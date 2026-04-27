@@ -522,3 +522,24 @@ export async function setBusinessMode(input: {
   revalidatePath('/settings')
   return { success: true }
 }
+
+// ---------------------------------------------------------------------------
+// Regional Settings (stub for international readiness layer)
+// ---------------------------------------------------------------------------
+
+export type RegionalSettings = {
+  currencyCode: 'USD' | 'EUR' | 'GBP' | 'CAD' | 'AUD'
+  locale: string
+  measurementSystem: 'imperial' | 'metric'
+  timezone: string
+}
+
+export async function getRegionalSettings(): Promise<RegionalSettings> {
+  // Default US settings until international readiness layer is built
+  return {
+    currencyCode: 'USD',
+    locale: 'en-US',
+    measurementSystem: 'imperial',
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/New_York',
+  }
+}

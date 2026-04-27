@@ -268,6 +268,8 @@ const EQUIPMENT_SUGGESTIONS = [
   'Cast Iron Skillet',
   'Dutch Oven',
   'Sheet Pans',
+  'Hotel Pans',
+  'Cambro',
   'Cutting Boards',
   'Chef Knife Set',
   'Mandoline',

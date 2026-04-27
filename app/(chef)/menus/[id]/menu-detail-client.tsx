@@ -6,6 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { TiptapEditor } from '@/components/ui/tiptap-editor'
 import { Badge } from '@/components/ui/badge'
 import { Alert } from '@/components/ui/alert'
 import { showUndoToast } from '@/components/ui/undo-toast'
@@ -1072,11 +1073,12 @@ export function MenuDetailClient({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-stone-300 mb-1">Description</label>
-                <Textarea
+                <TiptapEditor
+                  label="Description"
                   value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  rows={3}
+                  onChange={setDescription}
+                  minHeight={100}
+                  toolbar={['text', 'list']}
                 />
               </div>
             </CardContent>

@@ -393,6 +393,19 @@ export const DEFAULT_CULINARY_WORDS: CulinaryWord[] = [
   { word: 'Cure', tier: 3, category: 'action' },
   { word: 'Ferment', tier: 3, category: 'action' },
   { word: 'Pickle', tier: 3, category: 'action' },
+  { word: 'Reduce', tier: 3, category: 'action' },
+  { word: 'Proof', tier: 3, category: 'action' },
+  { word: 'Temper', tier: 3, category: 'action' },
+
+  // ══════════════════════════════════════════
+  // KNIFE CUTS (~6 words)
+  // ══════════════════════════════════════════
+  { word: 'Julienne', tier: 3, category: 'technique' },
+  { word: 'Brunoise', tier: 3, category: 'technique' },
+  { word: 'Chiffonade', tier: 3, category: 'technique' },
+  { word: 'Batonnet', tier: 4, category: 'technique' },
+  { word: 'Mirepoix', tier: 3, category: 'technique' },
+  { word: 'Bouquet Garni', tier: 4, category: 'technique' },
 ]
 
 // ─────────────────────────────────────────────

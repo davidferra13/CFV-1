@@ -40,10 +40,10 @@ export function ChefMenuSpotlight({
       <div className="mx-auto max-w-6xl">
         <div className="mb-7 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-300">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-300">
               Menu and package spotlight
             </p>
-            <h2 className="mt-3 text-3xl font-display tracking-tight text-stone-100">
+            <h2 className="mt-3 text-3xl font-display tracking-[-0.04em] text-stone-100">
               Published ways to start the conversation
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-400">

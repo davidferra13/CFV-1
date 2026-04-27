@@ -58,7 +58,7 @@ export default function HowItWorksPage() {
   return (
     <main>
       <section className="mx-auto w-full max-w-4xl px-4 pt-20 pb-8 sm:px-6 md:pt-28 md:pb-12 lg:px-8">
-        <h1 className="text-3xl font-display tracking-tight text-white md:text-4xl lg:text-5xl">
+        <h1 className="text-3xl font-display tracking-[-0.045em] leading-[1.1] text-white md:text-4xl lg:text-5xl">
           How it works
         </h1>
         <p className="mt-4 max-w-3xl text-base leading-relaxed text-stone-300">
@@ -147,7 +147,7 @@ export default function HowItWorksPage() {
         </div>
       </section>
 
-      <section className="border-t border-stone-800/40">
+      <section className="border-t border-stone-800/30">
         <div className="mx-auto w-full max-w-3xl px-4 py-14 sm:px-6 lg:px-8">
           <h2 className="text-xl font-semibold text-stone-100">If you are a chef</h2>
           <div className="mt-8 space-y-6">
@@ -187,7 +187,7 @@ export default function HowItWorksPage() {
         </div>
       </section>
 
-      <section className="border-t border-stone-800/40">
+      <section className="border-t border-stone-800/30">
         <div className="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
           <div className="rounded-2xl border border-stone-800/60 bg-stone-900/40 p-5">
             <h2 className="text-xl font-semibold text-stone-100">Need the trust details?</h2>
@@ -203,12 +203,12 @@ export default function HowItWorksPage() {
         </div>
       </section>
 
-      <section className="border-t border-stone-800/40">
+      <section className="border-t border-stone-800/30">
         <div className="mx-auto flex w-full max-w-3xl flex-col items-center px-4 py-14 text-center sm:px-6 md:py-18 lg:px-8">
           <div className="flex flex-col items-center gap-3 sm:flex-row">
             <Link
               href={PUBLIC_PRIMARY_CONSUMER_CTA.href}
-              className="inline-flex h-12 items-center justify-center rounded-xl gradient-accent px-6 text-sm font-semibold text-white glow-hover shadow-lg"
+              className="inline-flex h-12 items-center justify-center rounded-xl gradient-accent px-6 text-sm font-semibold text-white shadow-lg transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5 active:scale-[0.98]"
             >
               {PUBLIC_PRIMARY_CONSUMER_CTA.label}
             </Link>

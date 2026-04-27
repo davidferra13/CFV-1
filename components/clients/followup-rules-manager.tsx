@@ -7,7 +7,7 @@ import {
   upsertFollowUpRule,
   deleteFollowUpRule,
 } from '@/lib/clients/gifting-actions'
-import type { FollowUpRule, TriggerType, RuleAction } from '@/lib/clients/gifting-actions'
+import type { FollowUpRule, TriggerType, RuleAction } from '@/lib/clients/gifting-types'
 
 const TRIGGER_LABELS: Record<TriggerType, string> = {
   post_event: 'After every event',

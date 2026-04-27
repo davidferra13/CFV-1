@@ -18,6 +18,7 @@ import { WidgetCardSkeleton } from '@/components/dashboard/widget-cards/widget-c
 import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
 import { OnboardingBanner } from '@/components/onboarding/onboarding-banner'
 import UpcomingTouchpoints from '@/components/clients/upcoming-touchpoints'
+import GiftSuggestionsWidget from '@/components/dashboard/gift-suggestions-widget'
 import { getUpcomingTouchpoints } from '@/lib/clients/touchpoint-actions'
 import { ActionSurfaceCard } from '@/components/dashboard/action-surface-card'
 import { ResolveNextCard } from '@/components/dashboard/resolve-next-card'
@@ -1806,6 +1807,12 @@ export default async function ChefDashboard() {
           <WidgetErrorBoundary name="Upcoming Touchpoints" compact>
             <Suspense fallback={<TouchpointsSkeleton />}>
               <TouchpointsSection />
+            </Suspense>
+          </WidgetErrorBoundary>
+
+          <WidgetErrorBoundary name="Gift Suggestions" compact>
+            <Suspense fallback={<WidgetCardSkeleton size="md" />}>
+              <GiftSuggestionsWidget />
             </Suspense>
           </WidgetErrorBoundary>
         </div>

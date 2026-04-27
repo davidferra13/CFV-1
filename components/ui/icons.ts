@@ -320,6 +320,24 @@ export { RocketLaunch as Rocket } from '@phosphor-icons/react/ssr'
 export { Flag } from '@phosphor-icons/react/ssr'
 export { GitMerge } from '@phosphor-icons/react/ssr'
 
+// Context inspector icons
+export { CookingPot } from '@phosphor-icons/react/ssr'
+export { CurrencyDollar } from '@phosphor-icons/react/ssr'
+export { Note } from '@phosphor-icons/react/ssr'
+export { Warning } from '@phosphor-icons/react/ssr'
+
+// Rich text editor icons
+export { TextUnderline as Underline } from '@phosphor-icons/react/ssr'
+export { TextStrikethrough as Strikethrough } from '@phosphor-icons/react/ssr'
+export { TextHOne as Heading1 } from '@phosphor-icons/react/ssr'
+export { TextHTwo as Heading2 } from '@phosphor-icons/react/ssr'
+export { TextHThree as Heading3 } from '@phosphor-icons/react/ssr'
+export { TextAlignLeft as AlignLeft } from '@phosphor-icons/react/ssr'
+export { TextAlignCenter as AlignCenter } from '@phosphor-icons/react/ssr'
+export { TextAlignRight as AlignRight } from '@phosphor-icons/react/ssr'
+export { HighlighterCircle as Highlighter } from '@phosphor-icons/react/ssr'
+export { ListBullets } from '@phosphor-icons/react/ssr'
+
 // Prep timeline icons (not in SSR barrel export, imported directly)
 export { Snowflake } from '@phosphor-icons/react/dist/ssr/Snowflake'
 export { Key } from '@phosphor-icons/react/dist/ssr/Key'

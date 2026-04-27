@@ -67,6 +67,8 @@ export async function redirectToBillingPortal(): Promise<BillingActionResult | v
 }
 
 export async function redirectToCheckout(): Promise<BillingActionResult | void> {
+  await requireChef()
+
   const formData = new FormData()
   formData.set('offerId', 'support_12_monthly')
   return redirectToSupportCheckout(formData)

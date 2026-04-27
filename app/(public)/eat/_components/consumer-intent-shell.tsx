@@ -71,7 +71,7 @@ export function ConsumerIntentShell({
             <p className="inline-flex rounded-full border border-brand-700/70 bg-stone-900/80 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-brand-300">
               Food discovery
             </p>
-            <h1 className="mt-5 text-4xl font-display tracking-tight text-stone-100 md:text-6xl">
+            <h1 className="mt-5 text-4xl font-display tracking-[-0.04em] text-stone-100 md:text-6xl">
               What should we eat?
             </h1>
             <p className="mt-5 max-w-2xl text-base leading-relaxed text-stone-300 md:text-lg">
@@ -93,7 +93,7 @@ export function ConsumerIntentShell({
             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-stone-500">
               {describeActiveFilters(filters)}
             </p>
-            <h2 className="mt-2 text-2xl font-display tracking-tight text-stone-100 md:text-3xl">
+            <h2 className="mt-2 text-2xl font-display tracking-[-0.04em] text-stone-100 md:text-3xl">
               Best matches
             </h2>
           </div>

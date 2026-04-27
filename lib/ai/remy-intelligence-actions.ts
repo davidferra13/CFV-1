@@ -66,6 +66,8 @@ export async function executeContingencyPlanning(inputs: Record<string, unknown>
 }
 
 export async function executeSeasonalProduce() {
+  await requireChef()
+
   const month = new Date().getMonth() + 1
   const data = getSeasonalProduceGrouped(month)
 
@@ -89,6 +91,7 @@ export async function executeSeasonalProduce() {
 }
 
 export async function executeGroceryConsolidation(inputs: Record<string, unknown>) {
+  await requireChef()
   const eventId = await resolveEventId(String(inputs.eventName ?? inputs.eventId ?? ''))
   if (!eventId)
     return { error: 'Could not find that event. Please specify the event name or occasion.' }
@@ -830,12 +833,16 @@ export async function executeMultiEventComparison(
 // ─── Phase 5: Entity Awareness ────────────────────────────────────────────────
 
 export async function executeGoalsDashboard() {
+  await requireChef()
+
   const { getGoalsDashboard } = await import('@/lib/goals/actions')
   const dashboard = await getGoalsDashboard()
   return dashboard
 }
 
 export async function executeEquipmentList() {
+  await requireChef()
+
   const { getEquipmentWithDepreciation } = await import('@/lib/equipment/depreciation-actions')
   const items = await getEquipmentWithDepreciation(new Date().getFullYear())
   return {
@@ -854,6 +861,7 @@ export async function executeEquipmentList() {
 }
 
 export async function executeEquipmentMaintenance() {
+  await requireChef()
   const { getEquipmentDueForMaintenance } = await import('@/lib/equipment/actions')
   const items = await getEquipmentDueForMaintenance()
   return {

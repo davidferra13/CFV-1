@@ -19,6 +19,11 @@ const TakeAChefCaptureSchema = z.object({
   full_name: z.string().min(1, 'Client name is required'),
   email: z.string().email('Valid email required').optional().or(z.literal('')),
   phone: z.string().optional().or(z.literal('')),
+  client_birthday: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Birthday must use YYYY-MM-DD')
+    .optional()
+    .or(z.literal('')),
 
   // Event details
   event_date: z.string().min(1, 'Event date is required'),
@@ -37,9 +42,9 @@ const TakeAChefCaptureSchema = z.object({
   additional_notes: z.string().optional().or(z.literal('')),
 })
 
-export type TakeAChefCaptureInput = z.infer<typeof TakeAChefCaptureSchema>
+type TakeAChefCaptureInput = z.infer<typeof TakeAChefCaptureSchema>
 
-export type TakeAChefCaptureResult = {
+type TakeAChefCaptureResult = {
   success: boolean
   inquiryId?: string
   eventId?: string
@@ -72,6 +77,7 @@ export async function captureTakeAChefBooking(
     const sourceParts = [
       `Imported from Take a Chef booking notification`,
       `Serve time: ${validated.serve_time}`,
+      validated.client_birthday ? `Client birthday: ${validated.client_birthday}` : null,
       validated.dietary_restrictions?.trim()
         ? `Dietary restrictions: ${validated.dietary_restrictions.trim()}`
         : null,
@@ -89,6 +95,7 @@ export async function captureTakeAChefBooking(
           email: validated.email.toLowerCase().trim(),
           full_name: validated.full_name.trim(),
           phone: validated.phone?.trim() || null,
+          birthday: validated.client_birthday || null,
           dietary_restrictions: dietaryList,
           source: 'take_a_chef',
         })
@@ -106,6 +113,7 @@ export async function captureTakeAChefBooking(
           full_name: validated.full_name.trim(),
           email: `tac-${Date.now()}@placeholder.cheflowhq.com`,
           phone: validated.phone?.trim() || null,
+          birthday: validated.client_birthday || null,
           dietary_restrictions: dietaryList || [],
           allergies: [],
           status: 'active' as const,
@@ -139,6 +147,7 @@ export async function captureTakeAChefBooking(
         unknown_fields: {
           submission_source: 'take_a_chef_manual_capture',
           serve_time: validated.serve_time,
+          client_birthday: validated.client_birthday || null,
           commission_percent: validated.commission_percent,
           additional_notes: validated.additional_notes?.trim() || null,
           take_a_chef_finance: {
@@ -290,7 +299,7 @@ export async function captureTakeAChefBooking(
 // ─── Get TakeaChef conversion data for event detail page ──────────────────
 // Lightweight check: is this event sourced from Take a Chef?
 
-export type TakeAChefConversionData = {
+type TakeAChefConversionData = {
   isTakeAChef: boolean
   clientName: string | null
   chefSlug: string | null

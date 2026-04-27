@@ -174,7 +174,7 @@ export default async function ChefStorePage({ params }: Props) {
 
                       <div className="mt-5 flex items-end justify-between gap-3">
                         <div>
-                          <p className="text-xs uppercase tracking-[0.16em] text-stone-500">
+                          <p className="text-xs uppercase tracking-[0.18em] text-stone-500">
                             Price
                           </p>
                           <p className="mt-1 text-2xl font-semibold text-stone-100">

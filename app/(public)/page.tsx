@@ -74,25 +74,24 @@ export default function Home() {
 
       {/* ── Consumer Hero (above fold) ── */}
       <section className="relative overflow-hidden">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(237,168,107,0.16),_transparent_34%)]" />
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-brand-500/8 to-transparent" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(237,168,107,0.10),_transparent_50%)]" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-brand-500/6 to-transparent" />
 
-        <div className="relative mx-auto w-full max-w-4xl px-4 pb-12 pt-14 sm:px-6 sm:pb-16 sm:pt-20 lg:px-8">
+        <div className="relative mx-auto w-full max-w-4xl px-4 pb-16 pt-20 sm:px-6 sm:pb-20 sm:pt-28 lg:px-8">
           <div className="text-center">
-            <h1 className="mx-auto max-w-3xl text-4xl font-display tracking-tight text-white sm:text-5xl lg:text-6xl">
+            <h1 className="text-mask-hero mx-auto max-w-3xl text-[2.5rem] font-display tracking-[-0.045em] leading-[1.08] sm:text-5xl lg:text-[3.75rem]">
               Find a private chef near you
             </h1>
-            <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-stone-300 sm:text-xl">
+            <p className="mx-auto mt-6 max-w-xl text-base leading-7 tracking-[-0.01em] text-stone-400 sm:text-lg sm:leading-8">
               Browse vetted chefs by location and service type, compare profiles, and book directly.
-              From intimate dinners to weekly meal prep, ChefFlow connects you with the right fit.
             </p>
           </div>
 
-          <div className="mx-auto mt-8 max-w-2xl">
+          <div className="mx-auto mt-10 max-w-xl">
             <HomepageSearch />
           </div>
 
-          <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+          <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <TrackedLink
               href={PUBLIC_CONSUMER_DISCOVERY_ENTRY.href}
               analyticsName="home_consumer_hero_discovery"
@@ -100,7 +99,7 @@ export default function Home() {
                 section: 'consumer_hero',
                 destination: PUBLIC_CONSUMER_DISCOVERY_ENTRY.href,
               }}
-              className="inline-flex min-h-12 items-center justify-center rounded-2xl gradient-accent px-6 text-sm font-semibold text-white shadow-lg transition-colors hover:opacity-95"
+              className="inline-flex min-h-12 items-center justify-center rounded-2xl gradient-accent px-7 py-3 text-sm font-semibold tracking-[-0.01em] text-white shadow-lg transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5 active:scale-[0.98]"
             >
               Find food now
             </TrackedLink>
@@ -111,7 +110,7 @@ export default function Home() {
                 section: 'consumer_hero',
                 destination: PUBLIC_PRIMARY_CONSUMER_CTA.href,
               }}
-              className="inline-flex min-h-12 items-center justify-center rounded-2xl border border-stone-700 bg-stone-950/70 px-6 text-sm font-semibold text-stone-200 transition-colors hover:border-stone-600 hover:bg-stone-900"
+              className="inline-flex min-h-12 items-center justify-center rounded-2xl border border-stone-700/80 bg-stone-950/60 px-7 py-3 text-sm font-medium tracking-[-0.01em] text-stone-300 transition-all duration-200 hover:border-stone-600 hover:bg-stone-900 hover:text-stone-100"
             >
               Or describe your event
             </TrackedLink>
@@ -120,33 +119,33 @@ export default function Home() {
       </section>
 
       {/* ── Audience divider ── */}
-      <div className="border-t border-stone-800/60">
-        <div className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-4 sm:px-6 lg:px-8">
-          <div className="h-px flex-1 bg-stone-800/60" />
-          <p className="shrink-0 text-xs font-semibold uppercase tracking-[0.16em] text-stone-500">
+      <div className="py-6 sm:py-8">
+        <div className="mx-auto flex max-w-6xl items-center gap-6 px-4 sm:px-6 lg:px-8">
+          <div className="h-px flex-1 bg-gradient-to-r from-transparent via-stone-800/60 to-transparent" />
+          <p className="shrink-0 text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-500">
             Are you a chef-operator?
           </p>
-          <div className="h-px flex-1 bg-stone-800/60" />
+          <div className="h-px flex-1 bg-gradient-to-r from-transparent via-stone-800/60 to-transparent" />
         </div>
       </div>
 
       {/* ── Operator Section ── */}
       <section className="relative overflow-hidden">
-        <div className="relative mx-auto grid w-full max-w-6xl gap-10 px-4 pb-12 pt-6 sm:px-6 sm:pb-16 lg:grid-cols-[minmax(0,1.05fr)_minmax(340px,0.95fr)] lg:items-center lg:px-8 lg:pb-20">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_rgba(237,168,107,0.06),_transparent_50%)]" />
+        <div className="relative mx-auto grid w-full max-w-6xl gap-12 px-4 pb-16 pt-4 sm:px-6 sm:pb-20 lg:grid-cols-[minmax(0,1.05fr)_minmax(340px,0.95fr)] lg:items-center lg:gap-16 lg:px-8 lg:pb-24">
           <div>
-            <span className="inline-flex rounded-full border border-brand-700/40 bg-brand-950/30 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-200">
+            <span className="inline-flex rounded-full border border-brand-700/30 bg-brand-950/20 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-300/80">
               ChefFlow for chef-led operators
             </span>
-            <h2 className="mt-6 max-w-4xl text-4xl font-display tracking-tight text-white sm:text-5xl">
+            <h2 className="mt-7 max-w-lg text-[2rem] font-display tracking-[-0.04em] leading-[1.12] text-white sm:text-4xl lg:text-[2.75rem]">
               Run private chef, catering, and meal prep work without spreadsheet patchwork.
             </h2>
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-300">
-              ChefFlow keeps inquiries, events, menus, payments, and finance attached in one
-              operator workspace. Start with real product proof, then use the walkthrough lane when
-              you want the system mapped to your current workflow.
+            <p className="mt-5 max-w-lg text-base leading-7 tracking-[-0.01em] text-stone-400">
+              Inquiries, events, menus, payments, and finance in one operator workspace. Start with
+              real product proof, then map it to your workflow.
             </p>
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-9 flex flex-col gap-3 sm:flex-row">
               <TrackedLink
                 href={buildMarketingSourceHref({
                   pathname: '/for-operators',
@@ -158,7 +157,7 @@ export default function Home() {
                   section: 'operator',
                   destination: '/for-operators',
                 }}
-                className="inline-flex min-h-14 items-center justify-center rounded-2xl gradient-accent px-6 text-base font-semibold text-white shadow-lg transition-transform hover:-translate-y-0.5 active:scale-[0.98]"
+                className="inline-flex min-h-12 items-center justify-center rounded-2xl gradient-accent px-7 py-3 text-sm font-semibold tracking-[-0.01em] text-white shadow-lg transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5 active:scale-[0.98]"
               >
                 See operator proof
               </TrackedLink>
@@ -169,29 +168,29 @@ export default function Home() {
                 })}
                 analyticsName="home_hero_operator_walkthrough"
                 analyticsProps={{ section: 'operator' }}
-                className="inline-flex min-h-14 items-center justify-center rounded-2xl border border-stone-700 bg-stone-950/70 px-6 text-base font-semibold text-stone-200 transition-colors hover:border-stone-600 hover:bg-stone-900"
+                className="inline-flex min-h-12 items-center justify-center rounded-2xl border border-stone-700/80 bg-stone-950/60 px-7 py-3 text-sm font-medium tracking-[-0.01em] text-stone-300 transition-all duration-200 hover:border-stone-600 hover:bg-stone-900 hover:text-stone-100"
               >
                 Request walkthrough
               </TrackedLink>
             </div>
           </div>
 
-          <aside className="rounded-[2rem] border border-stone-700/70 bg-stone-950/80 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.28)] backdrop-blur-xl sm:p-6">
+          <aside className="rounded-[2rem] border border-stone-800/30 bg-stone-950/70 p-5 shadow-[0_32px_80px_rgba(0,0,0,0.32)] backdrop-blur-xl sm:p-6">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-300">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-300/70">
                   Real product proof
                 </p>
-                <h3 className="mt-2 text-2xl font-display tracking-tight text-stone-100">
+                <h3 className="mt-2 text-xl font-display tracking-[-0.03em] text-stone-100">
                   Live operator workspace
                 </h3>
               </div>
-              <span className="rounded-full border border-stone-700 bg-stone-900/70 px-3 py-1 text-xs font-medium text-stone-300">
+              <span className="rounded-full border border-stone-800 bg-stone-900/60 px-3 py-1 text-[11px] font-medium text-stone-400">
                 Current screen
               </span>
             </div>
 
-            <div className="mt-5 overflow-hidden rounded-[1.5rem] border border-stone-700/70 bg-stone-950/75">
+            <div className="mt-5 overflow-hidden rounded-2xl border border-stone-800/30 bg-stone-950/75">
               <Image
                 src="/proof/operator-dashboard.png"
                 alt="ChefFlow operator dashboard with inquiries, events, finance, and command center modules"
@@ -206,10 +205,12 @@ export default function Home() {
               {HOME_OPERATOR_PROOF_ITEMS.map((item) => (
                 <div
                   key={item.title}
-                  className="rounded-2xl border border-stone-800/70 bg-stone-950/60 p-4"
+                  className="rounded-xl border border-stone-800/30 bg-stone-900/30 p-3.5"
                 >
-                  <p className="text-sm font-semibold text-stone-100">{item.title}</p>
-                  <p className="mt-2 text-xs leading-6 text-stone-400">{item.detail}</p>
+                  <p className="text-sm font-semibold tracking-[-0.01em] text-stone-200">
+                    {item.title}
+                  </p>
+                  <p className="mt-1.5 text-xs leading-5 text-stone-500">{item.detail}</p>
                 </div>
               ))}
             </div>

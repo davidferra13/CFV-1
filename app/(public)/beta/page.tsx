@@ -93,7 +93,7 @@ export default async function BetaSignupPage({ searchParams }: BetaSignupPagePro
             <p className="inline-flex rounded-full border border-brand-700 bg-stone-900 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-brand-300">
               Early access for chefs and operators
             </p>
-            <h1 className="mt-5 max-w-4xl fluid-display-xl font-display tracking-tight text-stone-100">
+            <h1 className="mt-5 max-w-4xl fluid-display-xl font-display tracking-[-0.04em] text-stone-100">
               Request access to the operator system behind every booking.
             </h1>
             <p className="mt-5 max-w-3xl text-base leading-8 text-stone-300 md:text-lg">
@@ -178,7 +178,7 @@ export default async function BetaSignupPage({ searchParams }: BetaSignupPagePro
               <p className="text-xs font-semibold uppercase tracking-[0.1em] text-brand-300">
                 Access status
               </p>
-              <p className="mt-2 text-3xl font-display tracking-tight text-stone-100">
+              <p className="mt-2 text-3xl font-display tracking-[-0.04em] text-stone-100">
                 {signupCount} of {BETA_CAPACITY} spots requested
               </p>
               <div className="mt-4 h-2 overflow-hidden rounded-full bg-stone-800">
@@ -195,7 +195,7 @@ export default async function BetaSignupPage({ searchParams }: BetaSignupPagePro
             </div>
 
             <div className="mt-6">
-              <h2 className="text-2xl font-display tracking-tight text-stone-100">
+              <h2 className="text-2xl font-display tracking-[-0.04em] text-stone-100">
                 Request operator access
               </h2>
               <p className="mt-3 text-sm leading-7 text-stone-300">
@@ -225,7 +225,7 @@ export default async function BetaSignupPage({ searchParams }: BetaSignupPagePro
           <p className="text-xs font-semibold uppercase tracking-[0.1em] text-brand-300">
             Why this rollout exists
           </p>
-          <h2 className="mt-3 text-3xl font-display tracking-tight text-stone-100 md:text-4xl">
+          <h2 className="mt-3 text-3xl font-display tracking-[-0.04em] text-stone-100 md:text-4xl">
             Marketplace demand is only the front end. ChefFlow is for the operating layer after the
             inquiry lands.
           </h2>

@@ -11,6 +11,7 @@ import {
 import { TEMPLATE_VARIABLES } from '@/lib/communication/templates/constants'
 import { useProtectedForm } from '@/lib/qol/use-protected-form'
 import { FormShield } from '@/components/forms/form-shield'
+import { TiptapEditor } from '@/components/ui/tiptap-editor'
 
 type Props = {
   template: ResponseTemplate | null
@@ -183,13 +184,13 @@ export function TemplateEditor({ template, onClose, chefId }: Props) {
         </div>
 
         <div>
-          <label className="block text-xs text-stone-400 mb-1">Body</label>
-          <textarea
+          <TiptapEditor
+            label="Body"
             value={body}
-            onChange={(e) => setBody(e.target.value)}
-            rows={8}
-            className="w-full bg-stone-900 border border-stone-700 rounded px-3 py-2 text-stone-100 text-sm font-mono"
+            onChange={setBody}
+            minHeight={200}
             placeholder="Template body..."
+            toolbar={['text', 'heading', 'list', 'insert']}
           />
         </div>
 

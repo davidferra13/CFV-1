@@ -8,13 +8,13 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
-import { parseISO, format, addDays, isWithinInterval, setYear } from 'date-fns'
+import { addDays, format } from 'date-fns'
 
-export type UpcomingMilestone = {
+type UpcomingMilestone = {
   clientId: string
   clientName: string
   type: 'birthday' | 'anniversary' | 'milestone'
-  label: string // "Birthday", "Wedding Anniversary", or custom label
+  label: string // Birthday, Wedding Anniversary, or custom label
   date: string // ISO date of next occurrence (this year or next)
   daysUntil: number // 0 = today, 1 = tomorrow, …
   noteText: string // original milestone text for display
@@ -92,10 +92,9 @@ export async function getUpcomingMilestones(lookaheadDays = 14): Promise<Upcomin
 
   const { data: clients } = await db
     .from('clients')
-    .select('id, full_name, personal_milestones')
+    .select('id, full_name, birthday, anniversary, personal_milestones')
     .eq('tenant_id', user.tenantId!)
     .eq('is_active', true)
-    .not('personal_milestones', 'is', null)
 
   const today = new Date()
   today.setHours(0, 0, 0, 0)
@@ -104,6 +103,38 @@ export async function getUpcomingMilestones(lookaheadDays = 14): Promise<Upcomin
   const results: UpcomingMilestone[] = []
 
   for (const client of clients ?? []) {
+    if (client.birthday) {
+      const birthday = new Date(client.birthday)
+      const next = nextOccurrence(birthday.getMonth() + 1, birthday.getDate(), today)
+      if (next <= horizon) {
+        results.push({
+          clientId: client.id,
+          clientName: client.full_name,
+          type: 'birthday',
+          label: 'Birthday',
+          date: format(next, 'yyyy-MM-dd'),
+          daysUntil: Math.round((next.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)),
+          noteText: 'Birthday',
+        })
+      }
+    }
+
+    if (client.anniversary) {
+      const anniversary = new Date(client.anniversary)
+      const next = nextOccurrence(anniversary.getMonth() + 1, anniversary.getDate(), today)
+      if (next <= horizon) {
+        results.push({
+          clientId: client.id,
+          clientName: client.full_name,
+          type: 'anniversary',
+          label: 'Anniversary',
+          date: format(next, 'yyyy-MM-dd'),
+          daysUntil: Math.round((next.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)),
+          noteText: 'Anniversary',
+        })
+      }
+    }
+
     const milestones = (client.personal_milestones as string | null) ?? ''
     if (!milestones.trim()) continue
 
@@ -130,6 +161,9 @@ export async function getUpcomingMilestones(lookaheadDays = 14): Promise<Upcomin
         type = 'anniversary'
         label = lower.includes('wedding') ? 'Wedding Anniversary' : 'Anniversary'
       }
+
+      if (type === 'birthday' && client.birthday) continue
+      if (type === 'anniversary' && client.anniversary) continue
 
       const parsed = parseMilestoneDate(line)
       if (!parsed) continue

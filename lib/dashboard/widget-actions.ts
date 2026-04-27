@@ -212,21 +212,49 @@ export interface UpcomingBirthday {
   daysUntil: number
 }
 
+function daysUntilMonthDay(month: number, day: number, today: Date): number {
+  const thisYear = new Date(today.getFullYear(), month - 1, day)
+  const candidate = thisYear < today ? new Date(today.getFullYear() + 1, month - 1, day) : thisYear
+  return Math.ceil((candidate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+}
+
+function parseMilestoneText(raw: unknown): string {
+  if (Array.isArray(raw)) {
+    return raw
+      .map((item) => {
+        if (typeof item === 'string') return item
+        if (item && typeof item === 'object') {
+          const record = item as Record<string, unknown>
+          return [record.title, record.label, record.type, record.date, record.value]
+            .filter(Boolean)
+            .join(' ')
+        }
+        return ''
+      })
+      .join(' ')
+  }
+
+  if (raw && typeof raw === 'object') {
+    return Object.values(raw as Record<string, unknown>)
+      .filter(Boolean)
+      .join(' ')
+  }
+
+  return String(raw ?? '')
+}
+
 export async function getUpcomingBirthdays(daysAhead = 14): Promise<UpcomingBirthday[]> {
   const user = await requireChef()
   const db: any = createServerClient()
 
   const { data: clients } = await db
     .from('clients')
-    .select('id, full_name, personal_milestones')
+    .select('id, full_name, birthday, personal_milestones')
     .eq('tenant_id', user.tenantId!)
-    .not('personal_milestones', 'is', null)
 
   if (!clients || clients.length === 0) return []
 
   const today = new Date()
-  const cutoff = new Date(today)
-  cutoff.setDate(cutoff.getDate() + daysAhead)
   const results: UpcomingBirthday[] = []
 
   const months: [string, number][] = [
@@ -245,8 +273,20 @@ export async function getUpcomingBirthdays(daysAhead = 14): Promise<UpcomingBirt
   ]
 
   for (const c of clients) {
-    const raw = c.personal_milestones
-    const text = (Array.isArray(raw) ? raw.join(' ') : String(raw ?? '')).toLowerCase()
+    if (c.birthday) {
+      const birthday = new Date(c.birthday)
+      const daysUntil = daysUntilMonthDay(birthday.getMonth() + 1, birthday.getDate(), today)
+      if (daysUntil >= 0 && daysUntil <= daysAhead) {
+        results.push({
+          clientId: c.id,
+          clientName: c.full_name ?? 'Unknown',
+          milestone: 'Birthday',
+          daysUntil,
+        })
+      }
+    }
+
+    const text = parseMilestoneText(c.personal_milestones).toLowerCase()
     if (!text.trim()) continue
 
     for (const [monthName, monthNum] of months) {
@@ -256,13 +296,7 @@ export async function getUpcomingBirthdays(daysAhead = 14): Promise<UpcomingBirt
         const day = parseInt(match[1], 10)
         if (day < 1 || day > 31) continue
 
-        // Build date for this year
-        const thisYear = new Date(today.getFullYear(), monthNum - 1, day)
-        // If date already passed this year, try next year
-        const candidate =
-          thisYear < today ? new Date(today.getFullYear() + 1, monthNum - 1, day) : thisYear
-
-        const daysUntil = Math.ceil((candidate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+        const daysUntil = daysUntilMonthDay(monthNum, day, today)
         if (daysUntil >= 0 && daysUntil <= daysAhead) {
           results.push({
             clientId: c.id,

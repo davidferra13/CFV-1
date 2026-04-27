@@ -242,6 +242,19 @@ export async function createEvent(input: CreateEventInput) {
     throw new AuthError('Client not found or does not belong to your tenant')
   }
 
+  // Block event creation for closed/blocked client relationships
+  try {
+    const { assertClientRelationshipOpenForNewEvent } =
+      await import('@/lib/clients/relationship-closure-queries')
+    await assertClientRelationshipOpenForNewEvent(db, user.tenantId!, validated.client_id)
+  } catch (err) {
+    if (err instanceof Error && err.message.startsWith('Cannot create event:')) {
+      throw err
+    }
+    // Table-not-found or other query issues degrade gracefully
+    console.warn('[createEvent] Closure check degraded (non-blocking):', err)
+  }
+
   const duplicateCandidates = await findDuplicateEventCandidatesForTenant(db, user.tenantId!, {
     client_id: validated.client_id,
     event_date: validated.event_date,

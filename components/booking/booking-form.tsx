@@ -89,6 +89,7 @@ export function BookingForm({ chefSlug, selectedDate, onBack, bookingConfig }: P
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
+  const [clientBirthday, setClientBirthday] = useState('')
   const [occasion, setOccasion] = useState('')
   const [serviceMode, setServiceMode] = useState<'one_off' | 'recurring' | 'multi_day'>('one_off')
   const [recurringFrequency, setRecurringFrequency] = useState<'weekly' | 'biweekly' | 'monthly'>(
@@ -357,6 +358,7 @@ export function BookingForm({ chefSlug, selectedDate, onBack, bookingConfig }: P
           full_name: fullName.trim(),
           email: email.trim(),
           phone: phone.trim() || undefined,
+          client_birthday: clientBirthday || undefined,
           occasion: occasion.trim(),
           guest_count: parseInt(guestCount),
           event_date: selectedDate,
@@ -395,6 +397,7 @@ export function BookingForm({ chefSlug, selectedDate, onBack, bookingConfig }: P
           full_name: fullName.trim(),
           email: email.trim(),
           phone: phone.trim() || undefined,
+          client_birthday: clientBirthday || undefined,
           occasion: occasion.trim(),
           guest_count: parseInt(guestCount),
           event_date: selectedDate,
@@ -481,6 +484,16 @@ export function BookingForm({ chefSlug, selectedDate, onBack, bookingConfig }: P
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
         />
+        <Input
+          label="Birthday (optional)"
+          type="date"
+          value={clientBirthday}
+          onChange={(e) => setClientBirthday(e.target.value)}
+          helperText="Helps your chef remember birthdays for future celebrations."
+        />
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <Input
           label="Occasion"
           required

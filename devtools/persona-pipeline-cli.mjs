@@ -55,6 +55,8 @@ import {
   cleanDisplayName,
   inferName,
   savePipelineState,
+  markGapValidated,
+  getPrecisionReport,
 } from "./persona-pipeline-core.mjs";
 
 // ---------------------------------------------------------------------------
@@ -247,6 +249,51 @@ async function cmdValidate() {
   }
 
   console.log(`Saved to system/persona-batch-synthesis/validation.json`);
+  const precision = getPrecisionReport();
+  if (precision.overall?.validated > 0) {
+    console.log();
+    console.log(`${BOLD}PRECISION TRACKING${RESET}`);
+    console.log(`  Validated:        ${precision.overall.validated}/${precision.overall.total_gaps}`);
+    console.log(`  True positives:   ${GREEN}${precision.overall.true_positives}${RESET}`);
+    console.log(`  False positives:  ${RED}${precision.overall.false_positives}${RESET}`);
+    console.log(`  Precision rate:   ${precision.overall.precision_rate}%`);
+  }
+}
+
+async function cmdMarkGap() {
+  const title = args.slice(1).filter(a => !a.startsWith("--")).join(" ");
+  if (!title) { console.error("Usage: mark-real <gap title> | mark-false <gap title>"); process.exit(1); }
+  const isReal = command === "mark-real";
+  const result = markGapValidated(title, isReal);
+  if (result.error) { console.error(result.error); process.exit(1); }
+  console.log(`${isReal ? GREEN : RED}Marked "${title}" as ${isReal ? "REAL GAP" : "FALSE POSITIVE"}${RESET}`);
+  console.log(`Precision: ${result.precision.precision_rate}% (${result.precision.validated_count} validated)`);
+}
+
+async function cmdPrecision() {
+  const report = getPrecisionReport();
+  if (report.error) { console.error(report.error); process.exit(1); }
+  console.log();
+  console.log(`${BOLD}PIPELINE PRECISION REPORT${RESET}`);
+  console.log(`${"=".repeat(50)}`);
+  console.log(`  Total gaps:       ${report.overall.total_gaps}`);
+  console.log(`  Validated:        ${report.overall.validated}`);
+  console.log(`  Unvalidated:      ${report.overall.unvalidated}`);
+  console.log(`  ${GREEN}True positives:${RESET}  ${report.overall.true_positives}`);
+  console.log(`  ${RED}False positives:${RESET} ${report.overall.false_positives}`);
+  console.log(`  Precision rate:   ${report.overall.precision_rate !== null ? report.overall.precision_rate + "%" : "N/A"}`);
+  console.log();
+  console.log(`${BOLD}By Category:${RESET}`);
+  for (const [cat, s] of Object.entries(report.by_category)) {
+    const rate = s.validated > 0 ? Math.round((s.true_positives / s.validated) * 100) : "?";
+    console.log(`  ${cat}: ${s.total} gaps, ${s.validated} validated, ${rate}% precision`);
+  }
+  console.log();
+  console.log(`${BOLD}By Persona:${RESET}`);
+  for (const [p, s] of Object.entries(report.by_persona)) {
+    const rate = s.validated > 0 ? Math.round((s.true_positives / s.validated) * 100) : "?";
+    console.log(`  ${p}: ${s.total} gaps, ${s.validated} validated, ${rate}% precision`);
+  }
 }
 
 async function cmdAutoBuild() {
@@ -542,6 +589,9 @@ const commands = {
   synthesize: cmdSynthesize,
   synthesis: cmdSynthesize,
   validate: cmdValidate,
+  "mark-real": cmdMarkGap,
+  "mark-false": cmdMarkGap,
+  precision: cmdPrecision,
   "auto-build": cmdAutoBuild,
   autobuild: cmdAutoBuild,
   converge: cmdConverge,

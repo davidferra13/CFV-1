@@ -260,7 +260,7 @@ export default async function NearbyCollectionDetailPage({ params, searchParams 
         />
       )}
 
-      <section className="border-b border-stone-800/50">
+      <section className="border-b border-stone-800/30">
         <div className="mx-auto max-w-6xl px-4 pb-10 pt-16 sm:px-6 lg:px-8">
           <nav
             aria-label="Breadcrumb"
@@ -284,7 +284,7 @@ export default async function NearbyCollectionDetailPage({ params, searchParams 
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-300">
             {collection.eyebrow}
           </p>
-          <h1 className="mt-3 text-4xl font-bold tracking-tight text-stone-100 md:text-5xl">
+          <h1 className="mt-3 text-4xl font-bold tracking-[-0.04em] text-stone-100 md:text-5xl">
             {collection.title}
           </h1>
           <p className="mt-4 max-w-3xl text-base leading-relaxed text-stone-400">

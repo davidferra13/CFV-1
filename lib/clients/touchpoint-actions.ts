@@ -2,37 +2,14 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import type {
+  TouchpointRule,
+  TouchpointRuleType,
+  UpcomingTouchpoint,
+} from '@/lib/clients/touchpoint-types'
 import { revalidatePath } from 'next/cache'
 
 // ---- Types ------------------------------------------------------------------
-
-export type TouchpointRuleType =
-  | 'birthday'
-  | 'anniversary'
-  | 'days_since_last_event'
-  | 'lifetime_spend_milestone'
-  | 'streak_milestone'
-  | 'custom'
-
-export type TouchpointRule = {
-  id: string
-  chef_id: string
-  rule_type: TouchpointRuleType
-  trigger_value: string | null
-  action_suggestion: string | null
-  is_active: boolean
-  created_at: string
-  updated_at: string
-}
-
-export type UpcomingTouchpoint = {
-  client_id: string
-  client_name: string
-  rule_type: TouchpointRuleType
-  reason: string
-  action_suggestion: string | null
-  urgency: 'high' | 'medium' | 'low'
-}
 
 // ---- CRUD -------------------------------------------------------------------
 
@@ -136,7 +113,7 @@ export async function getUpcomingTouchpoints(): Promise<UpcomingTouchpoint[]> {
   // Load all clients for this chef
   const { data: clients } = await db
     .from('clients')
-    .select('id, full_name, date_of_birth')
+    .select('id, full_name, birthday')
     .eq('tenant_id', user.tenantId!)
 
   if (!clients || clients.length === 0) return []
@@ -167,7 +144,7 @@ async function evaluateRule(
   client: {
     id: string
     full_name: string | null
-    date_of_birth: string | null
+    birthday: string | null
   },
   clientName: string,
   now: Date,
@@ -201,13 +178,13 @@ async function evaluateRule(
 
 function evaluateBirthday(
   rule: TouchpointRule,
-  client: { date_of_birth: string | null; id: string },
+  client: { birthday: string | null; id: string },
   clientName: string,
   now: Date
 ): UpcomingTouchpoint | null {
-  if (!client.date_of_birth) return null
+  if (!client.birthday) return null
 
-  const dob = new Date(client.date_of_birth)
+  const dob = new Date(client.birthday)
   const thisYearBday = new Date(now.getFullYear(), dob.getMonth(), dob.getDate())
   if (thisYearBday < now) {
     thisYearBday.setFullYear(thisYearBday.getFullYear() + 1)

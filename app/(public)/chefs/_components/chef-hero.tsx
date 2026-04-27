@@ -19,7 +19,7 @@ export function ChefHero() {
           Curated Chef Directory
         </p>
 
-        <h1 className="max-w-3xl text-4xl font-display tracking-tight text-white md:text-5xl lg:text-6xl">
+        <h1 className="max-w-3xl text-4xl font-display tracking-[-0.04em] text-white md:text-5xl lg:text-6xl">
           Browse our curated chef network.
         </h1>
 
@@ -31,7 +31,7 @@ export function ChefHero() {
         <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row">
           <Link
             href={PUBLIC_PRIMARY_CONSUMER_CTA.href}
-            className="inline-flex h-12 items-center justify-center rounded-xl gradient-accent px-6 text-sm font-semibold text-white glow-hover shadow-lg"
+            className="inline-flex h-12 items-center justify-center rounded-xl gradient-accent px-6 text-sm font-semibold text-white transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5 active:scale-[0.98] shadow-lg"
           >
             {PUBLIC_PRIMARY_CONSUMER_CTA.label}
           </Link>

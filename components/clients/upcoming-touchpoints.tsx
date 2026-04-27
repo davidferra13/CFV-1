@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import type { UpcomingTouchpoint } from '@/lib/clients/touchpoint-actions'
+import type { UpcomingTouchpoint } from '@/lib/clients/touchpoint-types'
 
 const URGENCY_STYLES: Record<string, string> = {
   high: 'border-red-200 bg-red-50',

@@ -7,7 +7,7 @@ import {
   updateTouchpointRule,
   deleteTouchpointRule,
 } from '@/lib/clients/touchpoint-actions'
-import type { TouchpointRule, TouchpointRuleType } from '@/lib/clients/touchpoint-actions'
+import type { TouchpointRule, TouchpointRuleType } from '@/lib/clients/touchpoint-types'
 
 const RULE_TYPE_LABELS: Record<TouchpointRuleType, string> = {
   birthday: 'Birthday',

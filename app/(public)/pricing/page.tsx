@@ -170,15 +170,15 @@ export default function PricingPage() {
     <main>
       <FAQPageJsonLd faqs={PRICING_FAQS} />
 
-      <section className="border-b border-stone-800/50">
+      <section className="border-b border-stone-800/30">
         <div className="mx-auto w-full max-w-5xl px-4 pb-10 pt-20 sm:px-6 md:pb-14 md:pt-28 lg:px-8">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-300">
             Pricing
           </p>
-          <h1 className="mt-4 max-w-3xl text-4xl font-display tracking-tight text-white md:text-5xl">
+          <h1 className="mt-4 max-w-3xl text-4xl font-display tracking-[-0.045em] leading-[1.1] text-white md:text-5xl">
             What is free, what is paid, what is only planned, and what is not for sale yet.
           </h1>
-          <p className="mt-5 max-w-3xl text-base leading-relaxed text-stone-300 md:text-lg">
+          <p className="mt-5 max-w-3xl text-base leading-7 tracking-[-0.01em] text-stone-300 md:text-lg">
             Older ChefFlow copy mixed together free workflows, legacy Pro language, and future paid
             ideas. This page is the tighter version: public client usage is free today, core
             operator workflows are free today, the current $29/month charge is a voluntary supporter
@@ -292,13 +292,13 @@ export default function PricingPage() {
         </div>
       </section>
 
-      <section className="border-t border-stone-800/50">
+      <section className="border-t border-stone-800/30">
         <div className="mx-auto w-full max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
           <div className="max-w-3xl">
             <p className="text-sm font-semibold uppercase tracking-[0.14em] text-brand-300">
               Free Today
             </p>
-            <h2 className="mt-3 text-3xl font-display tracking-tight text-stone-100">
+            <h2 className="mt-3 text-3xl font-display tracking-[-0.04em] text-stone-100">
               Current free operator surface
             </h2>
             <p className="mt-4 text-sm leading-relaxed text-stone-400">
@@ -312,13 +312,13 @@ export default function PricingPage() {
         </div>
       </section>
 
-      <section className="border-t border-stone-800/50 bg-stone-950/40">
+      <section className="border-t border-stone-800/30 bg-stone-950/40">
         <div className="mx-auto w-full max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
           <div className="max-w-3xl">
             <p className="text-sm font-semibold uppercase tracking-[0.14em] text-brand-300">
               Classified Paid Or Future Paid
             </p>
-            <h2 className="mt-3 text-3xl font-display tracking-tight text-stone-100">
+            <h2 className="mt-3 text-3xl font-display tracking-[-0.04em] text-stone-100">
               The larger paid surface already tagged in code
             </h2>
             <p className="mt-4 text-sm leading-relaxed text-stone-400">
@@ -342,13 +342,13 @@ export default function PricingPage() {
         </div>
       </section>
 
-      <section className="border-t border-stone-800/50">
+      <section className="border-t border-stone-800/30">
         <div className="mx-auto w-full max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
           <div className="max-w-3xl">
             <p className="text-sm font-semibold uppercase tracking-[0.14em] text-brand-300">
               Not Available Today
             </p>
-            <h2 className="mt-3 text-3xl font-display tracking-tight text-stone-100">
+            <h2 className="mt-3 text-3xl font-display tracking-[-0.04em] text-stone-100">
               Public plans ChefFlow does not sell yet
             </h2>
             <p className="mt-4 text-sm leading-relaxed text-stone-400">
@@ -369,13 +369,13 @@ export default function PricingPage() {
         </div>
       </section>
 
-      <section className="border-t border-stone-800/50 bg-stone-950/40">
+      <section className="border-t border-stone-800/30 bg-stone-950/40">
         <div className="mx-auto w-full max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
           <div className="max-w-3xl">
             <p className="text-sm font-semibold uppercase tracking-[0.14em] text-brand-300">
               Pricing FAQ
             </p>
-            <h2 className="mt-3 text-3xl font-display tracking-tight text-stone-100">
+            <h2 className="mt-3 text-3xl font-display tracking-[-0.04em] text-stone-100">
               Plain answers to the messy parts
             </h2>
           </div>
@@ -395,10 +395,10 @@ export default function PricingPage() {
         </div>
       </section>
 
-      <section className="border-t border-stone-800/50">
+      <section className="border-t border-stone-800/30">
         <div className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-12 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
           <div className="max-w-2xl">
-            <h2 className="text-2xl font-display tracking-tight text-stone-100">
+            <h2 className="text-2xl font-display tracking-[-0.04em] text-stone-100">
               Need the shortest version?
             </h2>
             <p className="mt-3 text-sm leading-relaxed text-stone-400">

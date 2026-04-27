@@ -377,8 +377,8 @@ export async function signUpClient(input: ClientSignupInput) {
     })
 
     // Mark invitation as used when token flow is used
-    if (invitationId) {
-      await markInvitationUsed(invitationId)
+    if (invitationId && invitationToken) {
+      await markInvitationUsed(invitationId, invitationToken)
     }
 
     // Notify chef when an invited client finishes account signup.

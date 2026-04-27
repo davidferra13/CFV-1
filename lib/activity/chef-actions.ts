@@ -78,6 +78,7 @@ export async function getChefActivityFeed(
 }
 
 export async function getChefActivitySummary(limit = 5): Promise<ChefActivityEntry[]> {
+  await requireChef()
   return getChefActivity({ limit, daysBack: 7 })
 }
 

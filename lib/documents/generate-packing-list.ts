@@ -73,7 +73,8 @@ const EQUIPMENT_TRIGGERS: Record<string, string[]> = {
   cocktail: ['Cocktail shaker', 'Jigger', 'Bar spoon'],
   dessert_frozen: ['Ice cream machine'],
   grill: ['Long tongs', 'Grill brush', 'Meat thermometer'],
-  buffet: ['Chafing dishes', 'Sterno fuel cans'],
+  buffet: ['Chafing dishes', 'Sterno fuel cans', 'Hotel pans', 'Cambro (insulated carrier)'],
+  offsite: ['Cambro (insulated carrier)', 'Hotel pans (full + half)'],
 }
 
 // ─── Serviceware by Style ────────────────────────────────────────────────────
@@ -266,6 +267,7 @@ export async function fetchPackingListData(eventId: string): Promise<PackingList
   if (specialRequests.includes('grill') || specialRequests.includes('bbq'))
     eventEquipment.push(...EQUIPMENT_TRIGGERS.grill)
   if (frozenItems.length > 0) eventEquipment.push(...EQUIPMENT_TRIGGERS.dessert_frozen)
+  if (coldItems.length + frozenItems.length >= 3) eventEquipment.push(...EQUIPMENT_TRIGGERS.offsite)
 
   const uniqueEventEquipment = [...new Set(eventEquipment)]
 

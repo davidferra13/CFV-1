@@ -212,10 +212,10 @@ export function OperatorWalkthroughForm({ sourceCta, sourcePage }: OperatorWalkt
   if (successMessage) {
     return (
       <div className="rounded-[1.75rem] border border-emerald-700/40 bg-emerald-950/20 p-6 sm:p-8">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-300">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-300">
           Request received
         </p>
-        <h3 className="mt-3 text-2xl font-display tracking-tight text-stone-100">
+        <h3 className="mt-3 text-2xl font-display tracking-[-0.04em] text-stone-100">
           The workflow context is in.
         </h3>
         <p className="mt-4 text-sm leading-7 text-emerald-100/90">{successMessage}</p>

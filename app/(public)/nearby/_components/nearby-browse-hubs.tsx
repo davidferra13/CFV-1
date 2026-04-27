@@ -46,7 +46,7 @@ export function NearbyBrowseHubs({ stats }: { stats: DirectoryStats }) {
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-200">
             Browse Hubs
           </p>
-          <h2 className="mt-3 max-w-3xl text-2xl font-semibold tracking-tight text-stone-100 sm:text-3xl">
+          <h2 className="mt-3 max-w-3xl text-2xl font-semibold tracking-[-0.04em] text-stone-100 sm:text-3xl">
             Start with the strongest pockets in the directory.
           </h2>
           <p className="mt-3 max-w-3xl text-sm leading-relaxed text-stone-400 sm:text-base">
@@ -57,7 +57,7 @@ export function NearbyBrowseHubs({ stats }: { stats: DirectoryStats }) {
 
           <div className="mt-6 grid gap-3 sm:grid-cols-3">
             <div className="rounded-2xl border border-stone-800/80 bg-stone-950/70 p-4">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-stone-500">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-500">
                 Live Directory
               </p>
               <p className="mt-2 text-2xl font-semibold text-stone-100">
@@ -68,7 +68,7 @@ export function NearbyBrowseHubs({ stats }: { stats: DirectoryStats }) {
               </p>
             </div>
             <div className="rounded-2xl border border-stone-800/80 bg-stone-950/70 p-4">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-stone-500">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-500">
                 Active States
               </p>
               <p className="mt-2 text-2xl font-semibold text-stone-100">
@@ -79,7 +79,7 @@ export function NearbyBrowseHubs({ stats }: { stats: DirectoryStats }) {
               </p>
             </div>
             <div className="rounded-2xl border border-stone-800/80 bg-stone-950/70 p-4">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-stone-500">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-500">
                 Best Starting Point
               </p>
               <p className="mt-2 text-base font-semibold text-stone-100">{leadCity}</p>
@@ -99,7 +99,7 @@ export function NearbyBrowseHubs({ stats }: { stats: DirectoryStats }) {
           </h3>
 
           <div className="mt-5">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-stone-500">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-500">
               Categories
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
@@ -110,7 +110,7 @@ export function NearbyBrowseHubs({ stats }: { stats: DirectoryStats }) {
           </div>
 
           <div className="mt-5">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-stone-500">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-500">
               Cities
             </p>
             {model.quickCityLinks.length > 0 ? (
@@ -276,7 +276,7 @@ export function NearbyBrowseHubs({ stats }: { stats: DirectoryStats }) {
               </p>
               <div className="mt-5 grid gap-4 sm:grid-cols-2">
                 <div className="rounded-2xl border border-stone-800/80 bg-stone-950/70 p-4">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-stone-500">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-500">
                     Start With A City
                   </p>
                   <div className="mt-3 flex flex-wrap gap-2">
@@ -294,7 +294,7 @@ export function NearbyBrowseHubs({ stats }: { stats: DirectoryStats }) {
                 </div>
 
                 <div className="rounded-2xl border border-stone-800/80 bg-stone-950/70 p-4">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-stone-500">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-500">
                     Start With A Type
                   </p>
                   <div className="mt-3 flex flex-wrap gap-2">

@@ -205,6 +205,14 @@ function formatCommandName(cmd: KitchenCommand): string {
       return `All day: ${cmd.dishName ?? ''}`
     case 'heard':
       return 'Heard'
+    case 'corner':
+      return 'Corner!'
+    case 'behind':
+      return 'Behind!'
+    case 'hot':
+      return 'Hot!'
+    case 'picking_up':
+      return `Picking up${cmd.dishName ? `: ${cmd.dishName}` : ''}`
     default:
       return 'Unknown'
   }

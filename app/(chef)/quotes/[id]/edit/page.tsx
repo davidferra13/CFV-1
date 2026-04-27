@@ -41,6 +41,7 @@ export default async function EditQuotePage({ params }: { params: { id: string }
             clients={clients}
             pricingHistory={pricingHistory}
             existingQuote={quote}
+            prefilledClientId={quote.client_id ?? undefined}
             prefilledEventId={quote.event_id ?? undefined}
           />
         </div>

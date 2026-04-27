@@ -52,6 +52,7 @@ interface FormData {
   serve_time: string
   email: string
   phone: string
+  client_birthday: string
   guest_count: string
   occasion: string
   budget: string
@@ -70,6 +71,7 @@ interface FormErrors {
   serve_time?: string
   email?: string
   phone?: string
+  client_birthday?: string
   guest_count?: string
   occasion?: string
   budget?: string
@@ -198,6 +200,7 @@ export function PublicInquiryForm({
     serve_time: '',
     email: defaultValues?.email ?? '',
     phone: defaultValues?.phone ?? '',
+    client_birthday: '',
     guest_count: '',
     occasion: '',
     budget: '',
@@ -383,6 +386,7 @@ export function PublicInquiryForm({
         serve_time: formData.serve_time.trim().toUpperCase(),
         email: formData.email.trim(),
         phone: formData.phone.trim(),
+        client_birthday: formData.client_birthday || undefined,
         guest_count: guestCount,
         occasion: formData.occasion.trim(),
         budget_cents: budgetCents,
@@ -423,6 +427,7 @@ export function PublicInquiryForm({
         serve_time: '',
         email: '',
         phone: '',
+        client_birthday: '',
         guest_count: '',
         occasion: '',
         budget: '',
@@ -756,6 +761,16 @@ export function PublicInquiryForm({
             onChange={handleChange}
             error={errors.phone}
             placeholder="Phone"
+          />
+
+          <Input
+            label="Birthday"
+            name="client_birthday"
+            type="date"
+            value={formData.client_birthday}
+            onChange={handleChange}
+            error={errors.client_birthday}
+            helperText="Optional. Helps the chef remember birthdays for future celebrations."
           />
 
           <Select

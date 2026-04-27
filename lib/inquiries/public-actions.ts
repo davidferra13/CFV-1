@@ -40,6 +40,11 @@ const PublicInquirySchema = z.object({
   occasion: z.string().min(1, 'Occasion is required'),
   // Optional
   phone: z.string().optional().or(z.literal('')),
+  client_birthday: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Birthday must use YYYY-MM-DD')
+    .optional()
+    .or(z.literal('')),
   budget_cents: z.number().int().nonnegative().nullable().optional(),
   budget_range: z.string().max(200).optional().or(z.literal('')),
   allergy_flag: z.enum(['none', 'yes', 'unknown']).optional(),
@@ -58,7 +63,7 @@ const PublicInquirySchema = z.object({
   website_url: z.string().max(2048).optional().or(z.literal('')),
 })
 
-export type PublicInquiryInput = z.infer<typeof PublicInquirySchema>
+type PublicInquiryInput = z.infer<typeof PublicInquirySchema>
 
 async function resolvePublicLocationAttribution(
   db: any,
@@ -182,6 +187,7 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
     validated.allergies_food_restrictions?.trim()
       ? `Allergies/Food Restrictions: ${validated.allergies_food_restrictions.trim()}`
       : null,
+    validated.client_birthday ? `Client Birthday: ${validated.client_birthday}` : null,
     validated.additional_notes?.trim()
       ? `Additional Notes: ${validated.additional_notes.trim()}`
       : null,
@@ -288,6 +294,7 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
     email: validated.email.toLowerCase().trim(),
     full_name: validated.full_name.trim(),
     phone: validated.phone?.trim() || null,
+    birthday: validated.client_birthday || null,
     source: 'website',
   })
 
@@ -368,6 +375,7 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
         budget_exact_cents: budgetCents,
         favorite_ingredients_dislikes: validated.favorite_ingredients_dislikes?.trim() || null,
         allergies_food_restrictions: validated.allergies_food_restrictions?.trim() || null,
+        client_birthday: validated.client_birthday || null,
         additional_notes: validated.additional_notes?.trim() || null,
         service_mode: serviceMode,
         recurring_frequency:

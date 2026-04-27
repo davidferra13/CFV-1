@@ -2,54 +2,18 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import type {
+  DeliveryMethod,
+  FollowUpRule,
+  GiftEntry,
+  GiftSuggestion,
+  GiftType,
+  RuleAction,
+  TriggerType,
+} from '@/lib/clients/gifting-types'
 import { revalidatePath } from 'next/cache'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
-
-export type GiftType = 'thank_you' | 'birthday' | 'holiday' | 'milestone' | 'apology' | 'custom'
-export type DeliveryMethod = 'hand_delivered' | 'shipped' | 'digital' | 'with_service'
-export type TriggerType =
-  | 'post_event'
-  | 'birthday'
-  | 'anniversary'
-  | 'no_booking_30d'
-  | 'no_booking_60d'
-  | 'no_booking_90d'
-  | 'holiday'
-  | 'milestone_event_count'
-export type RuleAction = 'reminder' | 'email_draft' | 'gift_suggestion'
-
-export type GiftEntry = {
-  id: string
-  chef_id: string
-  client_id: string
-  gift_type: GiftType
-  occasion: string
-  description: string
-  cost_cents: number
-  sent_at: string
-  delivery_method: DeliveryMethod
-  notes: string | null
-  created_at: string
-}
-
-export type FollowUpRule = {
-  id: string
-  chef_id: string
-  trigger_type: TriggerType
-  action: RuleAction
-  template_text: string | null
-  enabled: boolean
-  created_at: string
-}
-
-export type GiftSuggestion = {
-  type: GiftType
-  reason: string
-  client_id: string
-  client_name: string
-  urgency: 'high' | 'medium' | 'low'
-}
 
 // ─── Gift Log ────────────────────────────────────────────────────────────────
 
@@ -197,7 +161,7 @@ export async function getGiftSuggestions(clientId?: string): Promise<GiftSuggest
   // Build client query
   let clientQuery = db
     .from('clients')
-    .select('id, full_name, date_of_birth')
+    .select('id, full_name, birthday')
     .eq('tenant_id', user.tenantId!)
 
   if (clientId) {
@@ -212,8 +176,8 @@ export async function getGiftSuggestions(clientId?: string): Promise<GiftSuggest
     const name = client.full_name || 'Client'
 
     // Birthday check: within 14 days
-    if (client.date_of_birth) {
-      const dob = new Date(client.date_of_birth)
+    if (client.birthday) {
+      const dob = new Date(client.birthday)
       const thisYearBday = new Date(now.getFullYear(), dob.getMonth(), dob.getDate())
       // If birthday already passed this year, check next year
       if (thisYearBday < now) {

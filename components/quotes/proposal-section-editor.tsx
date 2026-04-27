@@ -5,6 +5,7 @@
 import { useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { TiptapEditor } from '@/components/ui/tiptap-editor'
 import type { ProposalSection } from '@/lib/quotes/proposal-builder-actions'
 
 type SectionEditorProps = {
@@ -117,12 +118,13 @@ function MenuEditor({ section, onUpdate }: SectionEditorProps) {
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Menu Description</label>
-        <Textarea
+        <TiptapEditor
+          label="Menu Description"
           value={content.description ?? ''}
-          onChange={(e) => updateDescription(e.target.value)}
+          onChange={updateDescription}
           placeholder="Describe the overall menu concept..."
-          rows={2}
+          minHeight={80}
+          toolbar={['text', 'list']}
         />
       </div>
 
@@ -293,12 +295,13 @@ function PricingEditor({ section, onUpdate }: SectionEditorProps) {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Pricing Note</label>
-        <Textarea
-          value={content.custom_note ?? ''}
-          onChange={(e) => updateField('custom_note', e.target.value)}
+        <TiptapEditor
+          label="Pricing Note"
+          value={(content.custom_note as string) ?? ''}
+          onChange={(html) => updateField('custom_note', html)}
           placeholder="e.g., Deposit of 50% required to secure your date..."
-          rows={2}
+          minHeight={80}
+          toolbar={['text', 'list']}
         />
       </div>
     </div>
@@ -314,12 +317,13 @@ function TermsEditor({ section, onUpdate }: SectionEditorProps) {
 
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">Terms & Conditions</label>
-      <Textarea
+      <TiptapEditor
+        label="Terms & Conditions"
         value={content.text ?? ''}
-        onChange={(e) => onUpdate({ ...section, content: { ...content, text: e.target.value } })}
+        onChange={(html) => onUpdate({ ...section, content: { ...content, text: html } })}
         placeholder="Enter your standard terms and conditions..."
-        rows={8}
+        minHeight={200}
+        toolbar={['text', 'heading', 'list', 'insert']}
       />
       <p className="text-xs text-gray-500 mt-1">
         These will default from your template if you have one saved.
@@ -406,12 +410,13 @@ function BioEditor({ section, onUpdate }: SectionEditorProps) {
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Bio / Description</label>
-        <Textarea
-          value={content.description ?? ''}
-          onChange={(e) => updateField('description', e.target.value)}
+        <TiptapEditor
+          label="Bio / Description"
+          value={(content.description as string) ?? ''}
+          onChange={(html) => updateField('description', html)}
           placeholder="Tell the client about yourself, your background, and your culinary philosophy..."
-          rows={5}
+          minHeight={140}
+          toolbar={['text', 'list', 'insert']}
         />
       </div>
       <div>
@@ -444,12 +449,12 @@ function CustomEditor({ section, onUpdate }: SectionEditorProps) {
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Content</label>
-        <Textarea
+        <TiptapEditor
+          label="Content"
           value={content.body ?? ''}
-          onChange={(e) => onUpdate({ ...section, content: { ...content, body: e.target.value } })}
+          onChange={(html) => onUpdate({ ...section, content: { ...content, body: html } })}
           placeholder="Write your custom content here..."
-          rows={6}
+          minHeight={160}
         />
       </div>
     </div>

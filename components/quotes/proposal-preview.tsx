@@ -1,11 +1,13 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 import { createQuoteFromProposal } from '@/lib/quotes/quick-proposal-actions'
 import type { ProposalData, ProposalOverrides } from '@/lib/quotes/quick-proposal-actions'
+import { getEventMenuCost } from '@/lib/quotes/actions'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import { formatCurrency } from '@/lib/utils/currency'
+import { TiptapEditor } from '@/components/ui/tiptap-editor'
 
 const DEFAULT_TERMS_KEY = 'chefflow-default-proposal-terms'
 
@@ -57,6 +59,30 @@ export function ProposalPreview({ proposal, onQuoteCreated, onClose }: ProposalP
     return ''
   })
   const [internalNotes, setInternalNotes] = useState('')
+
+  // Menu cost for chef-only margin indicator
+  const [menuCostData, setMenuCostData] = useState<{
+    totalFoodCostCents: number
+    hasAllCosts: boolean
+  } | null>(null)
+
+  useEffect(() => {
+    if (!proposal.eventId) return
+    let cancelled = false
+    getEventMenuCost(proposal.eventId)
+      .then((data) => {
+        if (!cancelled && data) {
+          setMenuCostData({
+            totalFoodCostCents: data.totalFoodCostCents,
+            hasAllCosts: data.hasAllCosts,
+          })
+        }
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [proposal.eventId])
 
   // Compute deposit amount from percentage
   const depositAmountCents = depositRequired
@@ -452,37 +478,64 @@ export function ProposalPreview({ proposal, onQuoteCreated, onClose }: ProposalP
 
           {/* Pricing notes */}
           <div>
-            <label className="block text-sm text-gray-600 mb-1">
-              Pricing Notes (visible to client)
-            </label>
-            <textarea
+            <TiptapEditor
+              label="Pricing Notes (visible to client)"
               value={pricingNotes}
-              onChange={(e) => setPricingNotes(e.target.value)}
-              rows={2}
-              className="w-full border rounded-md px-3 py-2 text-sm"
+              onChange={setPricingNotes}
+              minHeight={80}
               placeholder="Includes groceries, cooking, service, and cleanup..."
+              toolbar={['text', 'list']}
             />
           </div>
         </div>
       </section>
+
+      {/* Chef-only margin indicator (never shown to client) */}
+      {menuCostData &&
+        totalCents > 0 &&
+        (() => {
+          const foodCostPct = parseFloat(
+            ((menuCostData.totalFoodCostCents / totalCents) * 100).toFixed(1)
+          )
+          const marginCents = totalCents - menuCostData.totalFoodCostCents
+          const colorClass =
+            foodCostPct <= 30
+              ? 'text-emerald-600'
+              : foodCostPct <= 40
+                ? 'text-amber-600'
+                : 'text-red-600'
+          return (
+            <section className="rounded-lg border border-dashed border-gray-300 bg-gray-50 p-3 space-y-1">
+              <p className="text-[10px] uppercase tracking-wider text-gray-400 font-medium">
+                Chef only (not on client proposal)
+              </p>
+              <div className="flex items-center gap-3 text-sm">
+                <span className="text-gray-600">Your margin:</span>
+                <span
+                  className={`font-semibold ${marginCents > 0 ? 'text-emerald-600' : 'text-red-600'}`}
+                >
+                  {formatCurrency(marginCents)}
+                </span>
+                <span className={`font-semibold ${colorClass}`}>({foodCostPct}% food cost)</span>
+              </div>
+              {!menuCostData.hasAllCosts && (
+                <p className="text-xs text-amber-500">Based on partial recipe cost data</p>
+              )}
+            </section>
+          )
+        })()}
 
       {/* Terms */}
       <section>
         <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">
           Terms and Conditions
         </h3>
-        <textarea
+        <TiptapEditor
           value={terms}
-          onChange={(e) => setTerms(e.target.value)}
-          rows={6}
-          className="w-full border rounded-md px-3 py-2 text-sm"
-          placeholder={`Payment terms, cancellation policy, liability, dietary disclaimers...
-
-Example:
-- 50% deposit required to confirm booking
-- Balance due 48 hours before event
-- Cancellations with less than 72 hours notice forfeit deposit
-- Chef is not liable for undisclosed allergies`}
+          onChange={setTerms}
+          minHeight={160}
+          placeholder="Payment terms, cancellation policy, liability, dietary disclaimers..."
+          toolbar={['text', 'heading', 'list', 'insert']}
         />
         <p className="text-xs text-gray-500 mt-1">Terms are saved locally for future proposals</p>
       </section>
@@ -492,12 +545,13 @@ Example:
         <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">
           Internal Notes (not visible to client)
         </h3>
-        <textarea
+        <TiptapEditor
           value={internalNotes}
-          onChange={(e) => setInternalNotes(e.target.value)}
-          rows={2}
-          className="w-full border rounded-md px-3 py-2 text-sm"
+          onChange={setInternalNotes}
+          minHeight={80}
           placeholder="Notes for your records only..."
+          toolbar={['text', 'list']}
+          compact
         />
       </section>
 

@@ -121,7 +121,7 @@ export default async function OperatorWalkthroughPage({
               <p className="inline-flex rounded-full border border-brand-700 bg-stone-900 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-brand-300">
                 Operator walkthrough
               </p>
-              <h1 className="mt-5 max-w-4xl fluid-display-xl font-display tracking-tight text-stone-100">
+              <h1 className="mt-5 max-w-4xl fluid-display-xl font-display tracking-[-0.04em] text-stone-100">
                 Request a founder-led evaluation of your operator workflow.
               </h1>
               <p className="mt-5 max-w-3xl text-base leading-8 text-stone-300 md:text-lg">
@@ -159,7 +159,7 @@ export default async function OperatorWalkthroughPage({
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-brand-300">
                 What happens here
               </p>
-              <h2 className="mt-3 text-2xl font-display tracking-tight text-stone-100">
+              <h2 className="mt-3 text-2xl font-display tracking-[-0.04em] text-stone-100">
                 A matched next step, not a generic handoff.
               </h2>
               <ul className="mt-5 space-y-3">
@@ -196,7 +196,7 @@ export default async function OperatorWalkthroughPage({
           <p className="text-xs font-semibold uppercase tracking-[0.12em] text-brand-300">
             Who this is for
           </p>
-          <h2 className="mt-3 text-3xl font-display tracking-tight text-stone-100 md:text-4xl">
+          <h2 className="mt-3 text-3xl font-display tracking-[-0.04em] text-stone-100 md:text-4xl">
             Built for operators whose work already has real operational pressure.
           </h2>
           <p className="mt-4 text-sm leading-7 text-stone-400 md:text-base">
@@ -232,7 +232,7 @@ export default async function OperatorWalkthroughPage({
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-brand-300">
                 What the walkthrough covers
               </p>
-              <h2 className="mt-3 text-3xl font-display tracking-tight text-stone-100 md:text-4xl">
+              <h2 className="mt-3 text-3xl font-display tracking-[-0.04em] text-stone-100 md:text-4xl">
                 The evaluation stays specific.
               </h2>
               <div className="mt-8 grid gap-4 md:grid-cols-3">
@@ -316,7 +316,7 @@ export default async function OperatorWalkthroughPage({
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-brand-300">
                 After submission
               </p>
-              <h2 className="mt-3 text-2xl font-display tracking-tight text-stone-100">
+              <h2 className="mt-3 text-2xl font-display tracking-[-0.04em] text-stone-100">
                 Expect a qualified reply, not an instant calendar drop.
               </h2>
               <ol className="mt-5 space-y-4">
@@ -360,7 +360,7 @@ export default async function OperatorWalkthroughPage({
             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-brand-300">
               Request form
             </p>
-            <h2 className="mt-3 text-3xl font-display tracking-tight text-stone-100">
+            <h2 className="mt-3 text-3xl font-display tracking-[-0.04em] text-stone-100">
               Send the workflow context first.
             </h2>
             <p className="mt-4 text-sm leading-7 text-stone-300">

@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { TiptapEditor } from '@/components/ui/tiptap-editor'
 import { Button } from '@/components/ui/button'
 import { Alert } from '@/components/ui/alert'
 import { SaveStateBadge } from '@/components/ui/save-state-badge'
@@ -420,13 +421,16 @@ export function CreateMenuForm({ tenantId }: { tenantId: string }) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-stone-300 mb-1">Description</label>
-              <Textarea
+              <TiptapEditor
+                label="Description"
                 value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                onBlur={() => void durableDraft.persistDraft(currentFormData, { immediate: true })}
+                onChange={(html) => {
+                  setDescription(html)
+                  void durableDraft.persistDraft(currentFormData, { immediate: false })
+                }}
                 placeholder="Describe this menu..."
-                rows={3}
+                minHeight={100}
+                toolbar={['text', 'list']}
               />
             </div>
 
@@ -530,12 +534,13 @@ export function CreateMenuForm({ tenantId }: { tenantId: string }) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-stone-300 mb-1">Notes</label>
-              <Textarea
+              <TiptapEditor
+                label="Notes"
                 value={notes}
-                onChange={(e) => setNotes(e.target.value)}
+                onChange={setNotes}
                 placeholder="Any additional notes for this menu..."
-                rows={2}
+                minHeight={80}
+                compact
               />
             </div>
           </CardContent>

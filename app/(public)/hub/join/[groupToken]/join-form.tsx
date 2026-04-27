@@ -121,7 +121,7 @@ export function JoinGroupForm({
         <span className="inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-300">
           Quick Join
         </span>
-        <h2 className="mt-3 text-2xl font-semibold tracking-tight text-stone-50">{title}</h2>
+        <h2 className="mt-3 text-2xl font-semibold tracking-[-0.04em] text-stone-50">{title}</h2>
         <p className="mt-2 text-sm leading-6 text-stone-400">{description}</p>
         <p className="mt-3 text-xs font-medium uppercase tracking-[0.18em] text-stone-500">
           {contextLabel}

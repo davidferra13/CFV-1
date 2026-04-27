@@ -1,0 +1,142 @@
+[
+  {
+    "timestamp": "2026-04-27T02:59:09.519Z",
+    "gap_title": "No real-time store-level price truth contract",
+    "is_real": false,
+    "cumulative_precision": 0,
+    "total_validated": 1
+  },
+  {
+    "timestamp": "2026-04-27T02:59:09.643Z",
+    "gap_title": "No hard medical constraint enforcement engine (blocking layer)",
+    "is_real": false,
+    "cumulative_precision": 0,
+    "total_validated": 2
+  },
+  {
+    "timestamp": "2026-04-27T02:59:09.770Z",
+    "gap_title": "Insufficient hidden-risk and cross-contact signaling at ingredient level",
+    "is_real": false,
+    "cumulative_precision": 0,
+    "total_validated": 3
+  },
+  {
+    "timestamp": "2026-04-27T02:59:09.890Z",
+    "gap_title": "No safe-only menu generation mode for high-risk clients",
+    "is_real": false,
+    "cumulative_precision": 0,
+    "total_validated": 4
+  },
+  {
+    "timestamp": "2026-04-27T02:59:10.015Z",
+    "gap_title": "No explicit offline-first guarantee for mission-critical workflows",
+    "is_real": false,
+    "cumulative_precision": 0,
+    "total_validated": 5
+  },
+  {
+    "timestamp": "2026-04-27T02:59:42.252Z",
+    "gap_title": "Privacy/Security:",
+    "is_real": false,
+    "cumulative_precision": 0,
+    "total_validated": 6
+  },
+  {
+    "timestamp": "2026-04-27T02:59:42.356Z",
+    "gap_title": "Director-level cross-event risk cockpit is incomplete for this persona",
+    "is_real": false,
+    "cumulative_precision": 0,
+    "total_validated": 7
+  },
+  {
+    "timestamp": "2026-04-27T02:59:42.461Z",
+    "gap_title": "No rapid guest roster churn flow",
+    "is_real": false,
+    "cumulative_precision": 0,
+    "total_validated": 8
+  },
+  {
+    "timestamp": "2026-04-27T02:59:42.569Z",
+    "gap_title": "Drop Engine for High-Demand Releases",
+    "is_real": false,
+    "cumulative_precision": 0,
+    "total_validated": 9
+  },
+  {
+    "timestamp": "2026-04-27T02:59:42.689Z",
+    "gap_title": "No regulator-grade traceability export",
+    "is_real": false,
+    "cumulative_precision": 0,
+    "total_validated": 10
+  },
+  {
+    "timestamp": "2026-04-27T02:59:42.814Z",
+    "gap_title": "No deterministic dose-curve engine",
+    "is_real": false,
+    "cumulative_precision": 0,
+    "total_validated": 11
+  },
+  {
+    "timestamp": "2026-04-27T02:59:42.974Z",
+    "gap_title": "No molecule-level culinary data model",
+    "is_real": false,
+    "cumulative_precision": 0,
+    "total_validated": 12
+  },
+  {
+    "timestamp": "2026-04-27T02:59:43.159Z",
+    "gap_title": "No cannabis outcome intelligence loop",
+    "is_real": false,
+    "cumulative_precision": 0,
+    "total_validated": 13
+  },
+  {
+    "timestamp": "2026-04-27T02:59:43.283Z",
+    "gap_title": "Guest cannabis tolerance history is not modeled as a first-class longitudinal safety signal",
+    "is_real": false,
+    "cumulative_precision": 0,
+    "total_validated": 14
+  },
+  {
+    "timestamp": "2026-04-27T02:59:43.416Z",
+    "gap_title": "Product System (SKUs, Batches, Units)",
+    "is_real": false,
+    "cumulative_precision": 0,
+    "total_validated": 15
+  },
+  {
+    "timestamp": "2026-04-27T02:59:43.530Z",
+    "gap_title": "V1 strategy conflicts with multi-chef governance need",
+    "is_real": false,
+    "cumulative_precision": 0,
+    "total_validated": 16
+  },
+  {
+    "timestamp": "2026-04-27T02:59:43.644Z",
+    "gap_title": "No documented conflict-safe sync model",
+    "is_real": false,
+    "cumulative_precision": 0,
+    "total_validated": 17
+  },
+  {
+    "timestamp": "2026-04-27T02:59:43.755Z",
+    "gap_title": "No market-first menu builder mode",
+    "is_real": true,
+    "cumulative_precision": 6,
+    "total_validated": 18
+  },
+  {
+    "timestamp": "2026-04-27T02:59:43.861Z",
+    "gap_title": "Location Adaptation and Venue Constraints",
+    "is_real": true,
+    "cumulative_precision": 11,
+    "total_validated": 19
+  },
+  {
+    "timestamp": "2026-04-27T02:59:59.750Z",
+    "gap_title": "Ephemeral Event Lifecycle Management",
+    "is_real": false,
+    "cumulative_precision": 10,
+    "total_validated": 20
+  }
+]

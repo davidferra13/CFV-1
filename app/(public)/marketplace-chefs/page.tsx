@@ -131,7 +131,7 @@ export default async function MarketplaceChefsPage({ searchParams }: Marketplace
           </p>
           <div className="mt-8 grid gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)] lg:items-start">
             <div>
-              <h1 className="max-w-4xl fluid-display-xl font-display tracking-tight text-stone-100">
+              <h1 className="max-w-4xl fluid-display-xl font-display tracking-[-0.04em] text-stone-100">
                 Keep the marketplace booking. Own everything that follows.
               </h1>
               <p className="mt-6 max-w-3xl text-[1.05rem] leading-8 text-stone-300 md:text-lg">
@@ -203,7 +203,7 @@ export default async function MarketplaceChefsPage({ searchParams }: Marketplace
           <p className="text-xs font-semibold uppercase tracking-[0.1em] text-brand-300">
             Marketplace Chef Workflow
           </p>
-          <h2 className="mt-2 text-3xl font-display tracking-tight text-stone-100 md:text-4xl">
+          <h2 className="mt-2 text-3xl font-display tracking-[-0.04em] text-stone-100 md:text-4xl">
             Marketplace demand solves discovery. It does not solve the business after the lead.
           </h2>
           <p className="mt-4 text-[0.98rem] leading-8 text-stone-300 md:text-base">
@@ -238,7 +238,7 @@ export default async function MarketplaceChefsPage({ searchParams }: Marketplace
               <p className="text-xs font-semibold uppercase tracking-[0.1em] text-stone-400">
                 Marketplace Still Owns
               </p>
-              <h2 className="mt-2 text-2xl font-display tracking-tight text-stone-100">
+              <h2 className="mt-2 text-2xl font-display tracking-[-0.04em] text-stone-100">
                 The first-touch demand engine
               </h2>
               <ul className="mt-5 space-y-3">
@@ -258,7 +258,7 @@ export default async function MarketplaceChefsPage({ searchParams }: Marketplace
               <p className="text-xs font-semibold uppercase tracking-[0.1em] text-brand-300">
                 You Build In ChefFlow
               </p>
-              <h2 className="mt-2 text-2xl font-display tracking-tight text-stone-100">
+              <h2 className="mt-2 text-2xl font-display tracking-[-0.04em] text-stone-100">
                 The business that compounds
               </h2>
               <ul className="mt-5 space-y-3">
@@ -283,7 +283,7 @@ export default async function MarketplaceChefsPage({ searchParams }: Marketplace
             <p className="text-xs font-semibold uppercase tracking-[0.1em] text-brand-300">
               Marketplace Chef Playbook
             </p>
-            <h2 className="mt-2 text-3xl font-display tracking-tight text-stone-100 md:text-4xl">
+            <h2 className="mt-2 text-3xl font-display tracking-[-0.04em] text-stone-100 md:text-4xl">
               How a marketplace booking becomes owned business instead of one more isolated job.
             </h2>
           </div>
@@ -312,7 +312,7 @@ export default async function MarketplaceChefsPage({ searchParams }: Marketplace
           <p className="text-xs font-semibold uppercase tracking-[0.12em] text-brand-300">
             Next Step
           </p>
-          <h2 className="mt-3 text-3xl font-display tracking-tight text-stone-100 md:text-4xl">
+          <h2 className="mt-3 text-3xl font-display tracking-[-0.04em] text-stone-100 md:text-4xl">
             Use every marketplace dinner to build your own client base and operating history.
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-[0.98rem] leading-8 text-stone-300 md:text-base">

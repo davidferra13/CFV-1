@@ -122,7 +122,9 @@ export function PublicHeader() {
         <div className="flex items-center gap-5 sm:gap-8">
           <Link href="/" className="flex items-center gap-2.5">
             <AppLogo size={36} className="shadow-sm" />
-            <span className="text-base font-display tracking-tight text-stone-100">ChefFlow</span>
+            <span className="text-base font-display tracking-[-0.04em] text-stone-100">
+              ChefFlow
+            </span>
           </Link>
 
           {/* Desktop nav */}
@@ -158,7 +160,7 @@ export function PublicHeader() {
             href="/auth/signin"
             analyticsName="header_signin"
             analyticsProps={{ section: 'public_header' }}
-            className="inline-flex h-10 items-center justify-center rounded-lg bg-transparent px-3 text-sm font-medium text-stone-300 transition-colors hover:bg-stone-800 hover:text-stone-100"
+            className="inline-flex h-10 items-center justify-center rounded-xl bg-transparent px-4 text-sm font-medium tracking-[-0.01em] text-stone-400 transition-colors hover:bg-stone-800/60 hover:text-stone-100"
           >
             Sign In
           </TrackedLink>
@@ -166,7 +168,7 @@ export function PublicHeader() {
             href={PUBLIC_PRIMARY_CONSUMER_CTA.href}
             analyticsName="header_book_a_chef"
             analyticsProps={{ section: 'public_header' }}
-            className="inline-flex h-10 items-center justify-center rounded-lg gradient-accent px-4 text-sm font-semibold text-white glow-hover"
+            className="inline-flex h-10 items-center justify-center rounded-xl gradient-accent px-5 text-sm font-semibold tracking-[-0.01em] text-white shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-px"
           >
             {PUBLIC_PRIMARY_CONSUMER_CTA.label}
           </TrackedLink>

@@ -1,0 +1,1035 @@
+{
+  "validated_at": "2026-04-27T02:58:36.975Z",
+  "summary": {
+    "total": 50,
+    "built": 22,
+    "partial": 20,
+    "missing": 8,
+    "false_positive_rate": 44,
+    "precision": {
+      "validated_count": 20,
+      "true_positives": 2,
+      "false_positives": 18,
+      "precision_rate": 10
+    }
+  },
+  "gaps": [
+    {
+      "category": "event-lifecycle",
+      "title": "Ephemeral Event Lifecycle Management",
+      "severity": "HIGH",
+      "from": "Kai Donovan",
+      "status": "BUILT",
+      "validated": false,
+      "evidence": [
+        {
+          "type": "grep_match",
+          "term": "event.lifecycle",
+          "files": [
+            "lib/billing/feature-classification.ts",
+            "lib/loyalty/trigger-registry.ts",
+            "app/(chef)/loyalty/settings/loyalty-settings-form.tsx"
+          ]
+        },
+        {
+          "type": "grep_match",
+          "term": "ephemeral",
+          "files": [
+            "lib/ai/reminder-actions.ts",
+            "lib/ai/remy-activity-tracker.ts",
+            "lib/finance/revenue-forecast-run.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "event-lifecycle",
+      "title": "Sales Channel Tracking",
+      "severity": "HIGH",
+      "from": "Maya Rios",
+      "status": "BUILT",
+      "validated": null,
+      "evidence": [
+        {
+          "type": "grep_match",
+          "term": "sales.channel",
+          "files": ["lib/db/migrations/schema.ts", "lib/db/schema/schema.ts"]
+        },
+        {
+          "type": "grep_match",
+          "term": "sales",
+          "files": ["lib/activity/chef-types.ts", "lib/ai/ace-ollama.ts", "lib/ai/agent-brain.ts"]
+        },
+        {
+          "type": "grep_match",
+          "term": "channel",
+          "files": [
+            "lib/activity/resume.ts",
+            "lib/admin/activity-feed.ts",
+            "lib/admin/inquiry-admin-actions.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "access-control",
+      "title": "Tiered Access and Waitlist Control",
+      "severity": "HIGH",
+      "from": "Kai Donovan",
+      "status": "BUILT",
+      "validated": null,
+      "evidence": [
+        {
+          "type": "file_exists",
+          "path": "app/(public)/e/",
+          "label": "Public event pages"
+        }
+      ]
+    },
+    {
+      "category": "ticketing-drops",
+      "title": "Drop Engine for High-Demand Releases",
+      "severity": "HIGH",
+      "from": "Kai Donovan",
+      "status": "PARTIAL",
+      "validated": false,
+      "evidence": [
+        {
+          "type": "grep_match",
+          "term": "releases",
+          "files": ["lib/interface/surface-completeness.ts"]
+        }
+      ]
+    },
+    {
+      "category": "audience-community",
+      "title": "Audience Curation and Composition",
+      "severity": "MEDIUM",
+      "from": "Kai Donovan",
+      "status": "BUILT",
+      "validated": null,
+      "evidence": [
+        {
+          "type": "grep_match",
+          "term": "audience",
+          "files": [
+            "lib/analytics/posthog.ts",
+            "lib/db/migrations/schema.ts",
+            "lib/db/schema/schema.ts"
+          ]
+        },
+        {
+          "type": "grep_match",
+          "term": "curation",
+          "files": ["lib/discover/actions.ts", "lib/discover/nearby-collection-readiness.ts"]
+        }
+      ]
+    },
+    {
+      "category": "location-venue",
+      "title": "Location Adaptation and Venue Constraints",
+      "severity": "MEDIUM",
+      "from": "Kai Donovan",
+      "status": "PARTIAL",
+      "validated": true,
+      "evidence": [
+        {
+          "type": "grep_match",
+          "term": "location",
+          "files": [
+            "lib/admin/activity-feed.ts",
+            "lib/admin/inquiry-admin-actions.ts",
+            "lib/ai/agent-actions/event-actions.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "payment-financial",
+      "title": "No real-time store-level price truth contract",
+      "severity": "HIGH",
+      "from": "Noah Kessler",
+      "status": "MISSING",
+      "validated": false,
+      "evidence": []
+    },
+    {
+      "category": "payment-financial",
+      "title": "Privacy/Security:",
+      "severity": "MEDIUM",
+      "from": "Alexander Davenport",
+      "status": "MISSING",
+      "validated": false,
+      "evidence": []
+    },
+    {
+      "category": "payment-financial",
+      "title": "Waste/Cost:",
+      "severity": "HIGH",
+      "from": "Samantha Miller",
+      "status": "PARTIAL",
+      "validated": null,
+      "evidence": [
+        {
+          "type": "grep_match",
+          "term": "wastecost",
+          "files": [
+            "lib/events/waste-tracking-actions.ts",
+            "lib/inventory/batch-actions.ts",
+            "lib/popups/snapshot.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "compliance-legal",
+      "title": "No regulator-grade traceability export",
+      "severity": "HIGH",
+      "from": "Dr. Julien Armand",
+      "status": "PARTIAL",
+      "validated": false,
+      "evidence": [
+        {
+          "type": "grep_match",
+          "term": "traceability",
+          "files": [
+            "lib/documents/activity-logging.ts",
+            "lib/haccp/templates.ts",
+            "lib/inventory/location-actions.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "compliance-legal",
+      "title": "Compliance evidence is fragmented across multiple screens",
+      "severity": "HIGH",
+      "from": "Jordan Hale",
+      "status": "BUILT",
+      "validated": null,
+      "evidence": [
+        {
+          "type": "file_exists",
+          "path": "lib/chef/cannabis-actions.ts",
+          "label": "Cannabis compliance"
+        }
+      ]
+    },
+    {
+      "category": "dosing-cannabis",
+      "title": "No deterministic dose-curve engine",
+      "severity": "HIGH",
+      "from": "Dr. Julien Armand",
+      "status": "PARTIAL",
+      "validated": false,
+      "evidence": [
+        {
+          "type": "grep_match",
+          "term": "deterministic",
+          "files": [
+            "lib/ai/ace-ollama.ts",
+            "lib/ai/agent-actions/inquiry-response-actions.ts",
+            "lib/ai/agent-actions/lifecycle-circle-actions.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "dosing-cannabis",
+      "title": "No molecule-level culinary data model",
+      "severity": "HIGH",
+      "from": "Dr. Julien Armand",
+      "status": "PARTIAL",
+      "validated": false,
+      "evidence": [
+        {
+          "type": "grep_match",
+          "term": "culinary",
+          "files": [
+            "lib/activity/breadcrumb-types.ts",
+            "lib/activity/resume.ts",
+            "lib/ai/carry-forward-match.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "dosing-cannabis",
+      "title": "No cannabis outcome intelligence loop",
+      "severity": "HIGH",
+      "from": "Dr. Julien Armand",
+      "status": "PARTIAL",
+      "validated": false,
+      "evidence": [
+        {
+          "type": "grep_match",
+          "term": "cannabis",
+          "files": ["lib/admin/audit.ts", "lib/admin/cannabis-actions.ts", "lib/ai/ace-ollama.ts"]
+        }
+      ]
+    },
+    {
+      "category": "dosing-cannabis",
+      "title": "No canonical central dosing engine",
+      "severity": "HIGH",
+      "from": "Jordan Hale",
+      "status": "BUILT",
+      "validated": null,
+      "evidence": [
+        {
+          "type": "grep_match",
+          "term": "canonical",
+          "files": [
+            "lib/action-graph/bookings.ts",
+            "lib/admin/openclaw-health-actions.ts",
+            "lib/ai/chat-insights.ts"
+          ]
+        },
+        {
+          "type": "grep_match",
+          "term": "central",
+          "files": [
+            "lib/auth/password-policy.ts",
+            "lib/auth/route-policy.ts",
+            "lib/billing/feature-classification.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "dosing-cannabis",
+      "title": "Guest cannabis tolerance history is not modeled as a first-class longitudinal safety signal",
+      "severity": "HIGH",
+      "from": "Jordan Hale",
+      "status": "PARTIAL",
+      "validated": false,
+      "evidence": [
+        {
+          "type": "grep_match",
+          "term": "guest.cannabis",
+          "files": [
+            "lib/chef/cannabis-actions.ts",
+            "lib/db/migrations/schema.ts",
+            "lib/db/schema/schema.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "dosing-cannabis",
+      "title": "Product System (SKUs, Batches, Units)",
+      "severity": "HIGH",
+      "from": "Maya Rios",
+      "status": "PARTIAL",
+      "validated": false,
+      "evidence": [
+        {
+          "type": "grep_match",
+          "term": "product",
+          "files": [
+            "lib/admin/platform-stats.ts",
+            "lib/ai/command-intent-parser.ts",
+            "lib/ai/command-orchestrator.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "dosing-cannabis",
+      "title": "Batch Dosing Engine",
+      "severity": "HIGH",
+      "from": "Maya Rios",
+      "status": "BUILT",
+      "validated": null,
+      "evidence": [
+        {
+          "type": "grep_match",
+          "term": "batch",
+          "files": [
+            "lib/aar/feedback-actions.ts",
+            "lib/activity/breadcrumb-types.ts",
+            "lib/admin/email-actions.ts"
+          ]
+        },
+        {
+          "type": "grep_match",
+          "term": "dosing",
+          "files": [
+            "lib/billing/feature-classification.ts",
+            "app/(chef)/cannabis/about/page.tsx",
+            "app/(chef)/cannabis/compliance/page.tsx"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "dietary-medical",
+      "title": "No deterministic inventory-to-menu execution assistant",
+      "severity": "HIGH",
+      "from": "Leo Varga",
+      "status": "PARTIAL",
+      "validated": null,
+      "evidence": [
+        {
+          "type": "grep_match",
+          "term": "deterministic",
+          "files": [
+            "lib/ai/ace-ollama.ts",
+            "lib/ai/agent-actions/inquiry-response-actions.ts",
+            "lib/ai/agent-actions/lifecycle-circle-actions.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "dietary-medical",
+      "title": "No hard medical constraint enforcement engine (blocking layer)",
+      "severity": "HIGH",
+      "from": "Rina Solis",
+      "status": "MISSING",
+      "validated": false,
+      "evidence": []
+    },
+    {
+      "category": "dietary-medical",
+      "title": "Insufficient hidden-risk and cross-contact signaling at ingredient level",
+      "severity": "HIGH",
+      "from": "Rina Solis",
+      "status": "MISSING",
+      "validated": false,
+      "evidence": []
+    },
+    {
+      "category": "dietary-medical",
+      "title": "Implement Mandatory Allergy Workflow:",
+      "severity": "HIGH",
+      "from": "Samantha Green",
+      "status": "PARTIAL",
+      "validated": null,
+      "evidence": [
+        {
+          "type": "grep_match",
+          "term": "implement",
+          "files": [
+            "lib/ai/browser/ollama-adapter.ts",
+            "lib/ai/draft-actions.ts",
+            "lib/ai/local-ai-provider.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "dietary-medical",
+      "title": "Create \"Dietary Confirmation\" POS Overlay:",
+      "severity": "MEDIUM",
+      "from": "Samantha Green",
+      "status": "PARTIAL",
+      "validated": null,
+      "evidence": [
+        {
+          "type": "grep_match",
+          "term": "dietary.confirmation",
+          "files": [
+            "lib/db/fk-map.ts",
+            "lib/db/migrations/relations.ts",
+            "lib/db/migrations/schema.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "recipe-menu",
+      "title": "No market-first menu builder mode",
+      "severity": "HIGH",
+      "from": "Noah Kessler",
+      "status": "PARTIAL",
+      "validated": true,
+      "evidence": [
+        {
+          "type": "grep_match",
+          "term": "builder",
+          "files": [
+            "lib/activity/breadcrumb-types.ts",
+            "lib/ai/client-preference-profile.ts",
+            "lib/ai/remy-actions.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "recipe-menu",
+      "title": "No safe-only menu generation mode for high-risk clients",
+      "severity": "HIGH",
+      "from": "Rina Solis",
+      "status": "MISSING",
+      "validated": false,
+      "evidence": []
+    },
+    {
+      "category": "recipe-menu",
+      "title": "Dynamic Menu Engineering:",
+      "severity": "HIGH",
+      "from": "Ethan Calder",
+      "status": "BUILT",
+      "validated": null,
+      "evidence": [
+        {
+          "type": "grep_match",
+          "term": "menu.engineering",
+          "files": [
+            "lib/ai/queue/registry.ts",
+            "lib/ai/scheduled/job-definitions.ts",
+            "lib/ai/scheduled/jobs.ts"
+          ]
+        },
+        {
+          "type": "grep_match",
+          "term": "dynamic",
+          "files": [
+            "lib/ai/command-task-descriptions.ts",
+            "lib/ai/privacy-narrative.ts",
+            "lib/ai/remy-actions.ts"
+          ]
+        },
+        {
+          "type": "grep_match",
+          "term": "engineering",
+          "files": [
+            "lib/ai/queue/registry.ts",
+            "lib/ai/remy-actions.ts",
+            "lib/ai/remy-personality.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "scheduling-calendar",
+      "title": "No real-time dosing administration log",
+      "severity": "HIGH",
+      "from": "Dr. Julien Armand",
+      "status": "BUILT",
+      "validated": null,
+      "evidence": [
+        {
+          "type": "grep_match",
+          "term": "dosing",
+          "files": [
+            "lib/billing/feature-classification.ts",
+            "app/(chef)/cannabis/about/page.tsx",
+            "app/(chef)/cannabis/compliance/page.tsx"
+          ]
+        },
+        {
+          "type": "grep_match",
+          "term": "administration",
+          "files": [
+            "lib/auth/admin-access.ts",
+            "lib/marketing/compare-pages.ts",
+            "components/finance/payroll/w2-panel.tsx"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "scheduling-calendar",
+      "title": "No explicit offline-first guarantee for mission-critical workflows",
+      "severity": "HIGH",
+      "from": "Leo Varga",
+      "status": "MISSING",
+      "validated": false,
+      "evidence": []
+    },
+    {
+      "category": "scheduling-calendar",
+      "title": "No documented conflict-safe sync model",
+      "severity": "HIGH",
+      "from": "Leo Varga",
+      "status": "PARTIAL",
+      "validated": false,
+      "evidence": [
+        {
+          "type": "grep_match",
+          "term": "documented",
+          "files": [
+            "lib/auth/server-action-inventory.ts",
+            "lib/clients/completeness.ts",
+            "lib/completion/evaluators/client.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "staffing-team",
+      "title": "V1 strategy conflicts with multi-chef governance need",
+      "severity": "HIGH",
+      "from": "Jordan Hale",
+      "status": "PARTIAL",
+      "validated": false,
+      "evidence": [
+        {
+          "type": "grep_match",
+          "term": "strategy",
+          "files": [
+            "lib/ai/remy-actions.ts",
+            "lib/ai/remy-personality.ts",
+            "lib/analytics/revenue-engine.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "staffing-team",
+      "title": "Director-level cross-event risk cockpit is incomplete for this persona",
+      "severity": "HIGH",
+      "from": "Jordan Hale",
+      "status": "MISSING",
+      "validated": false,
+      "evidence": []
+    },
+    {
+      "category": "sourcing-supply",
+      "title": "No external store availability signal",
+      "severity": "HIGH",
+      "from": "Noah Kessler",
+      "status": "BUILT",
+      "validated": null,
+      "evidence": [
+        {
+          "type": "grep_match",
+          "term": "external.store",
+          "files": ["lib/db/migrations/schema.ts"]
+        },
+        {
+          "type": "grep_match",
+          "term": "availability.signal",
+          "files": [
+            "lib/calendar/entry-actions.ts",
+            "lib/calendar/signal-settings-actions.ts",
+            "lib/client-work-graph/shared-snapshot.ts"
+          ]
+        },
+        {
+          "type": "grep_match",
+          "term": "external",
+          "files": [
+            "lib/ai/cross-monitor.ts",
+            "lib/ai/privacy-narrative.ts",
+            "lib/ai/queue/monitor.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "sourcing-supply",
+      "title": "No destination-first store intelligence for travel",
+      "severity": "HIGH",
+      "from": "Noah Kessler",
+      "status": "PARTIAL",
+      "validated": null,
+      "evidence": [
+        {
+          "type": "grep_match",
+          "term": "destination-first",
+          "files": ["app/(public)/nearby/_components/nearby-collection-modules.tsx"]
+        }
+      ]
+    },
+    {
+      "category": "sourcing-supply",
+      "title": "No multi-store route and split-cart optimizer",
+      "severity": "HIGH",
+      "from": "Noah Kessler",
+      "status": "PARTIAL",
+      "validated": null,
+      "evidence": [
+        {
+          "type": "grep_match",
+          "term": "multi-store",
+          "files": [
+            "components/pricing/event-shopping-planner.tsx",
+            "components/pricing/shopping-optimizer.tsx"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "sourcing-supply",
+      "title": "Hyper-Local Sourcing:",
+      "severity": "HIGH",
+      "from": "Ethan Calder",
+      "status": "PARTIAL",
+      "validated": null,
+      "evidence": [
+        {
+          "type": "grep_match",
+          "term": "sourcing",
+          "files": [
+            "lib/admin-time/actions.ts",
+            "lib/admin-time/constants.ts",
+            "lib/ai/agent-brain.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "sourcing-supply",
+      "title": "Vendor Lock-in:",
+      "severity": "LOW",
+      "from": "Victor Hale",
+      "status": "BUILT",
+      "validated": null,
+      "evidence": [
+        {
+          "type": "grep_match",
+          "term": "vendor",
+          "files": [
+            "lib/activity/chef-types.ts",
+            "lib/ai/agent-actions/financial-call-actions.ts",
+            "lib/ai/agent-actions/operations-actions.ts"
+          ]
+        },
+        {
+          "type": "grep_match",
+          "term": "lock-in",
+          "files": ["components/staff/clock-panel.tsx"]
+        }
+      ]
+    },
+    {
+      "category": "reporting-analytics",
+      "title": "No explicit outcome-based reaction log as first-class feedback",
+      "severity": "HIGH",
+      "from": "Rina Solis",
+      "status": "PARTIAL",
+      "validated": null,
+      "evidence": [
+        {
+          "type": "grep_match",
+          "term": "log.feedback",
+          "files": [
+            "lib/reviews/chef-feedback-actions.ts",
+            "components/reviews/log-feedback-button.tsx",
+            "app/(chef)/reviews/page.tsx"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "reporting-analytics",
+      "title": "No dedicated safety command center view",
+      "severity": "HIGH",
+      "from": "Rina Solis",
+      "status": "BUILT",
+      "validated": null,
+      "evidence": [
+        {
+          "type": "grep_match",
+          "term": "command.center",
+          "files": [
+            "lib/admin/owner-moderation-actions.ts",
+            "lib/gmail/take-a-chef-command-center.ts",
+            "lib/interface/surface-governance.ts"
+          ]
+        },
+        {
+          "type": "grep_match",
+          "term": "safety",
+          "files": [
+            "lib/activity/chef-types.ts",
+            "lib/admin/cannabis-actions.ts",
+            "lib/admin/platform-stats.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "scaling-multi",
+      "title": "No charter or voyage provisioning mode",
+      "severity": "HIGH",
+      "from": "Leo Varga",
+      "status": "BUILT",
+      "validated": null,
+      "evidence": [
+        {
+          "type": "grep_match",
+          "term": "charter",
+          "files": ["lib/ai/directory-search-parser.ts"]
+        },
+        {
+          "type": "grep_match",
+          "term": "voyage",
+          "files": ["lib/demo/fixtures.ts"]
+        }
+      ]
+    },
+    {
+      "category": "scaling-multi",
+      "title": "No rapid guest roster churn flow",
+      "severity": "HIGH",
+      "from": "Leo Varga",
+      "status": "MISSING",
+      "validated": false,
+      "evidence": []
+    },
+    {
+      "category": "uncategorized",
+      "title": "Maintain Quality & Consistency:",
+      "severity": "HIGH",
+      "from": "Elena Ruiz",
+      "status": "BUILT",
+      "validated": null,
+      "evidence": [
+        {
+          "type": "grep_match",
+          "term": "maintain",
+          "files": [
+            "lib/ai/chefflow-feature-map.ts",
+            "lib/community/benchmarking-actions.ts",
+            "lib/db/migrations/schema.ts"
+          ]
+        },
+        {
+          "type": "grep_match",
+          "term": "quality",
+          "files": [
+            "lib/aar/feedback-actions.ts",
+            "lib/ai/analytics-actions.ts",
+            "lib/ai/command-task-descriptions.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "uncategorized",
+      "title": "Implement Live Status:",
+      "severity": "HIGH",
+      "from": "Malik Johnson",
+      "status": "BUILT",
+      "validated": null,
+      "evidence": [
+        {
+          "type": "grep_match",
+          "term": "live.status",
+          "files": [
+            "lib/db/fk-map.ts",
+            "lib/db/migrations/relations.ts",
+            "lib/db/migrations/schema.ts"
+          ]
+        },
+        {
+          "type": "grep_match",
+          "term": "implement",
+          "files": [
+            "lib/ai/browser/ollama-adapter.ts",
+            "lib/ai/draft-actions.ts",
+            "lib/ai/local-ai-provider.ts"
+          ]
+        },
+        {
+          "type": "grep_match",
+          "term": "status",
+          "files": [
+            "lib/aar/actions.ts",
+            "lib/action-graph/bookings.ts",
+            "lib/activity/chef-types.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "uncategorized",
+      "title": "Basic Geo-Filtering:",
+      "severity": "HIGH",
+      "from": "Malik Johnson",
+      "status": "PARTIAL",
+      "validated": null,
+      "evidence": [
+        {
+          "type": "grep_match",
+          "term": "basic",
+          "files": [
+            "lib/aar/feedback-actions.ts",
+            "lib/ai/agent-brain.ts",
+            "lib/ai/parse-recipe-vision.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "uncategorized",
+      "title": "Dynamic Quoting V1:",
+      "severity": "MEDIUM",
+      "from": "Malik Johnson",
+      "status": "BUILT",
+      "validated": null,
+      "evidence": [
+        {
+          "type": "grep_match",
+          "term": "dynamic",
+          "files": [
+            "lib/ai/command-task-descriptions.ts",
+            "lib/ai/privacy-narrative.ts",
+            "lib/ai/remy-actions.ts"
+          ]
+        },
+        {
+          "type": "grep_match",
+          "term": "quoting",
+          "files": [
+            "lib/ai/agent-brain.ts",
+            "lib/automations/seed.ts",
+            "lib/events/event-readiness-assistant.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "uncategorized",
+      "title": "Low Friction Input:",
+      "severity": "MEDIUM",
+      "from": "Marcus Hale",
+      "status": "BUILT",
+      "validated": null,
+      "evidence": [
+        {
+          "type": "grep_match",
+          "term": "low.friction",
+          "files": ["app/(chef)/network/page.tsx"]
+        },
+        {
+          "type": "grep_match",
+          "term": "friction",
+          "files": [
+            "lib/ai/agent-brain.ts",
+            "lib/billing/feature-classification.ts",
+            "lib/clients/actions.ts"
+          ]
+        },
+        {
+          "type": "grep_match",
+          "term": "input",
+          "files": ["lib/aar/actions.ts", "lib/aar/feedback-actions.ts", "lib/activity/actions.ts"]
+        }
+      ]
+    },
+    {
+      "category": "uncategorized",
+      "title": "Develop Cross-Contamination Matrix:",
+      "severity": "HIGH",
+      "from": "Samantha Green",
+      "status": "BUILT",
+      "validated": null,
+      "evidence": [
+        {
+          "type": "file_exists",
+          "path": "lib/dietary/cross-contamination-check.ts",
+          "label": "Allergen cross-contamination check"
+        }
+      ]
+    },
+    {
+      "category": "uncategorized",
+      "title": "Client Self-Service:",
+      "severity": "HIGH",
+      "from": "Tommy Thompson",
+      "status": "BUILT",
+      "validated": null,
+      "evidence": [
+        {
+          "type": "grep_match",
+          "term": "client",
+          "files": [
+            "lib/aar/actions.ts",
+            "lib/aar/feedback-actions.ts",
+            "lib/action-graph/bookings.ts"
+          ]
+        },
+        {
+          "type": "grep_match",
+          "term": "self-service",
+          "files": [
+            "lib/clients/client-profile-actions.ts",
+            "lib/staff/staff-portal-actions.ts",
+            "lib/tickets/purchase-actions.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "uncategorized",
+      "title": "Order Modification Workflow:",
+      "severity": "MEDIUM",
+      "from": "Tommy Thompson",
+      "status": "BUILT",
+      "validated": null,
+      "evidence": [
+        {
+          "type": "grep_match",
+          "term": "order",
+          "files": ["lib/aar/actions.ts", "lib/aar/feedback-actions.ts", "lib/activity/actions.ts"]
+        },
+        {
+          "type": "grep_match",
+          "term": "modification",
+          "files": [
+            "lib/analytics/culinary-analytics.ts",
+            "lib/auth/permission-actions.ts",
+            "lib/db/fk-map.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "uncategorized",
+      "title": "Depth over Breadth:",
+      "severity": "MEDIUM",
+      "from": "Victor Hale",
+      "status": "BUILT",
+      "validated": null,
+      "evidence": [
+        {
+          "type": "grep_match",
+          "term": "depth.over",
+          "files": [
+            "lib/clients/client-profile-service-schema.ts",
+            "lib/clients/client-profile-service.ts"
+          ]
+        },
+        {
+          "type": "grep_match",
+          "term": "depth",
+          "files": ["lib/ai/ace-ollama.ts", "lib/ai/agent-brain.ts", "lib/ai/correspondence.ts"]
+        },
+        {
+          "type": "grep_match",
+          "term": "breadth",
+          "files": ["lib/marketing/compare-pages.ts", "lib/pricing/sourceability.ts"]
+        }
+      ]
+    },
+    {
+      "category": "uncategorized",
+      "title": "Introduce \"The Vault\":",
+      "severity": "LOW",
+      "from": "Victor Hale 2",
+      "status": "BUILT",
+      "validated": null,
+      "evidence": [
+        {
+          "type": "grep_match",
+          "term": "introduce",
+          "files": ["lib/ai/remy-survey-prompt.ts", "lib/auth/invitations.ts", "lib/db/compat.ts"]
+        },
+        {
+          "type": "grep_match",
+          "term": "vault",
+          "files": [
+            "lib/help/page-info-sections/13-chef-portal-social-media.ts",
+            "lib/openclaw/cartridge-registry.ts",
+            "lib/social/actions.ts"
+          ]
+        }
+      ]
+    }
+  ]
+}

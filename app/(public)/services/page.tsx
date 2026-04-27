@@ -317,7 +317,7 @@ export default async function ServicesPage() {
       />
       <JsonLd data={buildServicesJsonLd(snapshot)} />
 
-      <section className="border-b border-stone-800/50">
+      <section className="border-b border-stone-800/30">
         <div className="mx-auto w-full max-w-5xl px-4 pb-10 pt-16 sm:px-6 md:pt-24 lg:px-8">
           <nav
             aria-label="Breadcrumb"
@@ -333,7 +333,7 @@ export default async function ServicesPage() {
           <p className="inline-flex rounded-full border border-brand-700/60 bg-brand-950/30 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-brand-300">
             Live Service Inventory
           </p>
-          <h1 className="mt-5 text-4xl font-display tracking-tight text-stone-100 md:text-5xl">
+          <h1 className="mt-5 text-4xl font-display tracking-[-0.04em] text-stone-100 md:text-5xl">
             Browse chefs by published service type.
           </h1>
           <p className="mt-4 max-w-3xl text-base leading-relaxed text-stone-300">
@@ -410,7 +410,7 @@ export default async function ServicesPage() {
         </section>
       )}
 
-      <section className="border-y border-stone-800/50">
+      <section className="border-y border-stone-800/30">
         <div className="mx-auto flex w-full max-w-3xl flex-col items-center px-4 py-14 text-center sm:px-6 lg:px-8">
           <p className="text-base text-stone-300">
             Need a chef even when a category is thin? The booking request path stays available while
@@ -419,7 +419,7 @@ export default async function ServicesPage() {
           <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
             <Link
               href={PUBLIC_PRIMARY_CONSUMER_CTA.href}
-              className="inline-flex h-12 items-center justify-center rounded-xl gradient-accent px-6 text-sm font-semibold text-white glow-hover shadow-lg"
+              className="inline-flex h-12 items-center justify-center rounded-xl gradient-accent px-6 text-sm font-semibold text-white transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5 active:scale-[0.98] shadow-lg"
             >
               {PUBLIC_PRIMARY_CONSUMER_CTA.label}
             </Link>

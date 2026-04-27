@@ -307,7 +307,7 @@ export default async function GiftCardsPage() {
           <p className="inline-flex rounded-full border border-brand-700/70 bg-stone-900/80 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-brand-300">
             Gift Cards
           </p>
-          <h1 className="mt-5 text-4xl font-display tracking-tight text-stone-100 md:text-6xl">
+          <h1 className="mt-5 text-4xl font-display tracking-[-0.04em] text-stone-100 md:text-6xl">
             Buy a private chef gift card.
           </h1>
           <p className="mx-auto mt-5 max-w-3xl text-base leading-relaxed text-stone-300 md:text-lg">
@@ -373,7 +373,7 @@ export default async function GiftCardsPage() {
       <section className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-display tracking-tight text-stone-100 md:text-3xl">
+            <h2 className="text-2xl font-display tracking-[-0.04em] text-stone-100 md:text-3xl">
               Gift card pages currently live
             </h2>
             <p className="mt-2 max-w-2xl text-sm leading-relaxed text-stone-400">
@@ -411,7 +411,7 @@ export default async function GiftCardsPage() {
               </Link>
               <Link
                 href="/book"
-                className="inline-flex h-11 items-center justify-center rounded-xl gradient-accent px-4 text-sm font-semibold text-white glow-hover"
+                className="inline-flex h-11 items-center justify-center rounded-xl gradient-accent px-4 text-sm font-semibold text-white transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5 active:scale-[0.98]"
               >
                 Book a chef
               </Link>
@@ -426,7 +426,7 @@ export default async function GiftCardsPage() {
             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-brand-300">
               Before You Buy
             </p>
-            <h2 className="mt-3 text-3xl font-display tracking-tight text-stone-100">
+            <h2 className="mt-3 text-3xl font-display tracking-[-0.04em] text-stone-100">
               Gift card policy, plainly stated
             </h2>
             <p className="mt-3 text-sm leading-relaxed text-stone-400">

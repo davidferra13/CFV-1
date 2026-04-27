@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { TiptapEditor } from '@/components/ui/tiptap-editor'
 import { Select } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -50,6 +51,7 @@ import { parseConflictError, type ConflictErrorPayload } from '@/lib/mutations/c
 import { ValidationError } from '@/lib/errors/app-error'
 import { mapErrorToUI } from '@/lib/errors/map-error-to-ui'
 import type { QuoteDraftPrefillSource } from '@/lib/quotes/quote-prefill'
+import { ReactiveContextInspector } from '@/components/inspector/context-inspector'
 
 type Client = {
   id: string
@@ -1178,6 +1180,16 @@ export function QuoteForm({
             </div>
           )}
 
+          {/* Context Inspector - shows client dietary, allergies, past meals, preferences */}
+          {clientId && (
+            <ReactiveContextInspector
+              clientId={clientId}
+              eventId={prefilledEventId}
+              sections={['client', 'dietary', 'preferences', 'pastMeals', 'feedback', 'venue']}
+              defaultCollapsed={false}
+            />
+          )}
+
           {/* Quote Details */}
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-stone-100 uppercase tracking-wider">
@@ -1225,69 +1237,98 @@ export function QuoteForm({
             )}
 
             {/* Menu Food Cost hint - informational only, chef sets the price */}
-            {menuCost && (
-              <Card className="border-brand-200 bg-brand-50/50 dark:bg-brand-950/20 dark:border-brand-800">
-                <div className="p-3 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium text-brand-800 dark:text-brand-200">
-                      Menu Food Cost
-                    </p>
-                    <a
-                      href={`/menus/${menuCost.menuId}`}
-                      className="text-xs text-brand-600 hover:underline"
-                    >
-                      {menuCost.menuName}
-                    </a>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 text-sm">
-                    <div>
-                      <span className="text-muted-foreground">Total food cost</span>
-                      <p className="font-medium">{fmt(menuCost.totalFoodCostCents)}</p>
-                    </div>
-                    {menuCost.costPerGuestCents != null && (
-                      <div>
-                        <span className="text-muted-foreground">Per guest</span>
-                        <p className="font-medium">{fmt(menuCost.costPerGuestCents)}</p>
+            {menuCost
+              ? (() => {
+                  const quotedCents = totalAmount.trim()
+                    ? Math.round(parseFloat(totalAmount) * 100)
+                    : 0
+                  const liveFoodCostPct =
+                    quotedCents > 0
+                      ? parseFloat(((menuCost.totalFoodCostCents / quotedCents) * 100).toFixed(1))
+                      : null
+                  const marginCents =
+                    quotedCents > 0 ? quotedCents - menuCost.totalFoodCostCents : null
+                  const foodCostColor =
+                    liveFoodCostPct == null
+                      ? ''
+                      : liveFoodCostPct <= 30
+                        ? 'text-green-600 dark:text-green-400'
+                        : liveFoodCostPct <= 40
+                          ? 'text-amber-600 dark:text-amber-400'
+                          : liveFoodCostPct > 50
+                            ? 'text-red-600 dark:text-red-400'
+                            : 'text-orange-600 dark:text-orange-400'
+                  return (
+                    <Card className="border-brand-200 bg-brand-50/50 dark:bg-brand-950/20 dark:border-brand-800">
+                      <div className="p-3 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm font-medium text-brand-800 dark:text-brand-200">
+                            Menu Food Cost
+                          </p>
+                          <a
+                            href={`/menus/${menuCost.menuId}`}
+                            className="text-xs text-brand-600 hover:underline"
+                          >
+                            {menuCost.menuName}
+                          </a>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 text-sm">
+                          <div>
+                            <span className="text-muted-foreground">Total food cost</span>
+                            <p className="font-medium">{fmt(menuCost.totalFoodCostCents)}</p>
+                          </div>
+                          {menuCost.costPerGuestCents != null && (
+                            <div>
+                              <span className="text-muted-foreground">Per guest</span>
+                              <p className="font-medium">{fmt(menuCost.costPerGuestCents)}</p>
+                            </div>
+                          )}
+                          {liveFoodCostPct != null && (
+                            <div>
+                              <span className="text-muted-foreground">Food cost</span>
+                              <p className={`font-medium ${foodCostColor}`}>
+                                {liveFoodCostPct}% of quoted price
+                              </p>
+                            </div>
+                          )}
+                          {marginCents != null && (
+                            <div>
+                              <span className="text-muted-foreground">Your margin</span>
+                              <p
+                                className={`font-medium ${marginCents > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}
+                              >
+                                {fmt(marginCents)}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                        {!menuCost.hasAllCosts && (
+                          <p className="text-xs text-amber-600">
+                            Partial data: some recipe ingredients are missing prices
+                          </p>
+                        )}
+                        {priceFreshness &&
+                          (priceFreshness.staleCount > 0 || priceFreshness.noPriceCount > 0) && (
+                            <p className="text-xs text-amber-500">
+                              {[
+                                priceFreshness.staleCount > 0 &&
+                                  `${priceFreshness.staleCount} price${priceFreshness.staleCount !== 1 ? 's' : ''} older than 30d${priceFreshness.oldestPriceDays ? ` (oldest: ${priceFreshness.oldestPriceDays}d)` : ''}`,
+                                priceFreshness.noPriceCount > 0 &&
+                                  `${priceFreshness.noPriceCount} ingredient${priceFreshness.noPriceCount !== 1 ? 's' : ''} unpriced`,
+                              ]
+                                .filter(Boolean)
+                                .join(' · ')}
+                            </p>
+                          )}
                       </div>
-                    )}
-                    {menuCost.foodCostPercentage != null && menuCost.guestCount != null && (
-                      <div>
-                        <span className="text-muted-foreground">At current quote</span>
-                        <p
-                          className={`font-medium ${
-                            menuCost.foodCostPercentage <= 30
-                              ? 'text-green-600'
-                              : menuCost.foodCostPercentage <= 40
-                                ? 'text-amber-600'
-                                : 'text-red-600'
-                          }`}
-                        >
-                          {menuCost.foodCostPercentage.toFixed(1)}% food cost
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                  {!menuCost.hasAllCosts && (
-                    <p className="text-xs text-amber-600">
-                      Some recipe ingredients are missing price data
-                    </p>
-                  )}
-                  {priceFreshness &&
-                    (priceFreshness.staleCount > 0 || priceFreshness.noPriceCount > 0) && (
-                      <p className="text-xs text-amber-500">
-                        {[
-                          priceFreshness.staleCount > 0 &&
-                            `${priceFreshness.staleCount} price${priceFreshness.staleCount !== 1 ? 's' : ''} older than 30d${priceFreshness.oldestPriceDays ? ` (oldest: ${priceFreshness.oldestPriceDays}d)` : ''}`,
-                          priceFreshness.noPriceCount > 0 &&
-                            `${priceFreshness.noPriceCount} ingredient${priceFreshness.noPriceCount !== 1 ? 's' : ''} unpriced`,
-                        ]
-                          .filter(Boolean)
-                          .join(' · ')}
-                      </p>
-                    )}
-                </div>
-              </Card>
-            )}
+                    </Card>
+                  )
+                })()
+              : (existingQuote?.event_id || prefilledEventId) && (
+                  <p className="text-xs text-muted-foreground">
+                    Link a menu to this event to see food cost analysis
+                  </p>
+                )}
 
             <div>
               <Input
@@ -1392,22 +1433,28 @@ export function QuoteForm({
               helperText="When does this quote expire?"
             />
 
-            <Textarea
+            <TiptapEditor
               label="Pricing Notes (visible to client)"
               placeholder="What's included, terms, etc."
               value={pricingNotes}
-              onChange={(e) => setPricingNotes(e.target.value)}
-              onBlur={() => void durableDraft.persistDraft(currentFormData, { immediate: true })}
-              rows={3}
+              onChange={(html) => {
+                setPricingNotes(html)
+                void durableDraft.persistDraft(currentFormData, { immediate: false })
+              }}
+              minHeight={100}
+              toolbar={['text', 'list']}
             />
 
-            <Textarea
+            <TiptapEditor
               label="Internal Notes (chef only)"
               placeholder="Cost breakdown, margins, competitor pricing..."
               value={internalNotes}
-              onChange={(e) => setInternalNotes(e.target.value)}
-              onBlur={() => void durableDraft.persistDraft(currentFormData, { immediate: true })}
-              rows={3}
+              onChange={(html) => {
+                setInternalNotes(html)
+                void durableDraft.persistDraft(currentFormData, { immediate: false })
+              }}
+              minHeight={100}
+              toolbar={['text', 'list']}
             />
           </div>
 

@@ -730,10 +730,10 @@ export default async function ChefDirectoryPage({ searchParams }: PageProps) {
       <section className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(340px,0.9fr)]">
           <div className="rounded-[1.75rem] border border-stone-700 bg-stone-900/70 p-6 shadow-[var(--shadow-card)]">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-300">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-300">
               Browse the live marketplace
             </p>
-            <h2 className="mt-3 font-display text-2xl font-bold tracking-tight text-stone-100">
+            <h2 className="mt-3 font-display text-2xl font-bold tracking-[-0.04em] text-stone-100">
               Search by city and service type, then compare live profiles.
             </h2>
             <p className="mt-3 text-sm leading-6 text-stone-300 md:text-base">
@@ -747,7 +747,7 @@ export default async function ChefDirectoryPage({ searchParams }: PageProps) {
           </div>
 
           <div className="rounded-[1.75rem] border border-stone-700 bg-stone-900/70 p-6 shadow-[var(--shadow-card)]">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-300">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-300">
               Popular starting points
             </p>
             <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
@@ -780,7 +780,7 @@ export default async function ChefDirectoryPage({ searchParams }: PageProps) {
         </div>
 
         <div className="mt-4 rounded-[1.75rem] border border-stone-700 bg-stone-900/60 p-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-300">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-300">
             How booking works
           </p>
           <div className="mt-5 grid gap-5 md:grid-cols-3">
@@ -802,10 +802,10 @@ export default async function ChefDirectoryPage({ searchParams }: PageProps) {
       <section className="mx-auto max-w-6xl px-4 pb-6 sm:px-6 lg:px-8">
         <div className="grid gap-4 lg:grid-cols-[1.2fr,0.8fr]">
           <div className="rounded-[1.75rem] border border-stone-700 bg-stone-900/70 p-6">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-300">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-300">
               Best fallback when the right profile is not here yet
             </p>
-            <h2 className="mt-3 font-display text-2xl font-bold tracking-tight text-stone-100">
+            <h2 className="mt-3 font-display text-2xl font-bold tracking-[-0.04em] text-stone-100">
               Describe your event once, not chef by chef.
             </h2>
             <p className="mt-3 text-sm leading-6 text-stone-300 md:text-base">
@@ -859,10 +859,10 @@ export default async function ChefDirectoryPage({ searchParams }: PageProps) {
           </div>
 
           <div className="rounded-[1.75rem] border border-stone-700 bg-stone-900/70 p-6">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-300">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-300">
               Directory shape today
             </p>
-            <h2 className="mt-3 font-display text-2xl font-bold tracking-tight text-stone-100">
+            <h2 className="mt-3 font-display text-2xl font-bold tracking-[-0.04em] text-stone-100">
               {directorySummary.acceptingChefs} of {directorySummary.totalChefs} listed chefs are
               accepting inquiries.
             </h2>
@@ -895,10 +895,10 @@ export default async function ChefDirectoryPage({ searchParams }: PageProps) {
         <section className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div className="max-w-2xl">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-300">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-300">
                 Featured chefs
               </p>
-              <h2 className="mt-3 font-display text-3xl tracking-tight text-stone-100">
+              <h2 className="mt-3 font-display text-3xl tracking-[-0.04em] text-stone-100">
                 Real profiles, not generic placeholders.
               </h2>
               <p className="mt-3 text-sm leading-7 text-stone-300 md:text-base">

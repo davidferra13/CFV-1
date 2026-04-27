@@ -263,6 +263,36 @@ export async function transitionEvent({
     }
   }
 
+  // ── Event Readiness Engine (go/no-go) ───────────────────────────────────────
+  // Runs 8 deterministic operational checks (menu, payment, allergies, etc.)
+  // and persists results. For confirmed/in_progress transitions, blocking failures
+  // prevent the transition unless system-initiated.
+  if ((toStatus === 'confirmed' || toStatus === 'in_progress') && !isSystemTransition) {
+    try {
+      const { evaluateEventReadiness } = await import('@/lib/events/event-readiness-engine')
+      const engineResult = await evaluateEventReadiness(eventId)
+
+      if (engineResult.overallStatus === 'NOT_READY') {
+        const blockerMessages = engineResult.blockers.map((b) => b.message).join('; ')
+        throw new Error(`Event not ready: ${blockerMessages}`)
+      }
+
+      if (engineResult.overallStatus === 'AT_RISK') {
+        readinessWarnings.push(
+          ...engineResult.warnings.map((w) => `Readiness engine: ${w.label} - ${w.message}`)
+        )
+      }
+    } catch (engineErr: any) {
+      if (engineErr.message?.startsWith('Event not ready:')) {
+        throw engineErr
+      }
+      log.events.warn('Event readiness engine failed (non-blocking)', {
+        error: engineErr,
+        context: { eventId, fromStatus, toStatus },
+      })
+    }
+  }
+
   // ── Same-date conflict check when confirming ────────────────────────────────
   // Soft warning only (no hard block). Chefs may legitimately have multiple events.
   // Returns a conflict notice as metadata for the UI to surface.
@@ -1612,6 +1642,70 @@ export async function transitionEvent({
       }
     } catch (err) {
       log.events.warn('Circle retention note on completion failed (non-blocking)', { error: err })
+    }
+  }
+
+  // Extract client memory on event completion (non-blocking)
+  // Parses event data (notes, dietary info, menus, messages) into structured
+  // client recall facts for the Client Snapshot surface.
+  if (toStatus === 'completed' && fromStatus === 'in_progress' && event.client_id) {
+    try {
+      const { extractClientMemoryFromText, buildEventExtractionText } =
+        await import('@/lib/ai/extract-client-memory')
+      const adminDb: any = createServerClient({ admin: true })
+
+      // Gather event context for extraction
+      const { data: eventMenuRows } = await adminDb
+        .from('event_menus')
+        .select('menu_id')
+        .eq('event_id', eventId)
+      const menuIds = (eventMenuRows ?? []).map((r: any) => r.menu_id)
+
+      let menus: any[] = []
+      if (menuIds.length > 0) {
+        const { data: menuData } = await adminDb
+          .from('menus')
+          .select('name, dishes(name, course_name)')
+          .in('id', menuIds)
+        menus = menuData ?? []
+      }
+
+      const { data: msgRows } = await adminDb
+        .from('messages')
+        .select('content, sender_name')
+        .eq('entity_type', 'event')
+        .eq('entity_id', eventId)
+        .order('created_at', { ascending: false })
+        .limit(15)
+
+      const text = await buildEventExtractionText({
+        occasion: event.occasion,
+        guest_count: event.guest_count,
+        notes: event.notes,
+        dietary_notes: (event as any).dietary_notes,
+        special_requests: (event as any).special_requests,
+        menus: menus.map((m: any) => ({
+          name: m.name,
+          dishes: m.dishes?.map((d: any) => ({ name: d.name, courseName: d.course_name })),
+        })),
+        messages: (msgRows ?? []).map((m: any) => ({
+          content: m.content,
+          sender_name: m.sender_name,
+        })),
+      })
+
+      if (text.trim()) {
+        await extractClientMemoryFromText({
+          client_id: event.client_id,
+          text,
+          source: 'completion_extract',
+          source_event_id: eventId,
+        })
+      }
+    } catch (err) {
+      log.events.warn('Client memory extraction on completion failed (non-blocking)', {
+        error: err,
+      })
     }
   }
 

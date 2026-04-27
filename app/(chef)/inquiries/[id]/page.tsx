@@ -68,6 +68,7 @@ import { getEntityActivityTimeline } from '@/lib/activity/entity-timeline'
 import { ScheduleRequestSchema, summarizeScheduleRequest } from '@/lib/booking/schedule-schema'
 import { Suspense } from 'react'
 import { InquiryIntelligencePanel } from '@/components/intelligence/inquiry-intelligence-panel'
+import { ContextInspector } from '@/components/inspector/context-inspector'
 import { getInquiryCircleToken } from '@/lib/hub/inquiry-circle-actions'
 import { SoftCloseLeverageCard } from '@/components/inquiries/soft-close-leverage-card'
 import { getCriticalPath } from '@/lib/lifecycle/critical-path'
@@ -596,6 +597,24 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
           createdAt={inquiry.created_at}
         />
       </Suspense>
+
+      {/* Context Inspector - consolidated client context */}
+      {inquiry.client_id && (
+        <ContextInspector
+          clientId={inquiry.client_id}
+          inquiryId={inquiry.id}
+          sections={[
+            'client',
+            'dietary',
+            'preferences',
+            'pastMeals',
+            'feedback',
+            'venue',
+            'milestones',
+          ]}
+          defaultCollapsed={true}
+        />
+      )}
 
       {(inquiry as any).service_mode === 'multi_day' && (
         <Card className="p-6">

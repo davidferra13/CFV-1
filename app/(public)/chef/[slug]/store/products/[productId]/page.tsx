@@ -58,19 +58,19 @@ export default async function PassiveProductCheckoutPage({ params }: Props) {
 
           <div className="mt-6 grid gap-4 sm:grid-cols-3">
             <div className="rounded-2xl border border-stone-800 bg-stone-900/70 p-4">
-              <p className="text-xs uppercase tracking-[0.16em] text-stone-500">Price</p>
+              <p className="text-xs uppercase tracking-[0.18em] text-stone-500">Price</p>
               <p className="mt-2 text-2xl font-semibold text-stone-100">
                 {formatCurrency(data.product.price)}
               </p>
             </div>
             <div className="rounded-2xl border border-stone-800 bg-stone-900/70 p-4">
-              <p className="text-xs uppercase tracking-[0.16em] text-stone-500">Fulfillment</p>
+              <p className="text-xs uppercase tracking-[0.18em] text-stone-500">Fulfillment</p>
               <p className="mt-2 text-base font-medium capitalize text-stone-100">
                 {data.product.fulfillment_type}
               </p>
             </div>
             <div className="rounded-2xl border border-stone-800 bg-stone-900/70 p-4">
-              <p className="text-xs uppercase tracking-[0.16em] text-stone-500">Source</p>
+              <p className="text-xs uppercase tracking-[0.18em] text-stone-500">Source</p>
               <p className="mt-2 text-base font-medium capitalize text-stone-100">
                 {data.product.source_type}
               </p>

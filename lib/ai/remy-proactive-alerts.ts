@@ -236,16 +236,16 @@ async function checkClientBirthdays(db: any, tenantId: string): Promise<AlertCan
   // Check clients with birthday in next 7 days (month/day comparison)
   const { data: clients, error } = await db
     .from('clients')
-    .select('id, full_name, date_of_birth')
+    .select('id, full_name, birthday')
     .eq('tenant_id', tenantId)
-    .not('date_of_birth', 'is', null)
+    .not('birthday', 'is', null)
     .limit(100)
 
   if (error) throw error
 
   for (const c of clients ?? []) {
-    if (!c.date_of_birth) continue
-    const dob = new Date(c.date_of_birth)
+    if (!c.birthday) continue
+    const dob = new Date(c.birthday)
     const birthdayThisYear = new Date(now.getFullYear(), dob.getMonth(), dob.getDate())
     // Check if birthday is in the next 7 days
     if (birthdayThisYear >= now && birthdayThisYear <= in7Days) {
@@ -363,7 +363,7 @@ async function checkDormantClients(db: any, tenantId: string): Promise<AlertCand
 
   const { data: clients, error } = await db
     .from('clients')
-    .select('id, full_name, last_event_date, date_of_birth')
+    .select('id, full_name, last_event_date, birthday')
     .eq('tenant_id', tenantId)
     .is('deleted_at', null)
     .not('last_event_date', 'is', null)
@@ -393,8 +393,8 @@ async function checkDormantClients(db: any, tenantId: string): Promise<AlertCand
     // Q20: Cross-reference birthday proximity for re-engagement opportunity
     let birthdayNote = ''
     let priority: 'low' | 'normal' | 'high' | 'urgent' = 'low'
-    if (client.date_of_birth) {
-      const dob = new Date(client.date_of_birth)
+    if (client.birthday) {
+      const dob = new Date(client.birthday)
       const nowDate = new Date()
       const birthdayThisYear = new Date(nowDate.getFullYear(), dob.getMonth(), dob.getDate())
       const daysUntilBirthday = Math.ceil(

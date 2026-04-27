@@ -32,9 +32,9 @@ function getValueLabel(incentive: Incentive): string {
     const currency = incentive.currency_code || 'USD'
     if (incentive.type === 'gift_card') {
       const remaining = incentive.remaining_balance_cents ?? incentive.amount_cents
-      return `${formatCurrency(remaining, { currency })} remaining`
+      return `${formatCurrency(remaining, currency)} remaining`
     }
-    return `${formatCurrency(incentive.amount_cents, { currency })} off`
+    return `${formatCurrency(incentive.amount_cents, currency)} off`
   }
   return 'Value at redemption'
 }

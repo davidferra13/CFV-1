@@ -1,0 +1,39 @@
+{
+  "version": 2,
+  "processed": [
+    {
+      "slug": "david-chang",
+      "type": "Chef",
+      "source_file": "Chef Flow Personas/Completed/Chef/david-chang.txt",
+      "report": "docs/stress-tests/persona-david-chang-2026-04-27.md",
+      "build_tasks": [
+        "system/persona-build-plans/david-chang/task-1.md",
+        "system/persona-build-plans/david-chang/task-2.md",
+        "system/persona-build-plans/david-chang/task-3.md",
+        "system/persona-build-plans/david-chang/task-4.md",
+        "system/persona-build-plans/david-chang/task-5.md"
+      ],
+      "analyzed_at": "2026-04-27T06:09:22.964Z",
+      "planned_at": "2026-04-27T06:09:22.962Z"
+    },
+    {
+      "slug": "mindy-weiss",
+      "type": "Client",
+      "source_file": "Chef Flow Personas/Completed/Client/mindy-weiss.txt",
+      "report": "docs/stress-tests/persona-mindy-weiss-2026-04-27.md",
+      "build_tasks": [
+        "system/persona-build-plans/mindy-weiss/task-1.md",
+        "system/persona-build-plans/mindy-weiss/task-2.md",
+        "system/persona-build-plans/mindy-weiss/task-3.md",
+        "system/persona-build-plans/mindy-weiss/task-4.md",
+        "system/persona-build-plans/mindy-weiss/task-5.md"
+      ],
+      "analyzed_at": "2026-04-27T06:21:43.133Z",
+      "planned_at": "2026-04-27T06:21:43.132Z"
+    }
+  ],
+  "failed": [],
+  "last_cycle": "2026-04-27T06:09:22.965Z",
+  "total_personas_processed": 2,
+  "total_build_tasks_queued": 10
+}

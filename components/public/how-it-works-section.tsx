@@ -34,7 +34,7 @@ export function HowItWorksSection() {
   return (
     <section className="relative mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 md:py-20 lg:px-8">
       <div className="mb-12 text-center">
-        <h2 className="text-3xl font-display tracking-tight text-stone-100 md:text-4xl">
+        <h2 className="text-3xl font-display tracking-[-0.04em] text-stone-100 md:text-4xl">
           Why marketplace-driven private chefs choose ChefFlow.
         </h2>
         <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-stone-400">

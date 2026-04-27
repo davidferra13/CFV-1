@@ -11,7 +11,7 @@ import {
   computeReadinessScoresForInquiries,
   getResponseQueue,
 } from '@/lib/inquiries/actions'
-import type { ReadinessScore, ResponseQueueItem } from '@/lib/inquiries/actions'
+import type { ReadinessScore, ResponseQueueItem } from '@/lib/inquiries/types'
 import { getBookingScoresForOpenInquiries } from '@/lib/analytics/booking-score'
 import { BookingScoreBadge } from '@/components/analytics/booking-score-badge'
 import { ReadinessScoreBadge } from '@/components/inquiries/readiness-score-badge'

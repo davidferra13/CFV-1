@@ -9,13 +9,23 @@ import {
   Ticket,
   ListChecks,
   Store,
+  MessageCircle,
 } from '@/components/ui/icons'
 
-export type EventDetailTab = 'overview' | 'popup' | 'money' | 'prep' | 'tickets' | 'ops' | 'wrap'
+export type EventDetailTab =
+  | 'overview'
+  | 'popup'
+  | 'chat'
+  | 'money'
+  | 'prep'
+  | 'tickets'
+  | 'ops'
+  | 'wrap'
 
 const TABS: { id: EventDetailTab; label: string; icon: React.ReactNode }[] = [
   { id: 'overview', label: 'Overview', icon: <Info className="h-4 w-4" /> },
   { id: 'popup', label: 'Pop-Up', icon: <Store className="h-4 w-4" /> },
+  { id: 'chat', label: 'Chat', icon: <MessageCircle className="h-4 w-4" /> },
   { id: 'money', label: 'Finance', icon: <DollarSign className="h-4 w-4" /> },
   { id: 'prep', label: 'Prep', icon: <ListChecks className="h-4 w-4" /> },
   { id: 'tickets', label: 'Tickets', icon: <Ticket className="h-4 w-4" /> },

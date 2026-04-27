@@ -26,6 +26,7 @@ type Props = {
   tickets: EventTicket[]
   summary: EventTicketSummary | null
   shareToken: string | null
+  ticketsEnabled: boolean
 }
 
 export function EventDetailTicketsTab({
@@ -36,6 +37,7 @@ export function EventDetailTicketsTab({
   tickets,
   summary,
   shareToken,
+  ticketsEnabled,
 }: Props) {
   const [showCreateType, setShowCreateType] = useState(false)
   const [showAddGuest, setShowAddGuest] = useState<'comp' | 'walkin' | null>(null)

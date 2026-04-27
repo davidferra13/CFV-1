@@ -7,6 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { TiptapEditor } from '@/components/ui/tiptap-editor'
 import { Alert } from '@/components/ui/alert'
 import {
   updateRecipe,
@@ -521,18 +522,22 @@ export function EditRecipeClient({ recipe, chefId }: Props) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-stone-300 mb-1">Method</label>
-              <Textarea value={method} onChange={(e) => setMethod(e.target.value)} rows={4} />
+              <TiptapEditor
+                label="Method"
+                value={method}
+                onChange={setMethod}
+                minHeight={120}
+                toolbar={['text', 'list', 'insert']}
+              />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-stone-300 mb-1">
-                Detailed Method
-              </label>
-              <Textarea
+              <TiptapEditor
+                label="Detailed Method"
                 value={methodDetailed}
-                onChange={(e) => setMethodDetailed(e.target.value)}
-                rows={3}
+                onChange={setMethodDetailed}
+                minHeight={100}
+                toolbar={['text', 'heading', 'list', 'insert']}
               />
             </div>
 
@@ -786,8 +791,13 @@ export function EditRecipeClient({ recipe, chefId }: Props) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-stone-300 mb-1">Notes</label>
-              <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} />
+              <TiptapEditor
+                label="Notes"
+                value={notes}
+                onChange={setNotes}
+                minHeight={80}
+                compact
+              />
             </div>
           </CardContent>
         </Card>

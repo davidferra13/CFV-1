@@ -33,7 +33,7 @@ export function MeetRemySection() {
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-950 text-brand-400">
             <Bot className="h-6 w-6" />
           </div>
-          <h2 className="text-3xl font-display tracking-tight text-stone-100 md:text-4xl">
+          <h2 className="text-3xl font-display tracking-[-0.04em] text-stone-100 md:text-4xl">
             Built-in AI assistant
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-stone-300">

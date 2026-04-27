@@ -43,6 +43,11 @@ const InstantBookSchema = z.object({
   full_name: z.string().min(1, 'Name is required').max(200),
   email: z.string().email('Valid email required').max(320),
   phone: z.string().max(50).optional().or(z.literal('')),
+  client_birthday: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Birthday must use YYYY-MM-DD')
+    .optional()
+    .or(z.literal('')),
   occasion: z.string().min(1, 'Occasion is required').max(200),
   event_date: z.string().min(1, 'Event date is required').max(20),
   serve_time: z.string().min(1, 'Serve time is required').max(20),
@@ -59,9 +64,9 @@ const InstantBookSchema = z.object({
   attempt_id: z.string().min(8).max(128).optional().or(z.literal('')),
 })
 
-export type InstantBookInput = z.infer<typeof InstantBookSchema>
+type InstantBookInput = z.infer<typeof InstantBookSchema>
 
-export type InstantBookResult = {
+type InstantBookResult = {
   checkoutUrl: string
   totalCents: number
   depositCents: number
@@ -311,6 +316,7 @@ export async function createInstantBookingCheckout(
       email: validated.email.toLowerCase().trim(),
       full_name: validated.full_name.trim(),
       phone: validated.phone?.trim() || null,
+      birthday: validated.client_birthday || null,
       source: 'website',
     })
 
@@ -390,6 +396,7 @@ export async function createInstantBookingCheckout(
             serviceMode === 'recurring' ? (validated.recurring_duration_weeks ?? 8) : null,
           menu_recommendation_lead_days:
             serviceMode === 'recurring' ? (validated.menu_recommendation_lead_days ?? 7) : null,
+          client_birthday: validated.client_birthday || null,
           schedule_request_jsonb: validated.schedule_request_jsonb ?? null,
         }),
         status: 'new',

@@ -243,6 +243,21 @@ async function resolveClientPortalAccess(
       .eq('id', client.id)
   }
 
+  // Check if client's relationship is closed and portal access revoked
+  try {
+    const { getPortalBlockingClosure } = await import('@/lib/clients/relationship-closure-queries')
+    const blockingClosure = await getPortalBlockingClosure(db, client.id)
+    if (blockingClosure) {
+      console.warn(
+        `[portal] Access denied: client ${client.id} has active closure (${blockingClosure.closure_mode}) with portal access revoked`
+      )
+      return null
+    }
+  } catch (err) {
+    // Degrade gracefully if table doesn't exist yet
+    console.warn('[portal] Closure check degraded (non-blocking):', err)
+  }
+
   return {
     normalizedToken,
     clientId: client.id,

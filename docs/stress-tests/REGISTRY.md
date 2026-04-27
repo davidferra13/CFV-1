@@ -164,3 +164,4 @@ _Next update: after next `/persona-stress-test` run_
 | victor-hale-2 | Chef | 2026-04-26 | 84/100 | local-ollama-v2 | [Report](persona-victor-hale-2-2026-04-26.md) |
 | david-chang | Chef | 2026-04-27 | 0/100 | local-ollama-v2 | [Report](persona-david-chang-2026-04-27.md) |
 | mindy-weiss | Client | 2026-04-27 | 50/100 | local-ollama-v2 | [Report](persona-mindy-weiss-2026-04-27.md) |
+| oprah-winfrey | Client | 2026-04-27 | 50/100 | local-ollama-v2 | [Report](persona-oprah-winfrey-2026-04-27.md) |

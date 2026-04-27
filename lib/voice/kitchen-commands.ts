@@ -15,6 +15,10 @@ export type KitchenCommand =
   | { type: 'whats_next' }
   | { type: 'all_day'; dishName?: string }
   | { type: 'heard' } // acknowledgment
+  | { type: 'corner' } // movement callout
+  | { type: 'behind' } // movement callout
+  | { type: 'hot' } // safety callout
+  | { type: 'picking_up'; dishName?: string } // taking food from pass
   | { type: 'unknown'; raw: string }
 
 // ── Number word mapping ────────────────────────────────────────────────────
@@ -136,6 +140,25 @@ export function parseKitchenCommand(transcript: string): KitchenCommand {
     return { type: 'heard' }
   }
 
+  // ── Kitchen callouts (safety / movement) ──
+  if (t === 'corner' || t === 'corner coming' || t.startsWith('corner')) {
+    return { type: 'corner' }
+  }
+
+  if (t === 'behind' || t === 'behind you' || t === 'hot behind') {
+    return { type: 'behind' }
+  }
+
+  if (t === 'hot' || t === 'hot pan' || t === 'hot coming' || t === 'hot coming through') {
+    return { type: 'hot' }
+  }
+
+  // ── Picking up (taking food from pass) ──
+  if (t.startsWith('picking up') || t.startsWith('pick up')) {
+    const dishName = extractAfter(t, 'picking up') ?? extractAfter(t, 'pick up')
+    return { type: 'picking_up', dishName }
+  }
+
   return { type: 'unknown', raw: t }
 }
 
@@ -172,4 +195,20 @@ export const COMMAND_HELP: Array<{ command: string; description: string; example
   },
   { command: 'All day', description: 'Check total count for a dish', example: '"All day salmon"' },
   { command: 'Heard', description: 'Acknowledge a command', example: '"Heard" or "Yes chef"' },
+  { command: 'Corner', description: 'Alert others you are rounding a corner', example: '"Corner"' },
+  {
+    command: 'Behind',
+    description: 'Alert others you are passing behind them',
+    example: '"Behind" or "Hot behind"',
+  },
+  {
+    command: 'Hot',
+    description: 'Warn about a hot pan or dish',
+    example: '"Hot" or "Hot coming through"',
+  },
+  {
+    command: 'Picking up',
+    description: 'Taking food from the pass',
+    example: '"Picking up course 2"',
+  },
 ]

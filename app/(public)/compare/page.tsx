@@ -135,7 +135,7 @@ export default async function CompareIndexPage({ searchParams }: CompareIndexPag
             <p className="inline-flex rounded-full border border-brand-700 bg-stone-900 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-brand-300">
               Comparison Hub
             </p>
-            <h1 className="mt-5 text-4xl font-display tracking-tight text-stone-100 md:text-6xl">
+            <h1 className="mt-5 text-4xl font-display tracking-[-0.04em] text-stone-100 md:text-6xl">
               Compare ChefFlow against the tools you already use.
             </h1>
             <p className="mt-5 max-w-3xl text-base leading-relaxed text-stone-300 md:text-lg">
@@ -193,7 +193,7 @@ export default async function CompareIndexPage({ searchParams }: CompareIndexPag
           <p className="text-xs font-semibold uppercase tracking-[0.12em] text-brand-300">
             Compare Guides
           </p>
-          <h2 className="mt-3 text-3xl font-display tracking-tight text-stone-100 md:text-4xl">
+          <h2 className="mt-3 text-3xl font-display tracking-[-0.04em] text-stone-100 md:text-4xl">
             Start with the system your team is actually deciding against.
           </h2>
           <p className="mt-4 text-sm leading-7 text-stone-400">
@@ -240,7 +240,7 @@ export default async function CompareIndexPage({ searchParams }: CompareIndexPag
       <section className="border-y border-stone-700/50 bg-stone-900/40">
         <div className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 md:py-20 lg:px-8">
           <div className="max-w-3xl">
-            <h2 className="text-3xl font-display tracking-tight text-stone-100 md:text-4xl">
+            <h2 className="text-3xl font-display tracking-[-0.04em] text-stone-100 md:text-4xl">
               Choose the next proof step.
             </h2>
             <p className="mt-4 text-base leading-relaxed text-stone-300">

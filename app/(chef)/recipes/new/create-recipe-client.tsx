@@ -7,6 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { TiptapEditor } from '@/components/ui/tiptap-editor'
 import { Badge } from '@/components/ui/badge'
 import { Alert } from '@/components/ui/alert'
 import {
@@ -605,24 +606,24 @@ export function CreateRecipeClient({ aiConfigured, chefId, prefillComponent }: P
                 )}
 
                 <div>
-                  <label className="block text-sm font-medium text-stone-300 mb-1">Method</label>
-                  <Textarea
+                  <TiptapEditor
+                    label="Method"
                     value={method}
-                    onChange={(e) => setMethod(e.target.value)}
+                    onChange={setMethod}
                     placeholder="Concise, outcome-oriented. The chef knows how to cook - just capture what to do."
-                    rows={4}
+                    minHeight={120}
+                    toolbar={['text', 'list', 'insert']}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-stone-300 mb-1">
-                    Detailed Method
-                  </label>
-                  <Textarea
+                  <TiptapEditor
+                    label="Detailed Method"
                     value={methodDetailed}
-                    onChange={(e) => setMethodDetailed(e.target.value)}
+                    onChange={setMethodDetailed}
                     placeholder="Optional: more detailed version with specific techniques or timings"
-                    rows={3}
+                    minHeight={100}
+                    toolbar={['text', 'heading', 'list', 'insert']}
                   />
                 </div>
 
@@ -898,12 +899,13 @@ export function CreateRecipeClient({ aiConfigured, chefId, prefillComponent }: P
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-stone-300 mb-1">Notes</label>
-                  <Textarea
+                  <TiptapEditor
+                    label="Notes"
                     value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
+                    onChange={setNotes}
                     placeholder="Any additional notes about this recipe"
-                    rows={2}
+                    minHeight={80}
+                    compact
                   />
                 </div>
               </CardContent>

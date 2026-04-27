@@ -1126,7 +1126,7 @@ export default async function ChefProfilePage({ params }: Props) {
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
                     Booking
                   </p>
-                  <h2 className="mt-3 text-2xl font-bold tracking-tight text-stone-950 sm:text-3xl">
+                  <h2 className="mt-3 text-2xl font-bold tracking-[-0.04em] text-stone-950 sm:text-3xl">
                     {heroBookingTitle}
                   </h2>
                   <p

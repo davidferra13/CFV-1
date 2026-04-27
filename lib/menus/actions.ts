@@ -1261,6 +1261,62 @@ export async function getMenuCostSummaries(): Promise<MenuCostSummary[]> {
 }
 
 // ============================================
+// MENU COST FOR SPECIFIC EVENT
+// ============================================
+
+/**
+ * Get menu cost summary for a specific event's linked menu.
+ * Returns null if no menu linked or no cost data available.
+ * Designed for use by computePricing() and other callers that
+ * need menu cost without fetching all summaries.
+ */
+export async function getMenuCostForEvent(eventId: string): Promise<{
+  menuId: string
+  menuName: string
+  totalCostCents: number
+  costPerGuestCents: number | null
+  foodCostPercentage: number | null
+  hasAllCosts: boolean
+  componentCount: number | null
+} | null> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  // Find menu linked to this event
+  const { data: menu } = await db
+    .from('menus')
+    .select('id, name')
+    .eq('event_id', eventId)
+    .eq('tenant_id', user.tenantId!)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  if (!menu) return null
+
+  // Get cost summary from the view
+  const { data: cost } = await db
+    .from('menu_cost_summary')
+    .select(
+      'total_recipe_cost_cents, cost_per_guest_cents, food_cost_percentage, has_all_recipe_costs, total_component_count'
+    )
+    .eq('menu_id', menu.id)
+    .maybeSingle()
+
+  if (!cost?.total_recipe_cost_cents) return null
+
+  return {
+    menuId: menu.id,
+    menuName: menu.name,
+    totalCostCents: cost.total_recipe_cost_cents,
+    costPerGuestCents: cost.cost_per_guest_cents,
+    foodCostPercentage: cost.food_cost_percentage,
+    hasAllCosts: cost.has_all_recipe_costs ?? false,
+    componentCount: cost.total_component_count,
+  }
+}
+
+// ============================================
 // MENU DUPLICATION
 // ============================================
 

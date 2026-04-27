@@ -134,7 +134,10 @@ import {
   getOrCreateChefHubProfileToken,
 } from '@/lib/hub/chef-circle-actions'
 import { getEventTicketTypes, getEventTickets, getEventTicketSummary } from '@/lib/tickets/actions'
+import { getClientMemory } from '@/lib/clients/client-memory-actions'
+import { ContextInspector } from '@/components/inspector/context-inspector'
 import { EventDetailOverviewTab } from './_components/event-detail-overview-tab'
+import { EventDetailChatTab } from './_components/event-detail-chat-tab'
 import { EventDetailMoneyTab } from './_components/event-detail-money-tab'
 import { EventDetailTicketsTab } from './_components/event-detail-tickets-tab'
 import { forecastMenuCost, type CostForecast } from '@/lib/openclaw/cost-forecast-actions'
@@ -144,6 +147,7 @@ import { EventDetailWrapTab } from './_components/event-detail-wrap-tab'
 import { getEventPrepTimeline } from '@/lib/prep-timeline/actions'
 import { Suspense } from 'react'
 import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
+import { PreEventNerveCenter } from '@/components/events/pre-event-nerve-center'
 import { EventIntelligencePanel } from '@/components/intelligence/event-intelligence-panel'
 import { getLifecycleProgress } from '@/lib/lifecycle/actions'
 import { getChefArchetype } from '@/lib/archetypes/actions'
@@ -176,6 +180,11 @@ import { EventDefaultFlowPanel } from '@/components/events/event-default-flow-pa
 import { getEventDefaultFlowSnapshotForTenant } from '@/lib/events/default-event-flow-data'
 import { EventCloneButton } from '@/components/events/event-clone-button'
 import { getEventConstraintRadar } from '@/lib/events/constraint-radar-actions'
+import { getOrEvaluateEventReadiness } from '@/lib/events/event-readiness-engine'
+import {
+  EventReadinessEnginePanel,
+  EventReadinessBadge,
+} from '@/components/events/event-readiness-engine-panel'
 
 async function EventCompletionSection({ eventId }: { eventId: string }) {
   const result = await getCompletionForEntity('event', eventId)
@@ -639,6 +648,7 @@ export default async function EventDetailPage({
   const activeTab = (searchParams?.tab ?? 'overview') as
     | 'overview'
     | 'popup'
+    | 'chat'
     | 'money'
     | 'prep'
     | 'tickets'
@@ -691,6 +701,7 @@ export default async function EventDetailPage({
     regionalSettings,
     constraintRadarData,
     inquiryReferralSource,
+    eventReadinessEngine,
   ] = await Promise.all([
     getEventFinancialSummary(params.id).catch(() => ({
       totalPaid: 0,
@@ -758,7 +769,7 @@ export default async function EventDetailPage({
       locale: 'en-US' as const,
       measurementSystem: 'imperial' as const,
     })),
-    getEventConstraintRadar(params.id).catch((error) => {
+    getEventConstraintRadar(params.id).catch((error: unknown) => {
       console.warn('[EventDetailPage] constraint radar failed', error)
       return null
     }),
@@ -780,6 +791,7 @@ export default async function EventDetailPage({
           }
         })()
       : Promise.resolve(null),
+    getOrEvaluateEventReadiness(params.id).catch(() => null),
   ])
   const readinessAssistant = await getEventReadinessAssistant(params.id, pricingIntelligence).catch(
     () => null
@@ -833,6 +845,7 @@ export default async function EventDetailPage({
     eventHasAllergyData,
     eventChatConversationId,
     parAlerts,
+    clientMemories,
   ] = await Promise.all([
     // Refund recommendation â€” only for cancelled events with payments
     event.status === 'cancelled' && totalPaid > 0
@@ -933,6 +946,8 @@ export default async function EventDetailPage({
     ['confirmed', 'in_progress'].includes(event.status) && isEventWithinDays(event.event_date, 7)
       ? getParAlerts().catch(() => [])
       : Promise.resolve([]),
+    // Client memory snapshot
+    event.client_id ? getClientMemory(event.client_id).catch(() => []) : Promise.resolve([]),
   ])
   const eventMenuData = (menuLibraryData?.menus ?? []).filter((m: any) =>
     eventMenus?.includes(m.id)
@@ -1114,6 +1129,9 @@ export default async function EventDetailPage({
             </h1>
             <EventStatusBadge status={event.status} />
             {referralSourceLabel && <Badge variant="info">Referral: {referralSourceLabel}</Badge>}
+            {eventReadinessEngine && !['completed', 'cancelled'].includes(event.status) && (
+              <EventReadinessBadge readiness={eventReadinessEngine} />
+            )}
             <DietaryComplexityBadge result={dietaryComplexity} />
             <EventRiskBadge result={eventRisk} />
           </div>
@@ -1191,6 +1209,7 @@ export default async function EventDetailPage({
               !['cancelled'].includes(event.status)
                 ? [{ label: 'Grocery Quote', href: `/events/${event.id}/grocery-quote` }]
                 : []),
+              { label: 'Mise en Place', href: `/events/${event.id}/mise-en-place` },
               { label: 'Travel Plan', href: `/events/${event.id}/travel` },
               ...(event.status === 'completed'
                 ? [{ label: 'Create Story', href: `/events/${event.id}/story` }]
@@ -1203,6 +1222,79 @@ export default async function EventDetailPage({
         </div>
       </div>
 
+      {/* Pre-Event Nerve Center: unified T-minus card for events within 48 hours */}
+      {isEventWithinDays(event.event_date, 2) &&
+        !['cancelled', 'completed'].includes(event.status) && (
+          <WidgetErrorBoundary name="Pre-Event Nerve Center" compact>
+            <Suspense fallback={null}>
+              <PreEventNerveCenter
+                eventId={params.id}
+                eventDate={event.event_date}
+                serveTime={(event as any).serve_time}
+                status={event.status}
+                occasion={event.occasion}
+                guestCount={event.guest_count ?? 0}
+                locationLat={(event as any).location_lat}
+                locationLng={(event as any).location_lng}
+                locationAddress={event.location_address}
+                prepTimeline={
+                  prepTimeline
+                    ? {
+                        days: ((prepTimeline as any).days ?? []).map((d: any) => ({
+                          label: d.label,
+                          items: (d.items ?? []).map((item: any) => ({
+                            recipeName: item.recipeName,
+                            componentName: item.componentName,
+                          })),
+                          totalPrepMinutes: d.totalPrepMinutes ?? 0,
+                          isToday: d.isToday ?? false,
+                          isPast: d.isPast ?? false,
+                          isServiceDay: d.isServiceDay ?? false,
+                        })),
+                        untimedItems: ((prepTimeline as any).untimedItems ?? []).map(
+                          (item: any) => ({
+                            recipeName: item.recipeName,
+                          })
+                        ),
+                        groceryDeadline: (prepTimeline as any).groceryDeadline
+                          ? dateToDateString((prepTimeline as any).groceryDeadline)
+                          : null,
+                      }
+                    : null
+                }
+                readinessBlockers={
+                  eventReadiness
+                    ? ((eventReadiness as any).blockers ?? []).map((b: any) => ({
+                        label: b.label,
+                        description: b.description,
+                        ctaLabel: b.ctaLabel,
+                        verifyRoute: b.verifyRoute,
+                      }))
+                    : []
+                }
+                readinessConfidence={(eventReadiness as any)?.confidence ?? null}
+                travelInfo={travelInfo}
+                packingStatus={
+                  (event as any).car_packed
+                    ? 'packed'
+                    : packingConfirmedCount > 0
+                      ? 'in_progress'
+                      : 'not_started'
+                }
+                packingConfirmedCount={packingConfirmedCount}
+                lastMessageAt={
+                  messages.length > 0
+                    ? ((messages[messages.length - 1] as any)?.created_at ?? null)
+                    : null
+                }
+                unreadMessageCount={0}
+                staffAssignedCount={(staffAssignments as any[]).length}
+                clientName={event.client?.full_name ?? null}
+              />
+            </Suspense>
+          </WidgetErrorBoundary>
+        )}
+
       {event.status !== 'cancelled' && serviceSimulationState ? (
         <ServiceSimulationRollupCard
           eventId={params.id}
@@ -1212,6 +1304,10 @@ export default async function EventDetailPage({
           description="Day-of snapshot from live event truth. Keep the full walkthrough in Ops, but keep this signal visible above the fold."
         />
       ) : null}
+
+      {eventReadinessEngine && !['completed', 'cancelled'].includes(event.status) && (
+        <EventReadinessEnginePanel eventId={params.id} readiness={eventReadinessEngine} />
+      )}
 
       <EventOperatingSpineCard
         spine={operatingSpine}
@@ -1329,7 +1425,7 @@ export default async function EventDetailPage({
             eventDate={dateToDateString(event.event_date)}
             serveTime={(event as any).serve_time}
             status={event.status}
-            completionScore={completionScore}
+            completionScore={completionScore ?? 0}
             prepDays={
               prepTimeline
                 ? (prepTimeline as any).days?.map((d: any) => ({
@@ -1442,8 +1538,24 @@ export default async function EventDetailPage({
         <EventPrepSchedule eventId={event.id} initialBlocks={prepBlocks as any} />
       )}
 
+      {/* Context Inspector - consolidated client/event reference */}
+      <ContextInspector
+        clientId={event.client_id}
+        eventId={event.id}
+        sections={[
+          'client',
+          'dietary',
+          'preferences',
+          'pastMeals',
+          'feedback',
+          'venue',
+          'milestones',
+        ]}
+        defaultCollapsed={true}
+      />
+
       {/* ============================================ */}
-      {/* MOBILE TAB NAV â€” hidden on md+               */}
+      {/* MOBILE TAB NAV - hidden on md+               */}
       {/* ============================================ */}
       <EventDetailMobileNav />
 
@@ -1484,9 +1596,19 @@ export default async function EventDetailPage({
         collaborators={eventCollaborators as any[]}
         eventMenuData={eventMenuData}
         constraintRadarData={constraintRadarData}
+        clientMemories={clientMemories as any[]}
       />
 
-      {/* TAB: MONEY â€” Financials, payments, expenses  */}
+      {/* TAB: CHAT - Inline circle chat thread        */}
+      {/* ============================================ */}
+      <EventDetailChatTab
+        activeTab={activeTab}
+        eventId={event.id}
+        hubGroupToken={hubGroupToken as string | null}
+        hubProfileToken={chefHubProfileToken as string | null}
+      />
+
+      {/* TAB: MONEY - Financials, payments, expenses  */}
       {/* ============================================ */}
       <EventDetailMoneyTab
         activeTab={activeTab}

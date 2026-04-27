@@ -74,7 +74,7 @@ export default async function PublicEventPage({ params, searchParams }: Props) {
         <div className="mx-auto flex min-h-[calc(100vh-5rem)] max-w-2xl items-center">
           <section className="w-full rounded-lg border border-stone-700 bg-stone-900 p-6 text-center sm:p-8">
             <p className="mb-3 text-sm font-medium text-red-300">Event unavailable</p>
-            <h1 className="text-3xl font-semibold tracking-tight text-stone-100">
+            <h1 className="text-3xl font-semibold tracking-[-0.04em] text-stone-100">
               Event not found.
             </h1>
             <p className="mt-3 text-sm leading-6 text-stone-400">

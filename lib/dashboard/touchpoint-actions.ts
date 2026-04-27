@@ -3,7 +3,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 
-export interface TouchpointReminder {
+interface TouchpointReminder {
   clientId: string
   clientName: string
   type: 'birthday' | 'anniversary'
@@ -20,10 +20,9 @@ export async function getUpcomingTouchpointReminders(): Promise<TouchpointRemind
   const db: any = createServerClient()
   const tenantId = user.tenantId!
 
-  // Load all clients with a date_of_birth
   const { data: clients, error } = await db
     .from('clients')
-    .select('id, full_name, date_of_birth')
+    .select('id, full_name, birthday')
     .eq('tenant_id', tenantId)
 
   if (error) throw new Error(`Failed to load clients: ${error.message}`)
@@ -36,8 +35,8 @@ export async function getUpcomingTouchpointReminders(): Promise<TouchpointRemind
     const name = client.full_name || 'Client'
 
     // Birthday check
-    if (client.date_of_birth) {
-      const dob = new Date(client.date_of_birth)
+    if (client.birthday) {
+      const dob = new Date(client.birthday)
       const thisYearBday = new Date(now.getFullYear(), dob.getMonth(), dob.getDate())
       if (thisYearBday < now) {
         thisYearBday.setFullYear(thisYearBday.getFullYear() + 1)

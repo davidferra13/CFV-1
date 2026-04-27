@@ -27,10 +27,10 @@ export function IntakeLaneExpectations({ className = '', lane, layout = 'cards' 
       className={`rounded-[1.75rem] border border-stone-700 bg-stone-900/60 p-6 sm:p-8 ${className}`.trim()}
     >
       <div className="max-w-3xl">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-300">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-300">
           {expectation.eyebrow}
         </p>
-        <h2 className="mt-3 font-display text-2xl font-bold tracking-tight text-stone-100 md:text-3xl">
+        <h2 className="mt-3 font-display text-2xl font-bold tracking-[-0.04em] text-stone-100 md:text-3xl">
           {expectation.title}
         </h2>
         <p className="mt-3 text-sm leading-6 text-stone-300 md:text-base">{expectation.summary}</p>

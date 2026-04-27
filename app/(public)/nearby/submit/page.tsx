@@ -30,7 +30,7 @@ export const metadata: Metadata = {
 export default function SubmitListingPage() {
   return (
     <div className="min-h-screen">
-      <div className="border-b border-stone-800/50">
+      <div className="border-b border-stone-800/30">
         <div className="mx-auto max-w-2xl px-4 py-4 sm:px-6">
           <Link
             href="/nearby"

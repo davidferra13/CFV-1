@@ -78,6 +78,8 @@ export type ChefActivityAction =
   | 'client_photo_uploaded'
   | 'client_cooled'
   | 'client_rewarmed'
+  | 'client_relationship_closed'
+  | 'client_relationship_reopened'
   // Financial
   | 'ledger_entry_created'
   | 'ledger_entry_voided'

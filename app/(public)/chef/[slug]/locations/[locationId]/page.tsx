@@ -98,7 +98,7 @@ export default async function PublicLocationPage({ params }: Props) {
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-300">
                 Published setting
               </p>
-              <h1 className="mt-3 text-4xl font-bold tracking-tight text-stone-50">
+              <h1 className="mt-3 text-4xl font-bold tracking-[-0.04em] text-stone-50">
                 {location.name}
               </h1>
               <p className="mt-3 text-lg text-stone-300">

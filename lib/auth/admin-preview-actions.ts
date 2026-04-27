@@ -4,7 +4,7 @@
 'use server'
 
 import { cookies } from 'next/headers'
-import { isAdmin } from '@/lib/auth/admin'
+import { requireAdmin } from '@/lib/auth/admin'
 import { revalidatePath } from 'next/cache'
 import { logAdminAction } from '@/lib/admin/audit'
 import { requireChef } from '@/lib/auth/get-user'
@@ -17,8 +17,7 @@ const PREVIEW_COOKIE = 'chefflow-admin-preview'
  * Only real admins can toggle this.
  */
 export async function toggleAdminPreview(enabled: boolean): Promise<void> {
-  const admin = await isAdmin().catch(() => false)
-  if (!admin) return // silently ignore non-admin calls
+  await requireAdmin()
 
   const store = cookies()
   if (enabled) {

@@ -85,7 +85,7 @@ export default function CustomersPage() {
           <p className="inline-flex rounded-full border border-brand-700 bg-stone-900 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-brand-300">
             Customer Stories
           </p>
-          <h1 className="mt-5 text-4xl font-display tracking-tight text-stone-100 md:text-6xl">
+          <h1 className="mt-5 text-4xl font-display tracking-[-0.04em] text-stone-100 md:text-6xl">
             No customer stories are published yet.
           </h1>
           <p className="mx-auto mt-5 max-w-3xl text-base leading-relaxed text-stone-300 md:text-lg">
@@ -98,7 +98,7 @@ export default function CustomersPage() {
 
       <section className="mx-auto w-full max-w-4xl px-4 py-12 sm:px-6 md:py-16 lg:px-8">
         <div className="rounded-2xl border border-stone-700 bg-stone-900/80 p-6 md:p-8">
-          <h2 className="text-2xl font-display tracking-tight text-stone-100 md:text-3xl">
+          <h2 className="text-2xl font-display tracking-[-0.04em] text-stone-100 md:text-3xl">
             Publication standard
           </h2>
           <ul className="mt-4 space-y-3 text-sm leading-relaxed text-stone-300">
@@ -115,7 +115,7 @@ export default function CustomersPage() {
       <section className="border-y border-stone-700/50 bg-stone-900/40">
         <div className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 md:py-20 lg:px-8">
           <div className="max-w-3xl">
-            <h2 className="text-3xl font-display tracking-tight text-stone-100 md:text-4xl">
+            <h2 className="text-3xl font-display tracking-[-0.04em] text-stone-100 md:text-4xl">
               What you can review right now
             </h2>
             <p className="mt-4 text-base leading-relaxed text-stone-300">
@@ -147,7 +147,7 @@ export default function CustomersPage() {
       </section>
 
       <section className="mx-auto w-full max-w-5xl px-4 py-14 text-center sm:px-6 md:py-20 lg:px-8">
-        <h2 className="text-3xl font-display tracking-tight text-stone-100 md:text-4xl">
+        <h2 className="text-3xl font-display tracking-[-0.04em] text-stone-100 md:text-4xl">
           Build your own baseline while the story library is empty.
         </h2>
         <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-stone-300">

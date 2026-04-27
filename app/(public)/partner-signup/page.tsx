@@ -61,7 +61,7 @@ export default async function PartnerSignupPage({ searchParams }: Props) {
             <p className="inline-flex rounded-full border border-brand-700/60 bg-stone-900/80 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-brand-300">
               Partner Intake
             </p>
-            <h1 className="mx-auto mt-5 max-w-4xl text-4xl font-display tracking-tight text-stone-100 md:text-5xl">
+            <h1 className="mx-auto mt-5 max-w-4xl text-4xl font-display tracking-[-0.04em] text-stone-100 md:text-5xl">
               Register as a partner for a chef you already work with.
             </h1>
             <p className="mx-auto mt-5 max-w-3xl text-base leading-relaxed text-stone-300 md:text-lg">
@@ -90,7 +90,7 @@ export default async function PartnerSignupPage({ searchParams }: Props) {
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
             <div className="rounded-3xl border border-stone-800/70 bg-stone-900/70 p-6 shadow-[var(--shadow-card)] md:p-8">
               <div className="max-w-2xl">
-                <h2 className="text-2xl font-display tracking-tight text-stone-100">
+                <h2 className="text-2xl font-display tracking-[-0.04em] text-stone-100">
                   Enter the chef&apos;s profile name
                 </h2>
                 <p className="mt-3 text-sm leading-relaxed text-stone-400">
@@ -186,7 +186,7 @@ export default async function PartnerSignupPage({ searchParams }: Props) {
                 <p className="inline-flex rounded-full border border-brand-700/60 bg-brand-950/40 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-brand-300">
                   Partner Intake For {data.chef.display_name}
                 </p>
-                <h1 className="mt-5 text-3xl font-display tracking-tight text-stone-100 md:text-4xl">
+                <h1 className="mt-5 text-3xl font-display tracking-[-0.04em] text-stone-100 md:text-4xl">
                   Submit your partner details to work with {data.chef.display_name}.
                 </h1>
                 <p className="mt-4 max-w-3xl text-sm leading-7 text-stone-300 md:text-base">

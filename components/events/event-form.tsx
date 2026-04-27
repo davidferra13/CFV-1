@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { TiptapEditor } from '@/components/ui/tiptap-editor'
 import { Select } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -37,6 +38,7 @@ import { normalizeEventTimeTruthValue } from '@/lib/events/time-truth'
 import { PrepTimeEstimateHint } from '@/components/intelligence/prep-time-estimate-hint'
 import { sanitizeReturnTo } from '@/lib/navigation/return-to'
 import { getDateConflictResultWithTimeout } from '@/lib/availability/conflict-check-client'
+import { ReactiveContextInspector } from '@/components/inspector/context-inspector'
 
 type Client = {
   id: string
@@ -753,20 +755,22 @@ export function EventForm({
               }
             />
 
-            {/* Dietary/allergy alert when a client is selected */}
-            {(() => {
-              const selectedClient = clients.find((c) => c.id === clientId)
-              const dietaryItems = [
-                ...(selectedClient?.dietary_restrictions ?? []),
-                ...(selectedClient?.allergies ?? []),
-              ].filter(Boolean)
-              if (!dietaryItems.length) return null
-              return (
-                <div className="rounded-md bg-amber-950/30 border border-amber-800/40 px-3 py-2 text-sm text-amber-200">
-                  <span className="font-medium">Dietary notes:</span> {dietaryItems.join(', ')}
-                </div>
-              )
-            })()}
+            {/* Context Inspector - client dietary, allergies, past meals, preferences, feedback */}
+            {clientId && (
+              <ReactiveContextInspector
+                clientId={clientId}
+                sections={[
+                  'client',
+                  'dietary',
+                  'preferences',
+                  'pastMeals',
+                  'feedback',
+                  'venue',
+                  'milestones',
+                ]}
+                defaultCollapsed={false}
+              />
+            )}
 
             <Input
               label="Occasion"
@@ -988,13 +992,16 @@ export function EventForm({
               )}
             </div>
 
-            <Textarea
+            <TiptapEditor
               label="Special Requests"
               placeholder="Any additional details or special requests..."
               value={specialRequests}
-              onChange={(e) => setSpecialRequests(e.target.value)}
-              onBlur={() => void durableDraft.persistDraft(currentFormData, { immediate: true })}
-              rows={4}
+              onChange={(html) => {
+                setSpecialRequests(html)
+                void durableDraft.persistDraft(currentFormData, { immediate: false })
+              }}
+              minHeight={120}
+              toolbar={['text', 'list']}
             />
 
             {partners.length > 0 && (

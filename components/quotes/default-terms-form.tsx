@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
+import { TiptapEditor } from '@/components/ui/tiptap-editor'
 import { toast } from 'sonner'
 
 const DEFAULT_TERMS_KEY = 'chefflow-default-proposal-terms'
@@ -66,21 +67,19 @@ export function DefaultTermsForm({ className }: DefaultTermsFormProps) {
     <div className={className}>
       <div className="space-y-4">
         <div>
-          <h3 className="text-sm font-semibold text-gray-900 mb-1">
-            Default Proposal Terms
-          </h3>
+          <h3 className="text-sm font-semibold text-gray-900 mb-1">Default Proposal Terms</h3>
           <p className="text-sm text-gray-500 mb-3">
-            These terms will be pre-filled when you create a Quick Proposal from
-            an event. You can always edit them per-proposal before sending.
+            These terms will be pre-filled when you create a Quick Proposal from an event. You can
+            always edit them per-proposal before sending.
           </p>
         </div>
 
-        <textarea
+        <TiptapEditor
           value={terms}
-          onChange={(e) => setTerms(e.target.value)}
-          rows={16}
-          className="w-full border rounded-lg px-4 py-3 text-sm font-mono leading-relaxed"
+          onChange={setTerms}
+          minHeight={320}
           placeholder="Enter your default terms and conditions..."
+          toolbar={['text', 'heading', 'list', 'insert']}
         />
 
         <div className="flex items-center gap-3">
@@ -100,8 +99,8 @@ export function DefaultTermsForm({ className }: DefaultTermsFormProps) {
         </div>
 
         <p className="text-xs text-gray-400">
-          Terms are stored locally in your browser. They persist across sessions
-          but are not synced between devices.
+          Terms are stored locally in your browser. They persist across sessions but are not synced
+          between devices.
         </p>
       </div>
     </div>

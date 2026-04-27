@@ -22,6 +22,45 @@ function localDateISO(d: Date): string {
   ].join('-')
 }
 
+function isValidBirthdayParts(year: number, month: number, day: number): boolean {
+  const date = new Date(Date.UTC(year, month - 1, day))
+  return (
+    year >= 1900 &&
+    year <= new Date().getFullYear() &&
+    date.getUTCFullYear() === year &&
+    date.getUTCMonth() === month - 1 &&
+    date.getUTCDate() === day
+  )
+}
+
+function normalizeBirthday(rawText: string): string | null {
+  const birthdayLine = rawText.match(
+    /(?:birthday|birth date|date of birth|dob)\s*[:\-]\s*(\d{4})-(\d{1,2})-(\d{1,2})/i
+  )
+  if (birthdayLine) {
+    const year = Number(birthdayLine[1])
+    const month = Number(birthdayLine[2])
+    const day = Number(birthdayLine[3])
+    if (isValidBirthdayParts(year, month, day)) {
+      return `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+    }
+  }
+
+  const slashLine = rawText.match(
+    /(?:birthday|birth date|date of birth|dob)\s*[:\-]\s*(\d{1,2})\/(\d{1,2})\/(\d{4})/i
+  )
+  if (slashLine) {
+    const month = Number(slashLine[1])
+    const day = Number(slashLine[2])
+    const year = Number(slashLine[3])
+    if (isValidBirthdayParts(year, month, day)) {
+      return `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+    }
+  }
+
+  return null
+}
+
 // ─── Input Schema ──────────────────────────────────────────────────────────
 
 const TakeAChefImportSchema = z.object({
@@ -30,9 +69,9 @@ const TakeAChefImportSchema = z.object({
   logCommission: z.boolean().default(true),
 })
 
-export type TakeAChefImportInput = z.infer<typeof TakeAChefImportSchema>
+type TakeAChefImportInput = z.infer<typeof TakeAChefImportSchema>
 
-export type TakeAChefImportResult = {
+type TakeAChefImportResult = {
   success: boolean
   inquiryId?: string
   eventId?: string
@@ -58,6 +97,7 @@ export async function importTakeAChefBooking(
     // 1. Parse the raw text with AI
     const parseResult = await parseInquiryFromText(validated.rawText)
     const parsed = parseResult.parsed
+    const clientBirthday = normalizeBirthday(validated.rawText)
 
     // 2. Find or create client
     let clientId: string | null = null
@@ -75,6 +115,7 @@ export async function importTakeAChefBooking(
           dietary_restrictions: parsed.confirmed_dietary_restrictions?.length
             ? parsed.confirmed_dietary_restrictions
             : null,
+          birthday: clientBirthday,
           source: 'take_a_chef',
         })
         clientId = clientResult.id
@@ -84,13 +125,43 @@ export async function importTakeAChefBooking(
       }
     }
 
+    if (!clientId && !clientEmail) {
+      try {
+        const { data: newClient } = await db
+          .from('clients')
+          .insert({
+            tenant_id: tenantId,
+            full_name: clientName,
+            email: `tac-${Date.now()}@placeholder.cheflowhq.com`,
+            phone: parsed.client_phone || null,
+            birthday: clientBirthday,
+            dietary_restrictions: parsed.confirmed_dietary_restrictions?.length
+              ? parsed.confirmed_dietary_restrictions
+              : [],
+            allergies: [],
+            status: 'active',
+            referral_source: 'take_a_chef',
+          })
+          .select('id')
+          .single()
+
+        if (newClient) {
+          clientId = newClient.id
+          clientCreated = true
+        }
+      } catch (clientErr) {
+        console.error('[importTakeAChefBooking] Placeholder client creation failed:', clientErr)
+      }
+    }
+
     // 3. Build source context for audit trail
-    const unknownFields: Record<string, string> = {
+    const unknownFields: Record<string, unknown> = {
       submission_source: 'take_a_chef_email_import',
       ai_confidence: parseResult.confidence,
     }
     if (parsed.notes) unknownFields.ai_notes = parsed.notes
     if (parsed.referral_source) unknownFields.referral_source_raw = parsed.referral_source
+    if (clientBirthday) unknownFields.client_birthday = clientBirthday
 
     // 4. Create inquiry
     const { data: inquiry, error: inquiryError } = await db

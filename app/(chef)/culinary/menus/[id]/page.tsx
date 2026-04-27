@@ -11,6 +11,7 @@ import { MenuContextSidebar } from '@/components/culinary/menu-context-sidebar'
 import { MenuWhatIfPanel } from '@/components/culinary/menu-whatif-panel'
 import { MenuAssemblyBrowser } from '@/components/culinary/menu-assembly-browser'
 import { MenuShoppingList } from '@/components/culinary/menu-shopping-list'
+import { ContextInspector } from '@/components/inspector/context-inspector'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -93,6 +94,13 @@ export default async function MenuDetailPage({ params }: { params: { id: string 
               </Button>
             </Link>
           </div>
+          {/* Context Inspector - event details, client dietary, past meals, preferences */}
+          <ContextInspector
+            clientId={menu.client_id ?? undefined}
+            eventId={menu.event_id ?? undefined}
+            sections={['event', 'client', 'dietary', 'preferences', 'pastMeals', 'venue']}
+            defaultCollapsed={true}
+          />
           <div>
             <p className="text-xs font-medium text-stone-500 uppercase tracking-wider mb-2">
               Readiness

@@ -804,7 +804,7 @@ export default async function NearbyPage({ searchParams }: PageProps) {
         />
       )}
 
-      <section className="border-b border-stone-800/50">
+      <section className="border-b border-stone-800/30">
         <div className="mx-auto max-w-6xl px-4 pb-8 pt-16 sm:px-6 lg:px-8">
           <nav
             aria-label="Breadcrumb"
@@ -817,7 +817,7 @@ export default async function NearbyPage({ searchParams }: PageProps) {
             <span className="text-stone-400">Nearby</span>
           </nav>
 
-          <h1 className="text-4xl font-bold tracking-tight text-stone-100 md:text-5xl">
+          <h1 className="text-4xl font-bold tracking-[-0.04em] text-stone-100 md:text-5xl">
             {heroTitle}
           </h1>
           <p className="mt-3 max-w-3xl text-base leading-relaxed text-stone-400">{heroSubtitle}</p>

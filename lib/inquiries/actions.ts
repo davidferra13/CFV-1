@@ -31,6 +31,12 @@ import {
   parseZipFromAddress,
   buildAutoMenuCourseNamesFromConversation,
 } from '@/lib/inquiries/conversation-scaffold'
+import type {
+  FirstContactInquiry,
+  LostReasonStat,
+  ReadinessScore,
+  ResponseQueueItem,
+} from '@/lib/inquiries/types'
 
 type InquiryStatus = Database['public']['Enums']['inquiry_status']
 type InquiryChannel = Database['public']['Enums']['inquiry_channel']
@@ -93,6 +99,11 @@ const CreateInquirySchema = z.object({
   client_name: z.string().min(1, 'Client name required'),
   client_email: z.string().email().optional().or(z.literal('')),
   client_phone: z.string().optional().or(z.literal('')),
+  client_birthday: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Birthday must use YYYY-MM-DD')
+    .optional()
+    .or(z.literal('')),
   referral_partner_id: z.string().uuid().nullable().optional(),
   partner_location_id: z.string().uuid().nullable().optional(),
   confirmed_date: z.string().optional().or(z.literal('')),
@@ -133,8 +144,8 @@ const UpdateInquirySchema = z.object({
   idempotency_key: z.string().optional(),
 })
 
-export type CreateInquiryInput = z.infer<typeof CreateInquirySchema>
-export type UpdateInquiryInput = z.infer<typeof UpdateInquirySchema>
+type CreateInquiryInput = z.infer<typeof CreateInquirySchema>
+type UpdateInquiryInput = z.infer<typeof UpdateInquirySchema>
 
 function inferComponentCategoryFromDishName(
   dishName: string
@@ -480,6 +491,31 @@ export async function createInquiry(input: CreateInquiryInput) {
     }
   }
 
+  if (clientId && validated.client_birthday) {
+    try {
+      const { data: client } = await db
+        .from('clients')
+        .select('birthday')
+        .eq('tenant_id', user.tenantId!)
+        .eq('id', clientId)
+        .single()
+
+      if (client && !client.birthday) {
+        const { error: birthdayError } = await db
+          .from('clients')
+          .update({ birthday: validated.client_birthday })
+          .eq('tenant_id', user.tenantId!)
+          .eq('id', clientId)
+
+        if (birthdayError) {
+          console.error('[createInquiry] Birthday backfill failed:', birthdayError)
+        }
+      }
+    } catch (err) {
+      console.error('[createInquiry] Birthday backfill failed:', err)
+    }
+  }
+
   // Build unknown_fields for unlinked lead info and extra data
   const unknownFields: Record<string, string> = {}
   if (!clientId) {
@@ -487,6 +523,7 @@ export async function createInquiry(input: CreateInquiryInput) {
     if (validated.client_email) unknownFields.client_email = validated.client_email
     if (validated.client_phone) unknownFields.client_phone = validated.client_phone
   }
+  if (validated.client_birthday) unknownFields.client_birthday = validated.client_birthday
   if (validated.notes) unknownFields.notes = validated.notes
   if (validated.referral_source) unknownFields.referral_source = validated.referral_source
 
@@ -2923,8 +2960,6 @@ export async function declineInquiry(id: string, reason?: string) {
 // 11. LOST REASON ANALYTICS
 // ============================================
 
-export type LostReasonStat = { reason: string; count: number }
-
 /**
  * Returns a breakdown of decline reasons, sorted by frequency.
  */
@@ -2953,17 +2988,6 @@ export async function getLostReasonStats(): Promise<LostReasonStat[]> {
 // ============================================
 // NEEDS FIRST CONTACT
 // ============================================
-
-export interface FirstContactInquiry {
-  id: string
-  clientName: string
-  channel: string
-  confirmedDate: string | null
-  confirmedOccasion: string | null
-  confirmedLocation: string | null
-  firstContactAt: string
-  clientId: string | null
-}
 
 /**
  * Get inquiries that have never been contacted - no outbound messages,
@@ -3063,15 +3087,6 @@ const READINESS_FIELDS = [
   { key: 'has_contact', label: 'Client contact info' },
 ] as const
 
-export type ReadinessScore = {
-  score: number
-  total: number
-  percent: number
-  filled: string[]
-  missing: string[]
-  level: 'ready' | 'almost' | 'partial' | 'minimal'
-}
-
 export async function computeReadinessScore(
   inquiry: Record<string, unknown>
 ): Promise<ReadinessScore> {
@@ -3139,17 +3154,6 @@ export async function computeReadinessScoresForInquiries(): Promise<Map<string, 
 // ============================================
 // RESPONSE QUEUE (urgency-sorted)
 // ============================================
-
-export type ResponseQueueItem = {
-  id: string
-  clientName: string
-  occasion: string | null
-  confirmedDate: string | null
-  guestCount: number | null
-  waitingHours: number
-  readiness: ReadinessScore
-  status: string
-}
 
 export async function getResponseQueue(limit = 10): Promise<ResponseQueueItem[]> {
   const user = await requireChef()

@@ -70,7 +70,7 @@ export default async function BookPage({ searchParams }: BookPageProps) {
       <section className="relative overflow-hidden">
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-brand-600/8 via-transparent to-transparent" />
         <div className="relative z-10 mx-auto max-w-3xl px-4 pt-16 pb-8 text-center sm:px-6 md:pt-24 lg:px-8">
-          <h1 className="text-3xl font-display tracking-tight text-white md:text-4xl lg:text-5xl">
+          <h1 className="text-3xl font-display tracking-[-0.04em] text-white md:text-4xl lg:text-5xl">
             Book a private chef
           </h1>
           <p className="mt-4 text-base text-stone-300 md:text-lg leading-relaxed max-w-xl mx-auto">
@@ -185,7 +185,7 @@ export default async function BookPage({ searchParams }: BookPageProps) {
       </section>
 
       {/* Trust footer */}
-      <section className="border-t border-stone-800/40">
+      <section className="border-t border-stone-800/30">
         <div className="mx-auto max-w-2xl px-4 py-12 text-center sm:px-6 lg:px-8">
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-stone-400">
             <span className="flex items-center gap-2">

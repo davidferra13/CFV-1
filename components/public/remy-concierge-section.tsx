@@ -154,7 +154,7 @@ export function RemyConciergeSection() {
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-900 text-brand-400">
               <MessageCircle className="h-7 w-7" />
             </div>
-            <h2 className="text-3xl font-display tracking-tight text-stone-100 md:text-4xl">
+            <h2 className="text-3xl font-display tracking-[-0.04em] text-stone-100 md:text-4xl">
               What do you need done?
             </h2>
             <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-stone-400">
@@ -216,7 +216,7 @@ export function RemyConciergeSection() {
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-900 text-brand-400">
             <MessageCircle className="h-7 w-7" />
           </div>
-          <h2 className="text-3xl font-display tracking-tight text-stone-100 md:text-4xl">
+          <h2 className="text-3xl font-display tracking-[-0.04em] text-stone-100 md:text-4xl">
             Tell me your bottleneck.
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-stone-400">

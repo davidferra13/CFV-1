@@ -187,7 +187,7 @@ export default async function ListingDetailPage({ params }: Props) {
     <div className="min-h-screen">
       {indexable ? <ListingJsonLd listing={listing} /> : null}
 
-      <div className="border-b border-stone-800/50">
+      <div className="border-b border-stone-800/30">
         <div className="mx-auto max-w-4xl px-4 py-4 sm:px-6 lg:px-8">
           <Link
             href="/nearby"
@@ -457,7 +457,7 @@ export default async function ListingDetailPage({ params }: Props) {
               </div>
             ) : null}
 
-            <div className="rounded-xl border border-stone-800/50 bg-stone-900/30 p-4">
+            <div className="rounded-xl border border-stone-800/30 bg-stone-900/30 p-4">
               <h3 className="text-xs font-semibold text-stone-300">
                 {listing.status === 'discovered' ? 'Own this business?' : 'Need a correction?'}
               </h3>

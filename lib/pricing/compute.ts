@@ -201,6 +201,7 @@ export interface PricingInput {
   numberOfDays?: number // for weekly types; defaults to 1
   weekendPremiumEnabled?: boolean // opt-in Fri/Sat uplift; defaults to false
   addOns?: AddOnInput[] // optional named or custom add-on line items
+  eventId?: string // optional: when provided, queries actual menu cost from recipe costing
 }
 
 export interface PricingBreakdown {
@@ -245,6 +246,11 @@ export interface PricingBreakdown {
 
   // Grocery estimate (internal only - never shown to client)
   estimatedGroceryCents: { low: number; high: number }
+
+  // Actual menu cost (from recipe costing, when available)
+  actualMenuCostCents?: number
+  menuFoodCostPercent?: number
+  menuCostConfidence?: 'complete' | 'partial' | 'none'
 
   // Metadata
   pricingModel: 'per_person' | 'flat_rate' | 'custom'
@@ -752,6 +758,33 @@ export async function computePricing(
     high: guestCount * 5000 * groceryMultiplier,
   }
 
+  // ── Step 12b: Actual menu cost (from recipe costing, when eventId provided) ──
+  let actualMenuCostCents: number | undefined
+  let menuFoodCostPercent: number | undefined
+  let menuCostConfidence: 'complete' | 'partial' | 'none' | undefined
+
+  if (input.eventId) {
+    try {
+      const { getMenuCostForEvent } = await import('@/lib/menus/actions')
+      const menuCost = await getMenuCostForEvent(input.eventId)
+      if (menuCost) {
+        actualMenuCostCents = menuCost.totalCostCents
+        menuCostConfidence = menuCost.hasAllCosts ? 'complete' : 'partial'
+        if (totalServiceCents > 0) {
+          menuFoodCostPercent = parseFloat(
+            ((menuCost.totalCostCents / totalServiceCents) * 100).toFixed(1)
+          )
+        }
+      } else {
+        menuCostConfidence = 'none'
+      }
+    } catch (err) {
+      // Non-blocking: menu cost query failure never breaks pricing
+      console.error('[non-blocking] Menu cost query failed in computePricing', err)
+      menuCostConfidence = 'none'
+    }
+  }
+
   // ── Step 13: Assemble and return ─────────────────────────────────────────
   return {
     serviceFeeCents,
@@ -778,6 +811,9 @@ export async function computePricing(
     depositPercent: rc.depositPercentage * 100,
     minimumApplied,
     estimatedGroceryCents,
+    actualMenuCostCents,
+    menuFoodCostPercent,
+    menuCostConfidence,
     pricingModel,
     isCouple,
     isLargeGroup,

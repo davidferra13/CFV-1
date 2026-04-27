@@ -302,10 +302,10 @@ export default async function ForOperatorsPage({ searchParams }: ForOperatorsPag
         <div className="relative z-10 mx-auto w-full max-w-6xl px-4 pb-16 pt-20 sm:px-6 md:pb-20 md:pt-24 lg:px-8">
           <div className="grid gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(340px,0.9fr)] lg:items-start">
             <div>
-              <p className="inline-flex rounded-full border border-brand-700/40 bg-brand-950/30 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-brand-300">
+              <p className="inline-flex rounded-full border border-brand-700/40 bg-brand-950/30 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-brand-300">
                 For chef-led operators
               </p>
-              <h1 className="mt-6 max-w-4xl fluid-display-xl font-display tracking-tight text-stone-100">
+              <h1 className="mt-6 max-w-4xl fluid-display-xl font-display tracking-[-0.045em] leading-[1.08] text-stone-100">
                 The operator workspace for private chefs, caterers, and meal prep businesses.
               </h1>
               <p className="mt-6 max-w-3xl text-[1.05rem] leading-8 text-stone-300 md:text-lg">
@@ -341,7 +341,7 @@ export default async function ForOperatorsPage({ searchParams }: ForOperatorsPag
                   })}
                   analyticsName="operators_hero_walkthrough_primary"
                   analyticsProps={{ section: 'hero', market_scope: PUBLIC_MARKET_SCOPE }}
-                  className="inline-flex min-h-14 items-center justify-center rounded-2xl gradient-accent px-6 text-base font-semibold text-white glow-hover shadow-lg transition-transform hover:-translate-y-0.5 active:scale-[0.98]"
+                  className="inline-flex min-h-14 items-center justify-center rounded-2xl gradient-accent px-6 text-base font-semibold text-white shadow-lg transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5 active:scale-[0.98]"
                 >
                   Request operator walkthrough
                 </TrackedLink>
@@ -384,10 +384,10 @@ export default async function ForOperatorsPage({ searchParams }: ForOperatorsPag
             <aside className="rounded-[2rem] border border-stone-800/60 bg-stone-900/50 p-5 shadow-[0_24px_70px_rgba(0,0,0,0.28)] backdrop-blur-xl sm:p-6">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-300">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-300">
                     Real Product Proof
                   </p>
-                  <h2 className="mt-2 text-2xl font-display tracking-tight text-stone-100">
+                  <h2 className="mt-2 text-2xl font-display tracking-[-0.04em] text-stone-100">
                     Live operator workspace
                   </h2>
                 </div>
@@ -428,14 +428,14 @@ export default async function ForOperatorsPage({ searchParams }: ForOperatorsPag
         </div>
       </section>
 
-      <section className="border-t border-stone-800/40">
-        <div className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 md:py-18 lg:px-8">
+      <section className="border-t border-stone-800/30">
+        <div className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 md:py-18 lg:px-8">
           <SectionViewTracker moduleName="operator_entry_paths" pageName="for_operators" />
           <div className="max-w-3xl">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-300">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-300">
               Specific Operator Frames
             </p>
-            <h2 className="mt-3 font-display text-3xl tracking-tight text-stone-100 md:text-4xl">
+            <h2 className="mt-3 font-display text-3xl tracking-[-0.04em] text-stone-100 md:text-4xl">
               Need a more specific frame than the default proof-to-walkthrough path?
             </h2>
             <p className="mt-4 text-sm leading-7 text-stone-400 md:text-base">
@@ -451,7 +451,7 @@ export default async function ForOperatorsPage({ searchParams }: ForOperatorsPag
                 key={path.analyticsName}
                 className="rounded-[1.75rem] border border-stone-800/60 bg-stone-900/40 p-6 shadow-[var(--shadow-card)]"
               >
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-300">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-300">
                   {path.eyebrow}
                 </p>
                 <h3 className="mt-3 text-xl font-semibold text-stone-100">{path.title}</h3>
@@ -470,14 +470,14 @@ export default async function ForOperatorsPage({ searchParams }: ForOperatorsPag
         </div>
       </section>
 
-      <section className="border-y border-stone-800/40 bg-stone-950/40">
+      <section className="border-y border-stone-800/30 bg-stone-950/40">
         <div className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 md:py-18 lg:px-8">
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div className="max-w-3xl">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-300">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-300">
                 Best Fit
               </p>
-              <h2 className="mt-3 font-display text-3xl tracking-tight text-stone-100 md:text-4xl">
+              <h2 className="mt-3 font-display text-3xl tracking-[-0.04em] text-stone-100 md:text-4xl">
                 Built for chef-led businesses that need the work to stay attached.
               </h2>
               <p className="mt-4 text-sm leading-7 text-stone-400 md:text-base">
@@ -518,10 +518,10 @@ export default async function ForOperatorsPage({ searchParams }: ForOperatorsPag
         <SectionViewTracker moduleName="operator_proof_overview" pageName="for_operators" />
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div className="max-w-3xl">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-300">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-300">
               Product Proof
             </p>
-            <h2 className="mt-3 font-display text-3xl tracking-tight text-stone-100 md:text-4xl">
+            <h2 className="mt-3 font-display text-3xl tracking-[-0.04em] text-stone-100 md:text-4xl">
               See the operator system before you sign up.
             </h2>
             <p className="mt-4 text-sm leading-7 text-stone-400 md:text-base">
@@ -577,15 +577,15 @@ export default async function ForOperatorsPage({ searchParams }: ForOperatorsPag
         </div>
       </section>
 
-      <section className="border-t border-stone-800/40 bg-stone-950/40">
+      <section className="border-t border-stone-800/30 bg-stone-950/40">
         <div className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 md:py-24 lg:px-8">
           <SectionViewTracker moduleName="operator_workflow_map" pageName="for_operators" />
           <div className="grid gap-8 lg:grid-cols-[360px_minmax(0,1fr)] lg:items-start">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-300">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-300">
                 Workflow Map
               </p>
-              <h2 className="mt-3 font-display text-3xl tracking-tight text-stone-100 md:text-4xl">
+              <h2 className="mt-3 font-display text-3xl tracking-[-0.04em] text-stone-100 md:text-4xl">
                 How a request becomes repeatable business.
               </h2>
               <p className="mt-4 text-sm leading-7 text-stone-400 md:text-base">
@@ -633,14 +633,14 @@ export default async function ForOperatorsPage({ searchParams }: ForOperatorsPag
         </div>
       </section>
 
-      <section className="border-t border-stone-800/40">
+      <section className="border-t border-stone-800/30">
         <div className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 md:py-24 lg:px-8">
           <SectionViewTracker moduleName="operator_deep_proof" pageName="for_operators" />
           <div className="max-w-3xl">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-300">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-300">
               Deeper Proof
             </p>
-            <h2 className="mt-3 font-display text-3xl tracking-tight text-stone-100 md:text-4xl">
+            <h2 className="mt-3 font-display text-3xl tracking-[-0.04em] text-stone-100 md:text-4xl">
               One record, not a patchwork.
             </h2>
             <p className="mt-4 text-sm leading-7 text-stone-400 md:text-base">
@@ -663,10 +663,10 @@ export default async function ForOperatorsPage({ searchParams }: ForOperatorsPag
                 </div>
               </div>
               <div className="rounded-[1.75rem] border border-stone-800/60 bg-stone-900/40 p-6 sm:p-8">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-300">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-300">
                   Event Record Proof
                 </p>
-                <h3 className="mt-3 font-display text-2xl font-bold tracking-tight text-stone-100">
+                <h3 className="mt-3 font-display text-2xl font-bold tracking-[-0.04em] text-stone-100">
                   The event is already more than a calendar entry.
                 </h3>
                 <p className="mt-4 text-sm leading-relaxed text-stone-400">
@@ -687,10 +687,10 @@ export default async function ForOperatorsPage({ searchParams }: ForOperatorsPag
 
             <article className="grid gap-6 lg:grid-cols-[380px_minmax(0,1fr)] lg:items-start">
               <div className="rounded-[1.75rem] border border-stone-800/60 bg-stone-900/40 p-6 sm:p-8 lg:order-1">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-300">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-300">
                   Finance Proof
                 </p>
-                <h3 className="mt-3 font-display text-2xl font-bold tracking-tight text-stone-100">
+                <h3 className="mt-3 font-display text-2xl font-bold tracking-[-0.04em] text-stone-100">
                   Finance stays inside the operator workflow.
                 </h3>
                 <p className="mt-4 text-sm leading-relaxed text-stone-400">
@@ -720,13 +720,13 @@ export default async function ForOperatorsPage({ searchParams }: ForOperatorsPag
         </div>
       </section>
 
-      <section className="border-t border-stone-800/40 bg-stone-950/40">
+      <section className="border-t border-stone-800/30 bg-stone-950/40">
         <div className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 md:py-24 lg:px-8">
           <div className="max-w-3xl">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-300">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-300">
               Truth-Based Evaluation
             </p>
-            <h2 className="mt-3 font-display text-3xl tracking-tight text-stone-100 md:text-4xl">
+            <h2 className="mt-3 font-display text-3xl tracking-[-0.04em] text-stone-100 md:text-4xl">
               Review the current product state without inflated claims.
             </h2>
             <p className="mt-4 text-sm leading-7 text-stone-400 md:text-base">
@@ -757,13 +757,13 @@ export default async function ForOperatorsPage({ searchParams }: ForOperatorsPag
         </div>
       </section>
 
-      <section className="border-t border-stone-800/40">
+      <section className="border-t border-stone-800/30">
         <div className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 md:py-20 lg:px-8">
           <div className="max-w-3xl">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-300">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-300">
               Next Step
             </p>
-            <h2 className="mt-3 font-display text-3xl tracking-tight text-stone-100 md:text-4xl">
+            <h2 className="mt-3 font-display text-3xl tracking-[-0.04em] text-stone-100 md:text-4xl">
               The default next step is the walkthrough once the proof is close.
             </h2>
             <p className="mt-4 text-sm leading-7 text-stone-400 md:text-base">
@@ -783,7 +783,7 @@ export default async function ForOperatorsPage({ searchParams }: ForOperatorsPag
                     : 'border-stone-800/60 bg-stone-900/40'
                 }`}
               >
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-300">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-300">
                   {card.eyebrow}
                 </p>
                 <h3 className="mt-3 text-xl font-semibold text-stone-100">{card.title}</h3>

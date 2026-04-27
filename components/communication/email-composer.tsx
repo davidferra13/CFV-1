@@ -2,6 +2,7 @@
 import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import { Send, X, ChevronDown } from '@/components/ui/icons'
+import { TiptapEditor } from '@/components/ui/tiptap-editor'
 import { toast } from 'sonner'
 
 interface EmailComposerProps {
@@ -123,11 +124,12 @@ export function EmailComposer({
       </div>
 
       {/* Body */}
-      <textarea
+      <TiptapEditor
         value={body}
-        onChange={(e) => setBody(e.target.value)}
+        onChange={setBody}
         placeholder="Write your message..."
-        className="w-full px-4 py-3 text-sm text-stone-200 focus:outline-none resize-none min-h-[160px]"
+        minHeight={160}
+        toolbar={['text', 'list', 'insert']}
       />
 
       {/* Footer */}

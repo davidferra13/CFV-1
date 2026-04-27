@@ -488,7 +488,7 @@ export function runGapValidation() {
       if (seenTitles.has(key)) continue;
       seenTitles.add(key);
 
-      const result = { category: catId, title: gap.title, severity: gap.severity, from: gap.from, status: "MISSING", evidence: [] };
+      const result = { category: catId, title: gap.title, severity: gap.severity, from: gap.from, status: "MISSING", validated: null, evidence: [] };
 
       if (gap.search_hints?.known_built_matches?.length > 0) {
         for (const match of gap.search_hints.known_built_matches) {
@@ -533,6 +533,70 @@ export function runGapValidation() {
 
 export function readValidation() {
   return readJsonFile(VALIDATION_FILE, null);
+}
+
+// ── Precision Tracking ────────────────────────────────────────────
+const PRECISION_LOG_FILE = join(SYSTEM_DIR, "persona-batch-synthesis", "precision-log.json");
+
+function normTitle(s) { return (s || "").toLowerCase().trim(); }
+
+export function markGapValidated(gapTitle, isReal) {
+  const validation = readJsonFile(VALIDATION_FILE, null);
+  if (!validation?.gaps) return { error: "No validation.json found" };
+  const normalized = normTitle(gapTitle);
+  let found = false;
+  for (const gap of validation.gaps) {
+    if (normTitle(gap.title) === normalized) { gap.validated = isReal; found = true; break; }
+  }
+  if (!found) return { error: `Gap not found: ${gapTitle}` };
+  const validated = validation.gaps.filter(g => g.validated === true || g.validated === false);
+  const truePositives = validated.filter(g => g.validated === true).length;
+  const falsePositives = validated.filter(g => g.validated === false).length;
+  validation.summary.precision = {
+    validated_count: validated.length, true_positives: truePositives, false_positives: falsePositives,
+    precision_rate: validated.length > 0 ? Math.round((truePositives / validated.length) * 100) : null,
+  };
+  writeFileSync(VALIDATION_FILE, JSON.stringify(validation, null, 2) + "\n", "utf8");
+  const log = readJsonFile(PRECISION_LOG_FILE, []);
+  log.push({ timestamp: new Date().toISOString(), gap_title: gapTitle, is_real: isReal, cumulative_precision: validation.summary.precision.precision_rate, total_validated: validated.length });
+  writeFileSync(PRECISION_LOG_FILE, JSON.stringify(log, null, 2) + "\n", "utf8");
+  return { success: true, gap: gapTitle, validated: isReal, precision: validation.summary.precision };
+}
+
+export function getPrecisionReport() {
+  const validation = readJsonFile(VALIDATION_FILE, null);
+  if (!validation?.gaps) return { error: "No validation.json" };
+  const gaps = validation.gaps;
+  const validated = gaps.filter(g => g.validated === true || g.validated === false);
+  const truePos = validated.filter(g => g.validated === true).length;
+  const falsePos = validated.filter(g => g.validated === false).length;
+  const unvalidated = gaps.filter(g => g.validated !== true && g.validated !== false).length;
+  const byCategory = {};
+  for (const gap of gaps) {
+    const cat = gap.category || "unknown";
+    if (!byCategory[cat]) byCategory[cat] = { total: 0, validated: 0, true_positives: 0, false_positives: 0 };
+    byCategory[cat].total++;
+    if (gap.validated === true || gap.validated === false) {
+      byCategory[cat].validated++;
+      if (gap.validated) byCategory[cat].true_positives++; else byCategory[cat].false_positives++;
+    }
+  }
+  const byPersona = {};
+  for (const gap of gaps) {
+    const persona = gap.from || "unknown";
+    if (!byPersona[persona]) byPersona[persona] = { total: 0, validated: 0, true_positives: 0, false_positives: 0 };
+    byPersona[persona].total++;
+    if (gap.validated === true || gap.validated === false) {
+      byPersona[persona].validated++;
+      if (gap.validated) byPersona[persona].true_positives++; else byPersona[persona].false_positives++;
+    }
+  }
+  const log = readJsonFile(PRECISION_LOG_FILE, []);
+  return {
+    overall: { total_gaps: gaps.length, validated: validated.length, unvalidated, true_positives: truePos, false_positives: falsePos, precision_rate: validated.length > 0 ? Math.round((truePos / validated.length) * 100) : null },
+    by_category: byCategory, by_persona: byPersona,
+    precision_trend: log.slice(-20).map(l => ({ date: l.timestamp.slice(0, 10), precision: l.cumulative_precision })),
+  };
 }
 
 export function generateGapBuildSpec(gap, index) {

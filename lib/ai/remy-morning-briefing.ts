@@ -121,15 +121,15 @@ export async function generateMorningBriefing(tenantId: string): Promise<string>
   // 5. Client birthdays this week
   const { data: clients } = await db
     .from('clients')
-    .select('full_name, date_of_birth')
+    .select('full_name, birthday')
     .eq('tenant_id', tenantId)
-    .not('date_of_birth', 'is', null)
+    .not('birthday', 'is', null)
     .limit(100)
 
   const birthdayItems: string[] = []
   for (const c of clients ?? []) {
-    if (!c.date_of_birth) continue
-    const dob = new Date(c.date_of_birth)
+    if (!c.birthday) continue
+    const dob = new Date(c.birthday)
     const bdThisYear = new Date(now.getFullYear(), dob.getMonth(), dob.getDate())
     if (bdThisYear >= now && bdThisYear <= new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)) {
       const daysUntil = Math.ceil((bdThisYear.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))

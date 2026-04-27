@@ -20,7 +20,7 @@ function SupportingCollectionLink({ collection }: { collection: NearbyCollection
       href={collection.href}
       className="group block rounded-2xl border border-stone-800/80 bg-stone-950/65 p-4 transition-colors hover:border-brand-600/40 hover:bg-stone-950"
     >
-      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-stone-500">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-500">
         {collection.eyebrow}
       </p>
       <h3 className="mt-2 text-base font-semibold text-stone-100 transition-colors group-hover:text-white">
@@ -116,7 +116,7 @@ export function NearbyCollectionModules({ stats }: { stats: DirectoryStats }) {
                   : 'Coverage-growing landing'}
               </span>
             </div>
-            <h2 className="mt-4 max-w-3xl text-3xl font-semibold tracking-tight text-stone-100 sm:text-4xl">
+            <h2 className="mt-4 max-w-3xl text-3xl font-semibold tracking-[-0.04em] text-stone-100 sm:text-4xl">
               {model.title}
             </h2>
             <p className="mt-3 max-w-3xl text-sm leading-relaxed text-stone-400 sm:text-base">
@@ -124,7 +124,7 @@ export function NearbyCollectionModules({ stats }: { stats: DirectoryStats }) {
             </p>
 
             <div className="mt-6 rounded-[28px] border border-stone-800/80 bg-stone-950/65 p-5 sm:p-6">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-200">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-200">
                 Spotlight Guide
               </p>
               <h3 className="mt-3 text-2xl font-semibold text-stone-100">

@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react'
 import { ConfirmModal } from '@/components/ui/confirm-modal'
 import { getGiftLog, addGiftEntry, deleteGiftEntry } from '@/lib/clients/gifting-actions'
-import type { GiftEntry, GiftType, DeliveryMethod } from '@/lib/clients/gifting-actions'
+import type { GiftEntry, GiftType, DeliveryMethod } from '@/lib/clients/gifting-types'
 import { todayLocalDateString } from '@/lib/utils/format'
 
 const GIFT_TYPE_CONFIG: Record<GiftType, { label: string; color: string }> = {

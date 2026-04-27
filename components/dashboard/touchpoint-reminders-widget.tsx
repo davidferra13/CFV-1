@@ -3,11 +3,16 @@
 import { useEffect, useState, useTransition } from 'react'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
-import {
-  getUpcomingTouchpointReminders,
-  type TouchpointReminder,
-} from '@/lib/dashboard/touchpoint-actions'
+import { getUpcomingTouchpointReminders } from '@/lib/dashboard/touchpoint-actions'
 import { CollapsibleWidget } from '@/components/dashboard/collapsible-widget'
+
+type TouchpointReminder = {
+  clientId: string
+  clientName: string
+  type: 'birthday' | 'anniversary'
+  date: string
+  daysUntil: number
+}
 
 function typeLabel(type: TouchpointReminder['type']): string {
   switch (type) {

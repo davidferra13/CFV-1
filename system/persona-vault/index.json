@@ -1,0 +1,44 @@
+[
+  {
+    "id": "79e030fb-9d53-4747-9221-7a3c462fc1d2",
+    "content_hash": "412e8110c4762cc4",
+    "persona_type": "Chef",
+    "persona_name": "David Chang",
+    "author": {
+      "type": "ai",
+      "name": "hermes3:8b",
+      "tool": "persona-generator"
+    },
+    "source_file": "Chef Flow Personas/Uncompleted/Chef/david-chang.txt",
+    "stored_at": "2026-04-27T05:55:55.765Z",
+    "chars": 3684
+  },
+  {
+    "id": "9fd026b6-1e65-49dc-a6c1-8ad46e5084b4",
+    "content_hash": "eb4816bb7e29865b",
+    "persona_type": "Client",
+    "persona_name": "Oprah Winfrey",
+    "author": {
+      "type": "ai",
+      "name": "gemma4:e4b",
+      "tool": "persona-generator"
+    },
+    "source_file": "Chef Flow Personas/Uncompleted/Client/oprah-winfrey.txt",
+    "stored_at": "2026-04-27T06:13:27.721Z",
+    "chars": 8756
+  },
+  {
+    "id": "168054e8-4e74-44b9-b62b-e5dcd407fbaf",
+    "content_hash": "681c8aec61326720",
+    "persona_type": "Client",
+    "persona_name": "Mindy Weiss",
+    "author": {
+      "type": "ai",
+      "name": "gemma4:e4b",
+      "tool": "persona-generator"
+    },
+    "source_file": "Chef Flow Personas/Uncompleted/Client/mindy-weiss.txt",
+    "stored_at": "2026-04-27T06:15:20.225Z",
+    "chars": 8009
+  }
+]

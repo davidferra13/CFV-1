@@ -4,8 +4,10 @@ import { useState, useEffect } from 'react'
 import { format } from 'date-fns'
 import type { EventDetailTab } from '@/components/events/event-detail-mobile-nav'
 import { EventDetailSection } from '@/components/events/event-detail-mobile-nav'
+import Link from 'next/link'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import {
   Snowflake,
   Flame,
@@ -17,6 +19,7 @@ import {
   ListChecks,
   Calendar,
   Thermometer,
+  Target,
 } from '@/components/ui/icons'
 import { SymbolKeyTrigger } from '@/components/ui/symbol-key'
 import type {
@@ -433,6 +436,12 @@ export function EventDetailPrepTab({
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-stone-200">Prep Timeline</h2>
           <div className="flex items-center gap-2">
+            <Link href={`/events/${eventId}/mise-en-place`}>
+              <Button variant="primary" size="sm" className="gap-1.5">
+                <Target className="h-4 w-4" />
+                Mise en Place
+              </Button>
+            </Link>
             {timeline && (
               <a
                 href={`/api/prep-timeline/ical?eventId=${encodeURIComponent(eventId)}`}

@@ -209,6 +209,8 @@ export async function generatePackingList(eventName: string): Promise<PackingLis
       { item: 'Chef knives + knife roll', quantity: '1 set' },
       { item: 'Cutting boards', quantity: '2-3' },
       { item: 'Sheet pans', quantity: `${Math.ceil(guests / 6)}` },
+      { item: 'Hotel pans (full + half)', quantity: `${Math.max(2, Math.ceil(guests / 8))}` },
+      { item: 'Cambro (insulated carrier)', quantity: `${Math.max(1, Math.ceil(guests / 12))}` },
       { item: 'Mixing bowls (assorted)', quantity: '4-6' },
       { item: 'Tongs, spatulas, ladles', quantity: '1 set' },
       { item: 'Instant-read thermometer', quantity: '1' },

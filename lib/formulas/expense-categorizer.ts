@@ -192,6 +192,8 @@ const KEYWORD_MAP: Array<{ category: ExpenseCategory; keywords: string[]; alt?: 
         'dutch oven',
         'stock pot',
         'sheet pan',
+        'hotel pan',
+        'cambro',
         'baking sheet',
         'cutting board',
         'mandoline',

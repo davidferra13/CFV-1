@@ -203,7 +203,7 @@ export default function FaqPage() {
           <p className="inline-flex rounded-full border border-brand-700 bg-stone-900 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-brand-300">
             FAQ
           </p>
-          <h1 className="mt-5 text-4xl font-display tracking-tight text-stone-100 md:text-6xl">
+          <h1 className="mt-5 text-4xl font-display tracking-[-0.04em] text-stone-100 md:text-6xl">
             Questions from chefs, clients, and operators.
           </h1>
           <p className="mx-auto mt-5 max-w-3xl text-base leading-relaxed text-stone-300 md:text-lg">
@@ -255,7 +255,7 @@ export default function FaqPage() {
 
       <section className="border-y border-stone-700/50 bg-stone-900/40">
         <div className="mx-auto w-full max-w-5xl px-4 py-14 text-center sm:px-6 md:py-20 lg:px-8">
-          <h2 className="text-3xl font-display tracking-tight text-stone-100 md:text-4xl">
+          <h2 className="text-3xl font-display tracking-[-0.04em] text-stone-100 md:text-4xl">
             Ready to run your operation on one platform?
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-stone-300">

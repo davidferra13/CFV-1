@@ -15,7 +15,7 @@ export default function BetaThankYouPage() {
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-brand-950 mb-6">
           <CheckCircle2 className="w-8 h-8 text-brand-400" />
         </div>
-        <h1 className="text-4xl font-display tracking-tight text-stone-100 md:text-5xl">
+        <h1 className="text-4xl font-display tracking-[-0.04em] text-stone-100 md:text-5xl">
           You&apos;re in.
         </h1>
         <p className="mt-4 max-w-lg mx-auto text-base leading-relaxed text-stone-300 md:text-lg">

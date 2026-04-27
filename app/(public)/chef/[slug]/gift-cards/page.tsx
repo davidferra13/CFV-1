@@ -105,7 +105,7 @@ export default async function GiftCardStorePage({ params }: Props) {
                 <h2 className="mt-3 text-2xl font-semibold text-stone-100">{product.title}</h2>
                 <p className="mt-3 text-sm leading-relaxed text-stone-400">{product.description}</p>
                 <div className="mt-6">
-                  <p className="text-xs uppercase tracking-[0.16em] text-stone-500">Amount</p>
+                  <p className="text-xs uppercase tracking-[0.18em] text-stone-500">Amount</p>
                   <p className="mt-1 text-3xl font-semibold text-stone-100">
                     {formatCurrency(product.price)}
                   </p>

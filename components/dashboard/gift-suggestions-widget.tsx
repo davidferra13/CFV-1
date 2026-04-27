@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useTransition } from 'react'
 import { getGiftSuggestions, addGiftEntry } from '@/lib/clients/gifting-actions'
-import type { GiftSuggestion, GiftType, DeliveryMethod } from '@/lib/clients/gifting-actions'
+import type { GiftSuggestion, GiftType, DeliveryMethod } from '@/lib/clients/gifting-types'
 
 const URGENCY_STYLES = {
   high: 'border-l-red-500 bg-red-50',

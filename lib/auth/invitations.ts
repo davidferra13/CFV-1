@@ -55,13 +55,32 @@ export async function getInvitationByToken(token: string) {
 /**
  * Mark invitation as used (called during signup)
  */
-export async function markInvitationUsed(invitationId: string) {
+// public: client signup marks the already validated invitation token as used.
+export async function markInvitationUsed(invitationId: string, rawToken: string) {
   const db = createServerClient({ admin: true })
+  const hashed = hashToken(rawToken)
+
+  const { data: invitation, error: lookupError } = await db
+    .from('client_invitations')
+    .select('id, token')
+    .eq('id', invitationId)
+    .is('used_at', null)
+    .gt('expires_at', new Date().toISOString())
+    .single()
+
+  if (lookupError || !invitation) {
+    throw new Error('Invalid or expired invitation')
+  }
+
+  if (invitation.token !== hashed && invitation.token !== rawToken) {
+    throw new Error('Invalid or expired invitation')
+  }
 
   const { error } = await db
     .from('client_invitations')
     .update({ used_at: new Date().toISOString() })
     .eq('id', invitationId)
+    .is('used_at', null)
 
   if (error) {
     console.error('[markInvitationUsed] Error:', error)

@@ -45,9 +45,9 @@ export function HomepageSearch() {
   }
 
   return (
-    <form onSubmit={handleSearch} className="flex flex-col gap-3">
-      <div className="flex flex-1 flex-col overflow-hidden rounded-[1.5rem] border border-stone-700/80 bg-stone-900/90 shadow-[0_20px_40px_rgba(0,0,0,0.22)] backdrop-blur-sm transition-colors focus-within:border-brand-600/60 sm:flex-row">
-        <div className="flex min-h-[54px] flex-1 items-center border-b border-stone-700/60 sm:min-h-0 sm:border-b-0 sm:border-r">
+    <form onSubmit={handleSearch} className="flex flex-col gap-4">
+      <div className="flex flex-1 flex-col overflow-hidden rounded-2xl border border-stone-800/60 bg-stone-900/70 shadow-[0_24px_48px_rgba(0,0,0,0.25)] backdrop-blur-md transition-all duration-200 focus-within:border-brand-600/40 focus-within:shadow-[0_24px_48px_rgba(0,0,0,0.3),0_0_0_1px_rgba(237,168,107,0.12)] sm:flex-row">
+        <div className="flex min-h-[54px] flex-1 items-center border-b border-stone-800/30 sm:min-h-0 sm:border-b-0 sm:border-r sm:border-stone-800/30">
           <label htmlFor="homepage-location" className="sr-only">
             Location
           </label>
@@ -130,15 +130,20 @@ export function HomepageSearch() {
           </svg>
         </div>
       </div>
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-xs leading-5 text-stone-500">
-          Search by place and service first, then compare live profiles in the directory.
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-xs leading-5 tracking-[-0.01em] text-stone-500">
+          Search by place and service, then compare live profiles.
         </p>
         <button
           type="submit"
-          className="inline-flex h-[52px] items-center justify-center rounded-[1.25rem] border border-stone-700 bg-stone-900/80 px-6 text-sm font-semibold text-stone-100 shadow-lg transition-colors active:scale-[0.97] touch-manipulation hover:border-stone-600 hover:bg-stone-800 sm:h-[52px] sm:min-w-[188px]"
+          className="inline-flex h-12 items-center justify-center rounded-2xl border border-stone-700/80 bg-stone-900/60 px-7 text-sm font-semibold tracking-[-0.01em] text-stone-200 shadow-lg transition-all duration-200 active:scale-[0.97] touch-manipulation hover:border-stone-600 hover:bg-stone-800 hover:text-stone-100 sm:min-w-[180px]"
         >
-          <svg className="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg
+            className="mr-2 h-4 w-4 text-stone-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"

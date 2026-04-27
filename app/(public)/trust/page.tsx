@@ -122,7 +122,7 @@ export default function TrustPage() {
           <p className="inline-flex rounded-full border border-brand-700 bg-stone-900 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-brand-300">
             Trust Center
           </p>
-          <h1 className="mt-5 fluid-display-xl font-display tracking-tight text-stone-100">
+          <h1 className="mt-5 fluid-display-xl font-display tracking-[-0.04em] text-stone-100">
             Trust is clearer when the limits are explicit.
           </h1>
           <p className="mx-auto mt-5 max-w-3xl text-base leading-relaxed text-stone-300 md:text-lg">
@@ -175,7 +175,7 @@ export default function TrustPage() {
       <section className="border-y border-stone-700/50 bg-stone-900/30">
         <div className="mx-auto w-full max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
           <div className="max-w-3xl">
-            <h2 className="text-3xl font-display tracking-tight text-stone-100">
+            <h2 className="text-3xl font-display tracking-[-0.04em] text-stone-100">
               What a profile badge actually means
             </h2>
             <p className="mt-4 text-sm leading-relaxed text-stone-300">
@@ -201,7 +201,7 @@ export default function TrustPage() {
       <section className="border-y border-stone-700/50 bg-stone-900/40">
         <div className="mx-auto w-full max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
           <div className="max-w-3xl">
-            <h2 className="text-3xl font-display tracking-tight text-stone-100">
+            <h2 className="text-3xl font-display tracking-[-0.04em] text-stone-100">
               Payment, cancellation, and support expectations
             </h2>
             <p className="mt-4 text-sm leading-relaxed text-stone-300">
@@ -308,7 +308,7 @@ export default function TrustPage() {
       <section className="border-y border-stone-700/50 bg-stone-900/40">
         <div className="mx-auto w-full max-w-5xl px-4 py-14 sm:px-6 md:py-20 lg:px-8">
           <div className="text-center">
-            <h2 className="fluid-display-lg font-display tracking-tight text-stone-100">
+            <h2 className="fluid-display-lg font-display tracking-[-0.04em] text-stone-100">
               Want to test these workflows in your own operation?
             </h2>
             <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-stone-300">

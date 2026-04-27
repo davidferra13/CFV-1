@@ -55,7 +55,7 @@ export default function DinnerCirclesLandingPage() {
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-300">
           Public Guest Access
         </p>
-        <h1 className="mt-4 max-w-3xl text-4xl font-display tracking-tight text-stone-100 md:text-5xl">
+        <h1 className="mt-4 max-w-3xl text-4xl font-display tracking-[-0.04em] text-stone-100 md:text-5xl">
           Dinner Circles keep everyone on the same page before dinner.
         </h1>
         <p className="mt-5 max-w-2xl text-base leading-7 text-stone-300 md:text-lg">

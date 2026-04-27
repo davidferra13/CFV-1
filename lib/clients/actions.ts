@@ -592,6 +592,7 @@ export async function createClientFromLead(
     email: string
     full_name: string
     phone?: string | null
+    birthday?: string | null
     dietary_restrictions?: string[] | null
     allergies?: string[] | null
     source?: string | null
@@ -603,7 +604,11 @@ export async function createClientFromLead(
 
   // Idempotent: check if client already exists with this email
   const findExisting = async (withSoftDeleteFilter: boolean) => {
-    let query = db.from('clients').select('id').eq('tenant_id', tenantId).eq('email', lead.email)
+    let query = db
+      .from('clients')
+      .select('id, birthday')
+      .eq('tenant_id', tenantId)
+      .eq('email', lead.email)
     if (withSoftDeleteFilter) {
       query = query.is('deleted_at' as any, null)
     }
@@ -617,6 +622,17 @@ export async function createClientFromLead(
   const existing = existingResponse.data
 
   if (existing) {
+    if (lead.birthday && !existing.birthday) {
+      const { error: birthdayError } = await db
+        .from('clients')
+        .update({ birthday: lead.birthday })
+        .eq('tenant_id', tenantId)
+        .eq('id', existing.id)
+
+      if (birthdayError) {
+        console.error('[createClientFromLead] Birthday update failed:', birthdayError)
+      }
+    }
     return { id: existing.id, created: false }
   }
 
@@ -625,6 +641,7 @@ export async function createClientFromLead(
     email: lead.email,
     full_name: lead.full_name,
     phone: lead.phone || null,
+    birthday: lead.birthday || null,
     status: 'active',
     referral_source:
       (lead.source as

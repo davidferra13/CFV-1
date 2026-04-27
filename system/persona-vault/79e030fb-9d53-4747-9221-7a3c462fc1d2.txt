@@ -1,0 +1,53 @@
+**Chef Profile: David Chang - Master Chef (Empire Builder)**
+ 
+I am David Chang, founder of the Momofuku restaurant group. My empire spans multiple locations across New York City and even includes a cookbooks and food products line. As the visionary behind this culinary empire, I manage all aspects from concept to execution, ensuring that each location maintains the high standards that have made my brand successful.
+
+### Business Reality
+
+Right now:
+* I oversee 15 unique Momofuku locations [restaurants, bakeries, bars]
+* My annual revenue is estimated at $50 million USD
+* My team consists of over 500 employees across various roles from chefs to hostesses
+* The geographic scope spans major New York City areas including the boroughs of Manhattan and Brooklyn
+* Currently, I rely on a mix of spreadsheets for inventory tracking, text messages for internal communication, and my own instincts for decision-making
+
+### Primary Failure: Inefficient Inventory Management
+
+Without a centralized system to manage ingredients and supplies across all locations, I'm left with excess stock in one place while another location is desperately short. This leads to significant waste and costs me an estimated $100,000 per year due to overstocking at some venues while others are forced to order more frequently at higher prices.
+
+### Structural Issue: Difficulty in Delegating
+
+As the face of Momofuku, I find it challenging to fully delegate tasks without being constantly involved. This leads to micromanagement, which in turn strains relationships with my team and makes it difficult for them to feel empowered to make decisions on their own. While I can't be everywhere at once, the current lack of systems forces me to be.
+
+### Structural Issue: Brand Consistency
+
+Maintaining brand consistency across all Momofuku locations is a constant battle. While we strive to keep our standards high, the lack of a unified platform leads to inconsistencies in menu offerings, ingredient quality, and overall guest experience. This inconsistency not only dilutes my brand but also negatively impacts customer satisfaction.
+
+### Structural Issue: Real-time Data Accessibility
+
+With multiple locations, I'm often left without real-time data on everything from table turnover rates at our restaurants to inventory levels of key ingredients across all venues. This lack of visibility makes it nearly impossible for me to make informed decisions about staffing, menu changes, or supply purchases.
+
+### Psychological Model
+
+I optimize for:
+* Consistency in brand experience
+* Operational efficiency 
+* Employee satisfaction and development
+I refuse to compromise on:
+* Quality of ingredients and products
+* Innovation in the culinary world
+* Exceptional guest experiences
+I avoid:
+* Inefficient processes that don't scale
+* Technologies that are too complex or time-consuming to implement
+* Anything that doesn't directly impact my core business goals
+
+For this system to work for me, it must:
+
+1. Integrate seamlessly with our existing tech stack without requiring significant training.
+2. Provide real-time data visibility into inventory levels, guest feedback, and operational KPIs across all locations.
+3. Allow for easy delegation of tasks to key team members while still enabling me to oversee everything from a high level.
+4. Ensure brand consistency in menu offerings, ingredient quality, and overall guest experience.
+5. Help reduce waste through better supply management and forecasting demand across venues.
+6. Scale without additional costs or complexity as my business continues to grow.
+7. Offer insights into staffing needs based on sales trends and operational efficiency improvements.

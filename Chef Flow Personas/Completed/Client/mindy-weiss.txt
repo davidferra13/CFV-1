@@ -1,0 +1,73 @@
+**Client Profile: "Mindy Weiss" - Corporate Event Planner (High-End Coordinator)**
+
+I am the lead coordinator for corporate events, responsible for taking large, complex company initiatives—from quarterly board meetings to annual gala dinners—and transforming them into flawless, memorable experiences for high-level executives. I don't just book catering; I manage the entire sensory and logistical narrative of a brand's most important day. My job requires me to be simultaneously creative (designing the menu flow) and ruthlessly analytical (managing vendor contracts, headcounts, and budgets that often exceed $50,000 per event).
+
+### Business Reality
+
+Right now:
+* I book or manage **12-18** private dining, catering, or meal prep events per **quarter**.
+* I handle budgets ranging from **$15,000** (small executive lunch) to over **$120,000** (large gala dinner), requiring deposits of **$10,000-$25,000** and final payments within 30 days of the event.
+* My primary stakeholder group is my corporate client base (e.g., finance departments, marketing agencies) and my internal team of 4 junior coordinators.
+* My events are highly complex, often involving **300-500** guests, requiring specialized dietary accommodations (e.g., 15 vegan, 8 gluten-free, 5 severe nut allergies), multiple staging areas, and coordination across 2-3 different venues.
+* My current booking and communication setup is a chaotic mix: initial quotes are exchanged via email, confirmed details are tracked in a Master Google Sheet, RSVPs are managed through a third-party form, final payments are processed through a separate accounting portal, and day-of vendor changes are handled by WhatsApp texts.
+
+---
+
+### Primary Failure: The Cost of Scope Creep and Manual Reconciliation
+
+My biggest operational pain point is the sheer difficulty of maintaining a single, accurate source of truth when the scope of work changes. Because every corporate client adds "just one more thing"—a change in headcount, a new dietary restriction, a request for an additional dessert course—I have to manually update 5-7 different documents (the Master Sheet, the Vendor Quote, the Guest Count, the Menu Plan, the Invoice). If I miss updating the guaranteed headcount from 285 to 292 in one place, my costing model fails, leading to either a massive overcharge or, worse, a panicked, expensive scramble to source last-minute ingredients and staff. This manual reconciliation process costs me at least 5 hours of highly paid labor per major event, which should be spent designing the guest experience, not chasing numbers.
+
+---
+
+### Structural Issue: Fragmented Client Communication and Change Tracking
+
+The initial quote and contract are handled by my client through email attachments, but all the *operational* changes happen piecemeal across multiple communication channels. If the client texts me "Actually, we added 12 people who are vegetarian," I have to manually cross-reference that text, find the corresponding line item in the Google Sheet, calculate the cost difference, and then email an updated addendum. This process is incredibly fragile; I often forget to update the original contract or the final invoice when dealing with 5-10 small, text-based changes throughout the month.
+
+---
+
+### Structural Issue: Menu and Inventory Costing Disconnect
+
+My menu design process is separate from the actual costing and inventory system. I might design a beautiful, multi-course tasting menu that requires 25 pounds of specialty root vegetables and 40 servings of seared scallops. However, when I pass this menu plan to my vendor or my accounting team, the system doesn't inherently know the required yield, the ingredient waste percentage, or the current market price for the scallops. I have to manually calculate the raw material cost, the labor cost, and the waste factor, leading to delays and potential discrepancies that make accurate profitability forecasting impossible.
+
+---
+
+### Structural Issue: The Payment and Guarantee Flow Gap
+
+The booking, the deposit, the final payment, and the guaranteed headcount are all managed by different systems and different people. The client pays the deposit via a credit card portal, but the final invoice is generated in QuickBooks, referencing the headcount from a separate Google Sheet. If the client pays the final invoice but the headcount in the Master Sheet hasn't been updated by the operational team, the payment is accepted but the fulfillment plan is incorrect. There is no single point where the financial transaction locks in the final, guaranteed service parameters.
+
+---
+
+### Structural Issue: Coordination of Multi-Vendor Logistics
+
+My events rarely use just one caterer; they involve floral vendors, specialized equipment rental companies, and multiple kitchen stations. Every vendor needs access to the *same* single, immutable document detailing the final headcount, the specific dietary restrictions, and the precise delivery time. Currently, I send out a PDF that everyone has to download and print, which guarantees version control issues. If the floral vendor gets the v2 PDF and the kitchen manager gets the v3 PDF, we are operating on conflicting data sets.
+
+---
+
+### Structural Issue: Tracking Menu Iterations and Feedback
+
+When a client has a recurring event (e.g., quarterly board meetings), they usually want to "tweak" the menu based on the last event's feedback. I have to maintain a historical log of every menu iteration, every substitution, and the client's specific feedback notes for the past 12 months. This log is currently stored in a mix of emails and sticky notes in my physical planner. When I pull up the menu for the Q3 event, I have to manually read through the notes from Q1 and Q2 to ensure I don't accidentally reintroduce a dish or allergen the client explicitly forbade months ago.
+
+---
+
+### Psychological Model
+
+I optimize for: **Flawless predictability and seamless client experience.** My job is to make the complexity disappear for the client.
+I refuse to compromise on: **Accuracy of the final count and the quality of the execution.** If the numbers are wrong, the entire event fails, and the client is furious.
+I avoid: **Manual data entry and reconciling data across more than three different platforms.** It feels like wasted, non-creative time.
+I evaluate tools by: **How quickly they centralize and enforce data integrity across the entire event lifecycle.**
+
+I think in terms of dependencies: *If the headcount changes, the menu must change, which changes the costing, which changes the invoice.* I need a system that understands these relationships automatically.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must **automatically generate** an updated cost sheet and invoice addendum the moment I change the guaranteed headcount in the booking record.
+2. The system must **serve as the single source of truth** for all confirmed client details, including signed contracts, final headcount, and all dietary restrictions, preventing version control issues.
+3. The system must **allow me to link and track** specific ingredients, required quantities, and vendor costs directly to the final event menu item and the resulting invoice line item.
+4. The system must **support phased booking and payments**, ensuring that the operational plan (menu, count) is locked down only after the required deposit and initial agreement have been logged.
+5. The system must **provide a comprehensive event timeline view** that maps out all necessary steps—from initial quote to deposit payment, final headcount confirmation, vendor coordination, and payment due date—in one place.
+6. The system must **allow me to tag and retrieve** all historical menu modifications and client feedback notes linked to a specific client or event series over time.
+7. The system must **manage the guest list and RSVPs** and automatically flag any discrepancies between the booked guest list and the final, confirmed headcount.

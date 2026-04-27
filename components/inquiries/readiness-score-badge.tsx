@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import type { ReadinessScore } from '@/lib/inquiries/actions'
+import type { ReadinessScore } from '@/lib/inquiries/types'
 
 const LEVEL_STYLES = {
   ready: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300',

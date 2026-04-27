@@ -349,6 +349,17 @@ const WORD_ANIMATION_MAP: Record<string, CulinaryAnimation> = {
   Cooling: 'freeze',
   Baste: 'drip',
   Foggy: 'puff',
+
+  // ── Knife cuts & prep techniques ──
+  Julienne: 'slice',
+  Brunoise: 'slice',
+  Chiffonade: 'slice',
+  Batonnet: 'slice',
+  Mirepoix: 'squish',
+  'Bouquet Garni': 'bloom',
+  Reduce: 'drip',
+  Proof: 'puff',
+  Temper: 'squish',
 }
 
 /**

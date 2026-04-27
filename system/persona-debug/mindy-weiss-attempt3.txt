@@ -1,0 +1,55 @@
+# Persona Evaluation: Mindy (The Corporate Planner)
+
+**Persona:** Mindy (The Corporate Planner)
+**Goal:** To execute flawless, high-stakes corporate events (galas, executive retreats, large conferences) with zero logistical surprises.
+**Pain Points:** Vendor mismanagement, scope creep, last-minute budget overruns, and lack of centralized communication.
+**Key Needs:** Robust contract management, real-time budget tracking, and automated vendor communication workflows.
+
+***
+
+## Evaluation Against Mindy's Needs
+
+**1. Robust Contract Management:**
+*   **Assessment:** The system needs a dedicated module for uploading, tracking, and flagging key dates (payment milestones, cancellation clauses) from vendor contracts.
+*   **Current State:** (Assume this is a weakness)
+*   **Impact:** High. Failure here leads to unexpected penalties or service gaps.
+
+**2. Real-Time Budget Tracking:**
+*   **Assessment:** Must allow linking expenses directly to specific line items in the event budget, with automated alerts when spending exceeds 80% of allocated funds.
+*   **Current State:** (Assume this is a weakness)
+*   **Impact:** Critical. Budget control is non-negotiable for corporate finance sign-off.
+
+**3. Automated Vendor Communication Workflows:**
+*   **Assessment:** Ability to send standardized requests (e.g., "Please submit your insurance certificate by X date") to multiple vendors simultaneously, and track their individual responses.
+*   **Current State:** (Assume this is a weakness)
+*   **Impact:** High. Reduces manual follow-up time significantly.
+
+***
+
+## Detailed Gap Analysis
+
+**Gap 1: Contract Lifecycle Management (CLM)**
+*   **Problem:** Mindy needs to manage dozens of vendor agreements simultaneously. She needs to know *when* the deposit is due, *when* the final payment is due, and *when* the contract expires, all in one view.
+*   **Priority:** Critical.
+
+**Gap 2: Integrated Financial Controls**
+*   **Problem:** She cannot afford to reconcile spreadsheets manually. The system must act as the single source of truth for spending vs. budget, with immediate alerts.
+*   **Priority:** Critical.
+
+**Gap 3: Stakeholder Visibility**
+*   **Problem:** Multiple internal stakeholders (Marketing, Legal, Finance) need to see the status of different components of the event without needing to ask the Event Manager for updates.
+*   **Priority:** High.
+
+***
+
+## Recommendations for Improvement
+
+1.  **Implement a "Vendor Contract Hub":** Build a dedicated section for CLM, featuring automated reminders for milestones and a searchable repository for all signed agreements.
+2.  **Develop a "Budget Dashboard":** Create a visual dashboard that aggregates all spending against the master budget, color-coded for status (Green/Yellow/Red).
+3.  **Enhance Workflow Automation:** Introduce multi-recipient, templated communication workflows for vendor compliance checks.
+
+***
+
+## Conclusion
+
+The current system is strong on creative ideation and vendor sourcing but is critically weak in the **back-office operational rigor** required by corporate planners like Mindy. To win this segment, the platform must evolve from a creative tool into a **governance and financial control system.**

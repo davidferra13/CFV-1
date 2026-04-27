@@ -143,17 +143,17 @@ export default async function PassiveOrderPage({ params }: Props) {
 
           <div className="mt-6 grid gap-4 sm:grid-cols-3">
             <div className="rounded-2xl border border-stone-800 bg-stone-950/60 p-4">
-              <p className="text-xs uppercase tracking-[0.16em] text-stone-500">Paid</p>
+              <p className="text-xs uppercase tracking-[0.18em] text-stone-500">Paid</p>
               <p className="mt-2 text-2xl font-semibold text-stone-100">
                 {formatCurrency(purchase.amount_cents)}
               </p>
             </div>
             <div className="rounded-2xl border border-stone-800 bg-stone-950/60 p-4">
-              <p className="text-xs uppercase tracking-[0.16em] text-stone-500">Buyer</p>
+              <p className="text-xs uppercase tracking-[0.18em] text-stone-500">Buyer</p>
               <p className="mt-2 text-base font-medium text-stone-100">{purchase.buyer_name}</p>
             </div>
             <div className="rounded-2xl border border-stone-800 bg-stone-950/60 p-4">
-              <p className="text-xs uppercase tracking-[0.16em] text-stone-500">Fulfillment</p>
+              <p className="text-xs uppercase tracking-[0.18em] text-stone-500">Fulfillment</p>
               <p className="mt-2 text-base font-medium capitalize text-stone-100">
                 {purchase.fulfillment_type}
               </p>

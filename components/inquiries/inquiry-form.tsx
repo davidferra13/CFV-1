@@ -14,7 +14,7 @@ import { Alert } from '@/components/ui/alert'
 import { SaveStateBadge } from '@/components/ui/save-state-badge'
 import { DraftRestorePrompt } from '@/components/ui/draft-restore-prompt'
 import { UnsavedChangesDialog } from '@/components/ui/unsaved-changes-dialog'
-import { createInquiry, type CreateInquiryInput } from '@/lib/inquiries/actions'
+import { createInquiry } from '@/lib/inquiries/actions'
 import { getClientLastEventPrefill } from '@/lib/clients/actions'
 import { parseCurrencyToCents, formatCentsToDisplay } from '@/lib/utils/currency'
 import { AddressAutocomplete, type AddressData } from '@/components/ui/address-autocomplete'
@@ -27,6 +27,7 @@ import { useIdempotentMutation } from '@/lib/offline/use-idempotent-mutation'
 import { ValidationError } from '@/lib/errors/app-error'
 import { mapErrorToUI } from '@/lib/errors/map-error-to-ui'
 import { NEUTRAL_ADDRESS_PLACEHOLDER } from '@/lib/site/national-brand-copy'
+import { ReactiveContextInspector } from '@/components/inspector/context-inspector'
 
 type Client = {
   id: string
@@ -54,6 +55,7 @@ type InquiryFormData = {
   selected_client_id: string
   client_email: string
   client_phone: string
+  client_birthday: string
   confirmed_date: string
   guest_count: string
   location: string
@@ -67,6 +69,39 @@ type InquiryFormData = {
   source_message: string
   notes: string
   referral_source: string
+}
+
+type CreateInquiryInput = {
+  channel:
+    | 'text'
+    | 'email'
+    | 'instagram'
+    | 'take_a_chef'
+    | 'yhangry'
+    | 'phone'
+    | 'website'
+    | 'referral'
+    | 'walk_in'
+    | 'other'
+  client_id?: string | null
+  client_name: string
+  client_email?: string
+  client_phone?: string
+  client_birthday?: string
+  referral_partner_id?: string | null
+  partner_location_id?: string | null
+  confirmed_date?: string
+  confirmed_guest_count?: number | null
+  confirmed_location?: string
+  confirmed_occasion?: string
+  confirmed_budget_cents?: number | null
+  confirmed_dietary_restrictions?: string[] | null
+  confirmed_service_expectations?: string
+  confirmed_cannabis_preference?: string
+  source_message?: string
+  notes?: string
+  referral_source?: string
+  idempotency_key?: string
 }
 
 export function InquiryForm({
@@ -136,6 +171,7 @@ export function InquiryForm({
   // Optional contact info (for unlinked leads)
   const [clientEmail, setClientEmail] = useState('')
   const [clientPhone, setClientPhone] = useState('')
+  const [clientBirthday, setClientBirthday] = useState('')
 
   // Optional confirmed facts
   const [confirmedDate, setConfirmedDate] = useState('')
@@ -163,6 +199,7 @@ export function InquiryForm({
       selected_client_id: selectedClientId,
       client_email: clientEmail,
       client_phone: clientPhone,
+      client_birthday: clientBirthday,
       confirmed_date: confirmedDate,
       guest_count: guestCount,
       location,
@@ -183,6 +220,7 @@ export function InquiryForm({
       selectedClientId,
       clientEmail,
       clientPhone,
+      clientBirthday,
       confirmedDate,
       guestCount,
       location,
@@ -206,6 +244,7 @@ export function InquiryForm({
       selected_client_id: '',
       client_email: '',
       client_phone: '',
+      client_birthday: '',
       confirmed_date: '',
       guest_count: '',
       location: '',
@@ -264,6 +303,7 @@ export function InquiryForm({
     setSelectedClientId(data.selected_client_id)
     setClientEmail(data.client_email)
     setClientPhone(data.client_phone)
+    setClientBirthday(data.client_birthday)
     setConfirmedDate(data.confirmed_date)
     setGuestCount(data.guest_count)
     setLocation(data.location)
@@ -287,6 +327,7 @@ export function InquiryForm({
         setClientName(client.full_name)
         setClientEmail(client.email)
         setClientPhone(client.phone || '')
+        setClientBirthday('')
 
         // Pre-fill from last event for returning clients (non-blocking)
         try {
@@ -330,6 +371,7 @@ export function InquiryForm({
         client_name: clientName.trim(),
         client_email: clientEmail || undefined,
         client_phone: clientPhone || undefined,
+        client_birthday: clientBirthday || undefined,
         referral_partner_id: selectedPartnerId || null,
         partner_location_id: selectedLocationId || null,
         confirmed_date: confirmedDate || undefined,
@@ -464,6 +506,15 @@ export function InquiryForm({
           />
         </div>
 
+        {/* Context Inspector - client dietary, allergies, past meals, preferences */}
+        {selectedClientId && (
+          <ReactiveContextInspector
+            clientId={selectedClientId}
+            sections={['client', 'dietary', 'preferences', 'pastMeals', 'feedback']}
+            defaultCollapsed={false}
+          />
+        )}
+
         {/* === REFERRAL PARTNER (optional) === */}
         {partners.length > 0 && (
           <div className="space-y-4">
@@ -532,6 +583,13 @@ export function InquiryForm({
                 placeholder="(555) 123-4567"
                 value={clientPhone}
                 onChange={(e) => setClientPhone(e.target.value)}
+              />
+              <Input
+                label="Birthday"
+                type="date"
+                value={clientBirthday}
+                onChange={(e) => setClientBirthday(e.target.value)}
+                helperText="Optional. Used for birthday reminders and booking prompts."
               />
             </div>
           </div>

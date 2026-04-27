@@ -56,10 +56,10 @@ export default async function AboutPage() {
       <section className="mx-auto w-full max-w-6xl px-4 pt-20 pb-10 sm:px-6 md:pt-28 md:pb-14 lg:px-8">
         <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-300">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-300">
               About ChefFlow
             </p>
-            <h1 className="mt-4 text-3xl font-display tracking-tight text-white md:text-5xl">
+            <h1 className="mt-4 text-3xl font-display tracking-[-0.04em] text-white md:text-5xl">
               Built by a working operator who needed the software himself.
             </h1>
             <p className="mt-6 text-base leading-relaxed text-stone-300 md:text-lg">
@@ -134,7 +134,7 @@ export default async function AboutPage() {
         </div>
       </section>
 
-      <section className="border-t border-stone-800/40">
+      <section className="border-t border-stone-800/30">
         <div className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 md:py-20 lg:px-8">
           <div className="grid gap-4 md:grid-cols-3">
             <div className="rounded-2xl border border-stone-800/60 bg-stone-900/40 p-5">
@@ -165,7 +165,7 @@ export default async function AboutPage() {
         </div>
       </section>
 
-      <section className="border-t border-stone-800/40 bg-stone-950/40">
+      <section className="border-t border-stone-800/30 bg-stone-950/40">
         <div className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 md:py-20 lg:px-8">
           <SectionViewTracker moduleName="why_trust_chefflow" pageName="about" />
           <h2 className="text-xl font-semibold text-stone-100 md:text-2xl">Why trust ChefFlow</h2>
@@ -188,14 +188,14 @@ export default async function AboutPage() {
         </div>
       </section>
 
-      <section className="border-t border-stone-800/40">
+      <section className="border-t border-stone-800/30">
         <div className="mx-auto flex w-full max-w-3xl flex-col items-center px-4 py-14 text-center sm:px-6 md:py-18 lg:px-8">
           <div className="flex flex-col items-center gap-3 sm:flex-row">
             <TrackedLink
               href="/chefs"
               analyticsName="about_browse_chefs"
               analyticsProps={{ section: 'final_cta' }}
-              className="inline-flex h-12 items-center justify-center rounded-xl gradient-accent px-6 text-sm font-semibold text-white glow-hover shadow-lg"
+              className="inline-flex h-12 items-center justify-center rounded-xl gradient-accent px-6 text-sm font-semibold text-white transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5 active:scale-[0.98] shadow-lg"
             >
               Browse Chefs
             </TrackedLink>

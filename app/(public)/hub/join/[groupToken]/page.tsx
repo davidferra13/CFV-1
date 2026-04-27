@@ -90,7 +90,7 @@ export default async function JoinGroupPage({ params, searchParams }: Props) {
                 ) : null}
 
                 <div>
-                  <h1 className="text-3xl font-semibold tracking-tight text-stone-50 sm:text-4xl">
+                  <h1 className="text-3xl font-semibold tracking-[-0.04em] text-stone-50 sm:text-4xl">
                     {group.name}
                   </h1>
                   <p className="mt-2 max-w-xl text-sm leading-6 text-stone-300 sm:text-base">

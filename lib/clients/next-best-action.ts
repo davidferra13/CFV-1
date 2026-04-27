@@ -367,13 +367,38 @@ async function getNextBestActionsInternal(
   }
 
   const { data: clients } = await clientsQuery
-  const activeClients = (clients ?? []) as Array<{
+  let activeClients = (clients ?? []) as Array<{
     id: string
     full_name: string | null
     birthday: string | null
     anniversary: string | null
   }>
   if (activeClients.length === 0) return []
+
+  // Exclude clients with active relationship closures from all NBA signals
+  try {
+    const candidateIds = activeClients.map((c) => c.id)
+    const { data: closedRows } = await db
+      .from('client_relationship_closures')
+      .select('client_id')
+      .eq('tenant_id', user.tenantId!)
+      .in('client_id', candidateIds)
+      .is('reopened_at', null)
+
+    if (closedRows && closedRows.length > 0) {
+      const closedIds = new Set(
+        (closedRows as Array<{ client_id: string }>).map((r) => r.client_id)
+      )
+      activeClients = activeClients.filter((c) => !closedIds.has(c.id))
+      if (activeClients.length === 0) return []
+    }
+  } catch (err) {
+    // Table may not exist yet (migration not applied). Degrade gracefully.
+    const msg = err instanceof Error ? err.message : ''
+    if (!msg.includes('does not exist')) {
+      console.warn('[next-best-action] Closure filter degraded:', err)
+    }
+  }
 
   const activeClientIds = activeClients.map((client) => client.id)
   const clientNameMap = new Map(

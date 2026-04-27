@@ -1,9 +1,9 @@
 {
-  "lastEvaluatedFingerprint": "58c1ca06a669c2afa7d9eb2e96a2028387e59bc1a99ad5d0a8cf423d565b32f5",
-  "lastRunId": "live-ops-26068-1776615301",
-  "lastStatus": "ok",
-  "lastFailedSteps": [],
-  "lastBaseUrl": "http://localhost:3000",
-  "lastCheckedAt": "2026-04-19T16:15:36.0113183Z",
-  "lastTestSweepAt": "2026-04-19T16:15:36.0123998Z"
+  "lastEvaluatedFingerprint": "155f48ca44f451b5dd0f3582e6b849c936ea54d341b0efb2b154afb4e7acefe3",
+  "lastRunId": "live-ops-45232-1777270507",
+  "lastStatus": "needs-attention",
+  "lastFailedSteps": ["unit-canary"],
+  "lastBaseUrl": null,
+  "lastCheckedAt": "2026-04-27T06:16:56.6160164Z",
+  "lastTestSweepAt": "2026-04-27T06:16:56.6894827Z"
 }

@@ -9,13 +9,27 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Alert } from '@/components/ui/alert'
 import { Card } from '@/components/ui/card'
-import {
-  captureTakeAChefBooking,
-  type TakeAChefCaptureInput,
-} from '@/lib/inquiries/take-a-chef-capture-actions'
+import { captureTakeAChefBooking } from '@/lib/inquiries/take-a-chef-capture-actions'
 import { getDefaultTakeAChefCommissionPercent } from '@/lib/integrations/take-a-chef-defaults'
 
 // ─── Component ────────────────────────────────────────────────────────────
+
+type TakeAChefCaptureInput = {
+  full_name: string
+  email?: string
+  phone?: string
+  client_birthday?: string
+  event_date: string
+  serve_time: string
+  guest_count: number
+  location: string
+  occasion: string
+  total_price_cents?: number | null
+  commission_percent: number
+  log_commission: boolean
+  dietary_restrictions?: string
+  additional_notes?: string
+}
 
 export function TakeAChefCaptureForm({
   onSuccess,
@@ -78,6 +92,7 @@ export function TakeAChefCaptureForm({
         full_name: form.full_name!.trim(),
         email: form.email || '',
         phone: form.phone || '',
+        client_birthday: form.client_birthday || '',
         event_date: form.event_date!,
         serve_time: form.serve_time!,
         guest_count: form.guest_count!,
@@ -194,6 +209,20 @@ export function TakeAChefCaptureForm({
               onChange={(e) => set('phone', e.target.value)}
               className="w-full px-3 py-2 border border-stone-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
             />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-stone-300 mb-1">
+              Birthday (optional)
+            </label>
+            <input
+              type="date"
+              value={form.client_birthday || ''}
+              onChange={(e) => set('client_birthday', e.target.value)}
+              className="w-full px-3 py-2 border border-stone-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+            />
+            <p className="mt-1 text-xs text-stone-500">
+              Stores the date for birthday reminders and booking prompts.
+            </p>
           </div>
         </div>
       </div>

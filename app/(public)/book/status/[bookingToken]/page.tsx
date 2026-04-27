@@ -136,7 +136,7 @@ export default async function BookingStatusPage({ params }: Props) {
           <p className="text-xs font-semibold uppercase tracking-wider text-brand-400">
             Booking request
           </p>
-          <h1 className="mt-2 text-2xl font-display tracking-tight text-white">
+          <h1 className="mt-2 text-2xl font-display tracking-[-0.04em] text-white">
             {booking.occasion}
           </h1>
           <p className="mt-1 text-sm text-stone-400">

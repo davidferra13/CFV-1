@@ -804,7 +804,7 @@ export function BookDinnerForm({
       <button
         type="submit"
         disabled={submitting}
-        className="w-full inline-flex h-14 items-center justify-center rounded-2xl gradient-accent px-8 text-base font-semibold text-white glow-hover shadow-lg transition-all active:scale-[0.97] disabled:opacity-60 disabled:pointer-events-none touch-manipulation"
+        className="w-full inline-flex h-14 items-center justify-center rounded-2xl gradient-accent px-8 text-base font-semibold text-white transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5 active:scale-[0.98] shadow-lg transition-all active:scale-[0.97] disabled:opacity-60 disabled:pointer-events-none touch-manipulation"
       >
         {submitting ? (
           <>

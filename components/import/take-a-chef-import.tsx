@@ -10,15 +10,24 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Card } from '@/components/ui/card'
 import { Alert } from '@/components/ui/alert'
-import {
-  importTakeAChefBooking,
-  type TakeAChefImportResult,
-} from '@/lib/ai/import-take-a-chef-action'
+import { importTakeAChefBooking } from '@/lib/ai/import-take-a-chef-action'
 import { getDefaultTakeAChefCommissionPercent } from '@/lib/integrations/take-a-chef-defaults'
 
 // ─── Types ────────────────────────────────────────────────────────────────
 
 type Phase = 'input' | 'parsing' | 'review' | 'saving' | 'done'
+
+type TakeAChefImportResult = {
+  success: boolean
+  inquiryId?: string
+  eventId?: string
+  clientId?: string
+  clientCreated?: boolean
+  commissionExpenseId?: string
+  error?: string
+  warnings?: string[]
+  confidence?: string
+}
 
 // ─── Component ────────────────────────────────────────────────────────────
 
