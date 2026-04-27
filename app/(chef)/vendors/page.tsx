@@ -89,9 +89,27 @@ export default async function VendorsPage({
 
       {/* Vendor list */}
       {vendors.length === 0 ? (
-        <p className="text-sm text-stone-500">
-          {query ? 'No vendors match your search.' : 'No vendors yet. Add your first vendor below.'}
-        </p>
+        <Card className="p-8 text-center">
+          <svg
+            className="h-10 w-10 mx-auto text-stone-600 mb-3"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35m0 0a3.001 3.001 0 003.75-.615A2.993 2.993 0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.016A3.001 3.001 0 0021 9.349m-18 0a2.99 2.99 0 00.62-1.098L4.8 4.5h14.4l1.18 3.75A2.99 2.99 0 0021 9.349"
+            />
+          </svg>
+          <p className="text-stone-400 font-medium">
+            {query ? 'No vendors match your search' : 'No vendors yet'}
+          </p>
+          <p className="text-xs text-stone-600 mt-1">
+            {query ? 'Try a different search term' : 'Track your suppliers, farmers, and purveyors'}
+          </p>
+        </Card>
       ) : (
         <div className="space-y-3">
           {vendors.map((vendor: any) => (

@@ -47,6 +47,7 @@ import { CSVDownloadButton } from '@/components/exports/csv-download-button'
 import { exportRecipeCostCSV } from '@/lib/exports/actions'
 import { Snowflake } from '@/components/ui/icons'
 import { CompletionCard } from '@/components/completion/completion-card'
+import { CrossContactBadges } from '@/components/dietary/cross-contact-badges'
 import type { CompletionResult } from '@/lib/completion/types'
 
 const CATEGORY_COLORS: Record<string, 'default' | 'success' | 'warning' | 'info' | 'error'> = {
@@ -510,8 +511,9 @@ export function RecipeDetailClient({ recipe, initialCompletion, provenance }: Pr
                       }`}
                       title={ri.costNote || 'Cost verified'}
                     />
-                    <span className="text-stone-100">
+                    <span className="text-stone-100 flex items-center gap-1">
                       {ri.quantity} {ri.unit} {ri.ingredient.name}
+                      <CrossContactBadges ingredientName={ri.ingredient.name} compact />
                     </span>
                     {ri.preparation_notes && (
                       <span className="text-sm text-stone-500">({ri.preparation_notes})</span>

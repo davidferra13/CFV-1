@@ -23,6 +23,7 @@ import { ImageWithFallback } from '@/components/pricing/image-with-fallback'
 import { EnrichImagesButton } from '@/components/culinary/enrich-images-button'
 import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
 import { PricingIntelligenceBar } from '@/components/intelligence/pricing-intelligence-bar'
+import { CrossContactBadges } from '@/components/dietary/cross-contact-badges'
 
 export const metadata: Metadata = { title: 'Ingredients' }
 
@@ -143,7 +144,10 @@ export default async function IngredientsPage() {
                         className="h-8 w-8 rounded flex-shrink-0"
                       />
                       <div>
-                        {ing.name}
+                        <span className="flex items-center gap-1">
+                          {ing.name}
+                          <CrossContactBadges ingredientName={ing.name} compact />
+                        </span>
                         {ing.preferred_vendor && (
                           <p className="text-xs text-stone-400 mt-0.5">
                             Vendor: {ing.preferred_vendor}

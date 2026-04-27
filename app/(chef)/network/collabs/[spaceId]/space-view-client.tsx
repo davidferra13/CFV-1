@@ -335,7 +335,11 @@ export function SpaceViewClient({ detail, currentChefId, spaceId }: Props) {
                       <div key={msg.id} className="mb-3 flex items-start gap-2.5">
                         <div className="flex-shrink-0 h-7 w-7 rounded-full bg-stone-800 flex items-center justify-center overflow-hidden">
                           {msg.sender_avatar ? (
-                            <img src={msg.sender_avatar} alt="" className="h-7 w-7 object-cover" />
+                            <img
+                              src={msg.sender_avatar}
+                              alt={msg.sender_name || 'User'}
+                              className="h-7 w-7 object-cover"
+                            />
                           ) : (
                             <span className="text-xs text-stone-400">
                               {msg.sender_name.charAt(0)}

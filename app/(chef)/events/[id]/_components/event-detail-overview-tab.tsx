@@ -11,6 +11,7 @@ import { ClientPortalQR } from '@/components/events/client-portal-qr'
 import { MenuNutritionalPanel } from '@/components/ai/menu-nutritional-panel'
 import { ContractGeneratorPanel } from '@/components/ai/contract-generator-panel'
 import { AllergenRiskPanel } from '@/components/ai/allergen-risk-panel'
+import { MenuSafetyReport } from '@/components/dietary/menu-safety-report'
 import { GuestCodePanel } from '@/components/events/guest-code-panel'
 import { GuestMessagesPanel } from '@/components/events/guest-messages-panel'
 import { GuestExperiencePanel } from '@/components/sharing/guest-experience-panel'
@@ -580,6 +581,11 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
         {/* AI Allergen Risk Matrix (on-demand, deeper analysis) */}
         {event.status !== 'draft' && event.status !== 'cancelled' && (
           <AllergenRiskPanel eventId={event.id} />
+        )}
+
+        {/* Deterministic Menu Safety Check (constraint enforcement) */}
+        {event.menu_id && event.status !== 'draft' && event.status !== 'cancelled' && (
+          <MenuSafetyReport eventId={event.id} />
         )}
 
         {/* Repeat Menu Detection */}

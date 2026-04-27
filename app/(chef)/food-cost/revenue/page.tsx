@@ -6,10 +6,8 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
-import { revalidatePath } from 'next/cache'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { RevenueForm } from './revenue-form'
 
 export const metadata: Metadata = { title: 'Daily Revenue' }
 
@@ -45,64 +43,7 @@ export default async function DailyRevenuePage() {
           <CardTitle className="text-base">Log Today&apos;s Revenue</CardTitle>
         </CardHeader>
         <CardContent>
-          <form
-            action={async (formData: FormData) => {
-              'use server'
-              const { requireChef } = await import('@/lib/auth/get-user')
-              const { createServerClient } = await import('@/lib/db/server')
-              const { revalidatePath } = await import('next/cache')
-
-              const user = await requireChef()
-              const db: any = createServerClient()
-              const date = formData.get('date') as string
-              const amount = formData.get('amount') as string
-              const notes = formData.get('notes') as string
-
-              if (!date || !amount) return
-
-              const totalRevenueCents = Math.round(parseFloat(amount) * 100)
-              if (isNaN(totalRevenueCents) || totalRevenueCents <= 0) return
-
-              await db.from('daily_revenue').upsert(
-                {
-                  chef_id: user.tenantId!,
-                  date,
-                  total_revenue_cents: totalRevenueCents,
-                  source: 'manual',
-                  notes: notes?.trim() || null,
-                },
-                { onConflict: 'chef_id,date' }
-              )
-
-              revalidatePath('/food-cost/revenue')
-              revalidatePath('/food-cost')
-            }}
-            className="space-y-3"
-          >
-            <div className="grid grid-cols-2 gap-3">
-              <Input
-                name="date"
-                type="date"
-                defaultValue={(() => {
-                  const d = new Date()
-                  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-                })()}
-                required
-              />
-              <Input
-                name="amount"
-                type="number"
-                step="0.01"
-                min="0"
-                placeholder="Total sales ($)"
-                required
-              />
-            </div>
-            <Input name="notes" placeholder="Notes (optional)" />
-            <Button type="submit" variant="primary">
-              Save Revenue
-            </Button>
-          </form>
+          <RevenueForm />
         </CardContent>
       </Card>
 
@@ -116,7 +57,25 @@ export default async function DailyRevenuePage() {
         </CardHeader>
         <CardContent>
           {revenueEntries.length === 0 ? (
-            <p className="text-sm text-stone-500">No revenue entries yet.</p>
+            <div className="text-center py-6">
+              <svg
+                className="h-8 w-8 mx-auto text-stone-600 mb-2"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <p className="text-sm text-stone-400 font-medium">No revenue entries yet</p>
+              <p className="text-xs text-stone-600 mt-1">
+                Revenue from events and sales will appear here
+              </p>
+            </div>
           ) : (
             <div className="space-y-2">
               {revenueEntries.map((entry: any) => (

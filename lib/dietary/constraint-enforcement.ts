@@ -56,7 +56,7 @@ export type CrossContactRisk = {
 // Ingredients commonly processed on shared lines with allergens.
 // This catches risks that pure ingredient matching misses.
 
-const CROSS_CONTACT_RISKS: Record<string, { allergen: string; reason: string }[]> = {
+export const CROSS_CONTACT_RISKS: Record<string, { allergen: string; reason: string }[]> = {
   chocolate: [
     { allergen: 'milk', reason: 'Most chocolate is processed on dairy lines' },
     { allergen: 'tree_nuts', reason: 'Chocolate often processed with tree nuts' },
@@ -70,20 +70,14 @@ const CROSS_CONTACT_RISKS: Record<string, { allergen: string; reason: string }[]
     { allergen: 'tree_nuts', reason: 'Granola typically processed with nuts' },
     { allergen: 'peanuts', reason: 'Shared facility risk' },
   ],
-  'oat milk': [
-    { allergen: 'gluten', reason: 'Oats often cross-contaminated with wheat' },
-  ],
-  oats: [
-    { allergen: 'gluten', reason: 'Oats frequently processed on wheat lines' },
-  ],
+  'oat milk': [{ allergen: 'gluten', reason: 'Oats often cross-contaminated with wheat' }],
+  oats: [{ allergen: 'gluten', reason: 'Oats frequently processed on wheat lines' }],
   'fried food': [
     { allergen: 'wheat', reason: 'Shared fryer oil with breaded items' },
     { allergen: 'fish', reason: 'Shared fryer oil risk' },
     { allergen: 'shellfish', reason: 'Shared fryer oil risk' },
   ],
-  vinaigrette: [
-    { allergen: 'sesame', reason: 'Sesame oil sometimes used in vinaigrettes' },
-  ],
+  vinaigrette: [{ allergen: 'sesame', reason: 'Sesame oil sometimes used in vinaigrettes' }],
   pesto: [
     { allergen: 'tree_nuts', reason: 'Traditional pesto contains pine nuts' },
     { allergen: 'dairy', reason: 'Traditional pesto contains parmesan' },
