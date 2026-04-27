@@ -47,10 +47,38 @@ export function GuestPhotoGallery({ shareToken, guestName, guestToken, maskNames
     }
   }
 
+  const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/gif']
+  const MAX_SIZE_BYTES = 10 * 1024 * 1024
+
+  function handleFileChange() {
+    const file = fileRef.current?.files?.[0]
+    if (!file) return
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      setError('Only JPG, PNG, WebP, HEIC, and GIF images are allowed.')
+      if (fileRef.current) fileRef.current.value = ''
+      return
+    }
+    if (file.size > MAX_SIZE_BYTES) {
+      setError('Photo must be under 10MB.')
+      if (fileRef.current) fileRef.current.value = ''
+      return
+    }
+    setError('')
+  }
+
   async function handleUpload(e: React.FormEvent) {
     e.preventDefault()
     const file = fileRef.current?.files?.[0]
     if (!file || !name.trim()) return
+
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      setError('Only JPG, PNG, WebP, HEIC, and GIF images are allowed.')
+      return
+    }
+    if (file.size > MAX_SIZE_BYTES) {
+      setError('Photo must be under 10MB.')
+      return
+    }
 
     setUploading(true)
     setError('')
@@ -123,11 +151,12 @@ export function GuestPhotoGallery({ shareToken, guestName, guestToken, maskNames
             <input
               ref={fileRef}
               type="file"
-              accept="image/*"
+              accept="image/jpeg,image/png,image/webp,image/heic,image/gif"
+              onChange={handleFileChange}
               required
               className="w-full text-sm text-stone-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-brand-950 file:text-brand-400 hover:file:bg-brand-900"
             />
-            <p className="text-xs text-stone-400 mt-1">Max 10MB. JPG, PNG, HEIC supported.</p>
+            <p className="text-xs text-stone-400 mt-1">Max 10MB. JPG, PNG, WebP, HEIC, GIF supported.</p>
           </div>
 
           <input
