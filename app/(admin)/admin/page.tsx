@@ -4,7 +4,6 @@
 import { requireAdmin } from '@/lib/auth/admin'
 import { getPlatformOverviewStats } from '@/lib/admin/platform-stats'
 import { getAdminDebugState } from '@/lib/admin/debug-state'
-import { isFounderEmail } from '@/lib/platform/owner-account'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import {
@@ -260,8 +259,8 @@ export default async function AdminOverviewPage() {
         </div>
       </div>
 
-      {/* Founder-only section */}
-      {isFounderEmail(admin.email) && (
+      {/* Owner-only section */}
+      {admin.accessLevel === 'owner' && (
         <div>
           <h2 className="text-sm font-semibold text-stone-300 uppercase tracking-wide mb-3">
             Founder Only

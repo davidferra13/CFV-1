@@ -19,7 +19,6 @@ import { OfflineProvider } from '@/components/offline/offline-provider'
 import { PageInfoButton } from '@/components/ui/page-info'
 import { PresenceBeacon } from '@/components/admin/presence-beacon'
 import { TestAccountBanner } from '@/components/dev/test-account-banner'
-import { isFounderEmail } from '@/lib/platform/owner-account'
 import { AnalyticsIdentify } from '@/components/analytics/analytics-identify'
 import { PATHNAME_HEADER } from '@/lib/auth/request-auth-context'
 import { resolveAdminSurfaceMode } from '@/lib/interface/surface-governance'
@@ -58,7 +57,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             <AdminSidebar userId={admin.id} />
             <AdminMobileNav userId={admin.id} />
             <AdminMainContent>{children}</AdminMainContent>
-            {isFounderEmail(admin.email) && <RemyWrapper />}
+            {admin.accessLevel === 'owner' && <RemyWrapper />}
             <AnalyticsIdentify userId={admin.id} email={admin.email} role="admin" />
             <PresenceBeacon userId={admin.id} email={admin.email} />
             <PageInfoButton />

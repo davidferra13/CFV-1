@@ -6,7 +6,6 @@
  */
 
 import { requireAdmin } from '@/lib/auth/admin'
-import { isFounderEmail } from '@/lib/platform/owner-account'
 import { redirect } from 'next/navigation'
 import { pgClient as sql } from '@/lib/db'
 
@@ -35,7 +34,7 @@ export interface AbuseSummary {
 
 export async function getAbuseSummary(): Promise<AbuseSummary> {
   const admin = await requireAdmin()
-  if (!isFounderEmail(admin.email)) {
+  if (admin.accessLevel !== 'owner') {
     redirect('/unauthorized')
   }
 

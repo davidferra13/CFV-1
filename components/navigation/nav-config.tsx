@@ -1439,7 +1439,6 @@ export const navGroups: NavGroup[] = [
         href: '/remy',
         label: 'Remy History',
         icon: Bot,
-        adminOnly: true,
       },
     ],
   },

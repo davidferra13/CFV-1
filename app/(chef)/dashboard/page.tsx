@@ -1507,7 +1507,27 @@ export default async function ChefDashboard() {
 
   const hour = new Date().getHours()
   const timeOfDay = hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening'
-  const firstName = (user.email ?? '').split('@')[0].split('.')[0]
+
+  // Resolve chef's display name for greeting (not email prefix)
+  const chefGreetingName = await safe(
+    'chefName',
+    async () => {
+      const { createServerClient } = await import('@/lib/db/server')
+      const db: any = createServerClient()
+      const { data } = await db
+        .from('chefs')
+        .select('display_name')
+        .eq('id', user.tenantId)
+        .single()
+      const name = (data?.display_name ?? '').trim()
+      // If display_name looks like an email or raw username, skip it
+      if (!name || name.includes('@') || /^[a-z0-9_]+$/i.test(name)) return null
+      // Extract first word (e.g. "Maria's Kitchen" -> "Maria's", "Chef Bob" -> "Chef")
+      return name.split(/\s+/)[0] || null
+    },
+    null
+  )
+  const firstName = chefGreetingName
 
   const [
     archetype,

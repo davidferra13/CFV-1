@@ -9,7 +9,6 @@ import { validateEmailLocal, suggestEmailCorrection } from '@/lib/email/email-va
 import { PUBLIC_INTAKE_JSON_BODY_MAX_BYTES } from '@/lib/api/request-body'
 import { guardPublicIntent } from '@/lib/security/public-intent-guard'
 import { matchChefsForBooking } from '@/lib/booking/match-chefs'
-import { resolveOwnerChefId } from '@/lib/platform/owner-account'
 import { resolvePublicMarketScope } from '@/lib/public/public-market-scope'
 import {
   PublicSeasonalMarketPulseIntentSchema,
@@ -163,21 +162,6 @@ export async function POST(request: NextRequest) {
           })(),
         }
       : null
-
-    // Founder first-dibs: always include the founder if they're within radius
-    // but were excluded by the 10-chef cap. Founder slot doesn't count against cap.
-    try {
-      const founderChefId = await resolveOwnerChefId(createAdminClient())
-      if (founderChefId && !chefsToNotify.some((c) => c.id === founderChefId)) {
-        // Check if founder was in the full matched list (within radius)
-        const founderMatch = matchedChefs.find((c) => c.id === founderChefId)
-        if (founderMatch) {
-          chefsToNotify.push(founderMatch)
-        }
-      }
-    } catch (founderErr) {
-      console.error('[open-booking] Founder first-dibs check failed (non-blocking):', founderErr)
-    }
 
     const db: any = createAdminClient()
     const clientEmail = data.email.toLowerCase().trim()

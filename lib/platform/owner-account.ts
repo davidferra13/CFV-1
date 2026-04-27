@@ -29,11 +29,6 @@ function uniqueStrings(values: string[]): string[] {
   return Array.from(new Set(values))
 }
 
-export function isFounderEmail(email: string | null | undefined): boolean {
-  if (!email) return false
-  return normalizeEmail(email) === FOUNDER_EMAIL
-}
-
 /**
  * Legacy admin email list for notifications and founder metadata.
  * Not used for security gates.

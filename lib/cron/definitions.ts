@@ -141,6 +141,13 @@ export const CRON_MONITOR_DEFINITIONS: CronMonitorDefinition[] = [
     description: 'Notify chefs about overdue inquiry follow-ups',
   },
   {
+    cronName: 'proactive-drafts',
+    routePath: '/api/scheduled/proactive-drafts',
+    maxExpectedMinutes: 720,
+    cadence: '6h',
+    description: 'Auto-generate reply drafts for inquiries awaiting chef response',
+  },
+  {
     cronName: 'reviews-sync',
     routePath: '/api/scheduled/reviews-sync',
     maxExpectedMinutes: 720,

@@ -1,5 +1,4 @@
 import { requireAdmin } from '@/lib/auth/admin'
-import { isFounderEmail } from '@/lib/platform/owner-account'
 import { notFound } from 'next/navigation'
 import { OpenClawUsagePage } from '@/components/admin/openclaw-usage-page'
 
@@ -9,7 +8,7 @@ export const metadata = {
 
 export default async function OpenClawPage() {
   const admin = await requireAdmin()
-  if (!isFounderEmail(admin.email)) {
+  if (admin.accessLevel !== 'owner') {
     notFound()
   }
   return <OpenClawUsagePage />
