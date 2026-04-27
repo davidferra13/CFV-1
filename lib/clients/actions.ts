@@ -477,6 +477,26 @@ export async function createClient(input: CreateClientInput) {
     console.error('[createClient] Allergy sync failed (non-blocking):', err)
   }
 
+  // Auto-create persistent Dinner Circle for this client (non-blocking)
+  try {
+    if (validated.email) {
+      const { ensureRecurringClientCircle } = await import('@/lib/recurring/circle-bridge')
+      const circleId = await ensureRecurringClientCircle(user.tenantId!, client.id, 'Personal Chef')
+      if (!circleId) {
+        const db2: any = createServerClient()
+        await db2.from('chef_todos').insert({
+          chef_id: user.entityId,
+          text: `Dinner Circle could not be created for ${validated.full_name}. Check /circles.`,
+          completed: false,
+          created_by: 'system',
+          sort_order: 0,
+        })
+      }
+    }
+  } catch (err) {
+    console.error('[createClient] Circle creation failed (non-blocking):', err)
+  }
+
   // Log chef activity (non-blocking)
   try {
     const { logChefActivity } = await import('@/lib/activity/log-chef')

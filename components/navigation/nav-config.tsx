@@ -185,7 +185,7 @@ export const standaloneTop: NavItem[] = [
   },
   {
     href: '/circles',
-    label: 'Circles',
+    label: 'Dinner Circles',
     icon: MessagesSquare,
     coreFeature: true,
     tier: 'primary',
@@ -518,6 +518,16 @@ export const navGroups: NavGroup[] = [
         href: '/culinary',
         label: 'Culinary Hub',
         icon: ChefHat,
+      },
+      {
+        href: '/culinary/equipment',
+        label: 'Equipment',
+        icon: Wrench,
+        children: [
+          { href: '/culinary/equipment', label: 'Equipment Hub' },
+          { href: '/operations/equipment', label: 'Maintenance & Depreciation' },
+          { href: '/operations/equipment?tab=maintenance', label: 'Maintenance Schedule' },
+        ],
       },
       {
         href: '/culinary/price-catalog',

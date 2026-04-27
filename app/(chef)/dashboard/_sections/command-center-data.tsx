@@ -26,7 +26,7 @@ export async function CommandCenterSection() {
   const tid = user.tenantId!
 
   // Fetch only the 6 core counts needed by the condensed Core Areas panel
-  const [events, inquiries, clients, menus, quotes, unreadMessages] = await Promise.all([
+  const [events, inquiries, clients, menus, quotes, unreadMessages, circles] = await Promise.all([
     safeCount(db, 'events', 'tenant_id', tid, (q: any) =>
       q.not('status', 'in', '(completed,cancelled)')
     ),
@@ -37,9 +37,10 @@ export async function CommandCenterSection() {
     safeCount(db, 'menus', 'tenant_id', tid),
     safeCount(db, 'quotes', 'tenant_id', tid, (q: any) => q.in('status', ['draft', 'sent'])),
     safeCount(db, 'conversations', 'tenant_id', tid, (q: any) => q.gt('unread_count', 0)),
+    safeCount(db, 'hub_groups', 'tenant_id', tid, (q: any) => q.eq('is_active', true)),
   ])
 
-  const anyFailed = [events, inquiries, clients, menus, quotes, unreadMessages].some(
+  const anyFailed = [events, inquiries, clients, menus, quotes, unreadMessages, circles].some(
     (v) => v === null
   )
 
@@ -71,7 +72,7 @@ export async function CommandCenterSection() {
           goals: 0,
           campaigns: 0,
           calls: 0,
-          circles: 0,
+          circles: circles ?? 0,
         }}
       />
     </div>

@@ -381,6 +381,25 @@ export async function createEvent(input: CreateEventInput) {
     idempotency_key: `create_event:${result.event.id}`,
   })
 
+  // Auto-create Dinner Circle for this event (non-blocking)
+  try {
+    const { ensureCircleForEvent } = await import('@/lib/hub/chef-circle-actions')
+    const circleResult = await ensureCircleForEvent(result.event.id, user.tenantId!)
+    if (!circleResult) {
+      // Circle creation returned null; surface as chef todo
+      const db2: any = createServerClient()
+      await db2.from('chef_todos').insert({
+        chef_id: user.entityId,
+        text: `Dinner Circle could not be created for event ${validated.occasion || 'Untitled'} on ${validated.event_date}. Check /circles.`,
+        completed: false,
+        created_by: 'system',
+        sort_order: 0,
+      })
+    }
+  } catch (err) {
+    console.error('[createEvent] Circle creation failed (non-blocking):', err)
+  }
+
   // Log chef activity (non-blocking)
   try {
     const { logChefActivity } = await import('@/lib/activity/log-chef')

@@ -19,6 +19,7 @@ const CRON_PATHS = [
   '/api/cron/brand-monitor',
   '/api/scheduled/wellbeing-signals',
   '/api/cron/platform-observability-digest',
+  '/api/cron/circle-digest',
 ]
 
 function loadEnvFile(relativePath) {
