@@ -1,6 +1,6 @@
 'use client'
 
-import { type FormEvent, useState } from 'react'
+import { type FormEvent, useState, useRef, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
 import { submitFeedback as submitGuestFeedback } from '@/lib/feedback/feedback-actions'
 import { submitFeedback as submitUserFeedback, type FeedbackInput } from '@/lib/feedback/actions'
@@ -37,19 +37,23 @@ function StarRating({
 }) {
   const [hover, setHover] = useState(0)
 
+  const labelId = `feedback-star-label-${label.replace(/\s+/g, '-').toLowerCase()}`
+
   return (
     <div className="space-y-1">
-      <label className="block text-sm font-medium text-gray-700">{label}</label>
-      <div className="flex gap-1">
+      <label className="block text-sm font-medium text-gray-700" id={labelId}>{label}</label>
+      <div className="flex gap-1" role="radiogroup" aria-labelledby={labelId}>
         {[1, 2, 3, 4, 5].map((star) => (
           <button
             key={star}
             type="button"
+            role="radio"
+            aria-checked={value === star ? 'true' : 'false'}
             onClick={() => onChange(star)}
             onMouseEnter={() => setHover(star)}
             onMouseLeave={() => setHover(0)}
             className="p-0.5 focus:outline-none"
-            aria-label={`${star} star${star > 1 ? 's' : ''}`}
+            aria-label={`Rate ${star} out of 5 stars`}
           >
             <svg
               className={`h-8 w-8 transition-colors ${
@@ -75,6 +79,7 @@ function UserFeedbackPanel({ pageContext }: { pageContext?: string }) {
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const userSuccessRef = useRef<HTMLDivElement>(null)
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -115,9 +120,15 @@ function UserFeedbackPanel({ pageContext }: { pageContext?: string }) {
     }
   }
 
+  useEffect(() => {
+    if (submitted && userSuccessRef.current) {
+      userSuccessRef.current.focus()
+    }
+  }, [submitted])
+
   if (submitted) {
     return (
-      <div className="rounded-xl border border-emerald-800 bg-emerald-950/40 p-4 text-sm text-emerald-200">
+      <div ref={userSuccessRef} tabIndex={-1} role="status" className="rounded-xl border border-emerald-800 bg-emerald-950/40 p-4 text-sm text-emerald-200">
         Feedback sent. It has been routed to the internal review queue.
       </div>
     )
@@ -190,6 +201,13 @@ function EventFeedbackSurvey({ token, eventTitle }: { token: string; eventTitle?
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const eventSuccessRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (submitted && eventSuccessRef.current) {
+      eventSuccessRef.current.focus()
+    }
+  }, [submitted])
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -230,7 +248,7 @@ function EventFeedbackSurvey({ token, eventTitle }: { token: string; eventTitle?
 
   if (submitted) {
     return (
-      <div className="mx-auto max-w-lg rounded-lg bg-white p-8 text-center shadow-md">
+      <div ref={eventSuccessRef} tabIndex={-1} role="status" className="mx-auto max-w-lg rounded-lg bg-white p-8 text-center shadow-md">
         <svg
           className="mx-auto h-16 w-16 text-green-500"
           fill="none"

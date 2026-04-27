@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useRef, useEffect } from 'react'
 import { submitSurveyResponse } from '@/lib/feedback/surveys-actions'
 
 type Props = {
@@ -25,14 +25,19 @@ function StarRating({
   onChange: (v: number) => void
   label: string
 }) {
+  const labelId = `survey-star-label-${label.replace(/\s+/g, '-').toLowerCase()}`
+
   return (
     <div>
-      <label className="mb-1 block text-sm text-stone-300">{label}</label>
-      <div className="flex gap-1">
+      <label className="mb-1 block text-sm text-stone-300" id={labelId}>{label}</label>
+      <div className="flex gap-1" role="radiogroup" aria-labelledby={labelId}>
         {[1, 2, 3, 4, 5].map((star) => (
           <button
             key={star}
             type="button"
+            role="radio"
+            aria-checked={value === star ? 'true' : 'false'}
+            aria-label={`Rate ${star} out of 5 stars`}
             onClick={() => onChange(star)}
             className={`text-2xl transition-colors ${
               star <= value ? 'text-amber-400' : 'text-stone-600 hover:text-stone-500'
@@ -64,6 +69,7 @@ export function PostEventSurveyForm({ token, occasion, dishes, chefName }: Props
   const [submitted, setSubmitted] = useState(false)
   const [pending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
+  const successRef = useRef<HTMLDivElement>(null)
 
   function updateDishFeedback(dishId: string, patch: Partial<DishFeedbackState>) {
     setDishFeedback((current) => ({
@@ -127,9 +133,15 @@ export function PostEventSurveyForm({ token, occasion, dishes, chefName }: Props
     })
   }
 
+  useEffect(() => {
+    if (submitted && successRef.current) {
+      successRef.current.focus()
+    }
+  }, [submitted])
+
   if (submitted) {
     return (
-      <div className="rounded-lg border border-stone-800 bg-stone-900 p-8 text-center">
+      <div ref={successRef} tabIndex={-1} role="status" className="rounded-lg border border-stone-800 bg-stone-900 p-8 text-center">
         <div className="mb-4 text-4xl">🙏</div>
         <h2 className="mb-2 text-xl font-bold text-stone-100">Thank you for your feedback!</h2>
         <p className="text-stone-400">
@@ -305,12 +317,15 @@ export function PostEventSurveyForm({ token, occasion, dishes, chefName }: Props
                   </div>
 
                   <div className="flex items-center gap-4">
-                    <span className="text-xs text-stone-500">Optional rating</span>
-                    <div className="flex gap-0.5">
+                    <span className="text-xs text-stone-500" id={`survey-dish-rating-${dish.id}`}>Optional rating</span>
+                    <div className="flex gap-0.5" role="radiogroup" aria-labelledby={`survey-dish-rating-${dish.id}`}>
                       {[1, 2, 3, 4, 5].map((star) => (
                         <button
                           key={star}
                           type="button"
+                          role="radio"
+                          aria-checked={(feedback?.rating ?? 0) === star ? 'true' : 'false'}
+                          aria-label={`Rate ${dish.name} ${star} out of 5 stars`}
                           onClick={() => updateDishFeedback(dish.id, { rating: star })}
                           className={`text-lg ${
                             star <= (feedback?.rating ?? 0) ? 'text-amber-400' : 'text-stone-600'
