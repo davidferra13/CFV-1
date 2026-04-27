@@ -8,6 +8,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { z } from 'zod'
+import { broadcastTenantMutation } from '@/lib/realtime/broadcast'
 
 const BookingSettingsSchema = z.object({
   booking_enabled: z.boolean(),
@@ -126,6 +127,13 @@ export async function upsertBookingSettings(
   revalidatePath('/settings')
   revalidateTag('chef-booking-profile') // Bust public booking page cache
   revalidateTag(`chef-layout-${user.entityId}`) // Bust chef nav/layout cache
+  try {
+    broadcastTenantMutation(user.entityId, {
+      entity: 'chefs',
+      action: 'update',
+      reason: 'Booking settings updated',
+    })
+  } catch {}
   return { success: true }
 }
 

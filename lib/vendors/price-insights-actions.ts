@@ -175,6 +175,13 @@ export async function setVendorPriceAlertThreshold(
 
   revalidatePath(`/vendors/${data.vendorId}`)
   revalidatePath('/vendors/price-comparison')
+  try {
+    broadcastTenantMutation(user.tenantId!, {
+      entity: 'vendor_price_alert_settings',
+      action: 'update',
+      reason: 'Price alert threshold updated',
+    })
+  } catch {}
 
   return { success: true as const, thresholdPercent: normalizedThreshold }
 }

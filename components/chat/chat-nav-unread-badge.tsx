@@ -1,36 +1,52 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { getTotalUnreadCount } from '@/lib/chat/actions'
+import { useSSE } from '@/lib/realtime/sse-client'
 
 /**
  * Nav badge showing total unread chat message count.
- * Polls every 30s and refreshes on tab focus.
+ * Subscribes to SSE for instant updates; falls back to 120s polling.
+ *
+ * @param sseChannel - Optional SSE channel (e.g. `tenant:${tenantId}`). SSE disabled when omitted.
  */
-export function ChatNavUnreadBadge() {
+export function ChatNavUnreadBadge({ sseChannel }: { sseChannel?: string } = {}) {
   const [count, setCount] = useState(0)
+
+  const fetchCount = useCallback(async () => {
+    const isVisible =
+      typeof document === 'undefined' || document.visibilityState === 'visible'
+    if (!isVisible) return
+    try {
+      const n = await getTotalUnreadCount()
+      setCount(n)
+    } catch {
+      // Non-critical - fail silently
+    }
+  }, [])
+
+  // SSE subscription: re-fetch on any message in the channel
+  useSSE(sseChannel ?? '', {
+    enabled: Boolean(sseChannel),
+    onMessage: () => {
+      void fetchCount()
+    },
+  })
 
   useEffect(() => {
     let mounted = true
-    const isVisible = () =>
-      typeof document === 'undefined' || document.visibilityState === 'visible'
 
-    const fetchCount = async () => {
-      if (!isVisible()) return
-      try {
-        const n = await getTotalUnreadCount()
-        if (mounted) setCount(n)
-      } catch {
-        // Non-critical - fail silently
-      }
+    const wrappedFetch = async () => {
+      if (!mounted) return
+      await fetchCount()
     }
 
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') void fetchCount()
+      if (document.visibilityState === 'visible') void wrappedFetch()
     }
 
-    void fetchCount()
-    const interval = setInterval(() => void fetchCount(), 30_000)
+    void wrappedFetch()
+    const interval = setInterval(() => void wrappedFetch(), 120_000)
     document.addEventListener('visibilitychange', handleVisibilityChange)
 
     return () => {
@@ -38,7 +54,7 @@ export function ChatNavUnreadBadge() {
       clearInterval(interval)
       document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
-  }, [])
+  }, [fetchCount])
 
   if (count <= 0) return null
 

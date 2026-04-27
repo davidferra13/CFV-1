@@ -1,6 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { broadcastTenantMutation } from '@/lib/realtime/broadcast'
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
 import { requireCannabisAgreementSigned } from '@/lib/chef/cannabis-access-guards'
@@ -797,6 +798,8 @@ export async function upsertEventCannabisCourseConfig(
 
   revalidatePath(`/cannabis/events/${validated.eventId}/control-packet`)
 
+  try { broadcastTenantMutation(user.tenantId!, { entity: 'event_cannabis_course_config', action: 'update', reason: 'Cannabis course config updated' }) } catch {}
+
   return {
     success: true,
   }
@@ -902,6 +905,8 @@ export async function generateCannabisControlPacketSnapshot(
   revalidatePath('/cannabis/events')
   revalidatePath(`/cannabis/events/${validated.eventId}/control-packet`)
 
+  try { broadcastTenantMutation(user.tenantId!, { entity: 'cannabis_control_packet_snapshots', action: 'insert', reason: 'Control packet snapshot generated' }) } catch {}
+
   try {
     await logCannabisAudit({
       actorUserId: user.id,
@@ -982,6 +987,8 @@ export async function uploadControlPacketEvidence(snapshotId: string, formData: 
 
   revalidatePath(`/cannabis/events/${snapshot.event_id}/control-packet`)
 
+  try { broadcastTenantMutation(user.tenantId!, { entity: 'cannabis_control_packet_evidence', action: 'insert', reason: 'Control packet evidence uploaded' }) } catch {}
+
   try {
     await logCannabisAudit({
       actorUserId: user.id,
@@ -1045,6 +1052,8 @@ export async function deleteControlPacketEvidence(evidenceId: string) {
   }
 
   revalidatePath(`/cannabis/events/${evidence.event_id}/control-packet`)
+
+  try { broadcastTenantMutation(user.tenantId!, { entity: 'cannabis_control_packet_evidence', action: 'delete', reason: 'Control packet evidence deleted' }) } catch {}
 
   try {
     await logCannabisAudit({
@@ -1207,6 +1216,8 @@ export async function upsertControlPacketReconciliation(
 
   revalidatePath(`/cannabis/events/${validated.eventId}/control-packet`)
 
+  try { broadcastTenantMutation(user.tenantId!, { entity: 'cannabis_control_packet_reconciliations', action: 'update', reason: 'Control packet reconciliation saved' }) } catch {}
+
   try {
     await logCannabisAudit({
       actorUserId: user.id,
@@ -1306,6 +1317,8 @@ export async function finalizeControlPacket(input: z.infer<typeof FinalizePacket
   }
 
   revalidatePath(`/cannabis/events/${validated.eventId}/control-packet`)
+
+  try { broadcastTenantMutation(user.tenantId!, { entity: 'cannabis_control_packet_snapshots', action: 'update', reason: 'Control packet finalized' }) } catch {}
 
   try {
     await logCannabisAudit({

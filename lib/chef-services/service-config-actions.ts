@@ -3,6 +3,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { revalidateTag } from 'next/cache'
+import { broadcastTenantMutation } from '@/lib/realtime/broadcast'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -186,6 +187,13 @@ export async function saveServiceConfig(
 
   // Bust Remy context cache
   revalidateTag(`chef-layout-${tenantId}`)
+  try {
+    broadcastTenantMutation(tenantId, {
+      entity: 'chef_service_config',
+      action: 'update',
+      reason: 'Service config saved',
+    })
+  } catch {}
 
   return { success: true }
 }

@@ -254,6 +254,7 @@ export async function createManualPopUpOrderAction(input: {
   source: PopUpOrderSource
   notes?: string
 }) {
+  const user = await requireChef()
   const sourceNote = `Pop-Up source: ${input.source}${input.notes ? ` | ${input.notes}` : ''}`
   const quantity = Math.max(1, Math.round(input.quantity))
   const paidCents = Math.max(0, Math.round(input.paidCents))

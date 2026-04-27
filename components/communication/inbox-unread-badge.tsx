@@ -1,42 +1,58 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { getUnreadThreadCount } from '@/lib/communication/actions'
+import { useSSE } from '@/lib/realtime/sse-client'
 
 /**
  * Client component that fetches and displays the unread inbox count.
- * Polls every 30 seconds so the badge stays current without a full page reload.
+ * Subscribes to SSE for instant updates; falls back to 120s polling.
  * Used in the nav sidebar next to the Inbox label.
+ *
+ * @param sseChannel - Optional SSE channel (e.g. `tenant:${tenantId}`). SSE disabled when omitted.
  */
-export function InboxUnreadBadge() {
+export function InboxUnreadBadge({ sseChannel }: { sseChannel?: string } = {}) {
   const [count, setCount] = useState(0)
+
+  const fetchCount = useCallback(async () => {
+    const isVisible =
+      typeof document === 'undefined' || document.visibilityState === 'visible'
+    if (!isVisible) return
+
+    try {
+      const n = await getUnreadThreadCount()
+      setCount(n)
+    } catch {
+      // Silently fail - badge is non-critical
+    }
+  }, [])
+
+  // SSE subscription: re-fetch on any message in the channel
+  useSSE(sseChannel ?? '', {
+    enabled: Boolean(sseChannel),
+    onMessage: () => {
+      void fetchCount()
+    },
+  })
 
   useEffect(() => {
     let mounted = true
-    const isVisible = () =>
-      typeof document === 'undefined' || document.visibilityState === 'visible'
 
-    const fetchCount = async () => {
-      if (!isVisible()) return
-
-      try {
-        const n = await getUnreadThreadCount()
-        if (mounted) setCount(n)
-      } catch {
-        // Silently fail - badge is non-critical
-      }
+    const wrappedFetch = async () => {
+      if (!mounted) return
+      await fetchCount()
     }
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
-        void fetchCount()
+        void wrappedFetch()
       }
     }
 
-    void fetchCount()
+    void wrappedFetch()
     const interval = setInterval(() => {
-      void fetchCount()
-    }, 30_000)
+      void wrappedFetch()
+    }, 120_000)
     document.addEventListener('visibilitychange', handleVisibilityChange)
 
     return () => {
@@ -44,7 +60,7 @@ export function InboxUnreadBadge() {
       clearInterval(interval)
       document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
-  }, [])
+  }, [fetchCount])
 
   if (count <= 0) return null
 

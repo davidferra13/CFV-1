@@ -8,6 +8,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
+import { broadcastTenantMutation } from '@/lib/realtime/broadcast'
 
 // --- Types ---
 
@@ -267,6 +268,13 @@ export async function generateDailyBriefing(date?: string): Promise<DailyBriefin
   }
 
   revalidatePath('/dashboard')
+  try {
+    broadcastTenantMutation(user.tenantId!, {
+      entity: 'chef_daily_briefings',
+      action: 'update',
+      reason: 'Daily briefing generated',
+    })
+  } catch {}
 
   return {
     id: briefing.id,

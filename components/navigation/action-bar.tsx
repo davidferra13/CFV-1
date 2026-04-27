@@ -26,6 +26,10 @@ type ActionBarProps = {
   showAllFeatures?: boolean
   /** Admin and privileged roles keep the full operational shell */
   bypassProgressiveDisclosure?: boolean
+  /** Tenant ID for SSE subscriptions on badge components */
+  tenantId?: string
+  /** User ID for SSE subscriptions on badge components */
+  userId?: string
 }
 
 export function ActionBar({
@@ -35,6 +39,8 @@ export function ActionBar({
   tenantPresence,
   showAllFeatures = false,
   bypassProgressiveDisclosure = false,
+  tenantId,
+  userId,
 }: ActionBarProps) {
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -84,17 +90,17 @@ export function ActionBar({
               <Icon className="h-[18px] w-[18px]" />
               {item.href === '/inbox' && (
                 <span className="absolute -top-1 -right-1">
-                  <InboxUnreadBadge />
+                  <InboxUnreadBadge sseChannel={tenantId ? `tenant:${tenantId}` : undefined} />
                 </span>
               )}
               {item.href === '/notifications' && (
                 <span className="absolute -top-1 -right-1">
-                  <NotificationsUnreadBadge />
+                  <NotificationsUnreadBadge sseChannel={userId ? `user:${userId}` : undefined} />
                 </span>
               )}
               {item.href === '/events' && (
                 <span className="absolute -top-1 -right-1">
-                  <InquiriesUnreadBadge />
+                  <InquiriesUnreadBadge sseChannel={tenantId ? `chef-${tenantId}` : undefined} />
                 </span>
               )}
             </Link>
@@ -132,9 +138,9 @@ export function ActionBar({
                 className={`w-[18px] h-[18px] flex-shrink-0 ${active || isPending ? 'text-brand-600' : 'text-stone-400'}`}
               />
               <span className="truncate">{item.label}</span>
-              {item.href === '/inbox' && <InboxUnreadBadge />}
-              {item.href === '/notifications' && <NotificationsUnreadBadge />}
-              {item.href === '/events' && <InquiriesUnreadBadge />}
+              {item.href === '/inbox' && <InboxUnreadBadge sseChannel={tenantId ? `tenant:${tenantId}` : undefined} />}
+              {item.href === '/notifications' && <NotificationsUnreadBadge sseChannel={userId ? `user:${userId}` : undefined} />}
+              {item.href === '/events' && <InquiriesUnreadBadge sseChannel={tenantId ? `chef-${tenantId}` : undefined} />}
             </Link>
           )
         })}

@@ -3,6 +3,7 @@
 import { createHash } from 'crypto'
 import { headers } from 'next/headers'
 import { revalidatePath } from 'next/cache'
+import { broadcastTenantMutation } from '@/lib/realtime/broadcast'
 import { createServerClient } from '@/lib/db/server'
 import { logCannabisAudit } from '@/lib/admin/audit'
 import {
@@ -99,6 +100,8 @@ export async function signCannabisHostAgreement(
   revalidatePath('/cannabis/hub')
   revalidatePath('/cannabis/unlock')
   revalidatePath('/cannabis/agreement')
+
+  try { broadcastTenantMutation(user.tenantId!, { entity: 'cannabis_host_agreements', action: 'insert', reason: 'Cannabis host agreement signed' }) } catch {}
 
   try {
     await logCannabisAudit({

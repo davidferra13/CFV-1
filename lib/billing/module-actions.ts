@@ -9,6 +9,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { revalidateTag } from 'next/cache'
 import { CHEF_LAYOUT_CACHE_TAG } from '@/lib/chef/layout-cache'
 import { ALL_MODULE_SLUGS, DEFAULT_ENABLED_MODULES } from '@/lib/billing/modules'
+import { broadcastTenantMutation } from '@/lib/realtime/broadcast'
 
 /**
  * Get the chef's currently enabled modules.
@@ -58,6 +59,13 @@ export async function updateEnabledModules(modules: string[]): Promise<void> {
 
   // Bust the layout cache so the sidebar updates immediately
   revalidateTag(`${CHEF_LAYOUT_CACHE_TAG}-${user.entityId}`)
+  try {
+    broadcastTenantMutation(user.entityId, {
+      entity: 'chef_preferences',
+      action: 'update',
+      reason: 'Enabled modules updated',
+    })
+  } catch {}
 }
 
 /**

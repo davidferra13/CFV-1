@@ -29,18 +29,37 @@ export function MileageLogPanel({ eventId, initialEntries }: Props) {
     e.preventDefault()
     setSubmitting(true)
     const fd = new FormData(e.currentTarget)
-    await addMileageLog({
+    const tripDate = fd.get('tripDate') as string
+    const milesVal = parseFloat(fd.get('miles') as string) || 0
+    const description = (fd.get('description') as string) || null
+    const result = await addMileageLog({
       eventId: eventId || (fd.get('eventId') as string) || undefined,
-      tripDate: fd.get('tripDate') as string,
+      tripDate,
       purpose: (fd.get('purpose') as any) || 'other',
       fromLocation: (fd.get('fromLocation') as string) || undefined,
       toLocation: (fd.get('toLocation') as string) || undefined,
-      miles: parseFloat(fd.get('miles') as string) || 0,
+      miles: milesVal,
       notes: (fd.get('notes') as string) || undefined,
     })
     setSubmitting(false)
-    setIsAdding(false)
-    window.location.reload()
+    if (result.success) {
+      const optimisticEntry: MileageEntry = {
+        id: crypto.randomUUID(),
+        eventId: eventId || null,
+        tripDate,
+        purpose: ((fd.get('purpose') as string) || 'other') as any,
+        fromLocation: (fd.get('fromLocation') as string) || null,
+        toLocation: (fd.get('toLocation') as string) || null,
+        miles: milesVal,
+        deductionCents: Math.round(milesVal * 72.5),
+        description,
+        notes: (fd.get('notes') as string) || null,
+        createdAt: new Date().toISOString(),
+      }
+      setEntries((prev) => [...prev, optimisticEntry])
+      setIsAdding(false)
+      router.refresh()
+    }
   }
 
   async function handleDelete(id: string) {

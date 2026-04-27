@@ -9,6 +9,7 @@ import { createServerClient } from '@/lib/db/server'
 import { CHEF_LAYOUT_CACHE_TAG } from '@/lib/chef/layout-cache'
 import { ALL_MODULE_SLUGS } from '@/lib/billing/modules'
 import { CORE_MODULES, DEFAULT_FOCUS_MODE_ENABLED } from '@/lib/billing/focus-mode'
+import { broadcastTenantMutation } from '@/lib/realtime/broadcast'
 
 /**
  * Check if Focus Mode is enabled for the current chef.
@@ -52,4 +53,11 @@ export async function toggleFocusMode(enabled: boolean): Promise<void> {
   }
 
   revalidateTag(`${CHEF_LAYOUT_CACHE_TAG}-${user.entityId}`)
+  try {
+    broadcastTenantMutation(user.entityId, {
+      entity: 'chef_preferences',
+      action: 'update',
+      reason: `Focus mode ${enabled ? 'enabled' : 'disabled'}`,
+    })
+  } catch {}
 }

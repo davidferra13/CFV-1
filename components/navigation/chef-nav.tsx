@@ -548,10 +548,10 @@ const NavGroupSection = memo(function NavGroupSection({
                   className={`w-4 h-4 flex-shrink-0 ${itemActive ? 'text-brand-600' : 'text-stone-400'}`}
                 />
                 {item.label}
-                {item.href === '/inbox' && <InboxUnreadBadge />}
+                {item.href === '/inbox' && <InboxUnreadBadge sseChannel={`tenant:${tenantId}`} />}
                 {item.href === '/circles' && <CirclesUnreadBadge />}
-                {item.href === '/events' && <InquiriesUnreadBadge />}
-                {item.href === '/chat' && <ChatNavUnreadBadge />}
+                {item.href === '/events' && <InquiriesUnreadBadge sseChannel={`chef-${tenantId}`} />}
+                {item.href === '/chat' && <ChatNavUnreadBadge sseChannel={`tenant:${tenantId}`} />}
               </PendingNavLink>
             )
           })}
@@ -989,6 +989,8 @@ export function ChefSidebar({
               tenantPresence={tenantPresence}
               showAllFeatures={showAllNav}
               bypassProgressiveDisclosure={isAdmin || isPrivileged}
+              tenantId={tenantId}
+              userId={userId}
             />
 
             <div className="w-6 border-t border-stone-800 my-1.5" />

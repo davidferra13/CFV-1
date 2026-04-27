@@ -70,12 +70,13 @@ export function PaymentPlanPanel({ eventId, initialInstallments, quotedPriceCent
         const optimisticInstallment: PaymentPlanInstallment = {
           id: crypto.randomUUID(),
           eventId,
+          installmentNum: installments.length + 1,
           label,
           amountCents: Math.round(amountDollars * 100),
           dueDate,
           paidAt: null,
+          paymentMethod: null,
           notes,
-          installmentNumber: installments.length + 1,
         }
         setInstallments((prev) => [...prev, optimisticInstallment])
         setIsAdding(false)

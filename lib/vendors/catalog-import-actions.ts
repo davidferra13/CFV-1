@@ -253,11 +253,20 @@ async function applyNormalizedRowToVendorItems(
   return { action: 'inserted', vendorItemId: inserted.id }
 }
 
-function revalidateVendorCatalogPaths(vendorId: string) {
+function revalidateVendorCatalogPaths(vendorId: string, tenantId?: string) {
   revalidatePath('/vendors')
   revalidatePath(`/vendors/${vendorId}`)
   revalidatePath('/vendors/price-comparison')
   revalidatePath('/food-cost')
+  if (tenantId) {
+    try {
+      broadcastTenantMutation(tenantId, {
+        entity: 'vendor_items',
+        action: 'update',
+        reason: 'Vendor catalog updated',
+      })
+    } catch {}
+  }
 }
 
 export async function importVendorCatalogRows(
@@ -302,7 +311,7 @@ export async function importVendorCatalogRows(
     }
   }
 
-  revalidateVendorCatalogPaths(data.vendor_id)
+  revalidateVendorCatalogPaths(data.vendor_id, user.tenantId!)
   return result
 }
 
@@ -411,7 +420,7 @@ export async function queueVendorCatalogRows(
   }
 
   result.needsReview = Math.max(0, result.queued - result.autoApplied)
-  revalidateVendorCatalogPaths(data.vendor_id)
+  revalidateVendorCatalogPaths(data.vendor_id, user.tenantId!)
   return result
 }
 
@@ -483,7 +492,7 @@ export async function reviewVendorCatalogRow(input: z.infer<typeof ReviewVendorC
       throw new Error(rejectError.message)
     }
 
-    revalidateVendorCatalogPaths(row.vendor_id)
+    revalidateVendorCatalogPaths(row.vendor_id, user.tenantId!)
     return { success: true as const, action: 'rejected' as const }
   }
 
@@ -519,7 +528,7 @@ export async function reviewVendorCatalogRow(input: z.infer<typeof ReviewVendorC
     throw new Error(approveError.message)
   }
 
-  revalidateVendorCatalogPaths(row.vendor_id)
+  revalidateVendorCatalogPaths(row.vendor_id, user.tenantId!)
   return { success: true as const, action: 'applied' as const }
 }
 
@@ -598,6 +607,6 @@ export async function approveAllPendingVendorCatalogRows(vendorId: string) {
     }
   }
 
-  revalidateVendorCatalogPaths(vendorId)
+  revalidateVendorCatalogPaths(vendorId, user.tenantId!)
   return { appliedCount, failedCount, errors }
 }
