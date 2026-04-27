@@ -22,8 +22,9 @@ import {
   checkRecipeGenerationBlock,
   checkOutOfScopeBlock,
   checkDangerousActionBlock,
+  checkHarmfulContentBlock,
 } from '@/lib/ai/remy-input-validation'
-import { isRemyBlocked, isRemyAdmin } from '@/lib/ai/remy-abuse-actions'
+import { isRemyBlocked, isRemyAdmin, logRemyAbuse } from '@/lib/ai/remy-abuse-actions'
 import { acquireInteractiveLock, releaseInteractiveLock } from '@/lib/ai/queue'
 import { recordRemyMetric } from '@/lib/ai/remy-metrics'
 import { checkRateLimit } from '@/lib/rateLimit'
@@ -143,7 +144,22 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Hard blocks (recipe gen, out-of-scope, dangerous)
+    // Hard blocks (harmful content, recipe gen, out-of-scope, dangerous)
+    const harmfulBlock = checkHarmfulContentBlock(message)
+    if (harmfulBlock) {
+      logRemyAbuse({
+        severity: 'critical',
+        category: 'harmful_content',
+        blockedMessage: message,
+        guardrailMatched: 'checkHarmfulContentBlock',
+      }).catch((err) => console.error('[non-blocking] Abuse logging failed', err))
+      return NextResponse.json({
+        blocked: false,
+        intent: 'question',
+        systemPrompt: null,
+        instantResponse: harmfulBlock,
+      })
+    }
     const recipeBlock = checkRecipeGenerationBlock(message)
     if (recipeBlock) {
       return NextResponse.json({
@@ -164,6 +180,12 @@ export async function POST(req: NextRequest) {
     }
     const dangerousBlock = checkDangerousActionBlock(message)
     if (dangerousBlock) {
+      logRemyAbuse({
+        severity: 'critical',
+        category: 'dangerous_action',
+        blockedMessage: message,
+        guardrailMatched: 'checkDangerousActionBlock',
+      }).catch((err) => console.error('[non-blocking] Abuse logging failed', err))
       return NextResponse.json({
         blocked: false,
         intent: 'question',

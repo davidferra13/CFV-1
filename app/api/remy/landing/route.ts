@@ -11,6 +11,9 @@ import {
   validateRemyRequestBody,
   validateHistory,
   checkRecipeGenerationBlock,
+  checkHarmfulContentBlock,
+  checkOutOfScopeBlock,
+  checkDangerousActionBlock,
 } from '@/lib/ai/remy-input-validation'
 import { buildLandingSystemPrompt } from '@/lib/ai/remy-landing-personality'
 import { checkRateLimit } from '@/lib/rateLimit'
@@ -101,10 +104,50 @@ export async function POST(req: NextRequest) {
       })
     }
 
+    // Harmful content block (weapons, violence, drugs, self-harm)
+    const harmfulBlock = checkHarmfulContentBlock(message)
+    if (harmfulBlock) {
+      console.warn('[remy:landing] Guard blocked:', {
+        guard: 'checkHarmfulContentBlock',
+        message: message.slice(0, 200),
+      })
+      return new Response(encodeSSE({ type: 'error', data: harmfulBlock }), {
+        headers: sseHeaders(),
+      })
+    }
+
     // Recipe generation is banned on ALL surfaces (CLAUDE.md: "not ever")
     const recipeBlock = checkRecipeGenerationBlock(message)
     if (recipeBlock) {
+      console.warn('[remy:landing] Guard blocked:', {
+        guard: 'checkRecipeGenerationBlock',
+        message: message.slice(0, 200),
+      })
       return new Response(encodeSSE({ type: 'error', data: recipeBlock }), {
+        headers: sseHeaders(),
+      })
+    }
+
+    // Out-of-scope block (non-business requests)
+    const outOfScopeBlock = checkOutOfScopeBlock(message)
+    if (outOfScopeBlock) {
+      console.warn('[remy:landing] Guard blocked:', {
+        guard: 'checkOutOfScopeBlock',
+        message: message.slice(0, 200),
+      })
+      return new Response(encodeSSE({ type: 'error', data: outOfScopeBlock }), {
+        headers: sseHeaders(),
+      })
+    }
+
+    // Dangerous action block (delete, developer mode, system introspection)
+    const dangerousActionBlock = checkDangerousActionBlock(message)
+    if (dangerousActionBlock) {
+      console.warn('[remy:landing] Guard blocked:', {
+        guard: 'checkDangerousActionBlock',
+        message: message.slice(0, 200),
+      })
+      return new Response(encodeSSE({ type: 'error', data: dangerousActionBlock }), {
         headers: sseHeaders(),
       })
     }

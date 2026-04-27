@@ -25,6 +25,7 @@ import {
   checkRecipeGenerationBlock,
   checkOutOfScopeBlock,
   checkDangerousActionBlock,
+  checkHarmfulContentBlock,
 } from '@/lib/ai/remy-input-validation'
 import { isRemyBlocked, isRemyAdmin, logRemyAbuse } from '@/lib/ai/remy-abuse-actions'
 import { acquireInteractiveLock, releaseInteractiveLock } from '@/lib/ai/queue'
@@ -185,10 +186,23 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    //  HARMFUL CONTENT BLOCK (weapons, violence, drugs, self-harm)
+    const harmfulBlock = checkHarmfulContentBlock(message)
+    if (harmfulBlock) {
+      logRemyAbuse({
+        severity: 'critical',
+        category: 'harmful_content',
+        blockedMessage: message,
+        guardrailMatched: 'checkHarmfulContentBlock',
+      }).catch((err) => console.error('[non-blocking] Abuse logging failed', err))
+      const body =
+        encodeSSE({ type: 'token', data: harmfulBlock }) + encodeSSE({ type: 'done', data: null })
+      return new Response(body, { headers: sseHeaders() })
+    }
+
     //  RECIPE GENERATION BLOCK (hard rule - AI never generates recipes)
     const recipeBlock = checkRecipeGenerationBlock(message)
     if (recipeBlock) {
-      // Return as a friendly Remy chat response, not an error
       const body =
         encodeSSE({ type: 'token', data: recipeBlock }) + encodeSSE({ type: 'done', data: null })
       return new Response(body, { headers: sseHeaders() })
@@ -197,7 +211,6 @@ export async function POST(req: NextRequest) {
     //  OUT-OF-SCOPE BLOCK (non-business requests)
     const outOfScopeBlock = checkOutOfScopeBlock(message)
     if (outOfScopeBlock) {
-      // Return as a friendly Remy chat response, not an error
       const body =
         encodeSSE({ type: 'token', data: outOfScopeBlock }) +
         encodeSSE({ type: 'done', data: null })
@@ -207,7 +220,12 @@ export async function POST(req: NextRequest) {
     //  DANGEROUS ACTION BLOCK (delete, developer mode, system introspection)
     const dangerousActionBlock = checkDangerousActionBlock(message)
     if (dangerousActionBlock) {
-      // Return as a friendly Remy refusal, not an error
+      logRemyAbuse({
+        severity: 'critical',
+        category: 'dangerous_action',
+        blockedMessage: message,
+        guardrailMatched: 'checkDangerousActionBlock',
+      }).catch((err) => console.error('[non-blocking] Abuse logging failed', err))
       const body =
         encodeSSE({ type: 'token', data: dangerousActionBlock }) +
         encodeSSE({ type: 'done', data: null })

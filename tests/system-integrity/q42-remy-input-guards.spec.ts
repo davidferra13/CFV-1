@@ -7,11 +7,15 @@
  *   - Inject special characters or formatting to manipulate the system prompt
  *   - Ask Remy to repeat its instructions back (system prompt exfiltration)
  *   - Request dangerous automations (delete data, send emails, etc.)
+ *   - Ask for harmful, violent, or illegal content
  *
- * Three guard functions form the pre-LLM pipeline:
- *   1. sanitizeForPrompt() - neutralizes injection markers
- *   2. checkDangerousActionBlock() - blocks requests for destructive operations
- *   3. validateRemyRequestBody() - enforces message length limits
+ * Guard functions form the pre-LLM pipeline:
+ *   1. checkHarmfulContentBlock() - blocks weapons, violence, drugs, self-harm
+ *   2. checkRecipeGenerationBlock() - blocks AI recipe generation
+ *   3. checkOutOfScopeBlock() - blocks off-domain questions
+ *   4. checkDangerousActionBlock() - blocks destructive operations
+ *   5. sanitizeForPrompt() - neutralizes injection markers
+ *   6. validateRemyRequestBody() - enforces message length limits
  *
  * Tests:
  *
@@ -32,6 +36,15 @@
  *
  * 6. OUT-OF-SCOPE GUARD: checkOutOfScopeBlock() prevents Remy from
  *    answering medical, legal, investment, or other off-domain questions.
+ *
+ * 7. HARMFUL CONTENT BLOCK: checkHarmfulContentBlock() prevents weapons,
+ *    violence, drug synthesis, and self-harm requests. Self-harm gets a
+ *    compassionate response with crisis resources.
+ *
+ * 8. RECIPE GENERATION BLOCK: checkRecipeGenerationBlock() prevents AI
+ *    from generating, suggesting, or fabricating recipes.
+ *
+ * 9. GUARD COVERAGE: All 5 Remy routes must call all 4 content guards.
  *
  * Run: npx playwright test -c playwright.system-integrity.config.ts tests/system-integrity/q42-remy-input-guards.spec.ts
  */
@@ -158,5 +171,102 @@ test.describe('Q42: Remy input guards', () => {
         src.includes('OUT_OF_SCOPE'),
       'checkOutOfScopeBlock must cover medical/legal/investment topics (outside chef domain)'
     ).toBe(true)
+  })
+
+  // -------------------------------------------------------------------------
+  // Test 7: Harmful content block catches weapons, violence, drugs, self-harm
+  // -------------------------------------------------------------------------
+  test('checkHarmfulContentBlock catches weapons, violence, drugs, and self-harm', () => {
+    const src = readFileSync(VALIDATION, 'utf-8')
+
+    expect(
+      src.includes('checkHarmfulContentBlock'),
+      'remy-input-validation.ts must export checkHarmfulContentBlock'
+    ).toBe(true)
+
+    // Must cover weapons/explosives
+    expect(
+      src.includes('bomb') || src.includes('explosive') || src.includes('weapon'),
+      'checkHarmfulContentBlock must cover weapons/explosives patterns'
+    ).toBe(true)
+
+    // Must cover violence
+    expect(
+      src.includes('kill') || src.includes('murder') || src.includes('assault'),
+      'checkHarmfulContentBlock must cover violence patterns'
+    ).toBe(true)
+
+    // Must cover drug synthesis
+    expect(
+      src.includes('meth') || src.includes('cocaine') || src.includes('fentanyl'),
+      'checkHarmfulContentBlock must cover drug synthesis patterns'
+    ).toBe(true)
+
+    // Must have compassionate self-harm response with crisis resources
+    expect(
+      src.includes('SELF_HARM_REFUSAL'),
+      'checkHarmfulContentBlock must export SELF_HARM_REFUSAL with crisis resources'
+    ).toBe(true)
+
+    expect(
+      src.includes('988') || src.includes('Crisis'),
+      'SELF_HARM_REFUSAL must include 988 Suicide & Crisis Lifeline or Crisis Text Line'
+    ).toBe(true)
+  })
+
+  // -------------------------------------------------------------------------
+  // Test 8: Recipe generation block exists
+  // -------------------------------------------------------------------------
+  test('checkRecipeGenerationBlock prevents AI recipe generation', () => {
+    const src = readFileSync(VALIDATION, 'utf-8')
+
+    expect(
+      src.includes('checkRecipeGenerationBlock'),
+      'remy-input-validation.ts must export checkRecipeGenerationBlock'
+    ).toBe(true)
+
+    expect(
+      src.includes('RECIPE_GENERATION_REFUSAL'),
+      'checkRecipeGenerationBlock must have a refusal message'
+    ).toBe(true)
+
+    // Must also have search exemption (read-only lookups are allowed)
+    expect(
+      src.includes('RECIPE_SEARCH_PATTERNS'),
+      'checkRecipeGenerationBlock must exempt recipe search/lookup queries'
+    ).toBe(true)
+  })
+
+  // -------------------------------------------------------------------------
+  // Test 9: All Remy routes call all 4 content guards
+  // -------------------------------------------------------------------------
+  test('all Remy API routes call all 4 content guard functions', () => {
+    const ROUTES = [
+      'app/api/remy/stream/route.ts',
+      'app/api/remy/context/route.ts',
+      'app/api/remy/landing/route.ts',
+      'app/api/remy/public/route.ts',
+      'app/api/remy/client/route.ts',
+    ]
+
+    const GUARDS = [
+      'checkHarmfulContentBlock',
+      'checkRecipeGenerationBlock',
+      'checkOutOfScopeBlock',
+      'checkDangerousActionBlock',
+    ]
+
+    for (const route of ROUTES) {
+      const routePath = resolve(process.cwd(), route)
+      expect(existsSync(routePath), `${route} must exist`).toBe(true)
+      const src = readFileSync(routePath, 'utf-8')
+
+      for (const guard of GUARDS) {
+        expect(
+          src.includes(guard),
+          `${route} must call ${guard}. All Remy surfaces need all 4 content guards.`
+        ).toBe(true)
+      }
+    }
   })
 })

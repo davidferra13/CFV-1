@@ -11,6 +11,9 @@ import {
   validateRemyRequestBody,
   validateHistory,
   checkRecipeGenerationBlock,
+  checkHarmfulContentBlock,
+  checkOutOfScopeBlock,
+  checkDangerousActionBlock,
 } from '@/lib/ai/remy-input-validation'
 import { checkRateLimit } from '@/lib/rateLimit'
 import {
@@ -146,10 +149,57 @@ export async function POST(req: NextRequest) {
       })
     }
 
+    // Harmful content block (weapons, violence, drugs, self-harm)
+    const harmfulBlock = checkHarmfulContentBlock(message)
+    if (harmfulBlock) {
+      console.warn('[remy:client] Guard blocked:', {
+        guard: 'checkHarmfulContentBlock',
+        clientId: user.entityId,
+        message: message.slice(0, 200),
+      })
+      return new Response(encodeSSE({ type: 'error', data: harmfulBlock }), {
+        status: 400,
+        headers: sseHeaders(),
+      })
+    }
+
     // Hard block recipe generation requests in client lane before any model call.
     const recipeBlock = checkRecipeGenerationBlock(message)
     if (recipeBlock) {
+      console.warn('[remy:client] Guard blocked:', {
+        guard: 'checkRecipeGenerationBlock',
+        clientId: user.entityId,
+        message: message.slice(0, 200),
+      })
       return new Response(encodeSSE({ type: 'error', data: recipeBlock }), {
+        status: 400,
+        headers: sseHeaders(),
+      })
+    }
+
+    // Out-of-scope block (non-business requests)
+    const outOfScopeBlock = checkOutOfScopeBlock(message)
+    if (outOfScopeBlock) {
+      console.warn('[remy:client] Guard blocked:', {
+        guard: 'checkOutOfScopeBlock',
+        clientId: user.entityId,
+        message: message.slice(0, 200),
+      })
+      return new Response(encodeSSE({ type: 'error', data: outOfScopeBlock }), {
+        status: 400,
+        headers: sseHeaders(),
+      })
+    }
+
+    // Dangerous action block (delete, developer mode, system introspection)
+    const dangerousActionBlock = checkDangerousActionBlock(message)
+    if (dangerousActionBlock) {
+      console.warn('[remy:client] Guard blocked:', {
+        guard: 'checkDangerousActionBlock',
+        clientId: user.entityId,
+        message: message.slice(0, 200),
+      })
+      return new Response(encodeSSE({ type: 'error', data: dangerousActionBlock }), {
         status: 400,
         headers: sseHeaders(),
       })
