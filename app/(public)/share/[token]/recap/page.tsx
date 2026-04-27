@@ -48,7 +48,7 @@ export default async function RecapPage({ params }: { params: { token: string } 
   const allDisplayMessages = [...pinnedMessages, ...recentMessages]
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-stone-50 to-white">
+    <div className="min-h-screen bg-gradient-to-b from-stone-950 to-stone-900">
       <div className="max-w-2xl mx-auto px-4 py-8 sm:py-12">
         {/* Hero */}
         <div className="text-center mb-10">
