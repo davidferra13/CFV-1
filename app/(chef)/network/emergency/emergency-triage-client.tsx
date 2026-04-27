@@ -153,7 +153,7 @@ export function EmergencyTriageClient({ data }: { data: TriageData }) {
       </div>
 
       {/* Summary Stats */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-center">
           <div className="text-2xl font-bold text-stone-100">{data.events.length}</div>
           <div className="text-xs text-stone-400 mt-1">Upcoming Events</div>

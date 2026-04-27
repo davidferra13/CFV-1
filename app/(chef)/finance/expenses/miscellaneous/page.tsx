@@ -62,7 +62,7 @@ export default async function MiscellaneousExpensesPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <Card className="p-4">
           <p className="text-2xl font-bold text-red-600">{formatCurrency(totalSpend)}</p>
           <p className="text-sm text-stone-500 mt-1">Total misc spend</p>
@@ -78,7 +78,7 @@ export default async function MiscellaneousExpensesPage() {
       </div>
 
       {totalByCategory.length > 0 && (
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {totalByCategory.map((c) => (
             <Card key={c.cat} className="p-3">
               <p className="text-sm font-medium text-stone-300">{c.label}</p>

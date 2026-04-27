@@ -214,8 +214,12 @@ function classifyInputType(content) {
     }
   }
 
-  const best = Object.entries(scores).sort((a, b) => b[1] - a[1])[0];
-  if (best && best[1] > 0) return best[0];
+  const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+  const best = sorted[0];
+  const runnerUp = sorted[1];
+  // Require minimum score of 2 OR a clear margin over runner-up
+  if (best && best[1] >= 2) return best[0];
+  if (best && best[1] > 0 && (!runnerUp || best[1] > runnerUp[1])) return best[0];
   return "note";
 }
 
@@ -301,10 +305,16 @@ function readUniversalIntake() {
   return results.sort((a, b) => String(b.submitted).localeCompare(String(a.submitted)));
 }
 
+let expandMetrics = { calls: 0, total_ms: 0, failures: 0 };
+
 async function expandIntakeItem(filePath, inputType) {
   if (inputType === "note" || inputType === "persona") return;
   if (!circuitBreakerCheck()) {
     console.log(`[intake-expand] Circuit breaker OPEN, skipping expansion for ${basename(filePath)}`);
+    emitRuntimeEvent("warn", "3977.intake-expand", {
+      action: "skipped_circuit_open",
+      file: basename(filePath),
+    }, { workflow: "intake" });
     return;
   }
   try {
@@ -323,6 +333,7 @@ async function expandIntakeItem(filePath, inputType) {
     const prompt = prompts[inputType];
     if (!prompt) return;
 
+    const expandStart = Date.now();
     const response = await fetch(`${OLLAMA_URL}/api/generate`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -331,10 +342,20 @@ async function expandIntakeItem(filePath, inputType) {
     });
 
     if (!response.ok) {
+      expandMetrics.failures++;
       console.error(`[intake-expand] Ollama returned ${response.status}`);
       circuitBreakerFailure();
+      emitRuntimeEvent("error", "3977.intake-expand", {
+        action: "ollama_error",
+        status: response.status,
+        file: basename(filePath),
+      }, { workflow: "intake" });
       return;
     }
+
+    const expandDuration = Date.now() - expandStart;
+    expandMetrics.calls++;
+    expandMetrics.total_ms += expandDuration;
 
     circuitBreakerSuccess();
     const result = await response.json();
@@ -1242,7 +1263,9 @@ function pruneNdjsonFile() {
     const lines = content.split("\n").filter(Boolean);
     if (lines.length > NDJSON_MAX_LINES) {
       const trimmed = lines.slice(-NDJSON_MAX_LINES);
-      writeFileSync(RUNTIME_EVENT_FILE, trimmed.join("\n") + "\n", "utf8");
+      const tmp = RUNTIME_EVENT_FILE + ".tmp";
+      writeFileSync(tmp, trimmed.join("\n") + "\n", "utf8");
+      renameSync(tmp, RUNTIME_EVENT_FILE);
       console.log(`[ndjson] Pruned ${lines.length - NDJSON_MAX_LINES} old events (kept ${NDJSON_MAX_LINES})`);
     }
   } catch {}
@@ -1832,14 +1855,19 @@ function pendingEntryIds(statuses = ["saved", "queued", "failed", "spec_queued"]
   return state.entries.filter((entry) => statuses.includes(entry.status)).map((entry) => entry.id);
 }
 
-function readBody(req) {
+function readBody(req, res) {
   return new Promise((resolve, reject) => {
     let body = "";
     req.on("data", (chunk) => {
       body += chunk;
       if (body.length > MAX_BODY_BYTES) {
-        reject(new Error("Request too large"));
+        const err = new Error("Request too large");
+        err.statusCode = 413;
+        if (res && !res.headersSent) {
+          sendJson(res, 413, { error: "Payload too large", max_bytes: MAX_BODY_BYTES });
+        }
         req.destroy();
+        reject(err);
       }
     });
     req.on("end", () => resolve(body));
@@ -3968,11 +3996,17 @@ function page() {
         localStorage.setItem(CACHE_KEY, JSON.stringify({ timestamp: Date.now(), data: payload }));
       } catch {}
     }
+    const CACHE_MAX_AGE_MS = 24 * 60 * 60 * 1000; // 24 hours
     function loadCachedSnapshot() {
       try {
         const raw = localStorage.getItem(CACHE_KEY);
         if (!raw) return null;
-        return JSON.parse(raw);
+        const parsed = JSON.parse(raw);
+        if (parsed?.timestamp && (Date.now() - parsed.timestamp) > CACHE_MAX_AGE_MS) {
+          localStorage.removeItem(CACHE_KEY);
+          return null;
+        }
+        return parsed;
       } catch { return null; }
     }
 
@@ -4456,7 +4490,13 @@ const server = createServer(async (req, res) => {
       let expanding = false;
       if (inputType !== "note") {
         expanding = true;
-        expandIntakeItem(item.path, inputType).catch(() => {});
+        expandIntakeItem(item.path, inputType).catch((err) => {
+          emitRuntimeEvent("error", "3977.intake-expand", {
+            action: "expand_failed_silently",
+            file: basename(item.path),
+            error: err?.message || String(err),
+          }, { workflow: "intake" });
+        });
       }
       broadcastRuntimeSnapshot();
       sendJson(res, 200, { ...item, expanding });
@@ -4571,6 +4611,11 @@ const server = createServer(async (req, res) => {
         planner_success_rate_pct: plannerSuccessRate,
         failed_by_type: failedByType,
         last_cycle: state.last_cycle || null,
+        expand: {
+          calls: expandMetrics.calls,
+          avg_ms: expandMetrics.calls > 0 ? Math.round(expandMetrics.total_ms / expandMetrics.calls) : 0,
+          failures: expandMetrics.failures,
+        },
       });
       return;
     }
@@ -5125,8 +5170,9 @@ const server = createServer(async (req, res) => {
       const planPath = url.searchParams.get("path");
       if (!planPath) { sendJson(res, 400, { error: "Missing path parameter" }); return; }
       // Security: only allow reading from system/persona-build-plans/
+      const allowedDir = join(ROOT, "system", "persona-build-plans");
       const resolved = join(ROOT, planPath);
-      if (!resolved.replace(/\\/g, "/").includes("system/persona-build-plans/") || !existsSync(resolved)) {
+      if (!resolved.replace(/\\/g, "/").startsWith(allowedDir.replace(/\\/g, "/")) || !existsSync(resolved)) {
         sendJson(res, 404, { error: "Plan not found" }); return;
       }
       try {

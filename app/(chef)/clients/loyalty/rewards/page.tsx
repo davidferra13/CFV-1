@@ -58,7 +58,7 @@ export default async function RewardsPage() {
         <p className="text-stone-500 mt-1">Gift cards and vouchers issued to your clients</p>
       </div>
 
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="p-4">
           <p className="text-2xl font-bold text-stone-100">{stats.totalIssued}</p>
           <p className="text-sm text-stone-500 mt-1">Total issued</p>

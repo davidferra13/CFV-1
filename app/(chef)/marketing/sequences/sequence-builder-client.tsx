@@ -144,7 +144,7 @@ export function SequenceBuilderClient() {
                 </button>
               )}
             </div>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               <div>
                 <label className="block text-xs font-medium text-stone-400 mb-1">
                   {i === 0 ? 'Delay from trigger (days)' : 'Delay from previous (days)'}

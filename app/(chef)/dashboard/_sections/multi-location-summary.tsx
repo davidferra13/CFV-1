@@ -53,7 +53,7 @@ export async function MultiLocationSummary() {
       )}
 
       {/* Aggregate row */}
-      <div className="grid grid-cols-3 gap-3 mb-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-3">
         <Card>
           <CardContent className="p-3">
             <p className="text-xs text-stone-500">Total Covers</p>
@@ -135,7 +135,7 @@ export function MultiLocationSummarySkeleton() {
   return (
     <section>
       <div className="section-label mb-4">Locations</div>
-      <div className="grid grid-cols-3 gap-3 mb-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-3">
         {[1, 2, 3].map((i) => (
           <div key={i} className="h-16 rounded-lg bg-stone-800/30 animate-pulse" />
         ))}

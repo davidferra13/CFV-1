@@ -120,7 +120,7 @@ export default async function ProductionCalendarPage({
       </div>
 
       {/* Summary row */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <div className="rounded-xl border border-stone-700 bg-stone-900 p-4">
           <p className="text-xs text-stone-400 uppercase tracking-wider mb-1">Events</p>
           <p className="text-2xl font-bold text-stone-100">{activeMonthEvents.length}</p>

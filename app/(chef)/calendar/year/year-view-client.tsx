@@ -149,7 +149,7 @@ export function YearViewClient({ summary, year, currentYear }: Props) {
       </div>
 
       {/* Stats strip */}
-      <div className="grid grid-cols-3 gap-3 text-center">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-center">
         <div className="bg-stone-900 border border-stone-700 rounded-lg px-3 py-2">
           <div className="text-lg font-bold text-stone-100">{summary.total_events}</div>
           <div className="text-xs text-stone-400">Events</div>

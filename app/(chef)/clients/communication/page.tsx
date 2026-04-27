@@ -51,7 +51,7 @@ export default async function ClientCommunicationPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {TOOLS.map((tool) => (
           <Link key={tool.href} href={tool.href}>
             <Card className="p-5 hover:shadow-md transition-shadow cursor-pointer h-full">

@@ -75,7 +75,7 @@ function RevenueSummaryView({ data }: { data: ReportData<'revenue-summary'> }) {
 function ClientActivityView({ data }: { data: ReportData<'client-activity'> }) {
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         <SummaryCard label="Total Clients" value={String(data.totalClients)} />
         <SummaryCard label="Total Bookings" value={String(data.totalBookings)} />
         <SummaryCard label="Total Spend" value={formatCents(data.totalSpendCents)} />
@@ -99,7 +99,7 @@ function ClientActivityView({ data }: { data: ReportData<'client-activity'> }) {
 function EventPerformanceView({ data }: { data: ReportData<'event-performance'> }) {
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         <SummaryCard label="Total Events" value={String(data.totalEvents)} />
         <SummaryCard label="Total Revenue" value={formatCents(data.totalRevenueCents)} />
         <SummaryCard label="Avg Margin" value={formatPercent(data.avgMarginPercent)} />

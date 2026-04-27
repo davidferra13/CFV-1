@@ -48,7 +48,7 @@ export default async function ClientHistoryPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <Card className="p-4">
           <p className="text-2xl font-bold text-stone-100">{totalEvents}</p>
           <p className="text-sm text-stone-500 mt-1">Total events completed</p>
@@ -63,7 +63,7 @@ export default async function ClientHistoryPage() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {VIEWS.map((view) => (
           <Link key={view.href} href={view.href}>
             <Card className="p-5 hover:shadow-md transition-shadow cursor-pointer h-full">

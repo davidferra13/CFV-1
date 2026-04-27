@@ -76,7 +76,7 @@ export default async function ReconciliationPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <Card className="p-4 bg-green-950 border-green-200">
           <p className="text-2xl font-bold text-green-700">{reconciled.length}</p>
           <p className="text-sm text-emerald-600 mt-1">Fully reconciled</p>

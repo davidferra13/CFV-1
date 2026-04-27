@@ -54,7 +54,7 @@ export default async function RecipeCostPage() {
       </div>
 
       {/* KPIs */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <Card className="p-4 text-center">
           <p className="text-2xl font-bold text-stone-100">
             {withCost.length > 0 ? formatCurrency(maxCostCents) : '-'}

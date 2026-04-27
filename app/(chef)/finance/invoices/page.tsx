@@ -93,7 +93,7 @@ export default async function InvoicesPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <Card className="p-4">
           <p className="text-2xl font-bold text-stone-100">{events.length}</p>
           <p className="text-sm text-stone-500 mt-1">Total events / invoices</p>
@@ -108,7 +108,7 @@ export default async function InvoicesPage() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {STAGES.map((stage) => {
           const count = counts[stage.label.toLowerCase() as keyof typeof counts] ?? 0
           return (

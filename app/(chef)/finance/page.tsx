@@ -38,7 +38,7 @@ async function MonthlyPLSnapshot() {
           Full report →
         </Link>
       </div>
-      <div className="grid grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <div>
           <p className="text-lg font-bold text-stone-100">{fmt(revenue.totalRevenueCents)}</p>
           <p className="text-xs text-stone-500">Revenue</p>
@@ -272,7 +272,7 @@ export default async function FinancePage() {
           fallback={
             <Card className="p-4 animate-pulse">
               <div className="h-6 bg-stone-800 rounded w-1/3 mb-3" />
-              <div className="grid grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="h-16 bg-stone-800 rounded" />
                 <div className="h-16 bg-stone-800 rounded" />
                 <div className="h-16 bg-stone-800 rounded" />

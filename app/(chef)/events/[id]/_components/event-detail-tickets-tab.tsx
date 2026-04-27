@@ -239,7 +239,7 @@ export function EventDetailTicketsTab({
           </div>
 
           {/* Sales metrics */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
               <p className="text-xs text-stone-400">Sold</p>
               <p className="text-2xl font-bold text-white">
@@ -292,7 +292,7 @@ export function EventDetailTicketsTab({
                 Name-list check-in updates attendance for wrap-up and no-show analysis.
               </p>
             </div>
-            <div className="grid grid-cols-3 gap-3 text-right">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-right">
               <div>
                 <p className="text-xs text-stone-500">Arrived</p>
                 <p className="text-xl font-semibold text-emerald-400">{checkedIn}</p>

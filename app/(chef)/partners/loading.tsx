@@ -15,7 +15,7 @@ export default function PartnersLoading() {
       </div>
 
       {/* Summary stats */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {[1, 2, 3].map((i) => (
           <Card key={i}>
             <CardContent className="pt-4 pb-4 space-y-1">

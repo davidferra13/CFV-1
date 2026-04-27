@@ -5,7 +5,13 @@
       "type": "Chef",
       "at": "2026-04-27T19:53:53.510Z",
       "success": false
+    },
+    {
+      "category": "dietary-medical",
+      "type": "Chef",
+      "at": "2026-04-27T20:38:53.544Z",
+      "success": false
     }
   ],
-  "last_check": "2026-04-27T19:53:53.510Z"
+  "last_check": "2026-04-27T20:38:53.544Z"
 }

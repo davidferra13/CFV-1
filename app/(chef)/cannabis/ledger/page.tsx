@@ -75,7 +75,7 @@ export default async function CannabisLedgerPage() {
         />
 
         {/* Totals */}
-        <div className="grid grid-cols-3 gap-3 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
           {[
             { label: 'Revenue', value: totals.revenue, color: '#8bc34a' },
             { label: 'Expenses', value: totals.expenses, color: '#ef9a9a' },

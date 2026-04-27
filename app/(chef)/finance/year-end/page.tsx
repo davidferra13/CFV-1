@@ -197,7 +197,7 @@ export default async function YearEndPage({ searchParams }: { searchParams: { ye
         <h2 className="text-sm font-semibold text-stone-300 uppercase tracking-wide mb-4">
           Business Summary - {validYear}
         </h2>
-        <div className="grid grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <div>
             <p className="text-2xl font-bold text-stone-100">{totalEvents}</p>
             <p className="text-sm text-stone-500 mt-0.5">Total events</p>
@@ -224,7 +224,7 @@ export default async function YearEndPage({ searchParams }: { searchParams: { ye
         <h2 className="text-sm font-semibold text-stone-300 uppercase tracking-wide mb-4">
           Revenue
         </h2>
-        <div className="grid grid-cols-3 gap-6 mb-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-5">
           <div>
             <p className="text-2xl font-bold text-green-700">
               {formatCurrency(pl.netRevenueCents)}

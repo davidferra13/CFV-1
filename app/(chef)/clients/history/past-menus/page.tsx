@@ -53,7 +53,7 @@ export default async function PastMenusPage() {
       </div>
 
       {eventMenus.length > 0 && (
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <Card className="p-4">
             <p className="text-2xl font-bold text-stone-100">{eventMenus.length}</p>
             <p className="text-sm text-stone-500 mt-1">Event menus served</p>

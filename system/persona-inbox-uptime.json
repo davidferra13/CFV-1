@@ -1,9 +1,9 @@
 {
   "sessions": [],
   "total_uptime_s": 0,
-  "restarts": 8,
+  "restarts": 10,
   "current_session": {
-    "started": "2026-04-27T19:08:53.425Z",
-    "pid": 66256
+    "started": "2026-04-27T20:39:17.993Z",
+    "pid": 56780
   }
 }

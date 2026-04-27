@@ -1,6 +1,6 @@
 {
-    "runId":  "live-ops-83212-1777317302",
-    "ranAt":  "2026-04-27T19:15:56.9095884Z",
+    "runId":  "live-ops-82332-1777320902",
+    "ranAt":  "2026-04-27T20:15:31.6390520Z",
     "target":  {
                    "label":  "dev",
                    "baseUrl":  "http://localhost:3100"
@@ -12,8 +12,8 @@
     "changedPaths":  [
                          "docs/uptime-history.json",
                          "system/.pipeline.lock",
-                         "system/runtime-events.ndjson",
-                         "tests/coverage/test-3977.mjs"
+                         "system/persona-inbox-state.json",
+                         "system/runtime-events.ndjson"
                      ],
     "healthProbes":  [
                          {
@@ -26,9 +26,9 @@
                          {
                              "name":  "health-readiness",
                              "path":  "/api/health/readiness?strict=1",
-                             "ok":  false,
-                             "statusCode":  0,
-                             "error":  "The operation has timed out."
+                             "ok":  true,
+                             "statusCode":  200,
+                             "error":  null
                          },
                          {
                              "name":  "home",
@@ -40,9 +40,9 @@
                          {
                              "name":  "signin",
                              "path":  "/auth/signin",
-                             "ok":  false,
-                             "statusCode":  0,
-                             "error":  "The operation has timed out."
+                             "ok":  true,
+                             "statusCode":  200,
+                             "error":  null
                          }
                      ],
     "steps":  [
@@ -50,7 +50,7 @@
                       "name":  "unit-canary",
                       "status":  "failed",
                       "exitCode":  1,
-                      "durationSeconds":  22.9
+                      "durationSeconds":  21.8
                   }
               ],
     "notes":  [

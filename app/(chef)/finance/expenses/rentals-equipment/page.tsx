@@ -65,7 +65,7 @@ export default async function RentalsEquipmentExpensesPage() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {totalByCategory.map((c) => (
           <Card key={c.cat} className="p-3">
             <p className="text-sm font-medium text-stone-300">{c.label}</p>

@@ -165,7 +165,7 @@ export default async function MarketplacePage() {
                   {roi.directRebookingCount !== 1 ? 's' : ''}
                 </p>
               </div>
-              <div className="grid grid-cols-3 gap-6 text-center">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 text-center">
                 <div>
                   <p className="text-2xl font-bold text-stone-100">{roi.totalMarketplaceClients}</p>
                   <p className="text-xs text-stone-500">marketplace clients</p>

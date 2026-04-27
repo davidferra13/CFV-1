@@ -798,7 +798,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
               </div>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
                   <p className="text-sm text-stone-500">Avg Margin</p>
                   <p
