@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { Alert } from '@/components/ui/alert'
@@ -96,27 +97,31 @@ export function TakeAChefCaptureTool() {
     setError(null)
     setMessage(null)
     startTransition(async () => {
-      const response = await saveTakeAChefPageCapture({
-        captureType,
-        pageUrl,
-        pageTitle,
-        pageText,
-        pageLinks,
-        notes,
-      })
+      try {
+        const response = await saveTakeAChefPageCapture({
+          captureType,
+          pageUrl,
+          pageTitle,
+          pageText,
+          pageLinks,
+          notes,
+        })
 
-      if (!response.success) {
-        setError(response.error || 'Failed to save page capture')
-        return
+        if (!response.success) {
+          setError(response.error || 'Failed to save page capture')
+          return
+        }
+
+        setResult({
+          inquiryId: response.inquiryId,
+          eventId: response.eventId,
+          inquiryCreated: response.inquiryCreated,
+          summary: response.summary,
+        })
+        setMessage(response.summary || 'Marketplace page saved to ChefFlow.')
+      } catch {
+        toast.error('Something went wrong')
       }
-
-      setResult({
-        inquiryId: response.inquiryId,
-        eventId: response.eventId,
-        inquiryCreated: response.inquiryCreated,
-        summary: response.summary,
-      })
-      setMessage(response.summary || 'Marketplace page saved to ChefFlow.')
     })
   }
 

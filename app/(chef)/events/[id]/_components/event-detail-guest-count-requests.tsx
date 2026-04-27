@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { format } from 'date-fns'
 import { Alert } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
@@ -49,19 +50,24 @@ export function EventDetailGuestCountRequests({ changes }: { changes: GuestCount
     setActiveChangeId(changeId)
 
     startTransition(async () => {
-      const result = await reviewGuestCountChange({
-        changeId,
-        decision,
-        reviewNotes: reviewNotes[changeId]?.trim() || undefined,
-      })
+      try {
+        const result = await reviewGuestCountChange({
+          changeId,
+          decision,
+          reviewNotes: reviewNotes[changeId]?.trim() || undefined,
+        })
 
-      if (!result.success) {
-        setError(result.error || 'Could not review the guest-count request.')
+        if (!result.success) {
+          setError(result.error || 'Could not review the guest-count request.')
+          setActiveChangeId(null)
+          return
+        }
+
+        router.refresh()
+      } catch {
+        toast.error('Something went wrong')
         setActiveChangeId(null)
-        return
       }
-
-      router.refresh()
     })
   }
 

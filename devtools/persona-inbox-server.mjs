@@ -47,6 +47,7 @@ let pipelineStartedAt = null;
 let pipelineChildPid = null;
 let runtimeFileOffset = 0;
 let runtimeFileWatcher = null;
+const MAX_SSE_CLIENTS = 50;
 const runtimeClients = new Set();
 const runtimeEvents = [];
 const runtimeEventIds = new Set();
@@ -1187,8 +1188,11 @@ function readJsonFile(path, fallback) {
 }
 
 function writeJsonFile(path, value) {
-  mkdirSync(SYSTEM_DIR, { recursive: true });
-  writeFileSync(path, `${JSON.stringify(value, null, 2)}\n`, "utf8");
+  mkdirSync(dirname(path), { recursive: true });
+  const data = `${JSON.stringify(value, null, 2)}\n`;
+  const tmp = path + ".tmp";
+  writeFileSync(tmp, data, "utf8");
+  renameSync(tmp, path);
 }
 
 function readRuntimeEvents(limit = RUNTIME_EVENT_LIMIT) {
@@ -1367,6 +1371,11 @@ function startRuntimeFileWatcher() {
 }
 
 function openRuntimeEventStream(req, res) {
+  if (runtimeClients.size >= MAX_SSE_CLIENTS) {
+    res.writeHead(503, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ error: "Too many SSE clients", max: MAX_SSE_CLIENTS }));
+    return;
+  }
   res.writeHead(200, {
     "Content-Type": "text/event-stream; charset=utf-8",
     "Cache-Control": "no-store, no-transform",
@@ -4521,6 +4530,7 @@ const server = createServer(async (req, res) => {
           const m = readJsonFile(UPTIME_FILE, {});
           return { total_uptime_s: m.total_uptime_s || 0, restarts: m.restarts || 0, active_children: activeChildren.size };
         })(),
+        sse_clients: runtimeClients.size,
         requests: {
           total: requestMetrics.total,
           errors: requestMetrics.errors,
@@ -4585,6 +4595,21 @@ const server = createServer(async (req, res) => {
       const idx = state.failed.findIndex(f => f.source_file === sourceFile);
       if (idx === -1) { sendJson(res, 404, { error: "Item not in dead-letter queue" }); return; }
 
+      const item = state.failed[idx];
+      const retryCount = (item.retry_count || 0) + 1;
+      const MAX_RETRIES = 3;
+      const PERMANENT_ERRORS = ["validation", "missing_sections", "low_word_count", "invalid_format"];
+      const isPermanent = PERMANENT_ERRORS.some(e => String(item.error || "").toLowerCase().includes(e));
+
+      if (isPermanent) {
+        sendJson(res, 422, { error: "Permanent failure, manual fix required", reason: item.error, source_file: sourceFile });
+        return;
+      }
+      if (retryCount > MAX_RETRIES) {
+        sendJson(res, 429, { error: `Max retries (${MAX_RETRIES}) exceeded`, retry_count: retryCount - 1, source_file: sourceFile });
+        return;
+      }
+
       // Move back to Uncompleted if in Failed
       const failedPath = join(ROOT, "Chef Flow Personas", "Failed", basename(dirname(sourceFile)), basename(sourceFile));
       const uncompletedPath = join(ROOT, sourceFile);
@@ -4593,25 +4618,43 @@ const server = createServer(async (req, res) => {
         try { renameSync(failedPath, uncompletedPath); } catch {}
       }
 
-      // Remove from failed list
+      // Remove from failed list, record retry count
       state.failed.splice(idx, 1);
+      // Store retry count so next failure preserves it
+      if (!state._retry_counts) state._retry_counts = {};
+      state._retry_counts[sourceFile] = retryCount;
       writeJsonFile(join(SYSTEM_DIR, "persona-pipeline-state.json"), state);
 
       emitRuntimeEvent("state:update", "3977.dead-letter", {
         action: "retry_queued",
         sourceFile,
+        retry_count: retryCount,
       }, { workflow: "dead-letter" });
       broadcastRuntimeSnapshot();
-      sendJson(res, 200, { status: "queued_for_retry", source_file: sourceFile });
+      sendJson(res, 200, { status: "queued_for_retry", source_file: sourceFile, retry_count: retryCount });
       return;
     }
 
     if (req.method === "POST" && path === "/api/dead-letter/retry-all") {
       const state = readJsonFile(join(SYSTEM_DIR, "persona-pipeline-state.json"), { failed: [] });
-      const count = state.failed.length;
-      if (count === 0) { sendJson(res, 200, { retried: 0 }); return; }
+      const PERMANENT_ERRORS = ["validation", "missing_sections", "low_word_count", "invalid_format"];
+      const MAX_RETRIES = 3;
+      const retryable = [];
+      const skipped = [];
 
       for (const f of state.failed) {
+        const isPermanent = PERMANENT_ERRORS.some(e => String(f.error || "").toLowerCase().includes(e));
+        const retryCount = ((state._retry_counts || {})[f.source_file] || 0) + 1;
+        if (isPermanent || retryCount > MAX_RETRIES) {
+          skipped.push({ source_file: f.source_file, reason: isPermanent ? "permanent_failure" : "max_retries_exceeded" });
+          continue;
+        }
+        retryable.push(f);
+        if (!state._retry_counts) state._retry_counts = {};
+        state._retry_counts[f.source_file] = retryCount;
+      }
+
+      for (const f of retryable) {
         const failedPath = join(ROOT, "Chef Flow Personas", "Failed", basename(dirname(f.source_file)), basename(f.source_file));
         const uncompletedPath = join(ROOT, f.source_file);
         if (existsSync(failedPath) && !existsSync(uncompletedPath)) {
@@ -4619,10 +4662,11 @@ const server = createServer(async (req, res) => {
           try { renameSync(failedPath, uncompletedPath); } catch {}
         }
       }
-      state.failed = [];
+      // Keep only non-retryable items in failed
+      state.failed = state.failed.filter(f => !retryable.some(r => r.source_file === f.source_file));
       writeJsonFile(join(SYSTEM_DIR, "persona-pipeline-state.json"), state);
       broadcastRuntimeSnapshot();
-      sendJson(res, 200, { retried: count });
+      sendJson(res, 200, { retried: retryable.length, skipped });
       return;
     }
 

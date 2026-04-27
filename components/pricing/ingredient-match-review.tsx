@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import { ChevronDown, ChevronRight, Check, X, Zap } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import {
@@ -61,20 +62,24 @@ export function IngredientMatchReview({ initialUnmatched }: IngredientMatchRevie
 
   function handleBatchConfirm() {
     startTransition(async () => {
-      const toConfirm = highConfidenceItems.filter(
-        (item) => batchSelections[item.id] !== false // default is checked
-      )
-      const confirmed: string[] = []
-      for (const item of toConfirm) {
-        try {
-          const res = await confirmMatchAction(item.id, item.suggestions[0].systemIngredientId)
-          if (res.success) confirmed.push(item.id)
-        } catch {
-          // Skip failures
+      try {
+        const toConfirm = highConfidenceItems.filter(
+          (item) => batchSelections[item.id] !== false // default is checked
+        )
+        const confirmed: string[] = []
+        for (const item of toConfirm) {
+          try {
+            const res = await confirmMatchAction(item.id, item.suggestions[0].systemIngredientId)
+            if (res.success) confirmed.push(item.id)
+          } catch {
+            // Skip individual failures
+          }
         }
+        setUnmatched((prev) => prev.filter((item) => !confirmed.includes(item.id)))
+        setShowBatchModal(false)
+      } catch {
+        toast.error('Something went wrong')
       }
-      setUnmatched((prev) => prev.filter((item) => !confirmed.includes(item.id)))
-      setShowBatchModal(false)
     })
   }
 

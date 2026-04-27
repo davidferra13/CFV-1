@@ -2,6 +2,7 @@
 
 import { useTransition } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { updatePrepStatus } from '@/lib/prep/prep-sheet-actions'
 import type { PrepItem } from '@/lib/prep/prep-sheet-actions'
@@ -34,11 +35,15 @@ export function PrepSheetTable({ items }: { items: PrepItem[] }) {
 
   function handleStatusChange(prepId: string, next: 'pending' | 'in_progress' | 'done') {
     startTransition(async () => {
-      const result = await updatePrepStatus(prepId, next)
-      if (!result.success) {
-        console.error('[prep-sheet] status update failed:', result.error)
+      try {
+        const result = await updatePrepStatus(prepId, next)
+        if (!result.success) {
+          toast.error(result.error || 'Failed to update prep status')
+        }
+        router.refresh()
+      } catch {
+        toast.error('Something went wrong')
       }
-      router.refresh()
     })
   }
 

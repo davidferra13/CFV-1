@@ -6,6 +6,7 @@
  */
 
 import { useState, useTransition, useEffect } from 'react'
+import { toast } from 'sonner'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { formatCurrency } from '@/lib/utils/currency'
@@ -52,19 +53,23 @@ export function PriceWatchList() {
     }
 
     startTransition(async () => {
-      const result = await addPriceWatch({
-        ingredientName: newName.trim(),
-        targetPriceCents: cents,
-        priceUnit: newUnit,
-      })
-      if (result.success) {
-        setNewName('')
-        setNewPrice('')
-        setShowAdd(false)
-        const updated = await getPriceWatchList()
-        setWatches(updated)
-      } else {
-        setAddError(result.error || 'Failed to add')
+      try {
+        const result = await addPriceWatch({
+          ingredientName: newName.trim(),
+          targetPriceCents: cents,
+          priceUnit: newUnit,
+        })
+        if (result.success) {
+          setNewName('')
+          setNewPrice('')
+          setShowAdd(false)
+          const updated = await getPriceWatchList()
+          setWatches(updated)
+        } else {
+          setAddError(result.error || 'Failed to add')
+        }
+      } catch {
+        toast.error('Something went wrong')
       }
     })
   }
