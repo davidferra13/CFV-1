@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/table'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
+import { ShoppingCart } from '@/components/ui/icons'
 
 export const metadata: Metadata = { title: 'Food & Ingredients Expenses' }
 
@@ -70,9 +71,13 @@ export default async function FoodIngredientsExpensesPage() {
       </div>
 
       {expenses.length === 0 ? (
-        <Card className="p-12 text-center">
-          <p className="text-stone-400 font-medium">No food &amp; ingredient expenses recorded</p>
-        </Card>
+        <div className="text-center py-16 text-stone-400">
+          <ShoppingCart className="mx-auto h-12 w-12 mb-4 text-stone-500" />
+          <p className="text-lg font-medium text-stone-300">No food &amp; ingredient expenses yet</p>
+          <p className="text-sm mt-1 max-w-md mx-auto">
+            Track grocery runs, specialty items, and alcohol purchases here. Add your first expense or scan a receipt to get started.
+          </p>
+        </div>
       ) : (
         <Card>
           <Table>

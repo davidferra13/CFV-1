@@ -13,6 +13,7 @@ import {
   type RecordOwnerDrawInput,
 } from '@/lib/finance/owner-draw-actions'
 import { format } from 'date-fns'
+import { Wallet } from '@/components/ui/icons'
 
 const PAYMENT_METHODS = [
   { value: 'cash', label: 'Cash' },
@@ -198,13 +199,13 @@ export function OwnerDrawsClient({ draws: initialDraws, year }: Props) {
       )}
 
       {draws.length === 0 ? (
-        <Card className="p-6 text-center">
-          <p className="text-stone-400 text-sm">No owner draws recorded for {year}.</p>
-          <p className="text-stone-500 text-xs mt-1">
-            Use the button above to record a draw when you transfer money from the business to
-            yourself.
+        <div className="text-center py-16 text-stone-400">
+          <Wallet className="mx-auto h-12 w-12 mb-4 text-stone-500" />
+          <p className="text-lg font-medium text-stone-300">No owner draws for {year}</p>
+          <p className="text-sm mt-1 max-w-md mx-auto">
+            Record equity draws when you transfer money from the business to yourself. These are tracked separately from expenses.
           </p>
-        </Card>
+        </div>
       ) : (
         <Card className="divide-y divide-stone-800">
           {draws.map((draw) => (

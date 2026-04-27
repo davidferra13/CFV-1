@@ -155,6 +155,15 @@ export function DisputeTracker({ initialDisputes }: Props) {
       )}
 
       {/* Dispute List */}
+      {disputes.length === 0 && !showCreate && (
+        <div className="text-center py-16 text-stone-400">
+          <ShieldAlert className="mx-auto h-12 w-12 mb-4 text-stone-500" />
+          <p className="text-lg font-medium text-stone-300">No disputes yet</p>
+          <p className="text-sm mt-1 max-w-md mx-auto">
+            Payment disputes, chargebacks, and refund requests will appear here. Use the button above to log a new dispute.
+          </p>
+        </div>
+      )}
       <div className="space-y-3">
         {disputes.map((d) => (
           <Card key={d.id}>

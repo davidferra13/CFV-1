@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/table'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
+import { Wrench } from '@/components/ui/icons'
 
 export const metadata: Metadata = { title: 'Rentals & Equipment Expenses' }
 
@@ -78,9 +79,13 @@ export default async function RentalsEquipmentExpensesPage() {
       </div>
 
       {expenses.length === 0 ? (
-        <Card className="p-12 text-center">
-          <p className="text-stone-400 font-medium">No rentals or equipment expenses recorded</p>
-        </Card>
+        <div className="text-center py-16 text-stone-400">
+          <Wrench className="mx-auto h-12 w-12 mb-4 text-stone-500" />
+          <p className="text-lg font-medium text-stone-300">No rentals or equipment expenses yet</p>
+          <p className="text-sm mt-1 max-w-md mx-auto">
+            Track equipment purchases, supply runs, venue rentals, and uniform costs here.
+          </p>
+        </div>
       ) : (
         <Card>
           <Table>

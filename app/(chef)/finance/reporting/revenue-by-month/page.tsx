@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/table'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format, subMonths, startOfMonth } from 'date-fns'
+import { BarChart3 } from '@/components/ui/icons'
 
 export const metadata: Metadata = { title: 'Revenue by Month' }
 
@@ -85,6 +86,15 @@ export default async function RevenueByMonthPage() {
         </Card>
       </div>
 
+      {entries.length === 0 ? (
+        <div className="text-center py-16 text-stone-400">
+          <BarChart3 className="mx-auto h-12 w-12 mb-4 text-stone-500" />
+          <p className="text-lg font-medium text-stone-300">No revenue data yet</p>
+          <p className="text-sm mt-1 max-w-md mx-auto">
+            Revenue will appear here as you record payments against events. Create an event and log a payment to get started.
+          </p>
+        </div>
+      ) : (
       <Card>
         <Table>
           <TableHeader>
@@ -115,6 +125,7 @@ export default async function RevenueByMonthPage() {
           </TableBody>
         </Table>
       </Card>
+      )}
     </div>
   )
 }

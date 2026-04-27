@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/table'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
+import { Users } from '@/components/ui/icons'
 
 export const metadata: Metadata = { title: 'Labor Expenses' }
 
@@ -56,9 +57,13 @@ export default async function LaborExpensesPage() {
       </div>
 
       {expenses.length === 0 ? (
-        <Card className="p-12 text-center">
-          <p className="text-stone-400 font-medium">No labor expenses recorded</p>
-        </Card>
+        <div className="text-center py-16 text-stone-400">
+          <Users className="mx-auto h-12 w-12 mb-4 text-stone-500" />
+          <p className="text-lg font-medium text-stone-300">No labor expenses yet</p>
+          <p className="text-sm mt-1 max-w-md mx-auto">
+            Log payments to sous chefs, servers, and other staff here. Link expenses to events to track labor cost per dinner.
+          </p>
+        </div>
       ) : (
         <Card>
           <Table>
