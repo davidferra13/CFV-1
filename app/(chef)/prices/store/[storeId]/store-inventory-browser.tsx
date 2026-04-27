@@ -173,7 +173,7 @@ export function StoreInventoryBrowser({
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
                               src={p.imageUrl}
-                              alt={p.name || 'Product image'}
+                              alt={p.productName || 'Product image'}
                               className="h-8 w-8 rounded object-cover flex-shrink-0 bg-stone-800"
                               onError={(e) => {
                                 ;(e.currentTarget as HTMLImageElement).style.display = 'none'
