@@ -22,6 +22,7 @@ import {
   Zap,
   UserCheck,
 } from '@/components/ui/icons'
+import { RetryButton } from '@/components/ui/retry-button'
 
 // ---------------------------------------------------------------------------
 // Activity type config
@@ -362,7 +363,8 @@ export default async function PulsePage({
         <div className="space-y-2">
           {feedError && (
             <div className="rounded-xl border border-red-700/40 bg-red-950/30 px-4 py-3 text-sm text-red-200">
-              Could not load platform activity. Check server logs.
+              <p>Could not load platform activity. Check server logs.</p>
+              <RetryButton />
             </div>
           )}
 
@@ -409,7 +411,8 @@ export default async function PulsePage({
         <div>
           {vitalsError && (
             <div className="rounded-xl border border-red-700/40 bg-red-950/30 px-4 py-3 text-sm text-red-200">
-              Could not load vitals. Check server logs.
+              <p>Could not load vitals. Check server logs.</p>
+              <RetryButton />
             </div>
           )}
           {vitals && <VitalsSidebar vitals={vitals} />}

@@ -5,6 +5,7 @@ import { getPlatformFinancialOverview, getPlatformLedgerEntries } from '@/lib/ad
 import { redirect } from 'next/navigation'
 import { DollarSign } from '@/components/ui/icons'
 import { ErrorState } from '@/components/ui/error-state'
+import { RetryButton } from '@/components/ui/retry-button'
 import { ProfitAndLossReport } from '@/components/finance/ProfitAndLossReport'
 import {
   getDefaultProfitLossWindow,
@@ -66,11 +67,14 @@ export default async function AdminFinancialsPage() {
       </div>
 
       {finFailed ? (
-        <ErrorState
-          title="Could not load financial overview"
-          description="The platform GMV query failed. Try refreshing."
-          size="sm"
-        />
+        <div>
+          <ErrorState
+            title="Could not load financial overview"
+            description="The platform GMV query failed."
+            size="sm"
+          />
+          <div className="flex justify-center"><RetryButton /></div>
+        </div>
       ) : fin ? (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-stone-900 rounded-xl border border-stone-700 px-4 py-4">
@@ -105,11 +109,14 @@ export default async function AdminFinancialsPage() {
       ) : null}
 
       {pnlFailed ? (
-        <ErrorState
-          title="Could not load profit and loss report"
-          description="The P&L query failed. Try refreshing."
-          size="sm"
-        />
+        <div>
+          <ErrorState
+            title="Could not load profit and loss report"
+            description="The P&L query failed."
+            size="sm"
+          />
+          <div className="flex justify-center"><RetryButton /></div>
+        </div>
       ) : pnlData ? (
         <ProfitAndLossReport initialData={pnlData} />
       ) : null}
@@ -120,11 +127,14 @@ export default async function AdminFinancialsPage() {
           <h2 className="text-sm font-semibold text-stone-300">Ledger Entries (last 200)</h2>
         </div>
         {entriesFailed ? (
-          <ErrorState
-            title="Could not load ledger entries"
-            description="The ledger query failed. Try refreshing."
-            size="sm"
-          />
+          <div>
+            <ErrorState
+              title="Could not load ledger entries"
+              description="The ledger query failed."
+              size="sm"
+            />
+            <div className="flex justify-center"><RetryButton /></div>
+          </div>
         ) : entries === null || entries.length === 0 ? (
           <p className="px-4 py-8 text-center text-sm text-slate-400">No ledger entries found.</p>
         ) : (

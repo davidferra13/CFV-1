@@ -5,6 +5,7 @@ import { getPlatformChefList, type PlatformChefRow } from '@/lib/admin/platform-
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Users, TrendingUp, AlertCircle } from '@/components/ui/icons'
+import { RetryButton } from '@/components/ui/retry-button'
 import { ChefHealthBadge } from '@/components/admin/chef-health-badge'
 
 function formatCents(cents: number): string {
@@ -106,9 +107,12 @@ export default async function AdminChefListPage() {
       </div>
 
       {error && (
-        <div className="bg-red-950 border border-red-800 rounded-lg px-4 py-3 text-sm text-red-700 flex items-center gap-2">
-          <AlertCircle size={14} />
-          {error}
+        <div className="bg-red-950 border border-red-800 rounded-lg px-4 py-3 text-sm text-red-700">
+          <div className="flex items-center gap-2">
+            <AlertCircle size={14} />
+            {error}
+          </div>
+          <RetryButton />
         </div>
       )}
 

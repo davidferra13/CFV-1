@@ -11,11 +11,36 @@ import {
   TableCell,
 } from '@/components/ui/table'
 import { formatCurrency } from '@/lib/utils/currency'
+import { ErrorState } from '@/components/ui/error-state'
+import { RetryButton } from '@/components/ui/retry-button'
 
 export const metadata: Metadata = { title: 'Platform Reconciliation - Admin' }
 
 export default async function ReconciliationPage() {
-  const data = await getPlatformReconciliation()
+  let data
+  try {
+    data = await getPlatformReconciliation()
+  } catch (err) {
+    console.error('[admin-reconciliation] Failed to load:', err)
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold text-stone-100">Platform Reconciliation</h1>
+          <p className="text-stone-500 mt-1">
+            Cross-tenant GMV, transfers, platform fees, and deferred amounts
+          </p>
+        </div>
+        <div>
+          <ErrorState
+            title="Could not load reconciliation data"
+            description="The reconciliation query failed."
+            size="sm"
+          />
+          <div className="flex justify-center"><RetryButton /></div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
