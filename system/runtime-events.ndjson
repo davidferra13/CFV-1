@@ -1140,3 +1140,6 @@
 {"id":"83f08ab3-3b2d-4939-855a-060cbaa0f0e1","timestamp":"2026-04-27T22:42:21.569Z","type":"tool:call","source":"3977.http","scope":{"workflow":"3977-http"},"payload":{"method":"GET","path":"/api/pipeline-funnel","query":{}}}
 {"id":"d378cb05-abf8-4f0a-b22b-07f1b97b89bf","timestamp":"2026-04-27T22:42:21.574Z","type":"tool:call","source":"3977.http","scope":{"workflow":"3977-http"},"payload":{"method":"GET","path":"/api/stale-plans","query":{}}}
 {"id":"630af86a-32e7-47c5-8edc-c9f648e3b3e5","timestamp":"2026-04-27T22:42:21.581Z","type":"tool:call","source":"3977.http","scope":{"workflow":"3977-http"},"payload":{"method":"GET","path":"/api/plan-priority","query":{}}}
+{"id":"d69cb070-f5b5-4e7f-bace-1434733fa682","timestamp":"2026-04-27T22:43:18.188Z","type":"state:update","source":"3977.watchdog","scope":{"workflow":"watchdog"},"payload":{"action":"orphaned_lock_self_healed","stale_pid":24440}}
+{"id":"3eded290-d570-48f1-9713-76b92622cb91","timestamp":"2026-04-27T22:44:18.190Z","type":"state:update","source":"3977.watchdog","scope":{"workflow":"watchdog"},"payload":{"action":"orphaned_lock_self_healed","stale_pid":67704}}
+{"id":"a89d47ca-d7f7-45de-a9bf-404a0ff7af99","timestamp":"2026-04-27T22:45:18.191Z","type":"state:update","source":"3977.watchdog","scope":{"workflow":"watchdog"},"payload":{"action":"orphaned_lock_self_healed","stale_pid":51748}}
