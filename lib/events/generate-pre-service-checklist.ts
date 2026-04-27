@@ -110,11 +110,38 @@ export async function generatePreServiceChecklist(eventId: string): Promise<PreS
   const eventDietary = Array.isArray(event.dietary_restrictions)
     ? event.dietary_restrictions.filter(Boolean)
     : []
-  const allDietary = [...new Set([...clientDietary, ...eventDietary])]
-
   const clientAllergies = Array.isArray(client?.allergies) ? client.allergies.filter(Boolean) : []
   const eventAllergies = Array.isArray(event.allergies) ? event.allergies.filter(Boolean) : []
-  const allAllergies = [...new Set([...clientAllergies, ...eventAllergies])]
+
+  // Include household member allergies and dietary restrictions
+  const householdAllergies: string[] = []
+  const householdDietary: string[] = []
+  if (event.client_id) {
+    try {
+      const { data: profiles } = await db
+        .from('hub_guest_profiles')
+        .select('id')
+        .eq('client_id', event.client_id)
+
+      const profileIds = (profiles || []).map((p: any) => p.id)
+      if (profileIds.length > 0) {
+        const { data: members } = await db
+          .from('hub_household_members')
+          .select('display_name, allergies, dietary_restrictions')
+          .in('profile_id', profileIds)
+
+        for (const m of members || []) {
+          for (const a of (m.allergies as string[]) || []) householdAllergies.push(a)
+          for (const d of (m.dietary_restrictions as string[]) || []) householdDietary.push(d)
+        }
+      }
+    } catch (err) {
+      console.warn('[pre-service-checklist] household lookup failed (non-blocking):', err)
+    }
+  }
+
+  const allAllergies = [...new Set([...clientAllergies, ...eventAllergies, ...householdAllergies])]
+  const allDietary = [...new Set([...clientDietary, ...eventDietary, ...householdDietary])]
 
   // Also pull guest-level dietary data (Q20 fix: include RSVP dietary in prep sheet)
   const { data: guestDietaryItems } = await db

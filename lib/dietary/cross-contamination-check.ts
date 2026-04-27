@@ -196,6 +196,41 @@ export async function checkMenuAllergenConflicts(
     }
   }
 
+  // Household member restrictions (children, spouse, etc.)
+  if (event.client_id) {
+    try {
+      const { data: profiles } = await db
+        .from('hub_guest_profiles')
+        .select('id')
+        .eq('client_id', event.client_id)
+
+      const profileIds = (profiles || []).map((p: any) => p.id)
+      if (profileIds.length > 0) {
+        const { data: members } = await db
+          .from('hub_household_members')
+          .select('display_name, allergies, dietary_restrictions')
+          .in('profile_id', profileIds)
+
+        for (const m of members || []) {
+          const memberRestrictions = [
+            ...(Array.isArray(m.allergies) ? m.allergies : []),
+            ...(Array.isArray(m.dietary_restrictions) ? m.dietary_restrictions : []),
+          ].filter(Boolean)
+
+          if (memberRestrictions.length > 0) {
+            people.push({
+              name: `${m.display_name || 'Household member'} (household)`,
+              type: 'guest',
+              restrictions: [...new Set(memberRestrictions)],
+            })
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('[cross-contamination-check] household lookup failed (non-blocking):', err)
+    }
+  }
+
   // 5. If no people with restrictions, or no menu, return empty
   if (people.length === 0 || !event.menu_id) {
     return {

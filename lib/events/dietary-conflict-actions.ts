@@ -170,6 +170,37 @@ export async function generateAndPersistDietaryAlerts(eventId: string): Promise<
     }
   }
 
+  // Household member concerns (children, spouse, etc. via hub_household_members)
+  // These are stored per-client profile and MUST be checked against the menu.
+  if (event.client_id) {
+    try {
+      const { data: profiles } = await db
+        .from('hub_guest_profiles')
+        .select('id')
+        .eq('client_id', event.client_id)
+
+      const profileIds = (profiles || []).map((p: any) => p.id)
+      if (profileIds.length > 0) {
+        const { data: householdMembers } = await db
+          .from('hub_household_members')
+          .select('display_name, allergies, dietary_restrictions')
+          .in('profile_id', profileIds)
+
+        for (const m of householdMembers || []) {
+          const memberName = `${m.display_name || 'Household member'} (household)`
+          for (const c of (m.allergies as string[]) || []) {
+            guestConcerns.push({ guestName: memberName, concern: c })
+          }
+          for (const c of (m.dietary_restrictions as string[]) || []) {
+            guestConcerns.push({ guestName: memberName, concern: c })
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('[generateAndPersistDietaryAlerts] household lookup failed (non-blocking):', err)
+    }
+  }
+
   const allConcerns = [...restrictions, ...allergies]
   // Add RSVP-sourced concerns to allConcerns for backward compat
   for (const gc of guestConcerns) {

@@ -44,7 +44,7 @@ export async function getEventAllergenRisk(eventId: string): Promise<AllergenRis
   // Fetch event + guests + menu components
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [eventResult, guestsResult, menuResult]: [
-    { data: { occasion: string | null; dietary_restrictions: unknown; allergies: unknown } | null },
+    { data: { occasion: string | null; dietary_restrictions: unknown; allergies: unknown; client_id: string | null } | null },
     {
       data:
         | {
@@ -59,7 +59,7 @@ export async function getEventAllergenRisk(eventId: string): Promise<AllergenRis
   ] = await Promise.all([
     db
       .from('events')
-      .select('occasion, dietary_restrictions, allergies')
+      .select('occasion, dietary_restrictions, allergies, client_id')
       .eq('id', eventId)
       .eq('tenant_id', user.tenantId!)
       .single(),
@@ -98,6 +98,41 @@ export async function getEventAllergenRisk(eventId: string): Promise<AllergenRis
       .filter(Boolean)
       .join(', '),
   }))
+
+  // Include household member dietary data (children, spouse, etc.)
+  if (event.client_id) {
+    try {
+      const { data: profiles } = await db
+        .from('hub_guest_profiles')
+        .select('id')
+        .eq('client_id', event.client_id)
+
+      const profileIds = (profiles || []).map((p: any) => p.id)
+      if (profileIds.length > 0) {
+        const { data: householdMembers } = await db
+          .from('hub_household_members')
+          .select('display_name, allergies, dietary_restrictions')
+          .in('profile_id', profileIds)
+
+        for (const m of householdMembers || []) {
+          const restrictions = [
+            ...(Array.isArray(m.allergies) ? m.allergies : []),
+            ...(Array.isArray(m.dietary_restrictions) ? m.dietary_restrictions : []),
+          ]
+            .filter(Boolean)
+            .join(', ')
+          if (restrictions) {
+            guestProfiles.push({
+              name: `${m.display_name || 'Household member'} (household)`,
+              restrictions,
+            })
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('[allergen-risk] household member lookup failed (non-blocking):', err)
+    }
+  }
 
   // Add event-level restrictions as a "General" guest entry if no individual guests
   if (guestProfiles.length === 0) {
