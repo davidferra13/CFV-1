@@ -1014,3 +1014,4 @@
 {"id":"36551524-00da-4a87-899a-7faf0401895c","timestamp":"2026-04-27T21:21:03.065Z","type":"tool:call","source":"3977.http","scope":{"workflow":"3977-http"},"payload":{"method":"GET","path":"/api/pipeline-funnel","query":{}}}
 {"id":"33cd459c-4951-456e-9de3-7dc1f5411c9d","timestamp":"2026-04-27T21:21:03.068Z","type":"tool:call","source":"3977.http","scope":{"workflow":"3977-http"},"payload":{"method":"GET","path":"/api/stale-plans","query":{}}}
 {"id":"fdb86d0e-d116-4f60-9e7a-fd60b58cd408","timestamp":"2026-04-27T21:21:03.072Z","type":"tool:call","source":"3977.http","scope":{"workflow":"3977-http"},"payload":{"method":"GET","path":"/api/plan-priority","query":{}}}
+{"id":"32260458-ee3d-48bd-952a-0676a20cb71e","timestamp":"2026-04-27T21:21:18.046Z","type":"state:update","source":"3977.watchdog","scope":{"workflow":"watchdog"},"payload":{"action":"orphaned_lock_self_healed","stale_pid":67740}}
