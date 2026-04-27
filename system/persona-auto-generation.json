@@ -11,7 +11,13 @@
       "type": "Chef",
       "at": "2026-04-27T20:38:53.544Z",
       "success": false
+    },
+    {
+      "category": "recipe-menu",
+      "type": "Chef",
+      "at": "2026-04-27T21:24:18.082Z",
+      "success": false
     }
   ],
-  "last_check": "2026-04-27T20:38:53.544Z"
+  "last_check": "2026-04-27T21:24:18.083Z"
 }
