@@ -9,5 +9,5 @@ export const metadata: Metadata = {
 }
 
 export default function EmbedLayout({ children }: { children: React.ReactNode }) {
-  return <div className="min-h-screen bg-transparent">{children}</div>
+  return <div style={{ minHeight: '100vh', background: 'transparent' }}>{children}</div>
 }
