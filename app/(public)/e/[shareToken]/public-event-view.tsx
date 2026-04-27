@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition, type FormEvent } from 'react'
+import { useState, useTransition, useEffect, useCallback, type FormEvent } from 'react'
 import {
   joinTicketWaitlist,
   purchaseTicket,
@@ -9,6 +9,7 @@ import {
 import type { PublicEventInfo } from '@/lib/tickets/purchase-actions'
 import type { EventTicketType } from '@/lib/tickets/types'
 import { submitDinnerCircleVendorInterest } from '@/lib/dinner-circles/actions'
+import { subscribeToChefEvents } from '@/lib/audience/subscriber-actions'
 import { buildEventDefaultLayer } from '@/lib/events/default-behaviors'
 
 type Props = {
@@ -66,6 +67,44 @@ function getCapacityLabel(ticketType: EventTicketType) {
   if (remaining <= 0) return 'Sold out'
 
   return `${remaining} of ${ticketType.capacity} remaining`
+}
+
+function formatCountdown(ms: number): string {
+  if (ms <= 0) return ''
+  const totalSec = Math.floor(ms / 1000)
+  const days = Math.floor(totalSec / 86400)
+  const hours = Math.floor((totalSec % 86400) / 3600)
+  const minutes = Math.floor((totalSec % 3600) / 60)
+  const seconds = totalSec % 60
+  const parts: string[] = []
+  if (days > 0) parts.push(`${days}d`)
+  if (hours > 0) parts.push(`${hours}h`)
+  if (minutes > 0) parts.push(`${minutes}m`)
+  parts.push(`${seconds}s`)
+  return parts.join(' ')
+}
+
+function getSaleStatusLabel(
+  status: string | undefined
+): { text: string; className: string } | null {
+  switch (status) {
+    case 'not_started':
+      return {
+        text: 'Coming soon',
+        className: 'border-amber-500/50 bg-amber-950/60 text-amber-200',
+      }
+    case 'early_access':
+      return {
+        text: 'Early access',
+        className: 'border-emerald-500/50 bg-emerald-950/60 text-emerald-200',
+      }
+    case 'on_sale':
+      return null
+    case 'ended':
+      return { text: 'Sales ended', className: 'border-stone-600 bg-stone-900 text-stone-400' }
+    default:
+      return null
+  }
 }
 
 function getErrorMessage(error: unknown) {
@@ -164,10 +203,16 @@ export function PublicEventView({
   const [waitlistName, setWaitlistName] = useState('')
   const [waitlistEmail, setWaitlistEmail] = useState('')
   const [waitlistStatus, setWaitlistStatus] = useState<string | null>(null)
+  const [notifyEmail, setNotifyEmail] = useState('')
+  const [notifyStatus, setNotifyStatus] = useState<string | null>(null)
+  const [selectedAddons, setSelectedAddons] = useState<Map<string, number>>(new Map())
+  const [countdownMs, setCountdownMs] = useState<number | null>(null)
+  const [countdownTarget, setCountdownTarget] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
   const [isVendorPending, startVendorTransition] = useTransition()
   const [isWaitlistPending, startWaitlistTransition] = useTransition()
+  const [isNotifyPending, startNotifyTransition] = useTransition()
   const isCompleted = event.lifecycleState === 'completed'
   const isLive = event.lifecycleState === 'live'
 
@@ -211,6 +256,84 @@ export function PublicEventView({
           }`
         : `Hosted by ${event.chefName}`
       : null
+
+  // Countdown timer for timed ticket drops
+  const earliestDrop = activeTicketTypes
+    .filter((tt) => tt.sale_status === 'not_started' && tt.sale_starts_at)
+    .sort(
+      (a, b) => new Date(a.sale_starts_at!).getTime() - new Date(b.sale_starts_at!).getTime()
+    )[0]
+
+  useEffect(() => {
+    if (!earliestDrop?.sale_starts_at) {
+      setCountdownMs(null)
+      setCountdownTarget(null)
+      return
+    }
+    setCountdownTarget(earliestDrop.sale_starts_at)
+    const target = new Date(earliestDrop.sale_starts_at).getTime()
+    const tick = () => {
+      const remaining = target - Date.now()
+      setCountdownMs(remaining > 0 ? remaining : 0)
+    }
+    tick()
+    const interval = setInterval(tick, 1000)
+    return () => clearInterval(interval)
+  }, [earliestDrop?.sale_starts_at])
+
+  // Addon total for order summary
+  const addonTotalCents = Array.from(selectedAddons.entries()).reduce((sum, [addonId, qty]) => {
+    const addon = event.addons.find((a) => a.id === addonId)
+    return sum + (addon ? addon.priceCents * qty : 0)
+  }, 0)
+  const grandTotalCents = orderTotalCents + addonTotalCents * orderQuantity
+
+  const toggleAddon = useCallback((addonId: string, maxPerTicket: number | null) => {
+    setSelectedAddons((prev) => {
+      const next = new Map(prev)
+      if (next.has(addonId)) {
+        next.delete(addonId)
+      } else {
+        next.set(addonId, 1)
+      }
+      return next
+    })
+  }, [])
+
+  const setAddonQuantity = useCallback(
+    (addonId: string, qty: number, maxPerTicket: number | null) => {
+      setSelectedAddons((prev) => {
+        const next = new Map(prev)
+        const clamped = Math.max(1, Math.min(qty, maxPerTicket ?? 10))
+        next.set(addonId, clamped)
+        return next
+      })
+    },
+    []
+  )
+
+  function handleNotifySubmit(formEvent: FormEvent<HTMLFormElement>) {
+    formEvent.preventDefault()
+    setNotifyStatus(null)
+
+    startNotifyTransition(async () => {
+      try {
+        const result = await subscribeToChefEvents({
+          chefId: event.tenantId,
+          email: notifyEmail.trim(),
+          sourceEventId: event.eventId,
+        })
+        if (result.success) {
+          setNotifyEmail('')
+          setNotifyStatus('You will be notified of future events.')
+        } else {
+          setNotifyStatus(result.error || 'Failed to subscribe.')
+        }
+      } catch {
+        setNotifyStatus('Something went wrong. Try again.')
+      }
+    })
+  }
 
   function buildPublicDefaults(shareUrl: string) {
     return buildEventDefaultLayer({
@@ -346,6 +469,10 @@ export function PublicEventView({
 
     setError(null)
 
+    const addonSelections = Array.from(selectedAddons.entries())
+      .filter(([, qty]) => qty > 0)
+      .map(([addonId, quantity]) => ({ addonId, quantity }))
+
     startTransition(async () => {
       try {
         const result = await purchaseTicket({
@@ -358,10 +485,24 @@ export function PublicEventView({
           dietaryRestrictions: joinList(dietary, dietaryOther),
           allergies: joinList(allergies, allergiesOther),
           notes: notes.trim() || undefined,
+          addons: addonSelections.length > 0 ? addonSelections : undefined,
         })
 
         window.location.href = result.checkoutUrl
       } catch (purchaseError) {
+        // Handle timed drop not-yet-started error with countdown info
+        if (purchaseError instanceof Error) {
+          try {
+            const parsed = JSON.parse(purchaseError.message)
+            if (parsed.code === 'SALE_NOT_STARTED' && parsed.saleStartsAt) {
+              setCountdownTarget(parsed.saleStartsAt)
+              setError(`Tickets go on sale ${new Date(parsed.saleStartsAt).toLocaleString()}`)
+              return
+            }
+          } catch {
+            // Not JSON, use normal error display
+          }
+        }
         setError(getErrorMessage(purchaseError))
       }
     })
@@ -420,7 +561,7 @@ export function PublicEventView({
         <div className="mx-auto flex min-h-[calc(100vh-5rem)] max-w-2xl items-center">
           <section className="w-full rounded-lg border border-stone-700 bg-stone-900 p-6 text-center sm:p-8">
             <p className="mb-3 text-sm font-medium text-emerald-400">Confirmed</p>
-            <h1 className="text-3xl font-semibold tracking-tight text-stone-100">You're in!</h1>
+            <h1 className="text-3xl font-semibold tracking-[-0.04em] text-stone-100">You're in!</h1>
             <p className="mt-3 text-sm leading-6 text-stone-400">
               Your tickets are confirmed. Check your email for details.
             </p>
@@ -504,7 +645,7 @@ export function PublicEventView({
         <div className="mx-auto flex min-h-[calc(100vh-5rem)] max-w-2xl items-center">
           <section className="w-full rounded-lg border border-stone-700 bg-stone-900 p-6 text-center sm:p-8">
             <p className="text-sm font-medium text-red-300">Checkout stopped</p>
-            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-stone-100">
+            <h1 className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-stone-100">
               Payment was cancelled.
             </h1>
             <p className="mt-3 text-sm leading-6 text-stone-400">
@@ -548,7 +689,7 @@ export function PublicEventView({
                 {defaultLayer.statusMessage}
               </span>
             </div>
-            <h1 className="text-4xl font-semibold tracking-tight text-stone-100 sm:text-5xl">
+            <h1 className="text-4xl font-semibold tracking-[-0.04em] text-stone-100 sm:text-5xl">
               {event.eventName}
             </h1>
           </div>
@@ -955,6 +1096,20 @@ export function PublicEventView({
             </div>
           )}
 
+          {countdownMs !== null && countdownMs > 0 && countdownTarget && (
+            <div className="rounded-lg border border-amber-500/40 bg-amber-950/30 p-4 text-center">
+              <p className="text-xs font-semibold uppercase tracking-wide text-amber-300">
+                Tickets drop in
+              </p>
+              <p className="mt-1 text-2xl font-bold tabular-nums tracking-[-0.04em] text-amber-100">
+                {formatCountdown(countdownMs)}
+              </p>
+              <p className="mt-1 text-xs text-amber-400/70">
+                {new Date(countdownTarget).toLocaleString()}
+              </p>
+            </div>
+          )}
+
           {ticketsClosed ? (
             <div className="rounded-lg border border-stone-700 bg-stone-900 p-5 text-sm text-stone-400">
               This event is no longer selling tickets. The page now works as the permanent recap and
@@ -997,6 +1152,29 @@ export function PublicEventView({
                 </button>
               </form>
               {waitlistStatus && <p className="mt-3 text-sm text-stone-400">{waitlistStatus}</p>}
+
+              <div className="mt-6 border-t border-stone-700 pt-4">
+                <p className="text-sm font-medium text-stone-300">Get notified of future events</p>
+                <form onSubmit={handleNotifySubmit} className="mt-2 flex gap-2">
+                  <input
+                    className={fieldClass}
+                    value={notifyEmail}
+                    onChange={(e) => setNotifyEmail(e.target.value)}
+                    placeholder="Your email"
+                    type="email"
+                    required
+                    disabled={isNotifyPending}
+                  />
+                  <button
+                    type="submit"
+                    disabled={isNotifyPending}
+                    className="shrink-0 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-stone-100 transition hover:bg-emerald-500 disabled:opacity-60"
+                  >
+                    {isNotifyPending ? 'Saving...' : 'Notify me'}
+                  </button>
+                </form>
+                {notifyStatus && <p className="mt-2 text-xs text-stone-400">{notifyStatus}</p>}
+              </div>
             </div>
           ) : (
             <div className="space-y-3">
@@ -1013,29 +1191,42 @@ export function PublicEventView({
                 const remaining = getRemaining(ticketType)
                 const soldOut = remaining !== null && remaining <= 0
                 const selected = selectedTicketTypeId === ticketType.id
+                const saleStatus = getSaleStatusLabel(ticketType.sale_status)
+                const notOnSale =
+                  ticketType.sale_status === 'not_started' || ticketType.sale_status === 'ended'
+                const isDisabled = soldOut || notOnSale
 
                 return (
                   <div key={ticketType.id} className="space-y-3">
                     <button
                       type="button"
                       onClick={() => selectTicketType(ticketType)}
-                      disabled={soldOut}
+                      disabled={isDisabled}
                       aria-pressed={selected}
                       className={`w-full rounded-lg border bg-stone-900 p-4 text-left transition ${
                         selected
                           ? 'border-emerald-500 ring-2 ring-emerald-500/20'
                           : 'border-stone-700 hover:border-stone-500'
                       } ${
-                        soldOut
+                        isDisabled
                           ? 'cursor-not-allowed border-stone-800 bg-stone-900/60 opacity-60 hover:border-stone-800'
                           : ''
                       }`}
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div className="min-w-0 space-y-1">
-                          <h3 className="text-base font-semibold text-stone-100">
-                            {ticketType.name}
-                          </h3>
+                          <div className="flex items-center gap-2">
+                            <h3 className="text-base font-semibold text-stone-100">
+                              {ticketType.name}
+                            </h3>
+                            {saleStatus && (
+                              <span
+                                className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold ${saleStatus.className}`}
+                              >
+                                {saleStatus.text}
+                              </span>
+                            )}
+                          </div>
                           {ticketType.description && (
                             <p className="text-sm leading-5 text-stone-400">
                               {ticketType.description}
@@ -1243,11 +1434,102 @@ export function PublicEventView({
                           />
                         </label>
 
+                        {event.addons.length > 0 && (
+                          <div className="space-y-3">
+                            <p className="text-sm font-medium text-stone-300">Add-ons</p>
+                            {event.addons.map((addon) => {
+                              const isSelected = selectedAddons.has(addon.id)
+                              const addonQty = selectedAddons.get(addon.id) ?? 0
+                              const soldOut = addon.remaining !== null && addon.remaining <= 0
+
+                              return (
+                                <div
+                                  key={addon.id}
+                                  className={`flex items-center gap-3 rounded-lg border p-3 transition ${
+                                    isSelected
+                                      ? 'border-emerald-600/50 bg-emerald-950/20'
+                                      : 'border-stone-700 bg-stone-950'
+                                  } ${soldOut ? 'opacity-50' : ''}`}
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={isSelected}
+                                    disabled={isPending || soldOut}
+                                    onChange={() => toggleAddon(addon.id, addon.maxPerTicket)}
+                                    aria-label={`Add ${addon.name}`}
+                                    className="h-4 w-4 rounded border-stone-600 bg-stone-800 text-emerald-500 focus:ring-emerald-500/30"
+                                  />
+                                  <div className="min-w-0 flex-1">
+                                    <p className="text-sm font-medium text-stone-200">
+                                      {addon.name}
+                                    </p>
+                                    {addon.description && (
+                                      <p className="text-xs text-stone-500">{addon.description}</p>
+                                    )}
+                                    {soldOut && (
+                                      <p className="text-xs font-medium text-red-400">Sold out</p>
+                                    )}
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    {isSelected &&
+                                      (addon.maxPerTicket === null || addon.maxPerTicket > 1) && (
+                                        <input
+                                          type="number"
+                                          value={addonQty}
+                                          min={1}
+                                          max={addon.maxPerTicket ?? 10}
+                                          onChange={(e) =>
+                                            setAddonQuantity(
+                                              addon.id,
+                                              parseInt(e.target.value, 10),
+                                              addon.maxPerTicket
+                                            )
+                                          }
+                                          disabled={isPending}
+                                          aria-label={`${addon.name} quantity`}
+                                          className="w-14 rounded border border-stone-700 bg-stone-900 px-2 py-1 text-center text-xs text-stone-200"
+                                        />
+                                      )}
+                                    <span className="text-sm font-medium text-stone-300">
+                                      {formatMoney(addon.priceCents)}
+                                    </span>
+                                  </div>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        )}
+
                         <div className="rounded-lg border border-stone-700 bg-stone-950 p-4 text-sm text-stone-300">
-                          {orderQuantity}x {selectedTicketType.name} ={' '}
-                          <span className="font-semibold text-stone-100">
-                            {formatMoney(orderTotalCents)}
-                          </span>
+                          <div className="flex justify-between">
+                            <span>
+                              {orderQuantity}x {selectedTicketType.name}
+                            </span>
+                            <span>{formatMoney(orderTotalCents)}</span>
+                          </div>
+                          {Array.from(selectedAddons.entries()).map(([addonId, qty]) => {
+                            const addon = event.addons.find((a) => a.id === addonId)
+                            if (!addon) return null
+                            return (
+                              <div key={addonId} className="flex justify-between text-stone-400">
+                                <span>
+                                  {qty}x {addon.name} (x{orderQuantity} tickets)
+                                </span>
+                                <span>{formatMoney(addon.priceCents * qty * orderQuantity)}</span>
+                              </div>
+                            )
+                          })}
+                          {addonTotalCents > 0 && (
+                            <div className="mt-2 flex justify-between border-t border-stone-700 pt-2 font-semibold text-stone-100">
+                              <span>Total</span>
+                              <span>{formatMoney(grandTotalCents)}</span>
+                            </div>
+                          )}
+                          {addonTotalCents === 0 && (
+                            <div className="mt-1 text-right font-semibold text-stone-100">
+                              {formatMoney(orderTotalCents)}
+                            </div>
+                          )}
                         </div>
 
                         <button

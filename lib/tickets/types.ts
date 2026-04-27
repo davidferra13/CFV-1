@@ -16,10 +16,41 @@ export interface EventTicketType {
   sold_count: number
   sort_order: number
   is_active: boolean
+  sale_starts_at: string | null
+  sale_ends_at: string | null
+  early_access_minutes: number | null
   created_at: string
   updated_at: string
   // Computed
   remaining?: number | null
+  sale_status?: 'not_started' | 'early_access' | 'on_sale' | 'ended'
+}
+
+export interface EventTicketAddon {
+  id: string
+  event_id: string
+  tenant_id: string
+  name: string
+  description: string | null
+  price_cents: number
+  max_per_ticket: number | null
+  total_capacity: number | null
+  sold_count: number
+  sort_order: number
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface EventTicketAddonPurchase {
+  id: string
+  ticket_id: string
+  addon_id: string
+  quantity: number
+  unit_price_cents: number
+  total_cents: number
+  created_at: string
+  addon?: EventTicketAddon | null
 }
 
 export interface EventTicket {

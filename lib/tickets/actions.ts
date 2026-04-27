@@ -7,7 +7,13 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
-import type { EventTicketType, EventTicket, EventTicketSummary } from './types'
+import type {
+  EventTicketType,
+  EventTicket,
+  EventTicketSummary,
+  EventTicketAddon,
+  EventTicketAddonPurchase,
+} from './types'
 
 // ─── Schemas ─────────────────────────────────────────────────────────
 
@@ -18,6 +24,9 @@ const CreateTicketTypeSchema = z.object({
   priceCents: z.number().int().min(0),
   capacity: z.number().int().positive().optional().nullable(),
   sortOrder: z.number().int().optional(),
+  saleStartsAt: z.string().datetime().optional().nullable(),
+  saleEndsAt: z.string().datetime().optional().nullable(),
+  earlyAccessMinutes: z.number().int().min(0).max(10080).optional().nullable(),
 })
 
 const UpdateTicketTypeSchema = z.object({
@@ -27,6 +36,31 @@ const UpdateTicketTypeSchema = z.object({
   description: z.string().max(500).optional().nullable(),
   priceCents: z.number().int().min(0).optional(),
   capacity: z.number().int().positive().optional().nullable(),
+  sortOrder: z.number().int().optional(),
+  isActive: z.boolean().optional(),
+  saleStartsAt: z.string().datetime().optional().nullable(),
+  saleEndsAt: z.string().datetime().optional().nullable(),
+  earlyAccessMinutes: z.number().int().min(0).max(10080).optional().nullable(),
+})
+
+const CreateAddonSchema = z.object({
+  eventId: z.string().uuid(),
+  name: z.string().min(1).max(100),
+  description: z.string().max(500).optional().nullable(),
+  priceCents: z.number().int().min(0),
+  maxPerTicket: z.number().int().positive().optional().nullable(),
+  totalCapacity: z.number().int().positive().optional().nullable(),
+  sortOrder: z.number().int().optional(),
+})
+
+const UpdateAddonSchema = z.object({
+  id: z.string().uuid(),
+  eventId: z.string().uuid(),
+  name: z.string().min(1).max(100).optional(),
+  description: z.string().max(500).optional().nullable(),
+  priceCents: z.number().int().min(0).optional(),
+  maxPerTicket: z.number().int().positive().optional().nullable(),
+  totalCapacity: z.number().int().positive().optional().nullable(),
   sortOrder: z.number().int().optional(),
   isActive: z.boolean().optional(),
 })
@@ -233,6 +267,9 @@ export async function createTicketType(
       price_cents: validated.priceCents,
       capacity: validated.capacity ?? null,
       sort_order: validated.sortOrder ?? 0,
+      sale_starts_at: validated.saleStartsAt ?? null,
+      sale_ends_at: validated.saleEndsAt ?? null,
+      early_access_minutes: validated.earlyAccessMinutes ?? null,
     })
     .select('*')
     .single()
@@ -276,6 +313,10 @@ export async function updateTicketType(
   if (validated.capacity !== undefined) updates.capacity = validated.capacity
   if (validated.sortOrder !== undefined) updates.sort_order = validated.sortOrder
   if (validated.isActive !== undefined) updates.is_active = validated.isActive
+  if (validated.saleStartsAt !== undefined) updates.sale_starts_at = validated.saleStartsAt
+  if (validated.saleEndsAt !== undefined) updates.sale_ends_at = validated.saleEndsAt
+  if (validated.earlyAccessMinutes !== undefined)
+    updates.early_access_minutes = validated.earlyAccessMinutes
 
   const { data, error } = await db
     .from('event_ticket_types')
@@ -333,10 +374,31 @@ export async function getEventTicketTypes(eventId: string): Promise<EventTicketT
 
   if (error) throw new Error(`Failed to load ticket types: ${error.message}`)
 
+  const now = new Date()
   return (data ?? []).map((tt: any) => ({
     ...tt,
     remaining: tt.capacity !== null ? Math.max(0, tt.capacity - tt.sold_count) : null,
+    sale_status: computeSaleStatus(tt, now),
   })) as EventTicketType[]
+}
+
+function computeSaleStatus(
+  tt: {
+    sale_starts_at: string | null
+    sale_ends_at: string | null
+    early_access_minutes: number | null
+  },
+  now: Date
+): EventTicketType['sale_status'] {
+  if (tt.sale_ends_at && new Date(tt.sale_ends_at) <= now) return 'ended'
+  if (!tt.sale_starts_at) return 'on_sale'
+  const saleStart = new Date(tt.sale_starts_at)
+  if (saleStart <= now) return 'on_sale'
+  if (tt.early_access_minutes) {
+    const earlyStart = new Date(saleStart.getTime() - tt.early_access_minutes * 60_000)
+    if (earlyStart <= now) return 'early_access'
+  }
+  return 'not_started'
 }
 
 export async function getEventTickets(eventId: string): Promise<EventTicket[]> {
@@ -991,4 +1053,119 @@ export async function toggleEventTicketing(input: {
 
   revalidatePath(`/events/${input.eventId}`)
   return { success: true }
+}
+
+// ─── Addon CRUD ─────────────────────────────────────────────────────
+
+export async function createTicketAddon(
+  input: z.infer<typeof CreateAddonSchema>
+): Promise<EventTicketAddon> {
+  const user = await requireChef()
+  const validated = CreateAddonSchema.parse(input)
+  const db: any = createServerClient()
+
+  const { data: event } = await db
+    .from('events')
+    .select('id')
+    .eq('id', validated.eventId)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  if (!event) throw new Error('Event not found')
+
+  const { data, error } = await db
+    .from('event_ticket_addons')
+    .insert({
+      event_id: validated.eventId,
+      tenant_id: user.tenantId!,
+      name: validated.name,
+      description: validated.description ?? null,
+      price_cents: validated.priceCents,
+      max_per_ticket: validated.maxPerTicket ?? null,
+      total_capacity: validated.totalCapacity ?? null,
+      sort_order: validated.sortOrder ?? 0,
+    })
+    .select('*')
+    .single()
+
+  if (error) throw new Error(`Failed to create addon: ${error.message}`)
+
+  revalidatePath(`/events/${validated.eventId}`)
+  return data as EventTicketAddon
+}
+
+export async function updateTicketAddon(
+  input: z.infer<typeof UpdateAddonSchema>
+): Promise<EventTicketAddon> {
+  const user = await requireChef()
+  const validated = UpdateAddonSchema.parse(input)
+  const db: any = createServerClient()
+
+  const { data: existing } = await db
+    .from('event_ticket_addons')
+    .select('id')
+    .eq('id', validated.id)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  if (!existing) throw new Error('Addon not found')
+
+  const updates: Record<string, unknown> = { updated_at: new Date().toISOString() }
+  if (validated.name !== undefined) updates.name = validated.name
+  if (validated.description !== undefined) updates.description = validated.description
+  if (validated.priceCents !== undefined) updates.price_cents = validated.priceCents
+  if (validated.maxPerTicket !== undefined) updates.max_per_ticket = validated.maxPerTicket
+  if (validated.totalCapacity !== undefined) updates.total_capacity = validated.totalCapacity
+  if (validated.sortOrder !== undefined) updates.sort_order = validated.sortOrder
+  if (validated.isActive !== undefined) updates.is_active = validated.isActive
+
+  const { data, error } = await db
+    .from('event_ticket_addons')
+    .update(updates)
+    .eq('id', validated.id)
+    .eq('tenant_id', user.tenantId!)
+    .select('*')
+    .single()
+
+  if (error) throw new Error(`Failed to update addon: ${error.message}`)
+
+  revalidatePath(`/events/${validated.eventId}`)
+  return data as EventTicketAddon
+}
+
+export async function deleteTicketAddon(input: { id: string; eventId: string }): Promise<void> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const { count } = await db
+    .from('event_ticket_addon_purchases')
+    .select('*', { count: 'exact', head: true })
+    .eq('addon_id', input.id)
+
+  if (count && count > 0) {
+    await db
+      .from('event_ticket_addons')
+      .update({ is_active: false, updated_at: new Date().toISOString() })
+      .eq('id', input.id)
+      .eq('tenant_id', user.tenantId!)
+  } else {
+    await db.from('event_ticket_addons').delete().eq('id', input.id).eq('tenant_id', user.tenantId!)
+  }
+
+  revalidatePath(`/events/${input.eventId}`)
+}
+
+export async function getEventTicketAddons(eventId: string): Promise<EventTicketAddon[]> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const { data, error } = await db
+    .from('event_ticket_addons')
+    .select('*')
+    .eq('event_id', eventId)
+    .eq('tenant_id', user.tenantId!)
+    .order('sort_order', { ascending: true })
+
+  if (error) throw new Error(`Failed to load addons: ${error.message}`)
+  return (data ?? []) as EventTicketAddon[]
 }

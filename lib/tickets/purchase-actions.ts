@@ -23,6 +23,11 @@ function getStripe(): Stripe {
 
 // ─── Schemas ─────────────────────────────────────────────────────────
 
+const AddonSelectionSchema = z.object({
+  addonId: z.string().uuid(),
+  quantity: z.number().int().min(1).max(20),
+})
+
 const PurchaseTicketSchema = z.object({
   shareToken: z.string().min(1),
   ticketTypeId: z.string().uuid(),
@@ -36,6 +41,8 @@ const PurchaseTicketSchema = z.object({
   plusOneDietary: z.array(z.string()).optional(),
   plusOneAllergies: z.array(z.string()).optional(),
   notes: z.string().max(2000).optional().or(z.literal('')),
+  addons: z.array(AddonSelectionSchema).optional(),
+  circleToken: z.string().optional().or(z.literal('')),
 })
 
 const JoinTicketWaitlistSchema = z.object({
@@ -55,6 +62,13 @@ export type PurchaseTicketResult = {
   totalCents: number
 }
 
+type AddonLineItem = {
+  addonId: string
+  name: string
+  priceCents: number
+  quantity: number
+}
+
 async function createCheckoutSessionForTicket(input: {
   db: any
   ticketId: string
@@ -65,6 +79,7 @@ async function createCheckoutSessionForTicket(input: {
   buyerEmail: string
   quantity: number
   totalCents: number
+  addonLineItems?: AddonLineItem[]
 }) {
   const stripe = getStripe()
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.cheflowhq.com'
@@ -82,21 +97,45 @@ async function createCheckoutSessionForTicket(input: {
   const eventName = event?.occasion || 'Event'
   const eventDate = event?.event_date || ''
 
-  const sessionParams: Stripe.Checkout.SessionCreateParams = {
-    mode: 'payment',
-    line_items: [
-      {
+  const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [
+    {
+      price_data: {
+        currency: 'usd',
+        product_data: {
+          name: `${input.ticketType.name} - ${eventName}`,
+          description: eventDate ? `${eventDate}` : undefined,
+        },
+        unit_amount: input.ticketType.price_cents,
+      },
+      quantity: input.quantity,
+    },
+  ]
+
+  // Add addon line items
+  if (input.addonLineItems?.length) {
+    for (const addon of input.addonLineItems) {
+      lineItems.push({
         price_data: {
           currency: 'usd',
           product_data: {
-            name: `${input.ticketType.name} - ${eventName}`,
-            description: eventDate ? `${eventDate}` : undefined,
+            name: `${addon.name} (add-on)`,
           },
-          unit_amount: input.ticketType.price_cents,
+          unit_amount: addon.priceCents,
         },
-        quantity: input.quantity,
-      },
-    ],
+        quantity: addon.quantity,
+      })
+    }
+  }
+
+  const addonTotalCents = (input.addonLineItems ?? []).reduce(
+    (sum, a) => sum + a.priceCents * a.quantity,
+    0
+  )
+  const grandTotalCents = input.totalCents + addonTotalCents
+
+  const sessionParams: Stripe.Checkout.SessionCreateParams = {
+    mode: 'payment',
+    line_items: lineItems,
     customer_email: input.buyerEmail.toLowerCase().trim(),
     success_url: `${appUrl}/e/${input.shareToken}?purchased=true&ticket=${input.ticketId}`,
     cancel_url: `${appUrl}/e/${input.shareToken}?cancelled=true&ticket=${input.ticketId}`,
@@ -120,7 +159,7 @@ async function createCheckoutSessionForTicket(input: {
 
   if (chefConfig.canReceiveTransfers && chefConfig.stripeAccountId) {
     const appFee = computeApplicationFee(
-      input.totalCents,
+      grandTotalCents,
       chefConfig.platformFeePercent,
       chefConfig.platformFeeFixedCents
     )
@@ -163,6 +202,14 @@ export type PublicEventInfo = {
   ticketsReserved: number
   totalCapacity: number
   ticketTypes: EventTicketType[]
+  addons: Array<{
+    id: string
+    name: string
+    description: string | null
+    priceCents: number
+    maxPerTicket: number | null
+    remaining: number | null
+  }>
   ticketsEnabled: boolean
   showMenu: boolean
   showDate: boolean
@@ -686,6 +733,26 @@ export async function getPublicEventByShareToken(
     outcome,
   })
 
+  // Get active addons
+  const { data: addonRows } = await db
+    .from('event_ticket_addons')
+    .select('id, name, description, price_cents, max_per_ticket, total_capacity, sold_count')
+    .eq('event_id', event.id)
+    .eq('is_active', true)
+    .order('sort_order', { ascending: true })
+
+  const addons = (addonRows ?? []).map((a: any) => ({
+    id: a.id,
+    name: a.name,
+    description: a.description ?? null,
+    priceCents: a.price_cents,
+    maxPerTicket: a.max_per_ticket ?? null,
+    remaining: a.total_capacity !== null ? Math.max(0, a.total_capacity - a.sold_count) : null,
+  }))
+
+  // Compute sale_status for each ticket type
+  const now = new Date()
+
   return {
     eventId: event.id,
     tenantId: share.tenant_id as string,
@@ -711,10 +778,27 @@ export async function getPublicEventByShareToken(
     ticketsSold,
     ticketsReserved,
     totalCapacity,
-    ticketTypes: (ticketTypes ?? []).map((tt: any) => ({
-      ...tt,
-      remaining: tt.capacity !== null ? Math.max(0, tt.capacity - tt.sold_count) : null,
-    })),
+    ticketTypes: (ticketTypes ?? []).map((tt: any) => {
+      let saleStatus: 'not_started' | 'early_access' | 'on_sale' | 'ended' = 'on_sale'
+      if (tt.sale_ends_at && new Date(tt.sale_ends_at) <= now) saleStatus = 'ended'
+      else if (tt.sale_starts_at) {
+        const saleStart = new Date(tt.sale_starts_at)
+        if (saleStart > now) {
+          if (tt.early_access_minutes) {
+            const earlyStart = new Date(saleStart.getTime() - tt.early_access_minutes * 60_000)
+            saleStatus = earlyStart <= now ? 'early_access' : 'not_started'
+          } else {
+            saleStatus = 'not_started'
+          }
+        }
+      }
+      return {
+        ...tt,
+        remaining: tt.capacity !== null ? Math.max(0, tt.capacity - tt.sold_count) : null,
+        sale_status: saleStatus,
+      }
+    }),
+    addons,
     ticketsEnabled: share.tickets_enabled === true,
     showMenu: share.show_menu !== false,
     showDate: share.show_date !== false,
@@ -838,13 +922,75 @@ export async function purchaseTicket(input: PurchaseTicketInput): Promise<Purcha
   // Verify ticket type exists and is active
   const { data: ticketType } = await db
     .from('event_ticket_types')
-    .select('id, name, price_cents, capacity, sold_count, is_active')
+    .select(
+      'id, name, price_cents, capacity, sold_count, is_active, sale_starts_at, sale_ends_at, early_access_minutes'
+    )
     .eq('id', validated.ticketTypeId)
     .eq('event_id', eventId)
     .single()
 
   if (!ticketType || !ticketType.is_active) {
     throw new Error('Ticket type not found or no longer available')
+  }
+
+  // ─── Timed Drop Enforcement ───────────────────────────────────────
+  const now = new Date()
+
+  if (ticketType.sale_ends_at && new Date(ticketType.sale_ends_at) <= now) {
+    throw new Error('Ticket sales have ended for this tier')
+  }
+
+  if (ticketType.sale_starts_at) {
+    const saleStart = new Date(ticketType.sale_starts_at)
+    if (saleStart > now) {
+      // Check early access for Circle members
+      let hasEarlyAccess = false
+      if (ticketType.early_access_minutes && validated.circleToken) {
+        const earlyStart = new Date(saleStart.getTime() - ticketType.early_access_minutes * 60_000)
+        if (earlyStart <= now) {
+          // Verify circle membership
+          const { data: circleCheck } = await db
+            .from('hub_groups')
+            .select('id')
+            .eq('event_id', eventId)
+            .eq('is_active', true)
+            .maybeSingle()
+
+          if (circleCheck) {
+            const buyerEmailNorm = validated.buyerEmail.toLowerCase().trim()
+            const { data: profile } = await db
+              .from('hub_guest_profiles')
+              .select('id')
+              .eq('email_normalized', buyerEmailNorm)
+              .maybeSingle()
+
+            if (profile) {
+              const { data: membership } = await db
+                .from('hub_group_members')
+                .select('id')
+                .eq('group_id', circleCheck.id)
+                .eq('profile_id', profile.id)
+                .maybeSingle()
+
+              if (membership) hasEarlyAccess = true
+            }
+          }
+        }
+      }
+
+      if (!hasEarlyAccess) {
+        const msUntilSale = saleStart.getTime() - now.getTime()
+        const minutesUntil = Math.ceil(msUntilSale / 60_000)
+        throw new Error(
+          JSON.stringify({
+            code: 'SALE_NOT_STARTED',
+            saleStartsAt: ticketType.sale_starts_at,
+            minutesUntilSale: minutesUntil,
+            hasEarlyAccess: false,
+          })
+        )
+      }
+    }
   }
 
   await assertEventCapacityAvailable(db, eventId, validated.quantity)
@@ -913,6 +1059,46 @@ export async function purchaseTicket(input: PurchaseTicketInput): Promise<Purcha
     reservationHeld = true
   }
 
+  // ─── Process Add-Ons ────────────────────────────────────────────────
+  const addonLineItems: AddonLineItem[] = []
+  let addonTotalCents = 0
+
+  if (validated.addons?.length) {
+    for (const addonSel of validated.addons) {
+      const { data: addon } = await db
+        .from('event_ticket_addons')
+        .select('id, name, price_cents, max_per_ticket, total_capacity, sold_count, is_active')
+        .eq('id', addonSel.addonId)
+        .eq('event_id', eventId)
+        .single()
+
+      if (!addon || !addon.is_active) continue
+
+      if (addon.max_per_ticket && addonSel.quantity > addon.max_per_ticket) {
+        throw new Error(`Maximum ${addon.max_per_ticket} of "${addon.name}" per ticket`)
+      }
+
+      if (addon.total_capacity !== null) {
+        const remaining = addon.total_capacity - addon.sold_count
+        if (addonSel.quantity > remaining) {
+          throw new Error(
+            remaining > 0
+              ? `Only ${remaining} "${addon.name}" remaining`
+              : `"${addon.name}" is sold out`
+          )
+        }
+      }
+
+      addonLineItems.push({
+        addonId: addon.id,
+        name: addon.name,
+        priceCents: addon.price_cents,
+        quantity: addonSel.quantity,
+      })
+      addonTotalCents += addon.price_cents * addonSel.quantity
+    }
+  }
+
   let session: Stripe.Checkout.Session
   try {
     session = await createCheckoutSessionForTicket({
@@ -925,6 +1111,7 @@ export async function purchaseTicket(input: PurchaseTicketInput): Promise<Purcha
       buyerEmail: validated.buyerEmail,
       quantity: validated.quantity,
       totalCents,
+      addonLineItems,
     })
   } catch (checkoutError) {
     if (reservationHeld) {
@@ -944,6 +1131,34 @@ export async function purchaseTicket(input: PurchaseTicketInput): Promise<Purcha
     .update({ stripe_checkout_session_id: session.id })
     .eq('id', ticket.id)
 
+  // Record addon purchases and reserve addon capacity
+  if (addonLineItems.length > 0) {
+    for (const item of addonLineItems) {
+      await db.from('event_ticket_addon_purchases').insert({
+        ticket_id: ticket.id,
+        addon_id: item.addonId,
+        quantity: item.quantity,
+        unit_price_cents: item.priceCents,
+        total_cents: item.priceCents * item.quantity,
+      })
+
+      // CAS reserve addon capacity
+      const { data: addonRow } = await db
+        .from('event_ticket_addons')
+        .select('sold_count')
+        .eq('id', item.addonId)
+        .single()
+
+      if (addonRow) {
+        await db
+          .from('event_ticket_addons')
+          .update({ sold_count: addonRow.sold_count + item.quantity })
+          .eq('id', item.addonId)
+          .eq('sold_count', addonRow.sold_count)
+      }
+    }
+  }
+
   const checkoutUrl = session.url
   if (!checkoutUrl) {
     throw new Error('Failed to create checkout session')
@@ -952,7 +1167,7 @@ export async function purchaseTicket(input: PurchaseTicketInput): Promise<Purcha
   return {
     checkoutUrl,
     ticketId: ticket.id,
-    totalCents,
+    totalCents: totalCents + addonTotalCents,
   }
 }
 

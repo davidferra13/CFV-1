@@ -19,7 +19,6 @@ import { PhotoConsentSummary } from '@/components/events/photo-consent-summary'
 import { RSVPTrackerPanel } from '@/components/events/rsvp-tracker-panel'
 import { GeocodeAddressButton } from '@/components/events/geocode-address-button'
 import { WeatherPanel } from '@/components/events/weather-panel'
-import { EventHubLinkPanel } from '@/components/hub/event-hub-link-panel'
 import { HostMessageTemplate } from '@/components/sharing/host-message-template'
 import { getEventMapUrl } from '@/lib/maps/mapbox'
 import { getQrCodeUrl } from '@/lib/qr/qr-code'
@@ -31,12 +30,16 @@ import { AllergenConflictAlert } from '@/components/events/allergen-conflict-ale
 import { DietaryKnowledgePanel } from '@/components/events/dietary-knowledge-panel'
 import { EventCollaboratorsPanel } from '@/components/collaboration/event-collaborators-panel'
 import type { EventCollaborator } from '@/lib/collaboration/types'
+import { ClientSnapshot } from '@/components/clients/client-snapshot'
+import type { ClientMemoryRow } from '@/lib/clients/client-memory-types'
+import { ChefBriefingPanel } from '@/components/briefing/chef-briefing-panel'
 import { ChefDecisionBriefPanel } from '@/components/hub/chef-decision-brief'
 import { GarmentFlipToggle } from '@/components/events/garment-flip-toggle'
 import { ConstraintRadarPanel } from '@/components/events/constraint-radar-panel'
 import type { ConstraintRadarData } from '@/lib/events/constraint-radar-actions'
 import { MenuSharePanel } from '@/components/menus/menu-share-panel'
 import { ShareSplitButton } from '@/components/payments/share-split-button'
+import { SeriesSelector } from '@/components/events/series-selector'
 
 type ServiceViewMenu = {
   id: string
@@ -79,6 +82,7 @@ type EventDetailOverviewTabProps = {
   collaborators: EventCollaborator[]
   eventMenuData?: ServiceViewMenu[]
   constraintRadarData?: ConstraintRadarData | null
+  clientMemories?: ClientMemoryRow[]
 }
 
 export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
@@ -107,6 +111,7 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
     collaborators,
     eventMenuData,
     constraintRadarData,
+    clientMemories,
   } = props
 
   return (
@@ -119,6 +124,11 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
       >
         {constraintRadarData && (
           <ConstraintRadarPanel data={constraintRadarData} eventId={event.id} />
+        )}
+
+        {/* Pre-Event Briefing */}
+        {event.status !== 'cancelled' && event.status !== 'completed' && (
+          <ChefBriefingPanel eventId={event.id} />
         )}
 
         {/* Main Content Grid */}
@@ -277,6 +287,9 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
                 </dd>
               </div>
             </dl>
+            <div className="mt-4 border-t border-stone-800 pt-4">
+              <SeriesSelector eventId={event.id} currentSeriesId={event.event_series_id ?? null} />
+            </div>
           </Card>
 
           {/* Client Information */}
@@ -358,6 +371,15 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
           </Card>
 
           <EventCollaboratorsPanel eventId={event.id} collaborators={collaborators} />
+
+          {/* Client Memory Snapshot */}
+          {event.client?.id && (
+            <ClientSnapshot
+              clientId={event.client.id}
+              clientName={event.client.full_name || 'Client'}
+              memories={clientMemories ?? []}
+            />
+          )}
         </div>
 
         {/* Client Portal QR Code */}
@@ -441,13 +463,26 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
         {/* AI Contract Generator */}
         {!['cancelled'].includes(event.status) && <ContractGeneratorPanel eventId={event.id} />}
 
-        {/* Social Hub Link */}
+        {/* Circle Chat Nudge */}
         {event.status !== 'draft' && event.status !== 'cancelled' && (
-          <EventHubLinkPanel
-            groupToken={hubGroupToken as string | null}
-            eventId={event.id}
-            profileToken={hubProfileToken}
-          />
+          <Card className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-semibold text-stone-300">Dinner Circle</h3>
+                <p className="text-xs text-stone-500 mt-0.5">
+                  {hubGroupToken
+                    ? 'Chat with your client and guests directly from the Chat tab.'
+                    : 'Start the circle from the Chat tab to coordinate with your client.'}
+                </p>
+              </div>
+              <Link
+                href={`/events/${event.id}?tab=chat`}
+                className="text-xs font-medium text-brand-500 hover:text-brand-400 whitespace-nowrap"
+              >
+                Go to Chat &rarr;
+              </Link>
+            </div>
+          </Card>
         )}
         {event.id && event.tenant_id && (
           <ChefDecisionBriefPanel eventId={event.id} tenantId={event.tenant_id} />

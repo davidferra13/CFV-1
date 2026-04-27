@@ -40,6 +40,7 @@ Failed:      0 files
 | 7   | Rina Solis           | Chef (medical constraints)       | 2026-04-25      | 62/100                                    | Codex autonomous                                   | `docs/stress-tests/persona-rina-solis-2026-04-25.md`                        | Planning is useful, but safety needs hard constraint enforcement and outcome tracking.                                                    |
 | 8   | Arthur Klein         | Chef (Excel-driven precision)    | 2026-04-25      | 63/100                                    | Opus 4.6 full pipeline                             | `docs/stress-tests/persona-arthur-klein-excel-precision-chef-2026-04-25.md` | Hardcoded overhead %/labor rate in plate cost is a BLOCKER. Financial ledger + price provenance are strengths. No recipe cost CSV export. |
 | 9   | Megan (Bachelorette) | Client (group coordinator/relay) | 2026-04-26      | 46/100 (HOSTILE)                          | Opus 4.6 full pipeline (from real call transcript) | `docs/stress-tests/persona-megan-referral-bachelorette-2026-04-26.md`       | System assumes booker = decision-maker. No menu delegation, no client-facing group split, no logistics capture for verbal agreements.     |
+| 10  | Chef Marco           | Chef (dinner series impresario)  | 2026-04-27      | 48/100 (HOSTILE)                          | Opus 4.6 full pipeline                             | `docs/stress-tests/persona-chef-marco-dinner-series-2026-04-27.md`          | No timed ticket drops (BLOCKER), no add-on checkout (BLOCKER). Drop engine confirmed cross-persona critical gap (Kai + Marco).            |
 
 ### Research-Only Personas (Not Formally Tested)
 
@@ -67,45 +68,51 @@ These personas were studied in multi-persona research but never run through the 
 
 Unique gaps discovered across all persona work (formal + informal):
 
-| #   | Gap                                                                  | Found By   | Scope        | Status     |
-| --- | -------------------------------------------------------------------- | ---------- | ------------ | ---------- |
-| 1   | Quote acceptance trust gap (phantom terms, no confirmation)          | Client Joy | REFINE       | Open       |
-| 2   | Client portal uses B2B dashboard language                            | Client Joy | REFINE       | Open       |
-| 3   | Hub terminology chaos (6+ labels for overlapping concepts)           | Client Joy | REFINE       | Open       |
-| 4   | Re-booking ignores returning client data (no pre-fill)               | Client Joy | EXPAND       | Open       |
-| 5   | No vendor portal or purchase order surface                           | Research   | EXPAND       | Open       |
-| 6   | No delivery tracking for meal prep                                   | Research   | EXPAND       | Open       |
-| 7   | No e-commerce/public ordering for artisan producers                  | Tester #4  | OUT-OF-SCOPE | Documented |
-| 8   | Dinner Circle host control surface insufficient                      | Sophie     | EXPAND       | Specced    |
-| 9   | No BEO generation for catering                                       | Research   | OUT-OF-SCOPE | Documented |
-| 10  | No supplier CRM for farm-to-table sourcing                           | Research   | EXPAND       | Open       |
-| 11  | No drop-release engine for high-demand event launches                | Kai        | EXPAND       | Open       |
-| 12  | No offline-first guarantee for mission-critical workflows            | Leo        | EXPAND       | Open       |
-| 13  | No hard medical constraint enforcement engine                        | Rina       | EXPAND       | Open       |
-| 14  | Hardcoded overhead % and labor rate in plate cost                    | Arthur     | REFINE       | Open       |
-| 15  | No recipe/ingredient cost CSV export                                 | Arthur     | EXPAND       | Open       |
-| 16  | No standalone ingredient price CSV import                            | Arthur     | EXPAND       | Open       |
-| 17  | No inline formula audit trail on costing views                       | Arthur     | REFINE       | Open       |
-| 18  | Confidence decay formula hidden from user                            | Arthur     | REFINE       | Open       |
-| 19  | No native .xlsx import (CSV only)                                    | Arthur     | EXPAND       | Open       |
-| 20  | No menu delegation to non-account third party (booker != decider)    | Megan      | EXPAND       | Open       |
-| 21  | No client-facing group payment split view                            | Megan      | EXPAND       | Open       |
-| 22  | No rental property logistics mode (plates, cleanup, kitchen unknown) | Megan      | EXPAND       | Open       |
-| 23  | Phone call agreements have no structured capture point               | Megan      | EXPAND       | Open       |
-| 24  | Surprise/secret tracking with no menu collision detection            | Megan      | EXPAND       | Open       |
-| 25  | Referral trust context not surfaced post-inquiry on event detail     | Megan      | REFINE       | Open       |
+| #   | Gap                                                                    | Found By   | Scope        | Status     |
+| --- | ---------------------------------------------------------------------- | ---------- | ------------ | ---------- |
+| 1   | Quote acceptance trust gap (phantom terms, no confirmation)            | Client Joy | REFINE       | Open       |
+| 2   | Client portal uses B2B dashboard language                              | Client Joy | REFINE       | Open       |
+| 3   | Hub terminology chaos (6+ labels for overlapping concepts)             | Client Joy | REFINE       | Open       |
+| 4   | Re-booking ignores returning client data (no pre-fill)                 | Client Joy | EXPAND       | Open       |
+| 5   | No vendor portal or purchase order surface                             | Research   | EXPAND       | Open       |
+| 6   | No delivery tracking for meal prep                                     | Research   | EXPAND       | Open       |
+| 7   | No e-commerce/public ordering for artisan producers                    | Tester #4  | OUT-OF-SCOPE | Documented |
+| 8   | Dinner Circle host control surface insufficient                        | Sophie     | EXPAND       | Specced    |
+| 9   | No BEO generation for catering                                         | Research   | OUT-OF-SCOPE | Documented |
+| 10  | No supplier CRM for farm-to-table sourcing                             | Research   | EXPAND       | Open       |
+| 11  | No drop-release engine for high-demand event launches                  | Kai        | EXPAND       | Open       |
+| 12  | No offline-first guarantee for mission-critical workflows              | Leo        | EXPAND       | Open       |
+| 13  | No hard medical constraint enforcement engine                          | Rina       | EXPAND       | Open       |
+| 14  | Hardcoded overhead % and labor rate in plate cost                      | Arthur     | REFINE       | Open       |
+| 15  | No recipe/ingredient cost CSV export                                   | Arthur     | EXPAND       | Open       |
+| 16  | No standalone ingredient price CSV import                              | Arthur     | EXPAND       | Open       |
+| 17  | No inline formula audit trail on costing views                         | Arthur     | REFINE       | Open       |
+| 18  | Confidence decay formula hidden from user                              | Arthur     | REFINE       | Open       |
+| 19  | No native .xlsx import (CSV only)                                      | Arthur     | EXPAND       | Open       |
+| 20  | No menu delegation to non-account third party (booker != decider)      | Megan      | EXPAND       | Open       |
+| 21  | No client-facing group payment split view                              | Megan      | EXPAND       | Open       |
+| 22  | No rental property logistics mode (plates, cleanup, kitchen unknown)   | Megan      | EXPAND       | Open       |
+| 23  | Phone call agreements have no structured capture point                 | Megan      | EXPAND       | Open       |
+| 24  | Surprise/secret tracking with no menu collision detection              | Megan      | EXPAND       | Open       |
+| 25  | Referral trust context not surfaced post-inquiry on event detail       | Megan      | REFINE       | Open       |
+| 26  | No ticket checkout add-ons (merch, wine pairings, experience upgrades) | Marco      | EXPAND       | Open       |
+| 27  | No public audience signup / "notify me of future events"               | Marco      | EXPAND       | Open       |
+| 28  | No consolidated cross-event prep / grocery view                        | Marco      | EXPAND       | Open       |
+| 29  | Event series table exists but has no UI or server actions              | Marco      | EXPAND       | Open       |
+| 30  | Venue management requires awkward "partner" creation                   | Marco      | EXPAND       | Open       |
+| 31  | No series-level financial aggregation or theme P&L                     | Marco      | EXPAND       | Open       |
 
 ---
 
 ## Saturation Status
 
 ```
-Total personas formally tested:  6 (Joy, Kai, Leo, Rina, Arthur, Megan)
-Total personas defined:          9 (Bob, Joy, Sophie, Tester #4, Kai, Leo, Rina, Arthur, Megan)
+Total personas formally tested:  7 (Joy, Kai, Leo, Rina, Arthur, Megan, Marco)
+Total personas defined:          10 (Bob, Joy, Sophie, Tester #4, Kai, Leo, Rina, Arthur, Megan, Marco)
 Research personas cataloged:     13
-Unique gaps found:               25
-New gaps per persona (avg):      3.2 (Megan: 6 new gaps)
-Saturation estimate:             MEDIUM (need 10+ formal tests, client-type underrepresented)
+Unique gaps found:               31
+New gaps per persona (avg):      3.3 (Marco: 6 new gaps, 1 duplicate with Kai #11)
+Saturation estimate:             MEDIUM (approaching 10 formal tests; client/guest/vendor types still underrepresented)
 ```
 
 ---
@@ -123,7 +130,7 @@ Based on coverage gaps and expected ROI:
 
 ---
 
-_Last updated: 2026-04-25 (Arthur Klein run)_
+_Last updated: 2026-04-27 (Chef Marco run)_
 _Next update: after next `/persona-stress-test` run_
 | 000-wp1-reliability-test-chef | Chef | 2026-04-26 | 0/100 | local-ollama-v2 | [Report](persona-000-wp1-reliability-test-chef-2026-04-26.md) |
 | elena-ruiz | Chef | 2026-04-26 | 50/100 | local-ollama-v2 | [Report](persona-elena-ruiz-2026-04-26.md) |
@@ -155,3 +162,5 @@ _Next update: after next `/persona-stress-test` run_
 | tommy-thompson | Vendor | 2026-04-26 | 50/100 | local-ollama-v2 | [Report](persona-tommy-thompson-2026-04-26.md) |
 | victor-hale-2 | Chef | 2026-04-26 | 68/100 | local-ollama-v2 | [Report](persona-victor-hale-2-2026-04-26.md) |
 | victor-hale-2 | Chef | 2026-04-26 | 84/100 | local-ollama-v2 | [Report](persona-victor-hale-2-2026-04-26.md) |
+| david-chang | Chef | 2026-04-27 | 0/100 | local-ollama-v2 | [Report](persona-david-chang-2026-04-27.md) |
+| mindy-weiss | Client | 2026-04-27 | 50/100 | local-ollama-v2 | [Report](persona-mindy-weiss-2026-04-27.md) |
