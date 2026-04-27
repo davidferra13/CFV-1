@@ -1,14 +1,16 @@
 {
-    "runId":  "live-ops-55592-1777328102",
-    "ranAt":  "2026-04-27T22:15:45.2648360Z",
+    "runId":  "live-ops-85152-1777331703",
+    "ranAt":  "2026-04-27T23:15:58.6718831Z",
     "target":  null,
     "newChangesDetected":  true,
     "periodicSweepDue":  false,
     "authSweepsEnabled":  false,
-    "changedPathCount":  3,
+    "changedPathCount":  5,
     "changedPaths":  [
                          "docs/uptime-history.json",
-                         "system/.pipeline.lock",
+                         "lib/devices/kiosk-menu-actions.ts",
+                         "lib/quotes/actions.ts",
+                         "system/persona-inbox-state.json",
                          "system/runtime-events.ndjson"
                      ],
     "healthProbes":  [
@@ -19,7 +21,7 @@
                       "name":  "unit-canary",
                       "status":  "failed",
                       "exitCode":  1,
-                      "durationSeconds":  24.6
+                      "durationSeconds":  30.7
                   }
               ],
     "notes":  [
