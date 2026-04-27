@@ -56,6 +56,8 @@ export function HomepageSearch() {
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
+            aria-hidden="true"
+            role="presentation"
           >
             <path
               strokeLinecap="round"
@@ -92,6 +94,8 @@ export function HomepageSearch() {
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
+            aria-hidden="true"
+            role="presentation"
           >
             <path
               strokeLinecap="round"
@@ -125,6 +129,8 @@ export function HomepageSearch() {
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
+            aria-hidden="true"
+            role="presentation"
           >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
@@ -138,7 +144,7 @@ export function HomepageSearch() {
           type="submit"
           className="inline-flex h-[52px] items-center justify-center rounded-[1.25rem] border border-stone-700 bg-stone-900/80 px-6 text-sm font-semibold text-stone-100 shadow-lg transition-colors active:scale-[0.97] touch-manipulation hover:border-stone-600 hover:bg-stone-800 sm:h-[52px] sm:min-w-[188px]"
         >
-          <svg className="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true" role="presentation">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
