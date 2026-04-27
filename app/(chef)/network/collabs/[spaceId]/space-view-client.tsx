@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useTransition, useRef, useEffect } from 'react'
+import { useState, useTransition, useRef, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
+import { useSSE } from '@/lib/realtime/sse-client'
 import { Button } from '@/components/ui/button'
 import {
   ArrowLeft,
@@ -80,6 +81,18 @@ export function SpaceViewClient({ detail, currentChefId, spaceId }: Props) {
   useEffect(() => {
     markCollabSpaceRead({ spaceId })
   }, [spaceId])
+
+  // Real-time: refresh messages when another member sends one
+  const handleSSEMessage = useCallback(
+    (msg: { event: string; data: any }) => {
+      if (msg.event === 'new_message' && msg.data?.senderChefId !== currentChefId) {
+        router.refresh()
+      }
+    },
+    [currentChefId, router]
+  )
+
+  useSSE(`collab-space:${spaceId}`, { onMessage: handleSSEMessage })
 
   const spaceName =
     detail.space.name ||
