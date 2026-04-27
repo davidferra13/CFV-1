@@ -9,6 +9,11 @@ const PresenceBeacon = dynamic(
   { ssr: false }
 )
 
+const RemyConciergeWidget = dynamic(
+  () => import('@/components/public/remy-concierge-widget').then((m) => m.RemyConciergeWidget),
+  { ssr: false }
+)
+
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
     <div
@@ -30,6 +35,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
         {children}
       </main>
       <PublicFooter />
+      <RemyConciergeWidget />
     </div>
   )
 }
