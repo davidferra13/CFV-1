@@ -4,7 +4,8 @@
 // No financial data shown here. Exposure IS the value.
 
 import NextImage from 'next/image'
-import { getPartnerPortalData } from '@/lib/partners/portal-actions'
+import { getPartnerPortalData, getMyPayouts } from '@/lib/partners/portal-actions'
+import { PartnerPayoutHistory } from '@/components/partners/partner-payout-history'
 import { format } from 'date-fns'
 import { MapPin, CalendarDays, Users, Image, Heart } from '@/components/ui/icons'
 import Link from 'next/link'
@@ -30,7 +31,7 @@ function StatCard({
 }
 
 export default async function PartnerDashboardPage() {
-  const data = await getPartnerPortalData()
+  const [data, payoutData] = await Promise.all([getPartnerPortalData(), getMyPayouts()])
 
   const { partner, locations, recentEvents, stats, originClientName, originEventSummary } = data
 
@@ -180,6 +181,12 @@ export default async function PartnerDashboardPage() {
           </div>
         </div>
       )}
+
+      {/* Payout history */}
+      <div>
+        <h2 className="text-lg font-semibold text-stone-100 mb-4">Payout History</h2>
+        <PartnerPayoutHistory data={payoutData} />
+      </div>
 
       {/* Empty state */}
       {locations.length === 0 && (
