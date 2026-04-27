@@ -134,6 +134,14 @@ export const CRON_MONITOR_DEFINITIONS: CronMonitorDefinition[] = [
     description: 'Alert chefs when marketplace leads sit untouched for 24 hours',
   },
   {
+    cronName: 'stale-draft-cleanup',
+    routePath: '/api/scheduled/stale-draft-cleanup',
+    maxExpectedMinutes: 120,
+    cadence: 'daily',
+    description:
+      'Delete stale inquiry reply drafts older than 3 days so fresh ones are regenerated',
+  },
+  {
     cronName: 'follow-ups',
     routePath: '/api/scheduled/follow-ups',
     maxExpectedMinutes: 720,
