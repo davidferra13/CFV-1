@@ -670,18 +670,18 @@ export function KioskOrderRegister({ token, staffSession }: KioskOrderRegisterPr
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => updateQuantity(item.id, -1)}
-                          className="rounded bg-stone-800 p-1 text-stone-300 hover:bg-stone-700"
+                          className="rounded bg-stone-800 p-2 text-stone-300 hover:bg-stone-700"
                         >
-                          <Minus className="h-3.5 w-3.5" />
+                          <Minus className="h-5 w-5" />
                         </button>
                         <span className="w-5 text-center text-sm text-stone-200">
                           {item.quantity}
                         </span>
                         <button
                           onClick={() => updateQuantity(item.id, 1)}
-                          className="rounded bg-stone-800 p-1 text-stone-300 hover:bg-stone-700"
+                          className="rounded bg-stone-800 p-2 text-stone-300 hover:bg-stone-700"
                         >
-                          <Plus className="h-3.5 w-3.5" />
+                          <Plus className="h-5 w-5" />
                         </button>
                       </div>
                       <p className="text-sm font-semibold text-stone-100">

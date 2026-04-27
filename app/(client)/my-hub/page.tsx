@@ -58,7 +58,7 @@ export default async function MyHubPage() {
             Your dinner circles, community groups, and trusted invite-only spaces.
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Link href="/my-hub/notifications">
             <Button variant="secondary" className="relative">
               <Bell className="mr-2 h-4 w-4" />
