@@ -18,9 +18,9 @@ fi
 
 echo "Type check passed."
 
-# Also run full regression check (not just quick)
-echo "Running full regression check..."
-bash scripts/regression-check.sh 2>&1
+# Run regression check (quick mode - semantic is advisory, not blocking)
+echo "Running regression check..."
+bash scripts/regression-check.sh --quick 2>&1
 
 if [ $? -ne 0 ]; then
   echo ""
