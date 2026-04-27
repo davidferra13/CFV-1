@@ -17,10 +17,11 @@ page.on('pageerror', err => {
 });
 
 try {
-  const response = await page.goto('http://127.0.0.1:3977/', { waitUntil: 'networkidle', timeout: 30000 });
+  const response = await page.goto('http://127.0.0.1:3977/', { waitUntil: 'domcontentloaded', timeout: 30000 });
   console.log('STATUS:', response.status());
   
-  await page.waitForTimeout(3000);
+  // Wait for content to render
+  await page.waitForTimeout(5000);
   
   await page.screenshot({ path: 'c:/Users/david/Documents/CFv1/tests/coverage/page-3977-screenshot.png', fullPage: true });
   console.log('Screenshot saved');
@@ -46,13 +47,15 @@ try {
   const hasStats = await page.$$eval('[class*="stat"], [class*="Stat"], [class*="metric"], [class*="Metric"]', els => els.length);
   console.log('STAT/METRIC ELEMENTS:', hasStats);
   
-  // Check for images
   const images = await page.$$eval('img', els => els.length);
   console.log('IMAGE ELEMENTS:', images);
   
-  // Check headings
   const headings = await page.$$eval('h1, h2, h3', els => els.map(e => e.innerText?.trim()).filter(Boolean));
   console.log('HEADINGS:', JSON.stringify(headings.slice(0, 20)));
+
+  // Check all element count
+  const allElements = await page.$$eval('*', els => els.length);
+  console.log('TOTAL DOM ELEMENTS:', allElements);
   
   console.log('\n--- CONSOLE ERRORS ---');
   if (errors.length === 0) {

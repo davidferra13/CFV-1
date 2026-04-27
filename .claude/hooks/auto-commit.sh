@@ -4,7 +4,7 @@
 # ═══════════════════════════════════════════════════════════════════
 # Dual-mode: fires on Stop (every Claude turn) AND SessionEnd.
 #
-#   --throttled  (Stop hook)       Commits if dirty + 5min since last commit
+#   --throttled  (Stop hook)       Commits if dirty + 2min since last commit
 #   --final      (SessionEnd hook) Commits unconditionally if dirty
 #   (no flag)                      Same as --throttled
 #
@@ -15,8 +15,9 @@
 # Safety:
 #   - Won't commit during merge/rebase conflicts
 #   - Won't commit on main/master
+#   - Won't commit if git index is locked (parallel agent safety)
 #   - Excludes .env, credentials, secrets
-#   - Throttled to max once per 5 minutes (Stop mode)
+#   - Throttled to max once per 2 minutes (Stop mode)
 #   - Never pushes (developer's call)
 #   - Logs to .claude/hooks/auto-commit.log
 # ═══════════════════════════════════════════════════════════════════
@@ -24,8 +25,8 @@
 MODE="${1:---throttled}"
 PROJECT_DIR="c:/Users/david/Documents/CFv1"
 LOG_FILE="$PROJECT_DIR/.claude/hooks/auto-commit.log"
-THROTTLE_FILE="/tmp/.claude-autocommit-throttle"
-THROTTLE_SECONDS=300  # 5 minutes
+THROTTLE_FILE="$PROJECT_DIR/.claude/hooks/.autocommit-throttle"
+THROTTLE_SECONDS=120  # 2 minutes
 
 timestamp() { date '+%Y-%m-%d %H:%M:%S'; }
 log() { echo "[$(timestamp)] $1" >> "$LOG_FILE"; }
