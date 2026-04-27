@@ -6,6 +6,7 @@
 // On approval, business items are written to the expenses table.
 
 import { useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -119,6 +120,7 @@ function LineItemRow({
 }
 
 function ReceiptBlock({ receipt: initialReceipt }: { receipt: ReceiptPhoto }) {
+  const router = useRouter()
   const [receipt, setReceipt] = useState(initialReceipt)
   const [lineItems, setLineItems] = useState<ReceiptLineItemRecord[]>(initialReceipt.lineItems)
   const [approving, setApproving] = useState(false)
@@ -173,7 +175,7 @@ function ReceiptBlock({ receipt: initialReceipt }: { receipt: ReceiptPhoto }) {
     try {
       await processReceiptOCR(receipt.id)
       toast.success('Receipt extracted successfully')
-      window.location.reload()
+      router.refresh()
     } catch (err) {
       console.error('[receipt-summary] OCR extraction failed', err)
       toast.error('Failed to extract receipt data. Please try again.')

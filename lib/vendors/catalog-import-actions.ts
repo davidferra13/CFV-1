@@ -3,6 +3,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
+import { broadcastTenantMutation } from '@/lib/realtime/broadcast'
 import { recordVendorPricePoint } from '@/lib/vendors/price-point-actions'
 import { z } from 'zod'
 

@@ -24,6 +24,7 @@ import {
   MENU_ENGINE_FEATURE_KEYS,
 } from '@/lib/scheduling/types'
 import { MAX_PRIMARY_NAV_ITEMS, normalizePrimaryNavHrefs } from '@/lib/interface/surface-governance'
+import { broadcastTenantMutation } from '@/lib/realtime/broadcast'
 
 // ============================================
 // VALIDATION
@@ -453,6 +454,9 @@ export async function updateChefPreferences(input: UpdatePreferencesInput) {
   revalidatePath('/settings/menu-engine')
   revalidatePath('/dashboard')
   revalidateTag(`chef-layout-${user.entityId}`)
+
+  try { broadcastTenantMutation(user.tenantId!, { entity: 'chef_preferences', action: 'update', reason: 'Chef preferences updated' }) } catch {}
+
   return { success: true }
 }
 
@@ -520,6 +524,9 @@ export async function setBusinessMode(input: {
   }
 
   revalidatePath('/settings')
+
+  try { broadcastTenantMutation(user.tenantId!, { entity: 'chef_preferences', action: 'update', reason: 'Business mode updated' }) } catch {}
+
   return { success: true }
 }
 

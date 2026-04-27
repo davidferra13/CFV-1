@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { ConfirmModal } from '@/components/ui/confirm-modal'
@@ -39,6 +40,7 @@ type Props = {
 }
 
 export function LocationsClient({ initialLocations, initialStock }: Props) {
+  const router = useRouter()
   const [locations, setLocations] = useState(initialLocations)
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
@@ -73,7 +75,7 @@ export function LocationsClient({ initialLocations, initialStock }: Props) {
         setName('')
         setNotes('')
         // Reload to get updated list
-        window.location.reload()
+        router.refresh()
       } catch (err) {
         console.error('Failed to create location', err)
       }
@@ -84,7 +86,7 @@ export function LocationsClient({ initialLocations, initialStock }: Props) {
     startTransition(async () => {
       try {
         await setDefaultLocation(id)
-        window.location.reload()
+        router.refresh()
       } catch (err) {
         console.error('Failed to set default', err)
       }

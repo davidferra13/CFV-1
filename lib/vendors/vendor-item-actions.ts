@@ -3,6 +3,7 @@
 import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
+import { broadcastTenantMutation } from '@/lib/realtime/broadcast'
 import { recordVendorPricePoint } from '@/lib/vendors/price-point-actions'
 import { z } from 'zod'
 
@@ -69,6 +70,13 @@ export async function addVendorItem(input: AddVendorItemInput) {
   })
 
   revalidatePath('/vendors')
+  try {
+    broadcastTenantMutation(user.tenantId!, {
+      entity: 'vendor_items',
+      action: 'insert',
+      reason: 'Vendor item added',
+    })
+  } catch {}
   return item
 }
 
@@ -147,6 +155,13 @@ export async function updateVendorItem(id: string, input: UpdateVendorItemInput)
   }
 
   revalidatePath('/vendors')
+  try {
+    broadcastTenantMutation(user.tenantId!, {
+      entity: 'vendor_items',
+      action: 'update',
+      reason: 'Vendor item updated',
+    })
+  } catch {}
 }
 
 export async function deleteVendorItem(id: string) {
@@ -165,6 +180,13 @@ export async function deleteVendorItem(id: string) {
   }
 
   revalidatePath('/vendors')
+  try {
+    broadcastTenantMutation(user.tenantId!, {
+      entity: 'vendor_items',
+      action: 'delete',
+      reason: 'Vendor item deleted',
+    })
+  } catch {}
 }
 
 export async function listVendorItems(vendorId: string) {

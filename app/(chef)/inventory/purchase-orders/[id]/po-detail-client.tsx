@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -34,6 +35,7 @@ type Props = {
 }
 
 export function PODetailClient({ po }: Props) {
+  const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [showAddItem, setShowAddItem] = useState(false)
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
@@ -49,7 +51,7 @@ export function PODetailClient({ po }: Props) {
     startTransition(async () => {
       try {
         await submitPO(po.id)
-        window.location.reload()
+        router.refresh()
       } catch (err) {
         console.error('Failed to submit PO', err)
       }
@@ -65,7 +67,7 @@ export function PODetailClient({ po }: Props) {
     startTransition(async () => {
       try {
         await cancelPO(po.id)
-        window.location.reload()
+        router.refresh()
       } catch (err) {
         console.error('Failed to cancel PO', err)
       }
@@ -88,7 +90,7 @@ export function PODetailClient({ po }: Props) {
         setItemQty('')
         setItemUnit('')
         setItemPrice('')
-        window.location.reload()
+        router.refresh()
       } catch (err) {
         console.error('Failed to add item', err)
       }
@@ -104,7 +106,7 @@ export function PODetailClient({ po }: Props) {
     startTransition(async () => {
       try {
         await receivePOItems(po.id, toReceive)
-        window.location.reload()
+        router.refresh()
       } catch (err) {
         console.error('Failed to receive items', err)
       }

@@ -3,6 +3,7 @@
 // Tip Log Panel - records tips received per event (cash, Venmo, Zelle, etc.)
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
 import { addTip, deleteTip } from '@/lib/finance/tip-actions'
 import type { TipEntry } from '@/lib/finance/tip-actions'
@@ -17,6 +18,7 @@ interface Props {
 }
 
 export function TipLogPanel({ eventId, initialTips }: Props) {
+  const router = useRouter()
   const [tips, setTips] = useState(initialTips)
   const [isAdding, setIsAdding] = useState(false)
   const [submitting, setSubmitting] = useState(false)
@@ -28,10 +30,24 @@ export function TipLogPanel({ eventId, initialTips }: Props) {
     setSubmitting(true)
     const fd = new FormData(e.currentTarget)
     fd.set('eventId', eventId)
-    await addTip(fd)
+    const amountDollars = parseFloat(fd.get('amountDollars') as string)
+    const method = (fd.get('method') as string) || 'cash'
+    const notes = (fd.get('notes') as string) || null
+    const result = await addTip(fd)
     setSubmitting(false)
-    setIsAdding(false)
-    window.location.reload()
+    if (result.success) {
+      const optimisticTip: TipEntry = {
+        id: crypto.randomUUID(),
+        eventId,
+        amountCents: Math.round(amountDollars * 100),
+        method,
+        notes,
+        receivedAt: new Date().toISOString(),
+      }
+      setTips((prev) => [...prev, optimisticTip])
+      setIsAdding(false)
+      router.refresh()
+    }
   }
 
   async function handleDelete(id: string) {

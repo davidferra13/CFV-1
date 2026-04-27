@@ -3,6 +3,7 @@
 // Mileage Log Panel - per-event or standalone mileage tracker.
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
 import { addMileageLog, deleteMileageLog } from '@/lib/finance/mileage-actions'
 import type { MileageEntry } from '@/lib/finance/mileage-actions'
@@ -16,6 +17,7 @@ interface Props {
 const IRS_RATE_DISPLAY = '72.5¢/mi' // 2026 IRS rate
 
 export function MileageLogPanel({ eventId, initialEntries }: Props) {
+  const router = useRouter()
   const [entries, setEntries] = useState(initialEntries)
   const [isAdding, setIsAdding] = useState(false)
   const [submitting, setSubmitting] = useState(false)

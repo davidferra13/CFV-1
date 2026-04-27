@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { logStaffMeal } from '@/lib/inventory/staff-meal-actions'
@@ -13,6 +14,7 @@ function formatCents(cents: number | null) {
 type Props = { initialMeals: any[] }
 
 export function StaffMealsClient({ initialMeals }: Props) {
+  const router = useRouter()
   const [showForm, setShowForm] = useState(false)
   const [isPending, startTransition] = useTransition()
   const [description, setDescription] = useState('')
@@ -63,7 +65,7 @@ export function StaffMealsClient({ initialMeals }: Props) {
         setStaffCount('1')
         setNotes('')
         setItems([{ ingredientName: '', quantity: '', unit: '', costCents: '' }])
-        window.location.reload()
+        router.refresh()
       } catch (err) {
         console.error('Failed to log staff meal', err)
       }

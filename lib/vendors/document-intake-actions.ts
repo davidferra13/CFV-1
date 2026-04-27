@@ -2,6 +2,7 @@
 
 import { createHash } from 'crypto'
 import { revalidatePath } from 'next/cache'
+import { broadcastTenantMutation } from '@/lib/realtime/broadcast'
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
 import { extractTextFromFile } from '@/lib/menus/extract-text'
@@ -164,11 +165,20 @@ type DraftExpenseSummary = {
   warnings: string[]
 }
 
-function revalidateVendorPaths(vendorId: string) {
+function revalidateVendorPaths(vendorId: string, tenantId?: string) {
   revalidatePath('/vendors')
   revalidatePath(`/vendors/${vendorId}`)
   revalidatePath('/vendors/price-comparison')
   revalidatePath('/food-cost')
+  if (tenantId) {
+    try {
+      broadcastTenantMutation(tenantId, {
+        entity: 'vendor_document_uploads',
+        action: 'update',
+        reason: 'Vendor document processed',
+      })
+    } catch {}
+  }
 }
 
 async function logVendorDocumentActivity(params: {
@@ -1006,7 +1016,7 @@ export async function uploadVendorDocument(
           .eq('id', insertedRow.id)
           .eq('chef_id', user.tenantId!)
 
-        revalidateVendorPaths(vendorId)
+        revalidateVendorPaths(vendorId, user.tenantId!)
         return { success: false, error: lineError, existingUploadId: insertedRow.id }
       }
 
@@ -1038,7 +1048,7 @@ export async function uploadVendorDocument(
         .eq('id', insertedRow.id)
         .eq('chef_id', user.tenantId!)
 
-      revalidateVendorPaths(vendorId)
+      revalidateVendorPaths(vendorId, user.tenantId!)
       await logVendorDocumentActivity({
         tenantId: user.tenantId!,
         actorId: user.id,
@@ -1075,7 +1085,7 @@ export async function uploadVendorDocument(
         .eq('id', insertedRow.id)
         .eq('chef_id', user.tenantId!)
 
-      revalidateVendorPaths(vendorId)
+      revalidateVendorPaths(vendorId, user.tenantId!)
       return { success: false, error: message, existingUploadId: insertedRow.id }
     }
   }
@@ -1105,7 +1115,7 @@ export async function uploadVendorDocument(
           .eq('id', insertedRow.id)
           .eq('chef_id', user.tenantId!)
 
-        revalidateVendorPaths(vendorId)
+        revalidateVendorPaths(vendorId, user.tenantId!)
         await logVendorDocumentActivity({
           tenantId: user.tenantId!,
           actorId: user.id,
@@ -1146,7 +1156,7 @@ export async function uploadVendorDocument(
         .eq('id', insertedRow.id)
         .eq('chef_id', user.tenantId!)
 
-      revalidateVendorPaths(vendorId)
+      revalidateVendorPaths(vendorId, user.tenantId!)
       await logVendorDocumentActivity({
         tenantId: user.tenantId!,
         actorId: user.id,
@@ -1178,7 +1188,7 @@ export async function uploadVendorDocument(
         .eq('id', insertedRow.id)
         .eq('chef_id', user.tenantId!)
 
-      revalidateVendorPaths(vendorId)
+      revalidateVendorPaths(vendorId, user.tenantId!)
       return { success: false, error: message, existingUploadId: insertedRow.id }
     }
   }
@@ -1229,7 +1239,7 @@ export async function uploadVendorDocument(
           .eq('id', insertedRow.id)
           .eq('chef_id', user.tenantId!)
 
-        revalidateVendorPaths(vendorId)
+        revalidateVendorPaths(vendorId, user.tenantId!)
         await logVendorDocumentActivity({
           tenantId: user.tenantId!,
           actorId: user.id,
@@ -1272,7 +1282,7 @@ export async function uploadVendorDocument(
         .eq('id', insertedRow.id)
         .eq('chef_id', user.tenantId!)
 
-      revalidateVendorPaths(vendorId)
+      revalidateVendorPaths(vendorId, user.tenantId!)
       await logVendorDocumentActivity({
         tenantId: user.tenantId!,
         actorId: user.id,
@@ -1305,7 +1315,7 @@ export async function uploadVendorDocument(
         .eq('id', insertedRow.id)
         .eq('chef_id', user.tenantId!)
 
-      revalidateVendorPaths(vendorId)
+      revalidateVendorPaths(vendorId, user.tenantId!)
       return { success: false, error: message, existingUploadId: insertedRow.id }
     }
   }
@@ -1323,7 +1333,7 @@ export async function uploadVendorDocument(
     .eq('id', insertedRow.id)
     .eq('chef_id', user.tenantId!)
 
-  revalidateVendorPaths(vendorId)
+  revalidateVendorPaths(vendorId, user.tenantId!)
   await logVendorDocumentActivity({
     tenantId: user.tenantId!,
     actorId: user.id,
@@ -1477,7 +1487,7 @@ export async function applyVendorDocumentDraft(
         },
       })
 
-      revalidateVendorPaths(uploadRow.vendor_id)
+      revalidateVendorPaths(uploadRow.vendor_id, user.tenantId!)
       return {
         success: true,
         documentType: 'invoice',
@@ -1559,9 +1569,16 @@ export async function applyVendorDocumentDraft(
       },
     })
 
-    revalidateVendorPaths(uploadRow.vendor_id)
+    revalidateVendorPaths(uploadRow.vendor_id, user.tenantId!)
     revalidatePath('/vendors')
     revalidatePath('/food-cost')
+    try {
+      broadcastTenantMutation(user.tenantId!, {
+        entity: 'vendor_invoices',
+        action: 'insert',
+        reason: 'Invoice created from document draft',
+      })
+    } catch {}
     return {
       success: true,
       documentType: 'invoice',
@@ -1754,10 +1771,17 @@ export async function applyVendorDocumentDraft(
       },
     })
 
-    revalidateVendorPaths(uploadRow.vendor_id)
+    revalidateVendorPaths(uploadRow.vendor_id, user.tenantId!)
     revalidatePath('/expenses')
     revalidatePath('/financials')
     revalidatePath('/finance')
+    try {
+      broadcastTenantMutation(user.tenantId!, {
+        entity: 'expenses',
+        action: 'insert',
+        reason: 'Expenses created from document draft',
+      })
+    } catch {}
     let expenseMessage = `Created ${createdExpenseIds.length} expense record(s) from draft.`
     if (!data.force_apply && skippedDuplicateRowsCount > 0) {
       expenseMessage =

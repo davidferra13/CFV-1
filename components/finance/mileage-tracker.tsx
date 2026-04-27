@@ -4,6 +4,7 @@
 // IRS 2026 rate: 72.5 cents/mile.
 
 import { useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
 import {
   addMileageLog,
@@ -29,6 +30,7 @@ function formatCents(cents: number): string {
 }
 
 export function MileageTracker({ initialEntries, initialSummary, events = [] }: Props) {
+  const router = useRouter()
   const [entries, setEntries] = useState(initialEntries)
   const [summary, setSummary] = useState(initialSummary)
   const [showForm, setShowForm] = useState(false)
@@ -137,10 +139,24 @@ export function MileageTracker({ initialEntries, initialSummary, events = [] }: 
             setSummary(previousSummary)
             return
           }
+          // Optimistic add to local state
+          const optimisticEntry: MileageEntry = {
+            id: crypto.randomUUID(),
+            eventId: eventId || null,
+            tripDate,
+            purpose,
+            fromLocation: fromLocation || null,
+            toLocation: toLocation || null,
+            miles: milesNum,
+            deductionCents: Math.round(milesNum * 72.5),
+            description: MILEAGE_PURPOSE_LABELS[purpose] || purpose,
+            notes: notes || null,
+            createdAt: new Date().toISOString(),
+          }
+          setEntries((prev) => [optimisticEntry, ...prev])
         }
         resetForm()
-        // Reload to get fresh data (server revalidates)
-        window.location.reload()
+        router.refresh()
       } catch {
         setEntries(previous)
         setSummary(previousSummary)

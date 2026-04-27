@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -21,6 +22,7 @@ function formatLabel(s: string) {
 type Props = { audit: any }
 
 export function AuditDetailClient({ audit }: Props) {
+  const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [counts, setCounts] = useState<Record<string, string>>({})
   const [showFinalizeConfirm, setShowFinalizeConfirm] = useState(false)
@@ -52,7 +54,7 @@ export function AuditDetailClient({ audit }: Props) {
     startTransition(async () => {
       try {
         await finalizeAudit(audit.id)
-        window.location.reload()
+        router.refresh()
       } catch (err) {
         console.error('Failed to finalize audit', err)
       }

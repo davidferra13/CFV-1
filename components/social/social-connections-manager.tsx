@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { ExternalLink, CheckCircle2, AlertCircle, RefreshCw, Unlink } from '@/components/ui/icons'
 import type { SocialConnectionStatus } from '@/lib/social/oauth-actions'
 import { ConfirmModal } from '@/components/ui/confirm-modal'
@@ -100,6 +101,7 @@ export function SocialConnectionsManager({ connections, justConnected }: Props) 
   const connMap = new Map(connections.map((c) => [c.platform, c]))
   const [disconnecting, setDisconnecting] = useState<string | null>(null)
   const [disconnectTarget, setDisconnectTarget] = useState<string | null>(null)
+  const router = useRouter()
 
   function handleDisconnect(platform: string) {
     setDisconnectTarget(platform)
@@ -115,8 +117,8 @@ export function SocialConnectionsManager({ connections, justConnected }: Props) 
         method: 'POST',
       })
       if (res.ok) {
-        // Hard-reload so the server re-fetches the connections list
-        window.location.reload()
+        // Refresh so the server re-fetches the connections list
+        router.refresh()
       } else {
         alert('Disconnect failed - please try again.')
       }

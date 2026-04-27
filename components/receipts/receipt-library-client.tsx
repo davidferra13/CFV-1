@@ -6,6 +6,7 @@
 // Each receipt shows its context label (event name or "Standalone", client name).
 
 import { useState, useTransition, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { toast } from 'sonner'
 import { Card } from '@/components/ui/card'
@@ -57,6 +58,7 @@ function StatusBadge({ status }: { status: AllReceiptPhoto['uploadStatus'] }) {
 // ─── Individual receipt block ─────────────────────────────────────────────────
 
 function LibraryReceiptBlock({ receipt: initialReceipt }: { receipt: AllReceiptPhoto }) {
+  const router = useRouter()
   const [receipt] = useState(initialReceipt)
   const [lineItems, setLineItems] = useState(initialReceipt.lineItems)
   const [approving, setApproving] = useState(false)
@@ -106,7 +108,7 @@ function LibraryReceiptBlock({ receipt: initialReceipt }: { receipt: AllReceiptP
     try {
       await processReceiptOCR(receipt.id)
       toast.success('Receipt extracted successfully')
-      window.location.reload()
+      router.refresh()
     } catch (err) {
       console.error('[receipt-library] OCR extraction failed', err)
       toast.error('Failed to extract receipt data. Please try again.')

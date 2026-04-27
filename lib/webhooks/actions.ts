@@ -7,6 +7,7 @@ import { validateWebhookUrl } from '@/lib/security/url-validation'
 import type { WebhookSubscription, DeliveryLogEntry } from './types'
 import { CHEF_FEATURE_FLAGS, requireChefFeatureFlag } from '@/lib/features/chef-feature-flags'
 import { logDeveloperToolsFirstUseIfNeeded } from '@/lib/features/developer-tools-observability'
+import { broadcastTenantMutation } from '@/lib/realtime/broadcast'
 
 // ── List ──
 
@@ -56,6 +57,13 @@ export async function createWebhookEndpoint(input: {
     db,
   })
   revalidatePath('/settings/webhooks')
+  try {
+    broadcastTenantMutation(user.entityId, {
+      entity: 'webhook_endpoints',
+      action: 'insert',
+      reason: 'Webhook endpoint created',
+    })
+  } catch {}
   return { secret }
 }
 
@@ -100,6 +108,13 @@ export async function updateWebhookEndpoint(
 
   if (error) throw new Error(error.message)
   revalidatePath('/settings/webhooks')
+  try {
+    broadcastTenantMutation(user.entityId, {
+      entity: 'webhook_endpoints',
+      action: 'update',
+      reason: 'Webhook endpoint updated',
+    })
+  } catch {}
 }
 
 // ── Delete ──
@@ -116,6 +131,13 @@ export async function deleteWebhookEndpoint(id: string): Promise<void> {
 
   if (error) throw new Error(error.message)
   revalidatePath('/settings/webhooks')
+  try {
+    broadcastTenantMutation(user.entityId, {
+      entity: 'webhook_endpoints',
+      action: 'delete',
+      reason: 'Webhook endpoint deleted',
+    })
+  } catch {}
 }
 
 // ── Test ──

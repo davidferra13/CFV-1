@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -89,6 +90,7 @@ export function DinnerCircleMenuPollComposer({
   const [courses, setCourses] = useState(() => buildDraftsFromState(currentState))
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+  const router = useRouter()
 
   const availableCourses = Array.from(
     new Set(
@@ -157,7 +159,7 @@ export function DinnerCircleMenuPollComposer({
           eventId,
           courses: normalizedCourses,
         })
-        window.location.reload()
+        router.refresh()
       } catch (err) {
         setError(
           err instanceof Error ? err.message : 'Failed to publish Dinner Circle menu polling'

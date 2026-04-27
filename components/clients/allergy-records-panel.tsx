@@ -6,6 +6,7 @@
 // Replaces the flat allergy string[] with severity-aware, source-tracked records.
 
 import { useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
 import {
   ShieldAlert,
   AlertTriangle,
@@ -325,10 +326,11 @@ function AllergyRecordRow({
 
 export function AllergyRecordsPanel({ clientId, initialRecords }: AllergyRecordsPanelProps) {
   const [records, setRecords] = useState(initialRecords)
+  const router = useRouter()
 
   const handleUpdate = () => {
-    // Reload to get fresh data from server
-    window.location.reload()
+    // Refresh to get fresh data from server
+    router.refresh()
   }
 
   const unconfirmed = records.filter((r) => !r.confirmed_by_chef)

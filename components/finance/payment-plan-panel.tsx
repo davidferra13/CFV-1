@@ -3,6 +3,7 @@
 // Payment Plan Panel - shows installments for an event with add/mark-paid controls.
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
 import {
@@ -21,6 +22,7 @@ interface Props {
 }
 
 export function PaymentPlanPanel({ eventId, initialInstallments, quotedPriceCents }: Props) {
+  const router = useRouter()
   const [installments, setInstallments] = useState(initialInstallments)
   const [isAdding, setIsAdding] = useState(false)
   const [submitting, setSubmitting] = useState(false)
@@ -59,9 +61,28 @@ export function PaymentPlanPanel({ eventId, initialInstallments, quotedPriceCent
     try {
       const fd = new FormData(e.currentTarget)
       fd.set('eventId', eventId)
-      await addInstallment(fd)
-      setIsAdding(false)
-      window.location.reload()
+      const label = fd.get('label') as string
+      const amountDollars = parseFloat(fd.get('amountDollars') as string)
+      const dueDate = fd.get('dueDate') as string
+      const notes = (fd.get('notes') as string) || null
+      const result = await addInstallment(fd)
+      if (result.success) {
+        const optimisticInstallment: PaymentPlanInstallment = {
+          id: crypto.randomUUID(),
+          eventId,
+          label,
+          amountCents: Math.round(amountDollars * 100),
+          dueDate,
+          paidAt: null,
+          notes,
+          installmentNumber: installments.length + 1,
+        }
+        setInstallments((prev) => [...prev, optimisticInstallment])
+        setIsAdding(false)
+        router.refresh()
+      } else {
+        toast.error(result.error || 'Failed to add installment')
+      }
     } catch (err) {
       console.error('[payment-plan] Failed to add installment', err)
       toast.error('Failed to add installment')

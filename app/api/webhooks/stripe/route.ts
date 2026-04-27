@@ -10,6 +10,7 @@ import { transitionEvent } from '@/lib/events/transitions'
 import { createServerClient } from '@/lib/db/server'
 import { logWebhookEvent } from '@/lib/webhooks/audit-log'
 import { revalidatePath } from 'next/cache'
+import { broadcastTenantMutation } from '@/lib/realtime/broadcast'
 
 /**
  * Lazy Stripe client initialization
@@ -488,6 +489,15 @@ async function handleGiftCardPurchaseCompleted(event: Stripe.Event, db: any) {
   } catch {
     // non-blocking
   }
+
+  // SSE broadcast for live sync
+  try {
+    broadcastTenantMutation(tenant_id, {
+      entity: 'gift_cards',
+      action: 'update',
+      reason: 'Gift card purchase completed via Stripe checkout',
+    })
+  } catch {}
 }
 
 /**
@@ -1033,6 +1043,16 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
       console.error('[handlePaymentSucceeded] Cache invalidation failed (non-blocking):', cacheErr)
     }
 
+    // SSE broadcast for live sync
+    try {
+      broadcastTenantMutation(tenant_id, {
+        entity: 'payments',
+        entityId: event_id,
+        action: 'update',
+        reason: 'Payment succeeded via Stripe',
+      })
+    } catch {}
+
     // Bust Remy context cache so AI reflects payment immediately (non-blocking)
     try {
       const { invalidateRemyContextCache } = await import('@/lib/ai/remy-context')
@@ -1164,6 +1184,16 @@ async function handlePaymentFailed(event: Stripe.Event) {
   } catch (cacheErr) {
     console.error('[handlePaymentFailed] Cache invalidation failed (non-blocking):', cacheErr)
   }
+
+  // SSE broadcast for live sync
+  try {
+    broadcastTenantMutation(tenant_id, {
+      entity: 'payments',
+      entityId: event_id,
+      action: 'update',
+      reason: 'Payment failed via Stripe',
+    })
+  } catch {}
 }
 
 /**
@@ -1236,6 +1266,16 @@ async function handlePaymentCanceled(event: Stripe.Event) {
   } catch (cacheErr) {
     console.error('[handlePaymentCanceled] Cache invalidation failed (non-blocking):', cacheErr)
   }
+
+  // SSE broadcast for live sync
+  try {
+    broadcastTenantMutation(tenant_id, {
+      entity: 'payments',
+      entityId: event_id,
+      action: 'update',
+      reason: 'Payment canceled via Stripe',
+    })
+  } catch {}
 }
 
 /**
@@ -1430,6 +1470,16 @@ async function handleRefund(event: Stripe.Event) {
   } catch (cacheErr) {
     console.error('[handleRefund] Cache invalidation failed (non-blocking):', cacheErr)
   }
+
+  // SSE broadcast for live sync
+  try {
+    broadcastTenantMutation(tenant_id, {
+      entity: 'payments',
+      entityId: event_id,
+      action: 'update',
+      reason: 'Refund processed via Stripe',
+    })
+  } catch {}
 }
 
 /**
@@ -1494,6 +1544,16 @@ async function handleDisputeCreated(event: Stripe.Event) {
   } catch (cacheErr) {
     console.error('[handleDisputeCreated] Cache invalidation failed (non-blocking):', cacheErr)
   }
+
+  // SSE broadcast for live sync
+  try {
+    broadcastTenantMutation(tenant_id, {
+      entity: 'disputes',
+      entityId: event_id,
+      action: 'insert',
+      reason: 'Dispute created via Stripe',
+    })
+  } catch {}
 }
 
 /**
@@ -1570,6 +1630,16 @@ async function handleDisputeFundsWithdrawn(event: Stripe.Event) {
       cacheErr
     )
   }
+
+  // SSE broadcast for live sync
+  try {
+    broadcastTenantMutation(tenant_id, {
+      entity: 'disputes',
+      entityId: event_id,
+      action: 'update',
+      reason: 'Dispute funds withdrawn via Stripe',
+    })
+  } catch {}
 }
 
 /**

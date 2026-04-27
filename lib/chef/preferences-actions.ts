@@ -3,6 +3,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath, revalidateTag } from 'next/cache'
+import { broadcastTenantMutation } from '@/lib/realtime/broadcast'
 
 export async function getWorkspaceDensity(): Promise<'minimal' | 'standard' | 'power'> {
   const user = await requireChef()
@@ -48,5 +49,8 @@ export async function setWorkspaceDensity(
   revalidatePath('/dashboard')
   revalidatePath('/settings')
   revalidateTag(`chef-layout-${user.entityId}`)
+
+  try { broadcastTenantMutation(user.tenantId ?? user.entityId, { entity: 'chef_preferences', action: 'update', reason: 'Workspace density updated' }) } catch {}
+
   return { success: true }
 }

@@ -13,6 +13,8 @@ import {
 } from '@/lib/inquiries/actions'
 import type { ReadinessScore, ResponseQueueItem } from '@/lib/inquiries/types'
 import { getBookingScoresForOpenInquiries } from '@/lib/analytics/booking-score'
+import { getInquiryStatusCounts } from '@/lib/inquiries/batch-status-update'
+import { BatchStatusUpdatePanel } from '@/components/inquiries/batch-status-update-panel'
 import { BookingScoreBadge } from '@/components/analytics/booking-score-badge'
 import { ReadinessScoreBadge } from '@/components/inquiries/readiness-score-badge'
 
@@ -209,18 +211,21 @@ export default async function InquiriesPage({
   await requireChef()
 
   const filter = (searchParams.status || 'all') as InquiryFilter
-  const gmailStatus = await getGmailSyncStatus().catch(() => ({
-    connected: false,
-    lastSyncedAt: null,
-  }))
+  const [gmailStatus, statusCounts] = await Promise.all([
+    getGmailSyncStatus().catch(() => ({
+      connected: false,
+      lastSyncedAt: null,
+    })),
+    getInquiryStatusCounts().catch(() => ({} as Record<string, number>)),
+  ])
 
   // Primary tabs (max 6 visible per interface philosophy Section 6)
-  const primaryTabs: { value: InquiryFilter; label: string }[] = [
-    { value: 'all', label: 'All' },
-    { value: 'respond_next', label: 'Respond Next' },
-    { value: 'new', label: 'New' },
-    { value: 'awaiting_chef', label: 'Your Reply' },
-    { value: 'quoted', label: 'Quoted' },
+  const primaryTabs: { value: InquiryFilter; label: string; count?: number }[] = [
+    { value: 'all', label: 'All', count: statusCounts['all'] },
+    { value: 'respond_next', label: 'Respond Next', count: statusCounts['respond_next'] },
+    { value: 'new', label: 'New', count: statusCounts['new'] },
+    { value: 'awaiting_chef', label: 'Your Reply', count: statusCounts['awaiting_chef'] },
+    { value: 'quoted', label: 'Quoted', count: statusCounts['quoted'] },
   ]
 
   // Overflow statuses (waiting/terminal states)
@@ -268,6 +273,17 @@ export default async function InquiriesPage({
                 className="shrink-0 whitespace-nowrap"
               >
                 {tab.label}
+                {tab.count != null && tab.count > 0 && (
+                  <span className={`ml-1.5 inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1 rounded-full text-xs font-medium ${
+                    filter === tab.value
+                      ? 'bg-white/20 text-white'
+                      : tab.value === 'respond_next' && tab.count > 0
+                        ? 'bg-amber-500/20 text-amber-400'
+                        : 'bg-stone-600/50 text-stone-300'
+                  }`}>
+                    {tab.count}
+                  </span>
+                )}
               </Button>
             </Link>
           ))}
@@ -288,14 +304,18 @@ export default async function InquiriesPage({
             </Card>
           }
         >
-          {filter === 'respond_next' ? <ResponseQueueList /> : <InquiryList filter={filter} />}
+          {filter === 'respond_next' ? (
+            <ResponseQueueList statusCounts={statusCounts} />
+          ) : (
+            <InquiryList filter={filter} />
+          )}
         </Suspense>
       </WidgetErrorBoundary>
     </div>
   )
 }
 
-async function ResponseQueueList() {
+async function ResponseQueueList({ statusCounts }: { statusCounts: Record<string, number> }) {
   const queue = await getResponseQueue(20).catch(() => [] as ResponseQueueItem[])
 
   if (queue.length === 0) {
@@ -310,6 +330,7 @@ async function ResponseQueueList() {
 
   return (
     <div className="space-y-2">
+      <BatchStatusUpdatePanel queueCount={queue.length} />
       {queue.map((item, index) => {
         const isFirst = index === 0
         const eventUrgency = scoreEventUrgency(item.confirmedDate)

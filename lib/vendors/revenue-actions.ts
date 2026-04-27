@@ -3,6 +3,7 @@
 import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
+import { broadcastTenantMutation } from '@/lib/realtime/broadcast'
 import { z } from 'zod'
 
 // ============================================
@@ -69,6 +70,13 @@ export async function upsertDailyRevenue(input: UpsertDailyRevenueInput) {
   }
 
   revalidatePath('/food-cost')
+  try {
+    broadcastTenantMutation(user.tenantId!, {
+      entity: 'daily_revenue',
+      action: existing ? 'update' : 'insert',
+      reason: existing ? 'Daily revenue updated' : 'Daily revenue created',
+    })
+  } catch {}
 }
 
 export async function listDailyRevenue(startDate: string, endDate: string) {

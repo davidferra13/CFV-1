@@ -3,6 +3,7 @@
 import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
+import { broadcastTenantMutation } from '@/lib/realtime/broadcast'
 import { z } from 'zod'
 
 // ============================================
@@ -77,6 +78,13 @@ export async function createInvoice(input: CreateInvoiceInput) {
 
   revalidatePath('/vendors')
   revalidatePath('/food-cost')
+  try {
+    broadcastTenantMutation(user.tenantId!, {
+      entity: 'vendor_invoices',
+      action: 'insert',
+      reason: 'Invoice created',
+    })
+  } catch {}
   return invoice
 }
 
@@ -161,4 +169,11 @@ export async function deleteInvoice(id: string) {
 
   revalidatePath('/vendors')
   revalidatePath('/food-cost')
+  try {
+    broadcastTenantMutation(user.tenantId!, {
+      entity: 'vendor_invoices',
+      action: 'delete',
+      reason: 'Invoice deleted',
+    })
+  } catch {}
 }

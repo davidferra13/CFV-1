@@ -4,6 +4,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { ConfirmModal } from '@/components/ui/confirm-modal'
 import { showUndoToast } from '@/components/ui/undo-toast'
@@ -28,6 +29,7 @@ interface IntakeForm {
 }
 
 export function IntakeFormsClient({ forms: initialForms }: { forms: IntakeForm[] }) {
+  const router = useRouter()
   const [forms, setForms] = useState<IntakeForm[]>(initialForms)
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
@@ -45,7 +47,7 @@ export function IntakeFormsClient({ forms: initialForms }: { forms: IntakeForm[]
         const result = await createDefaultForms()
         if (result.created > 0) {
           // Reload page to get fresh data
-          window.location.reload()
+          router.refresh()
         }
       } catch (err) {
         toast.error(err instanceof Error ? err.message : 'Failed to create default templates')

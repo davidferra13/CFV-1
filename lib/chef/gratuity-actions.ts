@@ -7,6 +7,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
+import { broadcastTenantMutation } from '@/lib/realtime/broadcast'
 import { z } from 'zod'
 
 const GratuitySettingsSchema = z.object({
@@ -61,5 +62,8 @@ export async function updateGratuitySettings(
   }
 
   revalidatePath('/settings')
+
+  try { broadcastTenantMutation(user.tenantId!, { entity: 'chefs', action: 'update', reason: 'Gratuity settings updated' }) } catch {}
+
   return { success: true }
 }

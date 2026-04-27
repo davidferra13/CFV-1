@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import type { CharityHourEntry, CharityHoursSummary, CharityOrganization } from './hours-types'
+import { broadcastTenantMutation } from '@/lib/realtime/broadcast'
 import {
   getOrganizationLinks,
   getPropublicaOrganizationUrl,
@@ -342,6 +343,13 @@ export async function logCharityHours(
   if (error) throw new Error(`Failed to log charity hours: ${error.message}`)
 
   await revalidateCommunityImpactPaths(user.entityId)
+  try {
+    broadcastTenantMutation(user.tenantId!, {
+      entity: 'charity_hours',
+      action: 'insert',
+      reason: 'Charity hours logged',
+    })
+  } catch {}
   return mapRow(data as CharityHourRow, organization)
 }
 
@@ -379,6 +387,13 @@ export async function updateCharityHours(
   if (error) throw new Error(`Failed to update charity hours: ${error.message}`)
 
   await revalidateCommunityImpactPaths(user.entityId)
+  try {
+    broadcastTenantMutation(user.tenantId!, {
+      entity: 'charity_hours',
+      action: 'update',
+      reason: 'Charity hours updated',
+    })
+  } catch {}
   return mapRow(data as CharityHourRow, organization)
 }
 
@@ -395,6 +410,13 @@ export async function deleteCharityHours(id: string): Promise<void> {
   if (error) throw new Error(`Failed to delete charity hours: ${error.message}`)
 
   await revalidateCommunityImpactPaths(user.entityId)
+  try {
+    broadcastTenantMutation(user.tenantId!, {
+      entity: 'charity_hours',
+      action: 'delete',
+      reason: 'Charity hours deleted',
+    })
+  } catch {}
 }
 
 export async function getCharityHours(filters?: {

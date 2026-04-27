@@ -9,6 +9,7 @@ import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import crypto from 'crypto'
 import type { WixConnectionStatus, WixSubmission } from './types'
+import { broadcastTenantMutation } from '@/lib/realtime/broadcast'
 
 // ─── Get Connection Status ───────────────────────────────────────────────
 
@@ -71,6 +72,13 @@ export async function setupWixConnection(): Promise<{ webhookUrl: string; webhoo
   }
 
   revalidatePath('/settings')
+  try {
+    broadcastTenantMutation(user.tenantId!, {
+      entity: 'wix_connections',
+      action: 'insert',
+      reason: 'Wix connection setup',
+    })
+  } catch {}
   return {
     webhookUrl: `${baseUrl}/api/webhooks/wix?secret=${webhookSecret}`,
     webhookSecret,
@@ -91,6 +99,13 @@ export async function disconnectWix(): Promise<void> {
   }
 
   revalidatePath('/settings')
+  try {
+    broadcastTenantMutation(user.tenantId!, {
+      entity: 'wix_connections',
+      action: 'delete',
+      reason: 'Wix disconnected',
+    })
+  } catch {}
 }
 
 // ─── Regenerate Webhook Secret ───────────────────────────────────────────
@@ -116,6 +131,13 @@ export async function regenerateWixSecret(): Promise<{
   }
 
   revalidatePath('/settings')
+  try {
+    broadcastTenantMutation(user.tenantId!, {
+      entity: 'wix_connections',
+      action: 'update',
+      reason: 'Wix webhook secret regenerated',
+    })
+  } catch {}
   return {
     webhookUrl: `${baseUrl}/api/webhooks/wix?secret=${newSecret}`,
     webhookSecret: newSecret,
@@ -186,4 +208,11 @@ export async function retryWixSubmission(submissionId: string): Promise<void> {
   }
 
   revalidatePath('/settings')
+  try {
+    broadcastTenantMutation(user.tenantId!, {
+      entity: 'wix_submissions',
+      action: 'update',
+      reason: 'Wix submission retried',
+    })
+  } catch {}
 }

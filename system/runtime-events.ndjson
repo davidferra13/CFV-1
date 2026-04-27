@@ -1030,3 +1030,5 @@
 {"id":"5b77f674-a5a7-4b09-b6a8-bf24fcecd0a7","timestamp":"2026-04-27T21:26:04.270Z","type":"tool:call","source":"3977.http","scope":{"workflow":"3977-http"},"payload":{"method":"GET","path":"/api/plan-priority","query":{}}}
 {"id":"0051e741-3921-420e-8a80-b35f64bd34bd","timestamp":"2026-04-27T21:26:18.048Z","type":"state:update","source":"3977.watchdog","scope":{"workflow":"watchdog"},"payload":{"action":"orphaned_lock_self_healed","stale_pid":49584}}
 {"id":"2edae1ca-cb78-4118-8847-2e3dad418625","timestamp":"2026-04-27T21:27:18.049Z","type":"state:update","source":"3977.watchdog","scope":{"workflow":"watchdog"},"payload":{"action":"orphaned_lock_self_healed","stale_pid":36940}}
+{"id":"d3813e20-96e2-4ad9-816b-336700623bee","timestamp":"2026-04-27T21:28:18.051Z","type":"state:update","source":"3977.watchdog","scope":{"workflow":"watchdog"},"payload":{"action":"orphaned_lock_self_healed","stale_pid":80228}}
+{"id":"3993776d-e662-4d31-ac98-b3282628b1f9","timestamp":"2026-04-27T21:29:18.051Z","type":"state:update","source":"3977.watchdog","scope":{"workflow":"watchdog"},"payload":{"action":"orphaned_lock_self_healed","stale_pid":75076}}

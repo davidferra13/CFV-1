@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
 import {
   draftGuestSegmentMessage,
   logGuestSegmentMessage,
@@ -109,6 +110,7 @@ export function RSVPAdvancedPanel({
     body: string
     recipientCount: number
   }>(null)
+  const router = useRouter()
   const [error, setError] = useState('')
   const activeJoinRequests = useMemo(
     () => joinRequests.filter((request) => request.status === 'pending'),
@@ -119,7 +121,7 @@ export function RSVPAdvancedPanel({
     setError('')
     try {
       await fn()
-      window.location.reload()
+      router.refresh()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Request failed')
     }
@@ -216,7 +218,7 @@ export function RSVPAdvancedPanel({
         body: draft.body,
         recipientCount: draft.recipientCount,
       })
-      window.location.reload()
+      router.refresh()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to log message')
     }

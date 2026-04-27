@@ -6,6 +6,7 @@ import { revalidatePath, revalidateTag } from 'next/cache'
 import { z } from 'zod'
 import { optimizeLogo } from '@/lib/images/optimize'
 import { getOnboardingCompletionState } from '@/lib/onboarding/completion-state'
+import { broadcastTenantMutation } from '@/lib/realtime/broadcast'
 
 const CHEF_LOGOS_BUCKET = 'chef-logos'
 const MAX_LOGO_SIZE = 5 * 1024 * 1024 // 5MB
@@ -256,6 +257,8 @@ export async function updateChefFullProfile(input: UpdateChefFullProfileInput) {
   revalidateTag(`chef-layout-${user.entityId}`)
   revalidateTag('chef-booking-profile')
 
+  try { broadcastTenantMutation(user.tenantId!, { entity: 'chef_profile', action: 'update', reason: 'Chef full profile updated' }) } catch {}
+
   return { success: true as const }
 }
 
@@ -281,6 +284,9 @@ export async function updateRestaurantGroupName(name: string | null) {
   revalidatePath('/settings/restaurants')
   revalidatePath('/chef', 'layout')
   revalidateTag(`chef-layout-${user.entityId}`)
+
+  try { broadcastTenantMutation(user.tenantId!, { entity: 'chef_profile', action: 'update', reason: 'Restaurant group name updated' }) } catch {}
+
   return { success: true as const }
 }
 
@@ -385,6 +391,8 @@ export async function uploadChefLogo(formData: FormData): Promise<{ success: tru
   revalidatePath('/settings/account')
   revalidateTag(`chef-layout-${user.entityId}`)
 
+  try { broadcastTenantMutation(user.tenantId!, { entity: 'chef_profile', action: 'update', reason: 'Chef logo uploaded' }) } catch {}
+
   return { success: true, url: publicUrl }
 }
 
@@ -421,6 +429,8 @@ export async function removeChefLogo(): Promise<{ success: true }> {
   revalidatePath('/settings/my-profile')
   revalidatePath('/settings/account')
   revalidateTag(`chef-layout-${user.entityId}`)
+
+  try { broadcastTenantMutation(user.tenantId!, { entity: 'chef_profile', action: 'update', reason: 'Chef logo removed' }) } catch {}
 
   return { success: true }
 }

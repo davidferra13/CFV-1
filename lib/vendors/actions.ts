@@ -3,6 +3,7 @@
 import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
+import { broadcastTenantMutation } from '@/lib/realtime/broadcast'
 import { z } from 'zod'
 
 // ============================================
@@ -77,6 +78,13 @@ export async function createVendor(input: VendorInput | CreateVendorInput) {
   }
 
   revalidatePath('/vendors')
+  try {
+    broadcastTenantMutation(user.tenantId!, {
+      entity: 'vendors',
+      action: 'insert',
+      reason: 'Vendor created',
+    })
+  } catch {}
   return vendor
 }
 
@@ -108,6 +116,13 @@ export async function updateVendor(id: string, input: UpdateVendorInput) {
 
   revalidatePath('/vendors')
   revalidatePath(`/vendors/${id}`)
+  try {
+    broadcastTenantMutation(user.tenantId!, {
+      entity: 'vendors',
+      action: 'update',
+      reason: 'Vendor updated',
+    })
+  } catch {}
 }
 
 export async function deactivateVendor(id: string) {
@@ -126,6 +141,13 @@ export async function deactivateVendor(id: string) {
   }
 
   revalidatePath('/vendors')
+  try {
+    broadcastTenantMutation(user.tenantId!, {
+      entity: 'vendors',
+      action: 'update',
+      reason: 'Vendor deactivated',
+    })
+  } catch {}
 }
 
 export async function listVendors(activeOnly = true) {
@@ -191,6 +213,13 @@ export async function deleteVendor(id: string) {
   }
 
   revalidatePath('/culinary/vendors')
+  try {
+    broadcastTenantMutation(user.tenantId!, {
+      entity: 'vendors',
+      action: 'delete',
+      reason: 'Vendor deleted',
+    })
+  } catch {}
 }
 
 export async function setVendorPreferred(id: string, preferred: boolean) {
@@ -209,4 +238,11 @@ export async function setVendorPreferred(id: string, preferred: boolean) {
   }
 
   revalidatePath('/culinary/vendors')
+  try {
+    broadcastTenantMutation(user.tenantId!, {
+      entity: 'vendors',
+      action: 'update',
+      reason: 'Vendor preferred status changed',
+    })
+  } catch {}
 }

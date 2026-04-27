@@ -4,6 +4,7 @@
 // but not yet delivered. Chef marks them as delivered after honouring at an event.
 
 import { useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
@@ -180,12 +181,13 @@ export function PendingDeliveriesPanel({
   deliveries: PendingDeliveryWithClient[]
 }) {
   const [deliveries, setDeliveries] = useState(initialDeliveries)
+  const router = useRouter()
 
   // Refresh by removing delivered/cancelled items from local state immediately
   // (page will revalidate in background via revalidatePath)
   function handleUpdate() {
-    // Optimistically remove - actual data refresh via server revalidation
-    window.location.reload()
+    // Optimistically remove, actual data refresh via server revalidation
+    router.refresh()
   }
 
   if (deliveries.length === 0) {

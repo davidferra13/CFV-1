@@ -7,6 +7,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { processWixSubmission } from '@/lib/wix/process'
 import { revalidatePath } from 'next/cache'
+import { broadcastTenantMutation } from '@/lib/realtime/broadcast'
 
 export type WixSubmissionDetail = {
   id: string
@@ -77,6 +78,13 @@ export async function retryWixSubmission(submissionId: string): Promise<{
 
   revalidatePath(`/wix-submissions/${submissionId}`)
   revalidatePath('/inbox')
+  try {
+    broadcastTenantMutation(user.tenantId!, {
+      entity: 'wix_submissions',
+      action: 'update',
+      reason: 'Wix submission reprocessed',
+    })
+  } catch {}
 
   if (result.status === 'completed') {
     return { success: true, inquiryId: result.inquiryId }

@@ -16,6 +16,7 @@ import {
   type PopUpMenuItemPlan,
   type PopUpOrderSource,
 } from './pop-up-model'
+import { broadcastTenantMutation } from '@/lib/realtime/broadcast'
 
 function mergePopUpConfig(current: PopUpConfig, patch: Partial<PopUpConfig>): PopUpConfig {
   return normalizePopUpConfig({
@@ -103,6 +104,13 @@ export async function updatePopUpConfigAction(input: {
   const next = mergePopUpConfig(current, input.patch)
   await writePopUpConfig(db, input.eventId, user.tenantId!, next)
   revalidatePath(`/events/${input.eventId}`)
+  try {
+    broadcastTenantMutation(user.tenantId!, {
+      entity: 'event_share_settings',
+      action: 'update',
+      reason: 'Pop-up config updated',
+    })
+  } catch {}
   return { success: true, config: next }
 }
 
@@ -168,6 +176,13 @@ export async function addProductToPopUpAction(input: {
   })
   await writePopUpConfig(db, input.eventId, user.tenantId!, next)
   revalidatePath(`/events/${input.eventId}`)
+  try {
+    broadcastTenantMutation(user.tenantId!, {
+      entity: 'event_share_settings',
+      action: 'update',
+      reason: 'Pop-up product added',
+    })
+  } catch {}
   return { success: true, config: next }
 }
 
@@ -219,6 +234,13 @@ export async function syncPopUpMenuItemToTicketTypeAction(input: {
   })
   await writePopUpConfig(db, input.eventId, user.tenantId!, next)
   revalidatePath(`/events/${input.eventId}`)
+  try {
+    broadcastTenantMutation(user.tenantId!, {
+      entity: 'event_share_settings',
+      action: 'update',
+      reason: 'Pop-up menu item synced to ticket type',
+    })
+  } catch {}
   return { success: true, config: next }
 }
 
@@ -258,5 +280,12 @@ export async function createManualPopUpOrderAction(input: {
   }
 
   revalidatePath(`/events/${input.eventId}`)
+  try {
+    broadcastTenantMutation(user.tenantId!, {
+      entity: 'tickets',
+      action: 'insert',
+      reason: 'Pop-up manual order created',
+    })
+  } catch {}
   return { success: true }
 }

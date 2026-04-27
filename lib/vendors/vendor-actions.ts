@@ -3,6 +3,7 @@
 import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
+import { broadcastTenantMutation } from '@/lib/realtime/broadcast'
 import { z } from 'zod'
 
 // ============================================
@@ -86,6 +87,13 @@ export async function createVendor(input: VendorInput) {
 
   if (error) throw new Error(`Failed to create vendor: ${error.message}`)
   revalidatePath('/vendors')
+  try {
+    broadcastTenantMutation(tenantId, {
+      entity: 'vendors',
+      action: 'insert',
+      reason: 'Vendor created',
+    })
+  } catch {}
   return vendor
 }
 
@@ -105,6 +113,13 @@ export async function updateVendor(id: string, input: VendorInput) {
 
   if (error) throw new Error(`Failed to update vendor: ${error.message}`)
   revalidatePath('/vendors')
+  try {
+    broadcastTenantMutation(tenantId, {
+      entity: 'vendors',
+      action: 'update',
+      reason: 'Vendor updated',
+    })
+  } catch {}
   return vendor
 }
 
@@ -117,6 +132,13 @@ export async function deleteVendor(id: string) {
 
   if (error) throw new Error(`Failed to delete vendor: ${error.message}`)
   revalidatePath('/vendors')
+  try {
+    broadcastTenantMutation(tenantId, {
+      entity: 'vendors',
+      action: 'delete',
+      reason: 'Vendor deleted',
+    })
+  } catch {}
   return { success: true }
 }
 
@@ -146,6 +168,13 @@ export async function togglePreferred(id: string) {
 
   if (error) throw new Error(`Failed to toggle preferred: ${error.message}`)
   revalidatePath('/vendors')
+  try {
+    broadcastTenantMutation(tenantId, {
+      entity: 'vendors',
+      action: 'update',
+      reason: 'Vendor preferred status toggled',
+    })
+  } catch {}
   return { success: true, is_preferred: !vendor.is_preferred }
 }
 
@@ -190,6 +219,13 @@ export async function addPriceEntry(vendorId: string, input: PriceEntryInput) {
 
   if (error) throw new Error(`Failed to add price entry: ${error.message}`)
   revalidatePath('/vendors')
+  try {
+    broadcastTenantMutation(tenantId, {
+      entity: 'vendor_price_entries',
+      action: 'insert',
+      reason: 'Price entry added',
+    })
+  } catch {}
   return entry
 }
 

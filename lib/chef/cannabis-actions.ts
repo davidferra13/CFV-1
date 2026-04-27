@@ -7,6 +7,7 @@ import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { isAdmin } from '@/lib/auth/admin'
 import { revalidatePath } from 'next/cache'
+import { broadcastTenantMutation } from '@/lib/realtime/broadcast'
 import { logCannabisAudit } from '@/lib/admin/audit'
 import { z } from 'zod'
 import { dateToDateString } from '@/lib/utils/format'
@@ -191,6 +192,9 @@ export async function upsertCannabisEventDetails(input: {
 
   if (error) throw new Error('Failed to save cannabis event details: ' + error.message)
   revalidatePath('/cannabis')
+
+  try { broadcastTenantMutation(user.tenantId!, { entity: 'cannabis_event_details', action: 'update', reason: 'Cannabis event details upserted' }) } catch {}
+
   return { success: true }
 }
 
@@ -319,6 +323,9 @@ export async function sendCannabisInvite(input: {
   if (error) throw new Error('Failed to submit invite: ' + error.message)
 
   revalidatePath('/cannabis/invite')
+
+  try { broadcastTenantMutation(user.tenantId!, { entity: 'cannabis_tier_invitations', action: 'insert', reason: 'Cannabis invite sent' }) } catch {}
+
   return { success: true }
 }
 
@@ -674,6 +681,8 @@ export async function updateChefCannabisGuestProfile(
   }
 
   revalidatePath('/cannabis/rsvps')
+
+  try { broadcastTenantMutation(user.tenantId!, { entity: 'guest_event_profile', action: 'update', reason: 'Cannabis guest profile updated' }) } catch {}
 
   try {
     await logCannabisAudit({
