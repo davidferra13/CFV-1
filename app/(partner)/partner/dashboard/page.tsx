@@ -8,6 +8,7 @@ import { getPartnerPortalData } from '@/lib/partners/portal-actions'
 import { format } from 'date-fns'
 import { MapPin, CalendarDays, Users, Image, Heart } from '@/components/ui/icons'
 import Link from 'next/link'
+import { PartnerReferralStats } from '@/components/partners/partner-referral-stats'
 
 function StatCard({
   label,
@@ -63,6 +64,9 @@ export default async function PartnerDashboardPage() {
         <StatCard label="Guests Served" value={stats.totalGuests.toLocaleString()} icon={Users} />
         <StatCard label="Photos" value={stats.totalPhotos} icon={Image} />
       </div>
+
+      {/* Referral impact stats */}
+      <PartnerReferralStats />
 
       {/* Partnership origin story */}
       {(originClientName || originEventSummary) && (
