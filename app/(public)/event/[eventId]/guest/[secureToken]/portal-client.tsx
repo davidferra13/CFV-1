@@ -54,7 +54,7 @@ type ReadyPortal = {
   guest: {
     fullName: string
     email: string | null
-    attendingStatus: 'yes' | 'no'
+    attendingStatus: 'yes' | 'no' | 'maybe'
     dietaryNotes: string
     accessibilityNotes: string
     menuPreferenceNote: string
@@ -198,14 +198,14 @@ function GuestPortalForm({
   const [submitted, setSubmitted] = useState(false)
   const [cannabisInfoOpen, setCannabisInfoOpen] = useState(true)
   const [savedSummary, setSavedSummary] = useState<{
-    attending_status: 'yes' | 'no'
+    attending_status: 'yes' | 'no' | 'maybe'
     cannabis_participation: 'participate' | 'not_consume' | 'undecided'
     editCutoff: string
   } | null>(null)
 
   const [form, setForm] = useState({
     full_name: portal.guest.fullName || '',
-    attending_status: (portal.guest.attendingStatus || 'yes') as 'yes' | 'no',
+    attending_status: (portal.guest.attendingStatus || 'yes') as 'yes' | 'no' | 'maybe',
     dietary_notes: portal.guest.dietaryNotes || '',
     accessibility_notes: portal.guest.accessibilityNotes || '',
     menu_preference_note: portal.guest.menuPreferenceNote || '',
@@ -232,7 +232,7 @@ function GuestPortalForm({
     [portal.lifecycle.editCutoff]
   )
 
-  const showCannabisSections = portal.event.cannabisEnabled && form.attending_status === 'yes'
+  const showCannabisSections = portal.event.cannabisEnabled && form.attending_status !== 'no'
   const showCannabisSurvey =
     showCannabisSections && form.age_confirmed && form.cannabis_participation !== 'not_consume'
 
@@ -490,9 +490,10 @@ function GuestPortalForm({
 
           <div>
             <p className="text-sm font-medium text-stone-200">Attending</p>
-            <div className="mt-2 grid grid-cols-2 gap-3">
+            <div className="mt-2 grid grid-cols-3 gap-3">
               {[
                 { value: 'yes', label: 'Yes' },
+                { value: 'maybe', label: 'Maybe' },
                 { value: 'no', label: 'No' },
               ].map((option) => (
                 <button
@@ -502,7 +503,7 @@ function GuestPortalForm({
                   onClick={() =>
                     setForm((prev) => ({
                       ...prev,
-                      attending_status: option.value as 'yes' | 'no',
+                      attending_status: option.value as 'yes' | 'no' | 'maybe',
                     }))
                   }
                   className="rounded-lg border px-3 py-2 text-sm"
@@ -518,7 +519,7 @@ function GuestPortalForm({
             </div>
           </div>
 
-          {form.attending_status === 'yes' && (
+          {form.attending_status !== 'no' && (
             <>
               <div>
                 <label className="text-sm font-medium text-stone-200">
@@ -896,7 +897,7 @@ function PostRSVPExperience({
   secureToken: string
   portal: ReadyPortal
   savedSummary: {
-    attending_status: 'yes' | 'no'
+    attending_status: 'yes' | 'no' | 'maybe'
     cannabis_participation: string
     editCutoff: string
   }
@@ -924,7 +925,7 @@ function PostRSVPExperience({
         </h1>
         <p className="mt-3 text-sm text-stone-300">
           <span className="font-medium">Attending:</span>{' '}
-          {savedSummary.attending_status === 'yes' ? 'Yes' : 'No'}
+          {savedSummary.attending_status === 'yes' ? 'Yes' : savedSummary.attending_status === 'maybe' ? 'Maybe' : 'No'}
           {portal.event.cannabisEnabled && (
             <>
               {' | '}

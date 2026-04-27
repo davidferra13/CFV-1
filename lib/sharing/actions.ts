@@ -253,7 +253,7 @@ const SaveGuestPortalRSVPSchema = z.object({
   eventId: z.string().uuid(),
   secureToken: z.string().min(32),
   full_name: z.string().min(1, 'Full name is required'),
-  attending_status: z.enum(['yes', 'no']),
+  attending_status: z.enum(['yes', 'no', 'maybe']),
   dietary_notes: z.string().optional(),
   accessibility_notes: z.string().optional(),
   menu_preference_note: z.string().optional(),
@@ -3230,7 +3230,9 @@ export async function saveGuestEventPortalRSVP(input: SaveGuestPortalRSVPInput) 
       ? 'pending'
       : validated.attending_status === 'yes'
         ? 'attending'
-        : 'declined',
+        : validated.attending_status === 'maybe'
+          ? 'maybe'
+          : 'declined',
     notes: validated.additional_note?.trim() || null,
     dietary_restrictions: parseNotesToList(validated.dietary_notes),
     attendance_queue_status: shouldWaitlist ? 'waitlisted' : 'none',
