@@ -782,12 +782,30 @@ export async function transitionQuote(id: string, newStatus: QuoteStatus) {
       try {
         const { notifyEventContacts } = await import('@/lib/events/notify-contacts')
         const total = ((updated.total_quoted_cents ?? 0) / 100).toFixed(2)
+        // Re-derive occasion for this scope (original is in the try block above)
+        let contactOccasion: string | null = null
+        if (updated.inquiry_id) {
+          const { data: inq } = await db
+            .from('inquiries')
+            .select('confirmed_occasion')
+            .eq('id', updated.inquiry_id)
+            .single()
+          contactOccasion = inq?.confirmed_occasion || null
+        }
+        if (!contactOccasion && updated.event_id) {
+          const { data: evt } = await db
+            .from('events')
+            .select('occasion')
+            .eq('id', updated.event_id)
+            .single()
+          contactOccasion = evt?.occasion || null
+        }
         await notifyEventContacts({
           eventId: updated.event_id,
           tenantId: user.tenantId!,
-          subject: `Quote sent: $${total} for ${occasion || 'event'}`,
+          subject: `Quote sent: $${total} for ${contactOccasion || 'event'}`,
           headline: 'Quote Sent to Client',
-          details: `A quote for $${total} has been sent to the client for "${occasion || 'the event'}".${updated.deposit_required && updated.deposit_amount_cents ? ` A deposit of $${(updated.deposit_amount_cents / 100).toFixed(2)} is required.` : ''}`,
+          details: `A quote for $${total} has been sent to the client for "${contactOccasion || 'the event'}".${updated.deposit_required && updated.deposit_amount_cents ? ` A deposit of $${(updated.deposit_amount_cents / 100).toFixed(2)} is required.` : ''}`,
         })
       } catch (contactErr) {
         console.error('[non-blocking] Event contact notification for quote failed:', contactErr)

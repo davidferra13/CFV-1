@@ -65,7 +65,7 @@ export default async function PartnerLocationDetailPage({ params }: { params: { 
     (a, b) => (a.display_order ?? 99) - (b.display_order ?? 99)
   )
   const pendingRequest = changeRequests.find((request) => request.status === 'pending') ?? null
-  const proposalValues = pendingRequest?.requested_payload ?? location
+  const proposalValues = (pendingRequest?.requested_payload ?? location) as typeof location
   const pendingChanges = pendingRequest
     ? getPartnerLocationProposalChangedFields(location, pendingRequest.requested_payload)
     : []

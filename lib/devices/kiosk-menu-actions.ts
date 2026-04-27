@@ -112,7 +112,7 @@ export async function getKioskMenus(
     }
 
     // Build the response, grouping dishes under their menus
-    const eventMap = new Map(activeEvents.map((e: any) => [e.id, e]))
+    const eventMap = new Map<string, any>(activeEvents.map((e: any) => [e.id, e]))
     const dishMap = new Map<string, KioskMenuDish[]>()
 
     for (const dish of dishes || []) {

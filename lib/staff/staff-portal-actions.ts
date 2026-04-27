@@ -945,7 +945,7 @@ export async function updateMyStaffProfile(
 
   const parsed = updateProfileSchema.safeParse(input)
   if (!parsed.success) {
-    return { success: false, error: parsed.error.errors[0]?.message ?? 'Invalid input' }
+    return { success: false, error: parsed.error.issues[0]?.message ?? 'Invalid input' }
   }
 
   const { display_name, phone, notes } = parsed.data
