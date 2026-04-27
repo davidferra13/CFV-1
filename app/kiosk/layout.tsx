@@ -2,6 +2,7 @@
 // Full-screen, touch-optimized, designed for dedicated tablets
 
 import type { Metadata, Viewport } from 'next'
+import { WakeLock } from '@/components/kiosk/wake-lock'
 
 export const metadata: Metadata = {
   title: 'ChefFlow Kiosk',
@@ -16,5 +17,10 @@ export const viewport: Viewport = {
 }
 
 export default function KioskLayout({ children }: { children: React.ReactNode }) {
-  return <div className="min-h-screen bg-stone-950 text-stone-100 select-none">{children}</div>
+  return (
+    <div className="min-h-screen bg-stone-950 text-stone-100 select-none">
+      <WakeLock />
+      {children}
+    </div>
+  )
 }
