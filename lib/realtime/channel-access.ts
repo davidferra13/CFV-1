@@ -1,6 +1,6 @@
 import { db } from '@/lib/db'
 import { conversations, events } from '@/lib/db/schema/schema'
-import { and, eq } from 'drizzle-orm'
+import { and, eq, sql } from 'drizzle-orm'
 
 export type RealtimeAccessContext = {
   isAdmin: boolean
@@ -82,6 +82,16 @@ export async function validateRealtimeChannelAccess(
         .limit(1)
 
       return Boolean(conversation)
+    }
+
+    case 'collab-space': {
+      if (!context.tenantId) return false
+
+      const memberRows = await db.execute(
+        sql`SELECT 1 FROM chef_collab_space_members WHERE space_id = ${id}::uuid AND chef_id = ${context.tenantId}::uuid LIMIT 1`
+      )
+
+      return memberRows.length > 0
     }
 
     case 'typing':

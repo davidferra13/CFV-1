@@ -3,6 +3,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
+import { broadcast } from '@/lib/realtime/sse-server'
 
 // ── Types ────────────────────────────────────────────────────
 
@@ -638,6 +639,17 @@ export async function sendCollabThreadMessage(input: {
     .update({ last_read_at: now })
     .eq('space_id', thread.space_id)
     .eq('chef_id', chefId)
+
+  // Broadcast real-time event to all space subscribers
+  try {
+    broadcast(`collab-space:${thread.space_id}`, 'new_message', {
+      messageId: msg.id,
+      threadId: input.threadId,
+      senderChefId: chefId,
+    })
+  } catch (err) {
+    console.error('[non-blocking] Collab space broadcast failed', err)
+  }
 
   revalidateNetworkPaths(thread.space_id)
   return { success: true, messageId: msg.id }
