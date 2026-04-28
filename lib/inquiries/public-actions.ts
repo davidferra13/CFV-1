@@ -682,23 +682,25 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
 export async function checkPublicDateAvailability(
   chefSlug: string,
   date: string
-): Promise<{ busy: boolean }> {
+): Promise<{ busy: boolean | null; error?: string }> {
   if (!chefSlug || !date) return { busy: false }
 
   try {
     const db = createServerClient({ admin: true })
     const chefLookup = await findChefByPublicSlug<{ id: string }>(db, chefSlug, 'id')
-    if (!chefLookup.data) return { busy: false }
+    if (!chefLookup.data) return { busy: null, error: 'Chef availability could not be checked.' }
 
-    const { count } = await db
+    const { count, error } = await db
       .from('events')
       .select('id', { count: 'exact', head: true })
       .eq('tenant_id', chefLookup.data.id)
       .eq('event_date', date)
       .neq('status', 'cancelled')
 
+    if (error) return { busy: null, error: 'Availability could not be checked.' }
+
     return { busy: (count ?? 0) > 0 }
   } catch {
-    return { busy: false }
+    return { busy: null, error: 'Availability could not be checked.' }
   }
 }

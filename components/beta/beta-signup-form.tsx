@@ -1,11 +1,49 @@
 'use client'
 
 import type { ChangeEvent, FormEvent } from 'react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Input } from '@/components/ui/input'
 import { ANALYTICS_EVENTS, trackEvent } from '@/lib/analytics/posthog'
 import { submitBetaSignup } from '@/lib/beta/actions'
+
+const BETA_SIGNUP_DRAFT_KEY = 'chefflow:beta-signup-form-draft'
+
+const initialFormData = {
+  name: '',
+  email: '',
+  phone: '',
+  businessName: '',
+  cuisineType: '',
+  yearsInBusiness: '',
+  referralSource: '',
+  website: '',
+}
+
+type BetaSignupFormData = typeof initialFormData
+
+function readDraftValue(value: unknown) {
+  return typeof value === 'string' ? value : ''
+}
+
+function normalizeDraft(parsedDraft: unknown): BetaSignupFormData | null {
+  if (!parsedDraft || typeof parsedDraft !== 'object') {
+    return null
+  }
+
+  const draft = parsedDraft as Partial<Record<keyof BetaSignupFormData, unknown>>
+
+  return {
+    name: readDraftValue(draft.name),
+    email: readDraftValue(draft.email),
+    phone: readDraftValue(draft.phone),
+    businessName: readDraftValue(draft.businessName),
+    cuisineType: readDraftValue(draft.cuisineType),
+    yearsInBusiness: readDraftValue(draft.yearsInBusiness),
+    referralSource: readDraftValue(draft.referralSource),
+    website: readDraftValue(draft.website),
+  }
+}
 
 export function BetaSignupForm() {
   const router = useRouter()
@@ -15,16 +53,38 @@ export function BetaSignupForm() {
 
   const [status, setStatus] = useState<'idle' | 'loading' | 'error'>('idle')
   const [errorMsg, setErrorMsg] = useState('')
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    businessName: '',
-    cuisineType: '',
-    yearsInBusiness: '',
-    referralSource: '',
-    website: '',
-  })
+  const [formData, setFormData] = useState<BetaSignupFormData>(initialFormData)
+  const [draftReady, setDraftReady] = useState(false)
+
+  useEffect(() => {
+    try {
+      const savedDraft = window.localStorage.getItem(BETA_SIGNUP_DRAFT_KEY)
+
+      if (savedDraft) {
+        const normalizedDraft = normalizeDraft(JSON.parse(savedDraft))
+
+        if (normalizedDraft) {
+          setFormData(normalizedDraft)
+        }
+      }
+    } catch (error) {
+      console.warn('[beta-signup] Failed to restore draft', error)
+    } finally {
+      setDraftReady(true)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!draftReady) {
+      return
+    }
+
+    try {
+      window.localStorage.setItem(BETA_SIGNUP_DRAFT_KEY, JSON.stringify(formData))
+    } catch (error) {
+      console.warn('[beta-signup] Failed to persist draft', error)
+    }
+  }, [draftReady, formData])
 
   const handleChange = (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = event.target
@@ -63,6 +123,11 @@ export function BetaSignupForm() {
           has_business_name: Boolean(formData.businessName.trim()),
           has_phone: Boolean(formData.phone.trim()),
         })
+        try {
+          window.localStorage.removeItem(BETA_SIGNUP_DRAFT_KEY)
+        } catch (error) {
+          console.warn('[beta-signup] Failed to clear draft', error)
+        }
         router.push('/beta/thank-you')
         return
       }

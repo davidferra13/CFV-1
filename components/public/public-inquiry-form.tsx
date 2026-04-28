@@ -223,7 +223,7 @@ export function PublicInquiryForm({
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [returningClient, setReturningClient] = useState(false)
   const [lookupDone, setLookupDone] = useState(false)
-  const [dateBusy, setDateBusy] = useState(false)
+  const [dateBusy, setDateBusy] = useState<boolean | null>(false)
 
   // Check date availability when date fields change
   useEffect(() => {
@@ -236,9 +236,13 @@ export function PublicInquiryForm({
     }
     const dateStr = `${String(y).padStart(4, '0')}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
     let cancelled = false
-    checkPublicDateAvailability(chefSlug, dateStr).then((result) => {
-      if (!cancelled) setDateBusy(result.busy)
-    })
+    checkPublicDateAvailability(chefSlug, dateStr)
+      .then((result) => {
+        if (!cancelled) setDateBusy(result.busy)
+      })
+      .catch(() => {
+        if (!cancelled) setDateBusy(null)
+      })
     return () => {
       cancelled = true
     }
@@ -748,6 +752,12 @@ export function PublicInquiryForm({
               <p className="text-sm text-amber-600 mt-1">
                 {chefName} may already have an event on this date. You can still submit your
                 inquiry; the chef will confirm availability.
+              </p>
+            )}
+            {dateBusy === null && (
+              <p className="text-sm text-stone-500 mt-1">
+                Availability could not be checked right now. You can still submit your inquiry; the
+                chef will confirm the date.
               </p>
             )}
           </div>

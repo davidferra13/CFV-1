@@ -2,6 +2,7 @@
 
 import { CookieConsent } from '@/components/ui/cookie-consent'
 import { SwRegister } from '@/components/pwa/sw-register'
+import { InstallPrompt } from '@/components/pwa/install-prompt'
 import { PostHogProvider } from '@/components/analytics/posthog-provider'
 import { PerformanceTelemetry } from '@/components/analytics/performance-telemetry'
 import { GlobalTooltipProvider } from '@/components/ui/global-tooltip-provider'
@@ -14,6 +15,7 @@ export function DeferredRootRuntime() {
       <GlobalTooltipProvider />
       <CookieConsent />
       <SwRegister />
+      <InstallPrompt />
     </>
   )
 }
