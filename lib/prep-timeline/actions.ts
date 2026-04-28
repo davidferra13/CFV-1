@@ -117,7 +117,12 @@ export async function togglePrepCompletion(
         { onConflict: 'event_id,item_key' }
       )
     } else {
-      await db.from('prep_completions').delete().eq('event_id', eventId).eq('item_key', itemKey)
+      await db
+        .from('prep_completions')
+        .delete()
+        .eq('event_id', eventId)
+        .eq('chef_id', user.tenantId!)
+        .eq('item_key', itemKey)
     }
     return { success: true }
   } catch (err: any) {

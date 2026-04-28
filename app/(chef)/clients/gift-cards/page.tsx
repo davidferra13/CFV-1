@@ -8,6 +8,7 @@ import {
   getIncentiveStats,
   getIncentiveRedemptions,
 } from '@/lib/loyalty/voucher-actions'
+import { getGiftCertificates, getGiftCertificateStats } from '@/lib/gifts/gift-certificate-actions'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -15,9 +16,13 @@ import { Badge } from '@/components/ui/badge'
 import { IncentiveRedemptionHistory } from '@/components/incentives/incentive-redemption-history'
 import { IssueButton, RowActions } from './gift-cards-client-shell'
 
-export default async function GiftCardsPage() {
-  await requireChef()
+type BadgeVariant = 'default' | 'success' | 'warning' | 'error' | 'info'
 
+function formatOptionalDate(value: string | null) {
+  return value ? format(new Date(value), 'MMM d, yyyy') : null
+}
+
+export default async function GiftCardsPage() {
   const db: any = createServerClient()
   const user = await requireChef()
 
@@ -31,10 +36,12 @@ export default async function GiftCardsPage() {
 
   const clients = (clientsRaw || []) as { id: string; full_name: string | null }[]
 
-  const [incentives, stats, redemptions] = await Promise.all([
+  const [incentives, stats, redemptions, certificates, certificateStats] = await Promise.all([
     getVoucherAndGiftCards(),
     getIncentiveStats(),
     getIncentiveRedemptions(),
+    getGiftCertificates(),
+    getGiftCertificateStats(),
   ])
 
   return (
@@ -138,7 +145,8 @@ export default async function GiftCardsPage() {
                         : isFullyUsed
                           ? 'Used'
                           : 'Active'
-                    const statusVariant = statusLabel === 'Active' ? 'success' : 'default'
+                    const statusVariant: BadgeVariant =
+                      statusLabel === 'Active' ? 'success' : 'default'
 
                     return (
                       <tr
@@ -177,7 +185,7 @@ export default async function GiftCardsPage() {
                           {incentive.redemptions_used} / {incentive.max_redemptions}
                         </td>
                         <td className="py-3 pr-4">
-                          <Badge variant={statusVariant as any}>{statusLabel}</Badge>
+                          <Badge variant={statusVariant}>{statusLabel}</Badge>
                         </td>
                         <td className="py-3 pr-4 text-stone-500 text-xs whitespace-nowrap">
                           {incentive.expires_at ? (
@@ -188,6 +196,158 @@ export default async function GiftCardsPage() {
                         </td>
                         <td className="py-3 text-right">
                           <RowActions incentive={incentive} />
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Passive store gift certificates */}
+      <Card className="mb-8">
+        <CardHeader>
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+            <div>
+              <CardTitle>Purchased Gift Certificates</CardTitle>
+              <p className="text-sm text-stone-500 mt-1">
+                Codes sold through the public store and available for chef-side reconciliation.
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-3 text-right sm:min-w-[280px]">
+              <div>
+                <div className="text-sm font-semibold text-stone-100">
+                  {certificateStats.activeCount}
+                </div>
+                <div className="text-xs text-stone-500">Active</div>
+              </div>
+              <div>
+                <div className="text-sm font-semibold text-stone-100">
+                  {formatCurrency(certificateStats.outstandingBalanceCents)}
+                </div>
+                <div className="text-xs text-stone-500">Outstanding</div>
+              </div>
+              <div>
+                <div className="text-sm font-semibold text-stone-100">
+                  {certificateStats.totalSold}
+                </div>
+                <div className="text-xs text-stone-500">Sold</div>
+              </div>
+              <div>
+                <div className="text-sm font-semibold text-stone-100">
+                  {formatCurrency(certificateStats.totalSoldCents)}
+                </div>
+                <div className="text-xs text-stone-500">Gross Value</div>
+              </div>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {certificates.length === 0 ? (
+            <p className="text-sm text-stone-500 py-6 text-center">
+              No purchased gift certificates yet. Public store purchases will appear here.
+            </p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-stone-700">
+                    <th className="text-left py-3 pr-4 font-medium text-stone-500 text-xs uppercase tracking-wide">
+                      Code
+                    </th>
+                    <th className="text-left py-3 pr-4 font-medium text-stone-500 text-xs uppercase tracking-wide">
+                      Purchaser
+                    </th>
+                    <th className="text-left py-3 pr-4 font-medium text-stone-500 text-xs uppercase tracking-wide">
+                      Recipient
+                    </th>
+                    <th className="text-left py-3 pr-4 font-medium text-stone-500 text-xs uppercase tracking-wide">
+                      Amount
+                    </th>
+                    <th className="text-left py-3 pr-4 font-medium text-stone-500 text-xs uppercase tracking-wide">
+                      Balance
+                    </th>
+                    <th className="text-left py-3 pr-4 font-medium text-stone-500 text-xs uppercase tracking-wide">
+                      Status
+                    </th>
+                    <th className="text-left py-3 pr-4 font-medium text-stone-500 text-xs uppercase tracking-wide">
+                      Expires
+                    </th>
+                    <th className="text-left py-3 font-medium text-stone-500 text-xs uppercase tracking-wide">
+                      Redeemed Event
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {certificates.map((certificate) => {
+                    const isExpired =
+                      certificate.expires_at && new Date(certificate.expires_at) < new Date()
+                    const statusLabel = isExpired && certificate.status === 'active'
+                      ? 'expired'
+                      : certificate.status
+                    const statusVariant: BadgeVariant =
+                      statusLabel === 'active'
+                        ? 'success'
+                        : statusLabel === 'redeemed'
+                          ? 'info'
+                          : statusLabel === 'voided'
+                            ? 'error'
+                            : 'warning'
+
+                    return (
+                      <tr
+                        key={certificate.id}
+                        className="border-b border-stone-800 hover:bg-stone-800"
+                      >
+                        <td className="py-3 pr-4">
+                          <span className="font-mono text-xs bg-stone-800 px-2 py-0.5 rounded text-stone-200">
+                            {certificate.code}
+                          </span>
+                          <div className="text-xs text-stone-500 mt-0.5">
+                            Sold {formatOptionalDate(certificate.purchased_at) ?? 'date unknown'}
+                          </div>
+                        </td>
+                        <td className="py-3 pr-4 text-stone-300 max-w-[180px]">
+                          <div className="truncate">{certificate.purchaser_name}</div>
+                          {certificate.purchaser_email && (
+                            <div className="text-xs text-stone-500 truncate">
+                              {certificate.purchaser_email}
+                            </div>
+                          )}
+                        </td>
+                        <td className="py-3 pr-4 text-stone-300 max-w-[180px]">
+                          <div className="truncate">{certificate.recipient_name ?? '-'}</div>
+                          {certificate.recipient_email && (
+                            <div className="text-xs text-stone-500 truncate">
+                              {certificate.recipient_email}
+                            </div>
+                          )}
+                        </td>
+                        <td className="py-3 pr-4 text-stone-300">
+                          {formatCurrency(certificate.amount_cents)}
+                        </td>
+                        <td className="py-3 pr-4 text-stone-300">
+                          {formatCurrency(certificate.balance_cents)}
+                        </td>
+                        <td className="py-3 pr-4">
+                          <Badge variant={statusVariant} className="capitalize">
+                            {statusLabel}
+                          </Badge>
+                        </td>
+                        <td className="py-3 pr-4 text-stone-500 text-xs whitespace-nowrap">
+                          {formatOptionalDate(certificate.expires_at) ?? (
+                            <span className="text-stone-300">Never</span>
+                          )}
+                        </td>
+                        <td className="py-3 text-stone-500 text-xs">
+                          {certificate.redeemed_event_id ? (
+                            <span className="font-mono">{certificate.redeemed_event_id}</span>
+                          ) : (
+                            <span className="text-stone-300">Not redeemed</span>
+                          )}
                         </td>
                       </tr>
                     )

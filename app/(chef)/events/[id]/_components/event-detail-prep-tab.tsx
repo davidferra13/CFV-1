@@ -547,15 +547,18 @@ export function EventDetailPrepTab({
                   </div>
                 </div>
                 <div className="divide-y divide-stone-800/50">
-                  {timeline.untimedItems.map((item) => (
-                    <PrepItemRow
-                      key={`${item.recipeId}-${item.componentName}`}
-                      item={item}
-                      eventId={eventId}
-                      checked={false}
-                      onToggle={() => {}}
-                    />
-                  ))}
+                  {timeline.untimedItems.map((item) => {
+                    const key = checkKey(eventId, item.recipeId, item.componentName, item.dishName)
+                    return (
+                      <PrepItemRow
+                        key={key}
+                        item={item}
+                        eventId={eventId}
+                        checked={checkedItems.has(key)}
+                        onToggle={() => toggleItem(key)}
+                      />
+                    )
+                  })}
                 </div>
               </Card>
             )}
