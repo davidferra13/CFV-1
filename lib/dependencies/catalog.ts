@@ -29,7 +29,8 @@ const dependencyCatalog = [
     provider: 'Primary relational database',
     usageCategory: 'Data persistence',
     importance: 'critical',
-    summary: 'Stores tenant data, ledger records, events, clients, settings, and operational state.',
+    summary:
+      'Stores tenant data, ledger records, events, clients, settings, and operational state.',
     operationalNotes:
       'A failure affects most authenticated workflows and must not be hidden as empty data.',
   },
@@ -59,7 +60,8 @@ const dependencyCatalog = [
     provider: 'Cloudflare',
     usageCategory: 'Traffic delivery, routing, and edge protection',
     importance: 'high',
-    summary: 'Supports public app routing, tunnel access, email routing, and edge security controls.',
+    summary:
+      'Supports public app routing, tunnel access, email routing, and edge security controls.',
     operationalNotes:
       'Routing or edge failures can block access even when the app and database are healthy.',
   },
@@ -79,7 +81,8 @@ const dependencyCatalog = [
     provider: 'Google',
     usageCategory: 'Calendar, mailbox, reviews, maps, and verification',
     importance: 'medium',
-    summary: 'Supports optional connected workflows such as calendar truth, mailbox sync, and reviews.',
+    summary:
+      'Supports optional connected workflows such as calendar truth, mailbox sync, and reviews.',
     operationalNotes:
       'Failures should degrade the specific connected workflow without inventing availability.',
   },
@@ -107,4 +110,9 @@ const dependencyCatalog = [
 
 export function getDependencyCatalog(): DependencyCatalogItem[] {
   return dependencyCatalog.map((dependency) => ({ ...dependency }))
+}
+
+export function getDependencyCatalogItem(id: string): DependencyCatalogItem | null {
+  const dependency = dependencyCatalog.find((item) => item.id === id)
+  return dependency ? { ...dependency } : null
 }

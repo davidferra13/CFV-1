@@ -2,6 +2,7 @@
 
 import { getBusinessHealthSummary } from '@/lib/intelligence/business-health-summary'
 import { getProactiveAlerts } from '@/lib/intelligence/proactive-alerts'
+import { getDependencyCatalog } from '@/lib/dependencies/catalog'
 import { WidgetCardShell } from '@/components/dashboard/widget-cards/widget-card-shell'
 import Link from 'next/link'
 
@@ -19,8 +20,11 @@ export async function IntelligenceCards() {
     safe('health', getBusinessHealthSummary, null),
     safe('alerts', getProactiveAlerts, null),
   ])
+  const criticalDependencies = getDependencyCatalog().filter(
+    (dependency) => dependency.importance === 'critical'
+  )
 
-  if (!health && !alerts) return null
+  if (!health && !alerts && criticalDependencies.length === 0) return null
 
   const criticalAlerts = alerts?.alerts.filter((a) => a.severity === 'critical') || []
   const warningAlerts = alerts?.alerts.filter((a) => a.severity === 'warning') || []
@@ -126,6 +130,39 @@ export async function IntelligenceCards() {
                 {health.topInsights[0]}
               </p>
             )}
+          </div>
+        </WidgetCardShell>
+      )}
+
+      {criticalDependencies.length > 0 && (
+        <WidgetCardShell
+          widgetId="operations_readiness"
+          title="Critical Dependencies"
+          size="sm"
+          href="/dependencies"
+        >
+          <div className="space-y-3">
+            <div>
+              <div className="text-2xl font-bold text-red-200">{criticalDependencies.length}</div>
+              <p className="text-xs text-stone-500">Read-only system dependency map</p>
+            </div>
+
+            <div className="space-y-1.5">
+              {criticalDependencies.slice(0, 3).map((dependency) => (
+                <Link
+                  key={dependency.id}
+                  href={`/dependencies#${dependency.id}`}
+                  className="flex items-center gap-2 rounded-lg border border-red-800/30 bg-red-950/30 px-3 py-2 transition-colors hover:bg-red-950/50"
+                >
+                  <span className="min-w-0 flex-1 truncate text-xs text-red-200">
+                    {dependency.service}
+                  </span>
+                  <span className="shrink-0 text-xxs font-semibold uppercase text-red-400">
+                    {dependency.importance}
+                  </span>
+                </Link>
+              ))}
+            </div>
           </div>
         </WidgetCardShell>
       )}
