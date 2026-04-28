@@ -167,6 +167,68 @@ function buildDataSummary(data: DailyReportContent): string {
   ].join('\n\n')
 }
 
+function bold(value: string): string {
+  return `**${value}**`
+}
+
+function bulletEvents(data: DailyReportContent): string {
+  if (data.eventsToday.length === 0) {
+    return `${bold('No events')} are scheduled today, leaving room for prep, admin, or follow-up.`
+  }
+
+  const eventWord = plural(data.eventsToday.length, 'event')
+  const firstEvent = data.eventsToday[0]
+  const firstEventSummary = formatEvent(firstEvent)
+  const remaining = data.eventsToday.length - 1
+
+  return remaining > 0
+    ? `${bold(`${data.eventsToday.length} ${eventWord}`)} are scheduled today, starting with ${firstEventSummary}, plus ${remaining} more.`
+    : `${bold('1 event')} is scheduled today: ${firstEventSummary}.`
+}
+
+function bulletRevenue(data: DailyReportContent): string {
+  return `${bold(formatCents(data.paymentsReceivedTodayCents))} came in today, with ${bold(formatCents(data.monthRevenueToDateCents))} month to date and ${formatSignedPercent(data.monthOverMonthChangePercent)}.`
+}
+
+function bulletPipeline(data: DailyReportContent): string {
+  const quoteText =
+    data.quotesExpiringSoon > 0
+      ? `${data.quotesExpiringSoon} ${plural(data.quotesExpiringSoon, 'quote')} expiring soon`
+      : 'no quotes expiring soon'
+
+  return `${bold(`${data.newInquiriesToday} new ${plural(data.newInquiriesToday, 'inquiry', 'inquiries')}`)} arrived today, with ${quoteText} and ${data.staleFollowUps} stale ${plural(data.staleFollowUps, 'follow-up')} to clear.`
+}
+
+function bulletOperations(data: DailyReportContent): string {
+  const foodCost =
+    data.foodCostAvgPercent === null
+      ? 'food cost trend unavailable'
+      : `${bold(`${data.foodCostAvgPercent}% food cost`)} trending ${data.foodCostTrending}`
+
+  return `${bold(formatHours(data.avgResponseTimeHours))} is the current response signal, with ${foodCost} and ${data.openClosureTasks} open closure ${plural(data.openClosureTasks, 'task')}.`
+}
+
+function bulletClientSignals(data: DailyReportContent): string {
+  const signalCount =
+    data.highIntentVisits.length + data.upcomingMilestones.length + data.dormantClients.length
+
+  if (signalCount === 0) {
+    return `${bold('No client signals')} need immediate follow-up from yesterday's activity.`
+  }
+
+  return `${bold(`${signalCount} client ${plural(signalCount, 'signal')}`)} need review across high-intent visits, milestones, and dormant client follow-up.`
+}
+
+export function generateDailyNarrativeBullets(data: DailyReportContent): string[] {
+  return [
+    bulletEvents(data),
+    bulletRevenue(data),
+    bulletPipeline(data),
+    bulletOperations(data),
+    bulletClientSignals(data),
+  ]
+}
+
 function stripEmDashes(text: string): string {
   return text.replace(/\u2014/g, ' - ').trim()
 }
