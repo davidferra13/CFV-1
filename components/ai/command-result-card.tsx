@@ -146,7 +146,7 @@ function FinanceSummaryData({ data }: { data: unknown }) {
   )
 }
 
-function EmailDraftData({ data, onCopied }: { data: unknown; onCopied: () => void }) {
+function EmailDraftData({ data }: { data: unknown }) {
   const d = data as { clientId: string; clientName: string; draftText: string }
   const [copied, setCopied] = useState(false)
 
@@ -154,7 +154,7 @@ function EmailDraftData({ data, onCopied }: { data: unknown; onCopied: () => voi
     await navigator.clipboard.writeText(d.draftText)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
-    onCopied()
+    toast.success('Draft copied')
   }
 
   return (
@@ -323,7 +323,7 @@ export function CommandResultCard({ result, onStatusChange }: CommandResultCardP
               {result.taskType === 'event.list_upcoming' && <EventListData data={result.data} />}
               {result.taskType === 'finance.summary' && <FinanceSummaryData data={result.data} />}
               {result.taskType === 'email.followup' && (
-                <EmailDraftData data={result.data} onCopied={() => {}} />
+                <EmailDraftData data={result.data} />
               )}
               {result.taskType === 'event.create_draft' && <EventDraftData data={result.data} />}
             </>
