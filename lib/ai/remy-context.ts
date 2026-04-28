@@ -32,6 +32,8 @@ import { getInquiryConversionContext } from '@/lib/intelligence/inquiry-conversi
 import { getServiceConfigForTenant } from '@/lib/chef-services/service-config-internal'
 import { formatServiceConfigForPrompt } from '@/lib/chef-services/service-config-actions'
 import { getMetricRegistryPromptContext } from '@/lib/analytics/metric-registry'
+import { evaluateCompletion } from '@/lib/completion/engine'
+import { buildPageCompletionContext } from '@/lib/ai/remy-completion-context'
 
 const OPENCLAW_API = process.env.OPENCLAW_API_URL || 'http://10.0.0.177:8081'
 
@@ -1951,6 +1953,15 @@ async function loadEventEntity(
   const data = eventResult.data
   if (!data) return undefined
 
+  const completionResult = await withContextFallback(
+    tenantId,
+    'load_event_completion_context',
+    null,
+    () => evaluateCompletion('event', eventId, tenantId, { shallow: true }),
+    { eventId }
+  )
+  const completion = buildPageCompletionContext(completionResult)
+
   const client = data.client as Record<string, unknown> | null
   const lines: string[] = []
   lines.push(`EVENT: ${data.occasion ?? 'Untitled event'}`)
@@ -1987,6 +1998,22 @@ async function loadEventEntity(
   if (!data.grocery_list_ready) notReady.push('grocery')
   if (!data.timeline_ready) notReady.push('timeline')
   if (notReady.length > 0) lines.push(`Not ready: ${notReady.join(', ')}`)
+
+  if (completion) {
+    lines.push(`\nCOMPLETION: ${completion.score}/100 (${completion.status})`)
+    if (completion.blockingRequirements.length > 0) {
+      lines.push(
+        `Completion blockers: ${completion.blockingRequirements.map((r) => r.label).join(', ')}`
+      )
+    } else if (completion.status === 'complete') {
+      lines.push('Completion blockers: none')
+    }
+    if (completion.nextAction) {
+      lines.push(
+        `Next completion action: ${completion.nextAction.label} -> ${completion.nextAction.url}`
+      )
+    }
+  }
 
   // Menu approval status
   if (data.menu_approval_status && data.menu_approval_status !== 'not_sent') {
@@ -2292,7 +2319,7 @@ async function loadEventEntity(
     }
   }
 
-  return { type: 'event', summary: lines.join('\n') }
+  return { type: 'event', summary: lines.join('\n'), completion }
 }
 
 async function loadClientEntity(

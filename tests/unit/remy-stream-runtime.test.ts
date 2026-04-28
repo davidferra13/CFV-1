@@ -8,6 +8,7 @@ const require = createRequire(import.meta.url)
 
 const { buildGreetingFastPath } = require('../../app/api/remy/stream/route-runtime-utils.ts')
 const { buildRemySystemPrompt } = require('../../app/api/remy/stream/route-prompt-utils.ts')
+const { tryInstantAnswer } = require('../../app/api/remy/stream/route-instant-answers.ts')
 const { parseRemyStream } = require('../../lib/ai/remy-stream-parser.ts')
 
 test('greeting fast path stays deterministic and context-free', () => {
@@ -106,6 +107,90 @@ test('stream prompt includes dynamic personality block and context health', () =
   assert.match(prompt, /TONE ADJUSTMENT: This chef is brand new\./)
   assert.match(prompt, /CONTEXT HEALTH: Some business context failed to load/)
   assert.match(prompt, /load_email_digest, load_price_context/)
+})
+
+test('Remy answers event readiness from completion context', () => {
+  const answer = tryInstantAnswer('is this event ready?', {
+    chefName: 'Chef',
+    businessName: 'Test Kitchen',
+    tagline: null,
+    chefCity: null,
+    chefState: null,
+    chefArchetype: null,
+    clientCount: 0,
+    upcomingEventCount: 1,
+    openInquiryCount: 0,
+    pageEntity: {
+      type: 'event',
+      summary: 'EVENT: Henderson dinner',
+      completion: {
+        status: 'partial',
+        score: 72,
+        missingRequirements: [
+          {
+            key: 'menu',
+            label: 'Menu complete',
+            category: 'culinary',
+            actionUrl: '/events/event-1/menu',
+          },
+        ],
+        blockingRequirements: [
+          {
+            key: 'allergies',
+            label: 'Client allergies confirmed',
+            category: 'safety',
+            actionUrl: '/events/event-1',
+          },
+        ],
+        nextAction: {
+          label: 'Confirm allergies',
+          url: '/events/event-1',
+        },
+      },
+    },
+  })
+
+  assert.ok(answer)
+  assert.match(answer.text, /Completion Contract/)
+  assert.match(answer.text, /72\/100/)
+  assert.match(answer.text, /Client allergies confirmed/)
+  assert.equal(answer.navSuggestions?.[0]?.href, '/events/event-1')
+})
+
+test('Remy answers mentioned event readiness from completion context', () => {
+  const answer = tryInstantAnswer('why is the Henderson dinner blocked?', {
+    chefName: 'Chef',
+    businessName: 'Test Kitchen',
+    tagline: null,
+    chefCity: null,
+    chefState: null,
+    chefArchetype: null,
+    clientCount: 0,
+    upcomingEventCount: 1,
+    openInquiryCount: 0,
+    mentionedEntities: [
+      {
+        type: 'event',
+        summary: 'EVENT: Henderson dinner',
+        completion: {
+          status: 'partial',
+          score: 80,
+          missingRequirements: [],
+          blockingRequirements: [
+            {
+              key: 'deposit',
+              label: 'Deposit paid',
+              category: 'financial',
+            },
+          ],
+          nextAction: null,
+        },
+      },
+    ],
+  })
+
+  assert.ok(answer)
+  assert.match(answer.text, /Deposit paid/)
 })
 
 test('local AI context route uses the same dynamic personality helper', () => {

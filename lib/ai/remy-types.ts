@@ -411,4 +411,23 @@ export interface RemyContext {
 export interface PageEntityContext {
   type: 'event' | 'client' | 'recipe' | 'inquiry' | 'menu'
   summary: string
+  completion?: {
+    status: import('@/lib/completion/types').CompletionStatus
+    score: number
+    missingRequirements: Array<{
+      key: string
+      label: string
+      category: import('@/lib/completion/types').RequirementCategory
+      actionUrl?: string
+      actionLabel?: string
+    }>
+    blockingRequirements: Array<{
+      key: string
+      label: string
+      category: import('@/lib/completion/types').RequirementCategory
+      actionUrl?: string
+      actionLabel?: string
+    }>
+    nextAction: { label: string; url: string } | null
+  }
 }

@@ -41,7 +41,59 @@ function formatMetricSourceAnswer(query: string): InstantAnswer | null {
   }
 }
 
+function findEventCompletionContext(ctx: RemyContext) {
+  const candidates = [ctx.pageEntity, ...(ctx.mentionedEntities ?? [])].filter(
+    (entity): entity is NonNullable<typeof entity> => Boolean(entity)
+  )
+
+  return candidates.find((entity) => entity.type === 'event' && entity.completion)
+}
+
+function formatEventCompletionAnswer(ctx: RemyContext): InstantAnswer | null {
+  const entity = findEventCompletionContext(ctx)
+  const completion = entity?.completion
+  if (!entity || !completion) return null
+
+  const lines: string[] = [
+    `Deterministic readiness from the Completion Contract: **${completion.score}/100 (${completion.status})**.`,
+  ]
+
+  if (completion.blockingRequirements.length > 0) {
+    lines.push('')
+    lines.push('Blocking requirements:')
+    for (const blocker of completion.blockingRequirements.slice(0, 5)) {
+      lines.push(`- ${blocker.label}`)
+    }
+  } else if (completion.status === 'complete') {
+    lines.push('')
+    lines.push('No blocking requirements are open.')
+  } else if (completion.missingRequirements.length > 0) {
+    lines.push('')
+    lines.push('No hard blockers are open, but these items are still missing:')
+    for (const missing of completion.missingRequirements.slice(0, 5)) {
+      lines.push(`- ${missing.label}`)
+    }
+  }
+
+  if (completion.nextAction) {
+    lines.push('')
+    lines.push(`Next step: **${completion.nextAction.label}**.`)
+  }
+
+  return {
+    text: lines.join('\n'),
+    navSuggestions: completion.nextAction
+      ? [{ label: completion.nextAction.label, href: completion.nextAction.url }]
+      : [{ label: 'Event', href: '/events' }],
+  }
+}
+
 const INSTANT_PATTERNS: AnswerPattern[] = [
+  {
+    pattern:
+      /(?:is|am|are|what|why|how).*(?:event|dinner|booking|service|gig|this).*(?:ready|complete|completion|block|blocked|missing|next)|(?:ready|complete|completion|block|blocked|missing|next).*(?:event|dinner|booking|service|gig|this)/i,
+    answer: (ctx) => formatEventCompletionAnswer(ctx),
+  },
   {
     pattern:
       /(?:where|how|what).*(?:metric|stat|analytics|number|usage|rate).*(?:source|come from|calculated|tracked|defined)|(?:source|calculation).*(?:metric|stat|analytics|usage|rate)/i,
