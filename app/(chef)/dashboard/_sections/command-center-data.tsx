@@ -1,6 +1,7 @@
 import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { CommandCenter } from '@/components/dashboard/command-center'
+import { InventoryBlindSpotsPanel, type InventoryBlindSpot } from './inventory-blind-spots-panel'
 
 async function safeCount(
   db: any,
@@ -24,6 +25,7 @@ export async function CommandCenterSection() {
   const user = await requireChef()
   const db: any = createServerClient()
   const tid = user.tenantId!
+  const inventoryBlindSpotsPromise = loadInventoryBlindSpots(db, tid)
 
   // Fetch only the 6 core counts needed by the condensed Core Areas panel
   const [events, inquiries, clients, menus, quotes, unreadMessages, circles] = await Promise.all([
@@ -75,6 +77,52 @@ export async function CommandCenterSection() {
           circles: circles ?? 0,
         }}
       />
+      <InventoryBlindSpotsPanel spots={await inventoryBlindSpotsPromise} />
     </div>
   )
+}
+
+async function loadInventoryBlindSpots(db: any, tenantId: string): Promise<InventoryBlindSpot[]> {
+  const [missingParLevels, missingVendorLinks, batchesMissingExpiry, batchesMissingLotNumbers] =
+    await Promise.all([
+      safeCount(db, 'inventory_counts', 'chef_id', tenantId, (q: any) => q.is('par_level', null)),
+      safeCount(db, 'inventory_counts', 'chef_id', tenantId, (q: any) => q.is('vendor_id', null)),
+      safeCount(db, 'inventory_batches', 'chef_id', tenantId, (q: any) =>
+        q.eq('is_depleted', false).is('expiry_date', null)
+      ),
+      safeCount(db, 'inventory_batches', 'chef_id', tenantId, (q: any) =>
+        q.eq('is_depleted', false).is('lot_number', null)
+      ),
+    ])
+
+  return [
+    {
+      id: 'parLevels',
+      label: 'Missing Par Levels',
+      count: missingParLevels,
+      href: '/inventory/reorder',
+      description: 'Tracked items without reorder thresholds.',
+    },
+    {
+      id: 'vendorLinks',
+      label: 'Missing Vendors',
+      count: missingVendorLinks,
+      href: '/inventory/procurement',
+      description: 'Tracked items without a preferred source.',
+    },
+    {
+      id: 'expiryDates',
+      label: 'Missing Expiry Dates',
+      count: batchesMissingExpiry,
+      href: '/inventory/expiry',
+      description: 'Active batches without freshness dates.',
+    },
+    {
+      id: 'lotNumbers',
+      label: 'Missing Lot Numbers',
+      count: batchesMissingLotNumbers,
+      href: '/inventory/purchase-orders',
+      description: 'Active batches without traceability IDs.',
+    },
+  ]
 }
