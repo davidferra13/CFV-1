@@ -14,6 +14,8 @@ import { QuoteExpiryCountdown } from '@/components/quotes/quote-expiry-countdown
 import { MessageChefButton } from '@/components/chat/message-chef-button'
 import { ActivityTracker } from '@/components/activity/activity-tracker'
 import { SessionHeartbeat } from '@/components/activity/session-heartbeat'
+import { PaymentStructureSummary } from '@/components/quotes/payment-structure-summary'
+import { readPaymentStructure } from '@/lib/payments/payment-structure'
 
 export default async function ClientQuoteDetailPage({ params }: { params: { id: string } }) {
   await requireClient()
@@ -25,6 +27,7 @@ export default async function ClientQuoteDetailPage({ params }: { params: { id: 
   }
 
   const isPending = quote.status === 'sent'
+  const paymentStructure = readPaymentStructure((quote as any).pricing_context ?? null)
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
@@ -128,6 +131,8 @@ export default async function ClientQuoteDetailPage({ params }: { params: { id: 
           )}
         </div>
       </Card>
+
+      {paymentStructure && <PaymentStructureSummary structure={paymentStructure} />}
 
       {/* Event Details from Inquiry */}
       {quote.inquiry && (

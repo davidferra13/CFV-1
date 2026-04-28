@@ -115,6 +115,9 @@ test('voice agent opt-out detection is shared with call handling', () => {
 
   const gatherSrc = readFileSync(GATHER_ROUTE, 'utf8')
   assert.match(gatherSrc, /hasVoiceAgentOptOutRequest/)
+  assert.match(gatherSrc, /getVoicePathwayForRole/)
+  assert.match(gatherSrc, /blocked unknown voice role/)
+  assert.doesNotMatch(gatherSrc, /searchParams\.get\('role'\) \?\? 'vendor_availability'/)
   assert.match(gatherSrc, /resolveVoiceAgentTurn/)
   assert.match(gatherSrc, /buildVoiceAgentFollowUp/)
   assert.match(gatherSrc, /voiceAgentFollowUp/)

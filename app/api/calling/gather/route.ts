@@ -5,7 +5,7 @@
  * Dispatches to per-role handlers. Logs every utterance to ai_call_transcripts.
  *
  * Roles handled:
- *   vendor_availability  - yes/no stock check + price/qty (default, existing)
+ *   vendor_availability  - yes/no stock check + price/qty
  *   vendor_delivery      - delivery window + contact name
  *   venue_confirmation   - access time + kitchen notes
  *   inbound_vendor_callback - vendor calling back
@@ -37,6 +37,7 @@ import {
   resolveVoiceAgentTurn,
   type VoiceAgentDecision,
 } from '@/lib/calling/voice-agent-contract'
+import { getVoicePathwayForRole } from '@/lib/calling/voice-pathways'
 
 // Q51: Strip trailing slash - same vulnerability as Q50 in twilio-webhook-auth.
 // Trailing slash on NEXTAUTH_URL produces double-slash callback URLs that break
@@ -558,10 +559,16 @@ export async function POST(req: NextRequest) {
   const callId = searchParams.get('callId') // supplier_calls.id (legacy vendor availability)
   const aiCallId = searchParams.get('aiCallId') // ai_calls.id (all new roles)
   const step = parseInt(searchParams.get('step') ?? '1', 10)
-  const role = searchParams.get('role') ?? 'vendor_availability'
+  const role = searchParams.get('role')
   const retry = parseInt(searchParams.get('retry') ?? '0', 10)
 
   const db: any = createAdminClient()
+
+  const pathway = role ? getVoicePathwayForRole(role) : null
+  if (!role || !pathway) {
+    console.error('[calling/gather] blocked unknown voice role:', role || '(missing)')
+    return closingTwiml("Sorry, this call route isn't configured correctly. We'll have the chef follow up if needed.")
+  }
 
   if (speech && isOutboundCallRole(role) && hasVoiceAgentOptOutRequest(speech)) {
     return handleAiCallOptOut({ db, callId, aiCallId, role, speech, confidence })
@@ -575,7 +582,11 @@ export async function POST(req: NextRequest) {
     return handleInboundVendorCallback(db, aiCallId, step, speech, digits, confidence)
   if (role === 'inbound_unknown') return handleInboundUnknown(db, aiCallId, speech, step)
 
-  // Default: vendor_availability
+  if (role !== 'vendor_availability') {
+    console.error('[calling/gather] blocked unsupported voice pathway:', pathway.id)
+    return closingTwiml("Sorry, this call route isn't configured correctly. We'll have the chef follow up if needed.")
+  }
+
   return handleVendorAvailability(db, callId, aiCallId, step, speech, digits, confidence, retry)
 }
 

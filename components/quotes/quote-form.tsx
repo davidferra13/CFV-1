@@ -490,7 +490,8 @@ export function QuoteForm({
       pricing_notes: existingQuote?.pricing_notes || prefilledPricingNotes || '',
       internal_notes: existingQuote?.internal_notes || prefilledInternalNotes || '',
       payment_structure_mode:
-        existingPaymentStructure?.mode ?? paymentModeFromDeposit(prefilledDepositRequired ?? false),
+        existingPaymentStructure?.mode ??
+        paymentModeFromDeposit(existingQuote?.deposit_required ?? prefilledDepositRequired ?? false),
       payment_participant_count: existingPaymentStructure?.participantCount?.toString() || '2',
       custom_payment_terms: existingPaymentStructure?.customTerms || '',
     }),
@@ -840,6 +841,7 @@ export function QuoteForm({
         const input: CreateQuoteInput = {
           client_id: clientId,
           inquiry_id: prefilledInquiryId || null,
+          event_id: prefilledEventId || null,
           quote_name: quoteName || undefined,
           pricing_model: pricingModel as 'per_person' | 'flat_rate' | 'custom',
           total_quoted_cents: totalCents,
@@ -1512,11 +1514,20 @@ export function QuoteForm({
                 type="checkbox"
                 checked={depositRequired}
                 onChange={(e) => {
-                  setDepositRequired(e.target.checked)
-                  if (e.target.checked && paymentStructureMode === 'full_upfront') {
+                  const checked = e.target.checked
+                  setDepositRequired(checked)
+                  if (
+                    checked &&
+                    (paymentStructureMode === 'full_upfront' ||
+                      paymentStructureMode === 'split_evenly' ||
+                      paymentStructureMode === 'custom_terms')
+                  ) {
                     applyPaymentStructureMode('deposit_balance')
                   }
-                  if (!e.target.checked && paymentStructureMode === 'deposit_balance') {
+                  if (
+                    !checked &&
+                    (paymentStructureMode === 'deposit_balance' || paymentStructureMode === 'thirds')
+                  ) {
                     applyPaymentStructureMode('full_upfront')
                   }
                 }}

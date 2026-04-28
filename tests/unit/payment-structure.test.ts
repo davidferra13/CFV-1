@@ -1,11 +1,15 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 
 import {
   buildPaymentStructure,
   readPaymentStructure,
   serializePaymentStructureForContext,
 } from '@/lib/payments/payment-structure'
+
+const ROOT = process.cwd()
 
 test('payment structure builds deposit plus balance terms', () => {
   const structure = buildPaymentStructure({
@@ -52,4 +56,31 @@ test('payment structure round trips through quote pricing context', () => {
 
   assert.deepEqual(readPaymentStructure(context), structure)
   assert.equal(readPaymentStructure({}), null)
+})
+
+test('event-prefilled quote creation keeps event link for installment sync', () => {
+  const quoteFormSrc = readFileSync(resolve(ROOT, 'components/quotes/quote-form.tsx'), 'utf8')
+
+  assert.match(quoteFormSrc, /event_id:\s*prefilledEventId \|\| null/)
+})
+
+test('deposit checkbox normalizes payment structure modes', () => {
+  const quoteFormSrc = readFileSync(resolve(ROOT, 'components/quotes/quote-form.tsx'), 'utf8')
+
+  assert.match(quoteFormSrc, /paymentStructureMode === 'split_evenly'/)
+  assert.match(quoteFormSrc, /paymentStructureMode === 'custom_terms'/)
+  assert.match(quoteFormSrc, /paymentStructureMode === 'thirds'/)
+  assert.match(quoteFormSrc, /applyPaymentStructureMode\('deposit_balance'\)/)
+  assert.match(quoteFormSrc, /applyPaymentStructureMode\('full_upfront'\)/)
+})
+
+test('authenticated client quote detail renders saved payment structure', () => {
+  const clientQuoteSrc = readFileSync(
+    resolve(ROOT, 'app/(client)/my-quotes/[id]/page.tsx'),
+    'utf8'
+  )
+
+  assert.match(clientQuoteSrc, /readPaymentStructure/)
+  assert.match(clientQuoteSrc, /PaymentStructureSummary/)
+  assert.match(clientQuoteSrc, /pricing_context/)
 })
