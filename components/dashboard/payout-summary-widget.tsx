@@ -32,7 +32,7 @@ export function PayoutSummaryWidget({ summary }: Props) {
             Connect your Stripe account to start receiving payouts.
           </p>
           <Link
-            href="/settings/payments"
+            href="/settings/stripe-connect"
             className="text-sm text-brand-500 hover:text-brand-400 font-medium mt-2 inline-block"
           >
             Set up payments

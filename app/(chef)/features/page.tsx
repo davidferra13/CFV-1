@@ -369,7 +369,7 @@ const SECTIONS: Section[] = [
       },
       {
         label: 'Journey Journal',
-        href: '/journey',
+        href: '/settings/journey',
         description: 'Document your career milestones and story.',
         icon: BookOpen,
       },

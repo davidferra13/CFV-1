@@ -869,7 +869,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
 
       return {
         text: lines.join('\n'),
-        navSuggestions: [{ label: 'Daily Ops', href: '/daily-ops' }],
+        navSuggestions: [{ label: 'Daily Ops', href: '/stations/daily-ops' }],
       }
     },
   },
@@ -1516,7 +1516,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
       const cats = es.categories.length > 0 ? `\n\nCategories: ${es.categories.join(', ')}` : ''
       return {
         text: `You have **${es.totalItems} piece${es.totalItems !== 1 ? 's' : ''} of equipment** tracked.${cats}`,
-        navSuggestions: [{ label: 'Equipment', href: '/equipment' }],
+        navSuggestions: [{ label: 'Equipment', href: '/operations/equipment' }],
       }
     },
   },

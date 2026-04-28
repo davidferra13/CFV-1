@@ -42,7 +42,7 @@ export default async function DraftMenusPage() {
               {menus.length}
             </span>
           </div>
-          <Link href="/culinary/menus/new">
+          <Link href="/menus/new">
             <Button>Create Menu</Button>
           </Link>
         </div>
