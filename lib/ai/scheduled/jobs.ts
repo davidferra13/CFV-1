@@ -1,10 +1,10 @@
 'use server'
 
 // Scheduled Intelligence Layer - Job Implementations
-// PRIVACY: All jobs handle tenant business data → local Ollama only.
+// PRIVACY: AI jobs use the single ChefFlow Ollama-compatible runtime.
 //
 // Each job is called by the queue worker on a schedule.
-// Jobs that are pure SQL run on PC. Jobs needing LLM prefer the Pi.
+// Jobs that are pure SQL run in-process. Jobs needing LLM use the configured runtime.
 
 import { createAdminClient } from '@/lib/db/admin'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
@@ -146,7 +146,7 @@ export async function handleLeadScoring(
 }
 
 // ============================================
-// 3. WEEKLY BUSINESS INSIGHTS (heavy - Pi preferred)
+// 3. WEEKLY BUSINESS INSIGHTS
 // ============================================
 
 export async function handleWeeklyInsights(
@@ -216,7 +216,7 @@ export async function handleWeeklyInsights(
 }
 
 // ============================================
-// 4. REVENUE GOAL PROGRESS (heavy - Pi preferred)
+// 4. REVENUE GOAL PROGRESS
 // ============================================
 
 export async function handleRevenueGoal(
@@ -252,7 +252,7 @@ export async function handleRevenueGoal(
 }
 
 // ============================================
-// 5. CLIENT CHURN PREDICTION (heavy - Pi preferred)
+// 5. CLIENT CHURN PREDICTION
 // ============================================
 
 export async function handleChurnPrediction(
@@ -285,7 +285,7 @@ export async function handleChurnPrediction(
 }
 
 // ============================================
-// 6. FOOD COST % ALERT (pure SQL - runs on PC)
+// 6. FOOD COST % ALERT
 // ============================================
 
 export async function handleFoodCostAlert(
@@ -331,7 +331,7 @@ export async function handleFoodCostAlert(
 }
 
 // ============================================
-// 7. PIPELINE BOTTLENECK REPORT (heavy - Pi preferred)
+// 7. PIPELINE BOTTLENECK REPORT
 // ============================================
 
 export async function handlePipelineBottleneck(
@@ -470,7 +470,7 @@ export async function handleFoodRecallMonitor(
 }
 
 // ============================================
-// 10. QUOTE WIN/LOSS ANALYSIS (heavy - Pi preferred)
+// 10. QUOTE WIN/LOSS ANALYSIS
 // ============================================
 
 export async function handleQuoteAnalysis(
@@ -514,7 +514,7 @@ export async function handleQuoteAnalysis(
 }
 
 // ============================================
-// 11. PLATFORM ANOMALY DETECTION (heavy - Pi preferred)
+// 11. PLATFORM ANOMALY DETECTION
 // ============================================
 
 export async function handleAnomalyDetection(
@@ -562,7 +562,7 @@ export async function handleAnomalyDetection(
 }
 
 // ============================================
-// 12. MENU ENGINEERING REPORT (heavy - Pi preferred)
+// 12. MENU ENGINEERING REPORT
 // ============================================
 
 export async function handleMenuEngineering(
@@ -723,7 +723,7 @@ export async function handlePaymentOverdueScanner(
 }
 
 // ============================================
-// 15. SOCIAL POST DRAFT (Ollama-powered - Pi preferred)
+// 15. SOCIAL POST DRAFT
 // ============================================
 
 export async function handleSocialPostDraft(
@@ -785,7 +785,7 @@ export async function handleSocialPostDraft(
     if (err instanceof OllamaOfflineError) throw err
     return {
       posts: [],
-      summary: 'Could not generate social posts - start Ollama.',
+      summary: 'AI content generation is unavailable right now. Please try again shortly.',
       generatedAt: new Date().toISOString(),
       fallback: true,
     }
@@ -841,7 +841,7 @@ export async function handleClientSentiment(
   if (cancelledEvents > 2) signals.push(`${cancelledEvents} cancellations in 30 days`)
   if (messageCount === 0) signals.push('No client messages in 30 days - engagement may be dropping')
 
-  // If we have messages and Ollama is running, do a light sentiment scan
+  // If we have messages and the AI runtime is available, do a light sentiment scan
   let sentimentAnalysis: Record<string, unknown> | null = null
   if (messageCount > 0) {
     const SentimentSchema = z.object({

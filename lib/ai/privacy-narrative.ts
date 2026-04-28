@@ -5,7 +5,9 @@
  * AI privacy, architecture, or speed must import from here.
  *
  * Architecture reality:
- *   - Self-hosted Ollama-compatible runtime (local GPU in dev, self-managed cloud in prod)
+ *   - Single Ollama-compatible ChefFlow AI runtime
+ *   - Cloud in production via OLLAMA_BASE_URL
+ *   - Localhost only in development
  *   - NOT OpenAI, Google, Anthropic, or any third-party AI service
  *   - Conversation content not stored server-side
  *   - Browser history stays in browser
@@ -152,39 +154,35 @@ ABOUT YOURSELF (use when users ask about privacy, speed, or how you work):
 
 export const AUTO_RESPONSE_AI_LABEL = 'Let Remy personalize auto-responses (private AI)'
 
-// ─── BYOAI (Bring Your Own AI) Privacy Variants ─────────────────────────────
-// Used when inference runs on the user's own device instead of ChefFlow servers.
+// ─── Legacy Provider Privacy Variants ───────────────────────────────────────
+// Legacy export names are retained for compatibility. All user-facing copy reflects
+// the single ChefFlow AI runtime, whether production cloud or development localhost.
 
-/** Browser AI: Chrome Built-in AI or WebLLM (runs entirely in the browser tab) */
-export const BYOAI_BROWSER_ONELINER =
-  'AI is running entirely in your browser. Your data never leaves this device.'
+/** Legacy browser provider label */
+export const BYOAI_BROWSER_ONELINER = PRIVACY_ONELINER
 
-/** Browser AI: expanded explanation */
-export const BYOAI_BROWSER_EXPLAINED =
-  "This conversation is powered by AI running directly in your browser using your device's hardware. No data is sent to any server, not even ChefFlow's. Everything stays on this device."
+/** Legacy browser provider expanded explanation */
+export const BYOAI_BROWSER_EXPLAINED = PRIVATE_AI_EXPLAINED
 
-/** Local Ollama: user's own machine */
-export const BYOAI_LOCAL_ONELINER =
-  'AI is running on your local machine. Your data never leaves your network.'
+/** Legacy local provider label */
+export const BYOAI_LOCAL_ONELINER = PRIVACY_ONELINER
 
-/** Local Ollama: expanded explanation */
-export const BYOAI_LOCAL_EXPLAINED =
-  'This conversation is powered by your own AI running on your local machine via Ollama. No data is sent to any external server. Everything stays on your hardware, under your control.'
+/** Legacy local provider expanded explanation */
+export const BYOAI_LOCAL_EXPLAINED = PRIVATE_AI_EXPLAINED
 
 /** Server fallback: same as existing narrative but explicitly labeled */
 export const BYOAI_SERVER_ONELINER = PRIVACY_ONELINER
 
-/** Speed + privacy for BYOAI surfaces */
-export const BYOAI_BROWSER_SPEED = 'Running locally. Zero latency. Complete privacy.'
-export const BYOAI_LOCAL_SPEED = 'Running on your machine. Fast and private.'
+/** Speed + privacy for legacy provider surfaces */
+export const BYOAI_BROWSER_SPEED = SPEED_PRIVACY_SHORT
+export const BYOAI_LOCAL_SPEED = SPEED_PRIVACY_SHORT
 
-/** Self-knowledge injection for Remy system prompt when running on user's device */
+/** Self-knowledge injection for legacy provider mode */
 export const REMY_BYOAI_SELF_KNOWLEDGE = `
 ABOUT YOUR CURRENT SESSION (use when users ask about privacy or how you work):
-- You are currently running on the user's own device, not on ChefFlow's servers.
-- No conversation data is being sent to any external server.
-- The user has full control over this AI instance.
-- If asked about privacy: "Right now I'm running entirely on your device. Nothing leaves your machine."
+- You run on ChefFlow's own private AI infrastructure, not on third-party services like OpenAI or Google.
+- Conversation content is not stored on ChefFlow's servers. Chat history lives in the user's browser.
+- If asked about privacy: "I run on ChefFlow's own private AI. Your data is never sent to third-party AI services."
 `
 
 /**
