@@ -421,7 +421,7 @@
 - **Allergen Conflict Alert:** Deterministic allergen cross-check (auto-runs on mount, no AI). Red/amber banners showing per-guest conflicts with FDA Big 9 classification. Expandable per-person detail with safe dish list. Gated on `menu_id` existing.
 - **AI Allergen Risk Matrix:** AI-powered allergen analysis (on-demand, deeper analysis)
 - **AI Menu Nutritional Summary:** AI nutritional breakdown
-- **Communication Log:** `MessageThread` (read-only) + `MessageLogForm` (compose with channel select, template select, textarea, submit)
+- **Communication Log:** stage-aware call recommendation card when current status, payments, dates, or message content indicate a phone call should happen, then `MessageThread` (read-only) + `MessageLogForm` (compose with channel select, template select, textarea, submit)
 
 #### Tab: Finance
 
@@ -617,6 +617,8 @@ The main client detail also reuses a shared tenant-scoped authenticated-client w
 
 **`/inquiries/[id]` - Detail:** Full inquiry dossier with contact card, confirmed facts, pipeline card (next action/follow-up due with inline edit), quotes card ("+ Create Quote" → `/quotes/new` via the shared quote-prefill contract carrying `source=inquiry`, `inquiry_id`, and `client_id`), **Critical Path card** (10-item progress tracker with status icons, progress bar, blockers grouped by stage, Dinner Circle link), **Service Lifecycle panel** (200+ checkpoint progress across 10 stages, collapsible stage sections, auto-detected evidence excerpts, click-to-confirm/skip/reset, missing required items list, "Draft Email for Missing Info" button with Ollama-generated email), AI response composer (generate draft → edit → "Approve & Send" via Gmail, toggles: "Include Dinner Circle link", "Include dinner summary" for email snapshot footer), communication log, transition buttons by status (with decline modal), notes section, recipe ideas linker, printed documents section, metadata.
 
+Inquiry detail now also includes a stage-aware call recommendation surfaced in both the header action area and the communication log. It covers discovery, proposal walkthrough, menu alignment, and overdue follow-up moments, then links into the shared `/calls/new` lifecycle prefill contract.
+
 ### 4.2 Quotes
 
 **Route:** `/quotes`
@@ -653,7 +655,7 @@ Founder-owned operator walkthrough requests from `/for-operators/walkthrough` al
 
 **`/calls/new`** - Form: type select, datetime, duration, title, contact info, prep notes, notification toggle. Accepts lifecycle prefill query params from inquiry and event detail for `call_type`, `client_id`, `client_name`, `contact_phone`, `contact_company`, `inquiry_id`, `event_id`, `title`, `prep_notes`, `duration_minutes`, and `notify_client`.
 
-**`/calls/[id]`** - Detail: meta grid, status action buttons (Mark confirmed/Cancel), agenda checklist (add/remove/toggle items, progress bar), outcome form (summary, notes, next action, duration, "Mark complete & save" / "Mark as no-show" buttons).
+**`/calls/[id]`** - Detail: meta grid, status action buttons (Mark confirmed/Cancel), agenda checklist (add/remove/toggle items, progress bar), outcome form with lifecycle templates (summary, notes, next action, duration, "Mark complete & save" / "Mark as no-show" buttons). Completed calls linked to inquiries can update the inquiry next action and follow-up due date.
 
 ### 4.5 Partners
 

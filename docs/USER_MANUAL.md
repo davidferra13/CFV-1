@@ -130,7 +130,9 @@ Event-driven proposal previews can also show a compact **Client Profile Guidance
 
 ### Tracking Calls and Meetings
 
-Click **Schedule Call** on any inquiry to set a date, time, and agenda. Inquiry and event detail pages now surface the right call checkpoint for the stage you are in: discovery, proposal walkthrough, pre-service logistics, or day-after follow-up. ChefFlow pre-fills the call type, contact, linked inquiry or event, title, duration, prep notes, and client notification setting from the current record. After the call, mark it as attended or no-show, and add outcome notes. Upcoming calls also appear on the dashboard.
+Click **Schedule Call** on any inquiry to set a date, time, and agenda. Inquiry and event detail pages now surface the right call checkpoint for the stage you are in: discovery, proposal walkthrough, menu alignment, deposit close, pre-service logistics, or day-after follow-up. The same recommendation appears inside the communication log when the current message history suggests the conversation should move from chat to a human phone call.
+
+ChefFlow pre-fills the call type, contact, linked inquiry or event, title, duration, prep notes, and client notification setting from the current record. After the call, mark it as attended or no-show, use an outcome template when one fits, and add outcome notes. If a completed call has a linked inquiry and a next action, ChefFlow updates the inquiry next action and follow-up due date. Upcoming calls also appear on the dashboard.
 
 ---
 
@@ -289,7 +291,7 @@ Each price shows its source (which store, which data point). Toggle the price hi
 
 The Food Catalog at Sidebar > Culinary > Food Catalog searches 15,000+ ingredients across 39 stores. When you type an ingredient name and get no results, ChefFlow does not give up. It works through three fallback tiers automatically:
 
-**Tier 1 - Local catalog:** The OpenClaw database. Instant results for mainstream grocery items.
+**Tier 1 - Local catalog:** The system catalog. Instant results for mainstream grocery items.
 
 **Tier 2 - Web search:** Searches specialty retailers (Eataly, Whole Foods, Formaggio Kitchen, Marx Foods, and others) via live web search. Good for gourmet or hard-to-find items.
 

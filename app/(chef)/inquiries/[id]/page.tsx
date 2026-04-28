@@ -80,7 +80,11 @@ import { getNextActions } from '@/lib/lifecycle/next-action'
 import { NextActionBanner } from '@/components/lifecycle/next-action-banner'
 import { RepeatClientPanel } from '@/components/clients/repeat-client-panel'
 import { getHandoffForInquiry } from '@/lib/network/collab-actions'
-import { buildLifecycleCallHref } from '@/lib/calls/lifecycle-prefill'
+import {
+  buildCallRecommendationHref,
+  recommendCallForInquiry,
+} from '@/lib/calls/recommendations'
+import { CallRecommendationCard } from '@/components/calls/call-recommendation-card'
 import {
   readPublicSeasonalMarketPulseIntentFromUnknownFields,
   type PublicSeasonalMarketPulseIntent,
@@ -368,36 +372,57 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
   if (!inquiry.confirmed_occasion) missingFacts.push('Occasion')
   if (!inquiry.confirmed_budget_cents) missingFacts.push('Budget')
 
-  const contactCompany = inquiry.confirmed_occasion ?? referralSource ?? undefined
-  const discoveryCallHref = buildLifecycleCallHref({
-    callType: 'discovery',
-    clientId: inquiry.client_id,
+  const visibleMessages = (messages as any[]).filter((m) => m.status !== 'draft')
+  const callRecommendation = recommendCallForInquiry({
+    id: inquiry.id,
+    status: inquiry.status,
     clientName: name,
-    contactPhone: phone,
-    contactCompany,
-    inquiryId: inquiry.id,
-    title: `Discovery call with ${name}`,
-    prepNotes:
-      'Confirm date, guest count, location, budget, dietary restrictions, service style, decision timeline, and deposit expectations.',
-    durationMinutes: 30,
-    notifyClient: !!inquiry.client_id,
+    hasClient: !!inquiry.client_id,
+    hasPhone: !!phone,
+    confirmedDate: inquiry.confirmed_date,
+    confirmedGuestCount: inquiry.confirmed_guest_count,
+    confirmedLocation: inquiry.confirmed_location,
+    confirmedBudgetCents: inquiry.confirmed_budget_cents,
+    confirmedOccasion: inquiry.confirmed_occasion,
+    followUpDueAt: inquiry.follow_up_due_at,
+    firstContactAt: inquiry.first_contact_at,
+    updatedAt: inquiry.updated_at,
+    messages: visibleMessages,
+    quotes: quotes.map((quote: any) => ({ status: quote.status })),
   })
-  const hasSentProposal = quotes.some((quote: any) =>
-    ['sent', 'viewed', 'accepted'].includes(String(quote.status))
+  const callRecommendationHref = callRecommendation
+    ? buildCallRecommendationHref(callRecommendation, {
+        clientId: inquiry.client_id,
+        clientName: name,
+        contactPhone: phone,
+        contactCompany: inquiry.confirmed_occasion ?? referralSource ?? undefined,
+        inquiryId: inquiry.id,
+        notifyClient: !!inquiry.client_id,
+      })
+    : null
+  const phoneHref = phone ? `tel:${phone}` : null
+  const fallbackDiscoveryHref = buildCallRecommendationHref(
+    {
+      kind: 'schedule_discovery',
+      callType: 'discovery',
+      urgency: phone ? 'now' : 'soon',
+      label: phone ? 'Call To Qualify' : 'Schedule Discovery Call',
+      reason:
+        'The lead has enough buying intent to justify a human qualification call before custom proposal work.',
+      title: `Discovery call with ${name}`,
+      prepNotes:
+        'Confirm date, guest count, location, budget, dietary restrictions, service style, decision timeline, and deposit expectations.',
+      durationMinutes: 30,
+    },
+    {
+      clientId: inquiry.client_id,
+      clientName: name,
+      contactPhone: phone,
+      contactCompany: inquiry.confirmed_occasion ?? referralSource ?? undefined,
+      inquiryId: inquiry.id,
+      notifyClient: !!inquiry.client_id,
+    }
   )
-  const proposalWalkthroughHref = buildLifecycleCallHref({
-    callType: 'proposal_walkthrough',
-    clientId: inquiry.client_id,
-    clientName: name,
-    contactPhone: phone,
-    contactCompany,
-    inquiryId: inquiry.id,
-    title: `Proposal walkthrough with ${name}`,
-    prepNotes:
-      'Walk through the proposal, clarify scope, confirm deposit timing, and resolve client questions before the date goes cold.',
-    durationMinutes: 20,
-    notifyClient: !!inquiry.client_id,
-  })
 
   // Build summary data for the shared InquirySummary component
   const summaryData: InquirySummaryData = {
@@ -484,7 +509,13 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
       {/* Next Action - what to do right now */}
       {nextActions && <NextActionBanner data={nextActions} />}
 
-      {!['declined', 'expired', 'confirmed'].includes(inquiry.status) && (
+      {callRecommendation && callRecommendationHref ? (
+        <CallRecommendationCard
+          recommendation={callRecommendation}
+          href={callRecommendationHref}
+          phoneHref={phoneHref}
+        />
+      ) : !['declined', 'expired', 'confirmed'].includes(inquiry.status) ? (
         <Card className="p-4 border-brand-700/40 bg-brand-950/30">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
@@ -494,23 +525,14 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
                 a deposit decision.
               </p>
             </div>
-            <div className="flex flex-wrap gap-2">
-              {phone && (
-                <a href={`tel:${phone}`}>
-                  <Button variant="secondary" size="sm">
-                    Call Now
-                  </Button>
-                </a>
-              )}
-              <Link href={hasSentProposal ? proposalWalkthroughHref : discoveryCallHref}>
-                <Button variant="primary" size="sm">
-                  {hasSentProposal ? 'Schedule Walkthrough' : 'Schedule Discovery'}
-                </Button>
-              </Link>
-            </div>
+            <Link href={fallbackDiscoveryHref}>
+              <Button variant="primary" size="sm">
+                Schedule Discovery
+              </Button>
+            </Link>
           </div>
         </Card>
-      )}
+      ) : null}
 
       {/* Soft-Close Leverage Card - State 1: detected soft close, inquiry still open */}
       {nextActions?.softCloseWorkflow?.futureInterest && inquiry.status === 'awaiting_chef' && (
@@ -1193,7 +1215,17 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
       {/* Communication Log */}
       <Card className="p-6">
         <h2 className="text-xl font-semibold mb-4">Communication</h2>
-        <MessageThread messages={(messages as any[]).filter((m) => m.status !== 'draft')} />
+        {callRecommendation && callRecommendationHref ? (
+          <div className="mb-4">
+            <CallRecommendationCard
+              recommendation={callRecommendation}
+              href={callRecommendationHref}
+              phoneHref={phoneHref}
+              compact
+            />
+          </div>
+        ) : null}
+        <MessageThread messages={visibleMessages} />
         <div className="mt-4 pt-4 border-t border-stone-700">
           <MessageLogForm
             inquiryId={inquiry.id}

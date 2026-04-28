@@ -43,6 +43,8 @@ import type { ConstraintRadarData } from '@/lib/events/constraint-radar-actions'
 import { MenuSharePanel } from '@/components/menus/menu-share-panel'
 import { ShareSplitButton } from '@/components/payments/share-split-button'
 import { SeriesSelector } from '@/components/events/series-selector'
+import { CallRecommendationCard } from '@/components/calls/call-recommendation-card'
+import type { CallRecommendation } from '@/lib/calls/recommendations'
 
 type ServiceViewMenu = {
   id: string
@@ -87,6 +89,9 @@ type EventDetailOverviewTabProps = {
   eventMenuData?: ServiceViewMenu[]
   constraintRadarData?: ConstraintRadarData | null
   clientMemories?: ClientMemoryRow[]
+  callRecommendation?: CallRecommendation | null
+  callRecommendationHref?: string | null
+  callPhoneHref?: string | null
 }
 
 export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
@@ -117,6 +122,9 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
     eventMenuData,
     constraintRadarData,
     clientMemories,
+    callRecommendation,
+    callRecommendationHref,
+    callPhoneHref,
   } = props
 
   return (
@@ -619,6 +627,16 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
               Includes messages from the original inquiry.
             </p>
           )}
+          {callRecommendation && callRecommendationHref ? (
+            <div className="mb-4">
+              <CallRecommendationCard
+                recommendation={callRecommendation}
+                href={callRecommendationHref}
+                phoneHref={callPhoneHref}
+                compact
+              />
+            </div>
+          ) : null}
           <MessageThread messages={messages} />
           <div className="mt-4 pt-4 border-t border-stone-700">
             <MessageLogForm

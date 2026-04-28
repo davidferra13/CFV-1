@@ -705,6 +705,31 @@ export async function logCallOutcome(id: string, input: LogOutcomeInput) {
   revalidatePath('/calls')
   revalidatePath(`/calls/${id}`)
 
+  if (data.inquiry_id && validated.next_action) {
+    const { error: inquiryUpdateError } = await db
+      .from('inquiries')
+      .update({
+        next_action_required: validated.next_action,
+        next_action_by: 'chef',
+        follow_up_due_at: validated.next_action_due_at,
+      })
+      .eq('id', data.inquiry_id)
+      .eq('tenant_id', user.tenantId!)
+
+    if (inquiryUpdateError) {
+      console.error('[logCallOutcome] Linked inquiry next action update failed:', inquiryUpdateError)
+      throw new Error('Call saved, but linked inquiry next action could not be updated')
+    }
+
+    revalidatePath('/inquiries')
+    revalidatePath(`/inquiries/${data.inquiry_id}`)
+  }
+
+  if (data.event_id) {
+    revalidatePath('/events')
+    revalidatePath(`/events/${data.event_id}`)
+  }
+
   // Log activity (non-blocking)
   try {
     const { logChefActivity } = await import('@/lib/activity/log-chef')

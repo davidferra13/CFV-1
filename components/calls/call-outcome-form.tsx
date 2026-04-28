@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
 import { useProtectedForm } from '@/lib/qol/use-protected-form'
 import { FormShield } from '@/components/forms/form-shield'
+import { CALL_OUTCOME_PRESETS, getPresetDueDateValue } from '@/lib/calls/outcome-presets'
 
 export function CallOutcomeForm({ call, chefId }: { call: ScheduledCall; chefId: string }) {
   const router = useRouter()
@@ -64,6 +65,15 @@ export function CallOutcomeForm({ call, chefId }: { call: ScheduledCall; chefId:
 
   const isTerminal =
     call.status === 'completed' || call.status === 'cancelled' || call.status === 'no_show'
+
+  function applyOutcomePreset(presetId: string) {
+    const preset = CALL_OUTCOME_PRESETS.find((item) => item.id === presetId)
+    if (!preset || isTerminal) return
+
+    setOutcomeSummary(preset.outcomeSummary)
+    setNextAction(preset.nextAction)
+    setNextActionDueAt(getPresetDueDateValue(preset))
+  }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -119,6 +129,25 @@ export function CallOutcomeForm({ call, chefId }: { call: ScheduledCall; chefId:
           {isTerminal ? 'Call Outcome' : 'Log Outcome'}
         </h3>
 
+        {!isTerminal && (
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-stone-300">Outcome templates</p>
+            <div className="flex flex-wrap gap-2">
+              {CALL_OUTCOME_PRESETS.map((preset) => (
+                <Button
+                  key={preset.id}
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => applyOutcomePreset(preset.id)}
+                >
+                  {preset.label}
+                </Button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Outcome summary */}
         <div className="space-y-1.5">
           <Label htmlFor="outcome_summary">
@@ -144,7 +173,7 @@ export function CallOutcomeForm({ call, chefId }: { call: ScheduledCall; chefId:
             id="call_notes"
             value={callNotes}
             onChange={(e) => setCallNotes(e.target.value)}
-            placeholder="Anything else worth capturing - preferences, concerns, ideas discussed…"
+            placeholder="Anything else worth capturing - preferences, concerns, ideas discussed..."
             rows={4}
             maxLength={5000}
             disabled={isTerminal}
@@ -204,8 +233,8 @@ export function CallOutcomeForm({ call, chefId }: { call: ScheduledCall; chefId:
         {/* Actions */}
         {!isTerminal && (
           <div className="flex gap-3 flex-wrap">
-            <Button type="submit" disabled={isPending}>
-              {isPending ? 'Saving…' : 'Mark complete & save'}
+            <Button type="submit" variant="primary" disabled={isPending}>
+              {isPending ? 'Saving...' : 'Mark complete & save'}
             </Button>
             <Button
               type="button"
