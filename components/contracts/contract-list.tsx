@@ -79,7 +79,7 @@ export function ContractList({ contracts }: { contracts: ContractListItem[] }) {
               {filtered.map((contract) => (
                 <Link
                   key={contract.id}
-                  href={`/contracts/${contract.id}`}
+                  href={`/contracts/${contract.id}/history`}
                   className="flex flex-col sm:flex-row sm:items-center gap-3 px-6 py-4 hover:bg-stone-800/40 transition-colors"
                 >
                   <div className="flex-1 min-w-0">

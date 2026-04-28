@@ -10,6 +10,20 @@ import { formatDistanceToNow } from 'date-fns'
 
 export const metadata: Metadata = { title: 'Accepted Quotes' }
 
+function buildCreateEventHref(quote: any) {
+  const params = new URLSearchParams()
+  if (quote.client_id) params.set('client_id', quote.client_id)
+  const occasion = quote.inquiry?.confirmed_occasion || quote.quote_name
+  if (occasion) params.set('occasion', occasion)
+  if (quote.guest_count_estimated) params.set('guest_count', String(quote.guest_count_estimated))
+  if (quote.total_quoted_cents) {
+    params.set('quoted_price', (quote.total_quoted_cents / 100).toFixed(2))
+  }
+
+  const query = params.toString()
+  return query ? `/events/new?${query}` : '/events/new'
+}
+
 export default async function AcceptedQuotesPage() {
   await requireChef()
 
@@ -48,12 +62,9 @@ export default async function AcceptedQuotesPage() {
         <div className="space-y-2">
           {quotes.map((quote: any) => {
             const clientName = quote.client?.full_name || 'Unknown Client'
+            const hasEvent = Boolean(quote.event_id || quote.event?.id)
             return (
-              <Link
-                key={quote.id}
-                href={`/quotes/${quote.id}`}
-                className="block rounded-lg border border-stone-700 p-4 hover:shadow-sm transition-all hover:bg-stone-800"
-              >
+              <div key={quote.id} className="rounded-lg border border-stone-700 p-4">
                 <div className="flex justify-between items-start gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
@@ -72,7 +83,7 @@ export default async function AcceptedQuotesPage() {
                       </p>
                     )}
                   </div>
-                  <div className="text-right flex-shrink-0">
+                  <div className="text-right flex-shrink-0 space-y-3">
                     <p className="text-lg font-semibold text-stone-100">
                       {formatCurrency(quote.total_quoted_cents)}
                     </p>
@@ -85,9 +96,23 @@ export default async function AcceptedQuotesPage() {
                     <p className="text-xs text-stone-400 mt-1">
                       {formatDistanceToNow(new Date(quote.updated_at), { addSuffix: true })}
                     </p>
+                    <div className="flex justify-end gap-2">
+                      {!hasEvent && (
+                        <Link href={buildCreateEventHref(quote)}>
+                          <Button variant="primary" size="sm">
+                            Create Event
+                          </Button>
+                        </Link>
+                      )}
+                      <Link href={`/quotes/${quote.id}`}>
+                        <Button variant="secondary" size="sm">
+                          View Quote
+                        </Button>
+                      </Link>
+                    </div>
                   </div>
                 </div>
-              </Link>
+              </div>
             )
           })}
         </div>

@@ -15,7 +15,7 @@ type ConflictSummary = {
 }
 
 export default async function EventStaffPage({ params }: { params: { id: string } }) {
-  await requireChef()
+  const user = await requireChef()
   const db: any = createServerClient()
 
   const { data: event } = await db
@@ -27,6 +27,7 @@ export default async function EventStaffPage({ params }: { params: { id: string 
     `
     )
     .eq('id', params.id)
+    .eq('tenant_id', user.tenantId!)
     .single()
 
   if (!event) notFound()
@@ -46,6 +47,7 @@ export default async function EventStaffPage({ params }: { params: { id: string 
           .from('tasks')
           .select('id', { count: 'exact', head: true })
           .eq('event_id', params.id)
+          .eq('chef_id', user.tenantId!)
           .in('assigned_to', assignedStaffIds)
       : Promise.resolve({ count: 0 }),
     Promise.all(

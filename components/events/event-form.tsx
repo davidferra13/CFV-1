@@ -134,6 +134,8 @@ type EventFormProps = {
     client_id?: string
     occasion?: string
     event_date?: string
+    guest_count?: string
+    quoted_price?: string
   }
 }
 
@@ -169,8 +171,8 @@ export function EventForm({
   const [conflictChecking, setConflictChecking] = useState(false)
 
   // Form state
-  const [clientId, setClientId] = useState(event?.client_id || '')
-  const [occasion, setOccasion] = useState(event?.occasion || '')
+  const [clientId, setClientId] = useState(event?.client_id || seed?.client_id || '')
+  const [occasion, setOccasion] = useState(event?.occasion || seed?.occasion || '')
   const [referralPartnerId, setReferralPartnerId] = useState<string | null>(
     event?.referral_partner_id ?? null
   )
@@ -181,10 +183,12 @@ export function EventForm({
     event?.event_timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/New_York'
   )
   const [eventDate, setEventDate] = useState(
-    event?.event_date ? event.event_date.substring(0, 16) : ''
+    event?.event_date ? event.event_date.substring(0, 16) : (seed?.event_date ?? '')
   )
   const [serveTime, setServeTime] = useState(event?.serve_time || '')
-  const [guestCount, setGuestCount] = useState(event?.guest_count?.toString() || '')
+  const [guestCount, setGuestCount] = useState(
+    event?.guest_count?.toString() || seed?.guest_count || ''
+  )
   const [locationAddress, setLocationAddress] = useState(event?.location_address || '')
   const [locationCity, setLocationCity] = useState(event?.location_city || '')
   const [locationState, setLocationState] = useState(event?.location_state || '')
@@ -197,7 +201,9 @@ export function EventForm({
   )
   const [specialRequests, setSpecialRequests] = useState(event?.special_requests || '')
   const [totalAmount, setTotalAmount] = useState(
-    event?.quoted_price_cents ? (event.quoted_price_cents / 100).toString() : ''
+    event?.quoted_price_cents
+      ? (event.quoted_price_cents / 100).toString()
+      : seed?.quoted_price || ''
   )
 
   // Deposit auto-fill from chef defaults (create mode only)
@@ -266,13 +272,15 @@ export function EventForm({
           ? seed.event_date
           : '',
       serve_time: event?.serve_time || '',
-      guest_count: event?.guest_count?.toString() || '',
+      guest_count: event?.guest_count?.toString() || seed?.guest_count || '',
       location_address: event?.location_address || '',
       location_city: event?.location_city || '',
       location_state: event?.location_state || '',
       location_zip: event?.location_zip || '',
       special_requests: event?.special_requests || '',
-      quoted_price: event?.quoted_price_cents ? (event.quoted_price_cents / 100).toString() : '',
+      quoted_price: event?.quoted_price_cents
+        ? (event.quoted_price_cents / 100).toString()
+        : seed?.quoted_price || '',
       deposit_amount: event?.deposit_amount_cents
         ? (event.deposit_amount_cents / 100).toString()
         : initialDeposit,
@@ -283,7 +291,15 @@ export function EventForm({
         Intl.DateTimeFormat().resolvedOptions().timeZone ||
         'America/New_York',
     }),
-    [event, initialDeposit, seed?.client_id, seed?.occasion, seed?.event_date]
+    [
+      event,
+      initialDeposit,
+      seed?.client_id,
+      seed?.occasion,
+      seed?.event_date,
+      seed?.guest_count,
+      seed?.quoted_price,
+    ]
   )
   const [committedFormData, setCommittedFormData] = useState<EventFormData>(initialFormData)
 

@@ -642,13 +642,21 @@ export async function syncEventToGoogleCalendar(
 
     // Store Google event ID back on the ChefFlow event
     // cast as any - columns not in generated types until migration is pushed
-    await db
+    const { error: syncUpdateError } = await db
       .from('events')
       .update({
         google_calendar_event_id: googleEventId,
         google_calendar_synced_at: new Date().toISOString(),
       })
       .eq('id', eventId)
+      .eq('tenant_id', chef.tenantId!)
+
+    if (syncUpdateError) {
+      return {
+        success: false,
+        error: `Google Calendar synced, but ChefFlow update failed: ${syncUpdateError.message}`,
+      }
+    }
 
     return { success: true, googleEventId }
   } catch (err) {
@@ -698,13 +706,21 @@ export async function deleteEventFromGoogleCalendar(
     }
 
     // Clear the stored Google event ID
-    await db
+    const { error: clearUpdateError } = await db
       .from('events')
       .update({
         google_calendar_event_id: null,
         google_calendar_synced_at: null,
       } as any)
       .eq('id', eventId)
+      .eq('tenant_id', chef.tenantId!)
+
+    if (clearUpdateError) {
+      return {
+        success: false,
+        error: `Google Calendar deleted, but ChefFlow update failed: ${clearUpdateError.message}`,
+      }
+    }
 
     return { success: true }
   } catch (err) {

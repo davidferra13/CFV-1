@@ -11,7 +11,7 @@ import { getPaymentPlan } from '@/lib/finance/payment-plan-actions'
 import { formatCurrency } from '@/lib/utils/currency'
 
 export default async function EventBillingPage({ params }: { params: { id: string } }) {
-  await requireChef()
+  const user = await requireChef()
   const db: any = createServerClient()
 
   const { data: event } = await db
@@ -24,6 +24,7 @@ export default async function EventBillingPage({ params }: { params: { id: strin
     `
     )
     .eq('id', params.id)
+    .eq('tenant_id', user.tenantId!)
     .single()
 
   if (!event) notFound()
@@ -33,6 +34,7 @@ export default async function EventBillingPage({ params }: { params: { id: strin
       .from('event_financial_summary')
       .select('total_paid_cents, outstanding_balance_cents')
       .eq('event_id', params.id)
+      .eq('tenant_id', user.tenantId!)
       .single()
       .then((result: any) => result.data ?? null),
     getPaymentPlan(params.id).catch(() => []),

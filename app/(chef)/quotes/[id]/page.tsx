@@ -26,6 +26,20 @@ import { QuotePriceConfidenceWarning } from '@/components/quotes/quote-price-con
 import { QuotePriceFreshnessWarning } from '@/components/quotes/quote-price-freshness-warning'
 import { Suspense } from 'react'
 
+function buildCreateEventHref(quote: any) {
+  const params = new URLSearchParams()
+  if (quote.client_id) params.set('client_id', quote.client_id)
+  const occasion = quote.inquiry?.confirmed_occasion || quote.quote_name
+  if (occasion) params.set('occasion', occasion)
+  if (quote.guest_count_estimated) params.set('guest_count', String(quote.guest_count_estimated))
+  if (quote.total_quoted_cents) {
+    params.set('quoted_price', (quote.total_quoted_cents / 100).toFixed(2))
+  }
+
+  const query = params.toString()
+  return query ? `/events/new?${query}` : '/events/new'
+}
+
 export default async function QuoteDetailPage({ params }: { params: { id: string } }) {
   const user = await requireChef()
 
@@ -240,7 +254,9 @@ export default async function QuoteDetailPage({ params }: { params: { id: string
       </div>
 
       {/* Linked Resources */}
-      {(quote.inquiry || quote.event) && (
+      {(quote.inquiry ||
+        quote.event ||
+        (quote.status === 'accepted' && !(quote as any).event_id)) && (
         <Card className="p-6">
           <h2 className="text-xl font-semibold mb-4">Linked Resources</h2>
           <div className="flex flex-wrap gap-4">
@@ -262,6 +278,16 @@ export default async function QuoteDetailPage({ params }: { params: { id: string
                     {quote.event.occasion || 'Untitled'}
                     {quote.event.event_date &&
                       ` - ${format(new Date(quote.event.event_date), 'MMM d, yyyy')}`}
+                  </p>
+                </div>
+              </Link>
+            )}
+            {quote.status === 'accepted' && !quote.event && !(quote as any).event_id && (
+              <Link href={buildCreateEventHref(quote)}>
+                <div className="border rounded-lg p-3 hover:bg-stone-800 transition-colors">
+                  <p className="text-sm font-medium text-stone-100">Create Event</p>
+                  <p className="text-sm text-stone-300">
+                    Start with this quote&apos;s client, guest count, and price.
                   </p>
                 </div>
               </Link>

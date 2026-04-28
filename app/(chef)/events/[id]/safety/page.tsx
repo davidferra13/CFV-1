@@ -27,7 +27,7 @@ function uniqueStrings(values: Array<string | null | undefined>): string[] {
 }
 
 export default async function EventSafetyPage({ params }: { params: { id: string } }) {
-  await requireChef()
+  const user = await requireChef()
   const db: any = createServerClient()
 
   const { data: event } = await db
@@ -39,6 +39,7 @@ export default async function EventSafetyPage({ params }: { params: { id: string
     `
     )
     .eq('id', params.id)
+    .eq('tenant_id', user.tenantId!)
     .single()
 
   if (!event) notFound()
@@ -53,6 +54,7 @@ export default async function EventSafetyPage({ params }: { params: { id: string
             'id, allergen, severity, source, confirmed_by_chef, confirmed_at, notes, created_at'
           )
           .eq('client_id', clientId)
+          .eq('tenant_id', user.tenantId!)
           .order('confirmed_by_chef', { ascending: true })
           .order('created_at', { ascending: false })
           .then((result: any) => result.data ?? [])
@@ -61,11 +63,13 @@ export default async function EventSafetyPage({ params }: { params: { id: string
       .from('event_guests')
       .select('allergies, plus_one_allergies')
       .eq('event_id', params.id)
+      .eq('tenant_id', user.tenantId!)
       .then((result: any) => result.data ?? []),
     db
       .from('dietary_conflict_alerts')
       .select('id, guest_name, allergy, conflicting_dish, severity, acknowledged')
       .eq('event_id', params.id)
+      .eq('chef_id', user.tenantId!)
       .order('acknowledged', { ascending: true })
       .then((result: any) => result.data ?? [])
       .catch(() => []),

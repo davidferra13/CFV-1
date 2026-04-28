@@ -607,7 +607,7 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold">Communication</h2>
             {chatConversationId && (
-              <Link href={`/communication/chat/${chatConversationId}`}>
+              <Link href={`/chat/${chatConversationId}`}>
                 <Button variant="ghost" size="sm">
                   Open Chat →
                 </Button>

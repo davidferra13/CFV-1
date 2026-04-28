@@ -114,7 +114,7 @@ const UpdatePreferencesSchema = z.object({
   menu_engine_features: MenuEngineFeaturesSchema.optional(),
 })
 
-export type UpdatePreferencesInput = z.infer<typeof UpdatePreferencesSchema>
+type UpdatePreferencesInput = z.infer<typeof UpdatePreferencesSchema>
 
 // Type assertion helper - chef_preferences not in generated types until migration applied
 function fromChefPreferences(db: any): any {
@@ -455,7 +455,13 @@ export async function updateChefPreferences(input: UpdatePreferencesInput) {
   revalidatePath('/dashboard')
   revalidateTag(`chef-layout-${user.entityId}`)
 
-  try { broadcastTenantMutation(user.tenantId!, { entity: 'chef_preferences', action: 'update', reason: 'Chef preferences updated' }) } catch {}
+  try {
+    broadcastTenantMutation(user.tenantId!, {
+      entity: 'chef_preferences',
+      action: 'update',
+      reason: 'Chef preferences updated',
+    })
+  } catch {}
 
   return { success: true }
 }
@@ -525,7 +531,13 @@ export async function setBusinessMode(input: {
 
   revalidatePath('/settings')
 
-  try { broadcastTenantMutation(user.tenantId!, { entity: 'chef_preferences', action: 'update', reason: 'Business mode updated' }) } catch {}
+  try {
+    broadcastTenantMutation(user.tenantId!, {
+      entity: 'chef_preferences',
+      action: 'update',
+      reason: 'Business mode updated',
+    })
+  } catch {}
 
   return { success: true }
 }
@@ -534,7 +546,7 @@ export async function setBusinessMode(input: {
 // Regional Settings (stub for international readiness layer)
 // ---------------------------------------------------------------------------
 
-export type RegionalSettings = {
+type RegionalSettings = {
   currencyCode: 'USD' | 'EUR' | 'GBP' | 'CAD' | 'AUD'
   locale: string
   measurementSystem: 'imperial' | 'metric'
@@ -542,11 +554,19 @@ export type RegionalSettings = {
 }
 
 export async function getRegionalSettings(): Promise<RegionalSettings> {
-  // Default US settings until international readiness layer is built
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const { data, error } = await db.from('chefs').select('timezone').eq('id', user.entityId).single()
+
+  if (error) {
+    throw new Error(`Failed to load regional settings: ${error.message}`)
+  }
+
   return {
     currencyCode: 'USD',
     locale: 'en-US',
     measurementSystem: 'imperial',
-    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/New_York',
+    timezone: data?.timezone || 'America/New_York',
   }
 }

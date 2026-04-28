@@ -12,7 +12,14 @@ import { getArchetypeCopy } from '@/lib/archetypes/ui-copy'
 export default async function NewEventPage({
   searchParams,
 }: {
-  searchParams: { client_id?: string; date?: string; occasion?: string; waitlist_id?: string }
+  searchParams: {
+    client_id?: string
+    date?: string
+    occasion?: string
+    guest_count?: string
+    quoted_price?: string
+    waitlist_id?: string
+  }
 }) {
   const user = await requireChef()
 
@@ -25,11 +32,17 @@ export default async function NewEventPage({
   const copy = getArchetypeCopy(archetype)
 
   const seed =
-    searchParams.client_id || searchParams.date || searchParams.occasion
+    searchParams.client_id ||
+    searchParams.date ||
+    searchParams.occasion ||
+    searchParams.guest_count ||
+    searchParams.quoted_price
       ? {
           client_id: searchParams.client_id,
           occasion: searchParams.occasion,
           event_date: searchParams.date,
+          guest_count: searchParams.guest_count,
+          quoted_price: searchParams.quoted_price,
         }
       : undefined
 

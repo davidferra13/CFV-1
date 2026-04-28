@@ -20,7 +20,7 @@ export default async function EventMenuApprovalPage({
   params: { id: string }
   searchParams?: { returnTo?: string }
 }) {
-  await requireChef()
+  const user = await requireChef()
   const db: any = createServerClient()
   const returnTo = sanitizeReturnTo(searchParams?.returnTo)
 
@@ -34,6 +34,7 @@ export default async function EventMenuApprovalPage({
     `
     )
     .eq('id', params.id)
+    .eq('tenant_id', user.tenantId!)
     .single()
 
   if (!event) notFound()
@@ -49,6 +50,7 @@ export default async function EventMenuApprovalPage({
       .from('hub_groups')
       .select('id, group_token')
       .eq('event_id', params.id)
+      .eq('tenant_id', user.tenantId!)
       .eq('is_active', true)
       .maybeSingle(),
   ])
