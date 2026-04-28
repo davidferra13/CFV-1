@@ -171,3 +171,7 @@ _Next update: after next `/persona-stress-test` run_
 | miley-cyrus | Guest | 2026-04-27 | 50/100 | local-ollama-v2 | [Report](persona-miley-cyrus-2026-04-27.md) |
 | olajide-olatunji | Guest | 2026-04-27 | 50/100 | local-ollama-v2 | [Report](persona-olajide-olatunji-2026-04-27.md) |
 | andrew-zimmern | Chef | 2026-04-27 | 50/100 | local-ollama-v2 | [Report](persona-andrew-zimmern-2026-04-27.md) |
+| gordon-ramsay | Chef | 2026-04-27 | 50/100 | local-ollama-v2 | [Report](persona-gordon-ramsay-2026-04-27.md) |
+| dean-deluca | Vendor | 2026-04-27 | 50/100 | local-ollama-v2 | [Report](persona-dean-deluca-2026-04-27.md) |
+| joel-salatin | Vendor | 2026-04-27 | 68/100 | local-ollama-v2 | [Report](persona-joel-salatin-2026-04-27.md) |
+| julia | Staff | 2026-04-27 | 50/100 | local-ollama-v2 | [Report](persona-julia-2026-04-27.md) |

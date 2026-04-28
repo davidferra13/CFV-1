@@ -1,0 +1,34 @@
+# Persona Evaluation: Specialty Ingredient Supplier
+
+**Persona:** Specialty Ingredient Supplier (High-End, Niche Focus)
+**Goal:** To manage complex, high-variability inventory and sales processes involving rare, perishable, or highly specialized ingredients, requiring granular tracking and custom quoting.
+
+**Assessment:** The current system appears built for standardized, high-volume restaurant operations. It lacks the necessary flexibility for the deep customization, provenance tracking, and complex unit conversions required by a specialty ingredient supplier.
+
+---
+
+**Detailed Analysis:**
+
+**Strengths (What works):**
+*   **Order Management:** The core ability to track orders and manage fulfillment stages is present.
+*   **Basic Inventory:** Basic stock tracking is functional for standard goods.
+
+**Weaknesses (What fails):**
+*   **Inventory Complexity:** Cannot handle variable units of measure (e.g., "per 100g," "per bloom," "by weight lot").
+*   **Provenance/Batch Tracking:** No mechanism for tracking specific batches, harvest dates, or supplier lot numbers, which is critical for high-end ingredients.
+*   **Quoting/Pricing:** Lacks the ability to build complex, multi-variable quotes that combine standard pricing with custom sourcing fees or tiered sourcing agreements.
+*   **Workflow:** The workflow is too linear and doesn't account for the "sourcing/vetting" stage that precedes an order confirmation.
+
+---
+
+**Recommendations for Improvement:**
+
+1.  **Implement Advanced Inventory Module:** Must support variable units of measure and mandatory batch/lot tracking linked to supplier documentation.
+2.  **Develop Custom Quoting Engine:** Needs to handle non-standard pricing structures (e.g., "Base Price + Sourcing Fee + Expediting Charge").
+3.  **Enhance Supplier Portal:** A dedicated area for suppliers to upload Certificate of Analysis (COA) or harvest documentation linked directly to the order/inventory lot.
+
+---
+
+**Conclusion:**
+
+The system is currently **Not Recommended** for this persona without significant, specialized development in inventory and quoting modules. It is too generalized for the required level of detail and risk management associated with niche, high-value ingredients.

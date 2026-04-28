@@ -1,6 +1,6 @@
 # Consolidated Build: Documentation Records
 
-**Priority rank:** 6 of 20
+**Priority rank:** 7 of 20
 **Personas affected:** 4 (Dr. Julien Armand, Maya Rios, Rina Solis, Miley Cyrus)
 **Average severity:** HIGH
 

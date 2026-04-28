@@ -1,0 +1,48 @@
+# Persona Evaluation: Local Farm Supplier (Joel)
+
+**Persona Name:** Joel (Local Farm Supplier)
+**Persona Goal:** To efficiently manage variable, perishable inventory and fulfill diverse, time-sensitive orders while maintaining high trust with restaurant clients.
+**Key Pain Points:** Manual tracking of highly variable inventory; reconciling diverse payment methods; managing communication chaos across multiple channels.
+
+***
+
+## Evaluation Against Joel's Needs
+
+**Overall Fit:** Medium-High. The system handles structured ordering well, but its rigidity struggles with the inherent variability and non-standardized nature of fresh, perishable goods.
+
+**Strengths:**
+*   **Order Management:** The structured menu/ordering system is good for predictable items.
+*   **Client Portal:** A dedicated portal helps centralize communication.
+*   **Basic Inventory:** Tracking basic stock levels is functional.
+
+**Weaknesses:**
+*   **Inventory Variability:** Cannot handle "harvest yield" or "available by weight/bunch" inputs easily.
+*   **Payment Complexity:** Lacks robust support for cash, partial payments, and reconciling diverse payment types common in local markets.
+*   **Communication Flow:** Too many steps are required to move from "I have 5 extra tomatoes today" to "Add 5 tomatoes to tomorrow's order."
+
+***
+
+## Detailed Scoring
+
+| Feature Area | Score (1-5) | Rationale |
+| :--- | :--- | :--- |
+| **Inventory Management** | 2/5 | Too structured. Needs dynamic, yield-based input rather than fixed SKUs. |
+| **Order Fulfillment** | 3/5 | Good for structured items, poor for ad-hoc additions. |
+| **Payment & Billing** | 2/5 | Lacks flexibility for cash/partial payments common in local trade. |
+| **User Experience (Mobile)** | 3/5 | Usable, but requires too many taps for quick, on-the-fly updates. |
+| **Workflow Automation** | 2/5 | Too linear. Needs branching logic for "if yield is low, suggest alternative." |
+
+***
+
+## Actionable Recommendations for Product Improvement
+
+1.  **Implement "Yield/Harvest Mode":** Introduce a dedicated inventory input screen that allows users to input available stock by weight or count, rather than selecting from a fixed menu. This should automatically flag the item as "Variable."
+2.  **Enhance Payment Reconciliation:** Add a "Payment Adjustment" module that allows staff to manually record cash payments, partial payments, or credits against an invoice, separate from the primary payment gateway.
+3.  **Streamline Ad-Hoc Ordering:** Create a "Quick Add/Special Request" button on the main dashboard that bypasses the standard menu flow, allowing staff to quickly add items not listed or items based on current availability.
+4.  **Improve Communication Triggers:** When an item's stock drops below a threshold (e.g., 10 units), the system should automatically generate a draft message to the client: "Heads up: Tomatoes are low today, but we have extra zucchini available if you need a swap!"
+
+***
+
+## Conclusion
+
+The platform is currently best suited for a small, predictable wholesale operation (e.g., a bakery supplying bread). For a dynamic, farm-to-table supplier like Joel, the system needs to become less of a rigid ledger and more of a **flexible communication and inventory coordination tool.**

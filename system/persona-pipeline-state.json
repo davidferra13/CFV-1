@@ -112,6 +112,46 @@
       ],
       "analyzed_at": "2026-04-28T00:52:46.491Z",
       "planned_at": "2026-04-28T00:52:46.491Z"
+    },
+    {
+      "slug": "gordon-ramsay",
+      "type": "Chef",
+      "source_file": "Chef Flow Personas/Completed/Chef/gordon-ramsay.txt",
+      "report": "docs/stress-tests/persona-gordon-ramsay-2026-04-27.md",
+      "build_tasks": [
+        "system/persona-build-plans/gordon-ramsay/task-3.md",
+        "system/persona-build-plans/gordon-ramsay/task-4.md"
+      ],
+      "analyzed_at": "2026-04-28T01:02:44.982Z",
+      "planned_at": "2026-04-28T01:02:44.981Z"
+    },
+    {
+      "slug": "dean-deluca",
+      "type": "Vendor",
+      "source_file": "Chef Flow Personas/Completed/Vendor/dean-deluca.txt",
+      "report": "docs/stress-tests/persona-dean-deluca-2026-04-27.md",
+      "build_tasks": [
+        "system/persona-build-plans/dean-deluca/task-1.md",
+        "system/persona-build-plans/dean-deluca/task-3.md",
+        "system/persona-build-plans/dean-deluca/task-4.md",
+        "system/persona-build-plans/dean-deluca/task-5.md"
+      ],
+      "analyzed_at": "2026-04-28T01:08:02.857Z",
+      "planned_at": "2026-04-28T01:08:02.857Z"
+    },
+    {
+      "slug": "joel-salatin",
+      "type": "Vendor",
+      "source_file": "Chef Flow Personas/Completed/Vendor/joel-salatin.txt",
+      "report": "docs/stress-tests/persona-joel-salatin-2026-04-27.md",
+      "build_tasks": [
+        "system/persona-build-plans/joel-salatin/task-1.md",
+        "system/persona-build-plans/joel-salatin/task-3.md",
+        "system/persona-build-plans/joel-salatin/task-4.md",
+        "system/persona-build-plans/joel-salatin/task-5.md"
+      ],
+      "analyzed_at": "2026-04-28T01:13:43.899Z",
+      "planned_at": "2026-04-28T01:13:43.899Z"
     }
   ],
   "failed": [
@@ -134,18 +174,23 @@
       "source_file": "Chef Flow Personas\\Uncompleted\\Partner\\danny-meyer.txt",
       "error": "[analyzer] 50 tokens...\r[analyzer] 100 tokens...\r[analyzer] 150 tokens...\r[analyzer] 200 tokens...\r[analyzer] 250 tokens...\r[analyzer] 300 tokens...\r[analyzer] 350 tokens...\r[analyzer] 400 tokens...\r[analyzer] 450 tokens...\r[analyzer] 500 tokens...\r[analyzer] 550 tokens...\r[analyzer] 600 tokens...\r[analyzer] 650 tokens...",
       "failed_at": "2026-04-27T07:10:14.119Z"
+    },
+    {
+      "source_file": "Chef Flow Personas\\Uncompleted\\Chef\\persona-2.txt",
+      "error": "Validation failed (score: 0): Missing sections: identity, business_reality, primary_failure, structural_issues, psychological_model, pass_fail",
+      "failed_at": "2026-04-28T01:02:44.988Z"
     }
   ],
-  "last_cycle": "2026-04-28T00:53:29.429Z",
-  "total_personas_processed": 8,
-  "total_build_tasks_queued": 33,
-  "last_synthesis_at": "2026-04-28T00:53:29.703Z",
+  "last_cycle": "2026-04-28T01:14:34.759Z",
+  "total_personas_processed": 11,
+  "total_build_tasks_queued": 43,
+  "last_synthesis_at": "2026-04-28T01:13:43.987Z",
   "metrics": {
-    "total_cycles": 2,
-    "total_analyzer_time_ms": 359847,
-    "total_planner_time_ms": 1784201,
+    "total_cycles": 3,
+    "total_analyzer_time_ms": 679251,
+    "total_planner_time_ms": 2477026,
     "total_synthesis_time_ms": 0,
-    "last_cycle_duration_ms": 2187002,
+    "last_cycle_duration_ms": 1063116,
     "retries_used": 0
   }
 }

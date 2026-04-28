@@ -194,5 +194,61 @@
     "source_file": "Chef Flow Personas/Uncompleted/Chef/andrew-zimmern.txt",
     "stored_at": "2026-04-28T00:33:57.500Z",
     "chars": 4286
+  },
+  {
+    "id": "091f1bad-40fa-42f4-b62a-2679ed98012d",
+    "content_hash": "0792671c843a526f",
+    "persona_type": "Vendor",
+    "persona_name": "Joel Salatin",
+    "author": {
+      "type": "ai",
+      "name": "gemma4:e4b",
+      "tool": "persona-generator"
+    },
+    "source_file": "Chef Flow Personas/Uncompleted/Vendor/joel-salatin.txt",
+    "stored_at": "2026-04-28T00:55:23.911Z",
+    "chars": 7389
+  },
+  {
+    "id": "2f152cb9-9832-442b-bd51-8f88de364eb5",
+    "content_hash": "7def71d00fd5a18e",
+    "persona_type": "Vendor",
+    "persona_name": "Dean DeLuca",
+    "author": {
+      "type": "ai",
+      "name": "gemma4:e4b",
+      "tool": "persona-generator"
+    },
+    "source_file": "Chef Flow Personas/Uncompleted/Vendor/dean-deluca.txt",
+    "stored_at": "2026-04-28T00:56:51.477Z",
+    "chars": 7466
+  },
+  {
+    "id": "94b190b5-24a0-4422-a508-b2cd42ecb936",
+    "content_hash": "544d0a8530308a50",
+    "persona_type": "Staff",
+    "persona_name": "Padma Lakshmi",
+    "author": {
+      "type": "ai",
+      "name": "gemma4:e4b",
+      "tool": "persona-generator"
+    },
+    "source_file": "Chef Flow Personas/Uncompleted/Staff/padma-lakshmi.txt",
+    "stored_at": "2026-04-28T01:17:11.297Z",
+    "chars": 7821
+  },
+  {
+    "id": "12b2453c-6bb6-44c5-9aeb-836adb5a7dc4",
+    "content_hash": "2f4b0aa0345cbece",
+    "persona_type": "Staff",
+    "persona_name": "Julia",
+    "author": {
+      "type": "ai",
+      "name": "gemma4:e4b",
+      "tool": "persona-generator"
+    },
+    "source_file": "Chef Flow Personas/Uncompleted/Staff/julia.txt",
+    "stored_at": "2026-04-28T01:18:45.068Z",
+    "chars": 7202
   }
 ]

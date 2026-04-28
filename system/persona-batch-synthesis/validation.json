@@ -1,10 +1,10 @@
 {
-  "validated_at": "2026-04-28T00:53:29.428Z",
+  "validated_at": "2026-04-28T01:14:34.758Z",
   "summary": {
-    "total": 50,
-    "built": 9,
-    "partial": 22,
-    "missing": 19,
+    "total": 56,
+    "built": 10,
+    "partial": 23,
+    "missing": 23,
     "false_positive_rate": 18
   },
   "gaps": [
@@ -36,12 +36,19 @@
         {
           "type": "grep_match",
           "term": "sales.channel",
-          "files": ["lib/db/migrations/schema.ts", "lib/db/schema/schema.ts"]
+          "files": [
+            "lib/db/migrations/schema.ts",
+            "lib/db/schema/schema.ts"
+          ]
         },
         {
           "type": "grep_match",
           "term": "sales",
-          "files": ["lib/activity/chef-types.ts", "lib/ai/ace-ollama.ts", "lib/ai/agent-brain.ts"]
+          "files": [
+            "lib/activity/chef-types.ts",
+            "lib/ai/ace-ollama.ts",
+            "lib/ai/agent-brain.ts"
+          ]
         }
       ]
     },
@@ -98,6 +105,14 @@
       "title": "No real-time store-level price truth contract",
       "severity": "HIGH",
       "from": "Noah Kessler",
+      "status": "MISSING",
+      "evidence": []
+    },
+    {
+      "category": "payment-financial",
+      "title": "Batch/Lot Tracking (Critical):",
+      "severity": "MEDIUM",
+      "from": "Dean Deluca",
       "status": "MISSING",
       "evidence": []
     },
@@ -445,7 +460,9 @@
         {
           "type": "grep_match",
           "term": "external.store",
-          "files": ["lib/db/migrations/schema.ts"]
+          "files": [
+            "lib/db/migrations/schema.ts"
+          ]
         },
         {
           "type": "grep_match",
@@ -538,7 +555,9 @@
         {
           "type": "grep_match",
           "term": "charter",
-          "files": ["lib/ai/directory-search-parser.ts"]
+          "files": [
+            "lib/ai/directory-search-parser.ts"
+          ]
         }
       ]
     },
@@ -609,6 +628,33 @@
             "lib/dinner-circles/sourcing-actions.ts",
             "lib/dinner-circles/types.ts",
             "lib/marketing/compare-pages.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "uncategorized",
+      "title": "Unit of Measure Flexibility:",
+      "severity": "LOW",
+      "from": "Dean Deluca",
+      "status": "BUILT",
+      "evidence": [
+        {
+          "type": "grep_match",
+          "term": "unit.measure",
+          "files": [
+            "lib/db/migrations/schema.ts",
+            "lib/db/schema/schema.ts",
+            "lib/vendors/catalog-import-actions.ts"
+          ]
+        },
+        {
+          "type": "grep_match",
+          "term": "measure",
+          "files": [
+            "lib/ai/grocery-quick-add-actions.ts",
+            "lib/ai/remy-archetypes.ts",
+            "lib/chef/actions.ts"
           ]
         }
       ]
@@ -711,6 +757,48 @@
           ]
         }
       ]
+    },
+    {
+      "category": "uncategorized",
+      "title": "Single Source of Truth:",
+      "severity": "HIGH",
+      "from": "Gordon Ramsay",
+      "status": "PARTIAL",
+      "evidence": [
+        {
+          "type": "grep_match",
+          "term": "single",
+          "files": [
+            "lib/aar/actions.ts",
+            "lib/aar/feedback-actions.ts",
+            "lib/activity/intent-notifications.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "uncategorized",
+      "title": "Implement \"Yield-Based Inventory Module\":",
+      "severity": "HIGH",
+      "from": "Joel Salatin",
+      "status": "MISSING",
+      "evidence": []
+    },
+    {
+      "category": "uncategorized",
+      "title": "Develop \"Dynamic Fulfillment Invoicing\":",
+      "severity": "HIGH",
+      "from": "Joel Salatin",
+      "status": "MISSING",
+      "evidence": []
+    },
+    {
+      "category": "uncategorized",
+      "title": "Add \"Yield Forecasting Notes\":",
+      "severity": "MEDIUM",
+      "from": "Joel Salatin",
+      "status": "MISSING",
+      "evidence": []
     },
     {
       "category": "uncategorized",

@@ -1,0 +1,61 @@
+**Staff Profile: "Padma Lakshmi" - Event Service Captain (High-Visibility Lead)**
+
+I am the service captain, the person responsible for translating the culinary vision into a flawless, guest-facing experience. I don't just manage the floor; I manage the flow of people, plates, and information. I work with the Head Chef, the Banquet Manager, and the entire service team to ensure that every detail, from the initial welcome cocktail to the final cleanup, is executed perfectly and discreetly. My job is to absorb the chaos and deliver elegance.
+
+### Business Reality
+
+Right now:
+* I work **4 to 6** shifts, events, kitchens, or service roles per **week**.
+* My pay is based on a mix of hourly wages and a $150-$300 per event service fee, depending on the client size and complexity. My certifications include advanced wine service and specialized allergy protocol training.
+* I am the lead for a team of **8 to 12** servers and runners. My training involves weekly menu tastings and mandatory bi-weekly dry runs. My uniform requirements are extremely strict—everything must be pressed, clean, and perfectly fitted, reflecting the venue's brand standard. I am available to work late nights, often finishing shifts after **1:00 AM**.
+* My scope covers high-end corporate venues and private residences, ranging from **25 to 300** guests, across multiple geographic locations within the greater metropolitan area.
+* My current briefing and scheduling setup is a messy combination of a printed master schedule sheet that gets marked up, a shared Google Sheet used by the Banquet Manager, and urgent, changing details communicated via a WhatsApp group chat.
+
+---
+
+### Primary Failure: Fragmented Handover of Guest Requirements
+
+The single biggest operational problem is the lack of a centralized, real-time source of truth for guest needs. When a client's guest list is updated—say, three guests with severe nut allergies, two requiring vegan options, and one with a severe gluten intolerance—that information is typically scattered across a cocktail napkin, a sticky note, or a single email thread. This forces my team leads to manually cross-reference the menu, the guest manifest, and the kitchen prep list, leading to critical communication delays. This failure results in either over-preparation of allergy-safe items (wasting valuable kitchen resources and increasing food cost by an estimated **$500-$1,000** per large event) or, far worse, the potential for a catastrophic service error involving a severe allergen, which risks not only the reputation of the venue but also the contract with the client.
+
+---
+
+### Structural Issue: Menu-to-Prep Disconnect
+
+When the Banquet Manager finalizes the menu for a 200-person gala, they send the PDF to the kitchen. The kitchen then creates a separate, detailed inventory sheet for prep. I, as the Captain, have to manually read both documents and translate that into actionable prep assignments for my team leads. This process is prone to error because quantities often don't align perfectly—for example, if the menu calls for 12 rounds of miniature salmon bites, the inventory might only list enough salmon for 10 rounds, leaving my team unsure if they should wait for the correction or if they should proceed with the incomplete prep, causing service bottlenecks.
+
+### Structural Issue: Fluid Staff Assignment and Compliance Tracking
+
+My team assignments change constantly based on the client's needs. One night, I might need 4 staff members with advanced wine knowledge, and the next night, I might need 6 staff members who are trained specifically in deep-tissue dietary protocols. Currently, staff certifications and specialized assignments are tracked on a physical binder that lives in the office. When a last-minute change occurs—like needing a certified vegan server for a high-profile corporate client—I spend critical minutes calling or messaging three different people just to verify who is available, certified, and assigned to that specific date.
+
+### Structural Issue: Real-Time Incident Documentation and Correction
+
+During a high-stakes event, things inevitably go wrong—a dietary restriction is missed, a server accidentally spills wine on a VIP guest, or a specific centerpiece item is damaged. My team needs an immediate, structured way to log these incidents, assign accountability, and document the necessary follow-up (e.g., "Need to send manager to guest table 7 to apologize and offer complimentary dessert"). Currently, I rely on a pen and paper notepad, which is lost, illegible, or ignored after the shift. This means that crucial corrective actions and client complaints are not systematically recorded, making it impossible to track recurring failures or audit staff performance accurately for the next shift.
+
+### Structural Issue: Post-Service Inventory and Resource Accountability
+
+After the service, I am responsible for ensuring all specialized equipment—from linen counts (e.g., 15 table runners, 3 specialized chafing dishes) to beverage service items (e.g., 12 crates of specialized glassware)—are accounted for and logged for the next use or for vendor pickup. This is a manual, physical inventory count, often done in dim lighting and amidst cleanup chaos. If a piece of equipment is missing or damaged, the paperwork system requires hours of follow-up calls to the facilities manager, slowing down the entire closeout process and potentially delaying the client's final invoice processing.
+
+---
+
+### Psychological Model
+
+I optimize for: Flawless, predictable workflow that minimizes friction between departments.
+I refuse to compromise on: Communication clarity and the integrity of the guest experience.
+I avoid: Guesswork, manual data transfers, and the feeling of being held hostage by outdated paperwork.
+I evaluate tools by: How quickly they can consolidate disparate pieces of information (who, what, where, when) into one single, reliable view.
+
+I think like a conductor; I see the whole orchestra—the kitchen, the front of house, the management—and I need to know exactly when every section is supposed to enter and exit the performance. My decisions are based on anticipating the next three steps, not just reacting to the current crisis.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1.  **Automatically map** the finalized menu items and their required ingredient counts to the necessary pre-service prep list, and flag any discrepancies over a 10% variance.
+2.  **Provide a single, accessible dashboard** for the shift captain showing all assigned staff members' current certifications (e.g., Wine, Vegan, Allergy Protocol) and their scheduled hours for the current event.
+3.  **Allow for real-time, structured input** of guest service notes and incident reports (e.g., "Guest 5, table 3, allergic reaction to shellfish, required immediate manager intervention") that are immediately visible to all relevant managers and staff leads.
+4.  **Facilitate a digital handover process** that includes both the final service manifest (guest counts, special requests) and a checklist of specialized equipment needed for the next shift's prep.
+5.  **Centralize all communication** regarding scheduling changes, menu modifications, and staffing assignments, eliminating the need for physical printouts or reliance on external messaging apps like WhatsApp.
+6.  **Cost out and track** the specialized, high-cost ingredients (e.g., specific imported cheeses, rare wines) used in the current event against the final service bill, providing instant variance reporting.
+7.  **Generate a comprehensive, timed workflow timeline** that guides the staff through pre-shift setup, service steps, and post-service cleanup checklists, ensuring no critical resource (like glassware or specialized linens) is forgotten.

@@ -160,3 +160,11 @@ A chef can:
 The system should feel like:
 
 “I can do anything behind the scenes, and the client only sees perfection.”
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, business_reality, primary_failure, structural_issues, psychological_model, pass_fail
+Flags: none
+Rejected: 2026-04-28T01:02:44.988Z
+-->

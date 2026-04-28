@@ -1,6 +1,6 @@
 {
-    "runId":  "live-ops-69888-1777335302",
-    "ranAt":  "2026-04-28T00:16:14.4769053Z",
+    "runId":  "live-ops-3984-1777338902",
+    "ranAt":  "2026-04-28T01:15:51.2604493Z",
     "target":  {
                    "label":  "dev",
                    "baseUrl":  "http://localhost:3100"
@@ -8,12 +8,59 @@
     "newChangesDetected":  true,
     "periodicSweepDue":  false,
     "authSweepsEnabled":  false,
-    "changedPathCount":  4,
+    "changedPathCount":  51,
     "changedPaths":  [
+                         "\"Chef Flow Personas/Uncompleted/Chef/gordon-ramsay.txt\"",
+                         "\"Chef Flow Personas/Uncompleted/Chef/persona-2.txt\"",
+                         "docs/stress-tests/REGISTRY.md",
                          "docs/uptime-history.json",
-                         "system/persona-inbox-state.json",
+                         "system/export-state.json",
+                         "system/persona-batch-synthesis/build-communication.md",
+                         "system/persona-batch-synthesis/build-compliance-legal.md",
+                         "system/persona-batch-synthesis/build-documentation-records.md",
+                         "system/persona-batch-synthesis/build-payment-financial.md",
+                         "system/persona-batch-synthesis/build-reporting-analytics.md",
+                         "system/persona-batch-synthesis/build-uncategorized.md",
+                         "system/persona-batch-synthesis/priority-queue.json",
+                         "system/persona-batch-synthesis/saturation.json",
+                         "system/persona-batch-synthesis/synthesis-2026-04-28.md",
+                         "system/persona-batch-synthesis/validation.json",
+                         "system/persona-drift-report.json",
                          "system/persona-pipeline-state.json",
-                         "system/runtime-events.ndjson"
+                         "system/persona-vault/index.json",
+                         "system/runtime-events.ndjson",
+                         "\"Chef Flow Personas/Completed/Chef/gordon-ramsay.txt\"",
+                         "\"Chef Flow Personas/Completed/Vendor/dean-deluca.txt\"",
+                         "\"Chef Flow Personas/Completed/Vendor/joel-salatin.txt\"",
+                         "\"Chef Flow Personas/Failed/Chef/persona-2.txt\"",
+                         "docs/stress-tests/persona-dean-deluca-2026-04-27.md",
+                         "docs/stress-tests/persona-gordon-ramsay-2026-04-27.md",
+                         "docs/stress-tests/persona-joel-salatin-2026-04-27.md",
+                         "system/persona-build-plans-rejected/dean-deluca-task-2.md",
+                         "system/persona-build-plans-rejected/gordon-ramsay-task-1.md",
+                         "system/persona-build-plans-rejected/gordon-ramsay-task-2.md",
+                         "system/persona-build-plans-rejected/gordon-ramsay-task-5.md",
+                         "system/persona-build-plans-rejected/joel-salatin-task-2.md",
+                         "system/persona-build-plans/dean-deluca/",
+                         "system/persona-build-plans/gordon-ramsay/",
+                         "system/persona-build-plans/joel-salatin/",
+                         "system/persona-debug/dean-deluca-attempt1.txt",
+                         "system/persona-debug/dean-deluca-attempt2.txt",
+                         "system/persona-debug/dean-deluca-attempt3.txt",
+                         "system/persona-debug/dean-deluca-partial.txt",
+                         "system/persona-debug/gordon-ramsay-attempt1.txt",
+                         "system/persona-debug/gordon-ramsay-attempt2.txt",
+                         "system/persona-debug/gordon-ramsay-attempt3.txt",
+                         "system/persona-debug/gordon-ramsay-partial.txt",
+                         "system/persona-debug/joel-salatin-attempt1.txt",
+                         "system/persona-debug/joel-salatin-attempt2.txt",
+                         "system/persona-debug/joel-salatin-attempt3.txt",
+                         "system/persona-debug/joel-salatin-partial.txt",
+                         "system/persona-vault/091f1bad-40fa-42f4-b62a-2679ed98012d.txt",
+                         "system/persona-vault/2f152cb9-9832-442b-bd51-8f88de364eb5.txt",
+                         "system/ready-tasks/018-high-order-management.md",
+                         "system/ready-tasks/020-high-batch-lot-tracking-critical.md",
+                         "system/ready-tasks/022-high-implement-yield-based-inventory-module.md"
                      ],
     "healthProbes":  [
                          {
@@ -33,16 +80,16 @@
                          {
                              "name":  "home",
                              "path":  "/",
-                             "ok":  false,
-                             "statusCode":  0,
-                             "error":  "The operation has timed out."
+                             "ok":  true,
+                             "statusCode":  200,
+                             "error":  null
                          },
                          {
                              "name":  "signin",
                              "path":  "/auth/signin",
-                             "ok":  false,
-                             "statusCode":  0,
-                             "error":  "The operation has timed out."
+                             "ok":  true,
+                             "statusCode":  200,
+                             "error":  null
                          }
                      ],
     "steps":  [
@@ -50,7 +97,7 @@
                       "name":  "unit-canary",
                       "status":  "failed",
                       "exitCode":  1,
-                      "durationSeconds":  29
+                      "durationSeconds":  23.5
                   }
               ],
     "notes":  [

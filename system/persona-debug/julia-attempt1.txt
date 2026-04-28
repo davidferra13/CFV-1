@@ -1,0 +1,51 @@
+# Persona Evaluation: Prep Kitchen Staff (Julia)
+
+**Persona:** Julia (Prep Kitchen Staff)
+**Goal:** To efficiently execute prep lists, maintain accurate inventory, and ensure all ingredients are correctly prepped and stored for service without manual errors or delays.
+**Pain Points:** Inconsistent prep lists, difficulty tracking ingredient usage across multiple stations, and physical strain from repetitive tasks.
+**Key Needs:** Digital, checklist-driven workflow; real-time inventory deduction; clear, visual instructions.
+
+***
+
+## Evaluation Summary
+
+**Overall Fit:** High Potential, but requires significant workflow customization.
+**Key Strengths:** The system's structured, checklist-based nature is ideal for repetitive prep tasks. The ability to link tasks to inventory is a major asset.
+**Key Weaknesses:** The current interface might be too tablet/desktop-heavy, requiring a more robust mobile/offline mode for the actual prep line.
+
+***
+
+## Detailed Scoring
+
+| Feature Area | Score (1-5) | Rationale |
+| :--- | :--- | :--- |
+| **Task Management** | 5 | Excellent for checklist-driven prep lists. Can handle complex, multi-step instructions. |
+| **Inventory Tracking** | 4 | Strong foundation, but needs better integration with *usage* tracking (i.e., deducting ingredients as they are used during prep). |
+| **Mobile Usability** | 3 | Needs optimization for greasy, wet, or glove-wearing hands (larger touch targets, offline mode). |
+| **Workflow Logic** | 4 | Good for sequential tasks, but needs more flexibility for parallel prep work (multiple items prepped simultaneously). |
+| **Reporting/Audit** | 5 | Excellent for end-of-shift reconciliation and waste tracking. |
+
+***
+
+## Actionable Recommendations
+
+1.  **Develop "Prep Mode" UI:** Create a dedicated, high-contrast, large-button interface optimized for use on a ruggedized tablet or mobile device in a wet environment.
+2.  **Implement "Usage Deduction":** When a prep task is marked complete, the system must prompt the user to input the *actual* amount used, which then deducts from the inventory count in real-time.
+3.  **Batching Functionality:** Allow managers to group related prep tasks (e.g., "All vegetable prep for Italian service") into one session to streamline the workflow and reduce context switching.
+
+***
+
+## Persona-Specific Use Case Scenario
+
+**Scenario:** Prep for a large Saturday brunch service.
+**Ideal Flow:**
+1.  Manager uploads the "Brunch Prep List" (Task Management).
+2.  System generates a required ingredient list and checks current stock (Inventory Check).
+3.  Julia accesses the task list on her mobile device. The list is broken down by station (e.g., "Butchery," "Vegetable Prep").
+4.  She completes "Dice 10 lbs of potatoes." The system deducts 10 lbs from the inventory.
+5.  She moves to the next task, "Marinate herbs." The system reminds her of the required herbs and checks stock.
+6.  At the end of the shift, the system generates a "Prep Variance Report" showing what was prepped vs. what was used, flagging potential waste.
+
+***
+***
+*(Self-Correction/Internal Note: This persona evaluation was based on the assumption of a general kitchen prep role. If the system is intended for a highly specialized role, like Pastry Chef, the focus on temperature control and ingredient shelf-life tracking would need to be elevated.)*

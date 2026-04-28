@@ -1,0 +1,67 @@
+**Vendor Profile: "Dean DeLuca" - Specialty Ingredient Distributor (Artisan Goods)**
+
+I specialize in sourcing and distributing the absolute highest quality, most exotic, and most niche ingredients to top-tier culinary operations across the region. My inventory ranges from single-origin spices and rare flours to highly specialized chocolate and preserved seafood. My reputation is built entirely on the provenance and quality of my products, meaning I am not a commodity supplier; I am a curated source.
+
+### Business Reality
+
+Right now:
+* I fulfill approximately 45-60 distinct chef orders, specialty bulk ingredient deliveries, or limited-run event ingredient kits per week.
+* My average invoice value is $3,500, but I often deal with minimum bulk orders of $1,000 to guarantee high-value, perishable stock. I require a 50% deposit for any order exceeding $5,000.
+* My catalog contains over 1,200 SKUs, many of which are highly seasonal, limited-run, or require specialized handling (e.g., vacuum-sealed, temperature-controlled, or specific preparation instructions).
+* I service high-end restaurants and private event kitchens across the greater metropolitan area, relying on a central, temperature-controlled warehouse facility located in the industrial park near the waterfront.
+* Current ordering is a chaotic mix: chefs text me photos of items they saw, send PDF spec sheets, email spreadsheets of bulk needs, and occasionally call for urgent, ad-hoc pickups.
+
+---
+
+### Primary Failure: Catalog Complexity and Substitution Risk
+
+My biggest pain point is managing the sheer complexity and instability of my catalog. When a chef needs "Belgian Chocolate, 65% Cacao," they might actually need a specific batch of chocolate from a single farm that was only available for three weeks. If the primary source is unavailable or the specific micro-batch is sold out, I cannot simply suggest a "similar" item; the entire dish profile changes. This forces me to manually check multiple supplier sheets against the client's specific, highly detailed recipe notes, leading to significant delays and constant back-and-forth communication that slows down my fulfillment team by several hours each day.
+
+---
+
+### Structural Issue: Non-Standardized Ingredient Specifications
+
+I receive product specifications from 20+ global suppliers, and they all use different units, grading systems, and measurements. One supplier measures saffron by the weight of the stigma, another by the pod, and a third by the bloom. My current workaround is maintaining a master Google Sheet where I manually convert and standardize every single unit (grams, ounces, threads, pods, etc.) before it can be priced or offered. This process is incredibly prone to human error—a single misplaced decimal or incorrect conversion factor can cost me hundreds of dollars in mis-invoicing or, worse, sending the wrong product entirely.
+
+---
+
+### Structural Issue: Managing Perishability and Batch Tracking
+
+Many of my high-value items—like specific truffle oils, rare seafood, or artisan cheeses—are only available in small, finite batches, often with a limited shelf life of 7-14 days. When a client orders a specific batch number (e.g., "Truffle Oil Batch #A47, harvested 10/22"), I have to manually track that batch's remaining count, its exact expiry date, and its current physical location in the cooler. If I forget to update the batch count in my spreadsheet, I risk selling a batch that has already been allocated or, worse, selling an item that is past its optimal use date, damaging my reputation immediately.
+
+---
+
+### Structural Issue: Dynamic Pricing for Bulk and Event Orders
+
+My pricing structure is highly dynamic. For a small, single-item purchase, I use a fixed rate. However, if a client orders 50 lbs of a specific type of flour, the unit cost drops by 12% due to bulk sourcing; if they order it and pay via wire transfer, the discount increases by another 5%. My current process involves calculating these stacked discounts (volume + payment method + seasonality) in a separate Excel tab, and then manually adjusting the final invoice. This is a major friction point because I spend far too much time generating the correct, complex quote, which often requires multiple people to cross-reference discount tiers.
+
+---
+
+### Structural Issue: Communication Gap Between Sourcing and Sales
+
+My sales team talks to chefs, who are focused on the creative "why" and the final plating presentation. My fulfillment team and sourcing team are focused on the logistical "how"—the packaging, the temperature, the weights, and the delivery window. These two departments rarely communicate effectively through the current system. If the sales team promises a specific exotic spice to be delivered on Tuesday, but the sourcing team hasn't cleared customs until Wednesday morning, I only find out 30 minutes before the truck leaves. This forces me to issue frantic, manual texts and phone calls to the client, eroding the perceived professionalism of my operation.
+
+---
+
+### Psychological Model
+
+I optimize for: Uncompromising quality and the ability to flawlessly match specific ingredient provenance to a chef's vision.
+I refuse to compromise on: The accuracy of my inventory counts, the temperature integrity of perishable goods, or the traceability of the ingredient's source.
+I avoid: Generic inventory management systems that treat all items as commodities, or any system that forces me to standardize a unique, rare product into a simple category.
+I evaluate tools by: How quickly they can handle highly variable data points (e.g., batch numbers, specific sourcing notes, dynamic pricing tiers) without losing the context or the complexity of the item.
+
+I think in terms of ingredient relationships—how one rare cocoa bean interacts with a specific spice profile, or how a certain altitude flour performs in a delicate pastry. My decision-making process is highly granular and context-dependent; I cannot treat my product catalog like a simple commodity list.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must allow me to track and report inventory based on specific, non-negotiable batch numbers and associated harvest/expiry dates.
+2. The system must automatically calculate complex, stacked discounts based on multiple variables (volume, payment method, and seasonal promotions) and generate a final, auditable invoice.
+3. The system must manage and normalize diverse units of measure (e.g., converting "threads," "pods," "grams," and "kilograms") while maintaining the original sourcing unit for documentation.
+4. The system must integrate high-touch, unstructured communication (like attaching a chef's photo-reference or a handwritten note) directly to the specific SKU and order line item.
+5. The system must provide a dedicated workflow for managing specialized fulfillment logistics, including temperature-controlled storage requirements and pre-scheduled pickup/delivery windows for high-value, perishable goods.
+6. The system must allow me to document and associate the specific *provenance* (farm name, harvest date, processing method) with every single unit sold, which must be visible to both my team and the client.
+7. The system must handle partial or complex substitutions, allowing me to suggest a replacement SKU while automatically recalculating the ingredient costing and flagging the necessary menu adjustments for my sales team.

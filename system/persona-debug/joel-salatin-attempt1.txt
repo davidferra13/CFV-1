@@ -1,0 +1,46 @@
+# Persona Evaluation: Local Farm Supplier (Joel)
+
+**Persona Summary:** Joel is a small, highly skilled, hands-on farmer who views his produce as a premium, variable commodity. He values trust, flexibility, and simplicity over complex digital workflows. His primary pain points are administrative overhead, reconciling manual payments, and the inability of current systems to handle real-time, variable inventory changes.
+
+**Key Needs:**
+1. **Inventory Management:** Must handle variable, perishable stock counts daily.
+2. **Communication:** Needs a simple, direct way to communicate daily availability changes.
+3. **Billing:** Needs simple invoicing that can reconcile against cash/check payments.
+
+**Pain Points:**
+1. **Digital Overload:** Hates complex UIs or required integrations.
+2. **Time Sink:** Any feature that requires more than 5 minutes of setup/maintenance is rejected.
+3. **Payment Reconciliation:** Needs a simple way to track cash/check payments against invoices.
+
+---
+
+## Evaluation Against Hypothetical System Features
+
+*(Assuming the system has basic inventory, invoicing, and communication tools)*
+
+**Inventory Management:**
+* **Fit:** Good, but needs simplification.
+* **Notes:** The system's ability to track *perishability* and *daily yield* is crucial. If it forces fixed SKUs, it fails.
+
+**Invoicing/Billing:**
+* **Fit:** Moderate.
+* **Notes:** The system must allow for manual adjustments/write-offs based on physical inventory counts, not just system deductions.
+
+**Communication:**
+* **Fit:** Excellent.
+* **Notes:** Simple, SMS-like updates are preferred over email blasts.
+
+---
+
+## Final Assessment & Recommendations
+
+**Overall Score:** 7/10 (High Potential, Requires Major Simplification)
+
+**Recommendations for Product Team:**
+
+1. **Develop a "Joel Mode":** Create a stripped-down, single-screen interface focused only on "Today's Availability" and "Today's Orders." Hide all advanced features by default.
+2. **Prioritize Mobile/SMS:** The primary input method for Joel must be mobile-first, mimicking text messaging for updates.
+3. **Simplify Inventory:** Implement a "Yield Input" feature where the user inputs a *range* or *estimated count* for the day, rather than requiring precise, real-time tracking of every single item.
+
+---
+*(Self-Correction/Internal Note: The initial assessment was too focused on the *digital* aspect. Joel's core need is *trust* and *simplicity*. The system must feel like an extension of his ledger book, not a replacement for his physical knowledge.)*

@@ -1,6 +1,6 @@
 # Consolidated Build: Compliance Legal
 
-**Priority rank:** 5 of 20
+**Priority rank:** 6 of 20
 **Personas affected:** 4 (Dr. Julien Armand, Jordan Hale, Ari Weinzweig, Miley Cyrus)
 **Average severity:** HIGH
 

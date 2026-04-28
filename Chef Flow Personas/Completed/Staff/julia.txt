@@ -1,0 +1,73 @@
+**Staff Profile: "Julia" Child - Prep Kitchen Assistant (Hands-on Prep)**
+
+I’m Julia, and I’m the go-to person for getting everything ready before the action starts. I handle the bulk prep—chopping, measuring, mise en place—for everything from simple components to complex sauces. My job is to ensure that when the main line cooks arrive, all the ingredients are perfectly prepped, labeled, and waiting exactly where they need to be, regardless of how many different menus we are running.
+
+### Business Reality
+
+Right now:
+* I work **5** shifts per week, covering 3 different prep kitchens (the main line, the pastry station, and the specialty prep unit) across **2** different venues.
+* I am paid **$16.50/hour** and I am required to maintain a basic Food Handler’s Certification, which needs renewal every 3 months.
+* I report to the Prep Lead, who is also responsible for inventory count, and I work in a small team of 4 assistants. I am required to wear a specific uniform (black apron and non-slip shoes) and must be on site 45 minutes before the official start time.
+* My scope covers the flagship restaurant kitchen in Downtown Miami, and sometimes I am called in to assist the catering kitchen located 5 miles away for large corporate events.
+* My current briefing and scheduling setup is a chaotic mix: I get schedule changes via group texts, the finalized prep list is a massive Excel sheet that lives on the manager's desktop, and any immediate changes are handled with verbal updates from the sous chef.
+
+---
+
+### Primary Failure: Prep List Drift and Inaccuracy
+
+The biggest operational headache is the prep list itself. It’s rarely accurate or current. Yesterday, the sheet said we needed 12 lbs of diced celery for the soup base, but the Head Chef changed the recipe last minute and only needs 8 lbs. Because I rely on the printed or emailed prep list, I over-prep ingredients, resulting in massive food waste (estimated at $150-$250 per shift just in wasted produce). Worse, if the list is missing a key item, we don't know until we are 30 minutes into service, forcing a costly scramble and delaying the entire station setup.
+
+---
+
+### Structural Issue: Manual Prep List Reconciliation
+
+The prep list is a static document that gets constantly updated in a silo. The manager updates the master Excel sheet, but then the sous chef prints a slightly different version for the floor, and I get a third version via text message. I have to physically cross-reference at least three different sources (the Excel sheet, the printed manifest, and the text) just to confirm the final quantity and type of ingredient. This manual verification process takes me 45 minutes before I can even start chopping, and it increases the risk of using outdated data.
+
+---
+
+### Structural Issue: Handoff Documentation and Accountability
+
+When I finish my prep for the day, the ingredients are labeled and stacked, but the recipe changes or the usage quantity isn't logged into a central system. I have to physically write the final usage count (e.g., "Used 8 lbs of celery, 2 lbs remain") onto a clipboard and leave it for the next shift's lead to manually transcribe. If that clipboard gets lost, or if the next shift arrives and the lead is busy, the ingredient inventory count is inaccurate, leading to over-ordering or missed stock counts the next day.
+
+---
+
+### Structural Issue: Multi-Venue Resource Allocation
+
+When I am pulled from the Downtown kitchen to assist the catering kitchen 5 miles away, my schedule and prep tasks are not centrally managed. I get a phone call, told to "go prep the dessert station." I have to manually check the catering kitchen's current inventory status (calling the manager there) and then physically confirm what I need to bring from my original station. There is no integrated system that tells me: "Julia, you are needed at Venue B, and you must bring 1 case of berries and 3 lbs of pre-blanched asparagus."
+
+---
+
+### Structural Issue: Ingredient Status Tracking
+
+I work with ingredients that have multiple stages (e.g., fresh whole produce, pre-chopped, marinated, cooked components). Right now, if I prep a batch of sauces, I have to write a physical label detailing the ingredients, the prep date, and the expiration date. When the next cook needs it, they have to visually check that label against their needs. If the label is slightly obscured, or if the component is moved to a different cooler, it becomes impossible for the next cook to know its true status or best-by date without digging through physical paperwork.
+
+---
+
+### Structural Issue: Schedule and Role Overlap
+
+Because I assist multiple stations and venues, my daily tasks often overlap with other staff members' responsibilities (e.g., I might prep the sauces, but the Pastry Assistant is supposed to be managing the sauce inventory count). We all have different roles and responsibilities documented in various places (the laminated station checklist, the manager's brain, the team whiteboard). If the system doesn't clearly show who is responsible for which prep task at which time, we end up doing redundant prep or, worse, forgetting critical tasks entirely.
+
+---
+
+### Psychological Model
+
+I optimize for: Efficiency and physical flow. If I can prep everything in a logical sequence and without having to stop and wait for information, I thrive.
+I refuse to compromise on: Accuracy of measurements and proper labeling. If the ingredients aren't labeled with date/usage, I won't trust them.
+I avoid: Digital systems that require me to stop what I'm doing and click through menus. I hate having to switch between a knife and a tablet.
+I evaluate tools by: How quickly they reduce physical paperwork and eliminate the need for manual cross-referencing.
+
+I am a practical, detail-oriented worker. I trust tangible things—a well-organized cooler, a clear checklist, a label. I am suspicious of anything that requires too many steps or too much administrative overhead.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1.  The system must automatically update the ingredient required quantity and type when the main menu changes, instantly notifying me of the new prep list.
+2.  The system must generate a digital, printable prep manifest that automatically deducts usage quantities and updates the current inventory count in real-time.
+3.  The system must clearly track the location and status (e.g., 'Prep Date: 10/25', 'Use By: 10/27') of every prepped component and ingredient batch.
+4.  The system must provide a single, consolidated view of my entire week, showing scheduled shifts, specific required tasks, and necessary ingredient transfers across all assigned venues.
+5.  The system must allow the Prep Lead to assign specific, measurable prep tasks to me and automatically flag if I report completion or if the task is overdue.
+6.  The system must integrate the finalized prep list directly with the vendor ordering process to minimize waste and ensure necessary ingredients are on hand.
+7.  The system must allow me to confirm when a prep task is complete and automatically log that time and the final quantity used, closing the loop between prep and inventory.
