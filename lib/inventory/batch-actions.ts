@@ -6,10 +6,11 @@
 import { revalidatePath } from 'next/cache'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { createNotification } from '@/lib/notifications/actions'
 
 // ─── Types ───────────────────────────────────────────────────────
 
-export type ExpiryAlert = {
+type ExpiryAlert = {
   batchId: string
   ingredientId: string | null
   ingredientName: string
@@ -22,7 +23,7 @@ export type ExpiryAlert = {
   urgency: 'expired' | 'critical' | 'warning' | 'ok'
 }
 
-export type IngredientBatch = {
+type IngredientBatch = {
   id: string
   ingredientName: string
   receivedDate: string
@@ -34,6 +35,60 @@ export type IngredientBatch = {
   unitCostCents: number | null
   isDepleted: boolean
   isExpired: boolean
+}
+
+async function notifyBatchInventoryAlert({
+  tenantId,
+  recipientId,
+  batchId,
+  ingredientName,
+  remainingQty,
+  unit,
+  alertType,
+  lotNumber,
+  expiryDate,
+}: {
+  tenantId: string
+  recipientId: string
+  batchId: string
+  ingredientName: string
+  remainingQty: number
+  unit: string
+  alertType: 'depleted' | 'expired'
+  lotNumber: string | null
+  expiryDate: string | null
+}) {
+  const title =
+    alertType === 'expired'
+      ? `Expired stock: ${ingredientName}`
+      : `Depleted stock: ${ingredientName}`
+  const body =
+    alertType === 'expired'
+      ? `${ingredientName} batch ${lotNumber ?? batchId} expired with ${remainingQty} ${unit} remaining and was written off.`
+      : `${ingredientName} batch ${lotNumber ?? batchId} is depleted. Check replacement stock before upcoming service.`
+
+  try {
+    await createNotification({
+      tenantId,
+      recipientId,
+      category: 'ops',
+      action: 'low_stock',
+      title,
+      body,
+      actionUrl: '/ops/inventory',
+      metadata: {
+        batch_id: batchId,
+        ingredient_name: ingredientName,
+        remaining_qty: remainingQty,
+        unit,
+        lot_number: lotNumber,
+        expiry_date: expiryDate,
+        source: `inventory_batch_${alertType}`,
+      },
+    })
+  } catch (err) {
+    console.error('[non-blocking] Failed to send batch inventory notification', err)
+  }
 }
 
 // ─── Actions ─────────────────────────────────────────────────────
@@ -142,7 +197,7 @@ export async function consumeFromBatch(
   // Fetch the batch - verify ownership
   const { data: batch, error: fetchError } = await db
     .from('inventory_batches' as any)
-    .select('id, remaining_qty, is_depleted')
+    .select('id, ingredient_name, remaining_qty, unit, lot_number, expiry_date, is_depleted')
     .eq('id', batchId)
     .eq('chef_id', user.tenantId!)
     .single()
@@ -170,6 +225,20 @@ export async function consumeFromBatch(
 
   if (updateError) throw new Error(`Failed to consume from batch: ${updateError.message}`)
 
+  if (isDepleted) {
+    await notifyBatchInventoryAlert({
+      tenantId: user.tenantId!,
+      recipientId: user.id,
+      batchId,
+      ingredientName: (batch as any).ingredient_name,
+      remainingQty: newRemainingQty,
+      unit: (batch as any).unit,
+      alertType: 'depleted',
+      lotNumber: (batch as any).lot_number ?? null,
+      expiryDate: (batch as any).expiry_date ?? null,
+    })
+  }
+
   revalidatePath('/inventory')
 
   return { remainingQty: newRemainingQty, isDepleted }
@@ -180,7 +249,7 @@ export async function consumeFromBatch(
  * Creates a negative inventory_transaction (type: 'waste') for the remaining amount,
  * then sets remaining_qty = 0, is_expired = true, is_depleted = true.
  */
-export async function markBatchExpired(batchId: string): Promise<void> {
+export async function markBatchExpired(batchId: string): Promise<{ success: true }> {
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -232,7 +301,21 @@ export async function markBatchExpired(batchId: string): Promise<void> {
 
   if (updateError) throw new Error(`Failed to mark batch expired: ${updateError.message}`)
 
+  await notifyBatchInventoryAlert({
+    tenantId: user.tenantId!,
+    recipientId: user.id,
+    batchId,
+    ingredientName: batchData.ingredient_name,
+    remainingQty,
+    unit: batchData.unit,
+    alertType: 'expired',
+    lotNumber: batchData.lot_number ?? null,
+    expiryDate: batchData.expiry_date ?? null,
+  })
+
   revalidatePath('/inventory')
+
+  return { success: true }
 }
 
 /**

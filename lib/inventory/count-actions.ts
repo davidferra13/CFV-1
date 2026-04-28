@@ -7,10 +7,11 @@ import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { createNotification } from '@/lib/notifications/actions'
 
 // ─── Types ───────────────────────────────────────────────────────
 
-export type InventoryCount = {
+type InventoryCount = {
   id: string
   chefId: string
   ingredientId: string | null
@@ -24,7 +25,7 @@ export type InventoryCount = {
   updatedAt: string
 }
 
-export type ParAlert = {
+type ParAlert = {
   id: string
   ingredientName: string
   currentQty: number
@@ -34,7 +35,7 @@ export type ParAlert = {
   vendorId: string | null
 }
 
-export type ReorderGroup = {
+type ReorderGroup = {
   vendorId: string | null
   items: {
     id: string
@@ -56,7 +57,55 @@ const UpdateInventoryCountSchema = z.object({
   vendorId: z.string().uuid().optional(),
 })
 
-export type UpdateInventoryCountInput = z.infer<typeof UpdateInventoryCountSchema>
+type UpdateInventoryCountInput = z.infer<typeof UpdateInventoryCountSchema>
+
+async function notifyLowInventory({
+  tenantId,
+  recipientId,
+  inventoryCountId,
+  ingredientName,
+  currentQty,
+  parLevel,
+  unit,
+  vendorId,
+}: {
+  tenantId: string
+  recipientId: string
+  inventoryCountId: string
+  ingredientName: string
+  currentQty: number
+  parLevel: number
+  unit: string
+  vendorId: string | null
+}) {
+  if (currentQty >= parLevel) return
+
+  const deficit = parLevel - currentQty
+
+  try {
+    await createNotification({
+      tenantId,
+      recipientId,
+      category: 'ops',
+      action: 'low_stock',
+      title: `Low stock: ${ingredientName}`,
+      body: `${ingredientName} is at ${currentQty} ${unit}, below the par level of ${parLevel} ${unit}. Deficit: ${deficit} ${unit}.`,
+      actionUrl: '/ops/inventory',
+      metadata: {
+        inventory_count_id: inventoryCountId,
+        ingredient_name: ingredientName,
+        current_qty: currentQty,
+        par_level: parLevel,
+        deficit,
+        unit,
+        vendor_id: vendorId,
+        source: 'inventory_count',
+      },
+    })
+  } catch (err) {
+    console.error('[non-blocking] Failed to send low stock notification', err)
+  }
+}
 
 // ─── Actions ─────────────────────────────────────────────────────
 
@@ -89,6 +138,23 @@ export async function updateInventoryCount(
 
   if (error) throw new Error(`Failed to update inventory count: ${(error as any).message}`)
 
+  const currentQty = Number((data as any).current_qty)
+  const parLevel = (data as any).par_level != null ? Number((data as any).par_level) : null
+  const vendorId = (data as any).vendor_id
+
+  if (parLevel != null) {
+    await notifyLowInventory({
+      tenantId: user.tenantId!,
+      recipientId: user.id,
+      inventoryCountId: (data as any).id,
+      ingredientName: (data as any).ingredient_name,
+      currentQty,
+      parLevel,
+      unit: (data as any).unit,
+      vendorId,
+    })
+  }
+
   revalidatePath('/inventory')
 
   return {
@@ -96,11 +162,11 @@ export async function updateInventoryCount(
     chefId: (data as any).chef_id,
     ingredientId: (data as any).ingredient_id,
     ingredientName: (data as any).ingredient_name,
-    currentQty: Number((data as any).current_qty),
-    parLevel: (data as any).par_level != null ? Number((data as any).par_level) : null,
+    currentQty,
+    parLevel,
     unit: (data as any).unit,
     lastCountedAt: (data as any).last_counted_at,
-    vendorId: (data as any).vendor_id,
+    vendorId,
     createdAt: (data as any).created_at,
     updatedAt: (data as any).updated_at,
   }
