@@ -8,6 +8,7 @@
 import { Ollama } from 'ollama'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 import { getOllamaConfig } from '@/lib/ai/providers'
+import { analyzeVoiceAffect } from '@/lib/affective/voice-affect'
 
 // Gemma 4 E4B is natively multimodal (text + image + audio + video).
 // No separate vision model needed. Uses the same model as all other Remy tasks.
@@ -306,16 +307,27 @@ export async function processVoiceMemo(audioBase64: string): Promise<VoiceMemoDa
         clients: [],
         events: [],
         notes: [],
+        affectiveAnalysis: analyzeVoiceAffect({
+          transcript: text,
+          source: 'voice_memo',
+          role: 'voice_memo',
+        }),
         confidence: 'low',
       }
     }
     const parsed = JSON.parse(jsonMatch[0])
+    const transcription = String(parsed.transcription || '')
     return {
-      transcription: String(parsed.transcription || ''),
+      transcription,
       actionItems: Array.isArray(parsed.actionItems) ? parsed.actionItems.map(String) : [],
       clients: Array.isArray(parsed.clients) ? parsed.clients.map(String) : [],
       events: Array.isArray(parsed.events) ? parsed.events.map(String) : [],
       notes: Array.isArray(parsed.notes) ? parsed.notes.map(String) : [],
+      affectiveAnalysis: analyzeVoiceAffect({
+        transcript: transcription,
+        source: 'voice_memo',
+        role: 'voice_memo',
+      }),
       confidence: ['high', 'medium', 'low'].includes(parsed.confidence) ? parsed.confidence : 'low',
     }
   } catch {

@@ -12,9 +12,6 @@ import { useState } from 'react'
 import { formatDistanceToNow, format } from 'date-fns'
 import {
   Phone,
-  Check,
-  X,
-  Clock,
   AlertCircle,
   Mic,
   ArrowDownRight,
@@ -54,6 +51,20 @@ interface AiCall {
   recording_url?: string | null
   duration_seconds?: number | null
   created_at: string
+}
+
+interface AffectiveAnalysis {
+  risk_level: 'none' | 'low' | 'medium' | 'high'
+  confidence: 'low' | 'medium' | 'high'
+  summary: string
+  recommended_action: string
+  guardrail?: string
+  signals: Array<{
+    signal: string
+    label: string
+    evidence: string[]
+    reason: string
+  }>
 }
 
 interface Props {
@@ -119,7 +130,9 @@ function fmtDuration(secs?: number | null) {
 // ---- Extracted data renderer -----------------------------------------------
 
 function ExtractedData({ data }: { data: Record<string, any> }) {
-  const entries = Object.entries(data).filter(([, v]) => v != null && v !== '')
+  const entries = Object.entries(data).filter(
+    ([key, v]) => key !== 'affective_analysis' && v != null && v !== ''
+  )
   if (entries.length === 0) return null
 
   const labels: Record<string, string> = {
@@ -138,6 +151,54 @@ function ExtractedData({ data }: { data: Record<string, any> }) {
           <span className="text-stone-300">{String(value)}</span>
         </div>
       ))}
+    </div>
+  )
+}
+
+function getAffectiveAnalysis(data?: Record<string, any> | null): AffectiveAnalysis | null {
+  const analysis = data?.affective_analysis
+  if (!analysis || typeof analysis !== 'object') return null
+  if (!Array.isArray(analysis.signals)) return null
+  return analysis as AffectiveAnalysis
+}
+
+function riskClass(riskLevel: AffectiveAnalysis['risk_level']) {
+  if (riskLevel === 'high') return 'border-rose-800 bg-rose-950/40 text-rose-300'
+  if (riskLevel === 'medium') return 'border-amber-800 bg-amber-950/40 text-amber-300'
+  if (riskLevel === 'low') return 'border-sky-800 bg-sky-950/40 text-sky-300'
+  return 'border-stone-700 bg-stone-800 text-stone-400'
+}
+
+function AffectiveSignalPanel({ analysis }: { analysis: AffectiveAnalysis }) {
+  if (analysis.signals.length === 0) return null
+
+  return (
+    <div className={`rounded-lg border p-3 ${riskClass(analysis.risk_level)}`}>
+      <div className="flex items-start gap-2">
+        <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+        <div className="min-w-0 flex-1 space-y-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs font-semibold uppercase tracking-wide">Voice signal</span>
+            <span className="rounded border border-current/30 px-1.5 py-0.5 text-[10px] uppercase">
+              {analysis.risk_level} risk
+            </span>
+            <span className="text-[10px] uppercase opacity-75">
+              {analysis.confidence} confidence
+            </span>
+          </div>
+          <p className="text-xs leading-relaxed">{analysis.summary}</p>
+          <div className="space-y-1.5">
+            {analysis.signals.slice(0, 3).map((signal) => (
+              <div key={signal.signal} className="text-xs">
+                <span className="font-medium">{signal.label}:</span>{' '}
+                <span className="opacity-80">{signal.evidence[0]}</span>
+              </div>
+            ))}
+          </div>
+          <p className="text-xs leading-relaxed opacity-90">{analysis.recommended_action}</p>
+          {analysis.guardrail && <p className="text-[10px] opacity-70">{analysis.guardrail}</p>}
+        </div>
+      </div>
     </div>
   )
 }
@@ -260,6 +321,7 @@ function CallRow({ item }: { item: UnifiedCall }) {
 
   // ai_calls row
   const c = item.data
+  const affectiveAnalysis = getAffectiveAnalysis(c.extracted_data)
   const hasDetail = c.full_transcript || c.extracted_data || c.recording_url
   const isInbound = c.direction === 'inbound'
 
@@ -292,6 +354,13 @@ function CallRow({ item }: { item: UnifiedCall }) {
             {c.contact_name || c.contact_phone || 'Unknown'}
           </span>
           {c.contact_name && <span className="text-xs text-stone-500 ml-2">{c.contact_phone}</span>}
+          {affectiveAnalysis && affectiveAnalysis.signals.length > 0 && (
+            <span
+              className={`ml-2 rounded border px-1.5 py-0.5 text-[10px] ${riskClass(affectiveAnalysis.risk_level)}`}
+            >
+              Signal
+            </span>
+          )}
         </span>
 
         {/* Subject */}
@@ -331,6 +400,8 @@ function CallRow({ item }: { item: UnifiedCall }) {
             {c.duration_seconds && <span>{fmtDuration(c.duration_seconds)} duration</span>}
             {c.contact_phone && <span>{c.contact_phone}</span>}
           </div>
+
+          {affectiveAnalysis && <AffectiveSignalPanel analysis={affectiveAnalysis} />}
 
           {c.extracted_data && <ExtractedData data={c.extracted_data} />}
 

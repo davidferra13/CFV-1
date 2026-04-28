@@ -1,9 +1,12 @@
+import type { AffectiveAnalysis } from '@/lib/affective/voice-affect'
+
 export interface VoiceMemoData {
   transcription: string
   actionItems: string[]
   clients: string[]
   events: string[]
   notes: string[]
+  affectiveAnalysis?: AffectiveAnalysis
   confidence: 'high' | 'medium' | 'low'
 }
 
@@ -38,6 +41,12 @@ export function formatVoiceMemoResponse(data: VoiceMemoData): string {
     for (const note of data.notes) {
       lines.push(`- ${note}`)
     }
+  }
+
+  if (data.affectiveAnalysis && data.affectiveAnalysis.signals.length > 0) {
+    lines.push('\n**Voice signal:**')
+    lines.push(`- ${data.affectiveAnalysis.summary}`)
+    lines.push(`- Recommended next step: ${data.affectiveAnalysis.recommended_action}`)
   }
 
   lines.push(

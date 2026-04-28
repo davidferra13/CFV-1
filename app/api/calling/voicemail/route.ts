@@ -10,6 +10,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/db/admin'
 import { broadcast } from '@/lib/realtime/broadcast'
 import { validateTwilioWebhook } from '@/lib/calling/twilio-webhook-auth'
+import { analyzeVoiceAffect } from '@/lib/affective/voice-affect'
 
 export async function POST(req: NextRequest) {
   const formData = await req.formData()
@@ -34,6 +35,16 @@ export async function POST(req: NextRequest) {
     updated_at: new Date().toISOString(),
   }
   if (transcriptionText) updates.full_transcript = transcriptionText
+  if (transcriptionText) {
+    updates.extracted_data = {
+      affective_analysis: analyzeVoiceAffect({
+        transcript: transcriptionText,
+        source: 'call',
+        role: 'inbound_voicemail',
+        direction: 'inbound',
+      }),
+    }
+  }
   if (recordingUrl) updates.recording_url = recordingUrl + '.mp3'
 
   // Guard the update: an unhandled DB error here produces a 500, which causes

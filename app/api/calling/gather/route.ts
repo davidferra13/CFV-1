@@ -27,6 +27,7 @@ import {
   buildVenueStep2Twiml,
   DEFAULT_VOICE,
 } from '@/lib/calling/voice-helpers'
+import { analyzeVoiceAffect } from '@/lib/affective/voice-affect'
 
 // Q51: Strip trailing slash - same vulnerability as Q50 in twilio-webhook-auth.
 // Trailing slash on NEXTAUTH_URL produces double-slash callback URLs that break
@@ -242,6 +243,24 @@ async function logTranscript(
   }
 }
 
+function affectiveAnalysisData(params: {
+  transcript: string | null
+  role: string
+  direction?: string | null
+  confidence?: number | null
+}): Record<string, any> {
+  if (!params.transcript) return {}
+  return {
+    affective_analysis: analyzeVoiceAffect({
+      transcript: params.transcript,
+      source: 'call',
+      role: params.role,
+      direction: params.direction ?? null,
+      speechConfidence: params.confidence ?? null,
+    }),
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Route handler
 // ---------------------------------------------------------------------------
@@ -416,6 +435,15 @@ async function handleVendorAvailability(
       const aiExtracted: Record<string, any> = {}
       if (priceQuoted) aiExtracted.price_quoted = priceQuoted
       if (quantityAvailable) aiExtracted.quantity_available = quantityAvailable
+      Object.assign(
+        aiExtracted,
+        affectiveAnalysisData({
+          transcript: speech,
+          role: 'vendor_availability',
+          direction: 'outbound',
+          confidence,
+        })
+      )
       await db
         .from('ai_calls')
         .update({
@@ -631,9 +659,20 @@ async function handleVendorAvailability(
     }
 
     if (aiCallId) {
+      const affectiveData = affectiveAnalysisData({
+        transcript: speech,
+        role: 'vendor_availability',
+        direction: 'outbound',
+        confidence,
+      })
       await db
         .from('ai_calls')
-        .update({ result: 'no', status: 'completed', updated_at: new Date().toISOString() })
+        .update({
+          result: 'no',
+          status: 'completed',
+          ...(Object.keys(affectiveData).length > 0 ? { extracted_data: affectiveData } : {}),
+          updated_at: new Date().toISOString(),
+        })
         .eq('id', aiCallId)
         .catch((err: unknown) => {
           console.error('[calling/gather] ai_calls result=no write failed:', err)
@@ -761,7 +800,16 @@ async function handleVendorDelivery(
         err
       )
     }
-    const updatedData = { ...existingCallData, contact_notes: speech }
+    const updatedData = {
+      ...existingCallData,
+      contact_notes: speech,
+      ...affectiveAnalysisData({
+        transcript: speech,
+        role: 'vendor_delivery',
+        direction: 'outbound',
+        confidence,
+      }),
+    }
 
     await db
       .from('ai_calls')
@@ -807,7 +855,17 @@ async function handleVendorDelivery(
   if (timeWindow) {
     await db
       .from('ai_calls')
-      .update({ extracted_data: { delivery_window: timeWindow } })
+      .update({
+        extracted_data: {
+          delivery_window: timeWindow,
+          ...affectiveAnalysisData({
+            transcript: speech,
+            role: 'vendor_delivery',
+            direction: 'outbound',
+            confidence,
+          }),
+        },
+      })
       .eq('id', aiCallId)
       .catch((err: unknown) => {
         console.error('[calling/gather] vendor_delivery step1 delivery_window write failed:', err)
@@ -854,7 +912,16 @@ async function handleVenueConfirmation(
         err
       )
     }
-    const updatedData = { ...existingVenueData, kitchen_notes: speech }
+    const updatedData = {
+      ...existingVenueData,
+      kitchen_notes: speech,
+      ...affectiveAnalysisData({
+        transcript: speech,
+        role: 'venue_confirmation',
+        direction: 'outbound',
+        confidence,
+      }),
+    }
 
     await db
       .from('ai_calls')
@@ -900,7 +967,17 @@ async function handleVenueConfirmation(
   if (timeWindow) {
     await db
       .from('ai_calls')
-      .update({ extracted_data: { access_window: timeWindow } })
+      .update({
+        extracted_data: {
+          access_window: timeWindow,
+          ...affectiveAnalysisData({
+            transcript: speech,
+            role: 'venue_confirmation',
+            direction: 'outbound',
+            confidence,
+          }),
+        },
+      })
       .eq('id', aiCallId)
       .catch((err: unknown) => {
         console.error('[calling/gather] venue_confirmation step1 access_window write failed:', err)
@@ -936,7 +1013,18 @@ async function handleInboundVendorCallback(
     if (speech) {
       await db
         .from('ai_calls')
-        .update({ full_transcript: speech, updated_at: new Date().toISOString() })
+        .update({
+          full_transcript: speech,
+          extracted_data: {
+            ...affectiveAnalysisData({
+              transcript: speech,
+              role: 'inbound_vendor_callback',
+              direction: 'inbound',
+              confidence,
+            }),
+          },
+          updated_at: new Date().toISOString(),
+        })
         .eq('id', aiCallId)
         .catch((err: unknown) => {
           console.error(
@@ -963,6 +1051,18 @@ async function handleInboundVendorCallback(
     .update({
       status: 'completed',
       full_transcript: speech || null,
+      ...(speech
+        ? {
+            extracted_data: {
+              ...affectiveAnalysisData({
+                transcript: speech,
+                role: 'inbound_vendor_callback',
+                direction: 'inbound',
+                confidence,
+              }),
+            },
+          }
+        : {}),
       updated_at: new Date().toISOString(),
     })
     .eq('id', aiCallId)
@@ -996,7 +1096,14 @@ async function handleInboundUnknown(
       .update({
         status: 'completed',
         full_transcript: speech,
-        extracted_data: { message: speech },
+        extracted_data: {
+          message: speech,
+          ...affectiveAnalysisData({
+            transcript: speech,
+            role: 'inbound_unknown',
+            direction: 'inbound',
+          }),
+        },
         updated_at: new Date().toISOString(),
       })
       .eq('id', aiCallId)
