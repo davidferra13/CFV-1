@@ -1,0 +1,70 @@
+{
+  "exported": {
+    "system/persona-build-plans/ari-weinzweig/task-2.md": {
+      "exported_at": "2026-04-28T00:16:46.983Z",
+      "export_file": "001-high-transparency-traceability.md",
+      "score": 65
+    },
+    "system/persona-build-plans/david-chang/task-5.md": {
+      "exported_at": "2026-04-28T00:16:46.983Z",
+      "export_file": "003-low-retry-candidate.md",
+      "score": 50
+    },
+    "system/persona-build-plans/mindy-weiss/task-5.md": {
+      "exported_at": "2026-04-28T00:16:46.986Z",
+      "export_file": "005-low-ux-alignment-gap.md",
+      "score": 50
+    },
+    "system/persona-build-plans/ari-weinzweig/task-1.md": {
+      "exported_at": "2026-04-28T00:16:46.988Z",
+      "export_file": "007-high-flexibility-over-standardization.md",
+      "score": 38
+    },
+    "system/persona-build-plans/david-chang/task-2.md": {
+      "exported_at": "2026-04-28T00:16:46.989Z",
+      "export_file": "009-high-manual-review-required.md",
+      "score": 38
+    },
+    "system/persona-build-plans/emma-chamberlain/task-2.md": {
+      "exported_at": "2026-04-28T00:16:46.990Z",
+      "export_file": "011-high-lack-of-ownership.md",
+      "score": 38
+    },
+    "system/persona-build-plans/gail-simmons/task-1.md": {
+      "exported_at": "2026-04-28T00:16:46.991Z",
+      "export_file": "013-high-workflow-coverage-gap.md",
+      "score": 38
+    },
+    "system/persona-build-plans/gail-simmons/task-2.md": {
+      "exported_at": "2026-04-28T00:16:46.992Z",
+      "export_file": "015-high-data-model-gap.md",
+      "score": 38
+    },
+    "system/persona-build-plans/mindy-weiss/task-2.md": {
+      "exported_at": "2026-04-28T00:16:46.993Z",
+      "export_file": "017-high-template-library.md",
+      "score": 38
+    },
+    "system/persona-build-plans/oprah-winfrey/task-2.md": {
+      "exported_at": "2026-04-28T00:16:46.994Z",
+      "export_file": "019-high-client-relationship-insights.md",
+      "score": 38
+    },
+    "system/persona-build-plans/gail-simmons/task-3.md": {
+      "exported_at": "2026-04-28T00:16:46.995Z",
+      "export_file": "021-medium-ux-alignment-gap.md",
+      "score": 34
+    }
+  },
+  "claimed": {
+    "system/persona-build-plans/ari-weinzweig/task-2.md": {
+      "claimed_at": "2026-04-28T00:16:57.740Z",
+      "export_file": "001-high-transparency-traceability.md"
+    },
+    "system/persona-build-plans/david-chang/task-5.md": {
+      "claimed_at": "2026-04-28T00:16:57.947Z",
+      "export_file": "003-low-retry-candidate.md"
+    }
+  },
+  "completed": {}
+}

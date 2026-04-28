@@ -1048,6 +1048,241 @@ function startAutoArchive() {
   autoArchiveInterval = setInterval(() => runAutoArchive(), AUTO_ARCHIVE_INTERVAL_MS);
 }
 
+// --- Auto-Export: Last Mile (plans -> Codex-ready specs) ---
+// Watches for high-quality build plans and exports them as ready-to-claim task files.
+// Claude/Codex sessions can poll GET /api/claim-task to get the next actionable spec.
+
+let autoExportInterval = null;
+const EXPORT_DIR = join(SYSTEM_DIR, "ready-tasks");
+const EXPORT_STATE_FILE = join(SYSTEM_DIR, "export-state.json");
+const EXPORT_MIN_SCORE = 30;        // Minimum plan-priority score to auto-export
+const EXPORT_CHECK_INTERVAL_MS = 10 * 60 * 1000; // Every 10 min
+const EXPORT_MAX_PENDING = 20;      // Max pending exported tasks at once
+
+function readExportState() {
+  return readJsonFile(EXPORT_STATE_FILE, { exported: {}, claimed: {}, completed: {} });
+}
+
+function writeExportState(state) {
+  writeJsonFile(EXPORT_STATE_FILE, state);
+}
+
+function runAutoExport() {
+  try {
+    mkdirSync(EXPORT_DIR, { recursive: true });
+    const exportState = readExportState();
+
+    // Count current pending (not claimed, not completed)
+    const pendingFiles = existsSync(EXPORT_DIR)
+      ? readdirSync(EXPORT_DIR).filter(f => f.endsWith(".md") && !f.startsWith("_"))
+      : [];
+    if (pendingFiles.length >= EXPORT_MAX_PENDING) return;
+
+    // Read prioritized plans
+    const plansDir = join(ROOT, "system", "persona-build-plans");
+    if (!existsSync(plansDir)) return;
+
+    // Build priority list (same logic as /api/plan-priority)
+    const allPlans = [];
+    const slugDirs = readdirSync(plansDir).filter(d => {
+      try { return statSync(join(plansDir, d)).isDirectory(); } catch { return false; }
+    });
+
+    for (const slug of slugDirs) {
+      const slugDir = join(plansDir, slug);
+      const tasks = readdirSync(slugDir).filter(f => f.endsWith(".md"));
+      for (const taskFile of tasks) {
+        const taskPath = join(slugDir, taskFile);
+        const relPath = `system/persona-build-plans/${slug}/${taskFile}`;
+        // Skip already exported or completed
+        if (exportState.exported[relPath] || exportState.completed[relPath]) continue;
+
+        try {
+          const content = readFileSync(taskPath, "utf8");
+          const severityMatch = content.match(/\*\*Severity:\*\*\s*(\w+)/);
+          const severity = severityMatch ? severityMatch[1].toUpperCase() : "MEDIUM";
+          const titleMatch = content.match(/^#\s+(.+)$/m);
+          const title = titleMatch ? titleMatch[1].replace(/^Build Task:\s*/i, "").trim() : taskFile;
+
+          // Check file ref accuracy
+          const fileRefs = [...content.matchAll(/`([a-zA-Z][\w/.-]+\.(?:ts|tsx|js|jsx|mjs|css|sql))`/g)];
+          let validRefs = 0, totalRefs = 0;
+          for (const match of fileRefs) {
+            if (match[1].includes('{') || match[1].startsWith('http')) continue;
+            totalRefs++;
+            if (existsSync(join(ROOT, match[1]))) validRefs++;
+          }
+          const refAccuracy = totalRefs > 0 ? Math.round((validRefs / totalRefs) * 100) : 50;
+
+          // Score (simplified version of plan-priority)
+          let score = 0;
+          if (severity === "HIGH") score += 20;
+          else if (severity === "MEDIUM") score += 10;
+          else score += 5;
+          score += Math.round(refAccuracy * 0.35);
+          if (totalRefs > 0 && validRefs > 0) score += 10;
+
+          if (score >= EXPORT_MIN_SCORE) {
+            allPlans.push({ slug, taskFile, relPath, title, severity, score, refAccuracy, content });
+          }
+        } catch {}
+      }
+    }
+
+    // Sort by score descending, export top N
+    allPlans.sort((a, b) => b.score - a.score);
+    const toExport = allPlans.slice(0, EXPORT_MAX_PENDING - pendingFiles.length);
+
+    let exportedCount = 0;
+    for (const plan of toExport) {
+      const seqNum = String(Object.keys(exportState.exported).length + exportedCount + 1).padStart(3, "0");
+      const safeName = `${seqNum}-${plan.severity.toLowerCase()}-${slugify(plan.title, 60)}.md`;
+      const exportPath = join(EXPORT_DIR, safeName);
+
+      // Write enriched spec file
+      const header = [
+        "---",
+        `status: ready`,
+        `priority: '${plan.severity.toLowerCase()}'`,
+        `score: ${plan.score}`,
+        `ref_accuracy: ${plan.refAccuracy}`,
+        `source_plan: '${plan.relPath}'`,
+        `source_persona: '${plan.slug}'`,
+        `exported_at: '${new Date().toISOString()}'`,
+        "---",
+        "",
+      ].join("\n");
+
+      writeFileSync(exportPath, header + plan.content, "utf8");
+
+      exportState.exported[plan.relPath] = {
+        exported_at: new Date().toISOString(),
+        export_file: safeName,
+        score: plan.score,
+      };
+      exportedCount++;
+    }
+
+    if (exportedCount > 0) {
+      writeExportState(exportState);
+      console.log(`[auto-export] Exported ${exportedCount} plans to ${relativePath(EXPORT_DIR)}`);
+      emitRuntimeEvent("state:update", "3977.auto-export", {
+        action: "auto_export_complete",
+        exported: exportedCount,
+        totalPending: pendingFiles.length + exportedCount,
+      }, { workflow: "auto-export" });
+      broadcastRuntimeSnapshot();
+    }
+  } catch (err) {
+    console.error("[auto-export] Error:", err.message);
+  }
+}
+
+function claimNextTask() {
+  mkdirSync(EXPORT_DIR, { recursive: true });
+  const files = readdirSync(EXPORT_DIR)
+    .filter(f => f.endsWith(".md") && !f.startsWith("_"));
+
+  // Sort by score descending (parse from frontmatter)
+  const scored = files.map(f => {
+    try {
+      const c = readFileSync(join(EXPORT_DIR, f), "utf8");
+      const m = c.match(/^score:\s*(\d+)/m);
+      return { file: f, score: m ? Number(m[1]) : 0 };
+    } catch { return { file: f, score: 0 }; }
+  }).sort((a, b) => b.score - a.score);
+  const sortedFiles = scored.map(s => s.file); // Highest score first
+
+  if (sortedFiles.length === 0) return null;
+
+  const exportState = readExportState();
+  // Find first unclaimed (highest score first)
+  for (const file of sortedFiles) {
+    const fullPath = join(EXPORT_DIR, file);
+    const content = readFileSync(fullPath, "utf8");
+    const sourceMatch = content.match(/^source_plan:\s*'(.+)'/m);
+    const sourcePlan = sourceMatch ? sourceMatch[1] : file;
+
+    if (exportState.claimed[sourcePlan]) continue;
+
+    // Claim it
+    exportState.claimed[sourcePlan] = {
+      claimed_at: new Date().toISOString(),
+      export_file: file,
+    };
+    writeExportState(exportState);
+
+    // Rename to mark as claimed
+    const claimedName = `_claimed_${file}`;
+    try { renameSync(fullPath, join(EXPORT_DIR, claimedName)); } catch {}
+
+    emitRuntimeEvent("state:update", "3977.auto-export", {
+      action: "task_claimed",
+      file,
+      sourcePlan,
+    }, { workflow: "auto-export" });
+    broadcastRuntimeSnapshot();
+
+    return {
+      file,
+      source_plan: sourcePlan,
+      content,
+      claimed_at: exportState.claimed[sourcePlan].claimed_at,
+    };
+  }
+  return null;
+}
+
+function completeClaimedTask(sourcePlan) {
+  const exportState = readExportState();
+  if (!exportState.claimed[sourcePlan]) return false;
+
+  exportState.completed[sourcePlan] = {
+    completed_at: new Date().toISOString(),
+    claimed_at: exportState.claimed[sourcePlan].claimed_at,
+  };
+  delete exportState.claimed[sourcePlan];
+  writeExportState(exportState);
+
+  // Remove claimed file from disk
+  const files = existsSync(EXPORT_DIR) ? readdirSync(EXPORT_DIR) : [];
+  for (const f of files) {
+    if (f.includes(sourcePlan.replace(/[/\\]/g, "-")) || (exportState.completed[sourcePlan] && f.startsWith("_claimed_"))) {
+      try { unlinkSync(join(EXPORT_DIR, f)); } catch {}
+    }
+  }
+
+  emitRuntimeEvent("state:update", "3977.auto-export", {
+    action: "task_completed",
+    sourcePlan,
+  }, { workflow: "auto-export" });
+  broadcastRuntimeSnapshot();
+  return true;
+}
+
+function getExportStats() {
+  const exportState = readExportState();
+  const pendingFiles = existsSync(EXPORT_DIR)
+    ? readdirSync(EXPORT_DIR).filter(f => f.endsWith(".md") && !f.startsWith("_")).length
+    : 0;
+  const claimedFiles = existsSync(EXPORT_DIR)
+    ? readdirSync(EXPORT_DIR).filter(f => f.startsWith("_claimed_")).length
+    : 0;
+  return {
+    pending: pendingFiles,
+    claimed: claimedFiles,
+    completed: Object.keys(exportState.completed).length,
+    total_exported: Object.keys(exportState.exported).length,
+  };
+}
+
+function startAutoExport() {
+  if (autoExportInterval) return;
+  // Run 3 minutes after startup, then every 10 min
+  setTimeout(() => runAutoExport(), 3 * 60 * 1000);
+  autoExportInterval = setInterval(() => runAutoExport(), EXPORT_CHECK_INTERVAL_MS);
+}
+
 function normalize(value) {
   return String(value || "")
     .toLowerCase()
@@ -5183,6 +5418,63 @@ const server = createServer(async (req, res) => {
       return;
     }
 
+    // --- Auto-Export / Task Claim API ---
+
+    if (req.method === "GET" && path === "/api/export-stats") {
+      sendJson(res, 200, getExportStats());
+      return;
+    }
+
+    if (req.method === "GET" && path === "/api/ready-tasks") {
+      mkdirSync(EXPORT_DIR, { recursive: true });
+      const files = readdirSync(EXPORT_DIR)
+        .filter(f => f.endsWith(".md") && !f.startsWith("_"))
+        .sort();
+      const tasks = files.map(f => {
+        const content = readFileSync(join(EXPORT_DIR, f), "utf8");
+        const scoreMatch = content.match(/^score:\s*(\d+)/m);
+        const priorityMatch = content.match(/^priority:\s*'?(\w+)/m);
+        const sourceMatch = content.match(/^source_plan:\s*'(.+)'/m);
+        const personaMatch = content.match(/^source_persona:\s*'(.+)'/m);
+        const titleMatch = content.match(/^#\s+(.+)$/m);
+        return {
+          file: f,
+          title: titleMatch ? titleMatch[1].replace(/^Build Task:\s*/i, "").trim() : f,
+          score: scoreMatch ? Number(scoreMatch[1]) : 0,
+          priority: priorityMatch ? priorityMatch[1] : "medium",
+          source_plan: sourceMatch ? sourceMatch[1] : "",
+          source_persona: personaMatch ? personaMatch[1] : "",
+        };
+      });
+      sendJson(res, 200, { tasks, count: tasks.length });
+      return;
+    }
+
+    if (req.method === "POST" && path === "/api/claim-task") {
+      const task = claimNextTask();
+      if (!task) {
+        sendJson(res, 200, { claimed: false, message: "No tasks available" });
+        return;
+      }
+      sendJson(res, 200, { claimed: true, ...task });
+      return;
+    }
+
+    if (req.method === "POST" && path === "/api/complete-claimed") {
+      const body = JSON.parse(await readBody(req, res));
+      const sourcePlan = body.source_plan;
+      if (!sourcePlan) { sendJson(res, 400, { error: "Missing source_plan" }); return; }
+      const ok = completeClaimedTask(sourcePlan);
+      sendJson(res, 200, { completed: ok, source_plan: sourcePlan });
+      return;
+    }
+
+    if (req.method === "POST" && path === "/api/export-now") {
+      runAutoExport();
+      sendJson(res, 200, { status: "ok", stats: getExportStats() });
+      return;
+    }
+
     sendJson(res, 404, { error: "Not found" });
   } catch (err) {
     sendJson(res, 500, { error: err.message || "Import failed" });
@@ -5217,6 +5509,7 @@ server.listen(port, host, () => {
   startOvernightScheduler();
   startDriftDetection();
   startAutoArchive();
+  startAutoExport();
   emitRuntimeEvent("state:update", "3977.server", {
     action: "server_listening",
     host,
@@ -5264,6 +5557,7 @@ function gracefulShutdown(signal) {
   if (overnightInterval) clearInterval(overnightInterval);
   if (driftInterval) clearInterval(driftInterval);
   if (autoArchiveInterval) clearInterval(autoArchiveInterval);
+  if (autoExportInterval) clearInterval(autoExportInterval);
   // Close SSE clients
   for (const client of runtimeClients) {
     try { client.end(); } catch {}
