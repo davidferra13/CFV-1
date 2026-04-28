@@ -49,8 +49,8 @@ import {
 import {
   draftCampaignConcept,
   generateAllDrafts,
-  type CampaignConceptDraft,
 } from '@/lib/ai/campaign-outreach'
+import type { CampaignConceptDraft } from '@/lib/ai/campaign-outreach-types'
 import type { PushDinnerRecipient } from '@/lib/campaigns/push-dinner-actions'
 import { getMenus } from '@/lib/menus/actions'
 

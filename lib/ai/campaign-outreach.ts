@@ -3,7 +3,7 @@
 // Campaign Outreach AI
 //
 // Two routing paths:
-//   1. draftCampaignConcept() → GEMINI (public marketing copy, no PII)
+//   1. draftCampaignConcept() → OLLAMA (public marketing copy, no PII)
 //      Writes the dinner's public-facing pitch (hook, description, CTA).
 //
 //   2. draftPersonalizedOutreach() → OLLAMA (private data)
@@ -21,6 +21,11 @@ import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 import { format } from 'date-fns'
 import { dateToDateString } from '@/lib/utils/format'
+import type {
+  CampaignConceptDraft,
+  GenerateAllResult,
+  PersonalizedDraft,
+} from './campaign-outreach-types'
 
 // ============================================================
 // 1. OLLAMA - CAMPAIGN CONCEPT COPY (no client PII)
@@ -31,13 +36,6 @@ const CampaignConceptSchema = z.object({
   description: z.string(),
   callToAction: z.string(),
 })
-
-export interface CampaignConceptDraft {
-  hook: string
-  description: string
-  callToAction: string
-  generatedAt: string
-}
 
 export async function draftCampaignConcept(input: {
   occasion: string
@@ -97,9 +95,65 @@ const OutreachSchema = z.object({
   body: z.string().min(10),
 })
 
-export interface PersonalizedDraft {
-  subject: string
-  body: string
+type ClientOutreachProfile = {
+  full_name: string | null
+  dietary_restrictions: string[] | null
+  allergies: string[] | null
+  vibe_notes: string | null
+  last_event_date: string | null
+  favorite_cuisines: string[] | null
+  dislikes: string[] | null
+}
+
+type PastClientEvent = {
+  occasion: string | null
+  event_date: string
+  service_style: string | null
+  guest_count: number | null
+}
+
+type CampaignRecipientContext = {
+  id: string
+  client_id: string | null
+  campaign_id: string
+  email: string
+}
+
+function cleanList(value: unknown): string[] {
+  return Array.isArray(value)
+    ? value.map((item) => String(item).trim()).filter(Boolean)
+    : []
+}
+
+function buildPreferenceLines(client: ClientOutreachProfile): string[] {
+  const lines: string[] = []
+  const dietary = cleanList(client.dietary_restrictions)
+  const allergies = cleanList(client.allergies)
+  const favorites = cleanList(client.favorite_cuisines)
+  const dislikes = cleanList(client.dislikes)
+
+  if (dietary.length) lines.push(`Known dietary preferences: ${dietary.join(', ')}`)
+  if (allergies.length) lines.push(`Known allergies to respect: ${allergies.join(', ')}`)
+  if (favorites.length) lines.push(`Favorite cuisines: ${favorites.join(', ')}`)
+  if (dislikes.length) lines.push(`Known dislikes: ${dislikes.join(', ')}`)
+  if (client.vibe_notes) lines.push(`Relationship notes: ${client.vibe_notes}`)
+
+  return lines.length ? lines : ['No recorded preferences for this recipient.']
+}
+
+function buildPastEventLines(events: PastClientEvent[]): string[] {
+  if (!events.length) return ['No recorded past events with this client.']
+
+  return events.map((event, index) => {
+    const parts = [
+      event.occasion || 'private event',
+      `on ${event.event_date}`,
+      event.service_style ? `style: ${event.service_style}` : '',
+      event.guest_count ? `${event.guest_count} guests` : '',
+    ].filter(Boolean)
+
+    return `Past event ${index + 1}: ${parts.join(', ')}`
+  })
 }
 
 /**
@@ -116,49 +170,66 @@ export async function draftPersonalizedOutreach(recipientId: string): Promise<Pe
   // 1. Load recipient → client → campaign
   const { data: recipient } = await db
     .from('campaign_recipients')
-    .select('id, client_id, campaign_id')
+    .select('id, client_id, campaign_id, email')
     .eq('id', recipientId)
     .eq('chef_id', chef.entityId)
     .single()
 
   if (!recipient) throw new Error('Recipient not found')
+  const recipientContext = recipient as CampaignRecipientContext
 
-  const [clientResult, campaignResult, chefResult] = await Promise.all([
-    db
-      .from('clients')
-      .select(
-        'full_name, dietary_restrictions, allergies, vibe_notes, last_event_date, favorite_cuisines, dislikes'
-      )
-      .eq('id', recipient.client_id)
-      .single(),
+  const [campaignResult, chefResult] = await Promise.all([
     db
       .from('marketing_campaigns')
       .select(
         'name, occasion, proposed_date, proposed_time, price_per_person_cents, concept_description, guest_count_max'
       )
-      .eq('id', recipient.campaign_id)
+      .eq('id', recipientContext.campaign_id)
+      .eq('chef_id', chef.entityId)
       .single(),
     db.from('chefs').select('full_name, business_name').eq('id', chef.entityId).single(),
   ])
 
-  const client = clientResult.data
   const campaign = campaignResult.data
   const chefData = chefResult.data
 
-  if (!client || !campaign) throw new Error('Data not found')
+  if (!campaign) throw new Error('Data not found')
 
-  // Fetch last event for context
-  const { data: lastEvent } = await db
-    .from('events')
-    .select('occasion, event_date, service_style')
-    .eq('tenant_id', chef.tenantId!)
-    .eq('client_id', recipient.client_id)
-    .not('status', 'in', '("cancelled","draft")')
-    .order('event_date', { ascending: false })
-    .limit(1)
-    .maybeSingle()
+  let client: ClientOutreachProfile | null = null
+  if (recipientContext.client_id) {
+    const { data: clientData, error: clientError } = await db
+      .from('clients')
+      .select(
+        'full_name, dietary_restrictions, allergies, vibe_notes, last_event_date, favorite_cuisines, dislikes'
+      )
+      .eq('id', recipientContext.client_id)
+      .eq('tenant_id', chef.tenantId!)
+      .maybeSingle()
 
-  const clientFirstName = (client.full_name ?? '').split(' ')[0] || 'there'
+    if (clientError) {
+      console.warn('[campaign-outreach] Failed to load client profile', {
+        recipientId,
+        clientId: recipientContext.client_id,
+        error: clientError.message,
+      })
+    }
+    client = clientData as ClientOutreachProfile | null
+  }
+
+  // Fetch recent real event history for context.
+  const { data: pastEvents } = recipientContext.client_id
+    ? await db
+        .from('events')
+        .select('occasion, event_date, service_style, guest_count')
+        .eq('tenant_id', chef.tenantId!)
+        .eq('client_id', recipientContext.client_id)
+        .not('status', 'in', '("cancelled","draft")')
+        .order('event_date', { ascending: false })
+        .limit(3)
+    : { data: [] }
+
+  const emailName = recipientContext.email.split('@')[0]?.replace(/[._-]+/g, ' ')
+  const clientFirstName = (client?.full_name ?? '').split(' ')[0] || emailName || 'there'
   const chefName = chefData?.full_name ?? 'Your Chef'
   const priceDisplay = campaign.price_per_person_cents
     ? `$${Math.round(campaign.price_per_person_cents / 100)} per person`
@@ -176,21 +247,18 @@ You know this client well. The message should feel like a personal note from a f
 Write in first person. One short paragraph or two at most. 120-160 words maximum.
 End with a natural sign-off - just your first name, nothing formal.
 No exclamation points. No "I hope this email finds you well." No bullet points.
+Use only the history and preferences supplied. If details are missing, stay general instead of inventing them.
 Return ONLY valid JSON: { "subject": "...", "body": "..." }`
 
   const userContent = [
     `Chef name: ${chefName}`,
     `Client first name: ${clientFirstName}`,
-    lastEvent
-      ? `Last event I cooked for them: ${lastEvent.occasion} on ${lastEvent.event_date}`
-      : 'This is a new client.',
-    client.dietary_restrictions?.length
-      ? `Their dietary restrictions: ${client.dietary_restrictions.join(', ')}`
-      : '',
-    client.favorite_cuisines?.length
-      ? `Their favorite cuisines: ${client.favorite_cuisines.join(', ')}`
-      : '',
-    client.vibe_notes ? `Notes on their personality: ${client.vibe_notes}` : '',
+    '',
+    `CLIENT HISTORY:`,
+    ...buildPastEventLines((pastEvents ?? []) as PastClientEvent[]),
+    '',
+    `CLIENT PREFERENCES:`,
+    ...(client ? buildPreferenceLines(client) : ['No recorded preferences for this recipient.']),
     '',
     `DINNER DETAILS:`,
     `Name: ${campaign.name}`,
@@ -201,7 +269,10 @@ Return ONLY valid JSON: { "subject": "...", "body": "..." }`
     campaign.concept_description ? `Description: ${campaign.concept_description}` : '',
     '',
     'Write a subject line and personal email body inviting this specific client to this dinner.',
-    'Reference the past event if there was one. Make it feel genuine and personal.',
+    'Reference one past event only if it is useful. Use dietary and preference details as quiet care, not as a checklist.',
+    campaign.guest_count_max
+      ? `Make the invitation feel genuinely limited without pressure. There are only ${campaign.guest_count_max} seats.`
+      : 'Make the invitation feel considered and personal without pretending there is a hard seat limit.',
     'Do NOT say "I am writing to invite you" - just dive in naturally.',
   ]
     .filter(Boolean)
@@ -218,10 +289,16 @@ Return ONLY valid JSON: { "subject": "...", "body": "..." }`
   }
 
   // Store draft in campaign_recipients
-  await db
+  const { error: updateError } = await db
     .from('campaign_recipients')
     .update({ draft_subject: draft.subject, draft_body: draft.body })
     .eq('id', recipientId)
+    .eq('chef_id', chef.entityId)
+
+  if (updateError) {
+    console.error('[campaign-outreach] Failed to store outreach draft', updateError)
+    throw new Error('Failed to store outreach draft')
+  }
 
   return draft
 }
@@ -229,12 +306,6 @@ Return ONLY valid JSON: { "subject": "...", "body": "..." }`
 // ============================================================
 // 3. GENERATE ALL DRAFTS (batches over all recipients)
 // ============================================================
-
-export type GenerateAllResult = {
-  generated: number
-  failed: number
-  ollamaOffline: boolean
-}
 
 export async function generateAllDrafts(campaignId: string): Promise<GenerateAllResult> {
   const chef = await requireChef()
