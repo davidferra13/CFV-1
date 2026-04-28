@@ -9,7 +9,7 @@ import { listInvoices } from '@/lib/vendors/invoice-actions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { VendorForm } from '@/components/vendors/vendor-form'
+import { VendorFormWrapper } from '@/components/vendors/vendor-form-wrapper'
 import { VendorPriceList } from '@/components/vendors/vendor-price-list'
 import { VendorCatalogReviewQueue } from '@/components/vendors/vendor-catalog-review-queue'
 import { listVendorCatalogQueue } from '@/lib/vendors/catalog-import-actions'
@@ -152,7 +152,7 @@ export default async function VendorDetailPage({ params }: { params: Promise<{ i
               Edit Vendor Info
             </summary>
             <div className="mt-3">
-              <VendorForm {...({ vendor } as any)} />
+              <VendorFormWrapper vendor={vendor} />
             </div>
           </details>
         </CardContent>

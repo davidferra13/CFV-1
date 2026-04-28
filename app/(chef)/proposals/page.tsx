@@ -90,8 +90,8 @@ export default async function ProposalsPage() {
                     <p className="text-sm text-stone-500 line-clamp-2">{template.description}</p>
                   )}
                   <p className="text-xs text-stone-400 mt-2">
-                    {template.updated_at
-                      ? `Updated ${new Date(template.updated_at).toLocaleDateString()}`
+                    {template.updatedAt
+                      ? `Updated ${new Date(template.updatedAt).toLocaleDateString()}`
                       : 'Draft'}
                   </p>
                 </Card>

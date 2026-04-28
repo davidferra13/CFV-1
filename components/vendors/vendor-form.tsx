@@ -33,7 +33,7 @@ type VendorFormProps = {
     rating: number | null
   }
   onSaved: () => void
-  onCancel: () => void
+  onCancel?: () => void
 }
 
 export function VendorForm({ vendor, onSaved, onCancel }: VendorFormProps) {
@@ -289,9 +289,11 @@ export function VendorForm({ vendor, onSaved, onCancel }: VendorFormProps) {
           <Button type="submit" variant="primary" disabled={isPending}>
             {isPending ? 'Saving...' : isEditing ? 'Save Changes' : 'Add Vendor'}
           </Button>
-          <Button type="button" variant="ghost" onClick={onCancel} disabled={isPending}>
-            Cancel
-          </Button>
+          {onCancel && (
+            <Button type="button" variant="ghost" onClick={onCancel} disabled={isPending}>
+              Cancel
+            </Button>
+          )}
         </div>
       </form>
     </FormShield>

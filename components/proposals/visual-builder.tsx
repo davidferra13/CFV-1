@@ -44,7 +44,7 @@ export function VisualBuilder({ templates, menus }: Props) {
           description: form.description || undefined,
           defaultMenuId: form.defaultMenuId || undefined,
           basePriceCents: form.basePriceCents,
-          includedServices: services as unknown as Record<string, unknown>,
+          includedServices: services,
         })
         setItems((prev) => [...prev, created])
         setShowCreate(false)

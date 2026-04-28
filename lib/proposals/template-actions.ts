@@ -15,7 +15,7 @@ export type ProposalTemplate = {
   description: string | null
   defaultMenuId: string | null
   basePriceCents: number
-  includedServices: Record<string, unknown> | null
+  includedServices: string[] | Record<string, unknown> | null
   createdAt: string
   updatedAt: string
 }
@@ -28,7 +28,9 @@ const CreateTemplateSchema = z.object({
   description: z.string().optional(),
   defaultMenuId: z.string().uuid().optional(),
   basePriceCents: z.number().int().min(0),
-  includedServices: z.record(z.string(), z.unknown()).optional(),
+  includedServices: z
+    .union([z.array(z.string().min(1)), z.record(z.string(), z.unknown())])
+    .optional(),
 })
 
 // ─── Actions ─────────────────────────────────────────────────────
