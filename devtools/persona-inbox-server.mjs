@@ -2203,11 +2203,20 @@ function page() {
     .pill { display: inline-flex; align-items: center; gap: 6px; height: 24px; border: 1px solid #c7c0b4; border-radius: 999px; padding: 0 9px; font-size: 12px; background: #fffdf8; }
     .dot { width: 8px; height: 8px; border-radius: 999px; background: #10b981; }
     .dot.offline { background: #b45309; }
-    .preview-list, .history-list { display: grid; gap: 8px; }
+    .preview-list, .history-list, .recent-activity-list { display: grid; gap: 8px; }
     .preview-item, .history-item { border: 1px solid #d4cec2; border-radius: 8px; background: #fffdf8; padding: 10px; }
     .preview-head, .history-head { display: flex; gap: 8px; align-items: center; justify-content: space-between; }
     .preview-controls { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 8px; margin-top: 8px; }
     .preview-controls input { width: 100%; box-sizing: border-box; }
+    .import-side { display: grid; gap: 10px; }
+    .recent-activity-panel h2 { margin-bottom: 4px; }
+    .recent-activity-list { max-height: 240px; overflow-y: auto; }
+    .recent-activity-item { border: 1px solid #d4cec2; border-radius: 8px; background: #fffdf8; padding: 10px; }
+    .recent-activity-item.duplicate { border-color: #d97706; background: #fff7ed; }
+    .recent-activity-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+    .recent-activity-kind { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; color: #374151; }
+    .recent-activity-snippet { font: 12px/1.45 ui-monospace, SFMono-Regular, Consolas, monospace; color: #374151; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .duplicate-note { color: #92400e; font-size: 12px; font-weight: 600; margin-top: 6px; }
     .muted { color: #6b7280; font-size: 12px; }
     .warn { color: #92400e; font-size: 12px; margin-top: 6px; }
     .status-badge { border-radius: 999px; padding: 3px 8px; font-size: 12px; background: #e5e7eb; color: #1f2937; white-space: nowrap; }
@@ -2432,9 +2441,12 @@ function page() {
     .time-ago { font-size: 11px; color: #9ca3af; }
     html.dark-mode {
       body { background: #121416; color: #f4f1e8; }
-      button.secondary, select, input, textarea, .panel, .preview-item, .history-item, .pill { background: #1f2429; color: #f4f1e8; border-color: #59616b; }
+      button.secondary, select, input, textarea, .panel, .preview-item, .history-item, .recent-activity-item, .pill { background: #1f2429; color: #f4f1e8; border-color: #59616b; }
       button { background: #f4f1e8; color: #121416; border-color: #f4f1e8; }
       .sub, .status, .muted, pre, .empty, .stat-label, .bar-label { color: #c6c0b7; }
+      .recent-activity-kind, .recent-activity-snippet { color: #f4f1e8; }
+      .recent-activity-item.duplicate { border-color: #d97706; background: #2a2118; }
+      .duplicate-note { color: #fbbf24; }
       code { background: rgba(244, 241, 232, 0.12); }
       .status-badge { background: #374151; color: #f9fafb; }
       .score-red { color: #ef4444; }
@@ -2628,9 +2640,16 @@ function page() {
         <textarea id="text" class="drop-zone" spellcheck="false" placeholder="Paste anything: personas, ideas, bugs, features, notes, critiques... (or drag files here)"></textarea>
         <p class="sub">Personas: use <code>--- persona: Chef: Name ---</code> markers or <code>Client: Name</code> headings. Everything else auto-classifies.</p>
       </section>
-      <aside class="panel">
-        <h2>Preview</h2>
-        <div id="preview" class="preview-list"><div class="empty">Preview a paste before importing.</div></div>
+      <aside class="import-side">
+        <div class="panel">
+          <h2>Preview</h2>
+          <div id="preview" class="preview-list"><div class="empty">Preview a paste before importing.</div></div>
+        </div>
+        <div class="panel recent-activity-panel">
+          <h2>Recent activity</h2>
+          <p class="sub" style="margin:0 0 10px">Last pasted or submitted intake.</p>
+          <div id="recentActivity" class="recent-activity-list"><div class="empty">Nothing pasted yet.</div></div>
+        </div>
       </aside>
     </div>
 
@@ -2925,6 +2944,7 @@ function page() {
     const inputTypeEl = $('inputType');
     const text = $('text'), statusEl = $('status'), type = $('type'), mode = $('mode');
     const previewEl = $('preview'), historyEl = $('history'), logEl = $('log');
+    const recentActivityEl = $('recentActivity');
     const netText = $('netText');
     const findingsEl = $('findings'), personasEl = $('personas'), buildQueueEl = $('buildQueue');
     const pipelineSection = $('pipelineSection'), pipelineLog = $('pipelineLog');
@@ -2933,6 +2953,8 @@ function page() {
     const runtimeCountEl = $('runtimeCount'), runtimeTypeFilter = $('runtimeTypeFilter');
     const toggleLogBtn = $('toggleLog');
     let currentPreview = [], previewText = '', wasRunning = false, logUserToggled = false;
+    let recentActivity = [];
+    const RECENT_ACTIVITY_KEY = 'persona-inbox-recent-activity-v1';
     let scoreHistoryData = [], allTaskData = [], taskCompletedCount = 0, currentTaskFilter = 'ALL';
     let runtimeEventSource = null, runtimeEvents = [], prevRunning = false;
     const buildCountEl = $('buildCount');
@@ -2979,6 +3001,73 @@ function page() {
       currentPreview = result.entries;
       renderPreview();
       return result.entries;
+    }
+
+    function activityKey(value) {
+      const normalized = String(value || '').trim().replace(/\\s+/g, ' ').toLowerCase();
+      if (!normalized) return '';
+      return normalized.length + ':' + normalized.slice(0, 900);
+    }
+
+    function activityExcerpt(value) {
+      const compact = String(value || '').trim().replace(/\\s+/g, ' ');
+      return compact.length > 220 ? compact.slice(0, 217) + '...' : compact;
+    }
+
+    function loadRecentActivity() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(RECENT_ACTIVITY_KEY) || '[]');
+        recentActivity = Array.isArray(saved) ? saved.slice(0, 5) : [];
+      } catch {
+        recentActivity = [];
+      }
+      renderRecentActivity();
+    }
+
+    function saveRecentActivity() {
+      try { localStorage.setItem(RECENT_ACTIVITY_KEY, JSON.stringify(recentActivity.slice(0, 5))); }
+      catch {}
+    }
+
+    function recordRecentActivity(kind, content, meta = {}) {
+      const key = activityKey(content);
+      if (!key) return;
+      const duplicate = recentActivity.some(item => item.key === key);
+      recentActivity = [{
+        id: Date.now() + '-' + Math.random().toString(36).slice(2),
+        kind,
+        inputType: meta.inputType || '',
+        label: meta.label || '',
+        chars: String(content || '').length,
+        excerpt: activityExcerpt(content),
+        key,
+        duplicate,
+        createdAt: new Date().toISOString(),
+      }, ...recentActivity].slice(0, 5);
+      saveRecentActivity();
+      renderRecentActivity();
+    }
+
+    function renderRecentActivity() {
+      if (!recentActivityEl) return;
+      if (!recentActivity.length) {
+        recentActivityEl.innerHTML = '<div class="empty">Nothing pasted yet.</div>';
+        return;
+      }
+      recentActivityEl.innerHTML = recentActivity.map(item => {
+        const kind = item.kind === 'submitted' ? 'Submitted' : 'Pasted';
+        const meta = [
+          item.inputType ? esc(item.inputType) : '',
+          item.label ? esc(item.label) : '',
+          item.chars ? esc(item.chars + ' chars') : '',
+        ].filter(Boolean).join(' | ');
+        return '<div class="recent-activity-item' + (item.duplicate ? ' duplicate' : '') + '">' +
+          '<div class="recent-activity-head"><span class="recent-activity-kind">' + kind + '</span><span class="time-ago">' + esc(timeAgo(item.createdAt)) + '</span></div>' +
+          (meta ? '<div class="muted" style="margin-bottom:6px">' + meta + '</div>' : '') +
+          '<div class="recent-activity-snippet">' + esc(item.excerpt) + '</div>' +
+          (item.duplicate ? '<div class="duplicate-note">Matches a recent item.</div>' : '') +
+          '</div>';
+      }).join('');
     }
 
     function renderPreview() {
@@ -3651,30 +3740,46 @@ function page() {
       return { result: stateRes, summary };
     }
 
+    loadRecentActivity();
+
     /* --- Event Handlers --- */
     $('paste').onclick = async () => {
-      try { text.value = await navigator.clipboard.readText(); statusEl.textContent = 'Clipboard pasted.'; await buildPreview(); }
+      try {
+        text.value = await navigator.clipboard.readText();
+        recordRecentActivity('pasted', text.value, { inputType: inputTypeEl.value === 'auto' ? 'auto-detect' : inputTypeEl.value });
+        statusEl.textContent = 'Clipboard pasted.';
+        await buildPreview();
+      }
       catch { statusEl.textContent = 'Browser blocked clipboard. Use Ctrl+V.'; }
     };
+    text.addEventListener('paste', (event) => {
+      const pastedText = event.clipboardData?.getData('text') || '';
+      setTimeout(() => {
+        recordRecentActivity('pasted', pastedText || text.value, { inputType: inputTypeEl.value === 'auto' ? 'auto-detect' : inputTypeEl.value });
+      }, 0);
+    });
     $('previewBtn').onclick = async () => { try { await buildPreview(); } catch(e) { statusEl.textContent = e.message; } };
     $('importBtn').onclick = async () => {
       try {
+        const submittedText = text.value;
         const selectedInputType = inputTypeEl.value;
         const detectedType = selectedInputType === 'auto' ? null : selectedInputType;
         if (detectedType && detectedType !== 'persona') {
           // Route to universal intake
           const result = await postJson('/api/intake-submit', {
-            content: text.value,
+            content: submittedText,
             inputType: detectedType,
-            title: text.value.split('\\n')[0].slice(0, 80).replace(/^#+\\s*/, ''),
+            title: submittedText.split('\\n')[0].slice(0, 80).replace(/^#+\\s*/, ''),
           });
+          recordRecentActivity('submitted', submittedText, { inputType: result.inputType, label: result.title });
           text.value = ''; currentPreview = []; renderPreview();
           const refreshed = await refreshState({ preserveStatus: true });
           statusEl.textContent = 'Saved ' + result.inputType + ': ' + esc(result.title) + (result.expanding ? ' (AI expanding...)' : '');
         } else {
           let entries = currentPreview;
-          if (!entries.length || previewText !== text.value) entries = await buildPreview();
-          const result = await postJson('/import', { text: text.value, defaultType: type.value, mode: mode.value, entries });
+          if (!entries.length || previewText !== submittedText) entries = await buildPreview();
+          const result = await postJson('/import', { text: submittedText, defaultType: type.value, mode: mode.value, entries });
+          recordRecentActivity('submitted', submittedText, { inputType: 'persona', label: result.created.length + ' file(s)' });
           text.value = ''; currentPreview = []; renderPreview();
           const refreshed = await refreshState({ preserveStatus: true });
           statusEl.textContent = 'Imported ' + result.created.length + ' file(s). ' + result.pipeline + '. ' + (refreshed?.summary || '');
