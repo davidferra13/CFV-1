@@ -34,11 +34,14 @@ test('gather route records stop-calling requests as durable call state', () => {
   const src = readFileSync(GATHER_ROUTE, 'utf8')
 
   assert.match(src, /AI_CALL_OPT_OUT_ACTION = 'ai_call_opt_out_requested'/)
-  assert.match(src, /hasAiCallOptOutRequest/)
+  assert.match(src, /has(?:AiCall|VoiceAgent)OptOutRequest/)
   assert.match(src, /handleAiCallOptOut/)
   assert.match(src, /Contact requested no AI assistant calls/)
 
-  const optOutDispatch = src.indexOf('hasAiCallOptOutRequest(speech)')
+  const optOutDispatch = Math.max(
+    src.indexOf('hasAiCallOptOutRequest(speech)'),
+    src.indexOf('hasVoiceAgentOptOutRequest(speech)')
+  )
   const normalDispatch = src.indexOf("if (role === 'vendor_delivery')")
   assert.ok(
     optOutDispatch > -1 && normalDispatch > -1 && optOutDispatch < normalDispatch,

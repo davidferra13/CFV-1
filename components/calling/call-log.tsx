@@ -67,6 +67,15 @@ interface AffectiveAnalysis {
   }>
 }
 
+interface VoiceAgentDecision {
+  type: string
+  category: string
+  answer: string
+  followUpPrompt: string
+  escalationReason: string | null
+  allowedToAnswer: boolean
+}
+
 interface Props {
   calls: SupplierCall[]
   aiCalls: AiCall[]
@@ -131,7 +140,8 @@ function fmtDuration(secs?: number | null) {
 
 function ExtractedData({ data }: { data: Record<string, any> }) {
   const entries = Object.entries(data).filter(
-    ([key, v]) => key !== 'affective_analysis' && v != null && v !== ''
+    ([key, v]) =>
+      !['affective_analysis', 'voice_agent_decision'].includes(key) && v != null && v !== ''
   )
   if (entries.length === 0) return null
 
@@ -160,6 +170,13 @@ function getAffectiveAnalysis(data?: Record<string, any> | null): AffectiveAnaly
   if (!analysis || typeof analysis !== 'object') return null
   if (!Array.isArray(analysis.signals)) return null
   return analysis as AffectiveAnalysis
+}
+
+function getVoiceAgentDecision(data?: Record<string, any> | null): VoiceAgentDecision | null {
+  const decision = data?.voice_agent_decision
+  if (!decision || typeof decision !== 'object') return null
+  if (typeof decision.answer !== 'string') return null
+  return decision as VoiceAgentDecision
 }
 
 function riskClass(riskLevel: AffectiveAnalysis['risk_level']) {
@@ -199,6 +216,30 @@ function AffectiveSignalPanel({ analysis }: { analysis: AffectiveAnalysis }) {
           {analysis.guardrail && <p className="text-[10px] opacity-70">{analysis.guardrail}</p>}
         </div>
       </div>
+    </div>
+  )
+}
+
+function VoiceAgentDecisionPanel({ decision }: { decision: VoiceAgentDecision }) {
+  return (
+    <div className="rounded-lg border border-stone-700 bg-stone-800 p-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-xs font-semibold uppercase tracking-wide text-stone-300">
+          Voice agent
+        </span>
+        <span className="rounded border border-stone-600 px-1.5 py-0.5 text-[10px] uppercase text-stone-400">
+          {decision.category}
+        </span>
+        <span className="rounded border border-stone-600 px-1.5 py-0.5 text-[10px] uppercase text-stone-400">
+          {decision.type}
+        </span>
+      </div>
+      <p className="mt-2 text-xs leading-relaxed text-stone-300">{decision.answer}</p>
+      {decision.escalationReason && (
+        <p className="mt-1 text-[10px] leading-relaxed text-stone-500">
+          Escalation: {decision.escalationReason}
+        </p>
+      )}
     </div>
   )
 }
@@ -322,6 +363,7 @@ function CallRow({ item }: { item: UnifiedCall }) {
   // ai_calls row
   const c = item.data
   const affectiveAnalysis = getAffectiveAnalysis(c.extracted_data)
+  const voiceAgentDecision = getVoiceAgentDecision(c.extracted_data)
   const hasDetail = c.full_transcript || c.extracted_data || c.recording_url
   const isInbound = c.direction === 'inbound'
 
@@ -402,6 +444,8 @@ function CallRow({ item }: { item: UnifiedCall }) {
           </div>
 
           {affectiveAnalysis && <AffectiveSignalPanel analysis={affectiveAnalysis} />}
+
+          {voiceAgentDecision && <VoiceAgentDecisionPanel decision={voiceAgentDecision} />}
 
           {c.extracted_data && <ExtractedData data={c.extracted_data} />}
 

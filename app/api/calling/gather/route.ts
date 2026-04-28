@@ -26,8 +26,13 @@ import {
   buildDeliveryStep2Twiml,
   buildVenueStep2Twiml,
   DEFAULT_VOICE,
+  sayElement,
 } from '@/lib/calling/voice-helpers'
 import { analyzeVoiceAffect } from '@/lib/affective/voice-affect'
+import {
+  hasVoiceAgentOptOutRequest,
+  resolveVoiceAgentTurn,
+} from '@/lib/calling/voice-agent-contract'
 
 // Q51: Strip trailing slash - same vulnerability as Q50 in twilio-webhook-auth.
 // Trailing slash on NEXTAUTH_URL produces double-slash callback URLs that break
@@ -80,24 +85,6 @@ const NO_WORDS = [
   'none left',
 ]
 const AI_CALL_OPT_OUT_ACTION = 'ai_call_opt_out_requested'
-const AI_CALL_OPT_OUT_PHRASES = [
-  'stop calling',
-  'do not call',
-  "don't call",
-  'dont call',
-  'take me off',
-  'take us off',
-  'remove me',
-  'remove us',
-  'no ai calls',
-  'no automated calls',
-]
-
-function hasAiCallOptOutRequest(speech: string | null): boolean {
-  if (!speech) return false
-  const lower = speech.toLowerCase()
-  return AI_CALL_OPT_OUT_PHRASES.some((phrase) => lower.includes(phrase))
-}
 
 function isOutboundCallRole(role: string): boolean {
   return [
@@ -422,6 +409,23 @@ function affectiveAnalysisData(params: {
   }
 }
 
+function buildInboundUnknownFollowUpTwiml(
+  answer: string,
+  followUpPrompt: string,
+  gatherActionUrl: string
+): NextResponse {
+  const safeGatherActionUrl = gatherActionUrl.replace(/&/g, '&amp;')
+  return twimlResponse(`<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  ${sayElement([answer, { type: 'break', ms: 350 }, followUpPrompt], DEFAULT_VOICE)}
+  <Gather input="speech" timeout="20" speechTimeout="auto" action="${safeGatherActionUrl}" method="POST" enhanced="true">
+    ${sayElement("Go ahead whenever you're ready.", DEFAULT_VOICE)}
+  </Gather>
+  ${sayElement("Sorry, I missed that. I'll note the call and have the chef follow up if needed.", DEFAULT_VOICE)}
+  <Hangup/>
+</Response>`)
+}
+
 // ---------------------------------------------------------------------------
 // Route handler
 // ---------------------------------------------------------------------------
@@ -447,7 +451,7 @@ export async function POST(req: NextRequest) {
 
   const db: any = createAdminClient()
 
-  if (speech && isOutboundCallRole(role) && hasAiCallOptOutRequest(speech)) {
+  if (speech && isOutboundCallRole(role) && hasVoiceAgentOptOutRequest(speech)) {
     return handleAiCallOptOut({ db, callId, aiCallId, role, speech, confidence })
   }
 
@@ -457,7 +461,7 @@ export async function POST(req: NextRequest) {
     return handleVenueConfirmation(db, aiCallId, step, speech, digits, confidence)
   if (role === 'inbound_vendor_callback')
     return handleInboundVendorCallback(db, aiCallId, step, speech, digits, confidence)
-  if (role === 'inbound_unknown') return handleInboundUnknown(db, aiCallId, speech)
+  if (role === 'inbound_unknown') return handleInboundUnknown(db, aiCallId, speech, step)
 
   // Default: vendor_availability
   return handleVendorAvailability(db, callId, aiCallId, step, speech, digits, confidence, retry)
@@ -1245,26 +1249,62 @@ async function handleInboundVendorCallback(
 async function handleInboundUnknown(
   db: any,
   aiCallId: string | null,
-  speech: string | null
+  speech: string | null,
+  step: number
 ): Promise<NextResponse> {
   if (aiCallId && speech) {
-    await logTranscript(db, aiCallId, 1, 'caller', speech, 'speech', null)
+    await logTranscript(db, aiCallId, step, 'caller', speech, 'speech', null)
+
+    const decision = resolveVoiceAgentTurn({
+      utterance: speech,
+      role: 'inbound_unknown',
+    })
 
     const { data: aiCall } = await db
       .from('ai_calls')
-      .select('chef_id, contact_phone, contact_name')
+      .select('chef_id, contact_phone, contact_name, full_transcript, extracted_data, action_log')
       .eq('id', aiCallId)
       .single()
+
+    const previousTranscript =
+      typeof aiCall?.full_transcript === 'string' && aiCall.full_transcript.trim()
+        ? aiCall.full_transcript.trim()
+        : null
+    const fullTranscript = previousTranscript ? `${previousTranscript}\n${speech}` : speech
+    const existingData =
+      aiCall?.extracted_data && typeof aiCall.extracted_data === 'object'
+        ? aiCall.extracted_data
+        : {}
+    const nextStatus =
+      step === 1 && decision.type !== 'collect_message' && decision.type !== 'opt_out'
+        ? 'in_progress'
+        : 'completed'
+    const existingLog = Array.isArray(aiCall?.action_log) ? aiCall.action_log : []
 
     await db
       .from('ai_calls')
       .update({
-        status: 'completed',
-        full_transcript: speech,
+        status: nextStatus,
+        full_transcript: fullTranscript,
+        ...(decision.type === 'opt_out'
+          ? {
+              action_log: [
+                ...existingLog,
+                {
+                  action: AI_CALL_OPT_OUT_ACTION,
+                  at: new Date().toISOString(),
+                  role: 'inbound_unknown',
+                  evidence: speech.slice(0, 500),
+                },
+              ],
+            }
+          : {}),
         extracted_data: {
+          ...existingData,
           message: speech,
+          voice_agent_decision: decision,
           ...affectiveAnalysisData({
-            transcript: speech,
+            transcript: fullTranscript,
             role: 'inbound_unknown',
             direction: 'inbound',
           }),
@@ -1276,7 +1316,7 @@ async function handleInboundUnknown(
         console.error('[calling/gather] inbound_unknown transcript+status write failed:', err)
       })
 
-    if (aiCall) {
+    if (aiCall && nextStatus === 'completed') {
       // Surface message in quick notes so chef sees it without visiting Call Sheet
       const callerLabel = aiCall.contact_name || aiCall.contact_phone || 'Unknown caller'
       await db
@@ -1295,13 +1335,27 @@ async function handleInboundUnknown(
         await broadcast(`chef-${aiCall.chef_id}`, 'ai_call_result', {
           aiCallId,
           role: 'inbound_unknown',
-          status: 'completed',
+          status: nextStatus,
           callerPhone: aiCall.contact_phone,
           message: speech,
+          voiceAgentDecision: decision,
         })
       } catch (err) {
         console.error('[calling/gather] inbound_unknown broadcast failed:', err)
       }
+    }
+
+    if (step === 1 && decision.type !== 'collect_message' && decision.type !== 'opt_out') {
+      const gatherAction = `${APP_URL}/api/calling/gather?aiCallId=${encodeURIComponent(aiCallId)}&step=2&role=inbound_unknown`
+      return buildInboundUnknownFollowUpTwiml(
+        decision.answer,
+        decision.followUpPrompt,
+        gatherAction
+      )
+    }
+
+    if (decision.type === 'opt_out') {
+      return closingTwiml(decision.answer)
     }
   }
   return closingTwiml(
