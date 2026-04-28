@@ -63,6 +63,8 @@ export function ProposalPublicView({ proposal, shareToken }: ProposalPublicViewP
   const [declineReason, setDeclineReason] = useState('')
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null)
   const [feedbackType, setFeedbackType] = useState<'success' | 'error'>('success')
+  const [nextStepUrl, setNextStepUrl] = useState<string | null>(null)
+  const [nextStepLabel, setNextStepLabel] = useState<string | null>(null)
 
   const isTerminal =
     currentStatus === 'approved' || currentStatus === 'declined' || currentStatus === 'expired'
@@ -82,6 +84,8 @@ export function ProposalPublicView({ proposal, shareToken }: ProposalPublicViewP
         } else {
           setFeedbackType('success')
           setFeedbackMessage(result.message)
+          setNextStepUrl(result.nextStepUrl ?? null)
+          setNextStepLabel(result.nextStepLabel ?? null)
         }
       } catch {
         setCurrentStatus(previousStatus)
@@ -698,8 +702,18 @@ export function ProposalPublicView({ proposal, shareToken }: ProposalPublicViewP
             </svg>
             <h3 className="text-lg font-semibold text-green-300 mb-1">Proposal Approved</h3>
             <p className="text-sm text-stone-400">
-              Your chef has been notified and will follow up with next steps.
+              {nextStepUrl
+                ? 'Your date is moving forward. Continue to the secure client portal for the next step.'
+                : 'Your chef has been notified and will follow up with next steps.'}
             </p>
+            {nextStepUrl && (
+              <a
+                href={nextStepUrl}
+                className="mt-5 inline-flex items-center justify-center rounded-lg bg-green-500 px-4 py-2 text-sm font-semibold text-stone-950 transition-colors hover:bg-green-400"
+              >
+                {nextStepLabel || 'Open client portal'}
+              </a>
+            )}
           </div>
         )}
 

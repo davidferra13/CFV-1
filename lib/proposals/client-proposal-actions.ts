@@ -7,6 +7,8 @@ import { createServerClient } from '@/lib/db/server'
 import { createAdminClient } from '@/lib/db/admin'
 import { checkRateLimit } from '@/lib/rateLimit'
 import type { PublicReviewFeedResult } from '@/lib/reviews/public-actions'
+import { createClientPortalLinkForClient } from '@/lib/client-portal/actions'
+import { transitionEvent } from '@/lib/events/transitions'
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -114,6 +116,14 @@ type PublicProposalData = {
       sourceLabel: string
     }>
   }
+}
+
+type ProposalActionResult = {
+  success: boolean
+  message: string
+  nextStepUrl?: string
+  nextStepLabel?: string
+  eventAdvanced?: boolean
 }
 
 // ─── Schemas ─────────────────────────────────────────────────────
@@ -445,7 +455,7 @@ export async function getPublicProposal(shareToken: string): Promise<PublicPropo
 
 export async function approveProposal(
   shareToken: string
-): Promise<{ success: boolean; message: string }> {
+): Promise<ProposalActionResult> {
   try {
     await checkRateLimit(`proposal-approve:${shareToken.slice(0, 16)}`, 10, 60 * 60 * 1000)
   } catch {
@@ -489,6 +499,57 @@ export async function approveProposal(
     return { success: false, message: 'Failed to approve proposal. Please try again.' }
   }
 
+  let eventAdvanced = false
+  let nextStepUrl: string | undefined
+  let nextStepLabel: string | undefined
+
+  if (proposal.event_id) {
+    try {
+      const { data: event } = await db
+        .from('events')
+        .select('id, status')
+        .eq('id', proposal.event_id)
+        .eq('tenant_id', proposal.tenant_id)
+        .maybeSingle()
+
+      if (event?.status === 'proposed') {
+        await transitionEvent({
+          eventId: proposal.event_id,
+          toStatus: 'accepted',
+          systemTransition: true,
+          actorContext: {
+            id: '00000000-0000-0000-0000-000000000000',
+            role: 'system',
+            entityId: proposal.tenant_id,
+            tenantId: proposal.tenant_id,
+          },
+          metadata: {
+            source: 'public_proposal_approval',
+            proposal_id: proposal.id,
+          },
+        })
+        eventAdvanced = true
+      }
+    } catch (err) {
+      console.error('[approveProposal] Event transition failed (non-blocking):', err)
+    }
+  }
+
+  if (proposal.client_id && proposal.event_id) {
+    try {
+      const portalLink = await createClientPortalLinkForClient({
+        clientId: proposal.client_id,
+        tenantId: proposal.tenant_id,
+        path: eventAdvanced ? `/pay/${proposal.event_id}` : '',
+        db,
+      })
+      nextStepUrl = portalLink.url
+      nextStepLabel = eventAdvanced ? 'Continue to secure payment' : 'Open client portal'
+    } catch (err) {
+      console.error('[approveProposal] Client portal link failed (non-blocking):', err)
+    }
+  }
+
   // Notify the chef (non-blocking)
   try {
     const { createNotification } = await import('@/lib/notifications/actions')
@@ -508,12 +569,20 @@ export async function approveProposal(
     console.error('[approveProposal] Chef notification failed (non-blocking):', err)
   }
 
-  return { success: true, message: 'Proposal approved successfully!' }
+  return {
+    success: true,
+    message: nextStepUrl
+      ? 'Proposal approved. Continue to the next secure step when you are ready.'
+      : 'Proposal approved successfully!',
+    nextStepUrl,
+    nextStepLabel,
+    eventAdvanced,
+  }
 }
 
 export async function declineProposal(
   shareToken: string,
-  _reason?: string
+  reason?: string
 ): Promise<{ success: boolean; message: string }> {
   try {
     await checkRateLimit(`proposal-decline:${shareToken.slice(0, 16)}`, 10, 60 * 60 * 1000)
@@ -522,6 +591,7 @@ export async function declineProposal(
   }
 
   const db: any = createAdminClient()
+  const declineReason = typeof reason === 'string' ? reason.trim().slice(0, 1000) : ''
 
   const { data: proposal, error: fetchError } = await db
     .from('client_proposals')
@@ -561,17 +631,27 @@ export async function declineProposal(
       category: 'event',
       action: 'proposal_declined',
       title: 'Proposal declined',
-      body: `A client declined your proposal: ${proposal.title || 'Untitled'}`,
+      body: declineReason
+        ? `A client declined your proposal: ${proposal.title || 'Untitled'}. Reason: ${declineReason}`
+        : `A client declined your proposal: ${proposal.title || 'Untitled'}`,
       actionUrl: `/proposals`,
       eventId: proposal.event_id ?? undefined,
       clientId: proposal.client_id ?? undefined,
-      metadata: { proposalId: proposal.id },
+      metadata: {
+        proposalId: proposal.id,
+        declineReason: declineReason || null,
+      },
     })
   } catch (err) {
     console.error('[declineProposal] Chef notification failed (non-blocking):', err)
   }
 
-  return { success: true, message: 'Proposal declined.' }
+  return {
+    success: true,
+    message: declineReason
+      ? 'Proposal declined. Your feedback has been sent to the chef.'
+      : 'Proposal declined.',
+  }
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────
