@@ -8,6 +8,7 @@ export const ONBOARDING_ITEM_KEYS = [
   'EMERGENCY_CONTACT',
   'SOCIAL_MEDIA_POLICY',
   'CLIENT_CONFIDENTIALITY_BRIEFED',
+  'VETTING_TIME_TRACKING',
   'W9_COLLECTED',
   'SERVICE_AGREEMENT_SIGNED',
 ] as const
@@ -22,6 +23,7 @@ export const ONBOARDING_ITEM_LABELS: Record<string, string> = {
   EMERGENCY_CONTACT: 'Emergency Contact Collected',
   SOCIAL_MEDIA_POLICY: 'Social Media Policy Acknowledged',
   CLIENT_CONFIDENTIALITY_BRIEFED: 'Client Confidentiality Briefing Complete',
+  VETTING_TIME_TRACKING: 'Vetting Time Tracking Reviewed',
   W9_COLLECTED: 'W-9 Form Collected',
   SERVICE_AGREEMENT_SIGNED: 'Service Agreement Signed',
 }

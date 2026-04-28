@@ -7,7 +7,11 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { updateGratuitySettings } from '@/lib/chef/gratuity-actions'
-import type { GratuitySettings as GratuitySettingsType } from '@/lib/chef/gratuity-actions'
+import {
+  defaultGratuityDisplayLabel,
+  validateClientEnteredGratuityPercent,
+  type GratuitySettings as GratuitySettingsType,
+} from '@/lib/chef/gratuity-types'
 
 const MODES: Array<{
   value: GratuitySettingsType['gratuity_mode']
@@ -17,7 +21,7 @@ const MODES: Array<{
   {
     value: 'discretionary',
     label: 'Discretionary',
-    description: 'Client decides. Quote will say "Gratuity at your discretion."',
+    description: 'Client decides the gratuity amount. Use a clear optional label.',
   },
   {
     value: 'auto_service_fee',
@@ -50,19 +54,44 @@ export function GratuitySettings({ initialSettings }: Props) {
   const [label, setLabel] = useState(initialSettings.gratuity_display_label ?? '')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   async function handleSave() {
+    setError(null)
+    setSaved(false)
+
+    let serviceFeePct: number | null = null
+    if (mode === 'auto_service_fee') {
+      const validatedPct = validateClientEnteredGratuityPercent(pct)
+
+      if (!validatedPct.valid) {
+        setError(validatedPct.error)
+        return
+      }
+
+      serviceFeePct = validatedPct.value
+    }
+
     setSaving(true)
     try {
-      await updateGratuitySettings({
+      const result = await updateGratuitySettings({
         gratuity_mode: mode,
-        gratuity_service_fee_pct: mode === 'auto_service_fee' && pct ? parseFloat(pct) : null,
-        gratuity_display_label: mode === 'auto_service_fee' && label.trim() ? label.trim() : null,
+        gratuity_service_fee_pct: serviceFeePct,
+        gratuity_display_label:
+          (mode === 'auto_service_fee' || mode === 'discretionary') && label.trim()
+            ? label.trim()
+            : null,
       })
+
+      if (!result.success) {
+        setError(result.error ?? 'Failed to save gratuity settings')
+        return
+      }
+
       setSaved(true)
       setTimeout(() => setSaved(false), 2000)
-    } catch {
-      // keep form open
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save gratuity settings')
     } finally {
       setSaving(false)
     }
@@ -70,9 +99,9 @@ export function GratuitySettings({ initialSettings }: Props) {
 
   const previewLabel = label.trim()
     ? label.trim()
-    : pct
-      ? `${pct}% service charge`
-      : 'Service charge'
+    : defaultGratuityDisplayLabel(mode, mode === 'auto_service_fee' ? pct : null)
+
+  const showLabelField = mode === 'auto_service_fee' || mode === 'discretionary'
 
   return (
     <div className="space-y-4">
@@ -102,41 +131,44 @@ export function GratuitySettings({ initialSettings }: Props) {
         ))}
       </div>
 
-      {mode === 'auto_service_fee' && (
+      {showLabelField && (
         <div className="rounded-lg border border-stone-700 bg-stone-800 p-3 space-y-3">
           <div className="flex items-center gap-3">
-            <div className="flex-1">
-              <label className="block text-xs font-medium text-stone-400 mb-1">
-                Service fee percentage
-              </label>
-              <div className="flex items-center gap-2">
-                <input
-                  type="number"
-                  value={pct}
-                  onChange={(e) => setPct(e.target.value)}
-                  placeholder="20"
-                  min="0"
-                  max="100"
-                  step="0.5"
-                  className="w-24 border border-stone-600 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
-                />
-                <span className="text-sm text-stone-500">%</span>
+            {mode === 'auto_service_fee' && (
+              <div className="flex-1">
+                <label className="block text-xs font-medium text-stone-400 mb-1">
+                  Service fee percentage
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    value={pct}
+                    onChange={(e) => setPct(e.target.value)}
+                    placeholder="20"
+                    min="0"
+                    max="100"
+                    step="0.5"
+                    className="w-24 border border-stone-600 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
+                  />
+                  <span className="text-sm text-stone-500">%</span>
+                </div>
               </div>
-            </div>
+            )}
             <div className="flex-1">
               <label className="block text-xs font-medium text-stone-400 mb-1">
-                Line item label on quote
+                Display label on quote
               </label>
               <input
                 type="text"
                 value={label}
                 onChange={(e) => setLabel(e.target.value)}
-                placeholder={pct ? `${pct}% service charge` : 'Service charge'}
+                placeholder={defaultGratuityDisplayLabel(mode, pct)}
+                maxLength={80}
                 className="w-full border border-stone-600 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
               />
             </div>
           </div>
-          {pct && (
+          {(mode === 'discretionary' || pct) && (
             <p className="text-xs text-stone-500">
               Quote will show:{' '}
               <span className="font-medium text-stone-300">&ldquo;{previewLabel}&rdquo;</span>
@@ -144,6 +176,8 @@ export function GratuitySettings({ initialSettings }: Props) {
           )}
         </div>
       )}
+
+      {error && <p className="text-sm text-red-400">{error}</p>}
 
       <Button variant="primary" size="sm" onClick={handleSave} loading={saving} disabled={saving}>
         {saved ? 'Saved' : 'Save Gratuity Settings'}
