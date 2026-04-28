@@ -11,6 +11,12 @@ import { recordSideEffectFailure } from '@/lib/monitoring/non-blocking'
 import { createServerClient } from '@/lib/db/server'
 import { sendEmail } from '@/lib/email/send'
 import { NotificationGenericEmail } from '@/lib/email/templates/notification-generic'
+import { captureScheduledMessageSnapshot } from '@/lib/context-snapshots/service'
+
+function snapshotTime(value: unknown): string {
+  if (value instanceof Date) return value.toISOString()
+  return String(value ?? '')
+}
 
 async function handleScheduledMessages(req: NextRequest): Promise<NextResponse> {
   const authError = verifyCronAuth(req.headers.get('authorization'))
@@ -49,6 +55,16 @@ async function handleScheduledMessages(req: NextRequest): Promise<NextResponse> 
       for (const msg of dueMessages) {
         try {
           let success = false
+          await captureScheduledMessageSnapshot({
+            tenantId: msg.chef_id,
+            messageId: msg.id,
+            stage: 'due',
+            channel: msg.channel,
+            scheduledFor: snapshotTime(msg.scheduled_for),
+            contextType: msg.context_type,
+            contextId: msg.context_id,
+            recipientId: msg.recipient_id,
+          })
 
           if (msg.channel === 'email') {
             // Look up recipient email address
@@ -80,6 +96,17 @@ async function handleScheduledMessages(req: NextRequest): Promise<NextResponse> 
                   updated_at: new Date().toISOString(),
                 })
                 .eq('id', msg.id)
+              await captureScheduledMessageSnapshot({
+                tenantId: msg.chef_id,
+                messageId: msg.id,
+                stage: 'failed',
+                channel: msg.channel,
+                scheduledFor: snapshotTime(msg.scheduled_for),
+                contextType: msg.context_type,
+                contextId: msg.context_id,
+                recipientId: msg.recipient_id,
+                errorMessage: 'No recipient email address found',
+              })
               failed++
               continue
             }
@@ -98,6 +125,16 @@ async function handleScheduledMessages(req: NextRequest): Promise<NextResponse> 
             console.log(
               `[scheduled-messages] Channel "${msg.channel}" not yet implemented for message ${msg.id} - leaving pending`
             )
+            await captureScheduledMessageSnapshot({
+              tenantId: msg.chef_id,
+              messageId: msg.id,
+              stage: 'pending_channel',
+              channel: msg.channel,
+              scheduledFor: snapshotTime(msg.scheduled_for),
+              contextType: msg.context_type,
+              contextId: msg.context_id,
+              recipientId: msg.recipient_id,
+            })
             // Do not mark as sent - leave status as pending so chef can see the message was not delivered
             continue
           }
@@ -111,6 +148,17 @@ async function handleScheduledMessages(req: NextRequest): Promise<NextResponse> 
               updated_at: new Date().toISOString(),
             })
             .eq('id', msg.id)
+          await captureScheduledMessageSnapshot({
+            tenantId: msg.chef_id,
+            messageId: msg.id,
+            stage: success ? 'sent' : 'failed',
+            channel: msg.channel,
+            scheduledFor: snapshotTime(msg.scheduled_for),
+            contextType: msg.context_type,
+            contextId: msg.context_id,
+            recipientId: msg.recipient_id,
+            errorMessage: success ? null : 'Failed to send email',
+          })
 
           if (success) sent++
           else failed++
@@ -133,6 +181,17 @@ async function handleScheduledMessages(req: NextRequest): Promise<NextResponse> 
               updated_at: new Date().toISOString(),
             })
             .eq('id', msg.id)
+          await captureScheduledMessageSnapshot({
+            tenantId: msg.chef_id,
+            messageId: msg.id,
+            stage: 'failed',
+            channel: msg.channel,
+            scheduledFor: snapshotTime(msg.scheduled_for),
+            contextType: msg.context_type,
+            contextId: msg.context_id,
+            recipientId: msg.recipient_id,
+            errorMessage: err instanceof Error ? err.message : 'Unknown error',
+          })
           failed++
         }
       }

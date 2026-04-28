@@ -8,6 +8,7 @@ import type { LucideIcon } from '@/components/ui/icons'
 import {
   Activity,
   AlertTriangle,
+  Archive,
   BarChart3,
   Bell,
   BellRing,
@@ -1435,6 +1436,11 @@ export const navGroups: NavGroup[] = [
         href: '/commands',
         label: 'Quick Commands',
         icon: Zap,
+      },
+      {
+        href: '/context-snapshots',
+        label: 'Context Snapshots',
+        icon: Archive,
       },
       {
         href: '/capture',

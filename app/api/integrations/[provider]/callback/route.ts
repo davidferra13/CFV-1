@@ -1,13 +1,15 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { getProviderMeta } from '@/lib/integrations/core/providers'
+import { captureIntegrationCallbackSnapshot } from '@/lib/context-snapshots/service'
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { provider: string } }
 ) {
+  let user
   try {
-    await requireChef()
+    user = await requireChef()
   } catch {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
@@ -21,6 +23,13 @@ export async function GET(
   const errorParam = request.nextUrl.searchParams.get('error')
 
   if (errorParam) {
+    await captureIntegrationCallbackSnapshot({
+      tenantId: user.tenantId!,
+      provider: meta.provider,
+      status: 'error',
+      hasCode: Boolean(code),
+      errorParam,
+    })
     return NextResponse.json(
       {
         provider: meta.provider,
@@ -34,6 +43,13 @@ export async function GET(
   if (!code) {
     return NextResponse.json({ error: 'Missing OAuth code' }, { status: 400 })
   }
+
+  await captureIntegrationCallbackSnapshot({
+    tenantId: user.tenantId!,
+    provider: meta.provider,
+    status: 'received',
+    hasCode: true,
+  })
 
   return NextResponse.json({
     provider: meta.provider,

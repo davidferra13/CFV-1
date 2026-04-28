@@ -12,6 +12,7 @@ import { Suspense } from 'react'
 import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
 import { SchedulingInsightsBar } from '@/components/intelligence/scheduling-insights-bar'
 import { CapacitySeasonalBar } from '@/components/intelligence/capacity-seasonal-bar'
+import { captureCalendarContextSnapshot } from '@/lib/context-snapshots/service'
 
 export const metadata: Metadata = { title: 'Calendar' }
 
@@ -45,6 +46,12 @@ export default async function CalendarPage() {
   const endDate = toLocalISO(endExt)
 
   const initialItems = await getUnifiedCalendar(startDate, endDate)
+  await captureCalendarContextSnapshot({
+    tenantId: user.tenantId!,
+    rangeStart: startDate,
+    rangeEnd: endDate,
+    items: initialItems,
+  })
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
