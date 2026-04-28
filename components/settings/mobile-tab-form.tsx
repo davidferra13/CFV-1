@@ -89,6 +89,41 @@ export function MobileTabForm({ initialMobileTabHrefs }: { initialMobileTabHrefs
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
+        <div className="rounded-lg border border-stone-700 bg-stone-950/40 p-4">
+          <p className="text-xs font-semibold uppercase tracking-wider text-stone-500">
+            iOS and PWA setup
+          </p>
+          <ol className="mt-3 space-y-2 text-sm text-stone-300">
+            <li className="flex gap-3">
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-stone-700 text-xs text-stone-400">
+                1
+              </span>
+              <span>Open ChefFlow in Safari on your iPhone or iPad.</span>
+            </li>
+            <li className="flex gap-3">
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-stone-700 text-xs text-stone-400">
+                2
+              </span>
+              <span>Tap the Share button in the Safari toolbar.</span>
+            </li>
+            <li className="flex gap-3">
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-stone-700 text-xs text-stone-400">
+                3
+              </span>
+              <span>Choose Add to Home Screen, then confirm with Add.</span>
+            </li>
+            <li className="flex gap-3">
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-stone-700 text-xs text-stone-400">
+                4
+              </span>
+              <span>
+                Open ChefFlow from the Home Screen and allow notifications when iOS asks, where
+                supported.
+              </span>
+            </li>
+          </ol>
+        </div>
+
         {/* Current selection (ordered) */}
         <div>
           <p className="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-2">

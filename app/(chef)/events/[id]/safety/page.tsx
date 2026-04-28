@@ -26,6 +26,10 @@ function uniqueStrings(values: Array<string | null | undefined>): string[] {
   return output
 }
 
+function safetyKey(value: string): string {
+  return value.trim().toLowerCase()
+}
+
 export default async function EventSafetyPage({ params }: { params: { id: string } }) {
   const user = await requireChef()
   const db: any = createServerClient()
@@ -91,6 +95,43 @@ export default async function EventSafetyPage({ params }: { params: { id: string
       ? await getOrCreateCrossContaminationChecklist(params.id, allergens).catch(() => null)
       : null
 
+  const sourceCounts = new Map<string, number>()
+  const activeConflictCounts = new Map<string, number>()
+
+  function countSource(value: string | null | undefined) {
+    const label = String(value ?? '').trim()
+    if (!label) return
+    const key = safetyKey(label)
+    sourceCounts.set(key, (sourceCounts.get(key) ?? 0) + 1)
+  }
+
+  ;(((event as any).allergies ?? []) as string[]).forEach(countSource)
+  ;(((event as any).client?.allergies ?? []) as string[]).forEach(countSource)
+  ;(allergyRecords as Array<{ allergen: string }>).forEach((record) => countSource(record.allergen))
+  ;(guests as any[]).forEach((guest) => {
+    ;(((guest.allergies ?? []) as string[]) ?? []).forEach(countSource)
+    ;(((guest.plus_one_allergies ?? []) as string[]) ?? []).forEach(countSource)
+  })
+  ;(dietaryConflicts as any[])
+    .filter((conflict) => !conflict.acknowledged)
+    .forEach((conflict) => {
+      const key = safetyKey(String(conflict.allergy ?? ''))
+      if (!key) return
+      activeConflictCounts.set(key, (activeConflictCounts.get(key) ?? 0) + 1)
+    })
+
+  const matrixRows = allergens.map((allergen) => {
+    const key = safetyKey(allergen)
+    const activeConflicts = activeConflictCounts.get(key) ?? 0
+    return {
+      allergen,
+      sourceCount: sourceCounts.get(key) ?? 1,
+      activeConflicts,
+      handoffStatus:
+        activeConflicts > 0 ? 'Conflict review needed' : checklist ? 'Checklist ready' : 'Pending',
+    }
+  })
+
   return (
     <div className="mx-auto max-w-5xl space-y-6">
       <div>
@@ -112,6 +153,54 @@ export default async function EventSafetyPage({ params }: { params: { id: string
           service-readiness shell.
         </p>
       </Card>
+
+      {matrixRows.length > 0 ? (
+        <Card className="p-6">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-stone-100">Allergy risk matrix</h2>
+              <p className="mt-1 text-sm text-stone-400">
+                Source count, unresolved conflicts, and kitchen handoff readiness from the loaded
+                event safety data.
+              </p>
+            </div>
+            <span className="text-xs font-medium uppercase tracking-[0.16em] text-stone-500">
+              {matrixRows.length} restriction{matrixRows.length === 1 ? '' : 's'}
+            </span>
+          </div>
+
+          <div className="mt-5 overflow-x-auto">
+            <table className="w-full min-w-[620px] text-left text-sm">
+              <thead>
+                <tr className="border-b border-stone-800 text-xs uppercase tracking-[0.16em] text-stone-500">
+                  <th className="py-2 pr-4 font-medium">Restriction</th>
+                  <th className="py-2 pr-4 font-medium">Sources</th>
+                  <th className="py-2 pr-4 font-medium">Active conflicts</th>
+                  <th className="py-2 font-medium">Handoff</th>
+                </tr>
+              </thead>
+              <tbody>
+                {matrixRows.map((row) => (
+                  <tr key={row.allergen} className="border-b border-stone-900 last:border-0">
+                    <td className="py-3 pr-4 font-medium text-stone-100">{row.allergen}</td>
+                    <td className="py-3 pr-4 text-stone-300">{row.sourceCount}</td>
+                    <td
+                      className={
+                        row.activeConflicts > 0
+                          ? 'py-3 pr-4 font-semibold text-red-300'
+                          : 'py-3 pr-4 text-stone-300'
+                      }
+                    >
+                      {row.activeConflicts}
+                    </td>
+                    <td className="py-3 text-stone-300">{row.handoffStatus}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      ) : null}
 
       {clientId ? (
         <AllergyRecordsPanel clientId={clientId} initialRecords={allergyRecords as any} />

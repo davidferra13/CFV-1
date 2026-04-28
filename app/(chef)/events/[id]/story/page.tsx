@@ -50,6 +50,19 @@ export default async function EventStoryPage({ params }: { params: Promise<{ id:
           Instagram, TikTok, or direct client sharing.
         </p>
       </div>
+
+      <div className="mt-4 p-4 rounded-lg bg-stone-900/50 border border-stone-800">
+        <h2 className="text-sm font-semibold text-stone-100">Sharing clearance</h2>
+        <p className="mt-2 text-sm text-stone-400">
+          Before posting or sending this recap, verify these items for the event.
+        </p>
+        <ul className="mt-3 space-y-2 text-sm text-stone-400">
+          <li>Client approval for social or client-facing sharing</li>
+          <li>Guest consent and privacy expectations for any visible details</li>
+          <li>Music, image, and media source rights for the final capture</li>
+          <li>Venue rules for photography, recording, and public posting</li>
+        </ul>
+      </div>
     </div>
   )
 }

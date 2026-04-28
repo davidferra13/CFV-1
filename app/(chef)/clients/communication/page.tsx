@@ -25,6 +25,18 @@ const TOOLS = [
     description: 'Calendar view of planned client check-ins and outreach',
     icon: '📅',
   },
+  {
+    href: '/events/upcoming',
+    label: 'Pre-Event Communication',
+    description: 'Review upcoming events and prep client outreach before service',
+    icon: 'EV',
+  },
+  {
+    href: '/settings/touchpoints',
+    label: 'Touchpoint Cadence',
+    description: 'Manage reusable outreach timing for client check-ins',
+    icon: 'TC',
+  },
 ]
 
 export default async function ClientCommunicationPage() {
