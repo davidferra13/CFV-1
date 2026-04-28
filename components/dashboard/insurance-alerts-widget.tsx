@@ -71,7 +71,7 @@ export function InsuranceAlertsWidget() {
         )}
 
         <a
-          href="/compliance/insurance"
+          href="/settings/protection/insurance"
           className="mt-2 block text-center text-xs text-brand-600 hover:underline"
         >
           View all policies

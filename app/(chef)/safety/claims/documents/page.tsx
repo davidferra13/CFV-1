@@ -9,17 +9,103 @@ import { Button } from '@/components/ui/button'
 
 export const metadata: Metadata = { title: 'Claim Documents' }
 
+type ClaimDocumentRow = {
+  id: string
+  claim_type: string
+  status: string
+  incident_date: string
+  description: string
+  policy_number: string | null
+  evidence_urls: unknown
+  created_at: string
+}
+
+type ClaimEvidenceDocument = {
+  id: string
+  fileName: string
+  fileUrl: string
+  claimType: string
+  status: string
+  incidentDate: string
+  policyNumber: string | null
+  description: string
+}
+
+function normalizeEvidenceUrls(value: unknown) {
+  if (!Array.isArray(value)) return []
+
+  return value.filter((item): item is string => {
+    if (typeof item !== 'string') return false
+
+    try {
+      const url = new URL(item)
+      return url.protocol === 'http:' || url.protocol === 'https:'
+    } catch {
+      return false
+    }
+  })
+}
+
+function formatClaimType(value: string) {
+  return value
+    .split('_')
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ')
+}
+
+function getDocumentName(url: string, index: number) {
+  try {
+    const parsed = new URL(url)
+    const lastPathPart = parsed.pathname.split('/').filter(Boolean).pop()
+    if (lastPathPart) return decodeURIComponent(lastPathPart)
+  } catch {
+    // normalizeEvidenceUrls already validates URLs. Keep a fallback for malformed legacy rows.
+  }
+
+  return `Evidence ${index + 1}`
+}
+
+function formatDate(value: string) {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return value
+
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  }).format(date)
+}
+
 export default async function ClaimDocumentsPage() {
   const chef = await requireChef()
   const db: any = createServerClient()
 
-  const { data: docs } = await db
-    .from('insurance_claim_documents')
-    .select('id, file_name, file_url, document_type, claim_number, created_at')
-    .eq('tenant_id', chef.tenantId!)
+  const { data: claims, error } = await db
+    .from('insurance_claims')
+    .select(
+      'id, claim_type, status, incident_date, description, policy_number, evidence_urls, created_at'
+    )
+    .eq('chef_id', chef.tenantId!)
     .order('created_at', { ascending: false })
 
-  const docList = docs ?? []
+  if (error) {
+    throw new Error(`Failed to load claim documents: ${error.message}`)
+  }
+
+  const docList = ((claims ?? []) as ClaimDocumentRow[]).flatMap((claim) =>
+    normalizeEvidenceUrls(claim.evidence_urls).map(
+      (url, index): ClaimEvidenceDocument => ({
+        id: `${claim.id}-${index}`,
+        fileName: getDocumentName(url, index),
+        fileUrl: url,
+        claimType: claim.claim_type,
+        status: claim.status,
+        incidentDate: claim.incident_date,
+        policyNumber: claim.policy_number,
+        description: claim.description,
+      })
+    )
+  )
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -39,36 +125,36 @@ export default async function ClaimDocumentsPage() {
       </div>
 
       {docList.length === 0 ? (
-        <div className="text-center py-20 bg-stone-800 rounded-xl border border-dashed border-stone-600">
+        <div className="rounded-lg border border-dashed border-stone-600 bg-stone-800 py-20 text-center">
           <h3 className="text-lg font-semibold text-stone-200 mb-1">No documents yet</h3>
           <p className="text-sm text-stone-500 max-w-sm mx-auto">
-            Supporting documents attached to your insurance claims will appear here.
+            Add evidence URLs when filing or updating a claim, and they will appear here.
           </p>
         </div>
       ) : (
         <div className="space-y-3">
-          {docList.map((doc: any) => (
+          {docList.map((doc) => (
             <div
               key={doc.id}
-              className="bg-stone-800 rounded-xl p-4 border border-stone-700 flex items-center justify-between gap-4"
+              className="flex items-center justify-between gap-4 rounded-lg border border-stone-700 bg-stone-800 p-4"
             >
-              <div>
-                <p className="font-medium text-stone-100">{doc.file_name ?? 'Document'}</p>
-                <p className="text-sm text-stone-500">
-                  {doc.document_type ?? 'Document'}
-                  {doc.claim_number ? ` - Claim #${doc.claim_number}` : ''}
+              <div className="min-w-0">
+                <p className="font-medium text-stone-100">{doc.fileName}</p>
+                <p className="mt-1 text-sm text-stone-500">
+                  {formatClaimType(doc.claimType)} claim, {doc.status.replaceAll('_', ' ')},{' '}
+                  incident {formatDate(doc.incidentDate)}
+                  {doc.policyNumber ? `, policy ${doc.policyNumber}` : ''}
                 </p>
+                <p className="mt-1 truncate text-xs text-stone-600">{doc.description}</p>
               </div>
-              {doc.file_url && (
-                <a
-                  href={doc.file_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="shrink-0 text-sm text-amber-400 hover:text-amber-300 font-medium"
-                >
-                  View
-                </a>
-              )}
+              <a
+                href={doc.fileUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="shrink-0 text-sm font-medium text-amber-400 hover:text-amber-300"
+              >
+                View
+              </a>
             </div>
           ))}
         </div>
