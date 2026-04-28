@@ -152,6 +152,21 @@
       ],
       "analyzed_at": "2026-04-28T01:13:43.899Z",
       "planned_at": "2026-04-28T01:13:43.899Z"
+    },
+    {
+      "slug": "julia",
+      "type": "Staff",
+      "source_file": "Chef Flow Personas/Completed/Staff/julia.txt",
+      "report": "docs/stress-tests/persona-julia-2026-04-27.md",
+      "build_tasks": [
+        "system/persona-build-plans/julia/task-1.md",
+        "system/persona-build-plans/julia/task-2.md",
+        "system/persona-build-plans/julia/task-3.md",
+        "system/persona-build-plans/julia/task-4.md",
+        "system/persona-build-plans/julia/task-5.md"
+      ],
+      "analyzed_at": "2026-04-28T01:25:14.199Z",
+      "planned_at": "2026-04-28T01:25:14.198Z"
     }
   ],
   "failed": [
@@ -182,13 +197,13 @@
     }
   ],
   "last_cycle": "2026-04-28T01:14:34.759Z",
-  "total_personas_processed": 11,
-  "total_build_tasks_queued": 43,
+  "total_personas_processed": 12,
+  "total_build_tasks_queued": 48,
   "last_synthesis_at": "2026-04-28T01:13:43.987Z",
   "metrics": {
-    "total_cycles": 3,
-    "total_analyzer_time_ms": 679251,
-    "total_planner_time_ms": 2477026,
+    "total_cycles": 4,
+    "total_analyzer_time_ms": 812800,
+    "total_planner_time_ms": 2732234,
     "total_synthesis_time_ms": 0,
     "last_cycle_duration_ms": 1063116,
     "retries_used": 0

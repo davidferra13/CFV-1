@@ -99,6 +99,16 @@
       "exported_at": "2026-04-28T01:13:33.791Z",
       "export_file": "022-high-implement-yield-based-inventory-module.md",
       "score": 38
+    },
+    "system/persona-build-plans/julia/task-3.md": {
+      "exported_at": "2026-04-28T01:23:33.882Z",
+      "export_file": "021-medium-batching-functionality.md",
+      "score": 55
+    },
+    "system/persona-build-plans/julia/task-1.md": {
+      "exported_at": "2026-04-28T01:23:33.883Z",
+      "export_file": "023-high-develop-prep-mode-ui.md",
+      "score": 38
     }
   },
   "claimed": {

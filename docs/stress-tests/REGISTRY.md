@@ -175,3 +175,4 @@ _Next update: after next `/persona-stress-test` run_
 | dean-deluca | Vendor | 2026-04-27 | 50/100 | local-ollama-v2 | [Report](persona-dean-deluca-2026-04-27.md) |
 | joel-salatin | Vendor | 2026-04-27 | 68/100 | local-ollama-v2 | [Report](persona-joel-salatin-2026-04-27.md) |
 | julia | Staff | 2026-04-27 | 50/100 | local-ollama-v2 | [Report](persona-julia-2026-04-27.md) |
+| padma-lakshmi | Staff | 2026-04-27 | 50/100 | local-ollama-v2 | [Report](persona-padma-lakshmi-2026-04-27.md) |

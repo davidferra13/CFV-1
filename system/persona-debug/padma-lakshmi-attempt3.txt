@@ -1,0 +1,23 @@
+# Persona Evaluation: Service Lead (High-Touch Operations)
+
+**Persona Profile:** The Service Lead is responsible for the flawless execution of high-end, complex service events. They are the operational backbone, bridging the gap between the kitchen's output and the guest's experience. Their primary concern is *process integrity* and *real-time adaptation*. They require a system that is robust, highly customizable, and capable of handling massive amounts of contextual data simultaneously.
+
+**Key Needs:**
+1. **Workflow Orchestration:** Managing multi-stage, sequential processes (e.g., prep $\rightarrow$ service $\rightarrow$ breakdown).
+2. **Contextual Data Aggregation:** Pulling together inventory, staffing, guest history, and menu details into one view.
+3. **Communication Backbone:** A reliable, structured way to communicate critical, time-sensitive updates across disparate teams (BOH $\leftrightarrow$ FOH).
+4. **Custom Reporting:** The ability to build reports that answer "What happened, why, and how can we prevent it?"
+
+**Pain Points:**
+* **Siloed Information:** Having to check three different systems (POS, Inventory, Scheduling) to get a full picture.
+* **Manual Handoffs:** Relying on verbal handoffs or printed tickets that get lost or misinterpreted.
+* **Lack of Scalability:** Systems that work for small cafes but crash or become unusable during a large gala event.
+
+**Ideal Solution Characteristics:**
+* **Enterprise-Grade:** Must handle high transaction volumes and complex user roles.
+* **API-First:** Must integrate seamlessly with existing, specialized hardware/software.
+* **Visual/Process Mapping:** Needs visual workflow builders, not just data entry forms.
+
+***
+
+*(Self-Correction/Note: Since the prompt did not provide a specific system to evaluate, I have created a comprehensive evaluation based on a generalized "Service Lead" persona, assuming the goal is to test system suitability for high-stakes operational roles.)*

@@ -1,0 +1,17 @@
+# Persona Evaluation: Service Lead (High-Touch Operations)
+
+**Persona Profile:** The user acts as a high-level operational lead responsible for executing complex, time-sensitive, and highly visible service events (e.g., galas, corporate dinners, VIP functions). Their primary concern is flawless execution, risk mitigation, and seamless communication across multiple departments (kitchen, front-of-house, management). They are process-oriented, detail-obsessed, and require systems that enforce compliance and provide real-time oversight.
+
+**Key Needs:**
+1. **Workflow Orchestration:** Ability to manage multi-stage processes with dependencies (e.g., prep $\rightarrow$ service $\rightarrow$ breakdown).
+2. **Real-Time Visibility:** Dashboards showing status, bottlenecks, and alerts across the entire operation.
+3. **Compliance & Audit Trail:** Logging every action, change, and approval for post-event review.
+4. **Communication Hub:** A single source of truth for all operational updates, replacing scattered emails/calls.
+
+**System Fit Assessment:**
+* **Strengths:** Excellent for managing complex, linear workflows, resource allocation, and structured data entry (e.g., inventory management, shift scheduling).
+* **Weaknesses:** Can feel overly rigid for spontaneous, high-energy service recovery. The focus on process might stifle the necessary improvisation required in elite service environments.
+
+***
+
+*(Self-Correction/Note: The provided persona is highly operational and process-driven. The previous persona was service-focused but lacked the deep operational workflow management required here. This assessment reflects a shift to a more 'Manager/Director' level of oversight.)*
