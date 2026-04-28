@@ -4,11 +4,12 @@ import { useState } from 'react'
 import { Share2, Copy, Loader2, Sparkles } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import {
-  generateSocialCaptions,
-  type SocialCaptionsResult,
-  type CaptionTone,
-} from '@/lib/ai/social-captions'
+import { generateSocialCaptions } from '@/lib/ai/social-captions'
+import type {
+  SocialCaptionsResult,
+  CaptionTone,
+  SocialPlatform,
+} from '@/lib/ai/social-captions-types'
 import { toast } from 'sonner'
 
 const TONES: { value: CaptionTone; label: string }[] = [
@@ -21,7 +22,7 @@ export function SocialCaptionsPanel({ eventId }: { eventId: string }) {
   const [result, setResult] = useState<SocialCaptionsResult | null>(null)
   const [loading, setLoading] = useState(false)
   const [tone, setTone] = useState<CaptionTone>('warm_personal')
-  const [platform, setPlatform] = useState<'instagram' | 'facebook' | 'twitter'>('instagram')
+  const [platform, setPlatform] = useState<SocialPlatform>('instagram')
 
   async function run() {
     setLoading(true)
@@ -79,7 +80,7 @@ export function SocialCaptionsPanel({ eventId }: { eventId: string }) {
           </div>
         </div>
         <p className="text-xs text-stone-500 mt-1">
-          Instagram, Facebook, and Twitter captions - no client details included.
+          Instagram, Facebook, X/Twitter, and LinkedIn captions - no client details included.
         </p>
       </div>
     )
@@ -93,7 +94,7 @@ export function SocialCaptionsPanel({ eventId }: { eventId: string }) {
           <span className="text-sm font-medium text-stone-300">Social Captions</span>
         </div>
         <div className="flex items-center gap-1">
-          {(['instagram', 'facebook', 'twitter'] as const).map((p) => (
+          {(['instagram', 'facebook', 'twitter', 'linkedin'] as const).map((p) => (
             <button
               key={p}
               onClick={() => setPlatform(p)}

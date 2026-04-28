@@ -3,7 +3,7 @@
 // Per-category channel toggles (email, push, SMS) + SMS phone setup.
 // Mounted on /settings/notifications. Uses optimistic UI with explicit channel saves.
 
-import { useState, useTransition } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 import { toast } from 'sonner'
 import { usePushSubscription } from '@/components/notifications/use-push-subscription'
 import {
@@ -177,6 +177,21 @@ export function NotificationSettingsForm({
   const hasChannelChanges = dirtyCategoryList.length > 0
   const hasSavedSmsSettings = savedSmsOptIn && Boolean(savedSmsPhone.trim())
 
+  useEffect(() => {
+    if (!hasChannelChanges || isSavingChannelChanges) return
+
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault()
+      event.returnValue = ''
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+    }
+  }, [hasChannelChanges, isSavingChannelChanges])
+
   const handleChannelToggle = (
     category: NotificationCategory,
     channel: 'email' | 'push' | 'sms',
@@ -237,6 +252,13 @@ export function NotificationSettingsForm({
         }
       })()
     })
+  }
+
+  const handleChannelDiscard = () => {
+    setChannels(savedChannels)
+    setDirtyCategories({})
+    setChannelSaved(false)
+    setChannelError(null)
   }
 
   const handleSmsSave = () => {
@@ -529,6 +551,15 @@ export function NotificationSettingsForm({
               </button>
               {hasChannelChanges && !isSavingChannelChanges && (
                 <span className="text-xs text-stone-400">{dirtyCategoryList.length} unsaved</span>
+              )}
+              {hasChannelChanges && !isSavingChannelChanges && (
+                <button
+                  type="button"
+                  onClick={handleChannelDiscard}
+                  className="rounded-md px-3 py-2 text-sm font-medium text-stone-300 transition-colors hover:bg-stone-800"
+                >
+                  Discard
+                </button>
               )}
               {channelSaved && <span className="text-sm text-emerald-600">Saved</span>}
               {channelError && <span className="text-sm text-red-600">{channelError}</span>}

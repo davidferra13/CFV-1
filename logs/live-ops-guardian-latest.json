@@ -1,23 +1,18 @@
 {
-  "runId": "live-ops-83684-1777407551",
-  "ranAt": "2026-04-28T20:19:52.3336173Z",
+  "runId": "live-ops-56596-1777410901",
+  "ranAt": "2026-04-28T21:15:51.3372510Z",
   "target": null,
   "newChangesDetected": true,
   "periodicSweepDue": false,
   "authSweepsEnabled": false,
-  "changedPathCount": 11,
+  "changedPathCount": 6,
   "changedPaths": [
-    "app/api/scheduled/service-readiness/route.ts",
-    "app/api/v2/commerce/products/route.ts",
-    "components/events/client-event-photo-gallery.tsx",
-    "lib/commerce/product-actions.ts",
-    "lib/cron/definitions.ts",
-    "lib/dinner-circles/event-circle.ts",
-    "lib/dinner-circles/ingredient-showcase.ts",
-    "logs/live-ops-guardian-alert.txt",
-    "logs/live-ops-guardian-latest.json",
-    "logs/live-ops-guardian-state.json",
-    "lib/dinner-circles/ingredient-showcase-types.ts"
+    "app/(chef)/events/[id]/page.tsx",
+    "components/ai/social-captions-panel.tsx",
+    "components/settings/notification-settings-form.tsx",
+    "lib/ai/social-captions.ts",
+    "app/(chef)/events/[id]/components/",
+    "lib/ai/social-captions-types.ts"
   ],
   "healthProbes": [],
   "steps": [
@@ -25,10 +20,10 @@
       "name": "unit-canary",
       "status": "passed",
       "exitCode": 0,
-      "durationSeconds": 22.4
+      "durationSeconds": 30.7
     }
   ],
-  "notes": [],
+  "notes": ["Auth-sensitive changes detected, but LIVE_OPS_ENABLE_AUTH_SWEEPS is disabled."],
   "failureCount": 0,
   "status": "ok"
 }

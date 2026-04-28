@@ -188,6 +188,7 @@ import {
 } from '@/components/events/event-readiness-engine-panel'
 import { BehindTheScenesPanel } from '@/components/events/behind-the-scenes-panel'
 import { loadBehindTheScenes } from '@/lib/private-context/loaders'
+import { CollaborateSection } from './components/CollaborateSection'
 
 async function EventCompletionSection({ eventId }: { eventId: string }) {
   const result = await getCompletionForEntity('event', eventId)
@@ -1310,6 +1311,9 @@ export default async function EventDetailPage({
               ...(event.status === 'completed'
                 ? [{ label: 'Create Story', href: `/events/${event.id}/story` }]
                 : []),
+              ...(!['draft', 'cancelled'].includes(event.status)
+                ? [{ label: 'Collaborate', href: '#collaborate' }]
+                : []),
             ]}
           />
           <Link href="/events">
@@ -1419,6 +1423,18 @@ export default async function EventDetailPage({
         collaborators={eventCollaborators as any[]}
         ticketHolders={ticketList as any[]}
         approvalGates={approvalGates}
+      />
+
+      <CollaborateSection
+        eventStatus={event.status}
+        eventGuestCount={event.guest_count ?? null}
+        activeShare={activeShare as any}
+        shares={guestShares as any[]}
+        guests={guestList as any[]}
+        rsvpSummary={rsvpSummary as any}
+        collaborators={eventCollaborators as any[]}
+        shortShareUrl={shortShareUrl}
+        fullShareUrl={fullShareUrl}
       />
 
       {/* Collaborator role banner â€” shown when viewing another chef's event */}
