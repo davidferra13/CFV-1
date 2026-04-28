@@ -568,7 +568,15 @@ export async function createClient(input: CreateClientInput) {
 /**
  * Get all clients for chef's tenant
  */
-export async function getClients() {
+type ClientListRow = Record<string, any> & {
+  id: string
+  email: string
+  phone: string
+  full_name: string
+  name?: string | null
+}
+
+export async function getClients(): Promise<ClientListRow[]> {
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -591,7 +599,12 @@ export async function getClients() {
     throw new UnknownAppError('Failed to fetch clients')
   }
 
-  return clients
+  return ((clients ?? []) as Array<Record<string, any>>).map((client) => ({
+    ...client,
+    full_name: client.full_name ?? client.name ?? 'Unnamed client',
+    email: client.email ?? '',
+    phone: client.phone ?? '',
+  })) as ClientListRow[]
 }
 
 /**
