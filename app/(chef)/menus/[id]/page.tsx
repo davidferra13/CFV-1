@@ -7,6 +7,8 @@ import { createServerClient } from '@/lib/db/server'
 import { MenuDetailClient } from './menu-detail-client'
 import { getMenuRecommendations } from '@/lib/analytics/menu-recommendations'
 import { MenuRecommendationHints } from '@/components/analytics/menu-recommendation-hints'
+import { ConstraintRecipePicker } from '@/components/menus/constraint-recipe-picker'
+import { getConstraintRecipePicks } from '@/lib/menus/constraint-recipe-picker-actions'
 import { getMenuInquiryLink } from '@/lib/menus/menu-intelligence-actions'
 import { evaluateCompletion } from '@/lib/completion/engine'
 import Link from 'next/link'
@@ -47,7 +49,8 @@ export default async function MenuDetailPage({ params }: Props) {
     }
   }
 
-  const [recipeMapResult, recommendations, inquiryLink, completionData] = await Promise.all([
+  const [recipeMapResult, recommendations, constraintRecipePicks, inquiryLink, completionData] =
+    await Promise.all([
     recipeIds.size > 0
       ? createServerClient()
           .from('recipes' as any)
@@ -66,6 +69,21 @@ export default async function MenuDetailPage({ params }: Props) {
       dietaryRestrictions: (event as any)?.dietary_restrictions ?? [],
       allergies: (event as any)?.allergies ?? [],
     }).catch(() => null),
+    getConstraintRecipePicks({
+      eventId: (event as any)?.id,
+      dietaryTags: (event as any)?.dietary_restrictions ?? [],
+      allergies: (event as any)?.allergies ?? [],
+    }).catch((err) => {
+      console.error('[menu-detail] Constraint recipe picker failed (non-blocking):', err.message)
+      return {
+        status: 'error' as const,
+        picks: [],
+        dietaryTags: (event as any)?.dietary_restrictions ?? [],
+        allergies: (event as any)?.allergies ?? [],
+        filteredOutCount: 0,
+        error: 'Could not load constraint recipe picks.',
+      }
+    }),
     getMenuInquiryLink(id).catch(() => null),
     evaluateCompletion('menu', id, user.tenantId!).catch(() => null),
   ])
@@ -111,6 +129,7 @@ export default async function MenuDetailPage({ params }: Props) {
         initialCompletion={completionData}
       />
       {recommendations && <MenuRecommendationHints result={recommendations} />}
+      <ConstraintRecipePicker result={constraintRecipePicks} />
     </div>
   )
 }

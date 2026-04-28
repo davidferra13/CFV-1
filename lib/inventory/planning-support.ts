@@ -221,17 +221,24 @@ export function estimateIngredientCostCents(
 
 export async function fetchIngredientPlanningMeta(
   db: any,
-  ingredientIds: string[]
+  ingredientIds: string[],
+  chefId?: string
 ): Promise<Map<string, IngredientPlanningMeta>> {
   const metaMap = new Map<string, IngredientPlanningMeta>()
   if (ingredientIds.length === 0) return metaMap
 
-  const { data, error } = await db
+  let query = db
     .from('ingredients')
     .select(
       'id, name, default_unit, weight_to_volume_ratio, last_price_cents, price_unit, preferred_vendor'
     )
     .in('id', ingredientIds)
+
+  if (chefId) {
+    query = query.eq('tenant_id', chefId)
+  }
+
+  const { data, error } = await query
 
   if (error) {
     throw new Error(`Failed to fetch ingredient planning metadata: ${error.message}`)
