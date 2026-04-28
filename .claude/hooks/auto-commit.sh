@@ -70,7 +70,7 @@ if [ "$MODE" = "--throttled" ] && [ -f "$THROTTLE_FILE" ]; then
   fi
 fi
 
-# ── Stage everything except secrets ──────────────────────────────
+# ── Stage everything except secrets and generated artifacts ──────
 git add -A 2>/dev/null
 
 # Unstage sensitive files (quoted for Windows git bash compatibility)
@@ -80,6 +80,18 @@ git reset HEAD -- \
   '**credentials*.json' \
   '**secrets*.json' \
   '**.pem' '**.key' \
+  2>/dev/null || true
+
+# Unstage Codex/persona pipeline runtime artifacts (churned every run)
+git reset HEAD -- \
+  'system/persona-*' \
+  'system/codex-*' \
+  'system/runtime-events.ndjson' \
+  'docs/stress-tests' \
+  'docs/uptime-history.json' \
+  'docs/.codex-workspace-brief.md' \
+  'Chef Flow Personas' \
+  'reports/codex-readiness.json' \
   2>/dev/null || true
 
 # ── Count staged ─────────────────────────────────────────────────

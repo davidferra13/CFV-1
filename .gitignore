@@ -307,8 +307,8 @@ scripts/.session-changes.jsonl
 .codex-*.err
 .codex-*.out
 
-# Codex runtime artifacts (queues, debug output, env snapshots)
-system/codex-queue/
+# Codex runtime artifacts (queues, debug output, env snapshots, prompts)
+system/codex-*/
 system/codex-env.txt
 system/persona-debug/
 reports/codex-readiness.json
