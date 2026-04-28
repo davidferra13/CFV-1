@@ -54,6 +54,36 @@
       "exported_at": "2026-04-28T00:16:46.995Z",
       "export_file": "021-medium-ux-alignment-gap.md",
       "score": 34
+    },
+    "system/persona-build-plans/miley-cyrus/task-1.md": {
+      "exported_at": "2026-04-28T00:36:33.761Z",
+      "export_file": "012-high-implement-a-critical-dependency-map.md",
+      "score": 38
+    },
+    "system/persona-build-plans/miley-cyrus/task-2.md": {
+      "exported_at": "2026-04-28T00:36:33.762Z",
+      "export_file": "014-high-mandatory-multi-signature-approval.md",
+      "score": 38
+    },
+    "system/persona-build-plans/olajide-olatunji/task-1.md": {
+      "exported_at": "2026-04-28T00:46:33.782Z",
+      "export_file": "014-high-workflow-coverage-gap.md",
+      "score": 48
+    },
+    "system/persona-build-plans/olajide-olatunji/task-3.md": {
+      "exported_at": "2026-04-28T00:46:33.783Z",
+      "export_file": "016-medium-ux-alignment-gap.md",
+      "score": 41
+    },
+    "system/persona-build-plans/andrew-zimmern/task-1.md": {
+      "exported_at": "2026-04-28T00:46:33.783Z",
+      "export_file": "018-high-advanced-inventory-supply-chain.md",
+      "score": 38
+    },
+    "system/persona-build-plans/andrew-zimmern/task-2.md": {
+      "exported_at": "2026-04-28T00:46:33.784Z",
+      "export_file": "020-high-project-management-workflow.md",
+      "score": 38
     }
   },
   "claimed": {

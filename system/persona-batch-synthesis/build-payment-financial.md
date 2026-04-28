@@ -1,12 +1,12 @@
 # Consolidated Build: Payment Financial
 
-**Priority rank:** 13 of 20
-**Personas affected:** 3 (Noah Kessler, Emma Chamberlain, Gail Simmons)
+**Priority rank:** 8 of 20
+**Personas affected:** 4 (Noah Kessler, Emma Chamberlain, Gail Simmons, Olajide Olatunji)
 **Average severity:** MEDIUM
 
 ## The Pattern
 
-3 persona(s) surfaced 3 related gaps in payment financial. The common thread: ChefFlow lacks native support for this category of operations, forcing manual workarounds.
+4 persona(s) surfaced 3 related gaps in payment financial. The common thread: ChefFlow lacks native support for this category of operations, forcing manual workarounds.
 
 ## Individual Gaps (deduplicated)
 
@@ -38,6 +38,10 @@ A single consolidated build addressing all payment financial gaps should cover:
 - `system/persona-build-plans/gail-simmons/task-3.md`
 - `system/persona-build-plans/gail-simmons/task-4.md`
 - `system/persona-build-plans/gail-simmons/task-5.md`
+- `system/persona-build-plans/olajide-olatunji/task-1.md`
+- `system/persona-build-plans/olajide-olatunji/task-3.md`
+- `system/persona-build-plans/olajide-olatunji/task-4.md`
+- `system/persona-build-plans/olajide-olatunji/task-5.md`
 
 ## Acceptance Criteria (merged from all personas)
 

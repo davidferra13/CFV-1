@@ -97,7 +97,7 @@ async function main() {
 
   // Build ingredient name index for product matching
   const ingredients = db.prepare(`
-    SELECT id, name FROM canonical_ingredients
+    SELECT ingredient_id as id, name FROM canonical_ingredients
     WHERE is_food = 1
   `).all();
 

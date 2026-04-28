@@ -1,0 +1,162 @@
+CHEFFLOW DIRECTIVE — PRIVATE / SECRET / COMPLIMENTARY SYSTEM
+
+Design and implement a dual-layer visibility and intelligence system that allows chefs to operate with full internal awareness while preserving external transparency.
+
+CORE PRINCIPLE
+
+ChefFlow remains fully transparent by default.
+This system introduces controlled invisibility layers that never break the core transparency model but allow selective concealment where required.
+
+1. PRIVATE CONTEXT LAYER (CHEF-ONLY MEMORY)
+
+Create a system that allows chefs to attach fully private notes and items to any Dinner Circle.
+
+These must:
+
+• Be completely invisible to all other users
+• Persist across the lifecycle of the event
+• Attach to menus, clients, events, or timelines
+• Support structured and unstructured data (notes, items, reminders, intentions)
+• Never leak into client-facing surfaces, exports, or communications
+
+Use cases include:
+• Complimentary items planning
+• Internal reminders
+• Observations about clients
+• Execution notes
+
+2. SECRET ORCHESTRATION SYSTEM (CONTROLLED VISIBILITY)
+
+Create a system for multi-party selective visibility inside Dinner Circles.
+
+A “Secret” is not a note — it is a controlled-access object.
+
+Each secret must support:
+
+• Defined visibility scope:
+
+Chef only
+Chef + selected participants
+Participant-only (chef optionally excluded until invited)
+
+• Dynamic inclusion:
+
+Ability to add/remove participants at any time
+Ability to reveal the secret at a chosen moment
+
+• Object types:
+
+Secret menu items
+Surprise dishes
+Gifts
+Experiences
+Event moments (cake reveal, toast, etc.)
+
+• Planning layer:
+
+Threaded discussion tied to the secret
+Asset planning (ingredients, design, timing)
+Execution timing (when it happens during service)
+
+• Isolation:
+
+Must never appear in standard menu views
+Must never affect visible pricing unless explicitly revealed
+Must not break existing transparency systems
+3. COMPLIMENTARY INTELLIGENCE ENGINE
+
+This is not manual. This is system-driven.
+
+Build an engine that identifies, suggests, and tracks strategic complimentary items based on real context.
+
+The system must:
+
+Detect Opportunities
+
+• Unselected menu preferences
+• Strong user signals (“almost chosen”, repeated interest)
+• Client taste patterns
+• Event significance (birthday, celebration, repeat client)
+• Chef inventory and recent prep
+• Excess production or reusable components
+• Strong profit margins or low food cost scenarios
+
+Generate Suggestions
+
+Surface actionable suggestions such as:
+
+• “Client strongly preferred X but selected Y”
+• “You already produced components that can be repurposed”
+• “This event qualifies for a high-impact complimentary addition”
+
+Optimize Execution
+
+• Suggest items that:
+
+Require minimal additional cost
+Reuse existing prep
+Fit naturally into the menu flow
+
+• Distinguish between:
+
+True complimentary (new addition)
+Piggyback (derived from existing production)
+Enforce Non-Exposure
+
+• Complimentary items must:
+
+Never appear in client-facing menus
+Never affect perceived pricing
+Exist only in chef + internal system layers
+Track Impact
+
+• Record:
+
+What was given
+Why it was suggested
+Client reaction (explicit or inferred)
+Retention or follow-up impact
+
+This feeds back into future recommendations.
+
+4. SYSTEM INTEGRATION RULES
+
+• Private, Secret, and Complimentary systems must NOT interfere with:
+
+Menu clarity
+Pricing logic
+Client-facing UX
+
+• All three systems must:
+
+Be toggleable
+Be non-intrusive
+Default to off unless used
+
+• Chef always has final control:
+
+Accept / reject suggestions
+Override visibility
+Remove or reveal at any time
+5. FAILURE CONDITIONS (UNACCEPTABLE)
+
+The system is broken if:
+
+• A secret is exposed unintentionally
+• A complimentary item appears in a client-visible surface
+• A chef cannot track their own hidden actions
+• Data becomes fragmented or disconnected from the event
+• The system introduces confusion instead of clarity
+
+END STATE
+
+A chef can:
+
+• Plan surprises without leaking them
+• Collaborate privately with selected participants
+• Track everything internally without breaking transparency
+• Be intelligently guided to create high-impact moments at low cost
+
+The system should feel like:
+
+“I can do anything behind the scenes, and the client only sees perfection.”

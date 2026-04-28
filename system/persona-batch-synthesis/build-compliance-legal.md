@@ -1,12 +1,12 @@
 # Consolidated Build: Compliance Legal
 
 **Priority rank:** 5 of 20
-**Personas affected:** 3 (Dr. Julien Armand, Jordan Hale, Ari Weinzweig)
+**Personas affected:** 4 (Dr. Julien Armand, Jordan Hale, Ari Weinzweig, Miley Cyrus)
 **Average severity:** HIGH
 
 ## The Pattern
 
-3 persona(s) surfaced 3 related gaps in compliance legal. The common thread: ChefFlow lacks native support for this category of operations, forcing manual workarounds.
+4 persona(s) surfaced 4 related gaps in compliance legal. The common thread: ChefFlow lacks native support for this category of operations, forcing manual workarounds.
 
 ## Individual Gaps (deduplicated)
 
@@ -20,6 +20,9 @@
 3. **Transparency & Traceability:** - from Ari Weinzweig - HIGH
    This gap affects whether ChefFlow can support the persona's full operating workflow without manual reconciliation.
    > Search hints: transparency.traceability, transparency, traceability
+4. **Immutable Audit Log:** - from Miley Cyrus - MEDIUM
+   This gap should be considered during build planning because it creates repeated operational friction.
+   > Search hints: immutable.audit, audit.log, immutable, audit
 
 ## Recommended Build Scope
 
@@ -28,6 +31,7 @@ A single consolidated build addressing all compliance legal gaps should cover:
 - No regulator-grade traceability export
 - Compliance evidence is fragmented across multiple screens
 - Transparency & Traceability:
+- Immutable Audit Log:
 
 ## Existing Build Tasks
 
@@ -36,9 +40,14 @@ A single consolidated build addressing all compliance legal gaps should cover:
 - `system/persona-build-plans/ari-weinzweig/task-3.md`
 - `system/persona-build-plans/ari-weinzweig/task-4.md`
 - `system/persona-build-plans/ari-weinzweig/task-5.md`
+- `system/persona-build-plans/miley-cyrus/task-1.md`
+- `system/persona-build-plans/miley-cyrus/task-2.md`
+- `system/persona-build-plans/miley-cyrus/task-3.md`
+- `system/persona-build-plans/miley-cyrus/task-4.md`
 
 ## Acceptance Criteria (merged from all personas)
 
 1. Dr. Julien Armand: No regulator-grade traceability export is addressed
 2. Jordan Hale: Compliance evidence is fragmented across multiple screens is addressed
 3. Ari Weinzweig: Transparency & Traceability: is addressed
+4. Miley Cyrus: Immutable Audit Log: is addressed

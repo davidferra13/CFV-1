@@ -1,6 +1,6 @@
 # Consolidated Build: Recipe Menu
 
-**Priority rank:** 1 of 20
+**Priority rank:** 2 of 20
 **Personas affected:** 5 (Dr. Julien Armand, Leo Varga, Maya Rios, Noah Kessler, Rina Solis)
 **Average severity:** HIGH
 

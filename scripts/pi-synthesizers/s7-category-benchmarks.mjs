@@ -53,13 +53,13 @@ async function main() {
   const categories = db.prepare(`
     SELECT
       ci.category,
-      COUNT(DISTINCT ci.id) as ingredient_count
+      COUNT(DISTINCT ci.ingredient_id) as ingredient_count
     FROM canonical_ingredients ci
-    JOIN current_prices cp ON cp.ingredient_id = ci.id
+    JOIN current_prices cp ON cp.canonical_ingredient_id = ci.ingredient_id
     WHERE ci.is_food = 1
     AND ci.category IS NOT NULL
     AND ci.category != ''
-    AND cp.scraped_at > datetime('now', '-14 days')
+    AND cp.last_confirmed_at > datetime('now', '-14 days')
     AND cp.price_cents > 0
     GROUP BY ci.category
     HAVING ingredient_count >= 5
@@ -71,10 +71,10 @@ async function main() {
   const getCategoryPrices = db.prepare(`
     SELECT cp.price_cents
     FROM current_prices cp
-    JOIN canonical_ingredients ci ON ci.id = cp.ingredient_id
+    JOIN canonical_ingredients ci ON ci.ingredient_id = cp.canonical_ingredient_id
     WHERE ci.category = ?
     AND ci.is_food = 1
-    AND cp.scraped_at > datetime('now', '-14 days')
+    AND cp.last_confirmed_at > datetime('now', '-14 days')
     AND cp.price_cents > 0
     AND cp.price_cents < 100000
   `);
@@ -82,10 +82,10 @@ async function main() {
   const getCategoryPrices30dAgo = db.prepare(`
     SELECT cp.price_cents
     FROM current_prices cp
-    JOIN canonical_ingredients ci ON ci.id = cp.ingredient_id
+    JOIN canonical_ingredients ci ON ci.ingredient_id = cp.canonical_ingredient_id
     WHERE ci.category = ?
     AND ci.is_food = 1
-    AND cp.scraped_at BETWEEN datetime('now', '-44 days') AND datetime('now', '-30 days')
+    AND cp.last_confirmed_at BETWEEN datetime('now', '-44 days') AND datetime('now', '-30 days')
     AND cp.price_cents > 0
     AND cp.price_cents < 100000
   `);

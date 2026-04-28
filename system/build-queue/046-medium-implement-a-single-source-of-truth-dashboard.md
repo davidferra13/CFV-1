@@ -1,10 +1,10 @@
 ---
 status: 'pending'
 priority: 'medium'
-category: 'communication'
+category: 'payment-financial'
 source: 'Emma Chamberlain'
 confidence: 'high'
-generated: '2026-04-27T06:53:59.578Z'
+generated: '2026-04-28T00:53:29.697Z'
 ---
 
 # Implement a "Single Source of Truth" Dashboard:

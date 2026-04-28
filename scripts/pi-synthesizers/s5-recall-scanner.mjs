@@ -47,8 +47,8 @@ async function main() {
   // Get active recalls
   const recalls = db.prepare(`
     SELECT * FROM fda_recalls
-    WHERE status != 'terminated'
-    ORDER BY published_date DESC
+    WHERE COALESCE(status, '') != 'terminated'
+    ORDER BY report_date DESC
   `).all();
 
   console.log(`  Active recalls: ${recalls.length}`);
@@ -61,7 +61,7 @@ async function main() {
 
   // Get food ingredients for matching
   const ingredients = db.prepare(`
-    SELECT id, name, category FROM canonical_ingredients
+    SELECT ingredient_id as id, name, category FROM canonical_ingredients
     WHERE is_food = 1
   `).all();
 

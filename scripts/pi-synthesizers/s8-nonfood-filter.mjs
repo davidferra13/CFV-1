@@ -70,6 +70,20 @@ function isNonFoodByName(name) {
   return false;
 }
 
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+function isBusy(err) { return err?.code?.startsWith('SQLITE_BUSY') || /database is locked/i.test(err?.message || ''); }
+
+async function runWithRetry(label, fn, attempts = 5) {
+  for (let i = 1; i <= attempts; i++) {
+    try { return await fn(); }
+    catch (err) {
+      if (!isBusy(err) || i === attempts) throw err;
+      console.warn(`  ${label}: DB locked, retry ${i}/${attempts} in ${i * 15}s...`);
+      await sleep(i * 15000);
+    }
+  }
+}
+
 async function main() {
   const db = new Database(DB_PATH, { timeout: 300000 });
   db.pragma('journal_mode = WAL');
@@ -102,45 +116,38 @@ async function main() {
 
   const setCategoryLower = new Set(NON_FOOD_CATEGORIES);
 
-  const updateBatch = db.transaction((items) => {
-    for (const item of items) {
-      let isFood = 1;
+  // Process without transactions - individual updates to avoid holding write lock
+  for (let i = 0; i < ingredients.length; i++) {
+    const item = ingredients[i];
+    let isFood = 1;
 
-      // Check category first
-      const catLower = (item.category || '').toLowerCase().trim();
-      if (setCategoryLower.has(catLower)) {
-        isFood = 0;
-      }
+    const catLower = (item.category || '').toLowerCase().trim();
+    if (setCategoryLower.has(catLower)) {
+      isFood = 0;
+    }
 
-      // Check name patterns (can override category for edge cases)
-      if (isFood && isNonFoodByName(item.name)) {
-        isFood = 0;
-      }
+    if (isFood && isNonFoodByName(item.name)) {
+      isFood = 0;
+    }
 
-      if (isFood) {
-        foodCount++;
-      } else {
-        nonFoodCount++;
-      }
+    if (isFood) {
+      foodCount++;
+    } else {
+      nonFoodCount++;
+    }
 
-      // Only update if value changed
-      const result = db.prepare(`
-        SELECT is_food FROM canonical_ingredients WHERE id = ?
-      `).get(item.id);
-
-      if (result && result.is_food !== isFood) {
-        update.run(isFood, item.id);
-        changedCount++;
+    try {
+      update.run(isFood, item.id);
+      changedCount++;
+    } catch (err) {
+      if (isBusy(err)) {
+        await sleep(1000);
+        try { update.run(isFood, item.id); changedCount++; }
+        catch (e) { /* skip this one */ }
       }
     }
-  });
 
-  // Process in batches of 5000
-  const batchSize = 5000;
-  for (let i = 0; i < ingredients.length; i += batchSize) {
-    const batch = ingredients.slice(i, i + batchSize);
-    updateBatch(batch);
-    if (i % 50000 === 0 && i > 0) {
+    if (i % 20000 === 0 && i > 0) {
       console.log(`  Processed ${i}/${ingredients.length}...`);
     }
   }

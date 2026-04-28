@@ -1,12 +1,12 @@
 # Consolidated Build: Sourcing Supply
 
-**Priority rank:** 5 of 21
-**Personas affected:** 3 (Noah Kessler, Ethan Calder, Victor Hale)
+**Priority rank:** 4 of 20
+**Personas affected:** 2 (Noah Kessler, Andrew Zimmern)
 **Average severity:** HIGH
 
 ## The Pattern
 
-3 persona(s) surfaced 5 related gaps in sourcing supply. The common thread: ChefFlow lacks native support for this category of operations, forcing manual workarounds.
+2 persona(s) surfaced 4 related gaps in sourcing supply. The common thread: ChefFlow lacks native support for this category of operations, forcing manual workarounds.
 
 ## Individual Gaps (deduplicated)
 
@@ -19,12 +19,9 @@
 3. **No multi-store route and split-cart optimizer** - from Noah Kessler - HIGH
    Recommendation for best combination of stores to minimize spend while meeting availability constraints and travel time.
    > Search hints: multi-store.route, route.split-cart, split-cart.optimizer, multi-store, route, split-cart, optimizer
-4. **Hyper-Local Sourcing:** - from Ethan Calder - HIGH
+4. **Advanced Inventory/Supply Chain:** - from Andrew Zimmern - HIGH
    The analyzer identified this as a major product fit concern. Review the raw analyzer output below for the original wording and supporting context.
-   > Search hints: hyper-local.sourcing, hyper-local, sourcing
-5. **Vendor Lock-in:** - from Victor Hale - LOW
-   This gap is lower priority but still useful for product fit assessment.
-   > Search hints: vendor.lock-in, vendor, lock-in
+   > Search hints: advanced.inventorysupply, inventorysupply.chain, advanced, inventorysupply, chain
 
 ## Recommended Build Scope
 
@@ -33,26 +30,18 @@ A single consolidated build addressing all sourcing supply gaps should cover:
 - No external store availability signal
 - No destination-first store intelligence for travel
 - No multi-store route and split-cart optimizer
-- Hyper-Local Sourcing:
-- Vendor Lock-in:
+- Advanced Inventory/Supply Chain:
 
 ## Existing Build Tasks
 
-- `system/persona-build-plans/ethan-calder/task-1.md`
-- `system/persona-build-plans/ethan-calder/task-2.md`
-- `system/persona-build-plans/ethan-calder/task-3.md`
-- `system/persona-build-plans/ethan-calder/task-4.md`
-- `system/persona-build-plans/ethan-calder/task-5.md`
-- `system/persona-build-plans/victor-hale/task-1.md`
-- `system/persona-build-plans/victor-hale/task-2.md`
-- `system/persona-build-plans/victor-hale/task-3.md`
-- `system/persona-build-plans/victor-hale/task-4.md`
-- `system/persona-build-plans/victor-hale/task-5.md`
+- `system/persona-build-plans/andrew-zimmern/task-1.md`
+- `system/persona-build-plans/andrew-zimmern/task-2.md`
+- `system/persona-build-plans/andrew-zimmern/task-3.md`
+- `system/persona-build-plans/andrew-zimmern/task-4.md`
 
 ## Acceptance Criteria (merged from all personas)
 
 1. Noah Kessler: No external store availability signal is addressed
 2. Noah Kessler: No destination-first store intelligence for travel is addressed
 3. Noah Kessler: No multi-store route and split-cart optimizer is addressed
-4. Ethan Calder: Hyper-Local Sourcing: is addressed
-5. Victor Hale: Vendor Lock-in: is addressed
+4. Andrew Zimmern: Advanced Inventory/Supply Chain: is addressed

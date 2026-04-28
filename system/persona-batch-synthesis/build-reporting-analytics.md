@@ -1,6 +1,6 @@
 # Consolidated Build: Reporting Analytics
 
-**Priority rank:** 4 of 20
+**Priority rank:** 7 of 20
 **Personas affected:** 3 (Maya Rios, Rina Solis, Emma Chamberlain)
 **Average severity:** HIGH
 

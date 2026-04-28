@@ -106,16 +106,16 @@ async function main() {
   // Get food ingredients with prices
   const ingredients = db.prepare(`
     SELECT
-      ci.id,
+      ci.ingredient_id as id,
       ci.name,
       ci.category,
       AVG(cp.price_cents) as avg_price
     FROM canonical_ingredients ci
-    JOIN current_prices cp ON cp.ingredient_id = ci.id
+    JOIN current_prices cp ON cp.canonical_ingredient_id = ci.ingredient_id
     WHERE ci.is_food = 1
-    AND cp.scraped_at > datetime('now', '-14 days')
+    AND cp.last_confirmed_at > datetime('now', '-14 days')
     AND cp.price_cents > 0
-    GROUP BY ci.id
+    GROUP BY ci.ingredient_id
   `).all();
 
   console.log(`  Food ingredients with prices: ${ingredients.length}`);

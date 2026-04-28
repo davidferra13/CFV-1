@@ -84,13 +84,51 @@
       ],
       "analyzed_at": "2026-04-27T07:05:47.464Z",
       "planned_at": "2026-04-27T07:05:47.464Z"
+    },
+    {
+      "slug": "miley-cyrus",
+      "type": "Guest",
+      "source_file": "Chef Flow Personas/Completed/Guest/miley-cyrus.txt",
+      "report": "docs/stress-tests/persona-miley-cyrus-2026-04-27.md",
+      "build_tasks": [
+        "system/persona-build-plans/miley-cyrus/task-1.md",
+        "system/persona-build-plans/miley-cyrus/task-2.md",
+        "system/persona-build-plans/miley-cyrus/task-3.md",
+        "system/persona-build-plans/miley-cyrus/task-4.md"
+      ],
+      "analyzed_at": "2026-04-28T00:38:40.246Z",
+      "planned_at": "2026-04-28T00:38:40.245Z"
+    },
+    {
+      "slug": "olajide-olatunji",
+      "type": "Guest",
+      "source_file": "Chef Flow Personas/Completed/Guest/olajide-olatunji.txt",
+      "report": "docs/stress-tests/persona-olajide-olatunji-2026-04-27.md",
+      "build_tasks": [
+        "system/persona-build-plans/olajide-olatunji/task-1.md",
+        "system/persona-build-plans/olajide-olatunji/task-3.md",
+        "system/persona-build-plans/olajide-olatunji/task-4.md",
+        "system/persona-build-plans/olajide-olatunji/task-5.md"
+      ],
+      "analyzed_at": "2026-04-28T00:52:46.491Z",
+      "planned_at": "2026-04-28T00:52:46.491Z"
     }
   ],
   "failed": [
     {
+      "source_file": "Chef Flow Personas\\Uncompleted\\Guest\\woody.txt",
+      "error": "Validation failed (score: 0): File not found",
+      "failed_at": "2026-04-27T06:42:33.134Z"
+    },
+    {
       "source_file": "Chef Flow Personas\\Uncompleted\\Chef\\persona.txt",
       "error": "Validation failed (score: 0): Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail; Word count too low: 389 (minimum 500)",
       "failed_at": "2026-04-27T06:57:43.963Z"
+    },
+    {
+      "source_file": "Chef Flow Personas\\Uncompleted\\Staff\\rene.txt",
+      "error": "Validation failed (score: 0): File not found",
+      "failed_at": "2026-04-27T07:05:47.466Z"
     },
     {
       "source_file": "Chef Flow Personas\\Uncompleted\\Partner\\danny-meyer.txt",
@@ -98,16 +136,16 @@
       "failed_at": "2026-04-27T07:10:14.119Z"
     }
   ],
-  "last_cycle": "2026-04-28T00:13:59.426Z",
-  "total_personas_processed": 6,
-  "total_build_tasks_queued": 25,
-  "last_synthesis_at": "2026-04-27T06:53:59.580Z",
+  "last_cycle": "2026-04-28T00:53:29.429Z",
+  "total_personas_processed": 8,
+  "total_build_tasks_queued": 33,
+  "last_synthesis_at": "2026-04-28T00:53:29.703Z",
   "metrics": {
-    "total_cycles": 1,
-    "total_analyzer_time_ms": 0,
-    "total_planner_time_ms": 0,
+    "total_cycles": 2,
+    "total_analyzer_time_ms": 359847,
+    "total_planner_time_ms": 1784201,
     "total_synthesis_time_ms": 0,
-    "last_cycle_duration_ms": 0,
+    "last_cycle_duration_ms": 2187002,
     "retries_used": 0
   }
 }

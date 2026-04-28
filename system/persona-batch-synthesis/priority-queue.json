@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-27T21:49:16.496Z",
+  "generated_at": "2026-04-28T00:53:29.641Z",
   "queue": [
     {
       "title": "No molecule-level culinary data model",
@@ -8,20 +8,13 @@
       "severity": "HIGH",
       "description": "Tying batch/extraction/potency/terpenes to ingredients, dishes, and courses.",
       "search_hints": {
-        "grep_terms": [
-          "molecule-level.culinary",
-          "culinary.data",
-          "molecule-level",
-          "culinary"
-        ],
+        "grep_terms": ["molecule-level.culinary", "culinary.data", "molecule-level", "culinary"],
         "known_built_matches": [],
         "likely_false_positive": false
       },
       "likely_built": false,
       "category": "recipe-menu",
-      "personas": [
-        "dr-julien-armand-michelin"
-      ],
+      "personas": ["dr-julien-armand-michelin"],
       "priority_score": 6
     },
     {
@@ -43,9 +36,7 @@
       },
       "likely_built": false,
       "category": "recipe-menu",
-      "personas": [
-        "dr-julien-armand-michelin"
-      ],
+      "personas": ["dr-julien-armand-michelin"],
       "priority_score": 6
     },
     {
@@ -67,9 +58,7 @@
       },
       "likely_built": false,
       "category": "recipe-menu",
-      "personas": [
-        "leo-varga"
-      ],
+      "personas": ["leo-varga"],
       "priority_score": 6
     },
     {
@@ -92,9 +81,7 @@
       },
       "likely_built": false,
       "category": "recipe-menu",
-      "personas": [
-        "maya-rios-cannabis-pastry-chef-micro"
-      ],
+      "personas": ["maya-rios-cannabis-pastry-chef-micro"],
       "priority_score": 6
     },
     {
@@ -104,19 +91,13 @@
       "severity": "HIGH",
       "description": "The system lacks any mechanism to calculate THC distribution per unit in a batch. Maya requires precise calculation of total THC input → unit distribution (e.g., 100 brownies at exactly 5mg each), but ChefFlow's recipe system is designed for event courses, not batch production.",
       "search_hints": {
-        "grep_terms": [
-          "batch.dosing",
-          "batch",
-          "dosing"
-        ],
+        "grep_terms": ["batch.dosing", "batch", "dosing"],
         "known_built_matches": [],
         "likely_false_positive": false
       },
       "likely_built": false,
       "category": "recipe-menu",
-      "personas": [
-        "maya-rios-cannabis-pastry-chef-micro"
-      ],
+      "personas": ["maya-rios-cannabis-pastry-chef-micro"],
       "priority_score": 6
     },
     {
@@ -126,20 +107,13 @@
       "severity": "HIGH",
       "description": "Workflow that starts from currently available and priced ingredients, then proposes feasible dish options.",
       "search_hints": {
-        "grep_terms": [
-          "market-first.menu",
-          "menu.builder",
-          "market-first",
-          "builder"
-        ],
+        "grep_terms": ["market-first.menu", "menu.builder", "market-first", "builder"],
         "known_built_matches": [],
         "likely_false_positive": false
       },
       "likely_built": false,
       "category": "recipe-menu",
-      "personas": [
-        "noah-kessler"
-      ],
+      "personas": ["noah-kessler"],
       "priority_score": 6
     },
     {
@@ -164,9 +138,7 @@
       },
       "likely_built": false,
       "category": "recipe-menu",
-      "personas": [
-        "rina-solis"
-      ],
+      "personas": ["rina-solis"],
       "priority_score": 6
     },
     {
@@ -191,9 +163,23 @@
       },
       "likely_built": false,
       "category": "recipe-menu",
-      "personas": [
-        "rina-solis"
-      ],
+      "personas": ["rina-solis"],
+      "priority_score": 6
+    },
+    {
+      "title": "Project Management/Workflow:",
+      "from": "andrew-zimmern",
+      "from_name": "Andrew Zimmern",
+      "severity": "HIGH",
+      "description": "This gap affects whether ChefFlow can support the persona's full operating workflow without manual reconciliation.",
+      "search_hints": {
+        "grep_terms": ["project.managementworkflow", "project", "managementworkflow"],
+        "known_built_matches": [],
+        "likely_false_positive": false
+      },
+      "likely_built": false,
+      "category": "uncategorized",
+      "personas": ["andrew-zimmern"],
       "priority_score": 6
     },
     {
@@ -214,9 +200,7 @@
       },
       "likely_built": false,
       "category": "uncategorized",
-      "personas": [
-        "ari-weinzweig"
-      ],
+      "personas": ["ari-weinzweig"],
       "priority_score": 6
     },
     {
@@ -226,11 +210,7 @@
       "severity": "HIGH",
       "description": "The analyzer identified this as a major product fit concern. Review the raw analyzer output below for the original wording and supporting context.",
       "search_hints": {
-        "grep_terms": [
-          "information.overloadfragmentation",
-          "information",
-          "overloadfragmentation"
-        ],
+        "grep_terms": ["information.overloadfragmentation", "information", "overloadfragmentation"],
         "known_built_matches": [],
         "likely_false_positive": false
       },
@@ -242,9 +222,7 @@
         }
       ],
       "category": "uncategorized",
-      "personas": [
-        "emma-chamberlain"
-      ],
+      "personas": ["emma-chamberlain"],
       "priority_score": 6
     },
     {
@@ -254,17 +232,58 @@
       "severity": "HIGH",
       "description": "This gap affects whether ChefFlow can support the persona's full operating workflow without manual reconciliation.",
       "search_hints": {
+        "grep_terms": ["ownership"],
+        "known_built_matches": [],
+        "likely_false_positive": false
+      },
+      "likely_built": false,
+      "category": "uncategorized",
+      "personas": ["emma-chamberlain"],
+      "priority_score": 6
+    },
+    {
+      "title": "Implement a \"Critical Dependency Map\":",
+      "from": "miley-cyrus",
+      "from_name": "Miley Cyrus",
+      "severity": "HIGH",
+      "description": "The analyzer identified this as a major product fit concern. Review the raw analyzer output below for the original wording and supporting context.",
+      "search_hints": {
         "grep_terms": [
-          "ownership"
+          "implement.critical",
+          "critical.dependency",
+          "dependency.map",
+          "implement",
+          "critical",
+          "dependency"
         ],
         "known_built_matches": [],
         "likely_false_positive": false
       },
       "likely_built": false,
       "category": "uncategorized",
-      "personas": [
-        "emma-chamberlain"
-      ],
+      "personas": ["miley-cyrus"],
+      "priority_score": 6
+    },
+    {
+      "title": "Mandatory Multi-Signature Approval:",
+      "from": "miley-cyrus",
+      "from_name": "Miley Cyrus",
+      "severity": "HIGH",
+      "description": "This gap affects whether ChefFlow can support the persona's full operating workflow without manual reconciliation.",
+      "search_hints": {
+        "grep_terms": [
+          "mandatory.multi-signature",
+          "multi-signature.approval",
+          "mandatory",
+          "multi-signature",
+          "approval"
+        ],
+        "known_built_matches": [],
+        "likely_false_positive": false
+      },
+      "likely_built": false,
+      "category": "uncategorized",
+      "personas": ["miley-cyrus"],
       "priority_score": 6
     },
     {
@@ -286,9 +305,7 @@
       },
       "likely_built": false,
       "category": "uncategorized",
-      "personas": [
-        "mindy-weiss"
-      ],
+      "personas": ["mindy-weiss"],
       "priority_score": 6
     },
     {
@@ -312,10 +329,8 @@
       },
       "likely_built": false,
       "category": "payment-financial",
-      "personas": [
-        "noah-kessler"
-      ],
-      "priority_score": 4.8
+      "personas": ["noah-kessler"],
+      "priority_score": 5.4
     },
     {
       "title": "No regulator-grade traceability export",
@@ -336,10 +351,8 @@
       },
       "likely_built": false,
       "category": "compliance-legal",
-      "personas": [
-        "dr-julien-armand-michelin"
-      ],
-      "priority_score": 4.8
+      "personas": ["dr-julien-armand-michelin"],
+      "priority_score": 5.4
     },
     {
       "title": "Transparency & Traceability:",
@@ -348,20 +361,69 @@
       "severity": "HIGH",
       "description": "This gap affects whether ChefFlow can support the persona's full operating workflow without manual reconciliation.",
       "search_hints": {
-        "grep_terms": [
-          "transparency.traceability",
-          "transparency",
-          "traceability"
-        ],
+        "grep_terms": ["transparency.traceability", "transparency", "traceability"],
         "known_built_matches": [],
         "likely_false_positive": false
       },
       "likely_built": false,
       "category": "compliance-legal",
-      "personas": [
-        "ari-weinzweig"
-      ],
-      "priority_score": 4.8
+      "personas": ["ari-weinzweig"],
+      "priority_score": 5.4
+    },
+    {
+      "title": "No real-time dosing administration log",
+      "from": "dr-julien-armand-michelin",
+      "from_name": "Dr. Julien Armand",
+      "severity": "HIGH",
+      "description": "That records exact delivered mg and immediate guest response in-service.",
+      "search_hints": {
+        "grep_terms": ["dosing.administration", "administration.log", "dosing", "administration"],
+        "known_built_matches": [],
+        "likely_false_positive": false
+      },
+      "likely_built": false,
+      "category": "documentation-records",
+      "personas": ["dr-julien-armand-michelin"],
+      "priority_score": 5.4
+    },
+    {
+      "title": "Sales Channel Tracking",
+      "from": "maya-rios-cannabis-pastry-chef-micro",
+      "from_name": "Maya Rios",
+      "severity": "HIGH",
+      "description": "\\*\\* ChefFlow only tracks event sales (dinners), not product sales through pop-ups, drops, or direct channels. Maya's multi-channel sales require movement tracking across channels, but ChefFlow has no product-level sales history.",
+      "search_hints": {
+        "grep_terms": ["sales.channel", "channel.tracking", "sales", "channel", "tracking"],
+        "known_built_matches": [],
+        "likely_false_positive": false
+      },
+      "likely_built": false,
+      "category": "documentation-records",
+      "personas": ["maya-rios-cannabis-pastry-chef-micro"],
+      "priority_score": 5.4
+    },
+    {
+      "title": "No explicit outcome-based reaction log as first-class feedback",
+      "from": "rina-solis",
+      "from_name": "Rina Solis",
+      "severity": "HIGH",
+      "description": "Feedback surfaces are broad, but this persona requires structured outcomes such as tolerated, mild reaction, severe reaction, and clinician follow-up.",
+      "search_hints": {
+        "grep_terms": [
+          "outcome-based.reaction",
+          "reaction.log",
+          "log.feedback",
+          "outcome-based",
+          "reaction",
+          "feedback"
+        ],
+        "known_built_matches": [],
+        "likely_false_positive": false
+      },
+      "likely_built": false,
+      "category": "documentation-records",
+      "personas": ["rina-solis"],
+      "priority_score": 5.4
     },
     {
       "title": "No deterministic dose-curve engine",
@@ -370,19 +432,13 @@
       "severity": "HIGH",
       "description": "For assigning and validating per-guest dose progression by course (the persona’s core workflow).",
       "search_hints": {
-        "grep_terms": [
-          "deterministic.dose-curve",
-          "deterministic",
-          "dose-curve"
-        ],
+        "grep_terms": ["deterministic.dose-curve", "deterministic", "dose-curve"],
         "known_built_matches": [],
         "likely_false_positive": false
       },
       "likely_built": false,
       "category": "dosing-cannabis",
-      "personas": [
-        "dr-julien-armand-michelin"
-      ],
+      "personas": ["dr-julien-armand-michelin"],
       "priority_score": 4.8
     },
     {
@@ -392,20 +448,13 @@
       "severity": "HIGH",
       "description": "Tying batch/extraction/potency/terpenes to ingredients, dishes, and courses.",
       "search_hints": {
-        "grep_terms": [
-          "molecule-level.culinary",
-          "culinary.data",
-          "molecule-level",
-          "culinary"
-        ],
+        "grep_terms": ["molecule-level.culinary", "culinary.data", "molecule-level", "culinary"],
         "known_built_matches": [],
         "likely_false_positive": false
       },
       "likely_built": false,
       "category": "dosing-cannabis",
-      "personas": [
-        "dr-julien-armand-michelin"
-      ],
+      "personas": ["dr-julien-armand-michelin"],
       "priority_score": 4.8
     },
     {
@@ -428,9 +477,7 @@
       },
       "likely_built": false,
       "category": "dosing-cannabis",
-      "personas": [
-        "dr-julien-armand-michelin"
-      ],
+      "personas": ["dr-julien-armand-michelin"],
       "priority_score": 4.8
     },
     {
@@ -440,21 +487,13 @@
       "severity": "HIGH",
       "description": "Jordan’s highest-risk failure mode is inconsistent per-course dose allocation across chefs and events. Cannabis pages and dosage fields exist, but there is no explicitly documented rules engine enforcing dose standards globally.",
       "search_hints": {
-        "grep_terms": [
-          "canonical.central",
-          "central.dosing",
-          "canonical",
-          "central",
-          "dosing"
-        ],
+        "grep_terms": ["canonical.central", "central.dosing", "canonical", "central", "dosing"],
         "known_built_matches": [],
         "likely_false_positive": false
       },
       "likely_built": false,
       "category": "dosing-cannabis",
-      "personas": [
-        "jordan-hale-cannabis-culinary-director-multi"
-      ],
+      "personas": ["jordan-hale-cannabis-culinary-director-multi"],
       "priority_score": 4.8
     },
     {
@@ -479,9 +518,7 @@
       },
       "likely_built": false,
       "category": "dosing-cannabis",
-      "personas": [
-        "jordan-hale-cannabis-culinary-director-multi"
-      ],
+      "personas": ["jordan-hale-cannabis-culinary-director-multi"],
       "priority_score": 4.8
     },
     {
@@ -504,9 +541,7 @@
       },
       "likely_built": false,
       "category": "dosing-cannabis",
-      "personas": [
-        "maya-rios-cannabis-pastry-chef-micro"
-      ],
+      "personas": ["maya-rios-cannabis-pastry-chef-micro"],
       "priority_score": 4.8
     },
     {
@@ -516,19 +551,13 @@
       "severity": "HIGH",
       "description": "The system lacks any mechanism to calculate THC distribution per unit in a batch. Maya requires precise calculation of total THC input → unit distribution (e.g., 100 brownies at exactly 5mg each), but ChefFlow's recipe system is designed for event courses, not batch production.",
       "search_hints": {
-        "grep_terms": [
-          "batch.dosing",
-          "batch",
-          "dosing"
-        ],
+        "grep_terms": ["batch.dosing", "batch", "dosing"],
         "known_built_matches": [],
         "likely_false_positive": false
       },
       "likely_built": false,
       "category": "dosing-cannabis",
-      "personas": [
-        "maya-rios-cannabis-pastry-chef-micro"
-      ],
+      "personas": ["maya-rios-cannabis-pastry-chef-micro"],
       "priority_score": 4.8
     },
     {
@@ -538,21 +567,13 @@
       "severity": "HIGH",
       "description": "\\*\\* ChefFlow only tracks event sales (dinners), not product sales through pop-ups, drops, or direct channels. Maya's multi-channel sales require movement tracking across channels, but ChefFlow has no product-level sales history.",
       "search_hints": {
-        "grep_terms": [
-          "sales.channel",
-          "channel.tracking",
-          "sales",
-          "channel",
-          "tracking"
-        ],
+        "grep_terms": ["sales.channel", "channel.tracking", "sales", "channel", "tracking"],
         "known_built_matches": [],
         "likely_false_positive": false
       },
       "likely_built": false,
       "category": "reporting-analytics",
-      "personas": [
-        "maya-rios-cannabis-pastry-chef-micro"
-      ],
+      "personas": ["maya-rios-cannabis-pastry-chef-micro"],
       "priority_score": 4.8
     },
     {
@@ -575,9 +596,7 @@
       },
       "likely_built": false,
       "category": "reporting-analytics",
-      "personas": [
-        "rina-solis"
-      ],
+      "personas": ["rina-solis"],
       "priority_score": 4.8
     },
     {
@@ -600,81 +619,7 @@
       },
       "likely_built": false,
       "category": "reporting-analytics",
-      "personas": [
-        "rina-solis"
-      ],
-      "priority_score": 4.8
-    },
-    {
-      "title": "No real-time dosing administration log",
-      "from": "dr-julien-armand-michelin",
-      "from_name": "Dr. Julien Armand",
-      "severity": "HIGH",
-      "description": "That records exact delivered mg and immediate guest response in-service.",
-      "search_hints": {
-        "grep_terms": [
-          "dosing.administration",
-          "administration.log",
-          "dosing",
-          "administration"
-        ],
-        "known_built_matches": [],
-        "likely_false_positive": false
-      },
-      "likely_built": false,
-      "category": "documentation-records",
-      "personas": [
-        "dr-julien-armand-michelin"
-      ],
-      "priority_score": 4.8
-    },
-    {
-      "title": "Sales Channel Tracking",
-      "from": "maya-rios-cannabis-pastry-chef-micro",
-      "from_name": "Maya Rios",
-      "severity": "HIGH",
-      "description": "\\*\\* ChefFlow only tracks event sales (dinners), not product sales through pop-ups, drops, or direct channels. Maya's multi-channel sales require movement tracking across channels, but ChefFlow has no product-level sales history.",
-      "search_hints": {
-        "grep_terms": [
-          "sales.channel",
-          "channel.tracking",
-          "sales",
-          "channel",
-          "tracking"
-        ],
-        "known_built_matches": [],
-        "likely_false_positive": false
-      },
-      "likely_built": false,
-      "category": "documentation-records",
-      "personas": [
-        "maya-rios-cannabis-pastry-chef-micro"
-      ],
-      "priority_score": 4.8
-    },
-    {
-      "title": "No explicit outcome-based reaction log as first-class feedback",
-      "from": "rina-solis",
-      "from_name": "Rina Solis",
-      "severity": "HIGH",
-      "description": "Feedback surfaces are broad, but this persona requires structured outcomes such as tolerated, mild reaction, severe reaction, and clinician follow-up.",
-      "search_hints": {
-        "grep_terms": [
-          "outcome-based.reaction",
-          "reaction.log",
-          "log.feedback",
-          "outcome-based",
-          "reaction",
-          "feedback"
-        ],
-        "known_built_matches": [],
-        "likely_false_positive": false
-      },
-      "likely_built": false,
-      "category": "documentation-records",
-      "personas": [
-        "rina-solis"
-      ],
+      "personas": ["rina-solis"],
       "priority_score": 4.8
     },
     {
@@ -698,9 +643,7 @@
       },
       "likely_built": false,
       "category": "event-lifecycle",
-      "personas": [
-        "kai-donovan"
-      ],
+      "personas": ["kai-donovan"],
       "priority_score": 4.2
     },
     {
@@ -710,21 +653,13 @@
       "severity": "HIGH",
       "description": "\\*\\* ChefFlow only tracks event sales (dinners), not product sales through pop-ups, drops, or direct channels. Maya's multi-channel sales require movement tracking across channels, but ChefFlow has no product-level sales history.",
       "search_hints": {
-        "grep_terms": [
-          "sales.channel",
-          "channel.tracking",
-          "sales",
-          "channel",
-          "tracking"
-        ],
+        "grep_terms": ["sales.channel", "channel.tracking", "sales", "channel", "tracking"],
         "known_built_matches": [],
         "likely_false_positive": false
       },
       "likely_built": false,
       "category": "event-lifecycle",
-      "personas": [
-        "maya-rios-cannabis-pastry-chef-micro"
-      ],
+      "personas": ["maya-rios-cannabis-pastry-chef-micro"],
       "priority_score": 4.2
     },
     {
@@ -734,20 +669,13 @@
       "severity": "HIGH",
       "description": "ChefFlow has no mechanism for handling sell-out flow during high-demand events. When Kai releases an event, the system would require manual intervention to manage 200+ people, causing first-come chaos and message overload.",
       "search_hints": {
-        "grep_terms": [
-          "drop.high-demand",
-          "high-demand.releases",
-          "high-demand",
-          "releases"
-        ],
+        "grep_terms": ["drop.high-demand", "high-demand.releases", "high-demand", "releases"],
         "known_built_matches": [],
         "likely_false_positive": false
       },
       "likely_built": false,
       "category": "ticketing-drops",
-      "personas": [
-        "kai-donovan"
-      ],
+      "personas": ["kai-donovan"],
       "priority_score": 4.2
     },
     {
@@ -757,21 +685,13 @@
       "severity": "HIGH",
       "description": "\\*\\* ChefFlow only tracks event sales (dinners), not product sales through pop-ups, drops, or direct channels. Maya's multi-channel sales require movement tracking across channels, but ChefFlow has no product-level sales history.",
       "search_hints": {
-        "grep_terms": [
-          "sales.channel",
-          "channel.tracking",
-          "sales",
-          "channel",
-          "tracking"
-        ],
+        "grep_terms": ["sales.channel", "channel.tracking", "sales", "channel", "tracking"],
         "known_built_matches": [],
         "likely_false_positive": false
       },
       "likely_built": false,
       "category": "ticketing-drops",
-      "personas": [
-        "maya-rios-cannabis-pastry-chef-micro"
-      ],
+      "personas": ["maya-rios-cannabis-pastry-chef-micro"],
       "priority_score": 4.2
     },
     {
@@ -793,9 +713,7 @@
       },
       "likely_built": false,
       "category": "dietary-medical",
-      "personas": [
-        "leo-varga"
-      ],
+      "personas": ["leo-varga"],
       "priority_score": 4.2
     },
     {
@@ -820,9 +738,7 @@
       },
       "likely_built": false,
       "category": "dietary-medical",
-      "personas": [
-        "rina-solis"
-      ],
+      "personas": ["rina-solis"],
       "priority_score": 4.2
     },
     {
@@ -847,9 +763,7 @@
       },
       "likely_built": false,
       "category": "dietary-medical",
-      "personas": [
-        "rina-solis"
-      ],
+      "personas": ["rina-solis"],
       "priority_score": 4.2
     },
     {
@@ -859,20 +773,13 @@
       "severity": "HIGH",
       "description": "That records exact delivered mg and immediate guest response in-service.",
       "search_hints": {
-        "grep_terms": [
-          "dosing.administration",
-          "administration.log",
-          "dosing",
-          "administration"
-        ],
+        "grep_terms": ["dosing.administration", "administration.log", "dosing", "administration"],
         "known_built_matches": [],
         "likely_false_positive": false
       },
       "likely_built": false,
       "category": "scheduling-calendar",
-      "personas": [
-        "dr-julien-armand-michelin"
-      ],
+      "personas": ["dr-julien-armand-michelin"],
       "priority_score": 4.2
     },
     {
@@ -896,9 +803,7 @@
       },
       "likely_built": false,
       "category": "scheduling-calendar",
-      "personas": [
-        "leo-varga"
-      ],
+      "personas": ["leo-varga"],
       "priority_score": 4.2
     },
     {
@@ -919,9 +824,7 @@
       },
       "likely_built": false,
       "category": "scheduling-calendar",
-      "personas": [
-        "leo-varga"
-      ],
+      "personas": ["leo-varga"],
       "priority_score": 4.2
     },
     {
@@ -945,9 +848,7 @@
       },
       "likely_built": false,
       "category": "staffing-team",
-      "personas": [
-        "jordan-hale-cannabis-culinary-director-multi"
-      ],
+      "personas": ["jordan-hale-cannabis-culinary-director-multi"],
       "priority_score": 4.2
     },
     {
@@ -972,9 +873,7 @@
       },
       "likely_built": false,
       "category": "staffing-team",
-      "personas": [
-        "jordan-hale-cannabis-culinary-director-multi"
-      ],
+      "personas": ["jordan-hale-cannabis-culinary-director-multi"],
       "priority_score": 4.2
     },
     {
@@ -996,9 +895,101 @@
       },
       "likely_built": false,
       "category": "staffing-team",
-      "personas": [
-        "leo-varga"
-      ],
+      "personas": ["leo-varga"],
+      "priority_score": 4.2
+    },
+    {
+      "title": "No external store availability signal",
+      "from": "noah-kessler",
+      "from_name": "Noah Kessler",
+      "severity": "HIGH",
+      "description": "In-stock/low-stock indicators for stores Noah will shop.",
+      "search_hints": {
+        "grep_terms": [
+          "external.store",
+          "store.availability",
+          "availability.signal",
+          "external",
+          "store",
+          "availability",
+          "signal"
+        ],
+        "known_built_matches": [],
+        "likely_false_positive": false
+      },
+      "likely_built": false,
+      "category": "sourcing-supply",
+      "personas": ["noah-kessler"],
+      "priority_score": 4.2
+    },
+    {
+      "title": "No destination-first store intelligence for travel",
+      "from": "noah-kessler",
+      "from_name": "Noah Kessler",
+      "severity": "HIGH",
+      "description": "Before-arrival view of nearby stores, comparative prices, and likely procurement plan by destination.",
+      "search_hints": {
+        "grep_terms": [
+          "destination-first.store",
+          "store.intelligence",
+          "intelligence.travel",
+          "destination-first",
+          "store",
+          "intelligence",
+          "travel"
+        ],
+        "known_built_matches": [],
+        "likely_false_positive": false
+      },
+      "likely_built": false,
+      "category": "sourcing-supply",
+      "personas": ["noah-kessler"],
+      "priority_score": 4.2
+    },
+    {
+      "title": "No multi-store route and split-cart optimizer",
+      "from": "noah-kessler",
+      "from_name": "Noah Kessler",
+      "severity": "HIGH",
+      "description": "Recommendation for best combination of stores to minimize spend while meeting availability constraints and travel time.",
+      "search_hints": {
+        "grep_terms": [
+          "multi-store.route",
+          "route.split-cart",
+          "split-cart.optimizer",
+          "multi-store",
+          "route",
+          "split-cart",
+          "optimizer"
+        ],
+        "known_built_matches": [],
+        "likely_false_positive": false
+      },
+      "likely_built": false,
+      "category": "sourcing-supply",
+      "personas": ["noah-kessler"],
+      "priority_score": 4.2
+    },
+    {
+      "title": "Advanced Inventory/Supply Chain:",
+      "from": "andrew-zimmern",
+      "from_name": "Andrew Zimmern",
+      "severity": "HIGH",
+      "description": "The analyzer identified this as a major product fit concern. Review the raw analyzer output below for the original wording and supporting context.",
+      "search_hints": {
+        "grep_terms": [
+          "advanced.inventorysupply",
+          "inventorysupply.chain",
+          "advanced",
+          "inventorysupply",
+          "chain"
+        ],
+        "known_built_matches": [],
+        "likely_false_positive": false
+      },
+      "likely_built": false,
+      "category": "sourcing-supply",
+      "personas": ["andrew-zimmern"],
       "priority_score": 4.2
     },
     {
@@ -1020,9 +1011,7 @@
       },
       "likely_built": false,
       "category": "scaling-multi",
-      "personas": [
-        "leo-varga"
-      ],
+      "personas": ["leo-varga"],
       "priority_score": 4.2
     },
     {
@@ -1047,9 +1036,7 @@
       },
       "likely_built": false,
       "category": "scaling-multi",
-      "personas": [
-        "leo-varga"
-      ],
+      "personas": ["leo-varga"],
       "priority_score": 4.2
     },
     {
@@ -1059,19 +1046,13 @@
       "severity": "MEDIUM",
       "description": "This gap should be considered during build planning because it creates repeated operational friction.",
       "search_hints": {
-        "grep_terms": [
-          "friction.special",
-          "friction",
-          "special"
-        ],
+        "grep_terms": ["friction.special", "friction", "special"],
         "known_built_matches": [],
         "likely_false_positive": false
       },
       "likely_built": false,
       "category": "uncategorized",
-      "personas": [
-        "emma-chamberlain"
-      ],
+      "personas": ["emma-chamberlain"],
       "priority_score": 4
     },
     {
@@ -1081,10 +1062,7 @@
       "severity": "MEDIUM",
       "description": "This gap should be considered during build planning because it creates repeated operational friction.",
       "search_hints": {
-        "grep_terms": [
-          "alignment.gap",
-          "alignment"
-        ],
+        "grep_terms": ["alignment.gap", "alignment"],
         "known_built_matches": [],
         "likely_false_positive": false
       },
@@ -1093,90 +1071,77 @@
         {
           "slug": "mindy-weiss",
           "name": "Mindy Weiss"
+        },
+        {
+          "slug": "olajide-olatunji",
+          "name": "Olajide Olatunji"
         }
       ],
       "category": "uncategorized",
-      "personas": [
-        "gail-simmons"
-      ],
+      "personas": ["gail-simmons"],
       "priority_score": 4
     },
     {
-      "title": "No external store availability signal",
-      "from": "noah-kessler",
-      "from_name": "Noah Kessler",
-      "severity": "HIGH",
-      "description": "In-stock/low-stock indicators for stores Noah will shop.",
+      "title": "Implement a \"Single Source of Truth\" Dashboard:",
+      "from": "emma-chamberlain",
+      "from_name": "Emma Chamberlain",
+      "severity": "MEDIUM",
+      "description": "This gap may reduce confidence in pricing, planning, communication, or execution for the persona.",
       "search_hints": {
         "grep_terms": [
-          "external.store",
-          "store.availability",
-          "availability.signal",
-          "external",
-          "store",
-          "availability",
-          "signal"
+          "implement.single",
+          "single.source",
+          "source.truth",
+          "truth.dashboard",
+          "implement",
+          "single",
+          "source",
+          "truth"
         ],
         "known_built_matches": [],
         "likely_false_positive": false
       },
       "likely_built": false,
-      "category": "sourcing-supply",
-      "personas": [
-        "noah-kessler"
-      ],
+      "category": "payment-financial",
+      "personas": ["emma-chamberlain"],
       "priority_score": 3.6
     },
     {
-      "title": "No destination-first store intelligence for travel",
-      "from": "noah-kessler",
-      "from_name": "Noah Kessler",
-      "severity": "HIGH",
-      "description": "Before-arrival view of nearby stores, comparative prices, and likely procurement plan by destination.",
+      "title": "Financial accuracy gap",
+      "from": "gail-simmons",
+      "from_name": "Gail Simmons",
+      "severity": "MEDIUM",
+      "description": "This gap may reduce confidence in pricing, planning, communication, or execution for the persona.",
       "search_hints": {
-        "grep_terms": [
-          "destination-first.store",
-          "store.intelligence",
-          "intelligence.travel",
-          "destination-first",
-          "store",
-          "intelligence",
-          "travel"
-        ],
+        "grep_terms": ["financial.accuracy", "accuracy.gap", "financial", "accuracy"],
         "known_built_matches": [],
         "likely_false_positive": false
       },
       "likely_built": false,
-      "category": "sourcing-supply",
-      "personas": [
-        "noah-kessler"
+      "also_from": [
+        {
+          "slug": "olajide-olatunji",
+          "name": "Olajide Olatunji"
+        }
       ],
+      "category": "payment-financial",
+      "personas": ["gail-simmons"],
       "priority_score": 3.6
     },
     {
-      "title": "No multi-store route and split-cart optimizer",
-      "from": "noah-kessler",
-      "from_name": "Noah Kessler",
-      "severity": "HIGH",
-      "description": "Recommendation for best combination of stores to minimize spend while meeting availability constraints and travel time.",
+      "title": "Immutable Audit Log:",
+      "from": "miley-cyrus",
+      "from_name": "Miley Cyrus",
+      "severity": "MEDIUM",
+      "description": "This gap should be considered during build planning because it creates repeated operational friction.",
       "search_hints": {
-        "grep_terms": [
-          "multi-store.route",
-          "route.split-cart",
-          "split-cart.optimizer",
-          "multi-store",
-          "route",
-          "split-cart",
-          "optimizer"
-        ],
+        "grep_terms": ["immutable.audit", "audit.log", "immutable", "audit"],
         "known_built_matches": [],
         "likely_false_positive": false
       },
       "likely_built": false,
-      "category": "sourcing-supply",
-      "personas": [
-        "noah-kessler"
-      ],
+      "category": "compliance-legal",
+      "personas": ["miley-cyrus"],
       "priority_score": 3.6
     },
     {
@@ -1199,9 +1164,7 @@
       },
       "likely_built": false,
       "category": "onboarding-ux",
-      "personas": [
-        "rina-solis"
-      ],
+      "personas": ["rina-solis"],
       "priority_score": 3.6
     },
     {
@@ -1226,9 +1189,7 @@
       },
       "likely_built": false,
       "category": "onboarding-ux",
-      "personas": [
-        "rina-solis"
-      ],
+      "personas": ["rina-solis"],
       "priority_score": 3.6
     },
     {
@@ -1251,9 +1212,7 @@
       },
       "likely_built": false,
       "category": "onboarding-ux",
-      "personas": [
-        "rina-solis"
-      ],
+      "personas": ["rina-solis"],
       "priority_score": 3.6
     },
     {
@@ -1275,60 +1234,24 @@
       },
       "likely_built": false,
       "category": "delivery-logistics",
-      "personas": [
-        "dr-julien-armand-michelin"
-      ],
+      "personas": ["dr-julien-armand-michelin"],
       "priority_score": 3.6
     },
     {
-      "title": "Implement a \"Single Source of Truth\" Dashboard:",
-      "from": "emma-chamberlain",
-      "from_name": "Emma Chamberlain",
+      "title": "Immutable Audit Log:",
+      "from": "miley-cyrus",
+      "from_name": "Miley Cyrus",
       "severity": "MEDIUM",
-      "description": "This gap may reduce confidence in pricing, planning, communication, or execution for the persona.",
+      "description": "This gap should be considered during build planning because it creates repeated operational friction.",
       "search_hints": {
-        "grep_terms": [
-          "implement.single",
-          "single.source",
-          "source.truth",
-          "truth.dashboard",
-          "implement",
-          "single",
-          "source",
-          "truth"
-        ],
+        "grep_terms": ["immutable.audit", "audit.log", "immutable", "audit"],
         "known_built_matches": [],
         "likely_false_positive": false
       },
       "likely_built": false,
-      "category": "payment-financial",
-      "personas": [
-        "emma-chamberlain"
-      ],
-      "priority_score": 3.2
-    },
-    {
-      "title": "Financial accuracy gap",
-      "from": "gail-simmons",
-      "from_name": "Gail Simmons",
-      "severity": "MEDIUM",
-      "description": "This gap may reduce confidence in pricing, planning, communication, or execution for the persona.",
-      "search_hints": {
-        "grep_terms": [
-          "financial.accuracy",
-          "accuracy.gap",
-          "financial",
-          "accuracy"
-        ],
-        "known_built_matches": [],
-        "likely_false_positive": false
-      },
-      "likely_built": false,
-      "category": "payment-financial",
-      "personas": [
-        "gail-simmons"
-      ],
-      "priority_score": 3.2
+      "category": "documentation-records",
+      "personas": ["miley-cyrus"],
+      "priority_score": 3.6
     },
     {
       "title": "Implement a \"Single Source of Truth\" Dashboard:",
@@ -1352,9 +1275,7 @@
       },
       "likely_built": false,
       "category": "reporting-analytics",
-      "personas": [
-        "emma-chamberlain"
-      ],
+      "personas": ["emma-chamberlain"],
       "priority_score": 3.2
     },
     {
@@ -1364,19 +1285,13 @@
       "severity": "MEDIUM",
       "description": "This gap should be considered during build planning because it creates repeated operational friction.",
       "search_hints": {
-        "grep_terms": [
-          "scale.complexity",
-          "scale",
-          "complexity"
-        ],
+        "grep_terms": ["scale.complexity", "scale", "complexity"],
         "known_built_matches": [],
         "likely_false_positive": false
       },
       "likely_built": false,
       "category": "scaling-multi",
-      "personas": [
-        "oprah-winfrey"
-      ],
+      "personas": ["oprah-winfrey"],
       "priority_score": 2.8
     },
     {
@@ -1398,9 +1313,7 @@
       },
       "likely_built": false,
       "category": "audience-community",
-      "personas": [
-        "kai-donovan"
-      ],
+      "personas": ["kai-donovan"],
       "priority_score": 2.4
     },
     {
@@ -1424,9 +1337,7 @@
       },
       "likely_built": false,
       "category": "location-venue",
-      "personas": [
-        "kai-donovan"
-      ],
+      "personas": ["kai-donovan"],
       "priority_score": 2.4
     },
     {
@@ -1451,9 +1362,7 @@
       },
       "likely_built": false,
       "category": "communication",
-      "personas": [
-        "emma-chamberlain"
-      ],
+      "personas": ["emma-chamberlain"],
       "priority_score": 2.4
     },
     {
@@ -1475,10 +1384,14 @@
         "likely_false_positive": false
       },
       "likely_built": false,
-      "category": "uncategorized",
-      "personas": [
-        "gail-simmons"
+      "also_from": [
+        {
+          "slug": "olajide-olatunji",
+          "name": "Olajide Olatunji"
+        }
       ],
+      "category": "uncategorized",
+      "personas": ["gail-simmons"],
       "priority_score": 2
     },
     {
@@ -1501,9 +1414,7 @@
       },
       "likely_built": false,
       "category": "communication",
-      "personas": [
-        "emma-chamberlain"
-      ],
+      "personas": ["emma-chamberlain"],
       "priority_score": 1.2
     },
     {
@@ -1533,10 +1444,8 @@
       },
       "likely_built": true,
       "category": "compliance-legal",
-      "personas": [
-        "jordan-hale-cannabis-culinary-director-multi"
-      ],
-      "priority_score": 0.96
+      "personas": ["jordan-hale-cannabis-culinary-director-multi"],
+      "priority_score": 1.08
     },
     {
       "title": "Tiered Access and Waitlist Control",
@@ -1564,9 +1473,7 @@
       },
       "likely_built": true,
       "category": "access-control",
-      "personas": [
-        "kai-donovan"
-      ],
+      "personas": ["kai-donovan"],
       "priority_score": 0.72
     }
   ]

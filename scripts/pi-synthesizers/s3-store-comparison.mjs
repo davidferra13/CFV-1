@@ -26,16 +26,16 @@ async function main() {
   // Get food ingredients with prices at 3+ sources
   const ingredients = db.prepare(`
     SELECT
-      ci.id as ingredient_id,
+      ci.ingredient_id,
       ci.name as ingredient_name,
       ci.category,
       COUNT(DISTINCT cp.source_id) as store_count
     FROM canonical_ingredients ci
-    JOIN current_prices cp ON cp.ingredient_id = ci.id
+    JOIN current_prices cp ON cp.canonical_ingredient_id = ci.ingredient_id
     WHERE ci.is_food = 1
-    AND cp.scraped_at > datetime('now', '-14 days')
+    AND cp.last_confirmed_at > datetime('now', '-14 days')
     AND cp.price_cents > 0
-    GROUP BY ci.id
+    GROUP BY ci.ingredient_id
     HAVING store_count >= 3
     ORDER BY store_count DESC
   `).all();
@@ -45,15 +45,15 @@ async function main() {
   const getStorePrices = db.prepare(`
     SELECT
       sr.name as store_name,
-      sr.chain_slug,
+      sr.type as chain_slug,
       AVG(cp.price_cents) as avg_price,
       COUNT(*) as sample_size
     FROM current_prices cp
-    JOIN source_registry sr ON sr.id = cp.source_id
-    WHERE cp.ingredient_id = ?
-    AND cp.scraped_at > datetime('now', '-14 days')
+    JOIN source_registry sr ON sr.source_id = cp.source_id
+    WHERE cp.canonical_ingredient_id = ?
+    AND cp.last_confirmed_at > datetime('now', '-14 days')
     AND cp.price_cents > 0
-    GROUP BY sr.id
+    GROUP BY sr.source_id
     ORDER BY avg_price ASC
   `);
 

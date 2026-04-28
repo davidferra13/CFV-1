@@ -1,6 +1,6 @@
 # Consolidated Build: Scaling Multi
 
-**Priority rank:** 12 of 20
+**Priority rank:** 13 of 20
 **Personas affected:** 2 (Leo Varga, Oprah Winfrey)
 **Average severity:** HIGH
 

@@ -1,0 +1,51 @@
+# Persona Evaluation: Andrew Z. (Chef/Owner)
+
+**Persona Goal:** To streamline complex, multi-location culinary operations, moving from manual, fragmented processes to a centralized, intelligent system that maximizes creativity while minimizing waste and overhead.
+
+**Persona Needs:**
+1. **Operational Efficiency:** Real-time inventory tracking, automated ordering, and waste reduction tools.
+2. **Scalability:** Ability to manage multiple, distinct event/restaurant locations from one dashboard.
+3. **Collaboration:** Seamless communication between kitchen staff, front-of-house, and management.
+4. **Financial Oversight:** Clear, granular reporting on COGS per event/dish.
+
+**Persona Pain Points:**
+1. **Inventory Blind Spots:** Difficulty knowing real-time stock levels across different storage areas.
+2. **Scheduling Complexity:** Managing varied staffing needs for different event sizes and locations.
+3. **Data Silos:** Orders, inventory, and sales data are trapped in separate systems.
+
+**Persona Tech Savviness:** High (Comfortable with complex POS/ERP systems, but frustrated by poor UX).
+
+---
+
+## System Fit Analysis
+
+**Strengths:**
+* **Inventory Management:** The system's ability to track ingredients and manage supplier relationships is a direct hit on the pain point of inventory blind spots.
+* **Menu Engineering:** The structured approach to recipes and costing directly addresses the need for better COGS tracking.
+* **Multi-Location Support:** The architecture supports managing multiple distinct operational units, which is crucial for scaling.
+
+**Weaknesses:**
+* **Real-Time Communication:** The current focus seems heavily on back-of-house logistics, lacking robust, immediate communication tools for FOH/BOH handoffs during live events.
+* **Intuitive Setup:** The initial setup for complex, unique event menus might require too much manual configuration time for a busy owner.
+
+**Overall Recommendation:** High potential fit, but requires immediate enhancement in the user experience for dynamic, high-pressure service environments.
+
+---
+
+## Actionable Recommendations for Product Team
+
+1. **Implement "Event Mode" Dashboard:** Create a temporary, high-visibility dashboard for live events that aggregates *only* the necessary data (e.g., remaining ingredients for the current service, immediate prep needs, FOH ticket queue).
+2. **Enhance Mobile POS/KDS Integration:** Improve the Kitchen Display System (KDS) integration to allow staff to flag items as "Out of Stock" directly from the prep station, triggering an immediate, visible alert to the inventory module.
+3. **Advanced Forecasting Module:** Build a predictive module that uses historical sales data (e.g., "Taco Tuesday always sells 30% more limes than last year") to suggest optimal prep levels, moving beyond simple minimum stock counts.
+
+---
+
+## Persona Profile Summary
+
+| Attribute | Detail |
+| :--- | :--- |
+| **Primary Role** | Owner/Executive Chef |
+| **Key Goal** | Operationalizing creativity at scale. |
+| **Biggest Frustration** | Wasting time/money due to poor data visibility. |
+| **Must-Have Feature** | Real-time, multi-location inventory visibility. |
+| **Willing to Pay For** | Time savings, waste reduction, and improved profit margins. |

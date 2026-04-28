@@ -15,16 +15,16 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const DB_PATH = join(__dirname, '..', 'data', 'prices.db');
 
 function classifyAnomaly(anomaly, db) {
-  const { ingredient_id, ingredient_name, anomaly_type, magnitude, source_count } = anomaly;
+  const { ingredient_id, ingredient_name, anomaly_type, change_pct } = anomaly;
 
   let category = 'market_event'; // default
   let severity = 3;
 
-  const absMag = Math.abs(magnitude || 0);
-  const direction = (anomaly_type === 'spike' || magnitude > 0) ? 'spike' : 'drop';
+  const absMag = Math.abs(change_pct || 0);
+  const direction = (anomaly_type === 'spike' || change_pct > 0) ? 'spike' : 'drop';
 
-  // Rule 1: Single store + extreme change = likely data error
-  if (source_count <= 1 && absMag > 80) {
+  // Rule 1: Extreme single change = likely data error
+  if (absMag > 80) {
     category = 'data_error';
     severity = 1; // low severity, probably noise
   }
@@ -33,8 +33,8 @@ function classifyAnomaly(anomaly, db) {
     category = 'deal';
     severity = absMag > 30 ? 4 : 3;
   }
-  // Rule 3: Multiple stores same direction = market event
-  else if (source_count >= 3) {
+  // Rule 3: Check if multiple anomalies for same ingredient = market event
+  else if (absMag > 15) {
     category = 'market_event';
     severity = absMag > 30 ? 5 : absMag > 15 ? 4 : 3;
   }
@@ -59,7 +59,7 @@ function classifyAnomaly(anomaly, db) {
 
   // Boost severity for high-value food categories
   const ingredient = db.prepare(`
-    SELECT category, is_food FROM canonical_ingredients WHERE id = ?
+    SELECT category, is_food FROM canonical_ingredients WHERE ingredient_id = ?
   `).get(ingredient_id);
 
   const isFood = ingredient ? (ingredient.is_food !== 0) : true;
@@ -75,7 +75,7 @@ function classifyAnomaly(anomaly, db) {
   const roundMag = Math.round(absMag);
   const message = `${ingredient_name} ${dirLabel}${roundMag}% (${category.replace('_', ' ')})`;
 
-  return { category, severity, direction, message, isFood };
+  return { category, severity, direction, magnitude: absMag, message, isFood };
 }
 
 async function main() {
@@ -89,16 +89,14 @@ async function main() {
   const anomalies = db.prepare(`
     SELECT
       pa.id,
-      pa.ingredient_id,
+      pa.canonical_ingredient_id as ingredient_id,
       ci.name as ingredient_name,
       pa.anomaly_type,
-      pa.magnitude,
-      pa.source_count,
+      pa.change_pct,
       pa.detected_at
     FROM price_anomalies pa
-    LEFT JOIN canonical_ingredients ci ON ci.id = pa.ingredient_id
+    LEFT JOIN canonical_ingredients ci ON ci.ingredient_id = pa.canonical_ingredient_id
     WHERE pa.detected_at > datetime('now', '-48 hours')
-    AND pa.id NOT IN (SELECT COALESCE(json_extract(affected_stores, '$[0]'), 0) FROM synthesis_anomaly_alerts WHERE created_at > datetime('now', '-48 hours'))
     ORDER BY pa.detected_at DESC
     LIMIT 10000
   `).all();
@@ -133,8 +131,8 @@ async function main() {
       const stores = db.prepare(`
         SELECT DISTINCT sr.name
         FROM current_prices cp
-        JOIN source_registry sr ON sr.id = cp.source_id
-        WHERE cp.ingredient_id = ?
+        JOIN source_registry sr ON sr.source_id = cp.source_id
+        WHERE cp.canonical_ingredient_id = ?
         LIMIT 10
       `).all(anomaly.ingredient_id);
 
@@ -146,7 +144,7 @@ async function main() {
         result.category,
         result.severity,
         result.direction,
-        Math.abs(anomaly.magnitude || 0),
+        result.magnitude,
         storeNames,
         result.message,
         result.isFood ? 1 : 0

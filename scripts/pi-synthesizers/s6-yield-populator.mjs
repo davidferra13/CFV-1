@@ -109,7 +109,7 @@ async function main() {
 
   // Get food ingredients without yield data (or all for refresh)
   const ingredients = db.prepare(`
-    SELECT id, name, category FROM canonical_ingredients
+    SELECT ingredient_id as id, name, category FROM canonical_ingredients
     WHERE is_food = 1
   `).all();
 
@@ -118,7 +118,7 @@ async function main() {
   const update = db.prepare(`
     UPDATE canonical_ingredients
     SET yield_pct = ?, trim_loss_pct = ?, cook_shrinkage_pct = ?, yield_source = ?
-    WHERE id = ?
+    WHERE ingredient_id = ?
   `);
 
   let counts = { override: 0, category: 0, default: 0 };
@@ -157,7 +157,7 @@ async function main() {
   const highTrim = db.prepare(`
     SELECT name, yield_pct, trim_loss_pct, cook_shrinkage_pct, yield_source
     FROM canonical_ingredients
-    WHERE is_food = 1 AND yield_pct < 60
+    WHERE is_food = 1 AND yield_pct IS NOT NULL AND yield_pct < 60
     ORDER BY yield_pct ASC
     LIMIT 10
   `).all();

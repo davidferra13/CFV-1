@@ -1,6 +1,6 @@
 # Consolidated Build: Dietary Medical
 
-**Priority rank:** 7 of 20
+**Priority rank:** 9 of 20
 **Personas affected:** 2 (Leo Varga, Rina Solis)
 **Average severity:** HIGH
 

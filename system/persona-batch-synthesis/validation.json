@@ -1,11 +1,11 @@
 {
-  "validated_at": "2026-04-27T06:53:59.409Z",
+  "validated_at": "2026-04-28T00:53:29.428Z",
   "summary": {
-    "total": 43,
-    "built": 8,
-    "partial": 16,
+    "total": 50,
+    "built": 9,
+    "partial": 22,
     "missing": 19,
-    "false_positive_rate": 19
+    "false_positive_rate": 18
   },
   "gaps": [
     {
@@ -110,6 +110,24 @@
       "evidence": []
     },
     {
+      "category": "payment-financial",
+      "title": "Financial accuracy gap",
+      "severity": "MEDIUM",
+      "from": "Gail Simmons",
+      "status": "PARTIAL",
+      "evidence": [
+        {
+          "type": "grep_match",
+          "term": "financial",
+          "files": [
+            "lib/activity/chef-types.ts",
+            "lib/admin/activity-feed.ts",
+            "lib/admin/platform-stats.ts"
+          ]
+        }
+      ]
+    },
+    {
       "category": "compliance-legal",
       "title": "No regulator-grade traceability export",
       "severity": "HIGH",
@@ -142,9 +160,9 @@
           "type": "grep_match",
           "term": "transparency",
           "files": [
+            "lib/ai/parse-ollama.ts",
             "lib/ai/remy-metrics.ts",
-            "lib/scheduling/calendar-sync.ts",
-            "components/events/post-event-summary-client.tsx"
+            "lib/runtime-transparency/events.ts"
           ]
         },
         {
@@ -154,6 +172,33 @@
             "lib/documents/activity-logging.ts",
             "lib/haccp/templates.ts",
             "lib/inventory/location-actions.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "compliance-legal",
+      "title": "Immutable Audit Log:",
+      "severity": "MEDIUM",
+      "from": "Miley Cyrus",
+      "status": "BUILT",
+      "evidence": [
+        {
+          "type": "grep_match",
+          "term": "audit.log",
+          "files": [
+            "lib/admin/audit.ts",
+            "lib/admin/chef-admin-actions.ts",
+            "lib/admin/flag-actions.ts"
+          ]
+        },
+        {
+          "type": "grep_match",
+          "term": "immutable",
+          "files": [
+            "lib/admin/chef-admin-actions.ts",
+            "lib/ai/agent-actions/restricted-actions.ts",
+            "lib/chef/cannabis-access-guards.ts"
           ]
         }
       ]
@@ -286,8 +331,17 @@
       "title": "No hard medical constraint enforcement engine (blocking layer)",
       "severity": "HIGH",
       "from": "Rina Solis",
-      "status": "MISSING",
-      "evidence": []
+      "status": "PARTIAL",
+      "evidence": [
+        {
+          "type": "grep_match",
+          "term": "constraint.enforcement",
+          "files": [
+            "lib/dietary/safe-menu-filter.ts",
+            "components/dietary/cross-contact-badges.tsx"
+          ]
+        }
+      ]
     },
     {
       "category": "dietary-medical",
@@ -421,6 +475,24 @@
       "evidence": []
     },
     {
+      "category": "sourcing-supply",
+      "title": "Advanced Inventory/Supply Chain:",
+      "severity": "HIGH",
+      "from": "Andrew Zimmern",
+      "status": "PARTIAL",
+      "evidence": [
+        {
+          "type": "grep_match",
+          "term": "advanced",
+          "files": [
+            "lib/activity/entity-timeline.ts",
+            "lib/analytics/custom-report-enhanced-actions.ts",
+            "lib/billing/feature-classification.ts"
+          ]
+        }
+      ]
+    },
+    {
       "category": "reporting-analytics",
       "title": "No explicit outcome-based reaction log as first-class feedback",
       "severity": "HIGH",
@@ -501,6 +573,24 @@
             "lib/ai/contingency-ai.ts",
             "lib/ai/parse-ollama.ts",
             "lib/briefing/generate-briefing.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "uncategorized",
+      "title": "Project Management/Workflow:",
+      "severity": "HIGH",
+      "from": "Andrew Zimmern",
+      "status": "PARTIAL",
+      "evidence": [
+        {
+          "type": "grep_match",
+          "term": "project",
+          "files": [
+            "lib/action-graph/bookings.ts",
+            "lib/ai/command-intent-parser.ts",
+            "lib/ai/command-task-descriptions.ts"
           ]
         }
       ]
@@ -588,6 +678,68 @@
     },
     {
       "category": "uncategorized",
+      "title": "UX alignment gap",
+      "severity": "MEDIUM",
+      "from": "Gail Simmons",
+      "status": "PARTIAL",
+      "evidence": [
+        {
+          "type": "grep_match",
+          "term": "alignment",
+          "files": [
+            "lib/clients/client-profile-service-schema.ts",
+            "lib/clients/client-profile-service.ts",
+            "lib/interface/surface-completeness.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "uncategorized",
+      "title": "Operational follow through gap",
+      "severity": "LOW",
+      "from": "Gail Simmons",
+      "status": "PARTIAL",
+      "evidence": [
+        {
+          "type": "grep_match",
+          "term": "follow.through",
+          "files": [
+            "lib/action-graph/bookings.ts",
+            "lib/client-dashboard/types.ts",
+            "lib/clients/action-vocabulary.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "uncategorized",
+      "title": "Implement a \"Critical Dependency Map\":",
+      "severity": "HIGH",
+      "from": "Miley Cyrus",
+      "status": "MISSING",
+      "evidence": []
+    },
+    {
+      "category": "uncategorized",
+      "title": "Mandatory Multi-Signature Approval:",
+      "severity": "HIGH",
+      "from": "Miley Cyrus",
+      "status": "PARTIAL",
+      "evidence": [
+        {
+          "type": "grep_match",
+          "term": "mandatory",
+          "files": [
+            "lib/ai/gratuity-framing.ts",
+            "lib/push/send.ts",
+            "lib/simulation/pipeline-runner.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "uncategorized",
       "title": "\"Executive Override\" Workflow:",
       "severity": "HIGH",
       "from": "Mindy Weiss",
@@ -600,24 +752,6 @@
             "lib/ai/aar-generator.ts",
             "lib/ai/alert-digest.ts",
             "lib/ai/remy-archetypes.ts"
-          ]
-        }
-      ]
-    },
-    {
-      "category": "uncategorized",
-      "title": "UX alignment gap",
-      "severity": "LOW",
-      "from": "Mindy Weiss",
-      "status": "PARTIAL",
-      "evidence": [
-        {
-          "type": "grep_match",
-          "term": "alignment",
-          "files": [
-            "lib/clients/client-profile-service-schema.ts",
-            "lib/clients/client-profile-service.ts",
-            "lib/interface/surface-completeness.ts"
           ]
         }
       ]

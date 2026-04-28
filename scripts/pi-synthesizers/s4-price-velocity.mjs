@@ -24,14 +24,14 @@ async function main() {
   // Get ingredients with enough price history
   const ingredients = db.prepare(`
     SELECT DISTINCT
-      pc.ingredient_id,
+      pc.canonical_ingredient_id as ingredient_id,
       ci.name as ingredient_name,
       ci.is_food
     FROM price_changes pc
-    JOIN canonical_ingredients ci ON ci.id = pc.ingredient_id
-    WHERE pc.detected_at > datetime('now', '-30 days')
+    JOIN canonical_ingredients ci ON ci.ingredient_id = pc.canonical_ingredient_id
+    WHERE pc.observed_at > datetime('now', '-30 days')
     AND ci.is_food = 1
-    GROUP BY pc.ingredient_id
+    GROUP BY pc.canonical_ingredient_id
     HAVING COUNT(*) >= 3
   `).all();
 
@@ -55,41 +55,41 @@ async function main() {
   `);
 
   const get7dChanges = db.prepare(`
-    SELECT COUNT(*) as cnt, AVG(price_change_pct) as avg_pct
+    SELECT COUNT(*) as cnt, AVG(change_pct) as avg_pct
     FROM price_changes
-    WHERE ingredient_id = ? AND detected_at > datetime('now', '-7 days')
+    WHERE canonical_ingredient_id = ? AND observed_at > datetime('now', '-7 days')
   `);
 
   const get30dChanges = db.prepare(`
-    SELECT COUNT(*) as cnt, AVG(price_change_pct) as avg_pct
+    SELECT COUNT(*) as cnt, AVG(change_pct) as avg_pct
     FROM price_changes
-    WHERE ingredient_id = ? AND detected_at > datetime('now', '-30 days')
+    WHERE canonical_ingredient_id = ? AND observed_at > datetime('now', '-30 days')
   `);
 
   // Get daily prices for volatility calculation
   const getDailyPrices = db.prepare(`
     SELECT
-      date(detected_at) as day,
-      AVG(new_price) as avg_price
+      date(observed_at) as day,
+      AVG(new_price_cents) as avg_price
     FROM price_changes
-    WHERE ingredient_id = ? AND detected_at > datetime('now', '-30 days')
-    GROUP BY date(detected_at)
+    WHERE canonical_ingredient_id = ? AND observed_at > datetime('now', '-30 days')
+    GROUP BY date(observed_at)
     ORDER BY day
   `);
 
   // Get recent vs older trend for acceleration
   const getRecentTrend = db.prepare(`
-    SELECT AVG(price_change_pct) as avg_pct
+    SELECT AVG(change_pct) as avg_pct
     FROM price_changes
-    WHERE ingredient_id = ? AND detected_at > datetime('now', '-7 days')
+    WHERE canonical_ingredient_id = ? AND observed_at > datetime('now', '-7 days')
   `);
 
   const getOlderTrend = db.prepare(`
-    SELECT AVG(price_change_pct) as avg_pct
+    SELECT AVG(change_pct) as avg_pct
     FROM price_changes
-    WHERE ingredient_id = ?
-    AND detected_at > datetime('now', '-30 days')
-    AND detected_at <= datetime('now', '-7 days')
+    WHERE canonical_ingredient_id = ?
+    AND observed_at > datetime('now', '-30 days')
+    AND observed_at <= datetime('now', '-7 days')
   `);
 
   let statusCounts = { stable: 0, trending: 0, volatile: 0, spiking: 0 };

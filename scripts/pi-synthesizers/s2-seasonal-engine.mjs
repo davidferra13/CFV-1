@@ -83,14 +83,14 @@ async function main() {
   // Get food ingredients with price data
   const ingredients = db.prepare(`
     SELECT DISTINCT
-      ci.id,
+      ci.ingredient_id as id,
       ci.name,
       ci.category
     FROM canonical_ingredients ci
     WHERE ci.is_food = 1
-    AND ci.id IN (
-      SELECT DISTINCT ingredient_id FROM current_prices
-      WHERE scraped_at > datetime('now', '-90 days')
+    AND ci.ingredient_id IN (
+      SELECT DISTINCT canonical_ingredient_id FROM current_prices
+      WHERE last_confirmed_at > datetime('now', '-90 days')
     )
   `).all();
 
@@ -102,11 +102,17 @@ async function main() {
   `).all();
   console.log(`  Existing seasonal_availability records: ${existingSeasonal.length}`);
 
-  // Build a lookup from existing data
+  // Build a lookup from existing data (seasonal_availability has per-month columns: jan, feb, etc.)
+  const monthCols = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec_val'];
   const seasonalLookup = new Map();
   for (const s of existingSeasonal) {
-    const key = `${s.ingredient_id || s.ingredient_name}:${s.month}`;
-    seasonalLookup.set(key, s.availability_score || s.score || 0.5);
+    for (let m = 0; m < 12; m++) {
+      const val = s[monthCols[m]];
+      if (val != null) {
+        const key = `${s.canonical_ingredient_id}:${m + 1}`;
+        seasonalLookup.set(key, parseFloat(val) || 0.5);
+      }
+    }
   }
 
   const upsert = db.prepare(`
@@ -125,12 +131,12 @@ async function main() {
   // For price percentile, get monthly avg prices
   const getMonthlyPrices = db.prepare(`
     SELECT
-      CAST(strftime('%m', scraped_at) AS INTEGER) as month,
+      CAST(strftime('%m', last_confirmed_at) AS INTEGER) as month,
       AVG(price_cents) as avg_price
     FROM current_prices
-    WHERE ingredient_id = ?
-    AND scraped_at > datetime('now', '-365 days')
-    GROUP BY strftime('%m', scraped_at)
+    WHERE canonical_ingredient_id = ?
+    AND last_confirmed_at > datetime('now', '-365 days')
+    GROUP BY strftime('%m', last_confirmed_at)
   `);
 
   let totalScores = 0;

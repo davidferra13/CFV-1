@@ -1,33 +1,41 @@
 <!-- REJECTED: all 3 referenced files are missing -->
-<!-- 2026-04-28T00:24:39.089Z -->
+<!-- 2026-04-28T00:30:37.675Z -->
 
 # Build Task: Mandatory Multi-Signature Approval:
+
 **Source Persona:** miley-cyrus
 **Gap Number:** 2 of 5
 **Severity:** HIGH
 
 ## What to Build
-Implement a multi-signature approval workflow for gratuity framing messages, ensuring that before any message is sent, it requires approval from both the chef and the client. This will add an extra layer of transparency and ensure that the communication aligns with the preferences of both parties.
+
+Implement a multi-signature approval workflow for gratuity framing drafts within the ChefFlow application. This will ensure that before sending any gratuity-related messages or requests, they are reviewed and approved by both the chef and another designated signatory.
 
 ## Files to Modify
-- `lib/integrations/social/platform-adapters/tiktok.ts` -- Add a function to handle multi-signature approval for sending messages.
-- `lib/integrations/social/platform-adapters/x.ts` -- Similarly, add a function in this file to manage multi-signature approval before sending messages.
+
+- `lib/integrations/social/platform-adapters/x.ts` -- Add a function to handle multi-signature approval for gratuity framing drafts.
+- `pages/api/integrations/social/callback/x.ts` -- Update the callback handler to check for multi-signature approval before proceeding with social platform integration.
 
 ## Files to Create (if any)
-- `lib/services/multiSignatureApprovalService.ts` -- This service will be responsible for handling the logic of getting approvals from both chef and client before proceeding with message sending. It will include functions like `awaitChefApproval()`, `awaitClientApproval()`, and `sendIfApproved()`.
+
+- `lib/utils/multiSignatureApproval.ts` -- Create a utility module to encapsulate the logic for checking and managing multi-signature approvals.
 
 ## Implementation Notes
-- Ensure that the multi-signature approval process does not introduce significant delays in the communication flow.
-- Handle cases where one party is unavailable for approval by implementing a timeout mechanism or fallback strategy.
-- Integrate seamlessly with existing message sending logic without disrupting current functionalities.
+
+- Use existing authentication mechanisms to verify the identities of the chef and designated signatory.
+- Implement a secure, asynchronous approval workflow that does not block the main thread while waiting for approvals.
+- Handle scenarios where one or both parties fail to approve within a reasonable time frame.
 
 ## Acceptance Criteria
-1. The chef and client can no longer send messages without mutual approval.
-2. A new "Approval Pending" status is introduced for messages awaiting both parties' signatures.
-3. Messages are only sent once approved by both the chef and the client, with a proper audit trail of approvals.
-4. `npx tsc --noEmit --skipLibCheck` passes without any new errors related to the multi-signature approval logic.
+
+1. A gratuity framing draft cannot be sent until it has been approved by both the chef and another designated signatory.
+2. The multi-signature approval workflow does not block the main thread, allowing other parts of the application to continue functioning normally while approvals are pending.
+3. If either the chef or designated signatory fails to approve within a specified time frame, an alert is sent, and the draft is flagged for follow-up.
+4. `npx tsc --noEmit --skipLibCheck` passes without errors related to the newly added functionality.
 
 ## DO NOT
-- Modify other files not directly related to implementing the multi-signature approval workflow.
-- Introduce any changes that could potentially break existing functionalities or alter the database schema.
-- Add new npm dependencies as part of this specific task.
+
+- Modify existing social platform integration code outside of the specified files.
+- Add new npm dependencies or alter the project's external dependencies.
+- Change any database schema or queries related to user data.
+- Remove or modify existing functionality in the application unrelated to this gap.

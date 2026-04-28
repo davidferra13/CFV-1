@@ -1,29 +1,36 @@
 # Build Task: Immutable Audit Log:
+
 **Source Persona:** miley-cyrus
 **Gap Number:** 3 of 5
 **Severity:** MEDIUM
 
 ## What to Build
-Implement an immutable audit log feature, allowing admin users to view and search a read-only record of sensitive platform actions performed by chefs.
+
+Implement a robust immutable audit log system for sensitive platform actions, ensuring all changes are recorded and cannot be altered. Enhance the existing Admin Audit Log page with full functionality.
 
 ## Files to Modify
-- `app/(admin)/admin/audit/page.tsx` -- Enhance the existing page component to fetch and display the audit log data from the new immutable_audit_logs table. Add search functionality with filtering options based on time, actor, action type, target, and details.
+
+- `app/(admin)/admin/audit/page.tsx` -- Update UI components, add backend integration to record actions immutably
+
+## Files to Create (if any)
+
+- N/A
 
 ## Implementation Notes
-- Use Drizzle ORM queries to read from the immutable_audit_logs table.
-- Ensure that the UI components are responsive and mobile-friendly.
-- Implement client-side pagination for large datasets to improve performance.
-- Handle loading states and error scenarios gracefully in the UI.
+
+- Utilize Drizzle ORM to interact with the PostgreSQL database for immutable logging.
+- Ensure all sensitive actions trigger a log entry in the audit table.
+- Use Tailwind CSS classes to style the updated UI components.
 
 ## Acceptance Criteria
-1. Admin users can access an audit log page showing a history of sensitive actions performed by chefs.
-2. The audit log data is fetched from the immutable_audit_logs table using Drizzle ORM queries.
-3. Users can filter the audit log entries based on time, actor, action type, target, and details.
-4. Pagination is implemented for large datasets to ensure smooth performance.
-5. Loading states and error messages are handled appropriately in the UI.
+
+1. Sensitive platform actions are logged immutably upon occurrence.
+2. The Admin Audit Log page displays all recorded entries, with no ability to modify or delete them.
+3. `npx tsc --noEmit --skipLibCheck` passes without errors.
 
 ## DO NOT
-- Modify any code outside of `app/(admin)/admin/audit/page.tsx`.
-- Add new npm dependencies or change existing ones.
-- Alter the database schema related to immutable_audit_logs.
-- Remove or alter existing functionality on the page component.
+
+- Modify any files outside the specified `app/(admin)/admin/audit/page.tsx`.
+- Add new npm dependencies.
+- Change the existing database schema related to audit logging.
+- Delete or alter existing functionality of the Admin Audit Log page.

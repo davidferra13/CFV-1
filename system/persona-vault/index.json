@@ -180,5 +180,19 @@
     "source_file": "Chef Flow Personas/Uncompleted/Chef/gordon-ramsay.txt",
     "stored_at": "2026-04-28T00:19:54.814Z",
     "chars": 3874
+  },
+  {
+    "id": "a69dd803-3688-424b-b7ee-0f5ca2e89871",
+    "content_hash": "5113d5cf63b7a20a",
+    "persona_type": "Chef",
+    "persona_name": "Andrew Zimmern",
+    "author": {
+      "type": "ai",
+      "name": "hermes3:8b",
+      "tool": "persona-generator"
+    },
+    "source_file": "Chef Flow Personas/Uncompleted/Chef/andrew-zimmern.txt",
+    "stored_at": "2026-04-28T00:33:57.500Z",
+    "chars": 4286
   }
 ]
