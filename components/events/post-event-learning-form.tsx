@@ -58,6 +58,13 @@ const EDITABLE_DISH_OUTCOME_STATUS_VALUES = LEARNING_DISH_OUTCOME_STATUS_VALUES.
   (status): status is EditableDishOutcomeStatus => status !== 'planned'
 )
 
+const REACTION_NOTE_SHORTCUTS = [
+  'Guest response: no adverse response reported.',
+  'Guest response: mild concern reported. Follow up with the client.',
+  'Guest response: severe concern reported. Escalate follow-up and document details.',
+  'Guest response: follow-up completed with client.',
+] as const
+
 function SegmentedButtons<T extends string>({
   value,
   options,
@@ -172,6 +179,13 @@ export function PostEventLearningForm({ capture }: Props) {
 
   function removeExtraDish(key: string) {
     setDishes((current) => current.filter((dish) => dish.key !== key))
+  }
+
+  function appendChefNote(line: string) {
+    setChefNotes((current) => {
+      const trimmed = current.trim()
+      return trimmed ? `${trimmed}\n${line}` : line
+    })
   }
 
   function handleSave() {
@@ -308,6 +322,18 @@ export function PostEventLearningForm({ capture }: Props) {
 
           <div>
             <label className="mb-1 block text-sm font-medium text-stone-300">Chef notes</label>
+            <div className="mb-2 flex flex-wrap gap-2">
+              {REACTION_NOTE_SHORTCUTS.map((shortcut) => (
+                <button
+                  key={shortcut}
+                  type="button"
+                  onClick={() => appendChefNote(shortcut)}
+                  className="rounded-full border border-stone-700 bg-stone-900 px-3 py-1.5 text-xs text-stone-400 transition-colors hover:border-stone-500 hover:text-stone-200"
+                >
+                  {shortcut.replace('Guest response: ', '')}
+                </button>
+              ))}
+            </div>
             <textarea
               rows={3}
               value={chefNotes}
