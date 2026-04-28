@@ -1,16 +1,16 @@
 {
-  "generated_at": "2026-04-28T01:13:43.976Z",
-  "total_personas": 22,
+  "generated_at": "2026-04-28T01:31:52.727Z",
+  "total_personas": 24,
   "average_score": 51,
   "score_distribution": {
     "0-20": 2,
     "21-40": 1,
-    "41-60": 12,
+    "41-60": 14,
     "61-80": 7,
     "81-100": 0
   },
   "validation_summary": {
-    "total_gaps": 76,
+    "total_gaps": 80,
     "likely_false_positives": 2,
     "false_positive_rate": 3,
     "note": "Pre-validation via known-built feature registry. Run /api/validate-gaps for live codebase grep."
@@ -580,20 +580,21 @@
       ]
     },
     "recipe-menu": {
-      "count": 5,
+      "count": 6,
       "personas": [
         "dr-julien-armand-michelin",
         "leo-varga",
         "maya-rios-cannabis-pastry-chef-micro",
         "noah-kessler",
-        "rina-solis"
+        "rina-solis",
+        "julia"
       ],
       "severity_breakdown": {
-        "HIGH": 8,
+        "HIGH": 9,
         "MEDIUM": 0,
         "LOW": 0
       },
-      "gap_count": 8,
+      "gap_count": 9,
       "gaps": [
         {
           "title": "No molecule-level culinary data model",
@@ -725,21 +726,35 @@
             "known_built_matches": [],
             "likely_false_positive": false
           }
+        },
+        {
+          "title": "Develop \"Prep Mode\" UI:",
+          "from": "Julia",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": [
+              "develop.prep",
+              "develop"
+            ],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
         }
       ]
     },
     "scheduling-calendar": {
-      "count": 2,
+      "count": 3,
       "personas": [
         "dr-julien-armand-michelin",
-        "leo-varga"
+        "leo-varga",
+        "padma-lakshmi"
       ],
       "severity_breakdown": {
-        "HIGH": 3,
+        "HIGH": 4,
         "MEDIUM": 0,
         "LOW": 0
       },
-      "gap_count": 3,
+      "gap_count": 4,
       "gaps": [
         {
           "title": "No real-time dosing administration log",
@@ -784,6 +799,18 @@
               "conflict-safe.sync",
               "documented",
               "conflict-safe"
+            ],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        },
+        {
+          "title": "Real-Time Coordination:",
+          "from": "Padma Lakshmi",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": [
+              "coordination"
             ],
             "known_built_matches": [],
             "likely_false_positive": false
@@ -1349,7 +1376,7 @@
       ]
     },
     "uncategorized": {
-      "count": 11,
+      "count": 13,
       "personas": [
         "andrew-zimmern",
         "ari-weinzweig",
@@ -1358,17 +1385,19 @@
         "gail-simmons",
         "gordon-ramsay",
         "joel-salatin",
+        "julia",
         "miley-cyrus",
         "mindy-weiss",
         "olajide-olatunji",
-        "oprah-winfrey"
+        "oprah-winfrey",
+        "padma-lakshmi"
       ],
       "severity_breakdown": {
-        "HIGH": 11,
+        "HIGH": 12,
         "MEDIUM": 4,
-        "LOW": 4
+        "LOW": 5
       },
-      "gap_count": 15,
+      "gap_count": 17,
       "gaps": [
         {
           "title": "Project Management/Workflow:",
@@ -1554,6 +1583,22 @@
           }
         },
         {
+          "title": "Implement \"Usage Deduction\":",
+          "from": "Julia",
+          "severity": "HIGH",
+          "search_hints": {
+            "grep_terms": [
+              "implement.usage",
+              "usage.deduction",
+              "implement",
+              "usage",
+              "deduction"
+            ],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        },
+        {
           "title": "Implement a \"Critical Dependency Map\":",
           "from": "Miley Cyrus",
           "severity": "HIGH",
@@ -1597,6 +1642,20 @@
               "executive",
               "override",
               "workflow"
+            ],
+            "known_built_matches": [],
+            "likely_false_positive": false
+          }
+        },
+        {
+          "title": "Phase 1 (Foundation):",
+          "from": "Padma Lakshmi",
+          "severity": "LOW",
+          "search_hints": {
+            "grep_terms": [
+              "phase.foundation",
+              "phase",
+              "foundation"
             ],
             "known_built_matches": [],
             "likely_false_positive": false
@@ -1707,6 +1766,10 @@
         "new_categories": []
       },
       {
+        "slug": "julia",
+        "new_categories": []
+      },
+      {
         "slug": "miley-cyrus",
         "new_categories": []
       },
@@ -1721,9 +1784,13 @@
       {
         "slug": "oprah-winfrey",
         "new_categories": []
+      },
+      {
+        "slug": "padma-lakshmi",
+        "new_categories": []
       }
     ],
-    "consecutive_zero_new": 8,
+    "consecutive_zero_new": 10,
     "saturated": true,
     "categories_discovered": 19,
     "categories_total": 20,
@@ -1734,19 +1801,25 @@
   "priority_ranking": [
     {
       "category": "uncategorized",
-      "priority_score": 45,
-      "count": 11,
+      "priority_score": 49,
+      "count": 13,
       "avg_severity": "HIGH"
     },
     {
       "category": "recipe-menu",
-      "priority_score": 24,
-      "count": 5,
+      "priority_score": 27,
+      "count": 6,
       "avg_severity": "HIGH"
     },
     {
       "category": "dosing-cannabis",
       "priority_score": 21,
+      "count": 3,
+      "avg_severity": "HIGH"
+    },
+    {
+      "category": "scheduling-calendar",
+      "priority_score": 12,
       "count": 3,
       "avg_severity": "HIGH"
     },
@@ -1782,12 +1855,6 @@
     },
     {
       "category": "dietary-medical",
-      "priority_score": 9,
-      "count": 2,
-      "avg_severity": "HIGH"
-    },
-    {
-      "category": "scheduling-calendar",
       "priority_score": 9,
       "count": 2,
       "avg_severity": "HIGH"

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-28T01:13:43.969Z",
+  "generated_at": "2026-04-28T01:31:52.716Z",
   "queue": [
     {
       "title": "No real-time store-level price truth contract",
@@ -223,6 +223,27 @@
       "priority_score": 6
     },
     {
+      "title": "Develop \"Prep Mode\" UI:",
+      "from": "julia",
+      "from_name": "Julia",
+      "severity": "HIGH",
+      "description": "The analyzer identified this as a major product fit concern. Review the raw analyzer output below for the original wording and supporting context.",
+      "search_hints": {
+        "grep_terms": [
+          "develop.prep",
+          "develop"
+        ],
+        "known_built_matches": [],
+        "likely_false_positive": false
+      },
+      "likely_built": false,
+      "category": "recipe-menu",
+      "personas": [
+        "julia"
+      ],
+      "priority_score": 6
+    },
+    {
       "title": "Project Management/Workflow:",
       "from": "andrew-zimmern",
       "from_name": "Andrew Zimmern",
@@ -388,6 +409,30 @@
       "category": "uncategorized",
       "personas": [
         "joel-salatin"
+      ],
+      "priority_score": 6
+    },
+    {
+      "title": "Implement \"Usage Deduction\":",
+      "from": "julia",
+      "from_name": "Julia",
+      "severity": "HIGH",
+      "description": "This gap affects whether ChefFlow can support the persona's full operating workflow without manual reconciliation.",
+      "search_hints": {
+        "grep_terms": [
+          "implement.usage",
+          "usage.deduction",
+          "implement",
+          "usage",
+          "deduction"
+        ],
+        "known_built_matches": [],
+        "likely_false_positive": false
+      },
+      "likely_built": false,
+      "category": "uncategorized",
+      "personas": [
+        "julia"
       ],
       "priority_score": 6
     },
@@ -751,6 +796,98 @@
       "priority_score": 4.8
     },
     {
+      "title": "No real-time dosing administration log",
+      "from": "dr-julien-armand-michelin",
+      "from_name": "Dr. Julien Armand",
+      "severity": "HIGH",
+      "description": "That records exact delivered mg and immediate guest response in-service.",
+      "search_hints": {
+        "grep_terms": [
+          "dosing.administration",
+          "administration.log",
+          "dosing",
+          "administration"
+        ],
+        "known_built_matches": [],
+        "likely_false_positive": false
+      },
+      "likely_built": false,
+      "category": "scheduling-calendar",
+      "personas": [
+        "dr-julien-armand-michelin"
+      ],
+      "priority_score": 4.8
+    },
+    {
+      "title": "No explicit offline-first guarantee for mission-critical workflows",
+      "from": "leo-varga",
+      "from_name": "Leo Varga",
+      "severity": "HIGH",
+      "description": "Reliable local access to inventory, preferences, plans, menus, and task timelines during disconnected work.",
+      "search_hints": {
+        "grep_terms": [
+          "offline-first.guarantee",
+          "guarantee.mission-critical",
+          "mission-critical.workflows",
+          "offline-first",
+          "guarantee",
+          "mission-critical",
+          "workflows"
+        ],
+        "known_built_matches": [],
+        "likely_false_positive": false
+      },
+      "likely_built": false,
+      "category": "scheduling-calendar",
+      "personas": [
+        "leo-varga"
+      ],
+      "priority_score": 4.8
+    },
+    {
+      "title": "No documented conflict-safe sync model",
+      "from": "leo-varga",
+      "from_name": "Leo Varga",
+      "severity": "HIGH",
+      "description": "Safe handling for multi-day disconnected edits and eventual reconnection.",
+      "search_hints": {
+        "grep_terms": [
+          "documented.conflict-safe",
+          "conflict-safe.sync",
+          "documented",
+          "conflict-safe"
+        ],
+        "known_built_matches": [],
+        "likely_false_positive": false
+      },
+      "likely_built": false,
+      "category": "scheduling-calendar",
+      "personas": [
+        "leo-varga"
+      ],
+      "priority_score": 4.8
+    },
+    {
+      "title": "Real-Time Coordination:",
+      "from": "padma-lakshmi",
+      "from_name": "Padma Lakshmi",
+      "severity": "HIGH",
+      "description": "The analyzer identified this as a major product fit concern. Review the raw analyzer output below for the original wording and supporting context.",
+      "search_hints": {
+        "grep_terms": [
+          "coordination"
+        ],
+        "known_built_matches": [],
+        "likely_false_positive": false
+      },
+      "likely_built": false,
+      "category": "scheduling-calendar",
+      "personas": [
+        "padma-lakshmi"
+      ],
+      "priority_score": 4.8
+    },
+    {
       "title": "Sales Channel Tracking",
       "from": "maya-rios-cannabis-pastry-chef-micro",
       "from_name": "Maya Rios",
@@ -996,78 +1133,6 @@
       "category": "dietary-medical",
       "personas": [
         "rina-solis"
-      ],
-      "priority_score": 4.2
-    },
-    {
-      "title": "No real-time dosing administration log",
-      "from": "dr-julien-armand-michelin",
-      "from_name": "Dr. Julien Armand",
-      "severity": "HIGH",
-      "description": "That records exact delivered mg and immediate guest response in-service.",
-      "search_hints": {
-        "grep_terms": [
-          "dosing.administration",
-          "administration.log",
-          "dosing",
-          "administration"
-        ],
-        "known_built_matches": [],
-        "likely_false_positive": false
-      },
-      "likely_built": false,
-      "category": "scheduling-calendar",
-      "personas": [
-        "dr-julien-armand-michelin"
-      ],
-      "priority_score": 4.2
-    },
-    {
-      "title": "No explicit offline-first guarantee for mission-critical workflows",
-      "from": "leo-varga",
-      "from_name": "Leo Varga",
-      "severity": "HIGH",
-      "description": "Reliable local access to inventory, preferences, plans, menus, and task timelines during disconnected work.",
-      "search_hints": {
-        "grep_terms": [
-          "offline-first.guarantee",
-          "guarantee.mission-critical",
-          "mission-critical.workflows",
-          "offline-first",
-          "guarantee",
-          "mission-critical",
-          "workflows"
-        ],
-        "known_built_matches": [],
-        "likely_false_positive": false
-      },
-      "likely_built": false,
-      "category": "scheduling-calendar",
-      "personas": [
-        "leo-varga"
-      ],
-      "priority_score": 4.2
-    },
-    {
-      "title": "No documented conflict-safe sync model",
-      "from": "leo-varga",
-      "from_name": "Leo Varga",
-      "severity": "HIGH",
-      "description": "Safe handling for multi-day disconnected edits and eventual reconnection.",
-      "search_hints": {
-        "grep_terms": [
-          "documented.conflict-safe",
-          "conflict-safe.sync",
-          "documented",
-          "conflict-safe"
-        ],
-        "known_built_matches": [],
-        "likely_false_positive": false
-      },
-      "likely_built": false,
-      "category": "scheduling-calendar",
-      "personas": [
-        "leo-varga"
       ],
       "priority_score": 4.2
     },
@@ -1807,6 +1872,28 @@
       "category": "uncategorized",
       "personas": [
         "gail-simmons"
+      ],
+      "priority_score": 2
+    },
+    {
+      "title": "Phase 1 (Foundation):",
+      "from": "padma-lakshmi",
+      "from_name": "Padma Lakshmi",
+      "severity": "LOW",
+      "description": "This gap is lower priority but still useful for product fit assessment.",
+      "search_hints": {
+        "grep_terms": [
+          "phase.foundation",
+          "phase",
+          "foundation"
+        ],
+        "known_built_matches": [],
+        "likely_false_positive": false
+      },
+      "likely_built": false,
+      "category": "uncategorized",
+      "personas": [
+        "padma-lakshmi"
       ],
       "priority_score": 2
     },

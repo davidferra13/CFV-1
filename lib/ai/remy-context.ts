@@ -452,6 +452,32 @@ export async function loadRemyContext(
         failedOperations
       )
 
+  // Complimentary Intelligence: load pending suggestions for upcoming events
+  const compSuggestionsText = isMinimal
+    ? undefined
+    : await withContextFallback(
+        tenantId,
+        'load_comp_suggestions',
+        undefined,
+        async () => {
+          const { data: suggestions } = await db
+            .from('complimentary_suggestions')
+            .select('event_id, title, suggestion_type, confidence_score, effort_level, estimated_cost_cents')
+            .eq('tenant_id', tenantId)
+            .eq('status', 'pending')
+            .order('confidence_score', { ascending: false })
+            .limit(10)
+          if (!suggestions || suggestions.length === 0) return undefined
+          return suggestions
+            .map((s: any) =>
+              `- [${s.suggestion_type}] ${s.title} (confidence: ${s.confidence_score}%, effort: ${s.effort_level}, ~$${((s.estimated_cost_cents ?? 0) / 100).toFixed(2)})`
+            )
+            .join('\n')
+        },
+        undefined,
+        failedOperations
+      )
+
   return {
     chefName: chefProfile.businessName,
     businessName: chefProfile.businessName,
@@ -517,6 +543,8 @@ export async function loadRemyContext(
         : undefined,
     // CIL: Continuous Intelligence Layer insights (graph-based pattern detection)
     cilInsights,
+    // Complimentary Intelligence: pending comp suggestions for upcoming events
+    compSuggestions: compSuggestionsText,
   }
 }
 

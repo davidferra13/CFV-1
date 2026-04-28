@@ -1,0 +1,53 @@
+# Persona Evaluation: Drew N. (Event Producer/Curator)
+
+**Persona Profile:** Drew is a high-level event producer and curator who manages complex, multi-stakeholder events. His primary focus is on the *narrative* and *experience*—the seamless flow from concept to execution. He is highly sophisticated, relies on detailed operational data, and views technology as a tool to *reduce friction* and *increase perceived professionalism*. He is comfortable with complexity if the system is intuitive and reliable.
+
+**Key Needs:**
+1. **Operational Visibility:** Real-time status updates across multiple departments (F&B, A/V, Marketing).
+2. **Stakeholder Management:** Centralized communication and approval workflows.
+3. **Financial Reconciliation:** Clear, auditable tracking of budgets against actual spend.
+4. **Experience Mapping:** Ability to map the guest journey and identify potential failure points.
+
+**Pain Points:**
+1. **Siloed Information:** Information trapped in emails, spreadsheets, and disparate vendor portals.
+2. **Last-Minute Changes:** Inability to quickly model the impact of scope changes on budget/timeline.
+3. **Vendor Accountability:** Difficulty holding multiple vendors accountable to a single timeline.
+
+---
+
+## System Fit Analysis (Assuming a comprehensive Event Management Platform)
+
+**Strengths:**
+* **Workflow Automation:** Excellent for managing complex approval chains (e.g., "Budget Approval -> Vendor Selection -> Contract Signing -> Task Assignment").
+* **Centralized Dashboard:** Provides the high-level overview Drew craves, allowing him to manage multiple projects simultaneously without context switching.
+* **Resource Allocation:** Strong tools for tracking shared resources (staff, equipment) across different event components.
+
+**Weaknesses:**
+* **Over-Complexity:** If the platform is too feature-rich, Drew might get lost in the settings and struggle to find the core operational view.
+* **Customization Depth:** If the platform cannot be customized to reflect unique industry jargon or proprietary workflows, it will feel foreign.
+
+---
+
+## Recommendation & Implementation Strategy
+
+**Overall Fit:** High Potential, but requires careful onboarding.
+
+**Recommendation:** Position the platform not as a "database," but as the **"Single Source of Truth for the Event Narrative."** Focus initial training on the high-level dashboard and the critical path workflow management.
+
+**Implementation Focus Areas:**
+1. **Phase 1 (Quick Win):** Implement the core timeline and task management for the next event. Prove immediate value by eliminating email chains.
+2. **Phase 2 (Deep Dive):** Integrate vendor contracts and payment tracking. This addresses the financial reconciliation pain point.
+3. **Phase 3 (Optimization):** Build out the guest journey mapping and real-time communication channels.
+
+---
+
+## Persona-Specific Use Case Scenarios
+
+| Scenario | Drew's Goal | How the System Helps | Success Metric |
+| :--- | :--- | :--- | :--- |
+| **Mid-Event Crisis** | A key speaker cancels 2 hours before the event. | Dashboard flags the dependency failure. The system instantly suggests 3 pre-vetted backup speakers and updates the run-of-show timeline automatically. | Time to resolution (minutes). |
+| **Budget Overrun** | The catering costs are 15% over budget due to last-minute requests. | The system flags the variance against the master budget, showing exactly which line items are affected and requiring a mandatory "Budget Override" approval from the CFO role. | Accuracy and auditability of financial tracking. |
+| **Vendor Coordination** | Coordinating A/V setup across three different venues on the same day. | A shared, visual Gantt chart shows all vendor timelines, flagging any overlapping resource requests (e.g., two vendors needing the same loading dock at 8 AM). | Reduction in on-site logistical conflicts. |
+
+---
+***(End of Persona Analysis)***

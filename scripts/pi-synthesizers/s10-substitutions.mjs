@@ -14,6 +14,9 @@ import { fileURLToPath } from 'url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DB_PATH = join(__dirname, '..', 'data', 'prices.db');
 
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+function isBusy(err) { return err?.code?.startsWith('SQLITE_BUSY') || /database is locked/i.test(err?.message || ''); }
+
 // Sub-category groupings for meaningful substitutions
 const SUBSTITUTION_GROUPS = {
   // Proteins
@@ -147,62 +150,46 @@ async function main() {
 
   let totalSubs = 0;
 
-  const processBatch = db.transaction(() => {
-    for (const [group, items] of groupIndex) {
-      if (items.length < 2) continue;
+  for (const [group, items] of groupIndex) {
+    if (items.length < 2) continue;
+    items.sort((a, b) => a.avg_price - b.avg_price);
 
-      // Sort by price
-      items.sort((a, b) => a.avg_price - b.avg_price);
+    for (let i = 0; i < items.length; i++) {
+      for (let j = 0; j < items.length; j++) {
+        if (i === j) continue;
 
-      // Generate substitution pairs within the group
-      for (let i = 0; i < items.length; i++) {
-        for (let j = 0; j < items.length; j++) {
-          if (i === j) continue;
+        const original = items[i];
+        const substitute = items[j];
 
-          const original = items[i];
-          const substitute = items[j];
+        const priceDelta = original.avg_price > 0
+          ? Math.round(((substitute.avg_price - original.avg_price) / original.avg_price) * 10000) / 100
+          : 0;
 
-          // Price delta (positive = sub is more expensive)
-          const priceDelta = original.avg_price > 0
-            ? Math.round(((substitute.avg_price - original.avg_price) / original.avg_price) * 10000) / 100
-            : 0;
+        const origSeason = getSeasonalStatus.get(original.id, currentMonth);
+        const subSeason = getSeasonalStatus.get(substitute.id, currentMonth);
+        const seasonalMatch = (origSeason?.status === subSeason?.status) ? 1 : 0;
 
-          // Seasonal check
-          const origSeason = getSeasonalStatus.get(original.id, currentMonth);
-          const subSeason = getSeasonalStatus.get(substitute.id, currentMonth);
-          const seasonalMatch = (origSeason?.status === subSeason?.status) ? 1 : 0;
+        let confidence = 0.7;
+        if (seasonalMatch) confidence += 0.15;
+        if (Math.abs(priceDelta) < 20) confidence += 0.1;
+        if (Math.abs(priceDelta) > 50) confidence -= 0.2;
+        confidence = Math.max(0.3, Math.min(1.0, confidence));
 
-          // Confidence (higher for closer price + same season)
-          let confidence = 0.7; // base for same group
-          if (seasonalMatch) confidence += 0.15;
-          if (Math.abs(priceDelta) < 20) confidence += 0.1;
-          if (Math.abs(priceDelta) > 50) confidence -= 0.2;
-          confidence = Math.max(0.3, Math.min(1.0, confidence));
+        let reason = `Same ${group.replace(/_/g, ' ')}`;
+        if (priceDelta < -10) reason += `, ${Math.abs(Math.round(priceDelta))}% cheaper`;
+        else if (priceDelta > 10) reason += `, ${Math.round(priceDelta)}% more`;
+        if (subSeason?.status === 'peak_season') reason += ', in season';
 
-          // Generate reason
-          let reason = `Same ${group.replace(/_/g, ' ')}`;
-          if (priceDelta < -10) reason += `, ${Math.abs(Math.round(priceDelta))}% cheaper`;
-          else if (priceDelta > 10) reason += `, ${Math.round(priceDelta)}% more`;
-          if (subSeason?.status === 'peak_season') reason += ', in season';
-
-          insert.run(
-            original.id,
-            original.name,
-            substitute.id,
-            substitute.name,
-            group,
-            priceDelta,
-            seasonalMatch,
-            Math.round(confidence * 100) / 100,
-            reason
-          );
-          totalSubs++;
+        try {
+          insert.run(original.id, original.name, substitute.id, substitute.name,
+            group, priceDelta, seasonalMatch, Math.round(confidence * 100) / 100, reason);
+        } catch (err) {
+          if (isBusy(err)) { await sleep(1000); try { insert.run(original.id, original.name, substitute.id, substitute.name, group, priceDelta, seasonalMatch, Math.round(confidence * 100) / 100, reason); } catch (e) { /* skip */ } }
         }
+        totalSubs++;
       }
     }
-  });
-
-  processBatch();
+  }
 
   console.log(`\n  Substitutions generated: ${totalSubs}`);
 

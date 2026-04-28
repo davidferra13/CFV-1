@@ -1,6 +1,6 @@
 # Consolidated Build: Sourcing Supply
 
-**Priority rank:** 4 of 20
+**Priority rank:** 5 of 20
 **Personas affected:** 2 (Noah Kessler, Andrew Zimmern)
 **Average severity:** HIGH
 

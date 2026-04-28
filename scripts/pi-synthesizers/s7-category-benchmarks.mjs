@@ -14,6 +14,9 @@ import { fileURLToPath } from 'url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DB_PATH = join(__dirname, '..', 'data', 'prices.db');
 
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+function isBusy(err) { return err?.code?.startsWith('SQLITE_BUSY') || /database is locked/i.test(err?.message || ''); }
+
 // Dinner index basket weights (typical private dinner for 6-8)
 const DINNER_BASKET = {
   'produce':    { weight: 0.20, typical_lb: 8 },
@@ -110,52 +113,40 @@ async function main() {
   let dinnerIndexTotal = 0;
   const categoryMedians = {};
 
-  const processBatch = db.transaction(() => {
-    for (const cat of categories) {
-      const currentPrices = getCategoryPrices.all(cat.category).map(r => r.price_cents);
-      if (currentPrices.length < 5) continue;
+  for (const cat of categories) {
+    const currentPrices = getCategoryPrices.all(cat.category).map(r => r.price_cents);
+    if (currentPrices.length < 5) continue;
 
-      const med = Math.round(median(currentPrices));
-      const p25 = Math.round(percentile(currentPrices, 25));
-      const p75 = Math.round(percentile(currentPrices, 75));
+    const med = Math.round(median(currentPrices));
+    const p25 = Math.round(percentile(currentPrices, 25));
+    const p75 = Math.round(percentile(currentPrices, 75));
 
-      categoryMedians[cat.category.toLowerCase()] = med;
+    categoryMedians[cat.category.toLowerCase()] = med;
 
-      // Compare to 30 days ago
-      const oldPrices = getCategoryPrices30dAgo.all(cat.category).map(r => r.price_cents);
-      const oldMed = oldPrices.length >= 5 ? median(oldPrices) : med;
-      const vs30dPct = oldMed > 0
-        ? Math.round(((med - oldMed) / oldMed) * 10000) / 100
-        : 0;
+    const oldPrices = getCategoryPrices30dAgo.all(cat.category).map(r => r.price_cents);
+    const oldMed = oldPrices.length >= 5 ? median(oldPrices) : med;
+    const vs30dPct = oldMed > 0
+      ? Math.round(((med - oldMed) / oldMed) * 10000) / 100
+      : 0;
 
-      let trendDirection = 'flat';
-      if (vs30dPct > 3) trendDirection = 'up';
-      else if (vs30dPct < -3) trendDirection = 'down';
+    let trendDirection = 'flat';
+    if (vs30dPct > 3) trendDirection = 'up';
+    else if (vs30dPct < -3) trendDirection = 'down';
 
-      // Dinner index contribution
-      const basketKey = cat.category.toLowerCase();
-      const basketEntry = DINNER_BASKET[basketKey];
-      let dinnerContrib = 0;
-      if (basketEntry) {
-        dinnerContrib = Math.round(med * basketEntry.typical_lb * basketEntry.weight);
-      }
-      dinnerIndexTotal += dinnerContrib;
-
-      upsert.run(
-        cat.category,
-        med,
-        p25,
-        p75,
-        trendDirection,
-        vs30dPct,
-        vs30dPct,
-        currentPrices.length,
-        dinnerContrib || null
-      );
+    const basketKey = cat.category.toLowerCase();
+    const basketEntry = DINNER_BASKET[basketKey];
+    let dinnerContrib = 0;
+    if (basketEntry) {
+      dinnerContrib = Math.round(med * basketEntry.typical_lb * basketEntry.weight);
     }
-  });
+    dinnerIndexTotal += dinnerContrib;
 
-  processBatch();
+    try {
+      upsert.run(cat.category, med, p25, p75, trendDirection, vs30dPct, vs30dPct, currentPrices.length, dinnerContrib || null);
+    } catch (err) {
+      if (isBusy(err)) { await sleep(2000); try { upsert.run(cat.category, med, p25, p75, trendDirection, vs30dPct, vs30dPct, currentPrices.length, dinnerContrib || null); } catch (e) { /* skip */ } }
+    }
+  }
 
   console.log(`\n  Categories benchmarked: ${categories.length}`);
   console.log(`  Dinner index: $${(dinnerIndexTotal / 100).toFixed(2)}`);

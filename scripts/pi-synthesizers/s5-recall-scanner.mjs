@@ -14,6 +14,9 @@ import { fileURLToPath } from 'url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DB_PATH = join(__dirname, '..', 'data', 'prices.db');
 
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+function isBusy(err) { return err?.code?.startsWith('SQLITE_BUSY') || /database is locked/i.test(err?.message || ''); }
+
 function fuzzyMatch(recallText, ingredientName) {
   const recallLower = recallText.toLowerCase();
   const ingLower = ingredientName.toLowerCase();
@@ -79,59 +82,48 @@ async function main() {
 
   let alertCount = 0;
 
-  const processBatch = db.transaction(() => {
-    for (const recall of recalls) {
-      const recallText = [
-        recall.product_description || '',
-        recall.reason || '',
-        recall.recalling_firm || '',
-      ].join(' ').toLowerCase();
+  for (const recall of recalls) {
+    const recallText = [
+      recall.product_description || '',
+      recall.reason || '',
+      recall.recalling_firm || '',
+    ].join(' ').toLowerCase();
 
-      if (!recallText.trim()) continue;
+    if (!recallText.trim()) continue;
 
-      // Determine recall class and severity
-      let recallClass = recall.classification || 'III';
-      let severity;
-      if (recallClass.includes('I') && !recallClass.includes('II')) {
-        severity = 'critical';
-        recallClass = 'I';
-      } else if (recallClass.includes('II') && !recallClass.includes('III')) {
-        severity = 'warning';
-        recallClass = 'II';
-      } else {
-        severity = 'info';
-        recallClass = 'III';
-      }
-
-      // Match against ingredients
-      for (const ing of ingredients) {
-        const score = fuzzyMatch(recallText, ing.name);
-        if (score < 0.6) continue;
-
-        const brand = recall.recalling_firm || null;
-        const reason = recall.reason || 'FDA recall';
-        const products = JSON.stringify({
-          description: recall.product_description,
-          firm: recall.recalling_firm,
-          distribution: recall.distribution_pattern,
-        });
-
-        insert.run(
-          recall.id || null,
-          ing.id,
-          ing.name,
-          brand,
-          severity,
-          recallClass,
-          reason,
-          products
-        );
-        alertCount++;
-      }
+    let recallClass = recall.classification || 'III';
+    let severity;
+    if (recallClass.includes('I') && !recallClass.includes('II')) {
+      severity = 'critical';
+      recallClass = 'I';
+    } else if (recallClass.includes('II') && !recallClass.includes('III')) {
+      severity = 'warning';
+      recallClass = 'II';
+    } else {
+      severity = 'info';
+      recallClass = 'III';
     }
-  });
 
-  processBatch();
+    for (const ing of ingredients) {
+      const score = fuzzyMatch(recallText, ing.name);
+      if (score < 0.6) continue;
+
+      const brand = recall.recalling_firm || null;
+      const reason = recall.reason || 'FDA recall';
+      const products = JSON.stringify({
+        description: recall.product_description,
+        firm: recall.recalling_firm,
+        distribution: recall.distribution_pattern,
+      });
+
+      try {
+        insert.run(recall.id || null, ing.id, ing.name, brand, severity, recallClass, reason, products);
+      } catch (err) {
+        if (isBusy(err)) { await sleep(2000); try { insert.run(recall.id || null, ing.id, ing.name, brand, severity, recallClass, reason, products); } catch (e) { /* skip */ } }
+      }
+      alertCount++;
+    }
+  }
 
   console.log(`\n  Recall alerts generated: ${alertCount}`);
 

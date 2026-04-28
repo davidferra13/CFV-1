@@ -14,6 +14,9 @@ import { fileURLToPath } from 'url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DB_PATH = join(__dirname, '..', 'data', 'prices.db');
 
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+function isBusy(err) { return err?.code?.startsWith('SQLITE_BUSY') || /database is locked/i.test(err?.message || ''); }
+
 // Known seasonal produce patterns (northeast US)
 // month ranges where item is peak season (1-indexed)
 const SEASONAL_OVERRIDES = {
@@ -142,80 +145,62 @@ async function main() {
   let totalScores = 0;
   let statusCounts = { peak_season: 0, good_value: 0, off_season: 0, avoid: 0 };
 
-  const processBatch = db.transaction((batch) => {
-    for (const ing of batch) {
-      const monthlyPrices = getMonthlyPrices.all(ing.id);
-      if (monthlyPrices.length < 2) continue; // need at least 2 months
+  for (let idx = 0; idx < ingredients.length; idx++) {
+    const ing = ingredients[idx];
+    const monthlyPrices = getMonthlyPrices.all(ing.id);
+    if (monthlyPrices.length < 2) continue;
 
-      // Calculate price range for percentile normalization
-      const prices = monthlyPrices.map(m => m.avg_price);
-      const minPrice = Math.min(...prices);
-      const maxPrice = Math.max(...prices);
-      const priceRange = maxPrice - minPrice;
+    const prices = monthlyPrices.map(m => m.avg_price);
+    const minPrice = Math.min(...prices);
+    const maxPrice = Math.max(...prices);
+    const priceRange = maxPrice - minPrice;
 
-      // Check for seasonal override
-      const overrideMonths = getSeasonalOverride(ing.name);
+    const overrideMonths = getSeasonalOverride(ing.name);
 
-      // Build lookup of actual monthly prices
-      const priceByMonth = new Map();
-      for (const mp of monthlyPrices) {
-        priceByMonth.set(mp.month, mp.avg_price);
+    const priceByMonth = new Map();
+    for (const mp of monthlyPrices) {
+      priceByMonth.set(mp.month, mp.avg_price);
+    }
+
+    for (let month = 1; month <= 12; month++) {
+      let availability = 0.5;
+      if (overrideMonths) {
+        availability = overrideMonths.includes(month) ? 0.9 : 0.3;
+      }
+      const existingKey = `${ing.id}:${month}`;
+      if (seasonalLookup.has(existingKey)) {
+        availability = seasonalLookup.get(existingKey);
       }
 
-      for (let month = 1; month <= 12; month++) {
-        // Availability score (0-1)
-        let availability = 0.5; // default moderate
+      let pricePercentile = 0.5;
+      const monthPrice = priceByMonth.get(month);
+      if (monthPrice !== undefined && priceRange > 0) {
+        pricePercentile = (monthPrice - minPrice) / priceRange;
+      }
 
-        // Check override first
-        if (overrideMonths) {
-          availability = overrideMonths.includes(month) ? 0.9 : 0.3;
-        }
+      const valueScore = Math.round(availability * (1 - pricePercentile) * 100) / 100;
 
-        // Check existing seasonal_availability data
-        const existingKey = `${ing.id}:${month}`;
-        if (seasonalLookup.has(existingKey)) {
-          availability = seasonalLookup.get(existingKey);
-        }
+      let status;
+      if (valueScore > 0.7) status = 'peak_season';
+      else if (valueScore > 0.5) status = 'good_value';
+      else if (valueScore > 0.2) status = 'off_season';
+      else status = 'avoid';
 
-        // Price percentile (0-1, lower = cheaper relative to own range)
-        let pricePercentile = 0.5;
-        const monthPrice = priceByMonth.get(month);
-        if (monthPrice !== undefined && priceRange > 0) {
-          pricePercentile = (monthPrice - minPrice) / priceRange;
-        }
+      statusCounts[status]++;
+      totalScores++;
 
-        // Value score = availability * (1 - pricePercentile)
-        // High availability + low price = high value
-        const valueScore = Math.round(availability * (1 - pricePercentile) * 100) / 100;
-
-        // Status classification
-        let status;
-        if (valueScore > 0.7) status = 'peak_season';
-        else if (valueScore > 0.5) status = 'good_value';
-        else if (valueScore > 0.2) status = 'off_season';
-        else status = 'avoid';
-
-        statusCounts[status]++;
-        totalScores++;
-
-        upsert.run(
-          ing.id,
-          ing.name,
-          month,
+      try {
+        upsert.run(ing.id, ing.name, month,
           Math.round(availability * 100) / 100,
           Math.round(pricePercentile * 100) / 100,
-          valueScore,
-          status
-        );
+          valueScore, status);
+      } catch (err) {
+        if (isBusy(err)) { await sleep(2000); try { upsert.run(ing.id, ing.name, month, Math.round(availability * 100) / 100, Math.round(pricePercentile * 100) / 100, valueScore, status); } catch (e) { /* skip */ } }
       }
     }
-  });
 
-  const batchSize = 200;
-  for (let i = 0; i < ingredients.length; i += batchSize) {
-    processBatch(ingredients.slice(i, i + batchSize));
-    if (i % 2000 === 0 && i > 0) {
-      console.log(`  Processed ${i}/${ingredients.length}...`);
+    if (idx % 2000 === 0 && idx > 0) {
+      console.log(`  Processed ${idx}/${ingredients.length}...`);
     }
   }
 

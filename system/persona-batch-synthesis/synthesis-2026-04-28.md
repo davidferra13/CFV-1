@@ -1,15 +1,15 @@
 # Persona Batch Synthesis
 
 **Date:** 2026-04-28
-**Personas analyzed:** 22
+**Personas analyzed:** 24
 **Average score:** 51/100
 
 ## Priority Categories (by cross-persona frequency x severity)
 
-### 1. Uncategorized (11 personas, avg severity HIGH)
+### 1. Uncategorized (13 personas, avg severity HIGH)
 
-**Personas:** Andrew Zimmern, Ari Weinzweig, Dean Deluca, Emma Chamberlain, Gail Simmons, Gordon Ramsay, Joel Salatin, Miley Cyrus, Mindy Weiss, Olajide Olatunji, Oprah Winfrey
-**Priority score:** 45
+**Personas:** Andrew Zimmern, Ari Weinzweig, Dean Deluca, Emma Chamberlain, Gail Simmons, Gordon Ramsay, Joel Salatin, Julia, Miley Cyrus, Mindy Weiss, Olajide Olatunji, Oprah Winfrey, Padma Lakshmi
+**Priority score:** 49
 
 **Gaps in this category:**
 
@@ -25,14 +25,16 @@
 - Implement "Yield-Based Inventory Module": (Joel Salatin, HIGH)
 - Develop "Dynamic Fulfillment Invoicing": (Joel Salatin, HIGH)
 - Add "Yield Forecasting Notes": (Joel Salatin, MEDIUM)
+- Implement "Usage Deduction": (Julia, HIGH)
 - Implement a "Critical Dependency Map": (Miley Cyrus, HIGH)
 - Mandatory Multi-Signature Approval: (Miley Cyrus, HIGH)
 - "Executive Override" Workflow: (Mindy Weiss, HIGH)
+- Phase 1 (Foundation): (Padma Lakshmi, LOW)
 
-### 2. Recipe Menu (5 personas, avg severity HIGH)
+### 2. Recipe Menu (6 personas, avg severity HIGH)
 
-**Personas:** Dr. Julien Armand, Leo Varga, Maya Rios, Noah Kessler, Rina Solis
-**Priority score:** 24
+**Personas:** Dr. Julien Armand, Leo Varga, Maya Rios, Noah Kessler, Rina Solis, Julia
+**Priority score:** 27
 
 **Gaps in this category:**
 
@@ -44,6 +46,7 @@
 - No market-first menu builder mode (Noah Kessler, HIGH)
 - No safe-only menu generation mode for high-risk clients (Rina Solis, HIGH)
 - Insufficient hidden-risk and cross-contact signaling at ingredient level (Rina Solis, HIGH)
+- Develop "Prep Mode" UI: (Julia, HIGH)
 
 ### 3. Dosing Cannabis (3 personas, avg severity HIGH)
 
@@ -60,7 +63,19 @@
 - Product System (SKUs, Batches, Units) (Maya Rios, HIGH)
 - Batch Dosing Engine (Maya Rios, HIGH)
 
-### 4. Sourcing Supply (2 personas, avg severity HIGH)
+### 4. Scheduling Calendar (3 personas, avg severity HIGH)
+
+**Personas:** Dr. Julien Armand, Leo Varga, Padma Lakshmi
+**Priority score:** 12
+
+**Gaps in this category:**
+
+- No real-time dosing administration log (Dr. Julien Armand, HIGH)
+- No explicit offline-first guarantee for mission-critical workflows (Leo Varga, HIGH)
+- No documented conflict-safe sync model (Leo Varga, HIGH)
+- Real-Time Coordination: (Padma Lakshmi, HIGH)
+
+### 5. Sourcing Supply (2 personas, avg severity HIGH)
 
 **Personas:** Noah Kessler, Andrew Zimmern
 **Priority score:** 12
@@ -72,7 +87,7 @@
 - No multi-store route and split-cart optimizer (Noah Kessler, HIGH)
 - Advanced Inventory/Supply Chain: (Andrew Zimmern, HIGH)
 
-### 5. Payment Financial (5 personas, avg severity MEDIUM)
+### 6. Payment Financial (5 personas, avg severity MEDIUM)
 
 **Personas:** Noah Kessler, Dean Deluca, Emma Chamberlain, Gail Simmons, Olajide Olatunji
 **Priority score:** 11
@@ -84,7 +99,7 @@
 - Implement a "Single Source of Truth" Dashboard: (Emma Chamberlain, MEDIUM)
 - Financial accuracy gap (Gail Simmons, MEDIUM)
 
-### 6. Compliance Legal (4 personas, avg severity HIGH)
+### 7. Compliance Legal (4 personas, avg severity HIGH)
 
 **Personas:** Dr. Julien Armand, Jordan Hale, Ari Weinzweig, Miley Cyrus
 **Priority score:** 11
@@ -96,7 +111,7 @@
 - Transparency & Traceability: (Ari Weinzweig, HIGH)
 - Immutable Audit Log: (Miley Cyrus, MEDIUM)
 
-### 7. Documentation Records (4 personas, avg severity HIGH)
+### 8. Documentation Records (4 personas, avg severity HIGH)
 
 **Personas:** Dr. Julien Armand, Maya Rios, Rina Solis, Miley Cyrus
 **Priority score:** 11
@@ -108,7 +123,7 @@
 - No explicit outcome-based reaction log as first-class feedback (Rina Solis, HIGH)
 - Immutable Audit Log: (Miley Cyrus, MEDIUM)
 
-### 8. Reporting Analytics (3 personas, avg severity HIGH)
+### 9. Reporting Analytics (3 personas, avg severity HIGH)
 
 **Personas:** Maya Rios, Rina Solis, Emma Chamberlain
 **Priority score:** 11
@@ -120,7 +135,7 @@
 - No dedicated safety command center view (Rina Solis, HIGH)
 - Implement a "Single Source of Truth" Dashboard: (Emma Chamberlain, MEDIUM)
 
-### 9. Dietary Medical (2 personas, avg severity HIGH)
+### 10. Dietary Medical (2 personas, avg severity HIGH)
 
 **Personas:** Leo Varga, Rina Solis
 **Priority score:** 9
@@ -130,17 +145,6 @@
 - No deterministic inventory-to-menu execution assistant (Leo Varga, HIGH)
 - No hard medical constraint enforcement engine (blocking layer) (Rina Solis, HIGH)
 - Insufficient hidden-risk and cross-contact signaling at ingredient level (Rina Solis, HIGH)
-
-### 10. Scheduling Calendar (2 personas, avg severity HIGH)
-
-**Personas:** Dr. Julien Armand, Leo Varga
-**Priority score:** 9
-
-**Gaps in this category:**
-
-- No real-time dosing administration log (Dr. Julien Armand, HIGH)
-- No explicit offline-first guarantee for mission-critical workflows (Leo Varga, HIGH)
-- No documented conflict-safe sync model (Leo Varga, HIGH)
 
 ### 11. Staffing Team (2 personas, avg severity HIGH)
 
@@ -269,13 +273,15 @@
 - **Gail Simmons:** 0 new categories
 - **Gordon Ramsay:** 0 new categories
 - **Joel Salatin:** 0 new categories
+- **Julia:** 0 new categories
 - **Miley Cyrus:** 0 new categories
 - **Mindy Weiss:** 0 new categories
 - **Olajide Olatunji:** 0 new categories
 - **Oprah Winfrey:** 0 new categories
+- **Padma Lakshmi:** 0 new categories
 
 ## Score Trends
 
 - Lowest: David Chang (0)
 - Highest: Joel Salatin (68)
-- Distribution: 0-20: 2, 21-40: 1, 41-60: 12, 61-80: 7, 81-100: 0
+- Distribution: 0-20: 2, 21-40: 1, 41-60: 14, 61-80: 7, 81-100: 0

@@ -1,0 +1,46 @@
+# Persona Evaluation: Chef/Event Producer (High-End, Multi-Venue)
+
+**Persona Profile:** The user is a high-end culinary professional or event producer who manages complex, multi-stakeholder events (e.g., pop-ups, private dinners, festivals). They are highly skilled but time-poor. Their primary pain points revolve around coordinating disparate data sources (venue logistics, vendor inventory, guest dietary needs, staffing schedules) into one cohesive, real-time operational view. They value elegance, reliability, and predictive capability over simple task management.
+
+**Key Needs:** Centralized operational dashboard, robust resource allocation, seamless communication across diverse teams (kitchen, front-of-house, logistics).
+
+---
+
+## Evaluation Against System Capabilities
+
+*(Self-Correction/Assumption: Assuming the system has strong integration capabilities, advanced scheduling, and customizable dashboards.)*
+
+**Strengths:**
+*   **Centralization:** The system's ability to pull data from multiple sources (inventory, bookings, staff) into one view is a massive win for operational oversight.
+*   **Workflow Automation:** Automating reminders, approvals, and task handoffs reduces manual overhead significantly.
+*   **Customization:** The ability to build role-specific dashboards (e.g., Kitchen Manager vs. Venue Coordinator) is crucial for managing complexity.
+
+**Weaknesses:**
+*   **Complexity Overload:** If the system is *too* feature-rich, the user might get lost in configuration menus rather than executing tasks.
+*   **Real-Time Data Lag:** If inventory or booking updates aren't instantaneous, the entire operational plan fails.
+
+---
+
+## Persona-Specific Feedback & Recommendations
+
+**Overall Fit:** Excellent, provided the implementation focuses on *operational flow* rather than just *data storage*.
+
+**Key Recommendations:**
+
+1.  **Implement "Scenario Planning Mode":** Allow the user to build and save "What If" scenarios (e.g., "If Vendor X is delayed, what is the revised FOH staffing plan?"). This moves the system from reactive to proactive.
+2.  **Visual Timeline View:** For event day management, a Gantt or timeline view showing dependencies (e.g., "Plating cannot start until the roast arrives") is more valuable than a simple checklist.
+3.  **Vendor/Supplier Portal Integration:** Instead of just *logging* vendor details, the system should allow vendors to *update* their own availability/inventory directly into the master schedule, minimizing manual data entry by the core team.
+
+---
+
+## Final Scorecard
+
+| Criteria | Rating (1-5) | Notes |
+| :--- | :--- | :--- |
+| **Ease of Use (Day-to-Day)** | 4/5 | Needs careful onboarding to prevent feature fatigue. |
+| **Scalability (Small to Large)** | 5/5 | Handles the complexity of multi-venue/multi-day events well. |
+| **Integration Depth** | 5/5 | Must connect to POS, Inventory, and Scheduling systems. |
+| **Proactive Support** | 4/5 | Excellent for alerts, but needs better predictive modeling. |
+| **Overall Value Proposition** | 5/5 | Solves the core problem of operational chaos. |
+
+**Recommendation:** **Adopt.** Focus the initial rollout on the **Event Day Command Center Dashboard** and **Vendor Communication Hub**.

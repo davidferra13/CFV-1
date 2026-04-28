@@ -36,6 +36,7 @@ const emptyQueue: PriorityQueue = {
       message: 0,
       quote: 0,
       event: 0,
+      task: 0,
       financial: 0,
       post_event: 0,
       client: 0,
@@ -140,7 +141,7 @@ describe('action layer', () => {
 
     assert.equal(task.source, 'queue')
     assert.equal(task.href, '/inquiries/123')
-    assert.equal(task.ctaLabel, 'Resolve Next')
+    assert.equal(task.ctaLabel, 'Do This Now')
     assert.match(task.context.join(' '), /Maya Chen/)
   })
 

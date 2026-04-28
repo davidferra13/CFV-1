@@ -13,6 +13,9 @@ import { fileURLToPath } from 'url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DB_PATH = join(__dirname, '..', 'data', 'prices.db');
 
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+function isBusy(err) { return err?.code?.startsWith('SQLITE_BUSY') || /database is locked/i.test(err?.message || ''); }
+
 async function main() {
   const db = new Database(DB_PATH, { timeout: 300000 });
   db.pragma('journal_mode = WAL');
@@ -67,49 +70,36 @@ async function main() {
   let totalRankings = 0;
   let cheapestWins = new Map(); // track which store wins most often
 
-  const processBatch = db.transaction((batch) => {
-    for (const ing of batch) {
-      const storePrices = getStorePrices.all(ing.ingredient_id);
-      if (storePrices.length < 3) continue;
+  for (let idx = 0; idx < ingredients.length; idx++) {
+    const ing = ingredients[idx];
+    const storePrices = getStorePrices.all(ing.ingredient_id);
+    if (storePrices.length < 3) continue;
 
-      // Compute market average
-      const totalPrice = storePrices.reduce((s, p) => s + p.avg_price, 0);
-      const marketAvg = totalPrice / storePrices.length;
+    const totalPrice = storePrices.reduce((s, p) => s + p.avg_price, 0);
+    const marketAvg = totalPrice / storePrices.length;
 
-      for (let rank = 0; rank < storePrices.length; rank++) {
-        const sp = storePrices[rank];
-        const vsMarketPct = marketAvg > 0
-          ? Math.round(((sp.avg_price - marketAvg) / marketAvg) * 10000) / 100
-          : 0;
+    for (let rank = 0; rank < storePrices.length; rank++) {
+      const sp = storePrices[rank];
+      const vsMarketPct = marketAvg > 0
+        ? Math.round(((sp.avg_price - marketAvg) / marketAvg) * 10000) / 100
+        : 0;
 
-        insert.run(
-          ing.ingredient_id,
-          ing.ingredient_name,
-          sp.store_name,
-          sp.chain_slug || null,
-          Math.round(sp.avg_price),
-          vsMarketPct,
-          rank + 1,
-          sp.sample_size,
-          ing.category || null
-        );
+      try {
+        insert.run(ing.ingredient_id, ing.ingredient_name, sp.store_name,
+          sp.chain_slug || null, Math.round(sp.avg_price), vsMarketPct,
+          rank + 1, sp.sample_size, ing.category || null);
+      } catch (err) {
+        if (isBusy(err)) { await sleep(2000); try { insert.run(ing.ingredient_id, ing.ingredient_name, sp.store_name, sp.chain_slug || null, Math.round(sp.avg_price), vsMarketPct, rank + 1, sp.sample_size, ing.category || null); } catch (e) { /* skip */ } }
+      }
 
-        totalRankings++;
-
-        // Track cheapest store wins
-        if (rank === 0) {
-          const key = sp.store_name;
-          cheapestWins.set(key, (cheapestWins.get(key) || 0) + 1);
-        }
+      totalRankings++;
+      if (rank === 0) {
+        cheapestWins.set(sp.store_name, (cheapestWins.get(sp.store_name) || 0) + 1);
       }
     }
-  });
 
-  const batchSize = 200;
-  for (let i = 0; i < ingredients.length; i += batchSize) {
-    processBatch(ingredients.slice(i, i + batchSize));
-    if (i % 2000 === 0 && i > 0) {
-      console.log(`  Processed ${i}/${ingredients.length}...`);
+    if (idx % 2000 === 0 && idx > 0) {
+      console.log(`  Processed ${idx}/${ingredients.length}...`);
     }
   }
 

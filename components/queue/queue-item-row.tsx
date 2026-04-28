@@ -34,6 +34,7 @@ const DOMAIN_LABELS: Record<QueueDomain, string> = {
   message: 'Message',
   quote: 'Quote',
   event: 'Event',
+  task: 'Task',
   financial: 'Financial',
   post_event: 'Post-Event',
   client: 'Client',

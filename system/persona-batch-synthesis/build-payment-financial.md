@@ -1,6 +1,6 @@
 # Consolidated Build: Payment Financial
 
-**Priority rank:** 5 of 20
+**Priority rank:** 6 of 20
 **Personas affected:** 5 (Noah Kessler, Dean Deluca, Emma Chamberlain, Gail Simmons, Olajide Olatunji)
 **Average severity:** MEDIUM
 

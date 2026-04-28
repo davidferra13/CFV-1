@@ -14,6 +14,9 @@ import { fileURLToPath } from 'url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DB_PATH = join(__dirname, '..', 'data', 'prices.db');
 
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+function isBusy(err) { return err?.code?.startsWith('SQLITE_BUSY') || /database is locked/i.test(err?.message || ''); }
+
 // Category-based yield defaults (percentage)
 // These are industry standard averages for professional kitchens
 const CATEGORY_YIELDS = {
@@ -124,26 +127,19 @@ async function main() {
   let counts = { override: 0, category: 0, default: 0 };
   let updated = 0;
 
-  const processBatch = db.transaction((batch) => {
-    for (const ing of batch) {
-      const yields = getYieldForIngredient(ing.name, ing.category);
-      counts[yields.source]++;
+  for (let i = 0; i < ingredients.length; i++) {
+    const ing = ingredients[i];
+    const yields = getYieldForIngredient(ing.name, ing.category);
+    counts[yields.source]++;
 
-      update.run(
-        yields.yield_pct,
-        yields.trim_loss,
-        yields.cook_shrinkage,
-        yields.source,
-        ing.id
-      );
+    try {
+      update.run(yields.yield_pct, yields.trim_loss, yields.cook_shrinkage, yields.source, ing.id);
       updated++;
+    } catch (err) {
+      if (isBusy(err)) { await sleep(1000); try { update.run(yields.yield_pct, yields.trim_loss, yields.cook_shrinkage, yields.source, ing.id); updated++; } catch (e) { /* skip */ } }
     }
-  });
 
-  const batchSize = 5000;
-  for (let i = 0; i < ingredients.length; i += batchSize) {
-    processBatch(ingredients.slice(i, i + batchSize));
-    if (i % 50000 === 0 && i > 0) {
+    if (i % 20000 === 0 && i > 0) {
       console.log(`  Processed ${i}/${ingredients.length}...`);
     }
   }

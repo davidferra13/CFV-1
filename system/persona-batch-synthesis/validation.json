@@ -1,9 +1,9 @@
 {
-  "validated_at": "2026-04-28T01:14:34.758Z",
+  "validated_at": "2026-04-28T01:33:08.668Z",
   "summary": {
-    "total": 56,
-    "built": 10,
-    "partial": 23,
+    "total": 60,
+    "built": 11,
+    "partial": 26,
     "missing": 23,
     "false_positive_rate": 18
   },
@@ -383,6 +383,24 @@
       "evidence": []
     },
     {
+      "category": "recipe-menu",
+      "title": "Develop \"Prep Mode\" UI:",
+      "severity": "HIGH",
+      "from": "Julia",
+      "status": "PARTIAL",
+      "evidence": [
+        {
+          "type": "grep_match",
+          "term": "develop",
+          "files": [
+            "lib/admin/audit.ts",
+            "lib/admin/flag-actions.ts",
+            "lib/ai/agent-actions/proactive-actions.ts"
+          ]
+        }
+      ]
+    },
+    {
       "category": "scheduling-calendar",
       "title": "No real-time dosing administration log",
       "severity": "HIGH",
@@ -422,6 +440,24 @@
             "lib/auth/server-action-inventory.ts",
             "lib/clients/completeness.ts",
             "lib/completion/evaluators/client.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "scheduling-calendar",
+      "title": "Real-Time Coordination:",
+      "severity": "HIGH",
+      "from": "Padma Lakshmi",
+      "status": "PARTIAL",
+      "evidence": [
+        {
+          "type": "grep_match",
+          "term": "coordination",
+          "files": [
+            "lib/calling/twilio-actions.ts",
+            "lib/calling/voice-helpers.ts",
+            "lib/events/default-event-flow.ts"
           ]
         }
       ]
@@ -802,6 +838,24 @@
     },
     {
       "category": "uncategorized",
+      "title": "Implement \"Usage Deduction\":",
+      "severity": "HIGH",
+      "from": "Julia",
+      "status": "PARTIAL",
+      "evidence": [
+        {
+          "type": "grep_match",
+          "term": "implement",
+          "files": [
+            "lib/ai/browser/chrome-ai-adapter.ts",
+            "lib/ai/browser/ollama-adapter.ts",
+            "lib/ai/browser/webllm-adapter.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "uncategorized",
       "title": "Implement a \"Critical Dependency Map\":",
       "severity": "HIGH",
       "from": "Miley Cyrus",
@@ -840,6 +894,33 @@
             "lib/ai/aar-generator.ts",
             "lib/ai/alert-digest.ts",
             "lib/ai/remy-archetypes.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "uncategorized",
+      "title": "Phase 1 (Foundation):",
+      "severity": "LOW",
+      "from": "Padma Lakshmi",
+      "status": "BUILT",
+      "evidence": [
+        {
+          "type": "grep_match",
+          "term": "phase",
+          "files": [
+            "lib/ai/aar-generator.ts",
+            "lib/ai/agent-actions/workflow-actions.ts",
+            "lib/ai/command-orchestrator.ts"
+          ]
+        },
+        {
+          "type": "grep_match",
+          "term": "foundation",
+          "files": [
+            "lib/ai/remy-curated.ts",
+            "lib/ai/with-ai-fallback.ts",
+            "lib/charity/charity-keywords.ts"
           ]
         }
       ]

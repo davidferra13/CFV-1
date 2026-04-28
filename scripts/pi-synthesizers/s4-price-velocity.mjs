@@ -14,6 +14,9 @@ import { fileURLToPath } from 'url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DB_PATH = join(__dirname, '..', 'data', 'prices.db');
 
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+function isBusy(err) { return err?.code?.startsWith('SQLITE_BUSY') || /database is locked/i.test(err?.message || ''); }
+
 async function main() {
   const db = new Database(DB_PATH, { timeout: 300000 });
   db.pragma('journal_mode = WAL');
@@ -94,70 +97,54 @@ async function main() {
 
   let statusCounts = { stable: 0, trending: 0, volatile: 0, spiking: 0 };
 
-  const processBatch = db.transaction((batch) => {
-    for (const ing of batch) {
-      const d7 = get7dChanges.get(ing.ingredient_id);
-      const d30 = get30dChanges.get(ing.ingredient_id);
-      const dailyPrices = getDailyPrices.all(ing.ingredient_id);
+  for (let idx = 0; idx < ingredients.length; idx++) {
+    const ing = ingredients[idx];
+    const d7 = get7dChanges.get(ing.ingredient_id);
+    const d30 = get30dChanges.get(ing.ingredient_id);
+    const dailyPrices = getDailyPrices.all(ing.ingredient_id);
 
-      // Compute volatility (std dev of daily avg prices)
-      let volatility = 0;
-      if (dailyPrices.length >= 2) {
-        const mean = dailyPrices.reduce((s, p) => s + p.avg_price, 0) / dailyPrices.length;
-        const variance = dailyPrices.reduce((s, p) => s + Math.pow(p.avg_price - mean, 2), 0) / dailyPrices.length;
-        volatility = Math.sqrt(variance);
-        // Normalize as coefficient of variation (percentage)
-        if (mean > 0) volatility = (volatility / mean) * 100;
-      }
-
-      // Trend direction from 30d average change
-      const avgPct30 = d30?.avg_pct || 0;
-      let trendDirection = 'flat';
-      if (avgPct30 > 2) trendDirection = 'up';
-      else if (avgPct30 < -2) trendDirection = 'down';
-
-      // Trend acceleration: recent vs older
-      const recent = getRecentTrend.get(ing.ingredient_id);
-      const older = getOlderTrend.get(ing.ingredient_id);
-      const acceleration = (recent?.avg_pct || 0) - (older?.avg_pct || 0);
-
-      // Stability score: 0-100 (100 = rock stable)
-      // Based on: volatility (lower = better), change frequency (lower = better)
-      const freqScore = Math.max(0, 100 - (d30?.cnt || 0) * 2); // fewer changes = more stable
-      const volScore = Math.max(0, 100 - volatility * 5); // lower volatility = more stable
-      const stabilityScore = Math.round((freqScore + volScore) / 2);
-
-      // Status classification
-      let status = 'stable';
-      if (stabilityScore < 20 || (d7?.cnt > 10 && volatility > 15)) {
-        status = 'spiking';
-      } else if (stabilityScore < 40) {
-        status = 'volatile';
-      } else if (Math.abs(avgPct30) > 5) {
-        status = 'trending';
-      }
-
-      statusCounts[status]++;
-
-      upsert.run(
-        ing.ingredient_id,
-        ing.ingredient_name,
-        d7?.cnt || 0,
-        d30?.cnt || 0,
-        Math.round(volatility * 100) / 100,
-        trendDirection,
-        Math.round(acceleration * 100) / 100,
-        stabilityScore,
-        status
-      );
+    let volatility = 0;
+    if (dailyPrices.length >= 2) {
+      const mean = dailyPrices.reduce((s, p) => s + p.avg_price, 0) / dailyPrices.length;
+      const variance = dailyPrices.reduce((s, p) => s + Math.pow(p.avg_price - mean, 2), 0) / dailyPrices.length;
+      volatility = Math.sqrt(variance);
+      if (mean > 0) volatility = (volatility / mean) * 100;
     }
-  });
 
-  const batchSize = 500;
-  for (let i = 0; i < ingredients.length; i += batchSize) {
-    processBatch(ingredients.slice(i, i + batchSize));
-    if (i % 5000 === 0 && i > 0) {
-      console.log(`  Processed ${i}/${ingredients.length}...`);
+    const avgPct30 = d30?.avg_pct || 0;
+    let trendDirection = 'flat';
+    if (avgPct30 > 2) trendDirection = 'up';
+    else if (avgPct30 < -2) trendDirection = 'down';
+
+    const recent = getRecentTrend.get(ing.ingredient_id);
+    const older = getOlderTrend.get(ing.ingredient_id);
+    const acceleration = (recent?.avg_pct || 0) - (older?.avg_pct || 0);
+
+    const freqScore = Math.max(0, 100 - (d30?.cnt || 0) * 2);
+    const volScore = Math.max(0, 100 - volatility * 5);
+    const stabilityScore = Math.round((freqScore + volScore) / 2);
+
+    let status = 'stable';
+    if (stabilityScore < 20 || (d7?.cnt > 10 && volatility > 15)) {
+      status = 'spiking';
+    } else if (stabilityScore < 40) {
+      status = 'volatile';
+    } else if (Math.abs(avgPct30) > 5) {
+      status = 'trending';
+    }
+
+    statusCounts[status]++;
+
+    try {
+      upsert.run(ing.ingredient_id, ing.ingredient_name, d7?.cnt || 0, d30?.cnt || 0,
+        Math.round(volatility * 100) / 100, trendDirection,
+        Math.round(acceleration * 100) / 100, stabilityScore, status);
+    } catch (err) {
+      if (isBusy(err)) { await sleep(2000); try { upsert.run(ing.ingredient_id, ing.ingredient_name, d7?.cnt || 0, d30?.cnt || 0, Math.round(volatility * 100) / 100, trendDirection, Math.round(acceleration * 100) / 100, stabilityScore, status); } catch (e) { /* skip */ } }
+    }
+
+    if (idx % 5000 === 0 && idx > 0) {
+      console.log(`  Processed ${idx}/${ingredients.length}...`);
     }
   }
 

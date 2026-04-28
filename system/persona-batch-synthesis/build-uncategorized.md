@@ -1,12 +1,12 @@
 # Consolidated Build: Uncategorized
 
 **Priority rank:** 1 of 20
-**Personas affected:** 11 (Andrew Zimmern, Ari Weinzweig, Dean Deluca, Emma Chamberlain, Gail Simmons, Gordon Ramsay, Joel Salatin, Miley Cyrus, Mindy Weiss, Olajide Olatunji, Oprah Winfrey)
+**Personas affected:** 13 (Andrew Zimmern, Ari Weinzweig, Dean Deluca, Emma Chamberlain, Gail Simmons, Gordon Ramsay, Joel Salatin, Julia, Miley Cyrus, Mindy Weiss, Olajide Olatunji, Oprah Winfrey, Padma Lakshmi)
 **Average severity:** HIGH
 
 ## The Pattern
 
-11 persona(s) surfaced 15 related gaps in uncategorized. The common thread: ChefFlow lacks native support for this category of operations, forcing manual workarounds.
+13 persona(s) surfaced 17 related gaps in uncategorized. The common thread: ChefFlow lacks native support for this category of operations, forcing manual workarounds.
 
 ## Individual Gaps (deduplicated)
 
@@ -46,15 +46,21 @@
 12. **Add "Yield Forecasting Notes":** - from Joel Salatin - MEDIUM
    This gap should be considered during build planning because it creates repeated operational friction.
    > Search hints: add.yield, yield.forecasting, forecasting.notes, yield, forecasting, notes
-13. **Implement a "Critical Dependency Map":** - from Miley Cyrus - HIGH
+13. **Implement "Usage Deduction":** - from Julia - HIGH
+   This gap affects whether ChefFlow can support the persona's full operating workflow without manual reconciliation.
+   > Search hints: implement.usage, usage.deduction, implement, usage, deduction
+14. **Implement a "Critical Dependency Map":** - from Miley Cyrus - HIGH
    The analyzer identified this as a major product fit concern. Review the raw analyzer output below for the original wording and supporting context.
    > Search hints: implement.critical, critical.dependency, dependency.map, implement, critical, dependency
-14. **Mandatory Multi-Signature Approval:** - from Miley Cyrus - HIGH
+15. **Mandatory Multi-Signature Approval:** - from Miley Cyrus - HIGH
    This gap affects whether ChefFlow can support the persona's full operating workflow without manual reconciliation.
    > Search hints: mandatory.multi-signature, multi-signature.approval, mandatory, multi-signature, approval
-15. **"Executive Override" Workflow:** - from Mindy Weiss - HIGH
+16. **"Executive Override" Workflow:** - from Mindy Weiss - HIGH
    The analyzer identified this as a major product fit concern. Review the raw analyzer output below for the original wording and supporting context.
    > Search hints: executive.override, override.workflow, executive, override, workflow
+17. **Phase 1 (Foundation):** - from Padma Lakshmi - LOW
+   This gap is lower priority but still useful for product fit assessment.
+   > Search hints: phase.foundation, phase, foundation
 
 ## Recommended Build Scope
 
@@ -72,9 +78,11 @@ A single consolidated build addressing all uncategorized gaps should cover:
 - Implement "Yield-Based Inventory Module":
 - Develop "Dynamic Fulfillment Invoicing":
 - Add "Yield Forecasting Notes":
+- Implement "Usage Deduction":
 - Implement a "Critical Dependency Map":
 - Mandatory Multi-Signature Approval:
 - "Executive Override" Workflow:
+- Phase 1 (Foundation):
 
 ## Existing Build Tasks
 
@@ -105,6 +113,11 @@ A single consolidated build addressing all uncategorized gaps should cover:
 - `system/persona-build-plans/joel-salatin/task-3.md`
 - `system/persona-build-plans/joel-salatin/task-4.md`
 - `system/persona-build-plans/joel-salatin/task-5.md`
+- `system/persona-build-plans/julia/task-1.md`
+- `system/persona-build-plans/julia/task-2.md`
+- `system/persona-build-plans/julia/task-3.md`
+- `system/persona-build-plans/julia/task-4.md`
+- `system/persona-build-plans/julia/task-5.md`
 - `system/persona-build-plans/miley-cyrus/task-1.md`
 - `system/persona-build-plans/miley-cyrus/task-2.md`
 - `system/persona-build-plans/miley-cyrus/task-3.md`
@@ -119,6 +132,10 @@ A single consolidated build addressing all uncategorized gaps should cover:
 - `system/persona-build-plans/oprah-winfrey/task-2.md`
 - `system/persona-build-plans/oprah-winfrey/task-3.md`
 - `system/persona-build-plans/oprah-winfrey/task-4.md`
+- `system/persona-build-plans/padma-lakshmi/task-1.md`
+- `system/persona-build-plans/padma-lakshmi/task-3.md`
+- `system/persona-build-plans/padma-lakshmi/task-4.md`
+- `system/persona-build-plans/padma-lakshmi/task-5.md`
 
 ## Acceptance Criteria (merged from all personas)
 
@@ -134,6 +151,8 @@ A single consolidated build addressing all uncategorized gaps should cover:
 10. Joel Salatin: Implement "Yield-Based Inventory Module": is addressed
 11. Joel Salatin: Develop "Dynamic Fulfillment Invoicing": is addressed
 12. Joel Salatin: Add "Yield Forecasting Notes": is addressed
-13. Miley Cyrus: Implement a "Critical Dependency Map": is addressed
-14. Miley Cyrus: Mandatory Multi-Signature Approval: is addressed
-15. Mindy Weiss: "Executive Override" Workflow: is addressed
+13. Julia: Implement "Usage Deduction": is addressed
+14. Miley Cyrus: Implement a "Critical Dependency Map": is addressed
+15. Miley Cyrus: Mandatory Multi-Signature Approval: is addressed
+16. Mindy Weiss: "Executive Override" Workflow: is addressed
+17. Padma Lakshmi: Phase 1 (Foundation): is addressed

@@ -361,11 +361,16 @@ function buildQueueResolveTask(
 ): DashboardResolveNextTask {
   const badge =
     item.urgency === 'critical'
-      ? 'Resolve now'
+      ? 'Focus lock'
       : item.urgency === 'high'
-        ? 'Resolve today'
+        ? 'Next action'
         : 'Active work'
   const tone = item.urgency === 'critical' ? 'rose' : item.urgency === 'high' ? 'amber' : 'brand'
+  const title = item.urgency === 'critical' ? `Do this now: ${item.title}` : `Next: ${item.title}`
+  const description =
+    item.urgency === 'critical'
+      ? `This blocks lower-priority work. ${item.description}`
+      : item.description
   const context = [
     item.context.primaryLabel,
     item.context.secondaryLabel ?? null,
@@ -377,10 +382,10 @@ function buildQueueResolveTask(
     id: item.id,
     source: 'queue',
     badge,
-    title: item.title,
-    description: item.description,
+    title,
+    description,
     href: item.href,
-    ctaLabel: 'Resolve Next',
+    ctaLabel: item.urgency === 'critical' ? 'Do This Now' : 'Resolve Next',
     tone,
     context,
     remainingCount: Math.max(priorityQueue.summary.totalItems - 1, 0),

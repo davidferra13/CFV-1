@@ -694,6 +694,13 @@ ${fenceForPrompt('cil_insights', sanitizeForPrompt(context.cilInsights))}
 These insights come from the chef's persistent knowledge graph. Mention relevant ones when they naturally fit the conversation. Proactively flag high-severity items.`)
   }
 
+  // Complimentary Intelligence: pending comp suggestions
+  if (context.compSuggestions) {
+    parts.push(`\nCOMPLIMENTARY INTELLIGENCE (pending suggestions for upcoming events - mention when discussing event prep):
+${fenceForPrompt('comp_suggestions', sanitizeForPrompt(context.compSuggestions))}
+These are data-driven complimentary item suggestions. When the chef discusses an upcoming event, mention relevant suggestions naturally. The chef can accept or reject them.`)
+  }
+
   // Revenue pattern awareness
   if (context.revenuePattern) {
     const rp = context.revenuePattern

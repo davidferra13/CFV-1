@@ -8,6 +8,7 @@ import { getInquiryQueueItems } from './providers/inquiry'
 import { getMessageQueueItems } from './providers/message'
 import { getQuoteQueueItems } from './providers/quote'
 import { convertWorkItemsToQueueItems } from './providers/event'
+import { getTaskQueueItems } from './providers/task'
 import { getFinancialQueueItems } from './providers/financial'
 import { getPostEventQueueItems } from './providers/post-event'
 import { getClientQueueItems } from './providers/client'
@@ -50,6 +51,7 @@ export async function buildPriorityQueue(
     inquiryItems,
     messageItems,
     quoteItems,
+    taskItems,
     financialItems,
     postEventItems,
     clientItems,
@@ -60,6 +62,7 @@ export async function buildPriorityQueue(
     safeProvider('inquiry', () => getInquiryQueueItems(db, tenantId)),
     safeProvider('message', () => getMessageQueueItems(db, tenantId)),
     safeProvider('quote', () => getQuoteQueueItems(db, tenantId)),
+    safeProvider('task', () => getTaskQueueItems(db, tenantId)),
     safeProvider('financial', () => getFinancialQueueItems(db, tenantId)),
     safeProvider('post_event', () => getPostEventQueueItems(db, tenantId)),
     safeProvider('client', () => getClientQueueItems(db, tenantId)),
@@ -74,6 +77,7 @@ export async function buildPriorityQueue(
     ...inquiryItems,
     ...messageItems,
     ...quoteItems,
+    ...taskItems,
     ...financialItems,
     ...postEventItems,
     ...clientItems,
@@ -123,6 +127,7 @@ function selectNextAction(items: QueueItem[], now: Date): QueueItem | null {
   if (hour >= 6 && hour < 12) {
     // Morning: prep, shopping, culinary work
     timeWeights.event = 1.2
+    timeWeights.task = 1.2
     timeWeights.culinary = 1.2
   } else if (hour >= 12 && hour < 17) {
     // Afternoon: communication and admin
@@ -134,6 +139,7 @@ function selectNextAction(items: QueueItem[], now: Date): QueueItem | null {
   } else if (hour >= 17) {
     // Evening: next-day prep and post-event follow-ups
     timeWeights.event = 1.3
+    timeWeights.task = 1.25
     timeWeights.post_event = 1.2
   }
 
@@ -159,6 +165,7 @@ function computeSummary(items: QueueItem[]): QueueSummary {
     message: 0,
     quote: 0,
     event: 0,
+    task: 0,
     financial: 0,
     post_event: 0,
     client: 0,

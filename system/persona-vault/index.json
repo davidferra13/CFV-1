@@ -250,5 +250,47 @@
     "source_file": "Chef Flow Personas/Uncompleted/Staff/julia.txt",
     "stored_at": "2026-04-28T01:18:45.068Z",
     "chars": 7202
+  },
+  {
+    "id": "d2887210-7f9b-48f8-b31b-b133289a5301",
+    "content_hash": "ed9621a56ba5ff91",
+    "persona_type": "Partner",
+    "persona_name": "Drew Nieporent",
+    "author": {
+      "type": "ai",
+      "name": "gemma4:e4b",
+      "tool": "persona-generator"
+    },
+    "source_file": "Chef Flow Personas/Uncompleted/Partner/drew-nieporent.txt",
+    "stored_at": "2026-04-28T01:35:24.299Z",
+    "chars": 7211
+  },
+  {
+    "id": "08d951c1-5b40-4396-851a-9a5ab4a5d8bc",
+    "content_hash": "dc584f5db3570f64",
+    "persona_type": "Partner",
+    "persona_name": "Francis Mallmann",
+    "author": {
+      "type": "ai",
+      "name": "gemma4:e4b",
+      "tool": "persona-generator"
+    },
+    "source_file": "Chef Flow Personas/Uncompleted/Partner/francis-mallmann.txt",
+    "stored_at": "2026-04-28T01:37:15.383Z",
+    "chars": 8357
+  },
+  {
+    "id": "bcaf0d20-2830-45e8-95fa-c25db6a025f8",
+    "content_hash": "68abdc032cfbbbc9",
+    "persona_type": "Chef",
+    "persona_name": "Ina Garten",
+    "author": {
+      "type": "ai",
+      "name": "hermes3:8b",
+      "tool": "persona-generator"
+    },
+    "source_file": "Chef Flow Personas/Uncompleted/Chef/ina-garten.txt",
+    "stored_at": "2026-04-28T01:44:40.245Z",
+    "chars": 5349
   }
 ]

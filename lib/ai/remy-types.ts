@@ -400,6 +400,8 @@ export interface RemyContext {
     failedOperations: string[]
   }
   cilInsights?: string
+  /** Pending complimentary suggestions for upcoming events */
+  compSuggestions?: string
 }
 
 // ─── Page Entity Context ────────────────────────────────────────────────────

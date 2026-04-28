@@ -14,6 +14,7 @@ export type QueueDomain =
   | 'message'
   | 'quote'
   | 'event'
+  | 'task'
   | 'financial'
   | 'post_event'
   | 'client'

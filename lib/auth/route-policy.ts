@@ -177,6 +177,7 @@ export const PUBLIC_UNAUTHENTICATED_PATHS = [
   '/ingredients',
   '/services',
   '/ingredient',
+  '/sandbox',
 ] as const
 
 export const PUBLIC_ASSET_PATHS = [

@@ -137,6 +137,7 @@ const emptyQueue: PriorityQueue = {
       message: 0,
       quote: 0,
       event: 0,
+      task: 0,
       financial: 0,
       post_event: 0,
       client: 0,

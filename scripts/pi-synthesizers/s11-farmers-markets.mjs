@@ -14,6 +14,9 @@ import { fileURLToPath } from 'url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DB_PATH = join(__dirname, '..', 'data', 'prices.db');
 
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+function isBusy(err) { return err?.code?.startsWith('SQLITE_BUSY') || /database is locked/i.test(err?.message || ''); }
+
 // Month name to number mapping
 const MONTH_MAP = {
   'january': 1, 'february': 2, 'march': 3, 'april': 4,
@@ -121,38 +124,27 @@ async function main() {
   let openCount = 0;
   let totalProducts = 0;
 
-  const processBatch = db.transaction((batch) => {
-    for (const market of batch) {
-      const name = market.market_name || market.name || market.listing_name || 'Unknown Market';
-      const lat = market.latitude || market.y || market.lat || null;
-      const lng = market.longitude || market.x || market.lng || null;
-      const season = market.season1 || market.season || market.open_season || '';
-      const days = market.schedule || market.season1_time || market.open_days || '';
-      const productsText = market.products || market.media_food || '';
+  for (const market of markets) {
+    const name = market.market_name || market.name || market.listing_name || 'Unknown Market';
+    const lat = market.latitude || market.y || market.lat || null;
+    const lng = market.longitude || market.x || market.lng || null;
+    const season = market.season_start ? `${market.season_start}-${market.season_end}` : '';
+    const days = market.days_hours || '';
+    const productsText = market.products || '';
 
-      const matchedProducts = matchProductsToIngredients(productsText, ingredientIndex);
-      const isOpen = isOpenThisWeek(season) ? 1 : 0;
+    const matchedProducts = matchProductsToIngredients(productsText, ingredientIndex);
+    const isOpen = isOpenThisWeek(season) ? 1 : 0;
 
-      if (isOpen) openCount++;
-      totalProducts += matchedProducts.length;
+    if (isOpen) openCount++;
+    totalProducts += matchedProducts.length;
 
-      insert.run(
-        market.id || market.fmid || null,
-        name,
-        lat ? parseFloat(lat) : null,
-        lng ? parseFloat(lng) : null,
-        season,
-        days,
-        JSON.stringify(matchedProducts),
-        matchedProducts.length,
-        isOpen
-      );
+    try {
+      insert.run(market.id || null, name,
+        lat ? parseFloat(lat) : null, lng ? parseFloat(lng) : null,
+        season, days, JSON.stringify(matchedProducts), matchedProducts.length, isOpen);
+    } catch (err) {
+      if (isBusy(err)) { await sleep(1000); try { insert.run(market.id || null, name, lat ? parseFloat(lat) : null, lng ? parseFloat(lng) : null, season, days, JSON.stringify(matchedProducts), matchedProducts.length, isOpen); } catch (e) { /* skip */ } }
     }
-  });
-
-  const batchSize = 500;
-  for (let i = 0; i < markets.length; i += batchSize) {
-    processBatch(markets.slice(i, i + batchSize));
   }
 
   console.log(`\n  Markets processed: ${markets.length}`);

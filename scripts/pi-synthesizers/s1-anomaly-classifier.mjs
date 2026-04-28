@@ -14,6 +14,17 @@ import { fileURLToPath } from 'url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DB_PATH = join(__dirname, '..', 'data', 'prices.db');
 
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+function isBusy(err) { return err?.code?.startsWith('SQLITE_BUSY') || /database is locked/i.test(err?.message || ''); }
+
+async function safeRun(stmt, args, label = 'S1') {
+  try { return stmt.run(...args); }
+  catch (err) {
+    if (isBusy(err)) { await sleep(2000); try { return stmt.run(...args); } catch (e) { /* skip */ } }
+    else throw err;
+  }
+}
+
 function classifyAnomaly(anomaly, db) {
   const { ingredient_id, ingredient_name, anomaly_type, change_pct } = anomaly;
 
@@ -119,43 +130,35 @@ async function main() {
   let counts = { deal: 0, market_event: 0, data_error: 0, seasonal: 0 };
   let foodOnly = 0;
 
-  const processBatch = db.transaction((batch) => {
-    for (const anomaly of batch) {
-      if (!anomaly.ingredient_name) continue;
+  const getStores = db.prepare(`
+    SELECT DISTINCT sr.name
+    FROM current_prices cp
+    JOIN source_registry sr ON sr.source_id = cp.source_id
+    WHERE cp.canonical_ingredient_id = ?
+    LIMIT 10
+  `);
 
-      const result = classifyAnomaly(anomaly, db);
-      counts[result.category]++;
-      if (result.isFood) foodOnly++;
+  for (const anomaly of anomalies) {
+    if (!anomaly.ingredient_name) continue;
 
-      // Find affected stores for this ingredient
-      const stores = db.prepare(`
-        SELECT DISTINCT sr.name
-        FROM current_prices cp
-        JOIN source_registry sr ON sr.source_id = cp.source_id
-        WHERE cp.canonical_ingredient_id = ?
-        LIMIT 10
-      `).all(anomaly.ingredient_id);
+    const result = classifyAnomaly(anomaly, db);
+    counts[result.category]++;
+    if (result.isFood) foodOnly++;
 
-      const storeNames = JSON.stringify(stores.map(s => s.name));
+    const stores = getStores.all(anomaly.ingredient_id);
+    const storeNames = JSON.stringify(stores.map(s => s.name));
 
-      insert.run(
-        anomaly.ingredient_id,
-        anomaly.ingredient_name,
-        result.category,
-        result.severity,
-        result.direction,
-        result.magnitude,
-        storeNames,
-        result.message,
-        result.isFood ? 1 : 0
-      );
-    }
-  });
-
-  // Process in batches
-  const batchSize = 1000;
-  for (let i = 0; i < anomalies.length; i += batchSize) {
-    processBatch(anomalies.slice(i, i + batchSize));
+    await safeRun(insert, [
+      anomaly.ingredient_id,
+      anomaly.ingredient_name,
+      result.category,
+      result.severity,
+      result.direction,
+      result.magnitude,
+      storeNames,
+      result.message,
+      result.isFood ? 1 : 0
+    ]);
   }
 
   // Expire old alerts

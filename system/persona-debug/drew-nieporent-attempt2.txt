@@ -1,0 +1,57 @@
+# Persona Evaluation: Drew N. (Event Producer/Curator)
+
+**Persona Profile:** Drew is a high-level event producer and curator who manages complex, multi-stakeholder events. His primary focus is on the *experience* and the *narrative* of the event. He needs tools that manage complexity, track revenue streams, and maintain impeccable communication across diverse groups (vendors, sponsors, talent). He is comfortable with sophisticated technology but demands that the technology *simplifies* complexity, rather than adding to it.
+
+**Goal:** To execute flawless, profitable, and highly memorable events by managing all moving parts (logistics, finance, marketing, vendor relations) from a single source of truth.
+
+**Pain Points:**
+1. **Siloed Data:** Information lives in spreadsheets, emails, and separate vendor portals.
+2. **Financial Reconciliation:** Tracking payments, deposits, and revenue attribution across multiple sponsors/vendors is a nightmare.
+3. **Scope Creep Management:** Keeping track of scope changes and associated costs/approvals is manual and error-prone.
+4. **Vendor Onboarding Friction:** Getting new vendors up to speed with compliance, contracts, and technical requirements is slow.
+
+**Needs:**
+1. **Centralized Project Management:** A single dashboard for timelines, tasks, and dependencies.
+2. **Robust Financial Tracking:** Integrated invoicing, contract management, and revenue attribution.
+3. **Stakeholder Communication Hub:** Controlled communication channels tailored to specific roles (e.g., sponsors only see sponsor-related tasks).
+
+***
+
+## Evaluation Against System Capabilities (Assuming a comprehensive, enterprise-grade platform)
+
+*(Self-Correction: Since no specific system was provided, this evaluation assumes the system has robust PM, CRM, and Finance modules, which is necessary to satisfy this persona.)*
+
+**Strengths:**
+* **Project Management:** Excellent for managing complex timelines and dependencies.
+* **CRM/Vendor Management:** Strong for onboarding and maintaining vendor records.
+* **Financial Tracking:** Necessary for tracking multi-faceted revenue streams.
+
+**Weaknesses (Potential Gaps):**
+* **Creative Workflow Integration:** May lack native tools for mood boarding, visual asset management, or creative feedback loops common in high-end event design.
+* **Real-Time On-Site Operations:** Might require integration with physical access control or real-time vendor check-in systems.
+
+***
+
+## Persona Fit Score: 8/10 (High Fit, Requires Integration)
+
+**Verdict:** This persona requires a system that acts as the **Operating System for the Event Business**, not just a task manager. If the system can handle the financial complexity and the sheer volume of moving parts, it is a perfect fit.
+
+***
+
+## Actionable Recommendations for Product Development
+
+1. **Build a "Sponsor ROI Dashboard":** Allow users to input sponsor goals (e.g., "Generate 50 leads," "Achieve 10 media mentions") and track progress against those goals in real-time, linking tasks, marketing assets, and attendance data.
+2. **Implement Contract Lifecycle Management (CLM):** Integrate automated reminders for insurance renewals, payment milestones, and usage rights expiration dates.
+3. **Develop a "Scope Change Impact Analyzer":** When a task is marked as a scope change, the system must automatically prompt the user to select which budget line item, timeline adjustment, and required executive approval is affected.
+
+***
+
+## Summary Table
+
+| Feature Area | Persona Need | System Capability Check | Priority |
+| :--- | :--- | :--- | :--- |
+| **Project Management** | Centralized timeline, dependency mapping. | High | Must-Have |
+| **Finance/Billing** | Multi-source revenue tracking, invoicing. | High | Must-Have |
+| **Vendor Relations** | Streamlined onboarding, compliance tracking. | Medium-High | Should-Have |
+| **Communication** | Role-based, controlled communication channels. | Medium | Should-Have |
+| **Creative Workflow** | Visual asset management, mood boarding. | Low-Medium | Nice-to-Have |

@@ -1,12 +1,12 @@
 # Consolidated Build: Recipe Menu
 
 **Priority rank:** 2 of 20
-**Personas affected:** 5 (Dr. Julien Armand, Leo Varga, Maya Rios, Noah Kessler, Rina Solis)
+**Personas affected:** 6 (Dr. Julien Armand, Leo Varga, Maya Rios, Noah Kessler, Rina Solis, Julia)
 **Average severity:** HIGH
 
 ## The Pattern
 
-5 persona(s) surfaced 8 related gaps in recipe menu. The common thread: ChefFlow lacks native support for this category of operations, forcing manual workarounds.
+6 persona(s) surfaced 9 related gaps in recipe menu. The common thread: ChefFlow lacks native support for this category of operations, forcing manual workarounds.
 
 ## Individual Gaps (deduplicated)
 
@@ -34,6 +34,9 @@
 8. **Insufficient hidden-risk and cross-contact signaling at ingredient level** - from Rina Solis - HIGH
    Allergen checks exist, but hidden processing and cross-contact risk annotations are not surfaced as explicit hazard tiers in selection flows.
    > Search hints: insufficient.hidden-risk, hidden-risk.cross-contact, cross-contact.signaling, signaling.ingredient, insufficient, hidden-risk, cross-contact, signaling
+9. **Develop "Prep Mode" UI:** - from Julia - HIGH
+   The analyzer identified this as a major product fit concern. Review the raw analyzer output below for the original wording and supporting context.
+   > Search hints: develop.prep, develop
 
 ## Recommended Build Scope
 
@@ -47,10 +50,15 @@ A single consolidated build addressing all recipe menu gaps should cover:
 - No market-first menu builder mode
 - No safe-only menu generation mode for high-risk clients
 - Insufficient hidden-risk and cross-contact signaling at ingredient level
+- Develop "Prep Mode" UI:
 
 ## Existing Build Tasks
 
-No existing build tasks found for this category.
+- `system/persona-build-plans/julia/task-1.md`
+- `system/persona-build-plans/julia/task-2.md`
+- `system/persona-build-plans/julia/task-3.md`
+- `system/persona-build-plans/julia/task-4.md`
+- `system/persona-build-plans/julia/task-5.md`
 
 ## Acceptance Criteria (merged from all personas)
 
@@ -62,3 +70,4 @@ No existing build tasks found for this category.
 6. Noah Kessler: No market-first menu builder mode is addressed
 7. Rina Solis: No safe-only menu generation mode for high-risk clients is addressed
 8. Rina Solis: Insufficient hidden-risk and cross-contact signaling at ingredient level is addressed
+9. Julia: Develop "Prep Mode" UI: is addressed
