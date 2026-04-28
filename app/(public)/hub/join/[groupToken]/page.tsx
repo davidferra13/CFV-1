@@ -2,12 +2,14 @@ import { headers } from 'next/headers'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import type { CSSProperties } from 'react'
+import Link from 'next/link'
 import { getGroupByToken, getGroupMemberCount } from '@/lib/hub/group-actions'
 import {
   getInviteRoleLabel,
   resolveHubInviteAttribution,
   type HubInviteCopyRole,
 } from '@/lib/hub/invite-links'
+import { getPublicGroupJoinPreview } from '@/lib/hub/public-member-profile'
 import { createServerClient } from '@/lib/db/server'
 import { checkRateLimit } from '@/lib/rateLimit'
 import { JoinGroupForm } from './join-form'
@@ -15,6 +17,15 @@ import { JoinGroupForm } from './join-form'
 interface Props {
   params: Promise<{ groupToken: string }>
   searchParams: Promise<{ invite?: string }>
+}
+
+function formatEventDate(date: string | null): string {
+  if (!date) return 'Date shared after joining'
+  return new Date(`${date}T12:00:00`).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
 }
 
 export default async function JoinGroupPage({ params, searchParams }: Props) {
@@ -39,7 +50,10 @@ export default async function JoinGroupPage({ params, searchParams }: Props) {
     notFound()
   }
 
-  const memberCount = await getGroupMemberCount(group.id)
+  const [memberCount, joinPreview] = await Promise.all([
+    getGroupMemberCount(group.id),
+    getPublicGroupJoinPreview(group.id),
+  ])
   const isBridge = group.group_type === 'bridge'
   const inviteAttribution = inviteToken
     ? await resolveHubInviteAttribution({
@@ -134,6 +148,114 @@ export default async function JoinGroupPage({ params, searchParams }: Props) {
                   {item}
                 </div>
               ))}
+            </div>
+
+            <div className="grid gap-3 lg:grid-cols-2">
+              <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-500">
+                    Who is in this circle
+                  </p>
+                  {joinPreview.memberError && (
+                    <span className="text-[11px] text-amber-300">Unavailable</span>
+                  )}
+                </div>
+                {joinPreview.members.length > 0 ? (
+                  <div className="mt-3 space-y-2">
+                    {joinPreview.members.slice(0, 6).map((member) => (
+                      <Link
+                        key={member.memberId}
+                        href={`/hub/member/${member.memberId}?group=${groupToken}`}
+                        className="flex items-center gap-2 rounded-xl border border-white/5 bg-white/[0.03] px-3 py-2 transition-colors hover:bg-white/[0.06]"
+                      >
+                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-stone-800 text-xs font-medium text-stone-200">
+                          {member.avatarUrl ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={member.avatarUrl}
+                              alt=""
+                              className="h-8 w-8 rounded-full object-cover"
+                            />
+                          ) : (
+                            member.displayName
+                              .split(' ')
+                              .map((part) => part[0])
+                              .join('')
+                              .slice(0, 2)
+                              .toUpperCase()
+                          )}
+                        </span>
+                        <span className="min-w-0">
+                          <span className="block truncate text-sm font-medium text-stone-100">
+                            {member.displayName}
+                          </span>
+                          <span className="block truncate text-xs capitalize text-stone-500">
+                            {member.role}
+                          </span>
+                        </span>
+                      </Link>
+                    ))}
+                    {joinPreview.members.length > 6 && (
+                      <p className="text-xs text-stone-500">
+                        +{joinPreview.members.length - 6} more after joining
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <p className="mt-3 text-sm text-stone-400">
+                    Member details appear here when the circle has visible members.
+                  </p>
+                )}
+              </div>
+
+              <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-500">
+                    Linked events
+                  </p>
+                  {joinPreview.eventError && (
+                    <span className="text-[11px] text-amber-300">Unavailable</span>
+                  )}
+                </div>
+                {joinPreview.events.length > 0 ? (
+                  <div className="mt-3 space-y-2">
+                    {joinPreview.events.slice(0, 4).map((event) => {
+                      const content = (
+                        <>
+                          <span className="block truncate text-sm font-medium text-stone-100">
+                            {event.occasion ?? 'Dinner event'}
+                          </span>
+                          <span className="block text-xs text-stone-500">
+                            {formatEventDate(event.eventDate)}
+                            {event.locationCity ? ` in ${event.locationCity}` : ''}
+                          </span>
+                        </>
+                      )
+
+                      return event.href ? (
+                        <Link
+                          key={event.eventId}
+                          href={event.href}
+                          className="block rounded-xl border border-white/5 bg-white/[0.03] px-3 py-2 transition-colors hover:bg-white/[0.06]"
+                        >
+                          {content}
+                        </Link>
+                      ) : (
+                        <div
+                          key={event.eventId}
+                          className="rounded-xl border border-white/5 bg-white/[0.03] px-3 py-2"
+                        >
+                          {content}
+                        </div>
+                      )
+                    })}
+                  </div>
+                ) : (
+                  <p className="mt-3 text-sm text-stone-400">
+                    Event details will appear in the circle when the host links a dinner.
+                  </p>
+                )}
+              </div>
             </div>
           </div>
         </section>

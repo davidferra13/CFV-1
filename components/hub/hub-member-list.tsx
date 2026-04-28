@@ -2,6 +2,7 @@
 'use client'
 
 import { useState, useEffect, useTransition } from 'react'
+import Link from 'next/link'
 import type { HubGroupMember } from '@/lib/hub/types'
 import {
   updateMemberRole,
@@ -321,6 +322,15 @@ export function HubMemberList({
                   </div>
                 ) : null}
               </div>
+
+              {profile && (
+                <Link
+                  href={`/hub/member/${member.profile_id}?group=${groupToken}`}
+                  className="rounded-full px-2.5 py-1 text-xs text-stone-500 opacity-0 transition-opacity hover:bg-stone-700 hover:text-stone-200 group-hover:opacity-100"
+                >
+                  View Profile
+                </Link>
+              )}
 
               {/* Manage button (owner/admin only, not on self/owner/chef) */}
               {canManage && (
