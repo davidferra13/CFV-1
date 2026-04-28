@@ -16,6 +16,7 @@ const GATHER_ROUTE = resolve(ROOT, 'app/api/calling/gather/route.ts')
 const CALL_LOG = resolve(ROOT, 'components/calling/call-log.tsx')
 const CALL_SHEET = resolve(ROOT, 'app/(chef)/culinary/call-sheet/page.tsx')
 const LIVE_ALERTS = resolve(ROOT, 'components/calling/chef-live-alerts.tsx')
+const QUICK_NOTES = resolve(ROOT, 'components/dashboard/quick-notes-section.tsx')
 
 test('voice agent contract requires AI disclosure and hard answer boundaries', () => {
   assert.match(VOICE_AGENT_CONTRACT.identityDisclosure, /AI assistant/)
@@ -136,4 +137,17 @@ test('voice agent follow-up reaches live alerts and inbox', () => {
   assert.match(liveAlertsSrc, /call-sheet\?tab=inbox/)
   assert.match(callSheetSrc, /inboxFollowUp/)
   assert.match(callSheetSrc, /buildVoiceAgentFollowUp/)
+})
+
+test('voice booking intake creates linked inquiry workflow', () => {
+  const gatherSrc = readFileSync(GATHER_ROUTE, 'utf8')
+  const quickNotesSrc = readFileSync(QUICK_NOTES, 'utf8')
+
+  assert.match(gatherSrc, /ensureInboundBookingInquiry/)
+  assert.match(gatherSrc, /\.from\('inquiries'\)/)
+  assert.match(gatherSrc, /voice_agent_inquiry_id/)
+  assert.match(gatherSrc, /inquiry_state_transitions/)
+  assert.match(gatherSrc, /triaged_to: voiceAgentInquiryId \? 'inquiry' : null/)
+  assert.match(quickNotesSrc, /Open linked inquiry/)
+  assert.match(quickNotesSrc, /\/inquiries\/\$\{note\.triaged_ref_id\}/)
 })

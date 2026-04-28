@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition, useRef, useEffect } from 'react'
+import Link from 'next/link'
 import { addQuickNote, triageQuickNote, deleteQuickNote } from '@/lib/quick-notes/actions'
 import type { QuickNote } from '@/lib/quick-notes/actions'
 import { toast } from 'sonner'
@@ -74,6 +75,14 @@ function NoteItem({
       <span className="w-1.5 h-1.5 rounded-full bg-brand-500 mt-2 shrink-0" />
       <div className="flex-1 min-w-0">
         <p className="text-sm text-stone-200 leading-snug">{note.text}</p>
+        {note.triaged_to === 'inquiry' && note.triaged_ref_id && (
+          <Link
+            href={`/inquiries/${note.triaged_ref_id}`}
+            className="mt-1 inline-flex text-xs text-violet-300 hover:text-violet-200"
+          >
+            Open linked inquiry
+          </Link>
+        )}
       </div>
       <span className="text-xs text-stone-500 shrink-0 mt-0.5">{timeAgo(note.created_at)}</span>
       <div className="relative" ref={menuRef}>

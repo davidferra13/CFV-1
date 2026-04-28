@@ -16,6 +16,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { createAdminClient } from '@/lib/db/admin'
 import { broadcast } from '@/lib/realtime/broadcast'
 import { validateTwilioWebhook } from '@/lib/calling/twilio-webhook-auth'
@@ -34,6 +35,7 @@ import {
   hasVoiceAgentOptOutRequest,
   resolveVoiceAgentConversationDecision,
   resolveVoiceAgentTurn,
+  type VoiceAgentDecision,
 } from '@/lib/calling/voice-agent-contract'
 
 // Q51: Strip trailing slash - same vulnerability as Q50 in twilio-webhook-auth.
@@ -408,6 +410,114 @@ function affectiveAnalysisData(params: {
       direction: params.direction ?? null,
       speechConfidence: params.confidence ?? null,
     }),
+  }
+}
+
+async function ensureInboundBookingInquiry(params: {
+  db: any
+  aiCallId: string
+  aiCall: {
+    chef_id: string
+    contact_phone: string | null
+    contact_name: string | null
+  }
+  decision: VoiceAgentDecision
+  existingData: Record<string, any>
+  fullTranscript: string
+}): Promise<string | null> {
+  if (params.decision.type !== 'answer_and_collect' || params.decision.category !== 'booking') {
+    return null
+  }
+
+  if (typeof params.existingData.voice_agent_inquiry_id === 'string') {
+    return params.existingData.voice_agent_inquiry_id
+  }
+
+  try {
+    const { data: existing } = await params.db
+      .from('inquiries')
+      .select('id')
+      .eq('tenant_id', params.aiCall.chef_id)
+      .contains('unknown_fields', { ai_call_id: params.aiCallId })
+      .maybeSingle()
+
+    if (existing?.id) return existing.id
+  } catch (err) {
+    console.error('[calling/gather] voice booking inquiry dedupe check failed:', err)
+  }
+
+  try {
+    const now = new Date().toISOString()
+    const callerLabel =
+      params.aiCall.contact_name || params.aiCall.contact_phone || 'Unknown caller'
+    const { data: created, error } = await params.db
+      .from('inquiries')
+      .insert({
+        tenant_id: params.aiCall.chef_id,
+        channel: 'phone',
+        first_contact_at: now,
+        last_response_at: now,
+        contact_name: params.aiCall.contact_name || null,
+        contact_phone: params.aiCall.contact_phone || null,
+        source_message: params.fullTranscript,
+        next_action_required: 'Review AI voice intake and follow up directly.',
+        next_action_by: 'chef',
+        unknown_fields: {
+          source: 'voice_agent_inbound_call',
+          ai_call_id: params.aiCallId,
+          caller_label: callerLabel,
+          voice_agent_decision: params.decision,
+          needs_review: [
+            'event date',
+            'guest count',
+            'location',
+            'service style',
+            'dietary constraints',
+          ],
+        },
+      })
+      .select('id')
+      .single()
+
+    if (error || !created?.id) {
+      console.error('[calling/gather] voice booking inquiry insert failed:', error)
+      return null
+    }
+
+    try {
+      await params.db.from('inquiry_state_transitions').insert({
+        tenant_id: params.aiCall.chef_id,
+        inquiry_id: created.id,
+        from_status: null,
+        to_status: 'new',
+        reason: 'Created from inbound AI voice booking intake',
+        metadata: {
+          source: 'voice_agent_inbound_call',
+          ai_call_id: params.aiCallId,
+        },
+      })
+    } catch (err) {
+      console.error('[calling/gather] voice booking inquiry transition insert failed:', err)
+    }
+
+    revalidatePath('/inquiries')
+    revalidatePath('/dashboard')
+
+    try {
+      await broadcast(`chef-${params.aiCall.chef_id}`, 'new_inquiry_received', {
+        inquiryId: created.id,
+        clientName: callerLabel,
+        occasion: 'Voice booking inquiry',
+        eventDate: null,
+      })
+    } catch (err) {
+      console.error('[calling/gather] voice booking inquiry broadcast failed:', err)
+    }
+
+    return created.id
+  } catch (err) {
+    console.error('[calling/gather] voice booking inquiry creation failed:', err)
+    return null
   }
 }
 
@@ -1287,6 +1397,17 @@ async function handleInboundUnknown(
         ? 'in_progress'
         : 'completed'
     const existingLog = Array.isArray(aiCall?.action_log) ? aiCall.action_log : []
+    const voiceAgentInquiryId =
+      aiCall && aiCallId && nextStatus === 'completed'
+        ? await ensureInboundBookingInquiry({
+            db,
+            aiCallId,
+            aiCall,
+            decision,
+            existingData,
+            fullTranscript,
+          })
+        : null
 
     await db
       .from('ai_calls')
@@ -1310,6 +1431,7 @@ async function handleInboundUnknown(
           ...existingData,
           message: speech,
           voice_agent_decision: decision,
+          ...(voiceAgentInquiryId ? { voice_agent_inquiry_id: voiceAgentInquiryId } : {}),
           ...affectiveAnalysisData({
             transcript: fullTranscript,
             role: 'inbound_unknown',
@@ -1336,6 +1458,8 @@ async function handleInboundUnknown(
         .insert({
           chef_id: aiCall.chef_id,
           text: followUp.quickNoteText,
+          triaged_to: voiceAgentInquiryId ? 'inquiry' : null,
+          triaged_ref_id: voiceAgentInquiryId,
         })
         .catch((err: unknown) => {
           console.error('[calling/gather] inbound_unknown quick_note insert failed:', err)
@@ -1352,6 +1476,7 @@ async function handleInboundUnknown(
           message: speech,
           voiceAgentDecision: decision,
           voiceAgentFollowUp: followUp,
+          inquiryId: voiceAgentInquiryId,
         })
       } catch (err) {
         console.error('[calling/gather] inbound_unknown broadcast failed:', err)
