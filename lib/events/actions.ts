@@ -18,6 +18,7 @@ import {
   normalizeEventTimezoneTruthValue,
 } from '@/lib/events/time-truth'
 import { executeInteraction } from '@/lib/interactions'
+import { logOperationDirect, saveSnapshot, createDiff, computeDiff } from '@/lib/audit'
 import {
   EVENT_TIME_ACTIVITY_TYPES,
   EVENT_TIME_ACTIVITY_CONFIG,
@@ -436,6 +437,27 @@ export async function createEvent(input: CreateEventInput) {
     })
   } catch (err) {
     console.error('[createEvent] Webhook dispatch failed (non-blocking):', err)
+  }
+
+  // Operation audit log (non-blocking)
+  try {
+    const logId = await logOperationDirect(user.tenantId!, user.id, {
+      entityType: 'event',
+      entityId: result.event.id,
+      operation: 'create',
+      diff: createDiff(result.event as Record<string, unknown>),
+      metadata: { action: 'createEvent', source: 'user_action' },
+    })
+    if (logId) {
+      await saveSnapshot(user.tenantId!, {
+        entityType: 'event',
+        entityId: result.event.id,
+        snapshot: result.event as Record<string, unknown>,
+        operationLogId: logId,
+      })
+    }
+  } catch (err) {
+    console.error('[createEvent] Audit log failed (non-blocking):', err)
   }
 
   return result
@@ -927,6 +949,22 @@ export async function updateEvent(eventId: string, input: UpdateEventInput) {
     console.error('[updateEvent] Webhook dispatch failed (non-blocking):', err)
   }
 
+  // Operation audit log (non-blocking)
+  try {
+    await logOperationDirect(user.tenantId!, user.id, {
+      entityType: 'event',
+      entityId: eventId,
+      operation: 'update',
+      diff: computeDiff(
+        currentEvent as Record<string, unknown>,
+        result.event as Record<string, unknown>
+      ),
+      metadata: { action: 'updateEvent', source: 'user_action' },
+    })
+  } catch (err) {
+    console.error('[updateEvent] Audit log failed (non-blocking):', err)
+  }
+
   return result
 }
 
@@ -988,6 +1026,18 @@ export async function deleteEvent(eventId: string) {
     })
   } catch (err) {
     console.error('[deleteEvent] Activity log failed (non-blocking):', err)
+  }
+
+  // Operation audit log (non-blocking)
+  try {
+    await logOperationDirect(user.tenantId!, user.id, {
+      entityType: 'event',
+      entityId: eventId,
+      operation: 'delete',
+      metadata: { action: 'deleteEvent', source: 'user_action' },
+    })
+  } catch (err) {
+    console.error('[deleteEvent] Audit log failed (non-blocking):', err)
   }
 
   return { success: true }

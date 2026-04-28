@@ -10,6 +10,7 @@ import { revalidatePath, revalidateTag } from 'next/cache'
 import { z } from 'zod'
 import type { Database } from '@/types/database'
 import { invalidateRemyContextCache } from '@/lib/ai/remy-context'
+import { logOperationDirect, saveSnapshot, createDiff, computeDiff } from '@/lib/audit'
 
 type RecipeCategory = Database['public']['Enums']['recipe_category']
 type RecipeCuisine = Database['public']['Enums']['recipe_cuisine']
@@ -261,6 +262,28 @@ export async function createRecipe(input: CreateRecipeInput) {
 
   revalidatePath('/recipes')
   invalidateRemyContextCache(user.tenantId!)
+
+  // Operation audit log (non-blocking)
+  try {
+    const logId = await logOperationDirect(user.tenantId!, user.id, {
+      entityType: 'recipe',
+      entityId: recipe.id,
+      operation: 'create',
+      diff: createDiff(recipe as Record<string, unknown>),
+      metadata: { action: 'createRecipe', source: 'user_action' },
+    })
+    if (logId) {
+      await saveSnapshot(user.tenantId!, {
+        entityType: 'recipe',
+        entityId: recipe.id,
+        snapshot: recipe as Record<string, unknown>,
+        operationLogId: logId,
+      })
+    }
+  } catch (err) {
+    console.error('[createRecipe] Audit log failed (non-blocking):', err)
+  }
+
   return { success: true, recipe }
 }
 
@@ -700,6 +723,20 @@ export async function updateRecipe(recipeId: string, input: UpdateRecipeInput) {
   revalidatePath(`/recipes/${recipeId}`)
   revalidatePath('/culinary') // EC-G4: bust shopping list cache
   invalidateRemyContextCache(user.tenantId!)
+
+  // Operation audit log (non-blocking)
+  try {
+    await logOperationDirect(user.tenantId!, user.id, {
+      entityType: 'recipe',
+      entityId: recipeId,
+      operation: 'update',
+      diff: computeDiff(updateData as Record<string, unknown>, recipe as Record<string, unknown>),
+      metadata: { action: 'updateRecipe', source: 'user_action' },
+    })
+  } catch (err) {
+    console.error('[updateRecipe] Audit log failed (non-blocking):', err)
+  }
+
   return { success: true, recipe }
 }
 
@@ -765,6 +802,19 @@ export async function deleteRecipe(recipeId: string, force = false) {
 
   revalidatePath('/recipes')
   invalidateRemyContextCache(user.tenantId!)
+
+  // Operation audit log (non-blocking)
+  try {
+    await logOperationDirect(user.tenantId!, user.id, {
+      entityType: 'recipe',
+      entityId: recipeId,
+      operation: 'delete',
+      metadata: { action: 'deleteRecipe', source: 'user_action' },
+    })
+  } catch (err) {
+    console.error('[deleteRecipe] Audit log failed (non-blocking):', err)
+  }
+
   return { success: true }
 }
 

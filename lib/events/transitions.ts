@@ -17,6 +17,7 @@ import {
   type TransitionActor,
 } from './fsm'
 import { executeInteraction } from '@/lib/interactions'
+import { logOperationDirect, transitionDiff } from '@/lib/audit'
 
 // Re-export EventStatus so existing consumers that import from transitions.ts still work
 export type { EventStatus }
@@ -1241,29 +1242,31 @@ export async function transitionEvent({
         ? dateToDateString(event.event_date as Date | string)
         : 'TBD'
 
-      const contactMessages: Record<string, { subject: string; headline: string; details: string }> =
-        {
-          proposed: {
-            subject: `Event proposed: ${occasion}`,
-            headline: 'Event Proposed',
-            details: `A proposal for "${occasion}" on ${eventDateStr} has been sent to the client. The event is now awaiting client review and acceptance.`,
-          },
-          confirmed: {
-            subject: `Event confirmed: ${occasion}`,
-            headline: 'Event Confirmed',
-            details: `"${occasion}" on ${eventDateStr} is now confirmed. All logistics are locked in and preparation is underway.`,
-          },
-          completed: {
-            subject: `Event completed: ${occasion}`,
-            headline: 'Event Completed',
-            details: `"${occasion}" on ${eventDateStr} has been marked as completed. Thank you for your involvement.`,
-          },
-          cancelled: {
-            subject: `Event cancelled: ${occasion}`,
-            headline: 'Event Cancelled',
-            details: `"${occasion}" on ${eventDateStr} has been cancelled.${metadata.reason ? ` Reason: ${metadata.reason}` : ''}`,
-          },
-        }
+      const contactMessages: Record<
+        string,
+        { subject: string; headline: string; details: string }
+      > = {
+        proposed: {
+          subject: `Event proposed: ${occasion}`,
+          headline: 'Event Proposed',
+          details: `A proposal for "${occasion}" on ${eventDateStr} has been sent to the client. The event is now awaiting client review and acceptance.`,
+        },
+        confirmed: {
+          subject: `Event confirmed: ${occasion}`,
+          headline: 'Event Confirmed',
+          details: `"${occasion}" on ${eventDateStr} is now confirmed. All logistics are locked in and preparation is underway.`,
+        },
+        completed: {
+          subject: `Event completed: ${occasion}`,
+          headline: 'Event Completed',
+          details: `"${occasion}" on ${eventDateStr} has been marked as completed. Thank you for your involvement.`,
+        },
+        cancelled: {
+          subject: `Event cancelled: ${occasion}`,
+          headline: 'Event Cancelled',
+          details: `"${occasion}" on ${eventDateStr} has been cancelled.${metadata.reason ? ` Reason: ${metadata.reason}` : ''}`,
+        },
+      }
 
       const msg = contactMessages[toStatus]
       if (msg) {
@@ -1551,6 +1554,16 @@ export async function transitionEvent({
     log.events.warn('Automation evaluation failed (non-blocking)', { error: err })
   }
 
+  // Auto-generate complimentary suggestions when event reaches confirmed or paid (non-blocking)
+  if (toStatus === 'confirmed' || toStatus === 'paid') {
+    try {
+      const { generateCompSuggestions } = await import('@/lib/complimentary/actions')
+      await generateCompSuggestions(eventId)
+    } catch (err) {
+      log.events.warn('Complimentary suggestion generation failed (non-blocking)', { error: err })
+    }
+  }
+
   // Enqueue Remy reactive AI tasks (non-blocking)
   try {
     if (toStatus === 'confirmed') {
@@ -1807,6 +1820,23 @@ export async function transitionEvent({
     })
   } catch {
     // CIL failure is non-fatal
+  }
+
+  // Operation audit log (non-blocking)
+  try {
+    const actorId = transitionedBy ?? 'system'
+    await logOperationDirect(event.tenant_id, actorId, {
+      entityType: 'event',
+      entityId: eventId,
+      operation: 'transition',
+      diff: transitionDiff(fromStatus, toStatus),
+      metadata: {
+        action: 'transitionEvent',
+        source: isSystemTransition ? 'system' : 'user_action',
+      },
+    })
+  } catch {
+    // Audit log failure is non-fatal
   }
 
   return {

@@ -14,6 +14,7 @@ import { createConflictError } from '@/lib/mutations/conflict'
 import { UnknownAppError, ValidationError } from '@/lib/errors/app-error'
 import { isMissingSoftDeleteColumn } from '@/lib/mutations/soft-delete-compat'
 import { invalidateRemyContextCache } from '@/lib/ai/remy-context'
+import { logOperationDirect, saveSnapshot, createDiff, computeDiff } from '@/lib/audit'
 
 const InviteClientSchema = z.object({
   email: z.string().email('Valid email required'),
@@ -540,6 +541,27 @@ export async function createClient(input: CreateClientInput) {
     console.error('[createClient] Webhook dispatch failed (non-blocking):', err)
   }
 
+  // Operation audit log (non-blocking)
+  try {
+    const logId = await logOperationDirect(user.tenantId!, user.id, {
+      entityType: 'client',
+      entityId: client.id,
+      operation: 'create',
+      diff: createDiff(client as Record<string, unknown>),
+      metadata: { action: 'createClient', source: 'user_action' },
+    })
+    if (logId) {
+      await saveSnapshot(user.tenantId!, {
+        entityType: 'client',
+        entityId: client.id,
+        snapshot: client as Record<string, unknown>,
+        operationLogId: logId,
+      })
+    }
+  } catch (err) {
+    console.error('[createClient] Audit log failed (non-blocking):', err)
+  }
+
   return result
 }
 
@@ -924,6 +946,22 @@ export async function updateClient(clientId: string, input: UpdateClientInput) {
     console.error('[updateClient] Dietary propagation to events failed (non-blocking):', err)
   }
 
+  // Operation audit log (non-blocking)
+  try {
+    await logOperationDirect(user.tenantId!, user.id, {
+      entityType: 'client',
+      entityId: clientId,
+      operation: 'update',
+      diff: computeDiff(
+        currentClient as Record<string, unknown>,
+        client as Record<string, unknown>
+      ),
+      metadata: { action: 'updateClient', source: 'user_action' },
+    })
+  } catch (err) {
+    console.error('[updateClient] Audit log failed (non-blocking):', err)
+  }
+
   return result
 }
 
@@ -979,6 +1017,19 @@ export async function deleteClient(clientId: string) {
   revalidatePath('/clients')
   revalidatePath(`/clients/${clientId}`)
   invalidateRemyContextCache(user.tenantId!)
+
+  // Operation audit log (non-blocking)
+  try {
+    await logOperationDirect(user.tenantId!, user.id, {
+      entityType: 'client',
+      entityId: clientId,
+      operation: 'delete',
+      metadata: { action: 'deleteClient', source: 'user_action' },
+    })
+  } catch (err) {
+    console.error('[deleteClient] Audit log failed (non-blocking):', err)
+  }
+
   return { success: true }
 }
 
