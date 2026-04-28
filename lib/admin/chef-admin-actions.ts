@@ -5,7 +5,7 @@
 
 import { createAdminClient } from '@/lib/db/admin'
 import { requireAdmin } from '@/lib/auth/admin'
-import { logAdminAction } from './audit'
+import { logAdminAction } from './log-admin-action'
 import { revalidatePath, revalidateTag } from 'next/cache'
 
 // ─── Account Status ──────────────────────────────────────────────────────────

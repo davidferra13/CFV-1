@@ -70,11 +70,22 @@ export function PreEventChecklistClient({ event, client }: PreEventChecklistClie
   const [isPending, startTransition] = useTransition()
   const [confirmed, setConfirmed] = useState(!!event.pre_event_checklist_confirmed_at)
   const [error, setError] = useState<string | null>(null)
+  const [dietaryProtocolsRead, setDietaryProtocolsRead] = useState(false)
 
   const firstName = client?.preferred_name || client?.full_name?.split(' ')[0] || 'there'
+  const protocolLabels = client?.dietary_protocols?.length
+    ? client.dietary_protocols.map((protocol) => PROTOCOL_LABELS[protocol] || protocol)
+    : []
+  const hasDietaryProtocols = protocolLabels.length > 0
+  const canConfirm = !hasDietaryProtocols || dietaryProtocolsRead
 
   const handleConfirm = () => {
     setError(null)
+    if (!canConfirm) {
+      setError('Please mark the dietary protocols as read before confirming.')
+      return
+    }
+
     startTransition(async () => {
       try {
         await confirmPreEventChecklist(event.id)
@@ -110,10 +121,8 @@ export function PreEventChecklistClient({ event, client }: PreEventChecklistClie
     },
     {
       label: 'Dietary Protocols',
-      value: client?.dietary_protocols?.length
-        ? client.dietary_protocols.map((p) => PROTOCOL_LABELS[p] || p).join(', ')
-        : null,
-      empty: !client?.dietary_protocols?.length,
+      value: hasDietaryProtocols ? protocolLabels.join(', ') : null,
+      empty: !hasDietaryProtocols,
     },
   ]
 
@@ -262,6 +271,40 @@ export function PreEventChecklistClient({ event, client }: PreEventChecklistClie
               </p>
             </Alert>
           )}
+          {hasDietaryProtocols && (
+            <Alert variant={dietaryProtocolsRead ? 'success' : 'info'}>
+              <div className="space-y-3">
+                <div className="flex items-start gap-2">
+                  {dietaryProtocolsRead ? (
+                    <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                  ) : (
+                    <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                  )}
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium">
+                      {dietaryProtocolsRead
+                        ? 'Dietary protocols marked as read.'
+                        : 'Review these dietary protocols before final confirmation.'}
+                    </p>
+                    <p className="text-xs">{protocolLabels.join(', ')}</p>
+                  </div>
+                </div>
+                {!dietaryProtocolsRead && (
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => {
+                      setDietaryProtocolsRead(true)
+                      setError(null)
+                    }}
+                  >
+                    Mark Preferences as Read
+                  </Button>
+                )}
+              </div>
+            </Alert>
+          )}
         </CardContent>
       </Card>
 
@@ -329,13 +372,15 @@ export function PreEventChecklistClient({ event, client }: PreEventChecklistClie
       {/* Confirm Button */}
       <div className="bg-stone-900 border border-stone-700 rounded-xl p-6 text-center">
         <p className="text-stone-300 mb-4 text-sm">
-          Everything above looks correct and the chef has everything they need for a perfect
-          evening.
+          {canConfirm
+            ? 'Everything above looks correct and the chef has everything they need for a perfect evening.'
+            : 'Mark the dietary protocols as read before confirming these details.'}
         </p>
         <Button
           variant="primary"
           onClick={handleConfirm}
           loading={isPending}
+          disabled={!canConfirm}
           className="w-full sm:w-auto px-8"
         >
           {isPending ? 'Confirming...' : 'Everything Looks Good - Confirm Details'}
