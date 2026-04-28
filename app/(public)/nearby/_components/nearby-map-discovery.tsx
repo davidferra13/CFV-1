@@ -68,7 +68,7 @@ function cuisineLine(listing: DirectoryListingSummary) {
         .map(getCuisineLabel)
     : []
 
-  return [getBusinessTypeLabel(listing.business_type), ...cuisines].filter(Boolean).join(' · ')
+  return [getBusinessTypeLabel(listing.business_type), ...cuisines].filter(Boolean).join(' | ')
 }
 
 function directionsHref(listing: DirectoryListingSummary) {
@@ -105,8 +105,17 @@ function FitListingBounds({ listings }: { listings: DirectoryListingSummary[] })
 }
 
 function MapMoveTracker({ onMove }: { onMove: (center: MapCenter) => void }) {
+  const userMoved = useRef(false)
+
   useMapEvents({
+    dragstart() {
+      userMoved.current = true
+    },
+    zoomstart() {
+      userMoved.current = true
+    },
     moveend(event) {
+      if (!userMoved.current) return
       const map = event.target
       const center = map.getCenter()
       onMove({
@@ -116,6 +125,7 @@ function MapMoveTracker({ onMove }: { onMove: (center: MapCenter) => void }) {
       })
     },
     zoomend(event) {
+      if (!userMoved.current) return
       const map = event.target
       const center = map.getCenter()
       onMove({
@@ -201,7 +211,7 @@ function ListingRow({
             </div>
             <p className="mt-1 text-xs text-stone-400">{cuisineLine(listing)}</p>
             <p className="mt-1 line-clamp-1 text-xs text-stone-500">
-              {[distance, listingAddress(listing)].filter(Boolean).join(' · ')}
+              {[distance, listingAddress(listing)].filter(Boolean).join(' | ')}
             </p>
             <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-stone-400">
               {listingSummary(listing)}
@@ -239,10 +249,12 @@ function PlaceDrawer({
   listing,
   favoriteMode,
   onClose,
+  className = '',
 }: {
   listing: DirectoryListingSummary
   favoriteMode: DirectoryFavoriteMode
   onClose: () => void
+  className?: string
 }) {
   const photo = firstPhoto(listing)
   const distance = formatDistanceMiles(listing.distance_miles)
@@ -254,7 +266,9 @@ function PlaceDrawer({
     : []
 
   return (
-    <aside className="absolute inset-y-0 right-0 z-[550] flex w-full max-w-md flex-col border-l border-stone-800 bg-stone-950 shadow-2xl shadow-black/50 md:rounded-l-2xl">
+    <aside
+      className={`absolute inset-y-0 right-0 z-[550] flex w-full max-w-md flex-col border-l border-stone-800 bg-stone-950 shadow-2xl shadow-black/50 md:rounded-l-2xl ${className}`}
+    >
       <div className="flex items-center justify-between border-b border-stone-800 px-4 py-3">
         <div className="min-w-0">
           <h2 className="line-clamp-1 text-lg font-semibold text-stone-100">{listing.name}</h2>
@@ -398,6 +412,7 @@ export function NearbyMapDiscovery({
 }: Props) {
   const [selectedId, setSelectedId] = useState<string | null>(listings[0]?.id ?? null)
   const [movedCenter, setMovedCenter] = useState<MapCenter | null>(null)
+  const [mobileView, setMobileView] = useState<'list' | 'map' | 'details'>('list')
   const lastAutoSelection = useRef(listings[0]?.id ?? null)
   const gridParams = useMemo(() => {
     const params = new URLSearchParams(currentParams)
@@ -406,8 +421,9 @@ export function NearbyMapDiscovery({
     return next ? `/nearby?${next}` : '/nearby'
   }, [currentParams])
   const mappableListings = listings.filter((listing) => listing.lat != null && listing.lon != null)
-  const selectedListing =
-    listings.find((listing) => listing.id === selectedId) ?? listings[0] ?? null
+  const selectedListing = selectedId
+    ? (listings.find((listing) => listing.id === selectedId) ?? null)
+    : null
   const initialCenter = mappableListings[0]
     ? ([mappableListings[0].lat!, mappableListings[0].lon!] as [number, number])
     : DEFAULT_CENTER
@@ -416,6 +432,7 @@ export function NearbyMapDiscovery({
     if (lastAutoSelection.current === listings[0]?.id) return
     lastAutoSelection.current = listings[0]?.id ?? null
     setSelectedId(listings[0]?.id ?? null)
+    setMobileView('list')
   }, [listings])
 
   return (
@@ -432,6 +449,29 @@ export function NearbyMapDiscovery({
             {locationContextText ||
               'Move the map, compare cards, and open details without losing context.'}
           </p>
+          {mappableListings.length !== listings.length && (
+            <p className="mt-1 text-xs text-amber-300">
+              Showing {mappableListings.length} of {listings.length} results on the map. List-only
+              results stay available on the left.
+            </p>
+          )}
+        </div>
+        <div className="mt-3 grid grid-cols-3 gap-1 rounded-full border border-stone-800 bg-stone-900 p-1 lg:hidden">
+          {(['list', 'map', 'details'] as const).map((view) => (
+            <button
+              key={view}
+              type="button"
+              onClick={() => setMobileView(view)}
+              disabled={view === 'details' && !selectedListing}
+              className={`h-9 rounded-full text-xs font-semibold capitalize transition-colors disabled:cursor-not-allowed disabled:opacity-45 ${
+                mobileView === view
+                  ? 'bg-brand-600 text-white'
+                  : 'text-stone-400 hover:bg-stone-800 hover:text-stone-100'
+              }`}
+            >
+              {view}
+            </button>
+          ))}
         </div>
         <div className="mt-3 flex flex-wrap gap-2 md:mt-0">
           <Link
@@ -450,19 +490,30 @@ export function NearbyMapDiscovery({
       </div>
 
       <div className="grid min-h-[720px] lg:grid-cols-[420px_minmax(0,1fr)]">
-        <div className="max-h-[720px] overflow-y-auto border-b border-stone-800 lg:border-b-0 lg:border-r">
+        <div
+          className={`max-h-[720px] overflow-y-auto border-b border-stone-800 lg:block lg:border-b-0 lg:border-r ${
+            mobileView === 'list' ? 'block' : 'hidden'
+          }`}
+        >
           {listings.map((listing) => (
             <ListingRow
               key={listing.id}
               listing={listing}
-              selected={selectedListing?.id === listing.id}
+              selected={selectedId === listing.id}
               favoriteMode={favoriteMode}
-              onSelect={() => setSelectedId(listing.id)}
+              onSelect={() => {
+                setSelectedId(listing.id)
+                setMobileView('details')
+              }}
             />
           ))}
         </div>
 
-        <div className="relative min-h-[640px] bg-stone-900">
+        <div
+          className={`relative min-h-[640px] bg-stone-900 lg:block ${
+            mobileView === 'map' || mobileView === 'details' ? 'block' : 'hidden'
+          }`}
+        >
           {mappableListings.length > 0 ? (
             <>
               <SearchThisAreaButton movedCenter={movedCenter} currentParams={currentParams} />
@@ -485,7 +536,12 @@ export function NearbyMapDiscovery({
                       key={listing.id}
                       center={[listing.lat!, listing.lon!]}
                       radius={selected ? 11 : 7}
-                      eventHandlers={{ click: () => setSelectedId(listing.id) }}
+                      eventHandlers={{
+                        click: () => {
+                          setSelectedId(listing.id)
+                          setMobileView('details')
+                        },
+                      }}
                       pathOptions={{
                         color: selected ? '#f5f5f4' : '#1c1917',
                         fillColor:
@@ -501,7 +557,10 @@ export function NearbyMapDiscovery({
                       <Popup>
                         <button
                           type="button"
-                          onClick={() => setSelectedId(listing.id)}
+                          onClick={() => {
+                            setSelectedId(listing.id)
+                            setMobileView('details')
+                          }}
                           className="min-w-[180px] text-left"
                         >
                           <span className="block text-sm font-semibold text-stone-900">
@@ -536,7 +595,11 @@ export function NearbyMapDiscovery({
             <PlaceDrawer
               listing={selectedListing}
               favoriteMode={favoriteMode}
-              onClose={() => setSelectedId(null)}
+              onClose={() => {
+                setSelectedId(null)
+                setMobileView('map')
+              }}
+              className={mobileView === 'details' ? 'flex' : 'hidden lg:flex'}
             />
           )}
         </div>
