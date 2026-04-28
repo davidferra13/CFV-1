@@ -77,6 +77,10 @@ interface FormErrors {
   budget?: string
 }
 
+interface SuccessState {
+  circleGroupToken: string | null
+}
+
 const MONTH_OPTIONS = [
   { value: '1', label: 'January' },
   { value: '2', label: 'February' },
@@ -215,7 +219,7 @@ export function PublicInquiryForm({
   )
   const [errors, setErrors] = useState<FormErrors>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [showSuccess, setShowSuccess] = useState(false)
+  const [successState, setSuccessState] = useState<SuccessState | null>(null)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [returningClient, setReturningClient] = useState(false)
   const [lookupDone, setLookupDone] = useState(false)
@@ -378,7 +382,7 @@ export function PublicInquiryForm({
       const budgetCents = parseBudgetCents(budgetText)
       const budgetMode = budgetCents != null ? 'exact' : budgetText ? 'range' : 'unset'
 
-      await submitPublicInquiry({
+      const result = await submitPublicInquiry({
         chef_slug: chefSlug,
         full_name: formData.full_name.trim(),
         address: formData.address.trim(),
@@ -416,7 +420,7 @@ export function PublicInquiryForm({
       })
 
       clearDraft(chefSlug)
-      setShowSuccess(true)
+      setSuccessState({ circleGroupToken: result.circleGroupToken ?? null })
       setDietaryIntake(emptyDietaryIntake())
       setFormData({
         full_name: '',
@@ -459,7 +463,7 @@ export function PublicInquiryForm({
     }
   }
 
-  if (showSuccess) {
+  if (successState) {
     const successSteps = [
       {
         key: 'done',
@@ -518,6 +522,19 @@ export function PublicInquiryForm({
               ? `${chefName} publishes a response window of ${expectedResponseTime}.`
               : `${chefName} will review your details and reply when they can.`}
           </p>
+          {successState.circleGroupToken && (
+            <TrackedLink
+              href={`/hub/g/${successState.circleGroupToken}`}
+              analyticsName="public_inquiry_open_planning_space"
+              analyticsProps={{
+                chef_slug: chefSlug,
+              }}
+              className="mb-6 inline-flex items-center justify-center gap-2 rounded-md bg-stone-100 px-4 py-2 text-sm font-semibold text-stone-950 hover:bg-white"
+            >
+              Open planning space
+              <ExternalLink className="h-4 w-4" />
+            </TrackedLink>
+          )}
           <div className="text-left bg-stone-800 border border-stone-700 rounded-xl px-4 py-4 mb-6">
             <p className="text-xs font-bold text-stone-500 uppercase tracking-widest mb-3">
               What happens next
@@ -544,7 +561,7 @@ export function PublicInquiryForm({
           </div>
           <button
             type="button"
-            onClick={() => setShowSuccess(false)}
+            onClick={() => setSuccessState(null)}
             className="text-sm font-medium text-stone-400 hover:text-stone-200"
           >
             Submit another inquiry

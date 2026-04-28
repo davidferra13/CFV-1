@@ -215,20 +215,26 @@ export function CannabisRsvpsDashboardClient({ initialData }: { initialData: Das
                   </option>
                 ))}
               </select>
-              {/* Export PDF disabled: endpoint is a stub (returns 404).
-                  Re-enable when /api/cannabis/rsvps/[eventId]/summary is built. */}
-              <button
-                type="button"
-                disabled
-                className="px-3 py-2 rounded-lg text-xs font-semibold text-center cursor-not-allowed opacity-70"
+              <a
+                href={
+                  selectedEvent
+                    ? `/api/cannabis/rsvps/${selectedEvent.id}/summary`
+                    : '/cannabis/rsvps'
+                }
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-disabled={!selectedEvent}
+                className={`px-3 py-2 rounded-lg text-xs font-semibold text-center ${
+                  selectedEvent ? 'hover:opacity-90' : 'pointer-events-none opacity-70'
+                }`}
                 style={{
-                  background: 'rgba(74,124,78,0.16)',
+                  background: 'rgba(74,124,78,0.28)',
                   border: '1px solid rgba(74,124,78,0.25)',
-                  color: '#8fb791',
+                  color: '#d9eedc',
                 }}
               >
                 Generate Control Packet
-              </button>
+              </a>
             </div>
           }
         />

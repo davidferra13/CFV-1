@@ -318,6 +318,7 @@ export interface EventStub {
   id: string
   created_by_profile_id: string
   hub_group_id: string | null
+  hub_group_token?: string | null
   title: string
   occasion: string | null
   event_date: string | null

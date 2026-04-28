@@ -148,7 +148,7 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
   if (!guard.ok) {
     if (guard.error.code === 'honeypot') {
       // Honeypot filled by bots; return success to avoid retries.
-      return { success: true, inquiryCreated: false, eventCreated: false }
+      return { success: true, inquiryCreated: false, eventCreated: false, circleGroupToken: null }
     }
     throw new Error(guard.error.message)
   }
@@ -342,6 +342,7 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
       inquiryCreated: false,
       eventCreated: false,
       duplicateOf: existingInquiry.id,
+      circleGroupToken: null,
     }
   }
 
@@ -670,7 +671,7 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
     console.error('[submitPublicInquiry] Auto-response failed (non-blocking):', err)
   }
 
-  return { success: true, inquiryCreated: true, eventCreated: false }
+  return { success: true, inquiryCreated: true, eventCreated: false, circleGroupToken }
 }
 
 /**

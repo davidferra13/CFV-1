@@ -64,7 +64,7 @@ export async function createEventStub(input: z.infer<typeof CreateStubSchema>): 
         created_by_profile_id: profile.id,
         emoji: '🍽️',
       })
-      .select('id')
+      .select('id, group_token')
       .single()
 
     if (group) {
@@ -100,6 +100,7 @@ export async function createEventStub(input: z.infer<typeof CreateStubSchema>): 
       })
 
       stub.hub_group_id = group.id
+      stub.hub_group_token = group.group_token
     }
   }
 
