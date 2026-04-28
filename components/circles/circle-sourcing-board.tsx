@@ -1,7 +1,21 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { getCircleSourcingData, type CircleSourcingItem } from '@/lib/hub/circle-detail-actions'
+import { getCircleSourcingData } from '@/lib/hub/circle-detail-actions'
+
+interface CircleSourcingItem {
+  event_id: string
+  event_title: string
+  ingredient_id: string
+  ingredient_name: string
+  unit: string
+  recipe_qty: string
+  buy_qty: string
+  purchased_qty: string
+  used_qty: string
+  computed_leftover_qty: string
+  preferred_vendor: string | null
+}
 
 interface SourcingBoardProps {
   circleId: string
@@ -12,12 +26,22 @@ export function CircleSourcingBoard({ circleId }: SourcingBoardProps) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    let cancelled = false
+
     getCircleSourcingData(circleId)
       .then((result) => {
-        setData(result)
-        setLoading(false)
+        if (!cancelled) {
+          setData(result)
+          setLoading(false)
+        }
       })
-      .catch(() => setLoading(false))
+      .catch(() => {
+        if (!cancelled) setLoading(false)
+      })
+
+    return () => {
+      cancelled = true
+    }
   }, [circleId])
 
   if (loading) {

@@ -2,6 +2,7 @@
 
 import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
+import { createTodo } from '@/lib/todos/actions'
 import { revalidatePath } from 'next/cache'
 
 // ==========================================
@@ -230,8 +231,74 @@ export async function executeRule(
           break
         }
         case 'create_todo': {
-          // Would create a chef todo
-          console.log('[executeRule] create_todo action:', action.config)
+          const text =
+            typeof action.config.text === 'string'
+              ? action.config.text
+              : typeof action.config.title === 'string'
+                ? action.config.title
+                : typeof context.todo_text === 'string'
+                  ? context.todo_text
+                  : typeof context.message === 'string'
+                    ? context.message
+                    : ''
+
+          const dueDate = typeof action.config.due_date === 'string' ? action.config.due_date : null
+          const dueTime = typeof action.config.due_time === 'string' ? action.config.due_time : null
+          const reminderAt =
+            typeof action.config.reminder_at === 'string' ? action.config.reminder_at : null
+          const eventId =
+            typeof action.config.event_id === 'string'
+              ? action.config.event_id
+              : typeof context.event_id === 'string'
+                ? context.event_id
+                : null
+          const clientId =
+            typeof action.config.client_id === 'string'
+              ? action.config.client_id
+              : typeof context.client_id === 'string'
+                ? context.client_id
+                : null
+          const priority =
+            action.config.priority === 'low' ||
+            action.config.priority === 'medium' ||
+            action.config.priority === 'high' ||
+            action.config.priority === 'urgent'
+              ? action.config.priority
+              : 'medium'
+          const category =
+            action.config.category === 'general' ||
+            action.config.category === 'prep' ||
+            action.config.category === 'shopping' ||
+            action.config.category === 'client' ||
+            action.config.category === 'admin' ||
+            action.config.category === 'follow_up' ||
+            action.config.category === 'personal'
+              ? action.config.category
+              : 'follow_up'
+
+          const sourceParts = [
+            typeof context.communication_event_id === 'string'
+              ? `Communication event: ${context.communication_event_id}`
+              : null,
+            typeof context.thread_id === 'string' ? `Thread: ${context.thread_id}` : null,
+            typeof action.config.notes === 'string' ? action.config.notes : null,
+          ].filter((part): part is string => Boolean(part))
+
+          const result = await createTodo({
+            text,
+            due_date: dueDate,
+            due_time: dueTime,
+            priority,
+            category,
+            reminder_at: reminderAt,
+            event_id: eventId,
+            client_id: clientId,
+            notes: sourceParts.join('\n') || null,
+          })
+
+          if (!result.success) {
+            console.warn('[executeRule] create_todo action failed:', result.error)
+          }
           break
         }
         case 'send_survey': {

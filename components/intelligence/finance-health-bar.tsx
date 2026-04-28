@@ -3,14 +3,51 @@ import { getEventProfitability } from '@/lib/intelligence/event-profitability'
 import { getVendorPriceIntelligence } from '@/lib/intelligence/vendor-price-tracking'
 import { formatCurrency } from '@/lib/utils/currency'
 
+type FinanceSignal<T> =
+  | {
+      status: 'available'
+      data: T
+    }
+  | {
+      status: 'empty'
+      data: null
+    }
+  | {
+      status: 'unavailable'
+      data: null
+      label: string
+    }
+
+type UnavailableFinanceSignal = Extract<FinanceSignal<unknown>, { status: 'unavailable' }>
+
+async function loadFinanceSignal<T>(
+  label: string,
+  loader: () => Promise<T | null>
+): Promise<FinanceSignal<T>> {
+  try {
+    const data = await loader()
+    return data === null ? { status: 'empty', data: null } : { status: 'available', data }
+  } catch (error) {
+    console.warn(`[finance-intelligence] ${label} unavailable`, error)
+    return { status: 'unavailable', data: null, label }
+  }
+}
+
 export async function FinanceHealthBar() {
-  const [cashflow, profitability, vendors] = await Promise.all([
-    getCashFlowProjection().catch(() => null),
-    getEventProfitability().catch(() => null),
-    getVendorPriceIntelligence().catch(() => null),
+  const [cashflowResult, profitabilityResult, vendorsResult] = await Promise.all([
+    loadFinanceSignal('Cash flow', getCashFlowProjection),
+    loadFinanceSignal('Event profitability', getEventProfitability),
+    loadFinanceSignal('Vendor price intelligence', getVendorPriceIntelligence),
   ])
 
-  if (!cashflow && !profitability && !vendors) return null
+  const cashflow = cashflowResult.status === 'available' ? cashflowResult.data : null
+  const profitability = profitabilityResult.status === 'available' ? profitabilityResult.data : null
+  const vendors = vendorsResult.status === 'available' ? vendorsResult.data : null
+  const unavailableSignals = [cashflowResult, profitabilityResult, vendorsResult].filter(
+    (result): result is UnavailableFinanceSignal => result.status === 'unavailable'
+  )
+
+  if (!cashflow && !profitability && !vendors && unavailableSignals.length === 0) return null
 
   const trendColor =
     cashflow?.trend === 'improving'
@@ -30,6 +67,16 @@ export async function FinanceHealthBar() {
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      {unavailableSignals.length > 0 && (
+        <div className="col-span-2 sm:col-span-4 rounded-lg border border-amber-700/60 bg-amber-950/60 px-3 py-2">
+          <p className="text-xs font-medium text-amber-200">Finance intelligence is degraded.</p>
+          <p className="text-xs text-amber-300/80">
+            Unavailable signals: {unavailableSignals.map((signal) => signal.label).join(', ')}. Any
+            loaded figures below remain available.
+          </p>
+        </div>
+      )}
+
       {/* Cash Flow Trend */}
       {cashflow && (
         <div className="rounded-lg border border-stone-700/40 bg-stone-900/60 px-3 py-2">

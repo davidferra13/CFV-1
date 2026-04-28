@@ -26,6 +26,11 @@ import {
   getPriceElasticity,
   getReferralChainMapping,
 } from '@/lib/intelligence'
+import { loadResult, type LoadResult } from '@/lib/reality/load-result'
+
+const SIGNAL_UNAVAILABLE_MESSAGE = 'Could not load this signal right now'
+
+type IntelligenceLoadResult<T> = LoadResult<T | null>
 
 function formatCents(cents: number): string {
   return `$${(cents / 100).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
@@ -55,59 +60,209 @@ function EmptyState({ message }: { message: string }) {
   return <p className="text-sm text-muted-foreground italic">{message}</p>
 }
 
+function loadIntelligenceSignal<T>(
+  label: string,
+  loader: () => Promise<T | null>,
+  emptyReason: string
+): Promise<IntelligenceLoadResult<T>> {
+  return loadResult(label, loader, {
+    fallback: null,
+    emptyWhen: (data) => data === null,
+    emptyReason,
+    errorMessage: SIGNAL_UNAVAILABLE_MESSAGE,
+    log: console.warn,
+  })
+}
+
+function getSignalData<T>(result: IntelligenceLoadResult<T>): T | null {
+  return result.status === 'ok' ? result.data : null
+}
+
+function getEmptyStateMessage<T>(
+  result: IntelligenceLoadResult<T>,
+  emptyMessage: string
+): string {
+  if (result.status === 'unavailable') {
+    return result.error
+  }
+
+  if (result.status === 'empty') {
+    return result.reason
+  }
+
+  return emptyMessage
+}
+
 export async function IntelligenceHubContent() {
   // Fetch all intelligence data in parallel
   const [
-    seasonal,
-    rebooking,
-    cashflow,
-    scheduling,
-    triage,
-    postEvent,
-    pricing,
-    dietary,
-    ingredients,
-    network,
-    prepTime,
-    communication,
-    vendorPrices,
-    profitability,
-    quoteIntel,
-    untappedMarkets,
-    geographic,
-    revenuePerGuest,
-    seasonalMenu,
-    clientLifetime,
-    churnPrevention,
-    capacity,
-    priceElasticity,
-    referralChains,
+    seasonalResult,
+    rebookingResult,
+    cashflowResult,
+    schedulingResult,
+    triageResult,
+    postEventResult,
+    pricingResult,
+    dietaryResult,
+    ingredientsResult,
+    networkResult,
+    prepTimeResult,
+    communicationResult,
+    vendorPricesResult,
+    profitabilityResult,
+    quoteIntelResult,
+    untappedMarketsResult,
+    geographicResult,
+    revenuePerGuestResult,
+    seasonalMenuResult,
+    clientLifetimeResult,
+    churnPreventionResult,
+    capacityResult,
+    priceElasticityResult,
+    referralChainsResult,
   ] = await Promise.all([
-    getSeasonalDemandForecast().catch(() => null),
-    getRebookingPredictions().catch(() => null),
-    getCashFlowProjection().catch(() => null),
-    getSchedulingIntelligence().catch(() => null),
-    getInquiryTriage().catch(() => null),
-    getPostEventTriggers().catch(() => null),
-    getPriceAnomalies().catch(() => null),
-    getDietaryIntelligence().catch(() => null),
-    getIngredientConsolidation().catch(() => null),
-    getNetworkIntelligence().catch(() => null),
-    getPrepTimeIntelligence().catch(() => null),
-    getCommunicationCadence().catch(() => null),
-    getVendorPriceIntelligence().catch(() => null),
-    getEventProfitability().catch(() => null),
-    getQuoteIntelligence().catch(() => null),
-    getUntappedMarkets().catch(() => null),
-    getGeographicIntelligence().catch(() => null),
-    getRevenuePerGuest().catch(() => null),
-    getSeasonalMenuCorrelation().catch(() => null),
-    getClientLifetimeJourneys().catch(() => null),
-    getChurnPreventionTriggers().catch(() => null),
-    getCapacityCeiling().catch(() => null),
-    getPriceElasticity().catch(() => null),
-    getReferralChainMapping().catch(() => null),
+    loadIntelligenceSignal(
+      'Seasonal demand',
+      getSeasonalDemandForecast,
+      'Not enough event history to detect seasonal patterns (need 3+ events)'
+    ),
+    loadIntelligenceSignal(
+      'Rebooking predictions',
+      getRebookingPredictions,
+      'Need client event history to predict rebookings'
+    ),
+    loadIntelligenceSignal(
+      'Cash flow',
+      getCashFlowProjection,
+      'Need financial data to project cash flow'
+    ),
+    loadIntelligenceSignal(
+      'Smart scheduling',
+      getSchedulingIntelligence,
+      'Need 3+ events to analyze scheduling patterns'
+    ),
+    loadIntelligenceSignal('Inquiry triage', getInquiryTriage, 'No open inquiries to triage'),
+    loadIntelligenceSignal(
+      'Post-event tasks',
+      getPostEventTriggers,
+      'No recently completed events'
+    ),
+    loadIntelligenceSignal(
+      'Price intelligence',
+      getPriceAnomalies,
+      'Need 5+ completed events with pricing data'
+    ),
+    loadIntelligenceSignal(
+      'Dietary intelligence',
+      getDietaryIntelligence,
+      'Need client dietary data to analyze trends'
+    ),
+    loadIntelligenceSignal(
+      'Ingredient consolidation',
+      getIngredientConsolidation,
+      'No upcoming events with menus and recipes to consolidate'
+    ),
+    loadIntelligenceSignal(
+      'Network intelligence',
+      getNetworkIntelligence,
+      'Need inquiry and client data to analyze your network'
+    ),
+    loadIntelligenceSignal(
+      'Prep time intelligence',
+      getPrepTimeIntelligence,
+      'Need completed events with time tracking data'
+    ),
+    loadIntelligenceSignal(
+      'Communication cadence',
+      getCommunicationCadence,
+      'Need inquiry and quote data to track communication'
+    ),
+    loadIntelligenceSignal(
+      'Vendor price intelligence',
+      getVendorPriceIntelligence,
+      'Need expense records to track vendor prices'
+    ),
+    loadIntelligenceSignal(
+      'Event profitability',
+      getEventProfitability,
+      'Need 3+ completed events with pricing and expense data'
+    ),
+    loadIntelligenceSignal(
+      'Quote intelligence',
+      getQuoteIntelligence,
+      'Need 5+ quotes with outcomes to analyze'
+    ),
+    loadIntelligenceSignal(
+      'Untapped markets',
+      getUntappedMarkets,
+      'Need 3+ inquiries to detect market opportunities'
+    ),
+    loadIntelligenceSignal(
+      'Geographic intelligence',
+      getGeographicIntelligence,
+      'Need 3+ events with location data'
+    ),
+    loadIntelligenceSignal(
+      'Revenue per guest',
+      getRevenuePerGuest,
+      'Need 5+ completed events with guest counts'
+    ),
+    loadIntelligenceSignal(
+      'Seasonal menu intelligence',
+      getSeasonalMenuCorrelation,
+      'Need 5+ completed events with menus to analyze'
+    ),
+    loadIntelligenceSignal(
+      'Client lifetime value',
+      getClientLifetimeJourneys,
+      'Need 3+ clients with event history'
+    ),
+    loadIntelligenceSignal(
+      'Churn prevention',
+      getChurnPreventionTriggers,
+      'Need clients with event history to detect churn risk'
+    ),
+    loadIntelligenceSignal(
+      'Capacity ceiling',
+      getCapacityCeiling,
+      'Need 5+ events in the last 12 months'
+    ),
+    loadIntelligenceSignal(
+      'Price elasticity',
+      getPriceElasticity,
+      'Need 10+ quotes with outcomes to model elasticity'
+    ),
+    loadIntelligenceSignal(
+      'Referral chains',
+      getReferralChainMapping,
+      'Need 3+ clients with referral source data'
+    ),
   ])
+
+  const seasonal = getSignalData(seasonalResult)
+  const rebooking = getSignalData(rebookingResult)
+  const cashflow = getSignalData(cashflowResult)
+  const scheduling = getSignalData(schedulingResult)
+  const triage = getSignalData(triageResult)
+  const postEvent = getSignalData(postEventResult)
+  const pricing = getSignalData(pricingResult)
+  const dietary = getSignalData(dietaryResult)
+  const ingredients = getSignalData(ingredientsResult)
+  const network = getSignalData(networkResult)
+  const prepTime = getSignalData(prepTimeResult)
+  const communication = getSignalData(communicationResult)
+  const vendorPrices = getSignalData(vendorPricesResult)
+  const profitability = getSignalData(profitabilityResult)
+  const quoteIntel = getSignalData(quoteIntelResult)
+  const untappedMarkets = getSignalData(untappedMarketsResult)
+  const geographic = getSignalData(geographicResult)
+  const revenuePerGuest = getSignalData(revenuePerGuestResult)
+  const seasonalMenu = getSignalData(seasonalMenuResult)
+  const clientLifetime = getSignalData(clientLifetimeResult)
+  const churnPrevention = getSignalData(churnPreventionResult)
+  const capacity = getSignalData(capacityResult)
+  const priceElasticity = getSignalData(priceElasticityResult)
+  const referralChains = getSignalData(referralChainsResult)
 
   return (
     <div className="grid gap-6 md:grid-cols-2">
@@ -161,7 +316,12 @@ export async function IntelligenceHubContent() {
               </p>
             </div>
           ) : (
-            <EmptyState message="Not enough event history to detect seasonal patterns (need 3+ events)" />
+            <EmptyState
+              message={getEmptyStateMessage(
+                seasonalResult,
+                'Not enough event history to detect seasonal patterns (need 3+ events)'
+              )}
+            />
           )}
         </CardContent>
       </Card>
@@ -214,7 +374,12 @@ export async function IntelligenceHubContent() {
               )}
             </div>
           ) : (
-            <EmptyState message="Need client event history to predict rebookings" />
+            <EmptyState
+              message={getEmptyStateMessage(
+                rebookingResult,
+                'Need client event history to predict rebookings'
+              )}
+            />
           )}
         </CardContent>
       </Card>
@@ -280,7 +445,12 @@ export async function IntelligenceHubContent() {
               )}
             </div>
           ) : (
-            <EmptyState message="Need financial data to project cash flow" />
+            <EmptyState
+              message={getEmptyStateMessage(
+                cashflowResult,
+                'Need financial data to project cash flow'
+              )}
+            />
           )}
         </CardContent>
       </Card>
@@ -332,7 +502,12 @@ export async function IntelligenceHubContent() {
               )}
             </div>
           ) : (
-            <EmptyState message="Need 3+ events to analyze scheduling patterns" />
+            <EmptyState
+              message={getEmptyStateMessage(
+                schedulingResult,
+                'Need 3+ events to analyze scheduling patterns'
+              )}
+            />
           )}
         </CardContent>
       </Card>
@@ -392,7 +567,9 @@ export async function IntelligenceHubContent() {
               ))}
             </div>
           ) : (
-            <EmptyState message="No open inquiries to triage" />
+            <EmptyState
+              message={getEmptyStateMessage(triageResult, 'No open inquiries to triage')}
+            />
           )}
         </CardContent>
       </Card>
@@ -452,7 +629,9 @@ export async function IntelligenceHubContent() {
               ))}
             </div>
           ) : (
-            <EmptyState message="No recently completed events" />
+            <EmptyState
+              message={getEmptyStateMessage(postEventResult, 'No recently completed events')}
+            />
           )}
         </CardContent>
       </Card>
@@ -520,7 +699,12 @@ export async function IntelligenceHubContent() {
               )}
             </div>
           ) : (
-            <EmptyState message="Need 5+ completed events with pricing data" />
+            <EmptyState
+              message={getEmptyStateMessage(
+                pricingResult,
+                'Need 5+ completed events with pricing data'
+              )}
+            />
           )}
         </CardContent>
       </Card>
@@ -572,7 +756,12 @@ export async function IntelligenceHubContent() {
               )}
             </div>
           ) : (
-            <EmptyState message="Need client dietary data to analyze trends" />
+            <EmptyState
+              message={getEmptyStateMessage(
+                dietaryResult,
+                'Need client dietary data to analyze trends'
+              )}
+            />
           )}
         </CardContent>
       </Card>
@@ -634,7 +823,12 @@ export async function IntelligenceHubContent() {
               </p>
             </div>
           ) : (
-            <EmptyState message="No upcoming events with menus and recipes to consolidate" />
+            <EmptyState
+              message={getEmptyStateMessage(
+                ingredientsResult,
+                'No upcoming events with menus and recipes to consolidate'
+              )}
+            />
           )}
         </CardContent>
       </Card>
@@ -691,7 +885,12 @@ export async function IntelligenceHubContent() {
               </p>
             </div>
           ) : (
-            <EmptyState message="Need inquiry and client data to analyze your network" />
+            <EmptyState
+              message={getEmptyStateMessage(
+                networkResult,
+                'Need inquiry and client data to analyze your network'
+              )}
+            />
           )}
         </CardContent>
       </Card>
@@ -742,7 +941,12 @@ export async function IntelligenceHubContent() {
               )}
             </div>
           ) : (
-            <EmptyState message="Need completed events with time tracking data" />
+            <EmptyState
+              message={getEmptyStateMessage(
+                prepTimeResult,
+                'Need completed events with time tracking data'
+              )}
+            />
           )}
         </CardContent>
       </Card>
@@ -799,7 +1003,12 @@ export async function IntelligenceHubContent() {
               )}
             </div>
           ) : (
-            <EmptyState message="Need inquiry and quote data to track communication" />
+            <EmptyState
+              message={getEmptyStateMessage(
+                communicationResult,
+                'Need inquiry and quote data to track communication'
+              )}
+            />
           )}
         </CardContent>
       </Card>
@@ -862,7 +1071,12 @@ export async function IntelligenceHubContent() {
               ))}
             </div>
           ) : (
-            <EmptyState message="Need expense records to track vendor prices" />
+            <EmptyState
+              message={getEmptyStateMessage(
+                vendorPricesResult,
+                'Need expense records to track vendor prices'
+              )}
+            />
           )}
         </CardContent>
       </Card>
@@ -919,7 +1133,12 @@ export async function IntelligenceHubContent() {
               )}
             </div>
           ) : (
-            <EmptyState message="Need 3+ completed events with pricing and expense data" />
+            <EmptyState
+              message={getEmptyStateMessage(
+                profitabilityResult,
+                'Need 3+ completed events with pricing and expense data'
+              )}
+            />
           )}
         </CardContent>
       </Card>
@@ -987,7 +1206,12 @@ export async function IntelligenceHubContent() {
               ))}
             </div>
           ) : (
-            <EmptyState message="Need 5+ quotes with outcomes to analyze" />
+            <EmptyState
+              message={getEmptyStateMessage(
+                quoteIntelResult,
+                'Need 5+ quotes with outcomes to analyze'
+              )}
+            />
           )}
         </CardContent>
       </Card>
@@ -1038,7 +1262,12 @@ export async function IntelligenceHubContent() {
               )}
             </div>
           ) : (
-            <EmptyState message="Need 3+ inquiries to detect market opportunities" />
+            <EmptyState
+              message={getEmptyStateMessage(
+                untappedMarketsResult,
+                'Need 3+ inquiries to detect market opportunities'
+              )}
+            />
           )}
         </CardContent>
       </Card>
@@ -1092,7 +1321,12 @@ export async function IntelligenceHubContent() {
               )}
             </div>
           ) : (
-            <EmptyState message="Need 3+ events with location data" />
+            <EmptyState
+              message={getEmptyStateMessage(
+                geographicResult,
+                'Need 3+ events with location data'
+              )}
+            />
           )}
         </CardContent>
       </Card>
@@ -1154,7 +1388,12 @@ export async function IntelligenceHubContent() {
               )}
             </div>
           ) : (
-            <EmptyState message="Need 5+ completed events with guest counts" />
+            <EmptyState
+              message={getEmptyStateMessage(
+                revenuePerGuestResult,
+                'Need 5+ completed events with guest counts'
+              )}
+            />
           )}
         </CardContent>
       </Card>
@@ -1202,7 +1441,12 @@ export async function IntelligenceHubContent() {
               ))}
             </div>
           ) : (
-            <EmptyState message="Need 5+ completed events with menus to analyze" />
+            <EmptyState
+              message={getEmptyStateMessage(
+                seasonalMenuResult,
+                'Need 5+ completed events with menus to analyze'
+              )}
+            />
           )}
         </CardContent>
       </Card>
@@ -1263,7 +1507,12 @@ export async function IntelligenceHubContent() {
               )}
             </div>
           ) : (
-            <EmptyState message="Need 3+ clients with event history" />
+            <EmptyState
+              message={getEmptyStateMessage(
+                clientLifetimeResult,
+                'Need 3+ clients with event history'
+              )}
+            />
           )}
         </CardContent>
       </Card>
@@ -1325,7 +1574,12 @@ export async function IntelligenceHubContent() {
               )}
             </div>
           ) : (
-            <EmptyState message="Need clients with event history to detect churn risk" />
+            <EmptyState
+              message={getEmptyStateMessage(
+                churnPreventionResult,
+                'Need clients with event history to detect churn risk'
+              )}
+            />
           )}
         </CardContent>
       </Card>
@@ -1398,7 +1652,12 @@ export async function IntelligenceHubContent() {
               )}
             </div>
           ) : (
-            <EmptyState message="Need 5+ events in the last 12 months" />
+            <EmptyState
+              message={getEmptyStateMessage(
+                capacityResult,
+                'Need 5+ events in the last 12 months'
+              )}
+            />
           )}
         </CardContent>
       </Card>
@@ -1459,7 +1718,12 @@ export async function IntelligenceHubContent() {
               )}
             </div>
           ) : (
-            <EmptyState message="Need 10+ quotes with outcomes to model elasticity" />
+            <EmptyState
+              message={getEmptyStateMessage(
+                priceElasticityResult,
+                'Need 10+ quotes with outcomes to model elasticity'
+              )}
+            />
           )}
         </CardContent>
       </Card>
@@ -1515,7 +1779,12 @@ export async function IntelligenceHubContent() {
               )}
             </div>
           ) : (
-            <EmptyState message="Need 3+ clients with referral source data" />
+            <EmptyState
+              message={getEmptyStateMessage(
+                referralChainsResult,
+                'Need 3+ clients with referral source data'
+              )}
+            />
           )}
         </CardContent>
       </Card>

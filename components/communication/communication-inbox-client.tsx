@@ -600,9 +600,9 @@ export function CommunicationInboxClient({
         <div className="space-y-3">
           <div className="rounded-lg border border-stone-700/50 bg-stone-900/50 px-4 py-3">
             <p className="text-sm text-stone-400">
-              Raw Feed keeps chronological order and preserves duplicates. Dinner Only mode shows
-              every detected dinner opportunity (including repeats), so you can trust what is coming
-              in without checking Gmail.
+              Raw Feed keeps chronological order for the current imported window and preserves
+              duplicates. Dinner Only mode shows detected dinner opportunities, including repeats.
+              Source labels reflect where each message was imported from.
             </p>
             <div className="mt-3 flex items-center gap-2">
               <button
@@ -630,8 +630,8 @@ export function CommunicationInboxClient({
             <Card>
               <CardContent className="py-8 text-center text-sm text-stone-500">
                 {rawFeedDinnerOnly
-                  ? 'No dinner opportunities detected in the current raw feed window.'
-                  : 'No messages yet. Connect Gmail or log a message to get started.'}
+                  ? 'No dinner opportunities detected in the current imported feed window.'
+                  : 'No imported messages or manual logs yet. Connect Gmail or log a message to get started.'}
               </CardContent>
             </Card>
           ) : (
@@ -699,8 +699,8 @@ export function CommunicationInboxClient({
                 </div>
                 <h2 className="text-xl font-bold text-stone-100">Your inbox is ready</h2>
                 <p className="text-stone-400 max-w-md mx-auto">
-                  Every inquiry - email, text, Instagram DM, marketplace lead - lands here in one
-                  place. Connect your channels to get started.
+                  Imported email, manual phone notes, and supported marketplace messages land here
+                  in one place. Connect Gmail or log a message to get started.
                 </p>
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
                   {!gmailConnected && (
@@ -737,20 +737,22 @@ export function CommunicationInboxClient({
                 <div className="rounded-xl border border-stone-800 bg-stone-900 p-4 space-y-2">
                   <div className="text-sm font-medium text-stone-300">Auto-detected</div>
                   <p className="text-xs text-stone-500">
-                    TakeAChef, Thumbtack, TheKnot, Bark, and more - recognized automatically from
-                    your Gmail.
+                    Supported marketplace emails can be recognized from Gmail when the sender and
+                    content match known patterns.
                   </p>
                 </div>
                 <div className="rounded-xl border border-stone-800 bg-stone-900 p-4 space-y-2">
-                  <div className="text-sm font-medium text-stone-300">Cross-channel merge</div>
+                  <div className="text-sm font-medium text-stone-300">Identity matching</div>
                   <p className="text-xs text-stone-500">
-                    Same client from email + text + marketplace = one thread, not three duplicates.
+                    Threads can match by email, phone, or known client records. Unknown handles and
+                    social profiles may remain separate until connected.
                   </p>
                 </div>
                 <div className="rounded-xl border border-stone-800 bg-stone-900 p-4 space-y-2">
                   <div className="text-sm font-medium text-stone-300">Noise filtered</div>
                   <p className="text-xs text-stone-500">
-                    Payment receipts, marketing emails, and spam are automatically archived.
+                    Known non-opportunity messages can be filtered when the source and content are
+                    recognized.
                   </p>
                 </div>
               </div>

@@ -468,7 +468,7 @@ export async function getClientsNotInCircle(
 
 // â”€â”€â”€ SOURCING DATA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-export interface CircleSourcingItem {
+type CircleSourcingItem = {
   event_id: string
   event_title: string
   ingredient_id: string
@@ -490,6 +490,15 @@ export async function getCircleSourcingData(circleId: string): Promise<CircleSou
   const user = await requireChef()
   const tenantId = user.tenantId!
   const db: any = createServerClient({ admin: true })
+
+  const { data: circle } = await db
+    .from('hub_groups')
+    .select('id')
+    .eq('id', circleId)
+    .eq('tenant_id', tenantId)
+    .single()
+
+  if (!circle) return []
 
   // 1. Get linked event IDs for this circle
   const { data: eventLinks } = await db
@@ -533,6 +542,7 @@ export async function getCircleSourcingData(circleId: string): Promise<CircleSou
       .from('ingredients')
       .select('id, preferred_vendor')
       .in('id', ingredientIds)
+      .eq('tenant_id', tenantId)
 
     for (const ing of ingredients ?? []) {
       vendorMap[ing.id] = ing.preferred_vendor ?? null

@@ -1,5 +1,3 @@
-'use server'
-
 import { createServerClient } from '@/lib/db/server'
 import type { DinnerCircleSourceLink } from '@/lib/dinner-circles/types'
 
@@ -20,25 +18,53 @@ export async function buildEventIngredientShowcase(
   eventId: string,
   tenantId: string
 ): Promise<IngredientShowcaseResult> {
+  if (!eventId.trim()) {
+    throw new Error('Event ID is required to build ingredient showcase data')
+  }
+
+  if (!tenantId.trim()) {
+    throw new Error('Tenant ID is required to build ingredient showcase data')
+  }
+
   const db: any = createServerClient({ admin: true })
 
   // 1. Get lifecycle data for this event from the view
-  const { data: lifecycle } = await db
+  const { data: lifecycle, error: lifecycleError } = await db
     .from('event_ingredient_lifecycle')
     .select('ingredient_id, ingredient_name, unit, recipe_qty')
     .eq('event_id', eventId)
     .eq('chef_id', tenantId)
+
+  if (lifecycleError) {
+    throw new Error(`Failed to load event ingredient lifecycle: ${lifecycleError.message}`)
+  }
 
   if (!lifecycle || lifecycle.length === 0) {
     return { ingredientLines: [], sourceLinks: [] }
   }
 
   // 2. Get ingredient details with vendor info
-  const ingredientIds = (lifecycle as any[]).map((l: any) => l.ingredient_id)
-  const { data: ingredients } = await db
+  const ingredientIds = [
+    ...new Set(
+      (lifecycle as any[])
+        .map((l: any) => l.ingredient_id)
+        .filter((id: unknown): id is string => typeof id === 'string' && id.length > 0)
+    ),
+  ]
+
+  if (ingredientIds.length === 0) {
+    return { ingredientLines: [], sourceLinks: [] }
+  }
+
+  const { data: ingredients, error: ingredientsError } = await db
     .from('ingredients')
     .select('id, name, category, preferred_vendor')
     .in('id', ingredientIds)
+    .eq('tenant_id', tenantId)
+
+  if (ingredientsError) {
+    throw new Error(`Failed to load ingredient showcase details: ${ingredientsError.message}`)
+  }
 
   const detailMap: Record<
     string,

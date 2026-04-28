@@ -3,18 +3,9 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { pgClient } from '@/lib/db'
-import { StatCard } from '@/components/dashboard/widget-cards/stat-card'
 import { ListCard, type ListCardItem } from '@/components/dashboard/widget-cards/list-card'
 import { generateSuggestionPriority } from '@/lib/ai/suggestion-prioritizer'
-
-async function safe<T>(label: string, fn: () => Promise<T>, fallback: T): Promise<T> {
-  try {
-    return await fn()
-  } catch (err) {
-    console.error(`[Dashboard/SmartSuggestions] ${label} failed:`, err)
-    return fallback
-  }
-}
+import { loadResult } from '@/lib/reality/load-result'
 
 interface RecipeGap {
   id: string
@@ -120,11 +111,41 @@ export async function SmartSuggestions() {
   const user = await requireChef()
   const tenantId = user.tenantId!
 
-  const [recipeGaps, clientGaps, menuGaps] = await Promise.all([
-    safe('recipeGaps', () => getRecipeGaps(tenantId), []),
-    safe('clientGaps', () => getClientGaps(tenantId), []),
-    safe('menuGaps', () => getMenuGaps(tenantId), []),
+  const [recipeGapsResult, clientGapsResult, menuGapsResult] = await Promise.all([
+    loadResult('recipe gaps', () => getRecipeGaps(tenantId), {
+      fallback: [] as RecipeGap[],
+      log: (message, error) => console.error(`[Dashboard/SmartSuggestions] ${message}:`, error),
+    }),
+    loadResult('client gaps', () => getClientGaps(tenantId), {
+      fallback: [] as ClientGap[],
+      log: (message, error) => console.error(`[Dashboard/SmartSuggestions] ${message}:`, error),
+    }),
+    loadResult('menu gaps', () => getMenuGaps(tenantId), {
+      fallback: [] as MenuGap[],
+      log: (message, error) => console.error(`[Dashboard/SmartSuggestions] ${message}:`, error),
+    }),
   ])
+
+  const recipeGaps = recipeGapsResult.data
+  const clientGaps = clientGapsResult.data
+  const menuGaps = menuGapsResult.data
+  const unavailableSections = [
+    recipeGapsResult.status === 'unavailable' ? 'recipes' : null,
+    clientGapsResult.status === 'unavailable' ? 'clients' : null,
+    menuGapsResult.status === 'unavailable' ? 'menus' : null,
+  ].filter((section): section is string => section !== null)
+
+  if (unavailableSections.length > 0) {
+    return (
+      <div className="col-span-full rounded-xl border border-red-900/40 bg-red-950/20 px-4 py-5">
+        <p className="text-sm font-medium text-red-300">Suggestions are unavailable</p>
+        <p className="mt-1 text-xs text-stone-400">
+          Could not load {unavailableSections.join(', ')} suggestions. Try refreshing before using
+          this dashboard as a source of truth.
+        </p>
+      </div>
+    )
+  }
 
   // If everything is complete, don't render at all
   const hasRecipeGaps = recipeGaps.length > 0
@@ -186,7 +207,7 @@ export async function SmartSuggestions() {
   }))
 
   // AI: prioritize suggestions by business impact (non-blocking)
-  const aiPriority = await safe(
+  const aiPriorityResult = await loadResult(
     'aiPriority',
     () =>
       generateSuggestionPriority({
@@ -197,8 +218,12 @@ export async function SmartSuggestions() {
         staleCount: 0,
         menuGapsCount: menuGaps.length,
       }),
-    null
+    {
+      fallback: null,
+      log: (message, error) => console.warn(`[Dashboard/SmartSuggestions] ${message}:`, error),
+    }
   )
+  const aiPriority = aiPriorityResult.status === 'ok' ? aiPriorityResult.data : null
 
   return (
     <>

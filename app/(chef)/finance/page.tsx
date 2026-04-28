@@ -13,6 +13,30 @@ import { getProfitAndLossReport } from '@/lib/finance/profit-loss-report-actions
 import { getFinanceSurfaceAvailability } from '@/lib/finance/surface-availability'
 import { format, startOfMonth, endOfMonth } from 'date-fns'
 
+type FinanceDataLoad<T> =
+  | {
+      status: 'ok'
+      data: T
+    }
+  | {
+      status: 'unavailable'
+      data: null
+      message: string
+    }
+
+async function loadFinanceData<T>(
+  label: string,
+  loader: () => Promise<T>,
+  message: string
+): Promise<FinanceDataLoad<T>> {
+  try {
+    return { status: 'ok', data: await loader() }
+  } catch (error) {
+    console.warn(`[finance] ${label} unavailable`, error)
+    return { status: 'unavailable', data: null, message }
+  }
+}
+
 /** Inline P&L snapshot for the current month */
 async function MonthlyPLSnapshot() {
   const now = new Date()
@@ -170,12 +194,36 @@ const SECTIONS = [
 
 export default async function FinancePage() {
   await requireChef()
-  const [summary, carryForwardSavings, surfaceAvailability, regional] = await Promise.all([
-    getTenantFinancialSummary().catch(() => null),
-    getYtdCarryForwardSavings().catch(() => null),
-    getFinanceSurfaceAvailability().catch(() => null),
-    getRegionalSettings(),
-  ])
+  const [summary, carryForwardSavingsResult, surfaceAvailabilityResult, regional] =
+    await Promise.all([
+      getTenantFinancialSummary().catch(() => null),
+      loadFinanceData(
+        'carry-forward savings',
+        getYtdCarryForwardSavings,
+        'Carry-forward savings could not load. The YTD credit tile is unavailable, not zero.'
+      ),
+      loadFinanceData(
+        'surface availability',
+        getFinanceSurfaceAvailability,
+        'Finance surface availability could not be verified. Bank Feed and Cash Flow are hidden until checks recover.'
+      ),
+      getRegionalSettings(),
+    ])
+
+  const surfaceAvailability =
+    surfaceAvailabilityResult.status === 'ok' ? surfaceAvailabilityResult.data : null
+
+  const degradedDataMessages = [
+    carryForwardSavingsResult.status === 'unavailable' ? carryForwardSavingsResult.message : null,
+    surfaceAvailabilityResult.status === 'unavailable' ? surfaceAvailabilityResult.message : null,
+    surfaceAvailability?.bankFeed.reason === 'Availability check failed'
+      ? 'Bank Feed availability could not be checked, so it is hidden from primary finance actions.'
+      : null,
+    surfaceAvailability?.cashFlow.reason === 'Availability check failed' ||
+    surfaceAvailability?.cashFlow.reason === 'Forecast data unavailable'
+      ? 'Cash Flow availability could not be checked, so it is hidden from primary finance actions.'
+      : null,
+  ].filter((message): message is string => Boolean(message))
 
   // Filter tiles that are degraded and should not be primary-promoted
   const VISIBLE_SECTIONS = SECTIONS.filter((s) => {
@@ -231,6 +279,17 @@ export default async function FinancePage() {
         </div>
       )}
 
+      {degradedDataMessages.length > 0 && (
+        <div className="rounded-xl border border-amber-700 bg-amber-950 px-4 py-3">
+          <p className="text-sm font-medium text-amber-200">Some finance data is unavailable.</p>
+          <ul className="mt-2 space-y-1 text-sm text-amber-300">
+            {degradedDataMessages.map((message) => (
+              <li key={message}>{message}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {/* Financial Intelligence */}
       <WidgetErrorBoundary name="Finance Health" compact>
         <Suspense fallback={null}>
@@ -258,10 +317,25 @@ export default async function FinancePage() {
           <p className="text-2xl font-bold text-red-600">{fmt(summary.totalRefundsCents)}</p>
           <p className="text-sm text-stone-500 mt-1">Total refunds issued</p>
         </Card>
-        <Card className="p-4 border-emerald-200 bg-emerald-950">
-          <p className="text-2xl font-bold text-emerald-700">
-            {carryForwardSavings === null ? '--' : fmt(carryForwardSavings)}
-          </p>
+        <Card
+          className={`p-4 ${
+            carryForwardSavingsResult.status === 'unavailable'
+              ? 'border-amber-700 bg-stone-900'
+              : 'border-emerald-200 bg-emerald-950'
+          }`}
+        >
+          {carryForwardSavingsResult.status === 'unavailable' ? (
+            <>
+              <p className="text-2xl font-bold text-amber-300">Unavailable</p>
+              <p className="text-xs text-amber-300/80 mt-2">
+                Could not load this total. It is not being reported as $0.
+              </p>
+            </>
+          ) : (
+            <p className="text-2xl font-bold text-emerald-700">
+              {fmt(carryForwardSavingsResult.data)}
+            </p>
+          )}
           <p className="text-sm text-emerald-600 mt-1">Leftover credit applied YTD</p>
         </Card>
       </div>
