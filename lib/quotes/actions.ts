@@ -19,6 +19,8 @@ import { AuthError, UnknownAppError, ValidationError } from '@/lib/errors/app-er
 import { isMissingSoftDeleteColumn } from '@/lib/mutations/soft-delete-compat'
 import { QUOTE_SENT_REPAIR_KIND } from '@/lib/monitoring/failure-repair'
 import { executeInteraction } from '@/lib/interactions'
+import { readPaymentStructure } from '@/lib/payments/payment-structure'
+import { syncPaymentStructureToEventInstallments } from '@/lib/payments/sync-payment-structure'
 
 type QuoteStatus = Database['public']['Enums']['quote_status']
 type PricingModel = Database['public']['Enums']['pricing_model']
@@ -601,6 +603,7 @@ export async function transitionQuote(id: string, newStatus: QuoteStatus) {
     deposit_required: boolean
     deposit_amount_cents: number | null
     valid_until: string | null
+    pricing_context?: Record<string, unknown> | null
   }
 
   // Sync quoted price to linked event when sending a revised quote
@@ -632,6 +635,32 @@ export async function transitionQuote(id: string, newStatus: QuoteStatus) {
     } catch (syncErr) {
       console.error('[transitionQuote] Event price sync failed (non-blocking):', syncErr)
       warnings.push('Quote sent but event price may not reflect the latest amount.')
+    }
+  }
+
+  if (newStatus === 'sent' && updated.event_id) {
+    try {
+      const { data: quoteContext } = await db
+        .from('quotes')
+        .select('pricing_context')
+        .eq('id', id)
+        .eq('tenant_id', user.tenantId!)
+        .single()
+
+      const syncResult = await syncPaymentStructureToEventInstallments({
+        db,
+        tenantId: user.tenantId!,
+        eventId: updated.event_id,
+        structure: readPaymentStructure((quoteContext as any)?.pricing_context ?? null),
+      })
+
+      if (syncResult.insertedCount > 0) {
+        revalidatePath(`/events/${updated.event_id}`)
+        revalidatePath(`/events/${updated.event_id}/billing`)
+      }
+    } catch (syncErr) {
+      console.error('[transitionQuote] Payment plan sync failed (non-blocking):', syncErr)
+      warnings.push('Quote sent but payment plan installments may need manual setup.')
     }
   }
 

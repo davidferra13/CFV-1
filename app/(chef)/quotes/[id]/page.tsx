@@ -20,6 +20,8 @@ import { formatCurrency } from '@/lib/utils/currency'
 import { format, formatDistanceToNow } from 'date-fns'
 import { PriceComparisonSummary } from '@/components/pricing/price-comparison-summary'
 import { rowToPriceComparison } from '@/lib/pricing/pricing-decision'
+import { PaymentStructureSummary } from '@/components/quotes/payment-structure-summary'
+import { readPaymentStructure } from '@/lib/payments/payment-structure'
 import { QuotePriceConfidenceWarning } from '@/components/quotes/quote-price-confidence-warning'
 import { QuotePriceFreshnessWarning } from '@/components/quotes/quote-price-freshness-warning'
 import { Suspense } from 'react'
@@ -49,6 +51,7 @@ export default async function QuoteDetailPage({ params }: { params: { id: string
   }
 
   const { quote, versionHistory, timelineEntries } = result.data
+  const paymentStructure = readPaymentStructure((quote as any).pricing_context ?? null)
 
   if (!quote) {
     notFound()
@@ -215,6 +218,11 @@ export default async function QuoteDetailPage({ params }: { params: { id: string
                 </div>
               )}
             </dl>
+            {paymentStructure ? (
+              <div className="mt-4">
+                <PaymentStructureSummary structure={paymentStructure} compact />
+              </div>
+            ) : null}
           </Card>
         </div>
 

@@ -10,6 +10,7 @@
 
 - Inquiries: smart priority grouping, 8 status filters, funnel analytics, Smart Fill (AI parse), Gmail integration, Critical Path card, Service Lifecycle panel
 - Quotes: 6 status tabs, pricing intelligence, AI per-guest suggestions, historical price ranges
+- Quote payment structures: quote creation supports full upfront, deposit plus balance, thirds, split-even, and custom terms; saved structures appear on chef/client quote detail pages and seed event billing installments when possible
 - Quote draft prefill contract: `lib/quotes/quote-prefill.ts` now owns the canonical `/quotes/new` search-param schema for inquiry, event, change-order, and consulting entry points; `/quotes/new` composes explicit URL values with inquiry/event enrichment instead of reparsing ad hoc query strings per surface
 - Canonical public intake lanes: `lib/public/intake-lane-config.ts` defines open booking, direct chef inquiry, embed, kiosk, Wix, and instant-book ingress; all public writers now stamp shared `submission_source` values, and admin provenance reads the same contract instead of inferring from raw `channel` values
 - Public intake body guard: open booking, embed inquiry, and kiosk inquiry now share explicit JSON body limits and honest malformed-body handling, so intake routes return `400` or `413` instead of generic `500`s on bad input

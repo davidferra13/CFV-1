@@ -623,6 +623,7 @@ The main client detail also reuses a shared tenant-scoped authenticated-client w
 - Status filter tabs (All, Draft, Sent, Accepted, Rejected, Expired)
 - Quote acceptance insights panel (analytics)
 - Per row: client, status/pricing model badges, total amount
+- Quote forms now include a payment structure control for full upfront, deposit plus balance, thirds, split-even, and custom payment terms. The selected structure is saved in quote pricing context, appears on chef and client quote detail pages, and can seed event billing installments when no event payment plan exists yet.
 
 **`/quotes/new` - Form:** Client pricing history panel, AI pricing suggestions, **Smart Pricing Hint** (intelligence-driven per-guest suggestion with confidence level, acceptance rate, historical range, and "Use" button to auto-fill), price calculator (collapsible with service type/courses/date/distance/weekend premium, "Use This Price →" button), main form (client, quote name, pricing model, amount, deposit, valid until, notes). A shared schema-aware prefill runtime now normalizes canonical query params from inquiry detail, event/menu detail, scope-drift change orders, and the consulting calculator; explicit URL values win, then inquiry/event enrichment fills missing client, date, occasion, guest, and budget context before durable draft restore. Source-aware banners distinguish inquiry/event/change-order/consulting entry points. Submit creates quote.
 

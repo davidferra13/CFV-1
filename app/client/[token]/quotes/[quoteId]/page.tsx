@@ -10,6 +10,8 @@ import { checkRateLimit } from '@/lib/api/rate-limit'
 import { getClientPortalQuoteById } from '@/lib/quotes/client-actions'
 import { formatCurrency } from '@/lib/utils/currency'
 import { PortalQuoteResponseButtons } from './portal-quote-response-buttons'
+import { PaymentStructureSummary } from '@/components/quotes/payment-structure-summary'
+import { readPaymentStructure } from '@/lib/payments/payment-structure'
 
 type PageProps = {
   params: {
@@ -46,6 +48,7 @@ export default async function ClientPortalQuoteDetailPage({ params }: PageProps)
   }
 
   const isPending = quote.status === 'sent'
+  const paymentStructure = readPaymentStructure((quote as any).pricing_context ?? null)
 
   return (
     <div className="min-h-screen bg-stone-900 px-4 py-10">
@@ -131,6 +134,8 @@ export default async function ClientPortalQuoteDetailPage({ params }: PageProps)
                 </span>
               </div>
             )}
+
+            {paymentStructure && <PaymentStructureSummary structure={paymentStructure} compact />}
           </div>
         </Card>
 

@@ -38,6 +38,13 @@ import {
   type ServiceType,
   type PricingBreakdown,
 } from '@/lib/pricing/compute'
+import {
+  buildPaymentStructure,
+  readPaymentStructure,
+  serializePaymentStructureForContext,
+  type PaymentStructureMode,
+} from '@/lib/payments/payment-structure'
+import { PaymentStructureSummary } from '@/components/quotes/payment-structure-summary'
 import { getPricingConfig } from '@/lib/pricing/config-actions'
 import type { PricingConfig } from '@/lib/pricing/config-types'
 import { PricingSuggestionPanel } from '@/components/analytics/pricing-suggestion-panel'
@@ -88,6 +95,7 @@ type ExistingQuote = {
   valid_until: string | null
   pricing_notes: string | null
   internal_notes: string | null
+  pricing_context?: Record<string, unknown> | null
 }
 
 type QuoteFormData = {
@@ -103,6 +111,9 @@ type QuoteFormData = {
   valid_until: string
   pricing_notes: string
   internal_notes: string
+  payment_structure_mode: PaymentStructureMode
+  payment_participant_count: string
+  custom_payment_terms: string
 }
 
 type QuoteFormProps = {
@@ -133,6 +144,16 @@ type QuoteFormProps = {
 }
 
 const RECURRING_PRICE_WARNING_PERCENT = 20
+
+function parseOptionalCurrencyToCents(value: string): number {
+  if (!value.trim()) return 0
+  const parsed = parseCurrencyToCents(value)
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 0
+}
+
+function paymentModeFromDeposit(depositRequired: boolean): PaymentStructureMode {
+  return depositRequired ? 'deposit_balance' : 'full_upfront'
+}
 
 export function QuoteForm({
   tenantId,
@@ -273,6 +294,16 @@ export function QuoteForm({
   const [internalNotes, setInternalNotes] = useState(
     existingQuote?.internal_notes || prefilledInternalNotes || ''
   )
+  const existingPaymentStructure = readPaymentStructure(existingQuote?.pricing_context ?? null)
+  const [paymentStructureMode, setPaymentStructureMode] = useState<PaymentStructureMode>(
+    existingPaymentStructure?.mode ?? paymentModeFromDeposit(depositRequired)
+  )
+  const [paymentParticipantCount, setPaymentParticipantCount] = useState(
+    existingPaymentStructure?.participantCount?.toString() || '2'
+  )
+  const [customPaymentTerms, setCustomPaymentTerms] = useState(
+    existingPaymentStructure?.customTerms || ''
+  )
 
   // AI Draft: auto-fill form fields from inquiry context
   const handleAiDraft = async () => {
@@ -406,6 +437,9 @@ export function QuoteForm({
       valid_until: validUntil,
       pricing_notes: pricingNotes,
       internal_notes: internalNotes,
+      payment_structure_mode: paymentStructureMode,
+      payment_participant_count: paymentParticipantCount,
+      custom_payment_terms: customPaymentTerms,
     }),
     [
       clientId,
@@ -420,6 +454,9 @@ export function QuoteForm({
       validUntil,
       pricingNotes,
       internalNotes,
+      paymentStructureMode,
+      paymentParticipantCount,
+      customPaymentTerms,
     ]
   )
 
@@ -452,8 +489,13 @@ export function QuoteForm({
       valid_until: existingQuote?.valid_until?.split('T')[0] || prefilledValidUntil || '',
       pricing_notes: existingQuote?.pricing_notes || prefilledPricingNotes || '',
       internal_notes: existingQuote?.internal_notes || prefilledInternalNotes || '',
+      payment_structure_mode:
+        existingPaymentStructure?.mode ?? paymentModeFromDeposit(prefilledDepositRequired ?? false),
+      payment_participant_count: existingPaymentStructure?.participantCount?.toString() || '2',
+      custom_payment_terms: existingPaymentStructure?.customTerms || '',
     }),
     [
+      existingPaymentStructure,
       existingQuote,
       prefilledBudgetCents,
       prefilledClientId,
@@ -523,6 +565,9 @@ export function QuoteForm({
     setValidUntil(data.valid_until)
     setPricingNotes(data.pricing_notes)
     setInternalNotes(data.internal_notes)
+    setPaymentStructureMode(data.payment_structure_mode)
+    setPaymentParticipantCount(data.payment_participant_count)
+    setCustomPaymentTerms(data.custom_payment_terms)
   }
 
   const handleCalculate = async () => {
@@ -587,6 +632,75 @@ export function QuoteForm({
     }
   }
 
+  const paymentStructure = useMemo(
+    () =>
+      buildPaymentStructure({
+        mode: paymentStructureMode,
+        totalCents: parseOptionalCurrencyToCents(totalAmount),
+        depositCents: depositRequired ? parseOptionalCurrencyToCents(depositAmount) : 0,
+        depositPercentage: depositPercentage ? parseFloat(depositPercentage) : null,
+        participantCount: paymentParticipantCount ? parseInt(paymentParticipantCount, 10) : null,
+        customTerms: customPaymentTerms,
+      }),
+    [
+      customPaymentTerms,
+      depositAmount,
+      depositPercentage,
+      depositRequired,
+      paymentParticipantCount,
+      paymentStructureMode,
+      totalAmount,
+    ]
+  )
+
+  const applyPaymentStructureMode = (mode: PaymentStructureMode) => {
+    setPaymentStructureMode(mode)
+    const totalCents = parseOptionalCurrencyToCents(totalAmount)
+
+    if (mode === 'full_upfront' || mode === 'split_evenly' || mode === 'custom_terms') {
+      setDepositRequired(false)
+      return
+    }
+
+    setDepositRequired(true)
+    if (totalCents <= 0) return
+
+    if (mode === 'thirds') {
+      setDepositAmount((Math.round(totalCents / 3) / 100).toFixed(2))
+      setDepositPercentage('33.3')
+      return
+    }
+
+    if (!depositAmount) {
+      setDepositAmount((Math.round(totalCents * 0.5) / 100).toFixed(2))
+      setDepositPercentage('50')
+    }
+  }
+
+  const applyPaymentTermsToNotes = () => {
+    const note = paymentStructure.clientNote
+    if (!note.trim()) return
+    if (pricingNotes.includes(note)) return
+    setPricingNotes((prev) => (prev.trim() ? `${prev.trim()}\n\n${note}` : note))
+  }
+
+  const buildPricingDecisionPayload = () => {
+    const existingContext =
+      ((existingQuote as any)?.pricing_context as Record<string, unknown> | null | undefined) ?? {}
+    return {
+      pricingSourceKind: ((existingQuote as any)?.pricing_source_kind as any) ?? 'manual_only',
+      baselineTotalCents: ((existingQuote as any)?.baseline_total_cents as number | null) ?? null,
+      baselinePricePerPersonCents:
+        ((existingQuote as any)?.baseline_price_per_person_cents as number | null) ?? null,
+      overrideKind: ((existingQuote as any)?.override_kind as any) ?? 'none',
+      overrideReason: ((existingQuote as any)?.override_reason as string | null) ?? null,
+      pricingContext: {
+        ...existingContext,
+        ...serializePaymentStructureForContext(paymentStructure),
+      },
+    }
+  }
+
   const buildUpdatePayload = (expectedUpdatedAt?: string) => {
     const totalCents = parseCurrencyToCents(totalAmount)
     if (!totalCents || totalCents <= 0) {
@@ -606,6 +720,7 @@ export function QuoteForm({
       pricing_notes: pricingNotes || null,
       internal_notes: internalNotes || null,
       expected_updated_at: expectedUpdatedAt,
+      pricingDecision: buildPricingDecisionPayload(),
     }
   }
 
@@ -631,6 +746,14 @@ export function QuoteForm({
       valid_until: latest.valid_until?.split('T')[0] || '',
       pricing_notes: latest.pricing_notes || '',
       internal_notes: latest.internal_notes || '',
+      payment_structure_mode:
+        readPaymentStructure((latest as any).pricing_context ?? null)?.mode ?? 'full_upfront',
+      payment_participant_count:
+        readPaymentStructure(
+          (latest as any).pricing_context ?? null
+        )?.participantCount?.toString() || '2',
+      custom_payment_terms:
+        readPaymentStructure((latest as any).pricing_context ?? null)?.customTerms || '',
     })
   }
 
@@ -728,6 +851,7 @@ export function QuoteForm({
           valid_until: validUntil || null,
           pricing_notes: pricingNotes || undefined,
           internal_notes: internalNotes || undefined,
+          pricingDecision: buildPricingDecisionPayload(),
         }
         const mutationResult = await createMutation.mutate(input as any)
         if (mutationResult.queued) {
@@ -1387,7 +1511,15 @@ export function QuoteForm({
               <input
                 type="checkbox"
                 checked={depositRequired}
-                onChange={(e) => setDepositRequired(e.target.checked)}
+                onChange={(e) => {
+                  setDepositRequired(e.target.checked)
+                  if (e.target.checked && paymentStructureMode === 'full_upfront') {
+                    applyPaymentStructureMode('deposit_balance')
+                  }
+                  if (!e.target.checked && paymentStructureMode === 'deposit_balance') {
+                    applyPaymentStructureMode('full_upfront')
+                  }
+                }}
                 className="rounded border-stone-600 text-brand-600 focus:ring-brand-500"
               />
               <span className="text-sm text-stone-300">Deposit required</span>
@@ -1417,6 +1549,61 @@ export function QuoteForm({
                 />
               </div>
             )}
+          </div>
+
+          {/* Payment Structure */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold text-stone-500 uppercase tracking-wider">
+              Payment Structure
+            </h3>
+
+            <Select
+              label="How will this be charged?"
+              value={paymentStructureMode}
+              onChange={(e) => applyPaymentStructureMode(e.target.value as PaymentStructureMode)}
+              options={[
+                { value: 'full_upfront', label: 'Full payment upfront' },
+                { value: 'deposit_balance', label: 'Deposit plus balance' },
+                { value: 'thirds', label: 'Three-stage payment plan' },
+                { value: 'split_evenly', label: 'Split evenly between payers' },
+                { value: 'custom_terms', label: 'Custom payment terms' },
+              ]}
+              helperText="Saved with the quote and copied into the event payment plan when possible."
+            />
+
+            {paymentStructureMode === 'split_evenly' && (
+              <Input
+                label="Number of payers"
+                type="number"
+                min="2"
+                max="100"
+                value={paymentParticipantCount}
+                onChange={(e) => setPaymentParticipantCount(e.target.value)}
+              />
+            )}
+
+            {paymentStructureMode === 'custom_terms' && (
+              <Textarea
+                label="Custom payment terms"
+                placeholder="Example: $500 to reserve, ingredients reimbursed on receipt, remaining service fee due 48 hours before service."
+                value={customPaymentTerms}
+                onChange={(e) => setCustomPaymentTerms(e.target.value)}
+                rows={4}
+              />
+            )}
+
+            {paymentStructure.totalCents > 0 && (
+              <PaymentStructureSummary structure={paymentStructure} compact />
+            )}
+
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={applyPaymentTermsToNotes}
+              disabled={paymentStructure.totalCents <= 0}
+            >
+              Add Payment Terms to Client Notes
+            </Button>
           </div>
 
           {/* Validity & Notes */}

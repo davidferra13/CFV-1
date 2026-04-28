@@ -114,11 +114,13 @@ Use the filters at the top of the Inquiries page to focus on a specific status. 
 2. Click **Create Quote**
 3. Add menu items from your recipe library
 4. Adjust pricing per item (ChefFlow shows historical pricing and per-guest suggestions)
-5. Set deposit amount and payment terms
+5. Choose the payment structure: full payment, deposit plus balance, thirds, split evenly, or custom terms
 6. Click **Generate PDF**
 7. Send to client via email or share the link
 
 Track quote status: Draft > Sent > Accepted > Rejected > Expired.
+
+When a quote is linked to an event, ChefFlow saves the payment structure with the quote and can create event billing installments from it if the event does not already have a payment plan.
 
 ### Proposals
 

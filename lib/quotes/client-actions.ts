@@ -11,6 +11,8 @@ import { convertInquiryToEventWithContext } from '@/lib/inquiries/actions'
 import { revalidatePath } from 'next/cache'
 import { pushToDLQ } from '@/lib/resilience/retry'
 import { executeInteraction } from '@/lib/interactions'
+import { readPaymentStructure } from '@/lib/payments/payment-structure'
+import { syncPaymentStructureToEventInstallments } from '@/lib/payments/sync-payment-structure'
 
 const CLIENT_QUOTE_DETAIL_SELECT = `
   id, tenant_id, inquiry_id, event_id, client_id,
@@ -20,6 +22,7 @@ const CLIENT_QUOTE_DETAIL_SELECT = `
   deposit_percentage, pricing_notes, status,
   sent_at, accepted_at, rejected_at, rejected_reason,
   expired_at, valid_until, snapshot_frozen,
+  pricing_context,
   negotiation_occurred, original_quoted_cents,
   version, is_superseded, show_cost_breakdown,
   exclusions_note, addon_total_cents, effective_total_cents,
@@ -129,7 +132,7 @@ async function acceptQuoteForContext(quoteId: string, context: QuoteResponseCont
   const { data: preCheck } = await db
     .from('quotes')
     .select(
-      'id, status, valid_until, event_id, tenant_id, inquiry_id, quote_name, total_quoted_cents, deposit_required, deposit_amount_cents, events(status)'
+      'id, status, valid_until, event_id, tenant_id, inquiry_id, quote_name, total_quoted_cents, deposit_required, deposit_amount_cents, pricing_context, events(status)'
     )
     .eq('id', quoteId)
     .eq('client_id', context.clientId)
@@ -193,6 +196,19 @@ async function acceptQuoteForContext(quoteId: string, context: QuoteResponseCont
     total_quoted_cents: preCheck.total_quoted_cents as number | null,
     deposit_required: preCheck.deposit_required as boolean | null,
     deposit_amount_cents: preCheck.deposit_amount_cents as number | null,
+  }
+
+  if (quote.event_id && quote.tenant_id) {
+    try {
+      await syncPaymentStructureToEventInstallments({
+        db,
+        tenantId: quote.tenant_id,
+        eventId: quote.event_id,
+        structure: readPaymentStructure((preCheck as any).pricing_context ?? null),
+      })
+    } catch (syncErr) {
+      console.error('[acceptQuote] Payment plan sync failed (non-blocking):', syncErr)
+    }
   }
 
   revalidatePath('/my-quotes')
