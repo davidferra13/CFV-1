@@ -124,6 +124,7 @@ describe('Middleware - public unauthenticated paths', () => {
     assert.equal(isPublicUnauthenticatedPath('/compare'), true)
     assert.equal(isPublicUnauthenticatedPath('/customers'), true)
     assert.equal(isPublicUnauthenticatedPath('/faq'), true)
+    assert.equal(isPublicUnauthenticatedPath('/sandbox/home-v2'), true)
     assert.equal(isPublicUnauthenticatedPath('/trust'), true)
     assert.equal(isPublicUnauthenticatedPath('/unsubscribe'), true)
   })
