@@ -10,6 +10,8 @@ import { revalidatePath } from 'next/cache'
 import { requireAdmin } from '@/lib/auth/admin'
 import { getCurrentUser, requireClient } from '@/lib/auth/get-user'
 import { resolvePublicLocationQuery } from '@/lib/geo/public-location'
+import { createNotificationForTenant } from '@/lib/notifications/store'
+import type { NotificationAction } from '@/lib/notifications/types'
 import { z } from 'zod'
 import { slugify, ITEMS_PER_PAGE, normalizeUsStateCode } from './constants'
 import { DIRECTORY_CANONICAL_STATE_SQL as CANONICAL_STATE_SQL } from './directory-state-sql'
@@ -150,6 +152,22 @@ type DirectorySubmissionResult = {
   error?: string
   slug?: string
   mode?: 'submitted' | 'claimed_existing' | 'already_claimed'
+}
+
+type DirectoryLifecycleNotificationAction = Extract<
+  NotificationAction,
+  'directory_listing_claimed' | 'directory_listing_verified' | 'directory_listing_removed'
+>
+
+type DirectoryLifecycleNotificationListing = {
+  id: string
+  name: string
+  slug: string
+  status?: string | null
+  linked_chef_id?: string | null
+  claimed_by_name?: string | null
+  claimed_by_email?: string | null
+  email?: string | null
 }
 
 let geoDistanceStrategyPromise: Promise<GeoDistanceStrategy> | null = null
@@ -359,15 +377,98 @@ async function tryLinkListingToChefByEmail(
   if (!chefId) return null
 
   try {
-    return await linkDirectoryListingToChefAccount(db, {
+    const result = await linkDirectoryListingToChefAccount(db, {
       listingId: input.listingId,
       chefId,
       confidence: input.confidence,
       reason: input.reason,
     })
+    return { ...result, chefId }
   } catch (err) {
     console.error('[tryLinkListingToChefByEmail]', err)
     return null
+  }
+}
+
+async function resolveDirectoryLifecycleNotificationTenantId(
+  db: any,
+  listing: DirectoryLifecycleNotificationListing
+): Promise<string | null> {
+  if (listing.linked_chef_id) return listing.linked_chef_id
+
+  const emails = Array.from(
+    new Set(
+      [listing.claimed_by_email, listing.email]
+        .map((email) => email?.trim())
+        .filter((email): email is string => Boolean(email))
+    )
+  )
+
+  for (const email of emails) {
+    const chefId = await findChefAccountIdByEmail(db, email)
+    if (chefId) return chefId
+  }
+
+  return null
+}
+
+function getDirectoryLifecycleNotificationCopy(
+  action: DirectoryLifecycleNotificationAction,
+  listingName: string
+) {
+  if (action === 'directory_listing_claimed') {
+    return {
+      title: 'Nearby listing claimed',
+      body: `${listingName} was claimed in Nearby.`,
+    }
+  }
+
+  if (action === 'directory_listing_verified') {
+    return {
+      title: 'Nearby listing verified',
+      body: `${listingName} is now verified in Nearby.`,
+    }
+  }
+
+  return {
+    title: 'Nearby listing removed',
+    body: `${listingName} was removed from Nearby.`,
+  }
+}
+
+async function notifyDirectoryListingLifecycle(
+  db: any,
+  action: DirectoryLifecycleNotificationAction,
+  listing: DirectoryLifecycleNotificationListing
+) {
+  try {
+    const tenantId = await resolveDirectoryLifecycleNotificationTenantId(db, listing)
+    if (!tenantId) return
+
+    const copy = getDirectoryLifecycleNotificationCopy(action, listing.name)
+    const { error } = await createNotificationForTenant(tenantId, {
+      recipientRole: 'chef',
+      title: copy.title,
+      body: copy.body,
+      category: 'system',
+      action,
+      actionUrl: `/nearby/${listing.slug}`,
+      metadata: {
+        directory_listing_id: listing.id,
+        directory_listing_slug: listing.slug,
+        directory_listing_status: listing.status ?? null,
+      },
+    })
+
+    if (error) {
+      console.warn('[non-blocking] Directory lifecycle notification failed', {
+        action,
+        listingId: listing.id,
+        error,
+      })
+    }
+  } catch (err) {
+    console.error('[non-blocking] Directory lifecycle notification setup failed', err)
   }
 }
 
@@ -1331,6 +1432,15 @@ export async function requestListingClaim(input: {
     reason: 'claimed_email_exact',
   })
 
+  await notifyDirectoryListingLifecycle(db, 'directory_listing_claimed', {
+    id: input.listingId,
+    name: claimedListingRecord.name,
+    slug: claimedListingRecord.slug,
+    status: 'claimed',
+    claimed_by_name: input.name.trim(),
+    claimed_by_email: input.email.trim(),
+  })
+
   // Non-blocking: send claimed email
   try {
     const { sendDirectoryClaimedEmail } = await import('./outreach')
@@ -1568,7 +1678,7 @@ export async function adminUpdateListingStatus(
   // Fetch listing details before update (for email)
   const { data: listingBefore } = await db
     .from('directory_listings')
-    .select('name, slug, claimed_by_email, email')
+    .select('id, name, slug, status, linked_chef_id, claimed_by_email, email')
     .eq('id', listingId)
     .single()
 
@@ -1591,6 +1701,22 @@ export async function adminUpdateListingStatus(
         recipientEmail,
       }).catch((err) => console.error('[non-blocking] Verified email failed', err))
     }
+  }
+
+  if ((status === 'verified' || status === 'removed') && listingBefore) {
+    await notifyDirectoryListingLifecycle(
+      db,
+      status === 'verified' ? 'directory_listing_verified' : 'directory_listing_removed',
+      {
+        id: listingId,
+        name: (listingBefore as any).name,
+        slug: (listingBefore as any).slug,
+        status,
+        linked_chef_id: (listingBefore as any).linked_chef_id ?? null,
+        claimed_by_email: (listingBefore as any).claimed_by_email ?? null,
+        email: (listingBefore as any).email ?? null,
+      }
+    )
   }
 
   revalidatePath('/nearby')
