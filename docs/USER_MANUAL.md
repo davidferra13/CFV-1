@@ -130,7 +130,7 @@ Event-driven proposal previews can also show a compact **Client Profile Guidance
 
 ### Tracking Calls and Meetings
 
-Click **Schedule Call** on any inquiry to set a date, time, and agenda. After the call, mark it as attended or no-show, and add outcome notes. Upcoming calls also appear in your dashboard widget.
+Click **Schedule Call** on any inquiry to set a date, time, and agenda. Inquiry and event detail pages now surface the right call checkpoint for the stage you are in: discovery, proposal walkthrough, pre-service logistics, or day-after follow-up. ChefFlow pre-fills the call type, contact, linked inquiry or event, title, duration, prep notes, and client notification setting from the current record. After the call, mark it as attended or no-show, and add outcome notes. Upcoming calls also appear on the dashboard.
 
 ---
 

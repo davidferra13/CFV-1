@@ -49,8 +49,15 @@ type Props = {
   // Pre-populate from context
   defaultClientId?: string
   defaultClientName?: string
+  defaultContactPhone?: string
+  defaultContactCompany?: string
   defaultInquiryId?: string
   defaultEventId?: string
+  defaultCallType?: CallType
+  defaultTitle?: string
+  defaultPrepNotes?: string
+  defaultDurationMinutes?: number
+  defaultNotifyClient?: boolean
 }
 
 /**
@@ -73,22 +80,39 @@ export function CallForm({
   existing,
   defaultClientId,
   defaultClientName,
+  defaultContactPhone,
+  defaultContactCompany,
   defaultInquiryId,
   defaultEventId,
+  defaultCallType,
+  defaultTitle,
+  defaultPrepNotes,
+  defaultDurationMinutes,
+  defaultNotifyClient,
 }: Props) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
 
-  const [callType, setCallType] = useState<CallType>(existing?.call_type ?? 'general')
+  const [callType, setCallType] = useState<CallType>(
+    existing?.call_type ?? defaultCallType ?? 'general'
+  )
   const [scheduledAt, setScheduledAt] = useState(existing ? isoToLocal(existing.scheduled_at) : '')
-  const [duration, setDuration] = useState(String(existing?.duration_minutes ?? 30))
-  const [title, setTitle] = useState(existing?.title ?? '')
+  const [duration, setDuration] = useState(
+    String(existing?.duration_minutes ?? defaultDurationMinutes ?? 30)
+  )
+  const [title, setTitle] = useState(existing?.title ?? defaultTitle ?? '')
   const [contactName, setContactName] = useState(existing?.contact_name ?? defaultClientName ?? '')
-  const [contactPhone, setContactPhone] = useState(existing?.contact_phone ?? '')
-  const [contactCompany, setContactCompany] = useState(existing?.contact_company ?? '')
-  const [prepNotes, setPrepNotes] = useState(existing?.prep_notes ?? '')
-  const [notifyClient, setNotifyClient] = useState(existing?.notify_client ?? false)
+  const [contactPhone, setContactPhone] = useState(
+    existing?.contact_phone ?? defaultContactPhone ?? ''
+  )
+  const [contactCompany, setContactCompany] = useState(
+    existing?.contact_company ?? defaultContactCompany ?? ''
+  )
+  const [prepNotes, setPrepNotes] = useState(existing?.prep_notes ?? defaultPrepNotes ?? '')
+  const [notifyClient, setNotifyClient] = useState(
+    existing?.notify_client ?? defaultNotifyClient ?? false
+  )
   const [clientId] = useState(existing?.client_id ?? defaultClientId ?? null)
   const [inquiryId] = useState(existing?.inquiry_id ?? defaultInquiryId ?? null)
   const [eventId] = useState(existing?.event_id ?? defaultEventId ?? null)
@@ -253,7 +277,7 @@ export function CallForm({
           id="prep_notes"
           value={prepNotes}
           onChange={(e) => setPrepNotes(e.target.value)}
-          placeholder="Anything you want to remember or prepare before this call…"
+          placeholder="Anything you want to remember or prepare before this call..."
           rows={3}
           maxLength={5000}
         />
@@ -274,8 +298,8 @@ export function CallForm({
 
       {/* Actions */}
       <div className="flex gap-3">
-        <Button type="submit" disabled={isPending}>
-          {isPending ? 'Saving…' : existing ? 'Save changes' : 'Schedule call'}
+        <Button type="submit" variant="primary" disabled={isPending}>
+          {isPending ? 'Saving...' : existing ? 'Save changes' : 'Schedule call'}
         </Button>
         <Button type="button" variant="secondary" onClick={() => router.back()}>
           Cancel

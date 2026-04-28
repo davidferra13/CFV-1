@@ -39,6 +39,7 @@ export type SurfaceCompletenessCheckId =
   | 'derived-output-provenance-inventory'
   | 'public-seo-contract'
   | 'national-brand-audit'
+  | 'pre-event-checklist-client'
   | 'platform-observability-coverage'
 
 export type SurfaceCompletenessGroup =
@@ -2417,6 +2418,97 @@ export async function buildSystemContractGraph(
   }
 }
 
+function runPreEventChecklistClientCheck(): SurfaceCompletenessCheckResult {
+  const componentPath = 'components/events/pre-event-checklist-client.tsx'
+  const actionPath = 'lib/events/pre-event-checklist-actions.ts'
+  const routePath = 'app/(client)/my-events/[id]/pre-event-checklist/page.tsx'
+  const requiredPaths = [componentPath, actionPath, routePath]
+  const findings: SurfaceCompletenessFinding[] = []
+
+  for (const requiredPath of requiredPaths) {
+    if (!existsSync(path.join(process.cwd(), requiredPath))) {
+      findings.push({
+        checkId: 'pre-event-checklist-client',
+        code: 'missing-pre-event-checklist-path',
+        message: `Required pre-event checklist path is missing: ${requiredPath}`,
+        paths: [requiredPath],
+        severity: 'error',
+      })
+    }
+  }
+
+  const componentSource = existsSync(path.join(process.cwd(), componentPath))
+    ? readFileSync(path.join(process.cwd(), componentPath), 'utf8')
+    : ''
+  const actionSource = existsSync(path.join(process.cwd(), actionPath))
+    ? readFileSync(path.join(process.cwd(), actionPath), 'utf8')
+    : ''
+  const routeSource = existsSync(path.join(process.cwd(), routePath))
+    ? readFileSync(path.join(process.cwd(), routePath), 'utf8')
+    : ''
+
+  const expectations = [
+    {
+      code: 'missing-client-confirm-action-call',
+      message: 'Pre-event checklist client does not call confirmPreEventChecklist.',
+      ok: componentSource.includes('confirmPreEventChecklist('),
+      path: componentPath,
+    },
+    {
+      code: 'missing-section-confirmation-state',
+      message: 'Pre-event checklist client does not track section confirmation state.',
+      ok: componentSource.includes('sectionConfirmations'),
+      path: componentPath,
+    },
+    {
+      code: 'missing-dietary-protocol-display',
+      message: 'Pre-event checklist client does not display dietary protocol labels.',
+      ok:
+        componentSource.includes('PROTOCOL_LABELS') &&
+        componentSource.includes('dietary_protocols'),
+      path: componentPath,
+    },
+    {
+      code: 'missing-checklist-timestamp-update',
+      message: 'Pre-event checklist action does not update pre_event_checklist_confirmed_at.',
+      ok:
+        actionSource.includes('pre_event_checklist_confirmed_at') &&
+        actionSource.includes('new Date().toISOString()'),
+      path: actionPath,
+    },
+    {
+      code: 'missing-client-route-auth',
+      message: 'Pre-event checklist route does not require a client user.',
+      ok: routeSource.includes('requireClient('),
+      path: routePath,
+    },
+  ]
+
+  for (const expectation of expectations) {
+    if (expectation.ok) continue
+    findings.push({
+      checkId: 'pre-event-checklist-client',
+      code: expectation.code,
+      message: expectation.message,
+      paths: [expectation.path],
+      severity: 'error',
+    })
+  }
+
+  return {
+    findings,
+    group: 'coverage',
+    id: 'pre-event-checklist-client',
+    label: 'Pre-event checklist client confirmation',
+    status: findings.some((finding) => finding.severity === 'error') ? 'fail' : 'pass',
+    summary: {
+      checkedPaths: requiredPaths.length,
+      expectations: expectations.length,
+      missing: findings.length,
+    },
+  }
+}
+
 export const SURFACE_COMPLETENESS_CHECKS: SurfaceCompletenessCheckDefinition[] = [
   {
     group: 'coverage',
@@ -2483,6 +2575,12 @@ export const SURFACE_COMPLETENESS_CHECKS: SurfaceCompletenessCheckDefinition[] =
     id: 'national-brand-audit',
     label: 'National brand audit',
     run: runNationalBrandCheck,
+  },
+  {
+    group: 'coverage',
+    id: 'pre-event-checklist-client',
+    label: 'Pre-event checklist client confirmation',
+    run: runPreEventChecklistClientCheck,
   },
   {
     group: 'observability',

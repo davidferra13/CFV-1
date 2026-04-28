@@ -159,6 +159,7 @@ import { getGuestCountHistory } from '@/lib/guests/count-changes'
 import { loadEventServiceSimulationPanelState } from '@/lib/service-simulation/state'
 import { EventOperatingSpineCard } from '@/components/events/event-operating-spine-card'
 import { buildChefEventOperatingSpine } from '@/lib/events/operating-spine'
+import { buildLifecycleCallHref } from '@/lib/calls/lifecycle-prefill'
 import { getCourseProgress } from '@/lib/service-execution/actions'
 import { DinnerCircleCommandCenter } from '@/components/events/dinner-circle-command-center'
 import {
@@ -1032,6 +1033,69 @@ export default async function EventDetailPage({
     ticketSummaryLoad,
   ].filter((result) => result.status === 'unavailable')
 
+  const eventClientName = event.client?.full_name ?? null
+  const eventClientPhone = event.client?.phone ?? null
+  const eventCallContactCompany = event.occasion ?? null
+  const proposalCallHref = buildLifecycleCallHref({
+    callType: 'proposal_walkthrough',
+    clientId: event.client_id,
+    clientName: eventClientName,
+    contactPhone: eventClientPhone,
+    contactCompany: eventCallContactCompany,
+    eventId: event.id,
+    title: `Proposal walkthrough for ${event.occasion || 'event'}`,
+    prepNotes:
+      'Walk through scope, price, deposit timing, cancellation terms, and any open client questions.',
+    durationMinutes: 20,
+    notifyClient: !!event.client_id,
+  })
+  const logisticsCallHref = buildLifecycleCallHref({
+    callType: 'pre_event_logistics',
+    clientId: event.client_id,
+    clientName: eventClientName,
+    contactPhone: eventClientPhone,
+    contactCompany: eventCallContactCompany,
+    eventId: event.id,
+    title: `Pre-service logistics for ${event.occasion || 'event'}`,
+    prepNotes:
+      'Confirm arrival time, service time, parking, kitchen access, final guest count, allergies, equipment, and final payment.',
+    durationMinutes: 15,
+    notifyClient: !!event.client_id,
+  })
+  const followUpCallHref = buildLifecycleCallHref({
+    callType: 'follow_up',
+    clientId: event.client_id,
+    clientName: eventClientName,
+    contactPhone: eventClientPhone,
+    contactCompany: eventCallContactCompany,
+    eventId: event.id,
+    title: `Day-after follow-up for ${event.occasion || 'event'}`,
+    prepNotes:
+      'Thank the client, capture feedback, note preferences, ask for review or referral, and look for the next booking moment.',
+    durationMinutes: 15,
+    notifyClient: !!event.client_id,
+  })
+  const lifecycleCallAction =
+    event.status === 'proposed' || event.status === 'accepted' || event.status === 'paid'
+      ? {
+          label: 'Schedule Proposal Call',
+          href: proposalCallHref,
+          detail: 'Resolve client questions and move the booking toward deposit or confirmation.',
+        }
+      : event.status === 'confirmed'
+        ? {
+            label: 'Schedule Logistics Call',
+            href: logisticsCallHref,
+            detail: 'Lock final operational details before procurement and service.',
+          }
+        : event.status === 'completed'
+          ? {
+              label: 'Schedule Follow-Up Call',
+              href: followUpCallHref,
+              detail: 'Turn service completion into feedback, review, referral, or rebooking.',
+            }
+          : null
+
   const [
     dinnerCircleConfig,
     approvalGates,
@@ -1287,6 +1351,11 @@ export default async function EventDetailPage({
           <Link href={`/events/${event.id}/documents`}>
             <Button variant="secondary">Documents</Button>
           </Link>
+          {lifecycleCallAction && event.client_id && (
+            <Link href={lifecycleCallAction.href}>
+              <Button variant="secondary">{lifecycleCallAction.label}</Button>
+            </Link>
+          )}
           {event.client_id && !['cancelled'].includes(event.status) && (
             <QuickProposalButton eventId={event.id} />
           )}
@@ -1321,6 +1390,31 @@ export default async function EventDetailPage({
           </Link>
         </div>
       </div>
+
+      {lifecycleCallAction && event.client_id && (
+        <Card className="p-4 border-brand-700/40 bg-brand-950/30">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="text-sm font-semibold text-brand-200">Human call checkpoint</p>
+              <p className="mt-1 text-sm text-brand-100/80">{lifecycleCallAction.detail}</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {eventClientPhone && (
+                <a href={`tel:${eventClientPhone}`}>
+                  <Button variant="secondary" size="sm">
+                    Call Now
+                  </Button>
+                </a>
+              )}
+              <Link href={lifecycleCallAction.href}>
+                <Button variant="primary" size="sm">
+                  {lifecycleCallAction.label}
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </Card>
+      )}
 
       {/* Pre-Event Nerve Center: unified T-minus card for events within 48 hours */}
       {isEventWithinDays(event.event_date, 2) &&

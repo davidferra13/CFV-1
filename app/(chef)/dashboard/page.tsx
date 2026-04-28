@@ -20,6 +20,8 @@ import { OnboardingBanner } from '@/components/onboarding/onboarding-banner'
 import UpcomingTouchpoints from '@/components/clients/upcoming-touchpoints'
 import GiftSuggestionsWidget from '@/components/dashboard/gift-suggestions-widget'
 import { getUpcomingTouchpoints } from '@/lib/clients/touchpoint-actions'
+import { getUpcomingCalls } from '@/lib/calls/actions'
+import { UpcomingCallsWidget } from '@/components/calls/upcoming-calls-widget'
 import { ActionSurfaceCard } from '@/components/dashboard/action-surface-card'
 import { ResolveNextCard } from '@/components/dashboard/resolve-next-card'
 import { DecisionQueueWidget } from '@/components/dashboard/decision-queue-widget'
@@ -1636,6 +1638,28 @@ async function RelationshipActionLayerSection() {
   )
 }
 
+async function DashboardUpcomingCallsSection() {
+  const callsResult = await safeResult(
+    'upcomingCalls',
+    () => getUpcomingCalls(5),
+    [],
+    'Upcoming calls could not be loaded.'
+  )
+
+  if (callsResult.status === 'unavailable') {
+    return (
+      <DegradedDataNotice
+        title="Upcoming calls unavailable"
+        detail="Call schedule data could not be loaded, so the dashboard cannot safely confirm your next client call."
+      />
+    )
+  }
+
+  if (callsResult.data.length === 0) return null
+
+  return <UpcomingCallsWidget calls={callsResult.data} />
+}
+
 async function PostEventActionLayerSection() {
   const [eventsNeedingClosureResult, trustLoopCandidatesResult] = await Promise.all([
     safeResult(
@@ -2105,6 +2129,12 @@ export default async function ChefDashboard() {
           <WidgetErrorBoundary name="Priority Queue" compact>
             <Suspense fallback={<PriorityQueueSkeleton />}>
               <PriorityQueueSection queuePromise={queuePromise} />
+            </Suspense>
+          </WidgetErrorBoundary>
+
+          <WidgetErrorBoundary name="Upcoming Calls" compact>
+            <Suspense fallback={<WidgetCardSkeleton size="md" />}>
+              <DashboardUpcomingCallsSection />
             </Suspense>
           </WidgetErrorBoundary>
 

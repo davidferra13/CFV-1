@@ -151,6 +151,7 @@
 #### Upcoming Calls Widget
 
 - **Condition:** `upcomingCalls.length > 0`
+- Dashboard now renders this widget from the main focus grid. If call data cannot load, it shows an unavailable warning instead of silently hiding the call schedule.
 - "Schedule" link → `/calls/new`
 - Per call row: link to `/calls/${id}` showing date, time, contact name, call type, duration, agenda progress
 - "View all calls" link → `/calls`
@@ -650,7 +651,7 @@ Founder-owned operator walkthrough requests from `/for-operators/walkthrough` al
 
 **Route:** `/calls` - Status tabs (All/Upcoming/Completed/No-show/Cancelled). Per call: type badge, contact, date/time, duration, agenda progress.
 
-**`/calls/new`** - Form: type select, datetime, duration, title, contact info, prep notes, notification toggle.
+**`/calls/new`** - Form: type select, datetime, duration, title, contact info, prep notes, notification toggle. Accepts lifecycle prefill query params from inquiry and event detail for `call_type`, `client_id`, `client_name`, `contact_phone`, `contact_company`, `inquiry_id`, `event_id`, `title`, `prep_notes`, `duration_minutes`, and `notify_client`.
 
 **`/calls/[id]`** - Detail: meta grid, status action buttons (Mark confirmed/Cancel), agenda checklist (add/remove/toggle items, progress bar), outcome form (summary, notes, next action, duration, "Mark complete & save" / "Mark as no-show" buttons).
 

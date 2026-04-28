@@ -80,6 +80,7 @@ import { getNextActions } from '@/lib/lifecycle/next-action'
 import { NextActionBanner } from '@/components/lifecycle/next-action-banner'
 import { RepeatClientPanel } from '@/components/clients/repeat-client-panel'
 import { getHandoffForInquiry } from '@/lib/network/collab-actions'
+import { buildLifecycleCallHref } from '@/lib/calls/lifecycle-prefill'
 import {
   readPublicSeasonalMarketPulseIntentFromUnknownFields,
   type PublicSeasonalMarketPulseIntent,
@@ -367,6 +368,37 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
   if (!inquiry.confirmed_occasion) missingFacts.push('Occasion')
   if (!inquiry.confirmed_budget_cents) missingFacts.push('Budget')
 
+  const contactCompany = inquiry.confirmed_occasion ?? referralSource ?? undefined
+  const discoveryCallHref = buildLifecycleCallHref({
+    callType: 'discovery',
+    clientId: inquiry.client_id,
+    clientName: name,
+    contactPhone: phone,
+    contactCompany,
+    inquiryId: inquiry.id,
+    title: `Discovery call with ${name}`,
+    prepNotes:
+      'Confirm date, guest count, location, budget, dietary restrictions, service style, decision timeline, and deposit expectations.',
+    durationMinutes: 30,
+    notifyClient: !!inquiry.client_id,
+  })
+  const hasSentProposal = quotes.some((quote: any) =>
+    ['sent', 'viewed', 'accepted'].includes(String(quote.status))
+  )
+  const proposalWalkthroughHref = buildLifecycleCallHref({
+    callType: 'proposal_walkthrough',
+    clientId: inquiry.client_id,
+    clientName: name,
+    contactPhone: phone,
+    contactCompany,
+    inquiryId: inquiry.id,
+    title: `Proposal walkthrough with ${name}`,
+    prepNotes:
+      'Walk through the proposal, clarify scope, confirm deposit timing, and resolve client questions before the date goes cold.',
+    durationMinutes: 20,
+    notifyClient: !!inquiry.client_id,
+  })
+
   // Build summary data for the shared InquirySummary component
   const summaryData: InquirySummaryData = {
     id: inquiry.id,
@@ -451,6 +483,34 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
 
       {/* Next Action - what to do right now */}
       {nextActions && <NextActionBanner data={nextActions} />}
+
+      {!['declined', 'expired', 'confirmed'].includes(inquiry.status) && (
+        <Card className="p-4 border-brand-700/40 bg-brand-950/30">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="text-sm font-semibold text-brand-200">Human call checkpoint</p>
+              <p className="mt-1 text-sm text-brand-100/80">
+                Use the call system at this stage to turn the inquiry into a qualified proposal and
+                a deposit decision.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {phone && (
+                <a href={`tel:${phone}`}>
+                  <Button variant="secondary" size="sm">
+                    Call Now
+                  </Button>
+                </a>
+              )}
+              <Link href={hasSentProposal ? proposalWalkthroughHref : discoveryCallHref}>
+                <Button variant="primary" size="sm">
+                  {hasSentProposal ? 'Schedule Walkthrough' : 'Schedule Discovery'}
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </Card>
+      )}
 
       {/* Soft-Close Leverage Card - State 1: detected soft close, inquiry still open */}
       {nextActions?.softCloseWorkflow?.futureInterest && inquiry.status === 'awaiting_chef' && (
