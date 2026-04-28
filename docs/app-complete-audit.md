@@ -983,6 +983,8 @@ Founder-owned operator walkthrough requests from `/for-operators/walkthrough` al
 
 **Sub-pages:** `/analytics/daily-report` (daily business snapshot — 13 metric categories: schedule, revenue, pipeline, operations, client activity, schedule conflicts, milestones, dormant clients, action items, pipeline forecast; date navigation + regenerate button + past reports browser; emailed daily at 7 AM ET via Vercel Cron), `/analytics/benchmarks` (benchmark dashboard), `/analytics/pipeline` (forecast), `/analytics/demand` (heatmap + holiday YoY), `/analytics/client-ltv` (LTV chart), `/analytics/referral-sources` (referral analytics), `/analytics/reports` (custom report builder), `/analytics/funnel` (conversion funnel: Inquiry→Quote→Booking→Completed visualization, KPI cards for response time/conversion rate/ghost rate/lead time, channel performance comparison, decline reason breakdown, lead time distribution).
 
+**Route:** `/insights` - Clientele Insights tabbed dashboard. Tabs: Clientele, Seasons & Trends, Client Base, Operations, Culinary Usage, Take a Chef ROI. Culinary Usage reads linked event menus, dishes, components, recipes, recipe ingredients, and ingredients to show coverage, most-used ingredients, most-used recipes, most-picked menus, and a 12-month usage signal. It is read-only and does not infer usage for events without linked menus.
+
 ---
 
 ## 10b. INTELLIGENCE HUB (Pro)

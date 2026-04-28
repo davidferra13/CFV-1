@@ -486,6 +486,18 @@ If you have employees: Financials > Payroll manages wages, Form 941 (quarterly p
 - Utilization rates (days booked vs. available)
 - Cost tracking (ingredient cost %, labor cost %)
 
+### Clientele Insights
+
+**All Features > Insights** (`/insights`) shows live read-only patterns from your actual ChefFlow records:
+
+- Clientele patterns such as preferred dinner time, occasions, service styles, guest count, and dietary restrictions
+- Seasonal patterns such as busiest months, most popular days, and rolling revenue trend
+- Client base patterns such as repeat rate, lifetime value tiers, and acquisition sources
+- Operations patterns such as time per phase, event value by style, forgotten items, and AAR trends
+- Culinary Usage rankings for most-used ingredients, most-used recipes, most-picked menus, and 12-month usage signal
+
+Culinary Usage only counts events with linked menus, linked dishes, recipe components, and recipe ingredients. Events without linked menus are included in coverage, but not used for ingredient or recipe rankings.
+
 ### Intelligence Hub
 
 Analytics > Intelligence provides AI-powered insights:

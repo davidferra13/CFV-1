@@ -41,6 +41,11 @@ import type {
   FinancialIntelligence,
   TakeAChefROI,
 } from '@/lib/analytics/insights-actions'
+import type {
+  CulinaryUsageRanking,
+  CulinaryUsageStats,
+  CulinaryUsageTrendPoint,
+} from '@/lib/analytics/culinary-usage-types'
 
 // ─── Types ────────────────────────────────────────────
 
@@ -59,6 +64,7 @@ interface InsightsClientProps {
   phaseStats: PhaseTimeStats
   aarTrends: AARTrends
   financialStats: FinancialIntelligence
+  culinaryUsage: CulinaryUsageStats
   tacROI: TakeAChefROI
 }
 
@@ -69,6 +75,7 @@ const TABS = [
   { id: 'seasons', label: 'Seasons & Trends' },
   { id: 'client-base', label: 'Client Base' },
   { id: 'operations', label: 'Operations' },
+  { id: 'culinary-usage', label: 'Culinary Usage' },
   { id: 'take-a-chef', label: 'Take a Chef ROI' },
 ] as const
 
@@ -90,6 +97,24 @@ function formatMinutes(minutes: number): string {
   const h = Math.floor(minutes / 60)
   const m = minutes % 60
   return m > 0 ? `${h}h ${m}m` : `${h}h`
+}
+
+function formatDate(value: string | null): string {
+  if (!value) return '-'
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  }).format(new Date(`${value}T00:00:00`))
+}
+
+function formatLabel(value: string | null | undefined): string {
+  if (!value) return 'Uncategorized'
+  return value
+    .split('_')
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ')
 }
 
 // ─── Stat Card ────────────────────────────────────────
@@ -385,6 +410,177 @@ function OperationsTab({
 
 // ─── Tab 5: Take a Chef ROI ───────────────────────────
 
+function RankingTable({
+  title,
+  rows,
+  countLabel,
+}: {
+  title: string
+  rows: CulinaryUsageRanking[]
+  countLabel: string
+}) {
+  if (rows.length === 0) {
+    return (
+      <Card className="p-5">
+        <h3 className="font-semibold text-stone-100">{title}</h3>
+        <p className="text-sm text-stone-500 mt-4">No linked usage data yet.</p>
+      </Card>
+    )
+  }
+
+  return (
+    <Card className="p-5">
+      <h3 className="font-semibold text-stone-100 mb-4">{title}</h3>
+      <div className="space-y-3">
+        {rows.map((row, index) => (
+          <div key={row.id} className="rounded-lg border border-stone-800 bg-stone-900/40 p-3">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-xs text-stone-500">#{index + 1}</p>
+                <p className="font-medium text-stone-200 break-words">{row.name}</p>
+                <p className="text-xs text-stone-500">{formatLabel(row.category)}</p>
+              </div>
+              <div className="shrink-0 text-right">
+                <p className="text-xl font-bold text-stone-100">{row.useCount}</p>
+                <p className="text-xs text-stone-500">{countLabel}</p>
+              </div>
+            </div>
+            <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
+              <div>
+                <p className="text-stone-500">Events</p>
+                <p className="font-medium text-stone-300">{row.eventCount}</p>
+              </div>
+              <div>
+                <p className="text-stone-500">Revenue</p>
+                <p className="font-medium text-stone-300">
+                  {row.revenueCents > 0 ? formatCurrency(row.revenueCents) : '-'}
+                </p>
+              </div>
+              <div>
+                <p className="text-stone-500">Last used</p>
+                <p className="font-medium text-stone-300">{formatDate(row.lastUsedAt)}</p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </Card>
+  )
+}
+
+function UsageTrend({ data }: { data: CulinaryUsageTrendPoint[] }) {
+  const maxValue = Math.max(
+    1,
+    ...data.map((point) => Math.max(point.menuUses, point.recipeUses, point.ingredientUses))
+  )
+  const barWidth = (value: number) =>
+    value > 0 ? `${Math.max(4, (value / maxValue) * 100)}%` : '0%'
+
+  return (
+    <Card className="p-5">
+      <h3 className="font-semibold text-stone-100 mb-4">12-Month Usage Signal</h3>
+      <div className="space-y-3">
+        {data.map((point) => (
+          <div key={point.period} className="grid grid-cols-[64px_1fr] items-center gap-3">
+            <p className="text-xs text-stone-500">{point.period}</p>
+            <div className="space-y-1.5">
+              <div className="h-2 rounded-full bg-stone-800 overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-cyan-500"
+                  style={{ width: barWidth(point.menuUses) }}
+                />
+              </div>
+              <div className="h-2 rounded-full bg-stone-800 overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-violet-500"
+                  style={{ width: barWidth(point.recipeUses) }}
+                />
+              </div>
+              <div className="h-2 rounded-full bg-stone-800 overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-emerald-500"
+                  style={{ width: barWidth(point.ingredientUses) }}
+                />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="mt-4 flex flex-wrap gap-3 text-xs text-stone-400">
+        <span className="inline-flex items-center gap-1">
+          <span className="h-2 w-2 rounded-full bg-cyan-500" /> Menus
+        </span>
+        <span className="inline-flex items-center gap-1">
+          <span className="h-2 w-2 rounded-full bg-violet-500" /> Recipes
+        </span>
+        <span className="inline-flex items-center gap-1">
+          <span className="h-2 w-2 rounded-full bg-emerald-500" /> Ingredients
+        </span>
+      </div>
+    </Card>
+  )
+}
+
+function CulinaryUsageTab({ culinaryUsage }: Pick<InsightsClientProps, 'culinaryUsage'>) {
+  const coverage = culinaryUsage.coverage
+  const menuCoverage =
+    coverage.trackedEvents > 0
+      ? Math.round((coverage.eventsWithMenus / coverage.trackedEvents) * 100)
+      : 0
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard
+          label="Tracked Events"
+          value={coverage.trackedEvents}
+          sub={`${coverage.eventsWithMenus} have menus linked`}
+        />
+        <StatCard
+          label="Menu Coverage"
+          value={coverage.trackedEvents > 0 ? `${menuCoverage}%` : '-'}
+          sub="accepted through completed events"
+        />
+        <StatCard
+          label="Recipes Observed"
+          value={coverage.linkedRecipes}
+          sub="from linked event menus"
+        />
+        <StatCard
+          label="Ingredients Observed"
+          value={coverage.ingredientsInActiveRecipes}
+          sub={`${coverage.activeMenus} active menus total`}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        <RankingTable
+          title="Most-Used Ingredients"
+          rows={culinaryUsage.topIngredients}
+          countLabel="Uses"
+        />
+        <RankingTable title="Most-Used Recipes" rows={culinaryUsage.topRecipes} countLabel="Uses" />
+        <RankingTable
+          title="Most-Picked Menus"
+          rows={culinaryUsage.topMenus}
+          countLabel="Bookings"
+        />
+      </div>
+
+      <UsageTrend data={culinaryUsage.recentTrend} />
+
+      <Card className="p-5">
+        <h3 className="font-semibold text-stone-100">Coverage Notes</h3>
+        <p className="text-sm text-stone-400 mt-2">
+          These numbers are derived from real linked event menus, dishes, recipe components, and
+          recipe ingredients. Events without a linked menu are counted in coverage, but are not used
+          for ingredient or recipe rankings.
+        </p>
+      </Card>
+    </div>
+  )
+}
+
 function TakeAChefROITab({ roi }: { roi: TakeAChefROI }) {
   const hasData = roi.tacClientCount > 0
 
@@ -553,6 +749,7 @@ export function InsightsClient({
   phaseStats,
   aarTrends,
   financialStats,
+  culinaryUsage,
   tacROI,
 }: InsightsClientProps) {
   const [activeTab, setActiveTab] = useState<TabId>('clientele')
@@ -607,6 +804,7 @@ export function InsightsClient({
           financialStats={financialStats}
         />
       )}
+      {activeTab === 'culinary-usage' && <CulinaryUsageTab culinaryUsage={culinaryUsage} />}
       {activeTab === 'take-a-chef' && <TakeAChefROITab roi={tacROI} />}
     </div>
   )

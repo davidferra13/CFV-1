@@ -18,6 +18,7 @@ import {
   getPhaseTimeStats,
   getAARRatingTrends,
   getFinancialIntelligenceStats,
+  getCulinaryUsageStats,
   getTakeAChefROI,
 } from '@/lib/analytics/insights-actions'
 import dynamic from 'next/dynamic'
@@ -54,6 +55,7 @@ export default async function InsightsPage() {
     phaseStats,
     aarTrends,
     financialStats,
+    culinaryUsage,
     tacROI,
   ] = await Promise.all([
     getDinnerTimeDistribution(),
@@ -70,6 +72,7 @@ export default async function InsightsPage() {
     getPhaseTimeStats(),
     getAARRatingTrends(12),
     getFinancialIntelligenceStats(),
+    getCulinaryUsageStats(),
     getTakeAChefROI(),
   ])
 
@@ -97,6 +100,7 @@ export default async function InsightsPage() {
         phaseStats={phaseStats}
         aarTrends={aarTrends}
         financialStats={financialStats}
+        culinaryUsage={culinaryUsage}
         tacROI={tacROI}
       />
     </div>

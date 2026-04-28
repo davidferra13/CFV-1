@@ -9,6 +9,11 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { format, subMonths, startOfMonth } from 'date-fns'
 import { extractTakeAChefIntegrationSettings } from '@/lib/integrations/take-a-chef-defaults'
+import type {
+  CulinaryUsageRanking,
+  CulinaryUsageStats,
+  CulinaryUsageTrendPoint,
+} from '@/lib/analytics/culinary-usage-types'
 
 // ============================================
 // TYPES
@@ -95,6 +100,12 @@ function capitalize(s: string): string {
 function safeAvg(arr: number[]): number | null {
   if (arr.length === 0) return null
   return Math.round((arr.reduce((s, n) => s + n, 0) / arr.length) * 10) / 10
+}
+
+function requireNoDbError(label: string, error: unknown): void {
+  if (!error) return
+  console.error(`[${label}]`, error)
+  throw new Error(`Failed to load ${label}`)
 }
 
 // Parse a "YYYY-MM-DD" date string safely (avoids timezone shifts)
@@ -837,7 +848,310 @@ export async function getFinancialIntelligenceStats(): Promise<FinancialIntellig
 }
 
 // ============================================
-// 13. TAKE A CHEF ROI STATS
+// 15. CULINARY USAGE STATS
+// ============================================
+
+export async function getCulinaryUsageStats(): Promise<CulinaryUsageStats> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+  const tenantId = user.tenantId!
+  const trackedStatuses = ['accepted', 'paid', 'confirmed', 'in_progress', 'completed']
+
+  const [{ data: trackedEvents, error: eventsError }, { data: activeMenus, error: menusError }] =
+    await Promise.all([
+      db
+        .from('events')
+        .select('id, event_date, menu_id, quoted_price_cents, status')
+        .eq('tenant_id', tenantId)
+        .eq('is_demo', false)
+        .in('status', trackedStatuses),
+      db
+        .from('menus')
+        .select('id, name, status')
+        .eq('tenant_id', tenantId)
+        .neq('status', 'archived'),
+    ])
+
+  requireNoDbError('culinary usage events', eventsError)
+  requireNoDbError('culinary usage menus', menusError)
+
+  const events = (trackedEvents ?? []) as Array<{
+    id: string
+    event_date: string | null
+    menu_id: string | null
+    quoted_price_cents: number | null
+  }>
+  const linkedEvents = events.filter((event) => event.menu_id)
+  const menuIds = Array.from(new Set(linkedEvents.map((event) => event.menu_id).filter(Boolean)))
+
+  if (menuIds.length === 0) {
+    return {
+      generatedAt: new Date().toISOString(),
+      coverage: {
+        activeMenus: activeMenus?.length ?? 0,
+        linkedEventMenus: 0,
+        linkedRecipes: 0,
+        ingredientsInActiveRecipes: 0,
+        eventsWithMenus: 0,
+        trackedEvents: events.length,
+      },
+      topIngredients: [],
+      topRecipes: [],
+      topMenus: [],
+      recentTrend: buildEmptyCulinaryTrend(),
+    }
+  }
+
+  const [{ data: menus, error: linkedMenusError }, { data: dishes, error: dishesError }] =
+    await Promise.all([
+      db.from('menus').select('id, name, status').eq('tenant_id', tenantId).in('id', menuIds),
+      db.from('dishes').select('id, menu_id').eq('tenant_id', tenantId).in('menu_id', menuIds),
+    ])
+
+  requireNoDbError('culinary usage linked menus', linkedMenusError)
+  requireNoDbError('culinary usage dishes', dishesError)
+
+  const dishRows = (dishes ?? []) as Array<{ id: string; menu_id: string }>
+  const dishIds = dishRows.map((dish) => dish.id)
+  const dishMenu = new Map(dishRows.map((dish) => [dish.id, dish.menu_id]))
+
+  const { data: components, error: componentsError } =
+    dishIds.length > 0
+      ? await db
+          .from('components')
+          .select('id, dish_id, recipe_id, name, category')
+          .eq('tenant_id', tenantId)
+          .in('dish_id', dishIds)
+      : { data: [], error: null }
+
+  requireNoDbError('culinary usage components', componentsError)
+
+  const componentRows = (components ?? []) as Array<{
+    id: string
+    dish_id: string
+    recipe_id: string | null
+    name: string | null
+    category: string | null
+  }>
+  const recipeIds = Array.from(
+    new Set(componentRows.map((component) => component.recipe_id).filter(Boolean))
+  )
+
+  const [{ data: recipes, error: recipesError }, { data: recipeIngredients, error: riError }] =
+    recipeIds.length > 0
+      ? await Promise.all([
+          db
+            .from('recipes')
+            .select('id, name, category, times_cooked, last_cooked_at')
+            .eq('tenant_id', tenantId)
+            .in('id', recipeIds),
+          db
+            .from('recipe_ingredients')
+            .select('recipe_id, ingredient_id, quantity, unit')
+            .in('recipe_id', recipeIds),
+        ])
+      : [
+          { data: [], error: null },
+          { data: [], error: null },
+        ]
+
+  requireNoDbError('culinary usage recipes', recipesError)
+  requireNoDbError('culinary usage recipe ingredients', riError)
+
+  const ingredientIds = Array.from(
+    new Set(
+      ((recipeIngredients ?? []) as Array<{ ingredient_id: string | null }>)
+        .map((row) => row.ingredient_id)
+        .filter(Boolean)
+    )
+  )
+  const { data: ingredients, error: ingredientsError } =
+    ingredientIds.length > 0
+      ? await db
+          .from('ingredients')
+          .select('id, name, category')
+          .eq('tenant_id', tenantId)
+          .in('id', ingredientIds)
+      : { data: [], error: null }
+
+  requireNoDbError('culinary usage ingredients', ingredientsError)
+
+  const menuMap = new Map(
+    ((menus ?? []) as Array<{ id: string; name: string; status: string }>).map((menu) => [
+      menu.id,
+      menu,
+    ])
+  )
+  const recipeMap = new Map(
+    (
+      (recipes ?? []) as Array<{
+        id: string
+        name: string
+        category: string | null
+        times_cooked: number | null
+      }>
+    ).map((recipe) => [recipe.id, recipe])
+  )
+  const ingredientMap = new Map(
+    ((ingredients ?? []) as Array<{ id: string; name: string; category: string | null }>).map(
+      (ingredient) => [ingredient.id, ingredient]
+    )
+  )
+
+  const ingredientsByRecipe = new Map<
+    string,
+    Array<{ ingredient_id: string; quantity: number | null; unit: string | null }>
+  >()
+  for (const row of (recipeIngredients ?? []) as Array<{
+    recipe_id: string
+    ingredient_id: string
+    quantity: number | null
+    unit: string | null
+  }>) {
+    const existing = ingredientsByRecipe.get(row.recipe_id) ?? []
+    existing.push(row)
+    ingredientsByRecipe.set(row.recipe_id, existing)
+  }
+
+  const menuStats = new Map<string, CulinaryUsageRanking & { eventIds: Set<string> }>()
+  const recipeStats = new Map<string, CulinaryUsageRanking & { eventIds: Set<string> }>()
+  const ingredientStats = new Map<string, CulinaryUsageRanking & { eventIds: Set<string> }>()
+  const trendMap = buildCulinaryTrendMap()
+
+  for (const event of linkedEvents) {
+    const menuId = event.menu_id!
+    const menu = menuMap.get(menuId)
+    const eventRevenue = event.quoted_price_cents ?? 0
+    const eventDate = event.event_date
+    const eventMonth = eventDate ? format(parseDate(eventDate), 'MMM yy') : null
+    const menuEntry = getRankingEntry(menuStats, menuId, {
+      name: menu?.name ?? 'Unknown menu',
+      category: menu?.status ?? null,
+    })
+
+    menuEntry.useCount += 1
+    menuEntry.eventCount += 1
+    menuEntry.revenueCents += eventRevenue
+    menuEntry.eventIds.add(event.id)
+    menuEntry.lastUsedAt = maxIsoDate(menuEntry.lastUsedAt, eventDate)
+
+    const recipeIdsForEvent = new Set<string>()
+    const ingredientIdsForEvent = new Set<string>()
+
+    for (const component of componentRows) {
+      if (dishMenu.get(component.dish_id) !== menuId || !component.recipe_id) continue
+
+      const recipe = recipeMap.get(component.recipe_id)
+      const recipeEntry = getRankingEntry(recipeStats, component.recipe_id, {
+        name: recipe?.name ?? component.name ?? 'Unknown recipe',
+        category: recipe?.category ?? component.category ?? null,
+      })
+
+      recipeEntry.useCount += 1
+      recipeEntry.revenueCents += eventRevenue
+      recipeEntry.eventIds.add(event.id)
+      recipeEntry.eventCount = recipeEntry.eventIds.size
+      recipeEntry.lastUsedAt = maxIsoDate(recipeEntry.lastUsedAt, eventDate)
+      recipeIdsForEvent.add(component.recipe_id)
+
+      for (const recipeIngredient of ingredientsByRecipe.get(component.recipe_id) ?? []) {
+        const ingredient = ingredientMap.get(recipeIngredient.ingredient_id)
+        const ingredientEntry = getRankingEntry(ingredientStats, recipeIngredient.ingredient_id, {
+          name: ingredient?.name ?? 'Unknown ingredient',
+          category: ingredient?.category ?? null,
+        })
+        ingredientEntry.useCount += 1
+        ingredientEntry.revenueCents += eventRevenue
+        ingredientEntry.eventIds.add(event.id)
+        ingredientEntry.eventCount = ingredientEntry.eventIds.size
+        ingredientEntry.lastUsedAt = maxIsoDate(ingredientEntry.lastUsedAt, eventDate)
+        ingredientIdsForEvent.add(recipeIngredient.ingredient_id)
+      }
+    }
+
+    if (eventMonth && trendMap.has(eventMonth)) {
+      const point = trendMap.get(eventMonth)!
+      point.menuUses += 1
+      point.recipeUses += recipeIdsForEvent.size
+      point.ingredientUses += ingredientIdsForEvent.size
+    }
+  }
+
+  return {
+    generatedAt: new Date().toISOString(),
+    coverage: {
+      activeMenus: activeMenus?.length ?? 0,
+      linkedEventMenus: menuStats.size,
+      linkedRecipes: recipeStats.size,
+      ingredientsInActiveRecipes: ingredientStats.size,
+      eventsWithMenus: linkedEvents.length,
+      trackedEvents: events.length,
+    },
+    topIngredients: finalizeRanking(ingredientStats, 'events'),
+    topRecipes: finalizeRanking(recipeStats, 'events'),
+    topMenus: finalizeRanking(menuStats, 'bookings'),
+    recentTrend: Array.from(trendMap.values()),
+  }
+}
+
+function buildEmptyCulinaryTrend(): CulinaryUsageTrendPoint[] {
+  return Array.from(buildCulinaryTrendMap().values())
+}
+
+function buildCulinaryTrendMap(): Map<string, CulinaryUsageTrendPoint> {
+  const now = new Date()
+  const trend = new Map<string, CulinaryUsageTrendPoint>()
+  for (let i = 11; i >= 0; i--) {
+    const period = format(subMonths(now, i), 'MMM yy')
+    trend.set(period, { period, menuUses: 0, recipeUses: 0, ingredientUses: 0 })
+  }
+  return trend
+}
+
+function getRankingEntry(
+  map: Map<string, CulinaryUsageRanking & { eventIds: Set<string> }>,
+  id: string,
+  labels: { name: string; category?: string | null }
+): CulinaryUsageRanking & { eventIds: Set<string> } {
+  const existing = map.get(id)
+  if (existing) return existing
+
+  const entry: CulinaryUsageRanking & { eventIds: Set<string> } = {
+    id,
+    name: labels.name,
+    category: labels.category ?? null,
+    useCount: 0,
+    eventCount: 0,
+    revenueCents: 0,
+    lastUsedAt: null,
+    eventIds: new Set<string>(),
+  }
+  map.set(id, entry)
+  return entry
+}
+
+function maxIsoDate(current: string | null, next: string | null): string | null {
+  if (!next) return current
+  if (!current) return next
+  return next > current ? next : current
+}
+
+function finalizeRanking(
+  map: Map<string, CulinaryUsageRanking & { eventIds: Set<string> }>,
+  detailUnit: string
+): CulinaryUsageRanking[] {
+  return Array.from(map.values())
+    .map(({ eventIds, ...entry }) => ({
+      ...entry,
+      eventCount: eventIds.size,
+      detail: `${eventIds.size} ${detailUnit}`,
+    }))
+    .sort((a, b) => b.useCount - a.useCount || b.eventCount - a.eventCount)
+    .slice(0, 12)
+}
+
+// ============================================
+// 16. TAKE A CHEF ROI STATS
 // ============================================
 
 export type TakeAChefROI = {
