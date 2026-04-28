@@ -1,7 +1,7 @@
 import { Suspense } from 'react'
 import { Bot } from '@/components/ui/icons'
 import { RemyHistoryList } from '@/components/ai/remy-history-list'
-import { requireAdmin } from '@/lib/auth/admin'
+import { requireChef } from '@/lib/auth/get-user'
 
 export const metadata = {
   title: 'Remy History',
@@ -9,7 +9,7 @@ export const metadata = {
 }
 
 export default async function RemyHistoryPage() {
-  await requireAdmin()
+  await requireChef()
 
   return (
     <div className="container max-w-4xl py-8 space-y-6">
