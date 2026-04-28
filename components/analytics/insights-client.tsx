@@ -46,6 +46,12 @@ import type {
   CulinaryUsageStats,
   CulinaryUsageTrendPoint,
 } from '@/lib/analytics/culinary-usage-types'
+import type {
+  MetricCoverageSummary,
+  MetricDefinition,
+  MetricDomain,
+  MetricRollupCadence,
+} from '@/lib/analytics/metric-registry'
 
 // ─── Types ────────────────────────────────────────────
 
@@ -66,6 +72,8 @@ interface InsightsClientProps {
   financialStats: FinancialIntelligence
   culinaryUsage: CulinaryUsageStats
   tacROI: TakeAChefROI
+  metricDefinitions: readonly MetricDefinition[]
+  metricCoverage: MetricCoverageSummary
 }
 
 // ─── Tab Config ───────────────────────────────────────
@@ -76,6 +84,7 @@ const TABS = [
   { id: 'client-base', label: 'Client Base' },
   { id: 'operations', label: 'Operations' },
   { id: 'culinary-usage', label: 'Culinary Usage' },
+  { id: 'metric-registry', label: 'Metric Registry' },
   { id: 'take-a-chef', label: 'Take a Chef ROI' },
 ] as const
 
@@ -115,6 +124,21 @@ function formatLabel(value: string | null | undefined): string {
     .filter(Boolean)
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(' ')
+}
+
+function formatRegistryToken(value: string): string {
+  return value
+    .replace(/_/g, ' ')
+    .split(' ')
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ')
+}
+
+function formatFreshness(minutes: number): string {
+  if (minutes < 60) return `${minutes}m`
+  if (minutes < 1440) return `${Math.round(minutes / 60)}h`
+  return `${Math.round(minutes / 1440)}d`
 }
 
 // ─── Stat Card ────────────────────────────────────────
@@ -732,6 +756,136 @@ function TakeAChefROITab({ roi }: { roi: TakeAChefROI }) {
   )
 }
 
+const DOMAIN_LABELS: Record<MetricDomain, string> = {
+  sales: 'Sales',
+  planning: 'Planning',
+  culinary: 'Culinary',
+  inventory: 'Inventory',
+  money: 'Money',
+  growth: 'Growth',
+  operations: 'Operations',
+  quality: 'Quality',
+}
+
+const ROLLUP_LABELS: Record<MetricRollupCadence, string> = {
+  live: 'Live',
+  hourly: 'Hourly',
+  daily: 'Daily',
+  monthly: 'Monthly',
+}
+
+function MetricRegistryTab({
+  metricDefinitions,
+  metricCoverage,
+}: Pick<InsightsClientProps, 'metricDefinitions' | 'metricCoverage'>) {
+  const sortedDefinitions = [...metricDefinitions].sort((a, b) => {
+    const domainSort = DOMAIN_LABELS[a.domain].localeCompare(DOMAIN_LABELS[b.domain])
+    return domainSort === 0 ? a.label.localeCompare(b.label) : domainSort
+  })
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard label="Tracked Metrics" value={metricCoverage.total} sub="canonical registry" />
+        <StatCard label="Domains" value={metricCoverage.domains} sub="business areas covered" />
+        <StatCard
+          label="Live or Hourly"
+          value={metricCoverage.rollupCounts.live + metricCoverage.rollupCounts.hourly}
+          sub="fresh operational signals"
+        />
+        <StatCard
+          label="Max SLA"
+          value={formatFreshness(metricCoverage.maxFreshnessSlaMinutes)}
+          sub="slowest allowed freshness"
+        />
+      </div>
+
+      <Card className="p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h3 className="font-semibold text-stone-100">Metric Truth Registry</h3>
+            <p className="text-sm text-stone-500 mt-1">
+              Canonical definitions for every analytics number exposed to the chef portal.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2 text-xs text-stone-400">
+            {Object.entries(metricCoverage.rollupCounts).map(([cadence, count]) => (
+              <span
+                key={cadence}
+                className="rounded-full border border-stone-800 bg-stone-900 px-2.5 py-1"
+              >
+                {ROLLUP_LABELS[cadence as MetricRollupCadence]}: {count}
+              </span>
+            ))}
+          </div>
+        </div>
+      </Card>
+
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+        {sortedDefinitions.map((metric) => (
+          <Card key={metric.id} className="p-4">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-xs font-medium uppercase tracking-wide text-stone-500">
+                  {DOMAIN_LABELS[metric.domain]}
+                </p>
+                <h4 className="mt-1 font-semibold text-stone-100 break-words">{metric.label}</h4>
+                <p className="mt-1 text-xs text-stone-500 break-all">{metric.id}</p>
+              </div>
+              <div className="flex shrink-0 flex-wrap justify-end gap-2 text-xs">
+                <span className="rounded-full bg-stone-800 px-2.5 py-1 text-stone-300">
+                  {ROLLUP_LABELS[metric.rollupCadence]}
+                </span>
+                <span className="rounded-full bg-stone-800 px-2.5 py-1 text-stone-300">
+                  SLA {formatFreshness(metric.freshnessSlaMinutes)}
+                </span>
+              </div>
+            </div>
+
+            <p className="mt-3 text-sm text-stone-400">{metric.description}</p>
+
+            <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+              <div>
+                <p className="text-stone-500">Value</p>
+                <p className="mt-1 font-medium text-stone-300">
+                  {formatRegistryToken(metric.valueKind)}
+                </p>
+              </div>
+              <div>
+                <p className="text-stone-500">Scope</p>
+                <p className="mt-1 font-medium text-stone-300">
+                  {formatRegistryToken(metric.tenantScope)}
+                </p>
+              </div>
+              <div>
+                <p className="text-stone-500">Owner</p>
+                <p className="mt-1 font-medium text-stone-300">
+                  {formatRegistryToken(metric.owner)}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-4 space-y-2 text-xs">
+              <div>
+                <p className="text-stone-500">Source action</p>
+                <p className="mt-1 font-mono text-stone-300 break-all">{metric.sourceAction}</p>
+              </div>
+              <div>
+                <p className="text-stone-500">Tables</p>
+                <p className="mt-1 text-stone-300 break-words">{metric.sourceTables.join(', ')}</p>
+              </div>
+              <div>
+                <p className="text-stone-500">Surfaces</p>
+                <p className="mt-1 text-stone-300 break-words">{metric.surfaces.join(', ')}</p>
+              </div>
+            </div>
+          </Card>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 // ─── Main Client Component ────────────────────────────
 
 export function InsightsClient({
@@ -751,6 +905,8 @@ export function InsightsClient({
   financialStats,
   culinaryUsage,
   tacROI,
+  metricDefinitions,
+  metricCoverage,
 }: InsightsClientProps) {
   const [activeTab, setActiveTab] = useState<TabId>('clientele')
 
@@ -805,6 +961,9 @@ export function InsightsClient({
         />
       )}
       {activeTab === 'culinary-usage' && <CulinaryUsageTab culinaryUsage={culinaryUsage} />}
+      {activeTab === 'metric-registry' && (
+        <MetricRegistryTab metricDefinitions={metricDefinitions} metricCoverage={metricCoverage} />
+      )}
       {activeTab === 'take-a-chef' && <TakeAChefROITab roi={tacROI} />}
     </div>
   )

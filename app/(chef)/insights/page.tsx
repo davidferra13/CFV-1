@@ -21,6 +21,7 @@ import {
   getCulinaryUsageStats,
   getTakeAChefROI,
 } from '@/lib/analytics/insights-actions'
+import { METRIC_DEFINITIONS, getMetricCoverageSummary } from '@/lib/analytics/metric-registry'
 import dynamic from 'next/dynamic'
 
 const InsightsClient = dynamic(
@@ -75,6 +76,7 @@ export default async function InsightsPage() {
     getCulinaryUsageStats(),
     getTakeAChefROI(),
   ])
+  const metricCoverage = getMetricCoverageSummary()
 
   return (
     <div className="space-y-6">
@@ -102,6 +104,8 @@ export default async function InsightsPage() {
         financialStats={financialStats}
         culinaryUsage={culinaryUsage}
         tacROI={tacROI}
+        metricDefinitions={METRIC_DEFINITIONS}
+        metricCoverage={metricCoverage}
       />
     </div>
   )

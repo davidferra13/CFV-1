@@ -495,6 +495,7 @@ If you have employees: Financials > Payroll manages wages, Form 941 (quarterly p
 - Client base patterns such as repeat rate, lifetime value tiers, and acquisition sources
 - Operations patterns such as time per phase, event value by style, forgotten items, and AAR trends
 - Culinary Usage rankings for most-used ingredients, most-used recipes, most-picked menus, and 12-month usage signal
+- Metric Registry coverage for every canonical analytics metric, including source tables, source action, freshness SLA, tenant scope, and where the metric appears
 
 Culinary Usage only counts events with linked menus, linked dishes, recipe components, and recipe ingredients. Events without linked menus are included in coverage, but not used for ingredient or recipe rankings.
 

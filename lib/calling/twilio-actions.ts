@@ -137,6 +137,37 @@ async function hasPendingAiCall(
   }
 }
 
+async function checkAiCallOptOut(
+  db: any,
+  chefId: string,
+  contactPhone: string
+): Promise<{ blocked: boolean; error?: string }> {
+  try {
+    const { data, error } = await db
+      .from('ai_calls')
+      .select('id')
+      .eq('chef_id', chefId)
+      .eq('contact_phone', normalizePhone(contactPhone))
+      .contains('action_log', [{ action: 'ai_call_opt_out_requested' }])
+      .limit(1)
+      .maybeSingle()
+
+    if (error) throw error
+    if (!data) return { blocked: false }
+
+    return {
+      blocked: true,
+      error: 'This contact asked not to receive AI assistant calls. Follow up manually.',
+    }
+  } catch (err) {
+    console.error('[calling] ai-call opt-out check failed - blocking call:', err)
+    return {
+      blocked: true,
+      error: 'Calling unavailable because the AI call opt-out check failed. Please try again.',
+    }
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Gate check
 // ---------------------------------------------------------------------------
@@ -331,6 +362,11 @@ export async function initiateSupplierCall(
     return { success: false, error: 'Vendor phone number is not a valid format.' }
   }
 
+  const optOut = await checkAiCallOptOut(db, user.tenantId!, vendorPhoneNormalized)
+  if (optOut.blocked) {
+    return { success: false, error: optOut.error }
+  }
+
   const eligibility = await checkCallingEligibility(db, user.tenantId!)
   if (!eligibility.allowed) {
     return { success: false, error: eligibility.reason }
@@ -515,6 +551,11 @@ export async function initiateAdHocCall(
     }
   }
 
+  const optOut = await checkAiCallOptOut(db, user.tenantId!, vendorPhoneNormalized)
+  if (optOut.blocked) {
+    return { success: false, error: optOut.error }
+  }
+
   const alreadyCalling = await hasPendingCall(
     db,
     user.tenantId!,
@@ -696,6 +737,9 @@ export async function initiateDeliveryCoordinationCall(params: {
     return { success: false, error: 'Vendor phone number is not a valid format.' }
   }
 
+  const optOut = await checkAiCallOptOut(db, user.tenantId!, vendorPhoneNormalized)
+  if (optOut.blocked) return { success: false, error: optOut.error }
+
   if (await hasPendingAiCall(db, user.tenantId!, vendorPhoneNormalized, 'vendor_delivery')) {
     return { success: false, error: 'A delivery call to this vendor is already in progress.' }
   }
@@ -841,6 +885,9 @@ export async function initiateVenueConfirmationCall(params: {
   if (!isValidE164(venuePhoneNormalized)) {
     return { success: false, error: 'Venue phone number is not a valid format.' }
   }
+
+  const optOut = await checkAiCallOptOut(db, user.tenantId!, venuePhoneNormalized)
+  if (optOut.blocked) return { success: false, error: optOut.error }
 
   if (await hasPendingAiCall(db, user.tenantId!, venuePhoneNormalized, 'venue_confirmation')) {
     return {

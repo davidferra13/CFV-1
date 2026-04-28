@@ -79,6 +79,34 @@ const NO_WORDS = [
   'not in',
   'none left',
 ]
+const AI_CALL_OPT_OUT_ACTION = 'ai_call_opt_out_requested'
+const AI_CALL_OPT_OUT_PHRASES = [
+  'stop calling',
+  'do not call',
+  "don't call",
+  'dont call',
+  'take me off',
+  'take us off',
+  'remove me',
+  'remove us',
+  'no ai calls',
+  'no automated calls',
+]
+
+function hasAiCallOptOutRequest(speech: string | null): boolean {
+  if (!speech) return false
+  const lower = speech.toLowerCase()
+  return AI_CALL_OPT_OUT_PHRASES.some((phrase) => lower.includes(phrase))
+}
+
+function isOutboundCallRole(role: string): boolean {
+  return [
+    'vendor_availability',
+    'vendor_delivery',
+    'venue_confirmation',
+    'equipment_rental',
+  ].includes(role)
+}
 
 function resolveAvailability(digits: string | null, speech: string | null): 'yes' | 'no' | null {
   if (digits === '1') return 'yes'
@@ -243,6 +271,139 @@ async function logTranscript(
   }
 }
 
+async function handleAiCallOptOut(params: {
+  db: any
+  callId: string | null
+  aiCallId: string | null
+  role: string
+  speech: string
+  confidence: number | null
+}): Promise<NextResponse> {
+  const { db, callId, aiCallId, role, speech, confidence } = params
+  await logTranscript(db, aiCallId, 1, 'caller', speech, 'speech', confidence)
+
+  let aiCall: any = null
+  if (aiCallId) {
+    try {
+      const { data } = await db
+        .from('ai_calls')
+        .select(
+          'chef_id, contact_phone, contact_name, subject, action_log, extracted_data, full_transcript'
+        )
+        .eq('id', aiCallId)
+        .single()
+      aiCall = data
+
+      const existingLog = Array.isArray(aiCall?.action_log) ? aiCall.action_log : []
+      const existingData =
+        aiCall?.extracted_data && typeof aiCall.extracted_data === 'object'
+          ? aiCall.extracted_data
+          : {}
+      const existingTranscript =
+        typeof aiCall?.full_transcript === 'string' && aiCall.full_transcript.trim()
+          ? `${aiCall.full_transcript}\n${speech}`
+          : speech
+
+      await db
+        .from('ai_calls')
+        .update({
+          status: 'completed',
+          result: null,
+          full_transcript: existingTranscript,
+          extracted_data: {
+            ...existingData,
+            ai_call_opt_out: {
+              requested: true,
+              evidence: speech,
+              role,
+            },
+            ...affectiveAnalysisData({
+              transcript: speech,
+              role,
+              direction: 'outbound',
+              confidence,
+            }),
+          },
+          action_log: [
+            ...existingLog,
+            {
+              action: AI_CALL_OPT_OUT_ACTION,
+              at: new Date().toISOString(),
+              role,
+              evidence: speech.slice(0, 500),
+            },
+          ],
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', aiCallId)
+    } catch (err) {
+      console.error('[calling/gather] ai-call opt-out write failed:', err)
+    }
+  }
+
+  let supplierCall: any = null
+  if (callId) {
+    try {
+      const { data } = await db
+        .from('supplier_calls')
+        .update({
+          status: 'completed',
+          result: null,
+          speech_transcript: speech,
+          error_message: 'Contact requested no AI assistant calls',
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', callId)
+        .select('chef_id, vendor_id, vendor_name, ingredient_name')
+        .single()
+      supplierCall = data
+    } catch (err) {
+      console.error('[calling/gather] supplier_calls opt-out write failed:', err)
+    }
+  }
+
+  if (supplierCall) {
+    try {
+      await broadcast(`chef-${supplierCall.chef_id}`, 'supplier_call_result', {
+        callId,
+        aiCallId,
+        vendorId: supplierCall.vendor_id,
+        vendorName: supplierCall.vendor_name,
+        ingredientName: supplierCall.ingredient_name,
+        result: null,
+        status: 'completed',
+        priceQuoted: null,
+        quantityAvailable: null,
+      })
+    } catch (err) {
+      console.error('[calling/gather] supplier opt-out broadcast failed:', err)
+    }
+  } else if (aiCall) {
+    try {
+      await broadcast(`chef-${aiCall.chef_id}`, 'ai_call_result', {
+        aiCallId,
+        role,
+        contactName: aiCall.contact_name,
+        subject: aiCall.subject,
+        status: 'completed',
+        extractedData: {
+          ai_call_opt_out: {
+            requested: true,
+            evidence: speech,
+            role,
+          },
+        },
+      })
+    } catch (err) {
+      console.error('[calling/gather] ai-call opt-out broadcast failed:', err)
+    }
+  }
+
+  return closingTwiml(
+    "Understood. We'll stop AI assistant calls to this number. Thank you for letting me know."
+  )
+}
+
 function affectiveAnalysisData(params: {
   transcript: string | null
   role: string
@@ -285,6 +446,10 @@ export async function POST(req: NextRequest) {
   const retry = parseInt(searchParams.get('retry') ?? '0', 10)
 
   const db: any = createAdminClient()
+
+  if (speech && isOutboundCallRole(role) && hasAiCallOptOutRequest(speech)) {
+    return handleAiCallOptOut({ db, callId, aiCallId, role, speech, confidence })
+  }
 
   if (role === 'vendor_delivery')
     return handleVendorDelivery(db, aiCallId, step, speech, digits, confidence)

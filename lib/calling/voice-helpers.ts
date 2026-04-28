@@ -68,6 +68,17 @@ export function sayElement(content: string | SpeakPart[], voice = DEFAULT_VOICE)
   return `<Say voice="${voice}">${inner}</Say>`
 }
 
+function outboundTrustHandshakeParts(businessName: string, purposeParts: SpeakPart[]): SpeakPart[] {
+  return [
+    "Hi, I'm an AI assistant calling on behalf of ",
+    { type: 'emphasis', text: businessName },
+    '. This call may be recorded. ',
+    ...purposeParts,
+    ' If you would prefer not to receive AI assistant calls, just say stop calling at any time. ',
+    { type: 'break', ms: 400 },
+  ]
+}
+
 // ---------------------------------------------------------------------------
 // Closing TwiML - say a goodbye and hang up
 // ---------------------------------------------------------------------------
@@ -93,14 +104,11 @@ export function buildVendorAvailabilityTwiml(
 ): string {
   gatherActionUrl = gatherActionUrl.replace(/&/g, '&amp;')
   const greeting = speak([
-    'Hey there, ',
-    { type: 'break', ms: 200 },
-    "hope I'm not catching you at a bad time. ",
-    { type: 'break', ms: 400 },
-    "I'm calling on behalf of ",
-    { type: 'emphasis', text: businessName },
-    '. ',
-    { type: 'break', ms: 300 },
+    ...outboundTrustHandshakeParts(businessName, [
+      "I'm calling to check availability and pricing for ",
+      { type: 'emphasis', text: ingredientName },
+      '. ',
+    ]),
     'Quick question for you. ',
     { type: 'break', ms: 500 },
     'Do you happen to have ',
@@ -165,14 +173,7 @@ export function buildVendorDeliveryTwiml(
 ): string {
   gatherActionUrl = gatherActionUrl.replace(/&/g, '&amp;')
   const greeting = speak([
-    'Hi there, ',
-    { type: 'break', ms: 200 },
-    "hope you're having a good day. ",
-    { type: 'break', ms: 400 },
-    "I'm coordinating a delivery for ",
-    { type: 'emphasis', text: businessName },
-    '. ',
-    { type: 'break', ms: 400 },
+    ...outboundTrustHandshakeParts(businessName, ["I'm calling to confirm a vendor delivery. "]),
     "We've got an order for ",
     { type: 'emphasis', text: itemDescription },
     ' scheduled for ',
@@ -230,12 +231,7 @@ export function buildVenueConfirmationTwiml(
 ): string {
   gatherActionUrl = gatherActionUrl.replace(/&/g, '&amp;')
   const greeting = speak([
-    'Hi, ',
-    { type: 'break', ms: 200 },
-    "I'm reaching out on behalf of ",
-    { type: 'emphasis', text: businessName },
-    '. ',
-    { type: 'break', ms: 400 },
+    ...outboundTrustHandshakeParts(businessName, ["I'm calling to confirm event logistics. "]),
     'We have a private event at ',
     { type: 'emphasis', text: venueName },
     ' on ',
