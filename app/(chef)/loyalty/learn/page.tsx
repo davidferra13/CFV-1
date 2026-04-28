@@ -5,12 +5,23 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { LoyaltyGuideContent } from './loyalty-guide-content'
+import { getLoyaltyFeedbackEmotionItems } from '@/lib/loyalty/feedback-emotion-actions'
 
 export const metadata: Metadata = {
   title: 'Loyalty Program Guide',
 }
 
-export default function LoyaltyLearnPage() {
+export default async function LoyaltyLearnPage() {
+  let feedbackItems: Awaited<ReturnType<typeof getLoyaltyFeedbackEmotionItems>> = []
+  let feedbackError: string | null = null
+
+  try {
+    feedbackItems = await getLoyaltyFeedbackEmotionItems()
+  } catch (err) {
+    console.error('[LoyaltyLearnPage] Failed to load feedback emotion items:', err)
+    feedbackError = 'Could not load recent client feedback.'
+  }
+
   return (
     <div className="px-4 sm:px-6 py-8 max-w-3xl mx-auto">
       <Link
@@ -28,7 +39,7 @@ export default function LoyaltyLearnPage() {
         </p>
       </div>
 
-      <LoyaltyGuideContent />
+      <LoyaltyGuideContent feedbackItems={feedbackItems} feedbackError={feedbackError} />
 
       <p className="text-center text-xs text-stone-600 mt-8 pb-8">
         This guide is based on research across 15+ loyalty programs, behavioral science studies, and

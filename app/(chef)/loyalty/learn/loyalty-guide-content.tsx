@@ -13,8 +13,96 @@ import {
   GuideSubHeader,
   GuideRankList,
 } from '@/components/loyalty/guide-sections'
+import { detectEmotion } from '@/lib/ai/remy-emotion'
+import type { RemyEmotion } from '@/lib/ai/remy-visemes'
+import type { LoyaltyFeedbackEmotionItem } from '@/lib/loyalty/feedback-emotion-types'
 
-export function LoyaltyGuideContent() {
+const EMOTION_STYLES: Record<RemyEmotion, string> = {
+  neutral: 'border-stone-700 bg-stone-800/50 text-stone-300',
+  happy: 'border-emerald-800/60 bg-emerald-950/30 text-emerald-300',
+  surprised: 'border-brand-800/60 bg-brand-950/30 text-brand-300',
+  sad: 'border-sky-800/60 bg-sky-950/30 text-sky-300',
+  angry: 'border-red-800/60 bg-red-950/30 text-red-300',
+}
+
+const SOURCE_LABELS: Record<LoyaltyFeedbackEmotionItem['source'], string> = {
+  client_review: 'Client review',
+  guest_feedback: 'Guest feedback',
+  logged_feedback: 'Logged feedback',
+}
+
+function FeedbackEmotionPanel({
+  items,
+  error,
+}: {
+  items: LoyaltyFeedbackEmotionItem[]
+  error: string | null
+}) {
+  return (
+    <div className="rounded-lg border border-stone-700/30 bg-stone-900/40 p-4">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wider text-stone-500">
+            Recent feedback resonance
+          </p>
+          <p className="mt-1 text-sm text-stone-400">
+            Deterministic emotion labels from real reviews and feedback already on file.
+          </p>
+        </div>
+        <span className="rounded-full border border-stone-700 px-2.5 py-1 text-xs text-stone-400">
+          {items.length} item{items.length === 1 ? '' : 's'}
+        </span>
+      </div>
+
+      {error ? (
+        <div className="mt-3 rounded-lg border border-amber-900/40 bg-amber-950/20 px-3 py-2 text-sm text-amber-300">
+          {error}
+        </div>
+      ) : items.length === 0 ? (
+        <div className="mt-3 rounded-lg border border-stone-800 bg-stone-950/40 px-3 py-2 text-sm text-stone-400">
+          No written client or guest feedback is available yet. Once reviews, guest feedback, or
+          logged testimonials exist, emotion labels will appear here.
+        </div>
+      ) : (
+        <div className="mt-4 space-y-3">
+          {items.slice(0, 5).map((item) => {
+            const emotion = detectEmotion(item.text)
+            return (
+              <div key={item.id} className="rounded-lg border border-stone-800 bg-stone-950/40 p-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span
+                    className={`rounded-full border px-2 py-0.5 text-xs capitalize ${EMOTION_STYLES[emotion]}`}
+                  >
+                    {emotion}
+                  </span>
+                  <span className="text-xs text-stone-500">{SOURCE_LABELS[item.source]}</span>
+                  {item.rating ? (
+                    <span className="text-xs text-stone-500">{item.rating}/5</span>
+                  ) : null}
+                  {item.eventLabel ? (
+                    <span className="text-xs text-stone-600">{item.eventLabel}</span>
+                  ) : null}
+                </div>
+                <p className="mt-2 text-sm font-medium text-stone-200">{item.reviewerName}</p>
+                <p className="mt-1 line-clamp-3 text-sm leading-relaxed text-stone-400">
+                  {item.text}
+                </p>
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
+export function LoyaltyGuideContent({
+  feedbackItems,
+  feedbackError,
+}: {
+  feedbackItems: LoyaltyFeedbackEmotionItem[]
+  feedbackError: string | null
+}) {
   return (
     <div className="space-y-3">
       {/* ─── 1. What Is a Loyalty Program? ─── */}
@@ -340,6 +428,8 @@ export function LoyaltyGuideContent() {
           ever will. Your clients can afford your services - what they value is being
           <GuideStrong> known, recognized, and given something special.</GuideStrong>
         </GuideCallout>
+
+        <FeedbackEmotionPanel items={feedbackItems} error={feedbackError} />
       </GuideSection>
 
       {/* ─── 7. Rules of Thumb ─── */}
