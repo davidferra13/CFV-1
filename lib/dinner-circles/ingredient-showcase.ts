@@ -1,10 +1,8 @@
+'use server'
+
 import { createServerClient } from '@/lib/db/server'
 import type { DinnerCircleSourceLink } from '@/lib/dinner-circles/types'
-
-export interface IngredientShowcaseResult {
-  ingredientLines: string[]
-  sourceLinks: DinnerCircleSourceLink[]
-}
+import type { IngredientShowcaseResult } from '@/lib/dinner-circles/ingredient-showcase-types'
 
 /**
  * Build ingredient showcase data for an event from the database.

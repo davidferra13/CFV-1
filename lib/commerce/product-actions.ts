@@ -308,6 +308,7 @@ export async function toggleProduct86(productId: string, is86d: boolean) {
 
 export async function listProducts(filters?: {
   category?: string
+  sku?: string
   activeOnly?: boolean
   search?: string
   limit?: number
@@ -329,6 +330,9 @@ export async function listProducts(filters?: {
   }
   if (filters?.category) {
     query = query.eq('category', filters.category)
+  }
+  if (filters?.sku?.trim()) {
+    query = query.eq('sku', filters.sku.trim())
   }
   if (filters?.search) {
     query = query.ilike('name', `%${filters.search.replace(/[%_,.()"'\\]/g, '')}%`)

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
+import { runMonitoredCronJob } from '@/lib/cron/monitor'
 import { createServerClient } from '@/lib/db/server'
 import { ensureCurrentEventServiceSimulationForTenant } from '@/lib/service-simulation/state'
 
@@ -9,6 +10,16 @@ async function handleRequest(request: NextRequest) {
   const authError = verifyCronAuth(request.headers.get('authorization'))
   if (authError) return authError
 
+  try {
+    const result = await runMonitoredCronJob('service-readiness', refreshServiceReadiness)
+    return NextResponse.json(result)
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Unknown error'
+    return NextResponse.json({ error: message }, { status: 500 })
+  }
+}
+
+async function refreshServiceReadiness() {
   const db: any = createServerClient({ admin: true })
   const today = new Date()
   const end = new Date(today)
@@ -25,7 +36,7 @@ async function handleRequest(request: NextRequest) {
     .limit(250)
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    throw new Error(error.message)
   }
 
   const refreshed: string[] = []
@@ -43,13 +54,13 @@ async function handleRequest(request: NextRequest) {
     }
   }
 
-  return NextResponse.json({
+  return {
     success: failed.length === 0,
     fromDate,
     toDate,
     refreshed: refreshed.length,
     failed,
-  })
+  }
 }
 
 export async function GET(request: NextRequest) {

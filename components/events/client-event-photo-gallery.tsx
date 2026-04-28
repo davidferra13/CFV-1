@@ -2,7 +2,7 @@
 
 // ClientEventPhotoGallery - Read-only photo gallery for the client event portal.
 // Shows dish/dinner photos uploaded by the chef.
-// Returns null if there are no photos - the section disappears entirely.
+// Shows an empty state if there are no client-visible photos yet.
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
@@ -31,7 +31,26 @@ export function ClientEventPhotoGallery({ photos }: Props) {
     return () => window.removeEventListener('keydown', onKey)
   }, [lightboxIndex, photos.length])
 
-  if (photos.length === 0) return null
+  if (photos.length === 0) {
+    return (
+      <Card className="mb-6">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>Dinner Photos</CardTitle>
+            <span className="text-sm text-stone-500">0 photos</span>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="rounded-lg border border-dashed border-stone-700 bg-stone-900/30 px-4 py-6">
+            <p className="text-sm font-medium text-stone-200">No dinner photos shared yet.</p>
+            <p className="mt-1 text-sm text-stone-400">
+              Photos your chef shares for this event will appear here.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
 
   const openLightbox = (index: number) => setLightboxIndex(index)
   const closeLightbox = () => setLightboxIndex(null)

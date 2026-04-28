@@ -6,6 +6,8 @@ import type {
   DinnerCircleConfig,
   DinnerCircleIngredientStatus,
   DinnerCircleSnapshot,
+  DinnerCircleSourcingEvent,
+  DinnerCircleSubstitutionProposal,
   DinnerCircleTheme,
   PopUpCloseoutItem,
   PopUpConfig,
@@ -35,6 +37,12 @@ const VALID_INGREDIENT_STATUSES = new Set<DinnerCircleIngredientStatus>([
   'pending',
   'substitution_pending',
   'unavailable',
+])
+
+const VALID_SUBSTITUTION_PROPOSAL_STATUSES = new Set<DinnerCircleSubstitutionProposal['status']>([
+  'proposed',
+  'acknowledged',
+  'flagged',
 ])
 
 function normalizeIngredientStatus(value: unknown): DinnerCircleIngredientStatus {
@@ -124,6 +132,65 @@ function optionalPercent(value: unknown): number | null {
   if (value === null || value === undefined || value === '') return null
   const parsed = Number(value)
   return Number.isFinite(parsed) && parsed >= 0 ? Math.min(100, parsed) : null
+}
+
+function optionalCostDeltaCents(value: unknown): number | null {
+  if (value === null || value === undefined || value === '') return null
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? Math.round(parsed) : null
+}
+
+function optionalPriceFlexibilityPercent(value: unknown): number | undefined {
+  if (value === null || value === undefined || value === '') return undefined
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? Math.max(0, Math.min(50, parsed)) : undefined
+}
+
+function normalizeSourcingEvent(value: unknown, index: number): DinnerCircleSourcingEvent {
+  const item =
+    value && typeof value === 'object'
+      ? (value as DinnerCircleSourcingEvent)
+      : ({} as DinnerCircleSourcingEvent)
+  const ingredient = optionalString(item.ingredient) ?? 'Ingredient'
+  const loggedAt = optionalString(item.loggedAt) ?? ''
+
+  return {
+    id: optionalString(item.id) ?? `${ingredient}-${loggedAt}-${index}`,
+    ingredient,
+    previousStatus: normalizeIngredientStatus(item.previousStatus),
+    newStatus: normalizeIngredientStatus(item.newStatus),
+    reason: optionalString(item.reason) ?? '',
+    sourceName: optionalString(item.sourceName),
+    loggedAt,
+  }
+}
+
+function normalizeSubstitutionProposal(
+  value: unknown,
+  index: number
+): DinnerCircleSubstitutionProposal {
+  const item =
+    value && typeof value === 'object'
+      ? (value as DinnerCircleSubstitutionProposal)
+      : ({} as DinnerCircleSubstitutionProposal)
+  const originalIngredient = optionalString(item.originalIngredient) ?? 'Ingredient'
+  const proposedSubstitute = optionalString(item.proposedSubstitute) ?? 'Substitute'
+  const proposedAt = optionalString(item.proposedAt) ?? ''
+  const status = VALID_SUBSTITUTION_PROPOSAL_STATUSES.has(item.status) ? item.status : 'proposed'
+
+  return {
+    id:
+      optionalString(item.id) ??
+      `${originalIngredient}-${proposedSubstitute}-${proposedAt}-${index}`,
+    originalIngredient,
+    proposedSubstitute,
+    reason: optionalString(item.reason) ?? '',
+    costDeltaCents: optionalCostDeltaCents(item.costDeltaCents),
+    status,
+    proposedAt,
+    respondedAt: optionalString(item.respondedAt),
+    clientNote: optionalString(item.clientNote),
+  }
 }
 
 function normalizePopUpMenuItem(value: unknown): PopUpMenuItemPlan {
@@ -306,6 +373,15 @@ export function normalizeDinnerCircleConfig(value: unknown): DinnerCircleConfig 
       substitutionValidationNotes: input.adaptive?.substitutionValidationNotes ?? '',
       finalValidationLocked: input.adaptive?.finalValidationLocked ?? false,
       finalValidationNotes: input.adaptive?.finalValidationNotes ?? '',
+      sourcingLog: Array.isArray(input.adaptive?.sourcingLog)
+        ? input.adaptive.sourcingLog.slice(-100).map(normalizeSourcingEvent)
+        : [],
+      substitutionProposals: Array.isArray(input.adaptive?.substitutionProposals)
+        ? input.adaptive.substitutionProposals.slice(-50).map(normalizeSubstitutionProposal)
+        : [],
+      priceFlexibilityPercent: optionalPriceFlexibilityPercent(
+        input.adaptive?.priceFlexibilityPercent
+      ),
     },
     popUp: normalizePopUpConfig(input.popUp),
     theme: {

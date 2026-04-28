@@ -1,5 +1,5 @@
 // API v2: Commerce Products - List & Create
-// GET  /api/v2/commerce/products?category=...&activeOnly=true&search=...&limit=50&offset=0
+// GET  /api/v2/commerce/products?category=...&sku=...&activeOnly=true&search=...&limit=50&offset=0
 // POST /api/v2/commerce/products
 
 import { NextRequest } from 'next/server'
@@ -41,6 +41,7 @@ export const GET = withApiAuth(
   async (req, _ctx) => {
     const url = new URL(req.url)
     const category = url.searchParams.get('category') ?? undefined
+    const sku = url.searchParams.get('sku')?.trim() || undefined
     const activeOnly = url.searchParams.get('activeOnly') === 'true' ? true : undefined
     const search = url.searchParams.get('search') ?? undefined
     const limit = url.searchParams.get('limit')
@@ -51,7 +52,7 @@ export const GET = withApiAuth(
       : undefined
 
     try {
-      const data = await listProducts({ category, activeOnly, search, limit, offset })
+      const data = await listProducts({ category, sku, activeOnly, search, limit, offset })
       return apiSuccess(data)
     } catch (err: any) {
       return apiError('list_failed', err.message ?? 'Failed to list products', 500)
