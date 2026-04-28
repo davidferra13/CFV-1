@@ -186,6 +186,8 @@ import {
   EventReadinessEnginePanel,
   EventReadinessBadge,
 } from '@/components/events/event-readiness-engine-panel'
+import { BehindTheScenesPanel } from '@/components/events/behind-the-scenes-panel'
+import { loadBehindTheScenes } from '@/lib/private-context/loaders'
 
 async function EventCompletionSection({ eventId }: { eventId: string }) {
   const result = await getCompletionForEntity('event', eventId)
@@ -1003,6 +1005,14 @@ export default async function EventDetailPage({
     }
   }
 
+  // Behind the Scenes: private notes, secrets, comp items
+  const behindTheScenes = await loadBehindTheScenes(params.id).catch(() => ({
+    privateContexts: [],
+    secrets: [],
+    compItems: [],
+    compSuggestions: [],
+  }))
+
   // Compute dietary complexity from guest data
   const guestProfiles = (guestList as any[]).map((g: any) => ({
     dietaryRestrictions: g.dietary_restrictions ?? [],
@@ -1557,6 +1567,15 @@ export default async function EventDetailPage({
         defaultCollapsed={true}
       />
 
+      {/* Behind the Scenes: private notes, secrets, comp items (chef-only) */}
+      <BehindTheScenesPanel
+        eventId={event.id}
+        privateContexts={behindTheScenes.privateContexts}
+        secrets={behindTheScenes.secrets}
+        compItems={behindTheScenes.compItems}
+        compSuggestions={behindTheScenes.compSuggestions}
+      />
+
       {/* ============================================ */}
       {/* MOBILE TAB NAV - hidden on md+               */}
       {/* ============================================ */}
@@ -1716,6 +1735,7 @@ export default async function EventDetailPage({
         hasClosureStatus={!!closureStatus}
         transitions={transitions as any[]}
         timelineEntries={timelineEntries}
+        compItems={behindTheScenes.compItems}
       />
     </div>
   )

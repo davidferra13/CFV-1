@@ -205,6 +205,31 @@ export function scanGraph(db: Database.Database): ScanResult {
     }
   }
 
+  // ── 7. Complimentary opportunities (clients with strong relations but no comp signals) ──
+  // Detect clients who book frequently but have never received comp items
+  for (const client of clients) {
+    const bookingRelations = relations.filter(
+      r => (r.from_entity === client.id || r.to_entity === client.id) && r.type === 'books'
+    )
+    const hasCompSignal = relations.some(
+      r => (r.from_entity === client.id || r.to_entity === client.id) &&
+        (r.type as string) === 'comped_for'
+    )
+    // Strong repeat client (3+ bookings, strength > 0.5) without comp history
+    if (bookingRelations.length >= 3 && !hasCompSignal) {
+      const avgBookingStrength = bookingRelations.reduce((s, r) => s + r.strength, 0) / bookingRelations.length
+      if (avgBookingStrength > 0.5) {
+        insights.push({
+          type: 'opportunity',
+          severity: 'medium',
+          title: `Comp opportunity: ${client.label}`,
+          detail: `Loyal client with ${bookingRelations.length} bookings (avg strength ${(avgBookingStrength * 100).toFixed(0)}%) has never received a complimentary item. Strategic generosity could deepen this relationship.`,
+          entityIds: [client.id],
+        })
+      }
+    }
+  }
+
   // ── Stats ──────────────────────────────────────────────────────────────
   const avgStrength =
     relations.length > 0 ? relations.reduce((sum, r) => sum + r.strength, 0) / relations.length : 0

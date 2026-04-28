@@ -11,30 +11,35 @@
  * Schedule: Nightly at 11:30pm (after Pi's existing sync at 11pm)
  */
 
-import { execSync } from 'child_process';
 import postgres from 'postgres';
 
-const PI_HOST = '10.0.0.177';
-const PI_USER = 'davidferra';
-const PI_SCRIPT = '~/openclaw-prices/synthesizers/sync-synthesis-to-chefflow.mjs';
-
+const PI_API = process.env.PI_SYNTHESIS_URL || 'http://10.0.0.177:8090';
 const DATABASE_URL = process.env.DATABASE_URL || 'postgres://localhost:5432/chefflow';
 
 async function fetchFromPi(table = 'all') {
   console.log(`\n--- Fetching synthesis data from Pi (${table}) ---`);
 
   try {
-    const cmd = `ssh ${PI_USER}@${PI_HOST} "cd ~/openclaw-prices && node synthesizers/sync-synthesis-to-chefflow.mjs ${table}"`;
-    const output = execSync(cmd, {
-      timeout: 120000, // 2 min
-      encoding: 'utf-8',
-      maxBuffer: 50 * 1024 * 1024, // 50MB
-    });
+    const tables = table === 'all' ? 'all' : table;
+    const url = `${PI_API}/api/synthesis/export?tables=${tables}`;
+    const resp = await fetch(url, { signal: AbortSignal.timeout(120000) });
 
-    return JSON.parse(output);
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
+    return await resp.json();
   } catch (err) {
-    console.error(`  Failed to fetch from Pi: ${err.message}`);
-    return null;
+    console.error(`  Failed to fetch from Pi API: ${err.message}`);
+    console.log('  Falling back to SSH...');
+
+    // Fallback to SSH if API unavailable
+    try {
+      const { execSync } = await import('child_process');
+      const cmd = `ssh davidferra@10.0.0.177 "cd ~/openclaw-prices && node synthesizers/sync-synthesis-to-chefflow.mjs ${table}"`;
+      const output = execSync(cmd, { timeout: 120000, encoding: 'utf-8', maxBuffer: 50 * 1024 * 1024 });
+      return JSON.parse(output);
+    } catch (sshErr) {
+      console.error(`  SSH fallback also failed: ${sshErr.message}`);
+      return null;
+    }
   }
 }
 

@@ -79,6 +79,8 @@ import { PetManager } from '@/components/clients/pet-manager'
 import { SecurityAccessPanel } from '@/components/clients/security-access-panel'
 import { ServiceDefaultsPanel } from '@/components/clients/service-defaults-panel'
 import { BusinessIntelPanel } from '@/components/clients/business-intel-panel'
+import { PrivateContextPanel } from '@/components/events/private-context-panel'
+import { loadEntityPrivateContexts } from '@/lib/private-context/loaders'
 import { ClientPhotoGallery } from '@/components/clients/client-photo-gallery'
 import { getClientPhotos } from '@/lib/clients/photo-actions'
 import { computeEngagementScore } from '@/lib/activity/engagement'
@@ -171,6 +173,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
     culinaryGuidance,
     clientOpsSnapshotState,
     householdData,
+    clientPrivateContexts,
   ] = await Promise.all([
     getClientWithStats(params.id).catch(() => null),
     getMessageThread('client', params.id).catch(() => []),
@@ -220,6 +223,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
           error instanceof Error ? error.message : 'Could not load the shared client ops snapshot.',
       })),
     getHouseholdForClient(params.id).catch(() => null),
+    loadEntityPrivateContexts('client', params.id).catch(() => []),
   ])
 
   const engagementScore = computeEngagementScore(clientPortalActivity as any[])
@@ -1211,6 +1215,13 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
         paymentBehavior={(client as any).payment_behavior ?? null}
         tippingPattern={(client as any).tipping_pattern ?? null}
         farewellStyle={(client as any).farewell_style ?? null}
+      />
+
+      {/* Private Notes (chef-only, never visible to clients) */}
+      <PrivateContextPanel
+        entityType="client"
+        entityId={params.id}
+        contexts={clientPrivateContexts as any[]}
       />
 
       {/* Unified Client Timeline */}

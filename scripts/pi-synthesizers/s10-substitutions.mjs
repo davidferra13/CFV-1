@@ -150,12 +150,21 @@ async function main() {
 
   let totalSubs = 0;
 
+  const MAX_SUBS_PER_INGREDIENT = 5;
+  const MAX_GROUP_SIZE = 200; // skip enormous groups (likely bad categorization)
+
   for (const [group, items] of groupIndex) {
     if (items.length < 2) continue;
+    if (items.length > MAX_GROUP_SIZE) {
+      console.log(`  Skipping group "${group}" (${items.length} items, too large)`);
+      continue;
+    }
     items.sort((a, b) => a.avg_price - b.avg_price);
 
     for (let i = 0; i < items.length; i++) {
-      for (let j = 0; j < items.length; j++) {
+      // For each ingredient, pick top N cheapest alternatives (not itself)
+      let subsForThis = 0;
+      for (let j = 0; j < items.length && subsForThis < MAX_SUBS_PER_INGREDIENT; j++) {
         if (i === j) continue;
 
         const original = items[i];
@@ -180,6 +189,9 @@ async function main() {
         else if (priceDelta > 10) reason += `, ${Math.round(priceDelta)}% more`;
         if (subSeason?.status === 'peak_season') reason += ', in season';
 
+        // Only keep meaningful substitutions (confidence >= 0.5)
+        if (confidence < 0.5) continue;
+
         try {
           insert.run(original.id, original.name, substitute.id, substitute.name,
             group, priceDelta, seasonalMatch, Math.round(confidence * 100) / 100, reason);
@@ -187,6 +199,7 @@ async function main() {
           if (isBusy(err)) { await sleep(1000); try { insert.run(original.id, original.name, substitute.id, substitute.name, group, priceDelta, seasonalMatch, Math.round(confidence * 100) / 100, reason); } catch (e) { /* skip */ } }
         }
         totalSubs++;
+        subsForThis++;
       }
     }
   }

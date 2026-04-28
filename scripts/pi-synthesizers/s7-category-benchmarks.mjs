@@ -53,7 +53,15 @@ async function main() {
   console.log('\n=== S7: Category Cost Benchmarks ===');
 
   // Get food categories with prices
-  const categories = db.prepare(`
+  // Categories to exclude (source names, non-food, metadata)
+  const EXCLUDED_CATEGORIES = new Set([
+    'flipp-circular', 'suggested', 'uncategorized', 'other',
+    'personal_care', 'personal care', 'household', 'health care',
+    'kitchen supplies', 'baby', 'pet', 'pets', 'cleaning',
+    'usda-terminal',
+  ]);
+
+  const allCategories = db.prepare(`
     SELECT
       ci.category,
       COUNT(DISTINCT ci.ingredient_id) as ingredient_count
@@ -68,6 +76,11 @@ async function main() {
     HAVING ingredient_count >= 5
     ORDER BY ingredient_count DESC
   `).all();
+
+  const categories = allCategories.filter(c =>
+    !EXCLUDED_CATEGORIES.has(c.category.toLowerCase())
+  );
+  console.log(`  Filtered: ${allCategories.length} -> ${categories.length} (excluded ${allCategories.length - categories.length} non-food/meta categories)`);
 
   console.log(`  Food categories: ${categories.length}`);
 

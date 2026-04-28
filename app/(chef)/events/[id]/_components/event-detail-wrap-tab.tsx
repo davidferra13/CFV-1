@@ -9,8 +9,10 @@ import { SocialCaptionsPanel } from '@/components/ai/social-captions-panel'
 import { EntityActivityTimeline } from '@/components/activity/entity-activity-timeline'
 import { PostEventLearningPanel } from '@/components/events/post-event-learning-panel'
 import { PostEventTrustPanel } from '@/components/events/post-event-trust-panel'
+import { CompReactionCapture } from '@/components/events/comp-reaction-capture'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import type { ComplimentaryItem } from '@/lib/private-context/types'
 
 type EventTransition = {
   id: string
@@ -32,6 +34,7 @@ type EventDetailWrapTabProps = {
   hasClosureStatus: boolean
   transitions: EventTransition[]
   timelineEntries: any[]
+  compItems?: ComplimentaryItem[]
 }
 
 export function EventDetailWrapTab({
@@ -46,6 +49,7 @@ export function EventDetailWrapTab({
   hasClosureStatus,
   transitions,
   timelineEntries,
+  compItems,
 }: EventDetailWrapTabProps) {
   return (
     <EventDetailSection tab="wrap" activeTab={activeTab}>
@@ -112,6 +116,11 @@ export function EventDetailWrapTab({
         followUpSent={followUpSent}
         followUpSentAt={followUpSentAt}
       />
+
+      {/* Complimentary item reaction capture - post-event feedback */}
+      {eventStatus === 'completed' && compItems && compItems.length > 0 && (
+        <CompReactionCapture compItems={compItems} />
+      )}
 
       {/* AI AAR Generator - for completed events without a filed review */}
       {eventStatus === 'completed' && !hasAAR && <AARGeneratorPanel eventId={eventId} />}

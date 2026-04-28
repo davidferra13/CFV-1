@@ -54,13 +54,15 @@ const INGREDIENT_OVERRIDES = {
   'corn on the cob': { yield_pct: 55, trim_loss: 45, cook_shrinkage: 10 },
   'watermelon':     { yield_pct: 55, trim_loss: 45, cook_shrinkage: 0 },
   'coconut':        { yield_pct: 51, trim_loss: 49, cook_shrinkage: 0 },
-  // Shellfish
-  'lobster':        { yield_pct: 35, trim_loss: 65, cook_shrinkage: 10 },
-  'crab':           { yield_pct: 25, trim_loss: 75, cook_shrinkage: 5 },
+  // Shellfish (use regex keys prefixed with / for word-boundary matching)
+  'whole lobster':  { yield_pct: 35, trim_loss: 65, cook_shrinkage: 10 },
+  'lobster tail':   { yield_pct: 55, trim_loss: 40, cook_shrinkage: 10 },
+  'lobster claw':   { yield_pct: 35, trim_loss: 65, cook_shrinkage: 10 },
+  'crab leg':       { yield_pct: 25, trim_loss: 75, cook_shrinkage: 5 },
+  'crab claw':      { yield_pct: 25, trim_loss: 75, cook_shrinkage: 5 },
   'shrimp':         { yield_pct: 55, trim_loss: 45, cook_shrinkage: 15 },
   'clam':           { yield_pct: 30, trim_loss: 70, cook_shrinkage: 5 },
   'mussel':         { yield_pct: 35, trim_loss: 65, cook_shrinkage: 5 },
-  'oyster':         { yield_pct: 15, trim_loss: 85, cook_shrinkage: 0 },
   // Bone-in meats
   'bone-in':        { yield_pct: 60, trim_loss: 25, cook_shrinkage: 30 },
   'rack of lamb':   { yield_pct: 55, trim_loss: 25, cook_shrinkage: 30 },
@@ -71,12 +73,30 @@ const INGREDIENT_OVERRIDES = {
   'brisket':        { yield_pct: 50, trim_loss: 15, cook_shrinkage: 40 },
 };
 
+// Words that prevent shellfish yield overrides from matching
+const SHELLFISH_EXCLUDES = [
+  'mushroom', 'sauce', 'cracker', 'scissors', 'blade', 'rangoon',
+  'dip', 'ramen', 'empanada', 'seasoning', 'flavored', 'imitation',
+  'surimi', 'pinwheel', 'bar ', 'salad',
+];
+
 function getYieldForIngredient(name, category) {
   const lower = name.toLowerCase();
 
-  // Check specific overrides first
+  // Check specific overrides first, using smarter matching
   for (const [key, yields] of Object.entries(INGREDIENT_OVERRIDES)) {
-    if (lower.includes(key)) return { ...yields, source: 'override' };
+    // Multi-word keys: exact substring match is fine (e.g., "lobster tail")
+    if (key.includes(' ')) {
+      if (lower.includes(key)) return { ...yields, source: 'override' };
+      continue;
+    }
+    // Single-word keys: word boundary match + exclusion check
+    const regex = new RegExp(`\\b${key}s?\\b`, 'i');
+    if (regex.test(lower)) {
+      // Check exclusions for shellfish terms
+      const isExcluded = SHELLFISH_EXCLUDES.some(ex => lower.includes(ex));
+      if (!isExcluded) return { ...yields, source: 'override' };
+    }
   }
 
   // Fall back to category

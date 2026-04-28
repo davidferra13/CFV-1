@@ -346,8 +346,5 @@ build-surfaces/
 Chef\ Flow\ Personas/
 
 # Persona pipeline artifacts (all generated, all churned by Codex)
-system/persona-build-plans/
-system/persona-build-plans-rejected/
-system/persona-batch-synthesis/
-system/persona-auto-generation.json
-system/persona-inbox-state.json
+system/persona-*/
+system/persona-*.json

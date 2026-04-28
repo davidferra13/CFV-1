@@ -98,6 +98,19 @@ registerCartridge({
   },
 })
 
+// Synthesis Intelligence: pulls anomalies, seasonal scores, velocity, benchmarks, etc.
+registerCartridge({
+  codename: 'synthesis-intel',
+  name: 'Synthesis Intelligence',
+  port: 8090,
+  pullEndpoint: '/api/synthesis/export',
+  targetType: 'database',
+  syncHandler: async (): Promise<CartridgeSyncResult> => {
+    const { handleSynthesisSync } = await import('./synthesis-handler')
+    return handleSynthesisSync(null)
+  },
+})
+
 // Future cartridges register here as they are built:
 // registerCartridge({ codename: 'market-intel', ... })
 // registerCartridge({ codename: 'trend-watch', ... })

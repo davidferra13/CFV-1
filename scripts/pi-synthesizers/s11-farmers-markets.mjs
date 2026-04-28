@@ -56,26 +56,49 @@ function isOpenThisWeek(seasonText) {
   }
 }
 
-function matchProductsToIngredients(productsText, ingredientIndex) {
-  if (!productsText) return [];
+// USDA farmers market product tags are generic ("Organic", "Vegetables")
+// Map them to product categories for a rough product count estimate
+const TAG_TO_PRODUCT_COUNT = {
+  'organic': 30,
+  'vegetables': 20,
+  'fruits': 15,
+  'herbs': 10,
+  'eggs': 3,
+  'honey': 2,
+  'meat': 10,
+  'poultry': 5,
+  'cheese': 8,
+  'dairy': 8,
+  'baked goods': 5,
+  'flowers': 0,
+  'crafts': 0,
+  'jams': 3,
+  'preserves': 3,
+  'maple syrup': 1,
+  'wine': 3,
+  'cider': 1,
+  'mushrooms': 4,
+  'fish': 5,
+  'seafood': 5,
+  'nuts': 5,
+  'grains': 5,
+  'beans': 3,
+  'soap': 0,
+  'prepared food': 5,
+};
 
-  const matches = [];
-  const words = productsText.toLowerCase().split(/[,;\/\|]+/).map(w => w.trim()).filter(Boolean);
+function estimateProductCount(productsText) {
+  if (!productsText) return 5; // default estimate for markets with no data
 
-  for (const word of words) {
-    // Direct lookup
-    if (ingredientIndex.has(word)) {
-      matches.push(ingredientIndex.get(word));
-    }
-    // Partial match
-    for (const [name, id] of ingredientIndex) {
-      if (word.includes(name) || name.includes(word)) {
-        if (!matches.includes(id)) matches.push(id);
-      }
-    }
+  let count = 0;
+  const lower = productsText.toLowerCase();
+
+  for (const [tag, est] of Object.entries(TAG_TO_PRODUCT_COUNT)) {
+    if (lower.includes(tag)) count += est;
   }
 
-  return matches.slice(0, 50); // cap at 50 matches
+  // If nothing matched but text exists, give a default
+  return count || 5;
 }
 
 async function main() {
@@ -98,19 +121,6 @@ async function main() {
     return;
   }
 
-  // Build ingredient name index for product matching
-  const ingredients = db.prepare(`
-    SELECT ingredient_id as id, name FROM canonical_ingredients
-    WHERE is_food = 1
-  `).all();
-
-  const ingredientIndex = new Map();
-  for (const ing of ingredients) {
-    ingredientIndex.set(ing.name.toLowerCase(), ing.id);
-  }
-
-  console.log(`  Ingredient index size: ${ingredientIndex.size}`);
-
   // Clear and rebuild
   db.prepare(`DELETE FROM synthesis_local_markets`).run();
 
@@ -130,20 +140,26 @@ async function main() {
     const lng = market.longitude || market.x || market.lng || null;
     const season = market.season_start ? `${market.season_start}-${market.season_end}` : '';
     const days = market.days_hours || '';
-    const productsText = market.products || '';
+    const productsRaw = market.products || '';
+    // Parse JSON array if present, otherwise use raw text
+    let productsText = '';
+    try {
+      const arr = JSON.parse(productsRaw);
+      productsText = Array.isArray(arr) ? arr.join(', ') : productsRaw;
+    } catch { productsText = productsRaw; }
 
-    const matchedProducts = matchProductsToIngredients(productsText, ingredientIndex);
+    const productCount = estimateProductCount(productsText);
     const isOpen = isOpenThisWeek(season) ? 1 : 0;
 
     if (isOpen) openCount++;
-    totalProducts += matchedProducts.length;
+    totalProducts += productCount;
 
     try {
       insert.run(market.id || null, name,
         lat ? parseFloat(lat) : null, lng ? parseFloat(lng) : null,
-        season, days, JSON.stringify(matchedProducts), matchedProducts.length, isOpen);
+        season, days, JSON.stringify(productsText), productCount, isOpen);
     } catch (err) {
-      if (isBusy(err)) { await sleep(1000); try { insert.run(market.id || null, name, lat ? parseFloat(lat) : null, lng ? parseFloat(lng) : null, season, days, JSON.stringify(matchedProducts), matchedProducts.length, isOpen); } catch (e) { /* skip */ } }
+      if (isBusy(err)) { await sleep(1000); try { insert.run(market.id || null, name, lat ? parseFloat(lat) : null, lng ? parseFloat(lng) : null, season, days, JSON.stringify(productsText), productCount, isOpen); } catch (e) { /* skip */ } }
     }
   }
 

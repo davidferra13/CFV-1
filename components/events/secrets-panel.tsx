@@ -14,6 +14,7 @@ import {
   addSecretAsset,
   updateSecretAssetStatus,
 } from '@/lib/secrets/actions'
+import { SecretDetailView } from './secret-detail-view'
 import type {
   EventSecret,
   SecretType,
@@ -53,6 +54,7 @@ export function SecretsPanel({ eventId, secrets }: Props) {
   const [isPending, startTransition] = useTransition()
   const [showForm, setShowForm] = useState(false)
   const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [detailSecretId, setDetailSecretId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     title: '',
@@ -145,6 +147,16 @@ export function SecretsPanel({ eventId, secrets }: Props) {
   const activeSecrets = secrets.filter(s => s.status !== 'cancelled')
   const cancelledSecrets = secrets.filter(s => s.status === 'cancelled')
 
+  // Show detail view if a secret is selected
+  if (detailSecretId) {
+    return (
+      <SecretDetailView
+        secretId={detailSecretId}
+        onClose={() => setDetailSecretId(null)}
+      />
+    )
+  }
+
   return (
     <Card className="p-4">
       <div className="flex items-center justify-between mb-3">
@@ -164,6 +176,7 @@ export function SecretsPanel({ eventId, secrets }: Props) {
         <div className="space-y-2 mb-4 p-3 rounded-lg bg-zinc-900/50 border border-zinc-800">
           <div className="grid grid-cols-2 gap-2">
             <select
+              title="Secret type"
               value={formData.secret_type}
               onChange={e => setFormData(f => ({ ...f, secret_type: e.target.value as SecretType }))}
               className="bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-sm text-zinc-200"
@@ -173,6 +186,7 @@ export function SecretsPanel({ eventId, secrets }: Props) {
               ))}
             </select>
             <select
+              title="Visibility scope"
               value={formData.visibility_scope}
               onChange={e => setFormData(f => ({ ...f, visibility_scope: e.target.value as SecretVisibilityScope }))}
               className="bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-sm text-zinc-200"
@@ -297,9 +311,15 @@ export function SecretsPanel({ eventId, secrets }: Props) {
                   </Button>
                 </div>
 
+                {/* Full detail view */}
+                <Button variant="ghost" onClick={() => setDetailSecretId(secret.id)}>
+                  Open Full Details
+                </Button>
+
                 {/* Quick asset add */}
                 <div className="flex gap-2">
                   <select
+                    title="Asset type"
                     value={assetForm.asset_type}
                     onChange={e => setAssetForm(f => ({ ...f, asset_type: e.target.value as SecretAssetType }))}
                     className="bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs text-zinc-200"
