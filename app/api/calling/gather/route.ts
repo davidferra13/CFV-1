@@ -30,7 +30,9 @@ import {
 } from '@/lib/calling/voice-helpers'
 import { analyzeVoiceAffect } from '@/lib/affective/voice-affect'
 import {
+  buildVoiceAgentFollowUp,
   hasVoiceAgentOptOutRequest,
+  resolveVoiceAgentConversationDecision,
   resolveVoiceAgentTurn,
 } from '@/lib/calling/voice-agent-contract'
 
@@ -1255,7 +1257,7 @@ async function handleInboundUnknown(
   if (aiCallId && speech) {
     await logTranscript(db, aiCallId, step, 'caller', speech, 'speech', null)
 
-    const decision = resolveVoiceAgentTurn({
+    const currentDecision = resolveVoiceAgentTurn({
       utterance: speech,
       role: 'inbound_unknown',
     })
@@ -1275,6 +1277,11 @@ async function handleInboundUnknown(
       aiCall?.extracted_data && typeof aiCall.extracted_data === 'object'
         ? aiCall.extracted_data
         : {}
+    const decision = resolveVoiceAgentConversationDecision({
+      previousDecision: existingData.voice_agent_decision,
+      currentDecision,
+      step,
+    })
     const nextStatus =
       step === 1 && decision.type !== 'collect_message' && decision.type !== 'opt_out'
         ? 'in_progress'
@@ -1319,11 +1326,16 @@ async function handleInboundUnknown(
     if (aiCall && nextStatus === 'completed') {
       // Surface message in quick notes so chef sees it without visiting Call Sheet
       const callerLabel = aiCall.contact_name || aiCall.contact_phone || 'Unknown caller'
+      const followUp = buildVoiceAgentFollowUp({
+        decision,
+        callerLabel,
+        transcript: fullTranscript,
+      })
       await db
         .from('chef_quick_notes')
         .insert({
           chef_id: aiCall.chef_id,
-          text: `Inbound call from ${callerLabel}: "${speech}"`,
+          text: followUp.quickNoteText,
         })
         .catch((err: unknown) => {
           console.error('[calling/gather] inbound_unknown quick_note insert failed:', err)
@@ -1339,6 +1351,7 @@ async function handleInboundUnknown(
           callerPhone: aiCall.contact_phone,
           message: speech,
           voiceAgentDecision: decision,
+          voiceAgentFollowUp: followUp,
         })
       } catch (err) {
         console.error('[calling/gather] inbound_unknown broadcast failed:', err)

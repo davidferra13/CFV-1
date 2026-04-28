@@ -5,13 +5,17 @@ import { resolve } from 'node:path'
 
 import {
   VOICE_AGENT_CONTRACT,
+  buildVoiceAgentFollowUp,
   hasVoiceAgentOptOutRequest,
+  resolveVoiceAgentConversationDecision,
   resolveVoiceAgentTurn,
 } from '@/lib/calling/voice-agent-contract'
 
 const ROOT = process.cwd()
 const GATHER_ROUTE = resolve(ROOT, 'app/api/calling/gather/route.ts')
 const CALL_LOG = resolve(ROOT, 'components/calling/call-log.tsx')
+const CALL_SHEET = resolve(ROOT, 'app/(chef)/culinary/call-sheet/page.tsx')
+const LIVE_ALERTS = resolve(ROOT, 'components/calling/chef-live-alerts.tsx')
 
 test('voice agent contract requires AI disclosure and hard answer boundaries', () => {
   assert.match(VOICE_AGENT_CONTRACT.identityDisclosure, /AI assistant/)
@@ -65,6 +69,45 @@ test('voice agent refuses recipe generation by voice', () => {
   assert.equal(decision.allowedToAnswer, false)
 })
 
+test('voice agent preserves first-turn handoff boundaries after detail collection', () => {
+  const firstTurn = resolveVoiceAgentTurn({
+    role: 'inbound_unknown',
+    utterance: 'What would this cost for twenty people?',
+  })
+  const secondTurn = resolveVoiceAgentTurn({
+    role: 'inbound_unknown',
+    utterance: 'June fourth, twenty guests, in Boston.',
+  })
+
+  const finalDecision = resolveVoiceAgentConversationDecision({
+    previousDecision: firstTurn,
+    currentDecision: secondTurn,
+    step: 2,
+  })
+
+  assert.equal(finalDecision.type, 'handoff_required')
+  assert.equal(finalDecision.category, 'pricing')
+  assert.match(finalDecision.answer, /cannot give a binding quote/)
+})
+
+test('voice agent follow-up creates actionable chef task copy', () => {
+  const decision = resolveVoiceAgentTurn({
+    role: 'inbound_unknown',
+    utterance: 'Are you available for a dinner next Friday?',
+  })
+  const followUp = buildVoiceAgentFollowUp({
+    decision,
+    callerLabel: 'Jordan Lee',
+    transcript: 'Are you available for a dinner next Friday? June fourth, 14 guests, Cambridge.',
+  })
+
+  assert.equal(followUp.label, 'Booking intake')
+  assert.equal(followUp.urgency, 'standard')
+  assert.match(followUp.nextStep, /guest count/)
+  assert.match(followUp.quickNoteText, /Next step:/)
+  assert.match(followUp.alertBody, /Jordan Lee/)
+})
+
 test('voice agent opt-out detection is shared with call handling', () => {
   assert.equal(hasVoiceAgentOptOutRequest('Please stop calling this number'), true)
   assert.equal(hasVoiceAgentOptOutRequest('Call me back tomorrow'), false)
@@ -72,6 +115,8 @@ test('voice agent opt-out detection is shared with call handling', () => {
   const gatherSrc = readFileSync(GATHER_ROUTE, 'utf8')
   assert.match(gatherSrc, /hasVoiceAgentOptOutRequest/)
   assert.match(gatherSrc, /resolveVoiceAgentTurn/)
+  assert.match(gatherSrc, /buildVoiceAgentFollowUp/)
+  assert.match(gatherSrc, /voiceAgentFollowUp/)
   assert.match(gatherSrc, /voice_agent_decision/)
 })
 
@@ -81,4 +126,14 @@ test('call log renders voice agent decisions separately from raw extracted data'
   assert.match(callLogSrc, /VoiceAgentDecisionPanel/)
   assert.match(callLogSrc, /voice_agent_decision/)
   assert.match(callLogSrc, /Voice agent/)
+})
+
+test('voice agent follow-up reaches live alerts and inbox', () => {
+  const liveAlertsSrc = readFileSync(LIVE_ALERTS, 'utf8')
+  const callSheetSrc = readFileSync(CALL_SHEET, 'utf8')
+
+  assert.match(liveAlertsSrc, /voiceAgentFollowUp/)
+  assert.match(liveAlertsSrc, /call-sheet\?tab=inbox/)
+  assert.match(callSheetSrc, /inboxFollowUp/)
+  assert.match(callSheetSrc, /buildVoiceAgentFollowUp/)
 })

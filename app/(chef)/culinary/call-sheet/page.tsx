@@ -36,6 +36,11 @@ import { NationalVendorSearch } from '@/components/vendors/national-vendor-searc
 import { VendorDirectoryClient } from '@/app/(chef)/culinary/vendors/vendor-directory-client'
 import { CallSettingsForm } from '@/components/calling/call-settings-form'
 import { CallAccessRequest } from '@/components/calling/call-access-request'
+import {
+  buildVoiceAgentFollowUp,
+  isVoiceAgentDecision,
+  type VoiceAgentFollowUp,
+} from '@/lib/calling/voice-agent-contract'
 
 export const metadata: Metadata = { title: 'Voice Hub' }
 
@@ -93,6 +98,22 @@ function statusColor(status: string, result?: 'yes' | 'no' | null): string {
   if (status === 'failed') return 'text-rose-500'
   if (status === 'no_answer' || status === 'busy') return 'text-amber-400'
   return 'text-stone-400'
+}
+
+function inboxFollowUp(call: any): VoiceAgentFollowUp | null {
+  const decision = call.extracted_data?.voice_agent_decision
+  if (!isVoiceAgentDecision(decision)) return null
+  return buildVoiceAgentFollowUp({
+    decision,
+    callerLabel: call.contact_name || call.contact_phone || 'Unknown caller',
+    transcript: call.full_transcript,
+  })
+}
+
+function followUpColor(urgency: VoiceAgentFollowUp['urgency']): string {
+  if (urgency === 'urgent') return 'border-rose-500 text-rose-300'
+  if (urgency === 'review') return 'border-amber-500 text-amber-300'
+  return 'border-violet-500 text-violet-300'
 }
 
 const ROLE_LABELS: Record<string, string> = {
@@ -285,6 +306,19 @@ export default async function CallSheetPage({
             <div className="space-y-3">
               {inboxItems.map((call) => (
                 <div key={call.id} className="bg-stone-900 rounded-xl border border-stone-700 p-5">
+                  {(() => {
+                    const followUp = inboxFollowUp(call)
+                    return followUp ? (
+                      <div
+                        className={`mb-3 border-l-2 pl-3 text-xs leading-relaxed ${followUpColor(followUp.urgency)}`}
+                      >
+                        <div className="font-semibold uppercase tracking-wide">
+                          {followUp.label}
+                        </div>
+                        <div className="mt-1 text-stone-300">{followUp.nextStep}</div>
+                      </div>
+                    ) : null
+                  })()}
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-start gap-3">
                       <div className="p-2 bg-stone-800 rounded-lg mt-0.5">

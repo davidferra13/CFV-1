@@ -30,6 +30,14 @@ export interface VoiceAgentDecision {
   allowedToAnswer: boolean
 }
 
+export interface VoiceAgentFollowUp {
+  label: string
+  urgency: 'standard' | 'review' | 'urgent'
+  nextStep: string
+  quickNoteText: string
+  alertBody: string
+}
+
 export interface VoiceAgentContract {
   identityDisclosure: string
   recordingDisclosure: string
@@ -203,8 +211,123 @@ export function resolveVoiceAgentTurn(params: {
   )
 }
 
+export function isVoiceAgentDecision(value: unknown): value is VoiceAgentDecision {
+  if (!value || typeof value !== 'object') return false
+  const candidate = value as Partial<VoiceAgentDecision>
+  return (
+    typeof candidate.type === 'string' &&
+    typeof candidate.category === 'string' &&
+    typeof candidate.answer === 'string' &&
+    typeof candidate.followUpPrompt === 'string' &&
+    typeof candidate.allowedToAnswer === 'boolean'
+  )
+}
+
+export function resolveVoiceAgentConversationDecision(params: {
+  previousDecision: unknown
+  currentDecision: VoiceAgentDecision
+  step: number
+}): VoiceAgentDecision {
+  const previous = isVoiceAgentDecision(params.previousDecision)
+    ? params.previousDecision
+    : null
+
+  if (params.currentDecision.type === 'opt_out') return params.currentDecision
+  if (!previous || params.step <= 1) return params.currentDecision
+
+  if (params.currentDecision.type === 'restricted') return params.currentDecision
+  if (params.currentDecision.category === 'dietary') return params.currentDecision
+
+  if (previous.type === 'handoff_required' || previous.type === 'restricted') {
+    return previous
+  }
+
+  if (previous.type === 'answer_and_collect') return previous
+
+  return params.currentDecision
+}
+
+export function buildVoiceAgentFollowUp(params: {
+  decision: VoiceAgentDecision
+  callerLabel: string
+  transcript: string | null | undefined
+}): VoiceAgentFollowUp {
+  const excerpt = compactExcerpt(params.transcript)
+  const base = followUpBase(params.decision)
+  const quotedExcerpt = excerpt ? ` "${excerpt}"` : ''
+
+  return {
+    ...base,
+    quickNoteText: `${base.label} from ${params.callerLabel}:${quotedExcerpt} Next step: ${base.nextStep}`,
+    alertBody: `${params.callerLabel}: ${base.nextStep}`,
+  }
+}
+
 function normalizeUtterance(utterance: string | null | undefined): string {
   return (utterance ?? '').replace(/\s+/g, ' ').trim()
+}
+
+function compactExcerpt(value: string | null | undefined): string {
+  const text = normalizeUtterance(value)
+  if (text.length <= 420) return text
+  return `${text.slice(0, 417).trim()}...`
+}
+
+function followUpBase(decision: VoiceAgentDecision): Omit<VoiceAgentFollowUp, 'quickNoteText' | 'alertBody'> {
+  if (decision.type === 'opt_out') {
+    return {
+      label: 'AI call opt-out',
+      urgency: 'review',
+      nextStep: 'Review the contact and avoid future AI assistant calls to this number.',
+    }
+  }
+
+  if (decision.category === 'booking') {
+    return {
+      label: 'Booking intake',
+      urgency: 'standard',
+      nextStep:
+        'Review the event date, guest count, location, service style, and dietary constraints, then follow up directly.',
+    }
+  }
+
+  if (decision.category === 'pricing') {
+    return {
+      label: 'Pricing callback',
+      urgency: 'review',
+      nextStep: 'Review the scope before sending any quote or price guidance.',
+    }
+  }
+
+  if (decision.category === 'dietary') {
+    return {
+      label: 'Dietary review',
+      urgency: 'urgent',
+      nextStep: 'Review allergy or dietary details before any menu, quote, or confirmation step.',
+    }
+  }
+
+  if (decision.category === 'recipe' || decision.type === 'restricted') {
+    return {
+      label: 'Restricted request',
+      urgency: 'review',
+      nextStep: 'Review manually. The assistant did not create recipes, menus, or chef IP.',
+    }
+  }
+
+  if (decision.category === 'human') {
+    return {
+      label: 'Human callback',
+      urgency: 'review',
+      nextStep: 'Call back or reply directly because the caller asked for a person.',
+    }
+  }
+
+  return {
+    label: 'Inbound call follow-up',
+    urgency: 'standard',
+    nextStep: 'Review the message and decide whether a callback is needed.',
+  }
 }
 
 function collectMessageDecision(

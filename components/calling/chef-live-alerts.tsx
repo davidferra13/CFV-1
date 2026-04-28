@@ -78,6 +78,7 @@ export function ChefLiveAlerts({ tenantId }: Props) {
           timestamp: Date.now(),
         })
       } else if (event === 'supplier_call_result' || event === 'ai_call_result') {
+        const voiceAgentFollowUp = data.voiceAgentFollowUp
         const statusLabel =
           data.status === 'no_answer'
             ? 'no answer'
@@ -95,6 +96,20 @@ export function ChefLiveAlerts({ tenantId }: Props) {
             title: 'Call update',
             body: `${data.vendorName || data.contactName || 'Vendor'}: ${statusLabel}`,
             href: '/culinary/call-sheet?tab=log',
+            timestamp: Date.now(),
+          })
+        } else if (
+          event === 'ai_call_result' &&
+          voiceAgentFollowUp &&
+          typeof voiceAgentFollowUp.label === 'string' &&
+          typeof voiceAgentFollowUp.alertBody === 'string'
+        ) {
+          addAlert({
+            id,
+            type: 'call_result',
+            title: voiceAgentFollowUp.label,
+            body: voiceAgentFollowUp.alertBody,
+            href: '/culinary/call-sheet?tab=inbox',
             timestamp: Date.now(),
           })
         }
