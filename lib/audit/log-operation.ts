@@ -19,12 +19,7 @@
 
 import { pgClient } from '@/lib/db'
 import { getCurrentUser } from '@/lib/auth/get-user'
-import type {
-  LogOperationInput,
-  SnapshotInput,
-  OperationLogEntry,
-  EntitySnapshot,
-} from './types'
+import type { LogOperationInput, SnapshotInput, OperationLogEntry, EntitySnapshot } from './types'
 
 // ─── Core: Log a mutation ────────────────────────────────────────────────────
 
@@ -38,8 +33,7 @@ export async function logOperation(input: LogOperationInput): Promise<number | n
     const user = await getCurrentUser()
     if (!user?.tenantId) return null
 
-    const sql = pgClient()
-    const [row] = await sql`
+    const [row] = await pgClient`
       INSERT INTO operation_log (tenant_id, actor_id, entity_type, entity_id, operation, diff, metadata)
       VALUES (
         ${user.tenantId},
@@ -69,8 +63,7 @@ export async function logOperationDirect(
   input: LogOperationInput
 ): Promise<number | null> {
   try {
-    const sql = pgClient()
-    const [row] = await sql`
+    const [row] = await pgClient`
       INSERT INTO operation_log (tenant_id, actor_id, entity_type, entity_id, operation, diff, metadata)
       VALUES (
         ${tenantId},
@@ -96,13 +89,9 @@ export async function logOperationDirect(
  * Save a full entity snapshot. Use after creates or every N operations.
  * Non-blocking.
  */
-export async function saveSnapshot(
-  tenantId: string,
-  input: SnapshotInput
-): Promise<number | null> {
+export async function saveSnapshot(tenantId: string, input: SnapshotInput): Promise<number | null> {
   try {
-    const sql = pgClient()
-    const [row] = await sql`
+    const [row] = await pgClient`
       INSERT INTO entity_snapshots (tenant_id, entity_type, entity_id, snapshot, operation_log_id)
       VALUES (
         ${tenantId},
@@ -132,11 +121,10 @@ export async function getEntityTimeline(
   entityId: string,
   opts?: { limit?: number; offset?: number }
 ): Promise<OperationLogEntry[]> {
-  const sql = pgClient()
   const limit = opts?.limit ?? 50
   const offset = opts?.offset ?? 0
 
-  const rows = await sql`
+  const rows = await pgClient`
     SELECT id, tenant_id, actor_id, entity_type, entity_id, operation, diff, metadata, created_at
     FROM operation_log
     WHERE tenant_id = ${tenantId}
@@ -157,8 +145,7 @@ export async function getEntityOperationCount(
   entityType: string,
   entityId: string
 ): Promise<number> {
-  const sql = pgClient()
-  const [row] = await sql`
+  const [row] = await pgClient`
     SELECT COUNT(*)::int as count
     FROM operation_log
     WHERE tenant_id = ${tenantId}
@@ -177,10 +164,9 @@ export async function getEntitySnapshots(
   entityId: string,
   opts?: { limit?: number }
 ): Promise<EntitySnapshot[]> {
-  const sql = pgClient()
   const limit = opts?.limit ?? 10
 
-  const rows = await sql`
+  const rows = await pgClient`
     SELECT id, tenant_id, entity_type, entity_id, snapshot, operation_log_id, created_at
     FROM entity_snapshots
     WHERE tenant_id = ${tenantId}
@@ -200,12 +186,11 @@ export async function getTenantActivityLog(
   tenantId: string,
   opts?: { limit?: number; offset?: number; entityType?: string }
 ): Promise<OperationLogEntry[]> {
-  const sql = pgClient()
   const limit = opts?.limit ?? 50
   const offset = opts?.offset ?? 0
 
   if (opts?.entityType) {
-    const rows = await sql`
+    const rows = await pgClient`
       SELECT id, tenant_id, actor_id, entity_type, entity_id, operation, diff, metadata, created_at
       FROM operation_log
       WHERE tenant_id = ${tenantId}
@@ -217,7 +202,7 @@ export async function getTenantActivityLog(
     return rows as unknown as OperationLogEntry[]
   }
 
-  const rows = await sql`
+  const rows = await pgClient`
     SELECT id, tenant_id, actor_id, entity_type, entity_id, operation, diff, metadata, created_at
     FROM operation_log
     WHERE tenant_id = ${tenantId}
