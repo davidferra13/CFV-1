@@ -643,6 +643,43 @@ async function getChefToVenueTravel(
   }
 }
 
+type SecondaryEventDetailLoad<T> =
+  | {
+      status: 'ok'
+      data: T
+      label: null
+    }
+  | {
+      status: 'unavailable'
+      data: T
+      label: string
+    }
+
+function secondaryEventDetailOk<T>(data: T): SecondaryEventDetailLoad<T> {
+  return {
+    status: 'ok',
+    data,
+    label: null,
+  }
+}
+
+async function loadSecondaryEventDetail<T>(
+  label: string,
+  loader: () => Promise<T>,
+  fallback: T
+): Promise<SecondaryEventDetailLoad<T>> {
+  try {
+    return secondaryEventDetailOk(await loader())
+  } catch (error) {
+    console.warn(`[EventDetailPage] ${label} failed`, error)
+    return {
+      status: 'unavailable',
+      data: fallback,
+      label,
+    }
+  }
+}
+
 export default async function EventDetailPage({
   params,
   searchParams,
@@ -685,7 +722,7 @@ export default async function EventDetailPage({
     unrecordedComponents,
     aiConfigured,
     dopProgress,
-    messages,
+    messagesLoad,
     templates,
     eventLoyaltyTxs,
     eventLoyaltyImpact,
@@ -732,10 +769,15 @@ export default async function EventDetailPage({
     isCompletedOrBeyond ? getUnrecordedComponentsForEvent(params.id) : Promise.resolve([]),
     isAIConfigured().catch(() => false),
     getEventDOPProgress(params.id).catch(() => null),
-    getMessageThread('event', params.id, {
-      includeInquiryMessages: !!event.inquiry_id,
-      inquiryId: event.inquiry_id ?? undefined,
-    }).catch(() => []),
+    loadSecondaryEventDetail(
+      'message thread',
+      () =>
+        getMessageThread('event', params.id, {
+          includeInquiryMessages: !!event.inquiry_id,
+          inquiryId: event.inquiry_id ?? undefined,
+        }),
+      []
+    ),
     getResponseTemplates().catch(() => []),
     event.status === 'completed' && event.client_id
       ? getLoyaltyTransactions(event.client_id)
@@ -822,23 +864,23 @@ export default async function EventDetailPage({
     tacConversion,
     marketplaceConversion,
     guestShares,
-    guestList,
-    rsvpSummary,
+    guestListLoad,
+    rsvpSummaryLoad,
     eventPhotos,
     carryForwardItems,
     paymentPlanInstallments,
     mileageEntries,
     eventTips,
     guestLeadCount,
-    guestWallMessages,
+    guestWallMessagesLoad,
     travelInfo,
     contingencyNotes,
     emergencyContacts,
     tempLogs,
-    staffMembers,
-    staffAssignments,
+    staffMembersLoad,
+    staffAssignmentsLoad,
     menuApprovalData,
-    prepBlocks,
+    prepBlocksLoad,
     eventCollaborators,
     eventContacts,
     settlement,
@@ -867,13 +909,13 @@ export default async function EventDetailPage({
       : Promise.resolve(null),
     // Guest & sharing data
     getEventShares(params.id).catch(() => []),
-    getEventGuests(params.id).catch(() => []),
-    getEventRSVPSummary(params.id).catch(() => ({
+    loadSecondaryEventDetail('guest list', () => getEventGuests(params.id), []),
+    loadSecondaryEventDetail('RSVP summary', () => getEventRSVPSummary(params.id), {
       attending: 0,
       maybe: 0,
       declined: 0,
       pending: 0,
-    })),
+    }),
     isCompletedOrBeyond ? getEventPhotosForChef(params.id) : Promise.resolve([]),
     event.status !== 'cancelled'
       ? getAvailableCarryForwardItems(params.id).catch(() => [])
@@ -882,7 +924,7 @@ export default async function EventDetailPage({
     getMileageLogs().catch(() => []),
     getEventTips(params.id).catch(() => []),
     getEventGuestLeadCount(params.id).catch(() => 0),
-    getEventMessagesForChef(params.id).catch(() => []),
+    loadSecondaryEventDetail('guest messages', () => getEventMessagesForChef(params.id), []),
     (event as any).location_lat && (event as any).location_lng
       ? getChefToVenueTravel((event as any).location_lat, (event as any).location_lng)
       : Promise.resolve(null),
@@ -895,17 +937,17 @@ export default async function EventDetailPage({
       ? getEventTempLog(params.id).catch(() => [])
       : Promise.resolve([]),
     !['draft', 'cancelled'].includes(event.status)
-      ? listStaffMembers().catch(() => [])
-      : Promise.resolve([]),
+      ? loadSecondaryEventDetail('staff directory', () => listStaffMembers(), [])
+      : Promise.resolve(secondaryEventDetailOk([])),
     !['draft', 'cancelled'].includes(event.status)
-      ? getEventStaffRoster(params.id).catch(() => [])
-      : Promise.resolve([]),
+      ? loadSecondaryEventDetail('staff roster', () => getEventStaffRoster(params.id), [])
+      : Promise.resolve(secondaryEventDetailOk([])),
     eventMenus && event.status !== 'cancelled'
       ? getMenuApprovalStatus(params.id).catch(() => null)
       : Promise.resolve(null),
     event.status !== 'cancelled'
-      ? getEventPrepBlocks(params.id).catch(() => [])
-      : Promise.resolve([]),
+      ? loadSecondaryEventDetail('prep blocks', () => getEventPrepBlocks(params.id), [])
+      : Promise.resolve(secondaryEventDetailOk([])),
     getEventCollaborators(params.id).catch(() => []),
     getEventContacts(params.id).catch(() => []),
     getEventSettlement(params.id).catch(() => null),
@@ -961,11 +1003,34 @@ export default async function EventDetailPage({
   )
 
   // Ticket sales data
-  const [ticketTypes, ticketList, ticketSummary] = await Promise.all([
-    getEventTicketTypes(params.id).catch(() => []),
-    getEventTickets(params.id).catch(() => []),
-    getEventTicketSummary(params.id).catch(() => null),
+  const [ticketTypesLoad, ticketListLoad, ticketSummaryLoad] = await Promise.all([
+    loadSecondaryEventDetail('ticket types', () => getEventTicketTypes(params.id), []),
+    loadSecondaryEventDetail('ticket list', () => getEventTickets(params.id), []),
+    loadSecondaryEventDetail('ticket summary', () => getEventTicketSummary(params.id), null),
   ])
+  const messages = messagesLoad.data
+  const guestList = guestListLoad.data
+  const rsvpSummary = rsvpSummaryLoad.data
+  const guestWallMessages = guestWallMessagesLoad.data
+  const staffMembers = staffMembersLoad.data
+  const staffAssignments = staffAssignmentsLoad.data
+  const prepBlocks = prepBlocksLoad.data
+  const ticketTypes = ticketTypesLoad.data
+  const ticketList = ticketListLoad.data
+  const ticketSummary = ticketSummaryLoad.data
+  const unavailableSecondaryDetails = [
+    messagesLoad,
+    guestListLoad,
+    rsvpSummaryLoad,
+    guestWallMessagesLoad,
+    staffMembersLoad,
+    staffAssignmentsLoad,
+    prepBlocksLoad,
+    ticketTypesLoad,
+    ticketListLoad,
+    ticketSummaryLoad,
+  ].filter((result) => result.status === 'unavailable')
+
   const [
     dinnerCircleConfig,
     approvalGates,
@@ -1137,6 +1202,19 @@ export default async function EventDetailPage({
         eventId={params.id}
         costNeedsRefresh={(event as any).cost_needs_refresh === true}
       />
+
+      {unavailableSecondaryDetails.length > 0 && (
+        <div className="rounded-lg border border-amber-500/60 bg-amber-950/40 px-4 py-3">
+          <p className="text-sm font-semibold text-amber-200">
+            Event detail data integrity warning
+          </p>
+          <p className="mt-1 text-sm text-amber-100">
+            Some secondary event data could not be loaded:{' '}
+            {unavailableSecondaryDetails.map((result) => result.label).join(', ')}. These sections
+            are showing fallback data. Refresh before making operational decisions.
+          </p>
+        </div>
+      )}
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">

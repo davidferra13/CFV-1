@@ -127,6 +127,53 @@ async function safe<T>(label: string, fn: () => Promise<T>, fallback: T): Promis
   }
 }
 
+type DashboardLoadResult<T> =
+  | {
+      status: 'ok'
+      data: T
+      error: null
+    }
+  | {
+      status: 'unavailable'
+      data: T
+      error: string
+    }
+
+async function safeResult<T>(
+  label: string,
+  fn: () => Promise<T>,
+  fallback: T,
+  error: string
+): Promise<DashboardLoadResult<T>> {
+  try {
+    return { status: 'ok', data: await fn(), error: null }
+  } catch (err) {
+    console.error(`[Dashboard] ${label} failed:`, err)
+    return { status: 'unavailable', data: fallback, error }
+  }
+}
+
+function isUnavailable<T>(result: DashboardLoadResult<T>): boolean {
+  return result.status === 'unavailable'
+}
+
+function DegradedDataNotice({
+  title,
+  detail,
+  className = '',
+}: {
+  title: string
+  detail: string
+  className?: string
+}) {
+  return (
+    <div className={`rounded-xl border border-amber-800/50 bg-amber-950/30 px-4 py-3 ${className}`}>
+      <p className="text-sm font-medium text-amber-200">{title}</p>
+      <p className="mt-1 text-xs leading-5 text-amber-100/80">{detail}</p>
+    </div>
+  )
+}
+
 const emptyQueue: PriorityQueue = {
   items: [],
   nextAction: null,
@@ -359,20 +406,41 @@ async function DecisionQueueSection({
 }
 
 async function ResolveNextSection({
-  queuePromise,
+  queueResultPromise,
   onboardingProgress,
   profileGated,
 }: {
-  queuePromise: Promise<PriorityQueue>
+  queueResultPromise: Promise<DashboardLoadResult<PriorityQueue>>
   onboardingProgress: Awaited<ReturnType<typeof getOnboardingProgress>> | null
   profileGated: boolean
 }) {
-  const queue = await queuePromise
+  const queueResult = await queueResultPromise
   const task = resolveDashboardNextTask({
-    priorityQueue: queue,
+    priorityQueue: queueResult.data,
     onboardingProgress,
     profileGated,
   })
+
+  if (queueResult.status === 'unavailable' && task.source === 'clear') {
+    return (
+      <DegradedDataNotice
+        title="Resolve Next unavailable"
+        detail="Priority queue data could not be loaded, so the dashboard cannot safely confirm that nothing urgent is waiting."
+      />
+    )
+  }
+
+  if (queueResult.status === 'unavailable') {
+    return (
+      <div className="space-y-3">
+        <DegradedDataNotice
+          title="Resolve Next is using partial data"
+          detail="Priority queue data could not be loaded. Showing the next available setup or profile action instead."
+        />
+        <ResolveNextCard task={task} />
+      </div>
+    )
+  }
 
   return <ResolveNextCard task={task} />
 }
@@ -1335,56 +1403,141 @@ async function getTrustLoopCandidates(): Promise<TrustLoopCandidate[]> {
 
 async function LifecycleActionLayerSection() {
   const [
-    workSurface,
-    prepPrompts,
-    menuDecisionCandidates,
-    safetyCheckCandidates,
-    collectBalanceCandidates,
-    receiptCaptureCandidates,
-    teamReadyCandidates,
-    serviceReadyCandidates,
+    workSurfaceResult,
+    prepPromptsResult,
+    menuDecisionCandidatesResult,
+    safetyCheckCandidatesResult,
+    collectBalanceCandidatesResult,
+    receiptCaptureCandidatesResult,
+    teamReadyCandidatesResult,
+    serviceReadyCandidatesResult,
   ] = await Promise.all([
-    safe('workSurface', getDashboardWorkSurface, null),
-    safe('prepPrompts', getAllPrepPrompts, []),
-    safe('menuDecisionCandidates', getMenuDecisionCandidates, []),
-    safe('safetyCheckCandidates', getSafetyCheckCandidates, []),
-    safe('collectBalanceCandidates', getCollectBalanceCandidates, []),
-    safe('receiptCaptureCandidates', getReceiptCaptureCandidates, []),
-    safe('teamReadyCandidates', getTeamReadyCandidates, []),
-    safe('serviceReadyCandidates', getServiceReadyCandidates, []),
+    safeResult(
+      'workSurface',
+      getDashboardWorkSurface,
+      null,
+      'Lifecycle work surface data could not be loaded.'
+    ),
+    safeResult('prepPrompts', getAllPrepPrompts, [], 'Prep prompt data could not be loaded.'),
+    safeResult(
+      'menuDecisionCandidates',
+      getMenuDecisionCandidates,
+      [],
+      'Menu decision data could not be loaded.'
+    ),
+    safeResult(
+      'safetyCheckCandidates',
+      getSafetyCheckCandidates,
+      [],
+      'Safety check data could not be loaded.'
+    ),
+    safeResult(
+      'collectBalanceCandidates',
+      getCollectBalanceCandidates,
+      [],
+      'Balance collection data could not be loaded.'
+    ),
+    safeResult(
+      'receiptCaptureCandidates',
+      getReceiptCaptureCandidates,
+      [],
+      'Receipt capture data could not be loaded.'
+    ),
+    safeResult(
+      'teamReadyCandidates',
+      getTeamReadyCandidates,
+      [],
+      'Team readiness data could not be loaded.'
+    ),
+    safeResult(
+      'serviceReadyCandidates',
+      getServiceReadyCandidates,
+      [],
+      'Service readiness data could not be loaded.'
+    ),
   ])
 
-  if (!workSurface) return null
+  if (!workSurfaceResult.data) {
+    if (workSurfaceResult.status === 'unavailable') {
+      return (
+        <DegradedDataNotice
+          title="Lifecycle actions unavailable"
+          detail="Core work surface data could not be loaded, so lifecycle actions are paused instead of being hidden."
+        />
+      )
+    }
+    return null
+  }
+
+  const workSurface = workSurfaceResult.data
 
   const [
-    procurementCandidates,
-    prepFlowCandidates,
-    travelConfirmCandidates,
-    executionNextCandidates,
+    procurementCandidatesResult,
+    prepFlowCandidatesResult,
+    travelConfirmCandidatesResult,
+    executionNextCandidatesResult,
   ] = await Promise.all([
-    safe('procurementCandidates', () => getProcurementCandidates(workSurface), []),
-    safe('prepFlowCandidates', () => getPrepFlowCandidates(workSurface), []),
-    safe('travelConfirmCandidates', () => getTravelConfirmCandidates(workSurface), []),
-    safe('executionNextCandidates', getExecutionNextCandidates, []),
+    safeResult(
+      'procurementCandidates',
+      () => getProcurementCandidates(workSurface),
+      [],
+      'Procurement action data could not be loaded.'
+    ),
+    safeResult(
+      'prepFlowCandidates',
+      () => getPrepFlowCandidates(workSurface),
+      [],
+      'Prep flow action data could not be loaded.'
+    ),
+    safeResult(
+      'travelConfirmCandidates',
+      () => getTravelConfirmCandidates(workSurface),
+      [],
+      'Travel confirmation data could not be loaded.'
+    ),
+    safeResult(
+      'executionNextCandidates',
+      getExecutionNextCandidates,
+      [],
+      'Execution action data could not be loaded.'
+    ),
   ])
 
-  const prepareTask = resolvePrepareNextTask({ workSurface, prepPrompts })
-  const procurementTask = resolveProcurementNextTask(procurementCandidates)
-  const prepFlowTask = resolvePrepFlowTask(prepFlowCandidates)
-  const travelTask = resolveTravelConfirmTask(travelConfirmCandidates)
+  const degradedLabels = [
+    isUnavailable(prepPromptsResult) ? 'prep prompts' : null,
+    isUnavailable(menuDecisionCandidatesResult) ? 'menu decisions' : null,
+    isUnavailable(safetyCheckCandidatesResult) ? 'safety checks' : null,
+    isUnavailable(collectBalanceCandidatesResult) ? 'balances' : null,
+    isUnavailable(receiptCaptureCandidatesResult) ? 'receipts' : null,
+    isUnavailable(teamReadyCandidatesResult) ? 'team readiness' : null,
+    isUnavailable(serviceReadyCandidatesResult) ? 'service readiness' : null,
+    isUnavailable(procurementCandidatesResult) ? 'procurement' : null,
+    isUnavailable(prepFlowCandidatesResult) ? 'prep flow' : null,
+    isUnavailable(travelConfirmCandidatesResult) ? 'travel' : null,
+    isUnavailable(executionNextCandidatesResult) ? 'execution' : null,
+  ].filter((label): label is string => Boolean(label))
+
+  const prepareTask = resolvePrepareNextTask({ workSurface, prepPrompts: prepPromptsResult.data })
+  const procurementTask = resolveProcurementNextTask(procurementCandidatesResult.data)
+  const prepFlowTask = resolvePrepFlowTask(prepFlowCandidatesResult.data)
+  const travelTask = resolveTravelConfirmTask(travelConfirmCandidatesResult.data)
   const blockedTask = resolveFixMissingFactTask(workSurface)
   const commitTask = resolveCommitNextTask(workSurface)
-  const menuTask = resolveMenuDecisionTask(menuDecisionCandidates as MenuDecisionCandidate[])
-  const safetyTask = resolveSafetyCheckTask(safetyCheckCandidates as SafetyCheckCandidate[])
+  const menuTask = resolveMenuDecisionTask(
+    menuDecisionCandidatesResult.data as MenuDecisionCandidate[]
+  )
+  const safetyTask = resolveSafetyCheckTask(
+    safetyCheckCandidatesResult.data as SafetyCheckCandidate[]
+  )
   const collectBalanceTask = resolveCollectBalanceTask(
-    collectBalanceCandidates as CollectBalanceCandidate[]
+    collectBalanceCandidatesResult.data as CollectBalanceCandidate[]
   )
   const receiptCaptureTask = resolveReceiptCaptureTask(
-    receiptCaptureCandidates as ReceiptCaptureCandidate[]
+    receiptCaptureCandidatesResult.data as ReceiptCaptureCandidate[]
   )
-  const teamReadyTask = resolveTeamReadyTask(teamReadyCandidates as TeamReadyCandidate[])
-  const serviceTask = resolveServiceReadyTask(serviceReadyCandidates)
-  const executionTask = resolveExecutionNextTask(executionNextCandidates)
+  const teamReadyTask = resolveTeamReadyTask(teamReadyCandidatesResult.data as TeamReadyCandidate[])
+  const serviceTask = resolveServiceReadyTask(serviceReadyCandidatesResult.data)
+  const executionTask = resolveExecutionNextTask(executionNextCandidatesResult.data)
 
   if (
     !prepareTask &&
@@ -1401,11 +1554,26 @@ async function LifecycleActionLayerSection() {
     !serviceTask &&
     !executionTask
   ) {
+    if (degradedLabels.length > 0) {
+      return (
+        <DegradedDataNotice
+          title="Lifecycle actions using partial data"
+          detail={`Some action data could not be loaded: ${degradedLabels.join(', ')}.`}
+        />
+      )
+    }
     return null
   }
 
   return (
     <section className="grid gap-4 xl:grid-cols-2">
+      {degradedLabels.length > 0 ? (
+        <DegradedDataNotice
+          title="Lifecycle actions using partial data"
+          detail={`Some action data could not be loaded: ${degradedLabels.join(', ')}.`}
+          className="xl:col-span-2"
+        />
+      ) : null}
       {prepareTask ? <ActionSurfaceCard sectionLabel="Prepare Next" task={prepareTask} /> : null}
       {procurementTask ? (
         <ActionSurfaceCard sectionLabel="Procurement Next" task={procurementTask} />
@@ -1434,32 +1602,86 @@ async function LifecycleActionLayerSection() {
 }
 
 async function RelationshipActionLayerSection() {
-  const candidates = await safe('relationshipNextCandidates', getRelationshipNextCandidates, [])
-  const task = resolveRelationshipNextTask(candidates as RelationshipNextCandidate[])
+  const candidatesResult = await safeResult(
+    'relationshipNextCandidates',
+    getRelationshipNextCandidates,
+    [],
+    'Relationship action data could not be loaded.'
+  )
+  const task = resolveRelationshipNextTask(candidatesResult.data as RelationshipNextCandidate[])
 
-  if (!task) return null
+  if (!task) {
+    if (candidatesResult.status === 'unavailable') {
+      return (
+        <DegradedDataNotice
+          title="Relationship actions unavailable"
+          detail="Client relationship data could not be loaded, so the next relationship action is paused instead of being hidden."
+        />
+      )
+    }
+    return null
+  }
 
   return (
     <section>
+      {candidatesResult.status === 'unavailable' ? (
+        <DegradedDataNotice
+          title="Relationship actions using partial data"
+          detail="Client relationship data could not be fully loaded."
+          className="mb-3"
+        />
+      ) : null}
       <ActionSurfaceCard sectionLabel="Relationship Next" task={task} />
     </section>
   )
 }
 
 async function PostEventActionLayerSection() {
-  const [eventsNeedingClosure, trustLoopCandidates] = await Promise.all([
-    safe('eventsNeedingClosure', getEventsNeedingClosure, []),
-    safe('trustLoopCandidates', getTrustLoopCandidates, []),
+  const [eventsNeedingClosureResult, trustLoopCandidatesResult] = await Promise.all([
+    safeResult(
+      'eventsNeedingClosure',
+      getEventsNeedingClosure,
+      [],
+      'Post-event closeout data could not be loaded.'
+    ),
+    safeResult(
+      'trustLoopCandidates',
+      getTrustLoopCandidates,
+      [],
+      'Client trust loop data could not be loaded.'
+    ),
   ])
 
-  const resetTask = resolveResetNextTask(eventsNeedingClosure as ResetNextCandidate[])
-  const task = resolveCloseOutNextTask(eventsNeedingClosure as CloseOutCandidate[])
-  const trustTask = resolveTrustLoopNextTask(trustLoopCandidates)
+  const degradedLabels = [
+    isUnavailable(eventsNeedingClosureResult) ? 'closeout' : null,
+    isUnavailable(trustLoopCandidatesResult) ? 'trust loop' : null,
+  ].filter((label): label is string => Boolean(label))
 
-  if (!resetTask && !task && !trustTask) return null
+  const resetTask = resolveResetNextTask(eventsNeedingClosureResult.data as ResetNextCandidate[])
+  const task = resolveCloseOutNextTask(eventsNeedingClosureResult.data as CloseOutCandidate[])
+  const trustTask = resolveTrustLoopNextTask(trustLoopCandidatesResult.data)
+
+  if (!resetTask && !task && !trustTask) {
+    if (degradedLabels.length > 0) {
+      return (
+        <DegradedDataNotice
+          title="Post-event actions using partial data"
+          detail={`Some post-event data could not be loaded: ${degradedLabels.join(', ')}.`}
+        />
+      )
+    }
+    return null
+  }
 
   return (
     <section className="grid gap-4 xl:grid-cols-2">
+      {degradedLabels.length > 0 ? (
+        <DegradedDataNotice
+          title="Post-event actions using partial data"
+          detail={`Some post-event data could not be loaded: ${degradedLabels.join(', ')}.`}
+          className="xl:col-span-2"
+        />
+      ) : null}
       {resetTask ? <ActionSurfaceCard sectionLabel="Reset Next" task={resetTask} /> : null}
       {task ? <ActionSurfaceCard sectionLabel="Close Out Next" task={task} /> : null}
       {trustTask ? <ActionSurfaceCard sectionLabel="Trust Loop Next" task={trustTask} /> : null}
@@ -1468,9 +1690,24 @@ async function PostEventActionLayerSection() {
 }
 
 async function WeeklyBriefingSection() {
-  const briefing = await safe('weeklyBriefing', getWeeklyPriceBriefing, null)
-  if (!briefing) return null
-  return <WeeklyBriefingCard briefing={briefing} />
+  const briefingResult = await safeResult(
+    'weeklyBriefing',
+    getWeeklyPriceBriefing,
+    null,
+    'Weekly price briefing data could not be loaded.'
+  )
+  if (!briefingResult.data) {
+    if (briefingResult.status === 'unavailable') {
+      return (
+        <DegradedDataNotice
+          title="Weekly price briefing unavailable"
+          detail="Latest price briefing data could not be loaded right now."
+        />
+      )
+    }
+    return null
+  }
+  return <WeeklyBriefingCard briefing={briefingResult.data} />
 }
 
 async function CoverageHealthSection() {
@@ -1499,13 +1736,35 @@ async function PipelineStatusSection() {
 }
 
 async function QuickNotesLoader() {
-  const notes = await safe('quickNotes', () => getQuickNotes({ limit: 20 }), [])
-  return <QuickNotesSection initialNotes={notes} />
+  const notesResult = await safeResult(
+    'quickNotes',
+    () => getQuickNotes({ limit: 20 }),
+    [],
+    'Quick notes could not be loaded.'
+  )
+  return (
+    <>
+      {notesResult.status === 'unavailable' ? (
+        <DegradedDataNotice
+          title="Quick notes using partial data"
+          detail="Saved notes could not be loaded. New notes can still be captured."
+          className="mb-3"
+        />
+      ) : null}
+      <QuickNotesSection initialNotes={notesResult.data} />
+    </>
+  )
 }
 
 export default async function ChefDashboard() {
   const user = await requireChef()
-  const queuePromise = safe('queue', getPriorityQueue, emptyQueue)
+  const queueResultPromise = safeResult(
+    'queue',
+    getPriorityQueue,
+    emptyQueue,
+    'Priority queue data could not be loaded.'
+  )
+  const queuePromise = queueResultPromise.then((result) => result.data)
   const decisionQueuePromise = safe('decisionQueue', getDecisionQueue, emptyDecisionQueue)
 
   const hour = new Date().getHours()
@@ -1686,7 +1945,7 @@ export default async function ChefDashboard() {
         <WidgetErrorBoundary name="Resolve Next" compact>
           <Suspense fallback={<ResolveNextSkeleton />}>
             <ResolveNextSection
-              queuePromise={queuePromise}
+              queueResultPromise={queueResultPromise}
               onboardingProgress={onboardingProgress}
               profileGated={profileGated}
             />
