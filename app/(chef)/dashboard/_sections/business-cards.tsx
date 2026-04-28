@@ -6,15 +6,17 @@ import { formatCurrency } from '@/lib/utils/format'
 import { getRegionalSettings } from '@/lib/chef/actions'
 import { getTargetsForArchetype } from '@/lib/costing/knowledge'
 import { getCachedChefArchetype } from '@/lib/chef/layout-data-cache'
+import { isAdmin } from '@/lib/auth/admin'
 import { requireChef } from '@/lib/auth/get-user'
 import { MONTH_NAMES } from './business-section-defaults'
 import { loadBusinessCardsData } from './business-cards-loader'
 
 export async function BusinessCards() {
   const chef = await requireChef()
-  const [archetype, regional] = await Promise.all([
+  const [archetype, regional, userIsAdmin] = await Promise.all([
     getCachedChefArchetype(chef.entityId),
     getRegionalSettings(),
+    isAdmin(),
   ])
   const now = new Date()
   const currentMonthName = MONTH_NAMES[now.getMonth()]
@@ -32,7 +34,7 @@ export async function BusinessCards() {
     platformScore,
     stalledDrafts,
     failedSections,
-  } = await loadBusinessCardsData()
+  } = await loadBusinessCardsData({ includeProspecting: userIsAdmin })
 
   const currOpts = { locale: regional.locale, currency: regional.currencyCode }
   const fmt = (cents: number) => formatCurrency(cents, currOpts)
@@ -57,6 +59,7 @@ export async function BusinessCards() {
   const openInquiries = (inquiryStats.new ?? 0) + (inquiryStats.awaiting_client ?? 0)
   const hotPipeline = hotPipelineCount ?? 0
   const collectionRate = invoicePulse.monthlyStats.collectionRate
+  const showLeadFunnel = openInquiries > 0 || (userIsAdmin && hotPipeline > 0)
 
   return (
     <>
@@ -121,19 +124,21 @@ export async function BusinessCards() {
         />
       )}
 
-      {(openInquiries > 0 || hotPipeline > 0) && (
+      {showLeadFunnel && (
         <StatCard
           widgetId="lead_funnel_live"
           title="Lead Funnel"
           value={String(openInquiries)}
           subtitle="open inquiries"
           trend={
-            hotPipeline > 0
-              ? `${hotPipeline} hot leads`
-              : `${prospectStats.total ?? 0} total prospects`
+            userIsAdmin
+              ? hotPipeline > 0
+                ? `${hotPipeline} hot leads`
+                : `${prospectStats.total ?? 0} total prospects`
+              : 'Client inquiries only'
           }
           trendDirection={openInquiries > 0 ? 'up' : 'flat'}
-          href="/inquiries"
+          href={userIsAdmin ? '/prospecting' : '/inquiries'}
         />
       )}
 
@@ -145,7 +150,7 @@ export async function BusinessCards() {
           subtitle="collection rate this month"
           trend={`${fmt(invoicePulse.monthlyStats.totalPaidCents)} collected`}
           trendDirection={collectionRate >= 80 ? 'up' : collectionRate >= 50 ? 'flat' : 'down'}
-          href="/invoices"
+          href="/finance/invoices"
         />
       )}
 

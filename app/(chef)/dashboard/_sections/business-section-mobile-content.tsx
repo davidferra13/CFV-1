@@ -273,6 +273,7 @@ export function BusinessSectionMobileContent(
   const remyOverrides = Array.isArray(remyApprovalPolicies) ? remyApprovalPolicies.length : 0
   const totalWixSubmissions = Array.isArray(wixSubmissions) ? wixSubmissions.length : 0
   const totalSnapshots = Array.isArray(documentSnapshots) ? documentSnapshots.length : 0
+  const openInquiryCount = Number(inquiryStats.new ?? 0) + Number(inquiryStats.awaiting_client ?? 0)
 
   const metricWidgets: MetricWidget[] = [
     {
@@ -381,7 +382,10 @@ export function BusinessSectionMobileContent(
           label: 'Avg Food Cost',
           value: hasFoodCostData ? toPercent(avgFoodCostPercent) : 'No data',
         },
-        { label: 'Funnel Prospects', value: toInteger(conversionFunnel.totalProspects) },
+        {
+          label: userIsAdmin ? 'Funnel Prospects' : 'Open Inquiries',
+          value: toInteger(userIsAdmin ? conversionFunnel.totalProspects : openInquiryCount),
+        },
       ],
     },
     {
@@ -416,16 +420,19 @@ export function BusinessSectionMobileContent(
     },
     {
       id: 'lead_funnel_live',
-      title: 'Lead Funnel Live',
-      href: '/prospecting',
-      rows: [
-        { label: 'Prospects', value: toInteger(prospectStats.total) },
-        { label: 'Hot Pipeline', value: toInteger(context.hotPipelineCount) },
-        {
-          label: 'Open Inquiries',
-          value: toInteger(inquiryStats.new + inquiryStats.awaiting_client),
-        },
-      ],
+      title: userIsAdmin ? 'Lead Funnel Live' : 'Inquiry Funnel',
+      href: userIsAdmin ? '/prospecting' : '/inquiries',
+      rows: userIsAdmin
+        ? [
+            { label: 'Prospects', value: toInteger(prospectStats.total) },
+            { label: 'Hot Pipeline', value: toInteger(context.hotPipelineCount) },
+            { label: 'Open Inquiries', value: toInteger(openInquiryCount) },
+          ]
+        : [
+            { label: 'New Inquiries', value: toInteger(inquiryStats.new) },
+            { label: 'Awaiting Client', value: toInteger(inquiryStats.awaiting_client) },
+            { label: 'Open Inquiries', value: toInteger(openInquiryCount) },
+          ],
     },
     {
       id: 'network_collab_growth',
@@ -550,7 +557,7 @@ export function BusinessSectionMobileContent(
     {
       id: 'reports_snapshot',
       title: 'Reports Snapshot',
-      href: '/reports/daily',
+      href: '/analytics/daily-report',
       rows: [
         { label: 'Latest Report', value: latestDailyReportDate ?? 'Not available' },
         {
@@ -563,7 +570,7 @@ export function BusinessSectionMobileContent(
     {
       id: 'task_automation',
       title: 'Task & Automation',
-      href: '/automations',
+      href: '/settings/automations',
       rows: [
         { label: 'Automation Rules', value: toInteger(totalAutomations) },
         { label: 'Failed Runs', value: toInteger(automationFailureCount) },
@@ -637,7 +644,7 @@ export function BusinessSectionMobileContent(
     {
       id: 'imports_sync_health',
       title: 'Imports & Sync Health',
-      href: '/integrations',
+      href: '/settings/integrations',
       rows: [
         { label: 'Connected Integrations', value: toInteger(integrationOverview.totals.connected) },
         { label: 'Stale Integrations', value: toInteger(staleIntegrationCount) },

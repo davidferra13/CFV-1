@@ -1,19 +1,21 @@
 ﻿'use client'
 // Notification Settings Form
 // Per-category channel toggles (email, push, SMS) + SMS phone setup.
-// Mounted on /settings/notifications. Uses optimistic UI - saves on toggle.
+// Mounted on /settings/notifications. Uses optimistic UI with explicit channel saves.
 
 import { useState, useTransition } from 'react'
 import { toast } from 'sonner'
 import { usePushSubscription } from '@/components/notifications/use-push-subscription'
 import {
-  upsertCategoryPreference,
+  upsertCategoryPreferencesBatch,
   updateNotificationExperienceSettings,
   updateSmsSettings,
-  type CategoryPreference,
-  type NotificationExperienceSettings,
-  type SmsSettings,
 } from '@/lib/notifications/settings-actions'
+import type {
+  CategoryPreference,
+  NotificationExperienceSettings,
+  SmsSettings,
+} from '@/lib/notifications/settings-types'
 import { TIER_CHANNEL_DEFAULTS, DEFAULT_TIER_MAP } from '@/lib/notifications/tier-config'
 import {
   type NotificationCategory,
@@ -117,7 +119,9 @@ export function NotificationSettingsForm({
   initialSmsSettings,
   initialExperienceSettings,
 }: Props) {
-  const [isPending, startTransition] = useTransition()
+  const [isSettingsPending, startSettingsTransition] = useTransition()
+  const [, startChannelSaveTransition] = useTransition()
+  const [isSavingChannelChanges, setIsSavingChannelChanges] = useState(false)
   const { state: pushState, isLoading: pushLoading, subscribe, unsubscribe } = usePushSubscription()
 
   // Build a map from preferences array for quick lookup
@@ -142,10 +146,18 @@ export function NotificationSettingsForm({
     }
     return result
   })
+  const [savedChannels, setSavedChannels] = useState(channels)
+  const [dirtyCategories, setDirtyCategories] = useState<
+    Partial<Record<NotificationCategory, boolean>>
+  >({})
+  const [channelSaved, setChannelSaved] = useState(false)
+  const [channelError, setChannelError] = useState<string | null>(null)
 
   // SMS local state
   const [smsPhone, setSmsPhone] = useState(initialSmsSettings.sms_notify_phone ?? '')
   const [smsOptIn, setSmsOptIn] = useState(initialSmsSettings.sms_opt_in)
+  const [savedSmsPhone, setSavedSmsPhone] = useState(initialSmsSettings.sms_notify_phone ?? '')
+  const [savedSmsOptIn, setSavedSmsOptIn] = useState(initialSmsSettings.sms_opt_in)
   const [smsSaved, setSmsSaved] = useState(false)
   const [smsError, setSmsError] = useState<string | null>(null)
   const [experienceSaved, setExperienceSaved] = useState(false)
@@ -161,30 +173,69 @@ export function NotificationSettingsForm({
   const [digestIntervalMinutes, setDigestIntervalMinutes] = useState(
     String(initialExperienceSettings.digest_interval_minutes || 15)
   )
+  const dirtyCategoryList = CHEF_CATEGORIES.filter((cat) => dirtyCategories[cat])
+  const hasChannelChanges = dirtyCategoryList.length > 0
+  const hasSavedSmsSettings = savedSmsOptIn && Boolean(savedSmsPhone.trim())
 
   const handleChannelToggle = (
     category: NotificationCategory,
     channel: 'email' | 'push' | 'sms',
     value: boolean
   ) => {
+    setChannelSaved(false)
+    setChannelError(null)
     setChannels((prev) => ({
       ...prev,
       [category]: { ...prev[category], [channel]: value },
     }))
+    setDirtyCategories((prev) => ({ ...prev, [category]: true }))
+  }
 
-    startTransition(async () => {
-      try {
-        await upsertCategoryPreference(category, {
-          [`${channel}_enabled`]: value,
-        })
-      } catch (err) {
-        console.error('[notification-settings] Failed to save preference', err)
-        setChannels((prev) => ({
-          ...prev,
-          [category]: { ...prev[category], [channel]: !value },
-        }))
-        toast.error('Failed to save notification preference')
-      }
+  const handleChannelSave = () => {
+    const categoriesToSave = CHEF_CATEGORIES.filter((cat) => dirtyCategories[cat])
+    if (categoriesToSave.length === 0 || isSavingChannelChanges) return
+
+    const rollbackChannels = savedChannels
+    const nextSavedChannels = channels
+
+    setChannelSaved(false)
+    setChannelError(null)
+    setIsSavingChannelChanges(true)
+
+    startChannelSaveTransition(() => {
+      void (async () => {
+        try {
+          const result = await upsertCategoryPreferencesBatch(
+            categoriesToSave.map((category) => ({
+              category,
+              email_enabled: nextSavedChannels[category].email,
+              push_enabled: nextSavedChannels[category].push,
+              sms_enabled: nextSavedChannels[category].sms,
+            }))
+          )
+
+          if (result.error) {
+            setChannels(rollbackChannels)
+            setDirtyCategories({})
+            setChannelError(result.error)
+            toast.error('Failed to save notification preferences')
+            return
+          }
+
+          setSavedChannels(nextSavedChannels)
+          setDirtyCategories({})
+          setChannelSaved(true)
+          setTimeout(() => setChannelSaved(false), 3000)
+        } catch (err) {
+          console.error('[notification-settings] Failed to save channel preferences', err)
+          setChannels(rollbackChannels)
+          setDirtyCategories({})
+          setChannelError('Failed to save notification preferences')
+          toast.error('Failed to save notification preferences')
+        } finally {
+          setIsSavingChannelChanges(false)
+        }
+      })()
     })
   }
 
@@ -192,7 +243,7 @@ export function NotificationSettingsForm({
     setSmsSaved(false)
     setSmsError(null)
 
-    startTransition(async () => {
+    startSettingsTransition(async () => {
       try {
         const result = await updateSmsSettings({
           sms_opt_in: smsOptIn,
@@ -201,10 +252,13 @@ export function NotificationSettingsForm({
         if (result.error) {
           setSmsError(result.error)
         } else {
+          setSavedSmsOptIn(smsOptIn)
+          setSavedSmsPhone(smsPhone.trim())
           setSmsSaved(true)
           setTimeout(() => setSmsSaved(false), 3000)
         }
       } catch (err) {
+        setSmsError('Failed to save SMS settings')
         toast.error('Failed to save SMS settings')
       }
     })
@@ -214,7 +268,7 @@ export function NotificationSettingsForm({
     setExperienceSaved(false)
     setExperienceError(null)
 
-    startTransition(async () => {
+    startSettingsTransition(async () => {
       try {
         const parsedInterval = Number.parseInt(digestIntervalMinutes, 10)
         const result = await updateNotificationExperienceSettings({
@@ -332,10 +386,10 @@ export function NotificationSettingsForm({
             <button
               type="button"
               onClick={handleExperienceSave}
-              disabled={isPending}
+              disabled={isSettingsPending}
               className="rounded-md bg-stone-900 px-4 py-2 text-sm font-medium text-white hover:bg-stone-800 disabled:opacity-50 transition-colors"
             >
-              {isPending ? 'Saving...' : 'Save attention controls'}
+              {isSettingsPending ? 'Saving...' : 'Save attention controls'}
             </button>
             {experienceSaved && <span className="text-sm text-emerald-600">Saved</span>}
             {experienceError && <span className="text-sm text-red-600">{experienceError}</span>}
@@ -380,10 +434,10 @@ export function NotificationSettingsForm({
             <button
               type="button"
               onClick={handleSmsSave}
-              disabled={isPending}
+              disabled={isSettingsPending}
               className="rounded-md bg-stone-900 px-4 py-2 text-sm font-medium text-white hover:bg-stone-800 disabled:opacity-50 transition-colors"
             >
-              {isPending ? 'Saving…' : 'Save SMS settings'}
+              {isSettingsPending ? 'Saving…' : 'Save SMS settings'}
             </button>
             {smsSaved && <span className="text-sm text-emerald-600">Saved</span>}
             {smsError && <span className="text-sm text-red-600">{smsError}</span>}
@@ -428,6 +482,7 @@ export function NotificationSettingsForm({
                     <ChannelToggle
                       label={`${CATEGORY_LABELS[cat]} email`}
                       checked={channels[cat].email}
+                      disabled={isSavingChannelChanges}
                       onChange={(v) => handleChannelToggle(cat, 'email', v)}
                     />
                   </td>
@@ -435,7 +490,11 @@ export function NotificationSettingsForm({
                     <ChannelToggle
                       label={`${CATEGORY_LABELS[cat]} push`}
                       checked={channels[cat].push}
-                      disabled={pushState === 'unsupported' || pushState === 'denied'}
+                      disabled={
+                        isSavingChannelChanges ||
+                        pushState === 'unsupported' ||
+                        pushState === 'denied'
+                      }
                       onChange={(v) => handleChannelToggle(cat, 'push', v)}
                     />
                   </td>
@@ -443,7 +502,7 @@ export function NotificationSettingsForm({
                     <ChannelToggle
                       label={`${CATEGORY_LABELS[cat]} SMS`}
                       checked={channels[cat].sms}
-                      disabled={!smsOptIn || !smsPhone}
+                      disabled={isSavingChannelChanges || !hasSavedSmsSettings}
                       onChange={(v) => handleChannelToggle(cat, 'sms', v)}
                     />
                   </td>
@@ -454,10 +513,27 @@ export function NotificationSettingsForm({
         </div>
 
         <div className="border-t border-stone-800 px-5 py-3">
-          <p className="text-xs text-stone-400">
-            SMS toggles are disabled until you save a phone number and opt in above. Push toggles
-            are disabled if push is unsupported or denied by the browser.
-          </p>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-xs text-stone-400">
+              SMS toggles are disabled until you save a phone number and opt in above. Push toggles
+              are disabled if push is unsupported or denied by the browser.
+            </p>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={handleChannelSave}
+                disabled={!hasChannelChanges || isSavingChannelChanges}
+                className="rounded-md bg-stone-900 px-4 py-2 text-sm font-medium text-white hover:bg-stone-800 disabled:opacity-50 transition-colors"
+              >
+                {isSavingChannelChanges ? 'Saving...' : 'Save channel changes'}
+              </button>
+              {hasChannelChanges && !isSavingChannelChanges && (
+                <span className="text-xs text-stone-400">{dirtyCategoryList.length} unsaved</span>
+              )}
+              {channelSaved && <span className="text-sm text-emerald-600">Saved</span>}
+              {channelError && <span className="text-sm text-red-600">{channelError}</span>}
+            </div>
+          </div>
         </div>
       </section>
     </div>

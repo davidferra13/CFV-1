@@ -265,13 +265,15 @@ async function getEventTransitions(eventId: string) {
 }
 
 async function getEventPublicTicketShare(
-  eventId: string
+  eventId: string,
+  tenantId: string
 ): Promise<{ token: string | null; enabled: boolean }> {
   const db: any = createServerClient()
   const { data } = await db
     .from('event_share_settings')
     .select('share_token, tickets_enabled')
     .eq('event_id', eventId)
+    .eq('tenant_id', tenantId)
     .maybeSingle()
 
   return {
@@ -974,7 +976,10 @@ export default async function EventDetailPage({
     getDinnerCircleConfig(params.id).catch(() => null),
     getApprovalGates(params.id).catch(() => []),
     getRawCircleConfigForEvent(params.id).catch(() => ({})),
-    getEventPublicTicketShare(params.id).catch(() => ({ token: null, enabled: false })),
+    getEventPublicTicketShare(params.id, user.tenantId!).catch((err) => {
+      console.error('[EventDetailPage] Ticket share settings query failed:', err)
+      return { token: null, enabled: false }
+    }),
     getPopUpProductLibrary(user.tenantId!).catch(() => []),
   ])
   const publicTicketShareToken = ticketShareResult?.token ?? null

@@ -3,7 +3,7 @@ import type {
   CategoryPreference,
   NotificationExperienceSettings,
   SmsSettings,
-} from '@/lib/notifications/settings-actions'
+} from '@/lib/notifications/settings-types'
 
 type NotificationSettingsProps = {
   initialPreferences: CategoryPreference[]

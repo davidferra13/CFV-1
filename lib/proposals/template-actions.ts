@@ -4,21 +4,9 @@ import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import type { ProposalTemplate } from './template-types'
 
 // ─── Types ───────────────────────────────────────────────────────
-
-export type ProposalTemplate = {
-  id: string
-  chefId: string
-  name: string
-  coverPhotoUrl: string | null
-  description: string | null
-  defaultMenuId: string | null
-  basePriceCents: number
-  includedServices: string[] | Record<string, unknown> | null
-  createdAt: string
-  updatedAt: string
-}
 
 // ─── Schemas ─────────────────────────────────────────────────────
 
@@ -59,6 +47,7 @@ export async function createProposalTemplate(
   if (error) throw new Error(`Failed to create proposal template: ${error.message}`)
 
   revalidatePath('/proposals')
+  revalidatePath('/proposals/templates')
 
   return mapTemplate(data)
 }
@@ -94,7 +83,7 @@ export async function getProposalTemplate(id: string): Promise<ProposalTemplate>
   return mapTemplate(data)
 }
 
-export async function deleteProposalTemplate(id: string): Promise<void> {
+export async function deleteProposalTemplate(id: string): Promise<{ success: true }> {
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -107,6 +96,9 @@ export async function deleteProposalTemplate(id: string): Promise<void> {
   if (error) throw new Error(`Failed to delete proposal template: ${error.message}`)
 
   revalidatePath('/proposals')
+  revalidatePath('/proposals/templates')
+
+  return { success: true }
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────

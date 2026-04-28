@@ -63,6 +63,9 @@ export async function logIngredientPrice(input: LogPriceInput) {
     console.error('[logIngredientPrice] Price cascade failed (non-blocking):', err)
   }
 
+  revalidatePath('/recipes/ingredients')
+  revalidatePath(`/inventory/ingredients/${validated.ingredient_id}`)
+
   return { success: true, entry: data }
 }
 

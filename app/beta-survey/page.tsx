@@ -17,7 +17,7 @@ export default async function BetaSurveyPage() {
   const user = await getCurrentUser()
 
   if (!user) {
-    redirect('/login')
+    redirect('/auth/signin')
   }
 
   const redirectTo = user.role === 'chef' ? '/dashboard' : '/my-events'

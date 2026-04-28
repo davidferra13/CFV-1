@@ -6,13 +6,14 @@ import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { listProposalTemplates } from '@/lib/proposals/template-actions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import type { ProposalTemplate } from '@/lib/proposals/template-types'
 
 export const metadata: Metadata = { title: 'Proposals' }
 
 export default async function ProposalsPage() {
-  const user = await requireChef()
+  await requireChef()
 
-  const templates = await listProposalTemplates().catch(() => [])
+  const templatesResult = await loadTemplates()
 
   return (
     <div className="space-y-6">
@@ -63,9 +64,15 @@ export default async function ProposalsPage() {
       {/* Template List */}
       <div>
         <h2 className="text-sm font-semibold text-stone-500 uppercase tracking-wide mb-3">
-          Your Templates ({(templates as any[]).length})
+          Your Templates (
+          {templatesResult.success ? templatesResult.templates.length : 'Unavailable'})
         </h2>
-        {(templates as any[]).length === 0 ? (
+        {!templatesResult.success ? (
+          <Card className="p-8 text-center border-red-900/50">
+            <p className="text-stone-100 text-sm font-medium">Proposal templates could not load.</p>
+            <p className="text-stone-500 text-sm mt-1">{templatesResult.error}</p>
+          </Card>
+        ) : templatesResult.templates.length === 0 ? (
           <Card className="p-8 text-center">
             <p className="text-stone-500 text-sm">
               No proposal templates yet. Create your first template to start sending polished
@@ -80,8 +87,8 @@ export default async function ProposalsPage() {
           </Card>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {(templates as any[]).map((template: any) => (
-              <Link key={template.id} href={`/proposals/templates?edit=${template.id}`}>
+            {templatesResult.templates.map((template) => (
+              <Link key={template.id} href="/proposals/templates">
                 <Card className="p-4 hover:shadow-md transition-shadow cursor-pointer h-full">
                   <h3 className="font-semibold text-stone-100 mb-1">
                     {template.name || 'Untitled Template'}
@@ -102,4 +109,18 @@ export default async function ProposalsPage() {
       </div>
     </div>
   )
+}
+
+async function loadTemplates(): Promise<
+  { success: true; templates: ProposalTemplate[] } | { success: false; error: string }
+> {
+  try {
+    return { success: true, templates: await listProposalTemplates() }
+  } catch (err) {
+    console.error('[proposals] Failed to load proposal templates', err)
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : 'An unexpected error occurred.',
+    }
+  }
 }

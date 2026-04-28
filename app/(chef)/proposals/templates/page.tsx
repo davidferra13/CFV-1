@@ -7,22 +7,17 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { listProposalTemplates } from '@/lib/proposals/template-actions'
 import { VisualBuilder } from '@/components/proposals/visual-builder'
+import { Card } from '@/components/ui/card'
+import type { ProposalTemplate } from '@/lib/proposals/template-types'
 
 export const metadata: Metadata = { title: 'Proposal Templates' }
 
+type ProposalTemplateMenu = { id: string; name: string }
+
 export default async function ProposalTemplatesPage() {
   const user = await requireChef()
-  const db: any = createServerClient()
 
-  const [templates, menusResult] = await Promise.all([
-    listProposalTemplates().catch(() => []),
-    db
-      .from('menus')
-      .select('id, name')
-      .eq('tenant_id', user.tenantId!)
-      .then((res: any) => res.data ?? [])
-      .catch(() => []),
-  ])
+  const builderData = await loadTemplateBuilderData(user.tenantId!)
 
   return (
     <div className="space-y-6">
@@ -38,10 +33,47 @@ export default async function ProposalTemplatesPage() {
         </div>
       </div>
 
-      <VisualBuilder
-        templates={templates as any[]}
-        menus={menusResult as { id: string; name: string }[]}
-      />
+      {builderData.success ? (
+        <VisualBuilder templates={builderData.templates} menus={builderData.menus} />
+      ) : (
+        <Card className="p-8 text-center border-red-900/50">
+          <p className="text-stone-100 text-sm font-medium">
+            Proposal template data could not load.
+          </p>
+          <p className="text-stone-500 text-sm mt-1">{builderData.error}</p>
+        </Card>
+      )}
     </div>
   )
+}
+
+async function loadTemplateBuilderData(
+  tenantId: string
+): Promise<
+  | { success: true; templates: ProposalTemplate[]; menus: ProposalTemplateMenu[] }
+  | { success: false; error: string }
+> {
+  try {
+    const [templates, menus] = await Promise.all([listProposalTemplates(), listMenus(tenantId)])
+    return { success: true, templates, menus }
+  } catch (err) {
+    console.error('[proposals] Failed to load proposal template builder data', err)
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : 'An unexpected error occurred.',
+    }
+  }
+}
+
+async function listMenus(tenantId: string): Promise<ProposalTemplateMenu[]> {
+  const db: any = createServerClient()
+  const { data, error } = await db
+    .from('menus')
+    .select('id, name')
+    .eq('tenant_id', tenantId)
+    .order('name', { ascending: true })
+
+  if (error) throw new Error(`Failed to list menus: ${error.message}`)
+
+  return data ?? []
 }

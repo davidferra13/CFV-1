@@ -229,11 +229,11 @@ export function EventDetailTicketsTab({
               )}
               <Button
                 variant="ghost"
-                onClick={() => handleToggleTicketing(ticketTypes.length > 0 && !summary)}
+                onClick={() => handleToggleTicketing(!ticketsEnabled)}
                 disabled={isPending}
                 className="text-xs"
               >
-                {summary ? 'Disable Sales' : 'Enable Sales'}
+                {ticketsEnabled ? 'Disable Sales' : 'Enable Sales'}
               </Button>
             </div>
           </div>

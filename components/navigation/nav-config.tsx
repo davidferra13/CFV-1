@@ -1016,6 +1016,11 @@ export const navGroups: NavGroup[] = [
         icon: ListChecks,
       },
       {
+        href: '/dependencies',
+        label: 'Dependency Map',
+        icon: TreeStructure,
+      },
+      {
         href: '/documents',
         label: 'Documents',
         icon: FileText,

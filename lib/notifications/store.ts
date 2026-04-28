@@ -12,7 +12,7 @@ import type {
   CategoryPreference,
   SmsSettings,
   NotificationExperienceSettings,
-} from './settings-actions'
+} from './settings-types'
 import type { TierMapEntry } from './tier-actions'
 
 // ── Identity resolution ────────────────────────────────────────────────────

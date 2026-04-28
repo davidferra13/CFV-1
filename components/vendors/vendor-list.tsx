@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState, useTransition } from 'react'
 import { getVendors, togglePreferred, deleteVendor } from '@/lib/vendors/vendor-actions'
-import type { VendorCategory } from '@/lib/vendors/vendor-actions'
+import type { VendorCategory } from '@/lib/vendors/types'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Star, Plus, Trash2, Search } from '@/components/ui/icons'

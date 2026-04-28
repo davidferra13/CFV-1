@@ -5,26 +5,18 @@ import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
 import { broadcastTenantMutation } from '@/lib/realtime/broadcast'
 import { z } from 'zod'
+import { toVendorType, VENDOR_CATEGORY_VALUES } from './constants'
+import type { PriceEntryInput, VendorCategory, VendorInput } from './types'
 
 // ============================================
 // SCHEMAS
 // ============================================
 
-const VendorCategory = z.enum([
-  'grocery',
-  'specialty',
-  'farmers_market',
-  'wholesale',
-  'equipment',
-  'rental',
-  'other',
-])
-
-export type VendorCategory = z.infer<typeof VendorCategory>
+const VendorCategorySchema = z.enum(VENDOR_CATEGORY_VALUES)
 
 const VendorSchema = z.object({
   name: z.string().min(1, 'Name is required'),
-  category: VendorCategory,
+  category: VendorCategorySchema,
   contact_name: z.string().optional().nullable(),
   phone: z.string().optional().nullable(),
   email: z.string().email().optional().or(z.literal('')).nullable(),
@@ -34,8 +26,6 @@ const VendorSchema = z.object({
   is_preferred: z.boolean().optional().default(false),
   rating: z.number().int().min(1).max(5).optional().nullable(),
 })
-
-export type VendorInput = z.infer<typeof VendorSchema>
 
 const PriceEntrySchema = z.object({
   item_name: z.string().min(1, 'Item name is required'),
@@ -47,8 +37,6 @@ const PriceEntrySchema = z.object({
     .optional(),
   notes: z.string().optional().nullable(),
 })
-
-export type PriceEntryInput = z.infer<typeof PriceEntrySchema>
 
 // ============================================
 // VENDOR CRUD
@@ -81,7 +69,7 @@ export async function createVendor(input: VendorInput) {
 
   const { data: vendor, error } = await db
     .from('vendors')
-    .insert({ ...data, chef_id: tenantId })
+    .insert({ ...data, chef_id: tenantId, vendor_type: toVendorType(data.category) })
     .select()
     .single()
 
@@ -105,7 +93,11 @@ export async function updateVendor(id: string, input: VendorInput) {
 
   const { data: vendor, error } = await db
     .from('vendors')
-    .update({ ...data, updated_at: new Date().toISOString() })
+    .update({
+      ...data,
+      vendor_type: toVendorType(data.category),
+      updated_at: new Date().toISOString(),
+    })
     .eq('id', id)
     .eq('chef_id', tenantId)
     .select()

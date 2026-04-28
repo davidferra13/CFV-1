@@ -11,6 +11,7 @@ import type { EventTicketType } from '@/lib/tickets/types'
 import { submitDinnerCircleVendorInterest } from '@/lib/dinner-circles/actions'
 import { subscribeToChefEvents } from '@/lib/audience/subscriber-actions'
 import { buildEventDefaultLayer } from '@/lib/events/default-behaviors'
+import { toast } from 'sonner'
 
 type Props = {
   event: PublicEventInfo
@@ -378,6 +379,18 @@ export function PublicEventView({
     return window.location.origin + window.location.pathname
   }
 
+  function copyToClipboard(text: string, successMessage: string) {
+    if (!navigator.clipboard?.writeText) {
+      toast.error('Clipboard is unavailable in this browser.')
+      return
+    }
+
+    navigator.clipboard
+      .writeText(text)
+      .then(() => toast.success(successMessage))
+      .catch(() => toast.error('Could not copy. Please try again.'))
+  }
+
   function handleShare() {
     const url = getPublicEventUrl()
     const share = buildPublicDefaults(url).shareSnippets
@@ -388,14 +401,15 @@ export function PublicEventView({
       return
     }
 
-    navigator.clipboard.writeText(share.text)
-    alert('Link copied!')
+    copyToClipboard(share.text, 'Link copied.')
   }
 
   function copyShareSnippet(kind: 'text' | 'social') {
     const share = buildPublicDefaults(getPublicEventUrl()).shareSnippets
-    navigator.clipboard.writeText(share[kind])
-    alert(kind === 'text' ? 'Text copy copied!' : 'Social copy copied!')
+    copyToClipboard(
+      share[kind],
+      kind === 'text' ? 'Text copy copied.' : 'Social copy copied.'
+    )
   }
 
   function handleDownloadCalendar() {

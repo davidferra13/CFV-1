@@ -278,30 +278,47 @@ export async function handleTicketPurchaseCompleted(session: Stripe.Checkout.Ses
 
   // 3. Create event guest record
   try {
-    const { data: guest } = await db
-      .from('event_guests')
-      .insert({
-        event_id,
-        tenant_id,
-        full_name: ticket.buyer_name,
-        email: ticket.buyer_email,
-        phone: ticket.buyer_phone ?? null,
-        rsvp_status: 'attending',
-        dietary_restrictions: ticket.dietary_restrictions ?? [],
-        allergies: ticket.allergies ?? [],
-        plus_one: !!ticket.plus_one_name,
-        plus_one_name: ticket.plus_one_name ?? null,
-        notes: ticket.notes ?? null,
-        source: 'ticket',
-      })
-      .select('id')
-      .single()
+    let eventShareId: string | null = null
+    try {
+      const { data: share } = await db
+        .from('event_shares')
+        .select('id')
+        .eq('event_id', event_id)
+        .eq('tenant_id', tenant_id)
+        .eq('is_active', true)
+        .limit(1)
+        .maybeSingle()
+      eventShareId = share?.id ?? null
+    } catch (shareErr) {
+      console.error(
+        '[handleTicketPurchaseCompleted] Event share lookup failed (non-blocking):',
+        shareErr
+      )
+    }
+
+    const guestInsert: Record<string, unknown> = {
+      event_id,
+      tenant_id,
+      full_name: ticket.buyer_name,
+      email: ticket.buyer_email,
+      phone: ticket.buyer_phone ?? null,
+      rsvp_status: 'attending',
+      dietary_restrictions: ticket.dietary_restrictions ?? [],
+      allergies: ticket.allergies ?? [],
+      plus_one: !!ticket.plus_one_name,
+      plus_one_name: ticket.plus_one_name ?? null,
+      notes: ticket.notes ?? null,
+    }
+    if (eventShareId) {
+      guestInsert.event_share_id = eventShareId
+    }
+
+    const { data: guest } = await db.from('event_guests').insert(guestInsert).select('id').single()
 
     if (guest) {
       await db.from('event_tickets').update({ event_guest_id: guest.id }).eq('id', ticket_id)
     }
   } catch (guestErr) {
-    // May fail if event_guests doesn't have a source column - non-blocking
     console.error(
       '[handleTicketPurchaseCompleted] Guest record creation failed (non-blocking):',
       guestErr

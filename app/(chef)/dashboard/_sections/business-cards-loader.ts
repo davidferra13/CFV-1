@@ -67,7 +67,13 @@ export type BusinessCardsData = {
   failedSections: string[]
 }
 
-export async function loadBusinessCardsData(): Promise<BusinessCardsData> {
+interface LoadBusinessCardsDataOptions {
+  includeProspecting?: boolean
+}
+
+export async function loadBusinessCardsData({
+  includeProspecting = false,
+}: LoadBusinessCardsDataOptions = {}): Promise<BusinessCardsData> {
   const failedSections: string[] = []
 
   const [
@@ -86,12 +92,16 @@ export async function loadBusinessCardsData(): Promise<BusinessCardsData> {
   ] = await Promise.all([
     safe('eventCounts', getDashboardEventCounts, emptyEventCounts, failedSections),
     safe('foodCostTrend', () => getFoodCostTrend(6), emptyFoodCostTrend, failedSections),
-    safe('hotPipelineCount', getHotPipelineCount, 0, failedSections),
+    includeProspecting
+      ? safe('hotPipelineCount', getHotPipelineCount, 0, failedSections)
+      : Promise.resolve(0),
     safe('inquiryStats', getInquiryStats, emptyInquiryStats, failedSections),
     safe('invoicePulse', getInvoicePulse, EMPTY_INVOICE_PULSE, failedSections),
     safe('monthExpenses', getCurrentMonthExpenseSummary, emptyExpenses, failedSections),
     safe('monthRevenue', getMonthOverMonthRevenue, emptyMonthRevenue, failedSections),
-    safe('prospectStats', getProspectStats, emptyProspectStats, failedSections),
+    includeProspecting
+      ? safe('prospectStats', getProspectStats, emptyProspectStats, failedSections)
+      : Promise.resolve(emptyProspectStats),
     safe('quoteStats', getDashboardQuoteStats, emptyQuoteStats, failedSections),
     safe(
       'revenueGoal',

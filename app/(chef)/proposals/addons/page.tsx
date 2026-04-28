@@ -6,13 +6,14 @@ import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { listAddons } from '@/lib/proposals/addon-actions'
 import { AddonSelector } from '@/components/proposals/addon-selector'
+import { Card } from '@/components/ui/card'
 
 export const metadata: Metadata = { title: 'Proposal Add-Ons' }
 
 export default async function ProposalAddonsPage() {
-  const user = await requireChef()
+  await requireChef()
 
-  const addons = await listAddons().catch(() => [])
+  const addonsResult = await loadAddons()
 
   return (
     <div className="space-y-6">
@@ -28,7 +29,29 @@ export default async function ProposalAddonsPage() {
         </div>
       </div>
 
-      <AddonSelector initialAddons={addons as any[]} />
+      {addonsResult.success ? (
+        <AddonSelector initialAddons={addonsResult.addons as any[]} />
+      ) : (
+        <Card className="p-8 text-center border-red-900/50">
+          <p className="text-stone-100 text-sm font-medium">Proposal add-ons could not load.</p>
+          <p className="text-stone-500 text-sm mt-1">{addonsResult.error}</p>
+        </Card>
+      )}
     </div>
   )
+}
+
+async function loadAddons(): Promise<
+  | { success: true; addons: Awaited<ReturnType<typeof listAddons>> }
+  | { success: false; error: string }
+> {
+  try {
+    return { success: true, addons: await listAddons() }
+  } catch (err) {
+    console.error('[proposals] Failed to load proposal add-ons', err)
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : 'An unexpected error occurred.',
+    }
+  }
 }

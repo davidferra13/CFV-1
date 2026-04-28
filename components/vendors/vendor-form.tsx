@@ -2,21 +2,12 @@
 
 import { useCallback, useMemo, useState, useTransition } from 'react'
 import { createVendor, updateVendor } from '@/lib/vendors/vendor-actions'
-import type { VendorInput, VendorCategory } from '@/lib/vendors/vendor-actions'
+import { VENDOR_CATEGORY_OPTIONS } from '@/lib/vendors/constants'
+import type { VendorInput, VendorCategory } from '@/lib/vendors/types'
 import { Button } from '@/components/ui/button'
 import { Star } from '@/components/ui/icons'
 import { useProtectedForm } from '@/lib/qol/use-protected-form'
 import { FormShield } from '@/components/forms/form-shield'
-
-const CATEGORIES: { value: VendorCategory; label: string }[] = [
-  { value: 'grocery', label: 'Grocery' },
-  { value: 'specialty', label: 'Specialty' },
-  { value: 'farmers_market', label: 'Farmers Market' },
-  { value: 'wholesale', label: 'Wholesale' },
-  { value: 'equipment', label: 'Equipment' },
-  { value: 'rental', label: 'Rental' },
-  { value: 'other', label: 'Other' },
-]
 
 type VendorFormProps = {
   vendor?: {
@@ -177,7 +168,7 @@ export function VendorForm({ vendor, onSaved, onCancel }: VendorFormProps) {
             onChange={(e) => setCategory(e.target.value as VendorCategory)}
             className="w-full border rounded-md px-3 py-2 text-sm bg-background"
           >
-            {CATEGORIES.map((c) => (
+            {VENDOR_CATEGORY_OPTIONS.map((c) => (
               <option key={c.value} value={c.value}>
                 {c.label}
               </option>

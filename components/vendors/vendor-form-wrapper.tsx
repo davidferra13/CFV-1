@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { VendorForm } from './vendor-form'
-import type { VendorCategory } from '@/lib/vendors/vendor-actions'
+import type { VendorCategory } from '@/lib/vendors/types'
 
 type VendorFormWrapperProps = {
   vendor?: {

@@ -139,7 +139,7 @@ export default async function InventoryPage() {
         </div>
         <div className="flex items-center gap-3">
           <Link
-            href="/supply-chain/inventory"
+            href="/inventory"
             className="text-sm text-stone-500 hover:text-stone-300"
           >
             Full Inventory
@@ -173,7 +173,7 @@ export default async function InventoryPage() {
               {sorted.length === 0 ? (
                 <p className="text-sm text-stone-500 py-8 text-center">
                   No inventory tracked yet. Add items from{' '}
-                  <Link href="/supply-chain/inventory" className="text-amber-400 hover:underline">
+                  <Link href="/inventory" className="text-amber-400 hover:underline">
                     Inventory Hub
                   </Link>
                   .

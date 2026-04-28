@@ -152,6 +152,8 @@ export async function createClaim(input: CreateClaimInput) {
   if (error) throw new Error(`Failed to create claim: ${error.message}`)
 
   revalidatePath('/compliance')
+  revalidatePath('/safety/claims')
+  revalidatePath('/safety/claims/new')
   return data as InsuranceClaim
 }
 
@@ -177,6 +179,7 @@ export async function updateClaim(id: string, input: UpdateClaimInput) {
   if (error) throw new Error(`Failed to update claim: ${error.message}`)
 
   revalidatePath('/compliance')
+  revalidatePath('/safety/claims')
   return data as InsuranceClaim
 }
 
@@ -209,6 +212,7 @@ export async function deleteClaim(id: string) {
   if (error) throw new Error(`Failed to delete claim: ${error.message}`)
 
   revalidatePath('/compliance')
+  revalidatePath('/safety/claims')
   return { success: true }
 }
 
@@ -241,6 +245,7 @@ export async function updateClaimStatus(id: string, newStatus: ClaimStatus) {
   if (error) throw new Error(`Failed to update claim status: ${error.message}`)
 
   revalidatePath('/compliance')
+  revalidatePath('/safety/claims')
   return data as InsuranceClaim
 }
 

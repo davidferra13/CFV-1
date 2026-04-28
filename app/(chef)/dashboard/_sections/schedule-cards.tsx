@@ -7,6 +7,7 @@ import { getDOPTaskDigest, type DOPTaskDigest } from '@/lib/scheduling/task-dige
 import { loadEventServiceSimulationPanelState } from '@/lib/service-simulation/state'
 import { getWeatherForEvents, type InlineWeather } from '@/lib/weather/open-meteo'
 import { createServerClient } from '@/lib/db/server'
+import { requireChef } from '@/lib/auth/get-user'
 import { StatCard } from '@/components/dashboard/widget-cards/stat-card'
 import { ListCard, type ListCardItem } from '@/components/dashboard/widget-cards/list-card'
 import { WidgetCardShell } from '@/components/dashboard/widget-cards/widget-card-shell'
@@ -15,11 +16,17 @@ import { Card } from '@/components/ui/card'
 import Link from 'next/link'
 import { format } from 'date-fns'
 
-async function safe<T>(label: string, fn: () => Promise<T>, fallback: T): Promise<T> {
+async function safe<T>(
+  label: string,
+  fn: () => Promise<T>,
+  fallback: T,
+  failedSections?: Set<string>
+): Promise<T> {
   try {
     return await fn()
   } catch (err) {
     console.error(`[Dashboard/ScheduleCards] ${label} failed:`, err)
+    failedSections?.add(label)
     return fallback
   }
 }
@@ -39,10 +46,12 @@ const emptyDOPDigest: DOPTaskDigest = {
 }
 
 export async function ScheduleCards() {
+  const chef = await requireChef()
+  const failedSections = new Set<string>()
   const [weekSchedule, nextEvent, dopTaskDigest] = await Promise.all([
-    safe('weekSchedule', () => getWeekSchedule(0), emptyWeekSchedule),
-    safe('nextEvent', getNextUpcomingEvent, null),
-    safe('dopTaskDigest', getDOPTaskDigest, emptyDOPDigest),
+    safe('weekSchedule', () => getWeekSchedule(0), emptyWeekSchedule, failedSections),
+    safe('nextEvent', getNextUpcomingEvent, null, failedSections),
+    safe('dopTaskDigest', getDOPTaskDigest, emptyDOPDigest, failedSections),
   ])
 
   // Weather fetch
@@ -53,10 +62,12 @@ export async function ScheduleCards() {
       for (const task of dopTaskDigest.tasks) eventIds.add(task.eventId)
       if (eventIds.size === 0) return {}
       const db: any = createServerClient()
-      const { data: eventCoords } = await db
+      const { data: eventCoords, error } = await db
         .from('events')
         .select('id, event_date, location_lat, location_lng')
         .in('id', Array.from(eventIds))
+        .eq('tenant_id', chef.tenantId!)
+      if (error) throw error
       if (!eventCoords || eventCoords.length === 0) return {}
       const withCoords = eventCoords
         .filter((e: any) => e.location_lat != null && e.location_lng != null)
@@ -69,21 +80,26 @@ export async function ScheduleCards() {
       if (withCoords.length === 0) return {}
       return getWeatherForEvents(withCoords)
     },
-    {}
+    {},
+    failedSections
   )
 
   const todaysSchedule = await safe(
     'todaysScheduleEnriched',
     () => getTodaysScheduleEnriched(weatherByEventId),
-    null
+    null,
+    failedSections
   )
   const todaysReadiness = todaysSchedule?.event?.id
     ? await safe(
         'todaysServiceReadiness',
         () => loadEventServiceSimulationPanelState(todaysSchedule.event.id),
-        null
+        null,
+        failedSections
       )
     : null
+  const todaysScheduleFailed = failedSections.has('todaysScheduleEnriched')
+  const nextEventFailed = failedSections.has('nextEvent')
 
   // Build list items for today's schedule
   const scheduleItems: ListCardItem[] = []
@@ -165,20 +181,43 @@ export async function ScheduleCards() {
       )}
 
       {/* Today's Schedule - list card */}
-      <ListCard
-        widgetId="todays_schedule"
-        title="Today's Schedule"
-        count={scheduleItems.length}
-        items={scheduleItems}
-        href="/calendar"
-        emptyMessage={
-          nextEvent
-            ? `No events today. Next: ${nextEvent.occasion || 'Event'} on ${format(new Date(nextEvent.eventDate + 'T12:00:00'), 'MMM d')}`
-            : 'No events scheduled yet. Create your first one to get started.'
-        }
-        emptyActionLabel={nextEvent ? 'View Calendar' : 'Create Event'}
-        emptyActionHref={nextEvent ? '/calendar' : '/events/new'}
-      />
+      {todaysScheduleFailed ? (
+        <WidgetCardShell
+          widgetId="todays_schedule"
+          title="Today's Schedule"
+          size="md"
+          href="/calendar"
+        >
+          <div className="py-3 text-center">
+            <p className="text-xs text-stone-500">
+              Today's schedule could not be loaded. Calendar data may be temporarily unavailable.
+            </p>
+            <Link
+              href="/calendar"
+              className="text-xs text-brand-500 hover:text-brand-400 font-medium mt-1.5 inline-block"
+            >
+              View Calendar &rarr;
+            </Link>
+          </div>
+        </WidgetCardShell>
+      ) : (
+        <ListCard
+          widgetId="todays_schedule"
+          title="Today's Schedule"
+          count={scheduleItems.length}
+          items={scheduleItems}
+          href="/calendar"
+          emptyMessage={
+            nextEvent
+              ? `No events today. Next: ${nextEvent.occasion || 'Event'} on ${format(new Date(nextEvent.eventDate + 'T12:00:00'), 'MMM d')}`
+              : nextEventFailed
+                ? 'No events today. Upcoming event data could not be loaded.'
+                : 'No events scheduled yet. Create your first one to get started.'
+          }
+          emptyActionLabel={nextEvent || nextEventFailed ? 'View Calendar' : 'Create Event'}
+          emptyActionHref={nextEvent || nextEventFailed ? '/calendar' : '/events/new'}
+        />
+      )}
 
       {/* Week Strip - special widget */}
       {weekSchedule.days.length > 0 && (
@@ -217,7 +256,7 @@ export async function ScheduleCards() {
           subtitle={`${dopTaskDigest.dueTodayCount} due today`}
           trend={overdueCount > 0 ? `${overdueCount} overdue` : 'On track'}
           trendDirection={overdueCount > 0 ? 'down' : 'up'}
-          href="/daily-ops"
+          href="/stations/daily-ops"
         />
       )}
     </>

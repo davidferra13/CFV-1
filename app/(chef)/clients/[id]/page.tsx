@@ -340,6 +340,12 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
         </div>
         <div className="flex flex-wrap gap-2">
           <ScheduleMessageDialog clientId={client.id} clientName={client.full_name} />
+          <Link href={`/clients/${client.id}/relationship`}>
+            <Button variant="secondary">Relationship Insights</Button>
+          </Link>
+          <Link href="/culinary/menus/templates">
+            <Button variant="secondary">Menu Templates</Button>
+          </Link>
           <Link href={`/clients/${client.id}/recurring`}>
             <Button variant="secondary">Recurring Planning</Button>
           </Link>
