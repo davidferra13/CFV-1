@@ -1,29 +1,34 @@
 ---
-status: "pending"
-priority: "high"
-category: "uncategorized"
-source: "The Enthusiast"
-confidence: "medium"
-generated: "2026-04-28T18:50:26.266Z"
+status: 'pending'
+priority: 'high'
+category: 'uncategorized'
+source: 'Jacques Pepin'
+confidence: 'medium'
+generated: '2026-04-28T20:26:02.640Z'
 ---
-# Lack of Context:
+
+# Over-Automation:
 
 ## Gap
-Lack of Context:
+
+Over-Automation:
 
 ## Source
-The Enthusiast
+
+Jacques Pepin
 
 ## Confidence
+
 medium (PARTIAL)
 
 ## Affected Files
-- lib/aar/actions.ts
-- lib/aar/feedback-actions.ts
-- lib/activity/actions.ts
+
+- lib/build-queue/capability-registry.ts
 
 ## Search Hints
-- context
+
+- over-automation
 
 ## Suggested Approach
+
 Confirm the current codebase state for the affected workflow, then implement the smallest ChefFlow surface that closes this gap without duplicating an existing partial feature.

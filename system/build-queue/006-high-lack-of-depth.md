@@ -1,27 +1,36 @@
 ---
-status: "pending"
-priority: "high"
-category: "scheduling-calendar"
-source: "Charlotte Vance"
-confidence: "medium"
-generated: "2026-04-28T18:50:26.283Z"
+status: 'pending'
+priority: 'high'
+category: 'uncategorized'
+source: 'Eleanor Vance'
+confidence: 'medium'
+generated: '2026-04-28T20:26:02.638Z'
 ---
-# Booking/Inventory:
+
+# Lack of Depth:
 
 ## Gap
-Booking/Inventory:
+
+Lack of Depth:
 
 ## Source
-Charlotte Vance
+
+Eleanor Vance
 
 ## Confidence
+
 medium (PARTIAL)
 
 ## Affected Files
-- lib/build-queue/capability-registry.ts
+
+- lib/ai/ace-ollama.ts
+- lib/ai/agent-brain.ts
+- lib/ai/correspondence.ts
 
 ## Search Hints
-- bookinginventory
+
+- depth
 
 ## Suggested Approach
+
 Confirm the current codebase state for the affected workflow, then implement the smallest ChefFlow surface that closes this gap without duplicating an existing partial feature.

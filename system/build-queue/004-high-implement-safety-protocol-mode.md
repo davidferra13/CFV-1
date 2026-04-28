@@ -2,20 +2,20 @@
 status: 'pending'
 priority: 'high'
 category: 'uncategorized'
-source: 'Phil Rosenthal'
+source: 'Aiden Clarke'
 confidence: 'medium'
-generated: '2026-04-28T20:26:02.635Z'
+generated: '2026-04-28T20:26:02.637Z'
 ---
 
-# Curator/Expert Layer:
+# Implement "Safety Protocol Mode":
 
 ## Gap
 
-Curator/Expert Layer:
+Implement "Safety Protocol Mode":
 
 ## Source
 
-Phil Rosenthal
+Aiden Clarke
 
 ## Confidence
 
@@ -23,11 +23,17 @@ medium (PARTIAL)
 
 ## Affected Files
 
-- lib/build-queue/capability-registry.ts
+- lib/ai/browser/chrome-ai-adapter.ts
+- lib/ai/browser/ollama-adapter.ts
+- lib/ai/browser/webllm-adapter.ts
 
 ## Search Hints
 
-- curatorexpert
+- implement.safety
+- safety.protocol
+- implement
+- safety
+- protocol
 
 ## Suggested Approach
 

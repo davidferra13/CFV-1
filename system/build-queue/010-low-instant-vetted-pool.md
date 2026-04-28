@@ -1,21 +1,21 @@
 ---
 status: 'pending'
-priority: 'high'
+priority: 'low'
 category: 'uncategorized'
-source: 'Phil Rosenthal'
+source: 'Aaron Deluca'
 confidence: 'medium'
-generated: '2026-04-28T20:26:02.635Z'
+generated: '2026-04-28T20:26:02.641Z'
 ---
 
-# Curator/Expert Layer:
+# Instant Vetted Pool:
 
 ## Gap
 
-Curator/Expert Layer:
+Instant Vetted Pool:
 
 ## Source
 
-Phil Rosenthal
+Aaron Deluca
 
 ## Confidence
 
@@ -23,11 +23,16 @@ medium (PARTIAL)
 
 ## Affected Files
 
-- lib/build-queue/capability-registry.ts
+- lib/admin/activity-feed.ts
+- lib/ai/business-insights.ts
+- lib/ai/command-intent-parser.ts
 
 ## Search Hints
 
-- curatorexpert
+- instant.vetted
+- vetted.pool
+- instant
+- vetted
 
 ## Suggested Approach
 

@@ -1,27 +1,34 @@
 ---
-status: "pending"
-priority: "high"
-category: "audience-community"
-source: "Sarah Chen"
-confidence: "medium"
-generated: "2026-04-28T18:50:26.286Z"
+status: 'pending'
+priority: 'medium'
+category: 'communication'
+source: 'Hailey Bieber'
+confidence: 'medium'
+generated: '2026-04-28T20:26:02.648Z'
 ---
-# Curation/Vetting:
+
+# Discretion/Security:
 
 ## Gap
-Curation/Vetting:
+
+Discretion/Security:
 
 ## Source
-Sarah Chen
+
+Hailey Bieber
 
 ## Confidence
+
 medium (PARTIAL)
 
 ## Affected Files
+
 - lib/build-queue/capability-registry.ts
 
 ## Search Hints
-- curationvetting
+
+- discretionsecurity
 
 ## Suggested Approach
+
 Confirm the current codebase state for the affected workflow, then implement the smallest ChefFlow surface that closes this gap without duplicating an existing partial feature.

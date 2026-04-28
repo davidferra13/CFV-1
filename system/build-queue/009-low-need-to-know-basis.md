@@ -1,21 +1,21 @@
 ---
 status: 'pending'
-priority: 'high'
+priority: 'low'
 category: 'uncategorized'
-source: 'Phil Rosenthal'
+source: 'Caleb Arman'
 confidence: 'medium'
-generated: '2026-04-28T20:26:02.635Z'
+generated: '2026-04-28T20:26:02.640Z'
 ---
 
-# Curator/Expert Layer:
+# "Need-to-Know" Basis:
 
 ## Gap
 
-Curator/Expert Layer:
+"Need-to-Know" Basis:
 
 ## Source
 
-Phil Rosenthal
+Caleb Arman
 
 ## Confidence
 
@@ -23,11 +23,15 @@ medium (PARTIAL)
 
 ## Affected Files
 
-- lib/build-queue/capability-registry.ts
+- lib/commerce/tax-policy.ts
+- lib/db/migrations/schema.ts
+- lib/db/schema/schema.ts
 
 ## Search Hints
 
-- curatorexpert
+- need-to-know.basis
+- need-to-know
+- basis
 
 ## Suggested Approach
 

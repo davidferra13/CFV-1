@@ -1,27 +1,36 @@
 ---
-status: "pending"
-priority: "high"
-category: "uncategorized"
-source: "Jacques Pepin"
-confidence: "medium"
-generated: "2026-04-28T18:50:26.267Z"
+status: 'pending'
+priority: 'high'
+category: 'scheduling-calendar'
+source: 'Padma Lakshmi'
+confidence: 'medium'
+generated: '2026-04-28T20:26:02.651Z'
 ---
-# Over-Automation:
+
+# Real-Time Coordination:
 
 ## Gap
-Over-Automation:
+
+Real-Time Coordination:
 
 ## Source
-Jacques Pepin
+
+Padma Lakshmi
 
 ## Confidence
+
 medium (PARTIAL)
 
 ## Affected Files
+
 - lib/build-queue/capability-registry.ts
+- lib/calling/twilio-actions.ts
+- lib/calling/voice-helpers.ts
 
 ## Search Hints
-- over-automation
+
+- coordination
 
 ## Suggested Approach
+
 Confirm the current codebase state for the affected workflow, then implement the smallest ChefFlow surface that closes this gap without duplicating an existing partial feature.

@@ -1,29 +1,36 @@
 ---
-status: "pending"
-priority: "high"
-category: "uncategorized"
-source: "Eleanor Vance"
-confidence: "medium"
-generated: "2026-04-28T18:50:26.266Z"
+status: 'pending'
+priority: 'high'
+category: 'uncategorized'
+source: 'The Enthusiast'
+confidence: 'medium'
+generated: '2026-04-28T20:26:02.638Z'
 ---
-# Lack of Depth:
+
+# Lack of Context:
 
 ## Gap
-Lack of Depth:
+
+Lack of Context:
 
 ## Source
-Eleanor Vance
+
+The Enthusiast
 
 ## Confidence
+
 medium (PARTIAL)
 
 ## Affected Files
-- lib/ai/ace-ollama.ts
-- lib/ai/agent-brain.ts
-- lib/ai/correspondence.ts
+
+- lib/aar/actions.ts
+- lib/aar/feedback-actions.ts
+- lib/activity/actions.ts
 
 ## Search Hints
-- depth
+
+- context
 
 ## Suggested Approach
+
 Confirm the current codebase state for the affected workflow, then implement the smallest ChefFlow surface that closes this gap without duplicating an existing partial feature.
