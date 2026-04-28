@@ -40,6 +40,18 @@ const KNOWN_FLAGS = [
       'Exception-only: enable advanced API keys and webhook tooling for approved custom integrations',
   },
   {
+    key: 'unreliable_availability_warnings',
+    label: 'Availability Warnings',
+    description:
+      'Show marketplace availability blocking reminders on the chef availability broadcaster',
+  },
+  {
+    key: 'allergen_matrix',
+    label: 'Allergen Matrix',
+    description:
+      'Expose allergen matrix education and controls for chefs using menu safety workflows',
+  },
+  {
     key: 'supplier_calling',
     label: 'Supplier Calling',
     description:

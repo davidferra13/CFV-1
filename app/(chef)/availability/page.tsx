@@ -12,6 +12,7 @@ import { CalendarDays } from '@/components/ui/icons'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { AvailabilityChecklist } from '@/components/availability/availability-checklist'
+import { CHEF_FEATURE_FLAGS, hasChefFeatureFlag } from '@/lib/features/chef-feature-flags'
 
 export const metadata: Metadata = {
   title: 'Availability Broadcaster',
@@ -108,7 +109,10 @@ function statusVariant(status: string): 'success' | 'warning' | 'info' {
 
 export default async function AvailabilityPage() {
   const user = await requireChef()
-  const bookedDates = await getUpcomingBookedDates(user.tenantId!)
+  const [bookedDates, showAvailabilityWarnings] = await Promise.all([
+    getUpcomingBookedDates(user.tenantId!),
+    hasChefFeatureFlag(CHEF_FEATURE_FLAGS.unreliableAvailabilityWarnings, user.entityId),
+  ])
 
   return (
     <div className="mx-auto max-w-4xl space-y-8 px-4 py-8">
@@ -136,6 +140,17 @@ export default async function AvailabilityPage() {
           </div>
         </div>
       </div>
+
+      {showAvailabilityWarnings && bookedDates.length > 0 && (
+        <div className="rounded-lg border border-amber-900/70 bg-amber-950/30 p-4">
+          <p className="text-sm font-medium text-amber-200">Availability warning is active</p>
+          <p className="mt-1 text-sm text-amber-100/80">
+            You have {bookedDates.length} confirmed upcoming date
+            {bookedDates.length === 1 ? '' : 's'} to block on external marketplaces. Work through
+            the checklist below before accepting new inquiries for those dates.
+          </p>
+        </div>
+      )}
 
       {/* Upcoming booked dates */}
       <Card>

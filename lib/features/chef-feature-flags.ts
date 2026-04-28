@@ -4,6 +4,8 @@ import { createServerClient } from '@/lib/db/server'
 
 export const CHEF_FEATURE_FLAGS = {
   developerTools: 'developer_tools',
+  unreliableAvailabilityWarnings: 'unreliable_availability_warnings',
+  allergenMatrix: 'allergen_matrix',
 } as const
 
 export type ChefFeatureFlag = (typeof CHEF_FEATURE_FLAGS)[keyof typeof CHEF_FEATURE_FLAGS]

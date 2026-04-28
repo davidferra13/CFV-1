@@ -83,6 +83,9 @@ Ingredient costs are tracked per recipe. View cost-per-serving in the recipe det
 ## Proposed vs Served Menu
 When building a menu for an event, mark dishes as "proposed". After the event, update any modifications (substitutions, additions, removals). Both are recorded for your reference.
 
+## Allergen Matrix
+Menu detail and event safety views use recipe allergen flags, client allergy records, and event dietary notes to surface cross-contact risks. Keep recipe allergen flags current before sending menus for approval, then review Events > [event] > Safety before prep.
+
 ## Vendors
 Culinary > Vendors. Track specialty suppliers, their contact info, lead times, and notes.`,
   },
