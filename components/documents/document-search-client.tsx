@@ -7,11 +7,8 @@
 import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import {
-  searchAllDocuments,
-  type UnifiedSearchFilters,
-  type UnifiedSearchResult,
-} from '@/lib/documents/search-actions'
+import { searchAllDocuments } from '@/lib/documents/search-actions'
+import type { UnifiedSearchFilters, UnifiedSearchResult } from '@/lib/documents/search-types'
 import { format } from 'date-fns'
 
 type Props = {

@@ -7,44 +7,15 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { logDocumentActivity } from '@/lib/documents/activity-logging'
+import type {
+  UnifiedSearchFilters,
+  UnifiedSearchResponse,
+  UnifiedSearchResult,
+} from '@/lib/documents/search-types'
 import { dateToDateString } from '@/lib/utils/format'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-
-export type UnifiedSearchFilters = {
-  query?: string
-  dateFrom?: string // YYYY-MM-DD
-  dateTo?: string // YYYY-MM-DD
-  amountMinCents?: number
-  amountMaxCents?: number
-  eventId?: string
-  clientId?: string
-  sourceType?: 'all' | 'receipt' | 'document' | 'expense'
-  limit?: number
-  offset?: number
-}
-
-export type UnifiedSearchResult = {
-  id: string
-  source: 'receipt' | 'document' | 'expense'
-  title: string
-  summary: string | null
-  date: string | null
-  amountCents: number | null
-  eventId: string | null
-  eventName: string | null
-  clientId: string | null
-  clientName: string | null
-  status: string | null
-  documentType: string | null
-  folderName: string | null
-}
-
-export type UnifiedSearchResponse = {
-  results: UnifiedSearchResult[]
-  total: number
-  hasMore: boolean
-}
 
 // ─── Search ───────────────────────────────────────────────────────────────────
 
@@ -88,6 +59,30 @@ export async function searchAllDocuments(
   const total = allResults.length
   const paged = allResults.slice(offset, offset + limit)
 
+  if (shouldLogSearch(filters)) {
+    void logDocumentActivity({
+      tenantId: user.tenantId!,
+      userId: user.id,
+      action: 'document_search',
+      entityType: 'document',
+      metadata: {
+        query: filters.query ?? null,
+        sourceType,
+        dateFrom: filters.dateFrom ?? null,
+        dateTo: filters.dateTo ?? null,
+        amountMinCents: filters.amountMinCents ?? null,
+        amountMaxCents: filters.amountMaxCents ?? null,
+        eventId: filters.eventId ?? null,
+        clientId: filters.clientId ?? null,
+        limit,
+        offset,
+        total,
+        returnedCount: paged.length,
+        sourcesSearched: promises.length,
+      },
+    })
+  }
+
   return {
     results: paged,
     total,
@@ -96,6 +91,19 @@ export async function searchAllDocuments(
 }
 
 // ─── Individual source searches ───────────────────────────────────────────────
+
+function shouldLogSearch(filters: UnifiedSearchFilters): boolean {
+  return Boolean(
+    filters.query?.trim() ||
+    filters.dateFrom ||
+    filters.dateTo ||
+    filters.amountMinCents !== undefined ||
+    filters.amountMaxCents !== undefined ||
+    filters.eventId ||
+    filters.clientId ||
+    (filters.sourceType && filters.sourceType !== 'all')
+  )
+}
 
 async function searchReceipts(
   db: any,

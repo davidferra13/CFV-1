@@ -11,8 +11,8 @@ import {
   getDocumentsForEvent,
   getDocumentsForClient,
   getDocumentsForInquiry,
-  type LinkedDocument,
 } from '@/lib/documents/link-actions'
+import type { LinkedDocument } from '@/lib/documents/link-types'
 import { format } from 'date-fns'
 
 type Props = {

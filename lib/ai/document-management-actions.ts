@@ -7,6 +7,7 @@
 import { revalidatePath } from 'next/cache'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { logDocumentActivity } from '@/lib/documents/activity-logging'
 import type { ChefFolder, ChefDocument } from './document-management-types'
 
 // ─── Folder Actions ────────────────────────────────────────────────────────────
@@ -64,6 +65,20 @@ export async function createFolder(
     return { success: false, error: (error as any).message }
   }
 
+  void logDocumentActivity({
+    tenantId: user.tenantId!,
+    userId: user.id,
+    action: 'folder_created',
+    entityType: 'folder',
+    entityId: data.id,
+    metadata: {
+      folderName: data.name,
+      parentFolderId: data.parent_folder_id,
+      color: data.color,
+      icon: data.icon,
+    },
+  })
+
   revalidatePath('/documents')
   return {
     success: true,
@@ -99,6 +114,18 @@ export async function moveDocumentToFolder(
     console.error('[doc-management] Move document error:', error)
     return { success: false, error: error.message }
   }
+
+  void logDocumentActivity({
+    tenantId: user.tenantId!,
+    userId: user.id,
+    action: 'document_moved_to_folder',
+    entityType: 'document',
+    entityId: documentId,
+    metadata: {
+      folderId,
+      destination: folderId ? 'folder' : 'root',
+    },
+  })
 
   revalidatePath('/documents')
   return { success: true }
@@ -154,7 +181,7 @@ export async function searchDocuments(query: string): Promise<ChefDocument[]> {
     .order('updated_at', { ascending: false })
     .limit(20)
 
-  return ((data ?? []) as any[]).map((d) => ({
+  const results = ((data ?? []) as any[]).map((d) => ({
     id: d.id,
     title: d.title,
     type: d.type,
@@ -163,6 +190,22 @@ export async function searchDocuments(query: string): Promise<ChefDocument[]> {
     createdAt: d.created_at,
     updatedAt: d.updated_at,
   }))
+
+  if (query.trim()) {
+    void logDocumentActivity({
+      tenantId: user.tenantId!,
+      userId: user.id,
+      action: 'document_search',
+      entityType: 'document',
+      metadata: {
+        query,
+        resultCount: results.length,
+        source: 'ai_document_management',
+      },
+    })
+  }
+
+  return results
 }
 
 /**
@@ -192,6 +235,17 @@ export async function deleteFolder(
     console.error('[doc-management] Delete folder error:', error)
     return { success: false, error: (error as any).message }
   }
+
+  void logDocumentActivity({
+    tenantId: user.tenantId!,
+    userId: user.id,
+    action: 'folder_deleted',
+    entityType: 'folder',
+    entityId: folderId,
+    metadata: {
+      movedDocumentsToRoot: true,
+    },
+  })
 
   revalidatePath('/documents')
   return { success: true }

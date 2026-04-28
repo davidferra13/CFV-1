@@ -6,16 +6,11 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { logDocumentActivity } from '@/lib/documents/activity-logging'
+import type { LinkDocumentInput, LinkedDocument } from '@/lib/documents/link-types'
 import { revalidatePath } from 'next/cache'
 
 // ─── Link/Unlink ──────────────────────────────────────────────────────────────
-
-export type LinkDocumentInput = {
-  documentId: string
-  eventId?: string | null
-  clientId?: string | null
-  inquiryId?: string | null
-}
 
 /**
  * Link a document to an event, client, and/or inquiry.
@@ -48,6 +43,20 @@ export async function linkDocument(
     return { success: false, error: error.message }
   }
 
+  void logDocumentActivity({
+    tenantId: user.tenantId!,
+    userId: user.id,
+    action: 'document_linked',
+    entityType: 'document',
+    entityId: input.documentId,
+    metadata: {
+      eventId: input.eventId ?? null,
+      clientId: input.clientId ?? null,
+      inquiryId: input.inquiryId ?? null,
+      updatedFields: Object.keys(updates),
+    },
+  })
+
   revalidatePath('/documents')
   return { success: true }
 }
@@ -72,20 +81,22 @@ export async function unlinkDocument(
     return { success: false, error: error.message }
   }
 
+  void logDocumentActivity({
+    tenantId: user.tenantId!,
+    userId: user.id,
+    action: 'document_unlinked',
+    entityType: 'document',
+    entityId: documentId,
+    metadata: {
+      clearedFields: ['event_id', 'client_id', 'inquiry_id'],
+    },
+  })
+
   revalidatePath('/documents')
   return { success: true }
 }
 
 // ─── Entity Document Retrieval ────────────────────────────────────────────────
-
-export type LinkedDocument = {
-  id: string
-  title: string
-  documentType: string
-  summary: string | null
-  createdAt: string
-  folderName: string | null
-}
 
 /**
  * Get all documents linked to a specific event.
