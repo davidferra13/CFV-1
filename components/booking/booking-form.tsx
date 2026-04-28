@@ -106,6 +106,7 @@ export function BookingForm({ chefSlug, selectedDate, onBack, bookingConfig }: P
   const [guestCount, setGuestCount] = useState('')
   const [serveTime, setServeTime] = useState('')
   const [address, setAddress] = useState('')
+  const [addressTbd, setAddressTbd] = useState(false)
   const [notes, setNotes] = useState('')
   const [dietaryIntake, setDietaryIntake] = useState<DietaryIntakeValue>(emptyDietaryIntake())
   const [websiteUrl, setWebsiteUrl] = useState('')
@@ -321,6 +322,18 @@ export function BookingForm({ chefSlug, selectedDate, onBack, bookingConfig }: P
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
+    const addressHint = address.trim()
+    const submittedAddress = addressTbd
+      ? addressHint
+        ? `Address TBD - ${addressHint}`
+        : 'Address TBD'
+      : addressHint
+    const notesWithAddressContext = [
+      addressTbd ? 'Event address or venue is not finalized yet.' : null,
+      notes.trim() || null,
+    ]
+      .filter(Boolean)
+      .join('\n\n')
 
     if (
       !fullName.trim() ||
@@ -328,7 +341,7 @@ export function BookingForm({ chefSlug, selectedDate, onBack, bookingConfig }: P
       !occasion.trim() ||
       !guestCount ||
       !serveTime ||
-      !address.trim()
+      !submittedAddress
     ) {
       setError('Please fill in all required fields.')
       return
@@ -363,9 +376,9 @@ export function BookingForm({ chefSlug, selectedDate, onBack, bookingConfig }: P
           guest_count: parseInt(guestCount),
           event_date: selectedDate,
           serve_time: serveTime,
-          address: address.trim(),
+          address: submittedAddress,
           allergies_food_restrictions: serializeDietary(),
-          additional_notes: notes.trim() || undefined,
+          additional_notes: notesWithAddressContext || undefined,
           service_mode: serviceMode,
           recurring_frequency: serviceMode === 'recurring' ? recurringFrequency : undefined,
           recurring_duration_weeks:
@@ -402,9 +415,9 @@ export function BookingForm({ chefSlug, selectedDate, onBack, bookingConfig }: P
           guest_count: parseInt(guestCount),
           event_date: selectedDate,
           serve_time: serveTime,
-          address: address.trim(),
+          address: submittedAddress,
           allergies_food_restrictions: serializeDietary(),
-          additional_notes: notes.trim() || undefined,
+          additional_notes: notesWithAddressContext || undefined,
           service_mode: serviceMode,
           recurring_frequency: serviceMode === 'recurring' ? recurringFrequency : undefined,
           recurring_duration_weeks:
@@ -808,6 +821,7 @@ export function BookingForm({ chefSlug, selectedDate, onBack, bookingConfig }: P
           placeholder="e.g. 6"
           value={guestCount}
           onChange={(e) => setGuestCount(e.target.value)}
+          helperText="An estimate is okay. Your chef can confirm the final count before the quote or deposit."
         />
         <Input
           label="Desired Serve Time"
@@ -818,13 +832,31 @@ export function BookingForm({ chefSlug, selectedDate, onBack, bookingConfig }: P
         />
       </div>
 
-      <Input
-        label="Event Address"
-        required
-        placeholder={NEUTRAL_ADDRESS_PLACEHOLDER}
-        value={address}
-        onChange={(e) => setAddress(e.target.value)}
-      />
+      <div className="space-y-2">
+        <Input
+          label={addressTbd ? 'Event area or venue hint' : 'Event Address'}
+          required={!addressTbd}
+          placeholder={addressTbd ? 'Neighborhood, city, or venue name' : NEUTRAL_ADDRESS_PLACEHOLDER}
+          value={address}
+          onChange={(e) => setAddress(e.target.value)}
+          helperText={
+            addressTbd
+              ? 'The exact address will be confirmed before service planning.'
+              : 'Use the best current location so the chef can judge travel and setup fit.'
+          }
+        />
+        <label className="flex items-start gap-2 rounded-md border border-stone-700 bg-stone-900 px-3 py-2">
+          <input
+            type="checkbox"
+            checked={addressTbd}
+            onChange={(e) => setAddressTbd(e.target.checked)}
+            className="mt-0.5 rounded border-stone-600 bg-stone-800 text-brand-600 focus:ring-brand-600"
+          />
+          <span className="text-xs text-stone-400">
+            Exact address or venue is not finalized yet.
+          </span>
+        </label>
+      </div>
 
       <div className="space-y-1">
         <label className="block text-sm font-medium text-stone-300">
@@ -860,6 +892,9 @@ export function BookingForm({ chefSlug, selectedDate, onBack, bookingConfig }: P
           <p className="text-xs text-green-600">
             Remaining balance of {formatDollars(pricing.totalCents - pricing.depositCents)} due
             before event.
+          </p>
+          <p className="text-xs text-green-600">
+            Pricing is based on the current guest count and booking settings.
           </p>
         </div>
       )}

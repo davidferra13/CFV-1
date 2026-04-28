@@ -189,6 +189,7 @@ export function BookDinnerForm({
   const [nlParsing, setNlParsing] = useState(false)
   const [nlUsed, setNlUsed] = useState(false)
   const [hasStarted, setHasStarted] = useState(false)
+  const [dateFlexible, setDateFlexible] = useState(false)
   const liveScope = seasonalContext
     ? resolvePublicMarketScope({
         explicitLabel: form.location,
@@ -306,11 +307,19 @@ export function BookDinnerForm({
     }
 
     try {
+      const additionalNotes = [
+        dateFlexible ? 'Event date is flexible by a day or two.' : null,
+        form.additional_notes.trim() || null,
+      ]
+        .filter(Boolean)
+        .join('\n\n')
+
       const res = await fetch('/api/book', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...form,
+          additional_notes: additionalNotes,
           seasonal_intent: seasonalIntent,
           referral_source: trackingParams?.referral_source || '',
           referral_partner_id: trackingParams?.referral_partner_id || '',
@@ -616,6 +625,15 @@ export function BookDinnerForm({
               onChange={(e) => updateField('event_date', e.target.value)}
               className={inputClass}
             />
+            <label className="mt-2 flex items-start gap-2 text-xs text-stone-500">
+              <input
+                type="checkbox"
+                checked={dateFlexible}
+                onChange={(e) => setDateFlexible(e.target.checked)}
+                className="mt-0.5 rounded border-stone-600 bg-stone-900 text-brand-600 focus:ring-brand-600"
+              />
+              <span>Flexible by a day or two.</span>
+            </label>
           </div>
 
           <div>
@@ -646,6 +664,9 @@ export function BookDinnerForm({
               placeholder={NEUTRAL_LOCATION_PLACEHOLDER}
               className={inputClass}
             />
+            <p className="mt-1.5 text-xs text-stone-500">
+              City, neighborhood, ZIP code, or venue is enough to start matching chefs.
+            </p>
           </div>
 
           <div>
@@ -665,6 +686,9 @@ export function BookDinnerForm({
                 </option>
               ))}
             </select>
+            <p className="mt-1.5 text-xs text-stone-500">
+              Choose the closest range. Final guest count can be confirmed before the proposal.
+            </p>
           </div>
         </div>
 

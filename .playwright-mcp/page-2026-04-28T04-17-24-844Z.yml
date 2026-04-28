@@ -1,0 +1,37 @@
+- generic [active] [ref=e1]:
+  - link "Skip to main content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - main [ref=e4]:
+    - generic [ref=e5]:
+      - img "A chef plating a small dish beside a window in a quiet, neutral room" [ref=e6]
+      - generic [ref=e9]:
+        - generic [ref=e10]:
+          - generic [ref=e11]: ChefFlow
+          - generic [ref=e12]: Sandbox study
+        - generic [ref=e14]:
+          - paragraph [ref=e15]: Ops for Artists
+          - heading "Private chef work, made quieter." [level=1] [ref=e16]
+          - paragraph [ref=e17]: A restrained operating surface for inquiries, events, payments, and the details that keep service moving.
+    - generic [ref=e20]:
+      - paragraph [ref=e21]: Direction
+      - heading "Built around the pause before service begins." [level=2] [ref=e22]
+      - paragraph [ref=e23]: The homepage should feel less like software asking for attention and more like a room where the chef has already started. Copy stays sparse. Navigation stays absent. The image does the first impression.
+    - generic [ref=e26]:
+      - paragraph [ref=e27]: System
+      - generic [ref=e28]:
+        - paragraph [ref=e29]: One quiet moment.
+        - paragraph [ref=e30]: One clear promise.
+        - paragraph [ref=e31]: Enough space for the work to feel considered.
+  - alert [ref=e32]
+  - generic [ref=e33]:
+    - button "Dismiss cookie banner" [ref=e34] [cursor=pointer]: x
+    - generic [ref=e35]:
+      - generic [ref=e36]:
+        - text: This site uses cookies for basic functionality and analytics. See our
+        - link "Privacy Policy" [ref=e37] [cursor=pointer]:
+          - /url: /privacy
+        - text: .
+      - generic [ref=e38]:
+        - button "Dismiss cookie banner for now" [ref=e39] [cursor=pointer]: Not now
+        - button "Decline cookies" [ref=e40] [cursor=pointer]: Decline
+        - button "Accept cookies" [ref=e41] [cursor=pointer]: Accept

@@ -7,11 +7,53 @@ import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
 import { approveProposal, declineProposal } from '@/lib/proposals/client-proposal-actions'
 import Link from 'next/link'
-import type { PublicProposalData } from '@/lib/proposals/client-proposal-actions'
+import type { PublicProposalData } from '@/lib/proposals/client-proposal-types'
 
 type ProposalPublicViewProps = {
   proposal: PublicProposalData
   shareToken: string
+}
+
+function formatMoney(cents: number | null | undefined): string | null {
+  if (typeof cents !== 'number') return null
+  return `$${(cents / 100).toFixed(2)}`
+}
+
+function formatTime(value: string | null): string | null {
+  if (!value) return null
+  const [hourText, minuteText] = value.split(':')
+  const hour = Number(hourText)
+  const minute = Number(minuteText ?? '0')
+  if (!Number.isFinite(hour) || !Number.isFinite(minute)) return value
+  return new Date(2026, 0, 1, hour, minute).toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+  })
+}
+
+function formatLocation(proposal: PublicProposalData): string | null {
+  const cityLine = [proposal.locationCity, proposal.locationState, proposal.locationZip]
+    .filter(Boolean)
+    .join(', ')
+  return proposal.locationAddress || cityLine || null
+}
+
+function DetailCard({
+  label,
+  value,
+  helper,
+}: {
+  label: string
+  value: string
+  helper?: string | null
+}) {
+  return (
+    <div className="rounded-lg border border-stone-800 bg-stone-900/30 p-4">
+      <p className="text-xs font-medium uppercase tracking-wider text-stone-500">{label}</p>
+      <p className="mt-2 text-base font-semibold text-stone-100">{value}</p>
+      {helper && <p className="mt-1 text-xs leading-relaxed text-stone-500">{helper}</p>}
+    </div>
+  )
 }
 
 export function ProposalPublicView({ proposal, shareToken }: ProposalPublicViewProps) {
@@ -86,6 +128,26 @@ export function ProposalPublicView({ proposal, shareToken }: ProposalPublicViewP
 
   const addonTotal = (proposal.selectedAddons || []).reduce((sum, a) => sum + a.priceCents, 0)
   const basePriceCents = proposal.totalPriceCents - addonTotal
+  const perGuestCents =
+    proposal.guestCount && proposal.guestCount > 0
+      ? Math.round(proposal.totalPriceCents / proposal.guestCount)
+      : null
+  const depositLabel =
+    proposal.payment.depositAmountCents != null
+      ? formatMoney(proposal.payment.depositAmountCents)
+      : proposal.payment.depositRequired === false
+        ? 'No deposit published'
+        : 'Deposit not published yet'
+  const balanceLabel = formatMoney(proposal.payment.balanceDueCents)
+  const locationLabel = formatLocation(proposal)
+  const timeLabel = formatTime(proposal.eventServeTime)
+  const dietaryItems = [...proposal.dietaryRestrictions, ...proposal.allergies]
+  const hasOperationalNotes = Boolean(
+    proposal.locationNotes ||
+      proposal.kitchenNotes ||
+      proposal.specialRequests ||
+      dietaryItems.length > 0
+  )
 
   return (
     <div className="min-h-screen">
@@ -220,6 +282,120 @@ export function ProposalPublicView({ proposal, shareToken }: ProposalPublicViewP
                 <p className="text-lg font-semibold text-stone-100">{proposal.clientName}</p>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Booking confidence */}
+        <div className="rounded-xl border border-stone-700 bg-stone-900/50 p-6 sm:p-8">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-400">
+                Booking clarity
+              </p>
+              <h2 className="mt-2 text-2xl font-bold text-stone-100">
+                Review the service shape before you approve.
+              </h2>
+            </div>
+            <Badge variant={currentStatus === 'viewed' || currentStatus === 'sent' ? 'info' : 'default'}>
+              {currentStatus}
+            </Badge>
+          </div>
+
+          <div className="mt-6 grid gap-3 sm:grid-cols-2">
+            <DetailCard
+              label="Service time"
+              value={timeLabel || 'Not published yet'}
+              helper={proposal.eventDate ? 'Date is shown above. Confirm timing before payment.' : null}
+            />
+            <DetailCard
+              label="Location"
+              value={locationLabel || 'Location not published yet'}
+              helper={proposal.locationNotes || 'Confirm address, access, parking, and kitchen fit in writing.'}
+            />
+            <DetailCard
+              label="Service style"
+              value={proposal.serviceStyle || 'Not published yet'}
+              helper={proposal.kitchenNotes || 'Kitchen requirements should be settled before the event.'}
+            />
+            <DetailCard
+              label="Dietary readiness"
+              value={
+                dietaryItems.length > 0
+                  ? `${dietaryItems.length} dietary or allergy note${dietaryItems.length === 1 ? '' : 's'} captured`
+                  : 'No dietary notes captured yet'
+              }
+              helper={
+                dietaryItems.length > 0
+                  ? dietaryItems.slice(0, 3).join(', ')
+                  : 'Share allergies and hard restrictions before final approval.'
+              }
+            />
+          </div>
+
+          {hasOperationalNotes && (
+            <div className="mt-5 rounded-lg border border-stone-800 bg-stone-950/50 p-4">
+              <p className="text-sm font-semibold text-stone-100">Operational notes</p>
+              <div className="mt-3 space-y-2 text-sm text-stone-400">
+                {proposal.specialRequests && <p>Special requests: {proposal.specialRequests}</p>}
+                {proposal.kitchenNotes && <p>Kitchen: {proposal.kitchenNotes}</p>}
+                {proposal.locationNotes && <p>Location: {proposal.locationNotes}</p>}
+                {dietaryItems.length > 0 && <p>Dietary and allergy: {dietaryItems.join(', ')}</p>}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Trust stack */}
+        <div className="grid gap-4 lg:grid-cols-3">
+          <div className="rounded-xl border border-stone-800 bg-stone-900/40 p-5">
+            <p className="text-sm font-semibold text-stone-100">Chef proof</p>
+            {proposal.reviews.totalReviews > 0 ? (
+              <p className="mt-2 text-sm text-stone-400">
+                {proposal.reviews.averageRating.toFixed(1)} average rating from{' '}
+                {proposal.reviews.totalReviews} public review
+                {proposal.reviews.totalReviews === 1 ? '' : 's'}.
+              </p>
+            ) : (
+              <p className="mt-2 text-sm text-stone-400">
+                No public review summary is attached to this proposal yet.
+              </p>
+            )}
+          </div>
+          <div className="rounded-xl border border-stone-800 bg-stone-900/40 p-5">
+            <p className="text-sm font-semibold text-stone-100">Payment safety</p>
+            <p className="mt-2 text-sm text-stone-400">
+              Approving this proposal does not charge your card on this page. Review deposit,
+              balance, and written payment terms before money changes hands.
+            </p>
+          </div>
+          <div className="rounded-xl border border-stone-800 bg-stone-900/40 p-5">
+            <p className="text-sm font-semibold text-stone-100">Covered issues to confirm</p>
+            <p className="mt-2 text-sm text-stone-400">
+              Before payment, confirm chef cancellation, late arrival, menu substitutions, kitchen
+              readiness, dietary handling, and cleanup boundaries in writing.
+            </p>
+          </div>
+        </div>
+
+        {proposal.reviews.highlights.length > 0 && (
+          <div className="grid gap-3 sm:grid-cols-2">
+            {proposal.reviews.highlights.map((review) => (
+              <blockquote
+                key={review.id}
+                className="rounded-xl border border-stone-800 bg-stone-900/30 p-5"
+              >
+                <p className="text-sm leading-relaxed text-stone-300">
+                  &ldquo;{review.reviewText.length > 220
+                    ? `${review.reviewText.slice(0, 217).trim()}...`
+                    : review.reviewText}
+                  &rdquo;
+                </p>
+                <footer className="mt-3 text-xs text-stone-500">
+                  {review.reviewerName} via {review.sourceLabel}
+                  {review.rating ? `, ${review.rating.toFixed(1)} stars` : ''}
+                </footer>
+              </blockquote>
+            ))}
           </div>
         )}
 
@@ -370,9 +546,84 @@ export function ProposalPublicView({ proposal, shareToken }: ProposalPublicViewP
             </span>
           </div>
 
-          {proposal.guestCount && proposal.guestCount > 0 && (
+          {perGuestCents != null && (
             <p className="text-right text-sm text-stone-500 mt-1">
-              ${(proposal.totalPriceCents / 100 / proposal.guestCount).toFixed(2)} per guest
+              {formatMoney(perGuestCents)} per guest
+            </p>
+          )}
+
+          <div className="mt-6 grid gap-3 border-t border-stone-800 pt-5 sm:grid-cols-2">
+            <DetailCard
+              label="Deposit"
+              value={depositLabel || 'Deposit not published yet'}
+              helper={
+                proposal.payment.source === 'chef_settings'
+                  ? 'Estimated from this chef\'s published deposit settings.'
+                  : proposal.payment.source === 'event'
+                    ? 'Pulled from the linked event record.'
+                    : 'No deposit amount is attached to this proposal.'
+              }
+            />
+            <DetailCard
+              label="Balance"
+              value={balanceLabel || 'Balance not published yet'}
+              helper={
+                proposal.payment.balanceDueDaysBefore != null
+                  ? `Usually due ${proposal.payment.balanceDueDaysBefore} day${
+                      proposal.payment.balanceDueDaysBefore === 1 ? '' : 's'
+                    } before service.`
+                  : 'Confirm the balance due date before payment.'
+              }
+            />
+          </div>
+
+          {proposal.payment.termsText && (
+            <p className="mt-4 rounded-lg border border-stone-800 bg-stone-950/50 p-3 text-sm leading-relaxed text-stone-400">
+              {proposal.payment.termsText}
+            </p>
+          )}
+        </div>
+
+        {/* Policy visibility */}
+        <div className="rounded-xl border border-stone-800 bg-stone-900/40 p-6">
+          <p className="text-sm font-semibold text-stone-100">Cancellation and rescheduling</p>
+          {proposal.cancellationPolicy ? (
+            <div className="mt-4 space-y-3">
+              <p className="text-sm text-stone-300">{proposal.cancellationPolicy.name}</p>
+              {proposal.cancellationPolicy.gracePeriodHours != null && (
+                <p className="text-sm text-stone-400">
+                  Grace period: {proposal.cancellationPolicy.gracePeriodHours} hours.
+                </p>
+              )}
+              {proposal.cancellationPolicy.tiers.length > 0 && (
+                <div className="grid gap-2 sm:grid-cols-3">
+                  {proposal.cancellationPolicy.tiers.map((tier) => (
+                    <div
+                      key={`${tier.label}-${tier.minDays}-${tier.maxDays}`}
+                      className="rounded-lg border border-stone-800 bg-stone-950/50 p-3"
+                    >
+                      <p className="text-xs font-semibold uppercase tracking-wider text-stone-500">
+                        {tier.label}
+                      </p>
+                      <p className="mt-1 text-sm text-stone-200">
+                        {tier.refundPercent != null
+                          ? `${tier.refundPercent}% refund`
+                          : 'Refund not published'}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {proposal.cancellationPolicy.notes && (
+                <p className="text-sm leading-relaxed text-stone-400">
+                  {proposal.cancellationPolicy.notes}
+                </p>
+              )}
+            </div>
+          ) : (
+            <p className="mt-2 text-sm leading-relaxed text-stone-400">
+              No public cancellation policy is attached to this proposal yet. Ask for written
+              cancellation, rescheduling, and refund terms before payment.
             </p>
           )}
         </div>

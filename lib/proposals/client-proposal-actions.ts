@@ -6,10 +6,11 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { createAdminClient } from '@/lib/db/admin'
 import { checkRateLimit } from '@/lib/rateLimit'
+import type { PublicReviewFeedResult } from '@/lib/reviews/public-actions'
 
 // ─── Types ───────────────────────────────────────────────────────
 
-export type ClientProposal = {
+type ClientProposal = {
   id: string
   tenantId: string
   eventId: string | null
@@ -32,13 +33,13 @@ export type ClientProposal = {
   updatedAt: string
 }
 
-export type ProposalAddonEntry = {
+type ProposalAddonEntry = {
   addonId: string
   name: string
   priceCents: number
 }
 
-export type PublicProposalData = {
+type PublicProposalData = {
   id: string
   title: string
   personalNote: string | null
@@ -53,8 +54,22 @@ export type PublicProposalData = {
   chefSlug: string | null
   clientName: string | null
   eventDate: string | null
+  eventServeTime: string | null
   eventOccasion: string | null
   guestCount: number | null
+  serviceStyle: string | null
+  locationAddress: string | null
+  locationCity: string | null
+  locationState: string | null
+  locationZip: string | null
+  locationNotes: string | null
+  kitchenNotes: string | null
+  dietaryRestrictions: string[]
+  allergies: string[]
+  specialRequests: string | null
+  quotedPriceCents: number | null
+  eventDepositAmountCents: number | null
+  paymentStatus: string | null
   menu: {
     id: string
     name: string
@@ -68,6 +83,37 @@ export type PublicProposalData = {
     coverPhotoUrl: string | null
     includedServices: Record<string, unknown> | null
   } | null
+  payment: {
+    depositRequired: boolean | null
+    depositPercentage: number | null
+    depositAmountCents: number | null
+    balanceDueCents: number | null
+    balanceDueDaysBefore: number | null
+    termsText: string | null
+    source: 'event' | 'chef_settings' | 'not_published'
+  }
+  cancellationPolicy: {
+    name: string
+    gracePeriodHours: number | null
+    tiers: Array<{
+      label: string
+      minDays: number | null
+      maxDays: number | null
+      refundPercent: number | null
+    }>
+    notes: string | null
+  } | null
+  reviews: {
+    totalReviews: number
+    averageRating: number
+    highlights: Array<{
+      id: string
+      reviewerName: string
+      rating: number | null
+      reviewText: string
+      sourceLabel: string
+    }>
+  }
 }
 
 // ─── Schemas ─────────────────────────────────────────────────────
@@ -280,7 +326,7 @@ export async function getPublicProposal(shareToken: string): Promise<PublicPropo
   // Fetch chef info
   const { data: chef } = await db
     .from('chefs')
-    .select('display_name, business_name, booking_slug')
+    .select('display_name, business_name, booking_slug, public_slug')
     .eq('id', proposal.tenant_id)
     .single()
 
@@ -300,7 +346,9 @@ export async function getPublicProposal(shareToken: string): Promise<PublicPropo
   if (proposal.event_id) {
     const { data: e } = await db
       .from('events')
-      .select('event_date, occasion, guest_count')
+      .select(
+        'event_date, serve_time, occasion, guest_count, service_style, location_address, location_city, location_state, location_zip, location_notes, kitchen_notes, dietary_restrictions, allergies, special_requests, quoted_price_cents, deposit_amount_cents, payment_status'
+      )
       .eq('id', proposal.event_id)
       .single()
     event = e
@@ -357,7 +405,42 @@ export async function getPublicProposal(shareToken: string): Promise<PublicPropo
     }
   }
 
-  return buildPublicData(proposal, chef, client, event, menuData)
+  const [{ data: depositSettings }, { data: cancellationPolicy }, reviewFeed] = await Promise.all([
+    db
+      .from('chef_deposit_settings')
+      .select(
+        'deposit_required, deposit_percentage, balance_due_days_before, payment_terms_text'
+      )
+      .eq('chef_id', proposal.tenant_id)
+      .maybeSingle(),
+    db
+      .from('cancellation_policies')
+      .select('name, grace_period_hours, tiers, notes')
+      .eq('chef_id', proposal.tenant_id)
+      .eq('is_default', true)
+      .maybeSingle(),
+    (async (): Promise<PublicReviewFeedResult | null> => {
+      try {
+        const { getPublicChefReviewFeed } = await import('@/lib/reviews/public-actions')
+        return await getPublicChefReviewFeed(proposal.tenant_id)
+      } catch (err) {
+        console.error('[getPublicProposal] Failed to load public review feed', err)
+        return null
+      }
+    })(),
+  ])
+
+  return buildPublicData(
+    proposal,
+    chef,
+    client,
+    event,
+    menuData,
+    template,
+    depositSettings,
+    cancellationPolicy,
+    reviewFeed
+  )
 }
 
 export async function approveProposal(
@@ -498,8 +581,30 @@ function buildPublicData(
   chef: any,
   client: any,
   event: any,
-  menuData: any
+  menuData: any,
+  template: any = null,
+  depositSettings: any = null,
+  cancellationPolicy: any = null,
+  reviewFeed: PublicReviewFeedResult | null = null
 ): PublicProposalData {
+  const eventDeposit =
+    typeof event?.deposit_amount_cents === 'number' ? event.deposit_amount_cents : null
+  const settingDepositPercent =
+    typeof depositSettings?.deposit_percentage === 'number'
+      ? depositSettings.deposit_percentage
+      : null
+  const settingDeposit =
+    eventDeposit == null &&
+    depositSettings?.deposit_required === true &&
+    settingDepositPercent != null &&
+    proposal.total_price_cents > 0
+      ? Math.round(proposal.total_price_cents * (settingDepositPercent / 100))
+      : null
+  const depositAmountCents = eventDeposit ?? settingDeposit
+  const balanceDueCents =
+    depositAmountCents != null ? Math.max(proposal.total_price_cents - depositAmountCents, 0) : null
+  const tiers = Array.isArray(cancellationPolicy?.tiers) ? cancellationPolicy.tiers : []
+
   return {
     id: proposal.id,
     title: proposal.title,
@@ -512,13 +617,73 @@ function buildPublicData(
     createdAt: proposal.created_at,
     chefName: chef?.display_name || null,
     chefBusinessName: chef?.business_name || null,
-    chefSlug: chef?.booking_slug || null,
+    chefSlug: chef?.public_slug || chef?.booking_slug || null,
     clientName: client?.full_name ?? null,
     eventDate: event?.event_date || null,
+    eventServeTime: event?.serve_time || null,
     eventOccasion: event?.occasion || null,
     guestCount: event?.guest_count || null,
+    serviceStyle: event?.service_style || null,
+    locationAddress: event?.location_address || null,
+    locationCity: event?.location_city || null,
+    locationState: event?.location_state || null,
+    locationZip: event?.location_zip || null,
+    locationNotes: event?.location_notes || null,
+    kitchenNotes: event?.kitchen_notes || null,
+    dietaryRestrictions: Array.isArray(event?.dietary_restrictions)
+      ? event.dietary_restrictions.filter(Boolean)
+      : [],
+    allergies: Array.isArray(event?.allergies) ? event.allergies.filter(Boolean) : [],
+    specialRequests: event?.special_requests || null,
+    quotedPriceCents: event?.quoted_price_cents ?? null,
+    eventDepositAmountCents: eventDeposit,
+    paymentStatus: event?.payment_status || null,
     menu: menuData,
-    template: null,
+    template,
+    payment: {
+      depositRequired:
+        eventDeposit != null
+          ? true
+          : typeof depositSettings?.deposit_required === 'boolean'
+            ? depositSettings.deposit_required
+            : null,
+      depositPercentage: settingDepositPercent,
+      depositAmountCents,
+      balanceDueCents,
+      balanceDueDaysBefore:
+        typeof depositSettings?.balance_due_days_before === 'number'
+          ? depositSettings.balance_due_days_before
+          : null,
+      termsText: depositSettings?.payment_terms_text || null,
+      source: eventDeposit != null ? 'event' : settingDeposit != null ? 'chef_settings' : 'not_published',
+    },
+    cancellationPolicy: cancellationPolicy
+      ? {
+          name: cancellationPolicy.name || 'Cancellation policy',
+          gracePeriodHours:
+            typeof cancellationPolicy.grace_period_hours === 'number'
+              ? cancellationPolicy.grace_period_hours
+              : null,
+          tiers: tiers.map((tier: any) => ({
+            label: typeof tier?.label === 'string' ? tier.label : 'Policy tier',
+            minDays: typeof tier?.min_days === 'number' ? tier.min_days : null,
+            maxDays: typeof tier?.max_days === 'number' ? tier.max_days : null,
+            refundPercent: typeof tier?.refund_percent === 'number' ? tier.refund_percent : null,
+          })),
+          notes: cancellationPolicy.notes || null,
+        }
+      : null,
+    reviews: {
+      totalReviews: reviewFeed?.stats.totalReviews ?? 0,
+      averageRating: reviewFeed?.stats.averageRating ?? 0,
+      highlights: (reviewFeed?.reviews ?? []).slice(0, 2).map((review) => ({
+        id: review.id,
+        reviewerName: review.reviewerName,
+        rating: review.rating,
+        reviewText: review.reviewText,
+        sourceLabel: review.sourceLabel,
+      })),
+    },
   }
 }
 

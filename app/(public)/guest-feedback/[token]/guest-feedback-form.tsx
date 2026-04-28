@@ -159,7 +159,7 @@ export function GuestFeedbackForm({
         <StarRating label="Overall experience *" value={overall} onChange={setOverall} />
         <StarRating label="Food quality (optional)" value={food} onChange={setFood} />
         <StarRating
-          label="Atmosphere and service (optional)"
+          label="Service, timing, and cleanup (optional)"
           value={experience}
           onChange={setExperience}
         />
@@ -261,7 +261,7 @@ export function GuestFeedbackForm({
             onChange={(event) => setHighlight(event.target.value)}
             rows={3}
             maxLength={2000}
-            placeholder="The pacing, a specific dish, the overall experience..."
+            placeholder="The pacing, a specific dish, service flow, setup, or hospitality..."
             className="w-full rounded-lg border border-stone-600 bg-stone-800 px-3 py-2 text-sm text-stone-100 placeholder-stone-500"
           />
         </div>
@@ -275,7 +275,7 @@ export function GuestFeedbackForm({
             onChange={(event) => setSuggestion(event.target.value)}
             rows={3}
             maxLength={2000}
-            placeholder="Optional suggestion"
+            placeholder="Timing, communication, setup, dietary handling, cleanup, or anything else"
             className="w-full rounded-lg border border-stone-600 bg-stone-800 px-3 py-2 text-sm text-stone-100 placeholder-stone-500"
           />
         </div>

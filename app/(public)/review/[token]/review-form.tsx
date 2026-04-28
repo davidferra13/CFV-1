@@ -4,6 +4,14 @@ import { useState, useRef, useEffect } from 'react'
 import { submitTestimonialByToken } from '@/lib/testimonials/submit-testimonial'
 
 const starLabels = ['Poor', 'Fair', 'Good', 'Great', 'Excellent']
+const reviewDimensionOptions = [
+  'Menu fit',
+  'Pacing',
+  'Communication',
+  'Arrival timing',
+  'Cleanup',
+  'Value',
+]
 
 function StarRating({ value, onChange }: { value: number; onChange: (v: number) => void }) {
   const [hover, setHover] = useState(0)
@@ -43,6 +51,7 @@ function StarRating({ value, onChange }: { value: number; onChange: (v: number) 
 export function ReviewForm({ token, defaultName }: { token: string; defaultName: string }) {
   const [rating, setRating] = useState(0)
   const [content, setContent] = useState('')
+  const [reviewDimensions, setReviewDimensions] = useState<string[]>([])
   const [displayName, setDisplayName] = useState(defaultName)
   const [allowPublic, setAllowPublic] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -60,6 +69,15 @@ export function ReviewForm({ token, defaultName }: { token: string; defaultName:
       setError('Please share your experience.')
       return
     }
+    const finalContent =
+      reviewDimensions.length > 0
+        ? `${content.trim()}\n\nWhat stood out: ${reviewDimensions.join(', ')}.`
+        : content.trim()
+
+    if (finalContent.length > 2000) {
+      setError('Please shorten your review so the selected details fit.')
+      return
+    }
 
     setLoading(true)
     setError('')
@@ -68,7 +86,7 @@ export function ReviewForm({ token, defaultName }: { token: string; defaultName:
       const result = await submitTestimonialByToken({
         token,
         rating,
-        content: content.trim(),
+        content: finalContent,
         displayName: displayName.trim() || undefined,
         allowPublicDisplay: allowPublic,
       })
@@ -121,12 +139,41 @@ export function ReviewForm({ token, defaultName }: { token: string; defaultName:
           id="review-content"
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          placeholder="Tell us about your experience..."
+          placeholder="What worked, what felt personal, and what future clients should know."
           rows={5}
           maxLength={2000}
           className="w-full rounded-lg border border-stone-700 bg-stone-800 px-3 py-2 text-sm text-stone-100 placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-brand-600 resize-none"
         />
         <p className="text-xs text-stone-500 mt-1">{content.length}/2000</p>
+      </div>
+
+      <div>
+        <p className="block text-sm font-medium text-stone-200 mb-2">What stood out?</p>
+        <div className="flex flex-wrap gap-2">
+          {reviewDimensionOptions.map((option) => {
+            const selected = reviewDimensions.includes(option)
+            return (
+              <button
+                key={option}
+                type="button"
+                onClick={() =>
+                  setReviewDimensions((current) =>
+                    selected
+                      ? current.filter((item) => item !== option)
+                      : [...current, option]
+                  )
+                }
+                className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                  selected
+                    ? 'border-emerald-600 bg-emerald-950 text-emerald-200'
+                    : 'border-stone-700 bg-stone-800 text-stone-400 hover:border-stone-600'
+                }`}
+              >
+                {option}
+              </button>
+            )
+          })}
+        </div>
       </div>
 
       {/* Display Name */}

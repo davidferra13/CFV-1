@@ -10,6 +10,15 @@ type Props = {
   chefName?: string | null
 }
 
+const serviceProofOptions = [
+  'Communication',
+  'Timing',
+  'Hospitality',
+  'Setup',
+  'Cleanup',
+  'Guest care',
+]
+
 function StarRow({
   label,
   value,
@@ -48,6 +57,7 @@ export function TestimonialForm({ shareToken, guestName, guestToken, chefName }:
   const [foodRating, setFoodRating] = useState<number>(0)
   const [chefRating, setChefRating] = useState<number>(0)
   const [foodHighlight, setFoodHighlight] = useState('')
+  const [serviceProof, setServiceProof] = useState<string[]>([])
   const [wouldRecommend, setWouldRecommend] = useState<boolean | null>(null)
   const [loading, setLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
@@ -59,13 +69,23 @@ export function TestimonialForm({ shareToken, guestName, guestToken, chefName }:
 
     setLoading(true)
     setError('')
+    const finalText =
+      serviceProof.length > 0
+        ? `${text.trim()}\n\nWhat stood out: ${serviceProof.join(', ')}.`
+        : text.trim()
+
+    if (finalText.length > 1000) {
+      setError('Please shorten the review so the selected details fit.')
+      setLoading(false)
+      return
+    }
 
     try {
       await submitTestimonial({
         shareToken,
         guestToken: guestToken || undefined,
         guestName: name.trim(),
-        testimonial: text.trim(),
+        testimonial: finalText,
         foodRating: foodRating > 0 ? foodRating : undefined,
         chefRating: chefRating > 0 ? chefRating : undefined,
         foodHighlight: foodHighlight.trim() || undefined,
@@ -104,10 +124,10 @@ export function TestimonialForm({ shareToken, guestName, guestToken, chefName }:
 
       {/* Dual star ratings */}
       <div className="space-y-3 bg-stone-800 rounded-xl p-4">
-        <StarRow label="The Food" value={foodRating} onChange={setFoodRating} />
+        <StarRow label="Food quality" value={foodRating} onChange={setFoodRating} />
         <div className="border-t border-stone-700" />
         <StarRow
-          label={chefName ? `${chefName}` : 'The Chef'}
+          label={chefName ? `${chefName} and service` : 'Chef and service'}
           value={chefRating}
           onChange={setChefRating}
         />
@@ -181,6 +201,37 @@ export function TestimonialForm({ shareToken, guestName, guestToken, chefName }:
         />
       </div>
 
+      <div>
+        <p className="block text-sm font-medium text-stone-300 mb-2">
+          What stood out? <span className="text-stone-400 font-normal">(optional)</span>
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {serviceProofOptions.map((option) => {
+            const selected = serviceProof.includes(option)
+            return (
+              <button
+                key={option}
+                type="button"
+                onClick={() =>
+                  setServiceProof((current) =>
+                    selected
+                      ? current.filter((item) => item !== option)
+                      : [...current, option]
+                  )
+                }
+                className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                  selected
+                    ? 'border-emerald-600 bg-emerald-950 text-emerald-200'
+                    : 'border-stone-700 bg-stone-800 text-stone-400 hover:border-stone-600'
+                }`}
+              >
+                {option}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
       {/* Written review */}
       <div>
         <label htmlFor="testimonial-text" className="block text-sm font-medium text-stone-300 mb-1">
@@ -191,7 +242,7 @@ export function TestimonialForm({ shareToken, guestName, guestToken, chefName }:
           required
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="What made the evening special..."
+          placeholder="What made the evening feel personal, smooth, or memorable?"
           rows={3}
           maxLength={1000}
           className="w-full px-3 py-2 rounded-lg border border-stone-600 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-100 placeholder:text-stone-400 resize-none"
