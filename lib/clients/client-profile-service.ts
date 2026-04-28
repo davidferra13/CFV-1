@@ -91,10 +91,17 @@ type MealRequestRecord = {
 
 type EventRecord = {
   id?: string
+  occasion?: string | null
   event_date?: string | null
   guest_count?: number | null
   service_style?: string | null
   status?: string | null
+  dietary_restrictions?: string[] | null
+  allergies?: string[] | null
+  kitchen_notes?: string | null
+  access_instructions?: string | null
+  special_requests?: string | null
+  pre_event_checklist_confirmed_at?: string | null
 }
 
 type InquiryRecord = {
@@ -569,6 +576,91 @@ function isHighSpicePreference(raw: string | null | undefined): boolean {
   return value === 'hot' || value === 'very_hot'
 }
 
+function isPreEventChecklistConfirmed(event: EventRecord): boolean {
+  return Boolean(cleanText(event.pre_event_checklist_confirmed_at))
+}
+
+function isActivePlanningEvent(event: EventRecord): boolean {
+  const status = normalizeKey(event.status ?? '')
+  if (!['accepted', 'paid', 'confirmed', 'in_progress'].includes(status)) return false
+
+  const eventDate = Date.parse(`${event.event_date ?? ''}T00:00:00Z`)
+  if (!Number.isFinite(eventDate)) return true
+
+  const cutoff = new Date()
+  cutoff.setUTCHours(0, 0, 0, 0)
+  cutoff.setUTCDate(cutoff.getUTCDate() - 1)
+  return eventDate >= cutoff.getTime()
+}
+
+function hasKitchenAccessEvidence(event: EventRecord): boolean {
+  return Boolean(
+    cleanText(event.kitchen_notes) ||
+      cleanText(event.access_instructions) ||
+      cleanText(event.special_requests)
+  )
+}
+
+function makePreEventEvidenceRef(
+  event: EventRecord,
+  signalKey: string,
+  value: string,
+  confidence = 0.86
+): ProfileEvidenceRef {
+  return makeEvidenceRef({
+    sourceType: 'system_inference',
+    sourceTable: 'events',
+    sourceRecordId: event.id ?? null,
+    signalKey,
+    value,
+    confidence,
+    observedAt: event.pre_event_checklist_confirmed_at ?? event.event_date ?? null,
+  })
+}
+
+export type PreEventProfileAlignment = {
+  latestConfirmedAt: string | null
+  confirmedEventIds: string[]
+  unconfirmedEventIds: string[]
+  missingAccessEventIds: string[]
+  staleSinceProfileUpdate: boolean
+  status: 'ready' | 'needs_confirmation' | 'needs_access_review' | 'stale_profile'
+}
+
+export function buildPreEventProfileAlignment(
+  bundle: ClientProfileSourceBundle
+): PreEventProfileAlignment {
+  const activeEvents = bundle.events.filter(isActivePlanningEvent)
+  const confirmedEvents = activeEvents.filter(isPreEventChecklistConfirmed)
+  const unconfirmedEvents = activeEvents.filter((event) => !isPreEventChecklistConfirmed(event))
+  const missingAccessEvents = confirmedEvents.filter((event) => !hasKitchenAccessEvidence(event))
+  const latestConfirmedAt =
+    [...confirmedEvents]
+      .map((event) => event.pre_event_checklist_confirmed_at)
+      .filter((value): value is string => Boolean(value))
+      .sort()
+      .slice(-1)[0] ?? null
+  const staleSinceProfileUpdate = Boolean(
+    latestConfirmedAt &&
+      bundle.client.updated_at &&
+      Date.parse(bundle.client.updated_at) > Date.parse(latestConfirmedAt)
+  )
+
+  let status: PreEventProfileAlignment['status'] = 'ready'
+  if (unconfirmedEvents.length > 0) status = 'needs_confirmation'
+  else if (missingAccessEvents.length > 0) status = 'needs_access_review'
+  else if (staleSinceProfileUpdate) status = 'stale_profile'
+
+  return {
+    latestConfirmedAt,
+    confirmedEventIds: confirmedEvents.flatMap((event) => (event.id ? [event.id] : [])),
+    unconfirmedEventIds: unconfirmedEvents.flatMap((event) => (event.id ? [event.id] : [])),
+    missingAccessEventIds: missingAccessEvents.flatMap((event) => (event.id ? [event.id] : [])),
+    staleSinceProfileUpdate,
+    status,
+  }
+}
+
 function buildAffectiveContext(
   bundle: ClientProfileSourceBundle
 ): z.infer<typeof AffectiveContextSchema> {
@@ -731,18 +823,19 @@ function buildServiceDepth(
   for (const event of bundle.events) {
     const depth = mapServiceDepth(event.service_style)
     if (!depth || !event.service_style) continue
+    const confirmed = isPreEventChecklistConfirmed(event)
     addVote(
       depth,
       makeEvidenceRef({
-        sourceType: 'stated_preference',
+        sourceType: confirmed ? 'system_inference' : 'stated_preference',
         sourceTable: 'events',
         sourceRecordId: event.id ?? null,
-        signalKey: 'service_style',
+        signalKey: confirmed ? 'pre_event_confirmed_service_style' : 'service_style',
         value: event.service_style,
-        confidence: 0.6,
-        observedAt: event.event_date ?? null,
+        confidence: confirmed ? 0.82 : 0.6,
+        observedAt: event.pre_event_checklist_confirmed_at ?? event.event_date ?? null,
       }),
-      0.75
+      confirmed ? 1.05 : 0.75
     )
   }
 
@@ -878,7 +971,8 @@ function buildAmbiguousConstraints(
   likes: ProfilePreference[],
   hardVetoes: ProfileConstraint[],
   affectiveContext: z.infer<typeof AffectiveContextSchema>,
-  householdAlignment: HouseholdAlignment | null
+  householdAlignment: HouseholdAlignment | null,
+  bundle: ClientProfileSourceBundle
 ): AmbiguousConstraint[] {
   const conflicts = new Map<string, AmbiguousConstraint>()
 
@@ -998,6 +1092,113 @@ function buildAmbiguousConstraints(
       conflictingSignals: ['stressed context', 'high-service expectations'],
       queries: [],
       evidenceRefs: affectiveContext.evidenceRefs,
+    })
+  }
+
+  const preEventAlignment = buildPreEventProfileAlignment(bundle)
+
+  for (const event of bundle.events) {
+    if (!event.id || !isActivePlanningEvent(event)) continue
+
+    const eventLabel = cleanText(event.occasion) ?? 'Upcoming event'
+    const baseRef = makePreEventEvidenceRef(
+      event,
+      'pre_event_checklist_status',
+      isPreEventChecklistConfirmed(event) ? 'confirmed' : 'missing',
+      0.9
+    )
+
+    if (preEventAlignment.unconfirmedEventIds.includes(event.id)) {
+      upsertConflict({
+        conflictKey: `pre-event-checklist:${event.id}:unconfirmed`,
+        title: `Pre-event checklist is not confirmed for ${eventLabel}`,
+        severity: 'warning',
+        status: 'pending_user',
+        requiresUserArbitration: true,
+        conflictingSignals: ['pre-event checklist missing', eventLabel],
+        queries: [
+          {
+            priority: 1,
+            status: 'pending',
+            question:
+              'Confirm dietary preferences, allergies, service details, and kitchen access before day-of prep.',
+            reasoning:
+              'The client profile should not be treated as day-of ready until the event checklist is confirmed.',
+            options: [
+              'Confirm the pre-event checklist now',
+              'Keep menu decisions blocked until confirmation',
+              'Escalate to manual client follow-up',
+            ],
+          },
+        ],
+        evidenceRefs: [baseRef],
+      })
+      continue
+    }
+
+    if (preEventAlignment.missingAccessEventIds.includes(event.id)) {
+      upsertConflict({
+        conflictKey: `pre-event-checklist:${event.id}:missing-access`,
+        title: `Kitchen or access details need review for ${eventLabel}`,
+        severity: 'warning',
+        status: 'pending_user',
+        requiresUserArbitration: true,
+        conflictingSignals: ['pre-event checklist confirmed', 'kitchen/access detail missing'],
+        queries: [
+          {
+            priority: 1,
+            status: 'pending',
+            question: 'Add kitchen, parking, access, or special request details before prep starts.',
+            reasoning:
+              'The checklist was confirmed, but the event profile does not contain access context for day-of execution.',
+            options: [
+              'Add kitchen and access notes',
+              'Confirm that no special access context is needed',
+              'Follow up with the client before prep',
+            ],
+          },
+        ],
+        evidenceRefs: [baseRef],
+      })
+    }
+  }
+
+  if (preEventAlignment.staleSinceProfileUpdate && preEventAlignment.latestConfirmedAt) {
+    upsertConflict({
+      conflictKey: `pre-event-checklist:stale-profile:${bundle.client.id}`,
+      title: 'Client profile changed after latest pre-event checklist confirmation',
+      severity: 'warning',
+      status: 'pending_user',
+      requiresUserArbitration: true,
+      conflictingSignals: [
+        `client profile updated at ${bundle.client.updated_at}`,
+        `checklist confirmed at ${preEventAlignment.latestConfirmedAt}`,
+      ],
+      queries: [
+        {
+          priority: 1,
+          status: 'pending',
+          question: 'Reconfirm event checklist details after the client profile change.',
+          reasoning:
+            'Dietary, allergy, service, or access context may have changed after the checklist was confirmed.',
+          options: [
+            'Reconfirm the pre-event checklist',
+            'Review changed profile fields manually',
+            'Block prep until client details are current',
+          ],
+        },
+      ],
+      evidenceRefs: [
+        makeEvidenceRef({
+          sourceType: 'client_record',
+          sourceTable: 'clients',
+          sourceRecordId: bundle.client.id,
+          signalKey: 'client_profile_updated_after_checklist',
+          value: bundle.client.updated_at ?? 'profile updated',
+          confidence: 0.9,
+          observedAt: bundle.client.updated_at ?? null,
+        }),
+      ],
     })
   }
 
@@ -1469,6 +1670,40 @@ export function buildCulinaryProfileVector(
     }
   }
 
+  for (const event of bundle.events) {
+    if (!isPreEventChecklistConfirmed(event)) continue
+
+    for (const restriction of uniqueStrings(event.dietary_restrictions ?? [])) {
+      addConstraint(hardVetoSignals, {
+        label: restriction,
+        category: 'dietary',
+        severity: 'hard_veto',
+        rationale: 'Restriction confirmed during the pre-event checklist.',
+        evidenceRef: makePreEventEvidenceRef(
+          event,
+          'pre_event_confirmed_dietary_restriction',
+          restriction,
+          0.92
+        ),
+      })
+    }
+
+    for (const allergy of uniqueStrings(event.allergies ?? [])) {
+      addConstraint(hardVetoSignals, {
+        label: allergy,
+        category: 'allergy',
+        severity: 'hard_veto',
+        rationale: 'Allergy confirmed during the pre-event checklist.',
+        evidenceRef: makePreEventEvidenceRef(
+          event,
+          'pre_event_confirmed_allergy',
+          allergy,
+          0.94
+        ),
+      })
+    }
+  }
+
   for (const response of bundle.feedbackResponses) {
     const normalizedRating =
       typeof response.rating === 'number' ? clamp01(response.rating / 5) : null
@@ -1558,7 +1793,8 @@ export function buildCulinaryProfileVector(
     statedLikes,
     hardVetoes,
     affectiveContext,
-    householdAlignment
+    householdAlignment,
+    bundle
   )
 
   const baseVector = {
@@ -1699,7 +1935,9 @@ export async function loadClientProfileSourceBundle(
     trySelect<EventRecord[]>(
       db
         .from('events')
-        .select('id, event_date, guest_count, service_style, status')
+        .select(
+          'id, occasion, event_date, guest_count, service_style, status, dietary_restrictions, allergies, kitchen_notes, access_instructions, special_requests, pre_event_checklist_confirmed_at'
+        )
         .eq('tenant_id', tenantId)
         .eq('client_id', clientId)
         .order('event_date', { ascending: false })

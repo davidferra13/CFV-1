@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 
 import {
+  buildPreEventProfileAlignment,
   buildCulinaryProfileVector,
   recommendCandidateMealsAgainstVector,
   type ClientProfileSourceBundle,
@@ -162,5 +163,140 @@ describe('client profile service', () => {
       recommendation.vetoedCandidates.some((candidate) => candidate.candidateId === 'meal-1')
     )
     assert.ok(recommendation.confidenceJustification.length > 0)
+  })
+
+  it('treats confirmed pre-event checklist details as current profile evidence', () => {
+    const bundle = makeBaseBundle({
+      client: {
+        id: 'client-3',
+        full_name: 'Riley Stone',
+        preferred_name: 'Riley',
+        dietary_restrictions: [],
+        dietary_protocols: [],
+        allergies: [],
+        dislikes: [],
+        spice_tolerance: 'mild',
+        favorite_cuisines: [],
+        favorite_dishes: [],
+        preferred_service_style: 'plated',
+        updated_at: '2026-04-20T10:00:00.000Z',
+      },
+      events: [
+        {
+          id: 'event-1',
+          occasion: 'Anniversary Dinner',
+          event_date: '2026-06-01',
+          service_style: 'plated',
+          status: 'confirmed',
+          dietary_restrictions: ['gluten free'],
+          allergies: ['peanut'],
+          kitchen_notes: 'Six-burner range available.',
+          access_instructions: 'Use service entrance.',
+          pre_event_checklist_confirmed_at: '2026-04-22T12:00:00.000Z',
+        },
+      ],
+    })
+
+    const alignment = buildPreEventProfileAlignment(bundle)
+    const vector = buildCulinaryProfileVector(bundle)
+
+    assert.equal(alignment.status, 'ready')
+    assert.deepEqual(alignment.confirmedEventIds, ['event-1'])
+    assert.ok(
+      vector.hardVetoes.some(
+        (constraint) =>
+          constraint.label === 'gluten free' &&
+          constraint.evidenceRefs.some(
+            (ref) => ref.signalKey === 'pre_event_confirmed_dietary_restriction'
+          )
+      )
+    )
+    assert.ok(
+      vector.hardVetoes.some(
+        (constraint) =>
+          constraint.label === 'peanut' &&
+          constraint.evidenceRefs.some((ref) => ref.signalKey === 'pre_event_confirmed_allergy')
+      )
+    )
+    assert.ok(
+      vector.serviceDepth.evidenceRefs.some(
+        (ref) => ref.signalKey === 'pre_event_confirmed_service_style'
+      )
+    )
+  })
+
+  it('blocks profile recommendations when an active event lacks checklist confirmation', () => {
+    const vector = buildCulinaryProfileVector(
+      makeBaseBundle({
+        events: [
+          {
+            id: 'event-2',
+            occasion: 'Graduation Dinner',
+            event_date: '2026-06-02',
+            service_style: 'family_style',
+            status: 'confirmed',
+            dietary_restrictions: ['vegetarian'],
+            allergies: [],
+            kitchen_notes: 'Island prep space.',
+            access_instructions: 'Front desk has chef name.',
+            pre_event_checklist_confirmed_at: null,
+          },
+        ],
+      })
+    )
+
+    assert.ok(
+      vector.ambiguousConstraints.some(
+        (conflict) =>
+          conflict.conflictKey === 'pre-event-checklist:event-2:unconfirmed' &&
+          conflict.requiresUserArbitration
+      )
+    )
+  })
+
+  it('marks alignment stale when the client profile changed after confirmation', () => {
+    const bundle = makeBaseBundle({
+      client: {
+        id: 'client-4',
+        full_name: 'Taylor Reed',
+        preferred_name: 'Taylor',
+        dietary_restrictions: ['dairy free'],
+        dietary_protocols: [],
+        allergies: [],
+        dislikes: [],
+        spice_tolerance: 'mild',
+        favorite_cuisines: [],
+        favorite_dishes: [],
+        preferred_service_style: 'family_style',
+        updated_at: '2026-04-24T10:00:00.000Z',
+      },
+      events: [
+        {
+          id: 'event-3',
+          occasion: 'Board Dinner',
+          event_date: '2026-06-03',
+          service_style: 'plated',
+          status: 'confirmed',
+          dietary_restrictions: ['dairy free'],
+          allergies: [],
+          kitchen_notes: 'Kitchen walkthrough complete.',
+          access_instructions: 'Loading dock opens at 2 PM.',
+          pre_event_checklist_confirmed_at: '2026-04-23T10:00:00.000Z',
+        },
+      ],
+    })
+
+    const alignment = buildPreEventProfileAlignment(bundle)
+    const vector = buildCulinaryProfileVector(bundle)
+
+    assert.equal(alignment.status, 'stale_profile')
+    assert.equal(alignment.staleSinceProfileUpdate, true)
+    assert.ok(
+      vector.ambiguousConstraints.some(
+        (conflict) =>
+          conflict.conflictKey === 'pre-event-checklist:stale-profile:client-4' &&
+          conflict.requiresUserArbitration
+      )
+    )
   })
 })
