@@ -54,6 +54,8 @@ interface PreEventChecklistClientProps {
   } | null
 }
 
+type ChecklistSectionKey = 'event' | 'dietary' | 'kitchen' | 'special'
+
 const PROTOCOL_LABELS: Record<string, string> = {
   glp1: 'GLP-1 / Ozempic Support',
   longevity: 'Longevity Protocol',
@@ -71,16 +73,64 @@ export function PreEventChecklistClient({ event, client }: PreEventChecklistClie
   const [confirmed, setConfirmed] = useState(!!event.pre_event_checklist_confirmed_at)
   const [error, setError] = useState<string | null>(null)
   const [dietaryProtocolsRead, setDietaryProtocolsRead] = useState(false)
+  const [sectionConfirmations, setSectionConfirmations] = useState<
+    Record<ChecklistSectionKey, boolean>
+  >({
+    event: false,
+    dietary: false,
+    kitchen: false,
+    special: !event.special_requests,
+  })
 
   const firstName = client?.preferred_name || client?.full_name?.split(' ')[0] || 'there'
   const protocolLabels = client?.dietary_protocols?.length
     ? client.dietary_protocols.map((protocol) => PROTOCOL_LABELS[protocol] || protocol)
     : []
   const hasDietaryProtocols = protocolLabels.length > 0
-  const canConfirm = !hasDietaryProtocols || dietaryProtocolsRead
+  const requiredSections: ChecklistSectionKey[] = event.special_requests
+    ? ['event', 'dietary', 'kitchen', 'special']
+    : ['event', 'dietary', 'kitchen']
+  const allSectionsConfirmed = requiredSections.every((section) => sectionConfirmations[section])
+  const canConfirm = allSectionsConfirmed && (!hasDietaryProtocols || dietaryProtocolsRead)
+
+  const confirmSection = (section: ChecklistSectionKey) => {
+    setSectionConfirmations((prev) => ({ ...prev, [section]: true }))
+    setError(null)
+  }
+
+  const sectionControl = (
+    section: ChecklistSectionKey,
+    label: string,
+    disabled = false,
+    disabledReason?: string
+  ) =>
+    sectionConfirmations[section] ? (
+      <Badge variant="success" className="text-xs">
+        Section Confirmed
+      </Badge>
+    ) : (
+      <div className="flex flex-col items-end gap-1">
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          disabled={disabled}
+          onClick={() => confirmSection(section)}
+        >
+          {label}
+        </Button>
+        {disabled && disabledReason && (
+          <p className="max-w-48 text-right text-xs text-stone-500">{disabledReason}</p>
+        )}
+      </div>
+    )
 
   const handleConfirm = () => {
     setError(null)
+    if (!allSectionsConfirmed) {
+      setError('Please confirm each checklist section before final confirmation.')
+      return
+    }
     if (!canConfirm) {
       setError('Please mark the dietary protocols as read before confirming.')
       return
@@ -231,20 +281,31 @@ export function PreEventChecklistClient({ event, client }: PreEventChecklistClie
             </Link>
             .
           </p>
+          <div className="mt-4 flex justify-end">
+            {sectionControl('event', 'Confirm Event Details')}
+          </div>
         </CardContent>
       </Card>
 
       {/* Dietary Preferences */}
       <Card className="mb-4">
         <CardHeader className="pb-2">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-4">
             <CardTitle className="text-base">Your Dietary Preferences</CardTitle>
-            <Link
-              href="/my-profile"
-              className="text-xs text-brand-500 hover:text-brand-400 font-medium"
-            >
-              Update Profile →
-            </Link>
+            <div className="flex items-center gap-3">
+              {sectionControl(
+                'dietary',
+                'Confirm Preferences',
+                hasDietaryProtocols && !dietaryProtocolsRead,
+                'Mark protocols as read first'
+              )}
+              <Link
+                href="/my-profile"
+                className="text-xs text-brand-500 hover:text-brand-400 font-medium"
+              >
+                Update Profile →
+              </Link>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -311,14 +372,17 @@ export function PreEventChecklistClient({ event, client }: PreEventChecklistClie
       {/* Kitchen & Access */}
       <Card className="mb-4">
         <CardHeader className="pb-2">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-4">
             <CardTitle className="text-base">Kitchen & Access</CardTitle>
-            <Link
-              href="/my-profile"
-              className="text-xs text-brand-500 hover:text-brand-400 font-medium"
-            >
-              Update Profile →
-            </Link>
+            <div className="flex items-center gap-3">
+              {sectionControl('kitchen', 'Confirm Access')}
+              <Link
+                href="/my-profile"
+                className="text-xs text-brand-500 hover:text-brand-400 font-medium"
+              >
+                Update Profile →
+              </Link>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -343,14 +407,17 @@ export function PreEventChecklistClient({ event, client }: PreEventChecklistClie
       {event.special_requests && (
         <Card className="mb-4">
           <CardHeader className="pb-2">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-4">
               <CardTitle className="text-base">Special Requests</CardTitle>
-              <Link
-                href="/my-chat"
-                className="text-xs text-brand-500 hover:text-brand-400 font-medium"
-              >
-                Message Chef to Update →
-              </Link>
+              <div className="flex items-center gap-3">
+                {sectionControl('special', 'Confirm Requests')}
+                <Link
+                  href="/my-chat"
+                  className="text-xs text-brand-500 hover:text-brand-400 font-medium"
+                >
+                  Message Chef to Update →
+                </Link>
+              </div>
             </div>
           </CardHeader>
           <CardContent>
@@ -374,7 +441,7 @@ export function PreEventChecklistClient({ event, client }: PreEventChecklistClie
         <p className="text-stone-300 mb-4 text-sm">
           {canConfirm
             ? 'Everything above looks correct and the chef has everything they need for a perfect evening.'
-            : 'Mark the dietary protocols as read before confirming these details.'}
+            : 'Confirm each section above before final confirmation.'}
         </p>
         <Button
           variant="primary"

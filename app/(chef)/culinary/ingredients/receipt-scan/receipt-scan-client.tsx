@@ -485,33 +485,12 @@ export function ReceiptScanClient() {
         </Card>
       )}
 
-      {/* How it works */}
+      {/* Scan notes */}
       {step === 'upload' && (
-        <Card>
-          <CardHeader>
-            <CardTitle>How it works</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 text-sm">
-              <div className="text-center p-3">
-                <p className="font-medium text-stone-200">1. Upload</p>
-                <p className="text-stone-500 mt-1">Take a photo of your grocery receipt</p>
-              </div>
-              <div className="text-center p-3">
-                <p className="font-medium text-stone-200">2. Extract</p>
-                <p className="text-stone-500 mt-1">Ollama reads every line item and price</p>
-              </div>
-              <div className="text-center p-3">
-                <p className="font-medium text-stone-200">3. Match</p>
-                <p className="text-stone-500 mt-1">Items are matched to your ingredients</p>
-              </div>
-              <div className="text-center p-3">
-                <p className="font-medium text-stone-200">4. Import</p>
-                <p className="text-stone-500 mt-1">Confirmed prices update your cost data</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="rounded-lg border border-stone-800 bg-stone-900/40 px-4 py-3 text-sm text-stone-400">
+          Scan extracts line items, matches them to your ingredients, and imports only the prices you
+          approve.
+        </div>
       )}
     </div>
   )
