@@ -1093,6 +1093,7 @@ export default async function CannabisAboutPage() {
                 { label: 'Cannabis Events', status: 'live' },
                 { label: 'Cannabis Ledger', status: 'live' },
                 { label: 'Invitations', status: 'live' },
+                { label: 'Content Pipeline', status: 'live' },
                 { label: 'Compliance Placeholder', status: 'live' },
                 { label: 'SOPs & Checklists', status: 'planned' },
                 { label: 'Dosing Tracker (THC/CBD per guest)', status: 'planned' },
@@ -1103,6 +1104,22 @@ export default async function CannabisAboutPage() {
                 { label: 'Receipt Photo Documentation', status: 'planned' },
               ]}
             />
+            <div
+              className="rounded-lg p-3"
+              style={{ background: '#0a130a', border: '1px solid rgba(74, 124, 78, 0.12)' }}
+            >
+              <AboutParagraph>
+                Use the content pipeline after eligible completed events to review photos, draft
+                event-safe posts, approve the copy, and track what has been posted.
+              </AboutParagraph>
+              <a
+                href="/content"
+                className="inline-flex text-sm font-medium underline underline-offset-2 transition-opacity hover:opacity-80"
+                style={{ color: '#8bc34a' }}
+              >
+                Open Content Pipeline
+              </a>
+            </div>
           </AboutSection>
         </div>
 
