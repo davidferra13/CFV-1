@@ -1804,7 +1804,7 @@ function readPersonaReports() {
     .map((file) => {
       try {
         const content = readFileSync(join(dir, file), "utf8").replace(/\r\n/g, "\n");
-        // Handle both formats: "Test: Name" and "Test — Name"
+        // Handle both formats: "Test: Name" and "Test \u2014 Name"
         const nameMatch = content.match(/^# Persona Stress Test[\s:\u2014\u2013-]+(.+)$/m);
         let name = nameMatch ? nameMatch[1].trim() : file;
         // If name looks like a slug (all lowercase with hyphens), humanize it
@@ -3570,12 +3570,204 @@ function page() {
 
     /* --- Prompt Library --- */
     let currentPromptType = 'Chef';
+    const PROMPT_CONTEXT = {
+      Chef: {
+        actor: 'private chef, culinary operator, pop-up chef, caterer, or food service founder',
+        reality: [
+          'events, dinners, drops, prep days, or services per month',
+          'revenue, deposits, margins, menu pricing, or food cost with dollar amounts',
+          'team size, assistants, vendors, venues, or client mix',
+          'service geography, travel radius, kitchen constraints, and calendar pressure',
+          'current tools such as texts, spreadsheets, PDFs, notebooks, email, POS, or booking forms',
+        ],
+      },
+      Client: {
+        actor: 'private dining client, host, planner, buyer, or repeat customer',
+        reality: [
+          'events booked or considered per year',
+          'budget, deposits, invoice approvals, guest count, and payment constraints',
+          'dietary restrictions, household preferences, privacy needs, and decision makers',
+          'home, venue, travel, staffing, or service location constraints',
+          'current coordination tools such as email, texts, PDFs, calendars, or shared docs',
+        ],
+      },
+      Guest: {
+        actor: 'event guest, dinner guest, ticket holder, or invited attendee',
+        reality: [
+          'events attended per year and typical guest role',
+          'dietary, allergy, medical, accessibility, or privacy constraints',
+          'budget, ticket, invitation, check-in, or payment context',
+          'communication flow before, during, and after the event',
+          'current tools such as invitation links, texts, forms, email, or verbal updates',
+        ],
+      },
+      Vendor: {
+        actor: 'supplier, farm, butcher, fishmonger, venue, rental company, or specialty vendor',
+        reality: [
+          'orders, deliveries, pickups, or partner accounts per week',
+          'pricing, minimums, substitutions, payment terms, and invoice timing',
+          'inventory, seasonality, lead times, quality checks, and delivery constraints',
+          'service geography, route timing, packaging, or receiving rules',
+          'current coordination tools such as texts, calls, spreadsheets, invoices, or portals',
+        ],
+      },
+      Staff: {
+        actor: 'prep cook, server, sous chef, assistant, event lead, or operations staff member',
+        reality: [
+          'shifts, events, prep days, or service roles per month',
+          'pay, hours, assignments, availability, certifications, or training needs',
+          'team structure, handoff rules, role clarity, and authority boundaries',
+          'kitchen, venue, service, cleanup, or travel constraints',
+          'current briefing tools such as texts, printed sheets, spreadsheets, or verbal updates',
+        ],
+      },
+      Partner: {
+        actor: 'venue partner, farm partner, brand partner, referral partner, or collaborator',
+        reality: [
+          'events, referrals, collaborations, or promotions per quarter',
+          'revenue share, deposits, contract terms, or payment timing',
+          'shared calendars, guest lists, venues, marketing assets, and operational dependencies',
+          'approval rules, brand constraints, privacy expectations, or risk ownership',
+          'current coordination tools such as email, contracts, shared docs, texts, or calls',
+        ],
+      },
+      Public: {
+        actor: 'public discovery user researching chefs, dinners, classes, events, or food experiences',
+        reality: [
+          'searches, comparisons, inquiries, or bookings per year',
+          'budget, trust signals, timing, location, and availability requirements',
+          'portfolio, menu, review, cuisine, dietary, or accessibility needs',
+          'decision path from discovery to inquiry to booking',
+          'current discovery tools such as search engines, social media, referrals, review sites, or listing pages',
+        ],
+      },
+    };
+
+    function promptContextFor(typeName) {
+      return PROMPT_CONTEXT[typeName] || PROMPT_CONTEXT.Chef;
+    }
+
+    function promptHeader(typeName) {
+      return '**' + typeName + ' Profile: "[Their Full Name]" - [Their Title/Role] ([One-Word Archetype])**';
+    }
+
+    function buildPersonaPrompt(typeName, tier, notes, templateName) {
+      const context = promptContextFor(typeName);
+      const noteText = notes && notes.trim()
+        ? '\\n\\nUser notes to honor:\\n' + notes.trim()
+        : '';
+      const detailRule = tier === 'premium'
+        ? 'Write 900-1200 words total. Include concrete tradeoffs, edge cases, emotional stakes, and operational consequences.'
+        : 'Write 600-900 words total. Keep it focused, concrete, and operational.';
+      const sourceRule = templateName === 'local-real'
+        ? 'If the notes name a real person or business, use only the provided notes and clearly mark unknowns as [unknown]. Do not invent private facts.'
+        : 'Invent a completely fictional name and business context. Do not use any real celebrity, public figure, or identifiable real private person.';
+      const realityBullets = context.reality.map(item => '* Specific ' + item).join('\\n');
+
+      return 'You are writing a detailed persona profile for stress-testing a food service operations platform.\\n\\n' +
+        'Persona type: ' + typeName + '\\n' +
+        'Persona lens: ' + context.actor + '\\n' +
+        sourceRule + '\\n' +
+        detailRule + noteText + '\\n\\n' +
+        'Write the persona in FIRST PERSON as if they are describing themselves and their situation to a software evaluation team. Use this exact structure:\\n\\n' +
+        promptHeader(typeName) + '\\n\\n' +
+        '[2-3 sentence introduction in first person.]\\n\\n' +
+        '### Business Reality\\n\\n' +
+        'Right now:\\n' +
+        realityBullets + '\\n\\n' +
+        '### Primary Failure: [Name the Biggest Problem]\\n\\n' +
+        '[One detailed paragraph about their #1 operational pain point. Be specific: what breaks, what it costs them, why current workarounds fail.]\\n\\n' +
+        '### Structural Issue: [Issue Name]\\n\\n' +
+        '[Paragraph describing a systemic problem. Include current workaround and what breaks.]\\n\\n' +
+        '### Structural Issue: [Different Issue Name]\\n\\n' +
+        '[Another systemic problem with specifics.]\\n\\n' +
+        '### Structural Issue: [Third Issue Name]\\n\\n' +
+        '[Third systemic problem.]\\n\\n' +
+        '### Psychological Model\\n\\n' +
+        'I optimize for: [what they prioritize]\\n' +
+        'I refuse to compromise on: [non-negotiables]\\n' +
+        'I avoid: [what they hate]\\n' +
+        'I evaluate tools by: [their lens for software]\\n\\n' +
+        '### Pass / Fail Conditions\\n\\n' +
+        'For this system to work for me, it must:\\n\\n' +
+        '1. [Specific, testable requirement]\\n' +
+        '2. [Specific, testable requirement]\\n' +
+        '3. [Specific, testable requirement]\\n' +
+        '4. [Specific, testable requirement]\\n' +
+        '5. [Specific, testable requirement]\\n' +
+        '6. [Specific, testable requirement]\\n' +
+        '7. [Specific, testable requirement]\\n\\n' +
+        'IMPORTANT RULES:\\n' +
+        '- Make it feel real: specific dollar amounts, specific tools they currently use, specific frustrations.\\n' +
+        '- Every pass/fail condition must be something a software system could concretely implement or fail.\\n' +
+        '- Do NOT mention ChefFlow by name in the persona text.\\n' +
+        '- Do not include any preamble or commentary. Start directly with the ' + typeName + ' Profile line.';
+    }
+
+    async function copyPromptToClipboard(promptText) {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(promptText);
+        return;
+      }
+      const scratch = document.createElement('textarea');
+      scratch.value = promptText;
+      scratch.setAttribute('readonly', '');
+      scratch.style.position = 'fixed';
+      scratch.style.left = '-9999px';
+      document.body.appendChild(scratch);
+      scratch.select();
+      document.execCommand('copy');
+      scratch.remove();
+    }
+
+    function setPromptLabels() {
+      document.querySelectorAll('[data-tpl]').forEach(btn => {
+        const row = btn.closest('.prompt-template');
+        const label = row?.querySelector('.label');
+        if (!label) return;
+        label.textContent = currentPromptType + (btn.dataset.tpl === 'local-real' ? ' - Local Model (Real Person)' : ' - Premium AI (Fictional)');
+      });
+    }
+
+    async function copyCurrentPrompt(templateName) {
+      const promptText = buildPersonaPrompt(currentPromptType, $('promptTier')?.value || 'premium', $('promptNotes')?.value || '', templateName);
+      await copyPromptToClipboard(promptText);
+      toast(currentPromptType + ' prompt copied', 'success');
+    }
+
     document.querySelectorAll('[data-prompt-type]').forEach(btn => {
       btn.onclick = () => {
         currentPromptType = btn.dataset.promptType;
         $('promptBoxTitle').textContent = 'Generate ' + currentPromptType + ' Persona with ChatGPT';
+        setPromptLabels();
       };
     });
+    document.querySelectorAll('.copy-btn').forEach(btn => {
+      btn.onclick = async (event) => {
+        event.stopPropagation();
+        try { await copyCurrentPrompt(btn.dataset.tpl || 'premium-fictional'); }
+        catch (err) { toast('Prompt copy failed: ' + err.message, 'error'); }
+      };
+    });
+    document.querySelectorAll('.prompt-template').forEach(row => {
+      row.onclick = async () => {
+        const btn = row.querySelector('[data-tpl]');
+        try { await copyCurrentPrompt(btn?.dataset.tpl || 'premium-fictional'); }
+        catch (err) { toast('Prompt copy failed: ' + err.message, 'error'); }
+      };
+    });
+    if ($('generatePrompt')) {
+      $('generatePrompt').onclick = async () => {
+        try {
+          await copyCurrentPrompt($('promptTier')?.value === 'standard' ? 'standard-fictional' : 'premium-fictional');
+          const url = 'https://chatgpt.com/?q=' + encodeURIComponent('I copied a ' + currentPromptType + ' persona priming prompt. Please ask me to paste it.');
+          window.open(url, '_blank', 'noopener,noreferrer');
+        } catch (err) {
+          toast('Prompt generation failed: ' + err.message, 'error');
+        }
+      };
+    }
+    setPromptLabels();
     if ($('newSubmission')) $('newSubmission').onclick = () => { document.querySelector('[href="#importSection"]').click(); text.focus(); };
 
     /* --- Nav Active Tracking --- */
