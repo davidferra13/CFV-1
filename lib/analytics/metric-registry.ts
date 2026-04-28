@@ -52,6 +52,27 @@ export interface MetricCoverageSummary {
   domainCounts: Record<MetricDomain, number>
 }
 
+export interface MetricRegistryPromptMetric {
+  id: string
+  label: string
+  description: string
+  domain: MetricDomain
+  valueKind: MetricValueKind
+  rollupCadence: MetricRollupCadence
+  freshnessSlaMinutes: number
+  sourceAction: string
+  sourceTables: readonly string[]
+  surfaces: readonly string[]
+}
+
+export interface MetricRegistryPromptContext {
+  version: string
+  total: number
+  domains: number
+  surfaces: readonly string[]
+  metrics: readonly MetricRegistryPromptMetric[]
+}
+
 export const METRIC_REGISTRY_VERSION = '2026-04-28'
 
 export const METRIC_DEFINITIONS: readonly MetricDefinition[] = [
@@ -551,6 +572,92 @@ export function listMetricDefinitions(
 
 export function findMetricsBySurface(surface: string): readonly MetricDefinition[] {
   return listMetricDefinitions({ surface })
+}
+
+export function findMetricDefinitionsByQuery(
+  query: string,
+  options: { surface?: string; limit?: number } = {}
+): readonly MetricDefinition[] {
+  const normalizedQuery = query.trim().toLowerCase()
+  if (!normalizedQuery) return []
+
+  const tokens = normalizedQuery
+    .replace(/[^a-z0-9_.\s-]/g, ' ')
+    .split(/\s+/)
+    .filter((token) => token.length >= 3)
+
+  const definitions = options.surface
+    ? listMetricDefinitions({ surface: options.surface })
+    : METRIC_DEFINITIONS
+
+  const scored = definitions
+    .map((definition) => {
+      const haystack = [
+        definition.id,
+        definition.label,
+        definition.description,
+        definition.domain,
+        definition.valueKind,
+        definition.sourceAction,
+        definition.sourceTables.join(' '),
+        definition.surfaces.join(' '),
+      ]
+        .join(' ')
+        .toLowerCase()
+
+      const score = tokens.reduce((sum, token) => sum + (haystack.includes(token) ? 1 : 0), 0)
+      return { definition, score }
+    })
+    .filter((entry) => entry.score > 0)
+    .sort((a, b) => b.score - a.score || a.definition.label.localeCompare(b.definition.label))
+
+  return scored.slice(0, options.limit ?? 5).map((entry) => entry.definition)
+}
+
+export function getMetricRegistryPromptContext(
+  surface = 'remy_context',
+  limit = 16
+): MetricRegistryPromptContext {
+  const metrics = findMetricsBySurface(surface)
+    .slice(0, limit)
+    .map((definition) => ({
+      id: definition.id,
+      label: definition.label,
+      description: definition.description,
+      domain: definition.domain,
+      valueKind: definition.valueKind,
+      rollupCadence: definition.rollupCadence,
+      freshnessSlaMinutes: definition.freshnessSlaMinutes,
+      sourceAction: definition.sourceAction,
+      sourceTables: definition.sourceTables,
+      surfaces: definition.surfaces,
+    }))
+
+  const summary = getMetricCoverageSummary(METRIC_DEFINITIONS)
+
+  return {
+    version: METRIC_REGISTRY_VERSION,
+    total: summary.total,
+    domains: summary.domains,
+    surfaces: summary.surfaces,
+    metrics,
+  }
+}
+
+export function formatMetricRegistryForPrompt(context: MetricRegistryPromptContext): string {
+  const lines = [
+    `METRIC TRUTH REGISTRY v${context.version}: ${context.total} canonical metrics across ${context.domains} domains.`,
+    'Use these definitions when answering analytics, statistics, dashboard, or data-source questions. If a metric is not listed or loaded, say that the registry does not expose it in this context.',
+  ]
+
+  for (const metric of context.metrics) {
+    lines.push(
+      `- ${metric.label} (${metric.id}): ${metric.description} Domain: ${metric.domain}. Value: ${metric.valueKind}. Rollup: ${metric.rollupCadence}. SLA: ${metric.freshnessSlaMinutes} minutes. Source action: ${metric.sourceAction}. Tables: ${metric.sourceTables.join(', ')}.`
+    )
+  }
+
+  lines.push('Full registry is visible in ChefFlow at /insights under Metric Registry.')
+  return lines.join('\n')
 }
 
 export function getMetricCoverageSummary(

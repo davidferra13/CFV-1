@@ -31,6 +31,7 @@ import { getClientIntelligenceContext } from '@/lib/intelligence/client-intellig
 import { getInquiryConversionContext } from '@/lib/intelligence/inquiry-conversion-context'
 import { getServiceConfigForTenant } from '@/lib/chef-services/service-config-internal'
 import { formatServiceConfigForPrompt } from '@/lib/chef-services/service-config-actions'
+import { getMetricRegistryPromptContext } from '@/lib/analytics/metric-registry'
 
 const OPENCLAW_API = process.env.OPENCLAW_API_URL || 'http://10.0.0.177:8081'
 
@@ -462,15 +463,18 @@ export async function loadRemyContext(
         async () => {
           const { data: suggestions } = await db
             .from('complimentary_suggestions')
-            .select('event_id, title, suggestion_type, confidence_score, effort_level, estimated_cost_cents')
+            .select(
+              'event_id, title, suggestion_type, confidence_score, effort_level, estimated_cost_cents'
+            )
             .eq('tenant_id', tenantId)
             .eq('status', 'pending')
             .order('confidence_score', { ascending: false })
             .limit(10)
           if (!suggestions || suggestions.length === 0) return undefined
           return suggestions
-            .map((s: any) =>
-              `- [${s.suggestion_type}] ${s.title} (confidence: ${s.confidence_score}%, effort: ${s.effort_level}, ~$${((s.estimated_cost_cents ?? 0) / 100).toFixed(2)})`
+            .map(
+              (s: any) =>
+                `- [${s.suggestion_type}] ${s.title} (confidence: ${s.confidence_score}%, effort: ${s.effort_level}, ~$${((s.estimated_cost_cents ?? 0) / 100).toFixed(2)})`
             )
             .join('\n')
         },
@@ -537,6 +541,8 @@ export async function loadRemyContext(
     })(),
     // Price intelligence from Pi
     priceContext: priceContext ?? undefined,
+    // Canonical analytics definitions for metric availability and source questions
+    metricRegistry: getMetricRegistryPromptContext('remy_context'),
     contextHealth:
       failedOperations.length > 0
         ? { degraded: true, failedOperations: Array.from(new Set(failedOperations)) }

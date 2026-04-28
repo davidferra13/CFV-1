@@ -13,6 +13,7 @@ import { getArchetype } from '@/lib/ai/remy-archetypes'
 import type { SurveyState } from '@/lib/ai/remy-survey-constants'
 import type { RemyMessage, RemyContext } from '@/lib/ai/remy-types'
 import type { RemyMemory } from '@/lib/ai/remy-memory-types'
+import { formatMetricRegistryForPrompt } from '@/lib/analytics/metric-registry'
 
 //  Navigation Route Map
 
@@ -1186,6 +1187,16 @@ When the chef asks about a quote amount, compare it to this range: below 25th = 
     parts.push(`\nBUSINESS INTELLIGENCE (synthesized from 30 analytics engines - use when discussing business health, pricing, growth, or client retention):
 ${context.businessIntelligence}
 Reference these insights when the chef asks about their business, pricing strategy, client health, capacity, or growth.`)
+  }
+
+  const asksAboutMetrics =
+    userMessage &&
+    /\b(metric|metrics|stat|stats|statistics|analytics|dashboard|tracked|monitor|source table|source action|where.*number|how.*calculated|ingredient usage|recipe usage|menu usage|quote acceptance|revenue)\b/i.test(
+      userMessage
+    )
+
+  if (context.metricRegistry && (includeAnalyticalContext || asksAboutMetrics)) {
+    parts.push(`\n${formatMetricRegistryForPrompt(context.metricRegistry)}`)
   }
 
   // Streaming mode: markdown with optional nav suggestions

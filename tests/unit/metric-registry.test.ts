@@ -5,11 +5,16 @@ import {
   METRIC_DEFINITIONS,
   assertMetricIdsUnique,
   findMetricsBySurface,
+  findMetricDefinitionsByQuery,
+  formatMetricRegistryForPrompt,
   getMetricCoverageSummary,
   getMetricDefinition,
+  getMetricRegistryPromptContext,
   isMetricStale,
   listMetricDefinitions,
 } from '../../lib/analytics/metric-registry'
+import { tryInstantAnswer } from '../../app/api/remy/stream/route-instant-answers'
+import type { RemyContext } from '../../lib/ai/remy-types'
 
 describe('metric registry', () => {
   it('has unique ids and enough coverage for the chef portal analytics surface', () => {
@@ -68,5 +73,41 @@ describe('metric registry', () => {
     assert.equal(isMetricStale('not-a-date', 60, now), true)
     assert.equal(isMetricStale('2026-04-28T11:30:00.000Z', 60, now), false)
     assert.equal(isMetricStale('2026-04-28T10:30:00.000Z', 60, now), true)
+  })
+
+  it('builds a Remy-safe metric prompt context', () => {
+    const context = getMetricRegistryPromptContext('remy_context')
+    const prompt = formatMetricRegistryForPrompt(context)
+
+    assert.ok(context.metrics.length > 0)
+    assert.ok(context.metrics.every((metric) => metric.surfaces.includes('remy_context')))
+    assert.ok(prompt.includes('METRIC TRUTH REGISTRY'))
+    assert.ok(prompt.includes('Full registry is visible'))
+  })
+
+  it('finds metric definitions from natural language source questions', () => {
+    const matches = findMetricDefinitionsByQuery('where does ingredient usage come from', {
+      surface: 'remy_context',
+    })
+
+    assert.equal(matches[0]?.id, 'culinary.ingredient_usage')
+  })
+
+  it('lets Remy answer metric availability and source questions instantly', () => {
+    const context = {
+      clientCount: 0,
+      upcomingEventCount: 0,
+      openInquiryCount: 0,
+      metricRegistry: getMetricRegistryPromptContext('remy_context'),
+    } as RemyContext
+
+    const overview = tryInstantAnswer('what stats do you track', context)
+    assert.ok(overview?.text.includes('canonical metrics'))
+    assert.equal(overview?.navSuggestions?.[0]?.href, '/insights')
+
+    const source = tryInstantAnswer('where does ingredient usage come from', context)
+    assert.ok(source?.text.includes('getCulinaryUsageStats'))
+    assert.ok(source?.text.includes('recipe_ingredients'))
+    assert.ok(source?.text.includes('never a fake zero'))
   })
 })

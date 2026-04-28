@@ -399,6 +399,8 @@ export interface RemyContext {
     degraded: boolean
     failedOperations: string[]
   }
+  /** Canonical analytics definitions Remy can use for metric source and availability questions */
+  metricRegistry?: import('@/lib/analytics/metric-registry').MetricRegistryPromptContext
   cilInsights?: string
   /** Pending complimentary suggestions for upcoming events */
   compSuggestions?: string

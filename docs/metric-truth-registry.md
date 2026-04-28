@@ -11,6 +11,7 @@ ChefFlow has analytics across `/analytics`, `/insights`, dashboards, daily repor
 - Source file: `lib/analytics/metric-registry.ts`
 - UI surface: `/insights`, Metric Registry tab
 - Test file: `tests/unit/metric-registry.test.ts`
+- Remy integration: Remy receives the `remy_context` registry subset and can answer metric availability and source questions with deterministic instant answers.
 - Failure mode: every metric uses `error_state_not_zero`, which means failures must render as an error state instead of a silent zero.
 - Scope model: metrics declare `tenant_id`, `chef_id`, or `derived_from_tenant`. New query implementations must still enforce tenant scoping in the server action that reads data.
 

@@ -8,6 +8,7 @@
 // the question pattern and format the answer in Remy's voice.
 
 import type { RemyContext } from '@/lib/ai/remy-types'
+import { findMetricDefinitionsByQuery } from '@/lib/analytics/metric-registry'
 
 interface InstantAnswer {
   text: string
@@ -19,7 +20,64 @@ interface AnswerPattern {
   answer: (ctx: RemyContext, match: RegExpMatchArray) => InstantAnswer | null
 }
 
+function formatMetricFreshness(minutes: number): string {
+  if (minutes < 60) return `${minutes}m`
+  if (minutes < 1440) return `${Math.round(minutes / 60)}h`
+  return `${Math.round(minutes / 1440)}d`
+}
+
+function formatMetricSourceAnswer(query: string): InstantAnswer | null {
+  const matches = findMetricDefinitionsByQuery(query, { surface: 'remy_context', limit: 3 })
+  if (matches.length === 0) return null
+
+  return {
+    text: matches
+      .map(
+        (metric) =>
+          `**${metric.label}** (${metric.id})\n- What it means: ${metric.description}\n- Source action: \`${metric.sourceAction}\`\n- Tables: ${metric.sourceTables.map((table) => `\`${table}\``).join(', ')}\n- Freshness: ${formatMetricFreshness(metric.freshnessSlaMinutes)} ${metric.rollupCadence}\n- Failure rule: show an error state, never a fake zero`
+      )
+      .join('\n\n'),
+    navSuggestions: [{ label: 'Metric Registry', href: '/insights' }],
+  }
+}
+
 const INSTANT_PATTERNS: AnswerPattern[] = [
+  {
+    pattern:
+      /(?:where|how|what).*(?:metric|stat|analytics|number|usage|rate).*(?:source|come from|calculated|tracked|defined)|(?:source|calculation).*(?:metric|stat|analytics|usage|rate)/i,
+    answer: (_ctx, match) => formatMetricSourceAnswer(match.input ?? match[0]),
+  },
+  {
+    pattern:
+      /(?:what|which|show|list).*(?:analytics|metrics|stats|statistics).*(?:track|monitor|available|can you see|do you have)|(?:what|which).*(?:data|numbers).*(?:track|monitor)/i,
+    answer: (ctx) => {
+      const registry = ctx.metricRegistry
+      if (!registry || registry.metrics.length === 0) return null
+
+      const byDomain = registry.metrics.reduce<Record<string, number>>((counts, metric) => {
+        counts[metric.domain] = (counts[metric.domain] ?? 0) + 1
+        return counts
+      }, {})
+
+      const domainLine = Object.entries(byDomain)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([domain, count]) => `${domain}: ${count}`)
+        .join(', ')
+
+      const examples = registry.metrics
+        .slice(0, 10)
+        .map(
+          (metric) =>
+            `- **${metric.label}** (${metric.id}) from \`${metric.sourceAction}\`, ${formatMetricFreshness(metric.freshnessSlaMinutes)} freshness`
+        )
+        .join('\n')
+
+      return {
+        text: `I have **${registry.total} canonical metrics** in the Metric Truth Registry across **${registry.domains} domains**. Remy currently has these registry-backed metric definitions in context: ${domainLine}.\n\n${examples}\n\nAsk "where does ingredient usage come from?" or "how is quote acceptance tracked?" and I can show the exact source action, tables, freshness SLA, and failure rule.`,
+        navSuggestions: [{ label: 'Metric Registry', href: '/insights' }],
+      }
+    },
+  },
   // "How many clients do I have?"
   {
     pattern: /^how\s+many\s+clients?\s+(?:do\s+i\s+have|are\s+there|have\s+i\s+got)/i,
