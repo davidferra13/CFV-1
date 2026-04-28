@@ -73,7 +73,6 @@ export async function POST(req: NextRequest) {
         chef_id: aiCall.chef_id,
         text: `Voicemail from ${callerLabel}: "${transcriptionText}"`,
         status: 'raw',
-        source: 'inbound_voice_voicemail',
       })
     } catch (err) {
       console.error('[voicemail] chef_quick_notes insert error:', err)
