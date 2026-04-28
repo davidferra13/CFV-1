@@ -17,6 +17,25 @@ import {
 } from '@/lib/site/national-brand-copy'
 import { CategoryPill } from './category-icon'
 
+const LOCAL_INTENT_CHIPS = [
+  { label: 'Open now', query: 'open food near me' },
+  { label: 'Top rated', query: 'top rated food near me' },
+  { label: 'Cheap', query: 'cheap food near me' },
+  { label: 'Upscale', query: 'upscale food near me' },
+  { label: 'Delivery', query: 'delivery food near me' },
+  { label: 'Good for kids', query: 'family food near me' },
+  { label: 'Accepts reservations', query: 'reservations food near me' },
+]
+
+const POPULAR_AREAS = [
+  'New York, NY',
+  'Brooklyn, NY',
+  'Manhattan, NY',
+  'SoHo, New York',
+  'West Village, New York',
+  'East Village, New York',
+]
+
 type Props = {
   query: string
   businessType: string
@@ -55,6 +74,7 @@ export function NearbyFilters({
   )
   const [showAllCuisines, setShowAllCuisines] = useState(false)
   const [locationLoading, setLocationLoading] = useState(false)
+  const [showAreaPicker, setShowAreaPicker] = useState(false)
 
   useEffect(() => {
     setSearchInput(query)
@@ -129,6 +149,36 @@ export function NearbyFilters({
     [applyParams, locationInput, searchParams]
   )
 
+  const applyIntentQuery = useCallback(
+    (intentQuery: string) => {
+      const params = new URLSearchParams(searchParams?.toString())
+      if (query === intentQuery) {
+        params.delete('q')
+        setSearchInput('')
+      } else {
+        params.set('q', intentQuery)
+        setSearchInput(intentQuery)
+      }
+      params.delete('page')
+      applyParams(params)
+    },
+    [applyParams, query, searchParams]
+  )
+
+  const applySuggestedArea = useCallback(
+    (area: string) => {
+      const params = new URLSearchParams(searchParams?.toString())
+      params.set('location', area)
+      params.delete('lat')
+      params.delete('lon')
+      params.delete('page')
+      setLocationInput(area)
+      setShowAreaPicker(false)
+      applyParams(params)
+    },
+    [applyParams, searchParams]
+  )
+
   const clearFilters = useCallback(() => {
     setSearchInput('')
     setLocationInput('')
@@ -159,6 +209,7 @@ export function NearbyFilters({
         params.delete('page')
         params.set('lat', position.coords.latitude.toFixed(4))
         params.set('lon', position.coords.longitude.toFixed(4))
+        setShowAreaPicker(false)
         applyParams(params)
         setLocationLoading(false)
       },
@@ -228,6 +279,108 @@ export function NearbyFilters({
           {locationLoading ? 'Locating...' : usingBrowserLocation ? 'Using location' : 'Near me'}
         </button>
       </form>
+
+      <div className="flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setShowAreaPicker(true)}
+          className="inline-flex h-9 items-center gap-2 rounded-full border border-brand-700/60 bg-brand-950/30 px-3 text-xs font-semibold text-brand-100 transition-colors hover:border-brand-500 hover:bg-brand-950/50"
+        >
+          <MapPin className="h-3.5 w-3.5" />
+          {locationLabel || (usingBrowserLocation ? 'Current location' : 'Choose area')}
+        </button>
+        {LOCAL_INTENT_CHIPS.map((chip) => {
+          const active = query === chip.query
+          return (
+            <button
+              key={chip.label}
+              type="button"
+              onClick={() => applyIntentQuery(chip.query)}
+              className={`inline-flex h-9 items-center rounded-full px-3 text-xs font-semibold transition-colors ${
+                active
+                  ? 'bg-brand-600 text-white'
+                  : 'border border-stone-700 bg-stone-950 text-stone-300 hover:border-stone-600 hover:bg-stone-900'
+              }`}
+            >
+              {active ? `X ${chip.label}` : chip.label}
+            </button>
+          )
+        })}
+      </div>
+
+      {showAreaPicker && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 py-8">
+          <div className="w-full max-w-md rounded-2xl border border-stone-800 bg-stone-950 shadow-2xl shadow-black/50">
+            <div className="flex items-center justify-between border-b border-stone-800 px-5 py-4">
+              <h2 className="text-base font-semibold text-stone-100">Choose an area</h2>
+              <button
+                type="button"
+                onClick={() => setShowAreaPicker(false)}
+                className="rounded-full p-2 text-stone-500 transition-colors hover:bg-stone-900 hover:text-stone-200"
+                aria-label="Close area picker"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="space-y-5 p-5">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-500">
+                  For you
+                </p>
+                <p className="mt-2 text-sm text-stone-300">
+                  Find food closer to a specific area, or use precise location for distance-based
+                  sorting.
+                </p>
+                <button
+                  type="button"
+                  onClick={toggleBrowserLocation}
+                  disabled={locationLoading}
+                  className="mt-3 inline-flex h-10 items-center gap-2 rounded-full border border-stone-700 px-4 text-sm font-semibold text-stone-100 transition-colors hover:border-brand-500 hover:text-white disabled:cursor-wait disabled:opacity-70"
+                >
+                  <MapPin className="h-4 w-4" />
+                  {locationLoading ? 'Locating...' : 'Use precise location'}
+                </button>
+              </div>
+
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-500">
+                  Popular
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {POPULAR_AREAS.map((area) => (
+                    <button
+                      key={area}
+                      type="button"
+                      onClick={() => applySuggestedArea(area)}
+                      className="inline-flex h-10 items-center gap-2 rounded-full border border-stone-700 bg-stone-900 px-3 text-sm font-medium text-stone-200 transition-colors hover:border-brand-500 hover:text-white"
+                    >
+                      <MapPin className="h-3.5 w-3.5" />
+                      {area.replace(', New York', '')}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <form onSubmit={handleLocationSearch} className="flex gap-2">
+                <input
+                  type="text"
+                  value={locationInput}
+                  onChange={(event) => setLocationInput(event.target.value)}
+                  placeholder={NEUTRAL_LOCATION_PLACEHOLDER}
+                  className="h-11 min-w-0 flex-1 rounded-xl border border-stone-700 bg-stone-900 px-3 text-sm text-stone-100 placeholder:text-stone-500 focus:border-brand-500 focus:outline-none"
+                />
+                <button
+                  type="submit"
+                  onClick={() => setShowAreaPicker(false)}
+                  className="h-11 rounded-xl bg-brand-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
+                >
+                  Apply
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
         {BUSINESS_TYPES.map((type) => (

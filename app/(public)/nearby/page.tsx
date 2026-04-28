@@ -52,6 +52,7 @@ import { NearbyFallbackActions } from './_components/nearby-fallback-actions'
 import { ListingCard } from './_components/listing-card'
 import type { DirectoryFavoriteMode } from './_components/directory-favorite-button'
 import { NearbyFilters } from './_components/nearby-filters'
+import { NearbyMapDiscovery } from './_components/nearby-map-discovery-dynamic'
 import { NearbyTrustGuide } from './_components/nearby-trust-guide'
 import { UnmetDemandCapture } from './_components/unmet-demand-capture'
 
@@ -387,6 +388,7 @@ function ResultsSection({
   showCapture,
   favoriteMode,
   visualMode,
+  mapMode,
 }: {
   result: PaginatedListings
   activeFilterLabels: string[]
@@ -401,6 +403,7 @@ function ResultsSection({
   showCapture: boolean
   favoriteMode: DirectoryFavoriteMode
   visualMode: boolean
+  mapMode: boolean
 }) {
   if (result.listings.length === 0) {
     return isLanding ? (
@@ -513,29 +516,41 @@ function ResultsSection({
         </>
       )}
 
-      <div
-        className={
-          visualMode
-            ? 'grid gap-6 sm:grid-cols-2 xl:grid-cols-3'
-            : 'grid gap-6 sm:grid-cols-2 lg:grid-cols-3'
-        }
-      >
-        {result.listings.map((listing) => (
-          <ListingCard
-            key={listing.id}
-            listing={listing}
-            favoriteMode={favoriteMode}
-            visualMode={visualMode}
-          />
-        ))}
-      </div>
+      {mapMode ? (
+        <NearbyMapDiscovery
+          listings={result.listings}
+          total={result.total}
+          currentParams={currentParams.toString()}
+          favoriteMode={favoriteMode}
+          locationContextText={locationContextText}
+        />
+      ) : (
+        <div
+          className={
+            visualMode
+              ? 'grid gap-6 sm:grid-cols-2 xl:grid-cols-3'
+              : 'grid gap-6 sm:grid-cols-2 lg:grid-cols-3'
+          }
+        >
+          {result.listings.map((listing) => (
+            <ListingCard
+              key={listing.id}
+              listing={listing}
+              favoriteMode={favoriteMode}
+              visualMode={visualMode}
+            />
+          ))}
+        </div>
+      )}
 
-      <Pagination
-        page={result.page}
-        totalPages={result.totalPages}
-        total={result.total}
-        searchParams={currentParams}
-      />
+      {!mapMode && (
+        <Pagination
+          page={result.page}
+          totalPages={result.totalPages}
+          total={result.total}
+          searchParams={currentParams}
+        />
+      )}
 
       <div className="mt-10 rounded-xl border border-amber-800/30 bg-amber-950/10 p-5 text-center">
         <p className="text-sm font-semibold text-stone-200">
@@ -582,6 +597,8 @@ export default async function NearbyPage({ searchParams }: PageProps) {
   const pageParam = parseInt(firstParam(resolvedSearchParams.page), 10) || 1
   const visualMode =
     firstParam((resolvedSearchParams as Record<string, string | string[]>).visual) === '1'
+  const mapMode =
+    firstParam((resolvedSearchParams as Record<string, string | string[]>).map) === '1'
   const seoBase = buildNearbyBrowseSeoBase(resolvedSearchParams)
   const latParam = parseFloat(latRaw)
   const lonParam = parseFloat(lonRaw)
@@ -697,6 +714,7 @@ export default async function NearbyPage({ searchParams }: PageProps) {
   if (city) currentParams.set('city', city)
   if (priceRange) currentParams.set('price', priceRange)
   if (visualMode) currentParams.set('visual', '1')
+  if (mapMode) currentParams.set('map', '1')
   if (locationQuery) currentParams.set('location', locationQuery)
   if (requestedRadiusMiles != null) {
     currentParams.set('radius', String(requestedRadiusMiles))
@@ -712,6 +730,14 @@ export default async function NearbyPage({ searchParams }: PageProps) {
     visualParams.set('visual', '1')
   }
   const visualToggleHref = nearbyHref(visualParams)
+  const mapParams = new URLSearchParams(currentParams)
+  if (mapMode) {
+    mapParams.delete('map')
+  } else {
+    mapParams.set('map', '1')
+    mapParams.delete('page')
+  }
+  const mapToggleHref = nearbyHref(mapParams)
 
   const heroTitle = state ? `Nearby Food in ${getStateName(state)}` : 'Nearby Food Directory'
   const heroSubtitle =
@@ -884,6 +910,12 @@ export default async function NearbyPage({ searchParams }: PageProps) {
               >
                 {visualMode ? 'Compact cards' : 'Picture-first cards'}
               </Link>
+              <Link
+                href={mapToggleHref}
+                className="inline-flex min-h-10 items-center justify-center rounded-xl border border-stone-700 bg-stone-950 px-4 text-xs font-medium text-stone-200 transition-colors hover:border-stone-600 hover:bg-stone-900"
+              >
+                {mapMode ? 'Card grid' : 'Map view'}
+              </Link>
             </div>
           </div>
         </div>
@@ -911,6 +943,7 @@ export default async function NearbyPage({ searchParams }: PageProps) {
           showCapture={!shouldBlockResultsForInvalidLocation}
           favoriteMode={favoriteMode}
           visualMode={visualMode}
+          mapMode={mapMode}
         />
 
         {isLanding && stats.totalListings > 0 && (
