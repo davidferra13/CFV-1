@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { format } from 'date-fns'
 import { Badge } from '@/components/ui/badge'
-import type { ContentReadyEvent } from '@/lib/content/post-event-content-actions'
+import type { ContentReadyEvent } from '@/lib/content/post-event-content-types'
 import { ContentDraftEditor } from './content-draft-editor'
 
 export function ContentReadyEvents({ events }: { events: ContentReadyEvent[] }) {

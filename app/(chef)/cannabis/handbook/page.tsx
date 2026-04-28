@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import {
   CannabisPortalHeader,
   CannabisPageWrapper,
@@ -409,6 +410,28 @@ export default function CannabisHandbookPage() {
               </span>
             </li>
           </ul>
+        </section>
+
+        <section
+          className="mt-6 rounded-xl p-5"
+          style={{
+            background: '#0f1a0f',
+            border: '1px solid rgba(74, 124, 78, 0.2)',
+          }}
+        >
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-[#8bc34a] mb-3">
+            After the Dinner
+          </h2>
+          <p className="text-sm leading-relaxed text-[#d2e8d4]">
+            When service is complete and photos are cleared for use, move the event into the
+            content pipeline to draft, review, schedule, and mark posts as published.
+          </p>
+          <Link
+            href="/content"
+            className="mt-4 inline-flex items-center rounded-md border border-[#6aaa6e]/40 px-3 py-2 text-sm font-medium text-[#e8f5e9] transition-colors hover:border-[#8bc34a] hover:bg-[#1a2b1a]"
+          >
+            Open Content Pipeline
+          </Link>
         </section>
       </div>
     </CannabisPageWrapper>

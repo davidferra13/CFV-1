@@ -6,10 +6,12 @@
 // AI drafts require Ollama (private data). Chef always has final say.
 
 import { useState, useTransition, useCallback } from 'react'
+import type {
+  ContentReadyEvent,
+  ContentDraft,
+  ContentPlatform,
+} from '@/lib/content/post-event-content-types'
 import {
-  type ContentReadyEvent,
-  type ContentDraft,
-  type ContentPlatform,
   getContentReadyEvents,
   generateContentDraft,
   saveContentDraft,

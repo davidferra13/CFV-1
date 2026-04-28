@@ -8,7 +8,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
-import { ArrowLeft, CalendarDays, ExternalLink } from '@/components/ui/icons'
+import { CalendarDays } from '@/components/ui/icons'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { AvailabilityChecklist } from '@/components/availability/availability-checklist'
@@ -126,6 +126,14 @@ export default async function AvailabilityPage() {
             Your confirmed bookings below are dates you need to block on each platform. Use the
             checklist to track which platforms you have updated after each new booking.
           </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Link
+              href="/content"
+              className="inline-flex items-center rounded-md border border-stone-700 px-3 py-2 text-sm font-medium text-stone-200 transition-colors hover:border-stone-500 hover:bg-stone-800"
+            >
+              Open Content Pipeline
+            </Link>
+          </div>
         </div>
       </div>
 

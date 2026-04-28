@@ -3,6 +3,7 @@
 import { useState, useEffect, useTransition, useCallback } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import type { ContentPlatform, ContentDraft } from '@/lib/content/post-event-content-types'
 import {
   generateContentDraft,
   saveContentDraft,
@@ -10,8 +11,6 @@ import {
   updateDraftStatus,
   getEventContentDrafts,
   deleteContentDraft,
-  type ContentPlatform,
-  type ContentDraft,
 } from '@/lib/content/post-event-content-actions'
 
 // ── Constants ──────────────────────────────────────────────────────────────
