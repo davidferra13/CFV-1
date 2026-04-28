@@ -88,19 +88,9 @@
   ],
   "failed": [
     {
-      "source_file": "Chef Flow Personas\\Uncompleted\\Guest\\woody.txt",
-      "error": "Validation failed (score: 0): File not found",
-      "failed_at": "2026-04-27T06:42:33.134Z"
-    },
-    {
       "source_file": "Chef Flow Personas\\Uncompleted\\Chef\\persona.txt",
       "error": "Validation failed (score: 0): Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail; Word count too low: 389 (minimum 500)",
       "failed_at": "2026-04-27T06:57:43.963Z"
-    },
-    {
-      "source_file": "Chef Flow Personas\\Uncompleted\\Staff\\rene.txt",
-      "error": "Validation failed (score: 0): File not found",
-      "failed_at": "2026-04-27T07:05:47.466Z"
     },
     {
       "source_file": "Chef Flow Personas\\Uncompleted\\Partner\\danny-meyer.txt",
@@ -108,8 +98,16 @@
       "failed_at": "2026-04-27T07:10:14.119Z"
     }
   ],
-  "last_cycle": "2026-04-27T16:06:49.815Z",
+  "last_cycle": "2026-04-28T00:13:59.426Z",
   "total_personas_processed": 6,
   "total_build_tasks_queued": 25,
-  "last_synthesis_at": "2026-04-27T06:53:59.580Z"
+  "last_synthesis_at": "2026-04-27T06:53:59.580Z",
+  "metrics": {
+    "total_cycles": 1,
+    "total_analyzer_time_ms": 0,
+    "total_planner_time_ms": 0,
+    "total_synthesis_time_ms": 0,
+    "last_cycle_duration_ms": 0,
+    "retries_used": 0
+  }
 }

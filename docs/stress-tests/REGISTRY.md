@@ -168,3 +168,4 @@ _Next update: after next `/persona-stress-test` run_
 | emma-chamberlain | Guest | 2026-04-27 | 55/100 | local-ollama-v2 | [Report](persona-emma-chamberlain-2026-04-27.md) |
 | ari-weinzweig | Vendor | 2026-04-27 | 50/100 | local-ollama-v2 | [Report](persona-ari-weinzweig-2026-04-27.md) |
 | gail-simmons | Staff | 2026-04-27 | 68/100 | local-ollama-v2 | [Report](persona-gail-simmons-2026-04-27.md) |
+| miley-cyrus | Guest | 2026-04-27 | 50/100 | local-ollama-v2 | [Report](persona-miley-cyrus-2026-04-27.md) |

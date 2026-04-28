@@ -1,27 +1,56 @@
 {
-    "runId":  "live-ops-85152-1777331703",
-    "ranAt":  "2026-04-27T23:15:58.6718831Z",
-    "target":  null,
+    "runId":  "live-ops-69888-1777335302",
+    "ranAt":  "2026-04-28T00:16:14.4769053Z",
+    "target":  {
+                   "label":  "dev",
+                   "baseUrl":  "http://localhost:3100"
+               },
     "newChangesDetected":  true,
     "periodicSweepDue":  false,
     "authSweepsEnabled":  false,
-    "changedPathCount":  5,
+    "changedPathCount":  4,
     "changedPaths":  [
                          "docs/uptime-history.json",
-                         "lib/devices/kiosk-menu-actions.ts",
-                         "lib/quotes/actions.ts",
                          "system/persona-inbox-state.json",
+                         "system/persona-pipeline-state.json",
                          "system/runtime-events.ndjson"
                      ],
     "healthProbes":  [
-
+                         {
+                             "name":  "health-ping",
+                             "path":  "/api/health/ping",
+                             "ok":  true,
+                             "statusCode":  200,
+                             "error":  null
+                         },
+                         {
+                             "name":  "health-readiness",
+                             "path":  "/api/health/readiness?strict=1",
+                             "ok":  false,
+                             "statusCode":  0,
+                             "error":  "The operation has timed out."
+                         },
+                         {
+                             "name":  "home",
+                             "path":  "/",
+                             "ok":  false,
+                             "statusCode":  0,
+                             "error":  "The operation has timed out."
+                         },
+                         {
+                             "name":  "signin",
+                             "path":  "/auth/signin",
+                             "ok":  false,
+                             "statusCode":  0,
+                             "error":  "The operation has timed out."
+                         }
                      ],
     "steps":  [
                   {
                       "name":  "unit-canary",
                       "status":  "failed",
                       "exitCode":  1,
-                      "durationSeconds":  30.7
+                      "durationSeconds":  29
                   }
               ],
     "notes":  [

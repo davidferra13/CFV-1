@@ -1,0 +1,67 @@
+**Guest Profile: "Miley Cyrus" - High-Profile VIP Guest (Dietary Nightmare)**
+
+I am Miley Cyrus, and my presence at an event is never casual. I expect the entire experience—from the moment I walk through the door to the final bite of dessert—to be seamless, highly personalized, and utterly flawless. My public profile means my needs are scrutinized, and my dietary requirements are non-negotiable elements of my professional life. I am not just a guest; I am a logistical centerpiece that requires extreme pre-planning, flawless execution, and absolute confidentiality.
+
+### Business Reality
+
+Right now:
+* I attend an average of 8–12 highly publicized or private ticketed events (ranging from large galas to small farm dinners) per quarter.
+* My anticipated spend per event is easily over $15,000 (including private staging, specialized menus, staffing, and transportation), with a minimum required minimum spend of $5,000 for private bookings.
+* I have severe allergies (gluten, peanuts, tree nuts, and shellfish) and require a highly specific, clean-eating menu that often deviates significantly from the standard offering, necessitating detailed dietary surveys and multiple round-robin confirmations.
+* My most recent event was a private 30-person dinner at a vineyard in Napa Valley on October 12th, requiring a dedicated, chef-designed seven-course tasting menu.
+* My current communication setup is a mix of my personal assistant's texts (for immediate confirmation), a bespoke Google Sheet (for tracking allergies and preferences), and sporadic emails from the event coordinator, which is incredibly fragmented and unreliable.
+
+---
+
+### Primary Failure: The Single Point of Dietary Failure
+
+The biggest operational risk is the assumption that a "dietary restriction" means simply removing an ingredient. When this fails, it doesn't just mean a bad meal; it means a public, health-critical incident. If my specific allergy requirements—especially cross-contamination risks—are not tracked, confirmed, and communicated flawlessly from the initial RSVP through the final plate, the resulting crisis damages my reputation, requires immediate medical intervention, and creates an exponentially expensive PR nightmare. The cost is not just the meal, but the loss of trust and the potential for physical harm, which is far beyond any revenue calculation.
+
+---
+
+### Structural Issue: Fragmented Allergy and Preference Intake
+
+The initial RSVP process is completely broken. I am asked to fill out a generic dietary survey that only offers checkboxes (e.g., "Vegetarian," "No Seafood"). This forces me to either over-declare my needs (which creates unnecessary kitchen complexity) or under-declare them, which is dangerous. My current workaround is having my personal assistant compile a highly detailed, multi-page document listing specific ingredients I cannot tolerate, the degree of severity (mild vs. anaphylactic), and specific preparation methods required. This document is then manually emailed to the event planner, who must then cross-reference it against the booking sheet, often leading to discrepancies.
+
+---
+
+### Structural Issue: Lack of Real-Time Menu Visibility and Confirmation
+
+Once the event is booked, the menu visibility is opaque. I am told the menu is "chef-designed," which is vague. I need to see the actual menu, the ingredients list for every dish, and confirmation that the kitchen has physically received and acknowledged my specific restrictions *before* the day of the event. My workaround is forcing the event coordinator to send a PDF of the entire menu, with the allergies highlighted in red, and then having my assistant physically review and approve it, creating an unnecessary paper trail that slows down operations and increases the risk of version control errors.
+
+---
+
+### Structural Issue: Event Logistics and Headcount Drift
+
+The system cannot handle the dynamic nature of high-profile guest attendance. The initial RSVP might be 10 people, but due to last-minute last-minute cancellations or unexpected additions (e.g., my manager joining for one course), the headcount shifts. This causes severe friction in the kitchen's inventory and staffing planning. My current workaround involves a dedicated text chain with the event planner, where every single change in the guest count or seating arrangement must be manually logged and verbally confirmed, which is inefficient and prone to human error or missed messages.
+
+---
+
+### Structural Issue: Post-Event Feedback and Billing Reconciliation
+
+The feedback loop is completely manual and disconnected from the core event data. After the event, I receive a general feedback survey (e.g., "Rate the service 1-5"). However, my detailed feedback—such as "The dessert was beautiful, but the plating was uneven, and the gluten-free bread basket was stale"—has no direct, structured channel to the kitchen or the billing department. My assistant has to manually collate this qualitative feedback and then separately chase down the event manager to reconcile the final bill against the original dietary add-ons, creating a high chance of billing error or miscommunication regarding service recovery costs.
+
+---
+
+### Psychological Model
+
+I optimize for: Flawless, personalized, and discreet execution.
+I refuse to compromise on: The safety and integrity of my dietary requirements.
+I avoid: Generic forms, reliance on memory, and having to repeat information more than once.
+I evaluate tools by: How well they centralize complex, high-stakes data (like allergies, seating maps, and specialized menus) and automate the confirmation loop.
+
+I think in terms of risk mitigation and prestige. If a process is manual, it is a failure point. I need to see the entire operational journey mapped out in a single, authoritative source of truth.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must allow my personal assistant to upload a multi-page, detailed dietary restriction document and automatically flag every single ingredient and preparation risk across all associated menu items.
+2. The system must provide a single, auditable "Event Guest Profile" dashboard that centralizes the final confirmed headcount, the specific allergy restrictions, and the associated billing adjustments for every single guest.
+3. The system must send automated, sequential confirmation alerts (email/text) to the chef, kitchen manager, and server team when my dietary profile is updated, ensuring all staff are aware of the immediate change.
+4. The system must allow me to review and digitally approve the final, customized menu PDF, with clear visible confirmation that the kitchen has received and logged my specific allergy restrictions for that menu.
+5. The system must integrate the post-event feedback mechanism directly with the event record, allowing service recovery notes and specific complaints to be immediately logged and linked to the final invoice for reconciliation.
+6. The system must manage multiple, evolving booking variations (e.g., 10 people for dinner, 5 people for a cocktail reception) under one master event umbrella, ensuring the correct menu and staffing requirements are triggered for each time slot.
+7. The system must provide a real-time inventory check against the confirmed guest list and specialized menu requirements, alerting the operations team if key ingredients or allergy-safe components are low or missing.

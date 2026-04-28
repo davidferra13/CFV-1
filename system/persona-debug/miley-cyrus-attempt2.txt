@@ -1,0 +1,49 @@
+# Persona Evaluation: High-Profile, High-Risk Client
+
+**Persona:** High-Profile, High-Risk Client (e.g., Celebrity, VIP, Executive)
+**Key Needs:** Absolute data integrity, hyper-customization, proactive risk management, seamless cross-departmental communication, and flawless execution under pressure.
+**Pain Points:** Inflexibility, lack of personalization, manual data entry, and failure to anticipate complex, multi-layered requirements.
+
+---
+
+## Evaluation Summary
+
+**Overall Fit:** High Potential, but requires significant customization and process hardening. The system's core functionality is robust, but the current workflow lacks the necessary "risk mitigation layer" required for this persona.
+
+**Key Strengths:** The system's ability to handle complex scheduling, resource allocation, and multi-stage workflows is excellent. The structured nature of the platform provides a necessary level of accountability.
+
+**Key Weaknesses:** The current structure is too linear and fails to account for the *exceptions* and *escalations* inherent in VIP management. The lack of a dedicated "Risk Profile" or "Critical Dependency Map" is a major gap.
+
+---
+
+## Detailed Scoring
+
+| Feature Area | Score (1-5) | Rationale |
+| :--- | :--- | :--- |
+| **Custom Workflow Logic** | 4/5 | Can build complex paths, but needs conditional logic based on *risk level* rather than just *status*. |
+| **Data Integrity/Audit Trail** | 5/5 | Excellent logging capabilities are crucial for liability and reputation management. |
+| **Personalization/Flexibility** | 3/5 | Good for *tasks*, but poor for *persona*. Needs fields for "Allergens," "Emotional Triggers," "Preferred Vendor Tier." |
+| **Communication/Alerting** | 4/5 | Strong alerts, but needs tiered escalation (e.g., Level 1: Team Lead; Level 3: Executive Sponsor). |
+| **Scalability (Complexity)** | 4/5 | Can handle large scale, but the complexity must be managed by *risk grouping*, not just *volume*. |
+
+---
+
+## Gap Analysis & Recommendations
+
+**1. Missing Feature: Dynamic Risk Profiling (Critical)**
+*   **Problem:** The system treats all bookings equally. For this persona, a booking is weighted by *risk* (reputational, physical, logistical).
+*   **Recommendation:** Implement a mandatory "Risk Score" field upon client onboarding. This score dictates the required number of approvers, the required backup plan (Plan B/C), and the required communication cadence.
+
+**2. Missing Feature: Dependency Mapping & Critical Path Analysis**
+*   **Problem:** If the primary vendor fails, the system only flags the task delay. It doesn't automatically trigger the *pre-vetted, pre-paid* backup vendor.
+*   **Recommendation:** Create a "Critical Dependency Map" for every high-risk event. If Dependency A fails, the system must automatically trigger the procurement/booking for Dependency B, bypassing standard approval queues.
+
+**3. Process Improvement: "Exception Handling" Workflow**
+*   **Problem:** The current workflow is designed for the *ideal* path. VIPs *always* deviate from the ideal path.
+*   **Recommendation:** Build a dedicated "Exception Request" module. This allows staff to log a deviation (e.g., "Client requires last-minute change to venue due to weather") and forces a multi-level sign-off that explicitly acknowledges the risk taken by approving the deviation.
+
+---
+
+## Conclusion for Implementation Team
+
+This persona requires the system to act less like a project manager and more like a **Chief of Staff**. The focus must shift from *tracking tasks* to *managing potential failure points*. Prioritize building the **Risk Profile** and **Dependency Mapping** features above all else.

@@ -138,5 +138,47 @@
     "source_file": "Chef Flow Personas/Uncompleted/Partner/danny-meyer.txt",
     "stored_at": "2026-04-27T07:08:19.397Z",
     "chars": 7908
+  },
+  {
+    "id": "96f26cfc-bdbb-41b9-b7da-0268534a84ef",
+    "content_hash": "62415b15232a386e",
+    "persona_type": "Guest",
+    "persona_name": "Miley Cyrus",
+    "author": {
+      "type": "ai",
+      "name": "gemma4:e4b",
+      "tool": "persona-generator"
+    },
+    "source_file": "Chef Flow Personas/Uncompleted/Guest/miley-cyrus.txt",
+    "stored_at": "2026-04-28T00:15:37.718Z",
+    "chars": 7447
+  },
+  {
+    "id": "95dbe1d0-efb0-4e96-9883-3e4cc2421cfd",
+    "content_hash": "246c6487f9f007d4",
+    "persona_type": "Guest",
+    "persona_name": "Olajide Olatunji",
+    "author": {
+      "type": "ai",
+      "name": "gemma4:e4b",
+      "tool": "persona-generator"
+    },
+    "source_file": "Chef Flow Personas/Uncompleted/Guest/olajide-olatunji.txt",
+    "stored_at": "2026-04-28T00:17:02.267Z",
+    "chars": 6415
+  },
+  {
+    "id": "0324e8b1-a40a-4397-9f55-121f012ed589",
+    "content_hash": "22761d89186f8294",
+    "persona_type": "Chef",
+    "persona_name": "Gordon Ramsay",
+    "author": {
+      "type": "ai",
+      "name": "hermes3:8b",
+      "tool": "persona-generator"
+    },
+    "source_file": "Chef Flow Personas/Uncompleted/Chef/gordon-ramsay.txt",
+    "stored_at": "2026-04-28T00:19:54.814Z",
+    "chars": 3874
   }
 ]

@@ -1,5 +1,5 @@
 Live Ops Guardian found 1 failing check(s).
-Run: live-ops-85152-1777331703
-Target: unavailable
+Run: live-ops-69888-1777335302
+Target: http://localhost:3100
 Failures: unit-canary
 Latest summary: C:\Users\david\Documents\CFv1\logs\live-ops-guardian-latest.json
