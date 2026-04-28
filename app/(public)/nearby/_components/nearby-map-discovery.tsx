@@ -47,6 +47,17 @@ function listingAddress(listing: DirectoryListingSummary) {
   return listing.address?.trim() || cityState || 'Location details pending'
 }
 
+function listingLocationPrefill(listing: DirectoryListingSummary) {
+  const cityState = [
+    listing.city && listing.city !== 'unknown' ? listing.city : null,
+    listing.state,
+  ]
+    .filter(Boolean)
+    .join(', ')
+
+  return listing.address?.trim() || cityState || ''
+}
+
 function listingSummary(listing: DirectoryListingSummary) {
   return (
     listing.description?.trim() ||
@@ -79,6 +90,52 @@ function directionsHref(listing: DirectoryListingSummary) {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
     [listing.name, listing.address, listing.city, listing.state].filter(Boolean).join(', ')
   )}`
+}
+
+function bookingServiceType(listing: DirectoryListingSummary) {
+  switch (listing.business_type) {
+    case 'caterer':
+      return 'catering'
+    case 'meal_prep':
+      return 'meal_prep'
+    case 'private_chef':
+    case 'supper_club':
+    case 'pop_up':
+    case 'restaurant':
+    case 'food_truck':
+    case 'bakery':
+    default:
+      return 'dinner_party'
+  }
+}
+
+function bookingOccasion(listing: DirectoryListingSummary) {
+  const city = listing.city && listing.city !== 'unknown' ? ` in ${listing.city}` : ''
+  return `Private dining inspired by ${listing.name}${city}`
+}
+
+function bookingHref(listing: DirectoryListingSummary) {
+  const location = listingLocationPrefill(listing)
+  const additionalNotes = [
+    `I found ${listing.name} in ChefFlow Nearby and want help planning a private chef experience with similar local context.`,
+    location ? `Reference location: ${location}.` : null,
+    `Food context: ${cuisineLine(listing) || getBusinessTypeLabel(listing.business_type)}.`,
+  ]
+    .filter(Boolean)
+    .join(' ')
+
+  const params = new URLSearchParams({
+    occasion: bookingOccasion(listing),
+    service_type: bookingServiceType(listing),
+    additional_notes: additionalNotes,
+    referral_source: 'nearby_map',
+    utm_source: 'nearby',
+    utm_medium: 'map_drawer',
+    utm_campaign: 'food_near_me',
+  })
+  if (location) params.set('location', location)
+
+  return `/book?${params.toString()}`
 }
 
 function mapBounds(listings: DirectoryListingSummary[]) {
@@ -389,6 +446,35 @@ function PlaceDrawer({
                 </p>
               </div>
             </div>
+          </div>
+
+          <div className="rounded-2xl border border-brand-900/50 bg-brand-950/20 p-4">
+            <h3 className="text-sm font-semibold text-stone-100">
+              Turn this discovery into a hosted meal
+            </h3>
+            <p className="mt-1.5 text-xs leading-relaxed text-stone-400">
+              ChefFlow carries the place, location, and food context into booking so matched chefs
+              start with the same local signal you found here.
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Link
+                href={bookingHref(listing)}
+                className="inline-flex h-10 items-center justify-center rounded-xl bg-brand-600 px-4 text-xs font-semibold text-white transition-colors hover:bg-brand-700"
+              >
+                Book a Chef like this
+              </Link>
+              {listing.linked_chef ? (
+                <Link
+                  href={`/chef/${listing.linked_chef.slug}`}
+                  className="inline-flex h-10 items-center justify-center rounded-xl border border-stone-700 px-4 text-xs font-semibold text-stone-200 transition-colors hover:border-stone-600 hover:bg-stone-900"
+                >
+                  View {listing.linked_chef.display_name}
+                </Link>
+              ) : null}
+            </div>
+            <p className="mt-3 text-[11px] leading-relaxed text-stone-500">
+              Discovery - request - matched chefs - booking status.
+            </p>
           </div>
 
           <Link

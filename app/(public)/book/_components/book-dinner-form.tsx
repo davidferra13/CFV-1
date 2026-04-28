@@ -53,6 +53,7 @@ function applyPrefill(form: FormState, prefill?: PublicOpenBookingPrefill | null
 
   return {
     ...form,
+    ...(prefill.location ? { location: prefill.location } : {}),
     ...(prefill.occasion ? { occasion: prefill.occasion } : {}),
     ...(prefill.service_type ? { service_type: prefill.service_type } : {}),
     ...(prefill.additional_notes ? { additional_notes: prefill.additional_notes } : {}),

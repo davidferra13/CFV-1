@@ -98,7 +98,9 @@ export type DirectoryListingSummary = Pick<
   | 'lat'
   | 'lon'
   | 'lead_score'
+  | 'linked_chef_id'
 > & {
+  linked_chef?: DirectoryListing['linked_chef'] | null
   source?: DirectoryListing['source'] | null
   email?: DirectoryListing['email'] | null
   hours?: DirectoryListing['hours'] | null
@@ -280,6 +282,44 @@ async function getPublicLinkedChefSummary(
   }
 }
 
+async function getPublicLinkedChefMap(db: any, chefIds: string[]) {
+  if (chefIds.length === 0) return new Map<string, DirectoryLinkedChefSummary>()
+
+  const { data, error } = await db
+    .from('chefs')
+    .select(
+      `
+      id,
+      slug,
+      display_name,
+      business_name,
+      directory_approved,
+      chef_preferences!inner(network_discoverable)
+    `
+    )
+    .in('id', chefIds)
+    .eq('directory_approved', true)
+    .eq('chef_preferences.network_discoverable', true)
+    .not('slug', 'is', null)
+
+  if (error) {
+    console.error('[getPublicLinkedChefMap]', error)
+    return new Map<string, DirectoryLinkedChefSummary>()
+  }
+
+  return new Map(
+    ((data as any[] | null) ?? []).map((chef) => [
+      chef.id as string,
+      {
+        id: chef.id as string,
+        slug: chef.slug as string,
+        display_name:
+          (chef.display_name as string | null) || (chef.business_name as string | null) || 'Chef',
+      },
+    ]) as Array<[string, DirectoryLinkedChefSummary]>
+  )
+}
+
 async function getAdminLinkedChefMap(db: any, chefIds: string[]) {
   if (chefIds.length === 0) return new Map<string, DirectoryLinkedChefSummary>()
 
@@ -381,6 +421,27 @@ async function hydrateDirectoryFavoriteFlags<T extends DirectoryFavoriteHydratab
   return listings.map((listing) => ({
     ...listing,
     is_favorited: favorites.has(listing.id),
+  }))
+}
+
+async function hydrateDirectoryLinkedChefs<T extends { linked_chef_id?: string | null }>(
+  db: any,
+  listings: T[]
+): Promise<Array<T & { linked_chef: DirectoryLinkedChefSummary | null }>> {
+  if (listings.length === 0) {
+    return listings.map((listing) => ({ ...listing, linked_chef: null }))
+  }
+
+  const chefIds = Array.from(
+    new Set(listings.map((listing) => listing.linked_chef_id).filter(Boolean) as string[])
+  )
+  const linkedChefMap = await getPublicLinkedChefMap(db, chefIds)
+
+  return listings.map((listing) => ({
+    ...listing,
+    linked_chef: listing.linked_chef_id
+      ? (linkedChefMap.get(listing.linked_chef_id) ?? null)
+      : null,
   }))
 }
 
@@ -620,7 +681,7 @@ export async function getDirectoryListings(
     const queryWhereClause = queryConditions.join(' AND ')
     const candidateQuery = `SELECT id, name, slug, city, ${CANONICAL_STATE_SQL} as state, cuisine_types, business_type, website_url,
               status, price_range, featured, description, photo_urls, phone, email, address, hours, menu_url, source, claimed_at, updated_at,
-              lat::double precision as lat, lon::double precision as lon, lead_score,
+              lat::double precision as lat, lon::double precision as lon, lead_score, linked_chef_id,
               ${distanceSql} as distance_miles, ${textRankSql} as text_rank
        FROM directory_listings
        WHERE ${queryWhereClause}`
@@ -665,9 +726,10 @@ export async function getDirectoryListings(
         curated.listings,
         options
       )
+      const linkedChefAwareListings = await hydrateDirectoryLinkedChefs(db, favoriteAwareListings)
 
       return {
-        listings: favoriteAwareListings,
+        listings: linkedChefAwareListings,
         total: curated.total,
         page: curated.page,
         totalPages: curated.totalPages,
@@ -707,9 +769,10 @@ export async function getDirectoryListings(
       (dataResult as any[]).map(normalizeDirectoryListingSummary),
       options
     )
+    const linkedChefAwareListings = await hydrateDirectoryLinkedChefs(db, listings)
 
     return {
-      listings,
+      listings: linkedChefAwareListings,
       total,
       page,
       totalPages,

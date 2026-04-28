@@ -253,6 +253,7 @@ const PUBLIC_SEASONAL_MARKET_PALETTES: SeasonalPalette[] = [
 ]
 
 export type PublicOpenBookingPrefill = {
+  location?: string
   occasion?: string
   service_type?: string
   additional_notes?: string
@@ -601,6 +602,7 @@ export function readPublicOpenBookingPrefillFromSearchParams(
   input: SearchParamInput
 ): PublicOpenBookingPrefill {
   return {
+    location: sanitizePrefillValue(getSearchParamValue(input, 'location'), 500),
     occasion: sanitizePrefillValue(getSearchParamValue(input, 'occasion'), 500),
     service_type: sanitizePrefillValue(getSearchParamValue(input, 'service_type'), 100),
     additional_notes: sanitizePrefillValue(getSearchParamValue(input, 'additional_notes'), 5000),
@@ -614,6 +616,7 @@ export function mergePublicOpenBookingPrefill(
 
   for (const prefill of prefills) {
     if (!prefill) continue
+    if (prefill.location?.trim()) merged.location = prefill.location.trim()
     if (prefill.occasion?.trim()) merged.occasion = prefill.occasion.trim()
     if (prefill.service_type?.trim()) merged.service_type = prefill.service_type.trim()
     if (prefill.additional_notes?.trim()) {
