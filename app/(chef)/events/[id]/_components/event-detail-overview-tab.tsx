@@ -43,6 +43,7 @@ import { GarmentFlipToggle } from '@/components/events/garment-flip-toggle'
 import { ConstraintRadarPanel } from '@/components/events/constraint-radar-panel'
 import type { ConstraintRadarData } from '@/lib/events/constraint-radar-actions'
 import { MenuSharePanel } from '@/components/menus/menu-share-panel'
+import { MenuHealthScore } from '@/components/menus/menu-health-score'
 import { ShareSplitButton } from '@/components/payments/share-split-button'
 import { SeriesSelector } from '@/components/events/series-selector'
 import { CallRecommendationCard } from '@/components/calls/call-recommendation-card'
@@ -177,6 +178,7 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
     event.location_zip,
   ].filter((v) => v && v !== 'TBD')
   const eventLocationLabel = eventLocationParts.join(', ')
+  const primaryMenuId = event.menu_id ?? eventMenus?.[0] ?? eventMenuData?.[0]?.id ?? null
 
   return (
     <EventDetailSection tab="overview" activeTab={activeTab}>
@@ -476,6 +478,26 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
         {/* Menu Selection Sharing */}
         {event.status !== 'cancelled' && event.status !== 'draft' && (
           <MenuSharePanel eventId={event.id} hasMenu={!!event.menu_id} />
+        )}
+
+        {primaryMenuId && event.status !== 'cancelled' && event.status !== 'draft' && (
+          <Card className="p-6">
+            <div className="mb-4 flex items-start justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-semibold">Menu Readiness</h2>
+                <p className="mt-1 text-sm text-stone-500">
+                  Check dish coverage, costing, allergen review, and client approval before service.
+                </p>
+              </div>
+              <Link
+                href={`/culinary/menus/${primaryMenuId}`}
+                className="shrink-0 text-xs font-medium text-brand-500 hover:text-brand-400"
+              >
+                Open Menu
+              </Link>
+            </div>
+            <MenuHealthScore menuId={primaryMenuId} />
+          </Card>
         )}
 
         {/* Group Split Sharing */}
