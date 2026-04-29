@@ -1,0 +1,59 @@
+{
+  "id": "20260429T165953Z-build-chefflow-codex-replay-regression-harness-and-connect-it-into-skill-self-he",
+  "prompt": "Build ChefFlow Codex replay regression harness and connect it into skill self-healing",
+  "status": "finished",
+  "branch": "feature/procrastination-execution-engine",
+  "started_at": "2026-04-29T16:59:53.924Z",
+  "finished_at": "2026-04-29T17:03:27.890Z",
+  "selected_primary_skill": "builder",
+  "selected_sidecar_skills": [
+    "omninet",
+    "skill-garden",
+    "debug"
+  ],
+  "router_decision": null,
+  "used_skills": [
+    "builder",
+    "omninet",
+    "skill-garden",
+    "debug"
+  ],
+  "files_touched": [
+    ".claude/skills/omninet/SKILL.md",
+    ".claude/skills/skill-garden/SKILL.md",
+    "devtools/agent-skill-utils.mjs",
+    "devtools/agent-replay-corpus.mjs",
+    "devtools/agent-replay-runner.mjs",
+    "devtools/agent-preflight.mjs",
+    "devtools/skill-dashboard.mjs",
+    "devtools/skill-health-report.mjs",
+    "system/agent-golden-prompts/default.json",
+    "tests/unit/agent-harness-tools.test.ts",
+    "system/agent-replay-corpus/skill-outcome-scoring-clean.json",
+    "system/agent-reports/replay-runs/20260429T170006Z-agent-replay.json",
+    "system/agent-reports/replay-runs/latest.md",
+    "system/agent-reports/skill-dashboard/20260429T170017Z-skill-dashboard.json",
+    "system/agent-reports/skill-dashboard/latest.md",
+    "system/agent-reports/skill-health/20260429T170016Z-skill-health.json",
+    "system/agent-reports/router-decisions/20260429T165953Z-build-chefflow-codex-replay-regression-harness-and-connect-it-into-skill-self-he.json",
+    "system/agent-reports/router-decisions/20260429T170021Z-build-chefflow-codex-replay-regression-harness-and-connect-it-into-skill-self-he.json",
+    "system/agent-reports/skill-closeouts/20260429T170140Z-skill-garden-add-skill-replay-regression-harness.json"
+  ],
+  "commands_run": [],
+  "validations_run": [
+    "node --check devtools scripts",
+    "skill-validator omninet skill-garden",
+    "skill-trigger-tests",
+    "agent replay runner",
+    "agent preflight",
+    "agent harness unit tests",
+    "targeted em dash scan",
+    "git push hook typecheck and regression"
+  ],
+  "commit_hash": "5dba5055fad413bf71fc9d9dba09d214ad73fc0d",
+  "pushed": true,
+  "missed_skills": [],
+  "skill_garden_triggered": true,
+  "heal_skill_triggered": false,
+  "notes": null
+}
