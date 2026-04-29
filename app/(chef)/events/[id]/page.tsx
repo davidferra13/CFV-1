@@ -1645,7 +1645,7 @@ export default async function EventDetailPage({
             eventDate={dateToDateString(event.event_date)}
             serveTime={(event as any).serve_time}
             status={event.status}
-            completionScore={completionScore ?? 0}
+            completionScore={completionScore}
             prepDays={
               prepTimeline
                 ? (prepTimeline as any).days?.map((d: any) => ({
@@ -1658,9 +1658,11 @@ export default async function EventDetailPage({
                 : undefined
             }
             groceryDeadline={
-              (prepTimeline as any)?.groceryDeadline
-                ? dateToDateString((prepTimeline as any).groceryDeadline)
-                : null
+              prepTimeline
+                ? (prepTimeline as any).groceryDeadline
+                  ? dateToDateString((prepTimeline as any).groceryDeadline)
+                  : null
+                : undefined
             }
             untimedCount={(prepTimeline as any)?.untimedItems?.length}
           />
