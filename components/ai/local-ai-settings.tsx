@@ -64,7 +64,7 @@ export function LocalAiSettings({ initialPrefs }: { initialPrefs?: LocalAiPrefer
           return
         }
 
-        const nextPrefs = { ...prefs, url, model, verifiedAt: new Date().toISOString() }
+        const nextPrefs = { ...prefs, url, model, verifiedAt: verifiedResult.verifiedAt ?? null }
         setConnectionStatus('connected')
         setPrefs(nextPrefs)
         publishLocalAiPreferences(nextPrefs)

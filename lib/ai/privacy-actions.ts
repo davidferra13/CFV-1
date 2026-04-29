@@ -359,7 +359,7 @@ export async function saveLocalAiPreferences(input: {
 export async function markLocalAiVerified(input?: {
   url?: string
   model?: string
-}): Promise<{ success: boolean; error?: string }> {
+}): Promise<{ success: boolean; error?: string; verifiedAt?: string }> {
   const parsed = LocalAiUpdateSchema.pick({ url: true, model: true }).safeParse(input ?? {})
   if (!parsed.success) {
     return { success: false, error: parsed.error.message }
@@ -367,11 +367,12 @@ export async function markLocalAiVerified(input?: {
 
   const user = await requireChef()
   const db: any = createServerClient()
+  const verifiedAt = new Date().toISOString()
 
   const updates: Record<string, unknown> = {
     tenant_id: user.tenantId!,
-    local_ai_verified_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
+    local_ai_verified_at: verifiedAt,
+    updated_at: verifiedAt,
   }
   if (parsed.data.url !== undefined) updates.local_ai_url = parsed.data.url
   if (parsed.data.model !== undefined) updates.local_ai_model = parsed.data.model
@@ -383,7 +384,7 @@ export async function markLocalAiVerified(input?: {
     return { success: false, error: 'Failed to verify local AI' }
   }
 
-  return { success: true }
+  return { success: true, verifiedAt }
 }
 
 // ─── Delete ──────────────────────────────────────────────────────────────────
