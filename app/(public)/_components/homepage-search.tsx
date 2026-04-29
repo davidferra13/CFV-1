@@ -53,7 +53,7 @@ export function HomepageSearch() {
   return (
     <form
       onSubmit={handleSearch}
-      className="flex flex-col overflow-hidden rounded-2xl border border-stone-800/60 bg-stone-900/70 shadow-[0_24px_48px_rgba(0,0,0,0.25)] backdrop-blur-md transition-all duration-200 focus-within:border-brand-600/40 sm:flex-row"
+      className="homepage-booking-field flex flex-col overflow-hidden rounded-2xl border border-stone-800/60 bg-stone-900/70 shadow-[0_24px_48px_rgba(0,0,0,0.25)] backdrop-blur-md transition-all duration-200 focus-within:border-brand-600/40 sm:flex-row"
     >
       <div className="flex min-h-[54px] flex-1 items-center border-b border-stone-800/30 sm:border-b-0 sm:border-r">
         <label htmlFor="homepage-location" className="sr-only">

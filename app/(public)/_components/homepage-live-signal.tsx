@@ -8,9 +8,14 @@ const FADE_DURATION_MS = 300
 type HomepageLiveSignalProps = {
   messages: readonly string[]
   className?: string
+  truncate?: boolean
 }
 
-export function HomepageLiveSignal({ messages, className = '' }: HomepageLiveSignalProps) {
+export function HomepageLiveSignal({
+  messages,
+  className = '',
+  truncate = true,
+}: HomepageLiveSignalProps) {
   const prefersReducedMotion = usePrefersReducedMotion()
   const [activeIndex, setActiveIndex] = useState(0)
   const [isVisible, setIsVisible] = useState(true)
@@ -53,7 +58,9 @@ export function HomepageLiveSignal({ messages, className = '' }: HomepageLiveSig
   return (
     <p
       title={activeMessage}
-      className={`max-w-full truncate text-sm font-medium leading-6 tracking-[0.01em] text-stone-400 sm:text-[15px] ${className}`}
+      className={`max-w-full text-sm font-medium leading-6 tracking-[0.01em] text-stone-400 sm:text-[15px] ${
+        truncate ? 'truncate' : ''
+      } ${className}`}
       style={{
         opacity: prefersReducedMotion ? 1 : isVisible ? 1 : 0,
         transition: prefersReducedMotion ? 'none' : 'opacity 300ms var(--ease-spring)',

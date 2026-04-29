@@ -14,6 +14,8 @@ import {
 import { buildMarketingSourceHref } from '@/lib/marketing/source-links'
 import { buildOperatorWalkthroughHref } from '@/lib/marketing/walkthrough-links'
 import { buildMarketingMetadata } from '@/lib/site/public-site'
+import { HomepageLiveSignal } from './_components/homepage-live-signal'
+import { HomepageMotionController } from './_components/homepage-motion-controller'
 import { HomepageSearch } from './_components/homepage-search'
 
 export const revalidate = 60
@@ -57,6 +59,12 @@ const HOME_OPERATOR_PROOF_ITEMS = [
   },
 ] as const
 
+const HOME_BOOKING_INTENT_MESSAGES = [
+  'Plan the dinner. Book the chef. Keep the night effortless.',
+  'Browse real chefs, compare the fit, and start the booking path.',
+  'From first search to paid event, ChefFlow keeps the next step clear.',
+] as const
+
 export default function Home() {
   return (
     <>
@@ -71,19 +79,25 @@ export default function Home() {
       <OrganizationJsonLd />
       <SoftwareApplicationJsonLd />
       <WebSiteJsonLd />
+      <HomepageMotionController />
 
-      <section className="relative overflow-hidden">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(237,168,107,0.10),_transparent_50%)]" />
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-brand-500/6 to-transparent" />
+      <section className="homepage-living-hero relative overflow-hidden">
+        <div className="homepage-ambient-field pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(237,168,107,0.10),_transparent_50%)]" />
+        <div className="homepage-light-wash pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-brand-500/6 to-transparent" />
 
-        <div className="relative mx-auto w-full max-w-4xl px-4 pb-16 pt-20 sm:px-6 sm:pb-20 sm:pt-28 lg:px-8">
-          <div className="text-center">
+        <div className="homepage-depth-layer homepage-depth-near relative mx-auto w-full max-w-4xl px-4 pb-16 pt-20 sm:px-6 sm:pb-20 sm:pt-28 lg:px-8">
+          <div className="homepage-hero-copy text-center">
             <h1 className="text-mask-hero mx-auto max-w-3xl text-[2.5rem] font-display tracking-[-0.045em] leading-[1.08] sm:text-5xl lg:text-[3.75rem]">
               Find a private chef near you
             </h1>
             <p className="mx-auto mt-6 max-w-xl text-base leading-7 tracking-[-0.01em] text-stone-400 sm:text-lg sm:leading-8">
               Browse vetted chefs by location and service type, compare profiles, and book directly.
             </p>
+            <HomepageLiveSignal
+              messages={HOME_BOOKING_INTENT_MESSAGES}
+              className="homepage-intent-signal mx-auto mt-4"
+              truncate={false}
+            />
           </div>
 
           <div className="mx-auto mt-10 max-w-xl">
@@ -127,10 +141,10 @@ export default function Home() {
         </div>
       </div>
 
-      <section className="relative overflow-hidden">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_rgba(237,168,107,0.06),_transparent_50%)]" />
+      <section className="homepage-operator-section relative overflow-hidden">
+        <div className="homepage-operator-glow pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_rgba(237,168,107,0.06),_transparent_50%)]" />
         <div className="relative mx-auto grid w-full max-w-6xl gap-12 px-4 pb-16 pt-4 sm:px-6 sm:pb-20 lg:grid-cols-[minmax(0,1.05fr)_minmax(340px,0.95fr)] lg:items-center lg:gap-16 lg:px-8 lg:pb-24">
-          <div>
+          <div className="homepage-depth-layer homepage-depth-copy">
             <span className="inline-flex rounded-full border border-brand-700/30 bg-brand-950/20 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-300/80">
               ChefFlow for chef-led operators
             </span>
@@ -172,7 +186,7 @@ export default function Home() {
             </div>
           </div>
 
-          <aside className="rounded-[2rem] border border-stone-800/30 bg-stone-950/70 p-5 shadow-[0_32px_80px_rgba(0,0,0,0.32)] backdrop-blur-xl sm:p-6">
+          <aside className="homepage-depth-layer homepage-depth-far homepage-operator-panel rounded-[2rem] border border-stone-800/30 bg-stone-950/70 p-5 shadow-[0_32px_80px_rgba(0,0,0,0.32)] backdrop-blur-xl sm:p-6">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-300/70">
@@ -187,7 +201,7 @@ export default function Home() {
               </span>
             </div>
 
-            <div className="mt-5 overflow-hidden rounded-2xl border border-stone-800/30 bg-stone-950/75">
+            <div className="homepage-operator-screen mt-5 overflow-hidden rounded-2xl border border-stone-800/30 bg-stone-950/75">
               <Image
                 src="/proof/operator-dashboard.png"
                 alt="ChefFlow operator dashboard with inquiries, events, finance, and command center modules"
@@ -202,7 +216,7 @@ export default function Home() {
               {HOME_OPERATOR_PROOF_ITEMS.map((item) => (
                 <div
                   key={item.title}
-                  className="rounded-xl border border-stone-800/30 bg-stone-900/30 p-3.5"
+                  className="homepage-proof-tile rounded-xl border border-stone-800/30 bg-stone-900/30 p-3.5"
                 >
                   <p className="text-sm font-semibold tracking-[-0.01em] text-stone-200">
                     {item.title}
