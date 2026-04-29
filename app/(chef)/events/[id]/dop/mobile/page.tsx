@@ -22,6 +22,17 @@ interface Props {
   params: { id: string }
 }
 
+function DopUnavailableMessage({ title, message }: { title: string; message: string }) {
+  return (
+    <div className="min-h-screen bg-stone-800 flex items-center justify-center p-8">
+      <div className="max-w-sm text-center">
+        <p className="text-stone-200 font-semibold">{title}</p>
+        <p className="text-sm text-stone-400 mt-2">{message}</p>
+      </div>
+    </div>
+  )
+}
+
 export default async function DopMobilePage({ params }: Props) {
   const user = await requireChef()
   const db: any = createServerClient()
@@ -29,29 +40,64 @@ export default async function DopMobilePage({ params }: Props) {
   // Fetch event basics for the header
   const { data: event } = await db
     .from('events')
-    .select('id, occasion, serve_time, event_date')
+    .select('id, occasion, serve_time, event_date, status')
     .eq('id', params.id)
     .eq('tenant_id', user.tenantId!)
     .single()
 
   if (!event) notFound()
 
+  if (event.status === 'draft') {
+    return (
+      <DopUnavailableMessage
+        title="Day-of protocol is not ready yet."
+        message="Confirm this event before opening the mobile run mode."
+      />
+    )
+  }
+
+  if (event.status === 'cancelled') {
+    return (
+      <DopUnavailableMessage
+        title="Day-of protocol is unavailable."
+        message="Cancelled events cannot be opened in mobile run mode."
+      />
+    )
+  }
+
   // Fetch computed DOP schedule and manual completions in parallel
-  const [schedule, manualKeys] = await Promise.all([
+  const [scheduleResult, manualKeysResult] = await Promise.allSettled([
     getEventDOPSchedule(params.id),
-    getDOPManualCompletions(params.id).catch(() => new Set<string>()),
+    getDOPManualCompletions(params.id),
   ])
+
+  if (scheduleResult.status === 'rejected') {
+    return (
+      <DopUnavailableMessage
+        title="DOP schedule could not be loaded."
+        message="Refresh and try again before running service from this page."
+      />
+    )
+  }
+
+  if (manualKeysResult.status === 'rejected') {
+    return (
+      <DopUnavailableMessage
+        title="Task completion status could not be loaded."
+        message="Refresh and try again so completed DOP tasks are not shown as incomplete."
+      />
+    )
+  }
+
+  const schedule = scheduleResult.value
+  const manualKeys = manualKeysResult.value
 
   if (!schedule) {
     return (
-      <div className="min-h-screen bg-stone-800 flex items-center justify-center p-8">
-        <div className="text-center">
-          <p className="text-stone-400 font-medium">No DOP schedule available.</p>
-          <p className="text-sm text-stone-400 mt-1">
-            Ensure the event has a date and serve time set.
-          </p>
-        </div>
-      </div>
+      <DopUnavailableMessage
+        title="No DOP schedule available."
+        message="Ensure the event has a date and serve time set."
+      />
     )
   }
 
