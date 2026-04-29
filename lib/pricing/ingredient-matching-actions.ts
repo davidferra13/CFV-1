@@ -9,6 +9,7 @@ import {
   type SuggestMatchesResult,
   type UnmatchedIngredient,
 } from './ingredient-matching-utils'
+import { findDictionaryAliasSuggestions } from '@/lib/culinary-dictionary/queries'
 
 // Re-export types for consumers
 export type {
@@ -63,10 +64,14 @@ export async function suggestMatchesAction(ingredientId: string): Promise<Sugges
   if (!ingredient) return { suggestions: [], currentAlias }
 
   const normalized = normalizeIngredientName(ingredient.name)
-  const suggestions = await suggestIngredientMatches(db, normalized)
+  const suggestions = await suggestIngredientMatchesWithDictionary(db, normalized)
 
   // Auto-confirm if top match is high-confidence
-  if (suggestions.length > 0 && suggestions[0].score >= AUTO_CONFIRM_THRESHOLD) {
+  if (
+    suggestions.length > 0 &&
+    suggestions[0].score >= AUTO_CONFIRM_THRESHOLD &&
+    suggestions[0].source !== 'dictionary'
+  ) {
     const top = suggestions[0]
     try {
       await db.rpc('raw_sql', {
@@ -151,11 +156,50 @@ async function suggestIngredientMatches(
       name: row.name,
       score: parseFloat(row.score),
       category: row.category,
+      source: 'trigram',
     }))
   } catch (err) {
     console.error('[suggestIngredientMatches] Error:', err)
     return []
   }
+}
+
+async function suggestIngredientMatchesWithDictionary(
+  db: any,
+  normalizedName: string
+): Promise<MatchSuggestion[]> {
+  const [dictionaryAliases, trigramMatches] = await Promise.all([
+    findDictionaryAliasSuggestions(normalizedName, 3).catch(() => []),
+    suggestIngredientMatches(db, normalizedName),
+  ])
+
+  const dictionarySuggestions: MatchSuggestion[] = []
+  for (const alias of dictionaryAliases) {
+    const canonicalMatches = await suggestIngredientMatches(
+      db,
+      normalizeIngredientName(alias.canonicalName)
+    )
+    for (const match of canonicalMatches.slice(0, 2)) {
+      dictionarySuggestions.push({
+        ...match,
+        score: Math.min(match.score, alias.confidence),
+        source: 'dictionary',
+        dictionaryTerm: alias.canonicalName,
+      })
+    }
+  }
+
+  const byId = new Map<string, MatchSuggestion>()
+  for (const suggestion of [...dictionarySuggestions, ...trigramMatches]) {
+    const existing = byId.get(suggestion.systemIngredientId)
+    if (!existing || suggestion.score > existing.score) {
+      byId.set(suggestion.systemIngredientId, suggestion)
+    }
+  }
+
+  return Array.from(byId.values())
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 5)
 }
 
 // ============================================
@@ -293,7 +337,7 @@ export async function getUnmatchedIngredientsAction(): Promise<UnmatchedIngredie
   const results: UnmatchedIngredient[] = []
   for (const ing of unmatched.slice(0, 50)) {
     const normalized = normalizeIngredientName(ing.name)
-    const suggestions = await suggestIngredientMatches(db, normalized)
+    const suggestions = await suggestIngredientMatchesWithDictionary(db, normalized)
     results.push({
       id: ing.id,
       name: ing.name,

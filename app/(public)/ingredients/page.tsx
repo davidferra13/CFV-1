@@ -236,6 +236,12 @@ export default async function IngredientsPage({ searchParams }: Props) {
             {total.toLocaleString()} culinary ingredients with flavor profiles, origin, dietary
             info, and live pricing.
           </p>
+          <Link
+            href={buildHref('/dictionary')}
+            className="mt-3 inline-flex text-sm font-medium text-brand-400 hover:text-brand-300"
+          >
+            Browse the Culinary Dictionary
+          </Link>
         </div>
 
         {seasonalContext && (

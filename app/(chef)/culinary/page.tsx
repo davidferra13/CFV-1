@@ -35,6 +35,12 @@ const tiles = [
     icon: '🧅',
   },
   {
+    href: '/culinary/dictionary',
+    label: 'Culinary Dictionary',
+    description: 'Canonical terms, aliases, safety flags, and technique vocabulary',
+    icon: 'ABC',
+  },
+  {
     href: '/culinary/costing',
     label: 'Food Costing',
     description: 'Recipe and menu cost breakdowns at a glance',

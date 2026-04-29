@@ -33,6 +33,8 @@ import { formatCurrency } from '@/lib/utils/currency'
 import { CopyLinkButton } from './_components/copy-link-button'
 import { IngredientSearch } from './_components/ingredient-search'
 import type { CatalogDetailResult } from '@/lib/openclaw/catalog-types'
+import { searchDictionaryTerms } from '@/lib/culinary-dictionary/queries'
+import type { CulinaryDictionaryTerm } from '@/lib/culinary-dictionary/types'
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
@@ -238,6 +240,11 @@ async function IngredientPageContent({ id }: { id: string }) {
   const related = slugResult.category
     ? await getRelatedIngredients(slugResult.category, id, 4).catch(() => [])
     : []
+  const dictionaryTerms = await searchDictionaryTerms({
+    query: slugResult.name,
+    publicOnly: true,
+    limit: 1,
+  }).catch(() => [])
 
   return (
     <KnowledgeOnlyPage
@@ -246,6 +253,7 @@ async function IngredientPageContent({ id }: { id: string }) {
       category={slugResult.category}
       knowledge={slugResult.knowledge}
       related={related}
+      dictionaryTerm={dictionaryTerms[0] ?? null}
     />
   )
 }
@@ -258,13 +266,17 @@ async function FullIngredientPage({ id, detail }: { id: string; detail: CatalogD
   const sourceability = classifyFromCatalogDetail(detail)
 
   const categorySlug = detail.ingredient.category ?? null
-  const [knowledge, alternatives, related] = await Promise.all([
+  const [knowledge, alternatives, related, dictionaryTerms] = await Promise.all([
     getIngredientKnowledgeByName(detail.ingredient.name).catch(() => null),
     sourceability.classification !== 'readily_available'
       ? getPublicAlternatives(detail.ingredient.category, detail.ingredient.id, 4).catch(() => [])
       : Promise.resolve([]),
     categorySlug ? getRelatedIngredients(categorySlug, id, 4).catch(() => []) : Promise.resolve([]),
+    searchDictionaryTerms({ query: detail.ingredient.name, publicOnly: true, limit: 1 }).catch(
+      () => []
+    ),
   ])
+  const dictionaryTerm = dictionaryTerms[0] ?? null
 
   const representativePrice =
     detail.prices.find((p) => p.inStock && p.imageUrl) ??
@@ -418,7 +430,7 @@ async function FullIngredientPage({ id, detail }: { id: string; detail: CatalogD
           )}
 
           {/* Knowledge panel */}
-          {knowledge && <KnowledgePanel knowledge={knowledge} />}
+          {knowledge && <KnowledgePanel knowledge={knowledge} dictionaryTerm={dictionaryTerm} />}
 
           {/* More from this category */}
           {related.length > 0 && categorySlug && (
@@ -528,12 +540,14 @@ function KnowledgeOnlyPage({
   category,
   knowledge,
   related,
+  dictionaryTerm,
 }: {
   id: string
   name: string
   category: string | null
   knowledge: IngredientKnowledge
   related: CategoryIngredient[]
+  dictionaryTerm: CulinaryDictionaryTerm | null
 }) {
   return (
     <>
@@ -587,7 +601,7 @@ function KnowledgeOnlyPage({
           </div>
 
           {/* Knowledge panel */}
-          <KnowledgePanel knowledge={knowledge} />
+          <KnowledgePanel knowledge={knowledge} dictionaryTerm={dictionaryTerm} />
 
           {/* More from this category */}
           {related.length > 0 && category && (
@@ -654,7 +668,13 @@ function KnowledgeOnlyPage({
 // Shared knowledge panel (used in both page modes)
 // ---------------------------------------------------------------------------
 
-function KnowledgePanel({ knowledge }: { knowledge: IngredientKnowledge }) {
+function KnowledgePanel({
+  knowledge,
+  dictionaryTerm,
+}: {
+  knowledge: IngredientKnowledge
+  dictionaryTerm?: CulinaryDictionaryTerm | null
+}) {
   const hasContent =
     knowledge.wikiSummary ||
     knowledge.originCountries.length > 0 ||
@@ -729,6 +749,22 @@ function KnowledgePanel({ knowledge }: { knowledge: IngredientKnowledge }) {
                   className="px-2 py-0.5 rounded-full bg-stone-800 border border-stone-700 text-xs text-stone-300 capitalize"
                 >
                   {p}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {dictionaryTerm && dictionaryTerm.aliases.length > 0 && (
+          <div className="mt-1">
+            <p className="text-xs text-stone-500 mb-1.5">Also known as</p>
+            <div className="flex flex-wrap gap-1.5">
+              {dictionaryTerm.aliases.slice(0, 6).map((alias) => (
+                <span
+                  key={alias.id}
+                  className="px-2 py-0.5 rounded-full bg-stone-800 border border-stone-700 text-xs text-stone-300 capitalize"
+                >
+                  {alias.alias}
                 </span>
               ))}
             </div>

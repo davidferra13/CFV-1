@@ -1,24 +1,24 @@
 # Spec: Canonical Culinary Dictionary
 
-> **Status:** ready
+> **Status:** built
 > **Priority:** P1 (next up)
 > **Depends on:** none
 > **Estimated complexity:** large (9+ files)
 
 ## Timeline
 
-| Event                 | Date             | Agent/Session | Commit |
-| --------------------- | ---------------- | ------------- | ------ |
-| Created               | 2026-04-29 17:36 | Codex         |        |
-| Status: ready         | 2026-04-29 17:36 | Codex         |        |
-| Claimed (in-progress) |                  |               |        |
-| Spike completed       |                  |               |        |
-| Pre-flight passed     |                  |               |        |
-| Build completed       |                  |               |        |
-| Type check passed     |                  |               |        |
-| Build check passed    |                  |               |        |
-| Playwright verified   |                  |               |        |
-| Status: verified      |                  |               |        |
+| Event                 | Date             | Agent/Session | Commit                        |
+| --------------------- | ---------------- | ------------- | ----------------------------- |
+| Created               | 2026-04-29 17:36 | Codex         |                               |
+| Status: ready         | 2026-04-29 17:36 | Codex         |                               |
+| Claimed (in-progress) | 2026-04-29 17:44 | Codex         |                               |
+| Spike completed       |                  |               |                               |
+| Pre-flight passed     | blocked          | Codex         | pre-existing missing packages |
+| Build completed       | 2026-04-29 18:07 | Codex         | pending                       |
+| Type check passed     |                  |               |                               |
+| Build check passed    |                  |               |                               |
+| Playwright verified   |                  |               |                               |
+| Status: verified      |                  |               |                               |
 
 ---
 
@@ -88,44 +88,44 @@ The current app makes high-stakes culinary decisions from disconnected vocabular
 
 ## Files to Create
 
-| File | Purpose |
-| ---- | ------- |
-| `database/migrations/[next]_culinary_dictionary_core.sql` | Add dictionary tables, review queue tables, and additive indexes. Builder must choose the timestamp after listing existing migrations. |
-| `lib/culinary-dictionary/types.ts` | Shared TypeScript types for dictionary terms, aliases, meanings, safety flags, and review states. |
-| `lib/culinary-dictionary/normalization.ts` | Deterministic normalization helpers reused by dictionary search and ingredient matching. |
-| `lib/culinary-dictionary/queries.ts` | Non-server-action read helpers for public and chef dictionary queries. |
-| `lib/culinary-dictionary/actions.ts` | Chef-authenticated server actions for chef overrides and review decisions. |
-| `lib/culinary-dictionary/publication.ts` | Public visibility policy for dictionary terms and ingredient knowledge reuse. |
-| `components/culinary-dictionary/dictionary-search.tsx` | Search and filter UI for chef dictionary page. |
-| `components/culinary-dictionary/dictionary-term-card.tsx` | Term card reused on chef and public surfaces. |
-| `components/culinary-dictionary/dictionary-review-queue.tsx` | Chef review UI for aliases and unresolved terms. |
-| `app/(chef)/culinary/dictionary/page.tsx` | Chef dictionary page. |
-| `app/(public)/dictionary/page.tsx` | Public dictionary browse page for public-safe terms only. |
-| `app/(public)/dictionary/[slug]/page.tsx` | Public-safe dictionary detail page. |
-| `tests/unit/culinary-dictionary-normalization.test.ts` | Normalization, alias, and conflict tests. |
-| `tests/unit/culinary-dictionary-actions.test.ts` | Server-action contract tests for auth, tenant scope, errors, and cache invalidation. |
-| `tests/unit/culinary-dictionary-publication.test.ts` | Public visibility tests. |
-| `tests/launch/culinary-dictionary.spec.ts` | Browser verification for chef dictionary browse and review queue. |
-| `docs/changes/[date]-culinary-dictionary.md` | Change note after build. |
+| File                                                         | Purpose                                                                                                                                |
+| ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `database/migrations/[next]_culinary_dictionary_core.sql`    | Add dictionary tables, review queue tables, and additive indexes. Builder must choose the timestamp after listing existing migrations. |
+| `lib/culinary-dictionary/types.ts`                           | Shared TypeScript types for dictionary terms, aliases, meanings, safety flags, and review states.                                      |
+| `lib/culinary-dictionary/normalization.ts`                   | Deterministic normalization helpers reused by dictionary search and ingredient matching.                                               |
+| `lib/culinary-dictionary/queries.ts`                         | Non-server-action read helpers for public and chef dictionary queries.                                                                 |
+| `lib/culinary-dictionary/actions.ts`                         | Chef-authenticated server actions for chef overrides and review decisions.                                                             |
+| `lib/culinary-dictionary/publication.ts`                     | Public visibility policy for dictionary terms and ingredient knowledge reuse.                                                          |
+| `components/culinary-dictionary/dictionary-search.tsx`       | Search and filter UI for chef dictionary page.                                                                                         |
+| `components/culinary-dictionary/dictionary-term-card.tsx`    | Term card reused on chef and public surfaces.                                                                                          |
+| `components/culinary-dictionary/dictionary-review-queue.tsx` | Chef review UI for aliases and unresolved terms.                                                                                       |
+| `app/(chef)/culinary/dictionary/page.tsx`                    | Chef dictionary page.                                                                                                                  |
+| `app/(public)/dictionary/page.tsx`                           | Public dictionary browse page for public-safe terms only.                                                                              |
+| `app/(public)/dictionary/[slug]/page.tsx`                    | Public-safe dictionary detail page.                                                                                                    |
+| `tests/unit/culinary-dictionary-normalization.test.ts`       | Normalization, alias, and conflict tests.                                                                                              |
+| `tests/unit/culinary-dictionary-actions.test.ts`             | Server-action contract tests for auth, tenant scope, errors, and cache invalidation.                                                   |
+| `tests/unit/culinary-dictionary-publication.test.ts`         | Public visibility tests.                                                                                                               |
+| `tests/launch/culinary-dictionary.spec.ts`                   | Browser verification for chef dictionary browse and review queue.                                                                      |
+| `docs/changes/[date]-culinary-dictionary.md`                 | Change note after build.                                                                                                               |
 
 ---
 
 ## Files to Modify
 
-| File | What to Change |
-| ---- | -------------- |
-| `lib/pricing/ingredient-matching-utils.ts` | Delegate reusable normalization to `lib/culinary-dictionary/normalization.ts`, preserving existing behavior and tests. |
-| `lib/pricing/ingredient-matching-actions.ts` | Use dictionary alias lookup before trigram fallback, preserving chef approval before confirmed matches. |
-| `lib/pricing/ingredient-health-actions.ts` | Include dictionary alias and review status in unresolved ingredient health output. |
+| File                                           | What to Change                                                                                                                               |
+| ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `lib/pricing/ingredient-matching-utils.ts`     | Delegate reusable normalization to `lib/culinary-dictionary/normalization.ts`, preserving existing behavior and tests.                       |
+| `lib/pricing/ingredient-matching-actions.ts`   | Use dictionary alias lookup before trigram fallback, preserving chef approval before confirmed matches.                                      |
+| `lib/pricing/ingredient-health-actions.ts`     | Include dictionary alias and review status in unresolved ingredient health output.                                                           |
 | `lib/openclaw/ingredient-knowledge-queries.ts` | Add optional dictionary join helpers for canonical public-safe knowledge, without changing existing return shape until callers are migrated. |
-| `app/(public)/ingredients/page.tsx` | Link ingredient cards to dictionary terms when the term is public-safe and directly mapped. |
-| `app/(public)/ingredient/[id]/page.tsx` | Add "Also known as" and public-safe term facts from dictionary data. |
-| `app/(chef)/culinary/page.tsx` | Add nav tile for Culinary Dictionary. |
-| `components/culinary/culinary-board.tsx` | Optionally show dictionary-backed definitions for technique and composition words, read-only in this spec. |
-| `lib/constants/dietary-rules.ts` | No large rewrite. Add adapter tests that prove dictionary safety flags and existing keyword rules agree for seeded terms. |
-| `docs/app-complete-audit.md` | Document new chef and public dictionary pages after implementation. |
-| `project-map/chef-os/culinary.md` | Add dictionary page and data flow after implementation. |
-| `project-map/public/directory.md` | Add public dictionary browse and detail pages after implementation. |
+| `app/(public)/ingredients/page.tsx`            | Link ingredient cards to dictionary terms when the term is public-safe and directly mapped.                                                  |
+| `app/(public)/ingredient/[id]/page.tsx`        | Add "Also known as" and public-safe term facts from dictionary data.                                                                         |
+| `app/(chef)/culinary/page.tsx`                 | Add nav tile for Culinary Dictionary.                                                                                                        |
+| `components/culinary/culinary-board.tsx`       | Optionally show dictionary-backed definitions for technique and composition words, read-only in this spec.                                   |
+| `lib/constants/dietary-rules.ts`               | No large rewrite. Add adapter tests that prove dictionary safety flags and existing keyword rules agree for seeded terms.                    |
+| `docs/app-complete-audit.md`                   | Document new chef and public dictionary pages after implementation.                                                                          |
+| `project-map/chef-os/culinary.md`              | Add dictionary page and data flow after implementation.                                                                                      |
+| `project-map/public/directory.md`              | Add public dictionary browse and detail pages after implementation.                                                                          |
 
 ---
 
@@ -314,15 +314,15 @@ Important invariants:
 
 ## Server Actions
 
-| Action | Auth | Input | Output | Side Effects |
-| ------ | ---- | ----- | ------ | ------------ |
-| `searchCulinaryDictionary(input)` | `requireChef()` | `{ query: string, termType?: string, includeChefOverrides?: boolean }` | `{ success: true, terms: DictionaryTerm[] }` or `{ success: false, error: string }` | None |
-| `getCulinaryDictionaryTerm(idOrSlug)` | `requireChef()` | `string` | `{ success: true, term: DictionaryTermDetail }` or `{ success: false, error: string }` | None |
-| `addChefDictionaryAlias(input)` | `requireChef()` | `{ termId: string, alias: string, aliasKind?: string }` | `{ success: boolean, alias?: DictionaryAlias, error?: string }` | Revalidate `/culinary/dictionary` |
-| `hideChefDictionaryAlias(input)` | `requireChef()` | `{ aliasId: string }` | `{ success: boolean, error?: string }` | Revalidate `/culinary/dictionary` |
-| `createChefDictionaryTerm(input)` | `requireChef()` | `{ canonicalName: string, termType: string, definition?: string, aliases?: string[] }` | `{ success: boolean, termId?: string, error?: string }` | Inserts chef override or pending review item, revalidates `/culinary/dictionary` |
-| `resolveDictionaryReviewItem(input)` | `requireChef()` | `{ reviewId: string, decision: 'approved' | 'rejected' | 'dismissed', termId?: string }` | `{ success: boolean, error?: string }` | Updates review queue, revalidates dictionary and affected costing pages |
-| `getDictionaryReviewQueue()` | `requireChef()` | none | `{ success: true, items: ReviewItem[] }` or `{ success: false, error: string }` | None |
+| Action                                | Auth            | Input                                                                                  | Output                                                                                 | Side Effects                                                                     |
+| ------------------------------------- | --------------- | -------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- | -------------------------------------- | ----------------------------------------------------------------------- |
+| `searchCulinaryDictionary(input)`     | `requireChef()` | `{ query: string, termType?: string, includeChefOverrides?: boolean }`                 | `{ success: true, terms: DictionaryTerm[] }` or `{ success: false, error: string }`    | None                                                                             |
+| `getCulinaryDictionaryTerm(idOrSlug)` | `requireChef()` | `string`                                                                               | `{ success: true, term: DictionaryTermDetail }` or `{ success: false, error: string }` | None                                                                             |
+| `addChefDictionaryAlias(input)`       | `requireChef()` | `{ termId: string, alias: string, aliasKind?: string }`                                | `{ success: boolean, alias?: DictionaryAlias, error?: string }`                        | Revalidate `/culinary/dictionary`                                                |
+| `hideChefDictionaryAlias(input)`      | `requireChef()` | `{ aliasId: string }`                                                                  | `{ success: boolean, error?: string }`                                                 | Revalidate `/culinary/dictionary`                                                |
+| `createChefDictionaryTerm(input)`     | `requireChef()` | `{ canonicalName: string, termType: string, definition?: string, aliases?: string[] }` | `{ success: boolean, termId?: string, error?: string }`                                | Inserts chef override or pending review item, revalidates `/culinary/dictionary` |
+| `resolveDictionaryReviewItem(input)`  | `requireChef()` | `{ reviewId: string, decision: 'approved'                                              | 'rejected'                                                                             | 'dismissed', termId?: string }`                                                  | `{ success: boolean, error?: string }` | Updates review queue, revalidates dictionary and affected costing pages |
+| `getDictionaryReviewQueue()`          | `requireChef()` | none                                                                                   | `{ success: true, items: ReviewItem[] }` or `{ success: false, error: string }`        | None                                                                             |
 
 Server action rules:
 
@@ -382,16 +382,16 @@ Public detail page: `/dictionary/[slug]`
 
 ## Edge Cases and Error Handling
 
-| Scenario | Correct Behavior |
-| -------- | ---------------- |
-| Alias conflicts with existing normalized alias | Return `{ success: false, error }`, show conflict message, do not insert duplicate. |
-| Search DB fails | Show error state, not empty results. |
-| Public route receives non-public term slug | Return `notFound()`. |
-| Chef creates custom alias for hidden system alias | Store chef override without mutating system alias. |
-| Review item points to deleted term | Show stale review item with dismiss action. |
-| Dictionary match has low confidence | Queue for review, never auto-confirm. |
-| Alias suggests a dietary or allergen risk | Show caution or critical flag, do not silently apply. |
-| Multiple chefs define different aliases | Keep aliases chef-scoped through overrides, do not pollute system defaults. |
+| Scenario                                          | Correct Behavior                                                                    |
+| ------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| Alias conflicts with existing normalized alias    | Return `{ success: false, error }`, show conflict message, do not insert duplicate. |
+| Search DB fails                                   | Show error state, not empty results.                                                |
+| Public route receives non-public term slug        | Return `notFound()`.                                                                |
+| Chef creates custom alias for hidden system alias | Store chef override without mutating system alias.                                  |
+| Review item points to deleted term                | Show stale review item with dismiss action.                                         |
+| Dictionary match has low confidence               | Queue for review, never auto-confirm.                                               |
+| Alias suggests a dietary or allergen risk         | Show caution or critical flag, do not silently apply.                               |
+| Multiple chefs define different aliases           | Keep aliases chef-scoped through overrides, do not pollute system defaults.         |
 
 ---
 

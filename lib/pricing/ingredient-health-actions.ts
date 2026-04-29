@@ -2,6 +2,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { pgClient } from '@/lib/db'
+import { findDictionaryAliasSuggestions } from '@/lib/culinary-dictionary/queries'
 import { normalizeIngredientName, type MatchSuggestion } from './ingredient-matching-utils'
 import type {
   CostingRepairGroup,
@@ -252,9 +253,39 @@ export async function getIngredientHealthAction(): Promise<IngredientHealthSumma
         name: m.name,
         score: parseFloat(m.score),
         category: m.category,
+        source: 'trigram',
       }))
     } catch {
       // pg_trgm might not be available
+    }
+
+    if (suggestions.length === 0) {
+      const dictionaryAliases = await findDictionaryAliasSuggestions(normalized, 2).catch(() => [])
+      for (const alias of dictionaryAliases) {
+        try {
+          const dictionaryRows = await pgClient`
+            SELECT id, name, category,
+                   extensions.similarity(lower(name), ${normalizeIngredientName(alias.canonicalName)}) AS score
+            FROM system_ingredients
+            WHERE extensions.similarity(lower(name), ${normalizeIngredientName(alias.canonicalName)}) > 0.3
+              AND is_active = true
+            ORDER BY score DESC
+            LIMIT 2
+          `
+          suggestions.push(
+            ...(dictionaryRows ?? []).map((m: any) => ({
+              systemIngredientId: m.id,
+              name: m.name,
+              score: Math.min(parseFloat(m.score), alias.confidence),
+              category: m.category,
+              source: 'dictionary' as const,
+              dictionaryTerm: alias.canonicalName,
+            }))
+          )
+        } catch {
+          // Dictionary suggestions are advisory only.
+        }
+      }
     }
 
     unresolvedIngredients.push({
