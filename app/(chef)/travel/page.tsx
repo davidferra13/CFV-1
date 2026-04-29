@@ -9,6 +9,8 @@ import { getAllTravelLegs } from '@/lib/travel/actions'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { ErrorState } from '@/components/ui/error-state'
+import { RetryButton } from '@/components/ui/retry-button'
 import {
   LEG_TYPE_LABELS,
   LEG_STATUS_LABELS,
@@ -73,9 +75,11 @@ function statusVariant(status: string): 'default' | 'success' | 'warning' | 'err
 function LegRow({ leg }: { leg: TravelLegWithIngredients }) {
   const hasIngredients = leg.ingredients.length > 0
   const sourcedCount = leg.ingredients.filter((i) => i.status === 'sourced').length
+  const rowClassName =
+    'flex items-start justify-between py-3 border-b border-stone-800 last:border-0 gap-4 rounded-md px-2 -mx-2'
 
-  return (
-    <div className="flex items-start justify-between py-3 border-b border-stone-800 last:border-0 gap-4">
+  const content = (
+    <>
       <div className="flex items-start gap-3">
         {/* Day */}
         <div className="flex-shrink-0 text-center w-10">
@@ -117,12 +121,27 @@ function LegRow({ leg }: { leg: TravelLegWithIngredients }) {
       </div>
 
       {leg.primary_event_id && (
-        <Link href={`/events/${leg.primary_event_id}/travel`}>
-          <Button variant="ghost" size="sm">
-            View
-          </Button>
-        </Link>
+        <span className="rounded px-3 py-1.5 text-sm text-stone-200 transition-colors hover:bg-stone-700">
+          View
+        </span>
       )}
+    </>
+  )
+
+  if (leg.primary_event_id) {
+    return (
+      <Link
+        href={`/events/${leg.primary_event_id}/travel`}
+        className={`${rowClassName} hover:bg-stone-800/60`}
+      >
+        {content}
+      </Link>
+    )
+  }
+
+  return (
+    <div className={rowClassName}>
+      {content}
     </div>
   )
 }
@@ -138,12 +157,14 @@ export default async function GlobalTravelPage() {
   const future = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 90)
 
   let legs: Awaited<ReturnType<typeof getAllTravelLegs>> = []
+  let travelLoadFailed = false
   try {
     legs = await getAllTravelLegs({
       fromDate: `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`,
       toDate: `${future.getFullYear()}-${String(future.getMonth() + 1).padStart(2, '0')}-${String(future.getDate()).padStart(2, '0')}`,
     })
   } catch {
+    travelLoadFailed = true
     legs = []
   }
 
@@ -185,7 +206,18 @@ export default async function GlobalTravelPage() {
       )}
 
       {/* Week groups */}
-      {weeks.length === 0 ? (
+      {travelLoadFailed ? (
+        <Card className="p-10">
+          <ErrorState
+            title="Could not load travel plans"
+            description="Upcoming travel legs are unavailable right now."
+            size="sm"
+          />
+          <div className="flex justify-center">
+            <RetryButton />
+          </div>
+        </Card>
+      ) : weeks.length === 0 ? (
         <Card className="p-10 text-center">
           <p className="text-lg font-medium text-stone-400">No trips planned in the next 90 days</p>
           <p className="text-sm text-stone-400 mt-1">

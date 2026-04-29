@@ -7,6 +7,7 @@ import {
   ChatTeardropText,
   DollarSign,
   Inbox,
+  Truck,
   UtensilsCrossed,
   Users,
 } from '@/components/ui/icons'
@@ -88,6 +89,17 @@ function getCoreAreas(counts: CommandCenterProps['counts']): CoreArea[] {
       links: [
         { label: 'New event', href: '/events/new' },
         { label: 'Calendar', href: '/calendar' },
+      ],
+    },
+    {
+      label: 'Travel',
+      href: '/travel',
+      icon: Truck,
+      color: '#06b6d4',
+      description: 'Weekly routes and sourcing runs',
+      links: [
+        { label: 'Weekly planner', href: '/travel' },
+        { label: 'Travel expenses', href: '/finance/expenses/travel' },
       ],
     },
     {
@@ -186,7 +198,7 @@ export function CommandCenter({ counts }: CommandCenterProps) {
   return (
     <section>
       <div className="section-label mb-4">Core Areas</div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 stagger-grid">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3 stagger-grid">
         {areas.map((area) => (
           <CoreAreaCard key={area.label} area={area} />
         ))}
