@@ -5,32 +5,9 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
-import { getWasteSummary } from '@/lib/stations/waste-actions'
 import { WasteLog } from '@/components/stations/waste-log'
-import { Card, CardContent } from '@/components/ui/card'
 
 export const metadata: Metadata = { title: 'Waste Log' }
-
-type WasteSummary = {
-  total_entries: number
-  total_value_cents: number
-  by_reason: Array<{ reason: string; count: number }>
-}
-
-const REASON_LABELS: Record<string, string> = {
-  expired: 'Expired',
-  damaged: 'Damaged',
-  overproduced: 'Overproduced',
-  over_production: 'Overproduced',
-  dropped: 'Dropped',
-  contamination: 'Contamination',
-  quality: 'Quality Issue',
-  other: 'Other',
-}
-
-function getTopReason(summary: WasteSummary) {
-  return [...summary.by_reason].sort((a, b) => b.count - a.count)[0]?.reason ?? null
-}
 
 export default async function WasteLogPage() {
   await requireChef()
@@ -40,9 +17,6 @@ export default async function WasteLogPage() {
   const weekAgo = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7)
   const startDate = `${weekAgo.getFullYear()}-${String(weekAgo.getMonth() + 1).padStart(2, '0')}-${String(weekAgo.getDate()).padStart(2, '0')}`
   const endDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
-
-  const summary = (await getWasteSummary(startDate, endDate)) as WasteSummary
-  const topReason = getTopReason(summary)
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
@@ -65,33 +39,7 @@ export default async function WasteLogPage() {
         </Link>
       </div>
 
-      {/* Summary */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card>
-          <CardContent className="pt-4">
-            <p className="text-sm text-stone-500">Total Waste (7 days)</p>
-            <p className="text-3xl font-bold text-stone-100">{summary.total_entries} items</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-4">
-            <p className="text-sm text-stone-500">Waste Value (7 days)</p>
-            <p className="text-3xl font-bold text-stone-100">
-              ${(summary.total_value_cents / 100).toFixed(2)}
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-4">
-            <p className="text-sm text-stone-500">Top Reason</p>
-            <p className="text-3xl font-bold text-stone-100">
-              {topReason ? (REASON_LABELS[topReason] ?? topReason) : '-'}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <WasteLog startDate={startDate} endDate={endDate} />
+      <WasteLog startDate={startDate} endDate={endDate} showSummary />
     </div>
   )
 }

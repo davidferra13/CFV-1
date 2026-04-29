@@ -13,6 +13,27 @@ type Props = {
   stationId?: string
   startDate?: string
   endDate?: string
+  showSummary?: boolean
+}
+
+type WasteEntry = {
+  id: string
+  created_at: string
+  reason: string | null
+  quantity: number | string | null
+  unit: string | null
+  estimated_value_cents: number | null
+  notes: string | null
+  station_components?: { name?: string | null } | null
+  stations?: { name?: string | null } | null
+}
+
+type SummaryState = 'loading' | 'error' | 'ready'
+
+type WasteSummary = {
+  totalEntries: number
+  totalValueCents: number
+  topReason: string | null
 }
 
 const REASON_BADGE_VARIANT: Record<string, 'error' | 'warning' | 'info' | 'default'> = {
@@ -54,7 +75,85 @@ function formatUnknownReason(reason: string) {
     .join(' ')
 }
 
-export function WasteLog({ stationId, startDate, endDate }: Props) {
+function getTopReason(entries: WasteEntry[]) {
+  const counts = new Map<string, number>()
+
+  for (const entry of entries) {
+    const reason = normalizeReason(entry.reason)
+    counts.set(reason, (counts.get(reason) ?? 0) + 1)
+  }
+
+  return [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null
+}
+
+function getSummary(entries: WasteEntry[]): WasteSummary {
+  return {
+    totalEntries: entries.length,
+    totalValueCents: entries.reduce((sum, entry) => sum + (entry.estimated_value_cents ?? 0), 0),
+    topReason: getTopReason(entries),
+  }
+}
+
+function SummaryValue({
+  state,
+  children,
+}: {
+  state: SummaryState
+  children: React.ReactNode
+}) {
+  if (state === 'loading') {
+    return <p className="text-xl font-semibold text-stone-300">Loading...</p>
+  }
+
+  if (state === 'error') {
+    return <p className="text-xl font-semibold text-red-300">Unavailable</p>
+  }
+
+  return <p className="text-3xl font-bold text-stone-100">{children}</p>
+}
+
+function WasteSummaryCards({
+  entries,
+  loading,
+  error,
+}: {
+  entries: WasteEntry[]
+  loading: boolean
+  error: string | null
+}) {
+  const summary = getSummary(entries)
+  const state: SummaryState = loading ? 'loading' : error ? 'error' : 'ready'
+  const topReasonLabel = summary.topReason
+    ? REASON_LABELS[summary.topReason] ?? formatUnknownReason(summary.topReason)
+    : '-'
+
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <Card>
+        <CardContent className="pt-4">
+          <p className="text-sm text-stone-500">Total Waste in Filter</p>
+          <SummaryValue state={state}>{summary.totalEntries} items</SummaryValue>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardContent className="pt-4">
+          <p className="text-sm text-stone-500">Waste Value in Filter</p>
+          <SummaryValue state={state}>${(summary.totalValueCents / 100).toFixed(2)}</SummaryValue>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardContent className="pt-4">
+          <p className="text-sm text-stone-500">Top Reason in Filter</p>
+          <SummaryValue state={state}>
+            <span className="block truncate">{topReasonLabel}</span>
+          </SummaryValue>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+export function WasteLog({ stationId, startDate, endDate, showSummary = false }: Props) {
   const _wln = new Date()
   const today = `${_wln.getFullYear()}-${String(_wln.getMonth() + 1).padStart(2, '0')}-${String(_wln.getDate()).padStart(2, '0')}`
   const _wls = new Date(_wln.getFullYear(), _wln.getMonth(), _wln.getDate() - 7)
@@ -62,34 +161,50 @@ export function WasteLog({ stationId, startDate, endDate }: Props) {
 
   const [from, setFrom] = useState(startDate ?? sevenDaysAgo)
   const [to, setTo] = useState(endDate ?? today)
-  const [entries, setEntries] = useState<any[]>([])
+  const [entries, setEntries] = useState<WasteEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [totalValue, setTotalValue] = useState(0)
 
   useEffect(() => {
     loadData()
   }, [from, to])
 
   async function loadData() {
+    if (!from || !to) {
+      setEntries([])
+      setLoading(false)
+      setError('Choose a start and end date to load waste entries.')
+      return
+    }
+
+    if (from > to) {
+      setEntries([])
+      setLoading(false)
+      setError('Start date must be before end date.')
+      return
+    }
+
     setLoading(true)
     setError(null)
     try {
       const data = await getWasteLog(from, to, stationId)
-      setEntries(data)
-      setTotalValue(data.reduce((sum: number, e: any) => sum + (e.estimated_value_cents ?? 0), 0))
+      setEntries(data as WasteEntry[])
     } catch (err) {
       console.error('[WasteLog] Load error:', err)
       setEntries([])
-      setTotalValue(0)
       setError(err instanceof Error ? err.message : 'Failed to load waste log')
     } finally {
       setLoading(false)
     }
   }
 
+  const totalValue = entries.reduce((sum, entry) => sum + (entry.estimated_value_cents ?? 0), 0)
+
   return (
-    <Card>
+    <div className="space-y-4">
+      {showSummary && <WasteSummaryCards entries={entries} loading={loading} error={error} />}
+
+      <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="text-base">Waste Log</CardTitle>
@@ -134,7 +249,7 @@ export function WasteLog({ stationId, startDate, endDate }: Props) {
                   </tr>
                 </thead>
                 <tbody>
-                  {entries.map((entry: any) => {
+                  {entries.map((entry) => {
                     const reason = normalizeReason(entry.reason)
 
                     return (
@@ -183,6 +298,7 @@ export function WasteLog({ stationId, startDate, endDate }: Props) {
           </>
         )}
       </CardContent>
-    </Card>
+      </Card>
+    </div>
   )
 }
