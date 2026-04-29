@@ -5,7 +5,9 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Plus, Phone } from '@/components/ui/icons'
 import { getCalls, type CallType } from '@/lib/calls/actions'
+import { getCallIntelligenceSnapshot } from '@/lib/calls/intelligence-actions'
 import { CallCard } from '@/components/calls/call-card'
+import { CallIntelligencePanel } from '@/components/calls/call-intelligence-panel'
 
 export const metadata: Metadata = { title: 'Calls & Meetings' }
 
@@ -18,7 +20,7 @@ export default async function CallsPage({ searchParams }: Props) {
   const typeFilter = searchParams.type
 
   // Fetch upcoming + past in parallel
-  const [upcoming, past] = await Promise.all([
+  const [upcoming, past, intelligence] = await Promise.all([
     getCalls({
       status: ['scheduled', 'confirmed'],
       ...(typeFilter ? { call_type: typeFilter as CallType } : {}),
@@ -33,6 +35,7 @@ export default async function CallsPage({ searchParams }: Props) {
       ...(typeFilter ? { call_type: typeFilter as CallType } : {}),
       limit: 50,
     }),
+    getCallIntelligenceSnapshot(),
   ])
 
   const showAll = !statusFilter || statusFilter === 'all'
@@ -58,6 +61,8 @@ export default async function CallsPage({ searchParams }: Props) {
           Schedule call
         </Link>
       </div>
+
+      <CallIntelligencePanel snapshot={intelligence.snapshot} />
 
       {/* Status filter tabs */}
       <div className="overflow-x-auto border-b border-stone-700">

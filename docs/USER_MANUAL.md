@@ -134,6 +134,8 @@ Click **Schedule Call** on any inquiry to set a date, time, and agenda. Inquiry 
 
 ChefFlow pre-fills the call type, contact, linked inquiry or event, title, duration, prep notes, and client notification setting from the current record. After the call, mark it as attended or no-show, use an outcome template when one fits, and add outcome notes. If a completed call has a linked inquiry and a next action, ChefFlow updates the inquiry next action and follow-up due date. Upcoming calls also appear on the dashboard.
 
+The Calls page also includes Call Intelligence. It combines scheduled human calls, vendor or business-contact AI calls, supplier calls, transcripts, recordings, and logged outcomes into one human intervention queue. If a call source cannot be read, ChefFlow marks those metrics unavailable instead of showing fake zeroes.
+
 ---
 
 ## Events

@@ -651,7 +651,7 @@ Founder-owned operator walkthrough requests from `/for-operators/walkthrough` al
 
 ### 4.4 Calls & Meetings
 
-**Route:** `/calls` - Status tabs (All/Upcoming/Completed/No-show/Cancelled). Per call: type badge, contact, date/time, duration, agenda progress.
+**Route:** `/calls` - Call Intelligence panel plus status tabs (All/Upcoming/Completed/No-show/Cancelled). The intelligence panel reads scheduled human calls, AI call logs, supplier calls, recordings, transcripts, and outcomes, then shows intervention timing, unavailable source warnings, coverage gaps, and links to real call or Voice Hub records. Per call: type badge, contact, date/time, duration, agenda progress.
 
 **`/calls/new`** - Form: type select, datetime, duration, title, contact info, prep notes, notification toggle. Accepts lifecycle prefill query params from inquiry and event detail for `call_type`, `client_id`, `client_name`, `contact_phone`, `contact_company`, `inquiry_id`, `event_id`, `title`, `prep_notes`, `duration_minutes`, and `notify_client`.
 
