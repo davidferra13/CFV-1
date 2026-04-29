@@ -15,6 +15,7 @@ export function ActivityDot({ collapsed }: ActivityDotProps) {
   const [open, setOpen] = useState(false)
   const [items, setItems] = useState<ChefActivityEntry[]>([])
   const [loaded, setLoaded] = useState(false)
+  const [loadError, setLoadError] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
   const load = useCallback(async () => {
@@ -23,12 +24,14 @@ export function ActivityDot({ collapsed }: ActivityDotProps) {
       const res = await fetch('/api/activity/feed?tab=my&timeRange=7&limit=5', {
         cache: 'no-store',
       })
-      if (res.ok) {
-        const data = await res.json()
-        setItems(data.chefItems || [])
-      }
-    } catch {
+      if (!res.ok) throw new Error('Activity feed request failed')
+      const data = await res.json()
+      setItems(data.chefItems || [])
+      setLoadError(false)
+    } catch (err) {
       // non-blocking
+      console.warn('[activity-dot] Failed to load recent activity', err)
+      setLoadError(true)
     }
     setLoaded(true)
   }, [loaded])
@@ -102,41 +105,59 @@ export function ActivityDot({ collapsed }: ActivityDotProps) {
 
           <div className="max-h-64 overflow-y-auto p-1.5">
             {!loaded && <div className="text-xs text-stone-400 text-center py-4">Loading...</div>}
-            {loaded && items.length === 0 && (
+            {loaded && loadError && (
+              <div className="py-4 text-center text-xs text-amber-300">
+                <p>Activity could not load.</p>
+                <Link
+                  href="/activity"
+                  onClick={() => setOpen(false)}
+                  className="mt-2 inline-block font-medium text-brand-500 hover:text-brand-400"
+                >
+                  Open full timeline
+                </Link>
+              </div>
+            )}
+            {loaded && !loadError && items.length === 0 && (
               <div className="text-xs text-stone-400 text-center py-4">No recent activity</div>
             )}
-            {items.map((entry) => {
-              const config = DOMAIN_CONFIG[entry.domain] || DOMAIN_CONFIG.operational
-              const href = getChefActivityEntityHref(entry.entity_type, entry.entity_id)
-              const row = (
-                <div
-                  key={entry.id}
-                  className="flex items-start gap-2 py-1.5 px-2 rounded-md hover:bg-stone-800 transition-colors"
-                >
-                  <span
-                    className={`text-2xs font-medium px-1 py-0.5 rounded shrink-0 mt-0.5 ${config.bgColor} ${config.color}`}
+            {!loadError &&
+              items.map((entry) => {
+                const config = DOMAIN_CONFIG[entry.domain] || DOMAIN_CONFIG.operational
+                const href = getChefActivityEntityHref(entry.entity_type, entry.entity_id)
+                const row = (
+                  <div
+                    key={entry.id}
+                    className="flex items-start gap-2 py-1.5 px-2 rounded-md hover:bg-stone-800 transition-colors"
                   >
-                    {config.label}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs text-stone-300 leading-snug line-clamp-2">
-                      {entry.summary}
-                    </p>
-                    <p className="text-xxs text-stone-400 mt-0.5">
-                      {formatTimeAgo(entry.created_at)}
-                    </p>
+                    <span
+                      className={`text-2xs font-medium px-1 py-0.5 rounded shrink-0 mt-0.5 ${config.bgColor} ${config.color}`}
+                    >
+                      {config.label}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs text-stone-300 leading-snug line-clamp-2">
+                        {entry.summary}
+                      </p>
+                      <p className="text-xxs text-stone-400 mt-0.5">
+                        {formatTimeAgo(entry.created_at)}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              )
-              if (href) {
-                return (
-                  <Link key={entry.id} href={href} onClick={() => setOpen(false)} className="block">
-                    {row}
-                  </Link>
                 )
-              }
-              return row
-            })}
+                if (href) {
+                  return (
+                    <Link
+                      key={entry.id}
+                      href={href}
+                      onClick={() => setOpen(false)}
+                      className="block"
+                    >
+                      {row}
+                    </Link>
+                  )
+                }
+                return row
+              })}
           </div>
 
           <div className="border-t border-stone-800 px-3 py-2">
