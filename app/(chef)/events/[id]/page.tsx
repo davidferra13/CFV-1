@@ -271,6 +271,51 @@ async function getEventTransitions(eventId: string) {
   return transitions || []
 }
 
+async function getEventScheduledCalls(eventId: string, tenantId: string) {
+  const db: any = createServerClient()
+  const { data, error } = await db
+    .from('scheduled_calls')
+    .select(
+      [
+        'id',
+        'call_type',
+        'scheduled_at',
+        'duration_minutes',
+        'status',
+        'title',
+        'outcome_summary',
+        'call_notes',
+        'next_action',
+        'next_action_due_at',
+        'completed_at',
+        'actual_duration_minutes',
+      ].join(', ')
+    )
+    .eq('tenant_id', tenantId)
+    .eq('event_id', eventId)
+    .order('scheduled_at', { ascending: false })
+    .limit(8)
+
+  if (error) {
+    throw error
+  }
+
+  return (data ?? []) as Array<{
+    id: string
+    call_type: string
+    scheduled_at: string
+    duration_minutes: number | null
+    status: string
+    title: string | null
+    outcome_summary: string | null
+    call_notes: string | null
+    next_action: string | null
+    next_action_due_at: string | null
+    completed_at: string | null
+    actual_duration_minutes: number | null
+  }>
+}
+
 async function getEventPublicTicketShare(
   eventId: string,
   tenantId: string
@@ -751,6 +796,7 @@ export default async function EventDetailPage({
     constraintRadarData,
     inquiryReferralSource,
     eventReadinessEngine,
+    eventScheduledCalls,
   ] = await Promise.all([
     getEventFinancialSummary(params.id).catch(() => ({
       totalPaid: 0,
@@ -846,6 +892,7 @@ export default async function EventDetailPage({
         })()
       : Promise.resolve(null),
     getOrEvaluateEventReadiness(params.id).catch(() => null),
+    getEventScheduledCalls(params.id, user.tenantId!).catch(() => []),
   ])
   const readinessAssistant = await getEventReadinessAssistant(params.id, pricingIntelligence).catch(
     () => null
@@ -1778,6 +1825,7 @@ export default async function EventDetailPage({
         callRecommendation={eventCallRecommendation}
         callRecommendationHref={eventCallRecommendationHref}
         callPhoneHref={eventPhoneHref}
+        eventCalls={eventScheduledCalls}
       />
 
       {/* TAB: CHAT - Inline circle chat thread        */}

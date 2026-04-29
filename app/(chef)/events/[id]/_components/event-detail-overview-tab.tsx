@@ -62,6 +62,21 @@ type ServiceViewMenu = {
   }>
 }
 
+type EventScheduledCall = {
+  id: string
+  call_type: string
+  scheduled_at: string
+  duration_minutes: number | null
+  status: string
+  title: string | null
+  outcome_summary: string | null
+  call_notes: string | null
+  next_action: string | null
+  next_action_due_at: string | null
+  completed_at: string | null
+  actual_duration_minutes: number | null
+}
+
 type EventDetailOverviewTabProps = {
   activeTab: EventDetailTab
   event: any
@@ -92,6 +107,34 @@ type EventDetailOverviewTabProps = {
   callRecommendation?: CallRecommendation | null
   callRecommendationHref?: string | null
   callPhoneHref?: string | null
+  eventCalls?: EventScheduledCall[]
+}
+
+function formatCallLabel(value: string): string {
+  return value
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (letter) => letter.toUpperCase())
+}
+
+function getCallStatusClass(status: string): string {
+  switch (status) {
+    case 'completed':
+      return 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300'
+    case 'scheduled':
+      return 'border-blue-500/30 bg-blue-500/10 text-blue-300'
+    case 'in_progress':
+      return 'border-amber-500/30 bg-amber-500/10 text-amber-300'
+    case 'cancelled':
+      return 'border-stone-600 bg-stone-800 text-stone-400'
+    case 'no_show':
+      return 'border-red-500/30 bg-red-500/10 text-red-300'
+    default:
+      return 'border-stone-700 bg-stone-900 text-stone-300'
+  }
+}
+
+function getCallDisplayTitle(call: EventScheduledCall): string {
+  return call.title?.trim() || formatCallLabel(call.call_type)
 }
 
 export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
@@ -125,6 +168,7 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
     callRecommendation,
     callRecommendationHref,
     callPhoneHref,
+    eventCalls = [],
   } = props
 
   return (
@@ -609,6 +653,74 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
 
         {/* AI Menu Nutritional Summary */}
         {eventMenus && event.status !== 'cancelled' && <MenuNutritionalPanel eventId={event.id} />}
+
+        {eventCalls.length > 0 && (
+          <Card className="p-6">
+            <div className="mb-4 flex items-start justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-semibold">Call Timeline</h2>
+                <p className="mt-1 text-sm text-stone-500">
+                  Scheduled calls linked to this event, including outcomes and next actions.
+                </p>
+              </div>
+              <Link
+                href="/calls"
+                className="shrink-0 text-xs font-medium text-brand-500 hover:text-brand-400"
+              >
+                Open Calls
+              </Link>
+            </div>
+            <div className="space-y-3">
+              {eventCalls.slice(0, 5).map((call) => {
+                const hasOutcome = Boolean(call.outcome_summary?.trim() || call.call_notes?.trim())
+                return (
+                  <Link
+                    key={call.id}
+                    href={`/calls/${call.id}`}
+                    className="block rounded-lg border border-stone-800 bg-stone-900/70 p-3 transition hover:border-stone-700 hover:bg-stone-900"
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-2">
+                      <div>
+                        <div className="text-sm font-semibold text-stone-100">
+                          {getCallDisplayTitle(call)}
+                        </div>
+                        <div className="mt-1 text-xs text-stone-500">
+                          {format(new Date(call.scheduled_at), 'MMM d, yyyy h:mm a')}
+                          {call.duration_minutes ? ` - ${call.duration_minutes} min planned` : ''}
+                          {call.actual_duration_minutes
+                            ? ` - ${call.actual_duration_minutes} min actual`
+                            : ''}
+                        </div>
+                      </div>
+                      <span
+                        className={`rounded-full border px-2 py-1 text-[11px] font-medium ${getCallStatusClass(call.status)}`}
+                      >
+                        {formatCallLabel(call.status)}
+                      </span>
+                    </div>
+                    {call.outcome_summary && (
+                      <p className="mt-3 text-sm text-stone-300">{call.outcome_summary}</p>
+                    )}
+                    {call.status === 'completed' && !hasOutcome && (
+                      <p className="mt-3 text-sm font-medium text-amber-300">
+                        Outcome missing. Add the call result before this thread goes stale.
+                      </p>
+                    )}
+                    {call.next_action && (
+                      <div className="mt-3 rounded-md border border-stone-800 bg-stone-950/60 p-2 text-xs text-stone-300">
+                        <span className="font-medium text-stone-100">Next action:</span>{' '}
+                        {call.next_action}
+                        {call.next_action_due_at
+                          ? ` by ${format(new Date(call.next_action_due_at), 'MMM d h:mm a')}`
+                          : ''}
+                      </div>
+                    )}
+                  </Link>
+                )
+              })}
+            </div>
+          </Card>
+        )}
 
         {/* Communication Log */}
         <Card className="p-6">
