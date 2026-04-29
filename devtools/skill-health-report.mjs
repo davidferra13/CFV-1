@@ -13,6 +13,13 @@ import {
 } from './agent-skill-utils.mjs'
 
 const learningDir = path.join(process.cwd(), 'system', 'agent-learning-inbox')
+const generatedReportDirs = [
+  'skill-closeouts',
+  'skill-coverage',
+  'skill-dependencies',
+  'skill-health',
+  'router-decisions',
+].map((name) => path.join(reportsRoot, name))
 
 function skillAgeDays(skill) {
   const fs = globalThis.__fs
@@ -101,6 +108,18 @@ if (globalThis.__fs.existsSync(learningDir)) {
     }))
 }
 
+const staleGeneratedReports = generatedReportDirs.flatMap((dir) => {
+  if (!globalThis.__fs.existsSync(dir)) return []
+  const reports = globalThis.__fs
+    .readdirSync(dir)
+    .filter((name) => name.endsWith('.json'))
+    .sort()
+  return reports.slice(0, Math.max(0, reports.length - 1)).map((name) => ({
+    directory: relative(dir),
+    file: relative(path.join(dir, name)),
+  }))
+})
+
 const report = {
   generated_at: new Date().toISOString(),
   skill_count: skills.length,
@@ -109,6 +128,7 @@ const report = {
   ).length,
   overlaps,
   open_learning_items: openLearningItems,
+  stale_generated_reports: staleGeneratedReports,
   skills: skillRows,
 }
 
@@ -119,4 +139,5 @@ console.log(`Skill count: ${report.skill_count}`)
 console.log(`Unhealthy skills: ${report.unhealthy_count}`)
 console.log(`Potential overlaps: ${report.overlaps.length}`)
 console.log(`Open learning items: ${report.open_learning_items.length}`)
+console.log(`Stale generated reports: ${report.stale_generated_reports.length}`)
 console.log(`Wrote report: ${outFile.replace(/\\/g, '/')}`)

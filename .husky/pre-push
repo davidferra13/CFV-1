@@ -2,7 +2,15 @@
 
 # Type check before pushing (catches broken imports, type errors)
 echo "Running type check before push..."
-npx tsc --noEmit --skipLibCheck 2>&1
+if [ -x "node_modules/.bin/tsc" ]; then
+  node_modules/.bin/tsc --noEmit --skipLibCheck 2>&1
+elif [ -f "node_modules/.bin/tsc.cmd" ]; then
+  cmd.exe /c node_modules\\.bin\\tsc.cmd --noEmit --skipLibCheck 2>&1
+else
+  echo "Local TypeScript compiler not found at node_modules/.bin/tsc."
+  echo "Run npm install before pushing, or bypass with: git push --no-verify"
+  exit 1
+fi
 
 if [ $? -ne 0 ]; then
   echo ""

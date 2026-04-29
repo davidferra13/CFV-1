@@ -44,6 +44,33 @@ function runGitStatus(paths) {
     }))
 }
 
+function gitOutput(args) {
+  return execFileSync('git', args, { encoding: 'utf8' }).trim()
+}
+
+function commitContainsOwnedPaths(commit, ownedPaths) {
+  const files = new Set(
+    gitOutput(['diff-tree', '--no-commit-id', '--name-only', '-r', commit])
+      .split(/\r?\n/)
+      .map(normalizePath)
+      .filter(Boolean),
+  )
+  return ownedPaths.filter((ownedPath) => !files.has(normalizePath(ownedPath)))
+}
+
+function originContainsCommit(commit) {
+  const branch = args.branch || gitOutput(['branch', '--show-current'])
+  const remoteRef = args.remote || `origin/${branch}`
+  try {
+    execFileSync('git', ['merge-base', '--is-ancestor', commit, remoteRef], {
+      stdio: 'ignore',
+    })
+    return { ok: true, remoteRef }
+  } catch {
+    return { ok: false, remoteRef }
+  }
+}
+
 function isSkillPath(file) {
   return file.replace(/\\/g, '/').startsWith('.claude/skills/')
 }
@@ -152,6 +179,26 @@ if (args['skill-task'] && !hasCloseoutReportEvidence()) {
   )
 }
 
+if (args.commit && args.commit !== true) {
+  const commit = String(args.commit)
+  try {
+    const missingFromCommit = commitContainsOwnedPaths(commit, ownedPaths)
+    if (missingFromCommit.length) {
+      failures.push(
+        `Commit ${commit} does not contain owned paths: ${missingFromCommit.join(', ')}`,
+      )
+    }
+    if (args['require-pushed'] || args.pushed) {
+      const pushed = originContainsCommit(commit)
+      if (!pushed.ok) {
+        failures.push(`Commit ${commit} is not contained in ${pushed.remoteRef}`)
+      }
+    }
+  } catch (error) {
+    failures.push(`Commit verification failed: ${error.message}`)
+  }
+}
+
 if (!statusEntries.length && ownedPaths.length) {
   warnings.push('No uncommitted owned changes detected.')
 }
@@ -159,6 +206,7 @@ if (!statusEntries.length && ownedPaths.length) {
 const result = {
   ok: failures.length === 0,
   owned_paths: ownedPaths,
+  commit: args.commit && args.commit !== true ? String(args.commit) : null,
   failures,
   warnings,
 }

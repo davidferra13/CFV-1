@@ -25,8 +25,10 @@ Prefer the deterministic tools when changing or evaluating skills:
 
 - `node devtools/skill-validator.mjs [skill-name ...]` checks frontmatter, trigger language, em dashes, and references.
 - `node devtools/skill-trigger-tests.mjs` checks known prompts against expected skill routing evidence.
-- `node devtools/skill-router.mjs --prompt "..."` classifies primary skill, sidecar skills, hard stops, risk, and required checks before work starts.
+- `node devtools/skill-router.mjs --prompt "..." [--write]` classifies primary skill, sidecar skills, hard stops, risk, and required checks before work starts, and can persist routing evidence.
+- `node devtools/agent-preflight.mjs --prompt "..."` runs router, validator, trigger tests, coverage, dependency graph, and optional closeout checks in one pass.
 - `node devtools/agent-closeout-gate.mjs --owned path,other-path` blocks closeout when owned work lacks commit, validation, report, or compliance evidence.
+- `node devtools/report-skill-failure.mjs --skill skill-name --what "..." --prompt "..."` records a missed or weak skill behavior for repair, and can add a non-duplicate golden prompt with `--add-golden`.
 - `node devtools/session-transcript-auditor.mjs [--file transcript.txt] [--write]` turns missed real-session behavior into learning inbox items.
 - `node devtools/skill-learning-proposals.mjs` proposes patch, new skill, AGENTS.md, persona, findings, or rejection routes for open learning items.
 - `node devtools/skill-coverage-map.mjs` reports major ChefFlow task classes and their skill ownership.

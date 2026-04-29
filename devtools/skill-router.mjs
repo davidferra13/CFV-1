@@ -1,10 +1,15 @@
 #!/usr/bin/env node
 import {
   loadSkills,
+  nowStamp,
   parseArgs,
   projectSkillRoot,
   readStdin,
+  reportsRoot,
+  slugify,
+  writeJson,
 } from './agent-skill-utils.mjs'
+import path from 'node:path'
 
 const args = parseArgs()
 const prompt = String(args.prompt || args.p || args._.join(' ') || readStdin()).trim()
@@ -73,6 +78,18 @@ const rules = [
   {
     skill: 'review',
     terms: ['review', 'code review', 'before shipping', 'find bugs'],
+  },
+  {
+    skill: 'ledger-safety',
+    terms: ['ledger', 'ledger entry', 'append-only', 'computed balance', 'financial ledger'],
+  },
+  {
+    skill: 'billing-monetization',
+    terms: ['billing', 'monetization', 'paid tier', 'free tier', 'upgrade prompt', 'feature classification'],
+  },
+  {
+    skill: 'stripe-webhook-integrity',
+    terms: ['stripe', 'webhook', 'checkout', 'payment intent', 'subscription event', 'idempotency'],
   },
   {
     skill: 'debug',
@@ -293,11 +310,23 @@ for (const rule of riskRules) {
 if (hardStops.length > 0) riskLevel = 'high'
 
 const result = {
+  prompt,
+  generated_at: new Date().toISOString(),
   primary_skill: primarySkill,
   sidecar_skills: sidecarSkills,
   hard_stops: hardStops,
   risk_level: riskLevel,
   required_checks: [...new Set(requiredChecks)],
+}
+
+if (args.write || args.persist || args.report) {
+  const outFile = path.join(
+    reportsRoot,
+    'router-decisions',
+    `${nowStamp()}-${slugify(prompt)}.json`,
+  )
+  writeJson(outFile, result)
+  result.report_path = outFile.replace(/\\/g, '/')
 }
 
 console.log(JSON.stringify(result, null, 2))

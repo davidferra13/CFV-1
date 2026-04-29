@@ -21,12 +21,14 @@ Use these tools when the task touches skills or durable agent behavior:
 
 - Validate changed skills: `node devtools/skill-validator.mjs [skill-name ...]`
 - Test routing triggers: `node devtools/skill-trigger-tests.mjs`
-- Route a prompt before work: `node devtools/skill-router.mjs --prompt "..."`
+- Route a prompt before work: `node devtools/skill-router.mjs --prompt "..." [--write]`
+- Run the combined harness preflight: `node devtools/agent-preflight.mjs --prompt "..."`
 - Gate closeout before final: `node devtools/agent-closeout-gate.mjs --owned path,other-path`
 - Audit prior sessions: `node devtools/session-transcript-auditor.mjs [--file transcript.txt] [--write]`
 - Propose learning actions: `node devtools/skill-learning-proposals.mjs`
 - Map skill coverage: `node devtools/skill-coverage-map.mjs`
 - Map skill dependencies: `node devtools/skill-dependency-graph.mjs`
+- Report a skill failure: `node devtools/report-skill-failure.mjs --skill skill-name --what "..."`
 - Record unresolved learning: `node devtools/agent-learning-inbox.mjs add --category behavior --title "..."`
 - Classify external guidance: `node devtools/external-guidance-intake.mjs --source "source-name"`
 - Write skill closeout evidence: `node devtools/skill-closeout-report.mjs --goal "..." --primary skill-name --delta none|patch|new-skill|heal`
@@ -52,6 +54,9 @@ Use the most specific skill that fits. Combine skills only when their responsibi
 | Need test-first implementation                                                       | `tdd`                                                      |
 | Bug, failed behavior, broken route, recurring error                                  | `debug`                                                    |
 | Systemic or recurring root cause                                                     | `5-whys`                                                   |
+| Ledger, cents, balances, financial invariants, append-only money movement            | `ledger-safety`                                            |
+| Billing tiers, monetization, feature classification, upgrade prompt timing           | `billing-monetization`                                     |
+| Stripe webhooks, checkout events, payment idempotency, reconciliation                | `stripe-webhook-integrity`                                 |
 | Review code before shipping                                                          | `review`                                                   |
 | Compliance rules, banned text, invalid exports                                       | `compliance`                                               |
 | Zero hallucination risks, no-op UI, fake data, optimistic updates                    | `hallucination-scan`                                       |

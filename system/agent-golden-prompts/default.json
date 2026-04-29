@@ -80,6 +80,32 @@
       "omninet": ["ship", "Session close"],
       "ship": ["preserve unrelated dirty work", "commit"]
     }
+  },
+  {
+    "name": "ledger safety",
+    "prompt": "Fix a ledger balance issue where cents and append-only entries must stay correct.",
+    "expect": ["omninet", "ledger-safety"],
+    "evidence": {
+      "omninet": ["ledger-safety", "append-only"],
+      "ledger-safety": ["ledger", "append-only"]
+    }
+  },
+  {
+    "name": "billing monetization",
+    "prompt": "Connect a paid tier upgrade prompt to feature classification without blocking the free action.",
+    "expect": ["omninet", "billing-monetization"],
+    "evidence": {
+      "omninet": ["billing-monetization", "upgrade prompt"],
+      "billing-monetization": ["Free tier", "Paid tier"]
+    }
+  },
+  {
+    "name": "stripe webhook integrity",
+    "prompt": "Repair Stripe webhook idempotency and payment reconciliation into the ledger.",
+    "expect": ["omninet", "stripe-webhook-integrity"],
+    "evidence": {
+      "omninet": ["stripe-webhook-integrity", "idempotency"],
+      "stripe-webhook-integrity": ["Stripe", "idempotency"]
+    }
   }
 ]
-

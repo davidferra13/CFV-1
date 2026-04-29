@@ -1,12 +1,16 @@
 #!/usr/bin/env node
 import path from 'node:path'
 import {
+  ensureDir,
+  learningInboxRoot,
   loadSkills,
   nowStamp,
   parseArgs,
   projectSkillRoot,
   relative,
   reportsRoot,
+  shortHash,
+  slugify,
   tokenize,
   writeJson,
 } from './agent-skill-utils.mjs'
@@ -30,7 +34,7 @@ const taskClasses = [
     id: 'ledger',
     label: 'Ledger',
     description: 'Ledger-first financial behavior, append-only entries, cents, and computed balances.',
-    expectedOwners: ['builder', 'review', 'hallucination-scan'],
+    expectedOwners: ['ledger-safety', 'builder', 'review', 'hallucination-scan'],
     keywords: ['ledger', 'append', 'balance', 'cents', 'financial', 'money', 'immutable'],
   },
   {
@@ -65,14 +69,14 @@ const taskClasses = [
     id: 'billing',
     label: 'Billing',
     description: 'Tier classification, paid/free module behavior, monetization rules, and upgrade prompt timing.',
-    expectedOwners: ['builder', 'validation-gate', 'review'],
+    expectedOwners: ['billing-monetization', 'builder', 'validation-gate', 'review'],
     keywords: ['billing', 'tier', 'paid', 'free', 'upgrade', 'module', 'monetization'],
   },
   {
     id: 'stripe-webhooks',
     label: 'Stripe/Webhooks',
     description: 'Stripe integration, webhook processing, tickets, idempotency, and external payment events.',
-    expectedOwners: ['builder', 'debug', 'review'],
+    expectedOwners: ['stripe-webhook-integrity', 'builder', 'debug', 'review'],
     keywords: ['stripe', 'webhook', 'payment', 'checkout', 'invoice', 'subscription', 'idempotency'],
   },
   {
@@ -191,6 +195,38 @@ function printSummary(report) {
   }
 }
 
+function writeLearningItems(report) {
+  ensureDir(learningInboxRoot)
+  const weakRows = report.classes.filter((row) => row.status !== 'covered')
+  const files = []
+  for (const row of weakRows) {
+    const title = `Weak skill coverage for ${row.label}`
+    const details = [
+      row.description,
+      `Expected owners: ${row.expected_owners.join(', ')}`,
+      `Current status: ${row.status}`,
+      `Flags: ${row.flags.join(', ') || 'none'}`,
+    ].join('\n')
+    const id = `${nowStamp()}-${slugify(title)}-${shortHash(details)}`
+    const file = path.join(learningInboxRoot, `${id}.json`)
+    writeJson(file, {
+      id,
+      status: 'open',
+      category: 'workflow',
+      title,
+      source: 'skill-coverage-map',
+      target_skill: row.expected_owners[0] || null,
+      created_at: new Date().toISOString(),
+      details,
+      decision: null,
+      resolved_at: null,
+      notes: `coverage_id=${row.id}`,
+    })
+    files.push(file)
+  }
+  return files
+}
+
 const args = parseArgs()
 const skills = loadSkills(projectSkillRoot)
 const classes = mapCoverage(skills)
@@ -211,4 +247,9 @@ if (args.stdout) {
   writeJson(outFile, report)
   printSummary(report)
   console.log(`Wrote report: ${outFile.replace(/\\/g, '/')}`)
+  if (args['write-learning']) {
+    const learningFiles = writeLearningItems(report)
+    console.log(`Wrote ${learningFiles.length} learning inbox item(s).`)
+    for (const file of learningFiles) console.log(`- ${file.replace(/\\/g, '/')}`)
+  }
 }

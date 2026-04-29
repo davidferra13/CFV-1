@@ -1,0 +1,14 @@
+{
+  "prompt": "Fix Stripe webhook ledger reconciliation",
+  "generated_at": "2026-04-29T03:20:17.464Z",
+  "primary_skill": "stripe-webhook-integrity",
+  "sidecar_skills": [
+    "omninet",
+    "ledger-safety"
+  ],
+  "hard_stops": [],
+  "risk_level": "high",
+  "required_checks": [
+    "stage, commit, and push only owned files before closeout"
+  ]
+}
