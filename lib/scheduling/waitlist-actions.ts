@@ -116,6 +116,7 @@ export async function addToWaitlist(input: AddToWaitlistInput): Promise<Waitlist
   }
 
   revalidatePath('/schedule')
+  revalidatePath('/calendar')
   return data as unknown as WaitlistEntry
 }
 
@@ -150,13 +151,20 @@ export async function updateWaitlistEntry(
   }
 
   revalidatePath('/schedule')
+  revalidatePath('/calendar')
   return data as unknown as WaitlistEntry
 }
 
-export async function removeFromWaitlist(entryId: string): Promise<void> {
+export async function removeFromWaitlist(
+  entryId: string
+): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
   const db = await createServerClient()
   const chefId = user.tenantId!
+
+  if (!entryId.trim()) {
+    return { success: false, error: 'Waitlist entry is required' }
+  }
 
   const { error } = await db
     .from('waitlist_entries')
@@ -166,10 +174,12 @@ export async function removeFromWaitlist(entryId: string): Promise<void> {
 
   if (error) {
     console.error('[waitlist] Failed to remove entry:', error)
-    throw new Error('Failed to remove from waitlist')
+    return { success: false, error: 'Failed to remove from waitlist' }
   }
 
   revalidatePath('/schedule')
+  revalidatePath('/calendar')
+  return { success: true }
 }
 
 export async function notifyWaitlistOpening(date: string): Promise<WaitlistEntry[]> {
@@ -282,6 +292,7 @@ export async function convertWaitlistToEvent(entryId: string): Promise<string> {
 
   revalidatePath('/schedule')
   revalidatePath('/events')
+  revalidatePath('/calendar')
 
   return event.id
 }

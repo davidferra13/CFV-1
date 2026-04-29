@@ -156,7 +156,12 @@ export function WaitlistManager() {
     setEntries((prev) => prev.filter((e) => e.id !== entryId))
     startTransition(async () => {
       try {
-        await removeFromWaitlist(entryId)
+        const result = await removeFromWaitlist(entryId)
+        if (!result.success) {
+          setEntries(previous)
+          setError(result.error ?? 'Failed to remove entry')
+          return
+        }
         await loadData()
       } catch (err) {
         setEntries(previous)

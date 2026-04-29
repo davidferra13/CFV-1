@@ -12,6 +12,27 @@ interface Props {
   onClose: () => void
 }
 
+function formatDateOnly(date: Date) {
+  return [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, '0'),
+    String(date.getDate()).padStart(2, '0'),
+  ].join('-')
+}
+
+function listDatesInRange(startDate: string, endDate: string) {
+  const dates: string[] = []
+  const current = new Date(`${startDate}T12:00:00`)
+  const end = new Date(`${endDate}T12:00:00`)
+
+  while (current <= end) {
+    dates.push(formatDateOnly(current))
+    current.setDate(current.getDate() + 1)
+  }
+
+  return dates
+}
+
 export function ProtectedTimeForm({ onClose }: Props) {
   const [title, setTitle] = useState('')
   const [startDate, setStartDate] = useState('')
@@ -35,16 +56,25 @@ export function ProtectedTimeForm({ onClose }: Props) {
       return
     }
 
+    const protectedDates = listDatesInRange(startDate, endDate || startDate)
+    if (protectedDates.length > 31) {
+      setError('Protected time can cover up to 31 days at once.')
+      return
+    }
+
     setError(null)
 
     startTransition(async () => {
       try {
-        await createProtectedTime({
-          block_date: startDate,
-          block_type: 'full_day',
-          reason: title.trim(),
-          is_recurring: false,
-        })
+        const reason = blockType === 'rest' ? `Rest day: ${title.trim()}` : title.trim()
+        for (const blockDate of protectedDates) {
+          await createProtectedTime({
+            block_date: blockDate,
+            block_type: 'full_day',
+            reason,
+            is_recurring: false,
+          })
+        }
         onClose()
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Something went wrong.')
