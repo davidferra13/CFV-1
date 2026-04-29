@@ -13,6 +13,7 @@ import { ActivityFilters } from '@/components/activity/activity-filters'
 import { ClientActivityFeed } from '@/components/activity/client-activity-feed'
 import { RetraceTimeline } from '@/components/activity/retrace-timeline'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 
 type ActivityTab = 'my' | 'client' | 'all'
 type TimeRange = '1' | '7' | '30' | '90' | '180' | '365' | 'all'
@@ -84,6 +85,19 @@ const HOUR_LABELS = [
 ]
 const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
+function parseViewMode(value: string | null): ViewMode {
+  return value === 'retrace' || value === 'summary' ? value : 'summary'
+}
+
+function replaceModeInUrl(mode: ViewMode) {
+  if (typeof window === 'undefined') return
+
+  const url = new URL(window.location.href)
+  url.searchParams.set('mode', mode)
+  const query = url.searchParams.toString()
+  window.history.replaceState(null, '', `${url.pathname}${query ? `?${query}` : ''}${url.hash}`)
+}
+
 export function ActivityPageClient({
   resumeItems,
   initialChefActivity,
@@ -95,7 +109,8 @@ export function ActivityPageClient({
   initialBreadcrumbSessions = [],
   initialBreadcrumbCursor = null,
 }: ActivityPageClientProps) {
-  const [viewMode, setViewMode] = useState<ViewMode>('summary')
+  const searchParams = useSearchParams()
+  const [viewMode, setViewMode] = useState<ViewMode>(() => parseViewMode(searchParams.get('mode')))
   const [activeTab, setActiveTab] = useState<ActivityTab>('my')
   const [activeDomain, setActiveDomain] = useState<ChefActivityDomain | null>(null)
   const [actorFilter, setActorFilter] = useState<ActivityActorFilter>('all')
@@ -262,6 +277,23 @@ export function ActivityPageClient({
       ? 'Loading all activity...'
       : `Loading activity from the last ${daysBack} day(s)...`
 
+  function handleViewModeChange(mode: ViewMode) {
+    setViewMode(mode)
+    replaceModeInUrl(mode)
+  }
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || window.location.hash !== '#resume') return
+
+    const resumeSection = document.getElementById('resume')
+    if (!resumeSection) return
+
+    requestAnimationFrame(() => {
+      resumeSection.scrollIntoView({ block: 'start', behavior: 'smooth' })
+      resumeSection.focus({ preventScroll: true })
+    })
+  }, [])
+
   return (
     <div className="space-y-6">
       <ActivityLogToggle enabled={activityLogEnabled} />
@@ -273,7 +305,7 @@ export function ActivityPageClient({
         <div className="flex gap-1 bg-stone-800 rounded-lg p-1">
           <button
             type="button"
-            onClick={() => setViewMode('summary')}
+            onClick={() => handleViewModeChange('summary')}
             className={`text-xs font-medium py-1.5 px-4 rounded-md transition-colors ${
               viewMode === 'summary'
                 ? 'bg-stone-900 text-stone-200 shadow-sm'
@@ -284,7 +316,7 @@ export function ActivityPageClient({
           </button>
           <button
             type="button"
-            onClick={() => setViewMode('retrace')}
+            onClick={() => handleViewModeChange('retrace')}
             className={`text-xs font-medium py-1.5 px-4 rounded-md transition-colors ${
               viewMode === 'retrace'
                 ? 'bg-stone-900 text-stone-200 shadow-sm'
