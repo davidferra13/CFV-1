@@ -114,6 +114,10 @@ function safetyBadgeClass(safety: RemyApprovalPolicyTarget['safety']): string {
   }
 }
 
+function formatAccessDomains(domains: string[]): string {
+  return domains.length > 0 ? domains.join(', ') : 'none'
+}
+
 function getOutcomeText(entry: RemyActionAuditEntry): string {
   if (entry.errorMessage) return entry.errorMessage
   const payload = entry.resultPayload as Record<string, unknown> | null
@@ -650,6 +654,7 @@ export function RemyControlClient({
             <thead className="bg-stone-950 text-stone-400">
               <tr>
                 <th className="px-2 py-2 text-left font-medium">Action</th>
+                <th className="px-2 py-2 text-left font-medium">Access</th>
                 <th className="px-2 py-2 text-left font-medium">Safety</th>
                 <th className="px-2 py-2 text-left font-medium">Default</th>
                 <th className="px-2 py-2 text-left font-medium">Last run</th>
@@ -683,6 +688,26 @@ export function RemyControlClient({
                     <td className="px-2 py-2 align-top">
                       <p className="font-medium text-stone-100">{target.name}</p>
                       <p className="font-mono text-xs text-stone-500">{target.taskType}</p>
+                      <p className="mt-1 text-xs text-stone-500">{target.auditLabel}</p>
+                    </td>
+                    <td className="px-2 py-2 align-top text-xs text-stone-400">
+                      <p>
+                        <span className="text-stone-500">Reads:</span>{' '}
+                        {formatAccessDomains(target.reads)}
+                      </p>
+                      <p>
+                        <span className="text-stone-500">Writes:</span>{' '}
+                        {formatAccessDomains(target.writes)}
+                      </p>
+                      <p className="mt-1 text-stone-500">
+                        {target.requiresPrivateModel ? 'Private model' : 'Platform allowed'} ·{' '}
+                        {target.requiresApproval ? 'Approval required' : 'No approval required'}
+                      </p>
+                      {target.controlledBy.length > 0 && (
+                        <p className="mt-1 text-amber-300">
+                          Control: {target.controlledBy.join(', ')}
+                        </p>
+                      )}
                     </td>
                     <td className="px-2 py-2 align-top">
                       <span

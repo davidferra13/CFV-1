@@ -7,6 +7,11 @@ import { listAgentActions } from '@/lib/ai/agent-registry'
 import { getTaskName } from '@/lib/ai/command-task-descriptions'
 import type { AgentSafetyLevel } from '@/lib/ai/command-types'
 import {
+  getAiToolPermission,
+  type AiAccessDomain,
+  type AiPrivacyControl,
+} from '@/lib/ai/tool-permission-manifest'
+import {
   type RemyApprovalDecision,
   type RemyApprovalPolicyRecord,
   type RemyApprovalPolicyMap,
@@ -28,6 +33,12 @@ export interface RemyApprovalPolicyTarget {
   safety: AgentSafetyLevel
   defaultDecision: RemyApprovalDecision
   source: 'agent' | 'legacy'
+  reads: AiAccessDomain[]
+  writes: AiAccessDomain[]
+  requiresPrivateModel: boolean
+  requiresApproval: boolean
+  auditLabel: string
+  controlledBy: AiPrivacyControl[]
 }
 
 const LEGACY_POLICY_TARGETS: Array<{
@@ -152,24 +163,38 @@ export async function listRemyApprovalPolicyTargets(): Promise<RemyApprovalPolic
 
   for (const action of listAgentActions()) {
     const taskType = normalizeRemyTaskType(action.taskType)
+    const permission = getAiToolPermission(taskType)
     targets.set(taskType, {
       taskType,
       name: action.name,
       safety: action.safety,
       defaultDecision: defaultRemyDecisionForSafety(action.safety),
       source: 'agent',
+      reads: permission.reads,
+      writes: permission.writes,
+      requiresPrivateModel: permission.requiresPrivateModel,
+      requiresApproval: permission.requiresApproval,
+      auditLabel: permission.auditLabel,
+      controlledBy: permission.controlledBy,
     })
   }
 
   for (const legacy of LEGACY_POLICY_TARGETS) {
     const taskType = normalizeRemyTaskType(legacy.taskType)
     if (targets.has(taskType)) continue
+    const permission = getAiToolPermission(taskType)
     targets.set(taskType, {
       taskType,
       name: legacy.name,
       safety: legacy.safety,
       defaultDecision: defaultRemyDecisionForSafety(legacy.safety),
       source: 'legacy',
+      reads: permission.reads,
+      writes: permission.writes,
+      requiresPrivateModel: permission.requiresPrivateModel,
+      requiresApproval: permission.requiresApproval,
+      auditLabel: permission.auditLabel,
+      controlledBy: permission.controlledBy,
     })
   }
 

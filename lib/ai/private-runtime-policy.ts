@@ -1,3 +1,5 @@
+import { isAiToolControlledBy } from '@/lib/ai/tool-permission-manifest'
+
 export type AiWorkflow = 'remy.chat' | 'remy.context' | 'structured.parse'
 
 export type PrivateRuntimePrefs = {
@@ -60,28 +62,5 @@ export function canDraftAiDocuments(prefs: Pick<AiAccessPrefs, 'allowDocumentDra
 }
 
 export function isAiDocumentDraftTaskType(taskType: string): boolean {
-  return DOCUMENT_DRAFT_TASK_TYPES.has(taskType)
+  return isAiToolControlledBy(taskType, 'allow_document_drafts')
 }
-
-const DOCUMENT_DRAFT_TASK_TYPES = new Set([
-  'email.followup',
-  'email.generic',
-  'email.draft_reply',
-  'agent.draft_email',
-  'draft.thank_you',
-  'draft.referral_request',
-  'draft.testimonial_request',
-  'draft.quote_cover_letter',
-  'draft.decline_response',
-  'draft.cancellation_response',
-  'draft.payment_reminder',
-  'draft.re_engagement',
-  'draft.milestone_recognition',
-  'draft.food_safety_incident',
-  'draft.confirmation',
-  'draft.inquiry_first_response',
-  'draft.menu_proposal',
-  'contract.generate',
-  'document.create_folder',
-  'agent.create_doc_folder',
-])
