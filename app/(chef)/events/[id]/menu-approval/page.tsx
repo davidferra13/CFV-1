@@ -172,10 +172,29 @@ export default async function EventMenuApprovalPage({
       <Card className="p-6">
         <h2 className="text-lg font-semibold text-stone-100">Linked Menus</h2>
         {menus.length === 0 ? (
-          <p className="mt-3 text-sm text-stone-400">
-            No menu is attached to this event yet. Attach or build the menu before starting the
-            approval loop.
-          </p>
+          <div className="mt-3 space-y-4">
+            <p className="text-sm text-stone-400">
+              No menu is attached to this event yet. Attach or build the menu before starting the
+              approval loop.
+            </p>
+            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+              <Link href={`/events/${params.id}?tab=money`}>
+                <Button variant="primary" size="sm">
+                  Choose Existing Menu
+                </Button>
+              </Link>
+              <Link href="/menus/new">
+                <Button variant="secondary" size="sm">
+                  Build New Menu
+                </Button>
+              </Link>
+              <Link href={`/events/${params.id}/edit`}>
+                <Button variant="ghost" size="sm">
+                  Edit Event
+                </Button>
+              </Link>
+            </div>
+          </div>
         ) : (
           <div className="mt-4 space-y-3">
             {menus.map((menu) => (
