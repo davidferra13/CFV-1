@@ -424,6 +424,7 @@
 - **Guest Pipeline QR:** guest lead capture QR code
 - **Guest Excitement Wall:** moderated guest messages
 - **Post-Event Guest Outreach:** follow-up messaging panel
+- **Collaborate:** RSVP/share/collaborator control surface. Includes a thread-derived coordination panel that extracts timing, headcount, location, dietary, and action signals from the communication thread, then shows scoped collaborator, guest, and viewer views based on share visibility. Derived signals are runtime-only and the share expiry is surfaced when present.
 - **Allergen Conflict Alert:** Deterministic allergen cross-check (auto-runs on mount, no AI). Red/amber banners showing per-guest conflicts with FDA Big 9 classification. Expandable per-person detail with safe dish list. Gated on `menu_id` existing.
 - **AI Allergen Risk Matrix:** AI-powered allergen analysis (on-demand, deeper analysis)
 - **AI Menu Nutritional Summary:** AI nutritional breakdown

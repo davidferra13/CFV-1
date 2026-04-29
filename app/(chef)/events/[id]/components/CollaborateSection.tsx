@@ -5,6 +5,11 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { ChefGuestPanel } from '@/components/sharing/chef-guest-panel'
+import type {
+  CoordinationRoleView,
+  CoordinationSignal,
+  ThreadCoordinationBrief,
+} from '@/lib/events/thread-coordination-brief'
 
 type EventShare = {
   id: string
@@ -59,6 +64,7 @@ type CollaborateSectionProps = {
   collaborators: Collaborator[]
   shortShareUrl: string | null
   fullShareUrl: string | null
+  coordinationBrief: ThreadCoordinationBrief
 }
 
 function formatShareDate(value?: string | null) {
@@ -94,6 +100,7 @@ export function CollaborateSection({
   collaborators,
   shortShareUrl,
   fullShareUrl,
+  coordinationBrief,
 }: CollaborateSectionProps) {
   const [isOpen, setIsOpen] = useState(false)
 
@@ -179,6 +186,8 @@ export function CollaborateSection({
               <p className="mt-1 text-2xl font-semibold text-stone-100">{summary.plus_one_count}</p>
             </div>
           </div>
+
+          <ThreadDerivedCoordinationPanel brief={coordinationBrief} />
 
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
             <div className="rounded-lg border border-stone-800 p-4">
@@ -269,5 +278,100 @@ export function CollaborateSection({
         </div>
       )}
     </Card>
+  )
+}
+
+function ThreadDerivedCoordinationPanel({ brief }: { brief: ThreadCoordinationBrief }) {
+  if (brief.sourceMessageCount === 0) return null
+
+  const visibleRoleViews = brief.roleViews.filter((view) => {
+    return view.role === 'collaborator' || view.role === 'guest' || view.role === 'viewer'
+  })
+
+  return (
+    <div className="rounded-lg border border-stone-800 p-4">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h3 className="text-sm font-semibold text-stone-200">Thread-derived coordination</h3>
+          <p className="mt-1 text-xs text-stone-500">
+            Actionable timing, count, location, dietary, and instruction signals are derived from
+            the communication thread. The thread stays canonical.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Badge variant="info">{brief.sourceMessageCount} source messages</Badge>
+          <Badge variant={brief.retention.expiresByDesign ? 'warning' : 'default'}>
+            {brief.retention.expiresByDesign ? 'Expires by design' : 'No share expiry'}
+          </Badge>
+        </div>
+      </div>
+
+      {brief.signals.length === 0 ? (
+        <p className="mt-4 text-sm text-stone-500">
+          No actionable coordination signals were found in the current thread.
+        </p>
+      ) : (
+        <div className="mt-4 grid gap-3 lg:grid-cols-3">
+          {visibleRoleViews.map((view) => (
+            <RoleSignalCard key={view.role} view={view} />
+          ))}
+        </div>
+      )}
+
+      {brief.retention.shareExpiresAt && (
+        <p className="mt-3 text-xs text-stone-500">
+          Shared access expires {formatShareDate(brief.retention.shareExpiresAt)}. Derived signals
+          are runtime-only and are not stored separately.
+        </p>
+      )}
+    </div>
+  )
+}
+
+function RoleSignalCard({ view }: { view: CoordinationRoleView }) {
+  return (
+    <div className="rounded-lg bg-stone-900/70 p-3">
+      <div className="flex items-center justify-between gap-2">
+        <h4 className="text-xs font-semibold uppercase tracking-wide text-stone-400">
+          {view.label} view
+        </h4>
+        {view.hiddenSignalCount > 0 && (
+          <span className="text-[11px] text-stone-500">
+            {view.hiddenSignalCount} hidden
+          </span>
+        )}
+      </div>
+      {view.visibleSignals.length === 0 ? (
+        <p className="mt-3 text-xs text-stone-500">No thread signals are visible to this role.</p>
+      ) : (
+        <div className="mt-3 space-y-2">
+          {view.visibleSignals.slice(0, 3).map((signal) => (
+            <SignalRow key={signal.id} signal={signal} role={view.role} />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function SignalRow({
+  signal,
+  role,
+}: {
+  signal: CoordinationSignal
+  role: CoordinationRoleView['role']
+}) {
+  const canShowSourceSnippet = role === 'collaborator'
+
+  return (
+    <div className="rounded-md border border-stone-800 bg-stone-950/70 p-2">
+      <div className="flex items-center gap-2">
+        <Badge variant={signal.kind === 'action' ? 'warning' : 'default'}>{signal.label}</Badge>
+        <span className="truncate text-xs font-medium text-stone-200">{signal.value}</span>
+      </div>
+      {canShowSourceSnippet ? (
+        <p className="mt-1 line-clamp-2 text-xs text-stone-500">{signal.snippet}</p>
+      ) : null}
+    </div>
   )
 }

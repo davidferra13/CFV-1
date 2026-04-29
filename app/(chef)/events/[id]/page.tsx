@@ -194,6 +194,7 @@ import {
 import { BehindTheScenesPanel } from '@/components/events/behind-the-scenes-panel'
 import { loadBehindTheScenes } from '@/lib/private-context/loaders'
 import { CollaborateSection } from './components/CollaborateSection'
+import { buildThreadCoordinationBrief } from '@/lib/events/thread-coordination-brief'
 
 async function EventCompletionSection({ eventId }: { eventId: string }) {
   const result = await getCompletionForEntity('event', eventId)
@@ -1203,6 +1204,11 @@ export default async function EventDetailPage({
     packingConfirmedCount,
     hasAAR: Boolean(aar),
   })
+  const threadCoordinationBrief = buildThreadCoordinationBrief({
+    messages: messages as any[],
+    visibility: (activeShare?.visibility_settings as Record<string, boolean> | null) ?? null,
+    shareExpiresAt: (activeShare?.expires_at as string | null | undefined) ?? null,
+  })
   const dinnerCircleSnapshot = buildDinnerCircleSnapshot({
     event,
     config: dinnerCircleConfig ?? normalizeDinnerCircleConfig(null),
@@ -1484,6 +1490,7 @@ export default async function EventDetailPage({
         collaborators={eventCollaborators as any[]}
         shortShareUrl={shortShareUrl}
         fullShareUrl={fullShareUrl}
+        coordinationBrief={threadCoordinationBrief}
       />
 
       {/* Collaborator role banner â€” shown when viewing another chef's event */}
