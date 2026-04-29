@@ -1,5 +1,5 @@
 import { exec } from 'node:child_process'
-import { open, readFile, writeFile } from 'node:fs/promises'
+import { open, readdir, readFile, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { promisify } from 'node:util'
 
@@ -55,6 +55,34 @@ async function readJson(projectRoot, relativePath) {
     return { ok: true, value: JSON.parse(raw) }
   } catch (error) {
     return { ok: false, error: error.message }
+  }
+}
+
+async function readJsonDirectory(projectRoot, relativeDir, limit = 40) {
+  try {
+    const entries = await readdir(join(projectRoot, relativeDir), { withFileTypes: true })
+    const files = entries
+      .filter((entry) => entry.isFile() && entry.name.endsWith('.json'))
+      .map((entry) => entry.name)
+      .sort()
+      .reverse()
+      .slice(0, limit)
+
+    const values = await Promise.all(
+      files.map(async (file) => {
+        const relativePath = join(relativeDir, file)
+        const parsed = await readJson(projectRoot, relativePath)
+        return {
+          file: relativePath.replace(/\\/g, '/'),
+          ok: parsed.ok,
+          value: parsed.ok ? parsed.value : null,
+          error: parsed.ok ? null : parsed.error,
+        }
+      })
+    )
+    return { ok: true, values }
+  } catch (error) {
+    return { ok: false, values: [], error: error.message }
   }
 }
 
@@ -304,6 +332,58 @@ async function getRuntimeEvents(projectRoot) {
   }
 }
 
+async function getAgentWork(projectRoot) {
+  const [claims, flights] = await Promise.all([
+    readJsonDirectory(projectRoot, 'system/agent-claims', 60),
+    readJsonDirectory(projectRoot, 'system/agent-reports/flight-records', 30),
+  ])
+
+  const claimRows = claims.values
+    .filter((entry) => entry.ok && entry.value)
+    .map((entry) => ({
+      file: entry.file,
+      id: entry.value.id,
+      status: entry.value.status,
+      agent: entry.value.agent,
+      prompt: entry.value.prompt,
+      branch: entry.value.branch,
+      ownedPaths: entry.value.owned_paths ?? [],
+      updatedAt: entry.value.updated_at ?? entry.value.created_at ?? null,
+      finishedAt: entry.value.finished_at ?? null,
+      pushed: entry.value.pushed ?? null,
+    }))
+
+  const flightRows = flights.values
+    .filter((entry) => entry.ok && entry.value)
+    .map((entry) => ({
+      file: entry.file,
+      id: entry.value.id,
+      status: entry.value.status,
+      prompt: entry.value.prompt,
+      branch: entry.value.branch,
+      startedAt: entry.value.started_at ?? null,
+      finishedAt: entry.value.finished_at ?? null,
+      commitHash: entry.value.commit_hash ?? null,
+      pushed: entry.value.pushed ?? null,
+      filesTouched: entry.value.files_touched ?? [],
+    }))
+
+  return {
+    ok: claims.ok && flights.ok,
+    claims: {
+      ok: claims.ok,
+      active: claimRows.filter((claim) => claim.status === 'active'),
+      recent: claimRows.slice(0, 20),
+      error: claims.error ?? null,
+    },
+    flightRecords: {
+      ok: flights.ok,
+      recent: flightRows.slice(0, 15),
+      error: flights.error ?? null,
+    },
+  }
+}
+
 function buildRisks(snapshot) {
   const risks = []
   const listeners = new Set(snapshot.ports.listeners.map((row) => row.localPort))
@@ -344,12 +424,19 @@ function buildRisks(snapshot) {
       message: `${snapshot.processes.byKind.playwright} Playwright-related processes visible`,
     })
   }
+  if ((snapshot.agentWork.claims.active ?? []).length > 0) {
+    risks.push({
+      severity: 'info',
+      source: 'agents',
+      message: `${snapshot.agentWork.claims.active.length} active agent claim files visible`,
+    })
+  }
   return risks
 }
 
-export async function buildOperatingSurface(projectRoot) {
+export async function buildOperatingSurface(projectRoot, runtime = {}) {
   const generatedAt = new Date().toISOString()
-  const [ports, processes, scheduledTasks, git, health, logs, runtimeEvents] = await Promise.all([
+  const [ports, processes, scheduledTasks, git, health, logs, runtimeEvents, agentWork] = await Promise.all([
     getPorts(projectRoot),
     getProcesses(projectRoot),
     getScheduledTasks(projectRoot),
@@ -357,6 +444,7 @@ export async function buildOperatingSurface(projectRoot) {
     getHealth(projectRoot),
     getLogs(projectRoot),
     getRuntimeEvents(projectRoot),
+    getAgentWork(projectRoot),
   ])
 
   const snapshot = {
@@ -373,6 +461,10 @@ export async function buildOperatingSurface(projectRoot) {
     health,
     logs,
     runtimeEvents,
+    agentWork,
+    runtime: {
+      missionControl: runtime.missionControl ?? {},
+    },
   }
   snapshot.risks = buildRisks(snapshot)
 

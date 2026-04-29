@@ -2282,6 +2282,21 @@ body {
             <div id="ops-events" style="font-family:monospace;font-size:11px;line-height:1.6;white-space:pre-wrap;max-height:220px;overflow:auto;color:var(--text-secondary);"></div>
           </div>
         </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:12px;">
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px;min-height:260px;">
+            <div style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Active Agents</div>
+            <div id="ops-agents" style="display:flex;flex-direction:column;gap:7px;font-size:12px;max-height:220px;overflow:auto;"></div>
+          </div>
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px;min-height:260px;">
+            <div style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Mission Control API</div>
+            <div id="ops-network" style="font-family:monospace;font-size:11px;line-height:1.6;white-space:pre-wrap;max-height:220px;overflow:auto;color:var(--text-secondary);"></div>
+          </div>
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px;min-height:260px;">
+            <div style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Live Log Tails</div>
+            <div id="ops-logs" style="font-family:monospace;font-size:11px;line-height:1.6;white-space:pre-wrap;max-height:220px;overflow:auto;color:var(--text-secondary);"></div>
+          </div>
+        </div>
       </div>
 
       <div class="panel" id="panel-home">
@@ -10580,6 +10595,64 @@ function opsWallRenderEvents(data) {
   }).join('\n') || 'No runtime events visible'
 }
 
+function opsWallRenderAgents(data) {
+  const el = document.getElementById('ops-agents')
+  if (!el) return
+  const active = data.agentWork?.claims?.active || []
+  const recentFlights = data.agentWork?.flightRecords?.recent || []
+  if (active.length === 0 && recentFlights.length === 0) {
+    el.innerHTML = opsWallLine('Agent claims', 'none visible', 'warning')
+    return
+  }
+  const activeRows = active.map((claim) => `
+    <div style="border:1px solid rgba(59,130,246,0.28);border-radius:7px;padding:8px;background:rgba(15,23,42,0.35);">
+      <div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:4px;">
+        <span style="color:var(--info);font-weight:700;">${escapeHtml(claim.status || 'active')}</span>
+        <span style="color:var(--text-muted);font-size:10px;">${escapeHtml(opsWallTime(claim.updatedAt))}</span>
+      </div>
+      <div style="color:var(--text-primary);line-height:1.35;">${escapeHtml(claim.prompt || claim.id || 'agent claim')}</div>
+      <div style="color:var(--text-muted);font-size:10px;margin-top:4px;">${escapeHtml((claim.ownedPaths || []).slice(0, 3).join(', '))}</div>
+    </div>
+  `)
+  const flightRows = recentFlights.slice(0, 4).map((flight) => opsWallLine(flight.prompt || flight.id || 'flight record', flight.status || 'unknown', flight.status === 'finished' ? 'success' : 'info'))
+  el.innerHTML = [...activeRows, ...flightRows].join('')
+}
+
+function opsWallRenderNetwork(data) {
+  const el = document.getElementById('ops-network')
+  if (!el) return
+  const mc = data.runtime?.missionControl || {}
+  const events = mc.requestEvents || []
+  const header = [
+    `sse clients: ${mc.sseClients ?? 0}`,
+    `livefeed clients: ${mc.liveFeedClients ?? 0}`,
+    '',
+  ]
+  const lines = events.slice(-35).map((event) => {
+    const tone = event.status >= 500 ? 'ERR' : event.status >= 400 ? 'WARN' : 'OK'
+    return `${opsWallTime(event.time)} ${tone} ${event.method || 'GET'} ${event.status || 0} ${event.durationMs ?? '--'}ms ${event.path || '/'}`
+  })
+  el.textContent = [...header, ...lines].join('\n').trim() || 'No Mission Control API traffic captured yet'
+}
+
+function opsWallRenderLogs(data) {
+  const el = document.getElementById('ops-logs')
+  if (!el) return
+  const logs = data.logs || []
+  const visible = logs
+    .filter((log) => log.ok && (log.lines || []).length)
+    .slice(0, 6)
+    .map((log) => {
+      const lines = (log.lines || []).slice(-4)
+      return [`[${log.path}]`, ...lines].join('\n')
+    })
+  const missing = logs
+    .filter((log) => !log.ok)
+    .slice(0, 4)
+    .map((log) => `[missing] ${log.path}: ${log.error}`)
+  el.textContent = [...visible, ...missing].join('\n\n') || 'No log tails visible'
+}
+
 function renderOpsWall(data) {
   const errorEl = document.getElementById('ops-wall-error')
   if (errorEl) errorEl.style.display = 'none'
@@ -10603,6 +10676,9 @@ function renderOpsWall(data) {
   opsWallRenderTasks(data)
   opsWallRenderGit(data)
   opsWallRenderEvents(data)
+  opsWallRenderAgents(data)
+  opsWallRenderNetwork(data)
+  opsWallRenderLogs(data)
 }
 
 async function loadOpsWall(force = false) {

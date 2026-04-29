@@ -79,6 +79,8 @@ const CHAT_CONFIG = {
 const eventLog = []
 const sseClients = new Set()
 const MAX_LOG = 500
+const requestEvents = []
+const MAX_REQUEST_EVENTS = 250
 
 function log(source, message, type = 'info') {
   const entry = { time: Date.now(), source, message, type }
@@ -94,6 +96,26 @@ function log(source, message, type = 'info') {
   // Persist to log file (non-blocking, errors silently)
   const ts = new Date(entry.time).toISOString()
   appendFile(CONFIG.logFile, `[${ts}] [${type}] [${source}] ${message}\n`).catch(() => {})
+}
+
+function trackRequest(req, res) {
+  const start = Date.now()
+  let path = req.url || '/'
+  try {
+    path = new URL(req.url, `http://localhost:${PORT}`).pathname
+  } catch {}
+  res.on('finish', () => {
+    requestEvents.push({
+      time: new Date().toISOString(),
+      method: req.method,
+      path,
+      status: res.statusCode,
+      durationMs: Date.now() - start,
+      remoteAddress: req.socket?.remoteAddress || null,
+    })
+    while (requestEvents.length > MAX_REQUEST_EVENTS) requestEvents.shift()
+  })
+  return handleRequest(req, res)
 }
 
 // ── File Watcher (VS Code Activity Tracking) ─────────────────────
@@ -7483,7 +7505,14 @@ async function handleRequest(req, res) {
   }
 
   if (path === '/api/operating-surface' && method === 'GET') {
-    return json(res, await buildOperatingSurface(PROJECT_ROOT))
+    return json(res, await buildOperatingSurface(PROJECT_ROOT, {
+      missionControl: {
+        requestEvents: requestEvents.slice(-120),
+        eventLog: eventLog.slice(-80),
+        sseClients: sseClients.size,
+        liveFeedClients: liveFeedClients.size,
+      },
+    }))
   }
 
   // ── Passive Dashboard APIs ──────────────────────────────────────
@@ -8736,7 +8765,7 @@ async function getGitInfoBatch() {
 
 // ── Server startup ────────────────────────────────────────────────
 
-const server = createServer(handleRequest)
+const server = createServer(trackRequest)
 
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`
