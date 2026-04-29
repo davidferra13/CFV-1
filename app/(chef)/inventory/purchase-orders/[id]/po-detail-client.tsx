@@ -30,6 +30,12 @@ function formatCents(cents: number | null) {
   return `$${(cents / 100).toFixed(2)}`
 }
 
+type ReceiveDraft = {
+  receivedQty: number
+  lotNumber: string
+  expiryDate: string
+}
+
 type Props = {
   po: any
 }
@@ -43,7 +49,7 @@ export function PODetailClient({ po }: Props) {
   const [itemQty, setItemQty] = useState('')
   const [itemUnit, setItemUnit] = useState('')
   const [itemPrice, setItemPrice] = useState('')
-  const [receivingItems, setReceivingItems] = useState<Record<string, number>>({})
+  const [receivingItems, setReceivingItems] = useState<Record<string, ReceiveDraft>>({})
 
   const items = po.items || []
 
@@ -99,8 +105,13 @@ export function PODetailClient({ po }: Props) {
 
   function handleReceive() {
     const toReceive = Object.entries(receivingItems)
-      .filter(([, qty]) => qty > 0)
-      .map(([itemId, qty]) => ({ itemId, receivedQty: qty }))
+      .filter(([, draft]) => draft.receivedQty > 0)
+      .map(([itemId, draft]) => ({
+        itemId,
+        receivedQty: draft.receivedQty,
+        lotNumber: draft.lotNumber.trim() || undefined,
+        expiryDate: draft.expiryDate || undefined,
+      }))
     if (toReceive.length === 0) return
 
     startTransition(async () => {
@@ -215,14 +226,16 @@ export function PODetailClient({ po }: Props) {
                 <th className="text-right px-4 py-3 font-medium">Received</th>
                 <th className="text-left px-4 py-3 font-medium">Unit</th>
                 <th className="text-right px-4 py-3 font-medium">Est. Price</th>
+                <th className="text-left px-4 py-3 font-medium">Lot</th>
+                <th className="text-left px-4 py-3 font-medium">Expiry</th>
                 <th className="text-left px-4 py-3 font-medium">Status</th>
-                {canReceive && <th className="text-right px-4 py-3 font-medium">Receive Qty</th>}
+                {canReceive && <th className="text-left px-4 py-3 font-medium">Receive</th>}
               </tr>
             </thead>
             <tbody>
               {items.length === 0 ? (
                 <tr>
-                  <td colSpan={canReceive ? 7 : 6} className="px-4 py-8 text-center text-stone-500">
+                  <td colSpan={canReceive ? 9 : 8} className="px-4 py-8 text-center text-stone-500">
                     No items yet. Add items to this purchase order.
                   </td>
                 </tr>
@@ -240,6 +253,8 @@ export function PODetailClient({ po }: Props) {
                     <td className="px-4 py-3 text-right text-stone-300">
                       {formatCents(item.estimatedUnitPriceCents)}
                     </td>
+                    <td className="px-4 py-3 text-stone-400">{item.lotNumber || '-'}</td>
+                    <td className="px-4 py-3 text-stone-400">{item.expiryDate || '-'}</td>
                     <td className="px-4 py-3">
                       {item.isReceived ? (
                         <Badge variant="success">Received</Badge>
@@ -252,21 +267,62 @@ export function PODetailClient({ po }: Props) {
                       )}
                     </td>
                     {canReceive && (
-                      <td className="px-4 py-3 text-right">
-                        <input
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          placeholder="0"
-                          value={receivingItems[item.id] ?? ''}
-                          onChange={(e) =>
-                            setReceivingItems((prev) => ({
-                              ...prev,
-                              [item.id]: parseFloat(e.target.value) || 0,
-                            }))
-                          }
-                          className="w-20 bg-stone-800 border border-stone-600 rounded px-2 py-1 text-sm text-stone-200 text-right"
-                        />
+                      <td className="px-4 py-3">
+                        {item.isReceived ? (
+                          <span className="text-xs text-stone-500">Already received</span>
+                        ) : (
+                          <div className="grid min-w-[22rem] grid-cols-3 gap-2">
+                            <input
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              placeholder="Qty"
+                              value={receivingItems[item.id]?.receivedQty || ''}
+                              onChange={(e) =>
+                                setReceivingItems((prev) => ({
+                                  ...prev,
+                                  [item.id]: {
+                                    receivedQty: parseFloat(e.target.value) || 0,
+                                    lotNumber: prev[item.id]?.lotNumber ?? '',
+                                    expiryDate: prev[item.id]?.expiryDate ?? '',
+                                  },
+                                }))
+                              }
+                              className="w-full rounded border border-stone-600 bg-stone-800 px-2 py-1 text-right text-sm text-stone-200"
+                            />
+                            <input
+                              type="text"
+                              placeholder="Lot"
+                              value={receivingItems[item.id]?.lotNumber ?? ''}
+                              onChange={(e) =>
+                                setReceivingItems((prev) => ({
+                                  ...prev,
+                                  [item.id]: {
+                                    receivedQty: prev[item.id]?.receivedQty ?? 0,
+                                    lotNumber: e.target.value,
+                                    expiryDate: prev[item.id]?.expiryDate ?? '',
+                                  },
+                                }))
+                              }
+                              className="w-full rounded border border-stone-600 bg-stone-800 px-2 py-1 text-sm text-stone-200"
+                            />
+                            <input
+                              type="date"
+                              value={receivingItems[item.id]?.expiryDate ?? ''}
+                              onChange={(e) =>
+                                setReceivingItems((prev) => ({
+                                  ...prev,
+                                  [item.id]: {
+                                    receivedQty: prev[item.id]?.receivedQty ?? 0,
+                                    lotNumber: prev[item.id]?.lotNumber ?? '',
+                                    expiryDate: e.target.value,
+                                  },
+                                }))
+                              }
+                              className="w-full rounded border border-stone-600 bg-stone-800 px-2 py-1 text-sm text-stone-200"
+                            />
+                          </div>
+                        )}
                       </td>
                     )}
                   </tr>

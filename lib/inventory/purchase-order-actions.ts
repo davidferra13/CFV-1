@@ -115,6 +115,7 @@ function db(db: any) {
     purchaseOrders: () => db.from('purchase_orders' as any) as any,
     purchaseOrderItems: () => db.from('purchase_order_items' as any) as any,
     inventoryTransactions: () => db.from('inventory_transactions' as any) as any,
+    inventoryBatches: () => db.from('inventory_batches' as any) as any,
   }
 }
 
@@ -591,6 +592,37 @@ export async function receivePOItems(
     if (item.receivedQty > 0) {
       const totalCostCents =
         actualUnitPrice != null ? Math.round(item.receivedQty * actualUnitPrice) : null
+      let batchId: string | null = null
+
+      const { data: batch, error: batchError } = await db(db)
+        .inventoryBatches()
+        .insert({
+          chef_id: user.tenantId!,
+          ingredient_id: (poItem as any).ingredient_id ?? null,
+          ingredient_name: (poItem as any).ingredient_name,
+          received_date: ((_d) =>
+            `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`)(
+            new Date()
+          ),
+          expiry_date: item.expiryDate ?? null,
+          lot_number: item.lotNumber?.trim() || null,
+          vendor_id: po.vendor_id ?? null,
+          purchase_order_id: poId,
+          initial_qty: item.receivedQty,
+          remaining_qty: item.receivedQty,
+          unit: (poItem as any).unit,
+          unit_cost_cents: actualUnitPrice ?? null,
+          location_id: po.delivery_location_id ?? null,
+          notes: `Received via PO ${po.po_number || poId}`,
+        })
+        .select('id')
+        .single()
+
+      if (batchError) {
+        throw new Error(`Failed to create inventory batch: ${(batchError as any).message}`)
+      }
+
+      batchId = (batch as any)?.id ?? null
 
       const { error: txError } = await db(db)
         .inventoryTransactions()
@@ -605,7 +637,7 @@ export async function receivePOItems(
           location_id: po.delivery_location_id ?? null,
           purchase_order_id: poId,
           expiry_date: item.expiryDate ?? null,
-          batch_id: null,
+          batch_id: batchId,
           notes: `Received via PO ${po.po_number || poId}`,
           created_by: user.id,
         })
@@ -689,6 +721,7 @@ export async function receivePOItems(
   }
 
   revalidatePath('/inventory')
+  revalidatePath('/inventory/expiry')
   revalidatePath('/inventory/purchase-orders')
 
   return mapPO(updatedPO)
