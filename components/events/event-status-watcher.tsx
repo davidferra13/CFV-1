@@ -6,10 +6,12 @@
 // full-page polling. Renders nothing.
 
 import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
+import { trackedRouterRefresh } from '@/lib/runtime/tracked-router-refresh'
 
 export function EventStatusWatcher({ eventId }: { eventId: string }) {
   const router = useRouter()
+  const pathname = usePathname()
 
   useEffect(() => {
     const channel = encodeURIComponent(`client-event:${eventId}`)
@@ -20,7 +22,13 @@ export function EventStatusWatcher({ eventId }: { eventId: string }) {
         const msg = JSON.parse(e.data)
         if (msg.event === 'status_changed') {
           // Re-render the server component with fresh data
-          router.refresh()
+          trackedRouterRefresh(router, {
+            pathname,
+            source: 'event-status-watcher',
+            entity: 'event',
+            event: 'status_changed',
+            reason: `client-event:${eventId}`,
+          })
         }
       } catch {
         // Ignore heartbeats and parse errors
@@ -30,7 +38,7 @@ export function EventStatusWatcher({ eventId }: { eventId: string }) {
     return () => {
       es.close()
     }
-  }, [eventId, router])
+  }, [eventId, pathname, router])
 
   return null
 }

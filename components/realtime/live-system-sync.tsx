@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from
 import { usePathname, useRouter } from 'next/navigation'
 import { shouldRefreshForLiveRouteMutation } from '@/lib/realtime/live-route-invalidation'
 import { recordRefreshTelemetry } from '@/lib/runtime/refresh-telemetry'
+import { trackedRouterRefresh } from '@/lib/runtime/tracked-router-refresh'
 import { useSSE } from '@/lib/realtime/sse-client'
 
 type LiveSystemSyncProps = {
@@ -105,14 +106,12 @@ export function LiveSystemSync({ tenantId, userId, role }: LiveSystemSyncProps) 
 
       refreshTimerRef.current = setTimeout(() => {
         startTransition(() => {
-          recordRefreshTelemetry({
-            kind: 'refresh',
+          trackedRouterRefresh(router, {
             pathname,
             source: 'live-system-sync',
             entity: message.data?.entity,
             event: message.event,
           })
-          router.refresh()
           setSyncState({ phase: 'updated', label: 'Updated just now' })
           settleToIdle()
         })

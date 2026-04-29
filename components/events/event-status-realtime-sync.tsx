@@ -10,12 +10,13 @@
  * realtime subscriptions directly. This component is mounted inside the server
  * component and handles the subscription on the client side.
  *
- * When the event status changes (e.g., proposed → accepted via client portal),
+ * When the event status changes (e.g., proposed -> accepted via client portal),
  * the page automatically reflects the new state without a manual reload.
  */
 
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useEventStatusSubscription } from '@/lib/realtime/subscriptions'
+import { trackedRouterRefresh } from '@/lib/runtime/tracked-router-refresh'
 import { useCallback } from 'react'
 
 interface EventStatusRealtimeSyncProps {
@@ -24,14 +25,21 @@ interface EventStatusRealtimeSyncProps {
 
 export function EventStatusRealtimeSync({ eventId }: EventStatusRealtimeSyncProps) {
   const router = useRouter()
+  const pathname = usePathname()
 
   const handleStatusChange = useCallback(
     (newStatus: string, oldStatus: string) => {
-      console.log(`[EventStatusRealtimeSync] ${oldStatus} → ${newStatus} (event ${eventId})`)
+      console.log(`[EventStatusRealtimeSync] ${oldStatus} -> ${newStatus} (event ${eventId})`)
       // Refresh the server component tree to reflect the new status
-      router.refresh()
+      trackedRouterRefresh(router, {
+        pathname,
+        source: 'event-status-realtime-sync',
+        entity: 'event',
+        event: 'status_changed',
+        reason: `${oldStatus}->${newStatus}`,
+      })
     },
-    [eventId, router]
+    [eventId, pathname, router]
   )
 
   useEventStatusSubscription(eventId, handleStatusChange)

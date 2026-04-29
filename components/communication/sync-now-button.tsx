@@ -1,16 +1,18 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { RefreshCw } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { triggerGmailSync } from '@/lib/gmail/actions'
+import { trackedRouterRefresh } from '@/lib/runtime/tracked-router-refresh'
 
 export function SyncNowButton() {
   const [isPending, startTransition] = useTransition()
   const [lastResult, setLastResult] = useState<string | null>(null)
   const router = useRouter()
+  const pathname = usePathname()
 
   const handleSync = () => {
     setLastResult(null)
@@ -22,7 +24,13 @@ export function SyncNowButton() {
         if (result.messagesLogged > 0) parts.push(`${result.messagesLogged} messages`)
         if (result.processed > 0 && parts.length === 0) parts.push(`${result.processed} processed`)
         setLastResult(parts.length > 0 ? parts.join(', ') : 'Up to date')
-        router.refresh()
+        trackedRouterRefresh(router, {
+          pathname,
+          source: 'gmail-sync-now',
+          entity: 'gmail',
+          event: 'manual_sync',
+          reason: parts.length > 0 ? parts.join(', ') : 'up-to-date',
+        })
       } catch {
         setLastResult('Sync failed')
         toast.error('Gmail sync failed')

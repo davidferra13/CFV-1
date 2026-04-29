@@ -7,22 +7,30 @@
 // the chef transitions any event - no second SSE connection needed.
 
 import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useNotifications } from '@/components/notifications/notification-provider'
+import { trackedRouterRefresh } from '@/lib/runtime/tracked-router-refresh'
 
 const EVENT_CATEGORIES = new Set(['event', 'payment'])
 
 export function ClientEventsRefresher() {
   const router = useRouter()
+  const pathname = usePathname()
   const { addNotificationListener } = useNotifications()
 
   useEffect(() => {
     return addNotificationListener((notification) => {
       if (EVENT_CATEGORIES.has(notification.category)) {
-        router.refresh()
+        trackedRouterRefresh(router, {
+          pathname,
+          source: 'client-events-refresher',
+          entity: notification.category,
+          event: notification.action,
+          reason: 'event-notification',
+        })
       }
     })
-  }, [addNotificationListener, router])
+  }, [addNotificationListener, pathname, router])
 
   return null
 }

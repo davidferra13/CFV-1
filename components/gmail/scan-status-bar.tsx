@@ -3,7 +3,8 @@
 // Scan Status Bar - auto-refreshes every 5s when a scan is in progress.
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
+import { trackedRouterRefresh } from '@/lib/runtime/tracked-router-refresh'
 import type { HistoricalScanStatus } from '@/lib/gmail/historical-scan-actions'
 
 interface ScanStatusBarProps {
@@ -15,17 +16,24 @@ export function ScanStatusBar({ initialStatus, pendingCount }: ScanStatusBarProp
   const [status, setStatus] = useState(initialStatus)
   const [count, setCount] = useState(pendingCount)
   const router = useRouter()
+  const pathname = usePathname()
 
   useEffect(() => {
     if (status.status !== 'in_progress') return
 
     const interval = setInterval(() => {
       // Refresh the page to get fresh server data
-      router.refresh()
+      trackedRouterRefresh(router, {
+        pathname,
+        source: 'gmail-scan-status-bar',
+        entity: 'gmail',
+        event: 'scan_poll',
+        reason: 'historical-scan-in-progress',
+      })
     }, 5000)
 
     return () => clearInterval(interval)
-  }, [status.status, router])
+  }, [pathname, router, status.status])
 
   // Sync with server-refreshed props
   useEffect(() => {

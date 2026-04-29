@@ -5,7 +5,8 @@
 // Designed for wall-mounted screens that run 24/7.
 
 import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
+import { trackedRouterRefresh } from '@/lib/runtime/tracked-router-refresh'
 
 type Props = {
   intervalSeconds: number
@@ -13,14 +14,20 @@ type Props = {
 
 export function StaffBoardRefresher({ intervalSeconds }: Props) {
   const router = useRouter()
+  const pathname = usePathname()
 
   useEffect(() => {
     const interval = setInterval(() => {
-      router.refresh()
+      trackedRouterRefresh(router, {
+        pathname,
+        source: 'staff-board-refresher',
+        event: 'interval',
+        reason: `${intervalSeconds}s poll`,
+      })
     }, intervalSeconds * 1000)
 
     return () => clearInterval(interval)
-  }, [intervalSeconds, router])
+  }, [intervalSeconds, pathname, router])
 
   return null
 }
