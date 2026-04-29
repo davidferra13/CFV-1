@@ -70,6 +70,38 @@ test('voice agent refuses recipe generation by voice', () => {
   assert.equal(decision.allowedToAnswer, false)
 })
 
+test('voice agent hands menu confirmations and revisions to chef review', () => {
+  const decision = resolveVoiceAgentTurn({
+    role: 'inbound_unknown',
+    utterance: 'I want to approve the tasting menu but swap the second course.',
+  })
+  const followUp = buildVoiceAgentFollowUp({
+    decision,
+    callerLabel: 'Avery',
+    transcript: 'I want to approve the tasting menu but swap the second course.',
+  })
+
+  assert.equal(decision.type, 'handoff_required')
+  assert.equal(decision.category, 'menu')
+  assert.equal(decision.allowedToAnswer, true)
+  assert.match(decision.answer, /cannot create or change/)
+  assert.equal(followUp.label, 'Menu review')
+  assert.equal(followUp.urgency, 'review')
+  assert.match(followUp.nextStep, /before changing any menu/)
+})
+
+test('voice agent refuses menu building by voice', () => {
+  const decision = resolveVoiceAgentTurn({
+    role: 'inbound_unknown',
+    utterance: 'Can you build us a menu and suggest dishes for Saturday?',
+  })
+
+  assert.equal(decision.type, 'restricted')
+  assert.equal(decision.category, 'recipe')
+  assert.equal(decision.allowedToAnswer, false)
+  assert.match(decision.answer, /cannot create recipes, menu ideas, dish ideas/)
+})
+
 test('voice agent preserves first-turn handoff boundaries after detail collection', () => {
   const firstTurn = resolveVoiceAgentTurn({
     role: 'inbound_unknown',

@@ -29,6 +29,7 @@ import {
   initiateSupplierCall,
   initiateAdHocCall,
   getCallStatus,
+  type CallResult,
 } from '@/lib/calling/twilio-actions'
 import { useSSE } from '@/lib/realtime/sse-client'
 import { Phone, Search, Loader2, X, Mic, ChevronRight, ChevronUp } from '@/components/ui/icons'
@@ -52,6 +53,23 @@ type CallState =
       callCreatedAt?: string | null
     }
 
+type BatchCallDetail = {
+  vendorId: string
+  vendorName: string
+  status: 'launched' | 'failed'
+  callId?: string
+  error?: string
+}
+
+type BatchCallReport = {
+  requested: number
+  launched: number
+  failed: number
+  startedAt: string
+  completedAt: string
+  details: BatchCallDetail[]
+}
+
 // ---------------------------------------------------------------------------
 // CallHub
 // ---------------------------------------------------------------------------
@@ -65,6 +83,7 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
   const [callStates, setCallStates] = useState<Record<string, CallState>>({})
   const [callingAll, setCallingAll] = useState(false)
   const [confirmOpen, setConfirmOpen] = useState(false)
+  const [batchReport, setBatchReport] = useState<BatchCallReport | null>(null)
 
   // Quick Call - collapsed secondary flow
   const [quickOpen, setQuickOpen] = useState(false)
@@ -179,7 +198,7 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
   // Call mechanics
   // ---------------------------------------------------------------------------
 
-  async function placeCall(vendor: VendorCallCandidate) {
+  async function placeCall(vendor: VendorCallCandidate): Promise<CallResult> {
     setCallStates((prev) => ({ ...prev, [vendor.id]: { phase: 'calling' } }))
     try {
       let result: Awaited<ReturnType<typeof initiateSupplierCall>>
@@ -195,7 +214,7 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
           ...prev,
           [vendor.id]: { phase: 'done', result: null, status: result.error ?? 'Failed' },
         }))
-        return
+        return { success: false, error: result.error ?? 'Failed' }
       }
 
       const callId = result.callId!
@@ -254,12 +273,14 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
         }
       }, 4000)
       activePolls.current.add(poll)
+      return result
     } catch (err) {
       console.error('[call-hub] placeCall unexpected error:', err)
       setCallStates((prev) => ({
         ...prev,
         [vendor.id]: { phase: 'done', result: null, status: 'Error placing call' },
       }))
+      return { success: false, error: 'Error placing call' }
     }
   }
 
@@ -271,11 +292,37 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
     if (toCall.length === 0) return
     setConfirmOpen(false)
     setCallingAll(true)
+    setBatchReport(null)
+    const startedAt = new Date().toISOString()
+    const details: BatchCallDetail[] = []
+
     // Fix #2: serialize calls to prevent daily-limit race condition.
     // Parallel calls all pass the limit check before any insert commits.
     // Sequential execution ensures each call is counted before the next check.
     for (const v of toCall) {
-      await placeCall(v)
+      const result = await placeCall(v)
+      details.push({
+        vendorId: v.id,
+        vendorName: v.name,
+        status: result.success ? 'launched' : 'failed',
+        callId: result.callId,
+        error: result.error,
+      })
+    }
+    const launched = details.filter((detail) => detail.status === 'launched').length
+    const failed = details.length - launched
+    setBatchReport({
+      requested: toCall.length,
+      launched,
+      failed,
+      startedAt,
+      completedAt: new Date().toISOString(),
+      details,
+    })
+    if (failed > 0) {
+      toast.error(`${failed} call${failed === 1 ? '' : 's'} failed to launch.`)
+    } else {
+      toast.success(`${launched} call${launched === 1 ? '' : 's'} launched.`)
     }
     setCallingAll(false)
   }
@@ -457,19 +504,53 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
 
       {/* Resolution view */}
       {!resolving && resolution && (
-        <IngredientResolutionView
-          resolution={resolution}
-          callStates={callStates}
-          selected={selected}
-          onToggle={toggleVendor}
-          onCallAll={callSelected}
-          onCallOne={placeCall}
-          onEscalateTier2={escalateTier2Call}
-          callingAll={callingAll}
-          confirmOpen={confirmOpen}
-          onConfirmOpen={() => setConfirmOpen(true)}
-          onConfirmClose={() => setConfirmOpen(false)}
-        />
+        <>
+          <IngredientResolutionView
+            resolution={resolution}
+            callStates={callStates}
+            selected={selected}
+            onToggle={toggleVendor}
+            onCallAll={callSelected}
+            onCallOne={(vendor) => {
+              void placeCall(vendor)
+            }}
+            onEscalateTier2={escalateTier2Call}
+            callingAll={callingAll}
+            confirmOpen={confirmOpen}
+            onConfirmOpen={() => setConfirmOpen(true)}
+            onConfirmClose={() => setConfirmOpen(false)}
+          />
+          {batchReport && (
+            <div className="rounded-xl border border-stone-800 bg-stone-900 px-4 py-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <p className="text-sm font-semibold text-stone-200">Call batch report</p>
+                  <p className="text-xs text-stone-500">
+                    {batchReport.launched} launched, {batchReport.failed} failed from{' '}
+                    {batchReport.requested} selected.
+                  </p>
+                </div>
+                <span className="text-[10px] uppercase tracking-wide text-stone-600">
+                  {new Date(batchReport.completedAt).toLocaleTimeString([], {
+                    hour: 'numeric',
+                    minute: '2-digit',
+                  })}
+                </span>
+              </div>
+              {batchReport.failed > 0 && (
+                <div className="mt-3 space-y-1">
+                  {batchReport.details
+                    .filter((detail) => detail.status === 'failed')
+                    .map((detail) => (
+                      <p key={detail.vendorId} className="text-xs text-rose-300">
+                        {detail.vendorName}: {detail.error ?? 'Failed to launch'}
+                      </p>
+                    ))}
+                </div>
+              )}
+            </div>
+          )}
+        </>
       )}
 
       {/* Empty state: shown when nothing typed */}

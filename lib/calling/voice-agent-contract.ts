@@ -20,6 +20,7 @@ export interface VoiceAgentDecision {
     | 'pricing'
     | 'booking'
     | 'dietary'
+    | 'menu'
     | 'recipe'
     | 'human'
     | 'opt_out'
@@ -65,14 +66,14 @@ export const VOICE_AGENT_CONTRACT: VoiceAgentContract = {
     'Never pretend to be human.',
     'Never call clients from outbound automation.',
     'Never invent prices, availability, booking confirmation, menus, recipes, or medical advice.',
-    'Never generate recipes or tell the chef what to cook.',
+    'Never generate recipes, menus, dish ideas, or tell the chef what to cook.',
     'Never collect payment card details by voice.',
   ],
   handoffTriggers: [
     'caller asks for a human',
     'caller asks for exact pricing or a binding quote',
     'caller has allergy, medical, legal, refund, or payment dispute concerns',
-    'caller asks for recipes or menu invention',
+    'caller asks for recipes, menu invention, menu changes, or chef creative work',
     'caller asks for anything outside known ChefFlow operational data',
   ],
 }
@@ -127,7 +128,30 @@ const DIETARY_PATTERNS = [
   /\brestriction\b/i,
 ]
 
-const RECIPE_PATTERNS = [/\brecipe\b/i, /\bwhat should\b/i, /\bmenu idea\b/i, /\bdish idea\b/i]
+const MENU_CREATION_PATTERNS = [
+  /\bmenu idea\b/i,
+  /\bdish idea\b/i,
+  /\bwhat should\b/i,
+  /\bbuild (?:me |us )?a menu\b/i,
+  /\bmake (?:me |us )?a menu\b/i,
+  /\bcreate (?:me |us )?a menu\b/i,
+  /\bsuggest (?:a |some )?(?:menu|menus|dishes)\b/i,
+  /\bplan (?:a |the )?menu\b/i,
+]
+
+const MENU_REVIEW_PATTERNS = [
+  /\bmenu\b/i,
+  /\btasting menu\b/i,
+  /\bcourse\b/i,
+  /\bdish\b/i,
+  /\bapprove(?:d)?\b/i,
+  /\bchoose\b/i,
+  /\bselection\b/i,
+  /\bswap\b/i,
+  /\bsubstitution\b/i,
+]
+
+const RECIPE_PATTERNS = [/\brecipe\b/i]
 
 export function isAllowedVoiceAgentRole(role: string): role is VoiceAgentRole {
   return ALLOWED_ROLES.includes(role as VoiceAgentRole)
@@ -171,10 +195,20 @@ export function resolveVoiceAgentTurn(params: {
     )
   }
 
-  if (RECIPE_PATTERNS.some((pattern) => pattern.test(text))) {
+  if (
+    RECIPE_PATTERNS.some((pattern) => pattern.test(text)) ||
+    MENU_CREATION_PATTERNS.some((pattern) => pattern.test(text))
+  ) {
     return restrictedDecision(
       'recipe',
-      'I cannot create recipes or tell the chef what to cook. I can pass your preference to the chef.'
+      'I cannot create recipes, menu ideas, dish ideas, or tell the chef what to cook. I can pass your preference to the chef.'
+    )
+  }
+
+  if (MENU_REVIEW_PATTERNS.some((pattern) => pattern.test(text))) {
+    return handoffDecision(
+      'menu',
+      "I can record menu confirmations, selections, constraints, and revision notes for the chef, but I cannot create or change the chef's menu by voice."
     )
   }
 
@@ -228,9 +262,7 @@ export function resolveVoiceAgentConversationDecision(params: {
   currentDecision: VoiceAgentDecision
   step: number
 }): VoiceAgentDecision {
-  const previous = isVoiceAgentDecision(params.previousDecision)
-    ? params.previousDecision
-    : null
+  const previous = isVoiceAgentDecision(params.previousDecision) ? params.previousDecision : null
 
   if (params.currentDecision.type === 'opt_out') return params.currentDecision
   if (!previous || params.step <= 1) return params.currentDecision
@@ -273,7 +305,9 @@ function compactExcerpt(value: string | null | undefined): string {
   return `${text.slice(0, 417).trim()}...`
 }
 
-function followUpBase(decision: VoiceAgentDecision): Omit<VoiceAgentFollowUp, 'quickNoteText' | 'alertBody'> {
+function followUpBase(
+  decision: VoiceAgentDecision
+): Omit<VoiceAgentFollowUp, 'quickNoteText' | 'alertBody'> {
   if (decision.type === 'opt_out') {
     return {
       label: 'AI call opt-out',
@@ -304,6 +338,15 @@ function followUpBase(decision: VoiceAgentDecision): Omit<VoiceAgentFollowUp, 'q
       label: 'Dietary review',
       urgency: 'urgent',
       nextStep: 'Review allergy or dietary details before any menu, quote, or confirmation step.',
+    }
+  }
+
+  if (decision.category === 'menu') {
+    return {
+      label: 'Menu review',
+      urgency: 'review',
+      nextStep:
+        'Review the menu confirmation, selection, or revision request before changing any menu.',
     }
   }
 

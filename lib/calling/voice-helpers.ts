@@ -72,7 +72,7 @@ function outboundTrustHandshakeParts(businessName: string, purposeParts: SpeakPa
   return [
     "Hi, I'm an AI assistant calling on behalf of ",
     { type: 'emphasis', text: businessName },
-    '. This call may be recorded. ',
+    ". This call may be recorded, and I'll be brief. ",
     ...purposeParts,
     ' If you would prefer not to receive AI assistant calls, just say stop calling at any time. ',
     { type: 'break', ms: 400 },
