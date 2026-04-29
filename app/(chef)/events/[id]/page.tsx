@@ -151,6 +151,7 @@ import { Suspense } from 'react'
 import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
 import { PreEventNerveCenter } from '@/components/events/pre-event-nerve-center'
 import { PreServiceChecklistSection } from '@/components/events/pre-service-checklist-section'
+import { StationBoard } from '@/components/events/station-board'
 import { EventIntelligencePanel } from '@/components/intelligence/event-intelligence-panel'
 import { getLifecycleProgress } from '@/lib/lifecycle/actions'
 import { getChefArchetype } from '@/lib/archetypes/actions'
@@ -1593,6 +1594,12 @@ export default async function EventDetailPage({
         fullShareUrl={fullShareUrl}
         coordinationBrief={threadCoordinationBrief}
       />
+
+      {(eventCollaborators as any[]).length > 0 && !['cancelled'].includes(event.status) && (
+        <WidgetErrorBoundary name="Kitchen Stations" compact>
+          <StationBoard eventId={params.id} />
+        </WidgetErrorBoundary>
+      )}
 
       {/* Collaborator role banner â€” shown when viewing another chef's event */}
       {!isEventOwner && myCollaboratorRow && (
