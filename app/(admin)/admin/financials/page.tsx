@@ -2,6 +2,7 @@
 
 import { requireAdmin } from '@/lib/auth/admin'
 import { getPlatformFinancialOverview, getPlatformLedgerEntries } from '@/lib/admin/platform-stats'
+import { getPlatformReconciliation } from '@/lib/admin/reconciliation-actions'
 import { redirect } from 'next/navigation'
 import { DollarSign } from '@/components/ui/icons'
 import { ErrorState } from '@/components/ui/error-state'
@@ -35,10 +36,11 @@ export default async function AdminFinancialsPage() {
   }
 
   const window = await getDefaultProfitLossWindow()
-  const [overview, ledger, pnl] = await Promise.allSettled([
+  const [overview, ledger, pnl, reconciliation] = await Promise.allSettled([
     getPlatformFinancialOverview(),
     getPlatformLedgerEntries(200),
     getProfitAndLossReport(window.startDate, window.endDate),
+    getPlatformReconciliation(),
   ])
 
   const fin = overview.status === 'fulfilled' ? overview.value : null
@@ -47,12 +49,16 @@ export default async function AdminFinancialsPage() {
   const entriesFailed = ledger.status === 'rejected'
   const pnlData = pnl.status === 'fulfilled' ? pnl.value : null
   const pnlFailed = pnl.status === 'rejected'
+  const reconciliationData = reconciliation.status === 'fulfilled' ? reconciliation.value : null
+  const reconciliationFailed = reconciliation.status === 'rejected'
 
   if (overview.status === 'rejected')
     console.error('[admin-financials] Overview failed:', overview.reason)
   if (ledger.status === 'rejected')
     console.error('[admin-financials] Ledger failed:', ledger.reason)
   if (pnl.status === 'rejected') console.error('[admin-financials] P&L failed:', pnl.reason)
+  if (reconciliation.status === 'rejected')
+    console.error('[admin-financials] Reconciliation failed:', reconciliation.reason)
 
   return (
     <div className="space-y-6">
@@ -105,6 +111,46 @@ export default async function AdminFinancialsPage() {
             </p>
             <p className="text-2xl font-bold text-red-400 mt-1">
               {formatCents(fin.expensesThisMonth)}
+            </p>
+          </div>
+        </div>
+      ) : null}
+
+      {reconciliationFailed ? (
+        <div>
+          <ErrorState
+            title="Could not load reconciliation totals"
+            description="Transfer, fee, and deferred revenue totals are unavailable right now."
+            size="sm"
+          />
+          <div className="flex justify-center">
+            <RetryButton />
+          </div>
+        </div>
+      ) : reconciliationData ? (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="bg-stone-900 rounded-xl border border-stone-700 px-4 py-4">
+            <p className="text-xs text-stone-500 uppercase tracking-wide font-medium">
+              Transferred to Chefs
+            </p>
+            <p className="text-2xl font-bold text-green-600 mt-1">
+              {formatCents(reconciliationData.totalTransferredCents)}
+            </p>
+          </div>
+          <div className="bg-stone-900 rounded-xl border border-stone-700 px-4 py-4">
+            <p className="text-xs text-stone-500 uppercase tracking-wide font-medium">
+              Platform Fees
+            </p>
+            <p className="text-2xl font-bold text-violet-500 mt-1">
+              {formatCents(reconciliationData.totalPlatformFeesCents)}
+            </p>
+          </div>
+          <div className="bg-stone-900 rounded-xl border border-stone-700 px-4 py-4">
+            <p className="text-xs text-stone-500 uppercase tracking-wide font-medium">
+              Deferred Revenue
+            </p>
+            <p className="text-2xl font-bold text-amber-500 mt-1">
+              {formatCents(reconciliationData.totalDeferredCents)}
             </p>
           </div>
         </div>

@@ -126,6 +126,12 @@ function startOfCurrentMonth(): string {
   return d.toISOString()
 }
 
+function assertQuerySucceeded(result: { error?: unknown }, context: string) {
+  if (result.error) {
+    throw new Error(`[platform-stats] ${context} query failed`)
+  }
+}
+
 function detectStripeKeyMode(
   value: string | undefined,
   livePrefix: string,
@@ -432,6 +438,11 @@ export async function getPlatformFinancialOverview() {
       .limit(10000),
   ])
 
+  assertQuerySucceeded(allPayments, 'all payments')
+  assertQuerySucceeded(monthPayments, 'month payments')
+  assertQuerySucceeded(allExpenses, 'all expenses')
+  assertQuerySucceeded(monthExpenses, 'month expenses')
+
   const sum = (rows: { amount_cents: number | null }[] | null) =>
     (rows ?? []).reduce((s, r) => s + (r.amount_cents ?? 0), 0)
 
@@ -447,11 +458,12 @@ export async function getPlatformLedgerEntries(limit = 100) {
   await requireAdmin()
   const db: any = createAdminClient()
 
-  const { data } = await db
+  const { data, error } = await db
     .from('ledger_entries')
     .select('id, tenant_id, event_id, entry_type, amount_cents, description, created_at')
     .order('created_at', { ascending: false })
     .limit(limit)
+  assertQuerySucceeded({ error }, 'ledger entries')
 
   return data ?? []
 }
