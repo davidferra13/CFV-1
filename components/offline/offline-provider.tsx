@@ -8,6 +8,7 @@ import {
   createContext,
   useContext,
   useEffect,
+  useMemo,
   useState,
   useCallback,
   useRef,
@@ -18,6 +19,9 @@ import { replayPendingActions, onSyncProgress, type SyncProgress } from '@/lib/o
 import { getPendingCount } from '@/lib/offline/idb-queue'
 import { registerCaptureAction } from '@/lib/offline/register-capture-action'
 import { toast } from 'sonner'
+
+const ACTIVE_PENDING_POLL_MS = 3000
+const IDLE_PENDING_POLL_MS = 30_000
 
 interface OfflineContextValue {
   /** Whether the app is currently online */
@@ -43,19 +47,44 @@ const OfflineContext = createContext<OfflineContextValue>({
   checkNow: () => {},
 })
 
+function isSameProgress(a: SyncProgress | null, b: SyncProgress) {
+  return (
+    a?.total === b.total &&
+    a.completed === b.completed &&
+    a.failed === b.failed &&
+    a.current === b.current &&
+    a.isSyncing === b.isSyncing
+  )
+}
+
 export function useOffline() {
   return useContext(OfflineContext)
 }
 
 export function OfflineProvider({ children }: { children: ReactNode }) {
-  // Register the offline capture action so SW-queued items replay correctly
-  registerCaptureAction()
-
   const { isOnline, isOffline, wasOffline, checkNow } = useNetworkStatus()
   const [pendingCount, setPendingCount] = useState(0)
   const [syncProgress, setSyncProgress] = useState<SyncProgress | null>(null)
   const prevOnlineRef = useRef(true)
   const hasSyncedRef = useRef(false)
+  const checkNowRef = useRef(checkNow)
+
+  useEffect(() => {
+    checkNowRef.current = checkNow
+  }, [checkNow])
+
+  const stableCheckNow = useCallback(() => {
+    checkNowRef.current()
+  }, [])
+  const pendingPollIntervalMs =
+    isOffline || syncProgress?.isSyncing || pendingCount > 0
+      ? ACTIVE_PENDING_POLL_MS
+      : IDLE_PENDING_POLL_MS
+
+  useEffect(() => {
+    // Register once after mount so SW-queued items can replay without a render side effect.
+    registerCaptureAction()
+  }, [])
 
   const refreshPendingCount = useCallback(async (force = false) => {
     if (!force && typeof document !== 'undefined' && document.visibilityState !== 'visible') {
@@ -64,7 +93,7 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
 
     try {
       const count = await getPendingCount()
-      setPendingCount(count)
+      setPendingCount((current) => (current === count ? current : count))
     } catch {
       // IndexedDB may not be available (private browsing)
     }
@@ -80,18 +109,18 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
     void refreshPendingCount(true)
     const interval = setInterval(() => {
       void refreshPendingCount()
-    }, 3000)
+    }, pendingPollIntervalMs)
     document.addEventListener('visibilitychange', handleVisibilityChange)
 
     return () => {
       clearInterval(interval)
       document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
-  }, [refreshPendingCount])
+  }, [pendingPollIntervalMs, refreshPendingCount])
 
   useEffect(() => {
     return onSyncProgress((progress) => {
-      setSyncProgress(progress)
+      setSyncProgress((current) => (isSameProgress(current, progress) ? current : { ...progress }))
       if (!progress.isSyncing) {
         void refreshPendingCount(true)
       }
@@ -158,18 +187,19 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
     }
   }, [isOnline, refreshPendingCount])
 
+  const value = useMemo(
+    () => ({
+      isOnline,
+      isOffline,
+      justReconnected: wasOffline,
+      pendingCount,
+      syncProgress,
+      checkNow: stableCheckNow,
+    }),
+    [isOffline, isOnline, pendingCount, stableCheckNow, syncProgress, wasOffline]
+  )
+
   return (
-    <OfflineContext.Provider
-      value={{
-        isOnline,
-        isOffline,
-        justReconnected: wasOffline,
-        pendingCount,
-        syncProgress,
-        checkNow,
-      }}
-    >
-      {children}
-    </OfflineContext.Provider>
+    <OfflineContext.Provider value={value}>{children}</OfflineContext.Provider>
   )
 }

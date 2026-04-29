@@ -122,21 +122,20 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
       // localStorage unavailable
     }
   }, [])
+  const value = useMemo(
+    () => ({
+      collapsed: mounted ? collapsed : false,
+      setCollapsed: handleSetCollapsed,
+    }),
+    [collapsed, handleSetCollapsed, mounted]
+  )
 
   // Prevent flash of wrong width before hydration
   if (!mounted) {
-    return (
-      <SidebarContext.Provider value={{ collapsed: false, setCollapsed: handleSetCollapsed }}>
-        {children}
-      </SidebarContext.Provider>
-    )
+    return <SidebarContext.Provider value={value}>{children}</SidebarContext.Provider>
   }
 
-  return (
-    <SidebarContext.Provider value={{ collapsed, setCollapsed: handleSetCollapsed }}>
-      {children}
-    </SidebarContext.Provider>
-  )
+  return <SidebarContext.Provider value={value}>{children}</SidebarContext.Provider>
 }
 
 // ---- NavFilterInput ----

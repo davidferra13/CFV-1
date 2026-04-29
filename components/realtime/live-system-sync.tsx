@@ -1,7 +1,8 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
+import { shouldRefreshForLiveRouteMutation } from '@/lib/realtime/live-route-invalidation'
 import { useSSE } from '@/lib/realtime/sse-client'
 
 type LiveSystemSyncProps = {
@@ -48,6 +49,7 @@ function labelFromMessage(message: LiveMessage) {
 
 export function LiveSystemSync({ tenantId, userId, role }: LiveSystemSyncProps) {
   const router = useRouter()
+  const pathname = usePathname()
   const [isPending, startTransition] = useTransition()
   const [syncState, setSyncState] = useState<SyncState>({
     phase: 'idle',
@@ -82,6 +84,7 @@ export function LiveSystemSync({ tenantId, userId, role }: LiveSystemSyncProps) 
   const reconcile = useCallback(
     (message: LiveMessage) => {
       if (IGNORED_EVENTS.has(message.event)) return
+      if (!shouldRefreshForLiveRouteMutation(pathname, message)) return
 
       setSyncState({ phase: 'syncing', label: labelFromMessage(message) })
 
@@ -97,7 +100,7 @@ export function LiveSystemSync({ tenantId, userId, role }: LiveSystemSyncProps) 
         })
       }, 150)
     },
-    [router, settleToIdle]
+    [pathname, router, settleToIdle]
   )
 
   const handleDisconnect = useCallback(() => {

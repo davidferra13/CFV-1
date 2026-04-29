@@ -7,6 +7,10 @@ type HeartbeatState = 'alive' | 'slow' | 'dead' | 'loading'
 const POLL_INTERVAL_MS = 30_000
 const SLOW_THRESHOLD_MS = 2_000
 
+function isDocumentHidden() {
+  return document.visibilityState === 'hidden'
+}
+
 export function SystemHeartbeat({ collapsed }: { collapsed?: boolean }) {
   const [state, setState] = useState<HeartbeatState>('loading')
   const [lastCheck, setLastCheck] = useState<Date | null>(null)
@@ -16,10 +20,14 @@ export function SystemHeartbeat({ collapsed }: { collapsed?: boolean }) {
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const check = useCallback(async () => {
+    if (isDocumentHidden()) return
+
     const t0 = performance.now()
     try {
       const res = await fetch('/api/health', { cache: 'no-store' })
       const elapsed = Math.round(performance.now() - t0)
+      if (isDocumentHidden()) return
+
       setLatencyMs(elapsed)
       setLastCheck(new Date())
       if (res.ok) {
@@ -28,6 +36,8 @@ export function SystemHeartbeat({ collapsed }: { collapsed?: boolean }) {
         setState('slow')
       }
     } catch {
+      if (isDocumentHidden()) return
+
       setState('dead')
       setLastCheck(new Date())
       setLatencyMs(null)
@@ -35,13 +45,37 @@ export function SystemHeartbeat({ collapsed }: { collapsed?: boolean }) {
   }, [])
 
   useEffect(() => {
-    void check()
-    timerRef.current = setInterval(() => void check(), POLL_INTERVAL_MS)
-    // Tick the "ago" display every 10s
-    tickRef.current = setInterval(() => setNow(Date.now()), 10_000)
-    return () => {
+    const clearTimers = () => {
       if (timerRef.current) clearInterval(timerRef.current)
       if (tickRef.current) clearInterval(tickRef.current)
+      timerRef.current = null
+      tickRef.current = null
+    }
+
+    const startTimers = () => {
+      if (isDocumentHidden() || timerRef.current || tickRef.current) return
+
+      void check()
+      timerRef.current = setInterval(() => void check(), POLL_INTERVAL_MS)
+      // Tick the "ago" display every 10s
+      tickRef.current = setInterval(() => setNow(Date.now()), 10_000)
+    }
+
+    const handleVisibilityChange = () => {
+      if (isDocumentHidden()) {
+        clearTimers()
+      } else {
+        setNow(Date.now())
+        startTimers()
+      }
+    }
+
+    startTimers()
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      clearTimers()
     }
   }, [check])
 
