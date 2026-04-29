@@ -2052,6 +2052,22 @@ select:focus {
   animation: homepage-quiet-rise 22s ease-in-out infinite alternate;
 }
 
+.homepage-hero-shimmer {
+  background-image: linear-gradient(
+    105deg,
+    rgb(var(--brand-100)) 0%,
+    rgb(var(--stone-950)) 18%,
+    rgb(var(--brand-200)) 36%,
+    rgb(255 255 255 / 0.92) 46%,
+    rgb(var(--brand-300)) 54%,
+    rgb(var(--stone-950)) 72%,
+    rgb(var(--brand-100)) 100%
+  );
+  background-size: 260% 100%;
+  background-position: 0% 50%;
+  animation: homepage-metal-shimmer 68s ease-in-out infinite alternate;
+}
+
 .homepage-intent-signal {
   min-height: 1.5rem;
   text-wrap: balance;
@@ -2161,6 +2177,15 @@ select:focus {
   }
 }
 
+@keyframes homepage-metal-shimmer {
+  from {
+    background-position: 0% 50%;
+  }
+  to {
+    background-position: 100% 50%;
+  }
+}
+
 @keyframes homepage-booking-signal {
   0%,
   42% {
@@ -2213,6 +2238,7 @@ select:focus {
   .homepage-operator-glow,
   .homepage-depth-layer,
   .homepage-hero-copy,
+  .homepage-hero-shimmer,
   .homepage-booking-field::before,
   .homepage-operator-panel,
   .homepage-operator-screen img,
