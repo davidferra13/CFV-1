@@ -11,6 +11,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { EmailHandoff, PhoneHandoff } from '@/components/ui/handoff-actions'
 import { toast } from 'sonner'
 
 const ROLE_LABELS: Record<string, string> = {
@@ -179,9 +180,9 @@ function ContactRow({
             )}
           </div>
           {(contact.contact_email || contact.contact_phone) && (
-            <div className="flex items-center gap-3 mt-1 text-xs text-stone-400">
-              {contact.contact_email && <span>{contact.contact_email}</span>}
-              {contact.contact_phone && <span>{contact.contact_phone}</span>}
+            <div className="flex flex-wrap items-center gap-3 mt-1 text-xs text-stone-400">
+              {contact.contact_email && <EmailHandoff email={contact.contact_email} />}
+              {contact.contact_phone && <PhoneHandoff phone={contact.contact_phone} />}
             </div>
           )}
           {contact.notes && <p className="text-xs text-stone-500 mt-1 italic">{contact.notes}</p>}

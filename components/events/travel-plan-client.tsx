@@ -11,6 +11,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ConfirmModal } from '@/components/ui/confirm-modal'
+import { AddressHandoff } from '@/components/ui/handoff-actions'
 import {
   markLegComplete,
   markLegInProgress,
@@ -239,7 +240,9 @@ function LegCard({
                       {leg.origin_label || 'Origin'}
                     </p>
                     {leg.origin_address && (
-                      <p className="text-xs text-stone-300">{leg.origin_address}</p>
+                      <div className="text-xs text-stone-300">
+                        <AddressHandoff address={leg.origin_address} />
+                      </div>
                     )}
                   </div>
                 </div>
@@ -255,7 +258,11 @@ function LegCard({
                     </div>
                     <div className="ml-1">
                       <p className="text-sm font-medium text-stone-200">{stop.name}</p>
-                      {stop.address && <p className="text-xs text-stone-300">{stop.address}</p>}
+                      {stop.address && (
+                        <div className="text-xs text-stone-300">
+                          <AddressHandoff address={stop.address} />
+                        </div>
+                      )}
                       {stop.purpose && (
                         <p className="text-xs text-brand-600 italic">{stop.purpose}</p>
                       )}
@@ -283,7 +290,9 @@ function LegCard({
                         {leg.destination_label || 'Destination'}
                       </p>
                       {leg.destination_address && (
-                        <p className="text-xs text-stone-300">{leg.destination_address}</p>
+                        <div className="text-xs text-stone-300">
+                          <AddressHandoff address={leg.destination_address} />
+                        </div>
                       )}
                     </div>
                   </div>

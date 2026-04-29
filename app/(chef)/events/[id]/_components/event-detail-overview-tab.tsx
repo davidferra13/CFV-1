@@ -25,6 +25,7 @@ import { getEventMapUrl } from '@/lib/maps/mapbox'
 import { getQrCodeUrl } from '@/lib/qr/qr-code'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { AddressHandoff, EmailHandoff, PhoneHandoff } from '@/components/ui/handoff-actions'
 import { SendWorksheetButton } from '@/components/events/send-worksheet-button'
 import { RepeatMenuAlert } from '@/components/menus/repeat-menu-alert'
 import { AllergenConflictAlert } from '@/components/events/allergen-conflict-alert'
@@ -35,6 +36,7 @@ import { ClientSnapshot } from '@/components/clients/client-snapshot'
 import type { ClientMemoryRow } from '@/lib/clients/client-memory-types'
 import { ChefBriefingPanel } from '@/components/briefing/chef-briefing-panel'
 import { EventContactsPanel } from '@/components/events/event-contacts-panel'
+import { CalendarAddButtons } from '@/components/events/calendar-add-buttons'
 import type { EventContact } from '@/lib/events/contacts'
 import { ChefDecisionBriefPanel } from '@/components/hub/chef-decision-brief'
 import { GarmentFlipToggle } from '@/components/events/garment-flip-toggle'
@@ -111,9 +113,7 @@ type EventDetailOverviewTabProps = {
 }
 
 function formatCallLabel(value: string): string {
-  return value
-    .replace(/_/g, ' ')
-    .replace(/\b\w/g, (letter) => letter.toUpperCase())
+  return value.replace(/_/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase())
 }
 
 function getCallStatusClass(status: string): string {
@@ -170,6 +170,13 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
     callPhoneHref,
     eventCalls = [],
   } = props
+  const eventLocationParts = [
+    event.location_address,
+    event.location_city,
+    event.location_state,
+    event.location_zip,
+  ].filter((v) => v && v !== 'TBD')
+  const eventLocationLabel = eventLocationParts.join(', ')
 
   return (
     <EventDetailSection tab="overview" activeTab={activeTab}>
@@ -197,30 +204,25 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
               <div>
                 <dt className="text-sm font-medium text-stone-500">Location</dt>
                 <dd className="text-sm text-stone-100 mt-1">
-                  {(() => {
-                    const parts = [
-                      event.location_address,
-                      event.location_city,
-                      event.location_state,
-                      event.location_zip,
-                    ].filter((v) => v && v !== 'TBD')
-                    if (parts.length === 0) {
-                      return (
-                        <span className="text-amber-400 font-medium">
-                          TBD
-                          {event.status === 'draft' && (
-                            <Link
-                              href={`/events/${event.id}/edit`}
-                              className="ml-2 text-xs text-brand-500 hover:underline font-normal"
-                            >
-                              Set location
-                            </Link>
-                          )}
-                        </span>
-                      )
-                    }
-                    return parts.join(', ')
-                  })()}
+                  {eventLocationLabel ? (
+                    <AddressHandoff
+                      address={eventLocationLabel}
+                      lat={(event as any).location_lat}
+                      lng={(event as any).location_lng}
+                    />
+                  ) : (
+                    <span className="text-amber-400 font-medium">
+                      TBD
+                      {event.status === 'draft' && (
+                        <Link
+                          href={`/events/${event.id}/edit`}
+                          className="ml-2 text-xs text-brand-500 hover:underline font-normal"
+                        >
+                          Set location
+                        </Link>
+                      )}
+                    </span>
+                  )}
                 </dd>
                 {(event as any).location_lat && (event as any).location_lng ? (
                   <div className="mt-2 space-y-2">
@@ -311,6 +313,20 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
                   )}
                 </dd>
               </div>
+              {event.event_date && (
+                <div>
+                  <dt className="text-sm font-medium text-stone-500">Calendar Handoff</dt>
+                  <dd className="text-sm text-stone-100 mt-1">
+                    <CalendarAddButtons
+                      eventId={event.id}
+                      occasion={event.occasion || 'ChefFlow Event'}
+                      eventDate={event.event_date}
+                      startTime={event.serve_time ?? undefined}
+                      location={eventLocationLabel || undefined}
+                    />
+                  </dd>
+                </div>
+              )}
               <div>
                 <dt className="text-sm font-medium text-stone-500">Guest Count</dt>
                 <dd className="text-sm text-stone-100 mt-1">
@@ -360,24 +376,17 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
               <div>
                 <dt className="text-sm font-medium text-stone-500">Email</dt>
                 <dd className="text-sm text-stone-100 mt-1">
-                  <a
-                    href={`mailto:${event.client?.email}`}
-                    className="text-brand-600 hover:underline"
-                  >
-                    {event.client?.email}
-                  </a>
+                  <EmailHandoff email={event.client?.email} subject={event.occasion} />
                 </dd>
               </div>
               {event.client?.phone && (
                 <div>
                   <dt className="text-sm font-medium text-stone-500">Phone</dt>
                   <dd className="text-sm text-stone-100 mt-1">
-                    <a
-                      href={`tel:${event.client.phone}`}
-                      className="text-brand-600 hover:underline"
-                    >
-                      {event.client.phone}
-                    </a>
+                    <PhoneHandoff
+                      phone={event.client.phone}
+                      smsBody={`Hi, about ${event.occasion}`}
+                    />
                   </dd>
                 </div>
               )}

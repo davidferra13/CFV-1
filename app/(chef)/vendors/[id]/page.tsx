@@ -21,6 +21,12 @@ import { VendorPriceAlertSettings } from '@/components/vendors/vendor-price-aler
 import { InvoiceForm } from '@/components/vendors/invoice-form'
 import { VendorComparisonPanel } from '@/components/inventory/vendor-comparison-panel'
 import { EntityPhotoUpload } from '@/components/entities/entity-photo-upload'
+import {
+  AddressHandoff,
+  EmailHandoff,
+  ExternalUrlHandoff,
+  PhoneHandoff,
+} from '@/components/ui/handoff-actions'
 import Link from 'next/link'
 
 export const metadata: Metadata = { title: 'Vendor Detail' }
@@ -110,13 +116,36 @@ export default async function VendorDetailPage({ params }: { params: Promise<{ i
             {vendor.phone && (
               <div>
                 <span className="text-stone-500">Phone</span>
-                <p className="text-stone-200">{vendor.phone}</p>
+                <p className="text-stone-200">
+                  <PhoneHandoff phone={vendor.phone} />
+                </p>
               </div>
             )}
             {vendor.email && (
               <div>
                 <span className="text-stone-500">Email</span>
-                <p className="text-stone-200">{vendor.email}</p>
+                <p className="text-stone-200">
+                  <EmailHandoff
+                    email={vendor.email}
+                    subject={`ChefFlow order for ${vendor.name}`}
+                  />
+                </p>
+              </div>
+            )}
+            {(vendor as any).address && (
+              <div>
+                <span className="text-stone-500">Address</span>
+                <p className="text-stone-200">
+                  <AddressHandoff address={(vendor as any).address} />
+                </p>
+              </div>
+            )}
+            {(vendor as any).website && (
+              <div>
+                <span className="text-stone-500">Website</span>
+                <p className="text-stone-200">
+                  <ExternalUrlHandoff href={(vendor as any).website} label="Open vendor website" />
+                </p>
               </div>
             )}
             {(vendor as any).account_number && (

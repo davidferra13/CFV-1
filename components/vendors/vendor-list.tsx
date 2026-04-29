@@ -6,6 +6,12 @@ import type { VendorCategory } from '@/lib/vendors/types'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Star, Plus, Trash2, Search } from '@/components/ui/icons'
+import {
+  AddressHandoff,
+  EmailHandoff,
+  ExternalUrlHandoff,
+  PhoneHandoff,
+} from '@/components/ui/handoff-actions'
 import { toast } from 'sonner'
 
 type Vendor = {
@@ -219,8 +225,18 @@ export function VendorList({
               {vendor.contact_name && (
                 <p className="text-sm text-muted-foreground mt-2 truncate">{vendor.contact_name}</p>
               )}
-              {vendor.phone && (
-                <p className="text-sm text-muted-foreground truncate">{vendor.phone}</p>
+              {(vendor.phone || vendor.email || vendor.address || vendor.website) && (
+                <div
+                  className="mt-2 space-y-1 text-sm text-muted-foreground"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {vendor.phone && <PhoneHandoff phone={vendor.phone} />}
+                  {vendor.email && <EmailHandoff email={vendor.email} />}
+                  {vendor.address && <AddressHandoff address={vendor.address} />}
+                  {vendor.website && (
+                    <ExternalUrlHandoff href={vendor.website} label="Open vendor website" />
+                  )}
+                </div>
               )}
 
               <div className="flex items-center gap-2 mt-3 pt-3 border-t">

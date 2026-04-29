@@ -12,6 +12,7 @@ import { useRouter } from 'next/navigation'
 import { createVendor } from '@/lib/vendors/actions'
 import { NEUTRAL_VENDOR_SEARCH_PLACEHOLDER } from '@/lib/site/national-brand-copy'
 import { Search, MapPin, Phone, Globe, Plus, Check, Map, List } from '@/components/ui/icons'
+import { AddressHandoff, PhoneHandoff } from '@/components/ui/handoff-actions'
 import { toast } from 'sonner'
 import { VendorMapDynamic } from './vendor-map-dynamic'
 
@@ -280,6 +281,9 @@ export function NationalVendorSearch({ addedVendorIds }: { addedVendorIds?: Set<
               const isAdded = added.has(vendor.id)
               const isAdding = adding[vendor.id]
               const typeColor = TYPE_COLORS[vendor.vendor_type] || 'bg-stone-800 text-stone-400'
+              const vendorAddress = [vendor.address, vendor.city, vendor.state, vendor.zip]
+                .filter(Boolean)
+                .join(', ')
               return (
                 <li key={vendor.id} className="flex items-center justify-between px-4 py-3 gap-3">
                   <div className="min-w-0 flex-1">
@@ -294,12 +298,12 @@ export function NationalVendorSearch({ addedVendorIds }: { addedVendorIds?: Set<
                     <div className="flex items-center gap-3 mt-0.5 flex-wrap">
                       <span className="flex items-center gap-1 text-xs text-stone-500">
                         <MapPin className="w-3 h-3" />
-                        {[vendor.address, vendor.city, vendor.state].filter(Boolean).join(', ')}
+                        <AddressHandoff address={vendorAddress} lat={vendor.lat} lng={vendor.lng} />
                       </span>
                       {vendor.phone && (
                         <span className="flex items-center gap-1 text-xs text-stone-400">
                           <Phone className="w-3 h-3" />
-                          {vendor.phone}
+                          <PhoneHandoff phone={vendor.phone} />
                         </span>
                       )}
                       {vendor.website && (

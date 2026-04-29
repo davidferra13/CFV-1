@@ -17,6 +17,7 @@ import Link from 'next/link'
 import type { Tables } from '@/types/database'
 import { isDemoClient } from '@/lib/onboarding/demo-data-utils'
 import { CalendarPlus, MessageCircle, ExternalLink } from '@/components/ui/icons'
+import { EmailHandoff, PhoneHandoff } from '@/components/ui/handoff-actions'
 import { TIER_LABELS, TIER_COLORS } from '@/lib/clients/health-score-utils'
 import type { ClientHealthTier } from '@/lib/clients/health-score'
 
@@ -220,7 +221,12 @@ const ClientTableRow = memo(function ClientTableRow({ client }: { client: Client
           </span>
         </div>
       </TableCell>
-      <TableCell className="text-stone-600">{client.email}</TableCell>
+      <TableCell className="text-stone-600">
+        <div className="space-y-1" onClick={(e) => e.stopPropagation()}>
+          <EmailHandoff email={client.email} />
+          {(client as any).phone && <PhoneHandoff phone={(client as any).phone} />}
+        </div>
+      </TableCell>
       <TableCell>
         <span
           className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${tierColor}`}

@@ -6,7 +6,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { AddressAutocomplete } from '@/components/ui/address-autocomplete'
+import { AddressHandoff } from '@/components/ui/handoff-actions'
 import { updateClientPersonalInfo } from '@/lib/clients/milestones'
+import { toast } from 'sonner'
 
 type AdditionalAddress = {
   label: string
@@ -45,8 +47,11 @@ export function AddressManager({
     try {
       await updateClientPersonalInfo(clientId, { additional_addresses: updated })
       setAddresses(updated)
+      return true
     } catch (e) {
       console.error(e)
+      toast.error('Failed to save address')
+      return false
     } finally {
       setSaving(false)
     }
@@ -55,18 +60,20 @@ export function AddressManager({
   async function handleAdd() {
     if (!form.label || !form.address) return
     const updated = [...addresses, form]
-    await handleSave(updated)
-    setIsAdding(false)
-    setForm({
-      label: '',
-      address: '',
-      city: '',
-      state: '',
-      zip: '',
-      access_instructions: '',
-      kitchen_notes: '',
-      equipment_available: [],
-    })
+    const saved = await handleSave(updated)
+    if (saved) {
+      setIsAdding(false)
+      setForm({
+        label: '',
+        address: '',
+        city: '',
+        state: '',
+        zip: '',
+        access_instructions: '',
+        kitchen_notes: '',
+        equipment_available: [],
+      })
+    }
   }
 
   async function handleRemove(index: number) {
@@ -103,9 +110,13 @@ export function AddressManager({
               >
                 <div>
                   <span className="text-sm font-medium text-stone-100">{addr.label}</span>
-                  <p className="text-xs text-stone-500 mt-0.5">
-                    {[addr.address, addr.city, addr.state, addr.zip].filter(Boolean).join(', ')}
-                  </p>
+                  <div className="mt-1 text-xs">
+                    <AddressHandoff
+                      address={[addr.address, addr.city, addr.state, addr.zip]
+                        .filter(Boolean)
+                        .join(', ')}
+                    />
+                  </div>
                   {addr.access_instructions && (
                     <p className="text-xs text-stone-500 mt-0.5">
                       Access: {addr.access_instructions}

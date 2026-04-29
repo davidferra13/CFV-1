@@ -15,17 +15,12 @@ import { useRouter } from 'next/navigation'
 import { createVendor } from '@/lib/vendors/actions'
 import { toast } from 'sonner'
 import { Plus, Check } from '@/components/ui/icons'
+import { AddressHandoff, ExternalUrlHandoff, PhoneHandoff } from '@/components/ui/handoff-actions'
 
 // Leaflet CSS must be imported for proper rendering
 import 'leaflet/dist/leaflet.css'
 
-import {
-  MapContainer,
-  TileLayer,
-  CircleMarker,
-  Popup,
-  useMap,
-} from 'react-leaflet'
+import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from 'react-leaflet'
 
 type MapVendor = {
   id: string
@@ -71,17 +66,17 @@ const VENDOR_TYPE_TO_DB: Record<string, string> = {
 
 /** Marker fill colors per vendor type */
 const TYPE_MARKER_COLORS: Record<string, string> = {
-  butcher: '#dc2626',     // red-600
-  fishmonger: '#2563eb',  // blue-600
+  butcher: '#dc2626', // red-600
+  fishmonger: '#2563eb', // blue-600
   greengrocer: '#16a34a', // green-600
-  farm: '#65a30d',        // lime-600
-  deli: '#ea580c',        // orange-600
-  cheese: '#ca8a04',      // yellow-600
-  organic: '#059669',     // emerald-600
-  specialty: '#7c3aed',   // violet-600
-  liquor: '#9333ea',      // purple-600
-  bakery: '#d97706',      // amber-600
-  other: '#78716c',       // stone-500
+  farm: '#65a30d', // lime-600
+  deli: '#ea580c', // orange-600
+  cheese: '#ca8a04', // yellow-600
+  organic: '#059669', // emerald-600
+  specialty: '#7c3aed', // violet-600
+  liquor: '#9333ea', // purple-600
+  bakery: '#d97706', // amber-600
+  other: '#78716c', // stone-500
 }
 
 /** Badge colors for the popup type label */
@@ -142,9 +137,7 @@ export function VendorMap({
         vendor_type: VENDOR_TYPE_TO_DB[vendor.vendor_type] || 'other',
         phone: vendor.phone || '',
         email: '',
-        address: [vendor.address, vendor.city, vendor.state, vendor.zip]
-          .filter(Boolean)
-          .join(', '),
+        address: [vendor.address, vendor.city, vendor.state, vendor.zip].filter(Boolean).join(', '),
         website: vendor.website || '',
         notes: 'Added from national directory. OSM source.',
         is_preferred: false,
@@ -162,9 +155,7 @@ export function VendorMap({
   if (vendors.length === 0) {
     return (
       <div className="bg-stone-900 border border-stone-700 rounded-lg p-8 text-center">
-        <p className="text-sm text-stone-500">
-          Search for vendors above to see them on the map.
-        </p>
+        <p className="text-sm text-stone-500">Search for vendors above to see them on the map.</p>
       </div>
     )
   }
@@ -173,8 +164,8 @@ export function VendorMap({
     return (
       <div className="bg-stone-900 border border-stone-700 rounded-lg p-8 text-center">
         <p className="text-sm text-stone-500">
-          {vendors.length} vendor{vendors.length !== 1 ? 's' : ''} found, but none
-          have location coordinates. Switch to list view to see them.
+          {vendors.length} vendor{vendors.length !== 1 ? 's' : ''} found, but none have location
+          coordinates. Switch to list view to see them.
         </p>
       </div>
     )
@@ -184,8 +175,8 @@ export function VendorMap({
     <div className="space-y-2">
       {unmappableCount > 0 && (
         <p className="text-xs text-stone-500">
-          Showing {mappableVendors.length} of {vendors.length} on map
-          ({unmappableCount} missing coordinates)
+          Showing {mappableVendors.length} of {vendors.length} on map ({unmappableCount} missing
+          coordinates)
         </p>
       )}
       <div
@@ -204,13 +195,14 @@ export function VendorMap({
           />
           <FitBounds vendors={mappableVendors} />
           {mappableVendors.map((vendor) => {
-            const color =
-              TYPE_MARKER_COLORS[vendor.vendor_type] || TYPE_MARKER_COLORS.other
+            const color = TYPE_MARKER_COLORS[vendor.vendor_type] || TYPE_MARKER_COLORS.other
             const isAdded = added.has(vendor.id)
             const isAdding = adding[vendor.id]
             const badgeColor =
-              TYPE_BADGE_COLORS[vendor.vendor_type] ||
-              'bg-stone-800 text-stone-400'
+              TYPE_BADGE_COLORS[vendor.vendor_type] || 'bg-stone-800 text-stone-400'
+            const vendorAddress = [vendor.address, vendor.city, vendor.state, vendor.zip]
+              .filter(Boolean)
+              .join(', ')
 
             return (
               <CircleMarker
@@ -226,31 +218,19 @@ export function VendorMap({
               >
                 <Popup>
                   <div className="min-w-[200px] text-sm">
-                    <div className="font-semibold text-stone-900 mb-1">
-                      {vendor.name}
-                    </div>
+                    <div className="font-semibold text-stone-900 mb-1">{vendor.name}</div>
                     <span
                       className={`inline-block text-xs px-1.5 py-0.5 rounded font-medium mb-2 ${badgeColor}`}
                     >
-                      {VENDOR_TYPE_LABELS[vendor.vendor_type] ||
-                        vendor.vendor_type}
+                      {VENDOR_TYPE_LABELS[vendor.vendor_type] || vendor.vendor_type}
                     </span>
                     <div className="text-xs text-stone-600 space-y-0.5">
-                      {vendor.address && <div>{vendor.address}</div>}
-                      <div>
-                        {vendor.city}, {vendor.state}
-                        {vendor.zip ? ` ${vendor.zip}` : ''}
-                      </div>
-                      {vendor.phone && <div>{vendor.phone}</div>}
+                      {vendorAddress && (
+                        <AddressHandoff address={vendorAddress} lat={vendor.lat} lng={vendor.lng} />
+                      )}
+                      {vendor.phone && <PhoneHandoff phone={vendor.phone} />}
                       {vendor.website && (
-                        <a
-                          href={vendor.website}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-violet-600 hover:text-violet-500 underline"
-                        >
-                          Website
-                        </a>
+                        <ExternalUrlHandoff href={vendor.website} label="Open website" />
                       )}
                     </div>
                     <button
@@ -288,9 +268,7 @@ export function VendorMap({
       <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-stone-500">
         {Object.entries(TYPE_MARKER_COLORS)
           .filter(([type]) => type !== 'other')
-          .filter(([type]) =>
-            mappableVendors.some((v) => v.vendor_type === type)
-          )
+          .filter(([type]) => mappableVendors.some((v) => v.vendor_type === type))
           .map(([type, color]) => (
             <span key={type} className="flex items-center gap-1">
               <span

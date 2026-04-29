@@ -28,6 +28,7 @@ import { notFound } from 'next/navigation'
 import { ClientEventsTable } from './client-events-table'
 import { MilestoneManager } from '@/components/clients/milestone-manager'
 import { AddressManager } from '@/components/clients/address-manager'
+import { AddressHandoff, EmailHandoff, PhoneHandoff } from '@/components/ui/handoff-actions'
 import { PersonalInfoEditor } from '@/components/clients/personal-info-editor'
 import { QuickNotes } from '@/components/clients/quick-notes'
 import { getClientNotes } from '@/lib/notes/actions'
@@ -306,7 +307,12 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
             )}
             <EngagementBadge level={engagementScore.level} signals={engagementScore.signals} />
           </div>
-          <p className="text-stone-300 mt-1">{client.email}</p>
+          <div className="mt-1 text-stone-300">
+            <EmailHandoff
+              email={client.email}
+              subject={`ChefFlow update for ${client.full_name}`}
+            />
+          </div>
           {loyaltyProfile && (
             <div className="mt-2 flex flex-wrap items-center gap-2">
               <span
@@ -638,12 +644,27 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
             </div>
             <div>
               <p className="text-sm font-medium text-stone-500">Email</p>
-              <p className="text-lg text-stone-100 mt-1">{client.email}</p>
+              <p className="text-lg text-stone-100 mt-1">
+                <EmailHandoff
+                  email={client.email}
+                  subject={`ChefFlow update for ${client.full_name}`}
+                />
+              </p>
             </div>
             <div>
               <p className="text-sm font-medium text-stone-500">Phone</p>
-              <p className="text-lg text-stone-100 mt-1">{client.phone || 'Not provided'}</p>
+              <p className="text-lg text-stone-100 mt-1">
+                {client.phone ? <PhoneHandoff phone={client.phone} /> : 'Not provided'}
+              </p>
             </div>
+            {(client as any).address && (
+              <div>
+                <p className="text-sm font-medium text-stone-500">Primary Address</p>
+                <p className="text-lg text-stone-100 mt-1">
+                  <AddressHandoff address={(client as any).address} />
+                </p>
+              </div>
+            )}
             <div>
               <p className="text-sm font-medium text-stone-500">Client Since</p>
               <p className="text-lg text-stone-100 mt-1">
@@ -903,7 +924,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
       {menuHistory && <MenuHistoryPanel history={menuHistory} />}
 
       {/* Direct Outreach */}
-      <Card>
+      <Card id="outreach">
         <CardHeader>
           <CardTitle className="text-base">Send Message</CardTitle>
         </CardHeader>
@@ -1194,7 +1215,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
       />
 
       {/* Communication History */}
-      <Card>
+      <Card id="communication">
         <CardHeader>
           <CardTitle>Communication History</CardTitle>
         </CardHeader>

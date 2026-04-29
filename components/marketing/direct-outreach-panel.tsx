@@ -8,6 +8,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { EmailHandoff, PhoneHandoff } from '@/components/ui/handoff-actions'
 import { sendDirectOutreach } from '@/lib/marketing/actions'
 import { format } from 'date-fns'
 
@@ -120,9 +121,13 @@ export function DirectOutreachPanel({
     <div className="space-y-3">
       {/* Toggle button */}
       {!open && !sent && (
-        <Button variant="secondary" size="sm" onClick={() => setOpen(true)}>
-          {CHANNEL_ICON[defaultChannel]} Send message
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="secondary" size="sm" onClick={() => setOpen(true)}>
+            {CHANNEL_ICON[defaultChannel]} Send message
+          </Button>
+          {clientPhone && <PhoneHandoff phone={clientPhone} />}
+          {clientEmail && <EmailHandoff email={clientEmail} />}
+        </div>
       )}
 
       {sent && (
