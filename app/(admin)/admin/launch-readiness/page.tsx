@@ -131,6 +131,12 @@ export default async function AdminLaunchReadinessPage() {
           >
             Export packet
           </Link>
+          <Link
+            href="/api/admin/launch-readiness/decision-packet"
+            className="mt-2 inline-flex min-h-[40px] items-center justify-center rounded-lg border border-stone-800 px-3 text-sm font-medium text-stone-400 transition-colors hover:border-brand-700 hover:bg-stone-950 hover:text-brand-200"
+          >
+            JSON packet
+          </Link>
         </div>
       </div>
 
