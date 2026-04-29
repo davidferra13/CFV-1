@@ -549,6 +549,11 @@ export const navGroups: NavGroup[] = [
         ],
       },
       {
+        href: '/radar',
+        label: 'Culinary Radar',
+        icon: Compass,
+      },
+      {
         href: '/settings/menu-engine',
         label: 'Menu Engine Settings',
         icon: Sliders,

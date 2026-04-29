@@ -817,7 +817,11 @@ Founder-owned operator walkthrough requests from `/for-operators/walkthrough` al
 
 - **`/culinary/dictionary`** - Chef-facing canonical culinary dictionary. Header explains that dictionary data feeds costing, search, recipes, menus, and public ingredient pages. Stats cards show real counts for terms, public terms, aliases, and pending reviews. Search form filters by query and term type. Results render term cards with public/private state, type, category, definition, aliases, safety flags, and an inline chef alias form. Review queue panel shows pending low-confidence terms and approve/reject/dismiss actions. Reads from `culinary_dictionary_*` tables when migrated and falls back to the deterministic seed list when the tables are not available yet.
 
-### 6.3b Price Catalog (chef-facing)
+### 6.3b Culinary Radar
+
+- **`/radar`** - Chef-facing external culinary intelligence surface. Reads source-backed `chef_radar_matches` scoped to the chef and joins global `culinary_radar_items` and `culinary_radar_sources` for attribution. Header shows critical/high/source counts. Cards show severity, category, source, published date, relevance, why ChefFlow surfaced the item, matched internal entities, recommended next steps, and source link. Mark read and Dismiss are real server actions scoped by `chef_id`, revalidating Radar, dashboard, and briefing paths. Empty state explains that source monitors are ready but no relevant matches exist. Error state is explicit and does not claim all-clear when data fails.
+
+### 6.3c Price Catalog (chef-facing)
 
 - **`/culinary/price-catalog`** - Full OpenClaw market catalog: 32K+ food ingredients across 27+ sources (11 Instacart chains, Kroger national via API across 14 states, direct API scrapers for Whole Foods/Target/Walmart/Stop & Shop, Flipp circular ads, BLS government baselines). 12 clean categories (Produce, Protein, Dairy, Pantry, Grains & Bakery, Beverages, Snacks, Frozen, Oils & Spices, Prepared & Deli, Baking, Other). Search, category/store/tier/stock filters with infinite scroll. Each row shows: name, category badge (click-to-filter), best price + store, stock badge (green/amber/red), store count, freshness dot. Expanded detail: per-store price table with location, price, stock, confidence badge, freshness, link to store website, price history sparkline, "Add to My Pantry" button. Mobile responsive card layout. Nav link under Community sidebar.
 
