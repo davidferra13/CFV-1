@@ -1,4 +1,12 @@
-export type ChefActivityRouteEntity = 'event' | 'inquiry' | 'quote' | 'menu' | 'recipe' | 'client'
+export type ChefActivityRouteEntity =
+  | 'event'
+  | 'inquiry'
+  | 'quote'
+  | 'menu'
+  | 'recipe'
+  | 'client'
+  | 'task'
+  | 'station'
 
 export function getChefActivityEntityHref(
   entityType: ChefActivityRouteEntity,
@@ -27,6 +35,10 @@ export function getChefActivityEntityHref(
       return `/recipes/${entityId}`
     case 'client':
       return `/clients/${entityId}`
+    case 'task':
+      return '/tasks'
+    case 'station':
+      return `/stations/${entityId}`
     default:
       return null
   }

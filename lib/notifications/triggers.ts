@@ -74,7 +74,7 @@ export async function notifyTaskAssigned(
       type: 'task_assigned',
       title: `Task assigned to ${staffMemberName}`,
       message: `"${taskTitle}"${dueDateText}`,
-      link: '/ops/tasks',
+      link: '/tasks',
       metadata: {
         staff_member_id: staffMemberId,
         staff_member_name: staffMemberName,
@@ -184,7 +184,7 @@ export async function notifyOrderReady(tenantId: string, stationCount: number): 
       type: 'order_status',
       title: 'Order requests ready for review',
       message: `${stationCount} station${stationCount !== 1 ? 's' : ''} submitted orders. Review and place with vendors.`,
-      link: '/ops/orders',
+      link: '/stations/orders',
       metadata: {
         station_count: stationCount,
         status: 'ready_for_review',
@@ -213,7 +213,7 @@ export async function notifyDeliveryReceived(
       type: 'order_status',
       title: `Delivery received: ${stationName}`,
       message: `${stationName} station has received its delivery. Stock levels updated.`,
-      link: `/ops/stations/${stationId}`,
+      link: `/stations/${stationId}`,
       metadata: {
         station_name: stationName,
         station_id: stationId,
@@ -250,7 +250,7 @@ export async function notifyLowStock(
       type: 'low_stock',
       title: `Low stock: ${componentName}`,
       message: `${stationName} - on hand: ${onHand}, par: ${parLevel} (${percentage}% of par)`,
-      link: '/ops/clipboard',
+      link: '/ops/inventory',
       metadata: {
         station_name: stationName,
         component_name: componentName,
