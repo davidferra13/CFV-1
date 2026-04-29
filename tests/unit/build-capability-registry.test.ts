@@ -1,5 +1,6 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
+import fs from 'node:fs'
 
 import {
   BUILD_CAPABILITY_REGISTRY,
@@ -10,8 +11,12 @@ import {
 } from '../../lib/build-queue/capability-registry'
 
 describe('build capability registry', () => {
-  it('captures the locked first-pass build queue', () => {
-    assert.equal(BUILD_CAPABILITY_REGISTRY.length, 219)
+  it('captures the current first-pass build queue', () => {
+    const queueFileCount = fs
+      .readdirSync('system/build-queue')
+      .filter((name) => name.endsWith('.md')).length
+
+    assert.equal(BUILD_CAPABILITY_REGISTRY.length, queueFileCount)
 
     const ids = new Set(BUILD_CAPABILITY_REGISTRY.map((item) => item.id))
     assert.equal(ids.size, BUILD_CAPABILITY_REGISTRY.length)
@@ -31,23 +36,23 @@ describe('build capability registry', () => {
 
   it('supports lookup by id, category, and query', () => {
     assert.equal(
-      getBuildCapability('213-high-ephemeral-event-lifecycle-management')?.title,
-      'Ephemeral Event Lifecycle Management'
+      getBuildCapability('001-high-asset-inventory-tracking')?.title,
+      'Asset/Inventory Tracking:'
     )
     assert.equal(getBuildCapability('missing-capability'), null)
 
-    const lifecycle = findBuildCapabilitiesByCategory('event-lifecycle')
-    assert.ok(lifecycle.some((item) => item.id === '213-high-ephemeral-event-lifecycle-management'))
+    const paymentFinancial = findBuildCapabilitiesByCategory('payment-financial')
+    assert.ok(paymentFinancial.some((item) => item.id === '031-medium-billing-tracking'))
 
-    const traceability = findBuildCapabilitiesByQuery('regulator traceability export')
-    assert.ok(traceability.some((item) => item.title.includes('regulator-grade traceability')))
+    const mobileSite = findBuildCapabilitiesByQuery('mobile site profile')
+    assert.ok(mobileSite.some((item) => item.id === '068-high-develop-mobile-site-profile'))
   })
 
   it('summarizes first-pass coverage without silent zeros', () => {
     const summary = getBuildCapabilityCoverageSummary()
 
     assert.equal(summary.total, BUILD_CAPABILITY_REGISTRY.length)
-    assert.ok(summary.categories.includes('event-lifecycle'))
+    assert.ok(summary.categories.includes('payment-financial'))
     assert.ok(summary.priorityCounts.high > 0)
     assert.ok(summary.priorityCounts.medium > 0)
     assert.ok(summary.priorityCounts.low > 0)
