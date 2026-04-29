@@ -34,6 +34,9 @@ describe('thread coordination brief', () => {
     assert.ok(brief.signals.some((signal) => signal.kind === 'location'))
     assert.ok(brief.signals.some((signal) => signal.kind === 'dietary'))
     assert.ok(brief.signals.some((signal) => signal.kind === 'action'))
+    assert.equal(brief.retentionSummary.persist, 1)
+    assert.equal(brief.retentionSummary['auto-expire'], 4)
+    assert.equal(brief.retentionSummary['never-store'], 0)
   })
 
   it('compartmentalizes role views based on share visibility', () => {
@@ -115,10 +118,38 @@ describe('thread coordination brief', () => {
     })
 
     assert.match(text, /Guest coordination brief/)
-    assert.match(text, /Timing: 7pm/)
+    assert.match(text, /Timing \(high, auto-expire\): 7pm/)
     assert.match(text, /Access expires: 2026-05-01T04:00:00.000Z/)
     assert.doesNotMatch(text, /Address/)
     assert.doesNotMatch(text, /14 guests/)
     assert.doesNotMatch(text, /Nut allergy/)
+  })
+
+  it('keeps never-store sensitive signals out of external role views', () => {
+    const brief = buildThreadCoordinationBrief({
+      messages: [
+        {
+          id: 'msg-1',
+          body: "Please keep the surprise cake secret. Guests should arrive at 7pm.",
+          sent_at: '2026-04-28T14:00:00.000Z',
+        },
+      ],
+      visibility: {
+        show_date_time: true,
+      },
+    })
+
+    const neverStoreSignals = brief.signals.filter(
+      (signal) => signal.retentionPolicy === 'never-store'
+    )
+    const guestView = brief.roleViews.find((view) => view.role === 'guest')
+    assert.ok(guestView)
+
+    assert.ok(neverStoreSignals.length > 0)
+    assert.equal(brief.retentionSummary['never-store'], neverStoreSignals.length)
+    assert.equal(
+      guestView.visibleSignals.some((signal) => signal.retentionPolicy === 'never-store'),
+      false
+    )
   })
 })

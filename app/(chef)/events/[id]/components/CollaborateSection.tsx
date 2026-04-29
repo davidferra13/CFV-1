@@ -304,6 +304,11 @@ function ThreadDerivedCoordinationPanel({ brief }: { brief: ThreadCoordinationBr
           <Badge variant={brief.retention.expiresByDesign ? 'warning' : 'default'}>
             {brief.retention.expiresByDesign ? 'Expires by design' : 'No share expiry'}
           </Badge>
+          <Badge variant="success">{brief.retentionSummary.persist} persist</Badge>
+          <Badge variant="warning">{brief.retentionSummary['auto-expire']} auto-expire</Badge>
+          {brief.retentionSummary['never-store'] > 0 && (
+            <Badge variant="error">{brief.retentionSummary['never-store']} never-store</Badge>
+          )}
         </div>
       </div>
 
@@ -433,6 +438,10 @@ function SignalRow({
       <div className="flex items-center gap-2">
         <Badge variant={signal.kind === 'action' ? 'warning' : 'default'}>{signal.label}</Badge>
         <span className="truncate text-xs font-medium text-stone-200">{signal.value}</span>
+      </div>
+      <div className="mt-1 flex flex-wrap gap-1.5 text-[11px] text-stone-500">
+        <span>{signal.urgency}</span>
+        <span>{signal.retentionPolicy}</span>
       </div>
       {canShowSourceSnippet ? (
         <p className="mt-1 line-clamp-2 text-xs text-stone-500">{signal.snippet}</p>

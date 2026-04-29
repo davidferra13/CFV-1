@@ -6,6 +6,8 @@ import {
 export type CoordinationRole = 'chef' | 'client' | 'collaborator' | 'guest' | 'viewer'
 
 export type CoordinationSignalKind = 'timing' | 'headcount' | 'location' | 'dietary' | 'action'
+export type CoordinationRetentionPolicy = 'persist' | 'auto-expire' | 'never-store'
+export type CoordinationUrgency = 'critical' | 'high' | 'normal'
 
 export type CoordinationThreadMessage = {
   id: string
@@ -26,6 +28,8 @@ export type CoordinationSignal = {
   sourceMessageId: string
   sourceSentAt: string | null
   allowedRoles: CoordinationRole[]
+  retentionPolicy: CoordinationRetentionPolicy
+  urgency: CoordinationUrgency
 }
 
 export type CoordinationRoleView = {
@@ -39,6 +43,7 @@ export type ThreadCoordinationBrief = {
   sourceMessageCount: number
   signals: CoordinationSignal[]
   roleViews: CoordinationRoleView[]
+  retentionSummary: Record<CoordinationRetentionPolicy, number>
   retention: {
     source: 'communication_thread'
     derivedPersistence: 'runtime_only'
@@ -112,7 +117,7 @@ export function buildThreadCoordinationBrief(
   const sourceMessages = input.messages.filter((message) => message.body?.trim())
   const signals = sourceMessages
     .flatMap((message) => extractSignalsFromMessage(message, visibility))
-    .sort(compareSignalRecency)
+    .sort(compareSignals)
     .slice(0, SIGNAL_LIMIT)
 
   const roles: CoordinationRole[] = ['chef', 'client', 'collaborator', 'guest', 'viewer']
@@ -130,6 +135,7 @@ export function buildThreadCoordinationBrief(
     sourceMessageCount: sourceMessages.length,
     signals,
     roleViews,
+    retentionSummary: summarizeRetention(signals),
     retention: {
       source: 'communication_thread',
       derivedPersistence: 'runtime_only',
@@ -148,7 +154,9 @@ export function buildRoleInstructionText(input: BuildRoleInstructionTextInput): 
     lines.push('No visible coordination instructions are currently derived from the thread.')
   } else {
     for (const signal of visibleSignals) {
-      lines.push(`${signal.label}: ${signal.value}`)
+      lines.push(
+        `${signal.label} (${signal.urgency}, ${signal.retentionPolicy}): ${signal.value}`
+      )
       if (input.includeSourceSnippets && signal.snippet) {
         lines.push(`Context: ${signal.snippet}`)
       }
@@ -187,7 +195,9 @@ function extractSignalsFromMessage(
       snippet: extractSnippet(body, match.index, match[0].length),
       sourceMessageId: message.id,
       sourceSentAt: message.sent_at ?? message.created_at ?? null,
-      allowedRoles: getAllowedRolesForSignal(matcher.kind, visibility),
+      allowedRoles: getAllowedRolesForSignal(matcher.kind, visibility, body),
+      retentionPolicy: getRetentionPolicyForSignal(matcher.kind, body),
+      urgency: getUrgencyForSignal(matcher.kind, body),
     })
   }
 
@@ -196,9 +206,13 @@ function extractSignalsFromMessage(
 
 function getAllowedRolesForSignal(
   kind: CoordinationSignalKind,
-  visibility: PublicShareVisibilitySettings
+  visibility: PublicShareVisibilitySettings,
+  body: string
 ): CoordinationRole[] {
   const internal: CoordinationRole[] = ['chef', 'client', 'collaborator']
+  if (getRetentionPolicyForSignal(kind, body) === 'never-store') {
+    return ['chef', 'client']
+  }
 
   if (kind === 'timing') {
     return visibility.show_date_time ? [...internal, 'guest', 'viewer'] : internal
@@ -216,6 +230,26 @@ function getAllowedRolesForSignal(
   return internal
 }
 
+function getRetentionPolicyForSignal(
+  kind: CoordinationSignalKind,
+  body: string
+): CoordinationRetentionPolicy {
+  if (/\b(private|confidential|do not share|don't share|off[- ]?record|secret|surprise)\b/i.test(body)) {
+    return 'never-store'
+  }
+  if (kind === 'dietary') return 'persist'
+  return 'auto-expire'
+}
+
+function getUrgencyForSignal(kind: CoordinationSignalKind, body: string): CoordinationUrgency {
+  if (kind === 'dietary') return 'critical'
+  if (kind === 'action') return 'high'
+  if (kind === 'timing' && /\b(today|tonight|tomorrow|\d{1,2}(?::\d{2})?\s?(?:am|pm))\b/i.test(body)) {
+    return 'high'
+  }
+  return 'normal'
+}
+
 function extractSnippet(body: string, index: number, length: number): string {
   const start = Math.max(0, index - 56)
   const end = Math.min(body.length, index + length + 96)
@@ -228,8 +262,31 @@ function normalizeSignalValue(value: string): string {
   return value.trim().replace(/\s+/g, ' ')
 }
 
-function compareSignalRecency(a: CoordinationSignal, b: CoordinationSignal): number {
+function compareSignals(a: CoordinationSignal, b: CoordinationSignal): number {
+  const urgencyDelta = urgencyRank(b.urgency) - urgencyRank(a.urgency)
+  if (urgencyDelta !== 0) return urgencyDelta
   const aTime = a.sourceSentAt ? Date.parse(a.sourceSentAt) : 0
   const bTime = b.sourceSentAt ? Date.parse(b.sourceSentAt) : 0
   return bTime - aTime
+}
+
+function summarizeRetention(
+  signals: CoordinationSignal[]
+): Record<CoordinationRetentionPolicy, number> {
+  return signals.reduce(
+    (summary, signal) => ({
+      ...summary,
+      [signal.retentionPolicy]: summary[signal.retentionPolicy] + 1,
+    }),
+    { persist: 0, 'auto-expire': 0, 'never-store': 0 } as Record<
+      CoordinationRetentionPolicy,
+      number
+    >
+  )
+}
+
+function urgencyRank(urgency: CoordinationUrgency): number {
+  if (urgency === 'critical') return 3
+  if (urgency === 'high') return 2
+  return 1
 }
