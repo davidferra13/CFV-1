@@ -11,6 +11,10 @@ const exportRouteSource = readFileSync(
   join(process.cwd(), 'app/(admin)/admin/launch-readiness/export/route.ts'),
   'utf8'
 )
+const jsonPacketRouteSource = readFileSync(
+  join(process.cwd(), 'app/api/admin/launch-readiness/decision-packet/route.ts'),
+  'utf8'
+)
 const adminNavSource = readFileSync(
   join(process.cwd(), 'components/navigation/admin-nav-config.ts'),
   'utf8'
@@ -35,6 +39,18 @@ test('launch readiness export route is admin-only and returns a packet', () => {
   assert.match(exportRouteSource, /await\s+requireAdmin\(\)/)
   assert.match(exportRouteSource, /buildLaunchReadinessDecisionPacket/)
   assert.match(exportRouteSource, /Content-Disposition/)
+})
+
+test('launch readiness JSON packet route is admin-only and non-cached', () => {
+  assert.match(
+    jsonPacketRouteSource,
+    /import\s+\{\s*requireAdmin\s*\}\s+from ['"]@\/lib\/auth\/admin['"]/
+  )
+  assert.match(jsonPacketRouteSource, /await\s+requireAdmin\(\)/)
+  assert.match(jsonPacketRouteSource, /buildLaunchReadinessDecisionPacket/)
+  assert.match(jsonPacketRouteSource, /NextResponse\.json/)
+  assert.match(jsonPacketRouteSource, /Cache-Control['"]:\s*['"]no-store/)
+  assert.match(pageSource, /\/api\/admin\/launch-readiness\/decision-packet/)
 })
 
 test('launch readiness is visible only in admin navigation', () => {
