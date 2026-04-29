@@ -2,16 +2,20 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { Check, X, ChevronDown, ChevronRight, Zap } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { confirmMatchAction, dismissMatchAction } from '@/lib/pricing/ingredient-matching-actions'
 import {
   batchConfirmPendingAction,
-  type IngredientHealthSummary,
-  type PendingMatch,
-  type UnresolvedIngredient,
 } from '@/lib/pricing/ingredient-health-actions'
+import type {
+  CostingRepairGroup,
+  IngredientHealthSummary,
+  PendingMatch,
+  UnresolvedIngredient,
+} from '@/lib/pricing/ingredient-health-types'
 
 interface Props {
   health: IngredientHealthSummary
@@ -23,16 +27,19 @@ export function IngredientHealthBanner({ health }: Props) {
   const [pendingMatches, setPendingMatches] = useState(health.pendingMatches)
   const [unresolved, setUnresolved] = useState(health.unresolvedIngredients)
   const [stats, setStats] = useState(health.stats)
-  const [expandedSection, setExpandedSection] = useState<'pending' | 'unmatched' | null>(
+  const costingRepair = health.costingRepair
+  const [expandedSection, setExpandedSection] = useState<'pending' | 'unmatched' | 'repair' | null>(
     // Auto-expand the most actionable section
     health.pendingMatches.length > 0
       ? 'pending'
       : health.unresolvedIngredients.length > 0
         ? 'unmatched'
-        : null
+        : costingRepair.totalBlockers > 0
+          ? 'repair'
+          : null
   )
 
-  const needsAttention = stats.pending + stats.unmatched
+  const needsAttention = stats.pending + stats.unmatched + costingRepair.totalBlockers
   const isFullyResolved = needsAttention === 0
 
   // Confirm a pending auto-match
@@ -177,6 +184,11 @@ export function IngredientHealthBanner({ health }: Props) {
                 {stats.pending > 0 ? `${stats.pending} pending · ` : ''}
                 {stats.unmatched > 0 ? `${stats.unmatched} unmatched` : ''}
                 {stats.dismissed > 0 ? ` · ${stats.dismissed} skipped` : ''}
+                {costingRepair.totalBlockers > 0
+                  ? ` · ${costingRepair.totalBlockers} costing blocker${
+                      costingRepair.totalBlockers !== 1 ? 's' : ''
+                    }`
+                  : ''}
               </p>
             </div>
           </div>
@@ -344,6 +356,82 @@ export function IngredientHealthBanner({ health }: Props) {
               )}
             </div>
           )}
+
+          {/* Costing Repair Queue */}
+          {costingRepair.totalBlockers > 0 && (
+            <div
+              className={
+                pendingMatches.length > 0 || unresolved.length > 0
+                  ? 'border-t border-stone-800'
+                  : ''
+              }
+            >
+              <button
+                onClick={() => setExpandedSection(expandedSection === 'repair' ? null : 'repair')}
+                className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-stone-800/50 transition-colors text-sm"
+              >
+                <div className="flex items-center gap-2">
+                  {expandedSection === 'repair' ? (
+                    <ChevronDown className="w-4 h-4 text-stone-400" />
+                  ) : (
+                    <ChevronRight className="w-4 h-4 text-stone-400" />
+                  )}
+                  <span className="text-orange-400 font-medium">
+                    {costingRepair.totalBlockers} costing blocker
+                    {costingRepair.totalBlockers !== 1 ? 's' : ''}
+                  </span>
+                  <span className="text-stone-500">- price, density, or yield fixes needed</span>
+                </div>
+              </button>
+
+              {expandedSection === 'repair' && (
+                <div className="px-4 pb-3 space-y-3">
+                  <CostingRepairGroupView
+                    title="Missing prices"
+                    group={costingRepair.missingPrices}
+                    actionLabel="Update price"
+                    hrefFor={(ingredientId) => `/inventory/ingredients/${ingredientId}`}
+                  />
+                  <CostingRepairGroupView
+                    title={`Stale prices (${costingRepair.stalePrices.staleAfterDays}+ days)`}
+                    group={costingRepair.stalePrices}
+                    actionLabel="Review price"
+                    hrefFor={(ingredientId) => `/inventory/ingredients/${ingredientId}`}
+                  />
+                  <CostingRepairGroupView
+                    title="Missing density"
+                    group={costingRepair.missingDensity}
+                    actionLabel="Edit ingredient"
+                    hrefFor={(_, ingredientName) =>
+                      `/recipes/ingredients?search=${encodeURIComponent(ingredientName)}`
+                    }
+                  />
+                  <CostingRepairGroupView
+                    title="Missing yield"
+                    group={costingRepair.missingDefaultYield}
+                    actionLabel="Set yield"
+                    hrefFor={(_, ingredientName) =>
+                      `/recipes/ingredients?search=${encodeURIComponent(ingredientName)}`
+                    }
+                  />
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    <Link
+                      href="/recipes/ingredients"
+                      className="text-xs px-2 py-1 rounded border border-stone-700 text-stone-300 hover:border-brand-600 hover:text-brand-300 transition-colors"
+                    >
+                      Open Ingredient Library
+                    </Link>
+                    <Link
+                      href="/culinary/costing/recipe"
+                      className="text-xs px-2 py-1 rounded border border-stone-700 text-stone-300 hover:border-brand-600 hover:text-brand-300 transition-colors"
+                    >
+                      Open Recipe Costs
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
 
@@ -356,5 +444,53 @@ export function IngredientHealthBanner({ health }: Props) {
         </div>
       )}
     </Card>
+  )
+}
+
+function CostingRepairGroupView({
+  title,
+  group,
+  actionLabel,
+  hrefFor,
+}: {
+  title: string
+  group: CostingRepairGroup
+  actionLabel: string
+  hrefFor: (ingredientId: string, ingredientName: string) => string
+}) {
+  if (group.count === 0) return null
+
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-xs font-medium text-stone-300">
+          {title} ({group.count})
+        </p>
+        {group.count > group.ingredients.length && (
+          <span className="text-[11px] text-stone-500">
+            Showing {group.ingredients.length} of {group.count}
+          </span>
+        )}
+      </div>
+      <div className="space-y-1">
+        {group.ingredients.map((item) => (
+          <div
+            key={`${title}-${item.ingredientId}`}
+            className="flex items-center gap-3 py-2 px-3 rounded-md bg-stone-800/30 hover:bg-stone-800/50 transition-colors"
+          >
+            <div className="flex-1 min-w-0">
+              <p className="text-sm text-stone-300 truncate">{item.ingredientName}</p>
+              <p className="text-xs text-stone-500 truncate">{item.detail}</p>
+            </div>
+            <Link
+              href={hrefFor(item.ingredientId, item.ingredientName)}
+              className="text-xs px-2 py-1 rounded border border-stone-700 hover:border-brand-600 hover:bg-brand-950/30 text-stone-300 hover:text-brand-300 transition-colors flex-shrink-0"
+            >
+              {actionLabel}
+            </Link>
+          </div>
+        ))}
+      </div>
+    </div>
   )
 }

@@ -6,6 +6,7 @@
 
 import { useEffect, useRef, useState, useTransition } from 'react'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { checkMenuMargins, getMenuVendorHints } from '@/lib/menus/menu-intelligence-actions'
 import type { MarginAlert, MenuVendorHint } from '@/lib/menus/menu-intelligence-actions'
 import { getMenuCostingGaps } from '@/lib/menus/actions'
@@ -205,6 +206,16 @@ export function MenuCostSidebar({
               <li className="text-amber-200/40">+{gaps.unrecipedComponents.length - 5} more</li>
             )}
           </ul>
+          <div className="pt-1">
+            <Button
+              href={`/menus/${menuId}/editor`}
+              variant="secondary"
+              size="sm"
+              className="w-full"
+            >
+              Link recipes in menu editor
+            </Button>
+          </div>
         </div>
       )}
 
@@ -223,7 +234,10 @@ export function MenuCostSidebar({
           <ul className="text-xs text-orange-200/60 space-y-0.5 pl-2">
             {gaps.recipesWithMissingPrices.slice(0, 4).map((r) => (
               <li key={r.recipeId} className="truncate">
-                {r.recipeName}: {r.missingCount}/{r.totalIngredients} ingredients unpriced
+                <a href={`/culinary/recipes/${r.recipeId}`} className="hover:text-orange-100">
+                  {r.recipeName}
+                </a>
+                : {r.missingCount}/{r.totalIngredients} ingredients unpriced
               </li>
             ))}
             {gaps.recipesWithMissingPrices.length > 4 && (
@@ -232,6 +246,19 @@ export function MenuCostSidebar({
               </li>
             )}
           </ul>
+          <div className="flex flex-col gap-2 pt-1">
+            <Button
+              href={`/culinary/recipes/${gaps.recipesWithMissingPrices[0].recipeId}`}
+              variant="secondary"
+              size="sm"
+              className="w-full"
+            >
+              Price first recipe
+            </Button>
+            <Button href="/culinary/costing/recipe" variant="ghost" size="sm" className="w-full">
+              Review recipe costing
+            </Button>
+          </div>
         </div>
       )}
 
@@ -248,13 +275,23 @@ export function MenuCostSidebar({
           <ul className="text-xs text-yellow-200/60 space-y-0.5 pl-2">
             {gaps.unitMismatches.slice(0, 5).map((m, i) => (
               <li key={i} className="truncate">
-                {m.ingredientName}: {m.recipeUnit} vs {m.priceUnit}
+                {m.recipeName}: {m.ingredientName}, {m.recipeUnit} vs {m.priceUnit}
               </li>
             ))}
             {gaps.unitMismatches.length > 5 && (
               <li className="text-yellow-200/40">+{gaps.unitMismatches.length - 5} more</li>
             )}
           </ul>
+          <div className="pt-1">
+            <Button
+              href="/culinary/ingredients"
+              variant="secondary"
+              size="sm"
+              className="w-full"
+            >
+              Review ingredient units
+            </Button>
+          </div>
         </div>
       )}
 

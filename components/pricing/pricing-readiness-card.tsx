@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import type { PricingReadinessSummary } from '@/lib/pricing/pricing-readiness-actions'
 
 interface Props {
@@ -68,6 +69,26 @@ function SectionHeader({ title, label, status }: { title: string; label: string;
   )
 }
 
+function NextAction({
+  href,
+  label,
+  detail,
+}: {
+  href: string
+  label: string
+  detail: string
+}) {
+  return (
+    <Link
+      href={href}
+      className="block rounded-lg border border-stone-800 bg-stone-950/40 px-3 py-2 transition-colors hover:border-brand-700/60 hover:bg-stone-900"
+    >
+      <p className="text-xs font-medium text-brand-400">{label}</p>
+      <p className="mt-0.5 text-xs text-stone-500">{detail}</p>
+    </Link>
+  )
+}
+
 function MarketSection({ summary }: { summary: PricingReadinessSummary['market'] }) {
   const lastHealthy = summary.lastHealthySyncAt
     ? `${formatExact(summary.lastHealthySyncAt)} (${timeAgo(summary.lastHealthySyncAt)})`
@@ -94,6 +115,32 @@ function MarketSection({ summary }: { summary: PricingReadinessSummary['market']
 }
 
 function ChefSection({ summary }: { summary: PricingReadinessSummary['chef'] }) {
+  const nextActions: Array<{ href: string; label: string; detail: string }> = []
+
+  if ((summary.ingredientCoveragePct ?? 0) < 90) {
+    nextActions.push({
+      href: '/culinary/ingredients',
+      label: 'Price missing ingredients',
+      detail: 'Open your ingredient list and fill the gaps that block reliable recipe costs.',
+    })
+  }
+
+  if ((summary.recipeCoveragePct ?? 0) < 90) {
+    nextActions.push({
+      href: '/culinary/costing/recipe',
+      label: 'Review recipe costs',
+      detail: 'Find recipes with partial pricing before they flow into menus and quotes.',
+    })
+  }
+
+  if (summary.freshIngredients < summary.totalIngredients && summary.totalIngredients > 0) {
+    nextActions.push({
+      href: '/culinary/costing',
+      label: 'Refresh current prices',
+      detail: 'Use the refresh control after updating ingredient prices or market matches.',
+    })
+  }
+
   return (
     <div className="space-y-3">
       <SectionHeader title="Your Pricing Coverage" label={summary.label} status={summary.status} />
@@ -128,6 +175,13 @@ function ChefSection({ summary }: { summary: PricingReadinessSummary['chef'] }) 
           sub="Recipes with fresh ingredient pricing"
         />
       </div>
+      {nextActions.length > 0 ? (
+        <div className="grid gap-2 sm:grid-cols-2">
+          {nextActions.slice(0, 3).map((action) => (
+            <NextAction key={action.href + action.label} {...action} />
+          ))}
+        </div>
+      ) : null}
     </div>
   )
 }

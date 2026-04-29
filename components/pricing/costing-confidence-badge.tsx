@@ -1,10 +1,19 @@
 'use client'
 
+import {
+  getCostConfidencePresentation,
+  getCostConfidenceStatus,
+} from '@/lib/pricing/cost-confidence'
+
 interface CostingConfidenceBadgeProps {
   coveragePct: number | null
   avgConfidence?: number | null
   minConfidence?: number | null
   lowConfidenceCount?: number | null
+  missingPriceCount?: number | null
+  stalePriceCount?: number | null
+  unitMismatchCount?: number | null
+  estimatedPriceCount?: number | null
   size?: 'sm' | 'md'
   isPartial?: boolean
 }
@@ -29,12 +38,30 @@ function confidenceTooltip(
   coveragePct: number | null,
   avgConfidence: number | null | undefined,
   minConfidence: number | null | undefined,
-  lowConfidenceCount: number | null | undefined
+  lowConfidenceCount: number | null | undefined,
+  missingPriceCount: number | null | undefined,
+  stalePriceCount: number | null | undefined,
+  unitMismatchCount: number | null | undefined,
+  estimatedPriceCount: number | null | undefined,
+  statusTitle: string
 ): string {
   const parts: string[] = []
+  parts.push(statusTitle)
   if (coveragePct !== null) parts.push(`${coveragePct}% of ingredients priced`)
   if (avgConfidence != null) parts.push(`Avg confidence: ${Math.round(avgConfidence * 100)}%`)
   if (minConfidence != null) parts.push(`Weakest: ${Math.round(minConfidence * 100)}%`)
+  if (missingPriceCount != null && missingPriceCount > 0) {
+    parts.push(`${missingPriceCount} missing price${missingPriceCount > 1 ? 's' : ''}`)
+  }
+  if (stalePriceCount != null && stalePriceCount > 0) {
+    parts.push(`${stalePriceCount} stale price${stalePriceCount > 1 ? 's' : ''}`)
+  }
+  if (unitMismatchCount != null && unitMismatchCount > 0) {
+    parts.push(`${unitMismatchCount} unit mismatch${unitMismatchCount > 1 ? 'es' : ''}`)
+  }
+  if (estimatedPriceCount != null && estimatedPriceCount > 0) {
+    parts.push(`${estimatedPriceCount} estimated price${estimatedPriceCount > 1 ? 's' : ''}`)
+  }
   if (lowConfidenceCount != null && lowConfidenceCount > 0) {
     parts.push(
       `${lowConfidenceCount} ingredient${lowConfidenceCount > 1 ? 's' : ''} below 50% confidence`
@@ -48,40 +75,62 @@ export function CostingConfidenceBadge({
   avgConfidence,
   minConfidence,
   lowConfidenceCount,
+  missingPriceCount,
+  stalePriceCount,
+  unitMismatchCount,
+  estimatedPriceCount,
   size = 'sm',
   isPartial = false,
 }: CostingConfidenceBadgeProps) {
-  if (coveragePct === null && !isPartial) return null
+  const hasExplicitSignals =
+    (missingPriceCount ?? 0) > 0 ||
+    (stalePriceCount ?? 0) > 0 ||
+    (unitMismatchCount ?? 0) > 0 ||
+    (estimatedPriceCount ?? 0) > 0 ||
+    (lowConfidenceCount ?? 0) > 0 ||
+    avgConfidence != null ||
+    minConfidence != null
+
+  if (coveragePct === null && !isPartial && !hasExplicitSignals) return null
 
   const sizeClass = size === 'sm' ? 'text-xs px-1.5 py-0.5' : 'text-sm px-2 py-1'
-  const tooltip = confidenceTooltip(coveragePct, avgConfidence, minConfidence, lowConfidenceCount)
+  const status = getCostConfidenceStatus({
+    coveragePct,
+    avgConfidence,
+    minConfidence,
+    lowConfidenceCount,
+    missingPriceCount,
+    stalePriceCount,
+    unitMismatchCount,
+    estimatedPriceCount,
+    isPartial,
+  })
+  const statusPresentation = getCostConfidencePresentation(status)
+  const tooltip = confidenceTooltip(
+    coveragePct,
+    avgConfidence,
+    minConfidence,
+    lowConfidenceCount,
+    missingPriceCount,
+    stalePriceCount,
+    unitMismatchCount,
+    estimatedPriceCount,
+    statusPresentation.title
+  )
 
-  // Missing prices: show "Partial" in amber
-  if (isPartial || (coveragePct !== null && coveragePct > 0 && coveragePct < 100)) {
+  if (status !== 'complete') {
     return (
       <span
-        className={`inline-flex items-center gap-1 rounded border bg-amber-900/60 text-amber-400 border-amber-700/40 ${sizeClass} font-medium`}
+        className={`inline-flex items-center gap-1 rounded border ${statusPresentation.bgColor} ${statusPresentation.color} ${sizeClass} font-medium`}
         title={tooltip}
       >
-        Partial
+        {statusPresentation.label}
       </span>
     )
   }
 
-  // All priced (or none): show coverage + confidence quality
+  // All priced: preserve the existing confidence quality labels for complete coverage.
   const pct = coveragePct ?? 0
-
-  // No prices at all
-  if (pct === 0) {
-    return (
-      <span
-        className={`inline-flex items-center rounded border bg-red-900/60 text-red-400 border-red-700/40 ${sizeClass} font-medium`}
-        title={tooltip}
-      >
-        0%
-      </span>
-    )
-  }
 
   // Fully priced: color by confidence quality, not just coverage
   if (avgConfidence != null) {

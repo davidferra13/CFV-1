@@ -3,42 +3,15 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { pgClient } from '@/lib/db'
 import { normalizeIngredientName, type MatchSuggestion } from './ingredient-matching-utils'
-
-// ============================================
-// TYPES
-// ============================================
-
-export interface IngredientHealthStats {
-  total: number
-  confirmed: number
-  pending: number
-  unmatched: number
-  dismissed: number
-  coveragePct: number | null
-}
-
-export interface PendingMatch {
-  ingredientId: string
-  ingredientName: string
-  category: string | null
-  systemIngredientId: string
-  systemIngredientName: string
-  similarityScore: number
-  matchMethod: string
-}
-
-export interface UnresolvedIngredient {
-  id: string
-  name: string
-  category: string | null
-  suggestions: MatchSuggestion[]
-}
-
-export interface IngredientHealthSummary {
-  stats: IngredientHealthStats
-  pendingMatches: PendingMatch[]
-  unresolvedIngredients: UnresolvedIngredient[]
-}
+import type {
+  CostingRepairGroup,
+  CostingRepairIngredient,
+  CostingRepairSummary,
+  IngredientHealthStats,
+  IngredientHealthSummary,
+  PendingMatch,
+  UnresolvedIngredient,
+} from './ingredient-health-types'
 
 // ============================================
 // MAIN ACTION
@@ -52,9 +25,18 @@ export interface IngredientHealthSummary {
 export async function getIngredientHealthAction(): Promise<IngredientHealthSummary> {
   const user = await requireChef()
   const tenantId = user.tenantId!
+  const stalePriceDays = 30
 
   // Single query to get all stats + pending matches + unmatched ingredients
-  const [statsRows, pendingRows, unmatchedRows] = await Promise.all([
+  const [
+    statsRows,
+    pendingRows,
+    unmatchedRows,
+    missingPriceRows,
+    stalePriceRows,
+    missingDensityRows,
+    missingYieldRows,
+  ] = await Promise.all([
     // Stats: count by alias status
     pgClient`
       SELECT
@@ -113,6 +95,114 @@ export async function getIngredientHealthAction(): Promise<IngredientHealthSumma
         AND ia.id IS NULL
       ORDER BY i.name
       LIMIT 50
+    `,
+
+    pgClient`
+      SELECT
+        COUNT(*) OVER()::int AS total_count,
+        i.id AS ingredient_id,
+        i.name AS ingredient_name,
+        i.category,
+        COALESCE(i.default_unit, i.price_unit, 'unit') AS unit
+      FROM ingredients i
+      WHERE i.tenant_id = ${tenantId}
+        AND i.archived = false
+        AND (
+          COALESCE(i.cost_per_unit_cents, i.last_price_cents, i.average_price_cents) IS NULL
+          OR COALESCE(i.cost_per_unit_cents, i.last_price_cents, i.average_price_cents) <= 0
+        )
+      ORDER BY i.name
+      LIMIT 6
+    `,
+
+    pgClient`
+      SELECT
+        COUNT(*) OVER()::int AS total_count,
+        i.id AS ingredient_id,
+        i.name AS ingredient_name,
+        i.category,
+        i.last_price_date,
+        CASE
+          WHEN i.last_price_date IS NULL THEN NULL
+          ELSE (CURRENT_DATE - i.last_price_date)::int
+        END AS days_since_price
+      FROM ingredients i
+      WHERE i.tenant_id = ${tenantId}
+        AND i.archived = false
+        AND COALESCE(i.cost_per_unit_cents, i.last_price_cents, i.average_price_cents) IS NOT NULL
+        AND COALESCE(i.cost_per_unit_cents, i.last_price_cents, i.average_price_cents) > 0
+        AND (
+          i.last_price_date IS NULL
+          OR i.last_price_date < CURRENT_DATE - (${stalePriceDays}::int * INTERVAL '1 day')
+        )
+      ORDER BY i.last_price_date ASC NULLS FIRST, i.name
+      LIMIT 6
+    `,
+
+    pgClient`
+      WITH density_blockers AS (
+        SELECT DISTINCT
+          i.id AS ingredient_id,
+          i.name AS ingredient_name,
+          i.category,
+          ri.unit AS recipe_unit,
+          COALESCE(NULLIF(i.price_unit, ''), NULLIF(i.default_unit, ''), 'unit') AS cost_unit
+        FROM recipe_ingredients ri
+        JOIN recipes r ON r.id = ri.recipe_id
+        JOIN ingredients i ON i.id = ri.ingredient_id AND i.tenant_id = r.tenant_id
+        WHERE r.tenant_id = ${tenantId}
+          AND i.tenant_id = ${tenantId}
+          AND r.archived = false
+          AND i.archived = false
+          AND i.weight_to_volume_ratio IS NULL
+          AND (
+            (
+              lower(trim(ri.unit)) IN ('cup', 'cups', 'tbsp', 'tablespoon', 'tablespoons', 'tsp', 'teaspoon', 'teaspoons', 'ml', 'milliliter', 'milliliters', 'l', 'liter', 'liters', 'qt', 'quart', 'quarts', 'gal', 'gallon', 'gallons', 'fl oz', 'fluid ounce', 'fluid ounces')
+              AND lower(trim(COALESCE(NULLIF(i.price_unit, ''), NULLIF(i.default_unit, ''), 'unit'))) IN ('oz', 'ounce', 'ounces', 'lb', 'lbs', 'pound', 'pounds', 'g', 'gram', 'grams', 'kg', 'kilogram', 'kilograms')
+            )
+            OR
+            (
+              lower(trim(ri.unit)) IN ('oz', 'ounce', 'ounces', 'lb', 'lbs', 'pound', 'pounds', 'g', 'gram', 'grams', 'kg', 'kilogram', 'kilograms')
+              AND lower(trim(COALESCE(NULLIF(i.price_unit, ''), NULLIF(i.default_unit, ''), 'unit'))) IN ('cup', 'cups', 'tbsp', 'tablespoon', 'tablespoons', 'tsp', 'teaspoon', 'teaspoons', 'ml', 'milliliter', 'milliliters', 'l', 'liter', 'liters', 'qt', 'quart', 'quarts', 'gal', 'gallon', 'gallons', 'fl oz', 'fluid ounce', 'fluid ounces')
+            )
+          )
+      )
+      SELECT
+        COUNT(*) OVER()::int AS total_count,
+        ingredient_id,
+        ingredient_name,
+        category,
+        recipe_unit,
+        cost_unit
+      FROM density_blockers
+      ORDER BY ingredient_name
+      LIMIT 6
+    `,
+
+    pgClient`
+      WITH yield_blockers AS (
+        SELECT DISTINCT
+          i.id AS ingredient_id,
+          i.name AS ingredient_name,
+          i.category
+        FROM recipe_ingredients ri
+        JOIN recipes r ON r.id = ri.recipe_id
+        JOIN ingredients i ON i.id = ri.ingredient_id AND i.tenant_id = r.tenant_id
+        WHERE r.tenant_id = ${tenantId}
+          AND i.tenant_id = ${tenantId}
+          AND r.archived = false
+          AND i.archived = false
+          AND ri.yield_pct IS NULL
+          AND i.default_yield_pct IS NULL
+      )
+      SELECT
+        COUNT(*) OVER()::int AS total_count,
+        ingredient_id,
+        ingredient_name,
+        category
+      FROM yield_blockers
+      ORDER BY ingredient_name
+      LIMIT 6
     `,
   ])
 
@@ -175,7 +265,62 @@ export async function getIngredientHealthAction(): Promise<IngredientHealthSumma
     })
   }
 
-  return { stats, pendingMatches, unresolvedIngredients }
+  const missingPrices = buildCostingRepairGroup(missingPriceRows, (row) => ({
+    ingredientId: row.ingredient_id,
+    ingredientName: row.ingredient_name,
+    category: row.category,
+    detail: `No saved cost for ${row.unit ?? 'unit'}`,
+  }))
+
+  const stalePrices = {
+    ...buildCostingRepairGroup(stalePriceRows, (row) => ({
+      ingredientId: row.ingredient_id,
+      ingredientName: row.ingredient_name,
+      category: row.category,
+      detail:
+        row.days_since_price == null
+          ? 'Price exists without a date'
+          : `Last priced ${row.days_since_price} days ago`,
+    })),
+    staleAfterDays: stalePriceDays,
+  }
+
+  const missingDensity = buildCostingRepairGroup(missingDensityRows, (row) => ({
+    ingredientId: row.ingredient_id,
+    ingredientName: row.ingredient_name,
+    category: row.category,
+    detail: `Needed to convert ${row.recipe_unit} to ${row.cost_unit}`,
+  }))
+
+  const missingDefaultYield = buildCostingRepairGroup(missingYieldRows, (row) => ({
+    ingredientId: row.ingredient_id,
+    ingredientName: row.ingredient_name,
+    category: row.category,
+    detail: 'Recipe and ingredient yield are both unset',
+  }))
+
+  const costingRepair: CostingRepairSummary = {
+    missingPrices,
+    stalePrices,
+    missingDensity,
+    missingDefaultYield,
+    totalBlockers:
+      missingPrices.count + stalePrices.count + missingDensity.count + missingDefaultYield.count,
+  }
+
+  return { stats, pendingMatches, unresolvedIngredients, costingRepair }
+}
+
+function buildCostingRepairGroup<T extends { total_count?: number | string | null }>(
+  rows: T[] | undefined,
+  mapRow: (row: T) => CostingRepairIngredient
+): CostingRepairGroup {
+  const safeRows = rows ?? []
+
+  return {
+    count: safeRows.length > 0 ? Number(safeRows[0]?.total_count ?? safeRows.length) : 0,
+    ingredients: safeRows.map(mapRow),
+  }
 }
 
 // ============================================
