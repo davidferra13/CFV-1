@@ -1,3 +1,6 @@
+'use server'
+
+import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import type { DinnerCircleSourceLink } from '@/lib/dinner-circles/types'
 import type { IngredientShowcaseResult } from '@/lib/dinner-circles/ingredient-showcase-types'
@@ -20,6 +23,11 @@ export async function buildEventIngredientShowcase(
 
   if (!tenantId.trim()) {
     throw new Error('Tenant ID is required to build ingredient showcase data')
+  }
+
+  const user = await requireChef()
+  if (user.tenantId !== tenantId) {
+    throw new Error('Ingredient showcase tenant mismatch')
   }
 
   const db: any = createServerClient({ admin: true })
