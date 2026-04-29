@@ -102,6 +102,9 @@ import {
 } from '@/lib/client-work-graph/shared-snapshot'
 import { getHouseholdForClient } from '@/lib/hub/household-actions'
 import { ClientHouseholdPanel } from '@/components/clients/client-household-panel'
+import { getCallsLoadState } from '@/lib/calls/actions'
+import { buildClientCallMemorySnapshot } from '@/lib/clients/client-call-memory'
+import { ClientCallMemoryPanel } from '@/components/clients/client-call-memory-panel'
 
 async function ClientCompletionSection({ clientId }: { clientId: string }) {
   const result = await getCompletionForEntity('client', clientId)
@@ -175,6 +178,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
     clientOpsSnapshotState,
     householdData,
     clientPrivateContexts,
+    clientCallsState,
   ] = await Promise.all([
     getClientWithStats(params.id).catch(() => null),
     getMessageThread('client', params.id).catch(() => []),
@@ -225,6 +229,11 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
       })),
     getHouseholdForClient(params.id).catch(() => null),
     loadEntityPrivateContexts('client', params.id).catch(() => []),
+    getCallsLoadState({ client_id: params.id, limit: 50 }).catch(() => ({
+      status: 'unavailable' as const,
+      data: [],
+      error: 'Client call memory could not be loaded.',
+    })),
   ])
 
   const engagementScore = computeEngagementScore(clientPortalActivity as any[])
@@ -271,6 +280,10 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
       ? (clientOpsSnapshot.eventsResult.upcoming.find(
           (event) => String(event.id) === clientOpsSnapshot.rsvpSummary?.eventId
         ) ?? null)
+      : null
+  const clientCallMemory =
+    clientCallsState.status === 'ok'
+      ? buildClientCallMemorySnapshot(clientCallsState.data)
       : null
 
   return (
@@ -390,6 +403,11 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
 
       {/* Next Best Action */}
       {clientNBA ? <NextBestActionCard action={clientNBA} /> : null}
+
+      <ClientCallMemoryPanel
+        snapshot={clientCallMemory}
+        unavailable={clientCallsState.status === 'unavailable'}
+      />
 
       {/* Client Ops Snapshot */}
       {clientOpsSnapshot ? (
