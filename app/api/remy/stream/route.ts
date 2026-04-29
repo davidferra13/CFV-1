@@ -83,6 +83,7 @@ import {
 } from '@/lib/ai/remy-vision-actions'
 import { formatVoiceMemoResponse } from '@/lib/ai/voice-memo-format'
 import { shouldEmitAiSuggestions, shouldUseAiMemory } from '@/lib/ai/private-runtime-policy'
+import { isContinuityDigestPrompt, loadContinuityDigest } from '@/lib/activity/continuity-digest'
 
 //  POST Handler
 
@@ -756,7 +757,16 @@ export async function POST(req: NextRequest) {
     // For simple factual questions where the answer is already in the loaded context,
     // return an instant response without waiting 30-90s for Ollama.
     if (classification.intent === 'question') {
-      const instant = tryInstantAnswer(message, context, memories, { allowSuggestions })
+      const continuityDigest = isContinuityDigestPrompt(message)
+        ? await loadContinuityDigest(user.tenantId!).catch((err) => {
+            console.error('[non-blocking] Continuity digest failed:', err)
+            return null
+          })
+        : null
+      const instant = tryInstantAnswer(message, context, memories, {
+        allowSuggestions,
+        continuityDigest,
+      })
       if (instant) {
         releaseInteractiveLock()
         const encoder = new TextEncoder()

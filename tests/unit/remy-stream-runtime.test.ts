@@ -167,6 +167,48 @@ test('Remy answers event readiness from completion context', () => {
   assert.equal(answer.navSuggestions?.[0]?.href, '/events/event-1')
 })
 
+test('Remy answers away catch-up from deterministic continuity digest', () => {
+  const answer = tryInstantAnswer(
+    'what changed while I was away?',
+    {
+      chefName: 'Chef',
+      businessName: 'Test Kitchen',
+      tagline: null,
+      chefCity: null,
+      chefState: null,
+      chefArchetype: null,
+      clientCount: 0,
+      upcomingEventCount: 0,
+      openInquiryCount: 0,
+    },
+    [],
+    {
+      continuityDigest: {
+        cutoff: '2026-04-29T10:00:00.000Z',
+        cutoffSource: 'previous_session',
+        generatedAt: '2026-04-29T16:00:00.000Z',
+        activityCount: 1,
+        activities: [
+          {
+            id: 'activity-1',
+            summary: 'Quote sent to Maya Chen',
+            domain: 'quote',
+            action: 'quote_sent',
+            entityType: 'quote',
+            entityId: 'quote-1',
+            createdAt: '2026-04-29T11:00:00.000Z',
+          },
+        ],
+        recentSessions: [],
+      },
+    }
+  )
+
+  assert.ok(answer)
+  assert.match(answer.text, /Quote sent to Maya Chen/)
+  assert.equal(answer.navSuggestions?.[0]?.href, '/activity')
+})
+
 test('Remy answers mentioned event readiness from completion context', () => {
   const answer = tryInstantAnswer('why is the Henderson dinner blocked?', {
     chefName: 'Chef',

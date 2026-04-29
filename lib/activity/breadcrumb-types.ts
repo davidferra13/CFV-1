@@ -52,13 +52,15 @@ export const ROUTE_LABELS: Record<string, string> = {
   '/dashboard': 'Dashboard',
   '/daily-ops': 'Daily Ops',
   '/activity': 'Activity Log',
-  '/pipeline/inquiries': 'Inquiries',
-  '/pipeline/events': 'Events',
-  '/pipeline/quotes': 'Quotes',
+  '/inquiries': 'Inquiries',
+  '/events': 'Events',
+  '/quotes': 'Quotes',
   '/pipeline/leads': 'Leads',
   '/clients': 'Clients',
   '/clients/recurring': 'Recurring Board',
   '/culinary/menus': 'Menus',
+  '/recipes': 'Recipes',
+  '/recipes/new': 'New Recipe',
   '/culinary/recipes': 'Recipes',
   '/calendar': 'Calendar',
   '/finance': 'Finance Hub',
@@ -76,8 +78,14 @@ export function labelForPath(path: string): string {
   // Exact match
   if (ROUTE_LABELS[path]) return ROUTE_LABELS[path]
 
-  // Try prefix match (e.g. /pipeline/events/abc → "Event Detail")
+  // Try prefix match, for example /events/abc becomes "Event Detail".
   const segments = path.split('/').filter(Boolean)
+  if (segments[0] === 'recipes' && segments.length >= 2) {
+    if (segments[1] === 'new') return 'New Recipe'
+    if (segments.length >= 3 && segments[2] === 'edit') return 'Edit Recipe'
+    return 'Recipe Detail'
+  }
+
   if (segments.length >= 3) {
     const prefix = '/' + segments.slice(0, 2).join('/')
     const parentLabel = ROUTE_LABELS[prefix]

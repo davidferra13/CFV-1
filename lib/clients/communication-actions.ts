@@ -343,7 +343,7 @@ async function fetchInquiries(
       description: inq.channel ? `via ${inq.channel}` : null,
       status: inq.status,
       metadata: { inquiryId: inq.id, channel: inq.channel },
-      linkUrl: `/pipeline/inquiries/${inq.id}`,
+      linkUrl: `/inquiries/${inq.id}`,
     }
   })
 }

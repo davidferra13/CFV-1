@@ -9,6 +9,7 @@
 
 import type { RemyContext } from '@/lib/ai/remy-types'
 import type { RemyMemory } from '@/lib/ai/remy-memory-types'
+import type { ContinuityDigest } from '@/lib/activity/continuity-digest'
 import { findMetricDefinitionsByQuery } from '@/lib/analytics/metric-registry'
 import { daysUntilChefDate, getChefClock, isSameChefDate } from '@/lib/time/chef-clock'
 
@@ -22,7 +23,7 @@ interface AnswerPattern {
   answer: (
     ctx: RemyContext,
     match: RegExpMatchArray,
-    options: { message: string; memories: RemyMemory[] }
+    options: { message: string; memories: RemyMemory[]; continuityDigest?: ContinuityDigest | null }
   ) => InstantAnswer | null
 }
 
@@ -426,8 +427,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
       /^(?:good\s+morning|good\s+afternoon|good\s+evening|morning|afternoon|evening|hey|hi|hello|yo|sup|what'?s?\s+up)(?:\s+remy)?\s*[!.?]?$/i,
     answer: (ctx) => {
       const clock = getChefClock({ chefTimezone: ctx.chefTimezone })
-      const greeting =
-        clock.hour < 12 ? 'Morning' : clock.hour < 17 ? 'Afternoon' : 'Evening'
+      const greeting = clock.hour < 12 ? 'Morning' : clock.hour < 17 ? 'Afternoon' : 'Evening'
       const lines: string[] = [`${greeting}, chef! 👨‍🍳`]
 
       // Proactive context - what's most relevant right now
@@ -1101,8 +1101,11 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
   // "Recent activity" / "What's been happening?"
   {
     pattern:
-      /^(?:recent\s+(?:activity|work|updates?)|what'?s?\s+(?:been\s+happening|new|changed)|(?:show|any)\s+recent\s+(?:activity|updates?))/i,
-    answer: (ctx) => {
+      /^(?:recent\s+(?:activity|work|updates?)|what'?s?\s+(?:been\s+happening|new|changed)|(?:show|any)\s+recent\s+(?:activity|updates?)|(?:catch\s+me\s+up|what\s+changed\s+while\s+i\s+was\s+away|what'?s?\s+changed\s+since\s+i\s+left|what\s+happened\s+while\s+i\s+was\s+gone))/i,
+    answer: (ctx, _match, options) => {
+      if (options.continuityDigest) {
+        return formatContinuityDigestAnswer(options.continuityDigest)
+      }
       if (!ctx.recentArtifacts || ctx.recentArtifacts.length === 0) {
         return { text: 'No recent activity to show. 📋' }
       }
@@ -1808,9 +1811,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
         lines.push('')
       }
       if (ctx.upcomingCalls && ctx.upcomingCalls.length > 0) {
-        const todayCalls = ctx.upcomingCalls.filter(
-          (c) => isSameChefDate(c.scheduledAt, clock)
-        )
+        const todayCalls = ctx.upcomingCalls.filter((c) => isSameChefDate(c.scheduledAt, clock))
         if (todayCalls.length > 0) {
           lines.push(`**${todayCalls.length} call${todayCalls.length !== 1 ? 's' : ''} today:**`)
           for (const c of todayCalls) {
@@ -2131,7 +2132,7 @@ export function tryInstantAnswer(
   message: string,
   context: RemyContext,
   memories: RemyMemory[] = [],
-  options: { allowSuggestions?: boolean } = {}
+  options: { allowSuggestions?: boolean; continuityDigest?: ContinuityDigest | null } = {}
 ): InstantAnswer | null {
   const trimmed = message.trim()
   const allowSuggestions = options.allowSuggestions !== false
@@ -2139,7 +2140,11 @@ export function tryInstantAnswer(
   for (const { pattern, answer } of INSTANT_PATTERNS) {
     const match = trimmed.match(pattern)
     if (match) {
-      const result = answer(context, match, { message: trimmed, memories })
+      const result = answer(context, match, {
+        message: trimmed,
+        memories,
+        continuityDigest: options.continuityDigest ?? null,
+      })
       if (result) {
         const answerResult = allowSuggestions
           ? result
@@ -2156,4 +2161,43 @@ export function tryInstantAnswer(
   }
 
   return null
+}
+
+function formatContinuityDigestAnswer(digest: ContinuityDigest): InstantAnswer {
+  const sinceLabel = new Date(digest.cutoff).toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  })
+
+  if (digest.activityCount === 0) {
+    return {
+      text: `Nothing changed in tracked ChefFlow activity since ${sinceLabel}.`,
+      navSuggestions: [{ label: 'Open Activity', href: '/activity' }],
+    }
+  }
+
+  const lines = [
+    `**Changed since ${sinceLabel}:**`,
+    '',
+    ...digest.activities.map((activity) => {
+      const when = new Date(activity.createdAt).toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+      })
+      return `- ${activity.summary} (${when})`
+    }),
+  ]
+
+  if (digest.activityCount > digest.activities.length) {
+    lines.push('', `${digest.activityCount - digest.activities.length} more tracked update(s).`)
+  }
+
+  return {
+    text: lines.join('\n'),
+    navSuggestions: [{ label: 'Open Activity', href: '/activity' }],
+  }
 }

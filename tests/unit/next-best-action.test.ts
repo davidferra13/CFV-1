@@ -69,7 +69,7 @@ describe('next best action', () => {
         buildSignal({
           type: 'awaiting_chef_reply',
           actionType: 'reply_inquiry',
-          context: { href: '/pipeline/inquiries/inquiry-1', inquiryId: 'inquiry-1' },
+          context: { href: '/inquiries/inquiry-1', inquiryId: 'inquiry-1' },
         }),
       ],
     })

@@ -59,6 +59,7 @@ import {
   shouldEmitAiSuggestions,
   shouldUseAiMemory,
 } from '@/lib/ai/private-runtime-policy'
+import { isContinuityDigestPrompt, loadContinuityDigest } from '@/lib/activity/continuity-digest'
 
 export async function POST(req: NextRequest) {
   try {
@@ -343,7 +344,16 @@ export async function POST(req: NextRequest) {
 
     // Instant answers (no LLM needed)
     if (classification.intent === 'question') {
-      const instant = tryInstantAnswer(message, context, memories, { allowSuggestions })
+      const continuityDigest = isContinuityDigestPrompt(message)
+        ? await loadContinuityDigest(user.tenantId!).catch((err) => {
+            console.error('[non-blocking] Continuity digest failed:', err)
+            return null
+          })
+        : null
+      const instant = tryInstantAnswer(message, context, memories, {
+        allowSuggestions,
+        continuityDigest,
+      })
       if (instant) {
         return NextResponse.json({
           blocked: false,

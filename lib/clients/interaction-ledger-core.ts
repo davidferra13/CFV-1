@@ -732,7 +732,7 @@ export function buildClientInteractionLedgerEntries(
         kind: 'inquiry',
         id: row.id,
         label: 'Inquiry',
-        href: `/pipeline/inquiries/${row.id}`,
+        href: `/inquiries/${row.id}`,
       },
       state: {
         status: row.status ?? null,
@@ -851,7 +851,7 @@ export function buildClientInteractionLedgerEntries(
                 kind: 'inquiry',
                 id: row.inquiry_id,
                 label: 'Inquiry',
-                href: `/pipeline/inquiries/${row.inquiry_id}`,
+                href: `/inquiries/${row.inquiry_id}`,
               }
             : undefined,
         revision: revision
