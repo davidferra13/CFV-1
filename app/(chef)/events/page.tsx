@@ -8,6 +8,7 @@ import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getEvents } from '@/lib/events/actions'
 import { EventStatusBadge } from '@/components/events/event-status-badge'
+import { MobileEventCard } from '@/components/events/mobile-event-card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -27,6 +28,7 @@ import { createServerClient } from '@/lib/db/server'
 import { EmptyState } from '@/components/ui/empty-state'
 import { getCachedChefArchetype } from '@/lib/chef/layout-data-cache'
 import { getArchetypeCopy } from '@/lib/archetypes/ui-copy'
+import { buildEventMobileRunModeHref } from '@/lib/events/operation-registry'
 
 export const metadata: Metadata = { title: 'Events' }
 
@@ -146,6 +148,19 @@ function getEventStaleness(updatedAt: string | null, status: string): 'ok' | 'wa
   return 'ok'
 }
 
+function getLocalDateString(date = new Date()): string {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(
+    date.getDate()
+  ).padStart(2, '0')}`
+}
+
+function formatEventDateLabel(value: string | null | undefined): string {
+  if (!value) return 'Date TBD'
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return 'Date TBD'
+  return format(date, 'MMM d, yyyy')
+}
+
 // --- End urgency helpers ---
 
 async function EventsList({ status }: { status: EventStatus }) {
@@ -219,133 +234,151 @@ async function EventsList({ status }: { status: EventStatus }) {
   }
 
   return (
-    <Card>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-14"></TableHead>
-            <TableHead>Occasion</TableHead>
-            <TableHead>Date</TableHead>
-            <TableHead>Client</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Next Step</TableHead>
-            <TableHead>Quoted Price</TableHead>
-            <TableHead>Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {events.map((event: any) => {
-            const _td = new Date()
-            const isToday =
-              event.event_date ===
-              `${_td.getFullYear()}-${String(_td.getMonth() + 1).padStart(2, '0')}-${String(_td.getDate()).padStart(2, '0')}`
-            return (
-              <TableRow
-                key={event.id}
-                className={isToday ? 'bg-amber-950/20 border-l-2 border-l-amber-600' : ''}
-              >
-                <TableCell className="w-14 p-1">
-                  {eventPhotoMap[event.id] && (
-                    <Link href={`/events/${event.id}`}>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={eventPhotoMap[event.id]}
-                        alt={event.title || 'Event photo'}
-                        className="h-12 w-12 rounded object-cover"
-                      />
-                    </Link>
-                  )}
-                </TableCell>
-                <TableCell className="font-medium">
-                  <Link
-                    href={`/events/${event.id}`}
-                    className="text-brand-600 hover:text-brand-800 hover:underline"
-                  >
-                    {event.occasion || 'Untitled Event'}
-                  </Link>
-                  {isToday && (
-                    <Badge variant="warning" className="ml-2 text-xxs px-1.5 py-0">
-                      Tonight
-                    </Badge>
-                  )}
-                  {isDemoEvent(event) && (
-                    <Badge variant="info" className="ml-2 text-xxs px-1.5 py-0">
-                      Sample
-                    </Badge>
-                  )}
-                </TableCell>
-                <TableCell>{format(new Date(event.event_date), 'MMM d, yyyy')}</TableCell>
-                <TableCell>{event.client?.full_name || 'Unknown'}</TableCell>
-                <TableCell>
-                  <EventStatusBadge status={event.status} />
-                </TableCell>
-                <TableCell>
-                  {(() => {
-                    const next = getEventNextStep(event.status)
-                    const staleness = getEventStaleness(event.updated_at, event.status)
-                    if (next.owner === 'done') return null
-                    const dotColor =
-                      staleness === 'hot'
-                        ? 'bg-red-500 animate-pulse'
-                        : staleness === 'warm'
-                          ? 'bg-amber-500'
-                          : 'bg-emerald-500'
-                    return (
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={`inline-block h-2 w-2 rounded-full flex-shrink-0 ${dotColor}`}
+    <>
+      <div className="space-y-3 md:hidden">
+        {events.map((event: any) => {
+          const isToday = event.event_date === getLocalDateString()
+          return (
+            <MobileEventCard
+              key={event.id}
+              event={event}
+              regional={regional}
+              photoUrl={eventPhotoMap[event.id]}
+              isToday={isToday}
+              isSample={isDemoEvent(event)}
+            />
+          )
+        })}
+      </div>
+
+      <Card className="hidden md:block">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-14"></TableHead>
+              <TableHead>Occasion</TableHead>
+              <TableHead>Date</TableHead>
+              <TableHead>Client</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Next Step</TableHead>
+              <TableHead>Quoted Price</TableHead>
+              <TableHead>Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {events.map((event: any) => {
+              const isToday = event.event_date === getLocalDateString()
+              return (
+                <TableRow
+                  key={event.id}
+                  className={isToday ? 'bg-amber-950/20 border-l-2 border-l-amber-600' : ''}
+                >
+                  <TableCell className="w-14 p-1">
+                    {eventPhotoMap[event.id] && (
+                      <Link href={`/events/${event.id}`}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={eventPhotoMap[event.id]}
+                          alt={event.title || 'Event photo'}
+                          className="h-12 w-12 rounded object-cover"
                         />
-                        <span className="text-xs text-stone-400">
-                          {next.text}
-                          {next.owner === 'client' && (
-                            <span className="text-stone-600 ml-1">(client)</span>
-                          )}
-                        </span>
-                      </div>
-                    )
-                  })()}
-                </TableCell>
-                <TableCell>
-                  {formatCurrency(event.quoted_price_cents ?? 0, {
-                    locale: regional.locale,
-                    currency: regional.currencyCode,
-                  })}
-                </TableCell>
-                <TableCell>
-                  <div className="flex gap-2">
-                    <Link href={`/events/${event.id}`}>
-                      <Button size="sm" variant="secondary">
-                        View
-                      </Button>
+                      </Link>
+                    )}
+                  </TableCell>
+                  <TableCell className="font-medium">
+                    <Link
+                      href={`/events/${event.id}`}
+                      className="text-brand-600 hover:text-brand-800 hover:underline"
+                    >
+                      {event.occasion || 'Untitled Event'}
                     </Link>
-                    {isToday && !['draft', 'cancelled'].includes(event.status) && (
-                      <Link href={`/events/${event.id}/pack`}>
-                        <Button size="sm" variant="primary">
-                          Pack
-                        </Button>
-                      </Link>
+                    {isToday && (
+                      <Badge variant="warning" className="ml-2 text-xxs px-1.5 py-0">
+                        Tonight
+                      </Badge>
                     )}
-                    {event.status === 'draft' && (
-                      <Link href={`/events/${event.id}/edit`}>
+                    {isDemoEvent(event) && (
+                      <Badge variant="info" className="ml-2 text-xxs px-1.5 py-0">
+                        Sample
+                      </Badge>
+                    )}
+                  </TableCell>
+                  <TableCell>{formatEventDateLabel(event.event_date)}</TableCell>
+                  <TableCell>{event.client?.full_name || 'Unknown'}</TableCell>
+                  <TableCell>
+                    <EventStatusBadge status={event.status} />
+                  </TableCell>
+                  <TableCell>
+                    {(() => {
+                      const next = getEventNextStep(event.status)
+                      const staleness = getEventStaleness(event.updated_at, event.status)
+                      if (next.owner === 'done') return null
+                      const dotColor =
+                        staleness === 'hot'
+                          ? 'bg-red-500 animate-pulse'
+                          : staleness === 'warm'
+                            ? 'bg-amber-500'
+                            : 'bg-emerald-500'
+                      return (
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`inline-block h-2 w-2 rounded-full flex-shrink-0 ${dotColor}`}
+                          />
+                          <span className="text-xs text-stone-400">
+                            {next.text}
+                            {next.owner === 'client' && (
+                              <span className="text-stone-600 ml-1">(client)</span>
+                            )}
+                          </span>
+                        </div>
+                      )
+                    })()}
+                  </TableCell>
+                  <TableCell>
+                    {typeof event.quoted_price_cents === 'number' ? (
+                      formatCurrency(event.quoted_price_cents, {
+                        locale: regional.locale,
+                        currency: regional.currencyCode,
+                      })
+                    ) : (
+                      <span className="text-stone-500">Not quoted</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex gap-2">
+                      <Link href={`/events/${event.id}`}>
                         <Button size="sm" variant="secondary">
-                          Edit
+                          View
                         </Button>
                       </Link>
-                    )}
-                  </div>
-                </TableCell>
-              </TableRow>
-            )
-          })}
-        </TableBody>
-      </Table>
-    </Card>
+                      {isToday && !['draft', 'cancelled'].includes(event.status) && (
+                        <Link href={`/events/${event.id}/pack`}>
+                          <Button size="sm" variant="primary">
+                            Pack
+                          </Button>
+                        </Link>
+                      )}
+                      {event.status === 'draft' && (
+                        <Link href={`/events/${event.id}/edit`}>
+                          <Button size="sm" variant="secondary">
+                            Edit
+                          </Button>
+                        </Link>
+                      )}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )
+            })}
+          </TableBody>
+        </Table>
+      </Card>
+    </>
   )
 }
 
 async function TodayEventsBanner() {
-  const _teb = new Date()
-  const today = `${_teb.getFullYear()}-${String(_teb.getMonth() + 1).padStart(2, '0')}-${String(_teb.getDate()).padStart(2, '0')}`
+  const today = getLocalDateString()
   const events = await getEvents()
   const todayEvents = events.filter(
     (e: any) => e.event_date === today && !['draft', 'cancelled'].includes(e.status)
@@ -372,17 +405,31 @@ async function TodayEventsBanner() {
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
+              {event.serve_time && (
+                <Link
+                  href={buildEventMobileRunModeHref(event.id, 'dop')}
+                  className="inline-flex items-center px-3 py-1.5 rounded-md bg-amber-600 hover:bg-amber-500 text-white text-xs font-medium transition-colors"
+                >
+                  Run Mode
+                </Link>
+              )}
               <Link
-                href={`/events/${event.id}/pack`}
+                href={buildEventMobileRunModeHref(event.id, 'packing')}
                 className="inline-flex items-center px-3 py-1.5 rounded-md bg-orange-600 hover:bg-orange-500 text-white text-xs font-medium transition-colors"
               >
                 Pack List
               </Link>
               <Link
-                href={`/events/${event.id}/grocery-quote`}
+                href={`/events/${event.id}/print`}
                 className="inline-flex items-center px-3 py-1.5 rounded-md bg-stone-700 hover:bg-stone-600 text-stone-200 text-xs font-medium transition-colors"
               >
-                Grocery List
+                Print Center
+              </Link>
+              <Link
+                href={`/events/${event.id}/documents`}
+                className="inline-flex items-center px-3 py-1.5 rounded-md bg-stone-700 hover:bg-stone-600 text-stone-200 text-xs font-medium transition-colors"
+              >
+                Documents
               </Link>
               <Link
                 href={`/events/${event.id}`}

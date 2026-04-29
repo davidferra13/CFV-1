@@ -84,6 +84,41 @@ type SnapshotArchiveOutcome =
         | 'unknown_error'
     }
 
+class DocumentArchiveError extends Error {
+  reason: Exclude<SnapshotArchiveOutcome, { archived: true }>['reason']
+  statusCode: number
+  retryable: boolean
+
+  constructor(
+    message: string,
+    reason: Exclude<SnapshotArchiveOutcome, { archived: true }>['reason'],
+    statusCode: number,
+    retryable: boolean
+  ) {
+    super(message)
+    this.name = 'DocumentArchiveError'
+    this.reason = reason
+    this.statusCode = statusCode
+    this.retryable = retryable
+  }
+}
+
+function isDocumentGenerationRetryable(error: unknown): boolean {
+  if (error instanceof DocumentArchiveError) return error.retryable
+  return isTransientError(error)
+}
+
+async function removeUploadedSnapshot(db: any, storagePath: string) {
+  try {
+    const { error } = await db.storage.from(SNAPSHOT_BUCKET).remove([storagePath])
+    if (error) {
+      console.warn('[documents/route] snapshot cleanup failed:', error)
+    }
+  } catch (error) {
+    console.warn('[documents/route] snapshot cleanup failed:', error)
+  }
+}
+
 function getDocRenderConfigs(eventId: string): Record<OperationalDocumentType, DocRenderConfig> {
   const summary = getDocumentDefinition('summary')
   const grocery = getDocumentDefinition('grocery')
@@ -242,7 +277,12 @@ async function archiveGeneratedDocument(params: {
 
     if (uploadError) {
       console.error('[documents/route] snapshot upload failed:', uploadError)
-      return { archived: false, reason: 'upload_failed' }
+      throw new DocumentArchiveError(
+        'Failed to archive generated PDF: upload failed.',
+        'upload_failed',
+        503,
+        true
+      )
     }
 
     const recordValidation = validateSnapshotArchiveInsert({
@@ -258,9 +298,14 @@ async function archiveGeneratedDocument(params: {
       metadata,
     })
     if (!recordValidation.success) {
-      await db.storage.from(SNAPSHOT_BUCKET).remove([storagePath])
+      await removeUploadedSnapshot(db, storagePath)
       console.error('[documents/route] snapshot insert validation failed:', recordValidation.error)
-      return { archived: false, reason: 'validation_failed' }
+      throw new DocumentArchiveError(
+        'Failed to archive generated PDF: archive record validation failed.',
+        'validation_failed',
+        500,
+        false
+      )
     }
 
     const { data: insertedSnapshot, error: insertError } = await db
@@ -281,9 +326,14 @@ async function archiveGeneratedDocument(params: {
       .single()
 
     if (insertError) {
-      await db.storage.from(SNAPSHOT_BUCKET).remove([storagePath])
+      await removeUploadedSnapshot(db, storagePath)
       console.error('[documents/route] snapshot insert failed:', insertError)
-      return { archived: false, reason: 'insert_failed' }
+      throw new DocumentArchiveError(
+        'Failed to archive generated PDF: archive record insert failed.',
+        'insert_failed',
+        503,
+        true
+      )
     }
 
     return {
@@ -293,8 +343,11 @@ async function archiveGeneratedDocument(params: {
       versionNumber: nextVersion,
     }
   } catch (error) {
+    if (error instanceof DocumentArchiveError) {
+      throw error
+    }
     console.error('[documents/route] snapshot archive failed:', error)
-    return { archived: false, reason: 'unknown_error' }
+    throw new DocumentArchiveError('Failed to archive generated PDF.', 'unknown_error', 500, true)
   }
 }
 
@@ -417,7 +470,13 @@ export async function GET(request: NextRequest, { params }: { params: { eventId:
     const maxAttempts = generationJob?.maxAttempts ?? DOCUMENT_GENERATION_MAX_ATTEMPTS
     let attemptsUsed = 0
 
-    const renderSingle = async (config: DocRenderConfig): Promise<Buffer> => {
+    const renderSingle = async (
+      config: DocRenderConfig
+    ): Promise<{
+      pdfBuffer: Buffer
+      overflowedContent: boolean
+      overflowedContentCount: number
+    }> => {
       const pdf = new PDFLayout()
       const data = await config.fetch()
       if (data) {
@@ -427,10 +486,22 @@ export async function GET(request: NextRequest, { params }: { params: { eventId:
         pdf.text('Data not available for this event.', 10, 'italic')
       }
       applyPageMeta(pdf, generatedBy, customFooter, config.docTypeLabel)
-      return pdf.toBuffer()
+      const overflowedContent = pdf.hasOverflow()
+      const overflowedContentCount = pdf.overflowCount()
+      return {
+        pdfBuffer: pdf.toBuffer(),
+        overflowedContent,
+        overflowedContentCount,
+      }
     }
 
-    const renderCombined = async (types: OperationalDocumentType[]): Promise<Buffer> => {
+    const renderCombined = async (
+      types: OperationalDocumentType[]
+    ): Promise<{
+      pdfBuffer: Buffer
+      overflowedContent: boolean
+      overflowedContentCount: number
+    }> => {
       const pdf = new PDFLayout()
       for (let i = 0; i < types.length; i++) {
         if (i > 0) pdf.newPage()
@@ -444,7 +515,13 @@ export async function GET(request: NextRequest, { params }: { params: { eventId:
         }
         applyPageMeta(pdf, generatedBy, customFooter, config.docTypeLabel)
       }
-      return pdf.toBuffer()
+      const overflowedContent = pdf.hasOverflow()
+      const overflowedContentCount = pdf.overflowCount()
+      return {
+        pdfBuffer: pdf.toBuffer(),
+        overflowedContent,
+        overflowedContentCount,
+      }
     }
 
     let generationResult: {
@@ -453,6 +530,8 @@ export async function GET(request: NextRequest, { params }: { params: { eventId:
       archiveType: SnapshotDocumentType
       snapshotMetadata: SnapshotMetadata
       archiveOutcome: SnapshotArchiveOutcome | null
+      overflowedContent: boolean
+      overflowedContentCount: number
     }
 
     try {
@@ -462,20 +541,31 @@ export async function GET(request: NextRequest, { params }: { params: { eventId:
           let pdfBuffer: Buffer
           let filename: string
           let archiveType: SnapshotDocumentType = requestedType === 'pack' ? 'all' : requestedType
+          let overflowedContent = false
+          let overflowedContentCount = 0
 
           if (requestedType in docConfigs) {
             const operationalType = requestedType as OperationalDocumentType
             const config = docConfigs[operationalType]
-            pdfBuffer = await renderSingle(config)
+            const rendered = await renderSingle(config)
+            pdfBuffer = rendered.pdfBuffer
+            overflowedContent = rendered.overflowedContent
+            overflowedContentCount = rendered.overflowedContentCount
             filename = `${config.filenameBase}-${dateSuffix}.pdf`
             archiveType = operationalType
           } else if (requestedType === 'all') {
-            pdfBuffer = await renderCombined(CORE_PACKET_DOCUMENT_TYPES)
+            const rendered = await renderCombined(CORE_PACKET_DOCUMENT_TYPES)
+            pdfBuffer = rendered.pdfBuffer
+            overflowedContent = rendered.overflowedContent
+            overflowedContentCount = rendered.overflowedContentCount
             filename = `event-documents-${dateSuffix}.pdf`
             archiveType = 'all'
           } else if (requestedType === 'pack') {
             const packTypes = selectedTypes.length > 0 ? selectedTypes : CORE_PACKET_DOCUMENT_TYPES
-            pdfBuffer = await renderCombined(packTypes)
+            const rendered = await renderCombined(packTypes)
+            pdfBuffer = rendered.pdfBuffer
+            overflowedContent = rendered.overflowedContent
+            overflowedContentCount = rendered.overflowedContentCount
             filename = `event-pack-${dateSuffix}.pdf`
             archiveType = packTypes.length === 1 ? packTypes[0] : 'all'
           } else {
@@ -508,15 +598,17 @@ export async function GET(request: NextRequest, { params }: { params: { eventId:
             archiveType,
             snapshotMetadata,
             archiveOutcome,
+            overflowedContent,
+            overflowedContentCount,
           }
         },
         {
           maxAttempts,
-          retryOn: isTransientError,
+          retryOn: isDocumentGenerationRetryable,
         }
       )
     } catch (error) {
-      const retryable = isTransientError(error)
+      const retryable = isDocumentGenerationRetryable(error)
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown document generation failure'
 
@@ -595,6 +687,10 @@ export async function GET(request: NextRequest, { params }: { params: { eventId:
               reason: 'not_requested',
             } as const),
           snapshot: generationResult.snapshotMetadata,
+          pdf: {
+            overflowedContent: generationResult.overflowedContent,
+            overflowedContentCount: generationResult.overflowedContentCount,
+          },
         },
       })
     }
@@ -609,6 +705,18 @@ export async function GET(request: NextRequest, { params }: { params: { eventId:
       headers['X-Document-Generation-Job-Id'] = generationJob.jobId
       headers['X-Document-Generation-Job-Reused'] = generationJob.reused ? '1' : '0'
     }
+    if (generationResult.archiveOutcome) {
+      headers['X-Document-Archive-Status'] = generationResult.archiveOutcome.archived
+        ? 'archived'
+        : generationResult.archiveOutcome.reason
+      if (generationResult.archiveOutcome.archived) {
+        headers['X-Document-Snapshot-Id'] = generationResult.archiveOutcome.snapshotId
+      }
+    }
+    if (generationResult.overflowedContent) {
+      headers['X-Document-PDF-Overflow'] = '1'
+      headers['X-Document-PDF-Overflow-Count'] = String(generationResult.overflowedContentCount)
+    }
 
     return new NextResponse(bytes, {
       status: 200,
@@ -621,6 +729,12 @@ export async function GET(request: NextRequest, { params }: { params: { eventId:
     }
 
     console.error('[documents/route] Error:', error)
+    if (error instanceof DocumentArchiveError) {
+      return NextResponse.json(
+        { error: error.message, archiveReason: error.reason },
+        { status: error.statusCode }
+      )
+    }
     return NextResponse.json({ error: 'Failed to generate document' }, { status: 500 })
   }
 }

@@ -11,16 +11,24 @@ const MARGIN_TOP = 12 // mm
 const MARGIN_BOTTOM = 10 // mm
 const CONTENT_WIDTH = LETTER_WIDTH - 2 * MARGIN_X
 const MAX_Y = LETTER_HEIGHT - MARGIN_BOTTOM
+const OVERFLOW_NOTICE_HEIGHT = 14
+const OVERFLOW_NOTICE_Y = LETTER_HEIGHT - MARGIN_BOTTOM - OVERFLOW_NOTICE_HEIGHT - 2
 
 export class PDFLayout {
   doc: jsPDF
   y: number
   private fontScale: number
+  private pageNumber: number
+  private overflowedContentCount: number
+  private overflowPages: Set<number>
 
   constructor() {
     this.doc = new jsPDF({ unit: 'mm', format: 'letter' })
     this.y = MARGIN_TOP
     this.fontScale = 1
+    this.pageNumber = 1
+    this.overflowedContentCount = 0
+    this.overflowPages = new Set()
   }
 
   /** Set a global font scale factor (0.7–1.0) to shrink content to fit */
@@ -47,6 +55,53 @@ export class PDFLayout {
     return this.y + mm > MAX_Y
   }
 
+  /** True once content has exceeded the printable page area. */
+  hasOverflow(): boolean {
+    return this.overflowedContentCount > 0
+  }
+
+  /** Count of content fragments that could not be placed within the printable area. */
+  overflowCount(): number {
+    return this.overflowedContentCount
+  }
+
+  private markOverflow() {
+    this.overflowedContentCount += 1
+    this.overflowPages.add(this.pageNumber)
+  }
+
+  private markIfOverflow(mm: number) {
+    if (this.wouldOverflow(mm)) {
+      this.markOverflow()
+    }
+  }
+
+  private renderOverflowNotices() {
+    if (this.overflowPages.size === 0) return
+
+    const originalPage = this.pageNumber
+    for (const page of this.overflowPages) {
+      this.doc.setPage(page)
+      this.doc.setFillColor(255, 245, 225)
+      this.doc.setDrawColor(190, 80, 0)
+      this.doc.setLineWidth(0.5)
+      this.doc.rect(MARGIN_X, OVERFLOW_NOTICE_Y, CONTENT_WIDTH, OVERFLOW_NOTICE_HEIGHT, 'FD')
+      this.doc.setFont('helvetica', 'bold')
+      this.doc.setFontSize(8)
+      this.doc.setTextColor(140, 50, 0)
+      this.doc.text('WARNING: PDF content overflowed.', MARGIN_X + 3, OVERFLOW_NOTICE_Y + 5)
+      this.doc.setFont('helvetica', 'normal')
+      this.doc.setFontSize(7)
+      this.doc.text(
+        'Some operational details may be missing from this page. Regenerate a smaller packet or use source records.',
+        MARGIN_X + 3,
+        OVERFLOW_NOTICE_Y + 9
+      )
+      this.doc.setTextColor(0, 0, 0)
+    }
+    this.doc.setPage(originalPage)
+  }
+
   /** Add vertical space */
   space(mm: number = 2) {
     this.y += mm * this.fontScale
@@ -54,6 +109,7 @@ export class PDFLayout {
 
   /** Document title - large, bold, centered */
   title(text: string, size: number = 14) {
+    this.markIfOverflow(this.lineHeight(size) + 1)
     const s = this.scaledSize(size)
     this.doc.setFontSize(s)
     this.doc.setFont('helvetica', 'bold')
@@ -63,6 +119,7 @@ export class PDFLayout {
 
   /** Section header - bold, full width, with optional separator line */
   sectionHeader(text: string, size: number = 11, withLine: boolean = true) {
+    this.markIfOverflow((withLine ? 2 : 0) + this.lineHeight(size) + 1)
     if (withLine) {
       this.doc.setDrawColor(60, 60, 60)
       this.doc.setLineWidth(0.4)
@@ -78,6 +135,7 @@ export class PDFLayout {
 
   /** Course header - bold, slightly smaller than section header */
   courseHeader(text: string, size: number = 10) {
+    this.markIfOverflow(this.lineHeight(size) + 0.5)
     const s = this.scaledSize(size)
     this.doc.setFontSize(s)
     this.doc.setFont('helvetica', 'bold')
@@ -87,6 +145,7 @@ export class PDFLayout {
 
   /** Key-value pair on one line: "Label: Value" */
   keyValue(label: string, value: string, size: number = 9) {
+    this.markIfOverflow(this.lineHeight(size))
     const s = this.scaledSize(size)
     this.doc.setFontSize(s)
     this.doc.setFont('helvetica', 'bold')
@@ -99,6 +158,7 @@ export class PDFLayout {
 
   /** Compact header info bar - multiple key-value pairs on one line */
   headerBar(pairs: Array<[string, string]>, size: number = 8) {
+    this.markIfOverflow(this.lineHeight(size) + 0.5)
     const s = this.scaledSize(size)
     this.doc.setFontSize(s)
     let x = MARGIN_X
@@ -130,6 +190,8 @@ export class PDFLayout {
     for (const line of lines) {
       if (!this.wouldOverflow(lh)) {
         this.doc.text(line, MARGIN_X + indent, this.y)
+      } else {
+        this.markOverflow()
       }
       this.y += lh
     }
@@ -148,6 +210,8 @@ export class PDFLayout {
     for (let i = 0; i < lines.length; i++) {
       if (!this.wouldOverflow(lh)) {
         this.doc.text(lines[i], MARGIN_X + indent + bulletW, this.y)
+      } else {
+        this.markOverflow()
       }
       this.y += lh
     }
@@ -158,6 +222,7 @@ export class PDFLayout {
     const s = this.scaledSize(size)
     const boxSize = s * 0.38
     const lh = this.lineHeight(size) + 1
+    this.markIfOverflow(lh)
 
     // Draw checkbox
     this.doc.setDrawColor(40, 40, 40)
@@ -197,6 +262,7 @@ export class PDFLayout {
     const lh = this.lineHeight(size)
     const boxHeight = lines.length * lh + 4
     const boxPadding = 2
+    this.markIfOverflow(boxHeight + 3)
 
     // Box background (light red)
     this.doc.setFillColor(255, 240, 240)
@@ -216,6 +282,7 @@ export class PDFLayout {
 
   /** Horizontal rule */
   hr() {
+    this.markIfOverflow(2)
     this.doc.setDrawColor(180, 180, 180)
     this.doc.setLineWidth(0.2)
     this.doc.line(MARGIN_X, this.y, LETTER_WIDTH - MARGIN_X, this.y)
@@ -264,10 +331,12 @@ export class PDFLayout {
   newPage() {
     this.doc.addPage('letter')
     this.y = MARGIN_TOP
+    this.pageNumber += 1
   }
 
   /** Export as Buffer */
   toBuffer(): Buffer {
+    this.renderOverflowNotices()
     return Buffer.from(this.doc.output('arraybuffer'))
   }
 }

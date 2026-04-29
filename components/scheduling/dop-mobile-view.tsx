@@ -62,6 +62,22 @@ function flattenDOPSchedule(schedule: DOPSchedule, manualKeys: Set<string>): Fla
   return tasks
 }
 
+function applyManualCompletion(
+  keys: Set<string>,
+  taskKey: string,
+  completed: boolean
+): Set<string> {
+  const next = new Set(keys)
+
+  if (completed) {
+    next.add(taskKey)
+  } else {
+    next.delete(taskKey)
+  }
+
+  return next
+}
+
 interface DopMobileViewProps {
   eventId: string
   schedule: DOPSchedule
@@ -113,17 +129,12 @@ export function DopMobileView({
 
     startTransition(async () => {
       try {
-        await toggleDOPTaskCompletion(eventId, task.taskKey)
+        const result = await toggleDOPTaskCompletion(eventId, task.taskKey)
+        setManualKeys((prev) => applyManualCompletion(prev, task.taskKey, result.completed))
       } catch {
         // Revert on error
         setManualKeys((prev) => {
-          const next = new Set(prev)
-          if (wasComplete) {
-            next.add(task.taskKey)
-          } else {
-            next.delete(task.taskKey)
-          }
-          return next
+          return applyManualCompletion(prev, task.taskKey, wasComplete)
         })
         toast.error('Failed to save. Check your connection.')
       }

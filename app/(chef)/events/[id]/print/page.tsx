@@ -10,7 +10,6 @@ import {
 import { getDocumentReadiness } from '@/lib/documents/actions'
 import { evaluateReadinessForDocumentGeneration } from '@/lib/events/readiness'
 import {
-  EVENT_MOBILE_RUN_MODES,
   EVENT_OPERATION_DOCUMENTS,
   EVENT_PRINT_CENTER_PACKET_TYPES,
   EVENT_SAFETY_PRINTS,
@@ -22,6 +21,7 @@ import {
   buildEventSafetyPrintHref,
   getEventOperationReadiness,
 } from '@/lib/events/operation-registry'
+import { EventRunModeRail } from '@/components/events/event-run-mode-rail'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -233,35 +233,12 @@ export default async function EventPrintCenterPage({ params }: { params: { id: s
         </div>
       </section>
 
-      <section>
-        <div className="mb-3">
-          <h2 className="text-xl font-semibold text-stone-100">Mobile Run Modes</h2>
-          <p className="text-sm text-stone-400">
-            Phone-first layouts for wet hands, loadout, service, and closeout.
-          </p>
-        </div>
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-          {EVENT_MOBILE_RUN_MODES.map((mode) => (
-            <Card key={mode.id} className="flex h-full flex-col gap-3 p-4">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">
-                  {mode.moment}
-                </p>
-                <h3 className="mt-1 font-semibold text-stone-100">{mode.title}</h3>
-              </div>
-              <p className="text-sm text-stone-400">{mode.description}</p>
-              <Button
-                href={buildEventMobileRunModeHref(params.id, mode)}
-                variant="secondary"
-                size="sm"
-                className="mt-auto"
-              >
-                Open
-              </Button>
-            </Card>
-          ))}
-        </div>
-      </section>
+      <EventRunModeRail
+        eventId={params.id}
+        status={event.status}
+        showPrintCenter={false}
+        showDocuments={false}
+      />
     </div>
   )
 }

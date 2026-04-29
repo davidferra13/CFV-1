@@ -13,6 +13,7 @@ import { createServerClient } from '@/lib/db/server'
 
 const MAX_TYPES_PER_RUN = 12
 const MAX_ERROR_MESSAGE_LENGTH = 280
+const ARCHIVE_SUCCESS_STATUSES = new Set(['archived', 'duplicate_hash', 'rate_limited'])
 
 const bulkGenerateRequestSchema = z.object({
   types: z.array(z.string()).max(MAX_TYPES_PER_RUN).optional(),
@@ -180,13 +181,44 @@ export async function POST(request: NextRequest, { params }: { params: { eventId
       }
 
       await response.arrayBuffer()
+      const archiveStatus = response.headers.get('X-Document-Archive-Status')
+      if (!archiveStatus || !ARCHIVE_SUCCESS_STATUSES.has(archiveStatus)) {
+        results.push({
+          type,
+          status: 'failed',
+          httpStatus: response.status,
+          generationJobId,
+          reusedJob,
+          snapshotId: null,
+          error: archiveStatus
+            ? `Archive did not succeed: ${archiveStatus}`
+            : 'Archive status missing from document response.',
+        })
+        continue
+      }
+
+      const snapshotId =
+        archiveStatus === 'archived' ? response.headers.get('X-Document-Snapshot-Id') : null
+      if (archiveStatus === 'archived' && !snapshotId) {
+        results.push({
+          type,
+          status: 'failed',
+          httpStatus: response.status,
+          generationJobId,
+          reusedJob,
+          snapshotId: null,
+          error: 'Archived document response did not include a snapshot id.',
+        })
+        continue
+      }
+
       results.push({
         type,
         status: 'succeeded',
         httpStatus: response.status,
         generationJobId,
         reusedJob,
-        snapshotId: null,
+        snapshotId,
         error: null,
       })
     } catch (error) {
@@ -200,25 +232,6 @@ export async function POST(request: NextRequest, { params }: { params: { eventId
         error: summarizeErrorMessage(error),
       })
     }
-  }
-
-  for (const row of results) {
-    if (row.status !== 'succeeded') continue
-    const { data: snapshot, error: snapshotError } = await db
-      .from('event_document_snapshots')
-      .select('id')
-      .eq('tenant_id', user.tenantId!)
-      .eq('event_id', eventId)
-      .eq('document_type', row.type)
-      .order('generated_at', { ascending: false })
-      .limit(1)
-      .maybeSingle()
-
-    if (snapshotError) {
-      console.error('[documents/bulk-generate] latest snapshot lookup failed:', snapshotError)
-      continue
-    }
-    row.snapshotId = (snapshot?.id as string | undefined) ?? null
   }
 
   const succeeded = results.filter((row) => row.status === 'succeeded').length

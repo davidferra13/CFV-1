@@ -152,6 +152,7 @@ import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
 import { PreEventNerveCenter } from '@/components/events/pre-event-nerve-center'
 import { PreServiceChecklistSection } from '@/components/events/pre-service-checklist-section'
 import { StationBoard } from '@/components/events/station-board'
+import { EventRunModeRail } from '@/components/events/event-run-mode-rail'
 import { EventIntelligencePanel } from '@/components/intelligence/event-intelligence-panel'
 import { getLifecycleProgress } from '@/lib/lifecycle/actions'
 import { getChefArchetype } from '@/lib/archetypes/actions'
@@ -1466,6 +1467,14 @@ export default async function EventDetailPage({
           </Link>
         </div>
       </div>
+
+      <EventRunModeRail
+        eventId={event.id}
+        status={event.status}
+        compact
+        showDocuments={false}
+        className="rounded-lg border border-stone-800 bg-stone-900/50 p-3"
+      />
 
       {eventCallRecommendation && eventCallRecommendationHref && event.client_id && (
         <CallRecommendationCard

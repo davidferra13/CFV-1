@@ -6,6 +6,7 @@
 
 import { useState, useTransition } from 'react'
 import { toggleDOPTaskCompletion } from '@/lib/scheduling/dop-completions'
+import { toast } from 'sonner'
 
 type Props = {
   eventId: string
@@ -15,7 +16,7 @@ type Props = {
 
 export function DOPTaskCheckbox({ eventId, taskKey, initialChecked }: Props) {
   const [checked, setChecked] = useState(initialChecked)
-  const [, startTransition] = useTransition()
+  const [isPending, startTransition] = useTransition()
 
   const handleToggle = () => {
     const next = !checked
@@ -26,6 +27,7 @@ export function DOPTaskCheckbox({ eventId, taskKey, initialChecked }: Props) {
         setChecked(result.completed)
       } catch {
         setChecked(!next) // rollback on error
+        toast.error('Failed to save. Check your connection.')
       }
     })
   }
@@ -34,8 +36,9 @@ export function DOPTaskCheckbox({ eventId, taskKey, initialChecked }: Props) {
     <button
       type="button"
       onClick={handleToggle}
+      disabled={isPending}
       aria-label={checked ? 'Unmark task as done' : 'Mark task as done'}
-      className={`flex-shrink-0 w-5 h-5 mt-0.5 rounded border-2 flex items-center justify-center text-xs transition-colors cursor-pointer ${
+      className={`flex-shrink-0 w-5 h-5 mt-0.5 rounded border-2 flex items-center justify-center text-xs transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-60 ${
         checked
           ? 'bg-emerald-500 border-emerald-500 text-white'
           : 'bg-stone-900 border-stone-600 text-transparent hover:border-emerald-400'

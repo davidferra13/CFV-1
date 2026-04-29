@@ -9,6 +9,7 @@ import { format, differenceInMinutes } from 'date-fns'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { EventRunModeRail } from '@/components/events/event-run-mode-rail'
 import { getEventWeather, type EventWeather } from '@/lib/weather/open-meteo'
 import { assessWeatherRisk, type WeatherRiskResult } from '@/lib/formulas/weather-risk'
 import { fetchForecast } from '@/lib/weather/open-meteo'
@@ -179,8 +180,6 @@ export async function PreEventNerveCenter(props: NerveCenterProps) {
 
   const tMinus = getTMinus(eventDate, serveTime)
   const dopMobileHref = buildEventMobileRunModeHref(eventId, 'dop')
-  const packingHref = buildEventMobileRunModeHref(eventId, 'packing')
-  const travelHref = buildEventMobileRunModeHref(eventId, 'travel')
 
   // Fetch weather if we have coordinates
   let weather: EventWeather | null = null
@@ -455,31 +454,10 @@ export async function PreEventNerveCenter(props: NerveCenterProps) {
 
       {/* Quick action bar */}
       <div className="px-4 py-2.5 border-t border-stone-800/50 flex flex-wrap items-center gap-2 bg-stone-900/60">
-        {tMinus.hours > 0 && (
-          <Link href={dopMobileHref}>
-            <Button variant="secondary" size="sm">
-              Run Mode
-            </Button>
-          </Link>
-        )}
-        <Link href={packingHref}>
-          <Button variant="secondary" size="sm">
-            Pack List
-          </Button>
-        </Link>
+        <EventRunModeRail eventId={eventId} status={status} compact />
         <Link href={`/events/${eventId}/grocery-quote`}>
           <Button variant="secondary" size="sm">
             Grocery
-          </Button>
-        </Link>
-        <Link href={`/events/${eventId}/documents`}>
-          <Button variant="secondary" size="sm">
-            Docs
-          </Button>
-        </Link>
-        <Link href={travelHref}>
-          <Button variant="secondary" size="sm">
-            Travel
           </Button>
         </Link>
         <Link href={`/events/${eventId}?tab=prep`}>

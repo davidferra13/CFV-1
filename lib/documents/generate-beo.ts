@@ -9,6 +9,21 @@ import { PDFLayout } from './pdf-layout'
 import { format, parseISO } from 'date-fns'
 import { dateToDateString } from '@/lib/utils/format'
 
+const STAFF_ROLE_LABELS: Record<string, string> = {
+  sous_chef: 'Sous Chef',
+  kitchen_assistant: 'Kitchen Assistant',
+  service_staff: 'Service Staff',
+  server: 'Server',
+  bartender: 'Bartender',
+  dishwasher: 'Dishwasher',
+  other: 'Staff',
+}
+
+function formatStaffRole(role: string | null | undefined): string {
+  if (!role) return 'Staff'
+  return STAFF_ROLE_LABELS[role] ?? role.replace(/_/g, ' ')
+}
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type BEOData = {
@@ -139,25 +154,34 @@ export async function fetchBEOData(eventId: string): Promise<BEOData | null> {
     }
   }
 
-  // Fetch staff
+  // Fetch staff assignments
   const staff: BEOData['staff'] = []
   try {
     const { data: staffData } = await db
-      .from('event_staff')
-      .select('staff:staff_members(full_name), role')
+      .from('event_staff_assignments')
+      .select(
+        `
+        role_override,
+        staff_members (name, role)
+      `
+      )
       .eq('event_id', eventId)
-      .eq('tenant_id', user.tenantId!)
+      .eq('chef_id', user.tenantId!)
+      .order('created_at')
 
     if (staffData) {
       for (const s of staffData) {
-        const member = s.staff as unknown as { full_name: string } | null
+        const member = s.staff_members as unknown as { name: string; role: string | null } | null
         if (member) {
-          staff.push({ name: member.full_name, role: s.role ?? 'Staff' })
+          staff.push({
+            name: member.name,
+            role: formatStaffRole(s.role_override ?? member.role),
+          })
         }
       }
     }
   } catch {
-    // Staff table may not exist yet; non-blocking
+    // Staff assignments are optional for BEO generation; keep document generation non-blocking.
   }
 
   // Build timeline
