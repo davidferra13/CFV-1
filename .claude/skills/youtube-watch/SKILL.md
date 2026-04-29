@@ -38,6 +38,7 @@ Convert YouTube videos into grounded, useful work products. Prefer transcript an
    - Executive brief: conclusion first, then evidence.
    - Learning notes: concepts, examples, counterexamples, and retention prompts.
    - Software lecture mode: design concept, shared language, feedback loop, deep module lesson, failure mode, ChefFlow adoption action, and grill-me questions.
+   - App optimization mode: translate the video into ChefFlow architecture, product, workflow, skill, and validation opportunities.
    - Tactical extraction: steps, inputs, tools, costs, risks, and effort.
    - Implementation plan: ordered tasks, dependencies, files or systems likely affected, and validation.
    - Critique: strong claims, weak claims, missing evidence, incentives, and failure modes.
@@ -81,6 +82,17 @@ When a video mentions GitHub repos, papers, books, CLIs, models, libraries, prod
 2. Prefer official or primary URLs when browsing is needed.
 3. Classify the safe next action: read, vendor, install, ignore, or verify first.
 4. Do not install packages, clone repos, or download large media unless the user asked for that action or it is necessary and safe.
+
+## ChefFlow Optimization Mode
+
+When the user says a YouTube video should optimize the app:
+
+1. Extract the video's principles with transcript confidence and visual evidence.
+2. Map each principle to ChefFlow surfaces: app architecture, Remy, skills, build queue, UI workflow, data model, tests, or documentation.
+3. Separate safe skill/process adoption from risky app refactors.
+4. For app refactors, create bounded drills or specs rather than changing broad production code directly.
+5. Use `software-fundamentals` to identify shared design concept, ubiquitous language, deep module boundary, fastest feedback loop, and design investment.
+6. Update the video ledger under `system/video-learning/` when the same video remains an ongoing learning source.
 
 ## Extraction Commands
 
@@ -156,6 +168,13 @@ Software lecture adoption:
 - Feedback loop: [fastest meaningful check]
 - Grill-me prompt: [question to resolve before coding]
 - ChefFlow adoption action: [specific skill, process, test, or module change]
+
+ChefFlow optimization:
+
+- App surface: [architecture | Remy | skills | queue | UI | data | tests | docs]
+- Safe now: [skill/process/doc change]
+- Needs spec: [app refactor or risky implementation]
+- Module shape: [shallow grid to avoid | deep boundary to move toward]
 
 Referenced assets:
 

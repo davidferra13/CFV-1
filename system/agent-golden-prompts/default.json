@@ -58,6 +58,17 @@
     }
   },
   {
+    "name": "grill me working agreement",
+    "prompt": "Grill me. We always need to improve ChefFlow architecture, Codex operation, YouTube optimization, visible Playwright feedback, dirty-tree queue discipline, and deep module boundaries.",
+    "expect": ["omninet", "software-fundamentals", "youtube-watch", "skill-garden"],
+    "evidence": {
+      "omninet": ["Runtime Visibility", "Dirty Tree And Queue Discipline"],
+      "software-fundamentals": ["Human Strategy, AI Tactics", "Working agreement"],
+      "youtube-watch": ["ChefFlow Optimization Mode", "App optimization mode"],
+      "skill-garden": ["developer behavior", "durable behavior"]
+    }
+  },
+  {
     "name": "skill repair",
     "prompt": "This skill failed and needs to self-heal before future tasks.",
     "expect": ["omninet", "heal-skill", "skill-garden"],

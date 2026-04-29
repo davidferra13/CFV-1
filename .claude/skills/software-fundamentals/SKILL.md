@@ -66,6 +66,16 @@ Run this before coding unless the task is a tiny mechanical edit:
    - For non-critical internals, let AI fill implementation behind a tested boundary.
    - For critical areas such as money, auth, tenant scope, privacy, migrations, and safety, inspect internals directly.
 
+## Human Strategy, AI Tactics
+
+Human-owned strategy means the human or lead agent decides goals, product meaning, safety boundaries, module boundaries, interfaces, invariants, and what must never happen. AI tactics means agents may implement bounded internals, tests, docs, and mechanical changes after the interface, risks, and feedback loop are clear.
+
+Use this split:
+
+- Human strategy: what problem matters, what behavior is allowed, what data or money rules cannot break, which module owns the concept, and which ambiguity must be resolved before work starts.
+- AI tactics: create the narrow patch, add the focused test, update the doc, run validation, extract YouTube evidence, or implement internals behind an agreed interface.
+- Shared checkpoint: if the agent cannot state the interface, invariant, fastest feedback loop, and design investment, it is not ready to code.
+
 ## Upstream Skill Map
 
 Use the downloaded Matt Pocock skills as source material:
@@ -138,5 +148,6 @@ For ChefFlow work, combine this skill with the most specific task skill:
 
 - Lecture ledger: `system/video-learning/matt-pocock-software-fundamentals.md`.
 - ChefFlow adoption audit: `system/video-learning/matt-pocock-chefflow-adoption-audit.md`.
+- Working agreement: `system/operating-agreement/chefflow-codex-working-agreement.md`.
 
 Treat the adoption audit as the repo-level drill map. Do not start broad refactors from it casually. When one listed area becomes active work, use the drill to define the smallest interface-first slice and the fastest verification loop.

@@ -57,6 +57,7 @@ Use these tools when the task touches skills or durable agent behavior:
 7. Inspect branch and dirty work before writing, classify current-task files versus other agents' work, and keep ownership narrow.
 8. State the skill or skills being used in one short line.
 9. Execute the task with the normal ChefFlow hard stops: no main push, no destructive database operations, no `drizzle-kit push`, no manual `types/database.ts`, no ts-nocheck directive, no em dashes, no unapproved build, no unapproved long-running server.
+10. Read `system/operating-agreement/chefflow-codex-working-agreement.md` when the task touches architecture, agent behavior, YouTube learning, Remy, parallel-agent coordination, build queues, or module boundaries.
 
 ## Skill Router
 
@@ -103,6 +104,14 @@ Use `software-fundamentals` with these primary skills whenever the work is more 
 - `debug`: require one root-cause hypothesis, one fastest falsifying check, and a boundary-aware fix.
 - `tdd`: require the fastest test boundary before RED.
 - `review`: review for architecture entropy, shallow helper sprawl, boundary leakage, naming drift, and missing interface tests.
+
+## Runtime Visibility
+
+The developer wants visible runtime feedback whenever Codex is working on UI, browser behavior, or app flows. Use `warmup`, `verify`, or Playwright inspection when it is relevant and permitted. Do not start servers, restart servers, or keep long-running processes open without explicit permission. If a needed browser or server is not available, state the blocker and the exact safe command or skill that would make runtime visibility possible.
+
+## Dirty Tree And Queue Discipline
+
+Do not use a dirty tree as a reason to drift into unrelated cleanup. If unrelated dirty work blocks a task, preserve it, report the exact blocker, and route the work into the appropriate queue or isolated feature worktree. For build queue triage, use `findings-triage`, `quick-wins`, `persona-build`, or `builder` depending on whether the item is a finding, quick win, persona-derived feature, or ready spec.
 
 ## Heartbeat
 
