@@ -428,7 +428,7 @@
 - **Allergen Conflict Alert:** Deterministic allergen cross-check (auto-runs on mount, no AI). Red/amber banners showing per-guest conflicts with FDA Big 9 classification. Expandable per-person detail with safe dish list. Gated on `menu_id` existing.
 - **AI Allergen Risk Matrix:** AI-powered allergen analysis (on-demand, deeper analysis)
 - **AI Menu Nutritional Summary:** AI nutritional breakdown
-- **Communication Log:** stage-aware call recommendation card when current status, payments, dates, or message content indicate a phone call should happen, then `MessageThread` (read-only) + `MessageLogForm` (compose with channel select, template select, textarea, submit)
+- **Communication Log:** stage-aware call recommendation card when current status, payments, dates, or message content indicate a phone call should happen. Recent inbound confusion, urgency, concern, complicated coordination, or direct requests to talk now trigger a human call recommendation before more chat. Then `MessageThread` (read-only) + `MessageLogForm` (compose with channel select, template select, textarea, submit).
 
 #### Tab: Finance
 

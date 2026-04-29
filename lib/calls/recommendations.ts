@@ -93,6 +93,22 @@ const MENU_ALIGNMENT_PATTERNS = [
 ]
 const PRICE_PATTERNS = ['price', 'pricing', 'budget', 'cost', 'quote', 'deposit', 'pay', 'payment']
 const REBOOK_PATTERNS = ['again', 'next time', 'another', 'holiday', 'birthday', 'monthly']
+const HUMAN_TOUCH_PATTERNS = [
+  'call me',
+  'can we talk',
+  'could we talk',
+  'can we hop on',
+  'phone',
+  'urgent',
+  'asap',
+  'confused',
+  'not sure',
+  'unclear',
+  'concern',
+  'worried',
+  'complicated',
+  'overwhelmed',
+]
 
 function nowMs(): number {
   return Date.now()
@@ -189,6 +205,7 @@ export function recommendCallForInquiry(
   const clientIsQuiet = isClientQuietAfterOutbound(input.messages)
   const priceSignal = hasRecentInboundSignal(input.messages, PRICE_PATTERNS)
   const menuSignal = hasRecentInboundSignal(input.messages, MENU_ALIGNMENT_PATTERNS)
+  const humanTouchSignal = hasRecentInboundSignal(input.messages, HUMAN_TOUCH_PATTERNS)
 
   if (hasSentQuote || input.status === 'quoted' || priceSignal) {
     return {
@@ -203,6 +220,21 @@ export function recommendCallForInquiry(
       prepNotes:
         'Walk through scope, price, deposit timing, cancellation terms, and any open client questions.',
       durationMinutes: 20,
+    }
+  }
+
+  if (humanTouchSignal) {
+    return {
+      kind: 'call_now',
+      callType: 'follow_up',
+      urgency: 'now',
+      label: 'Call To Unblock The Thread',
+      reason:
+        'The client thread shows confusion, urgency, concern, or a direct request to talk. A human call should happen before more chat.',
+      title: `Human follow-up call with ${name}`,
+      prepNotes:
+        'Resolve the unclear point live, preserve tone, restate the decision, and log the next action back into ChefFlow.',
+      durationMinutes: 15,
     }
   }
 
@@ -257,6 +289,7 @@ export function recommendCallForEvent(input: EventCallRecommendationInput): Call
   const name = clientLabel(input.clientName)
   const menuSignal = hasRecentInboundSignal(input.messages, MENU_ALIGNMENT_PATTERNS)
   const rebookSignal = hasRecentInboundSignal(input.messages, REBOOK_PATTERNS)
+  const humanTouchSignal = hasRecentInboundSignal(input.messages, HUMAN_TOUCH_PATTERNS)
   const clientIsQuiet = isClientQuietAfterOutbound(input.messages)
   const depositDue =
     (input.depositAmountCents ?? 0) > 0 && (input.totalPaidCents ?? 0) < (input.depositAmountCents ?? 0)
@@ -279,6 +312,21 @@ export function recommendCallForEvent(input: EventCallRecommendationInput): Call
       }
     }
     return null
+  }
+
+  if (humanTouchSignal) {
+    return {
+      kind: 'call_now',
+      callType: 'follow_up',
+      urgency: 'now',
+      label: 'Call To Unblock The Thread',
+      reason:
+        'The event thread shows confusion, urgency, concern, or a direct request to talk. A human call should happen before more chat.',
+      title: `Human follow-up call for ${input.occasion || name}`,
+      prepNotes:
+        'Resolve the unclear point live, confirm timing, count, location, scope, or risk, and log the outcome back into ChefFlow.',
+      durationMinutes: 15,
+    }
   }
 
   if (menuSignal) {

@@ -54,6 +54,47 @@ describe('call recommendations', () => {
     assert.equal(recommendation?.callType, 'pre_event_logistics')
   })
 
+  it('recommends a human call when an event thread is confused or urgent', () => {
+    const farFuture = new Date()
+    farFuture.setDate(farFuture.getDate() + 21)
+
+    const recommendation = recommendCallForEvent({
+      id: 'event-urgent-thread',
+      status: 'confirmed',
+      eventDate: farFuture.toISOString(),
+      occasion: 'Garden dinner',
+      messages: [
+        {
+          direction: 'inbound',
+          body: 'I am confused about the setup and worried we missed something. Can we talk?',
+          created_at: new Date().toISOString(),
+        },
+      ],
+    })
+
+    assert.equal(recommendation?.kind, 'call_now')
+    assert.equal(recommendation?.callType, 'follow_up')
+    assert.equal(recommendation?.urgency, 'now')
+  })
+
+  it('recommends a human call when an inquiry thread directly asks to talk', () => {
+    const recommendation = recommendCallForInquiry({
+      id: 'inq-human-touch',
+      status: 'awaiting_chef',
+      clientName: 'Mara',
+      messages: [
+        {
+          direction: 'inbound',
+          body: 'This is getting complicated. Can we hop on the phone?',
+          created_at: new Date().toISOString(),
+        },
+      ],
+    })
+
+    assert.equal(recommendation?.kind, 'call_now')
+    assert.equal(recommendation?.callType, 'follow_up')
+  })
+
   it('recommends a day-after follow-up after completed service', () => {
     const completed = new Date()
     completed.setDate(completed.getDate() - 1)
