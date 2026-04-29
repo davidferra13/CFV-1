@@ -7,6 +7,8 @@ import {
   type FirstWeekActivationFacts,
 } from '@/lib/onboarding/first-week-activation'
 import { buildPilotActivationStatus } from '@/lib/pilot/activation'
+import { summarizeOperatorSurveyReadiness } from '@/lib/validation/operator-survey-readiness'
+import { summarizePublicBookingProof } from '@/lib/validation/public-booking-proof'
 import { buildAcquisitionReadiness } from '@/lib/validation/acquisition-readiness'
 import { buildOnboardingTestReadiness } from '@/lib/validation/onboarding-test-readiness'
 
@@ -69,6 +71,7 @@ export type LaunchReadinessFacts = {
     activeSurveys: number
     submittedResponses: number
     totalResponses: number
+    lastResponseAt: string | null
   }
   productFeedbackSignals: number
   acquisition: {
@@ -216,6 +219,18 @@ export function buildLaunchReadinessReport(facts: LaunchReadinessFacts): LaunchR
     (sum, chef) => sum + chef.evidence.feedbackSignals,
     0
   )
+  const publicBookingProof = summarizePublicBookingProof({
+    totalTests: publicBookingTests,
+    latestSubmittedAt: facts.acquisition.latestSubmissionAt,
+    hasStatusPageEvidence: facts.acquisition.publicBookingSubmissions > 0,
+    matchedChefCount: publicBookingTests,
+    unresolvedFollowup: 0,
+    href: bestPilot?.publicBookingHref ?? '/admin/users',
+  })
+  const operatorSurveyReadiness = summarizeOperatorSurveyReadiness({
+    ...facts.operatorSurvey,
+    lastResponseAt: facts.operatorSurvey.lastResponseAt,
+  })
   const feedbackSignals = pilotFeedbackSignals + facts.productFeedbackSignals
   const moneyLoopCandidates = facts.pilotCandidates.filter(
     (chef) => chef.evidence.events > 0 && chef.evidence.invoiceArtifacts > 0
@@ -279,15 +294,13 @@ export function buildLaunchReadinessReport(facts: LaunchReadinessFacts): LaunchR
     {
       key: 'public_booking_test',
       label: 'Public booking tested by a non-developer',
-      status: publicBookingTests > 0 ? 'operator_review' : 'needs_action',
-      evidence:
-        publicBookingTests > 0
-          ? countLabel(
-              publicBookingTests,
-              'public booking inquiry exists',
-              'public booking inquiries exist'
-            )
-          : 'No public booking inquiry exists yet',
+      status:
+        publicBookingProof.status === 'verified'
+          ? 'verified'
+          : publicBookingProof.status === 'missing'
+            ? 'needs_action'
+            : 'operator_review',
+      evidence: publicBookingProof.evidence,
       evidenceItems: [
         {
           label: 'Public inquiries',
@@ -298,16 +311,17 @@ export function buildLaunchReadinessReport(facts: LaunchReadinessFacts): LaunchR
         {
           label: 'Tester proof',
           value:
-            publicBookingTests > 0 ? 'Needs human tester verification' : 'No test run captured',
-          source: 'operator review',
+            publicBookingProof.status === 'verified'
+              ? 'Non-developer proof verified'
+              : publicBookingProof.status === 'missing'
+                ? 'No test run captured'
+                : 'Needs human tester verification',
+          source: 'public booking proof summary',
           href: bestPilot?.publicBookingHref ?? null,
         },
       ],
-      nextStep:
-        publicBookingTests > 0
-          ? 'Confirm the tester was not a developer and that the full handoff worked.'
-          : 'Send a chef booking link to a non-developer tester and capture the inquiry.',
-      href: bestPilot?.publicBookingHref ?? '/admin/users',
+      nextStep: publicBookingProof.nextStep,
+      href: publicBookingProof.href,
     },
     {
       key: 'first_booking_loop',
@@ -403,11 +417,13 @@ export function buildLaunchReadinessReport(facts: LaunchReadinessFacts): LaunchR
     {
       key: 'operator_survey',
       label: 'Wave-1 operator survey has responses',
-      status: facts.operatorSurvey.submittedResponses > 0 ? 'operator_review' : 'needs_action',
-      evidence:
-        facts.operatorSurvey.submittedResponses > 0
-          ? `${countLabel(facts.operatorSurvey.submittedResponses, 'submitted survey response', 'submitted survey responses')} across ${countLabel(facts.operatorSurvey.activeSurveys, 'active survey', 'active surveys')}`
-          : `${countLabel(facts.operatorSurvey.activeSurveys, 'active survey', 'active surveys')}; no submitted responses yet`,
+      status:
+        operatorSurveyReadiness.status === 'verified'
+          ? 'verified'
+          : operatorSurveyReadiness.status === 'missing'
+            ? 'needs_action'
+            : 'operator_review',
+      evidence: operatorSurveyReadiness.evidence,
       evidenceItems: [
         {
           label: 'Submitted responses',
@@ -422,11 +438,8 @@ export function buildLaunchReadinessReport(facts: LaunchReadinessFacts): LaunchR
           href: '/admin/beta-surveys',
         },
       ],
-      nextStep:
-        facts.operatorSurvey.submittedResponses > 0
-          ? 'Analyze responses and decide which launch claims survive contact with operators.'
-          : 'Launch the operator survey and collect responses before expanding the backlog.',
-      href: '/admin/beta-surveys',
+      nextStep: operatorSurveyReadiness.nextStep,
+      href: operatorSurveyReadiness.href,
     },
     {
       key: 'onboarding_test',
@@ -791,8 +804,27 @@ async function loadOperatorSurveyFacts(db: any) {
       .not('submitted_at', 'is', null),
     'submitted beta survey responses'
   )
+  const latestResponse = await db
+    .from('beta_survey_responses')
+    .select('submitted_at')
+    .not('submitted_at', 'is', null)
+    .order('submitted_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
 
-  return { activeSurveys, totalResponses, submittedResponses }
+  if (latestResponse.error) {
+    throw new Error('Launch readiness query failed: latest beta survey response')
+  }
+
+  return {
+    activeSurveys,
+    totalResponses,
+    submittedResponses,
+    lastResponseAt:
+      typeof latestResponse.data?.submitted_at === 'string'
+        ? latestResponse.data.submitted_at
+        : null,
+  }
 }
 
 async function loadProductFeedbackFacts(db: any) {
