@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   Bell,
@@ -207,6 +207,7 @@ export function NotificationListClient() {
     markAsRead: contextMarkRead,
     markAllAsRead: contextMarkAllRead,
     refreshCount,
+    addNotificationListener,
   } = useNotifications()
 
   const [notifications, setNotifications] = useState<Notification[]>([])
@@ -216,6 +217,7 @@ export function NotificationListClient() {
   const [page, setPage] = useState(0)
   const [totalCount, setTotalCount] = useState(0)
   const [loadError, setLoadError] = useState<string | null>(null)
+  const knownNotificationIdsRef = useRef<Set<string>>(new Set())
 
   // ─── Fetch ─────────────────────────────────────────────────────────
 
@@ -264,6 +266,33 @@ export function NotificationListClient() {
   useEffect(() => {
     fetchNotifications()
   }, [fetchNotifications])
+
+  useEffect(() => {
+    for (const notification of notifications) {
+      knownNotificationIdsRef.current.add(notification.id)
+    }
+  }, [notifications])
+
+  useEffect(() => {
+    return addNotificationListener((notification) => {
+      const matchesCategory = activeFilter === 'all' || notification.category === activeFilter
+      const matchesReadFilter = readFilter === 'all' || !notification.read_at
+
+      if (!matchesCategory) return
+      if (knownNotificationIdsRef.current.has(notification.id)) return
+
+      knownNotificationIdsRef.current.add(notification.id)
+      setTotalCount((prev) => prev + 1)
+
+      if (page !== 0 || !matchesReadFilter) return
+
+      setNotifications((prev) => {
+        if (prev.some((item) => item.id === notification.id)) return prev
+
+        return [notification, ...prev].slice(0, PAGE_SIZE)
+      })
+    })
+  }, [activeFilter, addNotificationListener, page, readFilter])
 
   // ─── Actions ───────────────────────────────────────────────────────
 

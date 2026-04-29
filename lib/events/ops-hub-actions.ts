@@ -28,6 +28,8 @@ export interface OpsHubData {
   shopping: {
     items: ShoppingListItem[]
     totalEstimatedCostCents: number
+    unavailable: boolean
+    error: string | null
   }
   prep: {
     days: PrepDay[]
@@ -56,9 +58,18 @@ async function getShopping(eventId: string, eventDate: string): Promise<OpsHubDa
     return {
       items: result.items,
       totalEstimatedCostCents: result.totalEstimatedCostCents,
+      unavailable: false,
+      error: null,
     }
-  } catch {
-    return { items: [], totalEstimatedCostCents: 0 }
+  } catch (error) {
+    console.error('[ops-hub] Shopping list generation failed', error)
+    return {
+      items: [],
+      totalEstimatedCostCents: 0,
+      unavailable: true,
+      error:
+        'Shopping list generation is unavailable right now. Try again from the shopping list page.',
+    }
   }
 }
 

@@ -281,8 +281,8 @@ export function NotificationProvider({
       for (const fn of listenersRef.current) {
         try {
           fn(notification)
-        } catch {
-          /* non-fatal */
+        } catch (err) {
+          console.warn('[NotificationProvider] Listener failed:', err)
         }
       }
 

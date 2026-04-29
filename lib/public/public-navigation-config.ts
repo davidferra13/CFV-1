@@ -108,6 +108,7 @@ export const PUBLIC_FOOTER_SECTIONS = {
       { href: '/about', label: 'About' },
       { href: '/pricing', label: 'Pricing' },
       { href: '/privacy', label: 'Privacy Policy' },
+      { href: '/data-request', label: 'Data Request' },
       { href: '/terms', label: 'Terms of Service' },
     ],
   },

@@ -103,6 +103,15 @@ function MenuSection({ menu }: { menu: OpsHubData['menu'] }) {
 }
 
 function ShoppingSection({ shopping }: { shopping: OpsHubData['shopping'] }) {
+  if (shopping.unavailable) {
+    return (
+      <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-sm text-red-800">
+        <p className="font-semibold text-red-900">Shopping list unavailable</p>
+        <p className="mt-1">{shopping.error ?? 'Shopping list generation failed.'}</p>
+      </div>
+    )
+  }
+
   if (shopping.items.length === 0) {
     return (
       <div className="rounded-lg border border-dashed border-stone-300 p-6 text-sm text-stone-600">

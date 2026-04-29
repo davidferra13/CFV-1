@@ -7,175 +7,28 @@ import {
   DOCUMENT_DEFINITIONS,
   type OperationalDocumentType,
 } from '@/lib/documents/document-definitions'
-import { getDocumentReadiness, type DocumentReadiness } from '@/lib/documents/actions'
+import { getDocumentReadiness } from '@/lib/documents/actions'
 import { evaluateReadinessForDocumentGeneration } from '@/lib/events/readiness'
+import {
+  EVENT_MOBILE_RUN_MODES,
+  EVENT_OPERATION_DOCUMENTS,
+  EVENT_PRINT_CENTER_PACKET_TYPES,
+  EVENT_SAFETY_PRINTS,
+  EVENT_SERVICE_PACKET_DOCUMENT_TYPES,
+  buildEventMobileRunModeHref,
+  buildEventOperationDocumentHref,
+  buildEventOperationPacketHref,
+  buildEventOperationWorkspaceHref,
+  buildEventSafetyPrintHref,
+  getEventOperationReadiness,
+} from '@/lib/events/operation-registry'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 
-type PrintCard = {
-  type: OperationalDocumentType
-  title: string
-  moment: string
-  description: string
-  workspaceHref: string
-  readinessKey?: keyof DocumentReadiness
-}
-
-type MobileRunMode = {
-  title: string
-  description: string
-  href: string
-  moment: string
-}
-
-const CORE_PRINT_CARDS: PrintCard[] = [
-  {
-    type: 'summary',
-    title: 'Event Brief',
-    moment: 'Before event',
-    description: 'Client, location, menu, timeline, and operational context in one packet.',
-    workspaceHref: 'interactive?type=summary',
-    readinessKey: 'eventSummary',
-  },
-  {
-    type: 'prep',
-    title: 'Prep Sheet',
-    moment: 'Prep',
-    description: 'Station prep, menu-linked work, quantities, and timing controls.',
-    workspaceHref: 'interactive?type=prep',
-    readinessKey: 'prepSheet',
-  },
-  {
-    type: 'grocery',
-    title: 'Shopping List',
-    moment: 'Shopping',
-    description: 'Ingredient buying list grouped for store execution.',
-    workspaceHref: 'interactive?type=grocery',
-    readinessKey: 'groceryList',
-  },
-  {
-    type: 'packing',
-    title: 'Packing Checklist',
-    moment: 'Loadout',
-    description: 'Equipment and transport list for the car, venue, and final pass.',
-    workspaceHref: 'pack',
-    readinessKey: 'packingList',
-  },
-  {
-    type: 'execution',
-    title: 'Execution Sheet',
-    moment: 'Service',
-    description: 'Fire order, service timing, course controls, and allergy callouts.',
-    workspaceHref: 'execution',
-    readinessKey: 'executionSheet',
-  },
-  {
-    type: 'checklist',
-    title: 'Pre-Service Checklist',
-    moment: 'Service',
-    description: 'Non-negotiable checks before service starts.',
-    workspaceHref: 'safety',
-    readinessKey: 'checklist',
-  },
-  {
-    type: 'foh',
-    title: 'Front-of-House Menu',
-    moment: 'Client-facing',
-    description: 'Clean menu printout for the table, host, or venue team.',
-    workspaceHref: 'menu-approval',
-    readinessKey: 'frontOfHouseMenu',
-  },
-  {
-    type: 'reset',
-    title: 'Reset Checklist',
-    moment: 'Closeout',
-    description: 'Post-service reset, cleanup, leftovers, and final checks.',
-    workspaceHref: 'close-out',
-    readinessKey: 'resetChecklist',
-  },
-  {
-    type: 'travel',
-    title: 'Travel Route',
-    moment: 'Travel',
-    description: 'Route, parking, stop timing, and venue arrival logistics.',
-    workspaceHref: 'travel',
-    readinessKey: 'travelRoute',
-  },
-  {
-    type: 'shots',
-    title: 'Content Shot List',
-    moment: 'Marketing',
-    description: 'Capture checklist for prep, plating, venue, and final dishes.',
-    workspaceHref: 'story',
-  },
-  {
-    type: 'beo',
-    title: 'Banquet Event Order',
-    moment: 'Venue handoff',
-    description: 'Consolidated BEO for staff, venue coordinators, and operator handoff.',
-    workspaceHref: 'documents',
-  },
-]
-
-function getWorkspaceHref(eventId: string, card: PrintCard): string {
-  if (card.workspaceHref.startsWith('interactive')) {
-    return `/events/${eventId}/${card.workspaceHref}`
-  }
-  return `/events/${eventId}/${card.workspaceHref}`
-}
-
-function getDocumentHref(eventId: string, type: OperationalDocumentType): string {
-  return `/api/documents/${eventId}?type=${type}&archive=1`
-}
-
-function getPacketHref(eventId: string, types: OperationalDocumentType[]): string {
-  return `/api/documents/${eventId}?type=pack&types=${types.join(',')}&archive=1`
-}
-
-function getReadiness(card: PrintCard, readiness: DocumentReadiness) {
-  if (!card.readinessKey) return { ready: true, missing: [] }
-  return readiness[card.readinessKey]
-}
-
 function formatEventDate(value: string | null | undefined): string {
   if (!value) return 'Date TBD'
   return format(new Date(value), 'EEEE, MMMM d, yyyy')
-}
-
-function buildMobileRunModes(eventId: string): MobileRunMode[] {
-  return [
-    {
-      title: 'Day-Of Protocol',
-      description: 'Phone-first step list for the event day.',
-      href: `/events/${eventId}/dop/mobile`,
-      moment: 'Service',
-    },
-    {
-      title: 'Packing Mode',
-      description: 'Interactive loadout checklist with packed state.',
-      href: `/events/${eventId}/pack`,
-      moment: 'Loadout',
-    },
-    {
-      title: 'Mise en Place',
-      description: 'Prep-stage execution view for kitchen work.',
-      href: `/events/${eventId}/mise-en-place`,
-      moment: 'Prep',
-    },
-    {
-      title: 'Travel Plan',
-      description: 'Arrival, route, parking, and stop plan.',
-      href: `/events/${eventId}/travel`,
-      moment: 'Travel',
-    },
-    {
-      title: 'Closeout',
-      description: 'Post-service wrap, reset, and final event actions.',
-      href: `/events/${eventId}/close-out`,
-      moment: 'Closeout',
-    },
-  ]
 }
 
 export default async function EventPrintCenterPage({ params }: { params: { id: string } }) {
@@ -190,20 +43,15 @@ export default async function EventPrintCenterPage({ params }: { params: { id: s
   if (!event) notFound()
 
   const eventTitle = event.occasion || 'Untitled Event'
-  const coreReady: OperationalDocumentType[] = CORE_PRINT_CARDS.filter(
-    (card) => card.type !== 'beo' && card.type !== 'shots'
+  const coreReady: OperationalDocumentType[] = EVENT_PRINT_CENTER_PACKET_TYPES.map((type) =>
+    EVENT_OPERATION_DOCUMENTS.find((card) => card.type === type)
   )
-    .filter((card) => getReadiness(card, readiness).ready)
+    .filter((card): card is (typeof EVENT_OPERATION_DOCUMENTS)[number] => Boolean(card))
+    .filter((card) => getEventOperationReadiness(card, readiness).ready)
     .map((card) => card.type)
-  const servicePacketCandidates: OperationalDocumentType[] = [
-    'summary',
-    'prep',
-    'grocery',
-    'packing',
-    'execution',
-    'checklist',
-  ]
-  const servicePacketTypes = servicePacketCandidates.filter((type) => coreReady.includes(type))
+  const servicePacketTypes = EVENT_SERVICE_PACKET_DOCUMENT_TYPES.filter((type) =>
+    coreReady.includes(type)
+  )
   const fullPacketTypes: OperationalDocumentType[] = coreReady
   const hasReadinessBlockers = (readinessGate?.counts.blockers ?? 0) > 0
 
@@ -263,7 +111,12 @@ export default async function EventPrintCenterPage({ params }: { params: { id: s
             </div>
             <div className="flex flex-wrap gap-2">
               {servicePacketTypes.length > 0 ? (
-                <Button href={getPacketHref(params.id, servicePacketTypes)} variant="primary">
+                <Button
+                  href={buildEventOperationPacketHref(params.id, servicePacketTypes, {
+                    archive: true,
+                  })}
+                  variant="primary"
+                >
                   Service Packet
                 </Button>
               ) : (
@@ -272,7 +125,12 @@ export default async function EventPrintCenterPage({ params }: { params: { id: s
                 </Button>
               )}
               {fullPacketTypes.length > 0 ? (
-                <Button href={getPacketHref(params.id, fullPacketTypes)} variant="secondary">
+                <Button
+                  href={buildEventOperationPacketHref(params.id, fullPacketTypes, {
+                    archive: true,
+                  })}
+                  variant="secondary"
+                >
                   Full Ready Packet
                 </Button>
               ) : (
@@ -290,12 +148,15 @@ export default async function EventPrintCenterPage({ params }: { params: { id: s
             High-visibility sheets for hands-on service.
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
-            <Button href={`/api/documents/${params.id}?type=allergy-card`} variant="secondary">
-              Allergy Card
-            </Button>
-            <Button href={`/api/documents/${params.id}?type=beo&archive=1`} variant="secondary">
-              BEO
-            </Button>
+            {EVENT_SAFETY_PRINTS.map((print) => (
+              <Button
+                key={print.id}
+                href={buildEventSafetyPrintHref(params.id, print)}
+                variant="secondary"
+              >
+                {print.title}
+              </Button>
+            ))}
           </div>
         </Card>
       </div>
@@ -310,9 +171,9 @@ export default async function EventPrintCenterPage({ params }: { params: { id: s
           </div>
         </div>
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {CORE_PRINT_CARDS.map((card) => {
+          {EVENT_OPERATION_DOCUMENTS.map((card) => {
             const doc = DOCUMENT_DEFINITIONS[card.type]
-            const status = getReadiness(card, readiness)
+            const status = getEventOperationReadiness(card, readiness)
             const ready = status.ready
 
             return (
@@ -342,12 +203,18 @@ export default async function EventPrintCenterPage({ params }: { params: { id: s
                   </div>
                 )}
                 <div className="mt-auto flex flex-wrap gap-2">
-                  <Button href={getWorkspaceHref(params.id, card)} variant="secondary" size="sm">
+                  <Button
+                    href={buildEventOperationWorkspaceHref(params.id, card)}
+                    variant="secondary"
+                    size="sm"
+                  >
                     Open Surface
                   </Button>
                   {ready ? (
                     <Button
-                      href={getDocumentHref(params.id, card.type)}
+                      href={buildEventOperationDocumentHref(params.id, card.type, {
+                        archive: true,
+                      })}
                       variant="primary"
                       size="sm"
                     >
@@ -374,8 +241,8 @@ export default async function EventPrintCenterPage({ params }: { params: { id: s
           </p>
         </div>
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-          {buildMobileRunModes(params.id).map((mode) => (
-            <Card key={mode.href} className="flex h-full flex-col gap-3 p-4">
+          {EVENT_MOBILE_RUN_MODES.map((mode) => (
+            <Card key={mode.id} className="flex h-full flex-col gap-3 p-4">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">
                   {mode.moment}
@@ -383,7 +250,12 @@ export default async function EventPrintCenterPage({ params }: { params: { id: s
                 <h3 className="mt-1 font-semibold text-stone-100">{mode.title}</h3>
               </div>
               <p className="text-sm text-stone-400">{mode.description}</p>
-              <Button href={mode.href} variant="secondary" size="sm" className="mt-auto">
+              <Button
+                href={buildEventMobileRunModeHref(params.id, mode)}
+                variant="secondary"
+                size="sm"
+                className="mt-auto"
+              >
                 Open
               </Button>
             </Card>
