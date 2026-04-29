@@ -291,6 +291,7 @@
 - **Widget ID:** `todo_list`
 - Per todo: toggle checkbox → `toggleTodo(id)`, delete button → `deleteTodo(id)`
 - Add task form: text input + "+" submit button → `createTodo(text)`
+- `/capture`: Instant Note mode saves the raw note to `chef_quick_notes`, runs the note intelligence layer, stores interpretation/component/action lineage, routes high-confidence components to workflow notes, ingredients, and tasks, and sends medium/low-confidence notes to the Review Queue. Photo mode still parses whiteboard images into categorized visible items with raw transcription.
 
 #### Activity Section
 

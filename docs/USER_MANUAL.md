@@ -85,6 +85,16 @@ Your layout saves automatically.
 
 ---
 
+## Capture
+
+Use **Capture** when you need to dump a thought without opening a structured form. The Instant Note box saves the raw note first, then ChefFlow interprets it in the background and turns it into routed system work.
+
+ChefFlow can split one note into multiple parts, such as recipe concept, technique experiment, ingredient discovery, seasonal sourcing insight, inventory thought, event idea, task, or review prompt. High-confidence notes create tracked actions automatically. Medium-confidence and low-confidence notes go to the Review Queue with the raw note, interpretation, ambiguity notes, and quick correction buttons.
+
+Every captured note creates a task, action, or review prompt so it does not disappear. Photo mode remains available for whiteboards and handwritten notes.
+
+---
+
 ## Inquiries and Sales
 
 ### Receiving Inquiries
