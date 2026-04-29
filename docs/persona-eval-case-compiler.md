@@ -35,6 +35,12 @@ Compile the latest 10 reports and write a JSON artifact:
 npm run personas:compile-evals -- --latest 10 --write
 ```
 
+Map compiled requirements to code evidence:
+
+```bash
+npm run personas:map-evidence -- --write
+```
+
 Use a custom target file:
 
 ```bash

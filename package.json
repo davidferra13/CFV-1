@@ -74,6 +74,7 @@
     "personas:generate:batch": "node devtools/persona-generator.mjs --count 10 --spread",
     "personas:corpus": "node devtools/persona-corpus-factory.mjs",
     "personas:compile-evals": "node devtools/persona-eval-case-compiler.mjs",
+    "personas:map-evidence": "node devtools/persona-evidence-mapper.mjs",
     "personas:orchestrate": "node devtools/persona-orchestrator.mjs --watch",
     "personas:orchestrate:once": "node devtools/persona-orchestrator.mjs --once",
     "personas:synthesize": "node devtools/persona-batch-synthesizer.mjs",
