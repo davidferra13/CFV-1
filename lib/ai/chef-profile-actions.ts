@@ -4,10 +4,11 @@
 // 12 structured Q&A questions that Remy reads to understand the chef deeply.
 // Injected into Remy's system prompt as the CULINARY PROFILE section.
 
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { CULINARY_QUESTIONS } from '@/lib/ai/chef-profile-constants'
+import { broadcastTenantMutation } from '@/lib/realtime/broadcast'
 import type { CulinaryQuestionKey, CulinaryProfileAnswer } from '@/lib/ai/chef-profile-constants'
 
 // Row shape from the new table (not yet in generated types)
@@ -81,6 +82,25 @@ export async function saveCulinaryProfileAnswer(
   }
 
   revalidatePath('/settings/culinary-profile')
+  revalidatePath('/chef/[slug]', 'page')
+  revalidatePath('/chef/[slug]/inquire', 'page')
+  revalidatePath('/book/[chefSlug]', 'page')
+  revalidateTag('chef-booking-profile')
+  revalidateTag(`chef-layout-${user.entityId}`)
+
+  try {
+    broadcastTenantMutation(user.entityId, {
+      entity: 'chef_culinary_profiles',
+      entityId: user.entityId,
+      action: 'mutation',
+      reason: 'culinary profile updated',
+      source: 'mutation',
+      patch: { questionKey },
+    })
+  } catch (err) {
+    console.error('[non-blocking] Culinary profile broadcast failed', err)
+  }
+
   return { success: true }
 }
 
@@ -116,6 +136,25 @@ export async function saveCulinaryProfileBulk(
   }
 
   revalidatePath('/settings/culinary-profile')
+  revalidatePath('/chef/[slug]', 'page')
+  revalidatePath('/chef/[slug]/inquire', 'page')
+  revalidatePath('/book/[chefSlug]', 'page')
+  revalidateTag('chef-booking-profile')
+  revalidateTag(`chef-layout-${user.entityId}`)
+
+  try {
+    broadcastTenantMutation(user.entityId, {
+      entity: 'chef_culinary_profiles',
+      entityId: user.entityId,
+      action: 'mutation',
+      reason: 'culinary profile bulk updated',
+      source: 'mutation',
+      patch: { saved: rows.length },
+    })
+  } catch (err) {
+    console.error('[non-blocking] Culinary profile bulk broadcast failed', err)
+  }
+
   return { success: true, saved: rows.length }
 }
 
