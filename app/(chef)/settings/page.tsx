@@ -372,8 +372,8 @@ export default async function SettingsPage() {
             >
               <p className="font-semibold text-sky-200">Schedule Blocks</p>
               <p className="mt-1 text-sm text-sky-300">
-                Manage blackout dates, unavailable windows, and recurring blocks that affect
-                booking availability.
+                Manage blackout dates, unavailable windows, and recurring blocks that affect booking
+                availability.
               </p>
             </Link>
           </SettingsCategory>
@@ -689,15 +689,25 @@ export default async function SettingsPage() {
             description="Control Remy, understand how your data is handled, and manage AI features."
             icon="Brain"
             tone="emerald"
-            summary={['Trust center', 'Culinary profile', 'Remy controls']}
+            summary={['Default knowledge', 'Trust center', 'Culinary profile']}
           >
             <div className="space-y-3">
               <Link
-                href="/settings/ai-privacy"
+                href="/settings/default-knowledge"
                 className="block border border-emerald-200 rounded-lg p-4 bg-emerald-950/40 hover:bg-emerald-950 transition-colors"
               >
-                <p className="font-semibold text-emerald-900">AI Trust Center</p>
+                <p className="font-semibold text-emerald-900">Default Knowledge</p>
                 <p className="text-sm text-emerald-700 mt-1">
+                  Review what ChefFlow knows by default, add durable memories, and audit every
+                  toggleable intelligence control in one place.
+                </p>
+              </Link>
+              <Link
+                href="/settings/ai-privacy"
+                className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
+              >
+                <p className="font-medium text-stone-100">AI Trust Center</p>
+                <p className="text-sm text-stone-500 mt-1">
                   See exactly how Remy works, where your data goes, and manage all AI controls. Walk
                   through privacy practices and delete data anytime.
                 </p>
