@@ -110,6 +110,9 @@ const UpdateEntrySchema = CreateEntrySchema.partial().extend({
   actual_revenue_cents: z.number().int().min(0).nullable().optional(),
 })
 
+const EntryIdSchema = z.string().min(1, 'Calendar entry id is required')
+const ActualRevenueSchema = z.number().int().min(0).optional()
+
 export type CreateCalendarEntryInput = z.infer<typeof CreateEntrySchema>
 export type UpdateCalendarEntryInput = z.infer<typeof UpdateEntrySchema>
 
@@ -164,6 +167,7 @@ export async function createCalendarEntry(input: CreateCalendarEntryInput) {
   }
 
   revalidatePath('/calendar')
+  revalidatePath(`/calendar/entry/${data.id}`)
   return data as ChefCalendarEntry
 }
 
@@ -173,6 +177,7 @@ export async function createCalendarEntry(input: CreateCalendarEntryInput) {
 
 export async function updateCalendarEntry(id: string, input: UpdateCalendarEntryInput) {
   const user = await requireChef()
+  const entryId = EntryIdSchema.parse(id)
   const validated = UpdateEntrySchema.parse(input)
   const db: any = createServerClient()
 
@@ -180,10 +185,11 @@ export async function updateCalendarEntry(id: string, input: UpdateCalendarEntry
   const { data: existing } = await db
     .from('chef_calendar_entries')
     .select('chef_id')
-    .eq('id', id)
+    .eq('id', entryId)
+    .eq('chef_id', user.tenantId!)
     .single()
 
-  if (!existing || existing.chef_id !== user.tenantId!) {
+  if (!existing) {
     throw new Error('Not found or unauthorized')
   }
 
@@ -203,7 +209,8 @@ export async function updateCalendarEntry(id: string, input: UpdateCalendarEntry
   const { data, error } = await db
     .from('chef_calendar_entries')
     .update(updateData)
-    .eq('id', id)
+    .eq('id', entryId)
+    .eq('chef_id', user.tenantId!)
     .select()
     .single()
 
@@ -213,6 +220,7 @@ export async function updateCalendarEntry(id: string, input: UpdateCalendarEntry
   }
 
   revalidatePath('/calendar')
+  revalidatePath(`/calendar/entry/${entryId}`)
   return data as ChefCalendarEntry
 }
 
@@ -222,20 +230,29 @@ export async function updateCalendarEntry(id: string, input: UpdateCalendarEntry
 
 export async function deleteCalendarEntry(id: string) {
   const user = await requireChef()
+  const entryId = EntryIdSchema.parse(id)
   const db: any = createServerClient()
 
-  const { error } = await db
+  const { data, error } = await db
     .from('chef_calendar_entries')
     .delete()
-    .eq('id', id)
+    .eq('id', entryId)
     .eq('chef_id', user.tenantId!)
+    .select('id')
+    .single()
 
   if (error) {
     console.error('[deleteCalendarEntry] Error:', error)
-    throw new Error('Failed to delete calendar entry')
+    return { success: false, error: 'Failed to delete calendar entry' }
+  }
+
+  if (!data) {
+    return { success: false, error: 'Calendar entry not found or unauthorized' }
   }
 
   revalidatePath('/calendar')
+  revalidatePath(`/calendar/entry/${entryId}`)
+  return { success: true }
 }
 
 // ============================================
@@ -292,17 +309,20 @@ export async function getCalendarEntry(id: string): Promise<ChefCalendarEntry | 
 
 export async function markCalendarEntryComplete(id: string, actualRevenueCents?: number) {
   const user = await requireChef()
+  const entryId = EntryIdSchema.parse(id)
+  const validatedActualRevenueCents = ActualRevenueSchema.parse(actualRevenueCents)
   const db: any = createServerClient()
 
   // Verify ownership
   const { data: existing } = await db
     .from('chef_calendar_entries')
     .select('chef_id, is_revenue_generating')
-    .eq('id', id)
+    .eq('id', entryId)
+    .eq('chef_id', user.tenantId!)
     .single()
 
-  if (!existing || existing.chef_id !== user.tenantId!) {
-    throw new Error('Not found or unauthorized')
+  if (!existing) {
+    return { success: false, error: 'Calendar entry not found or unauthorized' }
   }
 
   const updateFields: Record<string, unknown> = {
@@ -310,20 +330,26 @@ export async function markCalendarEntryComplete(id: string, actualRevenueCents?:
     completed_at: new Date().toISOString(),
   }
 
-  if (existing.is_revenue_generating && actualRevenueCents !== undefined) {
-    updateFields.actual_revenue_cents = actualRevenueCents
+  if (existing.is_revenue_generating && validatedActualRevenueCents !== undefined) {
+    updateFields.actual_revenue_cents = validatedActualRevenueCents
   }
 
-  const { error } = await db.from('chef_calendar_entries').update(updateFields).eq('id', id)
+  const { error } = await db
+    .from('chef_calendar_entries')
+    .update(updateFields)
+    .eq('id', entryId)
+    .eq('chef_id', user.tenantId!)
 
   if (error) {
     console.error('[markCalendarEntryComplete] Error:', error)
-    throw new Error('Failed to mark entry as complete')
+    return { success: false, error: 'Failed to mark entry as complete' }
   }
 
   revalidatePath('/calendar')
+  revalidatePath(`/calendar/entry/${entryId}`)
   revalidatePath('/financials')
   revalidatePath('/finance')
+  return { success: true }
 }
 
 // ============================================
@@ -332,6 +358,7 @@ export async function markCalendarEntryComplete(id: string, actualRevenueCents?:
 
 export async function notifyClientsOfPublicSignal(calendarEntryId: string) {
   const user = await requireChef()
+  const entryId = EntryIdSchema.parse(calendarEntryId)
   const db: any = createServerClient()
   const chefId = user.tenantId!
 
@@ -339,12 +366,12 @@ export async function notifyClientsOfPublicSignal(calendarEntryId: string) {
   const { data: entry } = await db
     .from('chef_calendar_entries')
     .select('id, entry_type, is_public, start_date, title, public_note')
-    .eq('id', calendarEntryId)
+    .eq('id', entryId)
     .eq('chef_id', chefId)
     .single()
 
   if (!entry || !entry.is_public || entry.entry_type !== 'target_booking') {
-    throw new Error('Entry not found or not a public target_booking')
+    return { success: false, error: 'Entry not found or not a public booking target' }
   }
 
   // Get all opted-in clients for this chef (need email + name for notifications)
@@ -354,26 +381,30 @@ export async function notifyClientsOfPublicSignal(calendarEntryId: string) {
     .eq('tenant_id', chefId)
     .eq('availability_signal_notifications', true)
 
-  if (!clients || clients.length === 0) return { notified: 0 }
+  if (!clients || clients.length === 0) {
+    revalidatePath('/calendar')
+    revalidatePath(`/calendar/entry/${entryId}`)
+    return { success: true, notified: 0 }
+  }
 
   // Insert notification log rows (unique constraint prevents duplicates)
   const rows = clients.map((c: { id: string }) => ({
     chef_id: chefId,
-    calendar_entry_id: calendarEntryId,
+    calendar_entry_id: entryId,
     client_id: c.id,
   }))
 
   const { data: inserted, error } = await db
     .from('availability_signal_notification_log')
-    .insert(rows)
+    .upsert(rows, {
+      onConflict: 'calendar_entry_id,client_id',
+      ignoreDuplicates: true,
+    })
     .select('id, client_id')
 
   if (error) {
-    // Unique violations expected for already-notified clients - not a hard error
-    console.warn(
-      '[notifyClientsOfPublicSignal] Some rows skipped (already notified):',
-      error.message
-    )
+    console.error('[notifyClientsOfPublicSignal] Error:', error)
+    return { success: false, error: 'Failed to notify clients' }
   }
 
   // Get chef business name for email
@@ -404,7 +435,9 @@ export async function notifyClientsOfPublicSignal(calendarEntryId: string) {
     }
   }
 
-  return { notified: inserted?.length ?? 0 }
+  revalidatePath('/calendar')
+  revalidatePath(`/calendar/entry/${entryId}`)
+  return { success: true, notified: inserted?.length ?? 0 }
 }
 
 // ============================================

@@ -1,5 +1,6 @@
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { CalendarEntryActionsPanel } from '@/components/calendar/calendar-entry-actions-panel'
 import { getCalendarColor } from '@/lib/calendar/colors'
 import type { ChefCalendarEntry } from '@/lib/calendar/entry-actions'
 
@@ -124,6 +125,10 @@ export function CalendarEntryDetail({ entry }: Props) {
             Week
           </Button>
         </div>
+      </div>
+
+      <div className="mb-4">
+        <CalendarEntryActionsPanel entry={entry} />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
