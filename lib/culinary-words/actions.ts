@@ -2,9 +2,11 @@
 
 import { requireChef, requireChefAdmin } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { normalizeCulinaryTerm, slugifyCulinaryTerm } from '@/lib/culinary-dictionary/normalization'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import type { WordCategory, WordTier } from './constants'
+import type { DictionaryTermType } from '@/lib/culinary-dictionary/types'
 
 // ─────────────────────────────────────────────
 // Types
@@ -98,7 +100,19 @@ export async function addCulinaryWord(
     throw new Error('Failed to add word')
   }
 
+  try {
+    await queueCulinaryWordDictionaryReview(db, {
+      chefId: user.tenantId ?? user.entityId,
+      word: validated.word,
+      category: validated.category,
+      tier: validated.tier,
+    })
+  } catch (err) {
+    console.warn('[non-blocking] Culinary dictionary review queue failed', err)
+  }
+
   revalidatePath('/culinary-board')
+  revalidatePath('/culinary/dictionary')
   return { success: true, word: mapRow(row) }
 }
 
@@ -154,4 +168,57 @@ function mapRow(row: Record<string, unknown>): UserCulinaryWord {
     category: row.category as WordCategory,
     createdAt: row.created_at as string,
   }
+}
+
+function dictionaryTermTypeForWordCategory(category: WordCategory): DictionaryTermType {
+  if (category === 'technique' || category === 'action') return 'technique'
+  if (category === 'sauce') return 'sauce'
+  if (category === 'texture' || category === 'mouthfeel') return 'texture'
+  if (category === 'flavor' || category === 'aroma') return 'flavor'
+  if (category === 'composition' || category === 'visual') return 'composition'
+  return 'other'
+}
+
+async function queueCulinaryWordDictionaryReview(
+  db: any,
+  input: {
+    chefId: string
+    word: string
+    category: WordCategory
+    tier: WordTier
+  }
+): Promise<void> {
+  const normalizedValue = normalizeCulinaryTerm(input.word)
+  if (!normalizedValue) return
+
+  const { data: existing, error: lookupError } = await db
+    .from('culinary_dictionary_review_queue' as any)
+    .select('id')
+    .eq('chef_id', input.chefId)
+    .eq('source_surface', 'culinary_board')
+    .eq('normalized_value', normalizedValue)
+    .eq('status', 'pending')
+    .limit(1)
+
+  if (lookupError) throw lookupError
+  if (existing?.length) return
+
+  const { error } = await db.from('culinary_dictionary_review_queue' as any).insert({
+    chef_id: input.chefId,
+    source_surface: 'culinary_board',
+    source_value: input.word,
+    normalized_value: normalizedValue,
+    confidence: input.tier <= 2 ? 0.8 : 0.65,
+    status: 'pending',
+    resolution: {
+      canonicalName: input.word,
+      canonicalSlug: slugifyCulinaryTerm(input.word),
+      termType: dictionaryTermTypeForWordCategory(input.category),
+      category: input.category,
+      source: 'culinary_board',
+      tier: input.tier,
+    },
+  })
+
+  if (error) throw error
 }

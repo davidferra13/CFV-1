@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useMemo, useCallback, useRef } from 'react'
 import type { CulinaryWord, WordCategory, WordTier } from '@/lib/culinary-words/constants'
 import {
@@ -9,6 +10,7 @@ import {
   TIER_LABELS,
 } from '@/lib/culinary-words/constants'
 import { getWordAnimation, getAnimationClass } from '@/lib/culinary-words/animations'
+import { getCulinaryWordDictionaryLink } from '@/lib/culinary-words/dictionary-links'
 
 type ListViewProps = {
   words: CulinaryWord[]
@@ -77,18 +79,32 @@ export function ListView({ words }: ListViewProps) {
             </h3>
 
             <div className="flex flex-wrap gap-2">
-              {catWords.map((w, i) => (
-                <span
-                  key={`${w.word}-${i}`}
-                  className={`culinary-word-clickable inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm border ${TIER_BADGE_COLORS[w.tier]}`}
-                  title={`Tier ${w.tier}: ${TIER_LABELS[w.tier]} - click me!`}
-                  data-word={w.word}
-                  onClick={handleClick}
-                >
-                  {w.tier <= 2 && <span className="font-bold text-xs">T{w.tier}</span>}
-                  <span className={w.tier <= 2 ? 'font-semibold' : ''}>{w.word}</span>
-                </span>
-              ))}
+              {catWords.map((w, i) => {
+                const dictionaryLink = getCulinaryWordDictionaryLink(w.word)
+
+                return (
+                  <span
+                    key={`${w.word}-${i}`}
+                    className={`culinary-word-clickable inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm border ${TIER_BADGE_COLORS[w.tier]}`}
+                    title={`Tier ${w.tier}: ${TIER_LABELS[w.tier]} - click me!`}
+                    data-word={w.word}
+                    onClick={handleClick}
+                  >
+                    {w.tier <= 2 && <span className="font-bold text-xs">T{w.tier}</span>}
+                    <span className={w.tier <= 2 ? 'font-semibold' : ''}>{w.word}</span>
+                    {dictionaryLink && (
+                      <Link
+                        href={dictionaryLink.href}
+                        className="ml-1 rounded-full border border-current/30 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide opacity-80 hover:opacity-100"
+                        title={`Open ${dictionaryLink.canonicalName} in the Culinary Dictionary`}
+                        onClick={(event) => event.stopPropagation()}
+                      >
+                        Dictionary
+                      </Link>
+                    )}
+                  </span>
+                )
+              })}
             </div>
           </section>
         )

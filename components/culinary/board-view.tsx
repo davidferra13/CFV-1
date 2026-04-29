@@ -1,9 +1,11 @@
 'use client'
 
+import Link from 'next/link'
 import { useMemo, useCallback, useRef } from 'react'
 import type { CulinaryWord } from '@/lib/culinary-words/constants'
 import { BOARD_COLORS, BOARD_FONTS, wordHash } from '@/lib/culinary-words/constants'
 import { getWordAnimation, getAnimationClass } from '@/lib/culinary-words/animations'
+import { getCulinaryWordDictionaryLink } from '@/lib/culinary-words/dictionary-links'
 
 type BoardViewProps = {
   words: CulinaryWord[]
@@ -45,9 +47,11 @@ export function BoardView({ words }: BoardViewProps) {
       const marginLeft = ((h >> 11) % 6) - 2 // -2px to 3px
       const isUppercase = w.tier === 1 || ((h >> 13) % 8 === 0 && w.tier === 2)
       const suffix = (h >> 15) % 12 === 0 ? '!' : (h >> 15) % 15 === 0 ? '?' : ''
+      const dictionaryLink = getCulinaryWordDictionaryLink(w.word)
 
       return {
         ...w,
+        dictionaryLink,
         rotation,
         displayWord: (isUppercase ? w.word.toUpperCase() : w.word) + suffix,
         style: {
@@ -122,18 +126,41 @@ export function BoardView({ words }: BoardViewProps) {
         className="flex flex-wrap justify-center items-center gap-0 px-5 py-6 leading-tight"
         style={{ lineHeight: 1.15 }}
       >
-        {styledWords.map((w, i) => (
-          <span
-            key={`${w.word}-${i}`}
-            className="culinary-word-clickable inline-block transition-all duration-200 opacity-90 hover:opacity-100 hover:scale-110"
-            style={w.style}
-            title={`${w.word} - ${w.category} - click me!`}
-            data-word={w.word}
-            onClick={handleClick}
-          >
-            {w.displayWord}
-          </span>
-        ))}
+        {styledWords.map((w, i) => {
+          const className =
+            'culinary-word-clickable inline-block transition-all duration-200 opacity-90 hover:opacity-100 hover:scale-110'
+          const title = w.dictionaryLink
+            ? `${w.word} - open ${w.dictionaryLink.canonicalName} in the Culinary Dictionary`
+            : `${w.word} - ${w.category} - click me!`
+
+          if (w.dictionaryLink) {
+            return (
+              <Link
+                key={`${w.word}-${i}`}
+                href={w.dictionaryLink.href}
+                className={`${className} border-b border-dotted border-current`}
+                style={w.style}
+                title={title}
+                data-word={w.word}
+              >
+                {w.displayWord}
+              </Link>
+            )
+          }
+
+          return (
+            <span
+              key={`${w.word}-${i}`}
+              className={className}
+              style={w.style}
+              title={title}
+              data-word={w.word}
+              onClick={handleClick}
+            >
+              {w.displayWord}
+            </span>
+          )
+        })}
       </div>
     </div>
   )

@@ -29,3 +29,11 @@ test('chef dictionary searches merge chef-specific aliases', () => {
   assert.match(querySource, /WHERE chef_id = \$\{chefId\}/)
   assert.match(querySource, /source:\s*'chef'/)
 })
+
+test('approved dictionary review items become private searchable chef terms', () => {
+  assert.match(querySource, /getApprovedChefReviewTerms/)
+  assert.match(querySource, /FROM culinary_dictionary_review_queue/)
+  assert.match(querySource, /AND status = 'approved'/)
+  assert.match(querySource, /id:\s*`chef-review-\$\{String\(row\.id\)\}`/)
+  assert.match(querySource, /\.\.\.baseTerms,\s*\.\.\.approvedReviewTerms/)
+})

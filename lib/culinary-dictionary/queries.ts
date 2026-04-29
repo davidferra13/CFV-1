@@ -2,7 +2,7 @@ import { pgClient } from '@/lib/db'
 import { isLikelyAliasMatch, normalizeDictionaryAlias } from './normalization'
 import { filterPublicDictionaryTerms } from './publication'
 import { SEEDED_DICTIONARY_TERMS } from './seed'
-import { DICTIONARY_ALIAS_KINDS } from './types'
+import { DICTIONARY_ALIAS_KINDS, DICTIONARY_TERM_TYPES } from './types'
 import type {
   CulinaryDictionaryAlias,
   CulinaryDictionaryReviewItem,
@@ -122,6 +122,81 @@ function mapRowsToTerms(rows: any[]): CulinaryDictionaryTerm[] {
   return Array.from(byId.values())
 }
 
+function isDictionaryTermType(value: unknown): value is DictionaryTermType {
+  return typeof value === 'string' && DICTIONARY_TERM_TYPES.includes(value as any)
+}
+
+function mapApprovedReviewRowsToTerms(rows: any[]): CulinaryDictionaryTerm[] {
+  return rows.map((row) => {
+    const resolution = (row.resolution ?? {}) as Record<string, unknown>
+    const canonicalName =
+      typeof resolution.canonicalName === 'string' && resolution.canonicalName.trim()
+        ? resolution.canonicalName.trim()
+        : String(row.source_value)
+    const canonicalSlug =
+      typeof resolution.canonicalSlug === 'string' && resolution.canonicalSlug.trim()
+        ? resolution.canonicalSlug.trim()
+        : String(row.normalized_value).replace(/\s+/g, '-')
+    const termType = isDictionaryTermType(resolution.termType) ? resolution.termType : 'other'
+    const category = typeof resolution.category === 'string' ? resolution.category : null
+
+    return {
+      id: `chef-review-${String(row.id)}`,
+      canonicalSlug,
+      canonicalName,
+      termType,
+      category,
+      shortDefinition: null,
+      longDefinition: null,
+      publicSafe: false,
+      source: 'chef',
+      confidence: row.confidence == null ? 0.65 : toNumber(row.confidence, 0.65),
+      needsReview: false,
+      aliases: [
+        {
+          id: `chef-review-${String(row.id)}-alias`,
+          termId: `chef-review-${String(row.id)}`,
+          alias: String(row.source_value),
+          normalizedAlias: String(row.normalized_value),
+          aliasKind: 'synonym',
+          confidence: row.confidence == null ? 0.65 : toNumber(row.confidence, 0.65),
+          source: 'chef',
+          needsReview: false,
+        },
+      ],
+      safetyFlags: [],
+    } satisfies CulinaryDictionaryTerm
+  })
+}
+
+async function getApprovedChefReviewTerms(
+  input: DictionarySearchInput,
+  limit: number
+): Promise<CulinaryDictionaryTerm[]> {
+  if (!input.chefId) return []
+
+  const query = input.query?.trim() ?? ''
+  const normalizedQuery = normalizeDictionaryAlias(query)
+
+  const rows = await pgClient`
+    SELECT id, source_value, normalized_value, confidence, resolution
+    FROM culinary_dictionary_review_queue
+    WHERE chef_id = ${input.chefId}
+      AND status = 'approved'
+      AND (${input.termType ?? 'all'} = 'all' OR resolution->>'termType' = ${input.termType ?? 'all'})
+      AND (
+        ${normalizedQuery} = ''
+        OR normalized_value LIKE ${`%${normalizedQuery}%`}
+        OR lower(source_value) LIKE ${`%${normalizedQuery}%`}
+        OR lower(COALESCE(resolution->>'canonicalName', '')) LIKE ${`%${normalizedQuery}%`}
+      )
+    ORDER BY created_at DESC
+    LIMIT ${limit}
+  `
+
+  return mapApprovedReviewRowsToTerms(rows as any[])
+}
+
 async function applyChefOverrides(
   terms: CulinaryDictionaryTerm[],
   chefId?: string | null
@@ -232,10 +307,9 @@ export async function searchDictionaryTerms(
       LIMIT ${limit * 8}
     `
 
-    const terms = (await applyChefOverrides(mapRowsToTerms(rows as any[]), input.chefId)).slice(
-      0,
-      limit
-    )
+    const baseTerms = await applyChefOverrides(mapRowsToTerms(rows as any[]), input.chefId)
+    const approvedReviewTerms = await getApprovedChefReviewTerms(input, limit)
+    const terms = [...baseTerms, ...approvedReviewTerms].slice(0, limit)
     return terms.length > 0 || normalizedQuery ? terms : searchSeedTerms(input)
   } catch (error) {
     if (!isMissingDictionaryTableError(error)) {
