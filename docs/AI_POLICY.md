@@ -1,4 +1,4 @@
-# AI in ChefFlow — Core Policy
+# AI in ChefFlow - Core Policy
 
 ## Core Principle
 
@@ -6,11 +6,33 @@ AI assists thinking and drafting.
 AI never owns truth.
 AI never mutates canonical state.
 
-**If it touches ledger, lifecycle, or identity directly — it's wrong.**
+**If it touches ledger, lifecycle, or identity directly, it's wrong.**
 
 ---
 
 ## Where AI Is Allowed
+
+### 0. Public Non-Private AI (Unauthenticated Only)
+
+AI may use the public-only monitored cloud gateway for allowlisted unauthenticated public
+surfaces.
+
+Allowed surfaces:
+
+- Platform landing concierge
+- Chef public profile concierge, using only verified public profile context
+
+Rules:
+
+- No authenticated context
+- No tenant-private context
+- No client, event, quote, ledger, payment, contract, staff, CRM, or recipe details
+- No recipe generation, suggestion, drafting, or auto-fill
+- No arbitrary prompt passthrough. Every call uses a known public task ID
+- No raw prompt or response persistence in server logs
+- If the gateway blocks or fails, it fails closed and never falls back to private AI
+
+This is a narrow exception. It does not change private ChefFlow AI policy.
 
 ### 1. Drafting Assistance (Chef-Controlled)
 
@@ -158,7 +180,7 @@ AI must:
 - A way to avoid writing proper schema
 - A justification for vague states
 
-If AI is compensating for unclear modeling — the modeling is wrong.
+If AI is compensating for unclear modeling, the modeling is wrong.
 
 ---
 

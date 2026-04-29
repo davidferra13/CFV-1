@@ -20,6 +20,24 @@ Every Ollama-backed runtime path should enter through this layer directly or thr
 
 The dispatch layer is deterministic. It does not call an LLM to decide which LLM should be used.
 
+## Public-Only Gateway Exception
+
+Unauthenticated public Remy surfaces may use the separate public-only monitored cloud gateway
+implemented in `lib/ai/public-cloud-gateway.ts`.
+
+This gateway is outside normal private AI fallback behavior. It is allowed only for known public
+task IDs, after policy checks in `lib/ai/public-cloud-policy.ts`, and it must not be imported by
+private routes or `parseWithOllama()`.
+
+Rules:
+
+- Public landing and chef-public profile concierge only
+- No authenticated context
+- No tenant-private context
+- No recipe generation
+- No raw prompt or response persistence
+- Provider failure returns a public unavailable response, not private-runtime fallback
+
 ## Runtime Modes
 
 The runtime supports three endpoint modes for Ollama-compatible inference:

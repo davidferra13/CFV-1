@@ -13,6 +13,7 @@ import { getStarterPainPoints, CHEFFLOW_FEATURE_MAP } from '@/lib/ai/chefflow-fe
 import { PRIMARY_SIGNUP_LABEL } from '@/lib/marketing/launch-mode'
 import { NO_CLICK_FIRST_PUBLIC_ENABLED } from '@/lib/marketing/no-click-rollout'
 import { buildMarketingSignupHref } from '@/lib/marketing/signup-links'
+import { PUBLIC_CHAT_CLOUD_DISCLOSURE } from '@/lib/ai/privacy-narrative'
 
 interface Message {
   id: string
@@ -309,7 +310,7 @@ export function RemyConciergeSection() {
             </button>
           </div>
 
-          <p className="mt-2 text-center text-xs text-stone-400">Powered by ChefFlow AI</p>
+          <p className="mt-2 text-center text-xs text-stone-400">{PUBLIC_CHAT_CLOUD_DISCLOSURE}</p>
 
           {/* CTA after conversation */}
           {messages.length >= 4 && !isStreaming && (

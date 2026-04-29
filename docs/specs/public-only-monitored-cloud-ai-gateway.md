@@ -1,6 +1,6 @@
 # Spec: Public-Only Monitored Cloud AI Gateway
 
-> **Status:** draft, policy approval required before build
+> **Status:** built
 > **Priority:** P0 (blocking)
 > **Depends on:** `docs/specs/full-cloud-ai-runtime-and-disclosure.md`
 > **Estimated complexity:** medium (3-8 files)
@@ -10,6 +10,7 @@
 | Event   | Date             | Agent/Session | Commit |
 | ------- | ---------------- | ------------- | ------ |
 | Created | 2026-04-29 17:15 | Codex planner |        |
+| Built   | 2026-04-29 18:10 | Codex builder |        |
 
 ---
 

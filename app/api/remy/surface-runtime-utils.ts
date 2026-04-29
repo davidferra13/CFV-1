@@ -38,6 +38,14 @@ const HELP_PATTERN = /^(?:help|what\s+can\s+you\s+do|what\s+are\s+(?:you|your)\s
 const GREETING_PATTERN =
   /^(?:good\s+morning|good\s+afternoon|good\s+evening|morning|afternoon|evening|hey|hi|hello|yo|sup|what'?s?\s+up)(?:\s+remy)?\s*[!.?]?$/i
 const THANKS_PATTERN = /^(?:thanks|thank\s+you|thx|cheers|appreciate\s+it)\s*[!.?]*$/i
+const PRICING_PATTERN = /\b(price|pricing|cost|costs|free|credit\s+card|subscription|how\s+much)\b/i
+const BOOKING_PATTERN =
+  /\b(book|booking|inquiry|inquire|get\s+started|sign\s+up|request|walkthrough)\b/i
+const PLATFORM_FEATURE_PATTERN =
+  /\b(payment|invoice|client|crm|menu|event|calendar|finance|operations|workflow|spreadsheet|admin)\b/i
+const PUBLIC_AVAILABILITY_PATTERN = /\b(available|availability|date|dates|schedule)\b/i
+const PUBLIC_DIETARY_PATTERN =
+  /\b(dietary|allerg(?:y|ies)|vegan|vegetarian|gluten[-\s]?free|kosher|halal)\b/i
 
 export function getSurfaceRuntimeOptions(message: string): {
   contextScope: ContextScope
@@ -68,6 +76,16 @@ export function trySurfaceInstantAnswer(
 
   if (THANKS_PATTERN.test(trimmed)) {
     return { text: buildThanks(surface) }
+  }
+
+  if (surface === 'landing') {
+    const landingAnswer = tryLandingInstantAnswer(trimmed)
+    if (landingAnswer) return landingAnswer
+  }
+
+  if (surface === 'public') {
+    const publicAnswer = tryPublicInstantAnswer(trimmed, context)
+    if (publicAnswer) return publicAnswer
   }
 
   // Client-only data-driven instant answers (no LLM needed)
@@ -207,6 +225,87 @@ function buildThanks(surface: RemySurface): string {
 }
 
 // ─── Client Data-Driven Instant Answers ──────────────────────────────────
+
+function tryLandingInstantAnswer(message: string): SurfaceInstantAnswer | null {
+  if (PRICING_PATTERN.test(message)) {
+    return {
+      text: [
+        'ChefFlow starts free, no credit card needed.',
+        'The free tier covers the standalone operator basics. Paid features are for leverage: automation, scale, and deeper assistance.',
+        'The fastest way to evaluate it is to start with the workflow you want fixed first.',
+      ].join('\n\n'),
+    }
+  }
+
+  if (BOOKING_PATTERN.test(message)) {
+    return {
+      text: [
+        'You can start from the public booking path or create a chef-operator account.',
+        'If you are hiring a chef, search by location and service type. If you run a chef business, start free and map your current workflow into ChefFlow.',
+      ].join('\n\n'),
+    }
+  }
+
+  if (PLATFORM_FEATURE_PATTERN.test(message)) {
+    return {
+      text: [
+        'ChefFlow keeps the private chef workflow in one place: inquiries, clients, events, menus, payments, and daily operations.',
+        'The point is fewer spreadsheets, fewer loose messages, and a cleaner handoff from first inquiry to paid event.',
+      ].join('\n\n'),
+    }
+  }
+
+  return null
+}
+
+function tryPublicInstantAnswer(
+  message: string,
+  context: SurfaceInstantContext
+): SurfaceInstantAnswer | null {
+  const name = context.businessName ?? context.chefName ?? 'Chef'
+
+  if (PRICING_PATTERN.test(message)) {
+    return {
+      text: [
+        `${name} handles pricing through a custom quote.`,
+        'Submit an inquiry with the date, guest count, location, and service style. Avoid sending payment details in chat.',
+      ].join('\n\n'),
+    }
+  }
+
+  if (PUBLIC_AVAILABILITY_PATTERN.test(message)) {
+    return {
+      text: [
+        `${name} will confirm availability directly.`,
+        'The inquiry form is the right next step for a specific date or event request.',
+      ].join('\n\n'),
+    }
+  }
+
+  if (PUBLIC_DIETARY_PATTERN.test(message)) {
+    const capabilities =
+      context.dietaryCapabilities && context.dietaryCapabilities.length > 0
+        ? `Known public dietary capabilities: ${context.dietaryCapabilities.slice(0, 4).join(', ')}.`
+        : 'Dietary needs are best confirmed directly with the chef.'
+    return {
+      text: [
+        capabilities,
+        'For private allergy or medical details, use the inquiry form instead of public chat.',
+      ].join('\n\n'),
+    }
+  }
+
+  if (BOOKING_PATTERN.test(message)) {
+    return {
+      text: [
+        `Use the inquiry form to contact ${name}.`,
+        'Share the event basics there so the chef can review availability, fit, and next steps.',
+      ].join('\n\n'),
+    }
+  }
+
+  return null
+}
 
 const CLIENT_EVENT_PATTERN =
   /^(?:when\s+is\s+my\s+(?:next\s+)?event|(?:my\s+)?(?:next|upcoming)\s+event|what\s+events?\s+do\s+i\s+have|(?:do\s+i\s+have\s+)?(?:any\s+)?upcoming\s+events?)\s*\??$/i

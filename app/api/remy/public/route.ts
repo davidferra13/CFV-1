@@ -27,6 +27,12 @@ import {
   getSurfaceRuntimeOptions,
   trySurfaceInstantAnswer,
 } from '../surface-runtime-utils'
+import {
+  PublicCloudGatewayError,
+  isPublicCloudAiConfigured,
+  streamPublicCloudAi,
+} from '@/lib/ai/public-cloud-gateway'
+import { isPublicCloudAiEnabled } from '@/lib/ai/public-cloud-policy'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -221,6 +227,59 @@ export async function POST(req: NextRequest) {
 
     // Build message for Ollama
     const fullPrompt = `${conversationHistory}Visitor: ${message}`
+
+    if (isPublicCloudAiEnabled()) {
+      if (!isPublicCloudAiConfigured()) {
+        return new Response(
+          encodeSSE({
+            type: 'error',
+            data: "I'm taking a quick break - check back in a few minutes!",
+          }),
+          { headers: sseHeaders() }
+        )
+      }
+
+      const encoder = new TextEncoder()
+      const stream = new ReadableStream({
+        async start(controller) {
+          try {
+            for await (const token of streamPublicCloudAi({
+              taskId: 'chef_public_concierge',
+              surface: 'public_chef_profile',
+              message,
+              history,
+              publicContext: {
+                businessName: context.businessName,
+                chefName: context.chefName,
+                serviceArea: context.serviceArea,
+                serviceTypes: context.serviceTypes,
+                dietaryCapabilities: context.dietaryCapabilities,
+              },
+              systemPrompt,
+              userPrompt: fullPrompt,
+              maxTokens: tokenBudget,
+            })) {
+              latency.markFirstToken()
+              controller.enqueue(encoder.encode(encodeSSE({ type: 'token', data: token })))
+            }
+
+            latency.logDone({ route_ms: Date.now() - routeStartedAt, token_budget: tokenBudget })
+            controller.enqueue(encoder.encode(encodeSSE({ type: 'done', data: null })))
+          } catch (err) {
+            latency.logError(err)
+            const message =
+              err instanceof PublicCloudGatewayError
+                ? err.publicMessage
+                : "Something went wrong - I'll be back shortly!"
+            controller.enqueue(encoder.encode(encodeSSE({ type: 'error', data: message })))
+          } finally {
+            controller.close()
+          }
+        },
+      })
+
+      return new Response(stream, { headers: sseHeaders() })
+    }
 
     const config = getOllamaConfig()
     const model = getOllamaModel('fast') // Use fast model for public (lighter, faster)

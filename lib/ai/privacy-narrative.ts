@@ -30,6 +30,10 @@ export const PRIVACY_ONELINER =
 /** Speed + privacy note (for chat surfaces) */
 export const SPEED_PRIVACY = 'Remy runs on private AI. Your data never leaves ChefFlow.'
 
+/** Public visitor chat disclosure */
+export const PUBLIC_CHAT_CLOUD_DISCLOSURE =
+  'Public chat may use monitored cloud AI. Do not enter private client, payment, event, or recipe details.'
+
 /** Speed + privacy, shorter variant (for footers) */
 export const SPEED_PRIVACY_SHORT = 'Private AI. Your data stays yours.'
 
