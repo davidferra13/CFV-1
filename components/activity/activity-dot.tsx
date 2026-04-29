@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import type { ChefActivityEntry } from '@/lib/activity/chef-types'
 import { DOMAIN_CONFIG } from '@/lib/activity/chef-types'
+import { getChefActivityEntityHref } from '@/lib/activity/entity-routes'
 
 interface ActivityDotProps {
   collapsed?: boolean
@@ -96,7 +97,7 @@ export function ActivityDot({ collapsed }: ActivityDotProps) {
             )}
             {items.map((entry) => {
               const config = DOMAIN_CONFIG[entry.domain] || DOMAIN_CONFIG.operational
-              const href = getEntityHref(entry)
+              const href = getChefActivityEntityHref(entry.entity_type, entry.entity_id)
               const row = (
                 <div
                   key={entry.id}
@@ -141,27 +142,6 @@ export function ActivityDot({ collapsed }: ActivityDotProps) {
       )}
     </div>
   )
-}
-
-function getEntityHref(entry: ChefActivityEntry): string | null {
-  const id = entry.entity_id
-  if (!id) return null
-  switch (entry.entity_type) {
-    case 'event':
-      return `/pipeline/events/${id}`
-    case 'inquiry':
-      return `/pipeline/inquiries/${id}`
-    case 'quote':
-      return `/pipeline/quotes/${id}`
-    case 'menu':
-      return `/culinary/menus/${id}`
-    case 'recipe':
-      return `/culinary/recipes/${id}`
-    case 'client':
-      return `/clients/${id}`
-    default:
-      return null
-  }
 }
 
 function formatTimeAgo(dateStr: string): string {

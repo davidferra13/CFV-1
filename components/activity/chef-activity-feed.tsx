@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { ActivityTimestamp } from '@/components/ui/activity-timestamp'
 import type { ChefActivityEntry } from '@/lib/activity/chef-types'
 import { DOMAIN_CONFIG } from '@/lib/activity/chef-types'
+import { getChefActivityEntityHref } from '@/lib/activity/entity-routes'
 
 interface ChefActivityFeedProps {
   entries: ChefActivityEntry[]
@@ -44,7 +45,7 @@ export function ChefActivityFeed({ entries, compact = false }: ChefActivityFeedP
 
 function ActivityRow({ entry, compact }: { entry: ChefActivityEntry; compact: boolean }) {
   const config = DOMAIN_CONFIG[entry.domain] || DOMAIN_CONFIG.operational
-  const href = getEntityHref(entry)
+  const href = getChefActivityEntityHref(entry.entity_type, entry.entity_id)
 
   const content = (
     <div
@@ -90,28 +91,6 @@ function ContextLine({ context }: { context: Record<string, unknown> }) {
   if (parts.length === 0) return null
 
   return <p className="text-xs text-stone-400 mt-0.5 truncate">{parts.join(' | ')}</p>
-}
-
-function getEntityHref(entry: ChefActivityEntry): string | null {
-  const id = entry.entity_id
-  if (!id) return null
-
-  switch (entry.entity_type) {
-    case 'event':
-      return `/pipeline/events/${id}`
-    case 'inquiry':
-      return `/pipeline/inquiries/${id}`
-    case 'quote':
-      return `/pipeline/quotes/${id}`
-    case 'menu':
-      return `/culinary/menus/${id}`
-    case 'recipe':
-      return `/culinary/recipes/${id}`
-    case 'client':
-      return `/clients/${id}`
-    default:
-      return null
-  }
 }
 
 function groupByDay(

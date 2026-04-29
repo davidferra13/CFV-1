@@ -5,6 +5,7 @@ import type { ChefActivityDomain, ChefActivityEntry, ResumeItem } from '@/lib/ac
 import { DOMAIN_CONFIG } from '@/lib/activity/chef-types'
 import type { ActivityActorFilter, ActivityEvent } from '@/lib/activity/types'
 import type { BreadcrumbSession } from '@/lib/activity/breadcrumb-types'
+import { getChefActivityEntityHref } from '@/lib/activity/entity-routes'
 import { mergeActivityByCreatedAt, parseTimeRangeDays } from '@/lib/activity/merge'
 import { ResumeSection } from '@/components/activity/resume-section'
 import { ChefActivityFeed } from '@/components/activity/chef-activity-feed'
@@ -546,7 +547,7 @@ function AllTimelineRow({
   if (item.source === 'chef' && item.chef) {
     const entry = item.chef
     const config = DOMAIN_CONFIG[entry.domain] || DOMAIN_CONFIG.operational
-    const href = getChefEntityHref(entry)
+    const href = getChefActivityEntityHref(entry.entity_type, entry.entity_id)
     const content = (
       <div className="flex items-start gap-2.5 py-2 px-2 rounded-md hover:bg-stone-800 transition-colors">
         <span
@@ -596,28 +597,6 @@ function AllTimelineRow({
   }
 
   return null
-}
-
-function getChefEntityHref(entry: ChefActivityEntry): string | null {
-  const id = entry.entity_id
-  if (!id) return null
-
-  switch (entry.entity_type) {
-    case 'event':
-      return `/pipeline/events/${id}`
-    case 'inquiry':
-      return `/pipeline/inquiries/${id}`
-    case 'quote':
-      return `/pipeline/quotes/${id}`
-    case 'menu':
-      return `/culinary/menus/${id}`
-    case 'recipe':
-      return `/culinary/recipes/${id}`
-    case 'client':
-      return `/clients/${id}`
-    default:
-      return null
-  }
 }
 
 function formatTimeAgo(dateStr: string): string {

@@ -3,6 +3,7 @@
 import type { ChefActivityEntry } from '@/lib/activity/chef-types'
 import type { ActivityEvent } from '@/lib/activity/types'
 import { DOMAIN_CONFIG } from '@/lib/activity/chef-types'
+import { getChefActivityEntityHref } from '@/lib/activity/entity-routes'
 import Link from 'next/link'
 
 interface ClientActivityTimelineProps {
@@ -43,7 +44,7 @@ export function ClientActivityTimeline({
       description: e.summary,
       domain: e.domain,
       created_at: e.created_at,
-      href: e.entity_id ? getEntityHref(e.entity_type, e.entity_id) : null,
+      href: getChefActivityEntityHref(e.entity_type, e.entity_id),
     })),
     ...clientActivity.map((e) => ({
       id: e.id,
@@ -110,25 +111,6 @@ function TimelineRow({ entry }: { entry: TimelineEntry }) {
     return <Link href={entry.href}>{inner}</Link>
   }
   return inner
-}
-
-function getEntityHref(entityType: string, entityId: string): string | null {
-  switch (entityType) {
-    case 'event':
-      return `/pipeline/events/${entityId}`
-    case 'inquiry':
-      return `/pipeline/inquiries/${entityId}`
-    case 'quote':
-      return `/pipeline/quotes/${entityId}`
-    case 'menu':
-      return `/culinary/menus/${entityId}`
-    case 'recipe':
-      return `/culinary/recipes/${entityId}`
-    case 'client':
-      return `/clients/${entityId}`
-    default:
-      return null
-  }
 }
 
 function formatTimeAgo(dateStr: string): string {

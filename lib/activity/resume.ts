@@ -6,6 +6,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import type { ResumeItem } from './chef-types'
+import { getChefActivityEntityHref } from './entity-routes'
 
 type DbClient = any
 
@@ -110,7 +111,7 @@ async function getActiveEvents(db: DbClient, tenantId: string): Promise<ResumeIt
       status: e.status,
       statusColor: EVENT_STATUS_COLORS[e.status] || 'stone',
       lastActionAt: e.updated_at,
-      href: `/pipeline/events/${e.id}`,
+      href: getChefActivityEntityHref('event', e.id),
       context: { client_name: clientName, event_date: e.event_date, guest_count: e.guest_count },
     }
   })
@@ -193,7 +194,7 @@ async function getActiveInquiries(db: DbClient, tenantId: string): Promise<Resum
       status: inq.status,
       statusColor: inq.status === 'new' ? 'red' : inq.next_action_by === 'chef' ? 'amber' : 'brand',
       lastActionAt: inq.follow_up_due_at || inq.updated_at,
-      href: `/pipeline/inquiries/${inq.id}`,
+      href: getChefActivityEntityHref('inquiry', inq.id),
       context: {
         client_name: clientName,
         channel: inq.channel,
@@ -232,7 +233,7 @@ async function getActiveQuotes(db: DbClient, tenantId: string): Promise<ResumeIt
       status: q.status,
       statusColor: q.status === 'draft' ? 'amber' : 'purple',
       lastActionAt: q.updated_at,
-      href: `/pipeline/quotes/${q.id}`,
+      href: getChefActivityEntityHref('quote', q.id),
       context: {
         client_name: clientName,
         event_name: eventName,
