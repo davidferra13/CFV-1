@@ -22,3 +22,11 @@ test('notification panel exposes the same actionable unread return-to-work path'
   assert.match(panelSource, /setReadFilter\('unread'\)/)
   assert.match(panelSource, /handleNavigate\(nextActionableUnread\)/)
 })
+
+test('notification panel shows load failure instead of an empty success state', () => {
+  assert.match(panelSource, /const \[loadError, setLoadError\] = useState\(false\)/)
+  assert.match(panelSource, /setLoadError\(true\)/)
+  assert.match(panelSource, /loadError \?/)
+  assert.match(panelSource, /Could not load notifications/)
+  assert.match(panelSource, /Open notifications/)
+})

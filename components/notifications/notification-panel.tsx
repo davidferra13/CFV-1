@@ -258,6 +258,7 @@ export function NotificationPanel({ onClose }: { onClose: () => void }) {
   const { markAsRead, markAllAsRead, unreadCount } = useNotifications()
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState(false)
   const [categoryFilter, setCategoryFilter] = useState<NotificationCategory | 'all'>('all')
   const [readFilter, setReadFilter] = useState<'all' | 'unread'>('all')
 
@@ -265,10 +266,12 @@ export function NotificationPanel({ onClose }: { onClose: () => void }) {
   useEffect(() => {
     async function load() {
       try {
+        setLoadError(false)
         const data = await getNotifications(30)
         setNotifications(data)
       } catch (err) {
         console.error('[NotificationPanel] Failed to load:', err)
+        setLoadError(true)
       } finally {
         setLoading(false)
       }
@@ -398,6 +401,24 @@ export function NotificationPanel({ onClose }: { onClose: () => void }) {
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <div className="w-5 h-5 border-2 border-stone-700 border-t-brand-600 rounded-full animate-spin" />
+          </div>
+        ) : loadError ? (
+          <div className="flex flex-col items-center justify-center px-4 py-12 text-center">
+            <AlertTriangle className="mb-2 h-8 w-8 text-amber-500" />
+            <p className="text-sm font-medium text-stone-200">Could not load notifications</p>
+            <p className="mt-1 text-xs text-stone-500">
+              Open the full notifications page to try again.
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                onClose()
+                router.push('/notifications')
+              }}
+              className="mt-3 rounded-md border border-stone-700 px-3 py-1.5 text-xs font-medium text-stone-300 hover:bg-stone-800"
+            >
+              Open notifications
+            </button>
           </div>
         ) : filteredNotifications.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 px-4">
