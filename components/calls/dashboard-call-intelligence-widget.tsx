@@ -11,12 +11,14 @@ export function DashboardCallIntelligenceWidget({
   snapshot: CallIntelligenceSnapshot
 }) {
   const topIntervention = snapshot.humanInterventions[0] ?? null
+  const topSla = snapshot.slaQueue[0] ?? null
   const hasSourceErrors = snapshot.sourceErrors.length > 0
   const missingOutcomes = snapshot.automationCoverage.humanCallsMissingOutcomes
   const missingTranscripts = snapshot.automationCoverage.voiceRecordsMissingTranscripts
 
   if (
     !topIntervention &&
+    !topSla &&
     !hasSourceErrors &&
     missingOutcomes === 0 &&
     missingTranscripts === 0
@@ -68,11 +70,26 @@ export function DashboardCallIntelligenceWidget({
           </p>
         )}
 
+        {topSla && (
+          <Link
+            href={topSla.href}
+            className="block rounded-lg border border-stone-800 bg-stone-950 p-3 transition-colors hover:border-stone-700"
+          >
+            <div className="flex flex-wrap items-center gap-2">
+              <span className={urgencyClass(topSla.urgency)}>{topSla.status}</span>
+              <span className="text-sm font-medium text-stone-100">Call SLA</span>
+            </div>
+            <p className="mt-1 text-sm text-stone-400">{topSla.target}</p>
+            <p className="mt-1 text-xs text-stone-500">{topSla.rule}</p>
+            <p className="mt-1 text-xs text-brand-300">{topSla.nextStep}</p>
+          </Link>
+        )}
+
         <div className="grid grid-cols-2 gap-2 text-xs">
           <Metric label="Active signals" value={snapshot.humanInterventions.length} />
+          <Metric label="SLA items" value={snapshot.slaQueue.length} />
           <Metric label="Overdue calls" value={snapshot.stats.humanOverdue} />
           <Metric label="Missing outcomes" value={missingOutcomes} />
-          <Metric label="Missing transcripts" value={missingTranscripts} />
         </div>
       </div>
     </div>

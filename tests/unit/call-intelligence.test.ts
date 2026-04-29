@@ -41,6 +41,12 @@ describe('call intelligence snapshot', () => {
     assert.ok(
       snapshot.humanInterventions.some((item) => item.id === 'scheduled-missing-outcome-call-complete')
     )
+    assert.ok(snapshot.slaQueue.some((item) => item.id === 'human-call-time-call-overdue'))
+    const outcomeSla = snapshot.slaQueue.find((item) => item.id === 'human-outcome-call-complete')
+    assert.ok(outcomeSla)
+    assert.equal(outcomeSla.status, 'overdue')
+    assert.equal(outcomeSla.urgency, 'critical')
+    assert.match(outcomeSla.rule, /outcomes/)
     assert.ok(snapshot.lifecycleTrace.some((item) => item.id === 'human-lifecycle-call-overdue'))
     const completedLifecycle = snapshot.lifecycleTrace.find(
       (item) => item.id === 'human-lifecycle-call-complete'
@@ -89,6 +95,11 @@ describe('call intelligence snapshot', () => {
     assert.equal(snapshot.stats.averageVoiceDurationSeconds, 60)
     assert.ok(snapshot.humanInterventions.some((item) => item.id === 'ai-inbound-ai-inbound'))
     assert.ok(snapshot.humanInterventions.some((item) => item.id === 'supplier-no-supplier-no'))
+    assert.ok(snapshot.slaQueue.some((item) => item.id === 'ai-review-ai-inbound'))
+    const supplierSla = snapshot.slaQueue.find((item) => item.id === 'supplier-resolution-supplier-no')
+    assert.ok(supplierSla)
+    assert.match(supplierSla.rule, /unavailability/)
+    assert.match(supplierSla.nextStep, /alternate supplier/)
     assert.ok(snapshot.lifecycleTrace.some((item) => item.id === 'ai-lifecycle-ai-inbound'))
     const supplierLifecycle = snapshot.lifecycleTrace.find(
       (item) => item.id === 'supplier-lifecycle-supplier-no'
@@ -115,6 +126,28 @@ describe('call intelligence snapshot', () => {
     assert.equal(snapshot.stats.totalVoiceRecords, null)
     assert.equal(snapshot.automationCoverage.voiceRecordsWithTranscripts, null)
     assert.ok(snapshot.engineGaps.includes('One or more call data sources could not be read for this snapshot.'))
+  })
+
+  it('keeps upcoming call obligations in the SLA queue with normal urgency', () => {
+    const snapshot = buildCallIntelligenceSnapshot({
+      now: NOW,
+      humanCalls: [
+        humanCall({
+          id: 'call-upcoming',
+          status: 'confirmed',
+          scheduled_at: '2026-04-28T20:00:00.000Z',
+          contact_name: 'Future Client',
+        }),
+      ],
+      aiCalls: [],
+      supplierCalls: [],
+    })
+
+    const item = snapshot.slaQueue.find((sla) => sla.id === 'human-call-time-call-upcoming')
+    assert.ok(item)
+    assert.equal(item.status, 'upcoming')
+    assert.equal(item.urgency, 'normal')
+    assert.equal(item.minutesUntilDue, 240)
   })
 })
 

@@ -82,6 +82,21 @@ export type CallIntelligenceLifecycleStep = {
   evidence: string | null
 }
 
+export type CallIntelligenceSlaStatus = 'overdue' | 'due_now' | 'upcoming'
+
+export type CallIntelligenceSlaItem = {
+  id: string
+  source: 'scheduled_call' | 'ai_call' | 'supplier_call'
+  target: string
+  rule: string
+  dueAt: string
+  status: CallIntelligenceSlaStatus
+  urgency: CallIntelligenceUrgency
+  minutesUntilDue: number
+  href: string
+  nextStep: string
+}
+
 export type CallIntelligenceSnapshot = {
   generatedAt: string
   sourceErrors: CallIntelligenceSourceError[]
@@ -100,6 +115,7 @@ export type CallIntelligenceSnapshot = {
     averageVoiceDurationSeconds: number | null
   }
   humanInterventions: CallIntelligenceIntervention[]
+  slaQueue: CallIntelligenceSlaItem[]
   lifecycleTrace: CallIntelligenceLifecycleStep[]
   automationCoverage: {
     aiAllowedOnlyFor: string
@@ -138,6 +154,13 @@ export function buildCallIntelligenceSnapshot(
   ]
     .sort((a, b) => urgencyRank(b.urgency) - urgencyRank(a.urgency))
     .slice(0, 8)
+  const slaQueue = [
+    ...buildHumanCallSla(humanCalls, now),
+    ...buildAiCallSla(aiCalls, now),
+    ...buildSupplierCallSla(supplierCalls, now),
+  ]
+    .sort(compareSlaItems)
+    .slice(0, 10)
   const lifecycleTrace = [
     ...buildHumanCallLifecycle(humanCalls, now),
     ...buildAiCallLifecycle(aiCalls),
@@ -217,6 +240,7 @@ export function buildCallIntelligenceSnapshot(
       averageVoiceDurationSeconds: average(voiceDurations),
     },
     humanInterventions,
+    slaQueue,
     lifecycleTrace,
     automationCoverage: {
       aiAllowedOnlyFor:
@@ -415,6 +439,136 @@ function buildSupplierCallInterventions(
   })
 }
 
+function buildHumanCallSla(
+  calls: CallIntelligenceHumanCall[],
+  now: Date
+): CallIntelligenceSlaItem[] {
+  return calls.flatMap((call) => {
+    const target = humanTarget(call)
+    const href = `/calls/${call.id}`
+    const items: CallIntelligenceSlaItem[] = []
+
+    if (call.status === 'scheduled' || call.status === 'confirmed') {
+      items.push(
+        createSlaItem({
+          id: `human-call-time-${call.id}`,
+          source: 'scheduled_call',
+          target,
+          rule: 'Complete scheduled human calls at the committed call time.',
+          dueAt: call.scheduled_at,
+          now,
+          href,
+          nextStep: 'Call now, join the scheduled call, or reschedule with the contact.',
+        })
+      )
+    }
+
+    if (call.status === 'completed' && !hasHumanOutcome(call)) {
+      items.push(
+        createSlaItem({
+          id: `human-outcome-${call.id}`,
+          source: 'scheduled_call',
+          target,
+          rule: 'Log human call outcomes within two hours of completion.',
+          dueAt: addMinutesIso(call.completed_at ?? call.scheduled_at, 120),
+          now,
+          href,
+          nextStep: 'Log outcome, notes, next action, and due date.',
+        })
+      )
+    }
+
+    if (call.status === 'completed' && call.next_action_due_at) {
+      items.push(
+        createSlaItem({
+          id: `human-next-action-${call.id}`,
+          source: 'scheduled_call',
+          target,
+          rule: 'Complete promised call follow-ups by the logged due date.',
+          dueAt: call.next_action_due_at,
+          now,
+          href,
+          nextStep: call.next_action ?? 'Complete the promised follow-up.',
+        })
+      )
+    }
+
+    if (call.status === 'no_show') {
+      items.push(
+        createSlaItem({
+          id: `human-no-show-${call.id}`,
+          source: 'scheduled_call',
+          target,
+          rule: 'Recover missed calls within thirty minutes.',
+          dueAt: addMinutesIso(call.scheduled_at, 30),
+          now,
+          href,
+          nextStep: 'Send a recovery message and schedule a new call.',
+        })
+      )
+    }
+
+    return items
+  })
+}
+
+function buildAiCallSla(
+  calls: CallIntelligenceAiCall[],
+  now: Date
+): CallIntelligenceSlaItem[] {
+  return calls.flatMap((call) => {
+    const isInbound = call.direction === 'inbound' || call.role?.includes('inbound')
+    const decisionText = JSON.stringify(call.extracted_data ?? call.action_log ?? {})
+    const hasEscalation = decisionText.includes('escalat') || decisionText.includes('human')
+    if (!isInbound && !hasEscalation) return []
+
+    const target = call.contact_name ?? call.contact_phone ?? call.subject ?? 'Voice contact'
+    return [
+      createSlaItem({
+        id: `ai-review-${call.id}`,
+        source: 'ai_call',
+        target,
+        rule: hasEscalation
+          ? 'Review AI voice escalations immediately.'
+          : 'Review inbound voice messages within one hour.',
+        dueAt: hasEscalation ? call.created_at : addMinutesIso(call.created_at, 60),
+        now,
+        href: '/culinary/call-sheet?tab=inbox',
+        nextStep: 'Review transcript and recording, then decide whether a callback is needed.',
+      }),
+    ]
+  })
+}
+
+function buildSupplierCallSla(
+  calls: CallIntelligenceSupplierCall[],
+  now: Date
+): CallIntelligenceSlaItem[] {
+  return calls.flatMap((call) => {
+    const failed = Boolean(call.status && FAILED_STATUSES.has(call.status))
+    const unavailable = call.result === 'no'
+    if (!failed && !unavailable) return []
+
+    const target = call.vendor_name ?? call.vendor_phone ?? 'Supplier'
+    return [
+      createSlaItem({
+        id: `supplier-resolution-${call.id}`,
+        source: 'supplier_call',
+        target,
+        rule: unavailable
+          ? 'Resolve ingredient unavailability within four hours.'
+          : 'Retry or replace failed supplier calls within four hours.',
+        dueAt: addMinutesIso(call.created_at, 240),
+        now,
+        href: '/culinary/call-sheet?tab=log',
+        nextStep: unavailable
+          ? 'Choose an alternate supplier or update the sourcing plan.'
+          : 'Retry the supplier or switch to a human follow-up.',
+      }),
+    ]
+  })
+}
+
 function buildHumanCallLifecycle(
   calls: CallIntelligenceHumanCall[],
   now: Date
@@ -544,6 +698,59 @@ function buildSupplierCallLifecycle(
       evidence: ingredientEvidence(call),
     }
   })
+}
+
+function createSlaItem(params: {
+  id: string
+  source: CallIntelligenceSlaItem['source']
+  target: string
+  rule: string
+  dueAt: string
+  now: Date
+  href: string
+  nextStep: string
+}): CallIntelligenceSlaItem {
+  const dueMs = Date.parse(params.dueAt)
+  const minutesUntilDue = Number.isFinite(dueMs)
+    ? Math.round((dueMs - params.now.getTime()) / 60_000)
+    : 0
+  const status: CallIntelligenceSlaStatus =
+    minutesUntilDue < 0 ? 'overdue' : minutesUntilDue <= 60 ? 'due_now' : 'upcoming'
+  const urgency: CallIntelligenceUrgency =
+    status === 'overdue' ? 'critical' : status === 'due_now' ? 'high' : 'normal'
+
+  return {
+    id: params.id,
+    source: params.source,
+    target: params.target,
+    rule: params.rule,
+    dueAt: params.dueAt,
+    status,
+    urgency,
+    minutesUntilDue,
+    href: params.href,
+    nextStep: params.nextStep,
+  }
+}
+
+function compareSlaItems(a: CallIntelligenceSlaItem, b: CallIntelligenceSlaItem): number {
+  const statusDelta = slaStatusRank(b.status) - slaStatusRank(a.status)
+  if (statusDelta !== 0) return statusDelta
+  const urgencyDelta = urgencyRank(b.urgency) - urgencyRank(a.urgency)
+  if (urgencyDelta !== 0) return urgencyDelta
+  return a.minutesUntilDue - b.minutesUntilDue
+}
+
+function slaStatusRank(status: CallIntelligenceSlaStatus): number {
+  if (status === 'overdue') return 3
+  if (status === 'due_now') return 2
+  return 1
+}
+
+function addMinutesIso(value: string, minutes: number): string {
+  const timestamp = Date.parse(value)
+  if (!Number.isFinite(timestamp)) return value
+  return new Date(timestamp + minutes * 60_000).toISOString()
 }
 
 function hasHumanOutcome(call: CallIntelligenceHumanCall): boolean {

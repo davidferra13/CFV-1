@@ -126,6 +126,38 @@ export function CallIntelligencePanel({ snapshot }: Props) {
         </div>
       </div>
 
+      {snapshot.slaQueue.length > 0 && (
+        <div className="rounded-lg border border-stone-800 bg-stone-900 p-3">
+          <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+            <h3 className="text-sm font-semibold uppercase tracking-wide text-stone-400">
+              Call SLA queue
+            </h3>
+            <span className="text-xs text-stone-600">
+              {snapshot.slaQueue.length} timed obligations
+            </span>
+          </div>
+          <div className="mt-3 grid gap-2 lg:grid-cols-2">
+            {snapshot.slaQueue.slice(0, 6).map((item) => (
+              <Link
+                key={item.id}
+                href={item.href}
+                className="block rounded-lg border border-stone-800 bg-stone-950/70 p-3 transition-colors hover:border-stone-700"
+              >
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className={urgencyClass(item.urgency)}>{item.status}</span>
+                  <span className="text-sm font-medium text-stone-100">{item.target}</span>
+                </div>
+                <p className="mt-1 text-xs text-stone-500">{item.rule}</p>
+                <p className="mt-1 text-xs text-brand-300">{item.nextStep}</p>
+                <p className="mt-2 text-[11px] text-stone-600">
+                  Due {new Date(item.dueAt).toLocaleString()} ({formatSlaDelta(item.minutesUntilDue)})
+                </p>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
       {snapshot.lifecycleTrace.length > 0 && (
         <div className="rounded-lg border border-stone-800 bg-stone-900 p-3">
           <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
@@ -186,6 +218,13 @@ function LifecycleCell({ label, value }: { label: string; value: string }) {
 
 function formatMetric(value: number | null): string {
   return value === null ? 'Unavailable' : value.toLocaleString()
+}
+
+function formatSlaDelta(minutesUntilDue: number): string {
+  const absolute = Math.abs(minutesUntilDue)
+  if (minutesUntilDue < 0) return `${absolute} min overdue`
+  if (minutesUntilDue === 0) return 'due now'
+  return `${absolute} min remaining`
 }
 
 function urgencyClass(urgency: CallIntelligenceUrgency): string {
