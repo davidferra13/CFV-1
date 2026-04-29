@@ -5,12 +5,17 @@
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
-import { getStaffActivityBoard, type StaffActivity } from '@/lib/staff/activity-board'
+import { getStaffActivityBoard } from '@/lib/staff/activity-board'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { StaffBoardRefresher } from '@/components/staff/staff-board-refresher'
 
 export const metadata: Metadata = { title: 'Staff Activity' }
+
+type StaffActivity = Extract<
+  Awaited<ReturnType<typeof getStaffActivityBoard>>,
+  { success: true }
+>['data'][number]
 
 // ============================================
 // HELPERS
@@ -140,7 +145,9 @@ function StaffCard({ staff }: { staff: StaffActivity }) {
 export default async function StaffLivePage() {
   await requireChef()
   await requirePro('staff-management')
-  const staffActivity = await getStaffActivityBoard()
+  const staffActivityResult = await getStaffActivityBoard()
+
+  const staffActivity = staffActivityResult.success ? staffActivityResult.data : []
 
   const activeCount = staffActivity.filter((s) => s.status === 'active').length
   const idleCount = staffActivity.filter((s) => s.status === 'idle').length
@@ -178,7 +185,14 @@ export default async function StaffLivePage() {
       </div>
 
       {/* Staff grid */}
-      {staffActivity.length === 0 ? (
+      {!staffActivityResult.success ? (
+        <Card>
+          <CardContent className="py-12 text-center">
+            <p className="text-stone-200 font-medium">Staff activity could not be loaded.</p>
+            <p className="text-sm text-stone-500 mt-1">{staffActivityResult.error}</p>
+          </CardContent>
+        </Card>
+      ) : staffActivity.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
             <p className="text-stone-400">No active staff members.</p>

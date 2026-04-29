@@ -7,7 +7,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 
-export type StaffActivity = {
+type StaffActivity = {
   id: string
   name: string
   role: string
@@ -21,11 +21,19 @@ export type StaffActivity = {
   minutesSinceActivity: number | null
 }
 
+type StaffActivityBoardResult =
+  | { success: true; data: StaffActivity[] }
+  | { success: false; error: string }
+
+function getQueryErrorMessage(source: string): string {
+  return `Unable to load staff activity from ${source}. Refresh the page or try again shortly.`
+}
+
 /**
  * Get activity data for all active staff members.
  * Derives activity from task status changes, clipboard updates, and station check-ins.
  */
-export async function getStaffActivityBoard(): Promise<StaffActivity[]> {
+export async function getStaffActivityBoard(): Promise<StaffActivityBoardResult> {
   const user = await requireChef()
   const db: any = createServerClient()
   const tenantId = user.tenantId!
@@ -41,8 +49,13 @@ export async function getStaffActivityBoard(): Promise<StaffActivity[]> {
     .eq('status', 'active')
     .order('name')
 
-  if (staffError || !staffMembers?.length) {
-    return []
+  if (staffError) {
+    console.error('[getStaffActivityBoard] Staff query failed', staffError)
+    return { success: false, error: getQueryErrorMessage('staff roster') }
+  }
+
+  if (!staffMembers?.length) {
+    return { success: true, data: [] }
   }
 
   const staffIds = staffMembers.map((s: any) => s.id)
@@ -83,13 +96,29 @@ export async function getStaffActivityBoard(): Promise<StaffActivity[]> {
       .limit(100),
   ])
 
+  const queryFailures = [
+    { source: 'tasks', error: tasksResult.error },
+    { source: 'task completion log', error: completionLogResult.error },
+    { source: 'operations log', error: opsLogResult.error },
+    { source: 'clipboard updates', error: clipboardResult.error },
+  ].filter((result) => result.error)
+
+  if (queryFailures.length > 0) {
+    console.error('[getStaffActivityBoard] Activity aggregation failed', queryFailures)
+    const firstFailure = queryFailures[0]
+    return {
+      success: false,
+      error: getQueryErrorMessage(firstFailure.source),
+    }
+  }
+
   const tasks = tasksResult.data ?? []
   const completionLogs = completionLogResult.data ?? []
   const opsLogs = opsLogResult.data ?? []
   const clipboardUpdates = clipboardResult.data ?? []
 
   // Build activity map per staff member
-  return staffMembers.map((staff: any) => {
+  const staffActivity = staffMembers.map((staff: any) => {
     const staffTasks = tasks.filter((t: any) => t.assigned_to === staff.id)
     const inProgressTask = staffTasks.find((t: any) => t.status === 'in_progress')
     const tasksDone = staffTasks.filter((t: any) => t.status === 'done').length
@@ -147,4 +176,6 @@ export async function getStaffActivityBoard(): Promise<StaffActivity[]> {
       minutesSinceActivity,
     }
   })
+
+  return { success: true, data: staffActivity }
 }
