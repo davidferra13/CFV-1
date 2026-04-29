@@ -170,6 +170,39 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
       'Fetch and read the content of a specific URL. Use when the chef shares a link or when a web search result needs deeper reading.',
     inputSchema: '{ "url": "string - full URL to fetch and read" }',
   },
+  {
+    type: 'radar.latest',
+    tier: 1,
+    name: 'Latest Culinary Radar',
+    description:
+      'Read source-backed Culinary Radar matches already ingested by ChefFlow. Use for latest culinary news, recalls, opportunities, sustainability, business, and craft signals. Never invent facts and never generate recipes.',
+    inputSchema:
+      '{ "category": "string - optional: safety, opportunity, sustainability, craft, business, local, client_signal", "limit": "number - optional, defaults to 5" }',
+  },
+  {
+    type: 'radar.safety',
+    tier: 1,
+    name: 'Radar Safety Alerts',
+    description:
+      'Show source-backed food safety, recall, outbreak, and public health matches from Culinary Radar. This is read-only and must include source attribution.',
+    inputSchema: '{ "limit": "number - optional, defaults to 5" }',
+  },
+  {
+    type: 'radar.opportunities',
+    tier: 1,
+    name: 'Radar Opportunities',
+    description:
+      'Show source-backed chef opportunities from Culinary Radar, including relief, charity, career, training, and industry opportunities when matched to the chef.',
+    inputSchema: '{ "limit": "number - optional, defaults to 5" }',
+  },
+  {
+    type: 'radar.explain_item',
+    tier: 1,
+    name: 'Explain Radar Item',
+    description:
+      'Explain why ChefFlow surfaced a specific Culinary Radar match, including the source, severity, matched internal records, and recommended next step. Read-only.',
+    inputSchema: '{ "itemId": "string - radar match id or item id" }',
+  },
 
   // ─── Phase 2 tasks ──────────────────────────────────────────────────────────
 

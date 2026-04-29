@@ -264,6 +264,50 @@ const DETERMINISTIC_PATTERNS: DeterministicPattern[] = [
       ],
     }),
   },
+  {
+    pattern:
+      /^(?:explain|why did you show|why is)\s+(?:the\s+)?(?:radar\s+)?(?:item|alert|match)\s+([a-zA-Z0-9:_-]+)/i,
+    build: (match, raw) => ({
+      rawInput: raw,
+      overallConfidence: 0.98,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'radar.explain_item',
+          tier: 1,
+          confidence: 0.98,
+          inputs: { itemId: match[1].trim() },
+          dependsOn: [],
+        },
+      ],
+    }),
+  },
+  {
+    pattern:
+      /\b(?:culinary radar|latest culinary news|food safety alerts?|recalls?|outbreaks?|wck|world central kitchen|chef opportunities)\b/i,
+    build: (_match, raw) => {
+      const taskType = /\b(?:recalls?|outbreaks?|safety)\b/i.test(raw)
+        ? 'radar.safety'
+        : /\b(?:wck|world central kitchen|opportunit|charity|relief|volunteer|career)\b/i.test(raw)
+          ? 'radar.opportunities'
+          : 'radar.latest'
+
+      return {
+        rawInput: raw,
+        overallConfidence: 0.95,
+        tasks: [
+          {
+            id: 't1',
+            taskType,
+            tier: 1,
+            confidence: 0.95,
+            inputs: {},
+            dependsOn: [],
+          },
+        ],
+      }
+    },
+  },
   // "Search the web for [query]" / "Google [query]"
   {
     pattern: /^(?:search the web|google|look up online|web search)\s+(?:for\s+)?(.+)/i,

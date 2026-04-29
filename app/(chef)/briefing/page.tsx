@@ -131,6 +131,53 @@ export default async function BriefingPage() {
         </div>
       )}
 
+      <Card>
+        <CardHeader className="pb-2">
+          <div className="flex items-center justify-between gap-3">
+            <CardTitle className="text-base text-stone-300">Culinary Radar</CardTitle>
+            <Link href="/radar" className="text-xs text-brand-400 hover:text-brand-300">
+              Open Radar
+            </Link>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {briefing.culinaryRadar.unavailable ? (
+            <div className="rounded-md border border-amber-900/40 bg-amber-950/20 px-3 py-2">
+              <p className="text-sm font-medium text-amber-300">Radar unavailable</p>
+              <p className="mt-1 text-xs text-amber-100/80">
+                {briefing.culinaryRadar.error ??
+                  'ChefFlow could not check source-backed culinary signals.'}
+              </p>
+            </div>
+          ) : briefing.culinaryRadar.matches.length === 0 ? (
+            <p className="text-sm text-stone-500">
+              No relevant external culinary signals right now.
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {briefing.culinaryRadar.matches.slice(0, 4).map((match) => (
+                <Link key={match.id} href="/radar" className="block">
+                  <div className="rounded-lg border border-stone-800 bg-stone-900/40 px-3 py-2 hover:border-stone-700">
+                    <div className="flex items-center gap-2">
+                      <Badge variant={severityBadge(match.severity)} className="text-xxs">
+                        {match.severity}
+                      </Badge>
+                      <p className="min-w-0 truncate text-sm font-medium text-stone-200">
+                        {match.item.title}
+                      </p>
+                    </div>
+                    <p className="mt-1 text-xs text-stone-500">
+                      {match.item.sourceName}
+                      {match.matchReasons[0] ? ` - ${match.matchReasons[0]}` : ''}
+                    </p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       {/* ============================================ */}
       {/* SECTION A: YESTERDAY'S RECAP */}
       {/* ============================================ */}

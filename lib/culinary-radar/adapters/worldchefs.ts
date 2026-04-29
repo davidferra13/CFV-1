@@ -4,7 +4,7 @@ type WorldchefsFixtureRecord = Record<string, unknown>
 
 export function parseWorldchefsRecord(record: WorldchefsFixtureRecord): CulinaryRadarRawItem {
   return {
-    sourceKey: 'worldchefs',
+    sourceKey: 'worldchefs_sustainability',
     externalId: text(record.id) || text(record.slug) || text(record.link),
     title: text(record.headline) || text(record.title),
     summary: text(record.body) || text(record.summary),
@@ -12,7 +12,9 @@ export function parseWorldchefsRecord(record: WorldchefsFixtureRecord): Culinary
     publishedAt: text(record.date) || text(record.publishedAt),
     updatedAt: text(record.updatedAt) || null,
     status: text(record.status),
-    tags: ['industry', text(record.region)].filter(Boolean),
+    category: 'sustainability',
+    tags: ['industry', 'sustainability', text(record.region)].filter(Boolean),
+    rawPayload: record,
   }
 }
 

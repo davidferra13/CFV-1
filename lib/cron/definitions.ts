@@ -92,6 +92,14 @@ export const CRON_MONITOR_DEFINITIONS: CronMonitorDefinition[] = [
     description: 'Send hourly and daily Circle digests',
   },
   {
+    cronName: 'culinary-radar',
+    routePath: '/api/cron/culinary-radar',
+    maxExpectedMinutes: 720,
+    cadence: '6h',
+    description:
+      'Ingest source-backed culinary safety, opportunity, sustainability, and craft signals',
+  },
+  {
     cronName: 'event-progression',
     routePath: '/api/cron/event-progression',
     maxExpectedMinutes: 120,

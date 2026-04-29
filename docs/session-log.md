@@ -22,6 +22,16 @@
 
 ## 2026-04-24 13:09 EST
 
+## 2026-04-29 19:52 EDT
+
+- Agent: Codex
+- Task: Expand Culinary Radar into ingestion, matching, dashboard, briefing, Daily Ops, preferences, feedback, and Remy read-only commands
+- Status: completed
+- Files touched: `app/(chef)/briefing/page.tsx`, `app/(chef)/dashboard/page.tsx`, `app/(chef)/radar/page.tsx`, `app/api/cron/culinary-radar/route.ts`, `app/api/remy/stream/route-runtime-utils.ts`, `components/ai/remy-capabilities-panel.tsx`, `components/ai/remy-task-card.tsx`, `components/dashboard/culinary-radar-widget.tsx`, `components/radar/radar-card.tsx`, `components/radar/radar-preferences.tsx`, `docs/app-complete-audit.md`, `docs/build-state.md`, `docs/session-log.md`, `lib/ai/command-intent-parser.ts`, `lib/ai/command-orchestrator.ts`, `lib/ai/command-task-descriptions.ts`, `lib/ai/remy-action-filter.ts`, `lib/ai/remy-navigation.ts`, `lib/ai/remy-read-task-registry.ts`, `lib/briefing/get-morning-briefing.ts`, `lib/cron/definitions.ts`, `lib/culinary-radar/*`, `project-map/chef-os/culinary.md`, `tests/unit/culinary-radar-normalize.test.ts`, `tests/unit/culinary-radar-source-registry.test.ts`
+- Commits: pending at log-write time
+- Build state on departure: focused Radar unit tests pass; full `npx tsc --noEmit --skipLibCheck` remains blocked by pre-existing missing calendar/capacitor packages, `next-auth/jwt` `encode`, and existing implicit-any errors outside Radar
+- Notes: Built source registry alignment around migration seed keys, cron ingestion, source health, chef-context matching, category controls, usefulness feedback, dashboard widget, briefing and Daily Ops propagation, and Remy read tasks. No migration was created or applied. No dev server, build, deploy, or destructive database command was run.
+
 - Agent: Codex
 - Task: Wire public showcase menu dish photos into public chef profile Sample Menus and prepare the next fresh-agent prompt
 - Status: completed

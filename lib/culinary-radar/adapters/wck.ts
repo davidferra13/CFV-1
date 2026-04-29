@@ -4,7 +4,7 @@ type WckFixtureRecord = Record<string, unknown>
 
 export function parseWckRecord(record: WckFixtureRecord): CulinaryRadarRawItem {
   return {
-    sourceKey: 'wck',
+    sourceKey: 'wck_opportunities',
     externalId: text(record.slug) || text(record.id) || text(record.url),
     title: text(record.title) || text(record.headline),
     summary: text(record.description) || text(record.summary),
@@ -12,8 +12,10 @@ export function parseWckRecord(record: WckFixtureRecord): CulinaryRadarRawItem {
     publishedAt: text(record.publishedAt) || text(record.date),
     updatedAt: text(record.updatedAt) || null,
     status: text(record.status),
-    tags: ['relief', 'operations'],
+    category: 'opportunity',
+    tags: ['relief', 'operations', 'opportunity'],
     locations: stringArray(record.locations),
+    rawPayload: record,
   }
 }
 

@@ -2,7 +2,11 @@ import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { dismissRadarMatch, markRadarMatchRead } from '@/lib/culinary-radar/actions'
+import {
+  dismissRadarMatch,
+  markRadarMatchRead,
+  markRadarMatchUseful,
+} from '@/lib/culinary-radar/actions'
 import type { RadarMatchView, RadarSeverity } from '@/lib/culinary-radar/view-model'
 
 function severityVariant(
@@ -35,11 +39,18 @@ function titleize(value: string): string {
 }
 
 async function markReadAction(id: string) {
-  await markRadarMatchRead(id)
+  const result = await markRadarMatchRead(id)
+  if (!result.success) throw new Error(result.error ?? 'Could not mark radar item read.')
 }
 
 async function dismissAction(id: string) {
-  await dismissRadarMatch(id)
+  const result = await dismissRadarMatch(id)
+  if (!result.success) throw new Error(result.error ?? 'Could not dismiss radar item.')
+}
+
+async function usefulAction(id: string, useful: boolean) {
+  const result = await markRadarMatchUseful(id, useful)
+  if (!result.success) throw new Error(result.error ?? 'Could not save radar feedback.')
 }
 
 export function RadarCard({ match }: { match: RadarMatchView }) {
@@ -147,6 +158,18 @@ export function RadarCard({ match }: { match: RadarMatchView }) {
               Dismiss
             </Button>
           </form>
+          <div className="flex gap-2 lg:flex-col">
+            <form action={usefulAction.bind(null, match.id, true)}>
+              <Button type="submit" variant="ghost" size="sm">
+                Useful
+              </Button>
+            </form>
+            <form action={usefulAction.bind(null, match.id, false)}>
+              <Button type="submit" variant="ghost" size="sm">
+                Not useful
+              </Button>
+            </form>
+          </div>
         </div>
       </div>
     </Card>

@@ -14,7 +14,7 @@ const {
 } = require('../../lib/culinary-radar/adapters/index.ts')
 
 test('normalizeRadarItem creates stable ids and content hashes from canonical fields', () => {
-  const source = getSourceDefinition('fda')
+  const source = getSourceDefinition('fda_recalls')
   const base = parseFdaRecord({
     recall_number: 'F-1234-2026',
     title: '  Undeclared Almond in Catering Sauce  ',
@@ -41,7 +41,7 @@ test('normalizeRadarItem creates stable ids and content hashes from canonical fi
 
   assert.equal(first.id, second.id)
   assert.equal(first.contentHash, second.contentHash)
-  assert.equal(first.sourceKey, 'fda')
+  assert.equal(first.sourceKey, 'fda_recalls')
   assert.equal(first.title, 'Undeclared almond in catering sauce')
   assert.equal(first.url, 'https://www.fda.gov/safety/recalls/example')
 })
@@ -79,7 +79,7 @@ test('normalizeRadarItems parses fixture-like source records and sorts determini
 
   assert.deepEqual(
     normalized.map((item: { sourceKey: string }) => item.sourceKey),
-    ['fsis', 'wck', 'worldchefs']
+    ['fsis_recalls', 'wck_opportunities', 'worldchefs_sustainability']
   )
   assert.equal(normalized[0].severity, 'critical')
   assert.equal(normalized[1].sourceLabel, 'World Central Kitchen')

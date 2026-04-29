@@ -55,3 +55,17 @@ export type RadarLoadResult = {
   matches: RadarMatchView[]
   sources: RadarSourceSummary[]
 }
+
+export type RadarPreferenceView = {
+  category: RadarCategory
+  enabled: boolean
+  emailEnabled: boolean
+  minAlertSeverity: RadarSeverity
+  digestFrequency: 'immediate' | 'daily' | 'weekly' | 'never'
+}
+
+export type RadarPreferenceLoadResult = {
+  success: boolean
+  error?: string
+  preferences: RadarPreferenceView[]
+}

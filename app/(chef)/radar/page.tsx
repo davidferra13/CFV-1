@@ -2,7 +2,8 @@ import type { Metadata } from 'next'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import { RadarCard } from '@/components/radar/radar-card'
-import { getRadarOverview } from '@/lib/culinary-radar/actions'
+import { RadarPreferences } from '@/components/radar/radar-preferences'
+import { getRadarOverview, getRadarPreferences } from '@/lib/culinary-radar/actions'
 
 export const metadata: Metadata = {
   title: 'Culinary Radar',
@@ -19,7 +20,7 @@ function categoryLabel(value: string): string {
 }
 
 export default async function CulinaryRadarPage() {
-  const overview = await getRadarOverview()
+  const [overview, preferences] = await Promise.all([getRadarOverview(), getRadarPreferences()])
 
   const criticalCount = overview.matches.filter((match) => match.severity === 'critical').length
   const highCount = overview.matches.filter((match) => match.severity === 'high').length
@@ -93,6 +94,17 @@ export default async function CulinaryRadarPage() {
             </Badge>
           ))}
         </div>
+      )}
+
+      {preferences.success && <RadarPreferences preferences={preferences.preferences} />}
+
+      {!preferences.success && (
+        <Card className="border-amber-900/50 bg-amber-950/20 p-5">
+          <p className="font-medium text-amber-300">Radar controls could not load.</p>
+          <p className="mt-1 text-sm text-amber-100/80">
+            {preferences.error ?? 'ChefFlow will keep default radar delivery active.'}
+          </p>
+        </Card>
       )}
 
       {overview.success && overview.matches.length === 0 && (

@@ -20,6 +20,7 @@ export function normalizeRadarItem(
   const status = item.status ? normalizeSentence(item.status) : null
   const tags = normalizeList(item.tags ?? [])
   const locations = normalizeList(item.locations ?? [])
+  const category = item.category ?? source.category
   const severity = assessRadarSeverity({
     sourceAuthority: source.authority,
     title,
@@ -47,6 +48,8 @@ export function normalizeRadarItem(
     sourceKey: source.key,
     sourceLabel: source.label,
     sourceAuthority: source.authority,
+    category,
+    credibilityTier: source.credibilityTier,
     externalId,
     title,
     summary,
@@ -56,6 +59,8 @@ export function normalizeRadarItem(
     status,
     tags,
     locations,
+    affectedEntities: item.affectedEntities ?? {},
+    rawPayload: item.rawPayload ?? {},
     severity,
     relevanceScore: Math.max(relevance.score, source.defaultRelevanceScore),
     relevanceSignals: relevance.matchedSignals,

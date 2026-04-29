@@ -1,6 +1,21 @@
-export type CulinaryRadarSourceKey = 'fda' | 'fsis' | 'wck' | 'worldchefs'
+export type CulinaryRadarSourceKey =
+  | 'fda_recalls'
+  | 'fsis_recalls'
+  | 'cdc_foodborne_outbreaks'
+  | 'wck_opportunities'
+  | 'worldchefs_sustainability'
+  | 'ift_food_science'
 
-export type CulinaryRadarSourceAuthority = 'regulatory' | 'relief' | 'industry'
+export type CulinaryRadarSourceAuthority = 'regulatory' | 'relief' | 'industry' | 'academic'
+
+export type CulinaryRadarCategory =
+  | 'safety'
+  | 'opportunity'
+  | 'sustainability'
+  | 'craft'
+  | 'business'
+  | 'local'
+  | 'client_signal'
 
 export type CulinaryRadarSeverity = 'critical' | 'high' | 'medium' | 'low'
 
@@ -8,7 +23,16 @@ export interface CulinaryRadarSourceDefinition {
   key: CulinaryRadarSourceKey
   label: string
   authority: CulinaryRadarSourceAuthority
+  category: CulinaryRadarCategory
+  credibilityTier:
+    | 'official'
+    | 'mission_partner'
+    | 'academic'
+    | 'industry'
+    | 'local'
+    | 'experimental'
   homepageUrl: string
+  feedUrl?: string
   defaultRelevanceScore: number
 }
 
@@ -21,8 +45,11 @@ export interface CulinaryRadarRawItem {
   publishedAt: string
   updatedAt?: string | null
   status?: string | null
+  category?: CulinaryRadarCategory
   tags?: string[]
   locations?: string[]
+  affectedEntities?: Record<string, unknown>
+  rawPayload?: Record<string, unknown>
 }
 
 export interface CulinaryRadarNormalizedItem {
@@ -30,6 +57,8 @@ export interface CulinaryRadarNormalizedItem {
   sourceKey: CulinaryRadarSourceKey
   sourceLabel: string
   sourceAuthority: CulinaryRadarSourceAuthority
+  category: CulinaryRadarCategory
+  credibilityTier: CulinaryRadarSourceDefinition['credibilityTier']
   externalId: string
   title: string
   summary: string
@@ -39,6 +68,8 @@ export interface CulinaryRadarNormalizedItem {
   status: string | null
   tags: string[]
   locations: string[]
+  affectedEntities: Record<string, unknown>
+  rawPayload: Record<string, unknown>
   severity: CulinaryRadarSeverity
   relevanceScore: number
   relevanceSignals: string[]

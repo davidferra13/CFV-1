@@ -1225,6 +1225,55 @@ function extractDateRef(text: string): string | null {
 function tryDeterministicCommandPlan(input: string): CommandPlan | null {
   const trimmed = input.trim()
 
+  const explainRadarMatch = trimmed.match(
+    /^(?:explain|why did you show|why is)\s+(?:the\s+)?(?:radar\s+)?(?:item|alert|match)\s+([a-zA-Z0-9:_-]+)/i
+  )
+  if (explainRadarMatch?.[1]) {
+    return {
+      rawInput: input,
+      overallConfidence: 1.0,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'radar.explain_item',
+          tier: 1,
+          confidence: 1.0,
+          inputs: { itemId: explainRadarMatch[1] },
+          dependsOn: [],
+        },
+      ],
+    }
+  }
+
+  if (
+    /\b(?:culinary radar|latest culinary news|food safety alerts?|recalls?|outbreaks?|wck|world central kitchen|chef opportunities)\b/i.test(
+      trimmed
+    )
+  ) {
+    const taskType = /\b(?:recalls?|outbreaks?|safety)\b/i.test(trimmed)
+      ? 'radar.safety'
+      : /\b(?:wck|world central kitchen|opportunit|charity|relief|volunteer|career)\b/i.test(
+            trimmed
+          )
+        ? 'radar.opportunities'
+        : 'radar.latest'
+
+    return {
+      rawInput: input,
+      overallConfidence: 1.0,
+      tasks: [
+        {
+          id: 't1',
+          taskType,
+          tier: 1,
+          confidence: 1.0,
+          inputs: {},
+          dependsOn: [],
+        },
+      ],
+    }
+  }
+
   // 1. Event listing: "upcoming events", "my events", "what events do I have"
   if (
     /^(?:upcoming|my|next|show|list)\s+events?\b/i.test(trimmed) ||

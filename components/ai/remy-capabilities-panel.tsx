@@ -36,11 +36,12 @@ const CAPABILITIES: CapabilityCategory[] = [
       'View financial summaries & monthly snapshots',
       'Search documents and list folders',
       'Search emails, view inbox, read threads',
+      'Read source-backed Culinary Radar alerts and opportunities',
       'Get client, inquiry, or event details',
       'Client lifetime value & break-even analysis',
       'Dietary/allergy checks & cross-contamination risks',
       'Packing lists, portion calculator, prep timelines',
-      'Web search for food trends, suppliers, ideas',
+      'Web search for food trends and suppliers',
     ],
   },
   {

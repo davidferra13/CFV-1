@@ -124,6 +124,7 @@ import { loadContinuityDigest, type ContinuityDigest } from '@/lib/activity/cont
 import { getResumeItems } from '@/lib/activity/resume'
 import { getUnreadCount } from '@/lib/notifications/actions'
 import { ReturnToWorkStrip } from '@/components/dashboard/return-to-work-strip'
+import { CulinaryRadarWidget } from '@/components/dashboard/culinary-radar-widget'
 
 export const metadata: Metadata = { title: 'Dashboard' }
 
@@ -2070,6 +2071,14 @@ export default async function ChefDashboard() {
           <div className="section-label mb-3">Alerts</div>
           <RemyAlertsWidget alerts={remyAlerts} />
         </div>
+      )}
+
+      {!isMinimalDensity && (
+        <WidgetErrorBoundary name="Culinary Radar" compact>
+          <Suspense fallback={<WidgetCardSkeleton size="md" />}>
+            <CulinaryRadarWidget />
+          </Suspense>
+        </WidgetErrorBoundary>
       )}
 
       {/* Event Deadline Alerts - approaching events with missing items */}

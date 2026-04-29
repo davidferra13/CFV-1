@@ -1,4 +1,6 @@
+export { parseCdcRecord } from './cdc'
 export { parseFdaRecord } from './fda'
 export { parseFsisRecord } from './fsis'
+export { parseIftRecord } from './ift'
 export { parseWckRecord } from './wck'
 export { parseWorldchefsRecord } from './worldchefs'

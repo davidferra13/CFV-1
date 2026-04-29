@@ -2,6 +2,8 @@ import 'server-only'
 
 import type { PlannedTask } from '@/lib/ai/command-types'
 import { searchClientsByName } from '@/lib/clients/actions'
+import { loadRadarDataForChef } from '@/lib/culinary-radar/read-model'
+import type { RadarMatchView } from '@/lib/culinary-radar/view-model'
 import { createServerClient } from '@/lib/db/server'
 import { resolvePricesBatch } from '@/lib/pricing/resolve-price'
 import {
@@ -284,6 +286,12 @@ const REMY_READ_TASK_EXECUTORS: Record<string, ReadTaskExecutor> = {
   'aar.events_without': () => executeEventsWithoutAAR(),
   'aar.forgotten_items': () => executeAARForgottenItems(),
   'waitlist.status': () => executeWaitlistStatus(),
+  'radar.latest': (task, ctx) => executeRadarLatest(task, ctx),
+  'radar.safety': (task, ctx) =>
+    executeRadarLatest({ ...task, inputs: { ...task.inputs, category: 'safety' } }, ctx),
+  'radar.opportunities': (task, ctx) =>
+    executeRadarLatest({ ...task, inputs: { ...task.inputs, category: 'opportunity' } }, ctx),
+  'radar.explain_item': (task, ctx) => executeRadarExplain(task, ctx),
 }
 
 export async function executeRegisteredRemyReadTask(
@@ -293,6 +301,102 @@ export async function executeRegisteredRemyReadTask(
   const executor = REMY_READ_TASK_EXECUTORS[task.taskType]
   if (!executor) return { handled: false }
   return { handled: true, data: await executor(task, ctx) }
+}
+
+async function executeRadarLatest(task: PlannedTask, ctx: ReadTaskContext) {
+  const category = typeof task.inputs.category === 'string' ? task.inputs.category : null
+  const limit =
+    typeof task.inputs.limit === 'number' && Number.isFinite(task.inputs.limit)
+      ? Math.max(1, Math.min(10, Math.round(task.inputs.limit)))
+      : 5
+  const overview = await loadRadarDataForChef(ctx.tenantId, undefined, 25)
+
+  if (!overview.success) {
+    return {
+      matches: [],
+      count: 0,
+      generatedAt: new Date().toISOString(),
+      unavailable: true,
+      error: overview.error ?? 'Culinary Radar could not load.',
+      sourceFreshness: 'unavailable',
+    }
+  }
+
+  const matches = overview.matches
+    .filter((match) => !category || match.item.category === category)
+    .slice(0, limit)
+
+  return {
+    matches: matches.map(toRemyRadarMatch),
+    count: matches.length,
+    generatedAt: new Date().toISOString(),
+    unavailable: false,
+    sourceFreshness: summarizeSourceFreshness(overview.sources),
+    unavailableSources: overview.sources
+      .filter((source) => source.active && source.lastError)
+      .map((source) => source.name),
+  }
+}
+
+async function executeRadarExplain(task: PlannedTask, ctx: ReadTaskContext) {
+  const itemId = String(task.inputs.itemId ?? '').trim()
+  if (!itemId) {
+    return { found: false, message: 'Please specify which radar item to explain.' }
+  }
+
+  const overview = await loadRadarDataForChef(ctx.tenantId, undefined, 50)
+  if (!overview.success) {
+    return {
+      found: false,
+      unavailable: true,
+      message: overview.error ?? 'Culinary Radar could not load.',
+    }
+  }
+
+  const match = overview.matches.find((entry) => entry.id === itemId || entry.itemId === itemId)
+  if (!match) {
+    return { found: false, message: 'No matching radar item found in your active Radar.' }
+  }
+
+  return {
+    found: true,
+    match: toRemyRadarMatch(match),
+    reasons: match.matchReasons,
+    matchedEntities: match.matchedEntities,
+    recommendedActions: match.recommendedActions,
+  }
+}
+
+function toRemyRadarMatch(match: RadarMatchView) {
+  return {
+    id: match.id,
+    itemId: match.itemId,
+    title: match.item.title,
+    category: match.item.category,
+    severity: match.severity,
+    sourceName: match.item.sourceName,
+    sourceUrl: match.item.canonicalUrl,
+    sourcePublishedAt: match.item.sourcePublishedAt,
+    matchedReason: match.matchReasons[0] ?? 'Matched by Culinary Radar.',
+    impactSummary: match.recommendedActions[0] ?? 'Read the source and decide whether it matters.',
+    relatedEntityLabel: match.matchedEntities[0]?.label,
+    route: '/radar',
+  }
+}
+
+function summarizeSourceFreshness(
+  sources: Array<{ active: boolean; lastSuccessAt: string | null }>
+) {
+  const active = sources.filter((source) => source.active)
+  if (active.length === 0) return 'no active sources'
+  const withSuccess = active.filter((source) => source.lastSuccessAt)
+  if (withSuccess.length === 0) return 'not refreshed yet'
+  const newest = withSuccess
+    .map((source) => source.lastSuccessAt)
+    .filter((value): value is string => Boolean(value))
+    .sort()
+    .at(-1)
+  return newest ? `last refreshed ${newest}` : 'not refreshed yet'
 }
 
 async function executePriceCheck(task: PlannedTask, ctx: ReadTaskContext) {

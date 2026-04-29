@@ -415,6 +415,114 @@ function TaskDataRenderer({ taskType, data }: { taskType: string; data: unknown 
       )
     }
 
+    case 'radar.latest':
+    case 'radar.safety':
+    case 'radar.opportunities': {
+      const d = data as {
+        matches: Array<{
+          id: string
+          title: string
+          category: string
+          severity: string
+          sourceName: string
+          sourceUrl: string
+          matchedReason: string
+          impactSummary: string
+          route?: string
+        }>
+        count: number
+        unavailable?: boolean
+        error?: string
+        sourceFreshness?: string
+        unavailableSources?: string[]
+      }
+      if (d.unavailable) {
+        return <p className="text-xs text-amber-500">{d.error ?? 'Culinary Radar unavailable.'}</p>
+      }
+      if (!d.matches?.length) {
+        return <p className="text-xs text-stone-500">No active Culinary Radar matches found.</p>
+      }
+      return (
+        <div className="space-y-2">
+          <p className="text-xs text-stone-400">
+            {d.count} Radar match{d.count === 1 ? '' : 'es'}
+            {d.sourceFreshness ? ` - ${d.sourceFreshness}` : ''}
+          </p>
+          {d.matches.map((match) => (
+            <div key={match.id} className="text-xs border-l-2 border-amber-400/60 pl-2">
+              <a
+                href={match.sourceUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-brand-600 dark:text-brand-400 hover:underline"
+              >
+                {match.title}
+              </a>
+              <p className="mt-0.5 text-stone-500 dark:text-stone-400">
+                {match.severity} - {match.category} - {match.sourceName}
+              </p>
+              <p className="mt-0.5 text-stone-500 dark:text-stone-400 line-clamp-2">
+                {match.matchedReason}
+              </p>
+              <p className="mt-0.5 text-stone-400 dark:text-stone-300 line-clamp-2">
+                {match.impactSummary}
+              </p>
+            </div>
+          ))}
+          {d.unavailableSources && d.unavailableSources.length > 0 && (
+            <p className="text-xxs text-amber-500">
+              Degraded sources: {d.unavailableSources.join(', ')}
+            </p>
+          )}
+        </div>
+      )
+    }
+
+    case 'radar.explain_item': {
+      const d = data as {
+        found: boolean
+        message?: string
+        match?: {
+          title: string
+          severity: string
+          sourceName: string
+          sourceUrl: string
+          matchedReason: string
+          impactSummary: string
+        }
+        reasons?: string[]
+        recommendedActions?: string[]
+      }
+      if (!d.found || !d.match) {
+        return <p className="text-xs text-stone-500">{d.message ?? 'Radar item not found.'}</p>
+      }
+      return (
+        <div className="space-y-2 text-xs">
+          <a
+            href={d.match.sourceUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-brand-600 dark:text-brand-400 hover:underline"
+          >
+            {d.match.title}
+          </a>
+          <p className="text-stone-500">
+            {d.match.severity} from {d.match.sourceName}
+          </p>
+          <ul className="list-disc pl-4 text-stone-500 dark:text-stone-400">
+            {(d.reasons ?? [d.match.matchedReason]).map((reason) => (
+              <li key={reason}>{reason}</li>
+            ))}
+          </ul>
+          {(d.recommendedActions ?? []).length > 0 && (
+            <p className="text-stone-400 dark:text-stone-300">
+              Next: {(d.recommendedActions ?? []).join(' ')}
+            </p>
+          )}
+        </div>
+      )
+    }
+
     case 'web.search': {
       const d = data as {
         query: string

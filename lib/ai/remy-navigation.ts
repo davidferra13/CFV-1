@@ -24,6 +24,8 @@ const ROUTE_ALIASES: Record<string, string> = {
   prices: '/prices',
   pricing: '/prices',
   quotes: '/quotes',
+  radar: '/radar',
+  'culinary radar': '/radar',
   recipes: '/recipes',
   recipe: '/recipes',
   'recipe book': '/recipes',

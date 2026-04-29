@@ -15,7 +15,7 @@ Last known state of the app. Updated after every successful type check and build
 
 | Check                                    | Status | Last Verified | Commit | Agent           |
 | ---------------------------------------- | ------ | ------------- | ------ | --------------- |
-| `npx tsc --noEmit --skipLibCheck`        | green  | 2026-04-27    | dirty  | Claude Opus 4.6 |
+| `npx tsc --noEmit --skipLibCheck`        | broken | 2026-04-29    | dirty  | Codex           |
 | `npm run build -- --no-lint` (16GB heap) | green  | 2026-04-27    | dirty  | Claude Opus 4.6 |
 
 **Canonical build command:** `npm run build -- --no-lint` (uses `scripts/run-next-build.mjs`, 12GB heap default).
@@ -41,6 +41,7 @@ _Newest first. Keep the last 10 entries. Prune older ones._
 
 | Date       | tsc   | build | Agent           | Notes                                                                                                                                        |
 | ---------- | ----- | ----- | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-04-29 | broken | -     | Codex           | Culinary Radar build branch. Full tsc is blocked by pre-existing missing `@dnd-kit/*`, `@fullcalendar/*`, `@capacitor/cli`, `next-auth/jwt` `encode`, and existing implicit-any errors in auth/calendar files. Focused Radar unit tests pass. |
 | 2026-04-27 | green | green | Claude Opus 4.6 | Regression detection system: 19 scripts, 5 layers, pre-commit/pre-push hooks, /regression skill. 241 registry checks passing. Self-test 6/6. |
 | 2026-04-27 | green | green | Claude Opus 4.6 | tsc + build clean on dirty checkout. 16GB heap required. BUILD_ID 0abc27ebf. 11 worktrees cleaned. Compliance: ALL CLEAR.                    |
 | 2026-04-24 | green | green | Codex           | First-time progressive disclosure. Starter dashboard, sparse-data hiding, progressive nav.                                                   |

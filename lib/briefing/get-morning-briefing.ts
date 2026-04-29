@@ -8,6 +8,8 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { getCarriedOverTasks, type CarriedTask } from '@/lib/tasks/carry-forward'
 import { getShiftNotes, type ShiftNote } from '@/lib/shifts/actions'
+import { loadRadarDataForChef } from '@/lib/culinary-radar/read-model'
+import type { RadarMatchView } from '@/lib/culinary-radar/view-model'
 
 // ============================================
 // TYPES
@@ -57,6 +59,7 @@ export type BriefingAlert = {
     | '86d'
     | 'expiring'
     | 'low_stock'
+    | 'radar_safety'
   title: string
   detail: string
   href: string
@@ -103,6 +106,11 @@ export type MorningBriefing = {
     event_title: string | null
     status: string
   }[]
+  culinaryRadar: {
+    matches: RadarMatchView[]
+    unavailable: boolean
+    error: string | null
+  }
 }
 
 // ============================================
@@ -319,6 +327,34 @@ export async function getMorningBriefing(): Promise<MorningBriefing> {
 
   // Build alerts
   const alerts: BriefingAlert[] = []
+  let culinaryRadar: MorningBriefing['culinaryRadar'] = {
+    matches: [],
+    unavailable: false,
+    error: null,
+  }
+
+  try {
+    const radar = await loadRadarDataForChef(user.entityId, undefined, 6)
+    if (radar.success) {
+      culinaryRadar = {
+        matches: radar.matches,
+        unavailable: false,
+        error: null,
+      }
+    } else {
+      culinaryRadar = {
+        matches: [],
+        unavailable: true,
+        error: radar.error ?? 'Culinary Radar could not load.',
+      }
+    }
+  } catch (err) {
+    culinaryRadar = {
+      matches: [],
+      unavailable: true,
+      error: err instanceof Error ? err.message : 'Culinary Radar could not load.',
+    }
+  }
 
   // Overdue tasks
   if (carriedOverTasks.length > 0) {
@@ -364,6 +400,21 @@ export async function getMorningBriefing(): Promise<MorningBriefing> {
     })
   }
 
+  const urgentRadar = culinaryRadar.matches.filter(
+    (match) =>
+      match.item.category === 'safety' &&
+      (match.severity === 'critical' || match.severity === 'high')
+  )
+  for (const match of urgentRadar.slice(0, 3)) {
+    alerts.push({
+      type: 'radar_safety',
+      title: match.item.title,
+      detail: `${match.item.sourceName}: ${match.matchReasons[0] ?? 'Source-backed safety signal'}`,
+      href: '/radar',
+      severity: match.severity === 'critical' ? 'critical' : 'high',
+    })
+  }
+
   // Yesterday's recap
   const yesterdayEvents = yesterdayEventsResult.data ?? []
   const yesterdayRecap: YesterdayRecap = {
@@ -398,5 +449,6 @@ export async function getMorningBriefing(): Promise<MorningBriefing> {
     staffOnDuty,
     alerts,
     prepTimersToday,
+    culinaryRadar,
   }
 }

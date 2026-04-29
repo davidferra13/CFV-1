@@ -40,6 +40,10 @@ const FOCUS_MODE_ACTIONS = new Set([
   // Briefing & safety
   'briefing.morning',
   'dietary.check',
+  'radar.latest',
+  'radar.safety',
+  'radar.opportunities',
+  'radar.explain_item',
   'nav.go',
 
   // Workflow actions

@@ -203,6 +203,49 @@ export function summarizeTaskResults(results: RemyTaskResult[]): string {
     } else if (task.taskType === 'web.read' && task.data) {
       const d = task.data as { url: string; title: string; summary: string }
       summaries.push(`**${d.title}**\n${d.summary}`)
+    } else if (task.taskType.startsWith('radar.') && task.data) {
+      const d = task.data as {
+        matches?: Array<{
+          title: string
+          severity: string
+          sourceName: string
+          sourceUrl: string
+          matchedReason: string
+          impactSummary: string
+        }>
+        unavailable?: boolean
+        error?: string
+        sourceFreshness?: string
+        message?: string
+        found?: boolean
+        match?: {
+          title: string
+          severity: string
+          sourceName: string
+          sourceUrl: string
+          matchedReason: string
+          impactSummary: string
+        }
+      }
+      if (d.unavailable) {
+        summaries.push(d.error ?? 'Culinary Radar is unavailable right now.')
+      } else if (d.match) {
+        summaries.push(
+          `**${d.match.title}** (${d.match.severity}, ${d.match.sourceName})\n${d.match.matchedReason}\nNext: ${d.match.impactSummary}\nSource: ${d.match.sourceUrl}`
+        )
+      } else if (d.matches && d.matches.length > 0) {
+        const freshness = d.sourceFreshness ? `\nSource freshness: ${d.sourceFreshness}` : ''
+        summaries.push(
+          `Culinary Radar found ${d.matches.length} active match${d.matches.length === 1 ? '' : 'es'}:${freshness}\n${d.matches
+            .map(
+              (match) =>
+                `- **${match.title}** (${match.severity}, ${match.sourceName})\n  ${match.matchedReason}\n  Next: ${match.impactSummary}\n  Source: ${match.sourceUrl}`
+            )
+            .join('\n')}`
+        )
+      } else {
+        summaries.push(d.message ?? 'No active Culinary Radar matches right now.')
+      }
     } else if (task.taskType === 'dietary.check' && task.data) {
       const d = task.data as {
         clientName: string
