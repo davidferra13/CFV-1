@@ -7,6 +7,8 @@ import {
   type FirstWeekActivationFacts,
 } from '@/lib/onboarding/first-week-activation'
 import { buildPilotActivationStatus } from '@/lib/pilot/activation'
+import { buildAcquisitionReadiness } from '@/lib/validation/acquisition-readiness'
+import { buildOnboardingTestReadiness } from '@/lib/validation/onboarding-test-readiness'
 
 export type LaunchReadinessStatus = 'verified' | 'needs_action' | 'operator_review'
 
@@ -18,6 +20,7 @@ export type LaunchReadinessCheckKey =
   | 'feedback_captured'
   | 'operator_survey'
   | 'onboarding_test'
+  | 'acquisition_attribution'
   | 'build_integrity'
   | 'backup_integrity'
 
@@ -26,7 +29,15 @@ export type LaunchReadinessCheck = {
   label: string
   status: LaunchReadinessStatus
   evidence: string
+  evidenceItems: LaunchReadinessEvidenceItem[]
   nextStep: string
+  href: string | null
+}
+
+export type LaunchReadinessEvidenceItem = {
+  label: string
+  value: string
+  source: string
   href: string | null
 }
 
@@ -59,6 +70,14 @@ export type LaunchReadinessFacts = {
     submittedResponses: number
     totalResponses: number
   }
+  productFeedbackSignals: number
+  acquisition: {
+    publicBookingSubmissions: number
+    utmAttributedSubmissions: number
+    referralAttributedSubmissions: number
+    uniqueSources: number
+    latestSubmissionAt: string | null
+  }
   buildIntegrity: {
     typecheckGreen: boolean
     buildGreen: boolean
@@ -79,10 +98,10 @@ export type LaunchReadinessReport = {
   totalChecks: number
   checks: LaunchReadinessCheck[]
   pilotCandidates: PilotCandidate[]
-  evidenceLog: Array<{
+  evidenceLog: LaunchReadinessEvidenceItem[]
+  nextActions: Array<{
     label: string
-    value: string
-    source: string
+    reason: string
     href: string | null
   }>
 }
@@ -153,12 +172,17 @@ function buildPilotCandidate(input: {
       prepSignals: input.firstWeekFacts.prepEvidenceCount,
       invoiceArtifacts: input.firstWeekFacts.invoiceArtifactCount,
       feedbackSignals: input.surveysCompletedCount + input.feedbackLoggedCount,
-      onboardingCompleted: input.firstWeekFacts.profileBasicsReady && input.firstWeekFacts.serviceSetupReady,
+      onboardingCompleted:
+        input.firstWeekFacts.profileBasicsReady && input.firstWeekFacts.serviceSetupReady,
     },
   }
 }
 
 function bestPilotCandidate(candidates: PilotCandidate[]): PilotCandidate | null {
+  return rankPilotCandidates(candidates)[0] ?? null
+}
+
+function rankPilotCandidates(candidates: PilotCandidate[]): PilotCandidate[] {
   return [...candidates].sort((a, b) => {
     if (b.completedSystemSteps !== a.completedSystemSteps) {
       return b.completedSystemSteps - a.completedSystemSteps
@@ -170,21 +194,29 @@ function bestPilotCandidate(candidates: PilotCandidate[]): PilotCandidate | null
       return b.evidence.publicBookingTests - a.evidence.publicBookingTests
     }
     return b.activeSpanDays - a.activeSpanDays
-  })[0] ?? null
+  })
 }
 
-export function buildLaunchReadinessReport(
-  facts: LaunchReadinessFacts
-): LaunchReadinessReport {
-  const bestPilot = bestPilotCandidate(facts.pilotCandidates)
+function hoursSince(iso: string | null, generatedAt: string): number | null {
+  if (!iso) return null
+  const startMs = new Date(iso).getTime()
+  const endMs = new Date(generatedAt).getTime()
+  if (!Number.isFinite(startMs) || !Number.isFinite(endMs) || endMs < startMs) return null
+  return Math.floor((endMs - startMs) / 3_600_000)
+}
+
+export function buildLaunchReadinessReport(facts: LaunchReadinessFacts): LaunchReadinessReport {
+  const rankedPilotCandidates = rankPilotCandidates(facts.pilotCandidates)
+  const bestPilot = bestPilotCandidate(rankedPilotCandidates)
   const publicBookingTests = facts.pilotCandidates.reduce(
     (sum, chef) => sum + chef.evidence.publicBookingTests,
     0
   )
-  const feedbackSignals = facts.pilotCandidates.reduce(
+  const pilotFeedbackSignals = facts.pilotCandidates.reduce(
     (sum, chef) => sum + chef.evidence.feedbackSignals,
     0
   )
+  const feedbackSignals = pilotFeedbackSignals + facts.productFeedbackSignals
   const moneyLoopCandidates = facts.pilotCandidates.filter(
     (chef) => chef.evidence.events > 0 && chef.evidence.invoiceArtifacts > 0
   )
@@ -196,13 +228,22 @@ export function buildLaunchReadinessReport(
       chef.activeSpanDays >= 14 &&
       chef.evidence.inquiries + chef.evidence.events + chef.evidence.feedbackSignals > 0
   )
-  const onboardingCandidates = facts.pilotCandidates.filter(
-    (chef) => chef.evidence.onboardingCompleted || chef.evidence.inquiries > 0 || chef.publicBookingHref
+  const setupReadyCandidates = facts.pilotCandidates.filter(
+    (chef) => chef.evidence.onboardingCompleted || chef.publicBookingHref
   )
+  const onboardingReadiness = buildOnboardingTestReadiness({
+    pilotCandidateCount: facts.pilotCandidates.length,
+    setupReadyCount: setupReadyCandidates.length,
+  })
+  const acquisitionReadiness = buildAcquisitionReadiness(facts.acquisition)
   const backupFresh =
     facts.backupIntegrity.latestStatus === 'success' &&
     facts.backupIntegrity.hoursSinceSuccess !== null &&
     facts.backupIntegrity.hoursSinceSuccess <= 36
+  const buildHoursSinceVerified = hoursSince(facts.buildIntegrity.lastVerified, facts.generatedAt)
+  const buildStateFresh = buildHoursSinceVerified !== null && buildHoursSinceVerified <= 168
+  const buildIntegrityGreen =
+    facts.buildIntegrity.typecheckGreen && facts.buildIntegrity.buildGreen && buildStateFresh
 
   const checks: LaunchReadinessCheck[] = [
     {
@@ -213,6 +254,22 @@ export function buildLaunchReadinessReport(
         activeTwoWeekCandidates.length > 0
           ? `${countLabel(activeTwoWeekCandidates.length, 'chef has', 'chefs have')} 14+ days of account age plus activity evidence`
           : 'No chef has both 14+ days of account age and activity evidence yet',
+      evidenceItems: [
+        {
+          label: 'Eligible chefs',
+          value: countLabel(activeTwoWeekCandidates.length, 'chef', 'chefs'),
+          source: 'chefs plus activity evidence',
+          href: '/admin/users',
+        },
+        {
+          label: 'Best candidate',
+          value: bestPilot
+            ? `${bestPilot.chefName}, ${bestPilot.activeSpanDays} active-span days`
+            : 'No pilot candidate yet',
+          source: 'ranked pilot evidence',
+          href: '/admin/users',
+        },
+      ],
       nextStep:
         activeTwoWeekCandidates.length > 0
           ? 'Confirm this is a real non-developer pilot, then record the operator decision.'
@@ -225,8 +282,27 @@ export function buildLaunchReadinessReport(
       status: publicBookingTests > 0 ? 'operator_review' : 'needs_action',
       evidence:
         publicBookingTests > 0
-          ? countLabel(publicBookingTests, 'public booking inquiry exists', 'public booking inquiries exist')
+          ? countLabel(
+              publicBookingTests,
+              'public booking inquiry exists',
+              'public booking inquiries exist'
+            )
           : 'No public booking inquiry exists yet',
+      evidenceItems: [
+        {
+          label: 'Public inquiries',
+          value: countLabel(publicBookingTests, 'inquiry', 'inquiries'),
+          source: 'open_booking_inquiries',
+          href: bestPilot?.publicBookingHref ?? '/admin/users',
+        },
+        {
+          label: 'Tester proof',
+          value:
+            publicBookingTests > 0 ? 'Needs human tester verification' : 'No test run captured',
+          source: 'operator review',
+          href: bestPilot?.publicBookingHref ?? null,
+        },
+      ],
       nextStep:
         publicBookingTests > 0
           ? 'Confirm the tester was not a developer and that the full handoff worked.'
@@ -243,10 +319,27 @@ export function buildLaunchReadinessReport(
           : bestPilot
             ? `${bestPilot.chefName} is at ${bestPilot.completedSystemSteps}/${bestPilot.totalSystemSteps} pilot proof checks`
             : 'No pilot candidate exists yet',
+      evidenceItems: [
+        {
+          label: 'Candidates at proof threshold',
+          value: countLabel(firstBookingLoopCandidates.length, 'chef', 'chefs'),
+          source: 'first-week activation and pilot evidence',
+          href: '/admin/users',
+        },
+        {
+          label: 'Leading candidate',
+          value: bestPilot
+            ? `${bestPilot.chefName}: ${bestPilot.completedSystemSteps}/${bestPilot.totalSystemSteps} checks`
+            : 'No pilot candidate yet',
+          source: 'ranked pilot evidence',
+          href: '/admin/users',
+        },
+      ],
       nextStep:
         firstBookingLoopCandidates.length > 0
           ? 'Keep the pilot warm and collect qualitative feedback.'
-          : bestPilot?.nextStepLabel ?? 'Create the first pilot chef and complete the booking loop.',
+          : (bestPilot?.nextStepLabel ??
+            'Create the first pilot chef and complete the booking loop.'),
       href: '/admin/users',
     },
     {
@@ -257,6 +350,22 @@ export function buildLaunchReadinessReport(
         moneyLoopCandidates.length > 0
           ? `${moneyLoopCandidates[0].chefName} has event and invoice artifacts`
           : 'No chef has both an event and invoice artifact yet',
+      evidenceItems: [
+        {
+          label: 'Money-loop candidates',
+          value: countLabel(moneyLoopCandidates.length, 'chef', 'chefs'),
+          source: 'events and invoice artifacts',
+          href: '/admin/events',
+        },
+        {
+          label: 'Best candidate money evidence',
+          value: bestPilot
+            ? `${bestPilot.evidence.events} events, ${bestPilot.evidence.invoiceArtifacts} invoice artifacts`
+            : 'No pilot candidate yet',
+          source: 'event and invoice tables',
+          href: '/admin/events',
+        },
+      ],
       nextStep:
         moneyLoopCandidates.length > 0
           ? 'Use the loop in pilot validation instead of adding more finance surface.'
@@ -271,6 +380,20 @@ export function buildLaunchReadinessReport(
         feedbackSignals > 0
           ? countLabel(feedbackSignals, 'feedback signal exists', 'feedback signals exist')
           : 'No completed survey or logged chef feedback exists yet',
+      evidenceItems: [
+        {
+          label: 'Pilot feedback',
+          value: countLabel(pilotFeedbackSignals, 'signal', 'signals'),
+          source: 'post_event_surveys and chef_feedback',
+          href: '/admin/feedback',
+        },
+        {
+          label: 'In-app product feedback',
+          value: countLabel(facts.productFeedbackSignals, 'signal', 'signals'),
+          source: 'user_feedback',
+          href: '/admin/feedback',
+        },
+      ],
       nextStep:
         feedbackSignals > 0
           ? 'Review the feedback and translate it into launch decisions.'
@@ -285,6 +408,20 @@ export function buildLaunchReadinessReport(
         facts.operatorSurvey.submittedResponses > 0
           ? `${countLabel(facts.operatorSurvey.submittedResponses, 'submitted survey response', 'submitted survey responses')} across ${countLabel(facts.operatorSurvey.activeSurveys, 'active survey', 'active surveys')}`
           : `${countLabel(facts.operatorSurvey.activeSurveys, 'active survey', 'active surveys')}; no submitted responses yet`,
+      evidenceItems: [
+        {
+          label: 'Submitted responses',
+          value: countLabel(facts.operatorSurvey.submittedResponses, 'response', 'responses'),
+          source: 'beta_survey_responses',
+          href: '/admin/beta-surveys',
+        },
+        {
+          label: 'Active surveys',
+          value: countLabel(facts.operatorSurvey.activeSurveys, 'survey', 'surveys'),
+          source: 'beta_survey_definitions',
+          href: '/admin/beta-surveys',
+        },
+      ],
       nextStep:
         facts.operatorSurvey.submittedResponses > 0
           ? 'Analyze responses and decide which launch claims survive contact with operators.'
@@ -294,32 +431,103 @@ export function buildLaunchReadinessReport(
     {
       key: 'onboarding_test',
       label: 'Onboarding tested with a non-technical user',
-      status: onboardingCandidates.length > 0 ? 'operator_review' : 'needs_action',
-      evidence:
-        onboardingCandidates.length > 0
-          ? `${onboardingCandidates[0].chefName} has enough setup evidence to run the onboarding test`
-          : 'No chef has enough setup evidence for a meaningful onboarding test yet',
-      nextStep:
-        onboardingCandidates.length > 0
-          ? 'Watch a non-technical user complete onboarding and record the friction points.'
-          : 'Prepare one pilot chef profile and public booking surface for a watched onboarding run.',
-      href: '/admin/users',
+      status:
+        onboardingReadiness.status === 'verified'
+          ? 'verified'
+          : onboardingReadiness.status === 'missing'
+            ? 'needs_action'
+            : 'operator_review',
+      evidence: onboardingReadiness.evidence,
+      evidenceItems: [
+        {
+          label: 'Ready for watched onboarding',
+          value: countLabel(setupReadyCandidates.length, 'chef', 'chefs'),
+          source: 'profile, setup, inquiry, and booking evidence',
+          href: onboardingReadiness.href,
+        },
+        {
+          label: 'Best candidate setup',
+          value: bestPilot
+            ? `${bestPilot.evidence.onboardingCompleted ? 'Setup complete' : 'Setup incomplete'}, ${bestPilot.evidence.inquiries} inquiries`
+            : 'No pilot candidate yet',
+          source: 'first-week activation evidence',
+          href: '/admin/users',
+        },
+      ],
+      nextStep: onboardingReadiness.nextStep,
+      href: onboardingReadiness.href,
+    },
+    {
+      key: 'acquisition_attribution',
+      label: 'Acquisition source is attributable',
+      status:
+        acquisitionReadiness.status === 'verified'
+          ? 'verified'
+          : acquisitionReadiness.status === 'missing'
+            ? 'needs_action'
+            : 'operator_review',
+      evidence: acquisitionReadiness.evidence,
+      evidenceItems: [
+        {
+          label: 'Public submissions',
+          value: countLabel(
+            facts.acquisition.publicBookingSubmissions,
+            'submission',
+            'submissions'
+          ),
+          source: 'open_bookings',
+          href: '/admin/activity',
+        },
+        {
+          label: 'Attributed sources',
+          value: `${countLabel(
+            facts.acquisition.utmAttributedSubmissions +
+              facts.acquisition.referralAttributedSubmissions,
+            'submission',
+            'submissions'
+          )} across ${countLabel(facts.acquisition.uniqueSources, 'source', 'sources')}`,
+          source: 'open_bookings referral and UTM fields',
+          href: '/admin/activity',
+        },
+      ],
+      nextStep: acquisitionReadiness.nextStep,
+      href: acquisitionReadiness.href,
     },
     {
       key: 'build_integrity',
       label: 'Build integrity is green',
-      status:
-        facts.buildIntegrity.typecheckGreen && facts.buildIntegrity.buildGreen
-          ? 'verified'
-          : 'needs_action',
-      evidence:
-        facts.buildIntegrity.typecheckGreen && facts.buildIntegrity.buildGreen
-          ? `Type check and build green${facts.buildIntegrity.lastVerified ? ` as of ${facts.buildIntegrity.lastVerified}` : ''}`
+      status: buildIntegrityGreen ? 'verified' : 'needs_action',
+      evidence: buildIntegrityGreen
+        ? `Type check and build green as of ${facts.buildIntegrity.lastVerified}`
+        : facts.buildIntegrity.typecheckGreen && facts.buildIntegrity.buildGreen
+          ? 'Build-state file is green but stale or missing a parseable verification time'
           : 'Build-state file does not show both type check and build as green',
-      nextStep:
-        facts.buildIntegrity.typecheckGreen && facts.buildIntegrity.buildGreen
-          ? 'Re-run release validation before shipping, not before every pilot learning step.'
-          : 'Run the approved verification flow and update build state after it passes.',
+      evidenceItems: [
+        {
+          label: 'Type check',
+          value: facts.buildIntegrity.typecheckGreen ? 'Green' : 'Not green',
+          source: 'docs/build-state.md',
+          href: '/admin/system',
+        },
+        {
+          label: 'Build',
+          value: facts.buildIntegrity.buildGreen ? 'Green' : 'Not green',
+          source: 'docs/build-state.md',
+          href: '/admin/system',
+        },
+        {
+          label: 'Freshness',
+          value:
+            buildHoursSinceVerified === null
+              ? 'Unknown'
+              : `${buildHoursSinceVerified} hours since verification`,
+          source: facts.buildIntegrity.commit ?? 'no commit recorded',
+          href: '/admin/system',
+        },
+      ],
+      nextStep: buildIntegrityGreen
+        ? 'Re-run release validation before shipping, not before every pilot learning step.'
+        : 'Run the approved verification flow and update build state after it passes.',
       href: '/admin/system',
     },
     {
@@ -331,6 +539,23 @@ export function buildLaunchReadinessReport(
         : facts.backupIntegrity.latestExecutedAt
           ? `Latest backup heartbeat is ${facts.backupIntegrity.latestStatus} at ${facts.backupIntegrity.latestExecutedAt}`
           : 'No backup heartbeat found in cron executions',
+      evidenceItems: [
+        {
+          label: 'Latest status',
+          value: facts.backupIntegrity.latestStatus,
+          source: 'cron_executions',
+          href: '/admin/system',
+        },
+        {
+          label: 'Freshness',
+          value:
+            facts.backupIntegrity.hoursSinceSuccess === null
+              ? 'No successful heartbeat'
+              : `${facts.backupIntegrity.hoursSinceSuccess} hours since success`,
+          source: 'db-backup heartbeat',
+          href: '/admin/system',
+        },
+      ],
       nextStep: backupFresh
         ? 'Keep backup monitoring active through launch.'
         : 'Run or repair the approved backup heartbeat path before launch.',
@@ -339,6 +564,14 @@ export function buildLaunchReadinessReport(
   ]
 
   const verifiedChecks = checks.filter((check) => check.status === 'verified').length
+  const nextActions = checks
+    .filter((check) => check.status !== 'verified')
+    .slice(0, 5)
+    .map((check) => ({
+      label: check.label,
+      reason: check.nextStep,
+      href: check.href,
+    }))
 
   return {
     generatedAt: facts.generatedAt,
@@ -346,7 +579,8 @@ export function buildLaunchReadinessReport(
     verifiedChecks,
     totalChecks: checks.length,
     checks,
-    pilotCandidates: facts.pilotCandidates,
+    pilotCandidates: rankedPilotCandidates,
+    nextActions,
     evidenceLog: [
       {
         label: 'Best pilot candidate',
@@ -365,7 +599,7 @@ export function buildLaunchReadinessReport(
       {
         label: 'Feedback signals',
         value: countLabel(feedbackSignals, 'signal', 'signals'),
-        source: 'post_event_surveys and chef_feedback',
+        source: 'post_event_surveys, chef_feedback, and user_feedback',
         href: '/admin/feedback',
       },
       {
@@ -373,6 +607,17 @@ export function buildLaunchReadinessReport(
         value: countLabel(facts.operatorSurvey.submittedResponses, 'response', 'responses'),
         source: 'beta_survey_responses',
         href: '/admin/beta-surveys',
+      },
+      {
+        label: 'Acquisition attribution',
+        value: `${countLabel(
+          facts.acquisition.utmAttributedSubmissions +
+            facts.acquisition.referralAttributedSubmissions,
+          'attributed submission',
+          'attributed submissions'
+        )} across ${countLabel(facts.acquisition.uniqueSources, 'source', 'sources')}`,
+        source: 'open_bookings referral and UTM fields',
+        href: '/admin/activity',
       },
       {
         label: 'Backup heartbeat',
@@ -392,7 +637,11 @@ async function count(db: any, table: string, label: string, apply: (query: any) 
   return countFrom(await apply(query), label)
 }
 
-async function loadPilotCandidate(db: any, chef: any, generatedAt: string): Promise<PilotCandidate> {
+async function loadPilotCandidate(
+  db: any,
+  chef: any,
+  generatedAt: string
+): Promise<PilotCandidate> {
   const chefId = String(chef.id)
   const [
     pricingConfig,
@@ -463,15 +712,16 @@ async function loadPilotCandidate(db: any, chef: any, generatedAt: string): Prom
     Boolean(chef.business_name && chef.display_name) || Boolean(chef.onboarding_completed_at)
   const bookingSurfaceReady = Boolean(
     chef.booking_enabled &&
-      chef.booking_slug &&
-      (chef.booking_base_price_cents || chef.booking_headline || chef.booking_bio_short)
+    chef.booking_slug &&
+    (chef.booking_base_price_cents || chef.booking_headline || chef.booking_bio_short)
   )
   const serviceSetupReady =
     pricingConfig > 0 || serviceTypes > 0 || bookingEventTypes > 0 || bookingSurfaceReady
 
   return buildPilotCandidate({
     chefId,
-    chefName: chef.business_name?.trim() || chef.display_name?.trim() || chef.email || 'Unnamed chef',
+    chefName:
+      chef.business_name?.trim() || chef.display_name?.trim() || chef.email || 'Unnamed chef',
     createdAt: chef.created_at ?? null,
     generatedAt,
     firstWeekFacts: {
@@ -499,8 +749,12 @@ async function loadPilotCandidate(db: any, chef: any, generatedAt: string): Prom
 async function loadBuildIntegrity() {
   try {
     const file = await readFile(path.join(process.cwd(), 'docs', 'build-state.md'), 'utf8')
-    const currentRow = file.match(/\|\s*`npx tsc --noEmit --skipLibCheck`\s*\|\s*(\w+)\s*\|\s*([^|]+)\|\s*([^|]+)\|/)
-    const buildRow = file.match(/\|\s*`npm run build -- --no-lint`[^|]*\|\s*(\w+)\s*\|\s*([^|]+)\|\s*([^|]+)\|/)
+    const currentRow = file.match(
+      /\|\s*`npx tsc --noEmit --skipLibCheck`\s*\|\s*(\w+)\s*\|\s*([^|]+)\|\s*([^|]+)\|/
+    )
+    const buildRow = file.match(
+      /\|\s*`npm run build -- --no-lint`[^|]*\|\s*(\w+)\s*\|\s*([^|]+)\|\s*([^|]+)\|/
+    )
 
     return {
       typecheckGreen: currentRow?.[1]?.trim() === 'green',
@@ -539,6 +793,60 @@ async function loadOperatorSurveyFacts(db: any) {
   )
 
   return { activeSurveys, totalResponses, submittedResponses }
+}
+
+async function loadProductFeedbackFacts(db: any) {
+  return countFrom(
+    await db.from('user_feedback').select('id', { count: 'exact', head: true }),
+    'user feedback'
+  )
+}
+
+function sourceKey(row: any): string | null {
+  const utm = typeof row?.utm_source === 'string' ? row.utm_source.trim() : ''
+  if (utm) return `utm:${utm.toLowerCase()}`
+  const referralPartner =
+    typeof row?.referral_partner_id === 'string' ? row.referral_partner_id.trim() : ''
+  if (referralPartner) return `partner:${referralPartner.toLowerCase()}`
+  const referral = typeof row?.referral_source === 'string' ? row.referral_source.trim() : ''
+  if (referral && referral !== 'open_booking') return `referral:${referral.toLowerCase()}`
+  return null
+}
+
+async function loadAcquisitionFacts(db: any) {
+  const { data, error } = await db
+    .from('open_bookings')
+    .select('id, referral_source, referral_partner_id, utm_source, created_at')
+    .order('created_at', { ascending: false })
+    .limit(500)
+
+  if (error) {
+    throw new Error('Launch readiness query failed: open bookings acquisition')
+  }
+
+  const rows = Array.isArray(data) ? data : []
+  const utmAttributedSubmissions = rows.filter((row) => {
+    const value = typeof row.utm_source === 'string' ? row.utm_source.trim() : ''
+    return value.length > 0
+  }).length
+  const referralAttributedSubmissions = rows.filter((row) => {
+    const referral = typeof row.referral_source === 'string' ? row.referral_source.trim() : ''
+    const partner =
+      typeof row.referral_partner_id === 'string' ? row.referral_partner_id.trim() : ''
+    return partner.length > 0 || (referral.length > 0 && referral !== 'open_booking')
+  }).length
+  const uniqueSources = new Set(rows.map(sourceKey).filter(Boolean)).size
+
+  return {
+    publicBookingSubmissions: rows.length,
+    utmAttributedSubmissions,
+    referralAttributedSubmissions,
+    uniqueSources,
+    latestSubmissionAt:
+      typeof rows[0]?.created_at === 'string' && rows[0].created_at.length > 0
+        ? rows[0].created_at
+        : null,
+  }
 }
 
 async function loadBackupIntegrity(db: any, generatedAt: string) {
@@ -592,9 +900,18 @@ export async function getLaunchReadinessReport(): Promise<LaunchReadinessReport>
     throw new Error('Launch readiness query failed: chefs')
   }
 
-  const [pilotCandidates, operatorSurvey, buildIntegrity, backupIntegrity] = await Promise.all([
+  const [
+    pilotCandidates,
+    operatorSurvey,
+    productFeedbackSignals,
+    acquisition,
+    buildIntegrity,
+    backupIntegrity,
+  ] = await Promise.all([
     Promise.all((chefs ?? []).map((chef: any) => loadPilotCandidate(db, chef, generatedAt))),
     loadOperatorSurveyFacts(db),
+    loadProductFeedbackFacts(db),
+    loadAcquisitionFacts(db),
     loadBuildIntegrity(),
     loadBackupIntegrity(db, generatedAt),
   ])
@@ -603,6 +920,8 @@ export async function getLaunchReadinessReport(): Promise<LaunchReadinessReport>
     generatedAt,
     pilotCandidates,
     operatorSurvey,
+    productFeedbackSignals,
+    acquisition,
     buildIntegrity,
     backupIntegrity,
   })

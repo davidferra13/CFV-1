@@ -60,6 +60,25 @@ function CheckRow({ check }: { check: LaunchReadinessCheck }) {
           </div>
           <p className="mt-2 text-sm text-stone-300">{check.evidence}</p>
           <p className="mt-1 text-xs leading-5 text-stone-500">{check.nextStep}</p>
+          {check.evidenceItems.length > 0 ? (
+            <div className="mt-3 grid gap-2 md:grid-cols-2">
+              {check.evidenceItems.map((item) => (
+                <div
+                  key={`${check.key}-${item.label}`}
+                  className="rounded-lg border border-stone-800 bg-stone-950/70 p-3"
+                >
+                  <p className="text-[11px] font-semibold uppercase text-stone-500">{item.label}</p>
+                  <p className="mt-1 text-sm font-medium text-stone-100">{item.value}</p>
+                  <p className="mt-1 text-xs text-stone-500">{item.source}</p>
+                  {item.href ? (
+                    <Link href={item.href} className="mt-2 inline-flex text-xs text-brand-400">
+                      Open source
+                    </Link>
+                  ) : null}
+                </div>
+              ))}
+            </div>
+          ) : null}
         </div>
       </div>
       {check.href ? (
@@ -98,6 +117,7 @@ export default async function AdminLaunchReadinessPage() {
             booking validation, onboarding evidence, survey feedback, money loop evidence, and build
             integrity.
           </p>
+          <p className="mt-1 text-xs text-stone-500">Generated {report.generatedAt}</p>
         </div>
         <div className="rounded-xl border border-stone-800 bg-stone-900 p-4 text-right">
           <p className="text-xs font-semibold uppercase text-stone-500">Verified</p>
@@ -149,6 +169,29 @@ export default async function AdminLaunchReadinessPage() {
 
         <aside className="space-y-6">
           <section className="rounded-xl border border-stone-800 bg-stone-900/70 p-5">
+            <h2 className="text-base font-semibold text-stone-100">Next evidence actions</h2>
+            <div className="mt-4 space-y-3">
+              {report.nextActions.map((action) => (
+                <div
+                  key={action.label}
+                  className="rounded-lg border border-stone-800 bg-stone-950 p-3"
+                >
+                  <p className="text-sm font-medium text-stone-100">{action.label}</p>
+                  <p className="mt-1 text-xs leading-5 text-stone-500">{action.reason}</p>
+                  {action.href ? (
+                    <Link href={action.href} className="mt-2 inline-flex text-xs text-brand-400">
+                      Open action
+                    </Link>
+                  ) : null}
+                </div>
+              ))}
+              {report.nextActions.length === 0 ? (
+                <p className="text-sm text-stone-500">No open launch evidence actions.</p>
+              ) : null}
+            </div>
+          </section>
+
+          <section className="rounded-xl border border-stone-800 bg-stone-900/70 p-5">
             <h2 className="text-base font-semibold text-stone-100">Evidence log</h2>
             <div className="mt-4 space-y-3">
               {report.evidenceLog.map((item) => (
@@ -195,6 +238,11 @@ export default async function AdminLaunchReadinessPage() {
                     <span>{chef.evidence.inquiries} inquiries</span>
                     <span>{chef.evidence.events} events</span>
                     <span>{chef.evidence.feedbackSignals} feedback</span>
+                  </div>
+                  <div className="mt-2 grid grid-cols-3 gap-2 text-xs text-stone-500">
+                    <span>{chef.evidence.publicBookingTests} public tests</span>
+                    <span>{chef.evidence.invoiceArtifacts} invoices</span>
+                    <span>{chef.evidence.onboardingCompleted ? 'Onboarded' : 'Setup open'}</span>
                   </div>
                   {chef.nextStepLabel ? (
                     <p className="mt-2 text-xs text-stone-500">Next: {chef.nextStepLabel}</p>
