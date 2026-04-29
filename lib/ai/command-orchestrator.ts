@@ -954,6 +954,87 @@ function executeNavGo(inputs: Record<string, unknown>) {
   return { route, navigated: true }
 }
 
+type CoreTaskContext = {
+  tenantId: string
+  resolvedDeps: Record<string, unknown>
+}
+
+type CoreTaskExecutor = (task: PlannedTask, ctx: CoreTaskContext) => Promise<unknown> | unknown
+
+const CORE_COMMAND_TASK_EXECUTORS: Record<string, CoreTaskExecutor> = {
+  'client.search': (task) => executeClientSearch(task.inputs),
+  'calendar.availability': (task) => executeCalendarAvailability(task.inputs),
+  'event.list_upcoming': (_task, ctx) => executeEventListUpcoming(ctx.tenantId),
+  'finance.summary': (_task, ctx) => executeFinanceSummary(ctx.tenantId),
+  'email.followup': (task, ctx) => executeEmailFollowup(task.inputs, ctx.resolvedDeps),
+  'event.create_draft': (task) => executeEventCreateDraft(task.inputs),
+  'client.count': async () => {
+    const allForCount = await getClients()
+    return { totalClients: (allForCount ?? []).length }
+  },
+  'client.list_recent': (task) => executeClientListRecent(task.inputs),
+  'client.details': (task) => executeClientDetails(task.inputs),
+  'event.details': (task, ctx) => executeEventDetails(task.inputs, ctx.tenantId),
+  'event.readiness': (task, ctx) => executeEventReadiness(task.inputs, ctx.tenantId),
+  'event.list_by_status': (task, ctx) => executeEventListByStatus(task.inputs, ctx.tenantId),
+  'inquiry.list_open': () => executeInquiryListOpen(),
+  'inquiry.details': (task) => executeInquiryDetails(task.inputs),
+  'finance.monthly_snapshot': () => executeFinanceMonthlySnapshot(),
+  'recipe.search': (task) => executeRecipeSearch(task.inputs),
+  'menu.list': (task) => executeMenuList(task.inputs),
+  'scheduling.next_available': (task) => executeSchedulingNextAvailable(task.inputs),
+  'web.search': (task) => executeWebSearch(task.inputs),
+  'web.read': (task) => executeWebRead(task.inputs),
+  'dietary.check': (task) => executeDietaryCheck(task.inputs),
+  'client.dietary': (task) => executeDietaryCheck(task.inputs),
+  'client.dietary_restrictions': (task) => executeDietaryCheck(task.inputs),
+  'chef.favorite_chefs': () => executeFavoriteChefs(),
+  'chef.culinary_profile': () => executeCulinaryProfile(),
+  'prep.timeline': (task) => executePrepTimeline(task.inputs),
+  'nudge.list': () => executeNudgeList(),
+  'grocery.quick_add': (task) => executeGroceryQuickAdd(task.inputs),
+  'document.search': (task) => executeDocumentSearch(task.inputs),
+  'document.list_folders': () => executeListFolders(),
+  'document.create_folder': (task) => executeCreateFolder(task.inputs),
+  'email.generic': (task) => executeEmailGeneric(task.inputs),
+  'email.recent': (task) => executeEmailRecent(task.inputs),
+  'email.search': (task) => executeEmailSearch(task.inputs),
+  'email.thread': (task) => executeEmailThread(task.inputs),
+  'email.inbox_summary': () => executeEmailInboxSummary(),
+  'email.status': () => executeEmailInboxSummary(),
+  'email.draft_reply': (task) => executeEmailDraftReply(task.inputs),
+  'draft.thank_you': (task) => executeDraftThankYou(task.inputs),
+  'draft.referral_request': (task) => executeDraftReferralRequest(task.inputs),
+  'draft.testimonial_request': (task) => executeDraftTestimonialRequest(task.inputs),
+  'draft.quote_cover_letter': (task) => executeDraftQuoteCoverLetter(task.inputs),
+  'draft.decline_response': (task) => executeDraftDeclineResponse(task.inputs),
+  'draft.cancellation_response': (task) => executeDraftCancellationResponse(task.inputs),
+  'draft.payment_reminder': (task) => executeDraftPaymentReminder(task.inputs),
+  'draft.re_engagement': (task) => executeDraftReEngagement(task.inputs),
+  'draft.milestone_recognition': (task) => executeDraftMilestoneRecognition(task.inputs),
+  'draft.food_safety_incident': (task) => executeDraftFoodSafetyIncident(task.inputs),
+  'draft.confirmation': (task) => executeDraftConfirmation(task.inputs),
+  'ops.portion_calc': (task) => executePortionCalc(task.inputs),
+  'ops.packing_list': (task) => executePackingList(task.inputs),
+  'ops.cross_contamination': (task) => executeCrossContamination(task.inputs),
+  'analytics.break_even': (task) => executeBreakEven(task.inputs),
+  'analytics.client_ltv': (task) => executeClientLTV(task.inputs),
+  'analytics.recipe_cost': (task) => executeRecipeCost(task.inputs),
+  'client.event_recap': (task) => executeEventRecap(task.inputs),
+  'client.menu_explanation': (task) => executeMenuExplanation(task.inputs),
+  'nav.go': (task) => executeNavGo(task.inputs),
+  'navigation.goto': (task) => executeNavGo(task.inputs),
+}
+
+async function executeCoreCommandTask(
+  task: PlannedTask,
+  ctx: CoreTaskContext
+): Promise<{ handled: true; data: unknown } | { handled: false }> {
+  const executor = CORE_COMMAND_TASK_EXECUTORS[task.taskType]
+  if (!executor) return { handled: false }
+  return { handled: true, data: await executor(task, ctx) }
+}
+
 async function executeSingleTask(
   task: PlannedTask,
   resolvedDeps: Record<string, unknown>,
@@ -1040,8 +1121,8 @@ async function executeSingleTask(
     }
 
     // ─── Security guardrail: block dangerous/injection task types ────────────
-    // The switch statement below handles all supported tasks; unknown types hit default.
-    // This check blocks explicitly dangerous patterns before they reach the switch.
+    // The task registries below handle supported tasks; unknown types are held.
+    // This check blocks explicitly dangerous patterns before they reach execution.
     if (
       task.taskType.includes('system') ||
       task.taskType.includes('prompt') ||
@@ -1062,190 +1143,21 @@ async function executeSingleTask(
     if (registeredReadTask.handled) {
       data = registeredReadTask.data
     } else {
-      switch (task.taskType) {
-        case 'client.search':
-          data = await executeClientSearch(task.inputs)
-          break
-        case 'calendar.availability':
-          data = await executeCalendarAvailability(task.inputs)
-          break
-        case 'event.list_upcoming':
-          data = await executeEventListUpcoming(tenantId)
-          break
-        case 'finance.summary':
-          data = await executeFinanceSummary(tenantId)
-          break
-        case 'email.followup':
-          data = await executeEmailFollowup(task.inputs, resolvedDeps)
-          break
-        case 'event.create_draft':
-          data = await executeEventCreateDraft(task.inputs)
-          break
-        case 'client.count': {
-          const allForCount = await getClients()
-          data = { totalClients: (allForCount ?? []).length }
-          break
+      const coreTask = await executeCoreCommandTask(task, {
+        tenantId,
+        resolvedDeps,
+      })
+      if (coreTask.handled) {
+        data = coreTask.data
+      } else {
+        return {
+          taskId: task.id,
+          taskType: task.taskType,
+          tier: 3,
+          name: task.taskType,
+          status: 'held',
+          holdReason: `"${task.taskType}" is not currently supported. Try rephrasing your request.`,
         }
-        case 'client.list_recent':
-          data = await executeClientListRecent(task.inputs)
-          break
-        case 'client.details':
-          data = await executeClientDetails(task.inputs)
-          break
-        case 'event.details':
-          data = await executeEventDetails(task.inputs, tenantId)
-          break
-        case 'event.readiness':
-          data = await executeEventReadiness(task.inputs, tenantId)
-          break
-        case 'event.list_by_status':
-          data = await executeEventListByStatus(task.inputs, tenantId)
-          break
-        case 'inquiry.list_open':
-          data = await executeInquiryListOpen()
-          break
-        case 'inquiry.details':
-          data = await executeInquiryDetails(task.inputs)
-          break
-        case 'finance.monthly_snapshot':
-          data = await executeFinanceMonthlySnapshot()
-          break
-        case 'recipe.search':
-          data = await executeRecipeSearch(task.inputs)
-          break
-        case 'menu.list':
-          data = await executeMenuList(task.inputs)
-          break
-        case 'scheduling.next_available':
-          data = await executeSchedulingNextAvailable(task.inputs)
-          break
-        case 'web.search':
-          data = await executeWebSearch(task.inputs)
-          break
-        case 'web.read':
-          data = await executeWebRead(task.inputs)
-          break
-        case 'dietary.check':
-        case 'client.dietary':
-        case 'client.dietary_restrictions':
-          data = await executeDietaryCheck(task.inputs)
-          break
-        case 'chef.favorite_chefs':
-          data = await executeFavoriteChefs()
-          break
-        case 'chef.culinary_profile':
-          data = await executeCulinaryProfile()
-          break
-        case 'prep.timeline':
-          data = await executePrepTimeline(task.inputs)
-          break
-        case 'nudge.list':
-          data = await executeNudgeList()
-          break
-        case 'grocery.quick_add':
-          data = await executeGroceryQuickAdd(task.inputs)
-          break
-        case 'document.search':
-          data = await executeDocumentSearch(task.inputs)
-          break
-        case 'document.list_folders':
-          data = await executeListFolders()
-          break
-        case 'document.create_folder':
-          data = await executeCreateFolder(task.inputs)
-          break
-        case 'email.generic':
-          data = await executeEmailGeneric(task.inputs)
-          break
-        case 'email.recent':
-          data = await executeEmailRecent(task.inputs)
-          break
-        case 'email.search':
-          data = await executeEmailSearch(task.inputs)
-          break
-        case 'email.thread':
-          data = await executeEmailThread(task.inputs)
-          break
-        case 'email.inbox_summary':
-        case 'email.status':
-          data = await executeEmailInboxSummary()
-          break
-        case 'email.draft_reply':
-          data = await executeEmailDraftReply(task.inputs)
-          break
-        case 'draft.thank_you':
-          data = await executeDraftThankYou(task.inputs)
-          break
-        case 'draft.referral_request':
-          data = await executeDraftReferralRequest(task.inputs)
-          break
-        case 'draft.testimonial_request':
-          data = await executeDraftTestimonialRequest(task.inputs)
-          break
-        case 'draft.quote_cover_letter':
-          data = await executeDraftQuoteCoverLetter(task.inputs)
-          break
-        case 'draft.decline_response':
-          data = await executeDraftDeclineResponse(task.inputs)
-          break
-        case 'draft.cancellation_response':
-          data = await executeDraftCancellationResponse(task.inputs)
-          break
-        case 'draft.payment_reminder':
-          data = await executeDraftPaymentReminder(task.inputs)
-          break
-        case 'draft.re_engagement':
-          data = await executeDraftReEngagement(task.inputs)
-          break
-        case 'draft.milestone_recognition':
-          data = await executeDraftMilestoneRecognition(task.inputs)
-          break
-        case 'draft.food_safety_incident':
-          data = await executeDraftFoodSafetyIncident(task.inputs)
-          break
-        case 'draft.confirmation':
-          data = await executeDraftConfirmation(task.inputs)
-          break
-        case 'ops.portion_calc':
-          data = await executePortionCalc(task.inputs)
-          break
-        case 'ops.packing_list':
-          data = await executePackingList(task.inputs)
-          break
-        case 'ops.cross_contamination':
-          data = await executeCrossContamination(task.inputs)
-          break
-        case 'analytics.break_even':
-          data = await executeBreakEven(task.inputs)
-          break
-        case 'analytics.client_ltv':
-          data = await executeClientLTV(task.inputs)
-          break
-        case 'analytics.recipe_cost':
-          data = await executeRecipeCost(task.inputs)
-          break
-        case 'client.event_recap':
-          data = await executeEventRecap(task.inputs)
-          break
-        case 'client.menu_explanation':
-          data = await executeMenuExplanation(task.inputs)
-          break
-
-        // ─── New tools (Remy upgrade) ──────────────────────────────────────────
-        case 'nav.go':
-        case 'navigation.goto':
-          data = executeNavGo(task.inputs)
-          break
-        // ─── Phase 1: Wire existing features ──────────────────────────────────
-        default:
-          return {
-            taskId: task.id,
-            taskType: task.taskType,
-            tier: 3,
-            name: task.taskType,
-            status: 'held',
-            holdReason: `"${task.taskType}" is not currently supported. Try rephrasing your request.`,
-          }
       }
     }
 
