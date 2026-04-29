@@ -2,7 +2,7 @@
 // Manages tab state and renders the four insight panels
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Card } from '@/components/ui/card'
 import {
   DinnerTimeChart,
@@ -56,6 +56,7 @@ import type {
 // ─── Types ────────────────────────────────────────────
 
 interface InsightsClientProps {
+  initialTab?: string
   dinnerTime: DinnerTimeSlot[]
   occasions: OccasionStat[]
   serviceStyles: ServiceStyleStat[]
@@ -89,6 +90,25 @@ const TABS = [
 ] as const
 
 type TabId = (typeof TABS)[number]['id']
+
+const DEFAULT_TAB: TabId = 'clientele'
+const DEEP_LINK_TAB_IDS = new Set<TabId>([
+  'clientele',
+  'seasons',
+  'client-base',
+  'operations',
+  'culinary-usage',
+  'metric-registry',
+  'take-a-chef',
+])
+
+function isDeepLinkTabId(value: string | undefined): value is TabId {
+  return DEEP_LINK_TAB_IDS.has(value as TabId)
+}
+
+function validateTabId(value: string | undefined): TabId {
+  return isDeepLinkTabId(value) ? value : DEFAULT_TAB
+}
 
 // ─── Helpers ──────────────────────────────────────────
 
@@ -889,6 +909,7 @@ function MetricRegistryTab({
 // ─── Main Client Component ────────────────────────────
 
 export function InsightsClient({
+  initialTab,
   dinnerTime,
   occasions,
   serviceStyles,
@@ -908,7 +929,11 @@ export function InsightsClient({
   metricDefinitions,
   metricCoverage,
 }: InsightsClientProps) {
-  const [activeTab, setActiveTab] = useState<TabId>('clientele')
+  const [activeTab, setActiveTab] = useState<TabId>(() => validateTabId(initialTab))
+
+  useEffect(() => {
+    setActiveTab(validateTabId(initialTab))
+  }, [initialTab])
 
   return (
     <div>

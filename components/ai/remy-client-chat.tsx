@@ -23,6 +23,31 @@ interface NavSuggestion {
   href: string
 }
 
+const ALLOWED_NAV_PREFIXES = [
+  '/my-events',
+  '/my-inquiries',
+  '/my-quotes',
+  '/my-profile',
+  '/my-hub',
+  '/my-rewards',
+  '/my-bookings',
+]
+
+function sanitizeNavSuggestion(value: unknown): NavSuggestion | null {
+  if (!value || typeof value !== 'object') return null
+  const raw = value as Record<string, unknown>
+  const label = typeof raw.label === 'string' ? raw.label.trim().slice(0, 80) : ''
+  const href = typeof raw.href === 'string' ? raw.href.trim() : ''
+
+  if (!label || !href.startsWith('/') || href.startsWith('//')) return null
+  if (href.includes('\\') || /[\r\n]/.test(href)) return null
+  if (!ALLOWED_NAV_PREFIXES.some((prefix) => href === prefix || href.startsWith(`${prefix}/`))) {
+    return null
+  }
+
+  return { label, href }
+}
+
 export function RemyClientChat() {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
@@ -58,7 +83,10 @@ export function RemyClientChat() {
     if (!navMatch) return { cleanContent: content, navs: [] }
 
     try {
-      const navs = JSON.parse(navMatch[1]) as NavSuggestion[]
+      const parsed = JSON.parse(navMatch[1])
+      const navs = Array.isArray(parsed)
+        ? parsed.map(sanitizeNavSuggestion).filter((nav): nav is NavSuggestion => Boolean(nav))
+        : []
       const cleanContent = content.replace(/NAV_SUGGESTIONS:\s*\[[\s\S]*?\]/, '').trim()
       return { cleanContent, navs }
     } catch {
@@ -66,8 +94,8 @@ export function RemyClientChat() {
     }
   }
 
-  const sendMessage = useCallback(async () => {
-    const trimmed = input.trim()
+  const sendMessage = useCallback(async (overrideText?: string) => {
+    const trimmed = (overrideText ?? input).trim()
     if (!trimmed || isStreaming) return
 
     setError(null)
@@ -217,7 +245,7 @@ export function RemyClientChat() {
             <Minus className="h-4 w-4" />
           </button>
           <button
-            onClick={() => setMode('docked')}
+            onClick={() => setMode('hidden')}
             className="rounded-lg p-1.5 text-stone-400 transition-colors hover:bg-stone-800 hover:text-stone-300"
             aria-label="Close chat"
           >
@@ -245,10 +273,7 @@ export function RemyClientChat() {
                 (q) => (
                   <button
                     key={q}
-                    onClick={() => {
-                      setInput(q)
-                      setTimeout(() => sendMessage(), 50)
-                    }}
+                    onClick={() => sendMessage(q)}
                     className="rounded-full border border-brand-700 bg-brand-950 px-3 py-1.5 text-xs text-brand-400 transition-colors hover:bg-brand-900"
                   >
                     {q}
@@ -317,7 +342,7 @@ export function RemyClientChat() {
             style={{ maxHeight: '100px' }}
           />
           <button
-            onClick={sendMessage}
+            onClick={() => sendMessage()}
             disabled={!input.trim() || isStreaming}
             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-600 text-white transition-colors hover:bg-brand-700 disabled:opacity-40"
             aria-label="Send message"

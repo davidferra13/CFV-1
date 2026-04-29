@@ -38,9 +38,33 @@ const InsightsClient = dynamic(
 
 export const metadata: Metadata = { title: 'Clientele Insights' }
 
-export default async function InsightsPage() {
+type InsightsSearchParams = {
+  tab?: string | string[]
+}
+
+const INSIGHTS_TABS = new Set([
+  'clientele',
+  'seasons',
+  'client-base',
+  'operations',
+  'culinary-usage',
+  'metric-registry',
+  'take-a-chef',
+])
+
+function getInitialInsightsTab(searchParams?: InsightsSearchParams): string {
+  const tab = Array.isArray(searchParams?.tab) ? searchParams?.tab[0] : searchParams?.tab
+  return tab && INSIGHTS_TABS.has(tab) ? tab : 'clientele'
+}
+
+export default async function InsightsPage({
+  searchParams,
+}: {
+  searchParams?: Promise<InsightsSearchParams>
+}) {
   await requireChef()
 
+  const initialTab = getInitialInsightsTab(await searchParams)
   const [
     dinnerTime,
     occasions,
@@ -88,6 +112,7 @@ export default async function InsightsPage() {
       </div>
 
       <InsightsClient
+        initialTab={initialTab}
         dinnerTime={dinnerTime}
         occasions={occasions}
         serviceStyles={serviceStyles}

@@ -3,6 +3,8 @@
 // 1M events/month free, no credit card
 // Know which features people use, where they drop off
 
+import { hasAcceptedAnalyticsCookies } from '@/lib/privacy/cookie-consent-client'
+
 /**
  * PostHog integration for Next.js
  *
@@ -77,6 +79,7 @@ export function trackEvent(
 ): void {
   try {
     if (typeof window === 'undefined') return
+    if (!hasAcceptedAnalyticsCookies()) return
     const posthog = (window as any).posthog
     if (posthog?.capture) {
       posthog.capture(event, properties)
@@ -96,6 +99,7 @@ export function identifyUser(
 ): void {
   try {
     if (typeof window === 'undefined') return
+    if (!hasAcceptedAnalyticsCookies()) return
     const posthog = (window as any).posthog
     if (posthog?.identify) {
       posthog.identify(userId, traits)

@@ -3,19 +3,15 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { usePathname } from 'next/navigation'
+import {
+  COOKIE_CONSENT_EVENT,
+  readCookieConsent,
+  type CookieConsentState,
+  type CookieConsentValue,
+} from '@/lib/privacy/cookie-consent-client'
 
 const POSTHOG_KEY = process.env.NEXT_PUBLIC_POSTHOG_KEY
 const POSTHOG_HOST = process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://us.i.posthog.com'
-
-type CookieConsent = 'accepted' | 'declined' | 'unknown'
-
-function readCookieConsent(): CookieConsent {
-  if (typeof document === 'undefined') return 'unknown'
-  const match = document.cookie.match(/(?:^|;\s*)cookieConsent=([^;]+)/)
-  if (!match) return 'unknown'
-  const value = decodeURIComponent(match[1])
-  return value === 'accepted' || value === 'declined' ? value : 'unknown'
-}
 
 /**
  * PostHog product analytics provider.
@@ -32,22 +28,26 @@ export function PostHogProvider({ children }: { children?: React.ReactNode }) {
   const pathname = usePathname()
   const initialized = useRef(false)
   const [isReady, setIsReady] = useState(false)
-  const [consent, setConsent] = useState<CookieConsent>('unknown')
+  const [consent, setConsent] = useState<CookieConsentState>('unknown')
+
+  function getPostHog() {
+    return typeof window === 'undefined' ? null : (window as any).posthog
+  }
 
   // Read consent and listen for changes emitted by the cookie banner.
   useEffect(() => {
     setConsent(readCookieConsent())
 
     const onConsentChanged = (event: Event) => {
-      const detail = (event as CustomEvent<'accepted' | 'declined'>).detail
+      const detail = (event as CustomEvent<CookieConsentValue>).detail
       if (detail === 'accepted' || detail === 'declined') {
         setConsent(detail)
       }
     }
 
-    window.addEventListener('cf:cookie-consent', onConsentChanged as EventListener)
+    window.addEventListener(COOKIE_CONSENT_EVENT, onConsentChanged as EventListener)
     return () => {
-      window.removeEventListener('cf:cookie-consent', onConsentChanged as EventListener)
+      window.removeEventListener(COOKIE_CONSENT_EVENT, onConsentChanged as EventListener)
     }
   }, [])
 
@@ -84,11 +84,29 @@ export function PostHogProvider({ children }: { children?: React.ReactNode }) {
     init()
   }, [consent, pathname])
 
+  // Re-enable capture if a user accepts after a prior decline.
+  useEffect(() => {
+    if (consent !== 'accepted' || !initialized.current) return
+    try {
+      const posthog = getPostHog()
+      if (posthog?.opt_in_capturing) {
+        posthog.opt_in_capturing()
+      }
+      setIsReady(Boolean(posthog))
+    } catch {
+      // Silently skip if PostHog is not available.
+    }
+  }, [consent])
+
   // Respect explicit decline even if consent changes after initialization.
   useEffect(() => {
     if (consent !== 'declined') return
+    setIsReady(false)
     try {
-      const posthog = (window as any).posthog
+      const posthog = getPostHog()
+      if (posthog?.reset) {
+        posthog.reset()
+      }
       if (posthog?.opt_out_capturing) {
         posthog.opt_out_capturing()
       }
@@ -100,16 +118,17 @@ export function PostHogProvider({ children }: { children?: React.ReactNode }) {
   // Track page views on initial load and route changes.
   useEffect(() => {
     if (!POSTHOG_KEY || !isReady) return
+    if (consent !== 'accepted') return
 
     try {
-      const posthog = (window as any).posthog
+      const posthog = getPostHog()
       if (posthog?.capture) {
         posthog.capture('$pageview', { pathname })
       }
     } catch {
       // Silently skip if PostHog is not available.
     }
-  }, [pathname, isReady])
+  }, [pathname, isReady, consent])
 
   return <>{children}</>
 }

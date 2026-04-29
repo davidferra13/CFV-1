@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -72,6 +72,8 @@ import type { SourceDataPoint, ConversionData, RevenueData } from '@/lib/partner
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 export interface AnalyticsHubProps {
+  initialTab?: string
+
   /** Labels of sections that failed to load (e.g. 'overview', 'revenue') */
   loadErrors?: string[]
 
@@ -195,6 +197,16 @@ const TABS = [
 ] as const
 
 type TabId = (typeof TABS)[number]['id']
+
+const DEFAULT_TAB: TabId = 'overview'
+
+function isTabId(value: string | undefined): value is TabId {
+  return TABS.some((tab) => tab.id === value)
+}
+
+function validateTabId(value: string | undefined): TabId {
+  return isTabId(value) ? value : DEFAULT_TAB
+}
 
 // ─── Tab Sections ─────────────────────────────────────────────────────────────
 
@@ -1104,7 +1116,7 @@ function BenchmarksTab() {
           Record monthly website traffic manually, or connect self-hosted Analytics / Plausible.
         </p>
         <a
-          href="/analytics"
+          href="/analytics?tab=marketing"
           className="inline-flex items-center gap-2 text-sm font-medium text-amber-600 hover:underline"
         >
           View analytics →
@@ -1145,8 +1157,12 @@ function LoadErrorBanner({ errors, section }: { errors: string[]; section: strin
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export function AnalyticsHub(props: AnalyticsHubProps) {
-  const [activeTab, setActiveTab] = useState<TabId>('overview')
+  const [activeTab, setActiveTab] = useState<TabId>(() => validateTabId(props.initialTab))
   const errors = props.loadErrors ?? []
+
+  useEffect(() => {
+    setActiveTab(validateTabId(props.initialTab))
+  }, [props.initialTab])
 
   return (
     <div>
