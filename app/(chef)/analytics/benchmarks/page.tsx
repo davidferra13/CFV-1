@@ -6,6 +6,8 @@ import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getBenchmarkHistory } from '@/lib/analytics/benchmark-actions'
+import { ErrorState } from '@/components/ui/error-state'
+import { RetryButton } from '@/components/ui/retry-button'
 
 const BenchmarkDashboard = dynamic(
   () => import('@/components/analytics/benchmark-dashboard').then((m) => m.BenchmarkDashboard),
@@ -25,9 +27,11 @@ export default async function BenchmarksPage() {
   const user = await requireChef()
 
   let benchmarkHistory: Awaited<ReturnType<typeof getBenchmarkHistory>> | null = null
+  let benchmarkError = false
   try {
     benchmarkHistory = await getBenchmarkHistory()
   } catch {
+    benchmarkError = true
     benchmarkHistory = null
   }
 
@@ -45,7 +49,18 @@ export default async function BenchmarksPage() {
         </div>
       </div>
 
-      {benchmarkHistory && benchmarkHistory.length > 0 ? (
+      {benchmarkError ? (
+        <div className="rounded-lg border border-red-900/40 bg-stone-800 p-8">
+          <ErrorState
+            title="Could not load benchmark history"
+            description="KPI benchmark data is unavailable right now."
+            size="sm"
+          />
+          <div className="flex justify-center">
+            <RetryButton />
+          </div>
+        </div>
+      ) : benchmarkHistory && benchmarkHistory.length > 0 ? (
         <BenchmarkDashboard
           current={{
             avgEventValueCents: benchmarkHistory[benchmarkHistory.length - 1].avgEventValueCents,

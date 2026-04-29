@@ -87,6 +87,25 @@ function formatCurrency(cents: number | null | undefined): string {
   }).format(amount)
 }
 
+function formatComparisonPercent(value: number | null | undefined): string {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return 'Not enough history'
+  return `${value > 0 ? '+' : ''}${value.toFixed(1)}%`
+}
+
+function formatFoodCostComparison(value: number | null | undefined): string {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return 'Need more completed events.'
+  if (value > 0) return 'higher than your completed-event average'
+  if (value < 0) return 'lower than your completed-event average'
+  return 'in line with your completed-event average'
+}
+
+function formatMarginComparison(value: number | null | undefined): string {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return 'Need more completed events.'
+  if (value > 0) return 'above your completed-event average'
+  if (value < 0) return 'below your completed-event average'
+  return 'in line with your completed-event average'
+}
+
 function isOperationalTypeReady(type: OperationalDocumentType, readiness: any): boolean {
   if (type === 'summary') return readiness.eventSummary.ready
   if (type === 'grocery') return readiness.groceryList.ready
@@ -708,6 +727,40 @@ export default async function EventDocumentsPage({
                   </span>
                 )}
               </div>
+
+              {financialSummary.comparison && (
+                <div className="mt-4 rounded border border-stone-800 p-3">
+                  <p className="text-xs-tight uppercase tracking-wide text-stone-500">
+                    Historical Comparison
+                  </p>
+                  <div className="mt-3 grid gap-2 md:grid-cols-2">
+                    <div>
+                      <p className="text-sm font-semibold text-stone-100">
+                        Food Cost:{' '}
+                        {formatComparisonPercent(
+                          financialSummary.comparison.vsAverageFoodCostPercent
+                        )}
+                      </p>
+                      <p className="text-xs text-stone-500">
+                        {formatFoodCostComparison(
+                          financialSummary.comparison.vsAverageFoodCostPercent
+                        )}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-stone-100">
+                        Margin:{' '}
+                        {formatComparisonPercent(financialSummary.comparison.vsAverageMarginPercent)}
+                      </p>
+                      <p className="text-xs text-stone-500">
+                        {formatMarginComparison(
+                          financialSummary.comparison.vsAverageMarginPercent
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </>
           )}
         </Card>

@@ -8,16 +8,22 @@ import { getSeasonalHeatmap } from '@/lib/analytics/demand-forecast-actions'
 import { getHolidayYearOverYear } from '@/lib/analytics/seasonality'
 import { DemandHeatmap } from '@/components/analytics/demand-heatmap'
 import { HolidayYoYTable } from '@/components/analytics/holiday-yoy-table'
+import { ErrorState } from '@/components/ui/error-state'
+import { RetryButton } from '@/components/ui/retry-button'
 
 export const metadata: Metadata = { title: 'Demand Forecast' }
 
 export default async function DemandForecastPage() {
   const user = await requireChef()
 
-  const [heatmapData, holidayYoY] = await Promise.all([
-    getSeasonalHeatmap().catch(() => null),
-    getHolidayYearOverYear().catch(() => []),
+  const [heatmapResult, holidayResult] = await Promise.allSettled([
+    getSeasonalHeatmap(),
+    getHolidayYearOverYear(),
   ])
+  const heatmapData = heatmapResult.status === 'fulfilled' ? heatmapResult.value : null
+  const heatmapError = heatmapResult.status === 'rejected'
+  const holidayYoY = holidayResult.status === 'fulfilled' ? holidayResult.value : []
+  const holidayError = holidayResult.status === 'rejected'
 
   return (
     <div className="space-y-6">
@@ -33,7 +39,18 @@ export default async function DemandForecastPage() {
         </div>
       </div>
 
-      {heatmapData ? (
+      {heatmapError ? (
+        <div className="rounded-lg border border-red-900/40 bg-stone-800 p-8">
+          <ErrorState
+            title="Could not load demand forecast"
+            description="Seasonal booking data is unavailable right now."
+            size="sm"
+          />
+          <div className="flex justify-center">
+            <RetryButton />
+          </div>
+        </div>
+      ) : heatmapData ? (
         <DemandHeatmap data={heatmapData} />
       ) : (
         <div className="rounded-lg border border-stone-700 bg-stone-800 p-8 text-center">
@@ -44,7 +61,20 @@ export default async function DemandForecastPage() {
         </div>
       )}
 
-      <HolidayYoYTable rows={holidayYoY} currentYear={new Date().getFullYear()} />
+      {holidayError ? (
+        <div className="rounded-lg border border-red-900/40 bg-stone-800 p-8">
+          <ErrorState
+            title="Could not load holiday trends"
+            description="Holiday year-over-year data is unavailable right now."
+            size="sm"
+          />
+          <div className="flex justify-center">
+            <RetryButton />
+          </div>
+        </div>
+      ) : (
+        <HolidayYoYTable rows={holidayYoY} currentYear={new Date().getFullYear()} />
+      )}
     </div>
   )
 }
