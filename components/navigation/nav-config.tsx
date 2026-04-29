@@ -1377,7 +1377,7 @@ export const navGroups: NavGroup[] = [
     items: [
       {
         href: '/replay',
-        label: 'Replay',
+        label: 'Catch Up',
         icon: Clock,
       },
       {

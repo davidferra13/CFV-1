@@ -10,7 +10,7 @@
 - Analytics hub: inquiry funnel, revenue trends, client metrics, event performance, utilization rates, cost tracking
 - Clientele Insights: client patterns, seasons, operations, Take a Chef ROI, Culinary Usage rankings for most-used ingredients, recipes, and menus, plus the Metric Truth Registry for canonical analytics definitions
 - Intelligence hub: Ollama-powered predictive pricing, demand forecasting, client clustering, anomaly detection
-- ChefFlow Replay: `/replay` combines resume suggestions, chef activity, client portal signals, and retrace sessions into Today, Yesterday, and Earlier This Week continuity groups with source-backed counts and resume links
+- Catch Up: `/replay` turns resume suggestions, chef activity, client portal signals, and retrace sessions into an action digest, since-you-left changes, client comeback signals, richer resume cards, grouped change explainers, operator filters, and local handled/snoozed state
 - Activity log: summary/retrace modes, domain filters, heat map, real-time PostgreSQL subscription
 - Activity command panel on `/activity`: right-side desktop panel and mobile drawer expose active filters, summary-feed counts, retrace state, and resume cues. The Summary, Retrace, and Desire Paths switcher is styled as a platform-history segmented control.
 - Priority queue: filtered by domain/urgency, snooze (1h/4h/Tomorrow/Next Week), 4 KPIs

@@ -79,6 +79,63 @@ test('buildChefFlowReplay creates entity links from real entity ids only', () =>
   assert.ok(hrefs.includes(null))
 })
 
+test('buildChefFlowReplay builds action digest from resume, client, and repeated changes', () => {
+  const replay = buildChefFlowReplay({
+    now,
+    resumeItems: [
+      {
+        id: 'quote-1',
+        type: 'quote',
+        title: 'Draft quote',
+        subtitle: 'Smith',
+        status: 'draft',
+        statusColor: 'amber',
+        href: '/quotes/quote-1',
+        context: {},
+      },
+    ],
+    breadcrumbSessions: [],
+    clientActivity: [clientEvent('payment-1', 'payment_page_visited', '2026-04-29T15:00:00-04:00')],
+    chefActivity: [
+      chefEntry('event-change-1', 'event', 'Updated event', '2026-04-29T14:00:00-04:00', 'event-1'),
+      chefEntry(
+        'event-change-2',
+        'event',
+        'Updated guest count',
+        '2026-04-29T13:00:00-04:00',
+        'event-1'
+      ),
+    ],
+  })
+
+  assert.ok(replay.actionDigest.some((item) => item.category === 'money'))
+  assert.ok(replay.actionDigest.some((item) => item.category === 'quote'))
+  assert.ok(replay.changeGroups.some((group) => group.count === 2))
+  assert.equal(replay.dailyStart.tone, 'money')
+})
+
+test('buildChefFlowReplay creates since-you-left items from the prior loaded session', () => {
+  const replay = buildChefFlowReplay({
+    now,
+    resumeItems: [],
+    clientActivity: [clientEvent('client-new', 'quote_viewed', '2026-04-29T15:00:00-04:00')],
+    chefActivity: [
+      chefEntry('newer', 'event', 'Newer event update', '2026-04-29T14:00:00-04:00'),
+      chefEntry('older', 'event', 'Older event update', '2026-04-28T09:00:00-04:00'),
+    ],
+    breadcrumbSessions: [
+      breadcrumbSession('current', '2026-04-29T16:00:00-04:00'),
+      breadcrumbSession('previous', '2026-04-29T12:00:00-04:00'),
+    ],
+  })
+
+  assert.equal(replay.sinceYouLeft.anchorAt, '2026-04-29T12:00:00-04:00')
+  assert.deepEqual(
+    replay.sinceYouLeft.items.map((item) => item.id),
+    ['client-client-new', 'chef-newer']
+  )
+})
+
 function chefEntry(
   id: string,
   domain: ChefActivityEntry['domain'],
@@ -122,11 +179,11 @@ function clientEvent(
   } as ActivityEvent
 }
 
-function breadcrumbSession(id: string): BreadcrumbSession {
+function breadcrumbSession(id: string, endedAt = '2026-04-29T14:05:00-04:00'): BreadcrumbSession {
   return {
     session_id: id,
     started_at: '2026-04-29T14:00:00-04:00',
-    ended_at: '2026-04-29T14:05:00-04:00',
+    ended_at: endedAt,
     duration_minutes: 5,
     breadcrumbs: [],
     page_count: 2,

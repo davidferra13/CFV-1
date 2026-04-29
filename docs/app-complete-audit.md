@@ -1198,7 +1198,7 @@ Completion state stored in localStorage per event. Progress bar. Critical items 
 
 ## 12. ACTIVITY & QUEUE
 
-**Route:** `/replay` - ChefFlow Replay continuity surface. Server-rendered from existing resume suggestions, chef activity, client portal activity, and breadcrumb sessions for the last 7 days. Shows metric cards, Pick Up Now rows, Today/Yesterday/Earlier This Week replay groups, retrace session summaries, and a Replay Command panel. Partial-load alert appears if a source fails; no fake rows or invented counts are rendered.
+**Route:** `/replay` - Catch Up continuity surface. Server-rendered from existing resume suggestions, chef activity, client portal activity, and breadcrumb sessions for the last 7 days, then enhanced in the browser with local handled/snoozed state. Shows a Daily Start card, operator filters, action digest, since-you-left changes, high-intent client comeback signals, resume cards, grouped change explainers, full history, retrace summaries, and a Catch Up Command panel. Partial-load alert appears if a source fails; no fake rows or invented counts are rendered.
 
 **Route:** `/activity` - Activity log with platform-history shell, Summary/Retrace/Desire Paths segmented control, Summary tab selector (My/Client/All), domain filter, time range, activity heat map (7-by-24 grid), feeds with "Load more". Retrace: breadcrumb session timeline. Activity logging on/off toggle. Real-time PostgreSQL subscription. The Activity Command panel summarizes tracking state, current filters, feed counts, breadcrumb sessions, and resume points, with explicit unavailable state when retrace data fails.
 

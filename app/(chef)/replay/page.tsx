@@ -9,7 +9,7 @@ import { buildChefFlowReplay } from '@/lib/activity/replay-model'
 import type { ActivityQueryResult } from '@/lib/activity/types'
 import type { BreadcrumbQueryResult } from '@/lib/activity/breadcrumb-types'
 
-export const metadata: Metadata = { title: 'ChefFlow Replay' }
+export const metadata: Metadata = { title: 'Catch Up' }
 export const dynamic = 'force-dynamic'
 
 export default async function ReplayPage() {
