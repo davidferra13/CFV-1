@@ -17,6 +17,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getCall, getCallLoadState } from '@/lib/calls/actions'
 import { CallPrepPanel } from '@/components/calls/call-prep-panel'
 import { CallOutcomeForm } from '@/components/calls/call-outcome-form'
+import { CallOutcomeQualityPanel } from '@/components/calls/call-outcome-quality-panel'
 import { CallStatusActions } from '@/components/calls/call-status-actions'
 import { CallTypeBadge } from '@/components/calls/call-type-badge'
 
@@ -190,6 +191,8 @@ export default async function CallDetailPage({ params }: Props) {
           <CallOutcomeForm call={call} chefId={user.entityId} />
         </div>
       )}
+
+      <CallOutcomeQualityPanel call={call} />
 
       {/* Completed outcome display */}
       {call.status === 'completed' && call.next_action && (
