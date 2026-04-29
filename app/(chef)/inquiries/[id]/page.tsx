@@ -406,6 +406,21 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
       kind: 'schedule_discovery',
       callType: 'discovery',
       urgency: phone ? 'now' : 'soon',
+      interventionScore: phone ? 62 : 48,
+      interventionAction: phone ? 'call_today' : 'schedule_call',
+      reasonTrace: [
+        {
+          signal: 'fallback_discovery',
+          weight: phone ? 34 : 20,
+          detail: phone
+            ? 'The inquiry has a reachable phone number and enough buying intent for direct qualification.'
+            : 'The inquiry has enough buying intent to schedule a human qualification step.',
+        },
+      ],
+      noCallRisk:
+        'Custom proposal work may start before date, guest count, budget, and decision timing are confirmed.',
+      idealOutcome:
+        'Confirm the core event facts and decide whether ChefFlow should move into proposal work.',
       label: phone ? 'Call To Qualify' : 'Schedule Discovery Call',
       reason:
         'The lead has enough buying intent to justify a human qualification call before custom proposal work.',
