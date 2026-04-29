@@ -390,6 +390,7 @@ export function NotificationListClient() {
   // ─── Render ────────────────────────────────────────────────────────
 
   const unreadInView = notifications.filter((n) => !n.read_at).length
+  const nextActionableUnread = notifications.find((n) => !n.read_at && n.action_url)
 
   return (
     <div>
@@ -409,6 +410,44 @@ export function NotificationListClient() {
         </div>
       )}
 
+      {nextActionableUnread && (
+        <div className="mb-4 rounded-xl border border-amber-700/50 bg-amber-950/30 px-4 py-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
+              <p className="text-xs font-semibold uppercase tracking-wide text-amber-300">
+                Return to work
+              </p>
+              <p className="mt-1 truncate text-sm font-medium text-stone-100">
+                {nextActionableUnread.title}
+              </p>
+              {nextActionableUnread.body && (
+                <p className="mt-0.5 line-clamp-2 text-xs text-stone-400">
+                  {nextActionableUnread.body}
+                </p>
+              )}
+            </div>
+            <div className="flex shrink-0 gap-2">
+              <button
+                type="button"
+                onClick={() => handleNavigate(nextActionableUnread)}
+                className="rounded-lg bg-amber-600 px-3 py-2 text-xs font-medium text-white hover:bg-amber-500"
+              >
+                Open next item
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setReadFilter('unread')
+                  setPage(0)
+                }}
+                className="rounded-lg border border-stone-700 px-3 py-2 text-xs font-medium text-stone-300 hover:bg-stone-800"
+              >
+                Show unread
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Filter tabs */}
       <div className="flex items-center gap-1.5 mb-4 overflow-x-auto pb-1 scrollbar-none">
         {FILTER_TABS.map((tab) => (

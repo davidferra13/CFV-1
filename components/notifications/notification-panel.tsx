@@ -288,6 +288,11 @@ export function NotificationPanel({ onClose }: { onClose: () => void }) {
     return result
   }, [notifications, categoryFilter, readFilter])
 
+  const nextActionableUnread = useMemo(
+    () => notifications.find((n) => !n.read_at && n.action_url),
+    [notifications]
+  )
+
   const handleNavigate = async (notification: Notification) => {
     if (!notification.read_at) {
       await markAsRead(notification.id)
@@ -362,6 +367,32 @@ export function NotificationPanel({ onClose }: { onClose: () => void }) {
       {/* Push subscribe prompt - contextual, shown inside the bell panel */}
       <PushSubscribeBanner />
 
+      {nextActionableUnread && (
+        <div className="border-b border-amber-700/40 bg-amber-950/30 px-4 py-3">
+          <p className="text-xs font-semibold uppercase tracking-wide text-amber-300">
+            Return to work
+          </p>
+          <p className="mt-1 truncate text-sm font-medium text-stone-100">
+            {nextActionableUnread.title}
+          </p>
+          <div className="mt-2 flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => handleNavigate(nextActionableUnread)}
+              className="rounded-md bg-amber-600 px-2.5 py-1.5 text-xs font-medium text-white hover:bg-amber-500"
+            >
+              Open next item
+            </button>
+            <button
+              type="button"
+              onClick={() => setReadFilter('unread')}
+              className="rounded-md border border-stone-700 px-2.5 py-1.5 text-xs font-medium text-stone-300 hover:bg-stone-800"
+            >
+              Show unread
+            </button>
+          </div>
+        </div>
+      )}
       {/* List */}
       <div className="max-h-[420px] overflow-y-auto custom-scrollbar divide-y divide-stone-800">
         {loading ? (
