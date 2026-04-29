@@ -1,6 +1,6 @@
 # Spec: Food Cost Truth Read Model
 
-> **Status:** ready
+> **Status:** in-progress
 > **Priority:** P1 (next up)
 > **Depends on:** none
 > **Estimated complexity:** large (9+ files)
@@ -11,6 +11,7 @@
 | ------------- | ---------------- | ------------- | ------ |
 | Created       | 2026-04-29 15:28 | Codex         |        |
 | Status: ready | 2026-04-29 15:28 | Codex         |        |
+| Claimed       | 2026-04-29 16:47 | Codex         |        |
 
 ---
 
