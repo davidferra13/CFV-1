@@ -343,6 +343,7 @@ A skill is a set of local instructions stored in a `SKILL.md` file. Each entry b
 - `soak`: Run the full software aging (soak) pipeline - useEffect cleanup audit, fixes, and soak tests. File: `.claude/skills/soak/SKILL.md`
 - `status`: Quick "where am I?" snapshot - branch, uncommitted work, last commit, what was in progress, what's next. File: `.claude/skills/status/SKILL.md`
 - `tdd`: Test-Driven Development. Write test first, watch it fail, write minimal code to pass, refactor. No production code without a failing test first. File: `.claude/skills/tdd/SKILL.md`
+- `validation-gate`: Check user-validation evidence before building new ChefFlow features. Use when a task proposes new product surface, backlog expansion, persona-driven features, survey or Wave-1 operator validation, launch readiness, "validation phase", "no new features without feedback", or when old findings show the team is building without real user evidence. File: `.claude/skills/validation-gate/SKILL.md`
 - `verify`: Run the full ChefFlow verification protocol - spec audit, build integrity, production parity, and Playwright pressure testing. File: `.claude/skills/verify/SKILL.md`
 - `warmup`: Get a chef account warm and on standby - server up, authenticated, routes compiled, browser open. Usage - /warmup [account] where account is chef-bob (default), agent, or developer. File: `.claude/skills/warmup/SKILL.md`
 

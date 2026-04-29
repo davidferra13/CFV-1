@@ -1,0 +1,4 @@
+interface:
+  display_name: "Validation Gate"
+  short_description: "Gate builds on user validation"
+  default_prompt: "Use Validation Gate to decide whether a proposed ChefFlow change should be built, planned, validated first, or blocked."
