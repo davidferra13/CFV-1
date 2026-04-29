@@ -18,6 +18,7 @@ import { readFileSync, watch } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { promisify } from 'node:util'
+import { buildOperatingSurface } from './operating-surface.mjs'
 
 const execAsync = promisify(exec)
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -7479,6 +7480,10 @@ async function handleRequest(req, res) {
   if (path === '/api/status' && method === 'GET') {
     const status = await getAllStatus()
     return json(res, status)
+  }
+
+  if (path === '/api/operating-surface' && method === 'GET') {
+    return json(res, await buildOperatingSurface(PROJECT_ROOT))
   }
 
   // ── Passive Dashboard APIs ──────────────────────────────────────

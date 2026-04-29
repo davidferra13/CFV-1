@@ -2074,6 +2074,11 @@ body {
             <span class="nav-icon">&#x1F4E1;</span>
             <span class="nav-label">Observe</span>
           </a>
+          <a class="nav-item" data-section="ops-wall" title="Ops Wall">
+            <span class="nav-dot checking" id="nd-ops-wall"></span>
+            <span class="nav-icon">&#x1F5A7;&#xFE0F;</span>
+            <span class="nav-label">Ops Wall</span>
+          </a>
           <a class="nav-item" data-section="infra" title="Infrastructure">
             <span class="nav-dot online" id="nd-infra"></span>
             <span class="nav-icon">&#x2699;&#xFE0F;</span>
@@ -2204,6 +2209,81 @@ body {
       </div>
 
       <!-- ─── Home Panel (Quick Actions) ─── -->
+      <div class="panel" id="panel-ops-wall" style="padding:20px 24px;overflow-y:auto;">
+        <div class="panel-header" style="margin-bottom:16px;">
+          <div>
+            <h2 class="panel-title">Ops Wall</h2>
+            <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">Live operating surface for UI, ports, processes, git, scheduled jobs, logs, and agents.</div>
+          </div>
+          <span class="status-badge checking" id="ops-wall-badge">
+            <span class="dot checking"></span>
+            <span id="ops-wall-status-text">Loading</span>
+          </span>
+        </div>
+
+        <div id="ops-wall-error" style="display:none;background:var(--error-dim);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:12px 14px;color:var(--error);font-size:13px;margin-bottom:14px;"></div>
+
+        <div style="display:grid;grid-template-columns:repeat(4,minmax(150px,1fr));gap:10px;margin-bottom:14px;">
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;">
+            <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;">Generated</div>
+            <div id="ops-generated" style="font-size:15px;font-weight:700;margin-top:4px;">--</div>
+          </div>
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;">
+            <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;">Risks</div>
+            <div id="ops-risk-count" style="font-size:24px;font-weight:700;color:var(--warning);line-height:1;margin-top:4px;">--</div>
+          </div>
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;">
+            <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;">Dirty Files</div>
+            <div id="ops-dirty-count" style="font-size:24px;font-weight:700;color:var(--brand);line-height:1;margin-top:4px;">--</div>
+          </div>
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;">
+            <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;">Processes</div>
+            <div id="ops-process-count" style="font-size:24px;font-weight:700;color:var(--info);line-height:1;margin-top:4px;">--</div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1.1fr 1fr;gap:12px;margin-bottom:12px;">
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px;min-height:220px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+              <div style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;">Critical Signals</div>
+              <button class="btn btn-ghost" onclick="loadOpsWall(true)" style="font-size:11px;padding:4px 10px;">Refresh</button>
+            </div>
+            <div id="ops-risks" style="display:flex;flex-direction:column;gap:8px;"></div>
+          </div>
+
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px;min-height:220px;">
+            <div style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Health Probes</div>
+            <div id="ops-health" style="display:flex;flex-direction:column;gap:8px;"></div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px;">
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px;min-height:210px;">
+            <div style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Ports</div>
+            <div id="ops-ports" style="display:flex;flex-direction:column;gap:7px;font-size:12px;"></div>
+          </div>
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px;min-height:210px;">
+            <div style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Process Types</div>
+            <div id="ops-processes" style="display:flex;flex-direction:column;gap:7px;font-size:12px;"></div>
+          </div>
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px;min-height:210px;">
+            <div style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Scheduled Tasks</div>
+            <div id="ops-tasks" style="display:flex;flex-direction:column;gap:7px;font-size:12px;"></div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px;min-height:260px;">
+            <div style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Git Worktree</div>
+            <div id="ops-git" style="font-family:monospace;font-size:11px;line-height:1.6;white-space:pre-wrap;max-height:220px;overflow:auto;color:var(--text-secondary);"></div>
+          </div>
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px;min-height:260px;">
+            <div style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Runtime Events</div>
+            <div id="ops-events" style="font-family:monospace;font-size:11px;line-height:1.6;white-space:pre-wrap;max-height:220px;overflow:auto;color:var(--text-secondary);"></div>
+          </div>
+        </div>
+      </div>
+
       <div class="panel" id="panel-home">
         <div class="panel-header">
           <h2 class="panel-title">Quick Actions</h2>
@@ -5303,6 +5383,7 @@ document.querySelectorAll('.nav-item').forEach(item => {
     if (section === 'feedback') loadFeedback()
     if (section === 'infra') loadInfra()
     if (section === 'observe') observeConnect()
+    if (section === 'ops-wall') loadOpsWall(true)
     if (section === 'expenses') loadExpenses()
     if (section === 'activity-log') loadRetroactiveActivity()
     if (section === 'manual') loadManual()
@@ -9316,6 +9397,7 @@ function switchSection(section) {
   if (section === 'infra') { loadInfra(); loadInfraExtended() }
   if (section === 'git') loadGitDiff()
   if (section === 'observe') observeConnect()
+  if (section === 'ops-wall') loadOpsWall(true)
   if (section === 'expenses') loadExpenses()
   if (section === 'manual') loadManual()
   if (section === 'remy') loadRemyPanel()
@@ -10360,6 +10442,195 @@ function escapeHtml(text) {
   return div.innerHTML
 }
 
+let opsWallLoading = false
+
+function opsWallColor(tone) {
+  if (tone === 'success') return 'var(--success)'
+  if (tone === 'error' || tone === 'critical') return 'var(--error)'
+  if (tone === 'warning') return 'var(--warning)'
+  if (tone === 'info') return 'var(--info)'
+  return 'var(--text-muted)'
+}
+
+function opsWallTime(value) {
+  if (!value) return '--'
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return String(value)
+  return date.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })
+}
+
+function opsWallLine(label, value, tone = 'muted') {
+  return `<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid rgba(30,41,59,0.55);padding:5px 0;">
+    <span style="color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(label)}</span>
+    <span style="color:${opsWallColor(tone)};font-weight:700;text-align:right;white-space:nowrap;">${escapeHtml(String(value))}</span>
+  </div>`
+}
+
+function opsWallSetBadge(tone, text) {
+  const badge = document.getElementById('ops-wall-badge')
+  const dot = document.getElementById('nd-ops-wall')
+  const badgeDot = badge?.querySelector('.dot')
+  const statusText = document.getElementById('ops-wall-status-text')
+  const cssClass = tone === 'success' ? 'online' : tone === 'error' ? 'offline' : 'checking'
+  if (dot) dot.className = `nav-dot ${cssClass}`
+  if (badgeDot) badgeDot.className = `dot ${cssClass}`
+  if (statusText) statusText.textContent = text
+  if (badge) {
+    badge.className = `status-badge ${cssClass}`
+    badge.style.color = opsWallColor(tone)
+    badge.style.borderColor = tone === 'success' ? 'rgba(34,197,94,0.25)' : tone === 'error' ? 'rgba(239,68,68,0.25)' : 'rgba(245,158,11,0.25)'
+  }
+}
+
+function opsWallRenderRisks(data) {
+  const el = document.getElementById('ops-risks')
+  if (!el) return
+  const risks = data.risks || []
+  if (risks.length === 0) {
+    el.innerHTML = opsWallLine('No visible risks', 'clear', 'success')
+    return
+  }
+  el.innerHTML = risks.map((risk) => `
+    <div style="border:1px solid ${risk.severity === 'critical' ? 'rgba(239,68,68,0.35)' : risk.severity === 'warning' ? 'rgba(245,158,11,0.35)' : 'rgba(59,130,246,0.25)'};border-radius:7px;padding:8px 10px;background:rgba(15,23,42,0.35);">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:3px;">
+        <span style="font-size:10px;text-transform:uppercase;letter-spacing:0.8px;color:${opsWallColor(risk.severity)};font-weight:700;">${escapeHtml(risk.severity)}</span>
+        <span style="font-size:10px;color:var(--text-muted);">${escapeHtml(risk.source || 'system')}</span>
+      </div>
+      <div style="font-size:12px;color:var(--text-primary);line-height:1.4;">${escapeHtml(risk.message || '')}</div>
+    </div>
+  `).join('')
+}
+
+function opsWallRenderHealth(data) {
+  const el = document.getElementById('ops-health')
+  if (!el) return
+  const probes = data.health?.probes || []
+  const probeLines = probes.map((probe) => opsWallLine(`${probe.name} ${probe.status || 0}`, `${probe.latencyMs ?? '--'}ms`, probe.ok ? 'success' : 'error')).join('')
+  const liveOps = data.health?.liveOps || {}
+  const sync = data.health?.openclawSync || {}
+  el.innerHTML = [
+    probeLines,
+    opsWallLine('Live Ops Guardian', liveOps.status || 'unknown', liveOps.status === 'ok' ? 'success' : 'warning'),
+    opsWallLine('Pricing sync', sync.status || 'unknown', sync.status === 'success' ? 'success' : 'warning'),
+  ].join('')
+}
+
+function opsWallRenderPorts(data) {
+  const el = document.getElementById('ops-ports')
+  if (!el) return
+  const listeners = new Map((data.ports?.listeners || []).map((row) => [row.localPort, row]))
+  el.innerHTML = (data.ports?.expected || []).map((port) => {
+    const row = listeners.get(port)
+    return opsWallLine(String(port), row ? `PID ${row.owningProcess}` : 'missing', row ? 'success' : 'error')
+  }).join('')
+}
+
+function opsWallRenderProcesses(data) {
+  const el = document.getElementById('ops-processes')
+  if (!el) return
+  const byKind = data.processes?.byKind || {}
+  const entries = Object.entries(byKind).sort((a, b) => b[1] - a[1])
+  el.innerHTML = entries.length
+    ? entries.map(([kind, count]) => opsWallLine(kind, count, kind === 'agent' || kind === 'playwright' ? 'info' : 'success')).join('')
+    : opsWallLine('Tracked processes', 'none', 'warning')
+}
+
+function opsWallRenderTasks(data) {
+  const el = document.getElementById('ops-tasks')
+  if (!el) return
+  const tasks = data.scheduledTasks || {}
+  const rows = tasks.rows || []
+  const running = tasks.running || []
+  const visible = [...running, ...rows.filter((row) => row.state !== 'Running')].slice(0, 12)
+  el.innerHTML = [
+    opsWallLine('Running', running.length, running.length ? 'success' : 'muted'),
+    opsWallLine('Ready', tasks.ready ?? 0, 'muted'),
+    ...visible.map((task) => opsWallLine(task.name || 'task', task.state || 'unknown', task.state === 'Running' ? 'success' : 'muted')),
+  ].join('')
+}
+
+function opsWallRenderGit(data) {
+  const el = document.getElementById('ops-git')
+  if (!el) return
+  const git = data.git || {}
+  const dirty = (git.dirtyFiles || []).slice(0, 40)
+  const commits = (git.recentCommits || []).slice(0, 5)
+  el.textContent = [
+    `branch: ${git.branch || 'unknown'}`,
+    git.summary || '',
+    `dirty files: ${git.dirtyCount ?? 0}`,
+    '',
+    ...dirty,
+    dirty.length < (git.dirtyFiles || []).length ? `... ${(git.dirtyFiles || []).length - dirty.length} more` : '',
+    '',
+    'recent commits:',
+    ...commits,
+  ].filter(Boolean).join('\n')
+}
+
+function opsWallRenderEvents(data) {
+  const el = document.getElementById('ops-events')
+  if (!el) return
+  const events = data.runtimeEvents?.recent || []
+  el.textContent = events.slice(-30).map((event) => {
+    const time = opsWallTime(event.ts || event.time || event.timestamp)
+    const source = event.source || event.type || 'event'
+    const message = event.message || event.action || event.name || JSON.stringify(event)
+    return `${time} ${source}: ${message}`
+  }).join('\n') || 'No runtime events visible'
+}
+
+function renderOpsWall(data) {
+  const errorEl = document.getElementById('ops-wall-error')
+  if (errorEl) errorEl.style.display = 'none'
+  const risks = data.risks || []
+  const hasCritical = risks.some((risk) => risk.severity === 'critical')
+  opsWallSetBadge(hasCritical ? 'error' : risks.length ? 'warning' : 'success', hasCritical ? 'Critical' : risks.length ? 'Attention' : 'Clear')
+
+  const generated = document.getElementById('ops-generated')
+  const riskCount = document.getElementById('ops-risk-count')
+  const dirtyCount = document.getElementById('ops-dirty-count')
+  const processCount = document.getElementById('ops-process-count')
+  if (generated) generated.textContent = opsWallTime(data.generatedAt)
+  if (riskCount) { riskCount.textContent = risks.length; riskCount.style.color = hasCritical ? 'var(--error)' : risks.length ? 'var(--warning)' : 'var(--success)' }
+  if (dirtyCount) dirtyCount.textContent = data.git?.dirtyCount ?? '--'
+  if (processCount) processCount.textContent = data.processes?.count ?? '--'
+
+  opsWallRenderRisks(data)
+  opsWallRenderHealth(data)
+  opsWallRenderPorts(data)
+  opsWallRenderProcesses(data)
+  opsWallRenderTasks(data)
+  opsWallRenderGit(data)
+  opsWallRenderEvents(data)
+}
+
+async function loadOpsWall(force = false) {
+  if (opsWallLoading && !force) return
+  opsWallLoading = true
+  opsWallSetBadge('warning', 'Loading')
+  try {
+    const res = await fetch(`${API}/api/operating-surface`, { cache: 'no-store' })
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    const data = await res.json()
+    renderOpsWall(data)
+  } catch (err) {
+    const message = err?.message || String(err)
+    const errorEl = document.getElementById('ops-wall-error')
+    if (errorEl) {
+      errorEl.textContent = `Ops Wall failed to load: ${message}`
+      errorEl.style.display = 'block'
+    }
+    opsWallSetBadge('error', 'Offline')
+  } finally {
+    opsWallLoading = false
+  }
+}
+
+setInterval(() => {
+  if (currentSection === 'ops-wall') loadOpsWall(false)
+}, 5000)
+
 function observeAutoScroll() {
   const log = document.getElementById('observe-log')
   if (log) log.scrollTop = log.scrollHeight
@@ -10528,7 +10799,7 @@ function toggleKeyboardHelp() {
           ['1', 'Quick Actions (Home)'], ['2', 'Dev Server'], ['3', 'Beta Server'], ['4', 'Production'],
           ['5', 'Ollama AI'], ['6', 'Git'], ['7', 'Build'], ['8', 'Project History'],
           ['[', 'Project Timeline'], ['9', 'User Feedback'], ['0', 'Infrastructure'], ['-', 'Blueprint'],
-          ['=', 'Observe (Live Feed)'], ['\\\\', 'System Reference'], ['\`', 'Project Expenses'], ['Tab', 'Test Logins'], [']', 'App Manual'],
+          ['=', 'Observe (Live Feed)'], ['Ops Wall', 'Live operating surface'], ['\\\\', 'System Reference'], ['\`', 'Project Expenses'], ['Tab', 'Test Logins'], [']', 'App Manual'],
           ['Ctrl+/', 'Gustav AI Chat'], ['Ctrl+K', 'Command Palette'], ['?', 'This Help'],
           ['Ctrl+N', 'New Chat (in Gustav)'], ['Ctrl+H', 'Chat History'], ['Ctrl+F', 'Search Chats'],
         ].map(([key, desc]) => `
@@ -10563,6 +10834,7 @@ const paletteCommands = [
   { label: 'User Feedback', action: () => switchSection('feedback'), keys: '9', category: 'Navigate' },
   { label: 'Infrastructure', action: () => switchSection('infra'), keys: '0', category: 'Navigate' },
   { label: 'Observe (Live Feed)', action: () => switchSection('observe'), keys: '=', category: 'Navigate' },
+  { label: 'Ops Wall', action: () => switchSection('ops-wall'), category: 'Navigate' },
   { label: 'System Reference', action: () => switchSection('sysref'), keys: '\\', category: 'Navigate' },
   { label: 'Project Expenses', action: () => switchSection('expenses'), keys: '`', category: 'Navigate' },
   { label: 'Test Logins', action: () => switchSection('logins'), keys: 'Tab', category: 'Navigate' },
