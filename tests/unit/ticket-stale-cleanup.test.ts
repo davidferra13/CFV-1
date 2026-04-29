@@ -15,6 +15,7 @@ class FakeDb {
       ticket_type_id: 'type_1',
       quantity: 2,
       payment_status: 'pending',
+      last_payment_error: null,
       capacity_released_at: null,
       stripe_checkout_session_id: 'cs_expired',
       created_at: '2026-04-27T10:00:00.000Z',
@@ -26,6 +27,7 @@ class FakeDb {
       ticket_type_id: 'type_1',
       quantity: 1,
       payment_status: 'pending',
+      last_payment_error: null,
       capacity_released_at: null,
       stripe_checkout_session_id: 'cs_complete',
       created_at: '2026-04-27T10:00:00.000Z',
@@ -37,6 +39,7 @@ class FakeDb {
       ticket_type_id: 'type_1',
       quantity: 1,
       payment_status: 'pending',
+      last_payment_error: null,
       capacity_released_at: null,
       stripe_checkout_session_id: null,
       created_at: '2026-04-27T10:00:00.000Z',
@@ -53,7 +56,7 @@ class FakeDb {
 }
 
 class FakeQuery {
-  private filters: Array<{ column: string; value: any; operator: 'eq' | 'lt' | 'neq' }> = []
+  private filters: Array<{ column: string; value: any; operator: 'eq' | 'lt' | 'neq' | 'is' }> = []
   private patch: Record<string, any> | null = null
 
   constructor(
@@ -82,6 +85,11 @@ class FakeQuery {
 
   neq(column: string, value: any) {
     this.filters.push({ column, value, operator: 'neq' })
+    return this
+  }
+
+  is(column: string, value: any) {
+    this.filters.push({ column, value, operator: 'is' })
     return this
   }
 
@@ -136,6 +144,7 @@ class FakeQuery {
         const value = row[filter.column]
         if (filter.operator === 'lt') return value < filter.value
         if (filter.operator === 'neq') return value !== filter.value
+        if (filter.operator === 'is') return value === filter.value
         return value === filter.value
       })
     )
@@ -178,7 +187,7 @@ describe('stale pending ticket cleanup', () => {
     assert.equal(db.tickets[1].payment_status, 'pending')
   })
 
-  it('does not release capacity twice after a final cancel CAS miss', async () => {
+  it('does not release capacity before winning the cancel CAS', async () => {
     const db = new FakeDb()
     db.tickets = [db.tickets[0]]
     db.failFinalCancelFor.add('ticket_1')
@@ -204,9 +213,9 @@ describe('stale pending ticket cleanup', () => {
     assert.equal(firstRun.cancelled, 0)
     assert.equal(firstRun.cancelCasMisses, 1)
     assert.equal(db.tickets[0].payment_status, 'pending')
-    assert.equal(db.tickets[0].capacity_released_at, '2026-04-29T12:00:00.000Z')
-    assert.equal(db.ticketTypes[0].sold_count, 2)
-    assert.equal(db.addons[0].sold_count, 2)
+    assert.equal(db.tickets[0].capacity_released_at, null)
+    assert.equal(db.ticketTypes[0].sold_count, 4)
+    assert.equal(db.addons[0].sold_count, 5)
 
     db.failFinalCancelFor.clear()
 
@@ -219,10 +228,38 @@ describe('stale pending ticket cleanup', () => {
     })
 
     assert.equal(secondRun.cancelled, 1)
-    assert.equal(secondRun.alreadyReleased, 1)
+    assert.equal(secondRun.alreadyReleased, 0)
     assert.equal(db.ticketTypes[0].sold_count, 2)
     assert.equal(db.addons[0].sold_count, 2)
     assert.equal(db.tickets[0].payment_status, 'cancelled')
+  })
+
+  it('recovers cleanup-cancelled tickets with unreleased capacity', async () => {
+    const db = new FakeDb()
+    db.tickets = [
+      {
+        ...db.tickets[0],
+        payment_status: 'cancelled',
+        last_payment_error: 'Stale pending checkout cleanup',
+        capacity_released_at: null,
+      },
+    ]
+
+    const result = await cleanupStalePendingTickets({
+      db,
+      stripe: null,
+      now: new Date('2026-04-29T12:00:00.000Z'),
+      staleHours: 24,
+      revalidate: () => {},
+    })
+
+    assert.equal(result.checked, 1)
+    assert.equal(result.cancelled, 0)
+    assert.equal(result.unverifiable, 0)
+    assert.deepEqual(result.ticketIds, ['ticket_1'])
+    assert.equal(db.tickets[0].capacity_released_at, '2026-04-29T12:00:00.000Z')
+    assert.equal(db.ticketTypes[0].sold_count, 2)
+    assert.equal(db.addons[0].sold_count, 2)
   })
 
   it('reports checkout-session tickets as unverifiable when Stripe is unavailable', async () => {

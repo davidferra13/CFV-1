@@ -553,8 +553,16 @@ export async function handleTicketPurchaseCompleted(session: Stripe.Checkout.Ses
       .eq('is_active', true)
       .maybeSingle()
 
+    const { data: shareSettings } = await db
+      .from('event_share_settings')
+      .select('share_token')
+      .eq('event_id', event_id)
+      .eq('tenant_id', tenant_id)
+      .maybeSingle()
+
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.cheflowhq.com'
     const circleUrl = circleGroup?.group_token ? `${appUrl}/hub/g/${circleGroup.group_token}` : null
+    const eventUrl = shareSettings?.share_token ? `${appUrl}/e/${shareSettings.share_token}` : null
 
     const { sendEmail } = await import('@/lib/email/send')
     const { createElement } = await import('react')
@@ -589,7 +597,7 @@ export async function handleTicketPurchaseCompleted(session: Stripe.Checkout.Ses
       react: createElement(NotificationGenericEmail, {
         title: 'You are in!',
         body: bodyLines,
-        actionUrl: circleUrl || `${appUrl}/e/${event_id}`,
+        actionUrl: circleUrl || eventUrl || appUrl,
         actionLabel: circleUrl ? 'Open Dinner Circle' : 'View Event',
       }),
     })

@@ -5,6 +5,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { appendLedgerEntryInternal } from '@/lib/ledger/append-internal'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import type {
@@ -208,6 +209,101 @@ async function releaseTicketTypeCapacity(input: {
     .eq('id', input.ticketTypeId)
     .eq('tenant_id', input.tenantId)
     .eq('sold_count', ticketType.sold_count)
+}
+
+async function getOrCreateRefundTicketBuyerClient(input: {
+  db: any
+  tenantId: string
+  buyerName: string
+  buyerEmail: string
+  buyerPhone?: string | null
+}) {
+  const normalizedEmail = input.buyerEmail.toLowerCase().trim()
+  if (!normalizedEmail) {
+    throw new Error('Ticket buyer email is required to record refund ledger entry')
+  }
+
+  const { data: existing, error: existingError } = await input.db
+    .from('clients')
+    .select('id')
+    .eq('tenant_id', input.tenantId)
+    .eq('email', normalizedEmail)
+    .maybeSingle()
+
+  if (existingError) throw existingError
+  if (existing?.id) return existing.id as string
+
+  const { data: created, error: createError } = await input.db
+    .from('clients')
+    .insert({
+      tenant_id: input.tenantId,
+      full_name: input.buyerName.trim() || normalizedEmail,
+      email: normalizedEmail,
+      phone: input.buyerPhone ?? null,
+      status: 'active',
+      referral_source: 'website',
+    })
+    .select('id')
+    .single()
+
+  if (createError) {
+    if (createError.code === '23505') {
+      const { data: raced } = await input.db
+        .from('clients')
+        .select('id')
+        .eq('tenant_id', input.tenantId)
+        .eq('email', normalizedEmail)
+        .maybeSingle()
+
+      if (raced?.id) return raced.id as string
+    }
+
+    throw createError
+  }
+
+  return created.id as string
+}
+
+async function appendTicketRefundLedgerEntry(input: {
+  db: any
+  ticket: any
+  event: any
+  tenantId: string
+  userId: string
+  userEmail: string | null | undefined
+  refundAmountCents: number
+}) {
+  if (input.refundAmountCents <= 0) return
+
+  const clientId =
+    input.event.client_id ??
+    (await getOrCreateRefundTicketBuyerClient({
+      db: input.db,
+      tenantId: input.tenantId,
+      buyerName: input.ticket.buyer_name,
+      buyerEmail: input.ticket.buyer_email,
+      buyerPhone: input.ticket.buyer_phone ?? null,
+    }))
+
+  const transactionReference = `ticket_refund_${input.ticket.id}`
+  const eventLabel = input.event.occasion ? ` for ${input.event.occasion}` : ''
+
+  await appendLedgerEntryInternal({
+    tenant_id: input.tenantId,
+    client_id: clientId,
+    entry_type: 'refund',
+    amount_cents: -Math.abs(input.refundAmountCents),
+    payment_method: input.ticket.stripe_payment_intent_id ? 'card' : 'cash',
+    description: `Ticket refund${eventLabel}`,
+    event_id: input.event.id,
+    transaction_reference: transactionReference,
+    internal_notes:
+      `Chef-initiated ticket refund by ${input.userEmail ?? input.userId}; ticket ${input.ticket.id}`,
+    is_refund: true,
+    refund_reason: 'Ticket refund',
+    received_at: new Date().toISOString(),
+    created_by: input.userId,
+  })
 }
 
 export async function checkTicketTypeCapacity(input: {
@@ -794,8 +890,11 @@ export async function refundTicket(input: {
 
   const { data: ticket } = await db
     .from('event_tickets')
-    .select('id, payment_status, ticket_type_id, quantity, stripe_payment_intent_id')
+    .select(
+      'id, event_id, tenant_id, payment_status, ticket_type_id, quantity, total_cents, buyer_name, buyer_email, buyer_phone, stripe_payment_intent_id'
+    )
     .eq('id', input.ticketId)
+    .eq('event_id', input.eventId)
     .eq('tenant_id', user.tenantId!)
     .single()
 
@@ -803,6 +902,17 @@ export async function refundTicket(input: {
   if (ticket.payment_status !== 'paid') {
     return { success: false, error: 'Only paid tickets can be refunded' }
   }
+
+  const { data: event } = await db
+    .from('events')
+    .select('id, tenant_id, client_id, occasion')
+    .eq('id', input.eventId)
+    .eq('tenant_id', user.tenantId!)
+    .maybeSingle()
+
+  if (!event) return { success: false, error: 'Event not found' }
+
+  let ledgerRefundCents = Number(ticket.total_cents ?? 0)
 
   // If Stripe payment, initiate Stripe refund
   if (ticket.stripe_payment_intent_id) {
@@ -812,23 +922,76 @@ export async function refundTicket(input: {
       const stripe = new StripeCtor(process.env.STRIPE_SECRET_KEY!, {
         apiVersion: '2025-12-18.acacia',
       })
-      await stripe.refunds.create({
-        payment_intent: ticket.stripe_payment_intent_id,
-      })
+      const refund = await stripe.refunds.create(
+        {
+          payment_intent: ticket.stripe_payment_intent_id,
+        },
+        {
+          idempotencyKey: `ticket_refund_${ticket.id}`,
+        }
+      )
+      if (Number.isInteger(refund?.amount) && refund.amount > 0) {
+        ledgerRefundCents = refund.amount
+      }
     } catch (err: any) {
       return { success: false, error: `Stripe refund failed: ${err.message}` }
     }
   }
 
+  try {
+    await appendTicketRefundLedgerEntry({
+      db,
+      ticket,
+      event,
+      tenantId: user.tenantId!,
+      userId: user.id,
+      userEmail: user.email,
+      refundAmountCents: ledgerRefundCents,
+    })
+  } catch (err: any) {
+    return { success: false, error: `Failed to record refund in ledger: ${err.message}` }
+  }
+
   // Update ticket status
-  await db
+  const { data: refundedTicket, error: refundUpdateError } = await db
     .from('event_tickets')
     .update({
       payment_status: 'refunded',
       cancelled_at: new Date().toISOString(),
     })
     .eq('id', input.ticketId)
+    .eq('event_id', input.eventId)
+    .eq('tenant_id', user.tenantId!)
     .eq('payment_status', 'paid') // CAS guard
+    .select('id')
+    .maybeSingle()
+
+  if (refundUpdateError) {
+    return {
+      success: false,
+      error: `Failed to update ticket refund status: ${refundUpdateError.message}`,
+    }
+  }
+
+  if (!refundedTicket) {
+    const { data: currentTicket } = await db
+      .from('event_tickets')
+      .select('payment_status')
+      .eq('id', input.ticketId)
+      .eq('event_id', input.eventId)
+      .eq('tenant_id', user.tenantId!)
+      .maybeSingle()
+
+    if (currentTicket?.payment_status !== 'refunded') {
+      return {
+        success: false,
+        error: 'Ticket refund state changed. Please refresh and try again.',
+      }
+    }
+
+    revalidatePath(`/events/${input.eventId}`)
+    return { success: true }
+  }
 
   // Decrement sold_count on ticket type
   if (ticket.ticket_type_id) {
@@ -836,6 +999,7 @@ export async function refundTicket(input: {
       .from('event_ticket_types')
       .select('sold_count')
       .eq('id', ticket.ticket_type_id)
+      .eq('tenant_id', user.tenantId!)
       .single()
 
     if (tt && tt.sold_count > 0) {
@@ -843,6 +1007,7 @@ export async function refundTicket(input: {
         .from('event_ticket_types')
         .update({ sold_count: Math.max(0, tt.sold_count - ticket.quantity) })
         .eq('id', ticket.ticket_type_id)
+        .eq('tenant_id', user.tenantId!)
         .eq('sold_count', tt.sold_count) // CAS guard
     }
   }

@@ -23,6 +23,7 @@ export type StalePendingTicketRow = {
   ticket_type_id: string | null
   quantity: number | null
   payment_status: string | null
+  last_payment_error?: string | null
   capacity_released_at: string | null
   stripe_checkout_session_id: string | null
   created_at: string | null
@@ -77,18 +78,39 @@ async function fetchStalePendingTickets(input: {
   cutoffIso: string
   limit: number
 }): Promise<StalePendingTicketRow[]> {
-  const { data, error } = await input.db
+  const selectColumns =
+    'id, event_id, tenant_id, ticket_type_id, quantity, payment_status, last_payment_error, capacity_released_at, stripe_checkout_session_id, created_at'
+
+  const { data: pending, error: pendingError } = await input.db
     .from('event_tickets')
-    .select(
-      'id, event_id, tenant_id, ticket_type_id, quantity, payment_status, capacity_released_at, stripe_checkout_session_id, created_at'
-    )
+    .select(selectColumns)
     .eq('payment_status', 'pending')
     .lt('created_at', input.cutoffIso)
     .order('created_at', { ascending: true })
     .limit(input.limit)
 
-  if (error) throw new Error(`Failed to fetch stale pending tickets: ${error.message}`)
-  return data ?? []
+  if (pendingError) {
+    throw new Error(`Failed to fetch stale pending tickets: ${pendingError.message}`)
+  }
+
+  const pendingTickets = pending ?? []
+  const remaining = Math.max(0, input.limit - pendingTickets.length)
+  if (remaining === 0) return pendingTickets
+
+  const { data: cancelled, error: cancelledError } = await input.db
+    .from('event_tickets')
+    .select(selectColumns)
+    .eq('payment_status', 'cancelled')
+    .eq('last_payment_error', CLEANUP_CANCEL_REASON)
+    .is('capacity_released_at', null)
+    .order('created_at', { ascending: true })
+    .limit(remaining)
+
+  if (cancelledError) {
+    throw new Error(`Failed to fetch cancelled stale tickets for capacity recovery: ${cancelledError.message}`)
+  }
+
+  return [...pendingTickets, ...(cancelled ?? [])]
 }
 
 async function releaseTicketTypeCapacity(db: DbClient, ticket: StalePendingTicketRow) {
@@ -187,7 +209,8 @@ async function markCapacityReleased(input: {
     .update({ capacity_released_at: input.ticket.capacity_released_at ?? input.nowIso })
     .eq('id', input.ticket.id)
     .eq('tenant_id', input.ticket.tenant_id)
-    .eq('payment_status', 'pending')
+    .neq('payment_status', 'paid')
+    .is('capacity_released_at', null)
     .select('id')
     .maybeSingle()
 
@@ -227,16 +250,26 @@ export async function cleanupStalePendingTickets(
 
   for (const ticket of tickets) {
     try {
-      if (!ticket.stripe_checkout_session_id || !stripe) {
-        result.unverifiable++
-        result.unverifiableTicketIds.push(ticket.id)
-        continue
-      }
+      const isCancelledRecovery = ticket.payment_status === 'cancelled'
 
-      const session = await stripe.checkout.sessions.retrieve(ticket.stripe_checkout_session_id)
-      if (session.status === 'complete') {
-        result.skippedComplete++
-        continue
+      if (!isCancelledRecovery) {
+        if (!ticket.stripe_checkout_session_id || !stripe) {
+          result.unverifiable++
+          result.unverifiableTicketIds.push(ticket.id)
+          continue
+        }
+
+        const session = await stripe.checkout.sessions.retrieve(ticket.stripe_checkout_session_id)
+        if (session.status === 'complete') {
+          result.skippedComplete++
+          continue
+        }
+
+        const cancelled = await cancelTicketAfterVerification({ db, ticket, nowIso })
+        if (!cancelled) {
+          result.cancelCasMisses++
+          continue
+        }
       }
 
       if (ticket.capacity_released_at) {
@@ -251,13 +284,7 @@ export async function cleanupStalePendingTickets(
         }
       }
 
-      const cancelled = await cancelTicketAfterVerification({ db, ticket, nowIso })
-      if (!cancelled) {
-        result.cancelCasMisses++
-        continue
-      }
-
-      result.cancelled++
+      if (!isCancelledRecovery) result.cancelled++
       result.ticketIds.push(ticket.id)
       revalidateEvents.add(ticket.event_id)
     } catch (err) {
