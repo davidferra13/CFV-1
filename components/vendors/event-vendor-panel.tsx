@@ -18,6 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert } from '@/components/ui/alert'
+import { EmailHandoff, PhoneHandoff } from '@/components/ui/handoff-actions'
 import { format } from 'date-fns'
 
 // ---- Types ----
@@ -286,13 +287,12 @@ function VendorAssignmentRow({
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-stone-100 truncate">{vendor.name}</p>
-          <div className="flex items-center gap-2 mt-0.5">
+          <div className="flex flex-wrap items-center gap-2 mt-0.5">
             {vendor.contact_name && (
               <span className="text-xs text-stone-500">{vendor.contact_name}</span>
             )}
-            {vendor.phone && (
-              <span className="text-xs text-stone-500">{vendor.phone}</span>
-            )}
+            {vendor.phone && <PhoneHandoff phone={vendor.phone} />}
+            {vendor.email && <EmailHandoff email={vendor.email} />}
           </div>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
@@ -391,10 +391,10 @@ function DeliveryRow({
         <div className="pl-0 text-xs text-stone-500 space-y-0.5">
           {delivery.items_description && <p>Items: {delivery.items_description}</p>}
           {delivery.contact_name && (
-            <p>
-              Contact: {delivery.contact_name}
-              {delivery.contact_phone && ` (${delivery.contact_phone})`}
-            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              <span>Contact: {delivery.contact_name}</span>
+              {delivery.contact_phone && <PhoneHandoff phone={delivery.contact_phone} />}
+            </div>
           )}
           {delivery.special_instructions && (
             <p>Instructions: {delivery.special_instructions}</p>

@@ -4,6 +4,11 @@ import { useState } from 'react'
 import type { ComponentType, ReactNode } from 'react'
 import { toast } from 'sonner'
 import {
+  copyToClipboard,
+  recordHandoffUsage,
+  type HandoffKind,
+} from '@/lib/handoffs/client-actions'
+import {
   buildMailtoHref,
   buildMapsDirectionsHref,
   buildSmsHref,
@@ -19,6 +24,8 @@ type HandoffButtonProps = {
   copyValue?: string | null
   external?: boolean
   icon: ComponentType<{ className?: string }>
+  kind: HandoffKind
+  action?: 'open' | 'copy'
 }
 
 function HandoffIconButton({
@@ -28,6 +35,8 @@ function HandoffIconButton({
   copyValue,
   external,
   icon: Icon,
+  kind,
+  action = href ? 'open' : 'copy',
 }: HandoffButtonProps) {
   const [copied, setCopied] = useState(false)
 
@@ -35,7 +44,11 @@ function HandoffIconButton({
     const value = copyValue?.trim()
     if (!value) return
     try {
-      await navigator.clipboard.writeText(value)
+      const result = await copyToClipboard(value, label)
+      if (!result.success) {
+        toast.error(result.error)
+        return
+      }
       setCopied(true)
       toast.success(`${label} copied`)
       window.setTimeout(() => setCopied(false), 1600)
@@ -54,6 +67,7 @@ function HandoffIconButton({
         target={external ? '_blank' : undefined}
         rel={external ? 'noopener noreferrer' : undefined}
         className={className}
+        onClick={() => recordHandoffUsage(kind, action, label)}
         aria-label={tooltip}
         title={tooltip}
         data-tooltip={tooltip}
@@ -103,9 +117,21 @@ export function PhoneHandoff({
     <span className={`inline-flex max-w-full items-center gap-2 ${className}`}>
       <HandoffText>{phone}</HandoffText>
       <span className="inline-flex shrink-0 items-center gap-1">
-        <HandoffIconButton href={telHref} label="Phone" tooltip="Call" icon={Phone} />
-        <HandoffIconButton href={smsHref} label="Phone" tooltip="Text" icon={MessageCircle} />
-        <HandoffIconButton label="Phone" tooltip="Copy phone" copyValue={phone} icon={Copy} />
+        <HandoffIconButton href={telHref} label="Phone" tooltip="Call" icon={Phone} kind="phone" />
+        <HandoffIconButton
+          href={smsHref}
+          label="Phone"
+          tooltip="Text"
+          icon={MessageCircle}
+          kind="sms"
+        />
+        <HandoffIconButton
+          label="Phone"
+          tooltip="Copy phone"
+          copyValue={phone}
+          icon={Copy}
+          kind="phone"
+        />
       </span>
     </span>
   )
@@ -129,8 +155,20 @@ export function EmailHandoff({
     <span className={`inline-flex max-w-full items-center gap-2 ${className}`}>
       <HandoffText>{email}</HandoffText>
       <span className="inline-flex shrink-0 items-center gap-1">
-        <HandoffIconButton href={mailtoHref} label="Email" tooltip="Compose email" icon={Mail} />
-        <HandoffIconButton label="Email" tooltip="Copy email" copyValue={email} icon={Copy} />
+        <HandoffIconButton
+          href={mailtoHref}
+          label="Email"
+          tooltip="Compose email"
+          icon={Mail}
+          kind="email"
+        />
+        <HandoffIconButton
+          label="Email"
+          tooltip="Copy email"
+          copyValue={email}
+          icon={Copy}
+          kind="email"
+        />
       </span>
     </span>
   )
@@ -160,8 +198,15 @@ export function AddressHandoff({
           tooltip="Open directions"
           icon={MapPin}
           external
+          kind="address"
         />
-        <HandoffIconButton label="Address" tooltip="Copy address" copyValue={address} icon={Copy} />
+        <HandoffIconButton
+          label="Address"
+          tooltip="Copy address"
+          copyValue={address}
+          icon={Copy}
+          kind="address"
+        />
       </span>
     </span>
   )
@@ -189,12 +234,14 @@ export function ExternalUrlHandoff({
           tooltip={label}
           icon={ExternalLink}
           external
+          kind="link"
         />
         <HandoffIconButton
           label="Link"
           tooltip="Copy link"
           copyValue={normalizedHref}
           icon={Copy}
+          kind="link"
         />
       </span>
     </span>
@@ -216,6 +263,7 @@ export function CalendarLinkButton({
       tooltip="Add to calendar"
       icon={CalendarPlus}
       external
+      kind="calendar"
     />
   )
 }

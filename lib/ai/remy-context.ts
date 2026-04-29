@@ -159,6 +159,27 @@ interface CachedContext {
 
 const contextCache = new Map<string, CachedContext>()
 const CACHE_TTL_MS = 5 * 60 * 1000 // 5 minutes
+const FAST_PATH_TIMEZONE_TIMEOUT_MS = 750
+
+export async function loadRemyFastPathTimezone(tenantId: string): Promise<string | null> {
+  const db: any = createServerClient()
+  const timezoneQuery = db
+    .from('chefs')
+    .select('timezone')
+    .eq('id', tenantId)
+    .single()
+    .then(({ data, error }: { data?: { timezone?: string | null } | null; error?: unknown }) => {
+      if (error) return null
+      return data?.timezone ?? null
+    })
+    .catch(() => null)
+
+  const timeout = new Promise<null>((resolve) => {
+    setTimeout(() => resolve(null), FAST_PATH_TIMEZONE_TIMEOUT_MS)
+  })
+
+  return Promise.race([timezoneQuery, timeout])
+}
 
 /** Empty detailed context for minimal scope - skips all 31 Tier 2 queries */
 function getEmptyDetailedContext(): CachedContext['data'] {

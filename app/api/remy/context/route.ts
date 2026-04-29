@@ -4,7 +4,11 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { requireChef } from '@/lib/auth/get-user'
-import { loadRemyContext, resolveMessageEntities } from '@/lib/ai/remy-context'
+import {
+  loadRemyContext,
+  loadRemyFastPathTimezone,
+  resolveMessageEntities,
+} from '@/lib/ai/remy-context'
 import { classifyIntent } from '@/lib/ai/remy-classifier'
 import { runCommand } from '@/lib/ai/command-orchestrator'
 import { parseTaskChain, looksLikeChain } from '@/lib/ai/remy-chain-parser'
@@ -253,11 +257,12 @@ export async function POST(req: NextRequest) {
         })
       }
 
+      const chefTimezone = await loadRemyFastPathTimezone(user.tenantId!)
       return NextResponse.json({
         blocked: false,
         intent: 'question',
         systemPrompt: null,
-        instantResponse: buildGreetingFastPath(),
+        instantResponse: buildGreetingFastPath({ chefTimezone }),
       })
     }
 

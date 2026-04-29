@@ -1,3 +1,4 @@
+import { getAiToolPermission, hasAiToolPermission } from '../tool-permission-manifest'
 import type { AiDispatchRequest, AiTaskClassification, AiTaskClass } from './types'
 
 const DETERMINISTIC_TASK_TYPES = new Set([
@@ -52,6 +53,37 @@ export function classifyAiTask(input: AiDispatchRequest): AiTaskClassification {
       needsApproval: false,
       reason: 'Task is explicitly classified as deterministic.',
     })
+  }
+
+  if (hasAiToolPermission(taskType)) {
+    const permission = getAiToolPermission(taskType)
+
+    if (permission.writes.length > 0) {
+      return classification('write', {
+        requiresLlm: true,
+        mutatesState: true,
+        needsApproval: permission.requiresApproval,
+        reason: `Permission manifest declares writes to ${permission.writes.join(', ')}.`,
+      })
+    }
+
+    if (permission.reads.length > 0) {
+      return classification('read', {
+        requiresLlm: true,
+        mutatesState: false,
+        needsApproval: permission.requiresApproval,
+        reason: `Permission manifest declares reads from ${permission.reads.join(', ')}.`,
+      })
+    }
+
+    if (permission.requiresApproval) {
+      return classification('orchestration', {
+        requiresLlm: true,
+        mutatesState: false,
+        needsApproval: true,
+        reason: 'Permission manifest requires approval for this AI task.',
+      })
+    }
   }
 
   if (taskType.startsWith('agent.') || hasMarker(taskType, WRITE_MARKERS)) {

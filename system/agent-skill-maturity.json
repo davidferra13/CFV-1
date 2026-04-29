@@ -1,0 +1,37 @@
+{
+  "generated_at": "2026-04-29T00:00:00.000Z",
+  "default_state": "active",
+  "states": {
+    "draft": "Usable only when explicitly selected or no proven skill owns the task.",
+    "active": "Default usable skill.",
+    "proven": "Preferred over active skills when routing confidence is tied.",
+    "needs-healing": "Use cautiously and route skill-garden or heal-skill as a sidecar.",
+    "deprecated": "Do not route unless explicitly named by the user."
+  },
+  "skills": {
+    "omninet": {
+      "state": "proven",
+      "reason": "Mandatory ChefFlow routing loop."
+    },
+    "skill-garden": {
+      "state": "proven",
+      "reason": "Owns durable Codex behavior creation and repair."
+    },
+    "builder": {
+      "state": "active",
+      "reason": "Default execution workflow."
+    },
+    "ledger-safety": {
+      "state": "active",
+      "reason": "Financial safety owner."
+    },
+    "billing-monetization": {
+      "state": "active",
+      "reason": "Monetization and tier owner."
+    },
+    "stripe-webhook-integrity": {
+      "state": "active",
+      "reason": "Stripe webhook and payment reconciliation owner."
+    }
+  }
+}

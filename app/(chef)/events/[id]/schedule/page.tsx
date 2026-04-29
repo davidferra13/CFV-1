@@ -11,6 +11,8 @@ import { TimelineView } from '@/components/scheduling/timeline-view'
 import { DOPView } from '@/components/scheduling/dop-view'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { CalendarAddButtons } from '@/components/events/calendar-add-buttons'
+import { AddressHandoff } from '@/components/ui/handoff-actions'
 import { ServiceSimulationRollupCard } from '@/components/events/service-simulation-rollup-card'
 import { ServiceSimulationReturnBanner } from '@/components/events/service-simulation-return-banner'
 import { loadEventServiceSimulationPanelState } from '@/lib/service-simulation/state'
@@ -36,6 +38,14 @@ export default async function EventSchedulePage({
   ])
 
   if (!event) notFound()
+  const locationLabel = [
+    (event as any).location_address,
+    (event as any).location_city,
+    (event as any).location_state,
+    (event as any).location_zip,
+  ]
+    .filter(Boolean)
+    .join(', ')
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -53,8 +63,12 @@ export default async function EventSchedulePage({
           </p>
           <p className="text-sm text-stone-500 mt-1">
             {event.client?.full_name} - {event.guest_count} guests
-            {event.location_city && ` - ${event.location_city}`}
           </p>
+          {locationLabel && (
+            <div className="mt-2 text-sm text-stone-400">
+              <AddressHandoff address={locationLabel} />
+            </div>
+          )}
         </div>
         <div className="flex gap-2">
           <Link href={returnTo ?? `/events/${event.id}`}>
@@ -65,6 +79,18 @@ export default async function EventSchedulePage({
           </Link>
         </div>
       </div>
+
+      <Card>
+        <CardContent className="pt-6">
+          <CalendarAddButtons
+            eventId={event.id}
+            occasion={event.occasion || 'ChefFlow Event'}
+            eventDate={event.event_date}
+            startTime={event.serve_time ?? undefined}
+            location={locationLabel || undefined}
+          />
+        </CardContent>
+      </Card>
 
       {simulationState ? (
         <ServiceSimulationRollupCard

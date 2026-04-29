@@ -17,9 +17,15 @@ const EXAMPLE_VALUES = {
   overhead: '150',
   targetMargin: '28',
   guestCount: '10',
+  menuCourses: '4',
+  serviceStaff: '1',
+  staffHours: '5',
+  staffRate: '32',
 }
 
 const MAX_MARGIN_PERCENT = 95
+const BASELINE_MENU_COURSES = 3
+const COMPLEXITY_LABOR_STEP = 0.08
 
 function parseNonNegative(value: string): number {
   const parsed = Number.parseFloat(value)
@@ -39,6 +45,10 @@ export function PricingCalculator() {
   const [overhead, setOverhead] = useState('0')
   const [targetMargin, setTargetMargin] = useState('25')
   const [guestCount, setGuestCount] = useState('0')
+  const [menuCourses, setMenuCourses] = useState('3')
+  const [serviceStaff, setServiceStaff] = useState('0')
+  const [staffHours, setStaffHours] = useState('0')
+  const [staffRate, setStaffRate] = useState('30')
   const [clientName, setClientName] = useState('')
   const [eventName, setEventName] = useState('')
   const [serviceDate, setServiceDate] = useState('')
@@ -51,8 +61,16 @@ export function PricingCalculator() {
     const rate = parseNonNegative(laborRate)
     const overheadAllocation = parseNonNegative(overhead)
     const guests = Math.floor(parseNonNegative(guestCount))
+    const courses = Math.max(1, Math.floor(parseNonNegative(menuCourses)))
+    const assistants = Math.floor(parseNonNegative(serviceStaff))
+    const assistantHours = parseNonNegative(staffHours)
+    const assistantRate = parseNonNegative(staffRate)
+    const complexitySteps = Math.max(0, courses - BASELINE_MENU_COURSES)
+    const complexityMultiplier = 1 + complexitySteps * COMPLEXITY_LABOR_STEP
 
-    const laborValue = hours * rate
+    const chefLaborValue = hours * rate * complexityMultiplier
+    const assistantLaborValue = assistants * assistantHours * assistantRate
+    const laborValue = chefLaborValue + assistantLaborValue
     const costFloor = food + laborValue + overheadAllocation
     const marginDecimal = safeMargin / 100
     const recommendedQuote = costFloor > 0 ? costFloor / (1 - marginDecimal) : 0
@@ -70,6 +88,13 @@ export function PricingCalculator() {
       hours,
       rate,
       guests,
+      courses,
+      assistants,
+      assistantHours,
+      assistantRate,
+      complexityMultiplier,
+      chefLaborValue,
+      assistantLaborValue,
       laborValue,
       costFloor,
       recommendedQuote,
@@ -81,7 +106,18 @@ export function PricingCalculator() {
       balance60,
       suggestedDepositRate,
     }
-  }, [foodCost, laborHours, laborRate, overhead, targetMargin, guestCount])
+  }, [
+    foodCost,
+    laborHours,
+    laborRate,
+    overhead,
+    targetMargin,
+    guestCount,
+    menuCourses,
+    serviceStaff,
+    staffHours,
+    staffRate,
+  ])
 
   const summaryText = useMemo(() => {
     const line = '----------------------------------------'
@@ -104,6 +140,8 @@ export function PricingCalculator() {
       `Target margin: ${numbers.margin.toFixed(0)}%`,
       `Projected profit: ${formatDollars(numbers.projectedProfit)}`,
       guestLine,
+      `Menu complexity: ${numbers.courses} courses (${numbers.complexityMultiplier.toFixed(2)}x chef labor)`,
+      `Service staff: ${numbers.assistants} assistants x ${numbers.assistantHours.toFixed(2)} hrs`,
       '',
       'Deposit options:',
       `- 50% deposit: ${formatDollars(numbers.deposit50)} | Remaining: ${formatDollars(numbers.balance50)}`,
@@ -121,6 +159,10 @@ export function PricingCalculator() {
     setOverhead('0')
     setTargetMargin('25')
     setGuestCount('0')
+    setMenuCourses('3')
+    setServiceStaff('0')
+    setStaffHours('0')
+    setStaffRate('30')
     setClientName('')
     setEventName('')
     setServiceDate('')
@@ -134,6 +176,10 @@ export function PricingCalculator() {
     setOverhead(EXAMPLE_VALUES.overhead)
     setTargetMargin(EXAMPLE_VALUES.targetMargin)
     setGuestCount(EXAMPLE_VALUES.guestCount)
+    setMenuCourses(EXAMPLE_VALUES.menuCourses)
+    setServiceStaff(EXAMPLE_VALUES.serviceStaff)
+    setStaffHours(EXAMPLE_VALUES.staffHours)
+    setStaffRate(EXAMPLE_VALUES.staffRate)
     setClientName('Sample Client')
     setEventName('Intimate Dinner Experience')
   }
@@ -178,7 +224,7 @@ export function PricingCalculator() {
         guest_count: numbers.guests > 0 ? numbers.guests : undefined,
         price_per_person_cents: numbers.guests > 0 ? Math.round(numbers.perGuest * 100) : undefined,
         pricing_notes: `Proposed service total ${formatDollars(numbers.recommendedQuote)}. ${numbers.suggestedDepositRate}% deposit requested to reserve the date.`,
-        internal_notes: `Consulting calculator prefill. Cost floor ${formatDollars(numbers.costFloor)}. Projected profit ${formatDollars(numbers.projectedProfit)}.`,
+        internal_notes: `Consulting calculator prefill. Cost floor ${formatDollars(numbers.costFloor)}. Projected profit ${formatDollars(numbers.projectedProfit)}. Menu ${numbers.courses} courses, ${numbers.assistants} assistants.`,
       })
     )
   }
@@ -264,6 +310,42 @@ export function PricingCalculator() {
             onChange={(event) => setGuestCount(event.target.value)}
             helperText="Used for estimated per-person quote guidance."
           />
+          <Input
+            type="number"
+            min="1"
+            step="1"
+            label="Menu Courses"
+            value={menuCourses}
+            onChange={(event) => setMenuCourses(event.target.value)}
+            helperText={`${BASELINE_MENU_COURSES} courses is baseline. Each added course increases chef labor.`}
+          />
+          <Input
+            type="number"
+            min="0"
+            step="1"
+            label="Service Assistants"
+            value={serviceStaff}
+            onChange={(event) => setServiceStaff(event.target.value)}
+            helperText="Prep, plating, service, or cleanup staff paid by the event."
+          />
+          <Input
+            type="number"
+            min="0"
+            step="0.25"
+            label="Assistant Hours"
+            value={staffHours}
+            onChange={(event) => setStaffHours(event.target.value)}
+            helperText="Average hours per assistant for this service."
+          />
+          <Input
+            type="number"
+            min="0"
+            step="1"
+            label="Assistant Rate ($/hr)"
+            value={staffRate}
+            onChange={(event) => setStaffRate(event.target.value)}
+            helperText="Fully loaded assistant hourly rate."
+          />
         </div>
 
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
@@ -273,7 +355,7 @@ export function PricingCalculator() {
               {formatDollars(numbers.laborValue)}
             </p>
             <p className="mt-1 text-xs text-stone-500">
-              {numbers.hours.toFixed(2)} hrs x {formatDollars(numbers.rate)}
+              Chef {numbers.hours.toFixed(2)} hrs x {formatDollars(numbers.rate)}
             </p>
           </div>
 
@@ -316,6 +398,35 @@ export function PricingCalculator() {
             </p>
           </div>
         )}
+
+        <div className="grid gap-3 md:grid-cols-3">
+          <div className="rounded-xl border border-stone-700/60 bg-stone-900/30 p-4">
+            <p className="text-xs uppercase tracking-wide text-stone-500">Menu Complexity</p>
+            <p className="mt-1 text-xl font-semibold text-stone-100">
+              {numbers.courses} courses
+            </p>
+            <p className="mt-1 text-xs text-stone-400">
+              Chef labor multiplier: {numbers.complexityMultiplier.toFixed(2)}x
+            </p>
+          </div>
+          <div className="rounded-xl border border-stone-700/60 bg-stone-900/30 p-4">
+            <p className="text-xs uppercase tracking-wide text-stone-500">Chef Labor</p>
+            <p className="mt-1 text-xl font-semibold text-stone-100">
+              {formatDollars(numbers.chefLaborValue)}
+            </p>
+            <p className="mt-1 text-xs text-stone-400">After menu complexity adjustment.</p>
+          </div>
+          <div className="rounded-xl border border-stone-700/60 bg-stone-900/30 p-4">
+            <p className="text-xs uppercase tracking-wide text-stone-500">Assistant Labor</p>
+            <p className="mt-1 text-xl font-semibold text-stone-100">
+              {formatDollars(numbers.assistantLaborValue)}
+            </p>
+            <p className="mt-1 text-xs text-stone-400">
+              {numbers.assistants} x {numbers.assistantHours.toFixed(2)} hrs x{' '}
+              {formatDollars(numbers.assistantRate)}
+            </p>
+          </div>
+        </div>
 
         <div className="grid gap-3 md:grid-cols-2">
           <div className="rounded-xl border border-stone-700/60 bg-stone-900/30 p-4">

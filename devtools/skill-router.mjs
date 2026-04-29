@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 import {
   loadSkills,
+  loadSkillMaturity,
   nowStamp,
   parseArgs,
   projectSkillRoot,
   readStdin,
   reportsRoot,
+  skillMaturityState,
   slugify,
   writeJson,
 } from './agent-skill-utils.mjs'
@@ -21,6 +23,7 @@ if (!prompt) {
 
 const skills = loadSkills(projectSkillRoot)
 const skillNames = new Set(skills.map((skill) => skill.name).filter(Boolean))
+const maturityManifest = loadSkillMaturity()
 const lowerPrompt = prompt.toLowerCase()
 
 const rules = [
@@ -256,6 +259,66 @@ function normalizeSkillName(rule) {
   return null
 }
 
+function maturityScore(skill) {
+  const state = skillMaturityState(skill, maturityManifest)
+  if (state === 'proven') return 0.4
+  if (state === 'active') return 0.2
+  if (state === 'draft') return -0.1
+  if (state === 'needs-healing') return -0.6
+  if (state === 'deprecated') return -100
+  return 0
+}
+
+function isExplicitlyNamed(skill) {
+  return lowerPrompt.includes(skill.toLowerCase())
+}
+
+const conflictPriorityRules = [
+  {
+    winner: 'ledger-safety',
+    beats: ['builder', 'review', 'hallucination-scan'],
+    reason: 'ledger-safety owns cents, balances, and append-only money movement',
+  },
+  {
+    winner: 'stripe-webhook-integrity',
+    beats: ['builder', 'debug', 'review', 'ledger-safety'],
+    reason: 'stripe-webhook-integrity owns external payment event intake and idempotency',
+  },
+  {
+    winner: 'billing-monetization',
+    beats: ['builder', 'validation-gate', 'review'],
+    reason: 'billing-monetization owns tier classification and upgrade prompt timing',
+  },
+  {
+    winner: 'validation-gate',
+    beats: ['persona-build', 'builder', 'planner'],
+    reason: 'validation-gate blocks unvalidated product surface expansion',
+  },
+  {
+    winner: 'host-integrity',
+    beats: ['health', 'debug', 'builder'],
+    reason: 'host-integrity owns ports, watchdogs, tunnels, and running process truth',
+  },
+]
+
+function resolvePrimary(matches) {
+  const matchedSkills = new Set(matches.map((match) => match.skill))
+  for (const rule of conflictPriorityRules) {
+    if (!matchedSkills.has(rule.winner)) continue
+    if (rule.beats.some((skill) => matchedSkills.has(skill))) {
+      return {
+        primary: rule.winner,
+        conflict: {
+          winner: rule.winner,
+          beats: rule.beats.filter((skill) => matchedSkills.has(skill)),
+          reason: rule.reason,
+        },
+      }
+    }
+  }
+  return { primary: matches[0]?.skill || 'first-principles', conflict: null }
+}
+
 const matches = rules
   .map((rule, index) => ({
     index,
@@ -263,9 +326,19 @@ const matches = rules
     score: scoreRule(rule),
   }))
   .filter((match) => match.skill && match.score > 0)
-  .sort((a, b) => b.score - a.score || a.index - b.index)
+  .filter((match) => {
+    const state = skillMaturityState(match.skill, maturityManifest)
+    return state !== 'deprecated' || isExplicitlyNamed(match.skill)
+  })
+  .map((match) => ({
+    ...match,
+    maturity_state: skillMaturityState(match.skill, maturityManifest),
+    rank_score: match.score + maturityScore(match.skill),
+  }))
+  .sort((a, b) => b.rank_score - a.rank_score || b.score - a.score || a.index - b.index)
 
-const primarySkill = matches[0]?.skill || 'first-principles'
+const primaryResolution = resolvePrimary(matches)
+const primarySkill = primaryResolution.primary
 const sidecarSkills = ['omninet']
 for (const match of matches.slice(1)) {
   if (!sidecarSkills.includes(match.skill) && match.skill !== primarySkill) {
@@ -314,6 +387,12 @@ const result = {
   generated_at: new Date().toISOString(),
   primary_skill: primarySkill,
   sidecar_skills: sidecarSkills,
+  skill_maturity: Object.fromEntries(
+    [primarySkill, ...sidecarSkills]
+      .filter(Boolean)
+      .map((skill) => [skill, skillMaturityState(skill, maturityManifest)]),
+  ),
+  conflict_resolution: primaryResolution.conflict,
   hard_stops: hardStops,
   risk_level: riskLevel,
   required_checks: [...new Set(requiredChecks)],

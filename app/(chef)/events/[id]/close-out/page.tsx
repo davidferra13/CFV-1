@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic'
 import { notFound, redirect } from 'next/navigation'
 import { requireChef } from '@/lib/auth/get-user'
 import { getEventCloseOutData } from '@/lib/events/financial-summary-actions'
+import { CostVarianceCard } from '@/components/finance/cost-variance-card'
 
 const CloseOutWizard = dynamic(
   () => import('@/components/events/close-out-wizard').then((m) => m.CloseOutWizard),
@@ -36,7 +37,10 @@ export default async function CloseOutPage({ params }: { params: { id: string } 
 
   return (
     <div className="py-8 px-4">
-      <CloseOutWizard data={data} />
+      <div className="max-w-2xl mx-auto space-y-6">
+        <CostVarianceCard eventId={params.id} />
+        <CloseOutWizard data={data} />
+      </div>
     </div>
   )
 }

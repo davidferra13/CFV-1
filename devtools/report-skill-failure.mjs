@@ -3,13 +3,16 @@ import path from 'node:path'
 import {
   ensureDir,
   learningInboxRoot,
+  loadSkills,
   nowStamp,
   parseArgs,
+  projectSkillRoot,
   readJson,
   readStdin,
   repoRoot,
   shortHash,
   slugify,
+  updateSkillMaturity,
   writeJson,
 } from './agent-skill-utils.mjs'
 
@@ -17,14 +20,15 @@ const goldenPromptFile = path.join(repoRoot, 'system', 'agent-golden-prompts', '
 
 function usage() {
   console.log(`Usage:
-  node devtools/report-skill-failure.mjs --skill skill-name --what "..." --prompt "..." [--details "..."] [--add-golden]
+  node devtools/report-skill-failure.mjs --skill skill-name --what "..." --prompt "..." [--details "..."] [--add-golden] [--no-mark-needs-healing]
 
 Options:
   --skill       Skill that failed or missed the prompt
   --what        Short description of the failure
   --prompt      Prompt that should reproduce or route the behavior
   --details     Optional context. Reads stdin when omitted and available
-  --add-golden  Append a golden prompt regression case when the prompt is new`)
+  --add-golden  Append a golden prompt regression case when the prompt is new
+  --no-mark-needs-healing  Do not mark the skill as needs-healing in the maturity manifest`)
 }
 
 function requireString(args, key) {
@@ -70,13 +74,24 @@ function writeLearningItem(item) {
   return file
 }
 
+function evidenceTermsForSkill(skillName) {
+  const skill = loadSkills(projectSkillRoot).find((item) => item.name === skillName)
+  if (!skill) return []
+  const stop = new Set(['when', 'with', 'this', 'that', 'skill', 'codex', 'chefflow', 'agent'])
+  return [...new Set(String(skill.description || '')
+    .toLowerCase()
+    .split(/[^a-z0-9-]+/)
+    .filter((word) => word.length > 3 && !stop.has(word)))]
+    .slice(0, 2)
+}
+
 function buildGoldenCase({ skill, what, prompt }) {
   return {
     name: `skill failure: ${skill} - ${slugify(what)}`,
     prompt,
     expect: [skill],
     evidence: {
-      [skill]: [],
+      [skill]: evidenceTermsForSkill(skill),
     },
   }
 }
@@ -126,6 +141,14 @@ function main() {
       file: path.relative(repoRoot, goldenResult.file).replace(/\\/g, '/'),
       case: goldenCase,
     }
+  }
+
+  if (!args['no-mark-needs-healing']) {
+    result.maturity = updateSkillMaturity(skill, {
+      state: 'needs-healing',
+      reason: `Failure reported: ${what}`,
+      source: result.learning_file,
+    })
   }
 
   console.log(JSON.stringify(result, null, 2))

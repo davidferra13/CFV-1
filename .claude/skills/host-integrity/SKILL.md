@@ -14,6 +14,9 @@ Use this skill to inspect the local Windows host topology safely. This is an aud
 - Do not change Task Scheduler registrations without explicit developer approval.
 - Do not assume a process is rogue just because it is unfamiliar.
 - Do not treat cleanup hooks as proof of hygiene. Repeated cleanup means hygiene debt.
+- Do not retry failed VNC, RDP, SSH, tunnel, or remote desktop connections unless the developer explicitly asks for a retry.
+- If a TigerVNC prompt fails against `10.0.0.177:5900`, treat it as a stop condition. Do not attempt reconnect loops.
+- If the developer says to stop repeated remote connection attempts, terminate only the viewer/client process that is attempting the connection, then report the PID and command line.
 
 ## Read-Only Checks
 

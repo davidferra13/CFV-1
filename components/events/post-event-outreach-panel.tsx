@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { draftPostEventEmail, draftTestimonialRequest } from '@/lib/guest-comms/actions'
+import { copyToClipboard } from '@/lib/handoffs/client-actions'
 
 type EmailDraft = {
   subject: string
@@ -18,7 +19,7 @@ export function PostEventOutreachPanel({ eventId }: { eventId: string }) {
   const [draft, setDraft] = useState<EmailDraft | null>(null)
   const [draftType, setDraftType] = useState<'followup' | 'guest_testimonial' | null>(null)
   const [loading, setLoading] = useState(false)
-  const [copied, setCopied] = useState(false)
+  const [copiedTarget, setCopiedTarget] = useState<'email' | 'recipients' | null>(null)
   const [error, setError] = useState('')
 
   async function handleDraft(type: 'followup' | 'guest_testimonial') {
@@ -40,20 +41,30 @@ export function PostEventOutreachPanel({ eventId }: { eventId: string }) {
     }
   }
 
-  function handleCopy() {
+  async function handleCopy() {
     if (!draft) return
     const text = `Subject: ${draft.subject}\n\n${draft.body}`
-    navigator.clipboard.writeText(text)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+    const result = await copyToClipboard(text, 'Email draft')
+    if (result.success) {
+      setCopiedTarget('email')
+      setError('')
+      setTimeout(() => setCopiedTarget(null), 2000)
+    } else {
+      setError(result.error)
+    }
   }
 
-  function handleCopyRecipients() {
+  async function handleCopyRecipients() {
     if (!draft) return
     const emails = draft.recipients.map((r) => `${r.name} <${r.email}>`).join(', ')
-    navigator.clipboard.writeText(emails)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+    const result = await copyToClipboard(emails, 'Recipients')
+    if (result.success) {
+      setCopiedTarget('recipients')
+      setError('')
+      setTimeout(() => setCopiedTarget(null), 2000)
+    } else {
+      setError(result.error)
+    }
   }
 
   return (
@@ -103,10 +114,10 @@ export function PostEventOutreachPanel({ eventId }: { eventId: string }) {
 
           <div className="flex gap-2 flex-wrap">
             <Button variant="primary" className="text-sm" onClick={handleCopy}>
-              {copied ? 'Copied!' : 'Copy Email'}
+              {copiedTarget === 'email' ? 'Copied!' : 'Copy Email'}
             </Button>
             <Button variant="secondary" className="text-sm" onClick={handleCopyRecipients}>
-              Copy Recipients
+              {copiedTarget === 'recipients' ? 'Recipients copied!' : 'Copy Recipients'}
             </Button>
             <Button
               variant="ghost"

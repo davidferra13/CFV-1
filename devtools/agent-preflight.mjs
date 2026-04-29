@@ -38,6 +38,7 @@ results.push(run('skill-validator', ['devtools/skill-validator.mjs']))
 results.push(run('trigger-tests', ['devtools/skill-trigger-tests.mjs']))
 results.push(run('coverage-map', ['devtools/skill-coverage-map.mjs', '--stdout']))
 results.push(run('dependency-graph', ['devtools/skill-dependency-graph.mjs', '--stdout']))
+results.push(run('maturity-report', ['devtools/skill-maturity-report.mjs', '--stdout']))
 
 if (args.owned && args.owned !== true) {
   results.push(
@@ -57,4 +58,3 @@ if (args.owned && args.owned !== true) {
 const failed = results.filter((result) => !result.ok)
 console.log(`\nPreflight complete: ${results.length - failed.length}/${results.length} checks passed.`)
 process.exit(failed.length ? 1 : 0)
-

@@ -1,0 +1,57 @@
+#!/usr/bin/env node
+import { execFileSync } from 'node:child_process'
+import {
+  parseArgs,
+  readStdin,
+} from './agent-skill-utils.mjs'
+
+function runNode(args) {
+  return execFileSync('node', args, { encoding: 'utf8' })
+}
+
+function usage() {
+  console.log(`Usage:
+  node devtools/agent-start.mjs --prompt "..."
+
+Routes the prompt, writes a flight record, and prints the required harness state.`)
+}
+
+try {
+  const args = parseArgs()
+  if (args.help) {
+    usage()
+    process.exit(0)
+  }
+  const prompt = String(args.prompt || args._.join(' ') || readStdin()).trim()
+  if (!prompt) throw new Error('Missing --prompt.')
+  const router = JSON.parse(runNode(['devtools/skill-router.mjs', '--prompt', prompt, '--write']))
+  const flight = JSON.parse(
+    runNode([
+      'devtools/agent-flight-recorder.mjs',
+      'start',
+      '--prompt',
+      prompt,
+      '--primary',
+      router.primary_skill,
+      '--sidecars',
+      (router.sidecar_skills || []).join(','),
+    ]),
+  )
+  const result = {
+    prompt,
+    primary_skill: router.primary_skill,
+    sidecar_skills: router.sidecar_skills || [],
+    skill_maturity: router.skill_maturity || {},
+    conflict_resolution: router.conflict_resolution || null,
+    hard_stops: router.hard_stops || [],
+    required_checks: router.required_checks || [],
+    risk_level: router.risk_level,
+    router_report: router.report_path || null,
+    flight_record: flight.record_file,
+  }
+  console.log(JSON.stringify(result, null, 2))
+} catch (error) {
+  console.error(error instanceof Error ? error.message : String(error))
+  usage()
+  process.exit(1)
+}

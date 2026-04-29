@@ -8,7 +8,7 @@ interface ClientPortalQRProps {
 }
 
 export function ClientPortalQR({ eventId, appUrl }: ClientPortalQRProps) {
-  const base = appUrl ?? process.env.NEXT_PUBLIC_APP_URL ?? 'https://your-domain.com'
+  const base = appUrl ?? process.env.NEXT_PUBLIC_APP_URL ?? 'https://app.cheflowhq.com'
 
   const portalUrl = `${base}/my-events/${eventId}`
   const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&ecc=M&data=${encodeURIComponent(portalUrl)}`

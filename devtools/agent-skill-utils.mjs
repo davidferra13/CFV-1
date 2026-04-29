@@ -1,12 +1,15 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import crypto from 'node:crypto'
+import { execFileSync } from 'node:child_process'
 
 export const repoRoot = process.cwd()
 export const projectSkillRoot = path.join(repoRoot, '.claude', 'skills')
 export const learningInboxRoot = path.join(repoRoot, 'system', 'agent-learning-inbox')
 export const guidanceInboxRoot = path.join(repoRoot, 'system', 'external-guidance-inbox')
 export const reportsRoot = path.join(repoRoot, 'system', 'agent-reports')
+export const flightRecordsRoot = path.join(reportsRoot, 'flight-records')
+export const skillMaturityFile = path.join(repoRoot, 'system', 'agent-skill-maturity.json')
 
 export function ensureDir(dir) {
   fs.mkdirSync(dir, { recursive: true })
@@ -164,6 +167,55 @@ export function writeJson(file, data) {
   writeText(file, `${JSON.stringify(data, null, 2)}\n`)
 }
 
+export function splitCsv(input) {
+  return String(input || '')
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean)
+}
+
+export function currentBranch() {
+  try {
+    return execFileSync('git', ['branch', '--show-current'], { encoding: 'utf8' }).trim()
+  } catch {
+    return null
+  }
+}
+
+export function loadSkillMaturity() {
+  const manifest = readJson(skillMaturityFile, null)
+  if (!manifest || typeof manifest !== 'object') {
+    return {
+      generated_at: null,
+      default_state: 'active',
+      skills: {},
+    }
+  }
+  return {
+    generated_at: manifest.generated_at || null,
+    default_state: manifest.default_state || 'active',
+    skills: manifest.skills && typeof manifest.skills === 'object' ? manifest.skills : {},
+  }
+}
+
+export function skillMaturityState(skillName, manifest = loadSkillMaturity()) {
+  const row = manifest.skills?.[skillName]
+  return row?.state || manifest.default_state || 'active'
+}
+
+export function updateSkillMaturity(skillName, patch) {
+  const manifest = loadSkillMaturity()
+  const previous = manifest.skills[skillName] || {}
+  manifest.generated_at = new Date().toISOString()
+  manifest.skills[skillName] = {
+    ...previous,
+    ...patch,
+    updated_at: new Date().toISOString(),
+  }
+  writeJson(skillMaturityFile, manifest)
+  return manifest.skills[skillName]
+}
+
 export function readStdin() {
   if (process.stdin.isTTY) return ''
   return fs.readFileSync(0, 'utf8')
@@ -188,4 +240,3 @@ export function parseArgs(argv = process.argv.slice(2)) {
   }
   return args
 }
-

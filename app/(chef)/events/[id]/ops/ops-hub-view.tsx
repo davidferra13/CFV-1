@@ -4,6 +4,8 @@ import { useState, type ReactNode } from 'react'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { EventStatusBadge, type EventStatus } from '@/components/events/event-status-badge'
+import { CalendarAddButtons } from '@/components/events/calendar-add-buttons'
+import { AddressHandoff } from '@/components/ui/handoff-actions'
 import type { OpsHubData } from '@/lib/events/ops-hub-actions'
 import type { PrepSymbol } from '@/lib/prep-timeline/compute-timeline'
 import { formatPrepTime } from '@/lib/prep-timeline/compute-timeline'
@@ -252,11 +254,23 @@ export function OpsHubView({ data }: { data: OpsHubData }) {
               {data.event.serve_time ? ` at ${data.event.serve_time}` : ''} |{' '}
               {data.event.guest_count} guests
             </p>
-            {(data.event.client_name || data.event.location_address) && (
-              <p className="mt-1 text-sm text-stone-400">
-                {[data.event.client_name, data.event.location_address].filter(Boolean).join(' | ')}
-              </p>
+            {data.event.client_name && (
+              <p className="mt-1 text-sm text-stone-400">{data.event.client_name}</p>
             )}
+            {data.event.location_address && (
+              <div className="mt-2 text-sm text-stone-400">
+                <AddressHandoff address={data.event.location_address} />
+              </div>
+            )}
+          </div>
+          <div className="shrink-0">
+            <CalendarAddButtons
+              eventId={data.event.id}
+              occasion={data.event.occasion || 'ChefFlow Event'}
+              eventDate={data.event.event_date}
+              startTime={data.event.serve_time ?? undefined}
+              location={data.event.location_address ?? undefined}
+            />
           </div>
         </div>
       </header>

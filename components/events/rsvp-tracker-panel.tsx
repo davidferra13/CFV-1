@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { copyToClipboard } from '@/lib/handoffs/client-actions'
 
 type Guest = {
   full_name: string
@@ -20,6 +21,7 @@ type Props = {
 
 export function RSVPTrackerPanel({ guests, totalExpected, shareUrl, occasion }: Props) {
   const [copied, setCopied] = useState(false)
+  const [copyError, setCopyError] = useState<string | null>(null)
 
   const attending = guests.filter((g) => g.rsvp_status === 'attending')
   const maybe = guests.filter((g) => g.rsvp_status === 'maybe')
@@ -28,7 +30,7 @@ export function RSVPTrackerPanel({ guests, totalExpected, shareUrl, occasion }: 
   const notResponded = Math.max(0, totalExpected - responded)
 
   // Generate a nudge message for the host to send
-  function generateNudge() {
+  async function generateNudge() {
     const lines = [
       `Hey! Quick reminder about ${occasion || 'our upcoming dinner'}.`,
       ``,
@@ -45,9 +47,14 @@ export function RSVPTrackerPanel({ guests, totalExpected, shareUrl, occasion }: 
       .filter(Boolean)
       .join('\n')
 
-    navigator.clipboard.writeText(lines)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+    const result = await copyToClipboard(lines, 'RSVP reminder')
+    if (result.success) {
+      setCopied(true)
+      setCopyError(null)
+      setTimeout(() => setCopied(false), 2000)
+    } else {
+      setCopyError(result.error)
+    }
   }
 
   return (
@@ -94,6 +101,7 @@ export function RSVPTrackerPanel({ guests, totalExpected, shareUrl, occasion }: 
             : `Copy RSVP Reminder for Host (${notResponded} pending)`}
         </Button>
       )}
+      {copyError && <p className="mt-2 text-xs text-red-400">{copyError}</p>}
     </Card>
   )
 }

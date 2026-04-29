@@ -28,11 +28,17 @@ export type AiToolPermission = {
 }
 
 export function getAiToolPermission(taskType: string): AiToolPermission {
-  const exact = AI_TOOL_PERMISSION_MANIFEST[taskType]
+  const normalizedTaskType = normalizeTaskType(taskType)
+  const exact = AI_TOOL_PERMISSION_MANIFEST[normalizedTaskType]
   if (exact) return exact
 
-  const inferred = inferAiToolPermission(taskType)
-  return inferred ?? createPermission(taskType, 'Remy task', [], [], false, false)
+  const inferred = inferAiToolPermission(normalizedTaskType)
+  return inferred ?? createPermission(normalizedTaskType, 'Remy task', [], [], false, false)
+}
+
+export function hasAiToolPermission(taskType: string): boolean {
+  const normalizedTaskType = normalizeTaskType(taskType)
+  return Boolean(AI_TOOL_PERMISSION_MANIFEST[normalizedTaskType] || inferAiToolPermission(normalizedTaskType))
 }
 
 export function isAiToolControlledBy(taskType: string, control: AiPrivacyControl): boolean {
@@ -129,6 +135,10 @@ function inferAiToolPermission(taskType: string): AiToolPermission | null {
   }
 
   return null
+}
+
+function normalizeTaskType(taskType: string): string {
+  return taskType.trim().toLowerCase()
 }
 
 function inferAgentToolPermission(taskType: string): AiToolPermission {

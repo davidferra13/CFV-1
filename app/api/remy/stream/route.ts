@@ -5,7 +5,11 @@
 import { NextRequest } from 'next/server'
 import { Ollama } from 'ollama'
 import { requireChef } from '@/lib/auth/get-user'
-import { loadRemyContext, resolveMessageEntities } from '@/lib/ai/remy-context'
+import {
+  loadRemyContext,
+  loadRemyFastPathTimezone,
+  resolveMessageEntities,
+} from '@/lib/ai/remy-context'
 import { classifyIntent } from '@/lib/ai/remy-classifier'
 import { runCommand } from '@/lib/ai/command-orchestrator'
 import { getTaskName } from '@/lib/ai/command-task-descriptions'
@@ -588,7 +592,8 @@ export async function POST(req: NextRequest) {
 
       // Keep greetings truly instant. Full context loading can stall on slow
       // database or enrichment calls, which should never block a simple "hi".
-      const greetingText = buildGreetingFastPath()
+      const chefTimezone = await loadRemyFastPathTimezone(user.tenantId!)
+      const greetingText = buildGreetingFastPath({ chefTimezone })
       const body =
         encodeSSE({ type: 'intent', data: 'question' }) +
         encodeSSE({ type: 'token', data: greetingText }) +

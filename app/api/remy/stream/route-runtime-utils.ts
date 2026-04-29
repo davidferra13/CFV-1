@@ -786,8 +786,11 @@ export function getOperatorResponseTokenBudget(
   return Math.min(budget, OLLAMA_STREAM_MAX_TOKENS)
 }
 
-export function buildGreetingFastPath(now = new Date()): string {
-  const hour = now.getHours()
+export function buildGreetingFastPath(
+  input: Date | { now?: Date | string; chefTimezone?: string | null } = new Date()
+): string {
+  const clock = getChefClock(input instanceof Date ? { now: input } : input)
+  const hour = clock.hour
   const greeting = hour < 12 ? 'Morning' : hour < 17 ? 'Afternoon' : 'Evening'
 
   return `${greeting}, chef!\n\nI'm here. Ask me about events, clients, menus, costs, drafts, or what needs attention today.`
@@ -1074,3 +1077,4 @@ export function suggestFollowUpActions(
 
   return suggestions.slice(0, 2)
 }
+import { getChefClock } from '@/lib/time/chef-clock'

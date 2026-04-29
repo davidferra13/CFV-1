@@ -21,14 +21,24 @@ test('greeting fast path stays deterministic and context-free', () => {
   )
 })
 
+test('greeting fast path uses chef timezone when provided', () => {
+  const text = buildGreetingFastPath({
+    now: '2026-04-09T14:00:00.000Z',
+    chefTimezone: 'America/Los_Angeles',
+  })
+
+  assert.match(text, /^Morning, chef!/)
+})
+
 test('new-user curated greeting is checked before greeting fast path', () => {
   const routePath = path.join(process.cwd(), 'app/api/remy/stream/route.ts')
   const source = fs.readFileSync(routePath, 'utf8')
 
   const curatedIndex = source.indexOf('getCuratedStreamGreeting')
-  const fastGreetingIndex = source.indexOf('buildGreetingFastPath()')
+  const fastGreetingIndex = source.indexOf('buildGreetingFastPath({ chefTimezone })')
 
   assert.ok(curatedIndex > -1)
+  assert.match(source, /loadRemyFastPathTimezone/)
   assert.ok(fastGreetingIndex > -1)
   assert.ok(curatedIndex < fastGreetingIndex)
 })
