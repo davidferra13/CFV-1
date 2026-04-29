@@ -142,6 +142,13 @@ export const CRON_MONITOR_DEFINITIONS: CronMonitorDefinition[] = [
       'Delete stale inquiry reply drafts older than 3 days so fresh ones are regenerated',
   },
   {
+    cronName: 'stale-ticket-cleanup',
+    routePath: '/api/scheduled/stale-ticket-cleanup',
+    maxExpectedMinutes: 120,
+    cadence: 'hourly',
+    description: 'Cancel verified stale pending event tickets and release reserved capacity',
+  },
+  {
     cronName: 'follow-ups',
     routePath: '/api/scheduled/follow-ups',
     maxExpectedMinutes: 720,
