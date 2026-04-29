@@ -1,0 +1,4 @@
+interface:
+  display_name: "Findings Triage"
+  short_description: "Normalize old and new ChefFlow findings into safe action classes"
+  default_prompt: "Use Findings Triage to classify audits, autodocket items, persona synthesis, and regression findings before acting."

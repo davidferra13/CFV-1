@@ -87,10 +87,11 @@ When the user asks to improve using new or old findings:
    - `system/regression-reports/`
    - `system/persona-batch-synthesis/`
 2. Extract only reusable agent behavior, not every product feature gap.
-3. Patch `omninet` when the improvement affects skill routing.
-4. Patch a specific skill when the finding belongs to an existing workflow.
-5. Create a new skill only when the finding reveals a reusable workflow with no owner.
-6. Keep the link between the skill and source finding obvious in the skill body, without copying large report sections.
+3. Use `findings-triage` before converting product gaps into code tasks.
+4. Patch `omninet` when the improvement affects skill routing.
+5. Patch a specific skill when the finding belongs to an existing workflow.
+6. Create a new skill only when the finding reveals a reusable workflow with no owner.
+7. Keep the link between the skill and source finding obvious in the skill body, without copying large report sections.
 
 ## Closeout
 

@@ -33,6 +33,7 @@ Use the most specific skill that fits. Combine skills only when their responsibi
 | Strategic product reasoning or vague request | `first-principles` |
 | Thread or feature completeness check | `audit` |
 | Highest leverage next move | `massive-win` |
+| Mixed old or new findings, autodocket, audit findings, backlog triage | `findings-triage` |
 | Persona pipeline management | `persona-inbox` |
 | Huge pasted persona material | `persona-dump` |
 | Persona fitness evaluation | `persona-stress-test` |
@@ -66,6 +67,7 @@ Invoke `skill-garden` when any of these appear:
 - External operator guidance from Hermes, OpenCloy, ChatGPT, notes, markdowns, or pasted conversations should become project behavior.
 - A workflow requires repeated manual parsing, like persona imports or build queue triage.
 - Current conclusions depend on old audit findings, stale docs, mixed test failures, or operational status artifacts.
+- The user asks to improve from old or new findings, audits, persona synthesis, autodocket, or backlog sources.
 
 ## Execution Rules
 
