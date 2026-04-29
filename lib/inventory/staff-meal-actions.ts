@@ -171,11 +171,21 @@ export async function logStaffMeal(input: LogStaffMealInput): Promise<StaffMeal>
         chef_id: user.tenantId!,
         ingredient_id: item.ingredientId ?? null,
         ingredient_name: item.ingredientName,
-        type: 'staff_meal',
+        transaction_type: 'staff_meal',
         quantity: -item.quantity,
         unit: item.unit,
         cost_cents: costCents ?? 0,
+        event_id: parsed.eventId ?? null,
         notes: `Staff meal: ${parsed.description || 'unlabeled'} (${parsed.staffCount} staff)`,
+        created_by: user.id,
+        confidence_status: 'confirmed',
+        confidence_score: 1,
+        source_quantity: item.quantity,
+        source_unit: item.unit,
+        canonical_quantity: item.quantity,
+        canonical_unit: item.unit,
+        conversion_status: 'not_required',
+        review_status: 'approved',
       })
     } catch (err) {
       console.error('[non-blocking] Failed to log inventory transaction for staff meal item', err)

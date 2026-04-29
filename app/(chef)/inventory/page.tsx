@@ -8,6 +8,7 @@ import { getParAlerts } from '@/lib/inventory/count-actions'
 import { ParAlertPanel } from '@/components/inventory/par-alert-panel'
 import { AutoReorderPanel } from '@/components/inventory/auto-reorder-panel'
 import { Card } from '@/components/ui/card'
+import { getPantryReviewSummary } from '@/lib/inventory/pantry-engine-actions'
 
 export const metadata: Metadata = { title: 'Inventory' }
 
@@ -48,7 +49,7 @@ const SUB_PAGES = [
   {
     href: '/inventory/counts',
     label: 'Inventory Counts',
-    description: 'Update on-hand quantities and par levels for all tracked ingredients',
+    description: 'Create baseline counts and auditable corrections for tracked ingredients',
     icon: 'clipboard',
   },
   {
@@ -85,7 +86,7 @@ const SUB_PAGES = [
     href: '/inventory/demand',
     label: 'Demand Forecast',
     description:
-      'What ingredients do you need for upcoming events? See shortages before they happen',
+      'Compare upcoming ingredient demand against stock evidence and review shortages early',
     icon: 'forecast',
   },
   {
@@ -118,12 +119,15 @@ export default async function InventoryPage() {
 
   let parAlerts: ParAlert[] = []
   let parAlertsError = false
+  let reviewSummary: Awaited<ReturnType<typeof getPantryReviewSummary>> | null = null
 
   try {
-    parAlerts = await getParAlerts()
+    const [alerts, reviews] = await Promise.all([getParAlerts(), getPantryReviewSummary()])
+    parAlerts = alerts
+    reviewSummary = reviews
   } catch (error) {
     parAlertsError = true
-    console.error('[inventory] Failed to load par alerts', error)
+    console.error('[inventory] Failed to load pantry intelligence summary', error)
   }
 
   return (
@@ -131,8 +135,8 @@ export default async function InventoryPage() {
       <div>
         <h1 className="text-3xl font-bold text-stone-100">Inventory</h1>
         <p className="text-stone-500 mt-1">
-          Your complete inventory command center - track every ingredient in and out, manage
-          purchase orders, run audits, and forecast demand.
+          Pantry intelligence command center. Track movements, review uncertain evidence, run
+          counts, and forecast demand without pretending unknown stock is confirmed.
         </p>
       </div>
 
@@ -148,6 +152,17 @@ export default async function InventoryPage() {
       )}
 
       {!parAlertsError && parAlerts.length > 0 && <ParAlertPanel alerts={parAlerts} />}
+
+      {!parAlertsError && reviewSummary && reviewSummary.pendingReviewCount > 0 && (
+        <Card className="border-amber-900/60 bg-amber-950/20 p-5">
+          <h2 className="font-semibold text-amber-100">Inventory evidence needs review</h2>
+          <p className="mt-1 text-sm text-amber-100/80">
+            {reviewSummary.pendingReviewCount} pantry movement
+            {reviewSummary.pendingReviewCount === 1 ? '' : 's'} need chef review before ChefFlow
+            treats them as confirmed stock.
+          </p>
+        </Card>
+      )}
 
       {/* Auto-reorder from par shortfalls */}
       {!parAlertsError && parAlerts.length > 0 && <AutoReorderPanel />}

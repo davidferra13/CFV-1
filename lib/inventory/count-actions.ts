@@ -7,7 +7,14 @@ import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { pgClient } from '@/lib/db'
 import { createNotification } from '@/lib/notifications/actions'
+import {
+  computePantryStockPositions,
+  decideCountAdjustment,
+  type PantryCountRow,
+  type PantryMovementRow,
+} from '@/lib/inventory/pantry-engine'
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -33,6 +40,7 @@ type ParAlert = {
   unit: string
   deficit: number
   vendorId: string | null
+  confidenceStatus?: string
 }
 
 type ReorderGroup = {
@@ -118,25 +126,131 @@ export async function updateInventoryCount(
 ): Promise<InventoryCount> {
   const user = await requireChef()
   const parsed = UpdateInventoryCountSchema.parse(input)
-  const db: any = createServerClient()
+  let data: any
 
-  const { data, error } = await (db.from('inventory_counts') as any)
-    .upsert(
-      {
-        chef_id: user.tenantId!,
-        ingredient_name: parsed.ingredientName,
-        current_qty: parsed.currentQty,
-        par_level: parsed.parLevel ?? null,
-        unit: parsed.unit,
-        vendor_id: parsed.vendorId ?? null,
-        last_counted_at: new Date().toISOString(),
-      },
-      { onConflict: 'chef_id,ingredient_name' }
-    )
-    .select()
-    .single()
+  await pgClient.begin(async (txSql: any) => {
+    const [ledger] = await txSql`
+      SELECT
+        COALESCE(SUM(quantity), 0)::numeric AS ledger_qty,
+        COUNT(*)::int AS movement_count
+      FROM inventory_transactions
+      WHERE chef_id = ${user.tenantId!}
+        AND lower(ingredient_name) = lower(${parsed.ingredientName})
+        AND unit = ${parsed.unit}
+        AND COALESCE(review_status, 'approved') <> 'rejected'
+    `
 
-  if (error) throw new Error(`Failed to update inventory count: ${(error as any).message}`)
+    const ledgerQty = Number(ledger?.ledger_qty ?? 0)
+    const movementCount = Number(ledger?.movement_count ?? 0)
+    const decision = decideCountAdjustment({
+      targetQty: parsed.currentQty,
+      ledgerQty,
+      hasLedgerMovements: movementCount > 0,
+    })
+
+    if (decision) {
+      const [evidence] = await txSql`
+        INSERT INTO inventory_evidence_sources (
+          chef_id,
+          source_type,
+          confidence_status,
+          confidence_score,
+          reviewed_at,
+          reviewed_by,
+          notes
+        )
+        VALUES (
+          ${user.tenantId!},
+          ${decision.evidenceSourceType},
+          ${decision.confidenceStatus},
+          ${1},
+          NOW(),
+          ${user.id},
+          ${
+            decision.transactionType === 'opening_balance'
+              ? 'Chef baseline inventory count'
+              : 'Chef manual inventory correction'
+          }
+        )
+        RETURNING id
+      `
+
+      await txSql`
+        INSERT INTO inventory_transactions (
+          chef_id,
+          ingredient_name,
+          transaction_type,
+          quantity,
+          unit,
+          notes,
+          created_by,
+          evidence_source_id,
+          confidence_status,
+          confidence_score,
+          source_quantity,
+          source_unit,
+          canonical_quantity,
+          canonical_unit,
+          conversion_status,
+          review_status
+        )
+        VALUES (
+          ${user.tenantId!},
+          ${parsed.ingredientName},
+          ${decision.transactionType},
+          ${decision.quantity},
+          ${parsed.unit},
+          ${
+            decision.transactionType === 'opening_balance'
+              ? `Opening balance from chef count: ${parsed.currentQty} ${parsed.unit}`
+              : `Manual correction from ${ledgerQty} ${parsed.unit} to ${parsed.currentQty} ${parsed.unit}`
+          },
+          ${user.id},
+          ${evidence.id},
+          ${decision.confidenceStatus},
+          ${1},
+          ${parsed.currentQty},
+          ${parsed.unit},
+          ${parsed.currentQty},
+          ${parsed.unit},
+          ${'not_required'},
+          ${'approved'}
+        )
+      `
+    }
+
+    const [upserted] = await txSql`
+      INSERT INTO inventory_counts (
+        chef_id,
+        ingredient_name,
+        current_qty,
+        par_level,
+        unit,
+        vendor_id,
+        last_counted_at
+      )
+      VALUES (
+        ${user.tenantId!},
+        ${parsed.ingredientName},
+        ${parsed.currentQty},
+        ${parsed.parLevel ?? null},
+        ${parsed.unit},
+        ${parsed.vendorId ?? null},
+        NOW()
+      )
+      ON CONFLICT (chef_id, ingredient_name)
+      DO UPDATE SET
+        current_qty = EXCLUDED.current_qty,
+        par_level = EXCLUDED.par_level,
+        unit = EXCLUDED.unit,
+        vendor_id = EXCLUDED.vendor_id,
+        last_counted_at = EXCLUDED.last_counted_at,
+        updated_at = NOW()
+      RETURNING *
+    `
+
+    data = upserted
+  })
 
   const currentQty = Number((data as any).current_qty)
   const parLevel = (data as any).par_level != null ? Number((data as any).par_level) : null
@@ -156,6 +270,8 @@ export async function updateInventoryCount(
   }
 
   revalidatePath('/inventory')
+  revalidatePath('/inventory/counts')
+  revalidatePath('/ops/inventory')
 
   return {
     id: (data as any).id,
@@ -209,27 +325,76 @@ export async function getParAlerts(): Promise<ParAlert[]> {
   const user = await requireChef()
   const db: any = createServerClient()
 
-  // Fetch items that have a par_level set
-  const { data, error } = await db
+  const { data: counts, error: countError } = await db
     .from('inventory_counts')
     .select('*')
     .eq('chef_id', user.tenantId!)
     .not('par_level', 'is', null)
     .order('ingredient_name', { ascending: true })
 
-  if (error) throw new Error(`Failed to fetch par alerts: ${error.message}`)
+  if (countError) throw new Error(`Failed to fetch par alerts: ${countError.message}`)
 
-  // Filter client-side: current_qty < par_level
-  return ((data || []) as any[])
-    .filter((row: any) => Number(row.current_qty) < Number(row.par_level))
-    .map((row: any) => ({
-      id: row.id,
-      ingredientName: row.ingredient_name,
-      currentQty: Number(row.current_qty),
-      parLevel: Number(row.par_level),
-      unit: row.unit,
-      deficit: Number(row.par_level) - Number(row.current_qty),
-      vendorId: row.vendor_id,
+  const { data: movements, error: movementError } = await db
+    .from('inventory_transactions' as any)
+    .select(
+      'id, ingredient_id, ingredient_name, transaction_type, quantity, unit, cost_cents, location_id, created_at, confidence_status, review_status'
+    )
+    .eq('chef_id', user.tenantId!)
+
+  if (movementError)
+    throw new Error(`Failed to fetch inventory movements: ${movementError.message}`)
+
+  const positions = computePantryStockPositions({
+    movements: ((movements ?? []) as any[]).map(
+      (row: any): PantryMovementRow => ({
+        id: row.id,
+        ingredient_id: row.ingredient_id ?? null,
+        ingredient_name: row.ingredient_name,
+        transaction_type: row.transaction_type,
+        quantity: row.quantity,
+        unit: row.unit,
+        cost_cents: row.cost_cents ?? null,
+        location_id: row.location_id ?? null,
+        created_at: row.created_at ?? null,
+        confidence_status: row.confidence_status ?? 'confirmed',
+        review_status: row.review_status ?? 'approved',
+      })
+    ),
+    counts: ((counts ?? []) as any[]).map(
+      (row: any): PantryCountRow => ({
+        id: row.id,
+        ingredient_id: row.ingredient_id ?? null,
+        ingredient_name: row.ingredient_name,
+        current_qty: row.current_qty,
+        par_level: row.par_level ?? null,
+        unit: row.unit,
+        last_counted_at: row.last_counted_at ?? null,
+        updated_at: row.updated_at ?? null,
+        vendor_id: row.vendor_id ?? null,
+      })
+    ),
+  })
+
+  const vendorByKey = new Map(
+    ((counts ?? []) as any[]).map((row: any) => [
+      `${row.ingredient_id ?? row.ingredient_name.toLowerCase()}::${row.unit.toLowerCase()}`,
+      row.vendor_id ?? null,
+    ])
+  )
+
+  return positions
+    .filter((position) => position.parLevel != null && position.deficit > 0)
+    .filter((position) => position.confidenceStatus !== 'unknown')
+    .filter((position) => position.confidenceStatus !== 'conflict')
+    .map((position) => ({
+      id: position.key,
+      ingredientName: position.ingredientName,
+      currentQty: position.currentQty,
+      parLevel: position.parLevel!,
+      unit: position.unit,
+      deficit: position.deficit,
+      vendorId: vendorByKey.get(position.key) ?? null,
+      confidenceStatus: position.confidenceStatus,
     }))
 }
 

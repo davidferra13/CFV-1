@@ -448,24 +448,24 @@ export async function approveReceiptSummary(receiptPhotoId: string) {
           }
         }
 
-        // Auto-receive into inventory: you bought it, now you have it (non-blocking)
-        // Creates positive 'receive' transactions in the inventory ledger
+        // Auto-receive reviewed receipt quantities into the inventory ledger.
+        // Lines without quantity or unit are not stock truth.
         try {
-          const matchedItems = lineItemInputs.filter((li) => li.ingredientId)
+          const matchedItems = lineItemInputs.filter(
+            (li) => li.ingredientId && li.quantity && li.unit
+          )
           if (matchedItems.length > 0) {
-            // Look up default_unit for matched ingredients so we record in the right unit
             const ingredientIds = [...new Set(matchedItems.map((li) => li.ingredientId!))]
             const { data: ingredientRows } = await db
               .from('ingredients')
-              .select('id, name, default_unit')
+              .select('id, name')
               .in('id', ingredientIds)
               .eq('tenant_id', user.tenantId!)
 
-            const ingredientMap = new Map<string, { name: string; unit: string }>()
+            const ingredientMap = new Map<string, { name: string }>()
             for (const row of (ingredientRows ?? []) as any[]) {
               ingredientMap.set(row.id, {
                 name: row.name,
-                unit: row.default_unit || 'each',
               })
             }
 
@@ -478,12 +478,20 @@ export async function approveReceiptSummary(receiptPhotoId: string) {
                   ingredient_id: li.ingredientId,
                   ingredient_name: ing.name,
                   transaction_type: 'receive',
-                  quantity: 1, // Default to 1 unit; chef can adjust via inventory UI
-                  unit: ing.unit,
+                  quantity: li.quantity,
+                  unit: li.unit,
                   cost_cents: li.amountCents,
                   event_id: photo.event_id ?? null,
-                  notes: `Auto-received from receipt at ${vendorName ?? 'unknown store'}`,
+                  notes: `Received from approved receipt at ${vendorName ?? 'unknown store'}`,
                   created_by: user.id,
+                  confidence_status: 'confirmed',
+                  confidence_score: 1,
+                  source_quantity: li.quantity,
+                  source_unit: li.unit,
+                  canonical_quantity: li.quantity,
+                  canonical_unit: li.unit,
+                  conversion_status: 'not_required',
+                  review_status: 'approved',
                 }
               })
 

@@ -9,6 +9,11 @@ import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import {
+  computePantryStockPositions,
+  type PantryCountRow,
+  type PantryMovementRow,
+} from '@/lib/inventory/pantry-engine'
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -326,53 +331,92 @@ export async function getStockSummary(): Promise<StockSummary> {
   const user = await requireChef()
   const db: any = createServerClient()
 
-  // Get all current stock items
-  const { data, error } = await db(db).currentStock().select('*').eq('chef_id', user.tenantId!)
+  const [transactionResult, countResult] = await Promise.all([
+    db(db)
+      .transactions()
+      .select(
+        'id, ingredient_id, ingredient_name, transaction_type, quantity, unit, cost_cents, location_id, created_at, confidence_status, review_status'
+      )
+      .eq('chef_id', user.tenantId!),
+    createServerClient()
+      .from('inventory_counts' as any)
+      .select('*')
+      .eq('chef_id', user.tenantId!),
+  ])
 
-  if (error) throw new Error(`Failed to fetch stock summary: ${(error as any).message}`)
+  if (transactionResult.error) {
+    throw new Error(`Failed to fetch stock summary: ${(transactionResult.error as any).message}`)
+  }
+  if (countResult.error) {
+    throw new Error(`Failed to fetch stock counts: ${(countResult.error as any).message}`)
+  }
 
-  const items = (data || []) as any[]
+  const transactions = (transactionResult.data || []) as any[]
+  const positions = computePantryStockPositions({
+    movements: transactions.map(
+      (row: any): PantryMovementRow => ({
+        id: row.id,
+        ingredient_id: row.ingredient_id ?? null,
+        ingredient_name: row.ingredient_name,
+        transaction_type: row.transaction_type,
+        quantity: row.quantity,
+        unit: row.unit,
+        cost_cents: row.cost_cents ?? null,
+        location_id: row.location_id ?? null,
+        created_at: row.created_at ?? null,
+        confidence_status: row.confidence_status ?? 'confirmed',
+        review_status: row.review_status ?? 'approved',
+      })
+    ),
+    counts: ((countResult.data || []) as any[]).map(
+      (row: any): PantryCountRow => ({
+        id: row.id,
+        ingredient_id: row.ingredient_id ?? null,
+        ingredient_name: row.ingredient_name,
+        current_qty: row.current_qty,
+        par_level: row.par_level ?? null,
+        unit: row.unit,
+        last_counted_at: row.last_counted_at ?? null,
+        updated_at: row.updated_at ?? null,
+        vendor_id: row.vendor_id ?? null,
+      })
+    ),
+  })
+
   let totalItems = 0
   let totalValueCents = 0
   let belowParCount = 0
 
-  for (const row of items) {
-    const qty = Number(row.current_qty ?? 0)
-    if (qty > 0) {
+  for (const position of positions) {
+    const trustworthy =
+      position.confidenceStatus !== 'unknown' && position.confidenceStatus !== 'conflict'
+    if (trustworthy && position.currentQty > 0) {
       totalItems++
     }
-
-    const parLevel = row.par_level != null ? Number(row.par_level) : null
-    if (parLevel != null && qty < parLevel) {
+    if (trustworthy && position.deficit > 0) {
       belowParCount++
     }
   }
 
-  // Get total value by summing (latest cost_cents) for each ingredient with positive stock
-  const { data: costData, error: costError } = await db(db)
-    .transactions()
-    .select('ingredient_id, cost_cents, quantity')
-    .eq('chef_id', user.tenantId!)
-    .not('cost_cents', 'is', null)
-    .order('created_at', { ascending: false })
-
-  if (!costError && costData) {
-    // Build a map of ingredient_id -> latest unit cost
-    const latestCostMap = new Map<string, number>()
-    for (const tx of costData as any[]) {
-      if (tx.ingredient_id && !latestCostMap.has(tx.ingredient_id)) {
-        const txQty = Math.abs(Number(tx.quantity ?? 1))
-        const unitCost = txQty > 0 ? Math.round(tx.cost_cents / txQty) : tx.cost_cents
-        latestCostMap.set(tx.ingredient_id, unitCost)
-      }
+  const latestCostMap = new Map<string, number>()
+  for (const tx of transactions) {
+    if (tx.ingredient_id && tx.cost_cents != null && !latestCostMap.has(tx.ingredient_id)) {
+      const txQty = Math.abs(Number(tx.quantity ?? 1))
+      const unitCost = txQty > 0 ? Math.round(tx.cost_cents / txQty) : tx.cost_cents
+      latestCostMap.set(tx.ingredient_id, unitCost)
     }
+  }
 
-    // Calculate total value
-    for (const row of items) {
-      const qty = Number(row.current_qty ?? 0)
-      if (qty > 0 && row.ingredient_id && latestCostMap.has(row.ingredient_id)) {
-        totalValueCents += Math.round(qty * latestCostMap.get(row.ingredient_id)!)
-      }
+  for (const position of positions) {
+    const trustworthy =
+      position.confidenceStatus !== 'unknown' && position.confidenceStatus !== 'conflict'
+    if (
+      trustworthy &&
+      position.currentQty > 0 &&
+      position.ingredientId &&
+      latestCostMap.has(position.ingredientId)
+    ) {
+      totalValueCents += Math.round(position.currentQty * latestCostMap.get(position.ingredientId)!)
     }
   }
 

@@ -58,8 +58,8 @@ export function AddInventoryItemForm() {
 
   if (!open) {
     return (
-      <Button size="sm" onClick={() => setOpen(true)}>
-        + Track Item
+      <Button size="sm" variant="primary" onClick={() => setOpen(true)}>
+        + Count Item
       </Button>
     )
   }
@@ -67,7 +67,7 @@ export function AddInventoryItemForm() {
   return (
     <Card className="max-w-lg">
       <CardHeader className="pb-3">
-        <CardTitle className="text-base">Track New Inventory Item</CardTitle>
+        <CardTitle className="text-base">Count New Inventory Item</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         <div>
@@ -123,11 +123,12 @@ export function AddInventoryItemForm() {
         <div className="flex gap-2 pt-1">
           <Button
             size="sm"
+            variant="primary"
             onClick={handleSubmit}
             loading={isPending}
             disabled={!form.ingredientName.trim()}
           >
-            Start Tracking
+            Save Count
           </Button>
           <Button size="sm" variant="ghost" onClick={() => setOpen(false)}>
             Cancel

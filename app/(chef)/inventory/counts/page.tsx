@@ -13,7 +13,15 @@ export const metadata: Metadata = { title: 'Inventory Counts' }
 export default async function InventoryCountsPage() {
   await requireChef()
 
-  const counts = await getInventoryCounts().catch(() => [])
+  let counts: Awaited<ReturnType<typeof getInventoryCounts>> = []
+  let countsError = false
+
+  try {
+    counts = await getInventoryCounts()
+  } catch (error) {
+    countsError = true
+    console.error('[inventory-counts] Failed to load counts', error)
+  }
 
   const items = (counts as any[]).map((c: any) => ({
     id: c.id,
@@ -36,16 +44,23 @@ export default async function InventoryCountsPage() {
           <AddInventoryItemForm />
         </div>
         <p className="text-stone-500 mt-1">
-          Update current quantities for tracked ingredients. Items below par are flagged for
-          reorder.
+          Count stock on hand. Saves append opening balance or correction movements so ChefFlow can
+          explain where each quantity came from.
         </p>
       </div>
 
-      {items.length === 0 ? (
+      {countsError ? (
+        <div className="rounded-lg border border-red-900/60 bg-red-950/20 p-8 text-center">
+          <p className="text-red-100 text-sm">
+            Inventory counts could not be loaded. Do not rely on pantry status until this page
+            refreshes successfully.
+          </p>
+        </div>
+      ) : items.length === 0 ? (
         <div className="rounded-lg border border-stone-700 bg-stone-800 p-8 text-center">
           <p className="text-stone-500 text-sm">
-            No inventory items tracked yet. Use the &quot;+ Track Item&quot; button above to start
-            tracking, or ingredients will appear automatically through recipes and vendor invoices.
+            No inventory items counted yet. Use the &quot;+ Count Item&quot; button above to create
+            a confirmed opening balance.
           </p>
         </div>
       ) : (

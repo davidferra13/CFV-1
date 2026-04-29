@@ -1,7 +1,7 @@
 'use client'
 
 // InventoryCountForm - Mobile-friendly inventory count form.
-// Allows chefs to update on-hand quantities with par-level indicators.
+// Count updates append inventory ledger movements instead of replacing truth.
 
 import { useState, useTransition } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
@@ -49,9 +49,12 @@ export function InventoryCountForm({ items }: { items: InventoryCount[] }) {
     startTransition(async () => {
       try {
         await updateInventoryCount({
-          id: item.id,
-          newQty: counts[item.id],
-        } as any)
+          ingredientName: item.ingredientName,
+          currentQty: counts[item.id],
+          parLevel: item.parLevel,
+          unit: item.unit,
+          vendorId: item.vendorId,
+        })
         setUpdatingId(null)
         setSuccessId(item.id)
         setTimeout(() => setSuccessId((prev) => (prev === item.id ? null : prev)), 2000)
@@ -80,6 +83,9 @@ export function InventoryCountForm({ items }: { items: InventoryCount[] }) {
           <ClipboardCheck className="h-5 w-5 text-stone-400" />
           Inventory Count
         </CardTitle>
+        <p className="text-xs text-stone-500">
+          Saved counts create an auditable opening balance or correction movement.
+        </p>
       </CardHeader>
       <CardContent className="p-0">
         <div className="divide-y divide-stone-800">
