@@ -3,6 +3,7 @@
 import { useState, useTransition, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { format, parseISO, differenceInHours } from 'date-fns'
+import { toast } from 'sonner'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -764,10 +765,12 @@ function ComponentCard({ component, eventId }: { component: MiseComponent; event
     startTransition(async () => {
       try {
         const key = `${component.componentId}-${component.componentName}`
-        await toggleMiseItem(eventId, key, next)
+        const result = await toggleMiseItem(eventId, key, next)
+        if (!result.success) throw new Error(result.error ?? 'Failed to save component.')
         router.refresh()
-      } catch {
+      } catch (err) {
         setPrepped(!next)
+        toast.error(err instanceof Error ? err.message : 'Failed to save component.')
       }
     })
   }, [prepped, component.componentId, component.componentName, eventId, router])
@@ -851,10 +854,12 @@ function IngredientRow({ ingredient, eventId }: { ingredient: MiseIngredient; ev
     startTransition(async () => {
       try {
         const key = `ing-${ingredient.ingredientId}-${ingredient.sources[0]?.componentId ?? ''}`
-        await toggleMiseItem(eventId, key, next)
+        const result = await toggleMiseItem(eventId, key, next)
+        if (!result.success) throw new Error(result.error ?? 'Failed to save ingredient.')
         router.refresh()
-      } catch {
+      } catch (err) {
         setPrepped(!next)
+        toast.error(err instanceof Error ? err.message : 'Failed to save ingredient.')
       }
     })
   }, [prepped, ingredient, eventId, router])
@@ -973,10 +978,16 @@ function EquipmentSection({ equipment, eventId }: { equipment: MiseEquipment[]; 
                         setPackedState((s) => ({ ...s, [eq.id]: next }))
                         startTransition(async () => {
                           try {
-                            await toggleEquipmentPacked(eventId, eq.id, next)
+                            const result = await toggleEquipmentPacked(eventId, eq.id, next)
+                            if (!result.success) {
+                              throw new Error(result.error ?? 'Failed to save equipment.')
+                            }
                             router.refresh()
-                          } catch {
+                          } catch (err) {
                             setPackedState((s) => ({ ...s, [eq.id]: !next }))
+                            toast.error(
+                              err instanceof Error ? err.message : 'Failed to save equipment.'
+                            )
                           }
                         })
                       }}

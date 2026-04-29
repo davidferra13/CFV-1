@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { format } from 'date-fns'
+import { toast } from 'sonner'
 import type { EventDetailTab } from '@/components/events/event-detail-mobile-nav'
 import { EventDetailSection } from '@/components/events/event-detail-mobile-nav'
 import Link from 'next/link'
@@ -400,30 +401,43 @@ export function EventDetailPrepTab({
   }, [eventId])
 
   function toggleItem(key: string) {
-    setCheckedItems((prev) => {
-      const next = new Set(prev)
-      const completed = !next.has(key)
-      if (completed) {
-        next.add(key)
-        try {
-          localStorage.setItem(key, '1')
-        } catch {
-          /* ignore */
-        }
-      } else {
-        next.delete(key)
-        try {
-          localStorage.removeItem(key)
-        } catch {
-          /* ignore */
-        }
+    const previous = new Set(checkedItems)
+    const completed = !previous.has(key)
+    const next = new Set(previous)
+
+    if (completed) {
+      next.add(key)
+      try {
+        localStorage.setItem(key, '1')
+      } catch {
+        /* ignore */
       }
-      // Sync to server in background
-      import('@/lib/prep-timeline/actions').then(({ togglePrepCompletion }) => {
-        togglePrepCompletion(eventId, key, completed).catch(() => {})
+    } else {
+      next.delete(key)
+      try {
+        localStorage.removeItem(key)
+      } catch {
+        /* ignore */
+      }
+    }
+
+    setCheckedItems(next)
+
+    import('@/lib/prep-timeline/actions')
+      .then(async ({ togglePrepCompletion }) => {
+        const result = await togglePrepCompletion(eventId, key, completed)
+        if (!result.success) throw new Error(result.error ?? 'Failed to save prep item.')
       })
-      return next
-    })
+      .catch((err) => {
+        setCheckedItems(previous)
+        try {
+          if (previous.has(key)) localStorage.setItem(key, '1')
+          else localStorage.removeItem(key)
+        } catch {
+          /* ignore */
+        }
+        toast.error(err instanceof Error ? err.message : 'Failed to save prep item.')
+      })
   }
 
   const maxDayMinutes = timeline

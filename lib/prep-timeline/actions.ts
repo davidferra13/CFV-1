@@ -101,13 +101,16 @@ export async function togglePrepCompletion(
   eventId: string,
   itemKey: string,
   completed: boolean
-): Promise<{ success: boolean }> {
+): Promise<{ success: boolean; error?: string }> {
+  if (!eventId.trim()) return { success: false, error: 'Event ID is required.' }
+  if (!itemKey.trim()) return { success: false, error: 'Prep item key is required.' }
+
   const user = await requireChef()
   const db: any = createServerClient()
 
   try {
     if (completed) {
-      await db.from('prep_completions').upsert(
+      const { error } = await db.from('prep_completions').upsert(
         {
           event_id: eventId,
           chef_id: user.tenantId!,
@@ -116,18 +119,26 @@ export async function togglePrepCompletion(
         },
         { onConflict: 'event_id,item_key' }
       )
+
+      if (error) return { success: false, error: error.message }
     } else {
-      await db
+      const { error } = await db
         .from('prep_completions')
         .delete()
         .eq('event_id', eventId)
         .eq('chef_id', user.tenantId!)
         .eq('item_key', itemKey)
+
+      if (error) return { success: false, error: error.message }
     }
+
+    revalidatePath(`/events/${eventId}`)
+    revalidatePath(`/events/${eventId}/mise-en-place`)
+    revalidateTag(`prep-timeline-${user.tenantId}`)
     return { success: true }
   } catch (err: any) {
     console.error('[togglePrepCompletion]', err)
-    return { success: false }
+    return { success: false, error: 'Failed to save prep completion.' }
   }
 }
 
@@ -136,15 +147,17 @@ export async function getPrepCompletions(eventId: string): Promise<string[]> {
   const db: any = createServerClient()
 
   try {
-    const { data } = await db
+    const { data, error } = await db
       .from('prep_completions')
       .select('item_key')
       .eq('event_id', eventId)
       .eq('chef_id', user.tenantId!)
 
+    if (error) throw new Error(error.message)
     return (data ?? []).map((row: any) => row.item_key)
-  } catch {
-    return []
+  } catch (err: any) {
+    console.error('[getPrepCompletions]', err)
+    throw new Error(`Failed to load prep completions: ${err.message ?? 'Unknown error'}`)
   }
 }
 

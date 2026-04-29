@@ -1,7 +1,7 @@
 'use client'
 
 // Chef Gear Check - personal readiness checklist
-// localStorage primary state, server sync in background.
+// Optimistic local state with persisted server confirmations.
 // Mirrors packing-list-client.tsx architecture.
 
 import { useState, useEffect, useCallback } from 'react'
@@ -43,23 +43,26 @@ function ItemRow({
   label,
   notes,
   checked,
+  pending,
   onToggle,
 }: {
   itemKey: string
   label: string
   notes?: string | null
   checked: boolean
+  pending?: boolean
   onToggle: (key: string) => void
 }) {
   return (
     <button
       type="button"
+      disabled={pending}
       onClick={() => onToggle(itemKey)}
       className={`w-full flex items-start gap-3 px-3 py-3 rounded-lg text-left transition-colors ${
         checked
           ? 'bg-green-950 border border-green-200'
           : 'bg-stone-900 border border-stone-700 hover:bg-stone-800'
-      }`}
+      } ${pending ? 'cursor-wait opacity-75' : ''}`}
     >
       <div
         className={`flex-shrink-0 w-7 h-7 rounded border-2 flex items-center justify-center mt-0.5 ${
@@ -85,6 +88,7 @@ function ItemRow({
           {label}
         </span>
         {notes && <span className="block text-xs text-stone-300 mt-0.5">{notes}</span>}
+        {pending && <span className="block text-xs text-stone-400 mt-0.5">Saving...</span>}
       </div>
     </button>
   )
@@ -179,6 +183,7 @@ function GearSection({
   category,
   items,
   checkedState,
+  pendingItemKeys,
   onToggle,
   chefId,
   onItemAdded,
@@ -186,6 +191,7 @@ function GearSection({
   category: GearCategory
   items: GearDefault[]
   checkedState: CheckedState
+  pendingItemKeys: Set<string>
   onToggle: (key: string) => void
   chefId: string
   onItemAdded: (item: GearDefault) => void
@@ -218,6 +224,7 @@ function GearSection({
             label={item.item_name}
             notes={item.notes}
             checked={checkedState[gearItemKey(item.item_name)] ?? false}
+            pending={pendingItemKeys.has(gearItemKey(item.item_name))}
             onToggle={onToggle}
           />
         ))}
@@ -240,6 +247,7 @@ export function GearCheckClient({
 
   const [gearItems, setGearItems] = useState<GearDefault[]>(initialDefaults)
   const [checked, setChecked] = useState<CheckedState>({})
+  const [pendingItemKeys, setPendingItemKeys] = useState<Set<string>>(new Set())
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(initialGearChecked)
   const [error, setError] = useState<string | null>(null)
@@ -267,22 +275,61 @@ export function GearCheckClient({
     }
   }, [storageKey, confirmedKeys])
 
+  const persistCheckedState = useCallback(
+    (next: CheckedState) => {
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(next))
+      } catch {
+        // localStorage unavailable
+      }
+    },
+    [storageKey]
+  )
+
   const toggle = useCallback(
     (itemKey: string) => {
+      if (pendingItemKeys.has(itemKey)) return
+
+      setError(null)
+      setPendingItemKeys((prev) => new Set(prev).add(itemKey))
+
+      const previousValue = checked[itemKey] ?? false
+      const newValue = !previousValue
+
       setChecked((prev) => {
-        const newValue = !prev[itemKey]
         const next = { ...prev, [itemKey]: newValue }
-        try {
-          localStorage.setItem(storageKey, JSON.stringify(next))
-        } catch {
-          // ignore
-        }
-        // Sync to DB in background
-        togglePackingConfirmation(eventId, itemKey, newValue).catch(() => {})
+        persistCheckedState(next)
         return next
       })
+
+      togglePackingConfirmation(eventId, itemKey, newValue)
+        .then((result) => {
+          if (!result.success || result.confirmed !== newValue) {
+            setChecked((current) => {
+              const next = { ...current, [itemKey]: previousValue }
+              persistCheckedState(next)
+              return next
+            })
+            setError(result.error ?? 'Failed to save gear confirmation')
+          }
+        })
+        .catch(() => {
+          setChecked((current) => {
+            const next = { ...current, [itemKey]: previousValue }
+            persistCheckedState(next)
+            return next
+          })
+          setError('Failed to save gear confirmation')
+        })
+        .finally(() => {
+          setPendingItemKeys((prev) => {
+            const next = new Set(prev)
+            next.delete(itemKey)
+            return next
+          })
+        })
     },
-    [storageKey, eventId]
+    [checked, eventId, pendingItemKeys, persistCheckedState]
   )
 
   const handleMarkReady = async () => {
@@ -359,6 +406,7 @@ export function GearCheckClient({
           category={cat}
           items={grouped[cat]}
           checkedState={checked}
+          pendingItemKeys={pendingItemKeys}
           onToggle={toggle}
           chefId={chefId}
           onItemAdded={handleItemAdded}

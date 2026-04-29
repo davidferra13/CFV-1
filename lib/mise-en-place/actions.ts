@@ -3,6 +3,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { getPrepCompletions } from '@/lib/prep-timeline/actions'
+import { revalidatePath } from 'next/cache'
 import {
   buildMiseEnPlace,
   type MiseRawInput,
@@ -316,7 +317,7 @@ export async function toggleMiseItem(
   eventId: string,
   itemKey: string,
   completed: boolean
-): Promise<{ success: boolean }> {
+): Promise<{ success: boolean; error?: string }> {
   // Delegate to existing prep completion system
   const { togglePrepCompletion } = await import('@/lib/prep-timeline/actions')
   return togglePrepCompletion(eventId, itemKey, completed)
@@ -327,21 +328,28 @@ export async function toggleEquipmentPacked(
   eventId: string,
   equipmentId: string,
   packed: boolean
-): Promise<{ success: boolean }> {
+): Promise<{ success: boolean; error?: string }> {
+  if (!eventId.trim()) return { success: false, error: 'Event ID is required.' }
+  if (!equipmentId.trim()) return { success: false, error: 'Equipment ID is required.' }
+
   const user = await requireChef()
   const db: any = createServerClient()
 
   try {
-    await db
+    const { error } = await db
       .from('event_equipment_checklist')
       .update({ packed, updated_at: new Date().toISOString() })
       .eq('id', equipmentId)
       .eq('event_id', eventId)
       .eq('chef_id', user.tenantId!)
 
+    if (error) return { success: false, error: error.message }
+
+    revalidatePath(`/events/${eventId}`)
+    revalidatePath(`/events/${eventId}/mise-en-place`)
     return { success: true }
   } catch (err: any) {
     console.error('[toggleEquipmentPacked]', err)
-    return { success: false }
+    return { success: false, error: 'Failed to update equipment.' }
   }
 }
