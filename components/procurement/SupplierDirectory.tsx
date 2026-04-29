@@ -4,7 +4,8 @@ import { useState, useTransition } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { createSupplier, type SupplierDirectoryEntry } from '@/lib/procurement/actions'
+import { createSupplier } from '@/lib/procurement/actions'
+import type { SupplierDirectoryEntry } from '@/lib/procurement/types'
 
 type Props = {
   initialSuppliers: SupplierDirectoryEntry[]

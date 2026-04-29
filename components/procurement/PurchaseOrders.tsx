@@ -10,9 +10,8 @@ import {
   addProcurementOrderItem,
   sendProcurementOrder,
   fulfillProcurementOrder,
-  type ProcurementOrder,
-  type ProcurementReferenceData,
 } from '@/lib/procurement/actions'
+import type { ProcurementOrder, ProcurementReferenceData } from '@/lib/procurement/types'
 
 function formatCurrency(cents: number | null) {
   if (cents == null) return '--'

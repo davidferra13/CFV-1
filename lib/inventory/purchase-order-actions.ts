@@ -8,60 +8,19 @@ import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import type {
+  AddPOItemInput,
+  CreatePOInput,
+  POItem,
+  PurchaseOrder,
+  PurchaseOrderStatus,
+  ReceiveItemInput,
+  UpdatePOItemInput,
+} from './purchase-order-types'
 
-// ─── Types ───────────────────────────────────────────────────────
+// Types
 
-export type PurchaseOrderStatus =
-  | 'draft'
-  | 'submitted'
-  | 'partially_received'
-  | 'received'
-  | 'cancelled'
-
-export type PurchaseOrder = {
-  id: string
-  chefId: string
-  vendorId: string | null
-  eventId: string | null
-  poNumber: string | null
-  status: PurchaseOrderStatus
-  orderDate: string | null
-  expectedDelivery: string | null
-  deliveryLocationId: string | null
-  estimatedTotalCents: number
-  actualTotalCents: number | null
-  photoUrl: string | null
-  notes: string | null
-  submittedAt: string | null
-  receivedAt: string | null
-  createdAt: string
-  vendorName?: string
-  eventTitle?: string
-  itemCount?: number
-}
-
-export type POItem = {
-  id: string
-  purchaseOrderId: string
-  ingredientId: string | null
-  ingredientName: string
-  orderedQty: number
-  unit: string
-  estimatedUnitPriceCents: number | null
-  estimatedTotalCents: number | null
-  receivedQty: number | null
-  actualUnitPriceCents: number | null
-  actualTotalCents: number | null
-  isReceived: boolean
-  isShorted: boolean
-  isDamaged: boolean
-  damageNotes: string | null
-  expiryDate: string | null
-  lotNumber: string | null
-  notes: string | null
-}
-
-// ─── Schemas ─────────────────────────────────────────────────────
+// Schemas
 
 const CreatePOSchema = z.object({
   vendorId: z.string().uuid().optional(),
@@ -102,15 +61,10 @@ const ReceiveItemSchema = z.object({
   lotNumber: z.string().optional(),
 })
 
-export type CreatePOInput = z.infer<typeof CreatePOSchema>
-export type AddPOItemInput = z.infer<typeof AddPOItemSchema>
-export type UpdatePOItemInput = z.infer<typeof UpdatePOItemSchema>
-export type ReceiveItemInput = z.infer<typeof ReceiveItemSchema>
-
-// ─── DB helper ────────────────────────────────────────────
+// DB helper
 // All inventory tables are pre-built for planned schema.
 // Cast .from() to bypass strict type checking.
-function db(db: any) {
+function tables(db: any) {
   return {
     purchaseOrders: () => db.from('purchase_orders' as any) as any,
     purchaseOrderItems: () => db.from('purchase_order_items' as any) as any,
@@ -119,7 +73,7 @@ function db(db: any) {
   }
 }
 
-// ─── Actions ─────────────────────────────────────────────────────
+// Actions
 
 /**
  * Create a new purchase order in draft status.
@@ -129,7 +83,7 @@ export async function createPurchaseOrder(input: CreatePOInput): Promise<Purchas
   const parsed = CreatePOSchema.parse(input)
   const db: any = createServerClient()
 
-  const { data, error } = await db(db)
+  const { data, error } = await tables(db)
     .purchaseOrders()
     .insert({
       chef_id: user.tenantId!,
@@ -335,7 +289,7 @@ export async function createPOFromEvent(eventId: string): Promise<PurchaseOrder>
   }
 
   // Create PO header
-  const { data: po, error: poError } = await db(db)
+  const { data: po, error: poError } = await tables(db)
     .purchaseOrders()
     .insert({
       chef_id: user.tenantId!,
@@ -357,7 +311,7 @@ export async function createPOFromEvent(eventId: string): Promise<PurchaseOrder>
       ...item,
     }))
 
-    const { error: itemsError } = await db(db).purchaseOrderItems().insert(itemRows)
+    const { error: itemsError } = await tables(db).purchaseOrderItems().insert(itemRows)
 
     if (itemsError) throw new Error(`Failed to create PO items: ${(itemsError as any).message}`)
   }
@@ -386,7 +340,7 @@ export async function addPOItem(poId: string, input: AddPOItemInput): Promise<PO
       ? Math.round(parsed.orderedQty * parsed.estimatedUnitPriceCents)
       : null
 
-  const { data, error } = await db(db)
+  const { data, error } = await tables(db)
     .purchaseOrderItems()
     .insert({
       purchase_order_id: poId,
@@ -422,7 +376,7 @@ export async function updatePOItem(itemId: string, input: UpdatePOItemInput): Pr
   const db: any = createServerClient()
 
   // Get the item to find its PO, then verify ownership
-  const { data: item, error: fetchError } = await db(db)
+  const { data: item, error: fetchError } = await tables(db)
     .purchaseOrderItems()
     .select('purchase_order_id, ordered_qty, estimated_unit_price_cents')
     .eq('id', itemId)
@@ -450,7 +404,7 @@ export async function updatePOItem(itemId: string, input: UpdatePOItemInput): Pr
   updatePayload.estimated_total_cents =
     finalPrice != null ? Math.round(finalQty * finalPrice) : null
 
-  const { data, error } = await db(db)
+  const { data, error } = await tables(db)
     .purchaseOrderItems()
     .update(updatePayload)
     .eq('id', itemId)
@@ -471,12 +425,12 @@ export async function updatePOItem(itemId: string, input: UpdatePOItemInput): Pr
  * Remove an item from a purchase order.
  * Recalculates estimated_total_cents on the PO.
  */
-export async function removePOItem(itemId: string): Promise<void> {
+export async function removePOItem(itemId: string): Promise<{ success: true }> {
   const user = await requireChef()
   const db: any = createServerClient()
 
   // Get the item to find its PO
-  const { data: item, error: fetchError } = await db(db)
+  const { data: item, error: fetchError } = await tables(db)
     .purchaseOrderItems()
     .select('purchase_order_id')
     .eq('id', itemId)
@@ -485,7 +439,7 @@ export async function removePOItem(itemId: string): Promise<void> {
   if (fetchError || !item) throw new Error('PO item not found')
   await verifyPOOwnership(db, (item as any).purchase_order_id, user.tenantId!)
 
-  const { error } = await db(db).purchaseOrderItems().delete().eq('id', itemId)
+  const { error } = await tables(db).purchaseOrderItems().delete().eq('id', itemId)
 
   if (error) throw new Error(`Failed to remove PO item: ${(error as any).message}`)
 
@@ -493,6 +447,8 @@ export async function removePOItem(itemId: string): Promise<void> {
 
   revalidatePath('/inventory')
   revalidatePath('/inventory/purchase-orders')
+
+  return { success: true }
 }
 
 /**
@@ -507,7 +463,7 @@ export async function submitPO(poId: string): Promise<PurchaseOrder> {
     throw new Error(`Cannot submit PO in "${po.status}" status - must be draft`)
   }
 
-  const { data, error } = await db(db)
+  const { data, error } = await tables(db)
     .purchaseOrders()
     .update({
       status: 'submitted',
@@ -554,7 +510,7 @@ export async function receivePOItems(
   // Process each item
   for (const item of parsedItems) {
     // Get the PO item details
-    const { data: poItem, error: itemError } = await db(db)
+    const { data: poItem, error: itemError } = await tables(db)
       .purchaseOrderItems()
       .select('*')
       .eq('id', item.itemId)
@@ -570,7 +526,7 @@ export async function receivePOItems(
       actualUnitPrice != null ? Math.round(item.receivedQty * actualUnitPrice) : null
 
     // Update the PO item
-    const { error: updateError } = await db(db)
+    const { error: updateError } = await tables(db)
       .purchaseOrderItems()
       .update({
         received_qty: item.receivedQty,
@@ -594,7 +550,7 @@ export async function receivePOItems(
         actualUnitPrice != null ? Math.round(item.receivedQty * actualUnitPrice) : null
       let batchId: string | null = null
 
-      const { data: batch, error: batchError } = await db(db)
+      const { data: batch, error: batchError } = await tables(db)
         .inventoryBatches()
         .insert({
           chef_id: user.tenantId!,
@@ -624,7 +580,7 @@ export async function receivePOItems(
 
       batchId = (batch as any)?.id ?? null
 
-      const { error: txError } = await db(db)
+      const { error: txError } = await tables(db)
         .inventoryTransactions()
         .insert({
           chef_id: user.tenantId!,
@@ -679,7 +635,7 @@ export async function receivePOItems(
   }
 
   // Determine new PO status: check if all items are received
-  const { data: allItems, error: allItemsError } = await db(db)
+  const { data: allItems, error: allItemsError } = await tables(db)
     .purchaseOrderItems()
     .select('is_received, actual_total_cents')
     .eq('purchase_order_id', poId)
@@ -695,7 +651,7 @@ export async function receivePOItems(
   }, 0)
 
   // Update PO status and actual total
-  const { data: updatedPO, error: poUpdateError } = await db(db)
+  const { data: updatedPO, error: poUpdateError } = await tables(db)
     .purchaseOrders()
     .update({
       status: newStatus,
@@ -739,7 +695,7 @@ export async function getPurchaseOrders(filters?: {
   const user = await requireChef()
   const db: any = createServerClient()
 
-  let query = db(db)
+  let query = tables(db)
     .purchaseOrders()
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -779,7 +735,7 @@ export async function getPurchaseOrders(filters?: {
   }
 
   // Get item counts per PO
-  const { data: itemCounts } = await db(db)
+  const { data: itemCounts } = await tables(db)
     .purchaseOrderItems()
     .select('purchase_order_id')
     .in('purchase_order_id', poIds)
@@ -817,7 +773,7 @@ export async function getPurchaseOrder(
   const user = await requireChef()
   const db: any = createServerClient()
 
-  const { data: po, error: poError } = await db(db)
+  const { data: po, error: poError } = await tables(db)
     .purchaseOrders()
     .select('*')
     .eq('id', poId)
@@ -826,7 +782,7 @@ export async function getPurchaseOrder(
 
   if (poError || !po) throw new Error('Purchase order not found')
 
-  const { data: items, error: itemsError } = await db(db)
+  const { data: items, error: itemsError } = await tables(db)
     .purchaseOrderItems()
     .select('*')
     .eq('purchase_order_id', poId)
@@ -880,7 +836,7 @@ export async function cancelPO(poId: string): Promise<PurchaseOrder> {
     throw new Error(`Cannot cancel PO in "${po.status}" status`)
   }
 
-  const { data, error } = await db(db)
+  const { data, error } = await tables(db)
     .purchaseOrders()
     .update({ status: 'cancelled' })
     .eq('id', poId)
@@ -896,10 +852,10 @@ export async function cancelPO(poId: string): Promise<PurchaseOrder> {
   return mapPO(data)
 }
 
-// ─── Helpers ─────────────────────────────────────────────────────
+// Helpers
 
 async function verifyPOOwnership(db: any, poId: string, tenantId: string): Promise<any> {
-  const { data, error } = await db(db)
+  const { data, error } = await tables(db)
     .purchaseOrders()
     .select('*')
     .eq('id', poId)
@@ -911,7 +867,7 @@ async function verifyPOOwnership(db: any, poId: string, tenantId: string): Promi
 }
 
 async function recalcPOEstimatedTotal(db: any, poId: string, tenantId: string): Promise<void> {
-  const { data: items } = await db(db)
+  const { data: items } = await tables(db)
     .purchaseOrderItems()
     .select('estimated_total_cents')
     .eq('purchase_order_id', poId)
@@ -920,7 +876,7 @@ async function recalcPOEstimatedTotal(db: any, poId: string, tenantId: string): 
     return sum + (i.estimated_total_cents ?? 0)
   }, 0)
 
-  await db(db)
+  await tables(db)
     .purchaseOrders()
     .update({ estimated_total_cents: total })
     .eq('id', poId)
