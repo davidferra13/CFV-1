@@ -36,12 +36,27 @@ Capture two things:
 
 A spec without Developer Notes is incomplete. A builder reading a spec without Developer Notes is building blind.
 
+## Step 3.5: Software Fundamentals Gate
+
+Before writing the spec, state:
+
+- Shared design concept: what are we changing, what must remain true, and what ambiguity remains?
+- Design tree: which meaningful decision branches were considered and resolved?
+- Ubiquitous language: existing domain terms, module names, entities, workflows, and invariants from code and docs.
+- Naming conflicts: any conflict with `AGENTS.md`, existing modules, UI copy, database columns, or billing language.
+- Deep module boundary: which interface should hide complexity, and what must stay visible to humans?
+- Fastest feedback loop: the first check a builder can run to prove the spec is working.
+
+If ambiguity remains after inspection, stop and ask grill-me questions before writing the spec. Do not proceed with assumptions that affect behavior, data model, auth, billing, tenant scope, UI promises, or module boundaries.
+
 ## Step 4: Write the Spec
 
 Use `docs/specs/_TEMPLATE.md`. Fill in every section. The spec must include:
 
 - **Timeline table** with creation timestamp
 - **Developer Notes** section (from Step 3)
+- **Design Investment** section: how this spec preserves or improves system design, and what entropy it avoids
+- **Ubiquitous Language** section: canonical terms reused and naming conflicts resolved
 - All technical sections per the template
 
 ## Step 5: Spec Validation (Evidence Required)
@@ -62,6 +77,7 @@ Answer every item below. **Each answer must cite specific file paths and line nu
 12. **What should NOT be touched?** Explicitly fence off adjacent code.
 13. **Is this the simplest complete version?** If not, cut scope now.
 14. **If implemented exactly as written, what would still be wrong?** Be honest.
+15. **What design investment does this make?** Simpler interface, clearer language, faster feedback, better module boundary, or explicit debt left behind.
 
 ## Final Check (Must Answer Explicitly)
 

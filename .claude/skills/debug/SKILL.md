@@ -29,7 +29,9 @@ Do NOT move to Phase 2 until you can state: "The error is X, it happens when Y, 
 
 1. State your hypothesis: "The bug is caused by [specific thing] because [evidence]."
 2. Design a minimal test: one change, one verification.
-3. Do NOT make multiple simultaneous changes. One at a time.
+3. Use the fastest check that proves or falsifies the hypothesis. One hypothesis, one check, one result.
+4. Identify whether the fix belongs behind an existing module interface or whether the interface itself is leaking complexity.
+5. Do NOT make multiple simultaneous changes. One at a time.
 
 ## Phase 4: Fix and Verify
 

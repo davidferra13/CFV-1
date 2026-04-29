@@ -127,9 +127,16 @@ Design investment:
 
 For ChefFlow work, combine this skill with the most specific task skill:
 
-- `builder`: require shared design concept, module boundary, and feedback loop before implementation.
-- `planner`: produce specs that include module/interface impact and validation, not just user-facing behavior.
-- `tdd`: use when behavior changes and a meaningful failing test can be written.
-- `debug`: use feedback loops and root cause evidence before changing code.
-- `review`: review for entropy, shallow modules, missing tests, unclear interfaces, and AI-generated drift.
+- `builder`: require shared design concept, grill-me gate when ambiguity remains, ubiquitous language, module boundary, fastest feedback loop, and design investment closeout before implementation is considered done.
+- `planner`: produce specs that include shared design concept, ubiquitous language, module/interface impact, fastest feedback loop, design investment, and validation, not just user-facing behavior.
+- `tdd`: use when behavior changes and a meaningful failing test can be written. Choose the fastest stable boundary before RED.
+- `debug`: use one root-cause hypothesis and one fastest falsifying check before changing code.
+- `review`: review for entropy, shallow modules, missing interface tests, boundary leakage, unclear interfaces, naming drift, and AI-generated drift.
 - `ledger-safety`, `stripe-webhook-integrity`, `billing-monetization`, `validation-gate`: keep human strategic inspection high because these are critical boundaries.
+
+## Adoption Artifacts
+
+- Lecture ledger: `system/video-learning/matt-pocock-software-fundamentals.md`.
+- ChefFlow adoption audit: `system/video-learning/matt-pocock-chefflow-adoption-audit.md`.
+
+Treat the adoption audit as the repo-level drill map. Do not start broad refactors from it casually. When one listed area becomes active work, use the drill to define the smallest interface-first slice and the fastest verification loop.

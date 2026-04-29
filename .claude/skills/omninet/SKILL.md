@@ -53,9 +53,10 @@ Use these tools when the task touches skills or durable agent behavior:
 3. If the request implies a task class, load the best matching skill from the router below.
 4. If the request reveals a repeated developer behavior, recurring failure, new operating rule, or missing reusable workflow, also load `skill-garden`.
 5. If the request includes a huge persona paste or asks whether one can be pasted, load `persona-dump`.
-6. Inspect branch and dirty work before writing, classify current-task files versus other agents' work, and keep ownership narrow.
-7. State the skill or skills being used in one short line.
-8. Execute the task with the normal ChefFlow hard stops: no main push, no destructive database operations, no `drizzle-kit push`, no manual `types/database.ts`, no ts-nocheck directive, no em dashes, no unapproved build, no unapproved long-running server.
+6. For non-trivial planning, building, debugging, TDD, or review work, add `software-fundamentals` as a sidecar unless the task is purely mechanical.
+7. Inspect branch and dirty work before writing, classify current-task files versus other agents' work, and keep ownership narrow.
+8. State the skill or skills being used in one short line.
+9. Execute the task with the normal ChefFlow hard stops: no main push, no destructive database operations, no `drizzle-kit push`, no manual `types/database.ts`, no ts-nocheck directive, no em dashes, no unapproved build, no unapproved long-running server.
 
 ## Skill Router
 
@@ -92,6 +93,16 @@ Use the most specific skill that fits. Combine skills only when their responsibi
 | Skill failed or produced bad guidance                                                | `heal-skill` and `skill-garden`                            |
 | New repeated workflow or developer behavior                                          | `skill-garden`                                             |
 | Session close, commit, push                                                          | `close-session` or `ship`                                  |
+
+## Software Fundamentals Sidecar
+
+Use `software-fundamentals` with these primary skills whenever the work is more than a tiny mechanical edit:
+
+- `planner`: require shared design concept, ubiquitous language, fastest feedback loop, and design investment before a spec is ready.
+- `builder`: require shared design concept, resolved ambiguity, module boundary, fastest feedback loop, and design investment before implementation and closeout.
+- `debug`: require one root-cause hypothesis, one fastest falsifying check, and a boundary-aware fix.
+- `tdd`: require the fastest test boundary before RED.
+- `review`: review for architecture entropy, shallow helper sprawl, boundary leakage, naming drift, and missing interface tests.
 
 ## Heartbeat
 

@@ -12,6 +12,18 @@ If you wrote the code before the test, delete the code and start over.
 
 ## The Cycle
 
+## Boundary Selection
+
+Before RED, identify the fastest meaningful test boundary:
+
+- Unit test for pure behavior.
+- Server action call for business logic.
+- Route or component test for UI behavior.
+- Playwright flow when only browser behavior proves the contract.
+- Replacement check when TDD is impractical, with a clear reason.
+
+Prefer stable interfaces over incidental internals. The test should protect the module contract the next agent will rely on.
+
 ### RED - Write a failing test
 
 1. Write a test that describes the desired behavior.

@@ -47,6 +47,17 @@
     }
   },
   {
+    "name": "adopt entire software fundamentals video",
+    "prompt": "Adopt everything from this Matt Pocock YouTube lecture into ChefFlow agent behavior.",
+    "expect": ["omninet", "youtube-watch", "software-fundamentals", "skill-garden"],
+    "evidence": {
+      "omninet": ["YouTube URL", "software-fundamentals"],
+      "youtube-watch": ["Software Lecture Mode", "Visual Evidence Index"],
+      "software-fundamentals": ["Mandatory Loop", "Design investment"],
+      "skill-garden": ["durable behavior", "existing skill"]
+    }
+  },
+  {
     "name": "skill repair",
     "prompt": "This skill failed and needs to self-heal before future tasks.",
     "expect": ["omninet", "heal-skill", "skill-garden"],

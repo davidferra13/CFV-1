@@ -34,6 +34,18 @@ If the developer says "Build [specific spec or plain English]," skip the queue a
 
 **If any pre-flight check fails:** you are NOT allowed to write code. Fix the existing break first, or report it to the developer. Never stack new code on top of broken code.
 
+## Software Fundamentals Gate (Before Writing Any Code)
+
+State this before implementation unless the task is a tiny mechanical edit:
+
+- Shared design concept: what are we changing, and what must remain true?
+- Ambiguity: what is still unclear, and what decision tree was resolved before coding?
+- Ubiquitous language: which ChefFlow terms, module names, entities, and invariants will be reused?
+- Module boundary: which interface should hide complexity, and which internals are high-risk enough to inspect directly?
+- Fastest feedback loop: what is the first quick check that can fail for the right reason?
+
+If ambiguity remains after inspection, stop and ask grill-me questions before writing code. Do not proceed on assumptions that affect behavior, data model, auth, billing, tenant scope, UI promises, or module boundaries.
+
 ## Spike (Before Writing Implementation Code)
 
 1. **Read `CLAUDE.md`** cover to cover.
@@ -45,6 +57,8 @@ If the developer says "Build [specific spec or plain English]," skip the queue a
    - "The spec is accurate about: [what matches]"
    - "The spec is wrong or incomplete about: [what doesn't match reality]"
    - "Developer intent from the notes: [summary of what the developer actually wants]"
+   - "Ubiquitous language confirmed: [terms reused, conflicts found, conflicts resolved]"
+   - "Deep module boundary: [interface, hidden complexity, high-risk internals]"
    - If the spec is wrong: **STOP. Do not improvise.** Update the spec with corrections, then continue.
 
 ## Build Phase (Continuous Verification)
@@ -60,6 +74,12 @@ Run `npx tsc --noEmit --skipLibCheck`. If it fails, fix it NOW before touching a
 ## Verification Plan (State Before Building)
 
 **Before writing implementation code, state your verification plan:** what you will check, how you will check it, and what success looks like.
+
+Include the fastest feedback loop:
+
+- Name the first check that can fail quickly.
+- Run it after the first logical implementation slice.
+- Prefer a focused test, type check, component route check, or server-action call before a full build or broad Playwright flow.
 
 ## Final Verification (Proof Required - Not Descriptions of Proof)
 
@@ -88,6 +108,7 @@ If the answer is anything other than "nothing," fix it before marking complete.
 - Update the spec status to `verified` only after all verification passes.
 - Update `docs/app-complete-audit.md` if any UI changed.
 - Update `docs/build-state.md` with the new green state and commit hash.
+- Add design investment closeout: what system design got simpler, clearer, or better protected; what complexity was hidden behind an interface; and what design debt remains.
 - Commit with message format: `feat|fix(spec-name): description`.
 - Push.
 

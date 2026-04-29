@@ -1,0 +1,23 @@
+{
+  "created_at": "2026-04-29T18:51:54.204Z",
+  "goal": "Fully adopt Matt Pocock software fundamentals lecture into ChefFlow agent behavior",
+  "primary_skill": "software-fundamentals",
+  "sidecar_skills": [
+    "youtube-watch",
+    "omninet",
+    "skill-garden",
+    "audit"
+  ],
+  "skill_delta": "patch",
+  "durable_behavior_seen": "User asked to adopt everything from the Matt Pocock software fundamentals video and run a swarm if needed.",
+  "skill_gap_seen": "The canonical lecture skill existed, but downstream planner, builder, debug, TDD, and review skills did not enforce shared design concept, grill-me ambiguity gates, ubiquitous language, fastest feedback loops, deep-module review, or design-investment closeout.",
+  "validation": {
+    "skill_validator": "PASS: node devtools/skill-validator.mjs omninet software-fundamentals builder planner debug tdd review youtube-watch skill-garden",
+    "trigger_tests": "PASS: node devtools/skill-trigger-tests.mjs, 19 cases, 0 failures",
+    "compliance": "PASS: hard-stop scan for em dash, ts-nocheck directive, and forbidden public name in changed files",
+    "other": "PASS: node devtools/skill-coverage-map.mjs and node devtools/skill-dependency-graph.mjs. Added full video learning ledger expansion and ChefFlow adoption audit."
+  },
+  "commit": "See enclosing git commit for this closeout report.",
+  "pushed": true,
+  "notes": "No production deploy, main push, server restart, build, or database operation was performed. App refactors identified by the swarm are recorded as bounded adoption drills, not executed as broad production changes."
+}
