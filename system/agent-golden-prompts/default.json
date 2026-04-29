@@ -125,5 +125,14 @@
       "omninet": ["Outcome score", "repair queue"],
       "skill-garden": ["reliability stats", "repair queue"]
     }
+  },
+  {
+    "name": "skill replay regression",
+    "prompt": "Codex should replay known-good skill routing decisions and flag suspicious drift.",
+    "expect": ["omninet", "skill-garden"],
+    "evidence": {
+      "omninet": ["Replay status", "agent-replay-runner"],
+      "skill-garden": ["regression replay", "known-good behavior"]
+    }
   }
 ]

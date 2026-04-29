@@ -1,0 +1,45 @@
+{
+  "ok": true,
+  "generated_at": "2026-04-29T17:00:06.012Z",
+  "case_count": 1,
+  "suspicious_count": 0,
+  "strengthened_count": 0,
+  "same_count": 1,
+  "cases": [
+    {
+      "id": "skill-outcome-scoring-clean",
+      "name": "skill-outcome-scoring-clean",
+      "source_file": "system/agent-replay-corpus/skill-outcome-scoring-clean.json",
+      "status": "same",
+      "suspicious_count": 0,
+      "strengthening_count": 0,
+      "expected": {
+        "primary_skill": "skill-garden",
+        "sidecar_skills": [
+          "omninet"
+        ],
+        "risk_level": "medium",
+        "hard_stops": [],
+        "required_checks": [
+          "run skill validator and trigger tests when skill behavior changes",
+          "run targeted compliance scan for em dashes, OpenClaw public text, and ts-nocheck",
+          "stage, commit, and push only owned files before closeout"
+        ]
+      },
+      "actual": {
+        "primary_skill": "skill-garden",
+        "sidecar_skills": [
+          "omninet"
+        ],
+        "risk_level": "medium",
+        "hard_stops": [],
+        "required_checks": [
+          "run skill validator and trigger tests when skill behavior changes",
+          "run targeted compliance scan for em dashes, OpenClaw public text, and ts-nocheck",
+          "stage, commit, and push only owned files before closeout"
+        ]
+      },
+      "diffs": []
+    }
+  ]
+}

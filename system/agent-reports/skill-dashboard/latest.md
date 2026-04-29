@@ -1,6 +1,6 @@
 # Agent Skill Dashboard
 
-Generated: 2026-04-29T16:22:20.735Z
+Generated: 2026-04-29T17:00:17.125Z
 
 ## Coverage
 
@@ -36,11 +36,18 @@ Generated: 2026-04-29T16:22:20.735Z
 - Open repairs: 0
 - High priority repairs: 0
 
+## Replay
+
+- Last run ok: true
+- Cases: 1
+- Suspicious drift: 0
+- Strengthened routes: 0
+
 ## Health
 
 - Unhealthy skills: 6
 - Overlaps: 0
-- Stale generated reports: 6
+- Stale generated reports: 18
 
 ## Learning
 

@@ -34,6 +34,8 @@ Prefer the deterministic tools when changing or evaluating skills:
 - `node devtools/skill-outcome-scorer.mjs --record path --update-stats --auto-maturity` scores whether skill use actually worked, updates reliability stats, and applies conservative maturity changes.
 - `node devtools/missed-skill-detector.mjs --record path [--write-learning]` compares expected and used skills, then creates repair items for misses.
 - `node devtools/skill-repair-queue.mjs` writes the current queue of skills that need healing.
+- `node devtools/agent-replay-corpus.mjs promote --record path --name "case-name"` promotes a clean flight record into regression replay.
+- `node devtools/agent-replay-runner.mjs --corpus` replays known-good prompts and flags suspicious routing drift.
 - `node devtools/agent-session-digest.mjs` writes a compact digest of recent flight records and what future Codex should do differently.
 - `node devtools/report-skill-failure.mjs --skill skill-name --what "..." --prompt "..."` records a missed or weak skill behavior for repair, and can add a non-duplicate golden prompt with `--add-golden`.
 - `node devtools/session-transcript-auditor.mjs [--file transcript.txt] [--write]` turns missed real-session behavior into learning inbox items.
@@ -109,6 +111,7 @@ When a skill performs badly or future Codex behavior would likely miss the user'
 7. When `missed-skill-detector` finds a miss, treat the learning item as a concrete repair signal, not a vague suggestion.
 8. Use the needs-healing state in `system/agent-skill-maturity.json` when a skill has a known miss, and promote it back to active or proven only after trigger tests or real flight records prove the repair.
 9. Use `system/agent-skill-stats.json` as evidence, not intuition. Repeated clean outcomes can promote a skill, and misses or failed outcomes should create repair queue work.
+10. Promote clean, representative skill sessions into `system/agent-replay-corpus/` so future router changes must preserve known-good behavior or explain the drift.
 
 ## External Guidance Intake
 
@@ -153,6 +156,7 @@ After editing skills:
 5. Write a closeout report with `node devtools/skill-closeout-report.mjs` when the task's main purpose was skill behavior.
 6. Run `node devtools/skill-dashboard.mjs` when coverage, maturity, routing behavior, or reliability stats changed.
 7. Run `node devtools/skill-repair-queue.mjs` after any outcome scoring that finds misses or failures.
-8. Run `node devtools/agent-closeout-gate.mjs --owned ...` before final closeout when practical.
-9. Stage only the files you changed unless the user explicitly asks to ship all dirty work.
-10. Commit and push on a feature branch.
+8. Run `node devtools/agent-replay-runner.mjs --corpus` when routing or skill trigger behavior changed and a replay corpus exists.
+9. Run `node devtools/agent-closeout-gate.mjs --owned ...` before final closeout when practical.
+10. Stage only the files you changed unless the user explicitly asks to ship all dirty work.
+11. Commit and push on a feature branch.

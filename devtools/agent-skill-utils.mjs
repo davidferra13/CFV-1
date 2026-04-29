@@ -9,6 +9,7 @@ export const learningInboxRoot = path.join(repoRoot, 'system', 'agent-learning-i
 export const guidanceInboxRoot = path.join(repoRoot, 'system', 'external-guidance-inbox')
 export const reportsRoot = path.join(repoRoot, 'system', 'agent-reports')
 export const flightRecordsRoot = path.join(reportsRoot, 'flight-records')
+export const replayCorpusRoot = path.join(repoRoot, 'system', 'agent-replay-corpus')
 export const skillMaturityFile = path.join(repoRoot, 'system', 'agent-skill-maturity.json')
 export const skillStatsFile = path.join(repoRoot, 'system', 'agent-skill-stats.json')
 

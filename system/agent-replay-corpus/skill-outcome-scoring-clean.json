@@ -1,0 +1,22 @@
+{
+  "id": "skill-outcome-scoring-clean",
+  "name": "skill-outcome-scoring-clean",
+  "source_record": "system/agent-reports/flight-records/20260429T162207Z-codex-should-score-skill-outcomes-and-update-reliability-stats.json",
+  "prompt": "Codex should score skill outcomes and update reliability stats",
+  "expected": {
+    "primary_skill": "skill-garden",
+    "sidecar_skills": [
+      "omninet"
+    ],
+    "risk_level": "medium",
+    "hard_stops": [],
+    "required_checks": [
+      "run targeted compliance scan for em dashes, OpenClaw public text, and ts-nocheck",
+      "run skill validator and trigger tests when skill behavior changes",
+      "stage, commit, and push only owned files before closeout"
+    ]
+  },
+  "promoted_at": "2026-04-29T17:00:02.704Z",
+  "source_commit": "bb5f96c9a0e062e2842726f3c9339361d33076cd",
+  "notes": null
+}

@@ -1,0 +1,24 @@
+{
+  "prompt": "Build ChefFlow Codex replay regression harness and connect it into skill self-healing",
+  "generated_at": "2026-04-29T16:59:53.823Z",
+  "primary_skill": "builder",
+  "sidecar_skills": [
+    "omninet",
+    "skill-garden",
+    "debug"
+  ],
+  "skill_maturity": {
+    "builder": "active",
+    "omninet": "proven",
+    "skill-garden": "proven",
+    "debug": "active"
+  },
+  "conflict_resolution": null,
+  "hard_stops": [],
+  "risk_level": "medium",
+  "required_checks": [
+    "run targeted compliance scan for em dashes, OpenClaw public text, and ts-nocheck",
+    "run skill validator and trigger tests when skill behavior changes",
+    "stage, commit, and push only owned files before closeout"
+  ]
+}

@@ -42,6 +42,7 @@ function buildDashboard() {
   const dependencies = runJson(['devtools/skill-dependency-graph.mjs', '--stdout'])
   const maturity = runJson(['devtools/skill-maturity-report.mjs', '--stdout'])
   const health = latestJson('skill-health')
+  const replay = latestJson('replay-runs')
   const stats = loadSkillStats()
   const repairQueue = latestJson('skill-repair-queue')
   const weakDomains = coverage.classes
@@ -88,6 +89,14 @@ function buildDashboard() {
       ? {
           repair_count: repairQueue.repair_count,
           high_count: repairQueue.entries?.filter((entry) => entry.priority === 'high').length || 0,
+        }
+      : null,
+    replay: replay
+      ? {
+          ok: replay.ok,
+          case_count: replay.case_count,
+          suspicious_count: replay.suspicious_count,
+          strengthened_count: replay.strengthened_count,
         }
       : null,
     health: health
@@ -142,6 +151,13 @@ function toMarkdown(report) {
     '',
     `- Open repairs: ${report.repair_queue?.repair_count ?? 0}`,
     `- High priority repairs: ${report.repair_queue?.high_count ?? 0}`,
+    '',
+    '## Replay',
+    '',
+    `- Last run ok: ${report.replay?.ok ?? 'unknown'}`,
+    `- Cases: ${report.replay?.case_count ?? 0}`,
+    `- Suspicious drift: ${report.replay?.suspicious_count ?? 0}`,
+    `- Strengthened routes: ${report.replay?.strengthened_count ?? 0}`,
     '',
     '## Health',
     '',

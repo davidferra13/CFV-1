@@ -39,6 +39,7 @@ results.push(run('trigger-tests', ['devtools/skill-trigger-tests.mjs']))
 results.push(run('coverage-map', ['devtools/skill-coverage-map.mjs', '--stdout']))
 results.push(run('dependency-graph', ['devtools/skill-dependency-graph.mjs', '--stdout']))
 results.push(run('maturity-report', ['devtools/skill-maturity-report.mjs', '--stdout']))
+results.push(run('replay-runner', ['devtools/agent-replay-runner.mjs', '--corpus', '--allow-empty', '--stdout']))
 
 if (args.owned && args.owned !== true) {
   results.push(

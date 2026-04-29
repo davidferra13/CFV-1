@@ -30,6 +30,8 @@ Use these tools when the task touches skills or durable agent behavior:
 - Score a finished task: `node devtools/skill-outcome-scorer.mjs --record path --update-stats --auto-maturity`
 - Detect missed skills: `node devtools/missed-skill-detector.mjs --record path [--write-learning]`
 - Generate repair queue: `node devtools/skill-repair-queue.mjs`
+- Promote a proven flight record into replay corpus: `node devtools/agent-replay-corpus.mjs promote --record path --name "case-name"`
+- Run replay regression: `node devtools/agent-replay-runner.mjs --corpus`
 - Generate session digest: `node devtools/agent-session-digest.mjs`
 - Gate closeout before final: `node devtools/agent-closeout-gate.mjs --owned path,other-path`
 - Audit prior sessions: `node devtools/session-transcript-auditor.mjs [--file transcript.txt] [--write]`
@@ -100,6 +102,7 @@ Maintain this lightweight state while working:
 - Hard stops: any project rule that affects the task.
 - Flight record: the start or finish evidence file when the work changes durable agent behavior.
 - Outcome score: whether routing, skill usage, validation, commit, push, and owned-file cleanup succeeded.
+- Replay status: whether current routing still matches promoted known-good skill decisions.
 - Evidence: files, commands, outputs, or user-provided artifacts that ground the work.
 - Skill delta: whether this task revealed a new skill, a skill repair, or no reusable change.
 - Closeout evidence: validator, trigger tests, skill health, or learning inbox entry when relevant.

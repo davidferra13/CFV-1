@@ -233,3 +233,144 @@ test('skill-repair-queue reads stats and reports no repairs by default', () => {
   assert.equal(typeof result.repair_count, 'number')
   assert.ok(Array.isArray(result.entries))
 })
+
+test('agent-replay-corpus promotes and lists a flight record in a temp corpus', () => {
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'chefflow-replay-corpus-'))
+  const recordFile = path.join(tempRoot, 'record.json')
+  const corpusDir = path.join(tempRoot, 'corpus')
+  fs.writeFileSync(
+    recordFile,
+    JSON.stringify(
+      {
+        id: 'unit-review-record',
+        prompt: 'Review these uncommitted changes before we ship.',
+        status: 'finished',
+        selected_primary_skill: 'review',
+        selected_sidecar_skills: ['omninet'],
+        missed_skills: [],
+      },
+      null,
+      2,
+    ),
+  )
+
+  try {
+    const promoted = JSON.parse(
+      runNode([
+        'devtools/agent-replay-corpus.mjs',
+        'promote',
+        '--record',
+        recordFile,
+        '--name',
+        'unit review replay',
+        '--output-dir',
+        corpusDir,
+      ]),
+    ) as { ok: boolean; case: { expected: { primary_skill: string } } }
+
+    assert.equal(promoted.ok, true)
+    assert.equal(promoted.case.expected.primary_skill, 'review')
+
+    const listed = JSON.parse(
+      runNode(['devtools/agent-replay-corpus.mjs', 'list', '--output-dir', corpusDir]),
+    ) as { ok: boolean; case_count: number; cases: Array<{ id: string }> }
+
+    assert.equal(listed.ok, true)
+    assert.equal(listed.case_count, 1)
+    assert.equal(listed.cases[0]?.id, 'unit-review-replay')
+  } finally {
+    fs.rmSync(tempRoot, { recursive: true, force: true })
+  }
+})
+
+test('agent-replay-runner replays a temp corpus without writing reports', () => {
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'chefflow-replay-run-'))
+  const corpusFile = path.join(tempRoot, 'corpus.json')
+  fs.writeFileSync(
+    corpusFile,
+    JSON.stringify(
+      [
+        {
+          id: 'review-request',
+          prompt: 'Review these uncommitted changes before we ship.',
+          expected_primary_skill: 'review',
+          expected_sidecar_skills: ['omninet'],
+        },
+        {
+          id: 'stripe-ledger',
+          prompt: 'Build Stripe webhook ledger reconciliation and idempotency.',
+          expected_primary_skill: 'stripe-webhook-integrity',
+          expected_sidecar_skills: ['ledger-safety', 'omninet'],
+        },
+      ],
+      null,
+      2,
+    ),
+  )
+
+  try {
+    const output = runNode([
+      'devtools/agent-replay-runner.mjs',
+      '--corpus',
+      corpusFile,
+      '--stdout',
+    ])
+    const result = JSON.parse(output) as {
+      ok: boolean
+      case_count: number
+      suspicious_count: number
+      cases: Array<{ status: string; actual: { primary_skill: string } }>
+    }
+
+    assert.equal(result.ok, true)
+    assert.equal(result.case_count, 2)
+    assert.equal(result.suspicious_count, 0)
+    assert.ok(result.cases.every((item) => item.status !== 'suspicious'))
+    assert.ok(result.cases.some((item) => item.actual.primary_skill === 'review'))
+  } finally {
+    fs.rmSync(tempRoot, { recursive: true, force: true })
+  }
+})
+
+test('agent-replay-runner reports suspicious routing drift as JSON failure', () => {
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'chefflow-replay-fail-'))
+  const corpusFile = path.join(tempRoot, 'corpus.json')
+  fs.writeFileSync(
+    corpusFile,
+    JSON.stringify(
+      [
+        {
+          id: 'intentional-mismatch',
+          prompt: 'Review these uncommitted changes before we ship.',
+          expected_primary_skill: 'builder',
+          expected_sidecar_skills: ['omninet'],
+        },
+      ],
+      null,
+      2,
+    ),
+  )
+
+  try {
+    const result = runNodeAllowFailure([
+      'devtools/agent-replay-runner.mjs',
+      '--corpus',
+      corpusFile,
+      '--stdout',
+    ])
+    const parsed = JSON.parse(result.stdout) as {
+      ok: boolean
+      suspicious_count: number
+      cases: Array<{ id: string; status: string; diffs: Array<{ kind: string }> }>
+    }
+
+    assert.equal(result.ok, false)
+    assert.equal(parsed.ok, false)
+    assert.equal(parsed.suspicious_count, 1)
+    assert.equal(parsed.cases[0]?.id, 'intentional-mismatch')
+    assert.equal(parsed.cases[0]?.status, 'suspicious')
+    assert.ok(parsed.cases[0]?.diffs.some((diff) => diff.kind === 'primary_changed'))
+  } finally {
+    fs.rmSync(tempRoot, { recursive: true, force: true })
+  }
+})
