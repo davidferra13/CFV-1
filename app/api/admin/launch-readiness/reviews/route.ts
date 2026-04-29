@@ -11,12 +11,26 @@ import {
   listLaunchReadinessOperatorReviews,
 } from '@/lib/validation/launch-readiness-review-store'
 
-const ReviewInputSchema = z.object({
-  checkKey: z.enum(LAUNCH_READINESS_REVIEWABLE_CHECK_KEYS),
-  decision: z.enum(['verified', 'rejected']),
-  note: z.string().trim().max(2000).optional().nullable(),
-  evidenceUrl: z.string().trim().max(1000).optional().nullable(),
-})
+const ReviewInputSchema = z
+  .object({
+    checkKey: z.enum(LAUNCH_READINESS_REVIEWABLE_CHECK_KEYS),
+    decision: z.enum(['verified', 'rejected']),
+    note: z.string().trim().max(2000).optional().nullable(),
+    evidenceUrl: z.string().trim().max(1000).optional().nullable(),
+  })
+  .superRefine((input, context) => {
+    const hasNote = typeof input.note === 'string' && input.note.trim().length > 0
+    const hasEvidenceUrl =
+      typeof input.evidenceUrl === 'string' && input.evidenceUrl.trim().length > 0
+
+    if (input.decision === 'verified' && !hasNote && !hasEvidenceUrl) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['note'],
+        message: 'Verified launch readiness reviews require a note or evidence link.',
+      })
+    }
+  })
 
 export async function GET() {
   await requireAdmin()
@@ -52,7 +66,8 @@ export async function POST(request: NextRequest) {
 
   const parsed = ReviewInputSchema.safeParse(body)
   if (!parsed.success) {
-    return NextResponse.json({ success: false, error: 'Invalid review input.' }, { status: 400 })
+    const message = parsed.error.issues[0]?.message ?? 'Invalid review input.'
+    return NextResponse.json({ success: false, error: message }, { status: 400 })
   }
 
   try {

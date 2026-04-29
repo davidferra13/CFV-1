@@ -23,6 +23,10 @@ const reviewsRouteSource = readFileSync(
   join(process.cwd(), 'app/api/admin/launch-readiness/reviews/route.ts'),
   'utf8'
 )
+const reviewConsoleSource = readFileSync(
+  join(process.cwd(), 'components/admin/launch-readiness-review-console.tsx'),
+  'utf8'
+)
 const launchReadinessSource = readFileSync(
   join(process.cwd(), 'lib/validation/launch-readiness.ts'),
   'utf8'
@@ -92,6 +96,26 @@ test('launch readiness persistent review route is admin-only and cache-busting',
   assert.match(reviewsRouteSource, /listLaunchReadinessOperatorReviews/)
   assert.match(reviewsRouteSource, /revalidatePath\(['"]\/admin\/launch-readiness['"]\)/)
   assert.match(reviewsRouteSource, /Cache-Control['"]:\s*['"]no-store/)
+  assert.match(reviewsRouteSource, /superRefine/)
+  assert.match(
+    reviewsRouteSource,
+    /Verified launch readiness reviews require a note or evidence link/
+  )
+  assert.match(reviewsRouteSource, /parsed\.error\.issues\[0\]\?\.message/)
+})
+
+test('launch readiness page connects persistent reviews to an operator console', () => {
+  assert.match(pageSource, /LaunchReadinessReviewConsole/)
+  assert.match(pageSource, /listLaunchReadinessOperatorReviews/)
+  assert.match(reviewConsoleSource, /^['"]use client['"]/m)
+  assert.match(reviewConsoleSource, /\/api\/admin\/launch-readiness\/reviews/)
+  assert.match(reviewConsoleSource, /router\.refresh\(\)/)
+  assert.match(reviewConsoleSource, /reviewableChecks/)
+  assert.match(reviewConsoleSource, /No checks are waiting for operator review/)
+  assert.match(
+    reviewConsoleSource,
+    /Verified launch readiness reviews require a note or evidence link/
+  )
 })
 
 test('launch readiness report applies stored operator reviews', () => {

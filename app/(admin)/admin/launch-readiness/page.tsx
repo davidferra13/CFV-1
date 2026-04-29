@@ -7,6 +7,8 @@ import {
   type LaunchReadinessStatus,
 } from '@/lib/validation/launch-readiness'
 import { buildLaunchReadinessRiskRegister } from '@/lib/validation/launch-readiness-risk-register'
+import { listLaunchReadinessOperatorReviews } from '@/lib/validation/launch-readiness-review-store'
+import { LaunchReadinessReviewConsole } from '@/components/admin/launch-readiness-review-console'
 import {
   AlertTriangle,
   CheckCircle2,
@@ -99,7 +101,10 @@ function CheckRow({ check }: { check: LaunchReadinessCheck }) {
 
 export default async function AdminLaunchReadinessPage() {
   await requireAdmin()
-  const report = await getLaunchReadinessReport()
+  const [report, operatorReviews] = await Promise.all([
+    getLaunchReadinessReport(),
+    listLaunchReadinessOperatorReviews(),
+  ])
   const percent = Math.round((report.verifiedChecks / report.totalChecks) * 100)
   const reviewCount = report.checks.filter((check) => check.status === 'operator_review').length
   const needsActionCount = report.checks.filter((check) => check.status === 'needs_action').length
@@ -185,6 +190,8 @@ export default async function AdminLaunchReadinessPage() {
         </section>
 
         <aside className="space-y-6">
+          <LaunchReadinessReviewConsole checks={report.checks} initialReviews={operatorReviews} />
+
           <section className="rounded-xl border border-stone-800 bg-stone-900/70 p-5">
             <h2 className="text-base font-semibold text-stone-100">Risk register</h2>
             <div className="mt-4 space-y-3">
@@ -200,7 +207,7 @@ export default async function AdminLaunchReadinessPage() {
                     </span>
                   </div>
                   <p className="mt-1 text-xs text-stone-500">
-                    {risk.ownerHint} · {risk.blockerClass}
+                    {risk.ownerHint} - {risk.blockerClass}
                   </p>
                   <p className="mt-2 text-xs leading-5 text-stone-400">{risk.nextAction}</p>
                   {risk.href ? (
