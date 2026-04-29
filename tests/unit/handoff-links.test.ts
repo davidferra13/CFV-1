@@ -34,6 +34,11 @@ test('handoff links build map search and directions URLs from coordinates or add
     buildMapsDirectionsHref({ lat: 43.6591, lng: -70.2568 }),
     'https://www.google.com/maps/dir/?api=1&destination=43.6591%2C-70.2568'
   )
+  assert.equal(
+    buildMapsDirectionsHref({ address: '12 Main St, Portland, ME' }),
+    'https://www.google.com/maps/dir/?api=1&destination=12%20Main%20St%2C%20Portland%2C%20ME'
+  )
+  assert.equal(buildMapsDirectionsHref({ address: '   ' }), null)
 })
 
 test('handoff links build Google Calendar template links', () => {

@@ -4,6 +4,7 @@ import { PublicPageView } from '@/components/analytics/public-page-view'
 import { SectionViewTracker } from '@/components/analytics/section-view-tracker'
 import { TrackedLink } from '@/components/analytics/tracked-link'
 import { TrackedVideo } from '@/components/analytics/tracked-video'
+import { PublicMarketResearchEntry } from '@/components/beta-survey/public-market-research-entry'
 import { ClipboardList, LayoutDashboard, Repeat, ShieldCheck, Users } from '@/components/ui/icons'
 import { PublicSecondaryEntryCluster } from '@/components/public/public-secondary-entry-cluster'
 import { getFreeFeatures } from '@/lib/billing/feature-classification'
@@ -427,6 +428,8 @@ export default async function ForOperatorsPage({ searchParams }: ForOperatorsPag
           </div>
         </div>
       </section>
+
+      <PublicMarketResearchEntry />
 
       <section className="border-t border-stone-800/30">
         <div className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 md:py-18 lg:px-8">

@@ -500,6 +500,8 @@ function buildEventStubWorkItems(eventStubs: ClientEventStubSummary[]): ClientWo
 
   const seekingChef = activeStubs.find((stub) => stub.status === 'seeking_chef')
   if (seekingChef) {
+    const href = seekingChef.hubGroupToken ? `/my-hub/g/${seekingChef.hubGroupToken}` : '/my-hub'
+
     return [
       createWorkItem(
         'stub_seeking_chef',
@@ -507,13 +509,15 @@ function buildEventStubWorkItems(eventStubs: ClientEventStubSummary[]): ClientWo
         'event_stub',
         `Track chef matching for ${seekingChef.title}`,
         'Your planning circle is already looking for a chef.',
-        '/my-hub',
+        href,
         'Open Planning'
       ),
     ]
   }
 
   const planning = activeStubs[0]
+  const href = planning.hubGroupToken ? `/my-hub/g/${planning.hubGroupToken}` : '/my-hub'
+
   return [
     createWorkItem(
       'stub_planning',
@@ -521,7 +525,7 @@ function buildEventStubWorkItems(eventStubs: ClientEventStubSummary[]): ClientWo
       'event_stub',
       `Continue planning ${planning.title}`,
       'Finish the basics in your planning circle before you reach out to a chef.',
-      '/my-hub',
+      href,
       'Open Planning'
     ),
   ]

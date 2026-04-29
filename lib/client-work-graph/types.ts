@@ -133,6 +133,7 @@ export type ClientEventStubSummary = {
   occasion: string | null
   status: 'planning' | 'seeking_chef' | 'adopted' | 'cancelled'
   hubGroupId: string | null
+  hubGroupToken: string | null
   eventDate: string | null
   guestCount: number | null
 }

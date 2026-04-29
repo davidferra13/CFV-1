@@ -54,11 +54,13 @@ export function TicketReconciliationPanel({ audit }: TicketReconciliationPanelPr
             {hasMismatches ? `${mismatchCount} mismatches` : 'No mismatches'}
           </Badge>
           {audit.checkedAt ? (
-            <span className="text-sm text-stone-500">Checked {formatDateTime(audit.checkedAt)}</span>
+            <span className="text-sm text-stone-500">
+              Checked {formatDateTime(audit.checkedAt)}
+            </span>
           ) : null}
           {audit.truncated ? <Badge variant="warning">Limited sample</Badge> : null}
         </div>
-        <Button href="/admin/ticket-reconciliation" variant="secondary" size="sm">
+        <Button href="/admin/reconciliation/tickets" variant="secondary" size="sm">
           Refresh audit
         </Button>
       </div>
@@ -99,7 +101,9 @@ export function TicketReconciliationPanel({ audit }: TicketReconciliationPanelPr
               const count = countsByCode[code] ?? 0
               return (
                 <TableRow key={code}>
-                  <TableCell className="font-medium text-stone-100">{MISMATCH_LABELS[code]}</TableCell>
+                  <TableCell className="font-medium text-stone-100">
+                    {MISMATCH_LABELS[code]}
+                  </TableCell>
                   <TableCell className="text-stone-300">{count}</TableCell>
                   <TableCell>
                     <Badge variant={count > 0 ? 'error' : 'success'}>
@@ -159,7 +163,9 @@ export function TicketReconciliationPanel({ audit }: TicketReconciliationPanelPr
                   <TableCell className="text-sm text-stone-300">
                     {formatOptionalCurrency(mismatch.amountCents)}
                   </TableCell>
-                  <TableCell className="max-w-md text-sm text-stone-300">{mismatch.message}</TableCell>
+                  <TableCell className="max-w-md text-sm text-stone-300">
+                    {mismatch.message}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

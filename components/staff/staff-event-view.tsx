@@ -15,6 +15,7 @@ import {
   type StaffEventData,
   type StaffEventTask,
 } from '@/lib/staff/staff-event-portal-actions'
+import { buildMapsDirectionsHref } from '@/lib/handoffs/links'
 
 const ROLE_LABELS: Record<string, string> = {
   sous_chef: 'Sous Chef',
@@ -61,7 +62,7 @@ export function StaffEventView({ eventData, token }: Props) {
     .filter(Boolean)
     .join(', ')
 
-  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`
+  const mapsUrl = buildMapsDirectionsHref({ address: fullAddress })
 
   function handleTaskToggle(taskIndex: number) {
     const previousTasks = [...tasks]
@@ -228,18 +229,25 @@ export function StaffEventView({ eventData, token }: Props) {
           <CardTitle className="text-base">Location</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <a
-            href={mapsUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block rounded-lg border border-stone-700 p-3 hover:border-brand-500 transition-colors"
-          >
-            <p className="font-medium text-stone-100 text-sm">{event.locationAddress}</p>
-            <p className="text-stone-400 text-sm">
-              {event.locationCity}, {event.locationState} {event.locationZip}
-            </p>
-            <p className="text-brand-500 text-xs mt-1">Open in Maps</p>
-          </a>
+          {mapsUrl ? (
+            <a
+              href={mapsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block rounded-lg border border-stone-700 p-3 hover:border-brand-500 transition-colors"
+            >
+              <p className="font-medium text-stone-100 text-sm">{event.locationAddress}</p>
+              <p className="text-stone-400 text-sm">
+                {event.locationCity}, {event.locationState} {event.locationZip}
+              </p>
+              <p className="text-brand-500 text-xs mt-1">Open in Maps</p>
+            </a>
+          ) : (
+            <div className="rounded-lg border border-stone-700 p-3">
+              <p className="font-medium text-stone-100 text-sm">Address unavailable</p>
+              <p className="text-stone-400 text-sm">Ask the chef for the service location.</p>
+            </div>
+          )}
 
           {event.accessInstructions && (
             <div>

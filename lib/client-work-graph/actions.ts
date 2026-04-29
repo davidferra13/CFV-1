@@ -23,7 +23,10 @@ export type ClientWorkGraphSnapshot = SharedClientWorkGraphSnapshot & {
   workGraph: ClientWorkGraph
 }
 
-function mapEventStubs(stubs: Array<Record<string, any>>): ClientEventStubSummary[] {
+function mapEventStubs(
+  stubs: Array<Record<string, any>>,
+  groupTokenByStubId: Map<string, string>
+): ClientEventStubSummary[] {
   return stubs
     .filter((stub) => stub.status !== 'cancelled' && stub.status !== 'adopted')
     .map((stub) => ({
@@ -32,6 +35,7 @@ function mapEventStubs(stubs: Array<Record<string, any>>): ClientEventStubSummar
       occasion: typeof stub.occasion === 'string' ? stub.occasion : null,
       status: stub.status as ClientEventStubSummary['status'],
       hubGroupId: typeof stub.hub_group_id === 'string' ? stub.hub_group_id : null,
+      hubGroupToken: groupTokenByStubId.get(String(stub.id)) ?? null,
       eventDate: typeof stub.event_date === 'string' ? stub.event_date : null,
       guestCount: typeof stub.guest_count === 'number' ? stub.guest_count : null,
     }))
@@ -83,9 +87,16 @@ export async function getClientWorkGraphSnapshot(options?: {
     unreadLoadFailed,
   }
 
+  const groupTokenByStubId = new Map(
+    groups
+      .filter((group) => group.event_stub_id && group.group_token)
+      .map((group) => [group.event_stub_id as string, group.group_token])
+  )
+
   const eventStubs = profileToken
     ? mapEventStubs(
-        (await getProfileEventStubs(profileToken).catch(() => [])) as Array<Record<string, any>>
+        (await getProfileEventStubs(profileToken).catch(() => [])) as Array<Record<string, any>>,
+        groupTokenByStubId
       )
     : []
 

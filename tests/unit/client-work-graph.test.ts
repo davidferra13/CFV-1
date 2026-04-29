@@ -325,4 +325,29 @@ describe('client work graph', () => {
     const suggestions = suggestClientNavFromWorkGraph('Do I have friend requests?', graph)
     assert.deepEqual(suggestions, [{ label: 'Open Requests', href: '/my-hub' }])
   })
+
+  it('routes client-created dinner planning stubs to the planning circle when linked', () => {
+    const graph = buildClientWorkGraph({
+      ...createBaseInput(),
+      eventStubs: [
+        {
+          id: 'stub-1',
+          title: 'Rooftop Birthday',
+          occasion: 'Birthday',
+          status: 'planning',
+          hubGroupId: 'group-1',
+          hubGroupToken: 'circle-token-1',
+          eventDate: '2026-06-02',
+          guestCount: 10,
+        },
+      ],
+    })
+
+    assert.equal(graph.summary.planningCount, 1)
+    assert.equal(graph.items[0]?.kind, 'stub_planning')
+    assert.equal(graph.items[0]?.href, '/my-hub/g/circle-token-1')
+
+    const suggestions = suggestClientNavFromWorkGraph('Where is my dinner circle?', graph)
+    assert.deepEqual(suggestions, [{ label: 'Open Planning', href: '/my-hub/g/circle-token-1' }])
+  })
 })

@@ -16,6 +16,7 @@ import {
 import { ANALYTICS_EVENTS, trackEvent } from '@/lib/analytics/posthog'
 import { DISCOVERY_SERVICE_TYPE_OPTIONS } from '@/lib/discovery/constants'
 import { LAUNCH_MODE, PRIMARY_SIGNUP_LABEL } from '@/lib/marketing/launch-mode'
+import { buildMarketingSourceHref } from '@/lib/marketing/source-links'
 import { buildMarketingSignupHref } from '@/lib/marketing/signup-links'
 import { NEUTRAL_HOME_SEARCH_LOCATION_PLACEHOLDER } from '@/lib/site/national-brand-copy'
 
@@ -304,7 +305,11 @@ export function HomeDualEntry() {
 
               <div className="mt-8 flex flex-col gap-3">
                 <TrackedLink
-                  href="/marketplace-chefs"
+                  href={buildMarketingSourceHref({
+                    pathname: '/marketplace-chefs',
+                    sourcePage: 'home',
+                    sourceCta: 'operator_card_workflow',
+                  })}
                   analyticsName="home_operator_path"
                   analyticsProps={{ section: 'operator_card' }}
                   onClick={() => handleAudienceSelect('operator', 'operator_path')}
@@ -401,7 +406,11 @@ export function HomeDualEntry() {
               payouts, and repeat business need a dedicated system, not inbox improvisation.
             </p>
             <TrackedLink
-              href="/marketplace-chefs"
+              href={buildMarketingSourceHref({
+                pathname: '/marketplace-chefs',
+                sourcePage: 'home',
+                sourceCta: 'operator_journey',
+              })}
               analyticsName="home_operator_lower_cta"
               analyticsProps={{ section: 'operator_journey' }}
               onClick={() => handleAudienceSelect('operator', 'lower_cta')}
@@ -437,7 +446,11 @@ export function HomeDualEntry() {
             Search chefs
           </TrackedLink>
           <TrackedLink
-            href="/marketplace-chefs"
+            href={buildMarketingSourceHref({
+              pathname: '/marketplace-chefs',
+              sourcePage: 'home',
+              sourceCta: 'final_operator_cta',
+            })}
             analyticsName="home_final_operator_cta"
             analyticsProps={{ section: 'final_cta' }}
             onClick={() => handleAudienceSelect('operator', 'final_cta')}

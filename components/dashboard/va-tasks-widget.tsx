@@ -59,7 +59,7 @@ export function VaTasksWidget() {
             VA Tasks
           </CardTitle>
           <Link
-            href="/staff/va-tasks"
+            href="/tasks/va"
             className="flex items-center gap-1 text-xs text-brand-400 hover:text-brand-300 transition-colors"
           >
             View all <ArrowRight className="h-3 w-3" />
