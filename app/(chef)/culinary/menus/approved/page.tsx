@@ -74,7 +74,7 @@ export default async function ApprovedMenusPage() {
                 <TableRow key={menu.id}>
                   <TableCell className="font-medium">
                     <Link
-                      href={`/culinary/menus/${menu.id}`}
+                      href={`/menus/${menu.id}`}
                       className="text-brand-600 hover:text-brand-300 hover:underline"
                     >
                       {menu.name}
@@ -97,7 +97,7 @@ export default async function ApprovedMenusPage() {
                     {menu.locked_at ? format(new Date(menu.locked_at), 'MMM d, yyyy') : '-'}
                   </TableCell>
                   <TableCell>
-                    <Link href={`/culinary/menus/${menu.id}`}>
+                    <Link href={`/menus/${menu.id}`}>
                       <Button size="sm" variant="secondary">
                         View
                       </Button>

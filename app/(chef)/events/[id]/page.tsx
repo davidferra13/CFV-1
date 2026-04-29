@@ -160,10 +160,7 @@ import { getGuestCountHistory } from '@/lib/guests/count-changes'
 import { loadEventServiceSimulationPanelState } from '@/lib/service-simulation/state'
 import { EventOperatingSpineCard } from '@/components/events/event-operating-spine-card'
 import { buildChefEventOperatingSpine } from '@/lib/events/operating-spine'
-import {
-  buildCallRecommendationHref,
-  recommendCallForEvent,
-} from '@/lib/calls/recommendations'
+import { buildCallRecommendationHref, recommendCallForEvent } from '@/lib/calls/recommendations'
 import { CallRecommendationCard } from '@/components/calls/call-recommendation-card'
 import { getCourseProgress } from '@/lib/service-execution/actions'
 import { DinnerCircleCommandCenter } from '@/components/events/dinner-circle-command-center'
@@ -199,8 +196,50 @@ import { buildThreadCoordinationBrief } from '@/lib/events/thread-coordination-b
 
 async function EventCompletionSection({ eventId }: { eventId: string }) {
   const result = await getCompletionForEntity('event', eventId)
-  if (!result) return null
-  return <CompletionCard result={result} />
+  if (!result.success) throw new Error(result.error)
+  if (!result.data) return null
+  return <CompletionCard result={result.data} />
+}
+
+type OpsPulsePrepDay = {
+  label: string
+  itemCount: number
+  totalMinutes: number
+  isPast: boolean
+  isToday: boolean
+}
+
+async function OpsPulseSection({
+  eventId,
+  eventDate,
+  serveTime,
+  status,
+  prepDays,
+  groceryDeadline,
+  untimedCount,
+}: {
+  eventId: string
+  eventDate?: string | null
+  serveTime?: string | null
+  status: string
+  prepDays?: OpsPulsePrepDay[]
+  groceryDeadline?: string | null
+  untimedCount?: number
+}) {
+  const result = await getCompletionForEntity('event', eventId)
+  if (!result.success) throw new Error(result.error)
+
+  return (
+    <OpsPulseCard
+      eventDate={eventDate}
+      serveTime={serveTime}
+      status={status}
+      completionScore={result.data?.score ?? null}
+      prepDays={prepDays}
+      groceryDeadline={groceryDeadline}
+      untimedCount={untimedCount}
+    />
+  )
 }
 
 async function getEventMenuCostSummary(eventId: string) {
@@ -1152,10 +1191,6 @@ export default async function EventDetailPage({
     timeline: null,
   }))
 
-  // Completion score for Ops Pulse
-  const completionResult = await getCompletionForEntity('event', params.id).catch(() => null)
-  const completionScore = completionResult?.score ?? null
-
   // Cost forecast for future events with menus
   let costForecast: CostForecast | null = null
   if (eventMenus && eventMenus.length > 0 && event.event_date) {
@@ -1641,31 +1676,33 @@ export default async function EventDetailPage({
       {/* Ops Pulse: inside-out operational summary */}
       {!['cancelled', 'completed'].includes(event.status) && (
         <WidgetErrorBoundary name="Ops Pulse" compact>
-          <OpsPulseCard
-            eventDate={dateToDateString(event.event_date)}
-            serveTime={(event as any).serve_time}
-            status={event.status}
-            completionScore={completionScore}
-            prepDays={
-              prepTimeline
-                ? (prepTimeline as any).days?.map((d: any) => ({
-                    label: d.label,
-                    itemCount: d.items?.length ?? 0,
-                    totalMinutes: d.totalPrepMinutes ?? 0,
-                    isPast: d.isPast,
-                    isToday: d.isToday,
-                  }))
-                : undefined
-            }
-            groceryDeadline={
-              prepTimeline
-                ? (prepTimeline as any).groceryDeadline
-                  ? dateToDateString((prepTimeline as any).groceryDeadline)
-                  : null
-                : undefined
-            }
-            untimedCount={(prepTimeline as any)?.untimedItems?.length}
-          />
+          <Suspense fallback={null}>
+            <OpsPulseSection
+              eventId={params.id}
+              eventDate={dateToDateString(event.event_date)}
+              serveTime={(event as any).serve_time}
+              status={event.status}
+              prepDays={
+                prepTimeline
+                  ? (prepTimeline as any).days?.map((d: any) => ({
+                      label: d.label,
+                      itemCount: d.items?.length ?? 0,
+                      totalMinutes: d.totalPrepMinutes ?? 0,
+                      isPast: d.isPast,
+                      isToday: d.isToday,
+                    }))
+                  : undefined
+              }
+              groceryDeadline={
+                prepTimeline
+                  ? (prepTimeline as any).groceryDeadline
+                    ? dateToDateString((prepTimeline as any).groceryDeadline)
+                    : null
+                  : undefined
+              }
+              untimedCount={(prepTimeline as any)?.untimedItems?.length}
+            />
+          </Suspense>
         </WidgetErrorBoundary>
       )}
 

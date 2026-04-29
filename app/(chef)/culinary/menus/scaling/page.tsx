@@ -66,10 +66,7 @@ export default async function MenuScalingPage() {
                 .map((menu: any) => (
                   <TableRow key={menu.id}>
                     <TableCell className="font-medium">
-                      <Link
-                        href={`/culinary/menus/${menu.id}`}
-                        className="text-brand-600 hover:underline"
-                      >
+                      <Link href={`/menus/${menu.id}`} className="text-brand-600 hover:underline">
                         {menu.name}
                       </Link>
                     </TableCell>
@@ -85,7 +82,7 @@ export default async function MenuScalingPage() {
                       </span>
                     </TableCell>
                     <TableCell>
-                      <Link href={`/culinary/menus/${menu.id}`}>
+                      <Link href={`/menus/${menu.id}`}>
                         <span className="text-xs text-brand-600 hover:underline cursor-pointer">
                           View
                         </span>

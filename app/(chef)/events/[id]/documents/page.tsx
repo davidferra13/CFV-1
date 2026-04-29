@@ -750,12 +750,12 @@ export default async function EventDocumentsPage({
                     <div>
                       <p className="text-sm font-semibold text-stone-100">
                         Margin:{' '}
-                        {formatComparisonPercent(financialSummary.comparison.vsAverageMarginPercent)}
-                      </p>
-                      <p className="text-xs text-stone-500">
-                        {formatMarginComparison(
+                        {formatComparisonPercent(
                           financialSummary.comparison.vsAverageMarginPercent
                         )}
+                      </p>
+                      <p className="text-xs text-stone-500">
+                        {formatMarginComparison(financialSummary.comparison.vsAverageMarginPercent)}
                       </p>
                     </div>
                   </div>
@@ -1152,24 +1152,36 @@ export default async function EventDocumentsPage({
                   Page {drilldown.page} of {drilldown.totalPages}
                 </div>
                 <div className="flex items-center gap-2">
-                  <Link
-                    href={buildDrilldownHref(event.id, queryState, {
-                      page: Math.max(1, drilldown.page - 1),
-                    })}
-                  >
-                    <Button variant="secondary" size="sm" disabled={!drilldown.hasPreviousPage}>
+                  {drilldown.hasPreviousPage ? (
+                    <Link
+                      href={buildDrilldownHref(event.id, queryState, {
+                        page: Math.max(1, drilldown.page - 1),
+                      })}
+                    >
+                      <Button variant="secondary" size="sm">
+                        Previous
+                      </Button>
+                    </Link>
+                  ) : (
+                    <Button variant="secondary" size="sm" disabled>
                       Previous
                     </Button>
-                  </Link>
-                  <Link
-                    href={buildDrilldownHref(event.id, queryState, {
-                      page: Math.min(drilldown.totalPages, drilldown.page + 1),
-                    })}
-                  >
-                    <Button variant="secondary" size="sm" disabled={!drilldown.hasNextPage}>
+                  )}
+                  {drilldown.hasNextPage ? (
+                    <Link
+                      href={buildDrilldownHref(event.id, queryState, {
+                        page: Math.min(drilldown.totalPages, drilldown.page + 1),
+                      })}
+                    >
+                      <Button variant="secondary" size="sm">
+                        Next
+                      </Button>
+                    </Link>
+                  ) : (
+                    <Button variant="secondary" size="sm" disabled>
                       Next
                     </Button>
-                  </Link>
+                  )}
                 </div>
               </div>
             )}

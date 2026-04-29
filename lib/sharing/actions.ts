@@ -1420,26 +1420,34 @@ export async function sendEventRSVPReminders(input: z.infer<typeof SendEventRemi
   const event = await getEventForUserAccess(validated.eventId, user)
   const db = createServerClient({ admin: true })
 
-  const { data: shareData } = await (db as any)
+  const { data: shareData, error: shareError } = await (db as any)
     .from('event_shares')
     .select('id, tenant_id, reminders_enabled')
     .eq('event_id', event.id)
+    .eq('tenant_id', event.tenant_id)
     .eq('is_active', true)
     .single()
   const share = shareData as any
 
+  if (shareError && shareError.code !== 'PGRST116') {
+    throw new Error('Failed to load RSVP reminder settings')
+  }
   if (!share) throw new Error('Active share not found for this event')
   if (!share.reminders_enabled) throw new Error('Reminders are disabled for this event')
 
-  const { data: pendingGuestsData } = await (db as any)
+  const { data: pendingGuestsData, error: pendingGuestsError } = await (db as any)
     .from('event_guests')
     .select('id, full_name, email, attendance_queue_status, rsvp_status')
     .eq('event_share_id', share.id)
+    .eq('tenant_id', event.tenant_id)
     .eq('rsvp_status', 'pending')
     .not('email', 'is', null)
 
+  if (pendingGuestsError) throw new Error('Failed to load pending RSVP guests')
+
   const recipients = ((pendingGuestsData as any[]) || []).filter((guest: any) => !!guest.email)
   let inserted = 0
+  let duplicateCount = 0
   for (const guest of recipients) {
     const reminderKey = `${validated.cadence}:${event.id}`
     const { error } = await ((db as any).from('rsvp_reminder_log').insert({
@@ -1451,17 +1459,28 @@ export async function sendEventRSVPReminders(input: z.infer<typeof SendEventRemi
       recipient_email: guest.email,
       status: 'queued',
     }) as any)
-    if (!error) inserted += 1
+    if (!error) {
+      inserted += 1
+    } else if (error.code === '23505') {
+      duplicateCount += 1
+    } else {
+      throw new Error('Failed to queue RSVP reminders')
+    }
   }
 
   const subject = `Reminder: RSVP for ${event.occasion || 'your event'}`
   const body = `Quick reminder to RSVP for ${event.occasion || 'this event'} on ${event.event_date}.`
+
+  revalidatePath(`/events/${event.id}`)
+  revalidatePath(`/my-events/${event.id}`)
+  revalidatePath('/cannabis/rsvps')
 
   return {
     success: true,
     cadence: validated.cadence,
     recipientCount: recipients.length,
     queuedCount: inserted,
+    duplicateCount,
     subject,
     body,
   }

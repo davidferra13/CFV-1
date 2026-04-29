@@ -390,7 +390,14 @@ export default async function DocumentsIndexPage({
             <Button type="submit" variant="secondary" size="sm">
               Search
             </Button>
-            {(rawQuery || phaseFilter !== 'all' || snapshotDocFilter !== 'any' || snapshotFromDate || snapshotToDate || snapshotOrder !== 'newest' || snapshotSearch || snapshotPage > 1) && (
+            {(rawQuery ||
+              phaseFilter !== 'all' ||
+              snapshotDocFilter !== 'any' ||
+              snapshotFromDate ||
+              snapshotToDate ||
+              snapshotOrder !== 'newest' ||
+              snapshotSearch ||
+              snapshotPage > 1) && (
               <Link href="/documents">
                 <Button variant="ghost" size="sm">
                   Reset
@@ -722,24 +729,36 @@ export default async function DocumentsIndexPage({
               Page {archiveDrilldown.page} of {archiveDrilldown.totalPages}
             </p>
             <div className="flex items-center gap-2">
-              <Link
-                href={buildSnapshotFilterHref(phaseFilter, rawQuery, snapshotQueryState, {
-                  page: Math.max(1, archiveDrilldown.page - 1),
-                })}
-              >
-                <Button variant="secondary" size="sm" disabled={!archiveDrilldown.hasPreviousPage}>
+              {archiveDrilldown.hasPreviousPage ? (
+                <Link
+                  href={buildSnapshotFilterHref(phaseFilter, rawQuery, snapshotQueryState, {
+                    page: Math.max(1, archiveDrilldown.page - 1),
+                  })}
+                >
+                  <Button variant="secondary" size="sm">
+                    Previous
+                  </Button>
+                </Link>
+              ) : (
+                <Button variant="secondary" size="sm" disabled>
                   Previous
                 </Button>
-              </Link>
-              <Link
-                href={buildSnapshotFilterHref(phaseFilter, rawQuery, snapshotQueryState, {
-                  page: Math.min(archiveDrilldown.totalPages, archiveDrilldown.page + 1),
-                })}
-              >
-                <Button variant="secondary" size="sm" disabled={!archiveDrilldown.hasNextPage}>
+              )}
+              {archiveDrilldown.hasNextPage ? (
+                <Link
+                  href={buildSnapshotFilterHref(phaseFilter, rawQuery, snapshotQueryState, {
+                    page: Math.min(archiveDrilldown.totalPages, archiveDrilldown.page + 1),
+                  })}
+                >
+                  <Button variant="secondary" size="sm">
+                    Next
+                  </Button>
+                </Link>
+              ) : (
+                <Button variant="secondary" size="sm" disabled>
                   Next
                 </Button>
-              </Link>
+              )}
             </div>
           </div>
         )}

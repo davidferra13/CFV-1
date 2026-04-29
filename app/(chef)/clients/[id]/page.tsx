@@ -108,8 +108,9 @@ import { ClientCallMemoryPanel } from '@/components/clients/client-call-memory-p
 
 async function ClientCompletionSection({ clientId }: { clientId: string }) {
   const result = await getCompletionForEntity('client', clientId)
-  if (!result) return null
-  return <CompletionCard result={result} />
+  if (!result.success) throw new Error(result.error)
+  if (!result.data) return null
+  return <CompletionCard result={result.data} />
 }
 
 const TIER_COLORS: Record<string, string> = {
@@ -282,9 +283,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
         ) ?? null)
       : null
   const clientCallMemory =
-    clientCallsState.status === 'ok'
-      ? buildClientCallMemorySnapshot(clientCallsState.data)
-      : null
+    clientCallsState.status === 'ok' ? buildClientCallMemorySnapshot(clientCallsState.data) : null
 
   return (
     <div className="space-y-8">

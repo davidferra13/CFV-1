@@ -77,7 +77,7 @@ export default async function DraftMenusPage() {
                 <TableRow key={menu.id}>
                   <TableCell className="font-medium">
                     <Link
-                      href={`/culinary/menus/${menu.id}`}
+                      href={`/menus/${menu.id}`}
                       className="text-brand-600 hover:text-brand-300 hover:underline"
                     >
                       {menu.name}
@@ -109,7 +109,7 @@ export default async function DraftMenusPage() {
                     {format(new Date(menu.created_at), 'MMM d, yyyy')}
                   </TableCell>
                   <TableCell>
-                    <Link href={`/culinary/menus/${menu.id}`}>
+                    <Link href={`/menus/${menu.id}`}>
                       <Button size="sm" variant="secondary">
                         Edit
                       </Button>

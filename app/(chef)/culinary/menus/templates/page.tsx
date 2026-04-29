@@ -53,7 +53,7 @@ export default async function MenuTemplatesPage() {
       ) : (
         <div className="grid grid-cols-2 gap-4">
           {templates.map((menu: any) => (
-            <Link key={menu.id} href={`/culinary/menus/${menu.id}`}>
+            <Link key={menu.id} href={`/menus/${menu.id}`}>
               <Card className="p-5 hover:shadow-md transition-shadow cursor-pointer h-full">
                 <div className="flex items-start justify-between mb-2">
                   <h2 className="font-semibold text-stone-100">{menu.name}</h2>

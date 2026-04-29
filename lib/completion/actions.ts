@@ -8,16 +8,21 @@ import { evaluateCompletion } from './engine'
 import type { EntityType, CompletionResult } from './types'
 import { pgClient } from '@/lib/db/index'
 
+type CompletionForEntityResult =
+  | { success: true; data: CompletionResult | null }
+  | { success: false; error: string }
+
 export async function getCompletionForEntity(
   entityType: EntityType,
   entityId: string
-): Promise<CompletionResult | null> {
+): Promise<CompletionForEntityResult> {
   const user = await requireChef()
   try {
-    return await evaluateCompletion(entityType, entityId, user.tenantId!)
+    const data = await evaluateCompletion(entityType, entityId, user.tenantId!)
+    return { success: true, data }
   } catch (err) {
     console.error(`[Completion] ${entityType}/${entityId} failed:`, err)
-    return null
+    return { success: false, error: 'Could not load completion data.' }
   }
 }
 
