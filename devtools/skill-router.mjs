@@ -275,14 +275,14 @@ function isExplicitlyNamed(skill) {
 
 const conflictPriorityRules = [
   {
-    winner: 'ledger-safety',
-    beats: ['builder', 'review', 'hallucination-scan'],
-    reason: 'ledger-safety owns cents, balances, and append-only money movement',
-  },
-  {
     winner: 'stripe-webhook-integrity',
     beats: ['builder', 'debug', 'review', 'ledger-safety'],
     reason: 'stripe-webhook-integrity owns external payment event intake and idempotency',
+  },
+  {
+    winner: 'ledger-safety',
+    beats: ['builder', 'review', 'hallucination-scan'],
+    reason: 'ledger-safety owns cents, balances, and append-only money movement',
   },
   {
     winner: 'billing-monetization',

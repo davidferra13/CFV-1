@@ -26,13 +26,19 @@ Prefer the deterministic tools when changing or evaluating skills:
 - `node devtools/skill-validator.mjs [skill-name ...]` checks frontmatter, trigger language, em dashes, and references.
 - `node devtools/skill-trigger-tests.mjs` checks known prompts against expected skill routing evidence.
 - `node devtools/skill-router.mjs --prompt "..." [--write]` classifies primary skill, sidecar skills, hard stops, risk, and required checks before work starts, and can persist routing evidence.
+- `node devtools/agent-start.mjs --prompt "..."` starts a task with routing evidence and a flight record.
 - `node devtools/agent-preflight.mjs --prompt "..."` runs router, validator, trigger tests, coverage, dependency graph, and optional closeout checks in one pass.
 - `node devtools/agent-closeout-gate.mjs --owned path,other-path` blocks closeout when owned work lacks commit, validation, report, or compliance evidence.
+- `node devtools/agent-finish.mjs --record path --owned path,other-path --used skill,skill --validations check,check` finishes a task with closeout, missed-skill detection, flight recording, and dashboard generation.
+- `node devtools/agent-flight-recorder.mjs start|finish ...` records the prompt, selected skills, used skills, touched files, validations, and commit.
+- `node devtools/missed-skill-detector.mjs --record path [--write-learning]` compares expected and used skills, then creates repair items for misses.
 - `node devtools/report-skill-failure.mjs --skill skill-name --what "..." --prompt "..."` records a missed or weak skill behavior for repair, and can add a non-duplicate golden prompt with `--add-golden`.
 - `node devtools/session-transcript-auditor.mjs [--file transcript.txt] [--write]` turns missed real-session behavior into learning inbox items.
 - `node devtools/skill-learning-proposals.mjs` proposes patch, new skill, AGENTS.md, persona, findings, or rejection routes for open learning items.
 - `node devtools/skill-coverage-map.mjs` reports major ChefFlow task classes and their skill ownership.
 - `node devtools/skill-dependency-graph.mjs` reports skill handoff edges, unknown references, and orphan skills.
+- `node devtools/skill-maturity-report.mjs` reports draft, active, proven, needs-healing, and deprecated skill states.
+- `node devtools/skill-dashboard.mjs` writes the consolidated skill dashboard for coverage, maturity, health, dependency, and learning status.
 - `node devtools/agent-learning-inbox.mjs add ...` captures useful but unresolved behavior without forcing an immediate skill patch.
 - `node devtools/external-guidance-intake.mjs --source "source-name"` classifies Hermes, OpenCloy, ChatGPT, or markdown guidance into routes.
 - `node devtools/skill-health-report.mjs` writes a broad health snapshot for stale references, open learning items, and overlap risk.
@@ -97,6 +103,8 @@ When a skill performs badly or future Codex behavior would likely miss the user'
 4. Validate the skill with the local validator.
 5. If the failure came from user correction, encode the corrected behavior as a concrete rule.
 6. If a skill did not technically fail but its trigger is too weak for the user's newly stated expectation, tighten the trigger and add the minimum procedural rule needed.
+7. When `missed-skill-detector` finds a miss, treat the learning item as a concrete repair signal, not a vague suggestion.
+8. Use the needs-healing state in `system/agent-skill-maturity.json` when a skill has a known miss, and promote it back to active or proven only after trigger tests or real flight records prove the repair.
 
 ## External Guidance Intake
 
@@ -139,6 +147,7 @@ After editing skills:
 3. Run `node devtools/skill-coverage-map.mjs` or `node devtools/skill-dependency-graph.mjs` when ownership or routing changed.
 4. Run a targeted compliance scan for em dashes in changed skill files.
 5. Write a closeout report with `node devtools/skill-closeout-report.mjs` when the task's main purpose was skill behavior.
-6. Run `node devtools/agent-closeout-gate.mjs --owned ...` before final closeout when practical.
-7. Stage only the files you changed unless the user explicitly asks to ship all dirty work.
-8. Commit and push on a feature branch.
+6. Run `node devtools/skill-dashboard.mjs` when coverage, maturity, or routing behavior changed.
+7. Run `node devtools/agent-closeout-gate.mjs --owned ...` before final closeout when practical.
+8. Stage only the files you changed unless the user explicitly asks to ship all dirty work.
+9. Commit and push on a feature branch.

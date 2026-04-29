@@ -19,6 +19,9 @@ const generatedReportDirs = [
   'skill-dependencies',
   'skill-health',
   'router-decisions',
+  'flight-records',
+  'skill-maturity',
+  'skill-dashboard',
 ].map((name) => path.join(reportsRoot, name))
 
 function skillAgeDays(skill) {

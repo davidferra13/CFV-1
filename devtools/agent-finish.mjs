@@ -76,7 +76,7 @@ try {
   ])
   const dashboard = runNode('skill-dashboard', ['devtools/skill-dashboard.mjs'], true)
   const result = {
-    ok: closeout.ok && flight.ok,
+    ok: closeout.ok && missed.ok && flight.ok,
     closeout: {
       ok: closeout.ok,
       output: closeout.output ? JSON.parse(closeout.output) : null,

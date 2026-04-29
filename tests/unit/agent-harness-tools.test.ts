@@ -16,6 +16,21 @@ function runNode(args: string[], cwd = repoRoot) {
   })
 }
 
+function runNodeAllowFailure(args: string[], cwd = repoRoot) {
+  try {
+    return {
+      ok: true,
+      stdout: runNode(args, cwd),
+    }
+  } catch (error) {
+    const err = error as { stdout?: Buffer | string }
+    return {
+      ok: false,
+      stdout: String(err.stdout || ''),
+    }
+  }
+}
+
 test('skill-router classifies a basic review request', () => {
   const output = runNode([
     'devtools/skill-router.mjs',
@@ -35,6 +50,23 @@ test('skill-router classifies a basic review request', () => {
   assert.ok(
     result.required_checks.includes('stage, commit, and push only owned files before closeout'),
   )
+})
+
+test('skill-router applies conflict priority for Stripe ledger work', () => {
+  const output = runNode([
+    'devtools/skill-router.mjs',
+    '--prompt',
+    'Build Stripe webhook ledger reconciliation and idempotency.',
+  ])
+  const result = JSON.parse(output) as {
+    primary_skill: string
+    sidecar_skills: string[]
+    conflict_resolution: { winner: string } | null
+  }
+
+  assert.equal(result.primary_skill, 'stripe-webhook-integrity')
+  assert.equal(result.conflict_resolution?.winner, 'stripe-webhook-integrity')
+  assert.ok(result.sidecar_skills.includes('ledger-safety'))
 })
 
 test('skill-learning-proposals returns empty JSON when no learning inbox exists', () => {
@@ -75,4 +107,74 @@ test('agent-closeout-gate succeeds for a clean committed file', () => {
   assert.deepEqual(result.owned_paths, ['package.json'])
   assert.deepEqual(result.failures, [])
   assert.ok(result.warnings.includes('No uncommitted owned changes detected.'))
+})
+
+test('missed-skill-detector reports expected skills that were not used', () => {
+  const result = runNodeAllowFailure([
+    'devtools/missed-skill-detector.mjs',
+    '--prompt',
+    'Build Stripe webhook ledger reconciliation and idempotency.',
+    '--used',
+    'builder',
+    '--touched',
+    'lib/ledger/append.ts,app/api/stripe/webhook/route.ts',
+  ])
+  const parsed = JSON.parse(result.stdout) as {
+    ok: boolean
+    missed_skills: Array<{ skill: string }>
+  }
+
+  assert.equal(result.ok, false)
+  assert.equal(parsed.ok, false)
+  assert.ok(parsed.missed_skills.some((miss) => miss.skill === 'stripe-webhook-integrity'))
+  assert.ok(parsed.missed_skills.some((miss) => miss.skill === 'ledger-safety'))
+})
+
+test('agent-flight-recorder starts and finishes a record', () => {
+  let recordPath: string | null = null
+  try {
+    const started = JSON.parse(
+      runNode([
+        'devtools/agent-flight-recorder.mjs',
+        'start',
+        '--prompt',
+        'Review these uncommitted changes before we ship.',
+      ]),
+    ) as { record_file: string }
+    recordPath = path.join(repoRoot, started.record_file)
+
+    const finished = JSON.parse(
+      runNode([
+        'devtools/agent-flight-recorder.mjs',
+        'finish',
+        '--record',
+        started.record_file,
+        '--owned',
+        'package.json',
+        '--used',
+        'omninet,review',
+        '--validations',
+        'unit-test',
+      ]),
+    ) as { record: { status: string; used_skills: string[]; files_touched: string[] } }
+
+    assert.equal(finished.record.status, 'finished')
+    assert.ok(finished.record.used_skills.includes('review'))
+    assert.ok(finished.record.files_touched.includes('package.json'))
+  } finally {
+    if (recordPath) fs.rmSync(recordPath, { force: true })
+  }
+})
+
+test('skill-maturity-report returns a valid maturity summary', () => {
+  const output = runNode(['devtools/skill-maturity-report.mjs', '--stdout'])
+  const result = JSON.parse(output) as {
+    skill_count: number
+    invalid_count: number
+    counts: Record<string, number>
+  }
+
+  assert.ok(result.skill_count > 0)
+  assert.equal(result.invalid_count, 0)
+  assert.ok(result.counts.active >= 1)
 })

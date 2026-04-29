@@ -107,5 +107,14 @@
       "omninet": ["stripe-webhook-integrity", "idempotency"],
       "stripe-webhook-integrity": ["Stripe", "idempotency"]
     }
+  },
+  {
+    "name": "agent flight recorder",
+    "prompt": "Codex should record what skills it selected, what files it touched, and whether it missed a skill.",
+    "expect": ["omninet", "skill-garden"],
+    "evidence": {
+      "omninet": ["flight record", "missed-skill"],
+      "skill-garden": ["flight record", "missed-skill"]
+    }
   }
 ]

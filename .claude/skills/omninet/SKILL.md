@@ -22,12 +22,18 @@ Use these tools when the task touches skills or durable agent behavior:
 - Validate changed skills: `node devtools/skill-validator.mjs [skill-name ...]`
 - Test routing triggers: `node devtools/skill-trigger-tests.mjs`
 - Route a prompt before work: `node devtools/skill-router.mjs --prompt "..." [--write]`
+- Start a recorded task: `node devtools/agent-start.mjs --prompt "..."`
 - Run the combined harness preflight: `node devtools/agent-preflight.mjs --prompt "..."`
+- Finish a recorded task: `node devtools/agent-finish.mjs --record path --owned path,other-path --used skill,skill --validations check,check`
+- Write or update a flight record directly: `node devtools/agent-flight-recorder.mjs start|finish ...`
+- Detect missed skills: `node devtools/missed-skill-detector.mjs --record path [--write-learning]`
 - Gate closeout before final: `node devtools/agent-closeout-gate.mjs --owned path,other-path`
 - Audit prior sessions: `node devtools/session-transcript-auditor.mjs [--file transcript.txt] [--write]`
 - Propose learning actions: `node devtools/skill-learning-proposals.mjs`
 - Map skill coverage: `node devtools/skill-coverage-map.mjs`
 - Map skill dependencies: `node devtools/skill-dependency-graph.mjs`
+- Report skill maturity: `node devtools/skill-maturity-report.mjs`
+- Write skill dashboard: `node devtools/skill-dashboard.mjs`
 - Report a skill failure: `node devtools/report-skill-failure.mjs --skill skill-name --what "..."`
 - Record unresolved learning: `node devtools/agent-learning-inbox.mjs add --category behavior --title "..."`
 - Classify external guidance: `node devtools/external-guidance-intake.mjs --source "source-name"`
@@ -86,6 +92,7 @@ Maintain this lightweight state while working:
 - Active skill: the current primary skill and why it applies.
 - Sidecar skills: any secondary skills that materially reduce risk.
 - Hard stops: any project rule that affects the task.
+- Flight record: the start or finish evidence file when the work changes durable agent behavior.
 - Evidence: files, commands, outputs, or user-provided artifacts that ground the work.
 - Skill delta: whether this task revealed a new skill, a skill repair, or no reusable change.
 - Closeout evidence: validator, trigger tests, skill health, or learning inbox entry when relevant.
@@ -99,6 +106,7 @@ Invoke `skill-garden` when any of these appear:
 - The user says "always", "never", "from now on", "make Codex", "Codex should", or similar operating guidance.
 - The same correction, missed behavior, or workflow appears more than once.
 - A skill fails, is too vague, chooses the wrong tool, or leaves out a recurring ChefFlow rule.
+- A task finishes with a missed-skill detector finding or a flight record showing selected skills differed from expected skills.
 - External operator guidance from Hermes, OpenCloy, ChatGPT, notes, markdowns, or pasted conversations should become project behavior.
 - A workflow requires repeated manual parsing, like persona imports or build queue triage.
 - Current conclusions depend on old audit findings, stale docs, mixed test failures, or operational status artifacts.

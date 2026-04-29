@@ -1,0 +1,20 @@
+{
+  "prompt": "Codex should record selected skills and detect missed skills",
+  "generated_at": "2026-04-29T15:44:48.932Z",
+  "primary_skill": "skill-garden",
+  "sidecar_skills": [
+    "omninet"
+  ],
+  "skill_maturity": {
+    "skill-garden": "proven",
+    "omninet": "proven"
+  },
+  "conflict_resolution": null,
+  "hard_stops": [],
+  "risk_level": "medium",
+  "required_checks": [
+    "run targeted compliance scan for em dashes, OpenClaw public text, and ts-nocheck",
+    "run skill validator and trigger tests when skill behavior changes",
+    "stage, commit, and push only owned files before closeout"
+  ]
+}

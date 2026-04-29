@@ -1,0 +1,478 @@
+{
+  "generated_at": "2026-04-29T15:43:25.190Z",
+  "default_state": "active",
+  "skill_count": 43,
+  "counts": {
+    "draft": 0,
+    "active": 41,
+    "proven": 2,
+    "needs-healing": 0,
+    "deprecated": 0
+  },
+  "invalid_count": 0,
+  "implicit_default_count": 37,
+  "unknown_configured_skills": [],
+  "skills": [
+    {
+      "name": "5-whys",
+      "file": ".claude/skills/5-whys/SKILL.md",
+      "state": "active",
+      "configured": false,
+      "reason": null,
+      "updated_at": null,
+      "flags": [
+        "implicit-default"
+      ]
+    },
+    {
+      "name": "audit",
+      "file": ".claude/skills/audit/SKILL.md",
+      "state": "active",
+      "configured": false,
+      "reason": null,
+      "updated_at": null,
+      "flags": [
+        "implicit-default"
+      ]
+    },
+    {
+      "name": "backup",
+      "file": ".claude/skills/backup/SKILL.md",
+      "state": "active",
+      "configured": false,
+      "reason": null,
+      "updated_at": null,
+      "flags": [
+        "implicit-default"
+      ]
+    },
+    {
+      "name": "billing-monetization",
+      "file": ".claude/skills/billing-monetization/SKILL.md",
+      "state": "active",
+      "configured": true,
+      "reason": "Monetization and tier owner.",
+      "updated_at": null,
+      "flags": []
+    },
+    {
+      "name": "builder",
+      "file": ".claude/skills/builder/SKILL.md",
+      "state": "active",
+      "configured": true,
+      "reason": "Default execution workflow.",
+      "updated_at": null,
+      "flags": []
+    },
+    {
+      "name": "close-session",
+      "file": ".claude/skills/close-session/SKILL.md",
+      "state": "active",
+      "configured": false,
+      "reason": null,
+      "updated_at": null,
+      "flags": [
+        "implicit-default"
+      ]
+    },
+    {
+      "name": "compliance",
+      "file": ".claude/skills/compliance/SKILL.md",
+      "state": "active",
+      "configured": false,
+      "reason": null,
+      "updated_at": null,
+      "flags": [
+        "implicit-default"
+      ]
+    },
+    {
+      "name": "debug",
+      "file": ".claude/skills/debug/SKILL.md",
+      "state": "active",
+      "configured": false,
+      "reason": null,
+      "updated_at": null,
+      "flags": [
+        "implicit-default"
+      ]
+    },
+    {
+      "name": "document",
+      "file": ".claude/skills/document/SKILL.md",
+      "state": "active",
+      "configured": false,
+      "reason": null,
+      "updated_at": null,
+      "flags": [
+        "implicit-default"
+      ]
+    },
+    {
+      "name": "evidence-integrity",
+      "file": ".claude/skills/evidence-integrity/SKILL.md",
+      "state": "active",
+      "configured": false,
+      "reason": null,
+      "updated_at": null,
+      "flags": [
+        "implicit-default"
+      ]
+    },
+    {
+      "name": "feature-closeout",
+      "file": ".claude/skills/feature-closeout/SKILL.md",
+      "state": "active",
+      "configured": false,
+      "reason": null,
+      "updated_at": null,
+      "flags": [
+        "implicit-default"
+      ]
+    },
+    {
+      "name": "findings-triage",
+      "file": ".claude/skills/findings-triage/SKILL.md",
+      "state": "active",
+      "configured": false,
+      "reason": null,
+      "updated_at": null,
+      "flags": [
+        "implicit-default"
+      ]
+    },
+    {
+      "name": "first-principles",
+      "file": ".claude/skills/first-principles/SKILL.md",
+      "state": "active",
+      "configured": false,
+      "reason": null,
+      "updated_at": null,
+      "flags": [
+        "implicit-default"
+      ]
+    },
+    {
+      "name": "hallucination-scan",
+      "file": ".claude/skills/hallucination-scan/SKILL.md",
+      "state": "active",
+      "configured": false,
+      "reason": null,
+      "updated_at": null,
+      "flags": [
+        "implicit-default"
+      ]
+    },
+    {
+      "name": "heal-skill",
+      "file": ".claude/skills/heal-skill/SKILL.md",
+      "state": "active",
+      "configured": false,
+      "reason": null,
+      "updated_at": null,
+      "flags": [
+        "implicit-default"
+      ]
+    },
+    {
+      "name": "health",
+      "file": ".claude/skills/health/SKILL.md",
+      "state": "active",
+      "configured": false,
+      "reason": null,
+      "updated_at": null,
+      "flags": [
+        "implicit-default"
+      ]
+    },
+    {
+      "name": "host-integrity",
+      "file": ".claude/skills/host-integrity/SKILL.md",
+      "state": "active",
+      "configured": false,
+      "reason": null,
+      "updated_at": null,
+      "flags": [
+        "implicit-default"
+      ]
+    },
+    {
+      "name": "ledger-safety",
+      "file": ".claude/skills/ledger-safety/SKILL.md",
+      "state": "active",
+      "configured": true,
+      "reason": "Financial safety owner.",
+      "updated_at": null,
+      "flags": []
+    },
+    {
+      "name": "massive-win",
+      "file": ".claude/skills/massive-win/SKILL.md",
+      "state": "active",
+      "configured": false,
+      "reason": null,
+      "updated_at": null,
+      "flags": [
+        "implicit-default"
+      ]
+    },
+    {
+      "name": "morning",
+      "file": ".claude/skills/morning/SKILL.md",
+      "state": "active",
+      "configured": false,
+      "reason": null,
+      "updated_at": null,
+      "flags": [
+        "implicit-default"
+      ]
+    },
+    {
+      "name": "omninet",
+      "file": ".claude/skills/omninet/SKILL.md",
+      "state": "proven",
+      "configured": true,
+      "reason": "Mandatory ChefFlow routing loop.",
+      "updated_at": null,
+      "flags": []
+    },
+    {
+      "name": "persona-build",
+      "file": ".claude/skills/persona-build/SKILL.md",
+      "state": "active",
+      "configured": false,
+      "reason": null,
+      "updated_at": null,
+      "flags": [
+        "implicit-default"
+      ]
+    },
+    {
+      "name": "persona-dump",
+      "file": ".claude/skills/persona-dump/SKILL.md",
+      "state": "active",
+      "configured": false,
+      "reason": null,
+      "updated_at": null,
+      "flags": [
+        "implicit-default"
+      ]
+    },
+    {
+      "name": "persona-inbox",
+      "file": ".claude/skills/persona-inbox/SKILL.md",
+      "state": "active",
+      "configured": false,
+      "reason": null,
+      "updated_at": null,
+      "flags": [
+        "implicit-default"
+      ]
+    },
+    {
+      "name": "persona-stress-test",
+      "file": ".claude/skills/persona-stress-test/SKILL.md",
+      "state": "active",
+      "configured": false,
+      "reason": null,
+      "updated_at": null,
+      "flags": [
+        "implicit-default"
+      ]
+    },
+    {
+      "name": "pi",
+      "file": ".claude/skills/pi/SKILL.md",
+      "state": "active",
+      "configured": false,
+      "reason": null,
+      "updated_at": null,
+      "flags": [
+        "implicit-default"
+      ]
+    },
+    {
+      "name": "pipeline",
+      "file": ".claude/skills/pipeline/SKILL.md",
+      "state": "active",
+      "configured": false,
+      "reason": null,
+      "updated_at": null,
+      "flags": [
+        "implicit-default"
+      ]
+    },
+    {
+      "name": "planner",
+      "file": ".claude/skills/planner/SKILL.md",
+      "state": "active",
+      "configured": false,
+      "reason": null,
+      "updated_at": null,
+      "flags": [
+        "implicit-default"
+      ]
+    },
+    {
+      "name": "pre-flight",
+      "file": ".claude/skills/pre-flight/SKILL.md",
+      "state": "active",
+      "configured": false,
+      "reason": null,
+      "updated_at": null,
+      "flags": [
+        "implicit-default"
+      ]
+    },
+    {
+      "name": "quick-wins",
+      "file": ".claude/skills/quick-wins/SKILL.md",
+      "state": "active",
+      "configured": false,
+      "reason": null,
+      "updated_at": null,
+      "flags": [
+        "implicit-default"
+      ]
+    },
+    {
+      "name": "regression",
+      "file": ".claude/skills/regression/SKILL.md",
+      "state": "active",
+      "configured": false,
+      "reason": null,
+      "updated_at": null,
+      "flags": [
+        "implicit-default"
+      ]
+    },
+    {
+      "name": "research",
+      "file": ".claude/skills/research/SKILL.md",
+      "state": "active",
+      "configured": false,
+      "reason": null,
+      "updated_at": null,
+      "flags": [
+        "implicit-default"
+      ]
+    },
+    {
+      "name": "review",
+      "file": ".claude/skills/review/SKILL.md",
+      "state": "active",
+      "configured": false,
+      "reason": null,
+      "updated_at": null,
+      "flags": [
+        "implicit-default"
+      ]
+    },
+    {
+      "name": "seam",
+      "file": ".claude/skills/seam/SKILL.md",
+      "state": "active",
+      "configured": false,
+      "reason": null,
+      "updated_at": null,
+      "flags": [
+        "implicit-default"
+      ]
+    },
+    {
+      "name": "ship",
+      "file": ".claude/skills/ship/SKILL.md",
+      "state": "active",
+      "configured": false,
+      "reason": null,
+      "updated_at": null,
+      "flags": [
+        "implicit-default"
+      ]
+    },
+    {
+      "name": "skill-garden",
+      "file": ".claude/skills/skill-garden/SKILL.md",
+      "state": "proven",
+      "configured": true,
+      "reason": "Owns durable Codex behavior creation and repair.",
+      "updated_at": null,
+      "flags": []
+    },
+    {
+      "name": "soak",
+      "file": ".claude/skills/soak/SKILL.md",
+      "state": "active",
+      "configured": false,
+      "reason": null,
+      "updated_at": null,
+      "flags": [
+        "implicit-default"
+      ]
+    },
+    {
+      "name": "status",
+      "file": ".claude/skills/status/SKILL.md",
+      "state": "active",
+      "configured": false,
+      "reason": null,
+      "updated_at": null,
+      "flags": [
+        "implicit-default"
+      ]
+    },
+    {
+      "name": "stripe-webhook-integrity",
+      "file": ".claude/skills/stripe-webhook-integrity/SKILL.md",
+      "state": "active",
+      "configured": true,
+      "reason": "Stripe webhook and payment reconciliation owner.",
+      "updated_at": null,
+      "flags": []
+    },
+    {
+      "name": "tdd",
+      "file": ".claude/skills/tdd/SKILL.md",
+      "state": "active",
+      "configured": false,
+      "reason": null,
+      "updated_at": null,
+      "flags": [
+        "implicit-default"
+      ]
+    },
+    {
+      "name": "validation-gate",
+      "file": ".claude/skills/validation-gate/SKILL.md",
+      "state": "active",
+      "configured": false,
+      "reason": null,
+      "updated_at": null,
+      "flags": [
+        "implicit-default"
+      ]
+    },
+    {
+      "name": "verify",
+      "file": ".claude/skills/verify/SKILL.md",
+      "state": "active",
+      "configured": false,
+      "reason": null,
+      "updated_at": null,
+      "flags": [
+        "implicit-default"
+      ]
+    },
+    {
+      "name": "warmup",
+      "file": ".claude/skills/warmup/SKILL.md",
+      "state": "active",
+      "configured": false,
+      "reason": null,
+      "updated_at": null,
+      "flags": [
+        "implicit-default"
+      ]
+    }
+  ]
+}
