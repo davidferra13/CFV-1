@@ -21,6 +21,7 @@ import {
   Inbox,
   Cpu,
   ClipboardCheck,
+  ShieldAlert,
 } from '@/components/ui/icons'
 
 function StatCard({
@@ -184,6 +185,12 @@ export default async function AdminOverviewPage() {
             icon={ClipboardCheck}
             label="Launch Readiness"
             description="V1 validation blockers and proof status"
+          />
+          <QuickTile
+            href="/admin/remy-activity"
+            icon={ShieldAlert}
+            label="Remy Activity"
+            description="Blocked users and critical AI safety events"
           />
           <QuickTile
             href="/admin/conversations"

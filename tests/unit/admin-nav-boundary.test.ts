@@ -61,6 +61,7 @@ describe('Admin Nav Boundary', () => {
       '/admin/events',
       '/admin/analytics',
       '/admin/audit',
+      '/admin/remy-activity',
       '/admin/flags',
       '/admin/financials',
       '/admin/system',

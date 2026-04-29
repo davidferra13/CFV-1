@@ -32,7 +32,7 @@ const CAPABILITIES: CapabilityCategory[] = [
       'Search for clients by name',
       'List upcoming events or filter by status',
       'Check calendar availability & find open dates',
-      'Search recipes and list menus',
+      'Search your saved recipe book and list menus',
       'View financial summaries & monthly snapshots',
       'Search documents and list folders',
       'Search emails, view inbox, read threads',
@@ -51,7 +51,6 @@ const CAPABILITIES: CapabilityCategory[] = [
     items: [
       'Create clients from a description',
       'Create events from natural language',
-      'Create recipes with ingredients',
       'Create menus and link to events',
       'Create quotes with pricing',
       'Log inquiries from any channel',
@@ -69,7 +68,6 @@ const CAPABILITIES: CapabilityCategory[] = [
     items: [
       'Update client profiles (dietary, contact, status)',
       'Update event details (date, guests, location)',
-      'Update recipes and ingredients',
       'Update menus',
       'Update quotes',
       'Send client invitations',
@@ -111,6 +109,7 @@ const CAPABILITIES: CapabilityCategory[] = [
       'User roles and permissions',
       'Permanent data deletion',
       'Sending emails directly',
+      'Creating or changing recipes and ingredients',
     ],
   },
 ]

@@ -459,7 +459,7 @@ test.describe('Screenshot Crawl - Public Pages', () => {
 
 const ADMIN_ROUTES = [
   '/admin',
-  '/admin/activity-feed',
+  '/admin/pulse',
   '/admin/analytics',
   '/admin/audit',
   '/admin/beta',

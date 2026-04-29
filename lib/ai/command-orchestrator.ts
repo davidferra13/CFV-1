@@ -85,6 +85,7 @@ import {
 import { getTenantRemyApprovalPolicyMap } from '@/lib/ai/remy-approval-policy-actions'
 import { validateSignificantApprovalPhrase } from '@/lib/ai/remy-significant-approval'
 import { executeRegisteredRemyReadTask } from '@/lib/ai/remy-read-task-registry'
+import { normalizeRemyNavigationRoute } from '@/lib/ai/remy-navigation'
 
 // ─── Individual Task Executors ────────────────────────────────────────────────
 
@@ -946,7 +947,10 @@ function buildExecutionRounds(tasks: PlannedTask[]): PlannedTask[][] {
 // ─── New Tool Executors (Remy upgrade) ────────────────────────────────────────
 
 function executeNavGo(inputs: Record<string, unknown>) {
-  const route = String(inputs.route ?? '/dashboard')
+  const route = normalizeRemyNavigationRoute(inputs.route)
+  if (!route) {
+    throw new Error('I could not find a safe ChefFlow route for that destination.')
+  }
   return { route, navigated: true }
 }
 

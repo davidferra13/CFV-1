@@ -46,7 +46,7 @@ export function buildAcquisitionReadiness(facts: AcquisitionReadinessFacts): Acq
       evidence: `${countLabel(publicBookingSubmissions, 'public booking submission exists', 'public booking submissions exist')}, but none have campaign or referral attribution`,
       nextStep:
         'Use a UTM or referral link for the next booking test so acquisition source is provable.',
-      href: '/admin/activity',
+      href: '/admin/pulse',
     }
   }
 
@@ -55,7 +55,7 @@ export function buildAcquisitionReadiness(facts: AcquisitionReadinessFacts): Acq
       status: 'operator_review',
       evidence: `${countLabel(attributedSubmissions, 'attributed submission', 'attributed submissions')} from ${countLabel(uniqueSources, 'source', 'sources')}`,
       nextStep: 'Confirm this source is intentional, then run one more channel before launch.',
-      href: '/admin/activity',
+      href: '/admin/pulse',
     }
   }
 
@@ -63,6 +63,6 @@ export function buildAcquisitionReadiness(facts: AcquisitionReadinessFacts): Acq
     status: 'verified',
     evidence: `${countLabel(attributedSubmissions, 'attributed submission', 'attributed submissions')} across ${countLabel(uniqueSources, 'source', 'sources')}`,
     nextStep: 'Keep source tracking active and compare conversion quality after launch.',
-    href: '/admin/activity',
+    href: '/admin/pulse',
   }
 }

@@ -11,16 +11,12 @@ import {
   Store,
   MessageCircle,
 } from '@/components/ui/icons'
+import {
+  normalizeEventDetailTab,
+  type EventDetailTab,
+} from '@/components/events/event-detail-tabs'
 
-export type EventDetailTab =
-  | 'overview'
-  | 'popup'
-  | 'chat'
-  | 'money'
-  | 'prep'
-  | 'tickets'
-  | 'ops'
-  | 'wrap'
+export type { EventDetailTab } from '@/components/events/event-detail-tabs'
 
 const TABS: { id: EventDetailTab; label: string; icon: React.ReactNode }[] = [
   { id: 'overview', label: 'Overview', icon: <Info className="h-4 w-4" /> },
@@ -43,7 +39,7 @@ export function EventDetailMobileNav() {
   const router = useRouter()
   const pathname = usePathname()
 
-  const activeTab = (searchParams?.get('tab') ?? 'overview') as EventDetailTab
+  const activeTab = normalizeEventDetailTab(searchParams?.get('tab'))
 
   function switchTab(tab: EventDetailTab) {
     const params = new URLSearchParams(searchParams?.toString() ?? '')

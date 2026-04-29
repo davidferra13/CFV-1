@@ -109,6 +109,7 @@ import {
   EventDetailMobileNav,
   EventDetailSection,
 } from '@/components/events/event-detail-mobile-nav'
+import { normalizeEventDetailTab } from '@/components/events/event-detail-tabs'
 import { AllergenRiskPanel } from '@/components/ai/allergen-risk-panel'
 import { ServiceTimelinePanel } from '@/components/ai/service-timeline-panel'
 import { PrepTimelinePanel } from '@/components/ai/prep-timeline-panel'
@@ -783,15 +784,7 @@ export default async function EventDetailPage({
   params: { id: string }
   searchParams?: { tab?: string }
 }) {
-  const activeTab = (searchParams?.tab ?? 'overview') as
-    | 'overview'
-    | 'popup'
-    | 'chat'
-    | 'money'
-    | 'prep'
-    | 'tickets'
-    | 'ops'
-    | 'wrap'
+  const activeTab = normalizeEventDetailTab(searchParams?.tab)
   const user = await requireChef()
 
   const event = await getEventById(params.id)

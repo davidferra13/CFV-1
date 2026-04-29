@@ -24,6 +24,7 @@ describe('acquisition readiness', () => {
 
     assert.equal(result.status, 'instrumented')
     assert.match(result.evidence, /none have campaign or referral attribution/)
+    assert.equal(result.href, '/admin/pulse')
   })
 
   it('keeps single-source attribution in operator review', () => {
@@ -35,6 +36,7 @@ describe('acquisition readiness', () => {
     })
 
     assert.equal(result.status, 'operator_review')
+    assert.equal(result.href, '/admin/pulse')
   })
 
   it('verifies multi-source attribution', () => {
@@ -46,5 +48,6 @@ describe('acquisition readiness', () => {
     })
 
     assert.equal(result.status, 'verified')
+    assert.equal(result.href, '/admin/pulse')
   })
 })

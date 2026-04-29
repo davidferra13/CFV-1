@@ -42,6 +42,7 @@ import {
 } from '@/lib/ai/remy-conversation-summary'
 import { saveSummary, getRecentSummaries } from '@/lib/ai/remy-local-storage'
 import { OllamaLocalProvider } from '@/lib/ai/local-ai-provider'
+import { getRemyNavigationRouteFromTasks } from '@/lib/ai/remy-navigation'
 import type {
   RemyMessage,
   RemyTaskResult,
@@ -394,6 +395,19 @@ export function useRemySend(config: UseRemySendConfig) {
     [localAi, pathname]
   )
 
+  const scheduleNavigationFromTasks = useCallback(
+    (tasks?: RemyTaskResult[]) => {
+      const route = getRemyNavigationRouteFromTasks(tasks)
+      if (!route) return
+
+      setTimeout(() => {
+        closeDrawer()
+        router.push(route)
+      }, 250)
+    },
+    [closeDrawer, router]
+  )
+
   const handleSend = useCallback(
     async (
       text?: string,
@@ -686,6 +700,7 @@ export function useRemySend(config: UseRemySendConfig) {
             const hasTasks = localResult.tasks?.some((t) => t.status === 'done')
             dispatchBody({ type: hasTasks ? 'SUCCESS' : 'RESPONSE_ENDED' })
             playNotificationSound()
+            scheduleNavigationFromTasks(localResult.tasks)
 
             saveLocalMessage(convId, 'remy', cleanContent, {
               tasks: localResult.tasks,
@@ -883,6 +898,7 @@ export function useRemySend(config: UseRemySendConfig) {
         }
 
         playNotificationSound()
+        scheduleNavigationFromTasks(tasks)
 
         saveLocalMessage(convId, 'remy', cleanContent, { tasks, navSuggestions, quickReplies })
           .then(() =>
@@ -992,6 +1008,7 @@ export function useRemySend(config: UseRemySendConfig) {
       router,
       localAi,
       tryLocalAi,
+      scheduleNavigationFromTasks,
     ]
   )
 
