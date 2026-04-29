@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 
-import { buildThreadCoordinationBrief } from '@/lib/events/thread-coordination-brief'
+import {
+  buildRoleInstructionText,
+  buildThreadCoordinationBrief,
+} from '@/lib/events/thread-coordination-brief'
 
 describe('thread coordination brief', () => {
   it('derives coordination signals from communication thread messages', () => {
@@ -83,5 +86,39 @@ describe('thread coordination brief', () => {
     })
 
     assert.equal(brief.signals[0].sourceMessageId, 'new-msg')
+  })
+
+  it('builds role instruction text from only visible scoped signals', () => {
+    const brief = buildThreadCoordinationBrief({
+      messages: [
+        {
+          id: 'msg-1',
+          body: 'Please confirm 14 guests at 7pm. Address is 10 Main Street. Nut allergy for one guest.',
+          sent_at: '2026-04-28T14:00:00.000Z',
+        },
+      ],
+      visibility: {
+        show_date_time: true,
+        show_location: false,
+        show_guest_count: false,
+        show_dietary_info: false,
+      },
+      shareExpiresAt: '2026-05-01T04:00:00.000Z',
+    })
+
+    const guestView = brief.roleViews.find((view) => view.role === 'guest')
+    assert.ok(guestView)
+
+    const text = buildRoleInstructionText({
+      view: guestView,
+      shareExpiresAt: brief.retention.shareExpiresAt,
+    })
+
+    assert.match(text, /Guest coordination brief/)
+    assert.match(text, /Timing: 7pm/)
+    assert.match(text, /Access expires: 2026-05-01T04:00:00.000Z/)
+    assert.doesNotMatch(text, /Address/)
+    assert.doesNotMatch(text, /14 guests/)
+    assert.doesNotMatch(text, /Nut allergy/)
   })
 })

@@ -53,6 +53,13 @@ export type BuildThreadCoordinationBriefInput = {
   shareExpiresAt?: string | null
 }
 
+export type BuildRoleInstructionTextInput = {
+  view: CoordinationRoleView
+  shareExpiresAt?: string | null
+  includeSourceSnippets?: boolean
+  maxSignals?: number
+}
+
 const ROLE_LABELS: Record<CoordinationRole, string> = {
   chef: 'Chef',
   client: 'Client',
@@ -130,6 +137,30 @@ export function buildThreadCoordinationBrief(
       expiresByDesign: Boolean(input.shareExpiresAt),
     },
   }
+}
+
+export function buildRoleInstructionText(input: BuildRoleInstructionTextInput): string {
+  const maxSignals = input.maxSignals ?? 5
+  const visibleSignals = input.view.visibleSignals.slice(0, maxSignals)
+  const lines = [`${input.view.label} coordination brief`]
+
+  if (visibleSignals.length === 0) {
+    lines.push('No visible coordination instructions are currently derived from the thread.')
+  } else {
+    for (const signal of visibleSignals) {
+      lines.push(`${signal.label}: ${signal.value}`)
+      if (input.includeSourceSnippets && signal.snippet) {
+        lines.push(`Context: ${signal.snippet}`)
+      }
+    }
+  }
+
+  if (input.shareExpiresAt) {
+    lines.push(`Access expires: ${input.shareExpiresAt}`)
+  }
+  lines.push('Source: current ChefFlow communication thread.')
+
+  return lines.join('\n')
 }
 
 function extractSignalsFromMessage(

@@ -10,6 +10,7 @@ import type {
   CoordinationSignal,
   ThreadCoordinationBrief,
 } from '@/lib/events/thread-coordination-brief'
+import { buildRoleInstructionText } from '@/lib/events/thread-coordination-brief'
 
 type EventShare = {
   id: string
@@ -313,7 +314,11 @@ function ThreadDerivedCoordinationPanel({ brief }: { brief: ThreadCoordinationBr
       ) : (
         <div className="mt-4 grid gap-3 lg:grid-cols-3">
           {visibleRoleViews.map((view) => (
-            <RoleSignalCard key={view.role} view={view} />
+            <RoleSignalCard
+              key={view.role}
+              view={view}
+              shareExpiresAt={brief.retention.shareExpiresAt}
+            />
           ))}
         </div>
       )}
@@ -328,7 +333,51 @@ function ThreadDerivedCoordinationPanel({ brief }: { brief: ThreadCoordinationBr
   )
 }
 
-function RoleSignalCard({ view }: { view: CoordinationRoleView }) {
+function RoleSignalCard({
+  view,
+  shareExpiresAt,
+}: {
+  view: CoordinationRoleView
+  shareExpiresAt: string | null
+}) {
+  const [copyState, setCopyState] = useState<'idle' | 'copied' | 'error'>('idle')
+  const [shareState, setShareState] = useState<'idle' | 'shared' | 'error'>('idle')
+  const instructionText = buildRoleInstructionText({
+    view,
+    shareExpiresAt,
+    includeSourceSnippets: view.role === 'collaborator',
+  })
+
+  async function handleCopyBrief() {
+    setCopyState('idle')
+    try {
+      if (!navigator.clipboard?.writeText) {
+        throw new Error('Clipboard unavailable')
+      }
+      await navigator.clipboard.writeText(instructionText)
+      setCopyState('copied')
+    } catch {
+      setCopyState('error')
+    }
+  }
+
+  async function handleShareBrief() {
+    setShareState('idle')
+    try {
+      if (!navigator.share) {
+        throw new Error('Native share unavailable')
+      }
+      await navigator.share({ text: instructionText })
+      setShareState('shared')
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        setShareState('idle')
+        return
+      }
+      setShareState('error')
+    }
+  }
+
   return (
     <div className="rounded-lg bg-stone-900/70 p-3">
       <div className="flex items-center justify-between gap-2">
@@ -349,6 +398,22 @@ function RoleSignalCard({ view }: { view: CoordinationRoleView }) {
             <SignalRow key={signal.id} signal={signal} role={view.role} />
           ))}
         </div>
+      )}
+      <div className="mt-3 flex flex-wrap gap-2">
+        <Button type="button" variant="secondary" size="sm" onClick={handleCopyBrief}>
+          Copy brief
+        </Button>
+        <Button type="button" variant="ghost" size="sm" onClick={handleShareBrief}>
+          Share
+        </Button>
+      </div>
+      {copyState === 'copied' && <p className="mt-2 text-xs text-emerald-400">Brief copied.</p>}
+      {copyState === 'error' && (
+        <p className="mt-2 text-xs text-red-400">Copy failed in this browser.</p>
+      )}
+      {shareState === 'shared' && <p className="mt-2 text-xs text-emerald-400">Share opened.</p>}
+      {shareState === 'error' && (
+        <p className="mt-2 text-xs text-stone-500">Native share is unavailable here.</p>
       )}
     </div>
   )
