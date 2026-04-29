@@ -1,7 +1,7 @@
 'use client'
-import { useState, useTransition } from 'react'
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Send, X, ChevronDown } from '@/components/ui/icons'
+import { MailOpen, X, ChevronDown } from '@/components/ui/icons'
 import { TiptapEditor } from '@/components/ui/tiptap-editor'
 import { toast } from 'sonner'
 
@@ -11,7 +11,6 @@ interface EmailComposerProps {
   defaultSubject?: string
   defaultBody?: string
   onClose?: () => void
-  onSent?: () => void
 }
 
 const EMAIL_TEMPLATES = [
@@ -38,12 +37,10 @@ export function EmailComposer({
   defaultSubject = '',
   defaultBody = '',
   onClose,
-  onSent,
 }: EmailComposerProps) {
   const [subject, setSubject] = useState(defaultSubject)
   const [body, setBody] = useState(defaultBody)
   const [showTemplates, setShowTemplates] = useState(false)
-  const [isPending, startTransition] = useTransition()
 
   function applyTemplate(template: (typeof EMAIL_TEMPLATES)[0]) {
     setSubject(template.subject)
@@ -51,29 +48,24 @@ export function EmailComposer({
     setShowTemplates(false)
   }
 
-  function handleSend() {
+  function handleOpenEmailApp() {
     if (!subject.trim()) return toast.error('Subject is required')
     if (!body.trim()) return toast.error('Message body is required')
 
-    startTransition(async () => {
-      try {
-        // In production, this would call a server action to send via Resend
-        // For now, open the default email client as a fallback
-        const mailto = `mailto:${toEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
-        window.open(mailto, '_blank')
-        toast.success('Opening your email client...')
-        onSent?.()
-      } catch (err: any) {
-        toast.error(err.message)
-      }
-    })
+    try {
+      const mailto = `mailto:${toEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+      window.location.href = mailto
+      toast.message('Opening your email app. Send the email there to complete delivery.')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Could not open your email app')
+    }
   }
 
   return (
     <div className="border border-stone-700 rounded-xl bg-stone-900 shadow-sm overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 bg-stone-800 border-b border-stone-700">
-        <span className="text-sm font-semibold text-stone-300">New Email</span>
+        <span className="text-sm font-semibold text-stone-300">Email Draft</span>
         <div className="flex gap-2">
           <div className="relative">
             <button
@@ -135,9 +127,9 @@ export function EmailComposer({
       {/* Footer */}
       <div className="flex items-center justify-between px-4 py-3 bg-stone-800 border-t border-stone-700">
         <p className="text-xs text-stone-400">Opens in your email app</p>
-        <Button onClick={handleSend} loading={isPending} size="sm">
-          <Send className="h-3.5 w-3.5 mr-1.5" />
-          Send
+        <Button onClick={handleOpenEmailApp} size="sm">
+          <MailOpen className="h-3.5 w-3.5 mr-1.5" />
+          Open Email App
         </Button>
       </div>
     </div>

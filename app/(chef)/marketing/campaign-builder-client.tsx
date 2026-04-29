@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -167,6 +168,7 @@ export function CampaignBuilderClient() {
     const instaCount = channelSplit.instagram.length
     const noMethodCount = channelSplit.no_method.length
     const isScheduled = showSchedule && form.scheduled_at
+    const scheduledDisplay = isScheduled ? new Date(form.scheduled_at).toLocaleString() : null
 
     return (
       <div className="space-y-4">
@@ -268,18 +270,30 @@ export function CampaignBuilderClient() {
 
         <div className="flex gap-2 flex-wrap">
           {isScheduled ? (
-            <Button disabled={saving}>
-              {saving
-                ? 'Scheduling…'
-                : `Schedule for ${new Date(form.scheduled_at).toLocaleString()}`}
-            </Button>
+            <div className="w-full rounded-md border border-amber-700/60 bg-amber-950/20 p-3">
+              <p className="text-sm font-semibold text-amber-300">Campaign scheduled</p>
+              <p className="mt-1 text-xs text-stone-400">
+                Saved for {scheduledDisplay}. You can review it from the campaign detail page.
+              </p>
+            </div>
           ) : (
             <Button onClick={handleSend} disabled={saving || emailCount === 0}>
               {saving ? 'Sending…' : `Send to ${emailCount} clients by email`}
             </Button>
           )}
-          <Button variant="ghost" size="sm" onClick={() => setStep('compose')}>
-            ← Edit
+          {isScheduled && campaignId ? (
+            <Link href={`/marketing/${campaignId}`}>
+              <Button variant="secondary" size="sm">
+                View campaign
+              </Button>
+            </Link>
+          ) : null}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={isScheduled ? reset : () => setStep('compose')}
+          >
+            {isScheduled ? 'Create another' : '← Edit'}
           </Button>
         </div>
 

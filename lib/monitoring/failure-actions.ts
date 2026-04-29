@@ -80,7 +80,7 @@ export async function getSideEffectFailures(opts?: {
 
   if (error) {
     console.error('[failure-actions] Failed to fetch side_effect_failures:', error)
-    return { failures: [], total: 0 }
+    throw new Error(`Failed to fetch side-effect failures: ${error.message}`)
   }
 
   return { failures: data ?? [], total: count ?? 0 }
@@ -90,16 +90,25 @@ export async function getFailureSources(): Promise<string[]> {
   await requireAdmin()
   const db: any = createServerClient({ admin: true })
 
-  const { data } = await db.from('side_effect_failures').select('source').is('dismissed_at', null)
+  const { data, error } = await db
+    .from('side_effect_failures')
+    .select('source')
+    .is('dismissed_at', null)
 
-  if (!data) return []
+  if (error) {
+    throw new Error(`Failed to fetch failure sources: ${error.message}`)
+  }
 
   const unique = [...new Set((data as { source: string }[]).map((r) => r.source))]
   return unique.sort()
 }
 
-export async function dismissFailure(id: string): Promise<void> {
+export async function dismissFailure(id: string): Promise<{ success: true }> {
   const admin = await requireAdmin()
+  if (!id) {
+    throw new Error('Failure id is required.')
+  }
+
   const db: any = createServerClient({ admin: true })
 
   const { error } = await db
@@ -112,10 +121,17 @@ export async function dismissFailure(id: string): Promise<void> {
   }
 
   revalidatePath('/admin/silent-failures')
+  return { success: true }
 }
 
-export async function dismissAllBySource(source: string): Promise<number> {
+export async function dismissAllBySource(
+  source: string
+): Promise<{ success: true; dismissedCount: number }> {
   const admin = await requireAdmin()
+  if (!source.trim()) {
+    throw new Error('Failure source is required.')
+  }
+
   const db: any = createServerClient({ admin: true })
 
   const { data, error } = await db
@@ -130,7 +146,7 @@ export async function dismissAllBySource(source: string): Promise<number> {
   }
 
   revalidatePath('/admin/silent-failures')
-  return data?.length ?? 0
+  return { success: true, dismissedCount: data?.length ?? 0 }
 }
 
 export async function repairSideEffectFailure(id: string): Promise<{ message: string }> {
@@ -265,7 +281,15 @@ export async function repairSideEffectFailure(id: string): Promise<{ message: st
       },
     }
 
-    await db.from('side_effect_failures').update({ context: repairContext }).eq('id', id)
+    const { error: attemptError } = await db
+      .from('side_effect_failures')
+      .update({ context: repairContext })
+      .eq('id', id)
+
+    if (attemptError) {
+      console.error('[failure-actions] Failed to record repair attempt:', attemptError)
+    }
+
     throw new Error(message)
   }
 }
@@ -283,8 +307,8 @@ export async function getFailureSummary(): Promise<{
     .select('severity, source')
     .is('dismissed_at', null)
 
-  if (error || !data) {
-    return { total: 0, bySeverity: {}, bySource: [] }
+  if (error) {
+    throw new Error(`Failed to fetch failure summary: ${error.message}`)
   }
 
   const rows = data as { severity: string; source: string }[]

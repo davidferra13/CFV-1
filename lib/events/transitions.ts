@@ -79,19 +79,6 @@ export async function transitionEvent({
   const isSystemTransition = parsed.systemTransition || parsed.actorContext?.role === 'system'
   const db = createServerClient({ admin: isSystemTransition })
 
-  // Fetch current event
-  const { data: event, error: fetchError } = await db
-    .from('events')
-    .select('*')
-    .eq('id', eventId)
-    .single()
-
-  if (fetchError || !event) {
-    throw new Error('Event not found')
-  }
-
-  const fromStatus = event.status as EventStatus
-
   let actor: TransitionActorContext | null = parsed.actorContext ?? null
 
   if (!actor && !isSystemTransition) {
@@ -107,6 +94,31 @@ export async function transitionEvent({
       tenantId: currentUser.tenantId ?? null,
     }
   }
+
+  // Fetch current event through the actor's allowed scope.
+  let eventQuery = db.from('events').select('*').eq('id', eventId)
+
+  if (!isSystemTransition && actor?.role === 'chef') {
+    if (!actor.tenantId) {
+      throw new Error('Authentication required')
+    }
+    eventQuery = eventQuery.eq('tenant_id', actor.tenantId)
+  }
+
+  if (!isSystemTransition && actor?.role === 'client') {
+    if (!actor.entityId) {
+      throw new Error('Authentication required')
+    }
+    eventQuery = eventQuery.eq('client_id', actor.entityId)
+  }
+
+  const { data: event, error: fetchError } = await eventQuery.single()
+
+  if (fetchError || !event) {
+    throw new Error('Event not found')
+  }
+
+  const fromStatus = event.status as EventStatus
 
   // Idempotency: already in target state is a no-op, not an error
   if (fromStatus === toStatus) {
@@ -353,7 +365,16 @@ export async function transitionEvent({
   ]
   if (PAYABLE_STATUSES.includes(toStatus) && event.quoted_price_cents > 0 && !event.pricing_model) {
     try {
-      await db.from('events').update({ pricing_model: 'flat_rate' }).eq('id', eventId)
+      const { error: pricingBackfillError } = await db
+        .from('events')
+        .update({ pricing_model: 'flat_rate' })
+        .eq('id', eventId)
+        .eq('tenant_id', event.tenant_id)
+
+      if (pricingBackfillError) {
+        throw pricingBackfillError
+      }
+
       log.events.info('Backfilled missing pricing_model to flat_rate', { context: { eventId } })
     } catch (err) {
       log.events.warn('pricing_model backfill failed (non-blocking)', { error: err })
@@ -399,6 +420,7 @@ export async function transitionEvent({
     .from('events')
     .select('status')
     .eq('id', eventId)
+    .eq('tenant_id', event.tenant_id)
     .single()
 
   if (verifiedEvent?.status !== toStatus) {
@@ -1998,12 +2020,17 @@ export async function markEventPaid(
   // Update payment method on the event.
   // payment_status is NOT set here: the DB trigger (update_event_payment_status_on_ledger_insert)
   // computes it from ledger entries. Direct writes would bypass the trigger and could diverge.
-  await db
+  const { error: paymentMethodError } = await db
     .from('events')
     .update({
       payment_method_primary: paymentMethod === 'other' ? 'cash' : paymentMethod,
     })
     .eq('id', eventId)
+    .eq('tenant_id', user.tenantId!)
+
+  if (paymentMethodError) {
+    throw new Error(`Failed to update payment method: ${paymentMethodError.message}`)
+  }
 
   // Now transition status
   return transitionEvent({

@@ -22,14 +22,21 @@ export default async function AdminSilentFailuresPage() {
     bySource: [],
   }
   let tableExists = true
+  let loadError: string | null = null
 
   try {
     ;[failures, summary] = await Promise.all([
       getSideEffectFailures({ limit: 200 }),
       getFailureSummary(),
     ])
-  } catch {
-    tableExists = false
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Unable to load silent failures.'
+    tableExists =
+      message.includes('side_effect_failures') &&
+      (message.includes('does not exist') || message.includes('schema cache'))
+    if (!tableExists) {
+      loadError = message
+    }
   }
 
   return (
@@ -47,7 +54,7 @@ export default async function AdminSilentFailuresPage() {
             Non-blocking operations that failed without user visibility
           </p>
         </div>
-        {tableExists && (
+        {tableExists && !loadError && (
           <div
             className={`ml-auto text-xs font-medium px-2 py-1 rounded ${
               summary.total === 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
@@ -62,6 +69,12 @@ export default async function AdminSilentFailuresPage() {
         <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 text-sm text-amber-800">
           side_effect_failures table not yet created. Apply migration 20260401000064 to enable this
           dashboard.
+        </div>
+      )}
+
+      {loadError && (
+        <div className="bg-red-950/70 border border-red-800 rounded-lg px-4 py-3 text-sm text-red-200">
+          Failed to load silent failures: {loadError}
         </div>
       )}
 
@@ -102,7 +115,7 @@ export default async function AdminSilentFailuresPage() {
         </div>
       )}
 
-      {tableExists && <SilentFailuresClient initialFailures={failures.failures} />}
+      {tableExists && !loadError && <SilentFailuresClient initialFailures={failures.failures} />}
     </div>
   )
 }
