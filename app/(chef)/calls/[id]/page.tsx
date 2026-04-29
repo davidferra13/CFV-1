@@ -14,7 +14,7 @@ import {
   FileText,
 } from '@/components/ui/icons'
 import { requireChef } from '@/lib/auth/get-user'
-import { getCall } from '@/lib/calls/actions'
+import { getCall, getCallLoadState } from '@/lib/calls/actions'
 import { CallPrepPanel } from '@/components/calls/call-prep-panel'
 import { CallOutcomeForm } from '@/components/calls/call-outcome-form'
 import { CallStatusActions } from '@/components/calls/call-status-actions'
@@ -44,12 +44,28 @@ const STATUS_PILL: Record<string, string> = {
 
 export default async function CallDetailPage({ params }: Props) {
   const user = await requireChef()
-  let call: Awaited<ReturnType<typeof getCall>>
-  try {
-    call = await getCall(params.id)
-  } catch {
-    notFound()
+  const callResult = await getCallLoadState(params.id)
+  if (callResult.status === 'unavailable') {
+    return (
+      <div className="max-w-3xl mx-auto px-4 py-8 space-y-6">
+        <Link
+          href="/calls"
+          className="flex items-center gap-1 text-sm text-stone-500 hover:text-stone-300"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          Back to Calls
+        </Link>
+        <div className="rounded-xl border border-amber-800/50 bg-amber-950/30 px-5 py-4">
+          <p className="text-sm font-medium text-amber-200">Call detail unavailable</p>
+          <p className="mt-1 text-xs leading-5 text-amber-100/80">
+            ChefFlow could not verify this call record right now, so it is not showing a false
+            deleted-call state.
+          </p>
+        </div>
+      </div>
+    )
   }
+  const call = callResult.data
   if (!call) notFound()
 
   const contact = getContactLabel(call)

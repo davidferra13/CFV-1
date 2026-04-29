@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ChevronLeft } from '@/components/ui/icons'
-import { getCall } from '@/lib/calls/actions'
+import { getCallLoadState } from '@/lib/calls/actions'
 import { CallForm } from '@/components/calls/call-form'
 
 export const metadata: Metadata = { title: 'Edit Call' }
@@ -12,7 +12,30 @@ export const metadata: Metadata = { title: 'Edit Call' }
 type Props = { params: { id: string } }
 
 export default async function EditCallPage({ params }: Props) {
-  const call = await getCall(params.id)
+  const callResult = await getCallLoadState(params.id)
+
+  if (callResult.status === 'unavailable') {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-8 space-y-4">
+        <Link
+          href="/calls"
+          className="flex items-center gap-1 text-sm text-stone-500 hover:text-stone-300"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          Back to Calls
+        </Link>
+        <div className="rounded-xl border border-amber-800/50 bg-amber-950/30 px-5 py-4">
+          <p className="text-sm font-medium text-amber-200">Call editor unavailable</p>
+          <p className="mt-1 text-xs leading-5 text-amber-100/80">
+            ChefFlow could not verify this call record right now, so editing is paused until the
+            data source recovers.
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  const call = callResult.data
 
   if (!call) notFound()
 

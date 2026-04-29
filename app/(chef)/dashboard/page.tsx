@@ -20,7 +20,7 @@ import { OnboardingBanner } from '@/components/onboarding/onboarding-banner'
 import UpcomingTouchpoints from '@/components/clients/upcoming-touchpoints'
 import GiftSuggestionsWidget from '@/components/dashboard/gift-suggestions-widget'
 import { getUpcomingTouchpoints } from '@/lib/clients/touchpoint-actions'
-import { getUpcomingCalls } from '@/lib/calls/actions'
+import { getUpcomingCallsLoadState } from '@/lib/calls/actions'
 import { getCallIntelligenceSnapshot } from '@/lib/calls/intelligence-actions'
 import { UpcomingCallsWidget } from '@/components/calls/upcoming-calls-widget'
 import { DashboardCallIntelligenceWidget } from '@/components/calls/dashboard-call-intelligence-widget'
@@ -1642,12 +1642,7 @@ async function RelationshipActionLayerSection() {
 }
 
 async function DashboardUpcomingCallsSection() {
-  const callsResult = await safeResult(
-    'upcomingCalls',
-    () => getUpcomingCalls(5),
-    [],
-    'Upcoming calls could not be loaded.'
-  )
+  const callsResult = await getUpcomingCallsLoadState(5)
 
   if (callsResult.status === 'unavailable') {
     return (

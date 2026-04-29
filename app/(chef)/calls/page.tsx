@@ -4,7 +4,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Plus, Phone } from '@/components/ui/icons'
-import { getCalls, type CallType } from '@/lib/calls/actions'
+import { getCallsLoadState, type CallType } from '@/lib/calls/actions'
 import { getCallIntelligenceSnapshot } from '@/lib/calls/intelligence-actions'
 import { CallCard } from '@/components/calls/call-card'
 import { CallIntelligencePanel } from '@/components/calls/call-intelligence-panel'
@@ -20,12 +20,12 @@ export default async function CallsPage({ searchParams }: Props) {
   const typeFilter = searchParams.type
 
   // Fetch upcoming + past in parallel
-  const [upcoming, past, intelligence] = await Promise.all([
-    getCalls({
+  const [upcomingResult, pastResult, intelligence] = await Promise.all([
+    getCallsLoadState({
       status: ['scheduled', 'confirmed'],
       ...(typeFilter ? { call_type: typeFilter as CallType } : {}),
     }),
-    getCalls({
+    getCallsLoadState({
       status:
         statusFilter === 'no_show'
           ? 'no_show'
@@ -37,6 +37,8 @@ export default async function CallsPage({ searchParams }: Props) {
     }),
     getCallIntelligenceSnapshot(),
   ])
+  const upcoming = upcomingResult.data
+  const past = pastResult.data
 
   const showAll = !statusFilter || statusFilter === 'all'
 
@@ -63,6 +65,16 @@ export default async function CallsPage({ searchParams }: Props) {
       </div>
 
       <CallIntelligencePanel snapshot={intelligence.snapshot} />
+
+      {(upcomingResult.status === 'unavailable' || pastResult.status === 'unavailable') && (
+        <div className="rounded-xl border border-amber-800/50 bg-amber-950/30 px-4 py-3">
+          <p className="text-sm font-medium text-amber-200">Call schedule partially unavailable</p>
+          <p className="mt-1 text-xs leading-5 text-amber-100/80">
+            One or more call lists could not be loaded. Empty sections below are not treated as an
+            all-clear state until the data source recovers.
+          </p>
+        </div>
+      )}
 
       {/* Status filter tabs */}
       <div className="overflow-x-auto border-b border-stone-700">
@@ -100,7 +112,9 @@ export default async function CallsPage({ searchParams }: Props) {
           <h2 className="text-sm font-semibold text-stone-400 uppercase tracking-wide">
             Upcoming ({upcoming.length})
           </h2>
-          {upcoming.length === 0 ? (
+          {upcomingResult.status === 'unavailable' ? (
+            <UnavailableCallsState message="Upcoming calls could not be loaded." />
+          ) : upcoming.length === 0 ? (
             <div className="text-center py-10 bg-stone-900 rounded-xl border border-dashed border-stone-700">
               <Phone className="w-8 h-8 text-stone-600 mx-auto mb-2" />
               <p className="text-sm text-stone-500">No upcoming calls scheduled</p>
@@ -127,7 +141,9 @@ export default async function CallsPage({ searchParams }: Props) {
           <h2 className="text-sm font-semibold text-stone-400 uppercase tracking-wide">
             Past ({past.length})
           </h2>
-          {past.length === 0 ? (
+          {pastResult.status === 'unavailable' ? (
+            <UnavailableCallsState message="Past calls could not be loaded." />
+          ) : past.length === 0 ? (
             <div className="text-center py-8">
               <svg
                 className="h-8 w-8 mx-auto text-stone-600 mb-2"
@@ -156,6 +172,17 @@ export default async function CallsPage({ searchParams }: Props) {
           )}
         </section>
       )}
+    </div>
+  )
+}
+
+function UnavailableCallsState({ message }: { message: string }) {
+  return (
+    <div className="rounded-xl border border-amber-800/50 bg-amber-950/30 px-4 py-6 text-center">
+      <p className="text-sm font-medium text-amber-200">{message}</p>
+      <p className="mt-1 text-xs text-amber-100/80">
+        ChefFlow could not verify this call list, so it is not showing a false empty state.
+      </p>
     </div>
   )
 }

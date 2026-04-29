@@ -330,7 +330,38 @@ export async function createCall(input: CreateCallInput) {
 export async function getCalls(filter?: CallsFilter): Promise<ScheduledCall[]> {
   const user = await requireChef()
   const db: any = createServerClient()
+  try {
+    return await readCallsForTenant(db, user.tenantId!, filter)
+  } catch (error) {
+    console.error('[getCalls] Error:', error)
+    return []
+  }
+}
 
+export async function getCallsLoadState(filter?: CallsFilter) {
+  const user = await requireChef()
+  const db: any = createServerClient()
+  try {
+    return {
+      status: 'ok' as const,
+      data: await readCallsForTenant(db, user.tenantId!, filter),
+      error: null,
+    }
+  } catch (error) {
+    console.error('[getCallsLoadState] Error:', error)
+    return {
+      status: 'unavailable' as const,
+      data: [] as ScheduledCall[],
+      error: 'Call schedule data could not be loaded.',
+    }
+  }
+}
+
+async function readCallsForTenant(
+  db: any,
+  tenantId: string,
+  filter?: CallsFilter
+): Promise<ScheduledCall[]> {
   let query = db
     .from('scheduled_calls')
     .select(
@@ -341,7 +372,7 @@ export async function getCalls(filter?: CallsFilter): Promise<ScheduledCall[]> {
       event:events(id, occasion, event_date)
     `
     )
-    .eq('tenant_id', user.tenantId!)
+    .eq('tenant_id', tenantId)
 
   if (filter?.status) {
     if (Array.isArray(filter.status)) {
@@ -372,8 +403,7 @@ export async function getCalls(filter?: CallsFilter): Promise<ScheduledCall[]> {
   const { data, error } = await query
 
   if (error) {
-    console.error('[getCalls] Error:', error)
-    return []
+    throw error
   }
 
   return (data || []) as unknown as ScheduledCall[]
@@ -385,7 +415,38 @@ export async function getCalls(filter?: CallsFilter): Promise<ScheduledCall[]> {
 export async function getUpcomingCalls(limit = 5): Promise<ScheduledCall[]> {
   const user = await requireChef()
   const db: any = createServerClient()
+  try {
+    return await readUpcomingCallsForTenant(db, user.tenantId!, limit)
+  } catch (error) {
+    console.error('[getUpcomingCalls] Error:', error)
+    return []
+  }
+}
 
+export async function getUpcomingCallsLoadState(limit = 5) {
+  const user = await requireChef()
+  const db: any = createServerClient()
+  try {
+    return {
+      status: 'ok' as const,
+      data: await readUpcomingCallsForTenant(db, user.tenantId!, limit),
+      error: null,
+    }
+  } catch (error) {
+    console.error('[getUpcomingCallsLoadState] Error:', error)
+    return {
+      status: 'unavailable' as const,
+      data: [] as ScheduledCall[],
+      error: 'Upcoming calls could not be loaded.',
+    }
+  }
+}
+
+async function readUpcomingCallsForTenant(
+  db: any,
+  tenantId: string,
+  limit: number
+): Promise<ScheduledCall[]> {
   const { data, error } = await db
     .from('scheduled_calls')
     .select(
@@ -394,15 +455,14 @@ export async function getUpcomingCalls(limit = 5): Promise<ScheduledCall[]> {
       client:clients(id, full_name, email)
     `
     )
-    .eq('tenant_id', user.tenantId!)
+    .eq('tenant_id', tenantId)
     .in('status', ['scheduled', 'confirmed'])
     .gte('scheduled_at', new Date().toISOString())
     .order('scheduled_at', { ascending: true })
     .limit(limit)
 
   if (error) {
-    console.error('[getUpcomingCalls] Error:', error)
-    return []
+    throw error
   }
 
   return (data || []) as unknown as ScheduledCall[]
@@ -414,7 +474,38 @@ export async function getUpcomingCalls(limit = 5): Promise<ScheduledCall[]> {
 export async function getCall(id: string): Promise<ScheduledCall | null> {
   const user = await requireChef()
   const db: any = createServerClient()
+  try {
+    return await readCallForTenant(db, user.tenantId!, id)
+  } catch (error) {
+    console.error('[getCall] Error:', error)
+    return null
+  }
+}
 
+export async function getCallLoadState(id: string) {
+  const user = await requireChef()
+  const db: any = createServerClient()
+  try {
+    return {
+      status: 'ok' as const,
+      data: await readCallForTenant(db, user.tenantId!, id),
+      error: null,
+    }
+  } catch (error) {
+    console.error('[getCallLoadState] Error:', error)
+    return {
+      status: 'unavailable' as const,
+      data: null as ScheduledCall | null,
+      error: 'Call detail could not be loaded.',
+    }
+  }
+}
+
+async function readCallForTenant(
+  db: any,
+  tenantId: string,
+  id: string
+): Promise<ScheduledCall | null> {
   const { data, error } = await db
     .from('scheduled_calls')
     .select(
@@ -426,12 +517,11 @@ export async function getCall(id: string): Promise<ScheduledCall | null> {
     `
     )
     .eq('id', id)
-    .eq('tenant_id', user.tenantId!)
-    .single()
+    .eq('tenant_id', tenantId)
+    .maybeSingle()
 
   if (error) {
-    console.error('[getCall] Error:', error)
-    return null
+    throw error
   }
 
   return data as unknown as ScheduledCall
