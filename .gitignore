@@ -161,6 +161,7 @@ backups/
 # Log files
 *.log
 chefflow-watchdog.log
+/logs/live-ops-guardian-*.json
 
 # Playwright ad-hoc run output
 playwright-run-output.txt
