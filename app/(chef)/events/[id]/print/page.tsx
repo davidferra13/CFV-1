@@ -79,7 +79,7 @@ export default async function EventPrintCenterPage({ params }: { params: { id: s
           <Button href={`/events/${params.id}/documents`} variant="secondary">
             Document Archive
           </Button>
-          <Button href={`/events/${params.id}/dop/mobile`} variant="primary">
+          <Button href={buildEventMobileRunModeHref(params.id, 'dop')} variant="primary">
             Open Mobile DOP
           </Button>
         </div>
