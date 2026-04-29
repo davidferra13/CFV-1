@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getClientsWithStats } from '@/lib/clients/actions'
+import { getRecentClientCommunications } from '@/lib/clients/recent-communications'
 import { Card } from '@/components/ui/card'
 
 export const metadata: Metadata = { title: 'Client Communication' }
@@ -39,9 +40,28 @@ const TOOLS = [
   },
 ]
 
+function formatActivityDate(dateStr: string): string {
+  const date = new Date(dateStr)
+  const now = new Date()
+  const diffDays = Math.floor((now.getTime() - date.getTime()) / 86400000)
+
+  if (diffDays === 0) return 'Today'
+  if (diffDays === 1) return 'Yesterday'
+  if (diffDays < 7) return `${diffDays}d ago`
+
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: diffDays > 365 ? 'numeric' : undefined,
+  })
+}
+
 export default async function ClientCommunicationPage() {
   await requireChef()
-  const clients = await getClientsWithStats()
+  const [clients, recentCommunications] = await Promise.all([
+    getClientsWithStats(),
+    getRecentClientCommunications(10),
+  ])
 
   const recentClients = [...clients]
     .sort((a, b) => {
@@ -74,6 +94,57 @@ export default async function ClientCommunicationPage() {
           </Link>
         ))}
       </div>
+
+      <Card className="p-5">
+        <div className="flex items-center justify-between gap-3 mb-4">
+          <div>
+            <h2 className="text-sm font-semibold text-stone-300">Recent Communications</h2>
+            <p className="text-xs text-stone-500 mt-1">
+              Latest messages, notes, and follow-ups across active client records
+            </p>
+          </div>
+          <Link
+            href="/clients/communication/notes"
+            className="shrink-0 text-xs font-medium text-brand-500 hover:text-brand-400"
+          >
+            Notes
+          </Link>
+        </div>
+
+        {recentCommunications.length === 0 ? (
+          <p className="py-6 text-center text-sm text-stone-500">
+            No client communications recorded yet
+          </p>
+        ) : (
+          <div className="divide-y divide-stone-800">
+            {recentCommunications.map((item) => (
+              <Link
+                key={item.id}
+                href={item.href}
+                className="flex items-start justify-between gap-4 py-3 hover:bg-stone-900"
+              >
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="rounded bg-stone-800 px-1.5 py-0.5 text-xxs font-medium text-stone-300">
+                      {item.badge}
+                    </span>
+                    <span className="truncate text-sm font-medium text-stone-100">
+                      {item.clientName}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-sm text-stone-300">{item.summary}</p>
+                  {item.detail ? (
+                    <p className="mt-0.5 truncate text-xs text-stone-500">{item.detail}</p>
+                  ) : null}
+                </div>
+                <span className="shrink-0 text-xs text-stone-400">
+                  {formatActivityDate(item.occurredAt)}
+                </span>
+              </Link>
+            ))}
+          </div>
+        )}
+      </Card>
 
       {recentClients.length > 0 && (
         <Card className="p-5">
