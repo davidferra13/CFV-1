@@ -2217,6 +2217,26 @@ function formatContinuityDigestAnswer(digest: ContinuityDigest): InstantAnswer {
 
   return {
     text: output.join('\n'),
-    navSuggestions: [{ label: 'Open Activity', href: '/activity' }],
+    navSuggestions: buildContinuityDigestNavSuggestions(digest),
   }
+}
+
+function buildContinuityDigestNavSuggestions(
+  digest: ContinuityDigest
+): Array<{ label: string; href: string }> {
+  const entitySuggestions = digest.changedEntityLinks.slice(0, 3).map((link) => ({
+    label: `Open ${formatContinuityEntityLabel(link.entityType)}`,
+    href: link.href,
+  }))
+
+  return [...entitySuggestions, { label: 'Open Activity', href: '/activity' }]
+}
+
+function formatContinuityEntityLabel(entityType: string): string {
+  const normalized = entityType.replace(/_/g, ' ').trim().toLowerCase()
+  if (!normalized) return 'item'
+  return normalized
+    .split(/\s+/)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ')
 }

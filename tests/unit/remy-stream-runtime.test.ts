@@ -229,7 +229,9 @@ test('Remy answers away catch-up from deterministic continuity digest', () => {
 
   assert.ok(answer)
   assert.match(answer.text, /Quote sent to Maya Chen/)
-  assert.equal(answer.navSuggestions?.[0]?.href, '/activity')
+  assert.equal(answer.navSuggestions?.[0]?.label, 'Open Quote')
+  assert.equal(answer.navSuggestions?.[0]?.href, '/quotes/quote-1')
+  assert.equal(answer.navSuggestions?.[1]?.href, '/activity')
 })
 
 test('Remy catch-up answer is explicit when continuity context is unavailable', () => {
