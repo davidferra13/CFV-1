@@ -7,7 +7,10 @@ import { ChevronDown, Menu, X } from '@/components/ui/icons'
 import { TrackedLink } from '@/components/analytics/tracked-link'
 import { AppLogo } from '@/components/branding/app-logo'
 
-import { PUBLIC_PRIMARY_CONSUMER_CTA } from '@/lib/public/public-surface-config'
+import {
+  PUBLIC_PRIMARY_CONSUMER_CTA,
+  getPublicRouteLabel,
+} from '@/lib/public/public-navigation-config'
 import {
   PUBLIC_NAV,
   isGroup,
@@ -66,11 +69,12 @@ function NavDropdown({ group, pathname }: { group: PublicNavGroup; pathname: str
         <div className="absolute left-0 top-full z-50 mt-1 min-w-[180px] rounded-xl border border-stone-700 bg-stone-900/95 py-1.5 shadow-xl backdrop-blur-xl">
           {group.items.map((item) => {
             const active = isPublicNavActive(pathname, item.href)
+            const label = getPublicRouteLabel(item.href, item.label)
             return (
               <TrackedLink
                 key={item.href}
                 href={item.href}
-                analyticsName={`header_dropdown_${item.label.toLowerCase().replace(/\s+/g, '_')}`}
+                analyticsName={`header_dropdown_${label.toLowerCase().replace(/\s+/g, '_')}`}
                 analyticsProps={{ section: 'public_header', group: group.label }}
                 className={`block px-4 py-2 text-sm transition-colors ${
                   active
@@ -79,7 +83,7 @@ function NavDropdown({ group, pathname }: { group: PublicNavGroup; pathname: str
                 }`}
                 onClick={() => setOpen(false)}
               >
-                {item.label}
+                {label}
               </TrackedLink>
             )
           })}
@@ -135,11 +139,12 @@ export function PublicHeader() {
               }
               const item = entry as PublicNavItem
               const active = isPublicNavActive(pathname, item.href)
+              const label = getPublicRouteLabel(item.href, item.label)
               return (
                 <TrackedLink
                   key={item.href}
                   href={item.href}
-                  analyticsName={`header_nav_${item.label.toLowerCase().replace(/\s+/g, '_')}`}
+                  analyticsName={`header_nav_${label.toLowerCase().replace(/\s+/g, '_')}`}
                   analyticsProps={{ section: 'public_header' }}
                   className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                     active
@@ -147,7 +152,7 @@ export function PublicHeader() {
                       : 'text-muted-soft hover:bg-stone-700 hover:text-stone-100'
                   }`}
                 >
-                  {item.label}
+                  {label}
                 </TrackedLink>
               )
             })}
@@ -182,7 +187,7 @@ export function PublicHeader() {
             analyticsProps={{ section: 'public_header_mobile' }}
             className="inline-flex min-h-[40px] items-center justify-center rounded-xl border border-brand-700/50 bg-brand-950/50 px-2.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-brand-200 touch-manipulation"
           >
-            Book
+            {PUBLIC_PRIMARY_CONSUMER_CTA.label}
           </TrackedLink>
           <button
             type="button"
@@ -208,11 +213,12 @@ export function PublicHeader() {
                     </p>
                     {entry.items.map((item) => {
                       const active = isPublicNavActive(pathname, item.href)
+                      const label = getPublicRouteLabel(item.href, item.label)
                       return (
                         <TrackedLink
                           key={item.href}
                           href={item.href}
-                          analyticsName={`header_mobile_nav_${item.label.toLowerCase().replace(/\s+/g, '_')}`}
+                          analyticsName={`header_mobile_nav_${label.toLowerCase().replace(/\s+/g, '_')}`}
                           analyticsProps={{ section: 'public_header_mobile', group: entry.label }}
                           className={`block rounded-lg px-3 py-2 text-sm font-medium ${
                             active
@@ -221,7 +227,7 @@ export function PublicHeader() {
                           }`}
                           onClick={() => setMobileMenuOpen(false)}
                         >
-                          {item.label}
+                          {label}
                         </TrackedLink>
                       )
                     })}
@@ -230,18 +236,19 @@ export function PublicHeader() {
               }
               const item = entry as PublicNavItem
               const active = isPublicNavActive(pathname, item.href)
+              const label = getPublicRouteLabel(item.href, item.label)
               return (
                 <TrackedLink
                   key={item.href}
                   href={item.href}
-                  analyticsName={`header_mobile_nav_${item.label.toLowerCase().replace(/\s+/g, '_')}`}
+                  analyticsName={`header_mobile_nav_${label.toLowerCase().replace(/\s+/g, '_')}`}
                   analyticsProps={{ section: 'public_header_mobile' }}
                   className={`block rounded-lg px-3 py-2 text-sm font-medium ${
                     active ? 'bg-brand-950 text-brand-400' : 'text-stone-300 hover:bg-stone-700'
                   }`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  {item.label}
+                  {label}
                 </TrackedLink>
               )
             })}

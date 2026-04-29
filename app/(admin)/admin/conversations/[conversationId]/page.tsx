@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { requireAdmin } from '@/lib/auth/admin'
+import { logAdminAction } from '@/lib/admin/audit'
 import { getConversationTranscript } from '@/lib/admin/owner-observability'
 import { OwnerModerationForm } from '@/components/admin/owner-moderation-form'
 
@@ -40,8 +41,9 @@ export default async function AdminConversationTranscriptPage({
   params: { conversationId: string }
   searchParams?: SearchParams
 }) {
+  let admin
   try {
-    await requireAdmin()
+    admin = await requireAdmin()
   } catch {
     redirect('/unauthorized')
   }
@@ -60,6 +62,21 @@ export default async function AdminConversationTranscriptPage({
   if (!transcript.conversation) {
     notFound()
   }
+
+  logAdminAction({
+    actorEmail: admin.email,
+    actorUserId: admin.id,
+    actionType: 'admin_viewed_conversation_transcript',
+    targetId: params.conversationId,
+    targetType: 'conversation',
+    details: {
+      tenantId: transcript.conversation.tenantId,
+      contextType: transcript.conversation.contextType,
+      includeDeleted,
+      searched: Boolean(q),
+      page,
+    },
+  }).catch(() => {})
 
   return (
     <div className="space-y-5">

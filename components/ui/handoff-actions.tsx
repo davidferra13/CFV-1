@@ -44,7 +44,7 @@ function HandoffIconButton({
     const value = copyValue?.trim()
     if (!value) return
     try {
-      const result = await copyToClipboard(value, label)
+      const result = await copyToClipboard(value, label, { kind, action, surface: label })
       if (!result.success) {
         toast.error(result.error)
         return

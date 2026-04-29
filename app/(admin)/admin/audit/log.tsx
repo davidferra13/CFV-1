@@ -1,3 +1,5 @@
+import Link from 'next/link'
+
 export type AdminAuditLogEntry = {
   id?: unknown
   ts?: unknown
@@ -26,6 +28,42 @@ function formatTarget(entry: AdminAuditLogEntry) {
 
   const visibleId = targetId.length > 12 ? `${targetId.slice(0, 12)}...` : targetId
   return targetType ? `${targetType}: ${visibleId}` : visibleId
+}
+
+function getDetailsObject(details: unknown): Record<string, unknown> | null {
+  if (!details || typeof details !== 'object' || Array.isArray(details)) return null
+  return details as Record<string, unknown>
+}
+
+function getDetailsString(details: unknown, key: string) {
+  const detailsObject = getDetailsObject(details)
+  const value = detailsObject?.[key]
+  return typeof value === 'string' && value.trim() ? value.trim() : null
+}
+
+function getTargetHref(entry: AdminAuditLogEntry) {
+  const targetType = entry.target_type ? String(entry.target_type) : null
+  const targetId = entry.target_id ? String(entry.target_id) : null
+  if (!targetType || !targetId) return null
+
+  if (targetType === 'chef') return `/admin/users/${targetId}`
+  if (targetType === 'conversation') return `/admin/conversations/${targetId}`
+  if (targetType === 'hub_group') return `/admin/hub/groups/${targetId}`
+  if (targetType === 'social_post') return `/admin/social?q=${encodeURIComponent(targetId)}`
+  if (targetType === 'chat_message') {
+    const conversationId = getDetailsString(entry.details, 'conversationId')
+    return conversationId
+      ? `/admin/conversations/${conversationId}?q=${encodeURIComponent(targetId)}&includeDeleted=1`
+      : null
+  }
+  if (targetType === 'hub_message') {
+    const groupId = getDetailsString(entry.details, 'groupId')
+    return groupId
+      ? `/admin/hub/groups/${groupId}?q=${encodeURIComponent(targetId)}&includeDeleted=1`
+      : null
+  }
+
+  return null
 }
 
 function formatDetails(details: unknown) {
@@ -80,7 +118,15 @@ export function AdminAuditLog({ entries }: { entries: AdminAuditLogEntry[] }) {
                   {entry.action_type ? String(entry.action_type) : '-'}
                 </span>
               </td>
-              <td className="px-4 py-2.5 text-xs text-slate-400">{formatTarget(entry)}</td>
+              <td className="px-4 py-2.5 text-xs text-slate-400">
+                {getTargetHref(entry) ? (
+                  <Link href={getTargetHref(entry)!} className="text-brand-500 hover:underline">
+                    {formatTarget(entry)}
+                  </Link>
+                ) : (
+                  formatTarget(entry)
+                )}
+              </td>
               <td className="px-4 py-2.5 text-xs text-slate-400 max-w-[320px] truncate">
                 {formatDetails(entry.details)}
               </td>

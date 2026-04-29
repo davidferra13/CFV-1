@@ -78,8 +78,8 @@ export default async function FeedbackPage({ params }: { params: { token: string
           occasion={surveyData.occasion}
           dishes={surveyData.dishes}
           chefName={surveyData.chefName}
+          postActionFooter={postActionFooter}
         />
-        {postActionFooter}
       </div>
     </div>
   )

@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import {
   CORE_DATA_PROCESSORS,
+  INTERNAL_DATA_PRACTICES,
   NO_DATA_SALE_BUILD_GUARDRAILS,
   OPTIONAL_PRIVACY_INTEGRATIONS,
   PRIVACY_COMMITMENTS,
@@ -18,6 +19,19 @@ const nextConfigSource = readFileSync(join(ROOT, 'next.config.js'), 'utf-8')
 const packageJsonSource = readFileSync(join(ROOT, 'package.json'), 'utf-8')
 const posthogProviderSource = readFileSync(
   join(ROOT, 'components', 'analytics', 'posthog-provider.tsx'),
+  'utf-8'
+)
+const posthogHelpersSource = readFileSync(join(ROOT, 'lib', 'analytics', 'posthog.ts'), 'utf-8')
+const cookieConsentSource = readFileSync(
+  join(ROOT, 'components', 'ui', 'cookie-consent.tsx'),
+  'utf-8'
+)
+const cookiePreferencesButtonSource = readFileSync(
+  join(ROOT, 'components', 'privacy', 'cookie-preferences-button.tsx'),
+  'utf-8'
+)
+const cookieConsentClientSource = readFileSync(
+  join(ROOT, 'lib', 'privacy', 'cookie-consent-client.ts'),
   'utf-8'
 )
 const sentryClientSource = readFileSync(join(ROOT, 'instrumentation-client.ts'), 'utf-8')
@@ -67,7 +81,16 @@ test('public privacy page renders from the shared privacy contract', () => {
   )
   assert.match(privacyPageSource, /PRIVACY_COMMITMENTS/)
   assert.match(privacyPageSource, /CORE_DATA_PROCESSORS/)
+  assert.match(privacyPageSource, /INTERNAL_DATA_PRACTICES/)
   assert.match(privacyPageSource, /OPTIONAL_PRIVACY_INTEGRATIONS/)
+})
+
+test('internal observability disclosures cover live presence, activity, and admin review', () => {
+  const practiceIds = new Set(INTERNAL_DATA_PRACTICES.map((practice) => practice.id))
+
+  assert.ok(practiceIds.has('presence'), 'live presence disclosure missing')
+  assert.ok(practiceIds.has('activity'), 'activity and breadcrumb disclosure missing')
+  assert.ok(practiceIds.has('admin-access'), 'admin review disclosure missing')
 })
 
 test('runtime integrations have matching public processor disclosures', () => {
@@ -105,6 +128,15 @@ test('analytics consent gating remains both documented and implemented', () => {
   assert.ok(posthog, 'PostHog disclosure missing')
   assert.strictEqual(posthog?.consentGate, 'cookie-consent')
   assert.match(posthogProviderSource, /consent !== 'accepted'/)
+  assert.match(posthogHelpersSource, /hasAcceptedAnalyticsCookies/)
+  assert.match(cookieConsentClientSource, /COOKIE_CONSENT_COOKIE_NAME/)
+})
+
+test('public privacy page exposes working cookie preference management', () => {
+  assert.match(privacyPageSource, /CookiePreferencesButton/)
+  assert.match(cookiePreferencesButtonSource, /openCookieConsentManager/)
+  assert.match(cookieConsentSource, /COOKIE_CONSENT_MANAGE_EVENT/)
+  assert.match(cookieConsentSource, /saveCookieConsent/)
 })
 
 test('Sentry privacy hardening remains both documented and implemented', () => {
@@ -113,4 +145,11 @@ test('Sentry privacy hardening remains both documented and implemented', () => {
   assert.ok(sentry, 'Sentry disclosure missing')
   assert.match(sentryClientSource, /sendDefaultPii:\s*false/)
   assert.match(sentryClientSource, /maskAllText:\s*true/)
+})
+
+test('AI privacy disclosure matches the single-runtime policy', () => {
+  assert.match(privacyPageSource, /single\s+Ollama-compatible\s+AI\s+runtime/)
+  assert.match(privacyPageSource, /no silent fallback/i)
+  assert.doesNotMatch(privacyPageSource, /Users may opt into local AI processing/)
+  assert.doesNotMatch(privacyPageSource, /third-party AI services/)
 })

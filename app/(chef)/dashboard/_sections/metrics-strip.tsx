@@ -70,7 +70,7 @@ export async function MetricsStrip() {
   }
 
   const items: { label: string; value: string; href: string }[] = [
-    { label: 'Recipes', value: String(metrics.recipes), href: '/culinary/recipes' },
+    { label: 'Recipes', value: String(metrics.recipes), href: '/recipes' },
     { label: 'Clients', value: String(metrics.clients), href: '/clients' },
     { label: 'Menus', value: String(metrics.menus), href: '/culinary/menus' },
     { label: 'Ingredients', value: String(metrics.ingredients), href: '/culinary/ingredients' },

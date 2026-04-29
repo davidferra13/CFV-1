@@ -3,19 +3,15 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useIsDemoMode } from '@/lib/demo-mode'
+import {
+  COOKIE_CONSENT_MANAGE_EVENT,
+  readCookieConsent,
+  saveCookieConsent,
+  type CookieConsentValue,
+} from '@/lib/privacy/cookie-consent-client'
 
 const DISMISS_KEY = 'cf-cookie-consent-dismissed-until'
 const DISMISS_DAYS = 7
-
-function getCookie(name: string): string | null {
-  const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'))
-  return match ? decodeURIComponent(match[2]) : null
-}
-
-function setCookie(name: string, value: string, days: number) {
-  const expires = new Date(Date.now() + days * 864e5).toUTCString()
-  document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`
-}
 
 export function CookieConsent() {
   const isDemo = useIsDemoMode()
@@ -23,8 +19,8 @@ export function CookieConsent() {
 
   useEffect(() => {
     if (isDemo) return
-    const consent = getCookie('cookieConsent')
-    if (consent) return
+    const consent = readCookieConsent()
+    if (consent !== 'unknown') return
 
     try {
       const dismissedUntilRaw = window.localStorage.getItem(DISMISS_KEY)
@@ -37,9 +33,26 @@ export function CookieConsent() {
     setVisible(true)
   }, [isDemo])
 
-  function handleConsent(value: 'accepted' | 'declined') {
-    setCookie('cookieConsent', value, 365)
-    window.dispatchEvent(new CustomEvent('cf:cookie-consent', { detail: value }))
+  useEffect(() => {
+    if (isDemo) return
+
+    function handleManageRequest() {
+      try {
+        window.localStorage.removeItem(DISMISS_KEY)
+      } catch {
+        // Ignore localStorage failures and open the manager.
+      }
+      setVisible(true)
+    }
+
+    window.addEventListener(COOKIE_CONSENT_MANAGE_EVENT, handleManageRequest)
+    return () => {
+      window.removeEventListener(COOKIE_CONSENT_MANAGE_EVENT, handleManageRequest)
+    }
+  }, [isDemo])
+
+  function handleConsent(value: CookieConsentValue) {
+    saveCookieConsent(value)
     setVisible(false)
   }
 

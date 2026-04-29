@@ -114,7 +114,7 @@ export default async function IngredientsPage() {
           <p className="text-stone-400 text-sm mb-4">
             Add ingredients manually or they&apos;ll appear automatically when you build recipes
           </p>
-          <Link href="/culinary/recipes/new">
+          <Link href="/recipes/new">
             <Button variant="secondary" size="sm">
               Add a Recipe
             </Button>

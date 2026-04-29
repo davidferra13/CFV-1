@@ -87,6 +87,18 @@ Show the build queue:
 2. Display ranked gaps with scores
 3. Note which are already built (cross-ref codebase)
 
+### bridge
+
+Prepare 3977 build output for Codex:
+
+1. Run `node devtools/codex-build-bridge.mjs status` to compare ready tasks and build queue volume.
+2. Run `node devtools/codex-build-bridge.mjs next --write` for a non-mutating Codex build packet.
+3. Use `node devtools/codex-build-bridge.mjs claim --dry-run` before any live claim.
+4. Only run `node devtools/codex-build-bridge.mjs claim` when the current Codex session is ready to own and build the returned task.
+5. After a task is built, report the result with `node devtools/codex-build-bridge.mjs complete --source-plan path --status built --commit sha --pushed --write`.
+
+The bridge must classify tasks as buildable, duplicate, blocked, needs-human, or needs-triage before Codex writes product code. Do not build blocked or duplicate tasks.
+
 ### generate [type] [name]
 
 Generate a new persona from a description:

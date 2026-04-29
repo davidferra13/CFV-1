@@ -2,16 +2,26 @@
 // The AdminPresencePanel client component handles the SSE realtime subscription
 
 import { requireAdmin } from '@/lib/auth/admin'
+import { logAdminAction } from '@/lib/admin/audit'
 import { redirect } from 'next/navigation'
 import { AdminPresencePanel } from '@/components/admin/admin-presence-panel'
 import { Radio } from '@/components/ui/icons'
 
 export default async function AdminPresencePage() {
+  let admin
   try {
-    await requireAdmin()
+    admin = await requireAdmin()
   } catch {
     redirect('/unauthorized')
   }
+
+  logAdminAction({
+    actorEmail: admin.email,
+    actorUserId: admin.id,
+    actionType: 'admin_viewed_live_presence',
+    targetType: 'live_presence',
+    details: { surface: 'admin_presence' },
+  }).catch(() => {})
 
   return (
     <div className="space-y-4">

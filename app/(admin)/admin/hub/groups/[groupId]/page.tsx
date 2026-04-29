@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { requireAdmin } from '@/lib/auth/admin'
+import { logAdminAction } from '@/lib/admin/audit'
 import { getHubGroupTranscript } from '@/lib/admin/owner-observability'
 import { OwnerModerationForm } from '@/components/admin/owner-moderation-form'
 
@@ -40,8 +41,9 @@ export default async function AdminHubGroupTranscriptPage({
   params: { groupId: string }
   searchParams?: SearchParams
 }) {
+  let admin
   try {
-    await requireAdmin()
+    admin = await requireAdmin()
   } catch {
     redirect('/unauthorized')
   }
@@ -60,6 +62,21 @@ export default async function AdminHubGroupTranscriptPage({
   if (!transcript.group) {
     notFound()
   }
+
+  logAdminAction({
+    actorEmail: admin.email,
+    actorUserId: admin.id,
+    actionType: 'admin_viewed_hub_transcript',
+    targetId: params.groupId,
+    targetType: 'hub_group',
+    details: {
+      tenantId: transcript.group.tenantId,
+      visibility: transcript.group.visibility,
+      includeDeleted,
+      searched: Boolean(q),
+      page,
+    },
+  }).catch(() => {})
 
   return (
     <div className="space-y-5">
@@ -139,7 +156,11 @@ export default async function AdminHubGroupTranscriptPage({
               <p className="mt-2 text-xs text-red-300">
                 Deleted at {formatDate(message.deletedAt)}
               </p>
-            ) : null}
+            ) : (
+              <div className="mt-3">
+                <OwnerModerationForm kind="hub_message" targetId={message.id} />
+              </div>
+            )}
           </div>
         ))}
         {transcript.messages.length === 0 ? (

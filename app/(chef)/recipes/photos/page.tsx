@@ -46,7 +46,7 @@ export default async function RecipePhotosPage() {
             Open a recipe and add step-by-step photos to document your technique. They will appear
             here.
           </p>
-          <Link href="/culinary/recipes">
+          <Link href="/recipes">
             <Button variant="primary">Browse Recipes</Button>
           </Link>
         </div>

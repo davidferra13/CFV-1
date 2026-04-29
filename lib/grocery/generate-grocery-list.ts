@@ -120,6 +120,7 @@ export async function generateGroceryList(eventId: string): Promise<GroceryListD
         .from('clients')
         .select('allergies, dietary_restrictions')
         .eq('id', event.client_id)
+        .eq('tenant_id', user.tenantId!)
         .single()
       for (const a of (clientRow?.allergies as string[] | null) ?? []) {
         if (!eventAllergies.includes(a)) allergyWarnings.push(`Client allergy: ${a}`)
@@ -132,7 +133,24 @@ export async function generateGroceryList(eventId: string): Promise<GroceryListD
     }
   }
 
-  if (!event.menu_id) {
+  const { data: eventMenus, error: eventMenusError } = await db
+    .from('menus')
+    .select('id')
+    .eq('event_id', eventId)
+    .eq('tenant_id', user.tenantId!)
+
+  if (eventMenusError) {
+    throw new Error('Failed to load event menus')
+  }
+
+  const menuIds = Array.from(
+    new Set([
+      ...((eventMenus ?? []) as Array<{ id: string }>).map((menu) => menu.id),
+      ...((event.menu_id ? [event.menu_id] : []) as string[]),
+    ])
+  )
+
+  if (menuIds.length === 0) {
     return {
       categories: [],
       eventName: event.occasion ?? 'Untitled Event',
@@ -171,7 +189,7 @@ export async function generateGroceryList(eventId: string): Promise<GroceryListD
       )
     `
     )
-    .eq('dishes.menu_id', event.menu_id)) as { data: ComponentRow[] | null }
+    .in('dishes.menu_id', menuIds)) as { data: ComponentRow[] | null }
 
   const componentRows = components ?? []
   const guestCount = event.guest_count ?? 10

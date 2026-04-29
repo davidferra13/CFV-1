@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { broadcastTyping } from '@/lib/realtime/broadcast'
 import { auth } from '@/lib/auth'
-import { hasPersistedAdminAccessForAuthUser } from '@/lib/auth/admin-access'
+import { hasAdminAccess } from '@/lib/auth/admin-access'
 import { validateRealtimeChannelAccess } from '@/lib/realtime/channel-access'
 
 export async function POST(request: NextRequest) {
@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
     const userId = session.user.id
 
     const allowed = await validateRealtimeChannelAccess(channel, {
-      isAdmin: await hasPersistedAdminAccessForAuthUser(userId),
+      isAdmin: await hasAdminAccess(userId),
       tenantId: session.user.tenantId ?? null,
       userId,
     })

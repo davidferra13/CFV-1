@@ -69,6 +69,57 @@ export async function adminSoftDeleteChatMessage(messageId: string, reason: stri
   return { success: true as const }
 }
 
+export async function adminSoftDeleteHubMessage(messageId: string, reason: string) {
+  const admin = await requireAdmin()
+  const parsedMessageId = uuidSchema.parse(messageId)
+  const parsedReason = parseModerationReason(reason)
+  const db: any = createAdminClient()
+
+  const { data: message, error: messageError } = await db
+    .from('hub_messages')
+    .select('id, group_id, author_profile_id, deleted_at')
+    .eq('id', parsedMessageId)
+    .maybeSingle()
+
+  if (messageError) {
+    throw new Error(`Unable to load hub message: ${messageError.message}`)
+  }
+  if (!message) {
+    throw new Error('Hub message not found')
+  }
+
+  if (!message.deleted_at) {
+    const { error: updateError } = await db
+      .from('hub_messages')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('id', parsedMessageId)
+      .is('deleted_at', null)
+
+    if (updateError) {
+      throw new Error(`Unable to moderate hub message: ${updateError.message}`)
+    }
+  }
+
+  await logAdminAction({
+    actorEmail: admin.email,
+    actorUserId: admin.id,
+    actionType: 'admin_moderated_hub_message',
+    targetId: parsedMessageId,
+    targetType: 'hub_message',
+    details: {
+      reason: parsedReason,
+      groupId: message.group_id ?? null,
+      authorProfileId: message.author_profile_id ?? null,
+      alreadyDeleted: Boolean(message.deleted_at),
+    },
+  })
+
+  revalidatePath('/admin/hub')
+  revalidatePath(`/admin/hub/groups/${message.group_id}`)
+  revalidatePath('/admin/command-center')
+  return { success: true as const }
+}
+
 export async function adminHideSocialPost(postId: string, reason: string) {
   const admin = await requireAdmin()
   const parsedPostId = uuidSchema.parse(postId)

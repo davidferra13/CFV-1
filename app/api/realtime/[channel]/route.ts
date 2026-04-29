@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server'
 import { subscribe, getPresenceState } from '@/lib/realtime/sse-server'
 import { auth } from '@/lib/auth'
-import { hasPersistedAdminAccessForAuthUser } from '@/lib/auth/admin-access'
+import { hasAdminAccess } from '@/lib/auth/admin-access'
 import { validateRealtimeChannelAccess } from '@/lib/realtime/channel-access'
 
 export const dynamic = 'force-dynamic'
@@ -38,7 +38,7 @@ export async function GET(
 
   // Verify the user has access to this specific channel (not just any channel)
   const allowed = await validateRealtimeChannelAccess(channel, {
-    isAdmin: await hasPersistedAdminAccessForAuthUser(session.user.id),
+    isAdmin: await hasAdminAccess(session.user.id),
     tenantId: session.user.tenantId ?? null,
     userId: session.user.id,
   })

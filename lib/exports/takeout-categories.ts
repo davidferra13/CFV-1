@@ -10,6 +10,7 @@ export type TakeoutCategoryId =
   | 'menus'
   | 'documents'
   | 'conversations'
+  | 'activity'
   | 'photos'
   | 'ingredients'
   | 'profile'
@@ -111,6 +112,18 @@ export const TAKEOUT_CATEGORIES: TakeoutCategory[] = [
     tables: [{ name: 'conversations' }, { name: 'chat_messages' }],
     formats: ['json'],
     folder: 'conversations',
+  },
+  {
+    id: 'activity',
+    label: 'Activity & Access Logs',
+    description: 'Portal activity, route breadcrumbs, and archived activity records',
+    tables: [
+      { name: 'activity_events' },
+      { name: 'activity_events_archive' },
+      { name: 'chef_breadcrumbs' },
+    ],
+    formats: ['json', 'csv'],
+    folder: 'activity',
   },
   {
     id: 'photos',

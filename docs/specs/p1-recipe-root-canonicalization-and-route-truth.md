@@ -1,6 +1,6 @@
 # Spec: Recipe Root Canonicalization and Route Truth
 
-> **Status:** ready
+> **Status:** built
 > **Priority:** P1
 > **Depends on:** none
 > **Estimated complexity:** large (15+ files)
@@ -13,11 +13,11 @@ _Every status change, every claim, every verification gets a row. This is the au
 | --------------------- | -------------------- | --------------- | ------ |
 | Created               | 2026-04-03 03:49 EDT | Planner (Codex) |        |
 | Status: ready         | 2026-04-03 03:49 EDT | Planner (Codex) |        |
-| Claimed (in-progress) |                      |                 |        |
-| Spike completed       |                      |                 |        |
-| Pre-flight passed     |                      |                 |        |
-| Build completed       |                      |                 |        |
-| Type check passed     |                      |                 |        |
+| Claimed (in-progress) | 2026-04-29 11:32 EDT | Worker B        |        |
+| Spike completed       | 2026-04-29 11:32 EDT | Worker B        |        |
+| Pre-flight passed     | Skipped: no build/dev server per task | Worker B        |        |
+| Build completed       | 2026-04-29 11:32 EDT | Worker B        |        |
+| Type check passed     | 2026-04-29 11:32 EDT | Worker B        |        |
 | Build check passed    |                      |                 |        |
 | Playwright verified   |                      |                 |        |
 | Status: verified      |                      |                 |        |

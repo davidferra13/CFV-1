@@ -134,5 +134,14 @@
       "omninet": ["Replay status", "agent-replay-runner"],
       "skill-garden": ["regression replay", "known-good behavior"]
     }
+  },
+  {
+    "name": "3977 codex build bridge",
+    "prompt": "Bridge 3977 ready tasks and build queue items into safe Codex build packets.",
+    "expect": ["omninet", "persona-inbox"],
+    "evidence": {
+      "omninet": ["codex-build-bridge", "persona-inbox"],
+      "persona-inbox": ["bridge", "codex-build-bridge"]
+    }
   }
 ]

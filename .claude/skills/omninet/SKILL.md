@@ -32,6 +32,7 @@ Use these tools when the task touches skills or durable agent behavior:
 - Generate repair queue: `node devtools/skill-repair-queue.mjs`
 - Promote a proven flight record into replay corpus: `node devtools/agent-replay-corpus.mjs promote --record path --name "case-name"`
 - Run replay regression: `node devtools/agent-replay-runner.mjs --corpus`
+- Bridge 3977 tasks into Codex build packets: `node devtools/codex-build-bridge.mjs next [--write]`
 - Generate session digest: `node devtools/agent-session-digest.mjs`
 - Gate closeout before final: `node devtools/agent-closeout-gate.mjs --owned path,other-path`
 - Audit prior sessions: `node devtools/session-transcript-auditor.mjs [--file transcript.txt] [--write]`

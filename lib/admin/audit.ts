@@ -6,7 +6,7 @@
 import { createAdminClient } from '@/lib/db/admin'
 import { requireAdmin } from '@/lib/auth/admin'
 
-export type AuditActionType =
+type AuditActionType =
   | 'account_created'
   | 'account_deactivated'
   | 'account_reactivated'
@@ -14,6 +14,8 @@ export type AuditActionType =
   | 'role_assigned'
   | 'admin_viewed_chef'
   | 'admin_viewed_client'
+  | 'admin_viewed_live_presence'
+  | 'admin_viewed_conversation_transcript'
   | 'admin_sent_email'
   | 'admin_broadcast_email'
   | 'admin_set_announcement'
@@ -36,8 +38,10 @@ export type AuditActionType =
   | 'cannabis_packet_finalized'
   | 'cannabis_guest_profile_updated'
   | 'admin_moderated_chat_message'
+  | 'admin_moderated_hub_message'
   | 'admin_moderated_social_post'
   | 'admin_moderated_hub_group'
+  | 'admin_viewed_hub_transcript'
   | 'admin_preview_enabled'
   | 'admin_preview_disabled'
 

@@ -9,379 +9,524 @@
     {
       "from": "close-session",
       "to": "evidence-integrity",
-      "kinds": ["backtick", "verb"],
+      "kinds": [
+        "backtick",
+        "verb"
+      ],
       "evidence": "`evidence-integrity`"
     },
     {
       "from": "findings-triage",
       "to": "builder",
-      "kinds": ["backtick", "verb"],
+      "kinds": [
+        "backtick",
+        "verb"
+      ],
       "evidence": "`builder`"
     },
     {
       "from": "findings-triage",
       "to": "debug",
-      "kinds": ["backtick"],
+      "kinds": [
+        "backtick"
+      ],
       "evidence": "`debug`"
     },
     {
       "from": "findings-triage",
       "to": "evidence-integrity",
-      "kinds": ["backtick", "verb"],
+      "kinds": [
+        "backtick",
+        "verb"
+      ],
       "evidence": "`evidence-integrity`"
     },
     {
       "from": "findings-triage",
       "to": "hallucination-scan",
-      "kinds": ["backtick", "verb"],
+      "kinds": [
+        "backtick",
+        "verb"
+      ],
       "evidence": "`hallucination-scan`"
     },
     {
       "from": "findings-triage",
       "to": "host-integrity",
-      "kinds": ["backtick", "verb"],
+      "kinds": [
+        "backtick",
+        "verb"
+      ],
       "evidence": "`host-integrity`"
     },
     {
       "from": "findings-triage",
       "to": "persona-build",
-      "kinds": ["backtick", "verb"],
+      "kinds": [
+        "backtick",
+        "verb"
+      ],
       "evidence": "`persona-build`"
     },
     {
       "from": "findings-triage",
       "to": "planner",
-      "kinds": ["backtick", "verb"],
+      "kinds": [
+        "backtick",
+        "verb"
+      ],
       "evidence": "`planner`"
     },
     {
       "from": "findings-triage",
       "to": "quick-wins",
-      "kinds": ["backtick", "verb"],
+      "kinds": [
+        "backtick",
+        "verb"
+      ],
       "evidence": "`quick-wins`"
     },
     {
       "from": "findings-triage",
       "to": "validation-gate",
-      "kinds": ["backtick", "verb"],
+      "kinds": [
+        "backtick",
+        "verb"
+      ],
       "evidence": "`validation-gate`"
     },
     {
       "from": "omninet",
       "to": "5-whys",
-      "kinds": ["backtick"],
+      "kinds": [
+        "backtick"
+      ],
       "evidence": "`5-whys`"
     },
     {
       "from": "omninet",
       "to": "audit",
-      "kinds": ["backtick"],
+      "kinds": [
+        "backtick"
+      ],
       "evidence": "`audit`"
     },
     {
       "from": "omninet",
       "to": "billing-monetization",
-      "kinds": ["backtick"],
+      "kinds": [
+        "backtick"
+      ],
       "evidence": "`billing-monetization`"
     },
     {
       "from": "omninet",
       "to": "builder",
-      "kinds": ["backtick"],
+      "kinds": [
+        "backtick"
+      ],
       "evidence": "`builder`"
     },
     {
       "from": "omninet",
       "to": "close-session",
-      "kinds": ["backtick"],
+      "kinds": [
+        "backtick"
+      ],
       "evidence": "`close-session`"
     },
     {
       "from": "omninet",
       "to": "compliance",
-      "kinds": ["backtick"],
+      "kinds": [
+        "backtick"
+      ],
       "evidence": "`compliance`"
     },
     {
       "from": "omninet",
       "to": "debug",
-      "kinds": ["backtick"],
+      "kinds": [
+        "backtick"
+      ],
       "evidence": "`debug`"
     },
     {
       "from": "omninet",
       "to": "evidence-integrity",
-      "kinds": ["backtick"],
+      "kinds": [
+        "backtick"
+      ],
       "evidence": "`evidence-integrity`"
     },
     {
       "from": "omninet",
       "to": "findings-triage",
-      "kinds": ["backtick"],
+      "kinds": [
+        "backtick"
+      ],
       "evidence": "`findings-triage`"
     },
     {
       "from": "omninet",
       "to": "first-principles",
-      "kinds": ["backtick"],
+      "kinds": [
+        "backtick"
+      ],
       "evidence": "`first-principles`"
     },
     {
       "from": "omninet",
       "to": "hallucination-scan",
-      "kinds": ["backtick"],
+      "kinds": [
+        "backtick"
+      ],
       "evidence": "`hallucination-scan`"
     },
     {
       "from": "omninet",
       "to": "heal-skill",
-      "kinds": ["backtick", "verb"],
+      "kinds": [
+        "backtick",
+        "verb"
+      ],
       "evidence": "`heal-skill`"
     },
     {
       "from": "omninet",
       "to": "host-integrity",
-      "kinds": ["backtick"],
+      "kinds": [
+        "backtick"
+      ],
       "evidence": "`host-integrity`"
     },
     {
       "from": "omninet",
       "to": "ledger-safety",
-      "kinds": ["backtick"],
+      "kinds": [
+        "backtick"
+      ],
       "evidence": "`ledger-safety`"
     },
     {
       "from": "omninet",
       "to": "massive-win",
-      "kinds": ["backtick"],
+      "kinds": [
+        "backtick"
+      ],
       "evidence": "`massive-win`"
     },
     {
       "from": "omninet",
       "to": "persona-build",
-      "kinds": ["backtick"],
+      "kinds": [
+        "backtick"
+      ],
       "evidence": "`persona-build`"
     },
     {
       "from": "omninet",
       "to": "persona-dump",
-      "kinds": ["backtick", "verb"],
+      "kinds": [
+        "backtick",
+        "verb"
+      ],
       "evidence": "`persona-dump`"
     },
     {
       "from": "omninet",
       "to": "persona-inbox",
-      "kinds": ["backtick"],
+      "kinds": [
+        "backtick"
+      ],
       "evidence": "`persona-inbox`"
     },
     {
       "from": "omninet",
       "to": "persona-stress-test",
-      "kinds": ["backtick"],
+      "kinds": [
+        "backtick"
+      ],
       "evidence": "`persona-stress-test`"
     },
     {
       "from": "omninet",
       "to": "research",
-      "kinds": ["backtick"],
+      "kinds": [
+        "backtick"
+      ],
       "evidence": "`research`"
     },
     {
       "from": "omninet",
       "to": "review",
-      "kinds": ["backtick"],
+      "kinds": [
+        "backtick"
+      ],
       "evidence": "`review`"
     },
     {
       "from": "omninet",
       "to": "ship",
-      "kinds": ["backtick"],
+      "kinds": [
+        "backtick"
+      ],
       "evidence": "`ship`"
     },
     {
       "from": "omninet",
       "to": "skill-garden",
-      "kinds": ["backtick", "verb"],
+      "kinds": [
+        "backtick",
+        "verb"
+      ],
       "evidence": "`skill-garden`"
     },
     {
       "from": "omninet",
       "to": "stripe-webhook-integrity",
-      "kinds": ["backtick"],
+      "kinds": [
+        "backtick"
+      ],
       "evidence": "`stripe-webhook-integrity`"
     },
     {
       "from": "omninet",
       "to": "swarm-governor",
-      "kinds": ["backtick"],
+      "kinds": [
+        "backtick"
+      ],
       "evidence": "`swarm-governor`"
     },
     {
       "from": "omninet",
       "to": "tdd",
-      "kinds": ["backtick"],
+      "kinds": [
+        "backtick"
+      ],
       "evidence": "`tdd`"
     },
     {
       "from": "omninet",
       "to": "validation-gate",
-      "kinds": ["backtick"],
+      "kinds": [
+        "backtick"
+      ],
       "evidence": "`validation-gate`"
     },
     {
       "from": "persona-build",
       "to": "findings-triage",
-      "kinds": ["backtick", "verb"],
+      "kinds": [
+        "backtick",
+        "verb"
+      ],
       "evidence": "`findings-triage`"
     },
     {
       "from": "persona-dump",
       "to": "findings-triage",
-      "kinds": ["backtick"],
+      "kinds": [
+        "backtick"
+      ],
       "evidence": "`findings-triage`"
     },
     {
       "from": "persona-dump",
       "to": "persona-build",
-      "kinds": ["backtick"],
+      "kinds": [
+        "backtick"
+      ],
       "evidence": "`persona-build`"
     },
     {
       "from": "persona-dump",
       "to": "persona-inbox",
-      "kinds": ["backtick", "verb"],
+      "kinds": [
+        "backtick",
+        "verb"
+      ],
       "evidence": "`persona-inbox`"
     },
     {
       "from": "persona-dump",
       "to": "persona-stress-test",
-      "kinds": ["backtick"],
+      "kinds": [
+        "backtick"
+      ],
       "evidence": "`persona-stress-test`"
     },
     {
       "from": "persona-dump",
       "to": "skill-garden",
-      "kinds": ["backtick"],
+      "kinds": [
+        "backtick"
+      ],
       "evidence": "`skill-garden`"
     },
     {
       "from": "persona-inbox",
       "to": "findings-triage",
-      "kinds": ["backtick"],
+      "kinds": [
+        "backtick"
+      ],
       "evidence": "`findings-triage`"
     },
     {
       "from": "persona-inbox",
       "to": "persona-build",
-      "kinds": ["backtick"],
+      "kinds": [
+        "backtick"
+      ],
       "evidence": "`persona-build`"
     },
     {
       "from": "persona-inbox",
       "to": "quick-wins",
-      "kinds": ["backtick"],
+      "kinds": [
+        "backtick"
+      ],
       "evidence": "`quick-wins`"
     },
     {
       "from": "skill-garden",
       "to": "findings-triage",
-      "kinds": ["backtick", "verb"],
+      "kinds": [
+        "backtick",
+        "verb"
+      ],
       "evidence": "`findings-triage`"
     },
     {
       "from": "skill-garden",
       "to": "heal-skill",
-      "kinds": ["backtick", "verb"],
+      "kinds": [
+        "backtick",
+        "verb"
+      ],
       "evidence": "`heal-skill`"
     },
     {
       "from": "skill-garden",
       "to": "omninet",
-      "kinds": ["backtick"],
+      "kinds": [
+        "backtick"
+      ],
       "evidence": "`omninet`"
     },
     {
       "from": "skill-garden",
       "to": "persona-dump",
-      "kinds": ["backtick"],
+      "kinds": [
+        "backtick"
+      ],
       "evidence": "`persona-dump`"
     },
     {
       "from": "software-fundamentals",
       "to": "billing-monetization",
-      "kinds": ["backtick"],
+      "kinds": [
+        "backtick"
+      ],
       "evidence": "`billing-monetization`"
     },
     {
       "from": "software-fundamentals",
       "to": "builder",
-      "kinds": ["backtick"],
+      "kinds": [
+        "backtick"
+      ],
       "evidence": "`builder`"
     },
     {
       "from": "software-fundamentals",
       "to": "debug",
-      "kinds": ["backtick"],
+      "kinds": [
+        "backtick"
+      ],
       "evidence": "`debug`"
     },
     {
       "from": "software-fundamentals",
       "to": "ledger-safety",
-      "kinds": ["backtick"],
+      "kinds": [
+        "backtick"
+      ],
       "evidence": "`ledger-safety`"
     },
     {
       "from": "software-fundamentals",
       "to": "planner",
-      "kinds": ["backtick"],
+      "kinds": [
+        "backtick"
+      ],
       "evidence": "`planner`"
     },
     {
       "from": "software-fundamentals",
       "to": "review",
-      "kinds": ["backtick"],
+      "kinds": [
+        "backtick"
+      ],
       "evidence": "`review`"
     },
     {
       "from": "software-fundamentals",
       "to": "stripe-webhook-integrity",
-      "kinds": ["backtick"],
+      "kinds": [
+        "backtick"
+      ],
       "evidence": "`stripe-webhook-integrity`"
     },
     {
       "from": "software-fundamentals",
       "to": "tdd",
-      "kinds": ["backtick"],
+      "kinds": [
+        "backtick"
+      ],
       "evidence": "`tdd`"
     },
     {
       "from": "software-fundamentals",
       "to": "validation-gate",
-      "kinds": ["backtick"],
+      "kinds": [
+        "backtick"
+      ],
       "evidence": "`validation-gate`"
     },
     {
       "from": "validation-gate",
       "to": "evidence-integrity",
-      "kinds": ["backtick"],
+      "kinds": [
+        "backtick"
+      ],
       "evidence": "`evidence-integrity`"
     },
     {
       "from": "validation-gate",
       "to": "findings-triage",
-      "kinds": ["backtick", "verb"],
+      "kinds": [
+        "backtick",
+        "verb"
+      ],
       "evidence": "`findings-triage`"
     },
     {
       "from": "validation-gate",
       "to": "planner",
-      "kinds": ["backtick", "verb"],
+      "kinds": [
+        "backtick",
+        "verb"
+      ],
       "evidence": "`planner`"
     },
     {
       "from": "warmup",
       "to": "host-integrity",
-      "kinds": ["backtick", "verb"],
+      "kinds": [
+        "backtick",
+        "verb"
+      ],
       "evidence": "`host-integrity`"
     }
   ],
@@ -389,7 +534,10 @@
     {
       "from": "skill-garden",
       "to": "skill-creator",
-      "kinds": ["backtick", "verb"],
+      "kinds": [
+        "backtick",
+        "verb"
+      ],
       "evidence": "`skill-creator`"
     }
   ],

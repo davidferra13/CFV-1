@@ -5,7 +5,7 @@
 import { useState, useTransition } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Alert } from '@/components/ui/alert'
-import type { ClientDeletionStatus } from '@/lib/clients/account-deletion-actions'
+import type { ClientDeletionStatus } from '@/lib/clients/account-deletion-types'
 import {
   requestClientAccountDeletion,
   cancelClientAccountDeletion,

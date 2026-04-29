@@ -17,7 +17,7 @@ export const metadata: Metadata = { title: 'Culinary' }
 
 const tiles = [
   {
-    href: '/culinary/recipes',
+    href: '/recipes',
     label: 'Recipe Book',
     description: 'Your full library of documented recipes with costing and yield',
     icon: '📖',

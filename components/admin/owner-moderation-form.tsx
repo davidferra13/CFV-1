@@ -6,11 +6,12 @@ import {
   adminDeactivateHubGroup,
   adminHideSocialPost,
   adminSoftDeleteChatMessage,
+  adminSoftDeleteHubMessage,
 } from '@/lib/admin/owner-moderation-actions'
 
 const CONFIRM_PHRASE = 'MODERATE'
 
-type OwnerModerationKind = 'chat_message' | 'social_post' | 'hub_group'
+type OwnerModerationKind = 'chat_message' | 'hub_message' | 'social_post' | 'hub_group'
 
 type Props = {
   kind: OwnerModerationKind
@@ -31,9 +32,11 @@ export function OwnerModerationForm({ kind, targetId }: Props) {
   const label =
     kind === 'chat_message'
       ? 'Soft-delete message'
-      : kind === 'social_post'
-        ? 'Hide post'
-        : 'Deactivate group'
+      : kind === 'hub_message'
+        ? 'Soft-delete hub message'
+        : kind === 'social_post'
+          ? 'Hide post'
+          : 'Deactivate group'
 
   function submitModeration() {
     if (!canSubmit) return
@@ -44,6 +47,8 @@ export function OwnerModerationForm({ kind, targetId }: Props) {
       try {
         if (kind === 'chat_message') {
           await adminSoftDeleteChatMessage(targetId, reasonValue)
+        } else if (kind === 'hub_message') {
+          await adminSoftDeleteHubMessage(targetId, reasonValue)
         } else if (kind === 'social_post') {
           await adminHideSocialPost(targetId, reasonValue)
         } else {

@@ -25,6 +25,7 @@ const generatedReportDirs = [
   'skill-outcomes',
   'skill-repair-queue',
   'replay-runs',
+  'codex-build-bridge',
   'session-digests',
 ].map((name) => path.join(reportsRoot, name))
 

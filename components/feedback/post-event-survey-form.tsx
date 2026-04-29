@@ -9,6 +9,7 @@ type Props = {
   occasion: string
   dishes: { id: string; name: string; course_name: string | null }[]
   chefName: string
+  postActionFooter?: React.ReactNode
 }
 
 type DishFeedbackState = {
@@ -30,7 +31,9 @@ function StarRating({
 
   return (
     <div>
-      <label className="mb-1 block text-sm text-stone-300" id={labelId}>{label}</label>
+      <label className="mb-1 block text-sm text-stone-300" id={labelId}>
+        {label}
+      </label>
       <div className="flex gap-1" role="radiogroup" aria-labelledby={labelId}>
         {[1, 2, 3, 4, 5].map((star) => (
           <button
@@ -56,7 +59,13 @@ function StarRating({
   )
 }
 
-export function PostEventSurveyForm({ token, occasion, dishes, chefName }: Props) {
+export function PostEventSurveyForm({
+  token,
+  occasion,
+  dishes,
+  chefName,
+  postActionFooter,
+}: Props) {
   const [foodQuality, setFoodQuality] = useState(0)
   const [portionSize, setPortionSize] = useState(0)
   const [punctuality, setPunctuality] = useState(0)
@@ -146,12 +155,24 @@ export function PostEventSurveyForm({ token, occasion, dishes, chefName }: Props
 
   if (submitted) {
     return (
-      <div ref={successRef} tabIndex={-1} role="status" className="rounded-lg border border-stone-800 bg-stone-900 p-8 text-center">
-        <CheckCircle className="mx-auto mb-4 h-10 w-10 text-emerald-400" aria-hidden="true" weight="fill" />
-        <h2 className="mb-2 text-xl font-bold text-stone-100">Thank you for your feedback!</h2>
-        <p className="text-stone-400">
-          {chefName} will use your input to make future events even better.
-        </p>
+      <div>
+        <div
+          ref={successRef}
+          tabIndex={-1}
+          role="status"
+          className="rounded-lg border border-stone-800 bg-stone-900 p-8 text-center"
+        >
+          <CheckCircle
+            className="mx-auto mb-4 h-10 w-10 text-emerald-400"
+            aria-hidden="true"
+            weight="fill"
+          />
+          <h2 className="mb-2 text-xl font-bold text-stone-100">Thank you for your feedback!</h2>
+          <p className="text-stone-400">
+            {chefName} will use your input to make future events even better.
+          </p>
+        </div>
+        {postActionFooter}
       </div>
     )
   }
@@ -322,8 +343,14 @@ export function PostEventSurveyForm({ token, occasion, dishes, chefName }: Props
                   </div>
 
                   <div className="flex items-center gap-4">
-                    <span className="text-xs text-stone-500" id={`survey-dish-rating-${dish.id}`}>Optional rating</span>
-                    <div className="flex gap-0.5" role="radiogroup" aria-labelledby={`survey-dish-rating-${dish.id}`}>
+                    <span className="text-xs text-stone-500" id={`survey-dish-rating-${dish.id}`}>
+                      Optional rating
+                    </span>
+                    <div
+                      className="flex gap-0.5"
+                      role="radiogroup"
+                      aria-labelledby={`survey-dish-rating-${dish.id}`}
+                    >
                       {[1, 2, 3, 4, 5].map((star) => (
                         <button
                           key={star}

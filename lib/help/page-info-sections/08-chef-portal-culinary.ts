@@ -12,9 +12,9 @@ export const CHEF_PORTAL_CULINARY_PAGE_INFO: Record<string, PageInfoEntry> = {
     ],
   },
 
-  '/culinary/recipes': {
+  '/recipes': {
     title: 'Recipe Book',
-    description: 'Your full library of documented recipes with costing and yield.',
+    description: 'The canonical recipe library for documented recipes, costing, yield, and reuse.',
     features: [
       'Recipe count and category badges',
       'Time, yield, ingredient count per recipe',
@@ -23,9 +23,9 @@ export const CHEF_PORTAL_CULINARY_PAGE_INFO: Record<string, PageInfoEntry> = {
     ],
   },
 
-  '/culinary/recipes/[id]': {
+  '/recipes/[id]': {
     title: 'Recipe Detail',
-    description: 'Full recipe view - ingredients, instructions, cost breakdown, and event history.',
+    description: 'Full recipe view with ingredients, instructions, cost breakdown, and event history.',
     features: [
       'Ingredient list with costs',
       'Step-by-step instructions',
@@ -34,13 +34,13 @@ export const CHEF_PORTAL_CULINARY_PAGE_INFO: Record<string, PageInfoEntry> = {
     ],
   },
 
-  '/culinary/recipes/[id]/edit': {
+  '/recipes/[id]/edit': {
     title: 'Edit Recipe',
-    description: 'Update recipe details - ingredients, instructions, yield, and costing.',
+    description: 'Update recipe details, ingredients, instructions, yield, and costing.',
     features: ['Ingredient editor', 'Instruction editor', 'Yield adjustment', 'Cost recalculation'],
   },
 
-  '/culinary/recipes/new': {
+  '/recipes/new': {
     title: 'New Recipe',
     description: 'Create a new recipe from scratch.',
     features: [
@@ -51,10 +51,34 @@ export const CHEF_PORTAL_CULINARY_PAGE_INFO: Record<string, PageInfoEntry> = {
     ],
   },
 
-  '/culinary/recipes/sprint': {
+  '/recipes/sprint': {
     title: 'Recipe Sprint',
-    description: 'Focused recipe development session - batch-create and test new recipes.',
+    description: 'Focused recipe development session for batch creation and recipe testing notes.',
     features: ['Sprint timer', 'Batch recipe creation', 'Testing notes'],
+  },
+
+  '/culinary/recipes': {
+    title: 'Recipe Book Redirect',
+    description: 'Compatibility alias that redirects to the canonical recipe library at /recipes.',
+    features: ['Redirects to /recipes', 'Keeps older recipe links from breaking'],
+  },
+
+  '/culinary/recipes/[id]': {
+    title: 'Recipe Detail Redirect',
+    description: 'Compatibility alias that redirects to the canonical recipe detail page.',
+    features: ['Redirects to /recipes/[id]', 'Keeps older recipe detail links from breaking'],
+  },
+
+  '/culinary/recipes/[id]/edit': {
+    title: 'Edit Recipe Redirect',
+    description: 'Compatibility alias that redirects to the canonical recipe edit page.',
+    features: ['Redirects to /recipes/[id]/edit', 'Keeps older edit links from breaking'],
+  },
+
+  '/culinary/recipes/new': {
+    title: 'New Recipe Redirect',
+    description: 'Compatibility alias that redirects to the canonical recipe creation page.',
+    features: ['Redirects to /recipes/new', 'Keeps older create links from breaking'],
   },
 
   '/culinary/recipes/drafts': {

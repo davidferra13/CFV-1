@@ -16,6 +16,7 @@ import { sendNotification } from '@/lib/notifications/send'
 import {
   CONTACT_INTAKE_LANES,
   detectContactIntakeLane,
+  isPrivacyDataRequestSubmission,
   parseOperatorWalkthroughSubmission,
   type ContactIntakeLane,
 } from '@/lib/contact/operator-evaluation'
@@ -35,10 +36,15 @@ function getResponseWindowText(isSupportOpen: boolean | null): string {
 function buildUserMessage(
   intakeLane: ContactIntakeLane,
   acknowledgmentSent: boolean,
-  responseWindowText: string
+  responseWindowText: string,
+  isPrivacyDataRequest = false
 ) {
   const requestLabel =
-    intakeLane === CONTACT_INTAKE_LANES.OPERATOR_WALKTHROUGH ? 'walkthrough request' : 'message'
+    intakeLane === CONTACT_INTAKE_LANES.OPERATOR_WALKTHROUGH
+      ? 'walkthrough request'
+      : isPrivacyDataRequest
+        ? 'privacy data request'
+        : 'message'
 
   return acknowledgmentSent
     ? `We received your ${requestLabel} and sent a confirmation email. We'll reply ${responseWindowText}.`
@@ -84,6 +90,12 @@ export async function submitContactForm(data: ContactFormData) {
   })
   const sourcePage = data.sourcePage?.trim() || parsedWalkthrough?.sourcePage || null
   const sourceCta = data.sourceCta?.trim() || parsedWalkthrough?.sourceCta || null
+  const isPrivacyDataRequest = isPrivacyDataRequestSubmission({
+    subject,
+    message,
+    sourcePage,
+    sourceCta,
+  })
 
   if (!name || !email || !message) {
     throw new Error('Name, email, and message are required')
@@ -154,6 +166,7 @@ export async function submitContactForm(data: ContactFormData) {
   // Auto-assign only generic contact into inquiry handling.
   if (
     intakeLane === CONTACT_INTAKE_LANES.GENERAL_CONTACT &&
+    !isPrivacyDataRequest &&
     ownerIdentity.ownerChefId &&
     submission?.id
   ) {
@@ -193,6 +206,24 @@ export async function submitContactForm(data: ContactFormData) {
           },
         })
       )
+    } else if (isPrivacyDataRequest) {
+      sideEffects.push(
+        sendNotification({
+          tenantId: ownerIdentity.ownerChefId,
+          recipientId: ownerIdentity.ownerAuthUserId,
+          type: 'new_inquiry',
+          title: `New privacy data request from ${name}`,
+          message: `${name} (${email}) submitted a privacy data request${sourcePage ? ` from ${sourcePage}` : ''}.`,
+          link: '/admin/communications',
+          metadata: {
+            kind: 'privacy_data_request',
+            source: 'data_request',
+            submission_id: submission.id,
+            source_page: sourcePage,
+            source_cta: sourceCta,
+          },
+        })
+      )
     } else if (inquiryId) {
       sideEffects.push(
         sendNotification({
@@ -219,7 +250,9 @@ export async function submitContactForm(data: ContactFormData) {
     recordPlatformEvent({
       eventKey: 'input.contact_form_submitted',
       source:
-        intakeLane === CONTACT_INTAKE_LANES.OPERATOR_WALKTHROUGH
+        isPrivacyDataRequest
+          ? 'public_data_request'
+          : intakeLane === CONTACT_INTAKE_LANES.OPERATOR_WALKTHROUGH
           ? 'public_operator_walkthrough'
           : 'public_contact',
       actorType: 'anonymous',
@@ -227,7 +260,9 @@ export async function submitContactForm(data: ContactFormData) {
       subjectType: 'contact_submission',
       subjectId: submission.id,
       summary:
-        intakeLane === CONTACT_INTAKE_LANES.OPERATOR_WALKTHROUGH
+        isPrivacyDataRequest
+          ? `${name} submitted a privacy data request`
+          : intakeLane === CONTACT_INTAKE_LANES.OPERATOR_WALKTHROUGH
           ? `${name} submitted an operator walkthrough request`
           : `${name} submitted the public contact form`,
       details: subject ? `Subject: ${subject}` : null,
@@ -236,6 +271,7 @@ export async function submitContactForm(data: ContactFormData) {
         email,
         subject,
         intake_lane: intakeLane,
+        privacy_data_request: isPrivacyDataRequest,
         inquiry_id: inquiryId,
         operator_evaluation_status: operatorEvaluationStatus,
         source_page: sourcePage,
@@ -268,11 +304,17 @@ export async function submitContactForm(data: ContactFormData) {
 
   revalidatePath('/leads')
   revalidatePath('/dashboard')
+  revalidatePath('/admin/communications')
 
   return {
     success: true,
     acknowledgmentSent: acknowledgmentResult,
-    userMessage: buildUserMessage(intakeLane, acknowledgmentResult, responseWindowText),
+    userMessage: buildUserMessage(
+      intakeLane,
+      acknowledgmentResult,
+      responseWindowText,
+      isPrivacyDataRequest
+    ),
   }
 }
 

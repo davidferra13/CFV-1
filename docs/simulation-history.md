@@ -625,3 +625,11 @@ Failing: inquiry_parse (0%), client_parse (0%), allergen_risk (0%), corresponden
 
 Passing: none
 Failing: inquiry_parse (0%), client_parse (0%), allergen_risk (0%), correspondence (0%), menu_suggestions (0%), quote_draft (0%)
+
+## 2026-04-29 14:44 UTC - 0% pass rate - Run b8afecc6
+Passing: none
+Failing: inquiry_parse (0%), client_parse (0%), allergen_risk (0%), correspondence (0%), menu_suggestions (0%), quote_draft (0%)
+
+## 2026-04-29 14:44 UTC - 0% pass rate - Run ed0ea64e
+Passing: none
+Failing: inquiry_parse (0%), client_parse (0%), allergen_risk (0%), correspondence (0%), menu_suggestions (0%), quote_draft (0%)

@@ -3,7 +3,10 @@ import assert from 'node:assert/strict'
 import {
   CONTACT_INTAKE_LANES,
   OPERATOR_EVALUATION_STATUS_META,
+  PRIVACY_DATA_REQUEST_SOURCE_CTA,
+  PRIVACY_DATA_REQUEST_SOURCE_PAGE,
   detectContactIntakeLane,
+  isPrivacyDataRequestSubmission,
   parseOperatorWalkthroughSubmission,
 } from '@/lib/contact/operator-evaluation'
 
@@ -63,4 +66,24 @@ test('operator evaluation statuses expose the founder-facing labels needed for t
   assert.equal(OPERATOR_EVALUATION_STATUS_META.new.label, 'New')
   assert.equal(OPERATOR_EVALUATION_STATUS_META.scheduled.label, 'Scheduled')
   assert.equal(OPERATOR_EVALUATION_STATUS_META.not_fit.label, 'Not fit')
+})
+
+test('privacy data requests are detectable without creating a new contact lane', () => {
+  assert.equal(
+    isPrivacyDataRequestSubmission({
+      subject: 'Data Request: Delete my data',
+      sourcePage: PRIVACY_DATA_REQUEST_SOURCE_PAGE,
+      sourceCta: PRIVACY_DATA_REQUEST_SOURCE_CTA,
+    }),
+    true
+  )
+
+  assert.equal(
+    detectContactIntakeLane(undefined, {
+      subject: 'Data Request: Delete my data',
+      sourcePage: PRIVACY_DATA_REQUEST_SOURCE_PAGE,
+      sourceCta: PRIVACY_DATA_REQUEST_SOURCE_CTA,
+    }),
+    CONTACT_INTAKE_LANES.GENERAL_CONTACT
+  )
 })

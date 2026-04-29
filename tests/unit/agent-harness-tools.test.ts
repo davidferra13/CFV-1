@@ -374,3 +374,205 @@ test('agent-replay-runner reports suspicious routing drift as JSON failure', () 
     fs.rmSync(tempRoot, { recursive: true, force: true })
   }
 })
+
+test('codex-build-bridge creates a dry-run packet from a temp ready task', () => {
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'chefflow-bridge-'))
+  const readyDir = path.join(tempRoot, 'ready-tasks')
+  const buildQueueDir = path.join(tempRoot, 'build-queue')
+  fs.mkdirSync(readyDir, { recursive: true })
+  fs.mkdirSync(buildQueueDir, { recursive: true })
+  const taskFile = path.join(readyDir, '001-high-client-export.md')
+  fs.writeFileSync(
+    taskFile,
+    `---
+status: ready
+priority: 'high'
+score: 72
+source_plan: 'system/persona-build-plans/client/task-1.md'
+source_persona: 'client'
+---
+
+# Build Task: Client export
+
+## What to Build
+
+Connect the client export action to the existing dashboard.
+
+## Files to Modify
+
+- \`components/dashboard/referral-widget.tsx\`
+
+## Acceptance Criteria
+
+1. The export action is visible only when data exists.
+`,
+  )
+
+  try {
+    const output = runNode([
+      'devtools/codex-build-bridge.mjs',
+      'packet',
+      '--file',
+      taskFile,
+      '--ready-dir',
+      readyDir,
+      '--build-queue-dir',
+      buildQueueDir,
+    ])
+    const result = JSON.parse(output) as {
+      ok: boolean
+      dry_run: boolean
+      claimed: boolean
+      packet: {
+        task: { title: string; source_plan: string }
+        classification: { status: string; affected_files: string[] }
+        codex_prompt: string
+      }
+    }
+
+    assert.equal(result.ok, true)
+    assert.equal(result.dry_run, true)
+    assert.equal(result.claimed, false)
+    assert.equal(result.packet.task.title, 'Build Task: Client export')
+    assert.equal(result.packet.task.source_plan, 'system/persona-build-plans/client/task-1.md')
+    assert.equal(result.packet.classification.status, 'buildable')
+    assert.ok(
+      result.packet.classification.affected_files.includes(
+        'components/dashboard/referral-widget.tsx',
+      ),
+    )
+    assert.match(result.packet.codex_prompt, /Act as a ChefFlow Codex builder/)
+  } finally {
+    fs.rmSync(tempRoot, { recursive: true, force: true })
+  }
+})
+
+test('codex-build-bridge blocks destructive database tasks', () => {
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'chefflow-bridge-unsafe-'))
+  const readyDir = path.join(tempRoot, 'ready-tasks')
+  const buildQueueDir = path.join(tempRoot, 'build-queue')
+  fs.mkdirSync(buildQueueDir, { recursive: true })
+  const taskFile = path.join(buildQueueDir, '001-high-destructive-db.md')
+  fs.writeFileSync(
+    taskFile,
+    `# Build Task: Dangerous cleanup
+
+Run drizzle-kit push, DROP TABLE old_events, and DELETE FROM ledger_entries.
+
+## Files to Modify
+
+- \`database/migrations/999.sql\`
+`,
+  )
+
+  try {
+    const result = runNodeAllowFailure([
+      'devtools/codex-build-bridge.mjs',
+      'packet',
+      '--file',
+      taskFile,
+      '--ready-dir',
+      readyDir,
+      '--build-queue-dir',
+      buildQueueDir,
+    ])
+    const parsed = JSON.parse(result.stdout) as {
+      ok: boolean
+      packet: { classification: { status: string; hard_stops: string[] } }
+    }
+
+    assert.equal(result.ok, false)
+    assert.equal(parsed.ok, false)
+    assert.equal(parsed.packet.classification.status, 'blocked')
+    assert.ok(parsed.packet.classification.hard_stops.includes('destructive_database'))
+    assert.ok(parsed.packet.classification.hard_stops.includes('drizzle_push'))
+  } finally {
+    fs.rmSync(tempRoot, { recursive: true, force: true })
+  }
+})
+
+test('codex-build-bridge refuses packet files outside configured queues', () => {
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'chefflow-bridge-outside-'))
+  const readyDir = path.join(tempRoot, 'ready-tasks')
+  const buildQueueDir = path.join(tempRoot, 'build-queue')
+  fs.mkdirSync(readyDir, { recursive: true })
+  fs.mkdirSync(buildQueueDir, { recursive: true })
+  const outsideFile = path.join(tempRoot, 'outside.md')
+  fs.writeFileSync(outsideFile, '# Outside task\n')
+
+  try {
+    const result = runNodeAllowFailure([
+      'devtools/codex-build-bridge.mjs',
+      'packet',
+      '--file',
+      outsideFile,
+      '--ready-dir',
+      readyDir,
+      '--build-queue-dir',
+      buildQueueDir,
+    ])
+    const parsed = JSON.parse(result.stdout) as { ok: boolean; error: string }
+
+    assert.equal(result.ok, false)
+    assert.equal(parsed.ok, false)
+    assert.match(parsed.error, /outside ready\/build queues/)
+  } finally {
+    fs.rmSync(tempRoot, { recursive: true, force: true })
+  }
+})
+
+test('codex-build-bridge claim dry-run uses ready tasks without endpoint mutation', () => {
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'chefflow-bridge-claim-'))
+  const readyDir = path.join(tempRoot, 'ready-tasks')
+  const buildQueueDir = path.join(tempRoot, 'build-queue')
+  fs.mkdirSync(readyDir, { recursive: true })
+  fs.mkdirSync(buildQueueDir, { recursive: true })
+  fs.writeFileSync(
+    path.join(readyDir, '001-medium-ready.md'),
+    `---
+priority: 'medium'
+score: 60
+source_plan: 'system/persona-build-plans/ready/task-1.md'
+---
+
+# Build Task: Ready task
+
+- \`components/ui/handoff-actions.tsx\`
+`,
+  )
+  fs.writeFileSync(
+    path.join(buildQueueDir, '001-high-staged.md'),
+    `# Build Task: Staged only
+
+- \`components/navigation/public-header.tsx\`
+`,
+  )
+
+  try {
+    const output = runNode([
+      'devtools/codex-build-bridge.mjs',
+      'claim',
+      '--dry-run',
+      '--ready-dir',
+      readyDir,
+      '--build-queue-dir',
+      buildQueueDir,
+    ])
+    const result = JSON.parse(output) as {
+      dry_run: boolean
+      claimed: boolean
+      packet: { task: { file: string; source_plan: string } }
+    }
+
+    assert.equal(result.dry_run, true)
+    assert.equal(result.claimed, false)
+    assert.equal(result.packet.task.file.endsWith('001-medium-ready.md'), true)
+    assert.equal(result.packet.task.source_plan, 'system/persona-build-plans/ready/task-1.md')
+    assert.deepEqual(
+      fs.readdirSync(readyDir).filter((file) => file.startsWith('_claimed_')),
+      [],
+    )
+  } finally {
+    fs.rmSync(tempRoot, { recursive: true, force: true })
+  }
+})

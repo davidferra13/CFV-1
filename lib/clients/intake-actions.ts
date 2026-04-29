@@ -445,14 +445,45 @@ export async function applyResponseToClient(responseId: string, clientId: string
     console.error('[applyResponseToClient] Allergy sync failed (non-blocking):', err)
   }
 
-  // Recheck upcoming event menus for allergen conflicts (non-blocking)
+  // Recheck upcoming event menus for food safety conflicts (non-blocking)
   try {
-    if (clientUpdate.allergies) {
+    if (clientUpdate.allergies || clientUpdate.dietary_restrictions) {
       const { recheckUpcomingMenusForClient } = await import('@/lib/dietary/menu-recheck')
       await recheckUpcomingMenusForClient({ tenantId, clientId, db: db as any })
     }
   } catch (err) {
     console.error('[applyResponseToClient] Menu recheck failed (non-blocking):', err)
+  }
+
+  try {
+    if (clientUpdate.allergies || clientUpdate.dietary_restrictions) {
+      const activeStatuses = ['accepted', 'paid', 'confirmed', 'in_progress']
+      const propagateFields: Record<string, unknown> = {}
+      if (clientUpdate.allergies) {
+        propagateFields.allergies = clientUpdate.allergies
+      }
+      if (clientUpdate.dietary_restrictions) {
+        propagateFields.dietary_restrictions = clientUpdate.dietary_restrictions
+      }
+
+      const { data: affectedEvents } = await (db as any)
+        .from('events')
+        .update(propagateFields)
+        .eq('client_id', clientId)
+        .eq('tenant_id', tenantId)
+        .in('status', activeStatuses)
+        .select('id')
+
+      for (const event of affectedEvents ?? []) {
+        revalidatePath(`/events/${event.id}`)
+        revalidatePath(`/my-events/${event.id}`)
+      }
+    }
+  } catch (err) {
+    console.error(
+      '[applyResponseToClient] Dietary propagation to events failed (non-blocking):',
+      err
+    )
   }
 
   // Log dietary changes from intake response (non-blocking)

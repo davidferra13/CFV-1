@@ -1,0 +1,18 @@
+{
+  "prompt": "Build the 3977 to Codex build bridge with safe claim, dry-run, classification, and result reporting",
+  "generated_at": "2026-04-29T17:16:12.511Z",
+  "primary_skill": "builder",
+  "sidecar_skills": [
+    "omninet"
+  ],
+  "skill_maturity": {
+    "builder": "active",
+    "omninet": "proven"
+  },
+  "conflict_resolution": null,
+  "hard_stops": [],
+  "risk_level": "medium",
+  "required_checks": [
+    "stage, commit, and push only owned files before closeout"
+  ]
+}

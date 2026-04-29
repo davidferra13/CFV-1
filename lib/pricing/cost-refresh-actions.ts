@@ -154,7 +154,7 @@ export async function propagatePriceChange(ingredientIds: string[], options?: { 
 
   // Bust UI caches
   revalidatePath('/culinary/costing')
-  revalidatePath('/culinary/recipes')
+  revalidatePath('/recipes')
   revalidateTag('recipe-costs')
 }
 

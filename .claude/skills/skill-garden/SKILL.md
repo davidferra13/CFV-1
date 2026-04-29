@@ -36,6 +36,7 @@ Prefer the deterministic tools when changing or evaluating skills:
 - `node devtools/skill-repair-queue.mjs` writes the current queue of skills that need healing.
 - `node devtools/agent-replay-corpus.mjs promote --record path --name "case-name"` promotes a clean flight record into regression replay.
 - `node devtools/agent-replay-runner.mjs --corpus` replays known-good prompts and flags suspicious routing drift.
+- `node devtools/codex-build-bridge.mjs next --write` converts 3977 output into a classified Codex build packet.
 - `node devtools/agent-session-digest.mjs` writes a compact digest of recent flight records and what future Codex should do differently.
 - `node devtools/report-skill-failure.mjs --skill skill-name --what "..." --prompt "..."` records a missed or weak skill behavior for repair, and can add a non-duplicate golden prompt with `--add-golden`.
 - `node devtools/session-transcript-auditor.mjs [--file transcript.txt] [--write]` turns missed real-session behavior into learning inbox items.

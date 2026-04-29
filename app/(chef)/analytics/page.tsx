@@ -83,6 +83,27 @@ import {
 
 export const metadata: Metadata = { title: 'Analytics Hub' }
 
+type AnalyticsSearchParams = {
+  tab?: string | string[]
+}
+
+const ANALYTICS_TABS = new Set([
+  'overview',
+  'revenue',
+  'operations',
+  'pipeline',
+  'clients',
+  'marketing',
+  'social',
+  'culinary',
+  'benchmarks',
+])
+
+function getInitialAnalyticsTab(searchParams?: AnalyticsSearchParams): string {
+  const tab = Array.isArray(searchParams?.tab) ? searchParams?.tab[0] : searchParams?.tab
+  return tab && ANALYTICS_TABS.has(tab) ? tab : 'overview'
+}
+
 // Date helpers
 function liso(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
@@ -99,9 +120,14 @@ function currentMonth(): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
 }
 
-export default async function AnalyticsHubPage() {
+export default async function AnalyticsHubPage({
+  searchParams,
+}: {
+  searchParams?: Promise<AnalyticsSearchParams>
+}) {
   await requireChef()
 
+  const initialTab = getInitialAnalyticsTab(await searchParams)
   const { start, end } = periodDates(12)
   const thisMonth = currentMonth()
 
@@ -236,6 +262,7 @@ export default async function AnalyticsHubPage() {
       <UpgradePrompt featureSlug="intelligence-hub" show={true} className="mb-4" />
 
       <AnalyticsHub
+        initialTab={initialTab}
         loadErrors={loadErrors}
         monthRevenue={val(monthRevenue, null, 'overview')}
         eventCounts={val(eventCounts, null, 'overview')}

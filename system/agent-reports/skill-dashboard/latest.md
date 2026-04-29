@@ -1,6 +1,6 @@
 # Agent Skill Dashboard
 
-Generated: 2026-04-29T17:00:17.125Z
+Generated: 2026-04-29T17:21:46.927Z
 
 ## Coverage
 
@@ -42,6 +42,14 @@ Generated: 2026-04-29T17:00:17.125Z
 - Cases: 1
 - Suspicious drift: 0
 - Strengthened routes: 0
+
+## Codex Build Bridge
+
+- Last run ok: true
+- Dry run: true
+- Claimed: false
+- Classification: duplicate
+- Task: system/ready-tasks/014-high-workflow-coverage-gap.md
 
 ## Health
 

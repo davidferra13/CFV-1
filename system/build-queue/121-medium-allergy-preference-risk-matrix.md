@@ -1,0 +1,30 @@
+---
+status: "pending"
+priority: "medium"
+category: "communication"
+source: "Woody"
+confidence: "high"
+generated: "2026-04-29T05:58:11.086Z"
+---
+# Allergy/Preference Risk Matrix:
+
+## Gap
+Allergy/Preference Risk Matrix:
+
+## Source
+Woody
+
+## Confidence
+high (MISSING)
+
+## Affected Files
+- Unknown until codebase validation runs
+
+## Search Hints
+- allergypreference.risk
+- risk.matrix
+- allergypreference
+- matrix
+
+## Suggested Approach
+Confirm the current codebase state for the affected workflow, then implement the smallest ChefFlow surface that closes this gap without duplicating an existing partial feature.

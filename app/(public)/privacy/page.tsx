@@ -1,7 +1,9 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { CookiePreferencesButton } from '@/components/privacy/cookie-preferences-button'
 import {
   CORE_DATA_PROCESSORS,
+  INTERNAL_DATA_PRACTICES,
   OPTIONAL_PRIVACY_INTEGRATIONS,
   PRIVACY_COMMITMENTS,
   PRIVACY_POLICY_LAST_UPDATED,
@@ -66,6 +68,23 @@ export default function PrivacyPage() {
             features used, and actions taken. This helps us understand what is working and what
             needs improvement.
           </p>
+
+          <h3 className="mb-2 text-base font-semibold text-stone-200">
+            Live presence, activity, and admin review
+          </h3>
+          <p className="mb-3 leading-relaxed">
+            ChefFlow includes operational monitoring so chefs can see client portal activity and
+            authorized platform operators can keep the service reliable and secure. These signals
+            are used for support, abuse prevention, moderation, troubleshooting, product
+            improvement, and workflow continuity.
+          </p>
+          <ul className="mb-4 list-disc space-y-2 pl-5 leading-relaxed">
+            {INTERNAL_DATA_PRACTICES.map((practice) => (
+              <li key={practice.id}>
+                <strong className="text-stone-200">{practice.title}</strong> - {practice.detail}
+              </li>
+            ))}
+          </ul>
 
           <h3 className="mb-2 text-base font-semibold text-stone-200">Inquiry submissions</h3>
           <p className="mb-3 leading-relaxed">
@@ -206,22 +225,12 @@ export default function PrivacyPage() {
           <p className="leading-relaxed">
             The Service includes an optional AI assistant (Remy) that helps chefs with tasks like
             drafting messages and organizing information. When you use AI-assisted features,
-            relevant context from your conversation is sent to a cloud-hosted AI processing endpoint
-            to generate responses. This processing happens in real time and conversation content is
-            not stored on the AI provider&apos;s servers after the response is generated. AI
-            features that handle private data (client names, dietary restrictions, financials) use a
-            dedicated private AI endpoint separate from third-party AI services. You can use the
-            Service without engaging AI features.
-          </p>
-
-          <p className="mt-4 leading-relaxed">
-            Users may opt into local AI processing by configuring a local AI instance (such as
-            Ollama) in their settings. When local AI is enabled, conversation inference runs
-            entirely on the user&apos;s own device and never reaches ChefFlow&apos;s servers for AI
-            processing. Context assembly (looking up your business data to build prompts) still
-            requires a server round-trip, but the AI inference itself stays local. If local AI is
-            unavailable, users are prompted before any message is routed through ChefFlow&apos;s
-            cloud AI.
+            relevant context from your ChefFlow workspace is processed through ChefFlow&apos;s single
+            Ollama-compatible AI runtime to generate responses. In production this runtime is
+            operated as a private ChefFlow service; in development it may run locally for testing.
+            There is no silent fallback to a second AI provider. If the runtime is unavailable, AI
+            features fail clearly. ChefFlow does not use AI to generate recipes or tell chefs what
+            to cook, and you can use the Service without engaging AI features.
           </p>
 
           <p className="mt-4 leading-relaxed">
@@ -237,7 +246,10 @@ export default function PrivacyPage() {
             account, your data remains accessible to you for 30 days, after which it may be archived
             or deleted at our discretion. Event records and financial ledger entries are retained
             for a minimum of seven years to comply with standard accounting practices. You may
-            request earlier deletion of non-financial personal data (see Section 6).
+            request earlier deletion of non-financial personal data (see Section 6). Short-lived
+            live presence is maintained in memory and expires automatically, while stored activity
+            and route breadcrumb records may be retained for security, support, product operations,
+            and customer data export.
           </p>
         </section>
 
@@ -294,6 +306,7 @@ export default function PrivacyPage() {
             defined expiry and are stored securely. You can configure your browser to reject
             cookies, but some features of the Service may not function correctly without them.
           </p>
+          <CookiePreferencesButton />
         </section>
 
         <section>

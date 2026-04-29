@@ -2,6 +2,10 @@
 
 import { useState, useTransition } from 'react'
 import { submitContactForm } from '@/lib/contact/actions'
+import {
+  PRIVACY_DATA_REQUEST_SOURCE_CTA,
+  PRIVACY_DATA_REQUEST_SOURCE_PAGE,
+} from '@/lib/contact/operator-evaluation'
 
 const REQUEST_TYPES = [
   { value: 'deletion', label: 'Delete my data' },
@@ -19,6 +23,9 @@ export function DataRequestForm() {
   const [website, setWebsite] = useState('') // honeypot
   const [done, setDone] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [confirmationText, setConfirmationText] = useState(
+    'We will respond to your request within 30 days.'
+  )
   const [isPending, startTransition] = useTransition()
 
   function handleSubmit(e: React.FormEvent) {
@@ -29,13 +36,24 @@ export function DataRequestForm() {
 
     startTransition(async () => {
       try {
-        await submitContactForm({
+        const requestDetails = details.trim()
+        const result = await submitContactForm({
           name: name.trim(),
           email: email.trim(),
           subject: `Data Request: ${typeLabel}`,
-          message: details.trim() || `Request type: ${typeLabel}. No additional details provided.`,
+          message: [
+            `Request type: ${typeLabel}`,
+            requestDetails || 'No additional details provided.',
+          ].join('\n\n'),
+          sourcePage: PRIVACY_DATA_REQUEST_SOURCE_PAGE,
+          sourceCta: PRIVACY_DATA_REQUEST_SOURCE_CTA,
           website,
         })
+        setConfirmationText(
+          result.acknowledgmentSent
+            ? 'We will respond to your request within 30 days. Check your inbox for a confirmation.'
+            : 'We will respond to your request within 30 days.'
+        )
         setDone(true)
       } catch {
         setError('Something went wrong. Please try again or email privacy@cheflowhq.com.')
@@ -47,9 +65,7 @@ export function DataRequestForm() {
     return (
       <div className="rounded-xl border border-emerald-700/50 bg-emerald-950/20 p-6 text-center">
         <p className="text-emerald-400 font-medium">Request received</p>
-        <p className="text-stone-400 text-sm mt-2">
-          We will respond to your request within 30 days. Check your inbox for a confirmation.
-        </p>
+        <p className="text-stone-400 text-sm mt-2">{confirmationText}</p>
       </div>
     )
   }

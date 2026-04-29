@@ -181,7 +181,7 @@ export async function SmartSuggestions() {
     id: r.id,
     label: r.name,
     sublabel: `${r.priced_count}/${r.ingredient_count} ingredients priced`,
-    href: `/culinary/recipes/${r.id}`,
+    href: `/recipes/${r.id}`,
     status: r.priced_count === 0 ? ('red' as const) : ('amber' as const),
   }))
 
@@ -257,7 +257,7 @@ export async function SmartSuggestions() {
           title="Recipes Need Pricing"
           count={recipeGaps.length}
           items={recipeItems}
-          href="/culinary/recipes"
+          href="/recipes"
         />
       )}
 

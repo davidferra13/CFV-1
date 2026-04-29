@@ -224,7 +224,6 @@ export async function cascadeIngredientPrice(
 
   revalidatePath('/inventory')
   revalidatePath('/recipes')
-  revalidatePath('/culinary/recipes')
 
   return {
     ingredientId,

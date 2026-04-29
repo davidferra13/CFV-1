@@ -34,11 +34,14 @@ import {
 } from '@/lib/directory/location-search'
 import { resolvePublicLocationQuery } from '@/lib/geo/public-location'
 import {
-  PUBLIC_CONSUMER_DISCOVERY_ENTRY,
   PUBLIC_MATCHED_CHEF_FOLLOWUP,
   PUBLIC_MATCHED_CHEF_HELPER,
-  PUBLIC_PRIMARY_CONSUMER_CTA,
 } from '@/lib/public/public-surface-config'
+import {
+  PUBLIC_CONSUMER_DISCOVERY_ENTRY,
+  PUBLIC_PRIMARY_CONSUMER_CTA,
+  PUBLIC_SUPPORTING_DIRECTORY_ENTRY,
+} from '@/lib/public/public-navigation-config'
 import {
   PUBLIC_DIRECTORY_LIVE_COVERAGE_COPY,
   PUBLIC_MATCHING_SCOPE_COPY,
@@ -733,7 +736,7 @@ export default async function ChefDirectoryPage({ searchParams }: PageProps) {
             </h2>
             <p className="mt-3 text-sm leading-6 text-stone-300 md:text-base">
               This marketplace search moved here from the homepage so the directory can carry the
-              browsing workflow while the homepage stays focused on operator proof.
+              browsing workflow while the homepage keeps the booking path clear.
             </p>
             <div className="mt-5">
               <HomepageSearch />
@@ -965,7 +968,7 @@ export default async function ChefDirectoryPage({ searchParams }: PageProps) {
             <p className="mt-2 text-stone-500 max-w-md mx-auto">
               {allChefs.length === 0
                 ? PUBLIC_MATCHING_SCOPE_COPY
-                : 'These filters did not leave a live fit. Try a broader search, or use Book Now so matched chefs can review the request directly.'}
+                : `These filters did not leave a live fit. Try a broader search, or use ${PUBLIC_PRIMARY_CONSUMER_CTA.label} so matched chefs can review the request directly.`}
             </p>
             {allChefs.length > 0 && (
               <p className="mt-1 text-xs text-stone-600">
@@ -990,10 +993,10 @@ export default async function ChefDirectoryPage({ searchParams }: PageProps) {
             <p className="mt-4 text-sm text-stone-500">
               Looking for restaurants, caterers, or food trucks instead?{' '}
               <Link
-                href="/nearby"
+                href={PUBLIC_SUPPORTING_DIRECTORY_ENTRY.href}
                 className="font-medium text-brand-400 transition-colors hover:text-brand-300"
               >
-                Browse all food operators nearby
+                {PUBLIC_SUPPORTING_DIRECTORY_ENTRY.label}
               </Link>
             </p>
             <WaitlistCapture location={activeLocationLabel || requestedLocation || undefined} />

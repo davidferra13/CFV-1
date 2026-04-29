@@ -1,6 +1,6 @@
 # Spec: Navigation And CTA Continuity
 
-> **Status:** ready
+> **Status:** built
 > **Priority:** P1 (next up)
 > **Depends on:** `p1-search-intent-landing-architecture.md` (ready), `p1-buyer-education-and-pre-decision-guidance.md` (ready), `p0-public-booking-routing-and-source-truth.md` (ready), `p1-operational-reassurance-and-what-happens-next.md` (ready)
 > **Estimated complexity:** medium (7-9 files)
@@ -13,6 +13,8 @@ _Every status change, every claim, every verification gets a row. This is the au
 | ------------- | -------------------- | ------------- | ------ |
 | Created       | 2026-04-03 18:10 EDT | Codex         |        |
 | Status: ready | 2026-04-03 18:10 EDT | Codex         |        |
+| Status: built | 2026-04-29 11:32 EDT | Worker A      |        |
+| Type check    | 2026-04-29 11:32 EDT | Worker A      | `npx tsc --noEmit --skipLibCheck --pretty false` exited 0 |
 
 ---
 
@@ -63,7 +65,7 @@ The current repo confirms the mismatch:
 - the header still mixes buyer routes with `/for-operators` and uses `Get Started` as the strongest top-right CTA, which reads like software onboarding rather than client booking (`components/navigation/public-header.tsx:11`, `components/navigation/public-header.tsx:15`, `components/navigation/public-header.tsx:78`, `components/navigation/public-header.tsx:84`)
 - the footer brand copy is operator-first, even though the public consumer routes are already real and valuable (`components/navigation/public-footer.tsx:54`, `components/navigation/public-footer.tsx:55`, `components/navigation/public-footer.tsx:56`, `components/navigation/public-footer.tsx:57`)
 - the public chef profile CTA area still mixes inquiry, gift cards, website links, client-account signup, and partner signup in one cluster (`app/(public)/chef/[slug]/page.tsx:595`, `app/(public)/chef/[slug]/page.tsx:605`, `app/(public)/chef/[slug]/page.tsx:619`, `app/(public)/chef/[slug]/page.tsx:636`, `app/(public)/chef/[slug]/page.tsx:660`, `app/(public)/chef/[slug]/page.tsx:670`)
-- `/discover` is already honestly labeled as a food directory, but it still needs a clearer supporting role relative to private-chef booking (`app/(public)/discover/page.tsx:305`, `app/(public)/discover/page.tsx:306`, `app/(public)/discover/page.tsx:298`)
+- `/discover` is a legacy redirect in this branch via `app/(public)/discover/[[...path]]/page.tsx`; the live food-directory surface is `/nearby`, so this slice treats `/nearby` as the supporting food-directory lane while preserving `/discover` as route-role metadata.
 
 This spec fixes that continuity gap without inventing new routes or rewriting the public stack.
 
@@ -86,7 +88,7 @@ This spec fixes that continuity gap without inventing new routes or rewriting th
 | `app/(public)/page.tsx`                                                                   | Align the homepage hero CTA label with the shared public CTA config and reduce visual competition from the operator CTA block below the consumer story                                 |
 | `app/(public)/chefs/_components/chef-hero.tsx`                                            | Add page-level continuity CTAs so `/chefs` supports the same consumer path instead of acting like a disconnected listing index                                                         |
 | `app/(public)/chefs/page.tsx`                                                             | Update zero-result and supporting CTAs so the primary fallback is still the consumer booking lane, not only contact or filter reset                                                    |
-| `app/(public)/discover/page.tsx`                                                          | Add a light handoff that clarifies the route's role as a food directory and points private-chef booking intent toward `/book` or `/chefs`                                              |
+| `app/(public)/discover/page.tsx`                                                          | Not present in this branch; `/discover` redirects to `/nearby` through the existing catch-all fallback, so no file was created to avoid a route conflict                                |
 | `app/(public)/chef/[slug]/page.tsx`                                                       | Keep inquiry as the primary action on chef-specific pages, but remove or demote buyer-irrelevant links from the primary CTA cluster                                                    |
 | `docs/research/foundations/2026-04-02-website-build-research-and-spec-cross-reference.md` | Mark navigation and CTA continuity as spec-backed and update builder sequencing                                                                                                        |
 
@@ -281,7 +283,7 @@ Profile CTA rules:
 - The footer already exposes buyer, operator, and resource routes, but its brand copy is operator-first (`components/navigation/public-footer.tsx:19`, `components/navigation/public-footer.tsx:20`, `components/navigation/public-footer.tsx:27`, `components/navigation/public-footer.tsx:32`, `components/navigation/public-footer.tsx:54`, `components/navigation/public-footer.tsx:55`, `components/navigation/public-footer.tsx:56`, `components/navigation/public-footer.tsx:57`).
 - The homepage hero already gives a strong consumer booking path, while the lower operator CTA block introduces a second competing accent CTA (`app/(public)/page.tsx:361`, `app/(public)/page.tsx:367`, `app/(public)/page.tsx:372`, `app/(public)/page.tsx:520`, `app/(public)/page.tsx:524`, `app/(public)/page.tsx:541`, `app/(public)/page.tsx:544`).
 - `/chefs` already has a consumer-first hero and real directory flow, but no strong page-level bridge back to the canonical booking lane (`app/(public)/chefs/_components/chef-hero.tsx:11`, `app/(public)/chefs/_components/chef-hero.tsx:16`, `app/(public)/chefs/_components/chef-hero.tsx:20`, `app/(public)/chefs/page.tsx:547`, `app/(public)/chefs/page.tsx:560`, `app/(public)/chefs/page.tsx:567`).
-- `/discover` is already honestly framed as a food directory (`app/(public)/discover/page.tsx:291`, `app/(public)/discover/page.tsx:298`, `app/(public)/discover/page.tsx:305`, `app/(public)/discover/page.tsx:306`).
+- `/discover` is currently a legacy redirect to `/nearby`; `/nearby` already has a private-chef handoff and should stay the visible food-directory lane.
 - Public chef profiles already have a live CTA cluster, but it mixes buyer and non-buyer actions too tightly (`app/(public)/chef/[slug]/page.tsx:595`, `app/(public)/chef/[slug]/page.tsx:599`, `app/(public)/chef/[slug]/page.tsx:609`, `app/(public)/chef/[slug]/page.tsx:623`, `app/(public)/chef/[slug]/page.tsx:639`, `app/(public)/chef/[slug]/page.tsx:660`, `app/(public)/chef/[slug]/page.tsx:670`).
 
 ### 2. What exactly changes?

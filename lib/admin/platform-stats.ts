@@ -692,15 +692,61 @@ export async function getPaymentHealthStats(timeframeHours = 24): Promise<Paymen
   }
 }
 
-export async function getPlatformAuditLog(limit = 100): Promise<Record<string, unknown>[]> {
+type PlatformAuditLogFilters = {
+  limit?: number
+  actorEmail?: string
+  actionType?: string
+  targetType?: string
+  targetId?: string
+  from?: string
+  to?: string
+}
+
+function normalizeAuditDateEnd(value: string): string {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return `${value}T23:59:59.999Z`
+  }
+  return value
+}
+
+export async function getPlatformAuditLog(
+  limitOrFilters: number | PlatformAuditLogFilters = 100
+): Promise<Record<string, unknown>[]> {
   await requireAdmin()
   const db: any = createAdminClient()
+  const filters =
+    typeof limitOrFilters === 'number' ? { limit: limitOrFilters } : { ...limitOrFilters }
+  const limit = Math.max(1, Math.min(500, Math.floor(filters.limit ?? 100)))
 
-  const { data } = await db
+  let query = db
     .from('admin_audit_log')
     .select('*')
     .order('ts', { ascending: false })
     .limit(limit)
+
+  if (filters.actorEmail?.trim()) {
+    query = query.ilike('actor_email', `%${filters.actorEmail.trim()}%`)
+  }
+  if (filters.actionType?.trim()) {
+    query = query.eq('action_type', filters.actionType.trim())
+  }
+  if (filters.targetType?.trim()) {
+    query = query.eq('target_type', filters.targetType.trim())
+  }
+  if (filters.targetId?.trim()) {
+    query = query.eq('target_id', filters.targetId.trim())
+  }
+  if (filters.from?.trim()) {
+    query = query.gte('ts', filters.from.trim())
+  }
+  if (filters.to?.trim()) {
+    query = query.lte('ts', normalizeAuditDateEnd(filters.to.trim()))
+  }
+
+  const { data, error } = await query
+  if (error) {
+    throw new Error(`Failed to load admin audit log: ${error.message}`)
+  }
 
   return (data ?? []) as Record<string, unknown>[]
 }

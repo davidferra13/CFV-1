@@ -1,4 +1,4 @@
-export const PRIVACY_POLICY_LAST_UPDATED = 'April 22, 2026'
+export const PRIVACY_POLICY_LAST_UPDATED = 'April 29, 2026'
 
 export type PrivacyCommitment = {
   id: string
@@ -16,6 +16,12 @@ export type PrivacyProcessor = {
   scope: 'core' | 'optional'
   consentGate?: 'cookie-consent'
   notes?: string
+}
+
+export type InternalDataPractice = {
+  id: string
+  title: string
+  detail: string
 }
 
 export const PRIVACY_COMMITMENTS: PrivacyCommitment[] = [
@@ -47,6 +53,27 @@ export const NO_DATA_SALE_BUILD_GUARDRAILS = [
   'Require user consent before enabling analytics cookies or similar optional tracking.',
   'Keep the public privacy policy aligned with the real runtime processors and optional integrations.',
 ] as const
+
+export const INTERNAL_DATA_PRACTICES: InternalDataPractice[] = [
+  {
+    id: 'presence',
+    title: 'Live presence and route context',
+    detail:
+      'ChefFlow records short-lived presence signals such as session ID, login state, current page, referrer, user agent, and time on site so authorized operators can monitor reliability, support, fraud, and active client workflows.',
+  },
+  {
+    id: 'activity',
+    title: 'Activity and workflow events',
+    detail:
+      'ChefFlow records portal events such as page views, quote views, payment page visits, conversation activity, document downloads, and route breadcrumbs. These records help power client activity panels, engagement scoring, support review, and data export.',
+  },
+  {
+    id: 'admin-access',
+    title: 'Authorized admin review',
+    detail:
+      'ChefFlow owners and platform admins may review tenant-scoped records, conversation transcripts, notifications, social posts, hub groups, activity events, and system diagnostics when needed to operate, secure, support, or moderate the platform. Sensitive admin actions and selected sensitive views are audit logged.',
+  },
+]
 
 export const CORE_DATA_PROCESSORS: PrivacyProcessor[] = [
   {

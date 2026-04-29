@@ -8,9 +8,9 @@ import {
   WebSiteJsonLd,
 } from '@/components/seo/json-ld'
 import {
-  PUBLIC_CONSUMER_DISCOVERY_ENTRY,
   PUBLIC_PRIMARY_CONSUMER_CTA,
-} from '@/lib/public/public-surface-config'
+  PUBLIC_SECONDARY_CONSUMER_CTA,
+} from '@/lib/public/public-navigation-config'
 import { buildMarketingSourceHref } from '@/lib/marketing/source-links'
 import { buildOperatorWalkthroughHref } from '@/lib/marketing/walkthrough-links'
 import { buildMarketingMetadata } from '@/lib/site/public-site'
@@ -93,26 +93,26 @@ export default function Home() {
 
           <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <TrackedLink
-              href={PUBLIC_CONSUMER_DISCOVERY_ENTRY.href}
-              analyticsName="home_consumer_hero_discovery"
-              analyticsProps={{
-                section: 'consumer_hero',
-                destination: PUBLIC_CONSUMER_DISCOVERY_ENTRY.href,
-              }}
-              className="inline-flex min-h-12 items-center justify-center rounded-2xl gradient-accent px-7 py-3 text-sm font-semibold tracking-[-0.01em] text-white shadow-lg transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5 active:scale-[0.98]"
-            >
-              Find food now
-            </TrackedLink>
-            <TrackedLink
               href={PUBLIC_PRIMARY_CONSUMER_CTA.href}
               analyticsName="home_consumer_hero_book"
               analyticsProps={{
                 section: 'consumer_hero',
                 destination: PUBLIC_PRIMARY_CONSUMER_CTA.href,
               }}
+              className="inline-flex min-h-12 items-center justify-center rounded-2xl gradient-accent px-7 py-3 text-sm font-semibold tracking-[-0.01em] text-white shadow-lg transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5 active:scale-[0.98]"
+            >
+              {PUBLIC_PRIMARY_CONSUMER_CTA.label}
+            </TrackedLink>
+            <TrackedLink
+              href={PUBLIC_SECONDARY_CONSUMER_CTA.href}
+              analyticsName="home_consumer_hero_browse"
+              analyticsProps={{
+                section: 'consumer_hero',
+                destination: PUBLIC_SECONDARY_CONSUMER_CTA.href,
+              }}
               className="inline-flex min-h-12 items-center justify-center rounded-2xl border border-stone-700/80 bg-stone-950/60 px-7 py-3 text-sm font-medium tracking-[-0.01em] text-stone-300 transition-all duration-200 hover:border-stone-600 hover:bg-stone-900 hover:text-stone-100"
             >
-              Or describe your event
+              {PUBLIC_SECONDARY_CONSUMER_CTA.label}
             </TrackedLink>
           </div>
         </div>
@@ -157,7 +157,7 @@ export default function Home() {
                   section: 'operator',
                   destination: '/for-operators',
                 }}
-                className="inline-flex min-h-12 items-center justify-center rounded-2xl gradient-accent px-7 py-3 text-sm font-semibold tracking-[-0.01em] text-white shadow-lg transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5 active:scale-[0.98]"
+                className="inline-flex min-h-12 items-center justify-center rounded-2xl border border-stone-700/80 bg-stone-950/60 px-7 py-3 text-sm font-semibold tracking-[-0.01em] text-stone-200 transition-all duration-200 hover:border-stone-600 hover:bg-stone-900 hover:text-stone-100 active:scale-[0.98]"
               >
                 See operator proof
               </TrackedLink>

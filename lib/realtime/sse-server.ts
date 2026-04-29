@@ -9,6 +9,10 @@ export function broadcast(channel: string, event: string, data: any) {
   eventBus.emit(channel, { event, data, timestamp: Date.now() })
 }
 
+export function toPresenceChannel(channel: string): string {
+  return channel.startsWith('presence:') ? channel : `presence:${channel}`
+}
+
 // For SSE route handlers to subscribe
 export function subscribe(
   channel: string,
@@ -61,7 +65,7 @@ export function getPresenceState(channel: string): Record<string, any> {
 }
 
 // Clean up stale presence entries periodically
-setInterval(() => {
+const presenceCleanupInterval = setInterval(() => {
   const now = Date.now()
   for (const [channel, members] of presenceStore) {
     for (const [sessionId, entry] of members) {
@@ -73,3 +77,5 @@ setInterval(() => {
     if (members.size === 0) presenceStore.delete(channel)
   }
 }, 30_000)
+
+presenceCleanupInterval.unref?.()

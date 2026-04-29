@@ -31,6 +31,9 @@ export const OPERATOR_EVALUATION_STATUS_META: Record<
 }
 
 const WALKTHROUGH_MARKER = 'Operator walkthrough request'
+const PRIVACY_DATA_REQUEST_SUBJECT_PREFIX = 'Data Request:'
+export const PRIVACY_DATA_REQUEST_SOURCE_PAGE = '/data-request'
+export const PRIVACY_DATA_REQUEST_SOURCE_CTA = 'privacy_request_form'
 
 type ParseOperatorWalkthroughInput = {
   subject?: string | null
@@ -77,6 +80,18 @@ export function isOperatorWalkthroughSubmission(input: ParseOperatorWalkthroughI
   return (
     subject?.startsWith(WALKTHROUGH_MARKER) === true ||
     message?.startsWith(WALKTHROUGH_MARKER) === true
+  )
+}
+
+export function isPrivacyDataRequestSubmission(input: ParseOperatorWalkthroughInput) {
+  const subject = normalizeValue(input.subject)
+  const sourcePage = normalizeValue(input.sourcePage)
+  const sourceCta = normalizeValue(input.sourceCta)
+
+  return (
+    subject?.startsWith(PRIVACY_DATA_REQUEST_SUBJECT_PREFIX) === true ||
+    sourcePage === PRIVACY_DATA_REQUEST_SOURCE_PAGE ||
+    sourceCta === PRIVACY_DATA_REQUEST_SOURCE_CTA
   )
 }
 

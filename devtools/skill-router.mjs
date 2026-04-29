@@ -61,6 +61,11 @@ const rules = [
       'persona pipeline',
       'persona status',
       'persona queue',
+      '3977',
+      'build queue',
+      'ready task',
+      'ready tasks',
+      'claim task',
     ],
   },
   {

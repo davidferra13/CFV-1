@@ -190,7 +190,7 @@ export async function getConversationTranscript(
     messageQuery = messageQuery.is('deleted_at', null)
   }
   if (q) {
-    messageQuery = messageQuery.ilike('body', `%${q}%`)
+    messageQuery = messageQuery.or(`id.eq.${q},body.ilike.%${q}%`)
   }
 
   const { data: messages, error } = await messageQuery.range(pagination.from, pagination.to)
@@ -552,7 +552,7 @@ export async function getHubGroupTranscript(
     messageQuery = messageQuery.is('deleted_at', null)
   }
   if (q) {
-    messageQuery = messageQuery.ilike('body', `%${q}%`)
+    messageQuery = messageQuery.or(`id.eq.${q},body.ilike.%${q}%`)
   }
 
   const { data: messages, error } = await messageQuery.range(pagination.from, pagination.to)

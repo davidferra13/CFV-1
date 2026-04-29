@@ -1,0 +1,20 @@
+{
+  "prompt": "Codex should score skill outcomes and update reliability stats",
+  "generated_at": "2026-04-29T16:22:06.609Z",
+  "primary_skill": "skill-garden",
+  "sidecar_skills": [
+    "omninet"
+  ],
+  "skill_maturity": {
+    "skill-garden": "proven",
+    "omninet": "proven"
+  },
+  "conflict_resolution": null,
+  "hard_stops": [],
+  "risk_level": "medium",
+  "required_checks": [
+    "run targeted compliance scan for em dashes, OpenClaw public text, and ts-nocheck",
+    "run skill validator and trigger tests when skill behavior changes",
+    "stage, commit, and push only owned files before closeout"
+  ]
+}

@@ -45,6 +45,7 @@ import {
   getPublicChefBuyerSignals,
   getPublicShowcaseMenus,
 } from '@/lib/public/chef-profile-readiness'
+import { PUBLIC_PRIMARY_CONSUMER_CTA } from '@/lib/public/public-navigation-config'
 import { absoluteUrl } from '@/lib/site/public-site'
 
 type Props = { params: { slug: string } }
@@ -1190,7 +1191,7 @@ export default async function ChefProfilePage({ params }: Props) {
                           : { backgroundColor: primaryColor }
                       }
                     >
-                      Check availability
+                      Start inquiry
                     </TrackedLink>
                   ) : null}
 
@@ -1267,6 +1268,16 @@ export default async function ChefProfilePage({ params }: Props) {
                       <ChefAvailabilityWaitlist chefId={chef.id} chefName={chef.display_name} />
                     </div>
                   )}
+
+                  <TrackedLink
+                    href={PUBLIC_PRIMARY_CONSUMER_CTA.href}
+                    analyticsName="public_profile_browse_to_booking"
+                    analyticsProps={{ chef_slug: publicSlug }}
+                    className="inline-flex w-full items-center justify-center text-sm font-semibold underline decoration-2 underline-offset-4 focus-visible:outline-none"
+                    style={{ color: primaryColor }}
+                  >
+                    Need help choosing? {PUBLIC_PRIMARY_CONSUMER_CTA.label}
+                  </TrackedLink>
                 </div>
               </div>
 

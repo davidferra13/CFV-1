@@ -2,12 +2,11 @@ import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { AppLogo } from '@/components/branding/app-logo'
 import { LAUNCH_MODE } from '@/lib/marketing/launch-mode'
-import {
-  PLATFORM_AUDIENCE_LABEL,
-  PLATFORM_SHORT_DESCRIPTION,
-} from '@/lib/marketing/platform-positioning'
 import { buildMarketingSignupHref } from '@/lib/marketing/signup-links'
-import { FOOTER_SECTIONS } from './public-nav-config'
+import {
+  PUBLIC_FOOTER_BRAND_COPY,
+  PUBLIC_FOOTER_SECTIONS,
+} from '@/lib/public/public-navigation-config'
 
 const NewsletterSignup = dynamic(
   () => import('@/components/marketing/newsletter-signup').then((m) => m.NewsletterSignup),
@@ -33,17 +32,36 @@ export function PublicFooter() {
             </span>
           </Link>
           <p className="mt-4 max-w-md text-sm leading-6 tracking-[-0.01em] text-stone-500">
-            {PLATFORM_SHORT_DESCRIPTION} ChefFlow also powers the operator back office.
+            {PUBLIC_FOOTER_BRAND_COPY}
           </p>
         </div>
 
-        {/* Discover */}
+        {/* Consumer */}
         <div>
           <p className="text-sm font-semibold tracking-[-0.01em] text-stone-200">
-            {FOOTER_SECTIONS.discover.heading}
+            {PUBLIC_FOOTER_SECTIONS.consumer.heading}
           </p>
           <ul className="mt-4 space-y-2">
-            {FOOTER_SECTIONS.discover.links.map((link) => (
+            {PUBLIC_FOOTER_SECTIONS.consumer.links.map((link) => (
+              <li key={link.href}>
+                <Link
+                  href={link.href}
+                  className="text-sm tracking-[-0.01em] text-stone-500 transition-colors hover:text-stone-200"
+                >
+                  {link.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Planning */}
+        <div>
+          <p className="text-sm font-semibold tracking-[-0.01em] text-stone-200">
+            {PUBLIC_FOOTER_SECTIONS.planning.heading}
+          </p>
+          <ul className="mt-4 space-y-2">
+            {PUBLIC_FOOTER_SECTIONS.planning.links.map((link) => (
               <li key={link.href}>
                 <Link
                   href={link.href}
@@ -59,10 +77,10 @@ export function PublicFooter() {
         {/* For Operators */}
         <div>
           <p className="text-sm font-semibold tracking-[-0.01em] text-stone-200">
-            {FOOTER_SECTIONS.forOperators.heading}
+            {PUBLIC_FOOTER_SECTIONS.operators.heading}
           </p>
           <ul className="mt-4 space-y-2">
-            {FOOTER_SECTIONS.forOperators.links.map((link) => (
+            {PUBLIC_FOOTER_SECTIONS.operators.links.map((link) => (
               <li key={link.href}>
                 <Link
                   href={link.href}
@@ -86,48 +104,13 @@ export function PublicFooter() {
           </ul>
         </div>
 
-        {/* Resources */}
-        <div>
-          <p className="text-sm font-semibold tracking-[-0.01em] text-stone-200">
-            {FOOTER_SECTIONS.resources.heading}
-          </p>
-          <ul className="mt-4 space-y-2">
-            {FOOTER_SECTIONS.resources.links.map((link) => (
-              <li key={link.href}>
-                <Link
-                  href={link.href}
-                  className="text-sm tracking-[-0.01em] text-stone-500 transition-colors hover:text-stone-200"
-                >
-                  {link.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-
         {/* Company */}
         <div>
           <p className="text-sm font-semibold tracking-[-0.01em] text-stone-200">
-            {FOOTER_SECTIONS.company.heading}
+            {PUBLIC_FOOTER_SECTIONS.company.heading}
           </p>
           <ul className="mt-4 space-y-2">
-            {FOOTER_SECTIONS.company.links.map((link) => (
-              <li key={link.href}>
-                <Link
-                  href={link.href}
-                  className="text-sm tracking-[-0.01em] text-stone-500 transition-colors hover:text-stone-200"
-                >
-                  {link.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-
-          <p className="mt-6 text-sm font-semibold text-stone-100">
-            {FOOTER_SECTIONS.legal.heading}
-          </p>
-          <ul className="mt-3 space-y-2">
-            {FOOTER_SECTIONS.legal.links.map((link) => (
+            {PUBLIC_FOOTER_SECTIONS.company.links.map((link) => (
               <li key={link.href}>
                 <Link
                   href={link.href}
@@ -144,7 +127,7 @@ export function PublicFooter() {
         <div className="sm:col-span-2 lg:col-span-1">
           <p className="text-sm font-semibold tracking-[-0.01em] text-stone-200">Stay Updated</p>
           <p className="mb-3 mt-4 text-sm text-stone-400">
-            Short guides for modern food-business operations.
+            Short notes on finding chefs, planning meals, and food-business operations.
           </p>
           <NewsletterSignup />
         </div>
@@ -154,7 +137,9 @@ export function PublicFooter() {
           <p className="text-xs tracking-[-0.01em] text-stone-600">
             &copy; {year} ChefFlow. All rights reserved.
           </p>
-          <p className="text-xs tracking-[-0.01em] text-stone-700">{PLATFORM_SHORT_DESCRIPTION}</p>
+          <p className="text-xs tracking-[-0.01em] text-stone-700">
+            Consumer booking first. Operator workspace still connected.
+          </p>
         </div>
       </div>
     </footer>

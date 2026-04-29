@@ -1,8 +1,8 @@
 import Link from 'next/link'
 import {
   PUBLIC_MATCHED_CHEF_HELPER,
-  PUBLIC_PRIMARY_CONSUMER_CTA,
 } from '@/lib/public/public-surface-config'
+import { PUBLIC_PRIMARY_CONSUMER_CTA } from '@/lib/public/public-navigation-config'
 import { PUBLIC_REQUEST_ROUTING_COPY } from '@/lib/public/public-market-copy'
 
 // Chef Directory Hero - consumer-first food discovery framing

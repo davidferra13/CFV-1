@@ -43,6 +43,7 @@ function buildDashboard() {
   const maturity = runJson(['devtools/skill-maturity-report.mjs', '--stdout'])
   const health = latestJson('skill-health')
   const replay = latestJson('replay-runs')
+  const bridge = latestJson('codex-build-bridge')
   const stats = loadSkillStats()
   const repairQueue = latestJson('skill-repair-queue')
   const weakDomains = coverage.classes
@@ -97,6 +98,15 @@ function buildDashboard() {
           case_count: replay.case_count,
           suspicious_count: replay.suspicious_count,
           strengthened_count: replay.strengthened_count,
+        }
+      : null,
+    bridge: bridge
+      ? {
+          ok: bridge.ok,
+          dry_run: bridge.dry_run,
+          claimed: bridge.claimed,
+          classification: bridge.packet?.classification?.status || bridge.status || null,
+          task_file: bridge.packet?.task?.file || bridge.source_plan || null,
         }
       : null,
     health: health
@@ -158,6 +168,14 @@ function toMarkdown(report) {
     `- Cases: ${report.replay?.case_count ?? 0}`,
     `- Suspicious drift: ${report.replay?.suspicious_count ?? 0}`,
     `- Strengthened routes: ${report.replay?.strengthened_count ?? 0}`,
+    '',
+    '## Codex Build Bridge',
+    '',
+    `- Last run ok: ${report.bridge?.ok ?? 'unknown'}`,
+    `- Dry run: ${report.bridge?.dry_run ?? 'unknown'}`,
+    `- Claimed: ${report.bridge?.claimed ?? 'unknown'}`,
+    `- Classification: ${report.bridge?.classification ?? 'unknown'}`,
+    `- Task: ${report.bridge?.task_file ?? 'unknown'}`,
     '',
     '## Health',
     '',
