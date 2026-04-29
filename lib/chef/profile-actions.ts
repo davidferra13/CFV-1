@@ -6,7 +6,9 @@ import { revalidatePath, revalidateTag } from 'next/cache'
 import { z } from 'zod'
 import { optimizeLogo } from '@/lib/images/optimize'
 import { getOnboardingCompletionState } from '@/lib/onboarding/completion-state'
+import { invalidateRemyContextCache } from '@/lib/ai/remy-context'
 import { broadcastTenantMutation } from '@/lib/realtime/broadcast'
+import { getMutationSyncPlan } from '@/lib/sync/mutation-sync-contracts'
 import type { ChefFullProfile, ChefSocialLinks } from '@/lib/chef/profile-types'
 
 const CHEF_LOGOS_BUCKET = 'chef-logos'
@@ -17,6 +19,61 @@ const LOGO_MIME_TO_EXT: Record<string, string> = {
   'image/png': 'png',
   'image/webp': 'webp',
   'image/svg+xml': 'svg',
+}
+
+function materializeSyncTag(tag: string, chefId: string): string {
+  return tag.replaceAll('{chefId}', chefId)
+}
+
+async function syncChefProfileMutation(input: {
+  tenantId: string
+  chefId: string
+  reason: string
+  patch?: Record<string, unknown>
+  extraPaths?: Array<{ path: string; type?: 'page' | 'layout' }>
+  extraTags?: string[]
+  extraLiveEntities?: string[]
+}) {
+  const plan = getMutationSyncPlan('chef_profile_contexts', {
+    reason: input.reason,
+    patch: input.patch,
+    paths: input.extraPaths,
+    tags: input.extraTags,
+    liveEntities: input.extraLiveEntities,
+  })
+
+  for (const route of plan.paths) {
+    if (route.type) {
+      revalidatePath(route.path, route.type)
+    } else {
+      revalidatePath(route.path)
+    }
+  }
+
+  for (const tag of plan.tags) {
+    revalidateTag(materializeSyncTag(tag, input.chefId))
+  }
+
+  if (plan.remyContext) {
+    try {
+      await invalidateRemyContextCache(input.tenantId)
+    } catch (err) {
+      console.warn('[syncChefProfileMutation] Remy context invalidation failed', err)
+    }
+  }
+
+  try {
+    broadcastTenantMutation(input.tenantId, {
+      entity: plan.liveEntities[0] ?? plan.entity,
+      entityId: input.chefId,
+      action: 'mutation',
+      reason: input.reason,
+      source: 'mutation',
+      patch: plan.patch,
+    })
+  } catch (err) {
+    console.warn('[syncChefProfileMutation] Live mutation broadcast failed', err)
+  }
 }
 
 function extractChefLogoPath(url: string | null | undefined): string | null {
@@ -227,15 +284,18 @@ export async function updateChefFullProfile(input: UpdateChefFullProfileInput) {
     throw new Error('Failed to update profile')
   }
 
-  revalidatePath('/settings')
-  revalidatePath('/settings/my-profile')
-  revalidatePath('/settings/public-profile')
-  revalidatePath('/settings/profile')
-  revalidatePath('/chef', 'layout') // FC-G11: bust public chef profile pages
-  revalidateTag(`chef-layout-${user.entityId}`)
-  revalidateTag('chef-booking-profile')
-
-  try { broadcastTenantMutation(user.tenantId!, { entity: 'chef_profile', action: 'update', reason: 'Chef full profile updated' }) } catch {}
+  await syncChefProfileMutation({
+    tenantId: user.tenantId!,
+    chefId: user.entityId,
+    reason: 'Chef full profile updated',
+    patch: { fields: Object.keys(payload) },
+    extraPaths: [
+      { path: '/settings' },
+      { path: '/settings/profile' },
+      { path: '/chef', type: 'layout' },
+    ],
+    extraTags: ['chef-booking-profile'],
+  })
 
   return { success: true as const }
 }
@@ -259,11 +319,13 @@ export async function updateRestaurantGroupName(name: string | null) {
     throw new Error('Failed to update restaurant group name')
   }
 
-  revalidatePath('/settings/restaurants')
-  revalidatePath('/chef', 'layout')
-  revalidateTag(`chef-layout-${user.entityId}`)
-
-  try { broadcastTenantMutation(user.tenantId!, { entity: 'chef_profile', action: 'update', reason: 'Restaurant group name updated' }) } catch {}
+  await syncChefProfileMutation({
+    tenantId: user.tenantId!,
+    chefId: user.entityId,
+    reason: 'Restaurant group name updated',
+    patch: { field: 'restaurant_group_name' },
+    extraPaths: [{ path: '/settings/restaurants' }, { path: '/chef', type: 'layout' }],
+  })
 
   return { success: true as const }
 }
@@ -364,12 +426,18 @@ export async function uploadChefLogo(formData: FormData): Promise<{ success: tru
     await db.storage.from(CHEF_LOGOS_BUCKET).remove([previousPath])
   }
 
-  revalidatePath('/settings')
-  revalidatePath('/settings/my-profile')
-  revalidatePath('/settings/account')
-  revalidateTag(`chef-layout-${user.entityId}`)
-
-  try { broadcastTenantMutation(user.tenantId!, { entity: 'chef_profile', action: 'update', reason: 'Chef logo uploaded' }) } catch {}
+  await syncChefProfileMutation({
+    tenantId: user.tenantId!,
+    chefId: user.entityId,
+    reason: 'Chef logo uploaded',
+    patch: { field: 'logo_url' },
+    extraPaths: [
+      { path: '/settings' },
+      { path: '/settings/account' },
+      { path: '/chef', type: 'layout' },
+    ],
+    extraTags: ['chef-booking-profile'],
+  })
 
   return { success: true, url: publicUrl }
 }
@@ -403,12 +471,18 @@ export async function removeChefLogo(): Promise<{ success: true }> {
     }
   }
 
-  revalidatePath('/settings')
-  revalidatePath('/settings/my-profile')
-  revalidatePath('/settings/account')
-  revalidateTag(`chef-layout-${user.entityId}`)
-
-  try { broadcastTenantMutation(user.tenantId!, { entity: 'chef_profile', action: 'update', reason: 'Chef logo removed' }) } catch {}
+  await syncChefProfileMutation({
+    tenantId: user.tenantId!,
+    chefId: user.entityId,
+    reason: 'Chef logo removed',
+    patch: { field: 'logo_url' },
+    extraPaths: [
+      { path: '/settings' },
+      { path: '/settings/account' },
+      { path: '/chef', type: 'layout' },
+    ],
+    extraTags: ['chef-booking-profile'],
+  })
 
   return { success: true }
 }

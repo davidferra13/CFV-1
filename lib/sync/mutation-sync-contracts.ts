@@ -49,14 +49,15 @@ const MUTATION_SYNC_CONTRACTS = {
       { path: '/book/[chefSlug]', type: 'page' },
       { path: '/remy' },
     ],
-    tags: ['chef-booking-profile', 'chef-layout:{chefId}'],
+    tags: ['chef-booking-profile', 'chef-layout-{chefId}'],
     liveEntities: ['chef_culinary_profiles', 'chef_culinary_profile'],
     remyContext: {
       entities: ['chef_culinary_profiles', 'remy_profile_context'],
       reason: 'Culinary profile answers feed public booking context and Remy profile context.',
     },
     patch: { source: 'mutation' },
-    reason: 'Culinary profile mutations affect chef profile pages, booking pages, live profile routes, and Remy context.',
+    reason:
+      'Culinary profile mutations affect chef profile pages, booking pages, live profile routes, and Remy context.',
   },
   chef_profile_contexts: {
     entity: 'chef_profile_contexts',
@@ -66,14 +67,15 @@ const MUTATION_SYNC_CONTRACTS = {
       { path: '/chef/[slug]', type: 'page' },
       { path: '/remy' },
     ],
-    tags: ['chef-layout:{chefId}', 'chef-profile-context:{chefId}'],
+    tags: ['chef-layout-{chefId}', 'chef-profile-context-{chefId}'],
     liveEntities: ['chef_profile_contexts', 'chef_profile_context', 'remy_profile_context'],
     remyContext: {
       entities: ['chef_profile_contexts', 'remy_profile_context'],
       reason: 'Profile context mutations update the facts Remy can cite about the chef.',
     },
     patch: { source: 'mutation' },
-    reason: 'Chef profile context mutations affect settings, public profile routes, live profile routes, and Remy context.',
+    reason:
+      'Chef profile context mutations affect settings, public profile routes, live profile routes, and Remy context.',
   },
 } as const satisfies Record<string, MutationSyncContract>
 

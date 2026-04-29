@@ -20,7 +20,7 @@ test('culinary profile saves use the mutation sync contract', () => {
   assert.match(contractSource, /path: '\/chef\/\[slug\]\/inquire'/)
   assert.match(contractSource, /path: '\/book\/\[chefSlug\]'/)
   assert.match(contractSource, /'chef-booking-profile'/)
-  assert.match(contractSource, /'chef-layout:\{chefId\}'/)
+  assert.match(contractSource, /'chef-layout-\{chefId\}'/)
 })
 
 test('culinary profile saves broadcast tenant-scoped live mutations', () => {

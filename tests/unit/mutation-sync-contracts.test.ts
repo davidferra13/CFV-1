@@ -19,7 +19,7 @@ test('chef culinary profile contract encodes cache, live, and Remy invalidation 
     { path: '/book/[chefSlug]', type: 'page' },
     { path: '/remy' },
   ])
-  assert.deepEqual(plan.tags, ['chef-booking-profile', 'chef-layout:{chefId}'])
+  assert.deepEqual(plan.tags, ['chef-booking-profile', 'chef-layout-{chefId}'])
   assert.deepEqual(plan.liveEntities, ['chef_culinary_profiles', 'chef_culinary_profile'])
   assert.deepEqual(plan.remyContext?.entities, ['chef_culinary_profiles', 'remy_profile_context'])
   assert.deepEqual(plan.patch, { source: 'mutation' })
@@ -29,7 +29,7 @@ test('chef culinary profile contract encodes cache, live, and Remy invalidation 
 test('plan merge adds extra paths, tags, live entities, patch values, and reason once', () => {
   const plan = getMutationSyncPlan('chef_culinary_profiles', {
     paths: [{ path: '/remy' }, { path: '/settings/public-profile' }],
-    tags: ['chef-booking-profile', 'remy-context:{chefId}'],
+    tags: ['chef-booking-profile', 'remy-context-{chefId}'],
     liveEntities: ['chef_culinary_profiles', 'remy_profile_context'],
     remyContext: {
       entities: ['remy_profile_context', 'remy_memories'],
@@ -47,7 +47,11 @@ test('plan merge adds extra paths, tags, live entities, patch values, and reason
     { path: '/remy' },
     { path: '/settings/public-profile' },
   ])
-  assert.deepEqual(plan.tags, ['chef-booking-profile', 'chef-layout:{chefId}', 'remy-context:{chefId}'])
+  assert.deepEqual(plan.tags, [
+    'chef-booking-profile',
+    'chef-layout-{chefId}',
+    'remy-context-{chefId}',
+  ])
   assert.deepEqual(plan.liveEntities, [
     'chef_culinary_profiles',
     'chef_culinary_profile',
