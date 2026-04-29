@@ -2032,6 +2032,66 @@ select:focus {
   will-change: transform, opacity;
 }
 
+.homepage-chef-drift {
+  z-index: 0;
+  opacity: 0.72;
+  mask-image: linear-gradient(90deg, transparent 0%, black 14%, black 86%, transparent 100%);
+}
+
+.homepage-chef-drift span {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.25rem;
+  border: 1px solid rgb(var(--stone-700) / 0.18);
+  border-radius: 999px;
+  background: rgb(var(--stone-950) / 0.34);
+  padding: 0.5rem 0.85rem;
+  color: rgb(var(--stone-300) / 0.42);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.12);
+  backdrop-filter: blur(10px);
+  animation: homepage-chef-card-drift 88s linear infinite;
+  will-change: transform;
+}
+
+.homepage-chef-drift span:nth-child(1) {
+  left: -16rem;
+  top: 22%;
+}
+
+.homepage-chef-drift span:nth-child(2) {
+  left: -24rem;
+  top: 44%;
+  animation-delay: -18s;
+}
+
+.homepage-chef-drift span:nth-child(3) {
+  left: -18rem;
+  top: 66%;
+  animation-delay: -34s;
+}
+
+.homepage-chef-drift span:nth-child(4) {
+  left: -12rem;
+  top: 31%;
+  animation-delay: -48s;
+}
+
+.homepage-chef-drift span:nth-child(5) {
+  left: -20rem;
+  top: 74%;
+  animation-delay: -61s;
+}
+
+.homepage-chef-drift span:nth-child(6) {
+  left: -28rem;
+  top: 54%;
+  animation-delay: -74s;
+}
+
 .homepage-depth-layer {
   will-change: transform;
 }
@@ -2168,6 +2228,15 @@ select:focus {
   }
 }
 
+@keyframes homepage-chef-card-drift {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(calc(100vw + 34rem), -14px, 0);
+  }
+}
+
 @keyframes homepage-quiet-rise {
   from {
     transform: translate3d(0, 0, 0);
@@ -2236,6 +2305,7 @@ select:focus {
   .homepage-ambient-field::after,
   .homepage-light-wash,
   .homepage-operator-glow,
+  .homepage-chef-drift span,
   .homepage-depth-layer,
   .homepage-hero-copy,
   .homepage-hero-shimmer,

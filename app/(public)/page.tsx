@@ -65,6 +65,15 @@ const HOME_BOOKING_INTENT_MESSAGES = [
   'From first search to paid event, ChefFlow keeps the next step clear.',
 ] as const
 
+const HOME_CHEF_DISCOVERY_CARDS = [
+  'Private dinner chef',
+  'Restaurant chef',
+  'Food truck chef',
+  'Baker',
+  'Meal prep chef',
+  'Pop-up chef',
+] as const
+
 export default function Home() {
   return (
     <>
@@ -84,8 +93,16 @@ export default function Home() {
       <section className="homepage-living-hero relative overflow-hidden">
         <div className="homepage-ambient-field pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(237,168,107,0.10),_transparent_50%)]" />
         <div className="homepage-light-wash pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-brand-500/6 to-transparent" />
+        <div
+          className="homepage-chef-drift pointer-events-none absolute inset-0"
+          aria-hidden="true"
+        >
+          {HOME_CHEF_DISCOVERY_CARDS.map((label) => (
+            <span key={label}>{label}</span>
+          ))}
+        </div>
 
-        <div className="homepage-depth-layer homepage-depth-near relative mx-auto w-full max-w-4xl px-4 pb-16 pt-20 sm:px-6 sm:pb-20 sm:pt-28 lg:px-8">
+        <div className="homepage-depth-layer homepage-depth-near relative z-10 mx-auto w-full max-w-4xl px-4 pb-16 pt-20 sm:px-6 sm:pb-20 sm:pt-28 lg:px-8">
           <div className="homepage-hero-copy text-center">
             <h1 className="homepage-hero-shimmer text-mask-hero mx-auto max-w-3xl text-[2.5rem] font-display tracking-[-0.045em] leading-[1.08] sm:text-5xl lg:text-[3.75rem]">
               Find a chef near you
@@ -102,6 +119,23 @@ export default function Home() {
 
           <div className="mx-auto mt-10 max-w-xl">
             <HomepageSearch />
+            <TrackedLink
+              href="/eat"
+              analyticsName="home_food_nearby_entry"
+              analyticsProps={{
+                section: 'consumer_hero',
+                destination: '/eat',
+              }}
+              className="group mx-auto mt-3 flex w-fit items-center justify-center gap-2 text-sm font-medium tracking-[-0.01em] text-stone-500 transition-colors hover:text-stone-300"
+            >
+              <span>Looking for food near you?</span>
+              <span
+                className="translate-x-0 text-brand-400/70 transition-transform group-hover:translate-x-0.5"
+                aria-hidden="true"
+              >
+                -&gt;
+              </span>
+            </TrackedLink>
           </div>
 
           <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
