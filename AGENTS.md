@@ -39,6 +39,12 @@ Don't run `next build`, `npm run dev`, or deploy scripts unless the developer sp
 
 The developer may have dev/beta/prod servers running. Don't touch them.
 
+### 9. ALWAYS assume other agents are actively working
+
+ChefFlow usually has a swarm of agents working at the same time. Treat every unfamiliar change, untracked file, deletion, stub, draft spec, log, generated artifact, and dirty worktree entry as another agent's active work unless you personally created it in this session.
+
+Before writing code, inspect the current branch and working tree. Keep edits scoped to files owned by the current task. Never revert, delete, rename, reformat, or "clean up" another agent's work unless the developer explicitly asks. Stage, commit, and push only the files you touched. If a hook, validation, or status check is polluted by unrelated dirty work, report that exact blocker instead of modifying unrelated files.
+
 ---
 
 ## STACK & ARCHITECTURE
@@ -185,18 +191,18 @@ Prospecting features must NEVER appear for non-admin users. All prospecting nav 
 
 ## KEY FILE LOCATIONS
 
-| What                          | Where                             |
-| ----------------------------- | --------------------------------- |
-| Event FSM                     | `lib/events/transitions.ts`       |
-| Ledger append                 | `lib/ledger/append.ts`            |
-| Ledger compute                | `lib/ledger/compute.ts`           |
-| Generated types (DO NOT EDIT) | `types/database.ts`               |
-| AI gateway                    | `lib/ai/parse-with-ollama.ts`     |
-| Remy (AI concierge)           | `components/ai/remy-drawer.tsx`   |
-| Billing/tier                  | `lib/billing/tier.ts`             |
+| What                          | Where                                   |
+| ----------------------------- | --------------------------------------- |
+| Event FSM                     | `lib/events/transitions.ts`             |
+| Ledger append                 | `lib/ledger/append.ts`                  |
+| Ledger compute                | `lib/ledger/compute.ts`                 |
+| Generated types (DO NOT EDIT) | `types/database.ts`                     |
+| AI gateway                    | `lib/ai/parse-with-ollama.ts`           |
+| Remy (AI concierge)           | `components/ai/remy-drawer.tsx`         |
+| Billing/tier                  | `lib/billing/tier.ts`                   |
 | Feature classification        | `lib/billing/feature-classification.ts` |
-| Module definitions            | `lib/billing/modules.ts`          |
-| Embed widget                  | `public/embed/chefflow-widget.js` |
+| Module definitions            | `lib/billing/modules.ts`                |
+| Embed widget                  | `public/embed/chefflow-widget.js`       |
 
 ---
 

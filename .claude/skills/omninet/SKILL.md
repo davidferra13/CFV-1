@@ -11,9 +11,10 @@ Use this as the first-pass router for ChefFlow work. Codex cannot run a true bac
 
 1. Treat Omninet as always active for ChefFlow, even when the user does not name it.
 2. Keep exactly one primary skill in charge of the current work, then add sidecar skills only for distinct risk or workflow needs.
-3. If the task reveals reusable developer behavior, external operator guidance, repeated friction, a missing trigger, or a skill failure, run `skill-garden` in the same turn.
-4. If a skill produced bad guidance, run `heal-skill` with `skill-garden` so the fix is both local and durable.
-5. At closeout, decide the skill delta: `none`, `patch`, `new-skill`, or `heal`. If it is not `none`, make the skill change before final response and commit it.
+3. Assume ChefFlow has a swarm of agents working concurrently. Treat unfamiliar dirty files, untracked files, deletions, stubs, logs, specs, and generated artifacts as other agents' active work unless you created them in this session.
+4. If the task reveals reusable developer behavior, external operator guidance, repeated friction, a missing trigger, or a skill failure, run `skill-garden` in the same turn.
+5. If a skill produced bad guidance, run `heal-skill` with `skill-garden` so the fix is both local and durable.
+6. At closeout, decide the skill delta: `none`, `patch`, `new-skill`, or `heal`. If it is not `none`, make the skill change before final response and commit it.
 
 ## Harness Commands
 
@@ -50,8 +51,9 @@ Use these tools when the task touches skills or durable agent behavior:
 3. If the request implies a task class, load the best matching skill from the router below.
 4. If the request reveals a repeated developer behavior, recurring failure, new operating rule, or missing reusable workflow, also load `skill-garden`.
 5. If the request includes a huge persona paste or asks whether one can be pasted, load `persona-dump`.
-6. State the skill or skills being used in one short line.
-7. Execute the task with the normal ChefFlow hard stops: no main push, no destructive database operations, no `drizzle-kit push`, no manual `types/database.ts`, no `@ts-nocheck`, no em dashes, no unapproved build, no unapproved long-running server.
+6. Inspect branch and dirty work before writing, classify current-task files versus other agents' work, and keep ownership narrow.
+7. State the skill or skills being used in one short line.
+8. Execute the task with the normal ChefFlow hard stops: no main push, no destructive database operations, no `drizzle-kit push`, no manual `types/database.ts`, no `@ts-nocheck`, no em dashes, no unapproved build, no unapproved long-running server.
 
 ## Skill Router
 
@@ -94,6 +96,7 @@ Maintain this lightweight state while working:
 - Goal: what outcome the user actually asked for.
 - Active skill: the current primary skill and why it applies.
 - Sidecar skills: any secondary skills that materially reduce risk.
+- Swarm context: which files are owned by this task and which dirty files belong to other agents.
 - Hard stops: any project rule that affects the task.
 - Flight record: the start or finish evidence file when the work changes durable agent behavior.
 - Outcome score: whether routing, skill usage, validation, commit, push, and owned-file cleanup succeeded.
@@ -126,6 +129,7 @@ Invoke `skill-garden` when any of these appear:
 - Prefer existing skills over creating new ones.
 - Prefer patching a weak skill over adding a duplicate.
 - Do not wait for the user to explicitly say "make a skill" when the request clearly contains durable operating guidance.
+- Never revert, delete, rename, reformat, stage, or "clean up" files owned by other agents. If unrelated dirty work affects validation or hooks, report the exact polluted evidence and keep the current task scoped.
 - Keep new skill bodies concise and trigger descriptions precise.
 - Commit and push any skill changes before finishing, following the project git workflow.
 - If a requested background behavior is not technically possible in Codex, encode the closest reliable triggerable behavior and state the limitation plainly.
