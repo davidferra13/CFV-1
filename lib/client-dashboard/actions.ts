@@ -11,6 +11,7 @@ import { getClientSpendingSummary } from '@/lib/clients/spending-actions'
 import { getClientWorkGraphSnapshot } from '@/lib/client-work-graph/actions'
 import type { ClientWorkGraph } from '@/lib/client-work-graph/types'
 import { buildClientActionRequiredSummary } from '@/lib/client-work-graph/shared-snapshot'
+import { buildClientContinuitySummary, type ClientContinuitySummary } from '@/lib/client-continuity'
 import type {
   ClientDashboardEvent,
   ClientDashboardWidgetPreference,
@@ -154,6 +155,7 @@ export async function getClientDashboardData(): Promise<{
   chefDisplayName: string
   pastWithBalance: Set<string>
   workGraph: ClientWorkGraph
+  continuitySummary: ClientContinuitySummary
   actionRequired: {
     proposalCount: number
     paymentDueCount: number
@@ -193,6 +195,7 @@ export async function getClientDashboardData(): Promise<{
     workGraph,
   } = snapshot
   const { upcoming, past } = eventsResult
+  const continuitySummary = buildClientContinuitySummary(workGraph, { snapshot })
 
   let chefDisplayName = 'your chef'
   if (unreviewedEvent && user.tenantId) {
@@ -233,6 +236,7 @@ export async function getClientDashboardData(): Promise<{
     chefDisplayName,
     pastWithBalance,
     workGraph,
+    continuitySummary,
     actionRequired: buildClientActionRequiredSummary(workGraph.summary),
   }
 }

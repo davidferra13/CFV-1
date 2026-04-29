@@ -34,6 +34,7 @@ import {
   ClientDashboardCollapseProvider,
 } from '@/components/client-dashboard/collapse-controls'
 import { ClientCollapsibleWidget } from '@/components/client-dashboard/collapsible-widget'
+import { ClientContinuitySummary as ClientContinuitySummaryCard } from '@/components/client-continuity'
 
 export const metadata: Metadata = { title: 'My Events' }
 
@@ -399,6 +400,7 @@ export default async function MyEventsPage() {
     pastWithBalance,
     actionRequired,
     workGraph,
+    continuitySummary,
   } = data
   const { upcoming, past, pastTotalCount, cancelled } = eventsResult
   const sentQuotes = quotes.filter((quote) => quote.status === 'sent').length
@@ -1699,6 +1701,10 @@ export default async function MyEventsPage() {
           />
         </div>
       )}
+
+      <div className="mb-6">
+        <ClientContinuitySummaryCard summary={continuitySummary} />
+      </div>
 
       <ClientDashboardCollapseProvider>
         <div className="mb-4 flex items-center justify-between">

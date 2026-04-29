@@ -6,6 +6,7 @@ import { createServerClient } from '@/lib/db/server'
 import { getClientWorkGraphSnapshot } from '@/lib/client-work-graph/actions'
 import { sanitizeForPrompt, fenceForPrompt } from '@/lib/ai/remy-input-validation'
 import type { ClientWorkGraph } from '@/lib/client-work-graph/types'
+import { buildClientContinuitySummary, type ClientContinuitySummary } from '@/lib/client-continuity'
 import {
   summarizeRemyClientContextSourceLabels,
   type RemyClientContextCategory,
@@ -58,6 +59,7 @@ export interface RemyClientContext {
   pointsToNextTier: number
   contextSourceLabels: string[]
   actionableItemCount: number
+  continuitySummary: ClientContinuitySummary
   workGraph: ClientWorkGraph
   workItems: Array<{
     title: string
@@ -127,6 +129,7 @@ export async function loadRemyClientContext(
           : null
   const pointsToNextTier =
     nextTierThreshold !== null ? Math.max(0, nextTierThreshold - lifetimePoints) : 0
+  const continuitySummary = buildClientContinuitySummary(snapshot.workGraph, { snapshot })
 
   return {
     clientName: client?.full_name ?? null,
@@ -168,6 +171,7 @@ export async function loadRemyClientContext(
     pointsToNextTier,
     contextSourceLabels: summarizeRemyClientContextSourceLabels(REMY_CLIENT_CONTEXT_CATEGORIES),
     actionableItemCount: snapshot.workGraph.summary.totalItems,
+    continuitySummary,
     workGraph: snapshot.workGraph,
     workItems: snapshot.workGraph.items.slice(0, 5).map((item) => ({
       title: item.title,
@@ -258,6 +262,25 @@ export function formatClientContext(ctx: RemyClientContext): string {
     }
   }
 
+  parts.push(`\nCURRENT RETURN STATE:`)
+  parts.push(`- Status: ${ctx.continuitySummary.caughtUp ? 'caught up' : 'action needed'}`)
+  parts.push(
+    `- Headline: ${fenceForPrompt('return_headline', sanitizeForPrompt(ctx.continuitySummary.headline))}`
+  )
+  parts.push(
+    `- Detail: ${fenceForPrompt('return_detail', sanitizeForPrompt(ctx.continuitySummary.detail))}`
+  )
+  if (ctx.continuitySummary.primaryNextStep) {
+    parts.push(
+      `- Primary next step: ${fenceForPrompt('next_step', sanitizeForPrompt(ctx.continuitySummary.primaryNextStep.label))} -> ${ctx.continuitySummary.primaryNextStep.href} (${ctx.continuitySummary.primaryNextStep.ctaLabel})`
+    )
+  }
+  if (ctx.continuitySummary.counts.length > 0) {
+    parts.push(
+      `- Current counts: ${ctx.continuitySummary.counts.map((count) => `${count.label}: ${count.count}`).join(', ')}`
+    )
+  }
+
   parts.push(`\nCLIENT PORTAL PAGES:
 /my-events - Your events
 /my-quotes - Your quotes
@@ -268,7 +291,7 @@ export function formatClientContext(ctx: RemyClientContext): string {
 /book-now - Book a new event`)
 
   parts.push(`\nGROUNDING RULE (CRITICAL):
-You may ONLY reference events, quotes, work items, and details that appear in the sections above.
+You may ONLY reference events, quotes, work items, return state, and details that appear in the sections above.
 If a section is empty, that means there are none - do not invent any.
 When suggesting navigation, prefer the listed work-item routes above.
 NEVER fabricate event dates, amounts, or details.`)
