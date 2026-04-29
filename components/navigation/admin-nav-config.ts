@@ -102,6 +102,7 @@ export const adminNavGroups: AdminNavGroup[] = [
       { href: '/admin/feedback', label: 'Feedback', icon: Star },
       { href: '/admin/presence', label: 'Live Presence', icon: WifiHigh },
       { href: '/admin/silent-failures', label: 'Silent Failures', icon: AlertTriangle },
+      { href: '/admin/route-integrity', label: 'Route Integrity', icon: TreeStructure },
       { href: '/admin/beta-surveys', label: 'Surveys', icon: ClipboardCheck },
       { href: '/admin/system', label: 'System Health', icon: ShieldCheck },
     ],
