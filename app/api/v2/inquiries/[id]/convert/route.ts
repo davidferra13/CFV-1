@@ -7,7 +7,7 @@
 // V2 API consumers get a clean draft event; additional scaffolding happens
 // when the chef opens the event in the app UI.
 
-import { withApiAuth, apiCreated, apiNotFound, apiError } from '@/lib/api/v2'
+import { withApiAuth, apiCreated, apiSuccess, apiNotFound, apiError } from '@/lib/api/v2'
 
 const VALID_CONVERT_FROM = ['confirmed'] as const
 
@@ -28,6 +28,26 @@ export const POST = withApiAuth(
     if (!inquiry) return apiNotFound('Inquiry')
 
     const inq = inquiry as Record<string, unknown>
+
+    if (inq.converted_to_event_id) {
+      const { data: existingEvent, error: existingEventError } = await ctx.db
+        .from('events')
+        .select('*')
+        .eq('id', inq.converted_to_event_id as string)
+        .eq('tenant_id', ctx.tenantId)
+        .is('deleted_at', null)
+        .single()
+
+      if (existingEventError || !existingEvent) {
+        console.error(
+          '[api/v2/inquiries/convert] Converted event lookup failed:',
+          existingEventError
+        )
+        return apiError('converted_event_missing', 'Converted event could not be loaded', 409)
+      }
+
+      return apiSuccess(existingEvent, { count: 1 })
+    }
 
     // Validate: only confirmed inquiries can convert
     if (!VALID_CONVERT_FROM.includes(inq.status as (typeof VALID_CONVERT_FROM)[number])) {

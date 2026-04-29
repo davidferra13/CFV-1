@@ -163,7 +163,7 @@ export const standaloneTop: NavItem[] = [
     coreFeature: true,
     tier: 'primary',
     subMenu: [
-      { href: '/culinary/recipes', label: 'Recipes' },
+      { href: '/recipes', label: 'Recipes' },
       { href: '/menus', label: 'Menus' },
       { href: '/culinary/price-catalog', label: 'Food Catalog' },
       { href: '/culinary/costing', label: 'Costing' },
@@ -535,6 +535,7 @@ export const navGroups: NavGroup[] = [
         label: 'Food Catalog',
         icon: Store,
         tier: 'secondary',
+        children: [{ href: '/prices', label: 'Ingredient Price Engine' }],
       },
       {
         href: '/recipes/ingredients',
@@ -607,7 +608,7 @@ export const navGroups: NavGroup[] = [
           { href: '/culinary/recipes/drafts', label: 'Drafts' },
           { href: '/recipes/new', label: 'New Recipe' },
           { href: '/recipes/production-log', label: 'Production Log' },
-          { href: '/culinary/recipes', label: 'Recipe Library' },
+          { href: '/recipes', label: 'Recipe Library' },
           { href: '/culinary/recipes/seasonal-notes', label: 'Seasonal Notes' },
           { href: '/recipes/photos', label: 'Step Photos' },
           { href: '/culinary/recipes/tags', label: 'Tags' },
@@ -995,10 +996,11 @@ export const navGroups: NavGroup[] = [
     module: 'station-ops',
     items: [
       {
-        href: '/ops',
-        label: 'Ops Hub',
+        href: '/operations',
+        label: 'Operations Hub',
         icon: Activity,
         children: [
+          { href: '/ops', label: 'Ops Command' },
           { href: '/ops/service', label: 'Service Day' },
           { href: '/ops/prep', label: 'Prep Board' },
           { href: '/ops/stations', label: 'Station Coordination' },

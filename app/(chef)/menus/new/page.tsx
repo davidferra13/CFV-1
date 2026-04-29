@@ -10,7 +10,9 @@ export default async function CreateMenuPage() {
     <div className="max-w-4xl mx-auto space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-stone-100">Create Menu</h1>
-        <p className="text-stone-400 mt-1">Create a new menu template</p>
+        <p className="text-stone-400 mt-1">
+          Build a menu from scratch or pull from your saved recipe book
+        </p>
       </div>
 
       <CreateMenuForm tenantId={user.tenantId!} />

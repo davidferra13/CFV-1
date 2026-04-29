@@ -66,6 +66,11 @@ function ReadinessIndicator({ ready, missing }: { ready: boolean; missing: strin
   return <span className="text-amber-600 text-sm">Needs: {missing.join(', ')}</span>
 }
 
+function readinessTooltip(label: string, missing: string[]) {
+  const missingText = missing.length > 0 ? missing.join(', ') : 'required event details'
+  return `${label} is unavailable until this event has: ${missingText}`
+}
+
 export function DocumentSection({
   eventId,
   readiness,
@@ -186,7 +191,13 @@ export function DocumentSection({
                       Interactive
                     </Button>
                   ) : (
-                    <Button variant="secondary" size="sm" disabled>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      disabled
+                      tooltip={readinessTooltip('Interactive document', doc.missing)}
+                      aria-label={readinessTooltip('Interactive document', doc.missing)}
+                    >
                       Interactive
                     </Button>
                   ))}
@@ -203,7 +214,13 @@ export function DocumentSection({
                     Archive
                   </Button>
                 ) : (
-                  <Button variant="ghost" size="sm" disabled>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    disabled
+                    tooltip={readinessTooltip('Archive', doc.missing)}
+                    aria-label={readinessTooltip('Archive', doc.missing)}
+                  >
                     Archive
                   </Button>
                 )}
@@ -214,6 +231,12 @@ export function DocumentSection({
                   size="sm"
                   disabled={!doc.ready}
                   onClick={() => doc.ready && setViewingDoc({ type: doc.type, label: doc.label })}
+                  tooltip={!doc.ready ? readinessTooltip('PDF preview', doc.missing) : undefined}
+                  aria-label={
+                    !doc.ready
+                      ? readinessTooltip('PDF preview', doc.missing)
+                      : `View ${doc.label} PDF`
+                  }
                 >
                   View PDF
                 </Button>
@@ -411,6 +434,16 @@ export function DocumentSection({
                 readiness.eventSummary.ready &&
                 setViewingDoc({ type: 'beo', label: 'Banquet Event Order' })
               }
+              tooltip={
+                !readiness.eventSummary.ready
+                  ? readinessTooltip('Banquet Event Order', readiness.eventSummary.missing)
+                  : undefined
+              }
+              aria-label={
+                !readiness.eventSummary.ready
+                  ? readinessTooltip('Banquet Event Order', readiness.eventSummary.missing)
+                  : 'View Banquet Event Order PDF'
+              }
             >
               View PDF
             </Button>
@@ -449,7 +482,13 @@ export function DocumentSection({
             {readiness.prepSheet.ready ? (
               <ServingLabelsButton eventId={eventId} />
             ) : (
-              <Button variant="secondary" size="sm" disabled>
+              <Button
+                variant="secondary"
+                size="sm"
+                disabled
+                tooltip={readinessTooltip('Serving labels', readiness.prepSheet.missing)}
+                aria-label={readinessTooltip('Serving labels', readiness.prepSheet.missing)}
+              >
                 Print Serving Labels
               </Button>
             )}
