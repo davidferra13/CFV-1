@@ -21,6 +21,12 @@ Use these tools when the task touches skills or durable agent behavior:
 
 - Validate changed skills: `node devtools/skill-validator.mjs [skill-name ...]`
 - Test routing triggers: `node devtools/skill-trigger-tests.mjs`
+- Route a prompt before work: `node devtools/skill-router.mjs --prompt "..."`
+- Gate closeout before final: `node devtools/agent-closeout-gate.mjs --owned path,other-path`
+- Audit prior sessions: `node devtools/session-transcript-auditor.mjs [--file transcript.txt] [--write]`
+- Propose learning actions: `node devtools/skill-learning-proposals.mjs`
+- Map skill coverage: `node devtools/skill-coverage-map.mjs`
+- Map skill dependencies: `node devtools/skill-dependency-graph.mjs`
 - Record unresolved learning: `node devtools/agent-learning-inbox.mjs add --category behavior --title "..."`
 - Classify external guidance: `node devtools/external-guidance-intake.mjs --source "source-name"`
 - Write skill closeout evidence: `node devtools/skill-closeout-report.mjs --goal "..." --primary skill-name --delta none|patch|new-skill|heal`

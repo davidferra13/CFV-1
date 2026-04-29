@@ -58,7 +58,11 @@ const defaultCases = [
 ]
 
 function loadCases(file) {
-  if (!file) return defaultCases
+  if (!file) {
+    const corpus = readJson('system/agent-golden-prompts/default.json', null)
+    if (Array.isArray(corpus) && corpus.length) return corpus
+    return defaultCases
+  }
   const data = readJson(file, null)
   if (!Array.isArray(data)) {
     throw new Error(`Trigger test file must be a JSON array: ${file}`)
@@ -107,4 +111,3 @@ for (const testCase of cases) {
 
 console.log(`\nTrigger tests: ${cases.length} case(s), ${failures} failure(s)`)
 process.exit(failures ? 1 : 0)
-

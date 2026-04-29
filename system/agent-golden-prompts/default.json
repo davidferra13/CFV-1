@@ -1,0 +1,85 @@
+[
+  {
+    "name": "bulk persona paste",
+    "prompt": "Can I paste a huge third-party ChatGPT persona dump here?",
+    "expect": ["omninet", "persona-dump"],
+    "evidence": {
+      "omninet": ["persona-dump", "huge persona paste"],
+      "persona-dump": ["whole blob", "third-party ChatGPT persona output"]
+    }
+  },
+  {
+    "name": "durable operating guidance",
+    "prompt": "Codex should always notice our developer behavior and make itself smarter.",
+    "expect": ["omninet", "skill-garden"],
+    "evidence": {
+      "omninet": ["developer behavior", "skill-garden"],
+      "skill-garden": ["make Codex smarter", "proactively"]
+    }
+  },
+  {
+    "name": "skill repair",
+    "prompt": "This skill failed and needs to self-heal before future tasks.",
+    "expect": ["omninet", "heal-skill", "skill-garden"],
+    "evidence": {
+      "omninet": ["heal-skill", "skill-garden"],
+      "heal-skill": ["Self-repair a skill"],
+      "skill-garden": ["Self-Healing Loop"]
+    }
+  },
+  {
+    "name": "review request",
+    "prompt": "Review these uncommitted changes before we ship.",
+    "expect": ["omninet", "review"],
+    "evidence": {
+      "omninet": ["Review code before shipping", "review"],
+      "review": ["review", "uncommitted"]
+    }
+  },
+  {
+    "name": "host process truth",
+    "prompt": "Audit ports 3100, 3200, watchdogs, tunnels, and Windows scheduled tasks.",
+    "expect": ["omninet", "host-integrity"],
+    "evidence": {
+      "omninet": ["Task Scheduler", "ports", "host-integrity"],
+      "host-integrity": ["ports 3100/3200/3300", "watchdogs"]
+    }
+  },
+  {
+    "name": "migration safety",
+    "prompt": "Create a database migration for this new table.",
+    "expect": ["omninet", "builder"],
+    "evidence": {
+      "omninet": ["destructive database operations", "drizzle-kit push"],
+      "builder": ["implementing features"]
+    }
+  },
+  {
+    "name": "validation phase",
+    "prompt": "Build a new public-facing feature from persona feedback.",
+    "expect": ["omninet", "validation-gate"],
+    "evidence": {
+      "omninet": ["validation-gate", "user-validation evidence"],
+      "validation-gate": ["new product surface", "persona-driven features"]
+    }
+  },
+  {
+    "name": "stale evidence",
+    "prompt": "The docs say the build is green, verify whether that is true.",
+    "expect": ["omninet", "evidence-integrity"],
+    "evidence": {
+      "omninet": ["evidence-integrity", "build health"],
+      "evidence-integrity": ["build health", "green"]
+    }
+  },
+  {
+    "name": "ship current agent work",
+    "prompt": "Ship this current task and preserve unrelated dirty work.",
+    "expect": ["omninet", "ship"],
+    "evidence": {
+      "omninet": ["ship", "Session close"],
+      "ship": ["preserve unrelated dirty work", "commit"]
+    }
+  }
+]
+

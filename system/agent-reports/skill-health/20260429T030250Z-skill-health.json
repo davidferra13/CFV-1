@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-29T02:39:57.602Z",
+  "generated_at": "2026-04-29T03:02:50.609Z",
   "skill_count": 40,
   "unhealthy_count": 6,
   "overlaps": [],
@@ -195,7 +195,7 @@
       "file": ".claude/skills/omninet/SKILL.md",
       "description": "Always-on ChefFlow Codex operating loop and mandatory router. Use at the start of any ChefFlow task, ambiguous request, multi-skill request, build, debug, review, research, planning, persona pipeline work, or when deciding which project skills to load. Routes work through the best existing skills, maintains a task heartbeat, protects ChefFlow hard stops, and triggers skill creation or self-healing through skill-garden when developer behavior should become durable.",
       "age_days": 0,
-      "line_count": 108,
+      "line_count": 114,
       "has_em_dash": false,
       "missing_frontmatter": false,
       "reference_warnings": []
@@ -350,7 +350,7 @@
       "file": ".claude/skills/skill-garden/SKILL.md",
       "description": "Create, improve, and self-heal ChefFlow project skills from observed developer behavior. Use proactively when the user gives operating guidance such as \"always\", \"never\", \"Codex should\", \"make Codex smarter\", \"self-heal\", \"create skills\", \"knows when to\", or \"use this behavior going forward\"; when a repeated workflow, correction, failure, persona import pattern, Hermes/OpenCloy markdown, or external conversation should become reusable Codex behavior; or when an existing skill needs refinement.",
       "age_days": 0,
-      "line_count": 135,
+      "line_count": 143,
       "has_em_dash": false,
       "missing_frontmatter": false,
       "reference_warnings": []

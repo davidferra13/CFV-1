@@ -1,0 +1,303 @@
+#!/usr/bin/env node
+import {
+  loadSkills,
+  parseArgs,
+  projectSkillRoot,
+  readStdin,
+} from './agent-skill-utils.mjs'
+
+const args = parseArgs()
+const prompt = String(args.prompt || args.p || args._.join(' ') || readStdin()).trim()
+
+if (!prompt) {
+  console.error('Missing prompt. Pass --prompt "..." or pipe text on stdin.')
+  process.exit(1)
+}
+
+const skills = loadSkills(projectSkillRoot)
+const skillNames = new Set(skills.map((skill) => skill.name).filter(Boolean))
+const lowerPrompt = prompt.toLowerCase()
+
+const rules = [
+  {
+    skill: 'backup',
+    terms: ['backup database', 'pg_dump', 'database backup'],
+  },
+  {
+    skill: 'host-integrity',
+    terms: [
+      'task scheduler',
+      'watchdog',
+      'cloudflare tunnel',
+      'port 3100',
+      'port 3200',
+      'port 3300',
+      'zombie process',
+      'running server',
+      'restart server',
+      'kill server',
+    ],
+  },
+  {
+    skill: 'persona-dump',
+    terms: ['persona dump', 'huge blurb', 'third-party chatgpt', 'paste them all'],
+  },
+  {
+    skill: 'persona-build',
+    terms: ['persona findings', 'build from personas', 'persona gaps'],
+  },
+  {
+    skill: 'persona-inbox',
+    terms: ['persona inbox', 'persona pipeline', 'persona status', 'persona queue'],
+  },
+  {
+    skill: 'skill-garden',
+    terms: [
+      'codex should',
+      'make codex smarter',
+      'self-heal',
+      'self healing',
+      'create skills',
+      'new skill',
+      'developer behavior',
+      'always remember',
+      'from now on',
+      'hermes',
+      'opencloy',
+    ],
+  },
+  {
+    skill: 'heal-skill',
+    terms: ['skill failed', 'skill missed', 'repair skill', 'heal skill'],
+  },
+  {
+    skill: 'review',
+    terms: ['review', 'code review', 'before shipping', 'find bugs'],
+  },
+  {
+    skill: 'debug',
+    terms: ['bug', 'broken', 'fails', 'failure', 'error', 'regression', 'root cause'],
+  },
+  {
+    skill: 'tdd',
+    terms: ['tdd', 'test first', 'failing test'],
+  },
+  {
+    skill: 'verification-gate',
+    aliases: ['verify'],
+    terms: ['playwright', 'production parity', 'pressure testing', 'verify'],
+  },
+  {
+    skill: 'compliance',
+    terms: ['em dash', 'openclaw in ui', 'ts-nocheck', 'compliance scan'],
+  },
+  {
+    skill: 'hallucination-scan',
+    terms: ['fake data', 'hardcoded', 'optimistic update', 'no-op', 'empty onclick'],
+  },
+  {
+    skill: 'evidence-integrity',
+    terms: ['green claims', 'stale tests', 'build state', 'sync status', 'conflicting evidence'],
+  },
+  {
+    skill: 'findings-triage',
+    terms: ['autodocket', 'audit findings', 'triage findings', 'backlog findings'],
+  },
+  {
+    skill: 'validation-gate',
+    terms: ['validation phase', 'user validation', 'launch readiness', 'survey evidence'],
+  },
+  {
+    skill: 'research',
+    terms: ['research', 'investigate', 'write report'],
+  },
+  {
+    skill: 'planner',
+    terms: ['write spec', 'plan spec', 'planner gate'],
+  },
+  {
+    skill: 'builder',
+    terms: ['build', 'implement', 'add', 'create', 'connect', 'feature', 'script'],
+  },
+]
+
+const hardStopRules = [
+  {
+    id: 'no_main_push_or_deploy',
+    terms: ['push to main', 'merge to main', 'deploy', 'production deploy'],
+  },
+  {
+    id: 'no_destructive_database_operations',
+    terms: ['drop table', 'drop column', 'delete from', 'truncate', 'alter column type'],
+  },
+  {
+    id: 'no_drizzle_push',
+    terms: ['drizzle-kit push', 'drizzle push'],
+  },
+  {
+    id: 'no_manual_database_types',
+    terms: ['types/database.ts'],
+  },
+  {
+    id: 'no_ts_nocheck',
+    terms: ['@ts-nocheck', 'ts-nocheck'],
+  },
+  {
+    id: 'no_em_dash',
+    terms: ['em dash', '\u2014'],
+  },
+  {
+    id: 'no_unapproved_build_or_long_running_server',
+    terms: ['next build', 'npm run dev', 'long-running', 'long running'],
+  },
+  {
+    id: 'no_kill_or_restart_running_servers',
+    terms: ['kill server', 'restart server', 'stop server', 'kill process'],
+  },
+]
+
+const requiredCheckRules = [
+  {
+    check: 'show full additive SQL before writing any migration',
+    terms: ['migration', 'database/migrations', 'sql migration'],
+  },
+  {
+    check: 'validate server action auth, tenant scope, input validation, errors, return value, and cache invalidation',
+    terms: ['use server', 'server action', 'action.ts', 'actions.ts'],
+  },
+  {
+    check: 'run targeted compliance scan for em dashes, OpenClaw public text, and ts-nocheck',
+    terms: ['public ui', 'copy', 'text', 'skill', 'skills', 'compliance'],
+  },
+  {
+    check: 'run node --check for changed devtools scripts',
+    terms: ['devtools', '.mjs', 'script', 'cli'],
+  },
+  {
+    check: 'run skill validator and trigger tests when skill behavior changes',
+    terms: ['skill', 'skills', 'router', 'trigger', 'self-heal', 'self healing'],
+  },
+  {
+    check: 'stage, commit, and push only owned files before closeout',
+    terms: ['ship', 'commit', 'push', 'closeout', 'done'],
+  },
+]
+
+const riskRules = [
+  {
+    level: 'high',
+    terms: [
+      'production',
+      'deploy',
+      'main',
+      'database',
+      'migration',
+      'ledger',
+      'stripe',
+      'payment',
+      'auth',
+      'tenant',
+      'security',
+      'server action',
+      'cloudflare tunnel',
+      'port 3300',
+      'kill server',
+      'restart server',
+    ],
+  },
+  {
+    level: 'medium',
+    terms: [
+      'ai',
+      'ollama',
+      'remy',
+      'billing',
+      'cache',
+      'webhook',
+      'public ui',
+      'persona pipeline',
+      'skill',
+      'devtools',
+    ],
+  },
+]
+
+function hasTerm(text, term) {
+  return text.includes(term.toLowerCase())
+}
+
+function scoreRule(rule) {
+  const terms = rule.terms || []
+  return terms.reduce((sum, term) => sum + (hasTerm(lowerPrompt, term) ? 1 : 0), 0)
+}
+
+function normalizeSkillName(rule) {
+  if (skillNames.has(rule.skill)) return rule.skill
+  for (const alias of rule.aliases || []) {
+    if (skillNames.has(alias)) return alias
+  }
+  return null
+}
+
+const matches = rules
+  .map((rule, index) => ({
+    index,
+    skill: normalizeSkillName(rule),
+    score: scoreRule(rule),
+  }))
+  .filter((match) => match.skill && match.score > 0)
+  .sort((a, b) => b.score - a.score || a.index - b.index)
+
+const primarySkill = matches[0]?.skill || 'first-principles'
+const sidecarSkills = ['omninet']
+for (const match of matches.slice(1)) {
+  if (!sidecarSkills.includes(match.skill) && match.skill !== primarySkill) {
+    sidecarSkills.push(match.skill)
+  }
+}
+if (
+  (primarySkill === 'heal-skill' || lowerPrompt.includes('skill failed')) &&
+  skillNames.has('skill-garden') &&
+  !sidecarSkills.includes('skill-garden')
+) {
+  sidecarSkills.push('skill-garden')
+}
+if (
+  (primarySkill === 'skill-garden' || sidecarSkills.includes('skill-garden')) &&
+  skillNames.has('heal-skill') &&
+  lowerPrompt.includes('failed') &&
+  !sidecarSkills.includes('heal-skill')
+) {
+  sidecarSkills.push('heal-skill')
+}
+
+const hardStops = hardStopRules
+  .filter((rule) => rule.terms.some((term) => hasTerm(lowerPrompt, term)))
+  .map((rule) => rule.id)
+
+const requiredChecks = requiredCheckRules
+  .filter((rule) => rule.terms.some((term) => hasTerm(lowerPrompt, term)))
+  .map((rule) => rule.check)
+
+if (!requiredChecks.includes('stage, commit, and push only owned files before closeout')) {
+  requiredChecks.push('stage, commit, and push only owned files before closeout')
+}
+
+let riskLevel = 'low'
+for (const rule of riskRules) {
+  if (rule.terms.some((term) => hasTerm(lowerPrompt, term))) {
+    riskLevel = rule.level
+    break
+  }
+}
+if (hardStops.length > 0) riskLevel = 'high'
+
+const result = {
+  primary_skill: primarySkill,
+  sidecar_skills: sidecarSkills,
+  hard_stops: hardStops,
+  risk_level: riskLevel,
+  required_checks: [...new Set(requiredChecks)],
+}
+
+console.log(JSON.stringify(result, null, 2))
