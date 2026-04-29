@@ -53,6 +53,12 @@ const tiles = [
     icon: '🏪',
   },
   {
+    href: '/culinary/call-sheet',
+    label: 'Voice Hub',
+    description: 'Supplier calls, vendor voicemail, transcripts, and recordings',
+    icon: 'TEL',
+  },
+  {
     href: '/recipes/import',
     label: 'Import Recipes',
     description: 'Bulk-import from CSV, URL, photo, or brain dump',

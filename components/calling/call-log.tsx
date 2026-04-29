@@ -8,7 +8,7 @@
  * and any structured data captured during the call.
  */
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { formatDistanceToNow, format } from 'date-fns'
 import {
   Phone,
@@ -83,7 +83,9 @@ interface Props {
 
 // ---- Unified row type ------------------------------------------------------
 
-type UnifiedCall = { kind: 'supplier'; data: SupplierCall } | { kind: 'ai'; data: AiCall }
+type UnifiedCall =
+  | { kind: 'supplier'; data: SupplierCall; ts: string }
+  | { kind: 'ai'; data: AiCall; ts: string }
 
 // ---- Labels / colors -------------------------------------------------------
 
@@ -134,6 +136,53 @@ function fmtDuration(secs?: number | null) {
   if (!secs) return null
   if (secs < 60) return `${secs}s`
   return `${Math.floor(secs / 60)}m ${secs % 60}s`
+}
+
+function getCallSearchText(item: UnifiedCall): string {
+  if (item.kind === 'supplier') {
+    const call = item.data
+    return [
+      call.vendor_name,
+      call.vendor_phone,
+      call.ingredient_name,
+      call.status,
+      call.result,
+      call.price_quoted,
+      call.quantity_available,
+      call.speech_transcript,
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase()
+  }
+
+  const call = item.data
+  const extractedData = call.extracted_data ? JSON.stringify(call.extracted_data) : ''
+
+  return [
+    call.direction,
+    call.role,
+    call.contact_name,
+    call.contact_phone,
+    call.subject,
+    call.status,
+    call.result,
+    call.full_transcript,
+    extractedData,
+  ]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase()
+}
+
+function isOnOrAfterDate(value: string, date: string): boolean {
+  if (!date) return true
+  return new Date(value).getTime() >= new Date(`${date}T00:00:00`).getTime()
+}
+
+function isOnOrBeforeDate(value: string, date: string): boolean {
+  if (!date) return true
+  return new Date(value).getTime() <= new Date(`${date}T23:59:59`).getTime()
 }
 
 // ---- Extracted data renderer -----------------------------------------------
@@ -478,11 +527,28 @@ function CallRow({ item }: { item: UnifiedCall }) {
 // ---- Main component --------------------------------------------------------
 
 export function CallLog({ calls, aiCalls }: Props) {
+  const [query, setQuery] = useState('')
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
+
   // Merge into one chronological list, newest first
   const unified: UnifiedCall[] = [
     ...calls.map((c) => ({ kind: 'supplier' as const, data: c, ts: c.created_at })),
     ...aiCalls.map((c) => ({ kind: 'ai' as const, data: c, ts: c.created_at })),
   ].sort((a, b) => new Date(b.ts).getTime() - new Date(a.ts).getTime())
+
+  const normalizedQuery = query.trim().toLowerCase()
+  const filtered = useMemo(
+    () =>
+      unified.filter((item) => {
+        if (normalizedQuery && !getCallSearchText(item).includes(normalizedQuery)) {
+          return false
+        }
+
+        return isOnOrAfterDate(item.ts, dateFrom) && isOnOrBeforeDate(item.ts, dateTo)
+      }),
+    [dateFrom, dateTo, normalizedQuery, unified]
+  )
 
   if (unified.length === 0) {
     return (
@@ -501,7 +567,9 @@ export function CallLog({ calls, aiCalls }: Props) {
         <div className="flex items-center gap-2">
           <Phone className="w-4 h-4 text-stone-400" />
           <span className="text-sm font-semibold text-stone-200">All Calls</span>
-          <span className="text-xs text-stone-500">{unified.length} total</span>
+          <span className="text-xs text-stone-500">
+            {filtered.length} of {unified.length} total
+          </span>
         </div>
         <div className="flex items-center gap-4 text-xs text-stone-500 hidden sm:flex">
           <span className="flex items-center gap-1">
@@ -512,6 +580,30 @@ export function CallLog({ calls, aiCalls }: Props) {
           </span>
           <span className="text-stone-600">Click any row for transcript</span>
         </div>
+      </div>
+
+      <div className="grid gap-3 border-b border-stone-800 px-5 py-3 sm:grid-cols-[1fr_10rem_10rem]">
+        <input
+          type="search"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder="Search vendor, ingredient, transcript, phone..."
+          className="rounded-lg border border-stone-700 bg-stone-950 px-3 py-2 text-sm text-stone-200 placeholder:text-stone-600 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+        />
+        <input
+          type="date"
+          value={dateFrom}
+          onChange={(event) => setDateFrom(event.target.value)}
+          aria-label="Filter calls from date"
+          className="rounded-lg border border-stone-700 bg-stone-950 px-3 py-2 text-sm text-stone-200 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+        />
+        <input
+          type="date"
+          value={dateTo}
+          onChange={(event) => setDateTo(event.target.value)}
+          aria-label="Filter calls to date"
+          className="rounded-lg border border-stone-700 bg-stone-950 px-3 py-2 text-sm text-stone-200 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+        />
       </div>
 
       {/* Column headers */}
@@ -531,12 +623,19 @@ export function CallLog({ calls, aiCalls }: Props) {
 
       {/* Rows */}
       <div className="divide-y divide-stone-800">
-        {unified.map((item) => (
-          <CallRow
-            key={item.kind === 'supplier' ? `s-${item.data.id}` : `a-${item.data.id}`}
-            item={item}
-          />
-        ))}
+        {filtered.length === 0 ? (
+          <div className="px-5 py-10 text-center">
+            <p className="text-sm text-stone-400">No calls match the current filters.</p>
+            <p className="mt-1 text-xs text-stone-600">Clear search or widen the date range.</p>
+          </div>
+        ) : (
+          filtered.map((item) => (
+            <CallRow
+              key={item.kind === 'supplier' ? `s-${item.data.id}` : `a-${item.data.id}`}
+              item={item}
+            />
+          ))
+        )}
       </div>
     </div>
   )
