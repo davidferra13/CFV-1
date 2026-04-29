@@ -61,35 +61,36 @@ Use these tools when the task touches skills or durable agent behavior:
 
 Use the most specific skill that fits. Combine skills only when their responsibilities are distinct.
 
-| Situation                                                                            | Primary skill                                              |
-| ------------------------------------------------------------------------------------ | ---------------------------------------------------------- |
-| Build from a spec or implement a feature                                             | `builder`                                                  |
-| Need test-first implementation                                                       | `tdd`                                                      |
-| Bug, failed behavior, broken route, recurring error                                  | `debug`                                                    |
-| Systemic or recurring root cause                                                     | `5-whys`                                                   |
-| Ledger, cents, balances, financial invariants, append-only money movement            | `ledger-safety`                                            |
-| Billing tiers, monetization, feature classification, upgrade prompt timing           | `billing-monetization`                                     |
-| Stripe webhooks, checkout events, payment idempotency, reconciliation                | `stripe-webhook-integrity`                                 |
-| Review code before shipping                                                          | `review`                                                   |
-| Compliance rules, banned text, invalid exports                                       | `compliance`                                               |
-| Zero hallucination risks, no-op UI, fake data, optimistic updates                    | `hallucination-scan`                                       |
-| Build health, green claims, stale tests, status truth, conflicting evidence          | `evidence-integrity`                                       |
-| Windows host, scheduled tasks, ports, watchdogs, tunnels, zombie processes           | `host-integrity`                                           |
-| New feature request during validation phase, survey evidence, launch-readiness proof | `validation-gate`                                          |
-| Strategic product reasoning or vague request                                         | `first-principles`                                         |
-| Thread or feature completeness check                                                 | `audit`                                                    |
-| Highest leverage next move                                                           | `massive-win`                                              |
-| Mixed old or new findings, autodocket, audit findings, backlog triage                | `findings-triage`                                          |
-| Persona pipeline management                                                          | `persona-inbox`                                            |
-| Huge pasted persona material                                                         | `persona-dump`                                             |
-| Persona fitness evaluation                                                           | `persona-stress-test`                                      |
-| Build missing features from persona findings                                         | `persona-build`                                            |
-| Persona corpus saturated or persona generation has diminishing returns               | `persona-inbox`, then `findings-triage` or `persona-build` |
-| Research task or written report                                                      | `research`                                                 |
-| Health, status, warmup, Pi, pipeline checks                                          | matching operational skill                                 |
-| Skill failed or produced bad guidance                                                | `heal-skill` and `skill-garden`                            |
-| New repeated workflow or developer behavior                                          | `skill-garden`                                             |
-| Session close, commit, push                                                          | `close-session` or `ship`                                  |
+| Situation                                                                                             | Primary skill                                              |
+| ----------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| Build from a spec or implement a feature                                                              | `builder`                                                  |
+| Large, multi-track, research-heavy, or build-heavy task that may benefit from bounded parallel agents | `swarm-governor`, then the task-specific skill             |
+| Need test-first implementation                                                                        | `tdd`                                                      |
+| Bug, failed behavior, broken route, recurring error                                                   | `debug`                                                    |
+| Systemic or recurring root cause                                                                      | `5-whys`                                                   |
+| Ledger, cents, balances, financial invariants, append-only money movement                             | `ledger-safety`                                            |
+| Billing tiers, monetization, feature classification, upgrade prompt timing                            | `billing-monetization`                                     |
+| Stripe webhooks, checkout events, payment idempotency, reconciliation                                 | `stripe-webhook-integrity`                                 |
+| Review code before shipping                                                                           | `review`                                                   |
+| Compliance rules, banned text, invalid exports                                                        | `compliance`                                               |
+| Zero hallucination risks, no-op UI, fake data, optimistic updates                                     | `hallucination-scan`                                       |
+| Build health, green claims, stale tests, status truth, conflicting evidence                           | `evidence-integrity`                                       |
+| Windows host, scheduled tasks, ports, watchdogs, tunnels, zombie processes                            | `host-integrity`                                           |
+| New feature request during validation phase, survey evidence, launch-readiness proof                  | `validation-gate`                                          |
+| Strategic product reasoning or vague request                                                          | `first-principles`                                         |
+| Thread or feature completeness check                                                                  | `audit`                                                    |
+| Highest leverage next move                                                                            | `massive-win`                                              |
+| Mixed old or new findings, autodocket, audit findings, backlog triage                                 | `findings-triage`                                          |
+| Persona pipeline management                                                                           | `persona-inbox`                                            |
+| Huge pasted persona material                                                                          | `persona-dump`                                             |
+| Persona fitness evaluation                                                                            | `persona-stress-test`                                      |
+| Build missing features from persona findings                                                          | `persona-build`                                            |
+| Persona corpus saturated or persona generation has diminishing returns                                | `persona-inbox`, then `findings-triage` or `persona-build` |
+| Research task or written report                                                                       | `research`                                                 |
+| Health, status, warmup, Pi, pipeline checks                                                           | matching operational skill                                 |
+| Skill failed or produced bad guidance                                                                 | `heal-skill` and `skill-garden`                            |
+| New repeated workflow or developer behavior                                                           | `skill-garden`                                             |
+| Session close, commit, push                                                                           | `close-session` or `ship`                                  |
 
 ## Heartbeat
 

@@ -56,7 +56,12 @@ const rules = [
   },
   {
     skill: 'persona-inbox',
-    terms: ['persona inbox', 'persona pipeline', 'persona status', 'persona queue'],
+    terms: [
+      'persona inbox',
+      'persona pipeline',
+      'persona status',
+      'persona queue',
+    ],
   },
   {
     skill: 'skill-garden',
@@ -72,6 +77,25 @@ const rules = [
       'from now on',
       'hermes',
       'opencloy',
+    ],
+  },
+  {
+    skill: 'swarm-governor',
+    terms: [
+      'swarm',
+      'subagent',
+      'subagents',
+      'parallel agent',
+      'parallel agents',
+      'bounded parallel',
+      'orchestrator',
+      'delegate',
+      'delegation',
+      'multi-track',
+      'large feature',
+      'independent code paths',
+      'research-heavy',
+      'build-heavy',
     ],
   },
   {
