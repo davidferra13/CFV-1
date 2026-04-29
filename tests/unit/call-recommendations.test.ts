@@ -18,6 +18,11 @@ describe('call recommendations', () => {
 
     assert.equal(recommendation?.kind, 'call_now')
     assert.equal(recommendation?.callType, 'discovery')
+    assert.equal(recommendation?.interventionAction, 'call_now')
+    assert.ok((recommendation?.interventionScore ?? 0) >= 70)
+    assert.ok(
+      recommendation?.reasonTrace.some((item) => item.signal === 'qualified_inquiry_facts')
+    )
   })
 
   it('prioritizes proposal calls when a quote is active', () => {
@@ -37,6 +42,8 @@ describe('call recommendations', () => {
 
     assert.equal(recommendation?.callType, 'proposal_walkthrough')
     assert.equal(recommendation?.urgency, 'now')
+    assert.equal(recommendation?.interventionAction, 'call_now')
+    assert.ok(recommendation?.noCallRisk.includes('price'))
   })
 
   it('recommends a logistics call for a confirmed event inside three days', () => {
@@ -52,6 +59,9 @@ describe('call recommendations', () => {
 
     assert.equal(recommendation?.kind, 'schedule_logistics')
     assert.equal(recommendation?.callType, 'pre_event_logistics')
+    assert.ok(
+      recommendation?.reasonTrace.some((item) => item.signal === 'service_window_close')
+    )
   })
 
   it('recommends a human call when an event thread is confused or urgent', () => {
@@ -75,6 +85,10 @@ describe('call recommendations', () => {
     assert.equal(recommendation?.kind, 'call_now')
     assert.equal(recommendation?.callType, 'follow_up')
     assert.equal(recommendation?.urgency, 'now')
+    assert.equal(recommendation?.interventionAction, 'call_now')
+    assert.ok(
+      recommendation?.reasonTrace.some((item) => item.signal === 'human_touch_language')
+    )
   })
 
   it('recommends a human call when an inquiry thread directly asks to talk', () => {
@@ -93,6 +107,7 @@ describe('call recommendations', () => {
 
     assert.equal(recommendation?.kind, 'call_now')
     assert.equal(recommendation?.callType, 'follow_up')
+    assert.ok((recommendation?.interventionScore ?? 0) >= 75)
   })
 
   it('recommends a day-after follow-up after completed service', () => {
@@ -109,5 +124,6 @@ describe('call recommendations', () => {
 
     assert.equal(recommendation?.kind, 'schedule_day_after_followup')
     assert.equal(recommendation?.callType, 'follow_up')
+    assert.ok(recommendation?.idealOutcome.includes('Feedback'))
   })
 })
