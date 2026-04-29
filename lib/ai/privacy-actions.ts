@@ -356,22 +356,31 @@ export async function saveLocalAiPreferences(input: {
   return { success: true }
 }
 
-export async function markLocalAiVerified(): Promise<{ success: boolean }> {
+export async function markLocalAiVerified(input?: {
+  url?: string
+  model?: string
+}): Promise<{ success: boolean; error?: string }> {
+  const parsed = LocalAiUpdateSchema.pick({ url: true, model: true }).safeParse(input ?? {})
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.message }
+  }
+
   const user = await requireChef()
   const db: any = createServerClient()
 
-  const { error } = await db.from('ai_preferences').upsert(
-    {
-      tenant_id: user.tenantId!,
-      local_ai_verified_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    },
-    { onConflict: 'tenant_id' }
-  )
+  const updates: Record<string, unknown> = {
+    tenant_id: user.tenantId!,
+    local_ai_verified_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  }
+  if (parsed.data.url !== undefined) updates.local_ai_url = parsed.data.url
+  if (parsed.data.model !== undefined) updates.local_ai_model = parsed.data.model
+
+  const { error } = await db.from('ai_preferences').upsert(updates, { onConflict: 'tenant_id' })
 
   if (error) {
     console.error('[ai-privacy] Failed to mark local AI verified:', error)
-    return { success: false }
+    return { success: false, error: 'Failed to verify local AI' }
   }
 
   return { success: true }

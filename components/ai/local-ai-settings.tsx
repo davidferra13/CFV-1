@@ -57,17 +57,10 @@ export function LocalAiSettings({ initialPrefs }: { initialPrefs?: LocalAiPrefer
           return
         }
 
-        const saveResult = await saveLocalAiPreferences({ url, model })
-        if (!saveResult.success) {
-          setConnectionStatus('unreachable')
-          toast.error(saveResult.error ?? 'Failed to save local AI settings')
-          return
-        }
-
-        const verifiedResult = await markLocalAiVerified()
+        const verifiedResult = await markLocalAiVerified({ url, model })
         if (!verifiedResult.success) {
           setConnectionStatus('unreachable')
-          toast.error('Failed to mark local AI as verified')
+          toast.error(verifiedResult.error ?? 'Failed to mark local AI as verified')
           return
         }
 
