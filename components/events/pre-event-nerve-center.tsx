@@ -451,6 +451,13 @@ export async function PreEventNerveCenter(props: NerveCenterProps) {
 
       {/* Quick action bar */}
       <div className="px-4 py-2.5 border-t border-stone-800/50 flex flex-wrap items-center gap-2 bg-stone-900/60">
+        {tMinus.hours > 0 && (
+          <Link href={`/events/${eventId}/dop/mobile`}>
+            <Button variant="secondary" size="sm">
+              Run Mode
+            </Button>
+          </Link>
+        )}
         <Link href={`/events/${eventId}/pack`}>
           <Button variant="secondary" size="sm">
             Pack List
@@ -477,7 +484,7 @@ export async function PreEventNerveCenter(props: NerveCenterProps) {
           </Button>
         </Link>
         {tMinus.hours <= 0 && (
-          <Link href={`/events/${eventId}?tab=ops`}>
+          <Link href={`/events/${eventId}/dop/mobile`}>
             <Button variant="primary" size="sm">
               Go Live
             </Button>

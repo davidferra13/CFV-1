@@ -5,6 +5,8 @@ import { MobileNavigation } from '@/components/mobile/mobile-navigation'
 
 export const metadata: Metadata = { title: 'Chef Mobile Dashboard' }
 
+const RUN_MODE_STATUSES = new Set(['confirmed', 'in_progress'])
+
 interface MobileChefDashboardPageProps {
   params: {
     slug: string
@@ -50,19 +52,35 @@ export default async function MobileChefDashboardPage({ params }: MobileChefDash
               No upcoming events.
             </p>
           ) : (
-            data.upcomingEvents.map((event) => (
-              <Link
-                key={event.id}
-                href={`/events/${event.id}`}
-                className="block rounded-lg border border-stone-700 bg-stone-900 p-3"
-              >
-                <p className="text-sm font-medium text-stone-100">{event.occasion || 'Event'}</p>
-                <p className="text-xs text-stone-400">
-                  {event.eventDate} {event.serveTime ? `| ${event.serveTime}` : ''} |{' '}
-                  {event.clientName || 'Client'}
-                </p>
-              </Link>
-            ))
+            data.upcomingEvents.map((event) => {
+              const canRun = RUN_MODE_STATUSES.has(event.status)
+
+              return (
+                <div key={event.id} className="rounded-lg border border-stone-700 bg-stone-900 p-3">
+                  <p className="text-sm font-medium text-stone-100">{event.occasion || 'Event'}</p>
+                  <p className="text-xs text-stone-400">
+                    {event.eventDate} {event.serveTime ? `| ${event.serveTime}` : ''} |{' '}
+                    {event.clientName || 'Client'}
+                  </p>
+                  <div className="mt-3 flex gap-2">
+                    {canRun && (
+                      <Link
+                        href={`/events/${event.id}/dop/mobile`}
+                        className="inline-flex min-h-[40px] items-center justify-center rounded-lg bg-brand-600 px-3 text-sm font-medium text-white"
+                      >
+                        Run
+                      </Link>
+                    )}
+                    <Link
+                      href={`/events/${event.id}`}
+                      className="inline-flex min-h-[40px] items-center justify-center rounded-lg border border-stone-600 px-3 text-sm font-medium text-stone-200"
+                    >
+                      View
+                    </Link>
+                  </div>
+                </div>
+              )
+            })
           )}
         </div>
       </div>

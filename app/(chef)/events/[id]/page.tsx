@@ -1400,6 +1400,9 @@ export default async function EventDetailPage({
           {/* Event-day quick actions - promoted to primary buttons when event is today */}
           {isEventToday(event.event_date) && !['draft', 'cancelled'].includes(event.status) && (
             <>
+              <Link href={`/events/${event.id}/dop/mobile`}>
+                <Button variant="primary">Run Mode</Button>
+              </Link>
               <Link href={`/events/${event.id}/pack`}>
                 <Button variant="primary">Pack List</Button>
               </Link>
@@ -1440,6 +1443,7 @@ export default async function EventDetailPage({
               !['cancelled'].includes(event.status)
                 ? [{ label: 'Grocery Quote', href: `/events/${event.id}/grocery-quote` }]
                 : []),
+              { label: 'Print Center', href: `/events/${event.id}/print` },
               { label: 'Mise en Place', href: `/events/${event.id}/mise-en-place` },
               { label: 'Travel Plan', href: `/events/${event.id}/travel` },
               ...(event.status === 'completed'
@@ -1718,6 +1722,12 @@ export default async function EventDetailPage({
                   className="text-xs text-brand-500 hover:text-brand-400"
                 >
                   View full schedule &rarr;
+                </Link>
+                <Link
+                  href={`/events/${event.id}/dop/mobile`}
+                  className="text-xs text-brand-500 hover:text-brand-400"
+                >
+                  Run Mode &rarr;
                 </Link>
               </div>
               <DOPProgressBar completed={dopProgress.completed} total={dopProgress.total} />
