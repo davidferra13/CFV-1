@@ -39,6 +39,13 @@ export function normalizeOwnedPaths(input) {
   return [...new Set(splitCsv(input).map(normalizePath).filter(Boolean))]
 }
 
+export function ownedPathsOverlap(left, right) {
+  const a = normalizePath(left)
+  const b = normalizePath(right)
+  if (!a || !b) return false
+  return a === b || a.startsWith(`${b}/`) || b.startsWith(`${a}/`)
+}
+
 export function claimRootFromArgs(args = {}) {
   return path.resolve(String(args['claims-dir'] || args.claimsDir || defaultClaimsRoot))
 }
@@ -126,15 +133,17 @@ export function detectClaimConflicts({
   claimsRoot = defaultClaimsRoot,
   owned = '',
 } = {}) {
-  const ownedPaths = new Set(normalizeOwnedPaths(owned))
+  const ownedPaths = normalizeOwnedPaths(owned)
   const currentClaimPath = claimFile ? path.resolve(String(claimFile)) : null
   const conflicts = []
-  if (!ownedPaths.size) return conflicts
+  if (!ownedPaths.length) return conflicts
 
   for (const entry of listClaims(claimsRoot)) {
     if (currentClaimPath && path.resolve(entry.file) === currentClaimPath) continue
     if (entry.claim.status !== 'active') continue
-    const overlap = (entry.claim.owned_paths || []).filter((item) => ownedPaths.has(normalizePath(item)))
+    const overlap = normalizeOwnedPaths((entry.claim.owned_paths || []).join(',')).filter(
+      (claimedPath) => ownedPaths.some((ownedPath) => ownedPathsOverlap(claimedPath, ownedPath))
+    )
     if (!overlap.length) continue
     conflicts.push({
       claim_file: relative(entry.file),

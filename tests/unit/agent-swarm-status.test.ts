@@ -73,3 +73,53 @@ test('agent-swarm-status reports active stale and overlapping claims', () => {
     fs.rmSync(claimsDir, { recursive: true, force: true })
   }
 })
+
+test('agent-swarm-status reports directory and child path overlaps', () => {
+  const claimsDir = fs.mkdtempSync(path.join(os.tmpdir(), 'chefflow-swarm-nested-status-'))
+
+  try {
+    fs.writeFileSync(
+      path.join(claimsDir, 'parent.json'),
+      JSON.stringify({
+        id: 'parent',
+        status: 'active',
+        branch: null,
+        agent: 'unit',
+        created_at: new Date().toISOString(),
+        owned_paths: ['app/(public)'],
+      })
+    )
+    fs.writeFileSync(
+      path.join(claimsDir, 'child.json'),
+      JSON.stringify({
+        id: 'child',
+        status: 'active',
+        branch: null,
+        agent: 'unit',
+        created_at: new Date().toISOString(),
+        owned_paths: ['app/(public)/page.tsx'],
+      })
+    )
+
+    const result = runNodeAllowFailure([
+      'devtools/agent-swarm-status.mjs',
+      '--claims-dir',
+      claimsDir,
+      '--json',
+    ])
+    const parsed = JSON.parse(result.stdout) as {
+      overlapping_claims: Array<{ path: string; left_path: string; right_path: string }>
+    }
+
+    assert.equal(result.ok, false)
+    const overlap = parsed.overlapping_claims[0]
+    assert.ok(overlap?.path.includes('app/(public)'))
+    assert.ok(overlap?.path.includes('app/(public)/page.tsx'))
+    assert.deepEqual(
+      new Set([overlap?.left_path, overlap?.right_path]),
+      new Set(['app/(public)', 'app/(public)/page.tsx'])
+    )
+  } finally {
+    fs.rmSync(claimsDir, { recursive: true, force: true })
+  }
+})

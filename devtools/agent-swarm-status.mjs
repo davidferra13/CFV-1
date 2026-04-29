@@ -1,6 +1,11 @@
 #!/usr/bin/env node
 import { execFileSync } from 'node:child_process'
-import { claimRootFromArgs, listClaims, normalizeOwnedPaths } from './agent-claim-utils.mjs'
+import {
+  claimRootFromArgs,
+  listClaims,
+  normalizeOwnedPaths,
+  ownedPathsOverlap,
+} from './agent-claim-utils.mjs'
 import { currentBranch, parseArgs } from './agent-skill-utils.mjs'
 
 function gitOutput(args, fallback = '') {
@@ -37,6 +42,31 @@ function statusEntries() {
     }))
 }
 
+function overlapLabel(leftPath, rightPath) {
+  return leftPath === rightPath ? leftPath : `${leftPath} <-> ${rightPath}`
+}
+
+function claimPairOverlaps(leftClaim, rightClaim) {
+  const overlaps = []
+  for (const leftPath of leftClaim.owned_paths || []) {
+    for (const rightPath of rightClaim.owned_paths || []) {
+      if (!ownedPathsOverlap(leftPath, rightPath)) continue
+      overlaps.push({
+        path: overlapLabel(leftPath, rightPath),
+        left_path: leftPath,
+        right_path: rightPath,
+      })
+    }
+  }
+  return overlaps
+}
+
+function dirtyOwners(filePath, activeClaims) {
+  return activeClaims.filter((claim) =>
+    (claim.owned_paths || []).some((ownedPath) => ownedPathsOverlap(ownedPath, filePath))
+  )
+}
+
 function buildStatus({ claimsRoot, maxAgeHours = 12 }) {
   const branch = currentBranch()
   const claims = listClaims(claimsRoot).map((entry) => ({
@@ -49,23 +79,24 @@ function buildStatus({ claimsRoot, maxAgeHours = 12 }) {
     const createdAt = Date.parse(claim.created_at || '')
     return Number.isFinite(createdAt) && (Date.now() - createdAt) / 36e5 > maxAgeHours
   })
-  const ownership = new Map()
-  for (const claim of activeClaims) {
-    for (const ownedPath of claim.owned_paths || []) {
-      if (!ownership.has(ownedPath)) ownership.set(ownedPath, [])
-      ownership.get(ownedPath).push(claim)
+  const overlappingClaims = []
+  for (let i = 0; i < activeClaims.length; i += 1) {
+    for (let j = i + 1; j < activeClaims.length; j += 1) {
+      const overlaps = claimPairOverlaps(activeClaims[i], activeClaims[j])
+      for (const overlap of overlaps) {
+        overlappingClaims.push({
+          path: overlap.path,
+          claims: [activeClaims[i].id, activeClaims[j].id],
+          left_path: overlap.left_path,
+          right_path: overlap.right_path,
+        })
+      }
     }
   }
-  const overlappingClaims = [...ownership.entries()]
-    .filter(([, owners]) => owners.length > 1)
-    .map(([filePath, owners]) => ({
-      path: filePath,
-      claims: owners.map((claim) => claim.id),
-    }))
   const claimedDirty = []
   const unclaimedDirty = []
   for (const entry of statusEntries()) {
-    const owners = ownership.get(entry.path) || []
+    const owners = dirtyOwners(entry.path, activeClaims)
     const row = { ...entry, claims: owners.map((claim) => claim.id) }
     if (owners.length) claimedDirty.push(row)
     else unclaimedDirty.push(row)

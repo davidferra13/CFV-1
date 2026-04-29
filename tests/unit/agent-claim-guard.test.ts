@@ -126,6 +126,42 @@ test('agent-claim check blocks overlapping active claims but ignores the current
   }
 })
 
+test('agent-claim check blocks directory and child path ownership overlap', () => {
+  const claimsDir = makeTempDir('chefflow-agent-claim-nested-conflict-')
+
+  try {
+    runNode([
+      'devtools/agent-claim.mjs',
+      'start',
+      '--prompt',
+      'Own public app work.',
+      '--owned',
+      'app/(public)',
+      '--claims-dir',
+      claimsDir,
+    ])
+
+    const conflict = runNodeAllowFailure([
+      'devtools/agent-claim.mjs',
+      'check',
+      '--owned',
+      'app/(public)/page.tsx',
+      '--claims-dir',
+      claimsDir,
+    ])
+    const parsed = JSON.parse(conflict.stdout) as {
+      ok: boolean
+      conflicts: Array<{ overlap: string[] }>
+    }
+
+    assert.equal(conflict.ok, false)
+    assert.equal(parsed.ok, false)
+    assert.deepEqual(parsed.conflicts[0]?.overlap, ['app/(public)'])
+  } finally {
+    fs.rmSync(claimsDir, { recursive: true, force: true })
+  }
+})
+
 test('agent-closeout-gate fails when a flight record started on a different branch', () => {
   const tempDir = makeTempDir('chefflow-agent-branch-guard-')
   const recordFile = path.join(tempDir, 'record.json')
