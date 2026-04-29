@@ -13,6 +13,7 @@ import { getEventWeather, type EventWeather } from '@/lib/weather/open-meteo'
 import { assessWeatherRisk, type WeatherRiskResult } from '@/lib/formulas/weather-risk'
 import { fetchForecast } from '@/lib/weather/open-meteo'
 import { dateToDateString } from '@/lib/utils/format'
+import { buildEventMobileRunModeHref } from '@/lib/events/operation-registry'
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -177,6 +178,9 @@ export async function PreEventNerveCenter(props: NerveCenterProps) {
   } = props
 
   const tMinus = getTMinus(eventDate, serveTime)
+  const dopMobileHref = buildEventMobileRunModeHref(eventId, 'dop')
+  const packingHref = buildEventMobileRunModeHref(eventId, 'packing')
+  const travelHref = buildEventMobileRunModeHref(eventId, 'travel')
 
   // Fetch weather if we have coordinates
   let weather: EventWeather | null = null
@@ -452,13 +456,13 @@ export async function PreEventNerveCenter(props: NerveCenterProps) {
       {/* Quick action bar */}
       <div className="px-4 py-2.5 border-t border-stone-800/50 flex flex-wrap items-center gap-2 bg-stone-900/60">
         {tMinus.hours > 0 && (
-          <Link href={`/events/${eventId}/dop/mobile`}>
+          <Link href={dopMobileHref}>
             <Button variant="secondary" size="sm">
               Run Mode
             </Button>
           </Link>
         )}
-        <Link href={`/events/${eventId}/pack`}>
+        <Link href={packingHref}>
           <Button variant="secondary" size="sm">
             Pack List
           </Button>
@@ -473,7 +477,7 @@ export async function PreEventNerveCenter(props: NerveCenterProps) {
             Docs
           </Button>
         </Link>
-        <Link href={`/events/${eventId}/travel`}>
+        <Link href={travelHref}>
           <Button variant="secondary" size="sm">
             Travel
           </Button>
@@ -484,7 +488,7 @@ export async function PreEventNerveCenter(props: NerveCenterProps) {
           </Button>
         </Link>
         {tMinus.hours <= 0 && (
-          <Link href={`/events/${eventId}/dop/mobile`}>
+          <Link href={dopMobileHref}>
             <Button variant="primary" size="sm">
               Go Live
             </Button>

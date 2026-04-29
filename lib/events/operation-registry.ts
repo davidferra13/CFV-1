@@ -292,7 +292,19 @@ export function buildEventOperationPacketHref(
   return `/api/documents/${eventId}?${params.toString()}`
 }
 
-export function buildEventMobileRunModeHref(eventId: string, mode: EventMobileRunMode): string {
+export function getEventMobileRunMode(id: EventMobileRunMode['id']): EventMobileRunMode {
+  const mode = EVENT_MOBILE_RUN_MODES.find((item) => item.id === id)
+  if (!mode) {
+    throw new Error(`Missing event mobile run mode registry entry for ${id}`)
+  }
+  return mode
+}
+
+export function buildEventMobileRunModeHref(
+  eventId: string,
+  modeOrId: EventMobileRunMode | EventMobileRunMode['id']
+): string {
+  const mode = typeof modeOrId === 'string' ? getEventMobileRunMode(modeOrId) : modeOrId
   return `/events/${eventId}/${mode.path}`
 }
 

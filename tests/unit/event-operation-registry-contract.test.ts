@@ -19,6 +19,7 @@ import {
   buildEventOperationPacketHref,
   buildEventOperationWorkspaceHref,
   buildEventSafetyPrintHref,
+  getEventMobileRunMode,
   getEventOperationReadiness,
   listMissingEventOperationRegistryTypes,
 } from '../../lib/events/operation-registry.js'
@@ -80,6 +81,8 @@ describe('event operation registry contract', () => {
   })
 
   it('keeps mobile run modes and safety prints connected to real routes', () => {
+    assert.equal(getEventMobileRunMode('dop').path, 'dop/mobile')
+
     assert.deepEqual(
       EVENT_MOBILE_RUN_MODES.map((mode) => buildEventMobileRunModeHref('event-1', mode)),
       [
@@ -90,6 +93,7 @@ describe('event operation registry contract', () => {
         '/events/event-1/close-out',
       ]
     )
+    assert.equal(buildEventMobileRunModeHref('event-1', 'packing'), '/events/event-1/pack')
 
     assert.deepEqual(
       EVENT_SAFETY_PRINTS.map((print) => buildEventSafetyPrintHref('event-1', print)),

@@ -195,6 +195,7 @@ import { BehindTheScenesPanel } from '@/components/events/behind-the-scenes-pane
 import { loadBehindTheScenes } from '@/lib/private-context/loaders'
 import { CollaborateSection } from './components/CollaborateSection'
 import { buildThreadCoordinationBrief } from '@/lib/events/thread-coordination-brief'
+import { buildEventMobileRunModeHref } from '@/lib/events/operation-registry'
 
 async function EventCompletionSection({ eventId }: { eventId: string }) {
   const result = await getCompletionForEntity('event', eventId)
@@ -801,6 +802,10 @@ export default async function EventDetailPage({
   // Get financial summary, transitions, and closure data in parallel
   const isCompletedOrBeyond = ['completed', 'in_progress'].includes(event.status)
   const canTrackTime = !['draft', 'cancelled'].includes(event.status)
+  const dopMobileHref = buildEventMobileRunModeHref(event.id, 'dop')
+  const packingHref = buildEventMobileRunModeHref(event.id, 'packing')
+  const miseEnPlaceHref = buildEventMobileRunModeHref(event.id, 'mise_en_place')
+  const travelHref = buildEventMobileRunModeHref(event.id, 'travel')
 
   const [
     { totalPaid, totalRefunded, outstandingBalance, financialAvailable },
@@ -1402,10 +1407,10 @@ export default async function EventDetailPage({
           {/* Event-day quick actions - promoted to primary buttons when event is today */}
           {isEventToday(event.event_date) && !['draft', 'cancelled'].includes(event.status) && (
             <>
-              <Link href={`/events/${event.id}/dop/mobile`}>
+              <Link href={dopMobileHref}>
                 <Button variant="primary">Run Mode</Button>
               </Link>
-              <Link href={`/events/${event.id}/pack`}>
+              <Link href={packingHref}>
                 <Button variant="primary">Pack List</Button>
               </Link>
               {eventMenus && (
@@ -1438,7 +1443,7 @@ export default async function EventDetailPage({
           <EventActionsOverflow
             actions={[
               ...(!isEventToday(event.event_date) && !['draft', 'cancelled'].includes(event.status)
-                ? [{ label: 'Packing List', href: `/events/${event.id}/pack` }]
+                ? [{ label: 'Packing List', href: packingHref }]
                 : []),
               ...(!isEventToday(event.event_date) &&
               eventMenus &&
@@ -1446,8 +1451,8 @@ export default async function EventDetailPage({
                 ? [{ label: 'Grocery Quote', href: `/events/${event.id}/grocery-quote` }]
                 : []),
               { label: 'Print Center', href: `/events/${event.id}/print` },
-              { label: 'Mise en Place', href: `/events/${event.id}/mise-en-place` },
-              { label: 'Travel Plan', href: `/events/${event.id}/travel` },
+              { label: 'Mise en Place', href: miseEnPlaceHref },
+              { label: 'Travel Plan', href: travelHref },
               ...(event.status === 'completed'
                 ? [{ label: 'Create Story', href: `/events/${event.id}/story` }]
                 : []),
@@ -1740,10 +1745,7 @@ export default async function EventDetailPage({
                 >
                   View full schedule &rarr;
                 </Link>
-                <Link
-                  href={`/events/${event.id}/dop/mobile`}
-                  className="text-xs text-brand-500 hover:text-brand-400"
-                >
+                <Link href={dopMobileHref} className="text-xs text-brand-500 hover:text-brand-400">
                   Run Mode &rarr;
                 </Link>
               </div>
@@ -1760,10 +1762,7 @@ export default async function EventDetailPage({
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-1">
                 <h3 className="text-sm font-semibold text-stone-300">Packing</h3>
-                <Link
-                  href={`/events/${event.id}/pack`}
-                  className="text-xs text-brand-500 hover:text-brand-400"
-                >
+                <Link href={packingHref} className="text-xs text-brand-500 hover:text-brand-400">
                   Open packing view &rarr;
                 </Link>
               </div>
