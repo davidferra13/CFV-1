@@ -1,0 +1,20 @@
+{
+  "created_at": "2026-04-29T18:37:43.373Z",
+  "goal": "Make keep improving typo tolerant",
+  "primary_skill": "skill-garden",
+  "sidecar_skills": [
+    "omninet"
+  ],
+  "skill_delta": "patch",
+  "durable_behavior_seen": "User wrote \"keepp improving\", which is clearly the same operating guidance as keep improving despite a typo.",
+  "skill_gap_seen": "skill-garden covered keep getting better but did not explicitly tell future agents to treat obvious typo variants as the same self-improvement trigger.",
+  "validation": {
+    "skill_validator": "PASS: node devtools/skill-validator.mjs skill-garden omninet",
+    "trigger_tests": "PASS: node devtools/skill-trigger-tests.mjs, 18 cases, 0 failures",
+    "compliance": "PASS: hard-stop scan for em dash, ts-nocheck directive, and forbidden public name in changed files",
+    "other": "Added typo tolerant keep improving golden prompt."
+  },
+  "commit": "See enclosing git commit for this closeout report.",
+  "pushed": true,
+  "notes": "No production deploy, main push, server restart, build, or database operation was performed."
+}

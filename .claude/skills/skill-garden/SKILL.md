@@ -1,6 +1,6 @@
 ---
 name: skill-garden
-description: Create, improve, and self-heal ChefFlow project skills from observed developer behavior. Use proactively when the user gives operating guidance such as "always", "never", "Codex should", "make Codex smarter", "keep getting better", "self-heal", "create skills", "knows when to", or "use this behavior going forward"; when a repeated workflow, correction, failure, persona import pattern, Hermes/OpenCloy markdown, or external conversation should become reusable Codex behavior; or when an existing skill needs refinement.
+description: Create, improve, and self-heal ChefFlow project skills from observed developer behavior. Use proactively when the user gives operating guidance such as "always", "never", "Codex should", "make Codex smarter", "keep getting better", "keep improving", "self-heal", "create skills", "knows when to", or "use this behavior going forward"; when a repeated workflow, correction, failure, persona import pattern, Hermes/OpenCloy markdown, or external conversation should become reusable Codex behavior; or when an existing skill needs refinement.
 ---
 
 # Skill Garden
@@ -21,7 +21,7 @@ Do not create skill churn. A good garden pass leaves no change when the behavior
 
 ## Keep Getting Better Pass
 
-When the user says "keep getting better", "continue improving", "keep learning", or similar broad improvement guidance, do not answer with motivation. Run a concrete improvement pass:
+When the user says "keep getting better", "keep improving", "continue improving", "keep learning", or similar broad improvement guidance, do not answer with motivation. Run a concrete improvement pass. Treat obvious typos and elongated words like "keepp improving" as the same intent when the phrase still clearly means improve Codex or the skill system.
 
 1. Identify the newest behavior, correction, missed evidence, or workflow gap from the current conversation.
 2. Search existing skills for the smallest owner.
@@ -88,7 +88,7 @@ Create or update a skill when at least one is true:
 
 - The user explicitly says this should become Codex behavior.
 - The user uses words like "always", "never", "from now on", "self-healing", or "knows when to".
-- The user says "keep getting better", "continue improving", "keep learning", or asks Codex to keep improving itself.
+- The user says "keep getting better", "keep improving", "continue improving", "keep learning", or asks Codex to keep improving itself, including obvious typo variants.
 - The same failure or correction appears twice.
 - The workflow has multiple steps that future agents would otherwise rediscover.
 - A pasted external conversation contains operating rules, persona pipeline rules, or process guidance that should survive the current chat.
