@@ -1,12 +1,15 @@
 ---
 name: warmup
 description: Get a chef account warm and on standby - server up, authenticated, routes compiled, browser open. Usage - /warmup [account] where account is chef-bob (default), agent, or developer.
-user-invocable: true
 ---
 
 # Warmup - Get a Chef Account on Standby
 
 Get an account warm and ready for real-time interaction. "Standby" means: server responding, session authenticated, key routes pre-compiled (no cold-start lag), browser open with live session.
+
+## Hard Stop
+
+Do not kill, restart, or start a server unless the developer explicitly asked for warmup behavior that includes server control. If the server is down and permission is unclear, stop and ask for approval.
 
 ## Arguments
 
@@ -22,15 +25,15 @@ Parse from user input. Examples:
 
 ## Procedure
 
-Run the warmup script. It handles everything: server check/start, auth, route warming, browser launch.
+Run the warmup script only when server control is explicitly allowed. It can start or manipulate services, so it is not safe as an implicit action.
 
 ```bash
 bash scripts/warmup.sh <account> <port>
 ```
 
-The script:
+The script may:
 
-1. **Server check** - verifies port is responding. If not, kills stuck processes and starts `npm run dev`
+1. **Server check/control** - verifies port is responding. If not, it may kill stuck processes and start `npm run dev`
 2. **Auth** - hits `/api/e2e/auth` with credentials from `.auth/<account>.json`, captures session cookie
 3. **Route warming** - curls 6 key routes with the session cookie so Next.js compiles them ahead of time
 4. **Browser launch** - opens Playwright Chromium with injected session cookie, navigates to dashboard
@@ -45,7 +48,7 @@ The script:
 
 ## If Something Fails
 
-- **Server won't start**: Check if another process holds the port (`netstat -ano | grep :<port>`), kill it
+- **Server down or port occupied**: Use `host-integrity` read-only checks first. Do not kill or restart without explicit approval.
 - **Auth fails 403**: `E2E_ALLOW_TEST_AUTH=true` must be in `.env.local`
 - **Auth fails 401**: Account may not exist in DB. Run `npx tsx scripts/setup-demo-accounts.ts`
 - **Browser won't launch**: Playwright not installed. Run `npx playwright install chromium`

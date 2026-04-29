@@ -30,6 +30,7 @@ Use the most specific skill that fits. Combine skills only when their responsibi
 | Compliance rules, banned text, invalid exports | `compliance` |
 | Zero hallucination risks, no-op UI, fake data, optimistic updates | `hallucination-scan` |
 | Build health, green claims, stale tests, status truth, conflicting evidence | `evidence-integrity` |
+| Windows host, scheduled tasks, ports, watchdogs, tunnels, zombie processes | `host-integrity` |
 | New feature request during validation phase, survey evidence, launch-readiness proof | `validation-gate` |
 | Strategic product reasoning or vague request | `first-principles` |
 | Thread or feature completeness check | `audit` |
@@ -71,6 +72,7 @@ Invoke `skill-garden` when any of these appear:
 - Current conclusions depend on old audit findings, stale docs, mixed test failures, or operational status artifacts.
 - The user asks to improve from old or new findings, audits, persona synthesis, autodocket, or backlog sources.
 - A proposed product build needs user-validation evidence before adding more surface area.
+- Work touches local servers, Task Scheduler, ports, tunnels, watchdogs, or process cleanup.
 
 ## Execution Rules
 

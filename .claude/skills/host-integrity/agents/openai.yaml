@@ -1,0 +1,4 @@
+interface:
+  display_name: "Host Integrity"
+  short_description: "Audit Windows task and process truth"
+  default_prompt: "Use Host Integrity to inspect ChefFlow Windows processes, scheduled tasks, ports, launchers, and watchdog topology without disrupting running services."
