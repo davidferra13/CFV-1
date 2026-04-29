@@ -43,6 +43,7 @@ import { listSales } from '@/lib/commerce/sale-actions'
 import { listProducts } from '@/lib/commerce/product-actions'
 import { getStockSummary } from '@/lib/inventory/transaction-actions'
 import { getWasteDashboard } from '@/lib/inventory/waste-actions'
+import { getExpiryAlerts } from '@/lib/inventory/batch-actions'
 import { listInvoices } from '@/lib/vendors/invoice-actions'
 import { listVendors } from '@/lib/vendors/actions'
 import { listStaffMembers } from '@/lib/staff/actions'
@@ -218,6 +219,7 @@ export async function loadBusinessSectionData({
     commerceProducts,
     stockSummary,
     wasteSummary,
+    expiredInventoryAlerts,
     vendorList,
     monthInvoices,
     staffMembers,
@@ -341,6 +343,7 @@ export async function loadBusinessSectionData({
     safe('commerceProducts', () => listProducts({ limit: 1 }), emptyProductList),
     safe('stockSummary', getStockSummary, emptyStockSummary),
     safe('wasteSummary', getWasteDashboard, emptyWasteSummary),
+    safe('expiredInventoryAlerts', () => getExpiryAlerts(0), [] as any[]),
     safe('vendorList', listVendors, [] as any[]),
     safe('monthInvoices', () => listInvoices(undefined, monthStart, monthEnd), [] as any[]),
     safe('staffMembers', () => listStaffMembers(true), [] as any[]),
@@ -536,6 +539,7 @@ export async function loadBusinessSectionData({
     commerceProducts,
     stockSummary,
     wasteSummary,
+    expiredInventoryAlerts,
     vendorList,
     monthInvoices,
     staffMembers,
