@@ -6,6 +6,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -184,6 +185,27 @@ function TaskCard({
           )}
 
           {task.notes && <p className="mt-0.5 text-xs text-stone-500 italic">{task.notes}</p>}
+
+          {(task.event_id || task.station_id) && (
+            <div className="mt-2 flex flex-wrap gap-2">
+              {task.event_id && (
+                <Link
+                  href={`/events/${task.event_id}`}
+                  className="rounded border border-stone-700 px-2 py-0.5 text-xxs font-medium text-stone-400 hover:bg-stone-800 hover:text-stone-200"
+                >
+                  Open event
+                </Link>
+              )}
+              {task.station_id && (
+                <Link
+                  href={`/stations/${task.station_id}`}
+                  className="rounded border border-stone-700 px-2 py-0.5 text-xxs font-medium text-stone-400 hover:bg-stone-800 hover:text-stone-200"
+                >
+                  Open station
+                </Link>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Actions */}

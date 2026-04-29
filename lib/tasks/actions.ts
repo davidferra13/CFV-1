@@ -70,6 +70,7 @@ export type Task = {
   title: string
   description: string | null
   assigned_to: string | null
+  event_id: string | null
   station_id: string | null
   due_date: string
   due_time: string | null
