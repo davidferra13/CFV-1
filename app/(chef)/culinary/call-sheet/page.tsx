@@ -41,6 +41,7 @@ import {
   isVoiceAgentDecision,
   type VoiceAgentFollowUp,
 } from '@/lib/calling/voice-agent-contract'
+import { buildLifecycleCallHref } from '@/lib/calls/lifecycle-prefill'
 
 export const metadata: Metadata = { title: 'Voice Hub' }
 
@@ -114,6 +115,29 @@ function followUpColor(urgency: VoiceAgentFollowUp['urgency']): string {
   if (urgency === 'urgent') return 'border-rose-500 text-rose-300'
   if (urgency === 'review') return 'border-amber-500 text-amber-300'
   return 'border-violet-500 text-violet-300'
+}
+
+function callbackCallType(role: string | null | undefined): 'vendor_supplier' | 'general' {
+  return role === 'inbound_vendor_callback' ? 'vendor_supplier' : 'general'
+}
+
+function buildInboxCallbackHref(call: any, followUp: VoiceAgentFollowUp | null): string {
+  const callerLabel = call.contact_name || call.contact_phone || 'Unknown caller'
+  const transcript = call.full_transcript
+    ? `Transcript: ${call.full_transcript}`
+    : 'Transcript: none available.'
+  const nextStep = followUp?.nextStep ? `Next step: ${followUp.nextStep}` : null
+  const subject = call.subject ? `Subject: ${call.subject}` : null
+
+  return buildLifecycleCallHref({
+    callType: callbackCallType(call.role),
+    contactPhone: call.contact_phone,
+    contactCompany: call.contact_name || undefined,
+    title: `Callback: ${callerLabel}`,
+    prepNotes: [nextStep, subject, transcript].filter(Boolean).join('\n'),
+    durationMinutes: 15,
+    notifyClient: false,
+  })
 }
 
 const ROLE_LABELS: Record<string, string> = {
@@ -208,7 +232,9 @@ export default async function CallSheetPage({
   const filteredAiCalls = aiCalls.filter((c) => c.role !== 'vendor_availability')
 
   const inboxItems = aiCalls.filter(
-    (c) => c.direction === 'inbound' && ['inbound_voicemail', 'inbound_unknown'].includes(c.role)
+    (c) =>
+      c.direction === 'inbound' &&
+      ['inbound_vendor_callback', 'inbound_voicemail', 'inbound_unknown'].includes(c.role)
   )
   const inboxCount = inboxItems.length
 
@@ -308,16 +334,34 @@ export default async function CallSheetPage({
                 <div key={call.id} className="bg-stone-900 rounded-xl border border-stone-700 p-5">
                   {(() => {
                     const followUp = inboxFollowUp(call)
+                    const callbackHref = buildInboxCallbackHref(call, followUp)
                     return followUp ? (
-                      <div
-                        className={`mb-3 border-l-2 pl-3 text-xs leading-relaxed ${followUpColor(followUp.urgency)}`}
-                      >
-                        <div className="font-semibold uppercase tracking-wide">
-                          {followUp.label}
+                      <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div
+                          className={`border-l-2 pl-3 text-xs leading-relaxed ${followUpColor(followUp.urgency)}`}
+                        >
+                          <div className="font-semibold uppercase tracking-wide">
+                            {followUp.label}
+                          </div>
+                          <div className="mt-1 text-stone-300">{followUp.nextStep}</div>
                         </div>
-                        <div className="mt-1 text-stone-300">{followUp.nextStep}</div>
+                        <Link
+                          href={callbackHref}
+                          className="inline-flex shrink-0 items-center justify-center rounded-lg border border-amber-700 px-3 py-1.5 text-xs font-medium text-amber-300 hover:bg-amber-950/40"
+                        >
+                          Schedule callback
+                        </Link>
                       </div>
-                    ) : null
+                    ) : (
+                      <div className="mb-3 flex justify-end">
+                        <Link
+                          href={callbackHref}
+                          className="inline-flex items-center justify-center rounded-lg border border-stone-700 px-3 py-1.5 text-xs font-medium text-stone-300 hover:bg-stone-800"
+                        >
+                          Schedule callback
+                        </Link>
+                      </div>
+                    )
                   })()}
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-start gap-3">

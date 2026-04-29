@@ -41,6 +41,16 @@ describe('call intelligence snapshot', () => {
     assert.ok(
       snapshot.humanInterventions.some((item) => item.id === 'scheduled-missing-outcome-call-complete')
     )
+    assert.ok(snapshot.lifecycleTrace.some((item) => item.id === 'human-lifecycle-call-overdue'))
+    const completedLifecycle = snapshot.lifecycleTrace.find(
+      (item) => item.id === 'human-lifecycle-call-complete'
+    )
+    assert.ok(completedLifecycle)
+    assert.match(completedLifecycle.trigger, /completion/)
+    assert.match(completedLifecycle.action, /outcome/)
+    assert.match(completedLifecycle.result, /No outcome/)
+    assert.match(completedLifecycle.stateChange, /completed/)
+    assert.match(completedLifecycle.nextStep, /Log/)
   })
 
   it('connects inbound AI calls, supplier failures, recordings, and transcripts', () => {
@@ -79,6 +89,16 @@ describe('call intelligence snapshot', () => {
     assert.equal(snapshot.stats.averageVoiceDurationSeconds, 60)
     assert.ok(snapshot.humanInterventions.some((item) => item.id === 'ai-inbound-ai-inbound'))
     assert.ok(snapshot.humanInterventions.some((item) => item.id === 'supplier-no-supplier-no'))
+    assert.ok(snapshot.lifecycleTrace.some((item) => item.id === 'ai-lifecycle-ai-inbound'))
+    const supplierLifecycle = snapshot.lifecycleTrace.find(
+      (item) => item.id === 'supplier-lifecycle-supplier-no'
+    )
+    assert.ok(supplierLifecycle)
+    assert.match(supplierLifecycle.trigger, /supplier/)
+    assert.match(supplierLifecycle.action, /capture/)
+    assert.match(supplierLifecycle.result, /no/)
+    assert.match(supplierLifecycle.stateChange, /completed/)
+    assert.match(supplierLifecycle.nextStep, /alternate supplier/)
   })
 
   it('marks failed sources as unavailable instead of zero', () => {

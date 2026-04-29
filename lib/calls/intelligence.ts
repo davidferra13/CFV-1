@@ -68,6 +68,20 @@ export type CallIntelligenceIntervention = {
   evidence: string | null
 }
 
+export type CallIntelligenceLifecycleStep = {
+  id: string
+  source: 'scheduled_call' | 'ai_call' | 'supplier_call'
+  target: string
+  occurredAt: string
+  trigger: string
+  action: string
+  result: string
+  stateChange: string
+  nextStep: string
+  href: string
+  evidence: string | null
+}
+
 export type CallIntelligenceSnapshot = {
   generatedAt: string
   sourceErrors: CallIntelligenceSourceError[]
@@ -86,6 +100,7 @@ export type CallIntelligenceSnapshot = {
     averageVoiceDurationSeconds: number | null
   }
   humanInterventions: CallIntelligenceIntervention[]
+  lifecycleTrace: CallIntelligenceLifecycleStep[]
   automationCoverage: {
     aiAllowedOnlyFor: string
     voiceRecordsWithRecordings: number | null
@@ -123,6 +138,13 @@ export function buildCallIntelligenceSnapshot(
   ]
     .sort((a, b) => urgencyRank(b.urgency) - urgencyRank(a.urgency))
     .slice(0, 8)
+  const lifecycleTrace = [
+    ...buildHumanCallLifecycle(humanCalls, now),
+    ...buildAiCallLifecycle(aiCalls),
+    ...buildSupplierCallLifecycle(supplierCalls),
+  ]
+    .sort((a, b) => Date.parse(b.occurredAt) - Date.parse(a.occurredAt))
+    .slice(0, 10)
 
   const humanCompleted = humanCalls.filter((call) => call.status === 'completed')
   const humanMissed = humanCalls.filter((call) => call.status === 'no_show')
@@ -195,6 +217,7 @@ export function buildCallIntelligenceSnapshot(
       averageVoiceDurationSeconds: average(voiceDurations),
     },
     humanInterventions,
+    lifecycleTrace,
     automationCoverage: {
       aiAllowedOnlyFor:
         'Vendor, supplier, venue, delivery, and business contact calls. Client calls stay human-led.',
@@ -389,6 +412,137 @@ function buildSupplierCallInterventions(
     }
 
     return interventions
+  })
+}
+
+function buildHumanCallLifecycle(
+  calls: CallIntelligenceHumanCall[],
+  now: Date
+): CallIntelligenceLifecycleStep[] {
+  return calls.map((call) => {
+    const target = humanTarget(call)
+    const href = `/calls/${call.id}`
+    const scheduledAt = Date.parse(call.scheduled_at)
+    const isPastDue =
+      (call.status === 'scheduled' || call.status === 'confirmed') &&
+      Number.isFinite(scheduledAt) &&
+      scheduledAt < now.getTime()
+
+    if (call.status === 'completed') {
+      return {
+        id: `human-lifecycle-${call.id}`,
+        source: 'scheduled_call',
+        target,
+        occurredAt: call.completed_at ?? call.scheduled_at,
+        trigger: 'A human call reached completion.',
+        action: 'Capture the conversation as an outcome, notes, duration, and next action.',
+        result: call.outcome_summary ?? call.call_notes ?? 'No outcome has been logged yet.',
+        stateChange: call.completed_at
+          ? `Call moved to completed at ${call.completed_at}.`
+          : 'Call is marked completed.',
+        nextStep: call.next_action ?? 'Log the missing outcome and decide the next action.',
+        href,
+        evidence: call.next_action_due_at ?? call.actual_duration_minutes?.toString() ?? null,
+      }
+    }
+
+    if (call.status === 'no_show') {
+      return {
+        id: `human-lifecycle-${call.id}`,
+        source: 'scheduled_call',
+        target,
+        occurredAt: call.scheduled_at,
+        trigger: 'The contact missed the scheduled human call.',
+        action: 'Recover the touchpoint instead of letting the client cycle stall.',
+        result: 'Call marked no-show.',
+        stateChange: 'Call moved to no-show.',
+        nextStep: 'Send a recovery message and schedule a new call.',
+        href,
+        evidence: call.call_type.replace(/_/g, ' '),
+      }
+    }
+
+    return {
+      id: `human-lifecycle-${call.id}`,
+      source: 'scheduled_call',
+      target,
+      occurredAt: call.scheduled_at,
+      trigger: isPastDue
+        ? 'A scheduled human touchpoint is past due.'
+        : 'A human touchpoint is scheduled.',
+      action: 'Prepare the agenda and complete the call at the committed time.',
+      result: `Call is currently ${call.status.replace(/_/g, ' ')}.`,
+      stateChange: isPastDue ? 'No completion state has been recorded.' : 'Call is still active.',
+      nextStep: isPastDue
+        ? 'Call now or reschedule the client-facing touchpoint.'
+        : 'Use the prep checklist, then log the outcome after the call.',
+      href,
+      evidence: call.call_type.replace(/_/g, ' '),
+    }
+  })
+}
+
+function buildAiCallLifecycle(calls: CallIntelligenceAiCall[]): CallIntelligenceLifecycleStep[] {
+  return calls.map((call) => {
+    const decisionText = JSON.stringify(call.extracted_data ?? call.action_log ?? {})
+    const target = call.contact_name ?? call.contact_phone ?? call.subject ?? 'Voice contact'
+    const isInbound = call.direction === 'inbound' || call.role?.includes('inbound')
+    const hasEscalation = decisionText.includes('escalat') || decisionText.includes('human')
+    const hasTranscript = hasText(call.full_transcript)
+
+    return {
+      id: `ai-lifecycle-${call.id}`,
+      source: 'ai_call',
+      target,
+      occurredAt: call.created_at,
+      trigger: isInbound
+        ? 'A voice message or inbound call reached the AI voice path.'
+        : 'A permitted business-contact voice task used automation.',
+      action: 'Record the call, transcript, status, and any extracted handoff signal.',
+      result: hasTranscript
+        ? 'Transcript captured.'
+        : `Voice record status is ${call.status ?? 'unknown'}.`,
+      stateChange: call.status
+        ? `AI voice record moved to ${call.status}.`
+        : 'AI voice record has no final status yet.',
+      nextStep: hasEscalation
+        ? 'Human should review the transcript and take over the next response.'
+        : isInbound
+          ? 'Review transcript and recording, then decide whether to call back.'
+          : 'Use the result in the sourcing or coordination workflow.',
+      href: '/culinary/call-sheet?tab=log',
+      evidence: transcriptEvidence(call.full_transcript, call.subject),
+    }
+  })
+}
+
+function buildSupplierCallLifecycle(
+  calls: CallIntelligenceSupplierCall[]
+): CallIntelligenceLifecycleStep[] {
+  return calls.map((call) => {
+    const target = call.vendor_name ?? call.vendor_phone ?? 'Supplier'
+    const resultLabel = call.result
+      ? `Supplier result: ${call.result}.`
+      : `Supplier call status is ${call.status ?? 'unknown'}.`
+
+    return {
+      id: `supplier-lifecycle-${call.id}`,
+      source: 'supplier_call',
+      target,
+      occurredAt: call.created_at,
+      trigger: 'A vendor or supplier availability task needed a voice check.',
+      action: 'Call the supplier and capture status, transcript, recording, and result.',
+      result: resultLabel,
+      stateChange: call.status
+        ? `Supplier call moved to ${call.status}.`
+        : 'Supplier call has no final status yet.',
+      nextStep:
+        call.result === 'no'
+          ? 'Choose an alternate supplier or update the sourcing plan.'
+          : 'Use the supplier result in procurement planning.',
+      href: '/culinary/call-sheet?tab=log',
+      evidence: ingredientEvidence(call),
+    }
   })
 }
 

@@ -126,10 +126,61 @@ export function CallIntelligencePanel({ snapshot }: Props) {
         </div>
       </div>
 
+      {snapshot.lifecycleTrace.length > 0 && (
+        <div className="rounded-lg border border-stone-800 bg-stone-900 p-3">
+          <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+            <h3 className="text-sm font-semibold uppercase tracking-wide text-stone-400">
+              Intervention lifecycle trace
+            </h3>
+            <span className="text-xs text-stone-600">
+              {snapshot.lifecycleTrace.length} recent records
+            </span>
+          </div>
+          <div className="mt-3 space-y-2">
+            {snapshot.lifecycleTrace.slice(0, 6).map((item) => (
+              <Link
+                key={item.id}
+                href={item.href}
+                className="block rounded-lg border border-stone-800 bg-stone-950/70 p-3 transition-colors hover:border-stone-700"
+              >
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="rounded-full bg-stone-800 px-2 py-0.5 text-[11px] uppercase text-stone-300">
+                    {item.source.replace(/_/g, ' ')}
+                  </span>
+                  <span className="text-sm font-medium text-stone-100">{item.target}</span>
+                  <span className="text-xs text-stone-600">
+                    {new Date(item.occurredAt).toLocaleString()}
+                  </span>
+                </div>
+                <div className="mt-2 grid gap-2 text-xs text-stone-400 md:grid-cols-5">
+                  <LifecycleCell label="Trigger" value={item.trigger} />
+                  <LifecycleCell label="Action" value={item.action} />
+                  <LifecycleCell label="Result" value={item.result} />
+                  <LifecycleCell label="State" value={item.stateChange} />
+                  <LifecycleCell label="Next" value={item.nextStep} />
+                </div>
+                {item.evidence && (
+                  <p className="mt-2 line-clamp-2 text-xs text-stone-600">{item.evidence}</p>
+                )}
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
       <p className="text-xs text-stone-600">
         Snapshot generated {new Date(snapshot.generatedAt).toLocaleString()}.
       </p>
     </section>
+  )
+}
+
+function LifecycleCell({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <p className="font-medium text-stone-500">{label}</p>
+      <p className="mt-0.5 leading-snug text-stone-300">{value}</p>
+    </div>
   )
 }
 
