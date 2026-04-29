@@ -1961,6 +1961,8 @@ export default async function ChefDashboard() {
           digest={returnDigestResult.data}
           resumeItems={resumeItemsResult.data}
           unreadNotificationCount={unreadNotificationResult.data}
+          digestUnavailable={isUnavailable(returnDigestResult)}
+          resumeItemsUnavailable={isUnavailable(resumeItemsResult)}
           unavailableLabels={[
             returnDigestResult.error,
             resumeItemsResult.error,

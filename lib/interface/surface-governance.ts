@@ -186,43 +186,47 @@ export function resolveClientSurfaceMode(pathname: string): ProductSurfaceMode {
 }
 
 export function resolveAdminSurfaceMode(pathname: string): ProductSurfaceMode {
+  const hasAdminPrefix = (prefix: string) =>
+    pathname === prefix || pathname.startsWith(`${prefix}/`)
+
   if (
     !pathname ||
     pathname === '/admin' ||
-    pathname.startsWith('/admin/pulse') ||
-    pathname.startsWith(`/admin/${['open', 'claw'].join('')}`) ||
-    pathname.startsWith('/admin/presence') ||
-    pathname.startsWith('/admin/analytics') ||
-    pathname.startsWith('/admin/financials') ||
-    pathname.startsWith('/admin/launch-readiness') ||
-    pathname.startsWith('/admin/silent-failures') ||
-    pathname.startsWith('/admin/command-center')
+    hasAdminPrefix('/admin/pulse') ||
+    hasAdminPrefix(`/admin/${['open', 'claw'].join('')}`) ||
+    hasAdminPrefix('/admin/presence') ||
+    hasAdminPrefix('/admin/analytics') ||
+    hasAdminPrefix('/admin/financials') ||
+    hasAdminPrefix('/admin/system/payments') ||
+    hasAdminPrefix('/admin/launch-readiness') ||
+    hasAdminPrefix('/admin/silent-failures') ||
+    hasAdminPrefix('/admin/command-center')
   ) {
     return 'monitoring'
   }
   if (
-    pathname.startsWith('/admin/users') ||
-    pathname.startsWith('/admin/flags') ||
-    pathname.startsWith('/admin/system') ||
-    pathname.startsWith('/admin/directory') ||
-    pathname.startsWith('/admin/directory-listings') ||
-    pathname.startsWith('/admin/referral-partners') ||
-    pathname.startsWith('/admin/price-catalog') ||
-    pathname.startsWith('/admin/beta')
+    hasAdminPrefix('/admin/users') ||
+    hasAdminPrefix('/admin/flags') ||
+    hasAdminPrefix('/admin/system') ||
+    hasAdminPrefix('/admin/directory') ||
+    hasAdminPrefix('/admin/directory-listings') ||
+    hasAdminPrefix('/admin/referral-partners') ||
+    hasAdminPrefix('/admin/price-catalog') ||
+    hasAdminPrefix('/admin/beta')
   ) {
     return 'configuring'
   }
   if (
-    pathname.startsWith('/admin/conversations') ||
-    pathname.startsWith('/admin/inquiries') ||
-    pathname.startsWith('/admin/events') ||
-    pathname.startsWith('/admin/feedback') ||
-    pathname.startsWith('/admin/audit') ||
-    pathname.startsWith('/admin/outreach') ||
-    pathname.startsWith('/admin/social') ||
-    pathname.startsWith('/admin/communications') ||
-    pathname.startsWith('/admin/hub') ||
-    pathname.startsWith('/admin/notifications')
+    hasAdminPrefix('/admin/conversations') ||
+    hasAdminPrefix('/admin/inquiries') ||
+    hasAdminPrefix('/admin/events') ||
+    hasAdminPrefix('/admin/feedback') ||
+    hasAdminPrefix('/admin/audit') ||
+    hasAdminPrefix('/admin/outreach') ||
+    hasAdminPrefix('/admin/social') ||
+    hasAdminPrefix('/admin/communications') ||
+    hasAdminPrefix('/admin/hub') ||
+    hasAdminPrefix('/admin/notifications')
   ) {
     return 'reviewing'
   }

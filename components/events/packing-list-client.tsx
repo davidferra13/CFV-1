@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { markCarPacked, resetPackingStatus, togglePackingConfirmation } from '@/lib/packing/actions'
 import type { PackingListData } from '@/lib/documents/generate-packing-list'
 import type { EventWeather } from '@/lib/weather/open-meteo'
+import { toast } from 'sonner'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -106,23 +107,26 @@ function ItemRow({
   label,
   sublabel,
   checked,
+  pending,
   onToggle,
 }: {
   id: string
   label: string
   sublabel?: string
   checked: boolean
+  pending?: boolean
   onToggle: (id: string) => void
 }) {
   return (
     <button
       type="button"
+      disabled={pending}
       onClick={() => onToggle(id)}
       className={`w-full flex items-start gap-3 px-3 py-3 rounded-lg text-left transition-colors ${
         checked
           ? 'bg-green-950 border border-green-200'
           : 'bg-stone-900 border border-stone-700 hover:bg-stone-800'
-      }`}
+      } ${pending ? 'cursor-wait opacity-75' : ''}`}
     >
       {/* Large checkbox - easy to tap on mobile */}
       <div
@@ -149,6 +153,7 @@ function ItemRow({
           {label}
         </span>
         {sublabel && <span className="block text-xs text-stone-300 mt-0.5">{sublabel}</span>}
+        {pending && <span className="block text-xs text-stone-400 mt-0.5">Saving...</span>}
       </div>
     </button>
   )
@@ -161,6 +166,7 @@ function Section({
   subtitle,
   items,
   checkedState,
+  pendingItemIds,
   onToggle,
   warning,
 }: {
@@ -168,6 +174,7 @@ function Section({
   subtitle?: string
   items: { id: string; label: string; sublabel?: string }[]
   checkedState: CheckedState
+  pendingItemIds: Set<string>
   onToggle: (id: string) => void
   warning?: string
 }) {
@@ -205,6 +212,7 @@ function Section({
             label={item.label}
             sublabel={item.sublabel}
             checked={checkedState[item.id] ?? false}
+            pending={pendingItemIds.has(item.id)}
             onToggle={onToggle}
           />
         ))}
@@ -314,6 +322,7 @@ export function PackingListClient({
   // ─── State ──────────────────────────────────────────────────────────────────
 
   const [checked, setChecked] = useState<CheckedState>({})
+  const [pendingItemIds, setPendingItemIds] = useState<Set<string>>(new Set())
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(alreadyPacked)
   const [error, setError] = useState<string | null>(null)
@@ -337,22 +346,60 @@ export function PackingListClient({
     }
   }, [storageKey, customStorageKey])
 
+  const persistCheckedState = useCallback(
+    (next: CheckedState) => {
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(next))
+      } catch {
+        // localStorage may be unavailable in private browsing.
+      }
+    },
+    [storageKey]
+  )
+
   const toggle = useCallback(
     (id: string) => {
+      if (pendingItemIds.has(id)) return
+
+      setPendingItemIds((prev) => new Set(prev).add(id))
+
+      const previousValue = checked[id] ?? false
+      const newValue = !previousValue
+
       setChecked((prev) => {
-        const newValue = !prev[id]
         const next = { ...prev, [id]: newValue }
-        try {
-          localStorage.setItem(storageKey, JSON.stringify(next))
-        } catch {
-          // ignore
-        }
-        // Sync to DB in background - fire-and-forget, localStorage is source of truth
-        togglePackingConfirmation(eventId, id, newValue).catch(() => {})
+        persistCheckedState(next)
         return next
       })
+
+      togglePackingConfirmation(eventId, id, newValue)
+        .then((result) => {
+          if (!result.success || result.confirmed !== newValue) {
+            setChecked((current) => {
+              const next = { ...current, [id]: previousValue }
+              persistCheckedState(next)
+              return next
+            })
+            toast.error(result.error ?? 'Failed to save packing confirmation.')
+          }
+        })
+        .catch(() => {
+          setChecked((current) => {
+            const next = { ...current, [id]: previousValue }
+            persistCheckedState(next)
+            return next
+          })
+          toast.error('Failed to save packing confirmation.')
+        })
+        .finally(() => {
+          setPendingItemIds((prev) => {
+            const next = new Set(prev)
+            next.delete(id)
+            return next
+          })
+        })
     },
-    [storageKey, eventId]
+    [checked, eventId, pendingItemIds, persistCheckedState]
   )
 
   const handleMarkPacked = async () => {
@@ -517,6 +564,7 @@ export function PackingListClient({
         subtitle="Pack proteins on bottom, sauces upright. Lids secured."
         items={coldSection}
         checkedState={checked}
+        pendingItemIds={pendingItemIds}
         onToggle={toggle}
       />
 
@@ -525,6 +573,7 @@ export function PackingListClient({
         subtitle="Pack on top of ice packs, last into the cooler before leaving."
         items={frozenSection}
         checkedState={checked}
+        pendingItemIds={pendingItemIds}
         onToggle={toggle}
         warning="PACK LAST - right before walking out the door."
       />
@@ -534,6 +583,7 @@ export function PackingListClient({
         subtitle="No contact with ice packs."
         items={roomTempSection}
         checkedState={checked}
+        pendingItemIds={pendingItemIds}
         onToggle={toggle}
       />
 
@@ -542,6 +592,7 @@ export function PackingListClient({
         subtitle="Nothing stacked on top. Handle separately."
         items={fragileSection}
         checkedState={checked}
+        pendingItemIds={pendingItemIds}
         onToggle={toggle}
       />
 
@@ -551,6 +602,7 @@ export function PackingListClient({
         subtitle="Standard kit + client and event-specific items."
         items={allEquipment}
         checkedState={checked}
+        pendingItemIds={pendingItemIds}
         onToggle={toggle}
       />
 
@@ -560,6 +612,7 @@ export function PackingListClient({
         subtitle="Plates, flatware, glassware, and serving pieces."
         items={servicewareSection}
         checkedState={checked}
+        pendingItemIds={pendingItemIds}
         onToggle={toggle}
       />
 
@@ -569,6 +622,7 @@ export function PackingListClient({
         subtitle="Chef uniform, tools, and compliance items."
         items={gearSection}
         checkedState={checked}
+        pendingItemIds={pendingItemIds}
         onToggle={toggle}
       />
 
@@ -587,6 +641,7 @@ export function PackingListClient({
                     id={item.id}
                     label={item.label}
                     checked={checked[item.id] ?? false}
+                    pending={pendingItemIds.has(item.id)}
                     onToggle={toggle}
                   />
                 </div>

@@ -136,7 +136,7 @@ export const EVENT_OPERATION_DOCUMENTS: EventOperationDocument[] = [
     moment: 'Closeout',
     phase: 'closeout',
     description: 'Post-service reset, cleanup, leftovers, and final checks.',
-    workspacePath: 'close-out',
+    workspacePath: 'reset',
     readinessKey: 'resetChecklist',
     includeInCorePacket: true,
     includeInPrintCenterPacket: true,

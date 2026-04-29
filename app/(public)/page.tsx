@@ -8,7 +8,9 @@ import {
 } from '@/components/seo/json-ld'
 import { buildMarketingSourceHref } from '@/lib/marketing/source-links'
 import { buildOperatorWalkthroughHref } from '@/lib/marketing/walkthrough-links'
+import { getDiscoverableChefs } from '@/lib/directory/actions'
 import { buildMarketingMetadata } from '@/lib/site/public-site'
+import { HomepageBookableChefs } from './_components/homepage-bookable-chefs'
 import { HomepageVisualStage } from './_components/homepage-visual-stage'
 import { MobileBookingBar } from './_components/mobile-booking-bar'
 import { OperatorProofStack } from './_components/operator-proof-stack'
@@ -38,9 +40,11 @@ export const metadata: Metadata = {
   ],
 }
 
-export default function Home() {
+export default async function Home() {
+  const chefs = await getDiscoverableChefs()
+
   return (
-    <main>
+    <>
       <PublicPageView
         pageName="home"
         properties={{
@@ -54,6 +58,8 @@ export default function Home() {
       <WebSiteJsonLd />
 
       <HomepageVisualStage />
+
+      <HomepageBookableChefs chefs={chefs} />
 
       <div className="py-6 sm:py-8">
         <div className="mx-auto flex max-w-6xl items-center gap-6 px-4 sm:px-6 lg:px-8">
@@ -115,6 +121,6 @@ export default function Home() {
       </section>
 
       <MobileBookingBar />
-    </main>
+    </>
   )
 }

@@ -108,7 +108,7 @@ const AdminNavGroupSection = memo(function AdminNavGroupSection({
               key={item.href}
               item={item}
               collapsed={collapsed}
-              isActive={pathname === item.href || pathname.startsWith(item.href + '/')}
+              isActive={isAdminNavItemActive(pathname, item.href)}
             />
           ))}
         </div>
@@ -178,9 +178,7 @@ export function AdminSidebar({ userId }: { userId: string }) {
             key={item.href}
             item={item}
             collapsed={collapsed}
-            isActive={
-              item.href === '/admin' ? pathname === '/admin' : pathname.startsWith(item.href)
-            }
+            isActive={isAdminNavItemActive(pathname, item.href)}
           />
         ))}
       </div>
@@ -281,8 +279,7 @@ export function AdminMobileNav({ userId }: { userId: string }) {
             <nav className="px-2 py-3 space-y-1">
               {adminPrimaryLinks.map((item) => {
                 const Icon = item.icon
-                const isActive =
-                  item.href === '/admin' ? pathname === '/admin' : pathname.startsWith(item.href)
+                const isActive = isAdminNavItemActive(pathname, item.href)
                 return (
                   <Link
                     key={item.href}
@@ -307,7 +304,7 @@ export function AdminMobileNav({ userId }: { userId: string }) {
                   </div>
                   {group.items.map((item) => {
                     const Icon = item.icon
-                    const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
+                    const isActive = isAdminNavItemActive(pathname, item.href)
                     return (
                       <Link
                         key={item.href}
@@ -358,6 +355,17 @@ export function AdminMobileNav({ userId }: { userId: string }) {
       )}
     </>
   )
+}
+
+function isAdminNavItemActive(pathname: string, href: string): boolean {
+  if (href === '/admin') return pathname === href
+  if (pathname === href) return true
+
+  if (href === '/admin/system' || href === '/admin/beta') {
+    return false
+  }
+
+  return pathname.startsWith(`${href}/`)
 }
 
 // ── Admin Main Content ────────────────────────────────────────────────────

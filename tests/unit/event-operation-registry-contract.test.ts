@@ -70,6 +70,10 @@ describe('event operation registry contract', () => {
       buildEventOperationWorkspaceHref('event-1', prep),
       '/events/event-1/interactive?type=prep'
     )
+    const reset = EVENT_OPERATION_DOCUMENTS.find((doc) => doc.type === 'reset')
+    assert.ok(reset)
+    assert.equal(buildEventOperationWorkspaceHref('event-1', reset), '/events/event-1/reset')
+
     assert.equal(
       buildEventOperationDocumentHref('event-1', 'prep', { archive: true }),
       '/api/documents/event-1?type=prep&archive=1'

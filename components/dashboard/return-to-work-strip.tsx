@@ -9,6 +9,8 @@ type ReturnToWorkStripProps = {
   digest: ContinuityDigest | null
   resumeItems: ResumeItem[]
   unreadNotificationCount: number | null
+  digestUnavailable?: boolean
+  resumeItemsUnavailable?: boolean
   unavailableLabels?: string[]
 }
 
@@ -16,6 +18,8 @@ export function ReturnToWorkStrip({
   digest,
   resumeItems,
   unreadNotificationCount,
+  digestUnavailable = false,
+  resumeItemsUnavailable = false,
   unavailableLabels = [],
 }: ReturnToWorkStripProps) {
   const latestSession = digest?.recentSessions[0] ?? null
@@ -43,7 +47,13 @@ export function ReturnToWorkStrip({
             Pick up with current context
           </h2>
           <p className="mt-1 text-sm text-stone-400">
-            {buildSummaryLine({ digest, resumeCount: resumeItems.length, unreadNotificationCount })}
+            {buildSummaryLine({
+              digest,
+              resumeCount: resumeItems.length,
+              unreadNotificationCount,
+              digestUnavailable,
+              resumeItemsUnavailable,
+            })}
           </p>
           {hasUnavailableData && (
             <p className="mt-2 text-xs text-amber-300">
@@ -74,13 +84,23 @@ export function ReturnToWorkStrip({
       <div className="mt-4 grid gap-3 lg:grid-cols-3">
         <ContextTile
           label="Last place"
-          value={latestSession?.lastPath ? readablePath(latestSession.lastPath) : 'No recent path'}
+          value={
+            digestUnavailable
+              ? 'Unavailable'
+              : latestSession?.lastPath
+                ? readablePath(latestSession.lastPath)
+                : 'No recent path'
+          }
           href={lastHref}
           cta="Open"
         />
         <ContextTile
           label="Changed"
-          value={`${changedCount} tracked update${changedCount === 1 ? '' : 's'}`}
+          value={
+            digestUnavailable
+              ? 'Unavailable'
+              : `${changedCount} tracked update${changedCount === 1 ? '' : 's'}`
+          }
           href="/activity"
           cta="Review"
         />
@@ -124,16 +144,24 @@ function buildSummaryLine({
   digest,
   resumeCount,
   unreadNotificationCount,
+  digestUnavailable,
+  resumeItemsUnavailable,
 }: {
   digest: ContinuityDigest | null
   resumeCount: number
   unreadNotificationCount: number | null
+  digestUnavailable: boolean
+  resumeItemsUnavailable: boolean
 }): string {
   const changed = digest?.activityCount ?? 0
   const unread = unreadNotificationCount ?? 0
   const parts = [
-    `${resumeCount} active item${resumeCount === 1 ? '' : 's'}`,
-    `${changed} tracked change${changed === 1 ? '' : 's'}`,
+    resumeItemsUnavailable
+      ? 'Active items unavailable'
+      : `${resumeCount} active item${resumeCount === 1 ? '' : 's'}`,
+    digestUnavailable
+      ? 'Tracked changes unavailable'
+      : `${changed} tracked change${changed === 1 ? '' : 's'}`,
   ]
   if (unreadNotificationCount !== null) {
     parts.push(`${unread} unread notification${unread === 1 ? '' : 's'}`)
