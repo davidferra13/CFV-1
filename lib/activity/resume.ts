@@ -132,7 +132,7 @@ async function getActiveMenus(db: DbClient, tenantId: string): Promise<ResumeIte
   const menuIds = rows.map((m) => m.id)
   const { data: dishes } =
     menuIds.length > 0
-      ? await db.from('dishes').select('menu_id').in('menu_id', menuIds)
+      ? await db.from('dishes').select('menu_id').eq('tenant_id', tenantId).in('menu_id', menuIds)
       : { data: [] }
 
   const dishCounts: Record<string, number> = {}
