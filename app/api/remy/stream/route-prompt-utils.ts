@@ -14,6 +14,7 @@ import type { SurveyState } from '@/lib/ai/remy-survey-constants'
 import type { RemyMessage, RemyContext } from '@/lib/ai/remy-types'
 import type { RemyMemory } from '@/lib/ai/remy-memory-types'
 import { formatMetricRegistryForPrompt } from '@/lib/analytics/metric-registry'
+import { getChefClock } from '@/lib/time/chef-clock'
 
 //  Navigation Route Map
 
@@ -329,30 +330,12 @@ export function buildRemySystemPrompt(
     )
   }
 
-  // Current timestamp - so Remy knows the time, day, and date
-  const now = new Date()
-  const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-  const timeStr = now.toLocaleTimeString('en-US', {
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-  })
-  const dateStr = now.toLocaleDateString('en-US', {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  })
-  const hour = now.getHours()
-  let timeOfDayNote = ''
-  if (hour >= 22 || hour < 5) {
-    timeOfDayNote = ' (late night - the chef is working late. Be concise, they may be tired.)'
-  } else if (hour >= 5 && hour < 8) {
-    timeOfDayNote =
-      ' (early morning - the chef is starting their day. Good time for a brief daily overview.)'
-  } else if (hour >= 12 && hour < 14) {
-    timeOfDayNote = ' (lunch break - keep responses efficient.)'
-  }
-  parts.push(`\nCURRENT TIME: ${timeStr} on ${dayNames[now.getDay()]}, ${dateStr}${timeOfDayNote}`)
+  const clock = getChefClock({ chefTimezone: context.chefTimezone })
+  parts.push(`\nCURRENT TIME:
+- UTC: ${clock.utcNow}
+- Chef local: ${clock.dateTimeLabel}
+- Timezone: ${clock.timezone} (${clock.timezoneSource})
+- Today key: ${clock.localDate}${clock.note ? `\n- Time note: ${clock.note}` : ''}`)
 
   const locationLine =
     context.chefCity && context.chefState

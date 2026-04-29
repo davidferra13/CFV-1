@@ -17,6 +17,7 @@ if ((Test-Path $logFile) -and (Get-Item $logFile).Length -gt 2MB) {
 
 $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
 $issues = @()
+$watchdogRecovery = "SKIP"
 
 # 1. Production server (port 3000)
 try {
@@ -73,6 +74,25 @@ try {
     $issues += "Cloudflare Tunnel (app.cheflowhq.com) unreachable"
 }
 
+# 5b. Non-destructive recovery bridge: if prod or public tunnel is down,
+# make sure the watchdog itself is alive. The supervisor only starts the
+# watchdog when absent. It does not kill, restart, or register services.
+if (($prodStatus -ne "OK") -or ($tunnelStatus -ne "OK")) {
+    $supervisorScript = "$projectDir\scripts\scheduled\watchdog-supervisor.ps1"
+    if (Test-Path $supervisorScript) {
+        try {
+            powershell.exe -NoProfile -ExecutionPolicy Bypass -File $supervisorScript | Out-Null
+            $watchdogRecovery = "CHECKED"
+        } catch {
+            $watchdogRecovery = "FAILED"
+            $issues += "Watchdog supervisor failed: $($_.Exception.Message)"
+        }
+    } else {
+        $watchdogRecovery = "MISSING"
+        $issues += "Watchdog supervisor script missing"
+    }
+}
+
 # 6. Disk space (alert if any drive < 10GB free)
 Get-PSDrive -PSProvider FileSystem | Where-Object { $_.Free -gt 0 } | ForEach-Object {
     $freeGB = [math]::Round($_.Free / 1GB, 1)
@@ -106,7 +126,7 @@ if ($healthchecksUrl) {
 }
 
 # Log result
-$line = "[$timestamp] Prod=$prodStatus | Dev=$devStatus | DB=$dbStatus | Ollama=$ollamaStatus | Tunnel=$tunnelStatus | Mem=${memUsedPct}% | CPU=${cpuPct}%"
+$line = "[$timestamp] Prod=$prodStatus | Dev=$devStatus | DB=$dbStatus | Ollama=$ollamaStatus | Tunnel=$tunnelStatus | WatchdogRecovery=$watchdogRecovery | Mem=${memUsedPct}% | CPU=${cpuPct}%"
 if ($issues.Count -gt 0) {
     $line += " | ISSUES: $($issues -join '; ')"
 }

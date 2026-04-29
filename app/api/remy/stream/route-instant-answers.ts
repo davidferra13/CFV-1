@@ -10,6 +10,7 @@
 import type { RemyContext } from '@/lib/ai/remy-types'
 import type { RemyMemory } from '@/lib/ai/remy-memory-types'
 import { findMetricDefinitionsByQuery } from '@/lib/analytics/metric-registry'
+import { daysUntilChefDate, getChefClock, isSameChefDate } from '@/lib/time/chef-clock'
 
 interface InstantAnswer {
   text: string
@@ -424,18 +425,17 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
     pattern:
       /^(?:good\s+morning|good\s+afternoon|good\s+evening|morning|afternoon|evening|hey|hi|hello|yo|sup|what'?s?\s+up)(?:\s+remy)?\s*[!.?]?$/i,
     answer: (ctx) => {
-      const hour = new Date().getHours()
-      const greeting = hour < 12 ? 'Morning' : hour < 17 ? 'Afternoon' : 'Evening'
+      const clock = getChefClock({ chefTimezone: ctx.chefTimezone })
+      const greeting =
+        clock.hour < 12 ? 'Morning' : clock.hour < 17 ? 'Afternoon' : 'Evening'
       const lines: string[] = [`${greeting}, chef! 👨‍🍳`]
 
       // Proactive context - what's most relevant right now
       const nuggets: string[] = []
       if (ctx.upcomingEvents && ctx.upcomingEvents.length > 0) {
-        const now = Date.now()
         const today = ctx.upcomingEvents.filter((e) => {
           if (!e.date) return false
-          const dt = new Date(e.date)
-          return dt.toDateString() === new Date().toDateString()
+          return isSameChefDate(e.date, clock)
         })
         if (today.length > 0) {
           nuggets.push(
@@ -444,10 +444,8 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
         } else {
           const next = ctx.upcomingEvents[0]
           if (next.date) {
-            const daysUntil = Math.ceil(
-              (new Date(next.date).getTime() - now) / (1000 * 60 * 60 * 24)
-            )
-            if (daysUntil <= 3) {
+            const daysUntil = daysUntilChefDate(next.date, clock)
+            if (daysUntil !== null && daysUntil <= 3) {
               nuggets.push(
                 `Next event in **${daysUntil} day${daysUntil !== 1 ? 's' : ''}**: ${next.occasion ?? 'Event'} for ${next.clientName}`
               )
@@ -1218,9 +1216,10 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
     pattern:
       /^(?:what'?s?\s+my\s+workload|am\s+i\s+overbooked|how\s+(?:busy|packed|full)\s+am\s+i)/i,
     answer: (ctx) => {
+      const clock = getChefClock({ chefTimezone: ctx.chefTimezone })
       const upcoming = ctx.upcomingEventCount ?? 0
       const todayEvents = (ctx.upcomingEvents ?? []).filter(
-        (e) => e.date && new Date(e.date).toDateString() === new Date().toDateString()
+        (e) => e.date && isSameChefDate(e.date, clock)
       ).length
       const thisWeek = (ctx.upcomingEvents ?? []).length
       const status =
@@ -1785,8 +1784,9 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
     pattern:
       /^(?:today'?s?\s+(?:plan|focus|priorities?)|what\s+should\s+i\s+(?:focus\s+on|do)\s+today|daily\s+priorities?|what'?s?\s+the\s+plan)/i,
     answer: (ctx) => {
+      const clock = getChefClock({ chefTimezone: ctx.chefTimezone })
       const todayEvents = (ctx.upcomingEvents ?? []).filter(
-        (e) => e.date && new Date(e.date).toDateString() === new Date().toDateString()
+        (e) => e.date && isSameChefDate(e.date, clock)
       )
       const lines: string[] = []
       if (todayEvents.length > 0) {
@@ -1809,7 +1809,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
       }
       if (ctx.upcomingCalls && ctx.upcomingCalls.length > 0) {
         const todayCalls = ctx.upcomingCalls.filter(
-          (c) => new Date(c.scheduledAt).toDateString() === new Date().toDateString()
+          (c) => isSameChefDate(c.scheduledAt, clock)
         )
         if (todayCalls.length > 0) {
           lines.push(`**${todayCalls.length} call${todayCalls.length !== 1 ? 's' : ''} today:**`)

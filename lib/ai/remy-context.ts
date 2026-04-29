@@ -9,16 +9,10 @@ import { createServerClient } from '@/lib/db/server'
 import type { RemyContext, PageEntityContext } from '@/lib/ai/remy-types'
 import { getDailyPlanStats } from '@/lib/daily-ops/actions'
 
-// Safe local-date ISO string - avoids UTC offset shifting after ~7pm ET
-function localDateISO(d: Date): string {
-  return [
-    d.getFullYear(),
-    String(d.getMonth() + 1).padStart(2, '0'),
-    String(d.getDate()).padStart(2, '0'),
-  ].join('-')
-}
-function localDateOffset(d: Date, days: number): string {
-  return localDateISO(new Date(d.getFullYear(), d.getMonth(), d.getDate() + days))
+function dateKeyOffset(dateKey: string, days: number): string {
+  const [year, month, day] = dateKey.split('-').map(Number)
+  const date = new Date(Date.UTC(year, month - 1, day + days))
+  return date.toISOString().slice(0, 10)
 }
 import { getCachedChefArchetype } from '@/lib/chef/layout-data-cache'
 import { archetypeToOperatorType, OPERATOR_TARGETS } from '@/lib/costing/knowledge'
@@ -34,6 +28,7 @@ import { formatServiceConfigForPrompt } from '@/lib/chef-services/service-config
 import { getMetricRegistryPromptContext } from '@/lib/analytics/metric-registry'
 import { evaluateCompletion } from '@/lib/completion/engine'
 import { buildPageCompletionContext } from '@/lib/ai/remy-completion-context'
+import { getChefClock } from '@/lib/time/chef-clock'
 
 const OPENCLAW_API = process.env.OPENCLAW_API_URL || 'http://10.0.0.177:8081'
 
@@ -148,6 +143,7 @@ interface CachedContext {
     | 'tagline'
     | 'chefCity'
     | 'chefState'
+    | 'chefTimezone'
     | 'chefArchetype'
     | 'pageEntity'
     | 'mentionedEntities'
@@ -286,10 +282,12 @@ export async function loadRemyContext(
 
   // Tier 1: Always fresh (cheap count queries + chef profile + daily plan + service config)
   // These run even for minimal scope - they're fast and provide core business summary.
-  const [chefProfile, counts, dailyPlan, healthSummary, serviceConfig, archetype] =
+  const chefProfile = await loadChefProfile(db, tenantId, failedOperations)
+  const clock = getChefClock({ chefTimezone: chefProfile.timezone })
+
+  const [counts, dailyPlan, healthSummary, serviceConfig, archetype] =
     await Promise.all([
-      loadChefProfile(db, tenantId, failedOperations),
-      loadQuickCounts(db, tenantId, failedOperations),
+      loadQuickCounts(db, tenantId, clock.localDate, failedOperations),
       isMinimal
         ? Promise.resolve(null)
         : withContextFallback(
@@ -338,7 +336,7 @@ export async function loadRemyContext(
     if (cached && cached.expiresAt > Date.now()) {
       detailed = cached.data
     } else {
-      detailed = await loadDetailedContext(db, tenantId, failedOperations)
+      detailed = await loadDetailedContext(db, tenantId, clock.localDate, failedOperations)
       contextCache.set(tenantId, {
         data: detailed,
         expiresAt: Date.now() + CACHE_TTL_MS,
@@ -490,6 +488,7 @@ export async function loadRemyContext(
     tagline: chefProfile.tagline,
     chefCity: chefProfile.city,
     chefState: chefProfile.state,
+    chefTimezone: chefProfile.timezone,
     chefArchetype: chefProfile.archetype,
     clientCount: counts.clients,
     upcomingEventCount: counts.upcomingEvents,
@@ -561,7 +560,7 @@ export async function loadRemyContext(
 async function loadChefProfile(db: any, tenantId: string, failedOperations?: string[]) {
   const { data, error } = await db
     .from('chefs')
-    .select('business_name, tagline, city, state, archetype')
+    .select('business_name, tagline, city, state, timezone, archetype')
     .eq('id', tenantId)
     .single()
 
@@ -574,13 +573,19 @@ async function loadChefProfile(db: any, tenantId: string, failedOperations?: str
     tagline: data?.tagline ?? null,
     city: data?.city ?? null,
     state: data?.state ?? null,
+    timezone: data?.timezone ?? null,
     archetype: data?.archetype ?? null,
   }
 }
 
 // ─── Tier 1: Quick Counts ───────────────────────────────────────────────────
 
-async function loadQuickCounts(db: any, tenantId: string, failedOperations?: string[]) {
+async function loadQuickCounts(
+  db: any,
+  tenantId: string,
+  today: string,
+  failedOperations?: string[]
+) {
   const [clientsResult, eventsResult, inquiriesResult] = await Promise.all([
     db.from('clients').select('id', { count: 'exact', head: true }).eq('tenant_id', tenantId),
     db
@@ -588,7 +593,7 @@ async function loadQuickCounts(db: any, tenantId: string, failedOperations?: str
       .select('id', { count: 'exact', head: true })
       .eq('tenant_id', tenantId)
       .not('status', 'in', '("cancelled","completed")')
-      .gte('event_date', localDateISO(new Date())),
+      .gte('event_date', today),
     db
       .from('inquiries')
       .select('id', { count: 'exact', head: true })
@@ -615,12 +620,16 @@ async function loadQuickCounts(db: any, tenantId: string, failedOperations?: str
 
 // ─── Tier 2: Detailed Context (cached 5 min) ────────────────────────────────
 
-async function loadDetailedContext(db: any, tenantId: string, failedOperations?: string[]) {
+async function loadDetailedContext(
+  db: any,
+  tenantId: string,
+  today: string,
+  failedOperations?: string[]
+) {
   const now = new Date()
-  const today = localDateISO(now)
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
   const yearStart = new Date(now.getFullYear(), 0, 1).toISOString()
-  const next30 = localDateOffset(now, 30)
+  const next30 = dateKeyOffset(today, 30)
 
   const [
     eventsResult,
@@ -912,7 +921,7 @@ async function loadDetailedContext(db: any, tenantId: string, failedOperations?:
       .eq('tenant_id', tenantId)
       .gt('balance_due_cents', 0)
       .gte('payment_due_date', today)
-      .lte('payment_due_date', localDateOffset(now, 7))
+      .lte('payment_due_date', dateKeyOffset(today, 7))
       .not('status', 'eq', 'cancelled')
       .order('payment_due_date', { ascending: true })
       .limit(5),
@@ -924,7 +933,7 @@ async function loadDetailedContext(db: any, tenantId: string, failedOperations?:
       .eq('tenant_id', tenantId)
       .eq('status', 'sent')
       .gte('valid_until', today)
-      .lte('valid_until', localDateOffset(now, 7))
+      .lte('valid_until', dateKeyOffset(today, 7))
       .order('valid_until', { ascending: true })
       .limit(5),
 

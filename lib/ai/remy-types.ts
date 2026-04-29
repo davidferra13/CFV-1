@@ -122,6 +122,7 @@ export interface RemyContext {
   tagline: string | null
   chefCity: string | null
   chefState: string | null
+  chefTimezone?: string | null
   chefArchetype: string | null
   clientCount: number
   upcomingEventCount: number
