@@ -63,6 +63,7 @@ export const adminNavGroups: AdminNavGroup[] = [
       { href: '/admin/directory', label: 'Directory', icon: TreeStructure },
       { href: '/admin/directory-listings', label: 'Directory Listings', icon: List },
       { href: '/admin/beta', label: 'Early Signups', icon: Star },
+      { href: '/admin/launch-readiness', label: 'Launch Readiness', icon: ClipboardCheck },
       { href: '/admin/flags', label: 'Feature Flags', icon: FlagBanner },
       { href: '/admin/hub', label: 'Dinner Circle Groups', icon: Users },
       { href: '/admin/referral-partners', label: 'Referral Partners', icon: Handshake },

@@ -20,6 +20,7 @@ import {
   Globe,
   Inbox,
   Cpu,
+  ClipboardCheck,
 } from '@/components/ui/icons'
 
 function StatCard({
@@ -177,6 +178,12 @@ export default async function AdminOverviewPage() {
             icon={Activity}
             label="Command Center"
             description="Cross-tenant owner observability dashboard"
+          />
+          <QuickTile
+            href="/admin/launch-readiness"
+            icon={ClipboardCheck}
+            label="Launch Readiness"
+            description="V1 validation blockers and proof status"
           />
           <QuickTile
             href="/admin/conversations"

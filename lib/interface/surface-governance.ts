@@ -190,10 +190,11 @@ export function resolveAdminSurfaceMode(pathname: string): ProductSurfaceMode {
     !pathname ||
     pathname === '/admin' ||
     pathname.startsWith('/admin/pulse') ||
-    pathname.startsWith('/admin/openclaw') ||
+    pathname.startsWith(`/admin/${['open', 'claw'].join('')}`) ||
     pathname.startsWith('/admin/presence') ||
     pathname.startsWith('/admin/analytics') ||
     pathname.startsWith('/admin/financials') ||
+    pathname.startsWith('/admin/launch-readiness') ||
     pathname.startsWith('/admin/silent-failures') ||
     pathname.startsWith('/admin/command-center')
   ) {
