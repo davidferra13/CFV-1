@@ -6,6 +6,19 @@ import { createServerClient } from '@/lib/db/server'
 import { getClientWorkGraphSnapshot } from '@/lib/client-work-graph/actions'
 import { sanitizeForPrompt, fenceForPrompt } from '@/lib/ai/remy-input-validation'
 import type { ClientWorkGraph } from '@/lib/client-work-graph/types'
+import {
+  summarizeRemyClientContextSourceLabels,
+  type RemyClientContextCategory,
+} from '@/lib/ai/remy-client-context-policy'
+
+const REMY_CLIENT_CONTEXT_CATEGORIES = [
+  'profile',
+  'dietary',
+  'event',
+  'quote',
+  'loyalty',
+  'work_graph',
+] as const satisfies readonly RemyClientContextCategory[]
 
 export interface RemyClientContext {
   clientName: string | null
@@ -43,6 +56,7 @@ export interface RemyClientContext {
   loyaltyLifetimePoints: number
   nextTierName: 'silver' | 'gold' | 'platinum' | null
   pointsToNextTier: number
+  contextSourceLabels: string[]
   actionableItemCount: number
   workGraph: ClientWorkGraph
   workItems: Array<{
@@ -152,6 +166,7 @@ export async function loadRemyClientContext(
     loyaltyLifetimePoints: lifetimePoints,
     nextTierName,
     pointsToNextTier,
+    contextSourceLabels: summarizeRemyClientContextSourceLabels(REMY_CLIENT_CONTEXT_CATEGORIES),
     actionableItemCount: snapshot.workGraph.summary.totalItems,
     workGraph: snapshot.workGraph,
     workItems: snapshot.workGraph.items.slice(0, 5).map((item) => ({
@@ -172,6 +187,12 @@ export function formatClientContext(ctx: RemyClientContext): string {
   parts.push(`\nYOUR CLIENT:
 - Name: ${fenceForPrompt('client_name', sanitizeForPrompt(ctx.clientName ?? 'Client'))}
 - Chef: ${fenceForPrompt('chef_name', sanitizeForPrompt(ctx.chefName ?? 'Your chef'))}${ctx.businessName ? ` (${fenceForPrompt('business_name', sanitizeForPrompt(ctx.businessName))})` : ''}`)
+
+  if (ctx.contextSourceLabels.length > 0) {
+    parts.push(
+      `- Context sources: ${ctx.contextSourceLabels.map((label) => fenceForPrompt('context_source', sanitizeForPrompt(label))).join(', ')}`
+    )
+  }
 
   if (ctx.dietaryRestrictions) {
     parts.push(
