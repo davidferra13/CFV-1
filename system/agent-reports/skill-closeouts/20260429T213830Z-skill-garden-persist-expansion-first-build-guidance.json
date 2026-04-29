@@ -1,0 +1,21 @@
+{
+  "created_at": "2026-04-29T21:38:30.409Z",
+  "goal": "Persist expansion-first build guidance",
+  "primary_skill": "skill-garden",
+  "sidecar_skills": [
+    "omninet",
+    "builder"
+  ],
+  "skill_delta": "patch",
+  "durable_behavior_seen": null,
+  "skill_gap_seen": null,
+  "validation": {
+    "skill_validator": "node devtools/skill-validator.mjs builder: OK, 0 errors, 0 warnings",
+    "trigger_tests": null,
+    "compliance": "rg em dash scan on changed skill and closeout report: no matches",
+    "other": "git diff reviewed for .claude/skills/builder/SKILL.md"
+  },
+  "commit": null,
+  "pushed": false,
+  "notes": "Patched builder with expansion-first default for future ChefFlow builds. Preserved unrelated dirty work."
+}

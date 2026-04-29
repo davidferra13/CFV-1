@@ -49,6 +49,9 @@ If the developer says "Build [specific spec or plain English]," skip the queue a
 
 ## Build Phase (Continuous Verification)
 
+- **Expansion-first default.** ChefFlow builds grow like a root system: additive, incremental, and compounding. Default every implementation to expanding existing capability piece by piece, preserving working surfaces and data paths unless the developer explicitly asks for removal, replacement, or contraction.
+- **No subtractive cleanup by assumption.** Do not remove features, UI, fields, docs, routes, tests, scripts, or behavior just because they look old, duplicated, incomplete, or awkward. If something conflicts with the current build, adapt around it or mark it for developer review.
+- **Progress over rewrite.** Prefer small forward steps that deepen the current system: add a guarded branch, extend a component, introduce an additive helper, fill a missing state, or connect an existing flow. Treat rewrites, simplifications that reduce surface area, and broad pruning as out of scope without explicit approval.
 - Implement exactly what the spec defines. No unapproved additions.
 - No "while I'm here" refactors. No bonus features.
 - If you discover something the spec didn't anticipate: stop, update the spec, then continue.
