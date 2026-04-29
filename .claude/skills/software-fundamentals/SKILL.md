@@ -16,6 +16,7 @@ AI does not make code cheap. It makes good software design more valuable because
 3. Keep the human in the strategic role: own architecture, boundaries, interfaces, tradeoffs, and verification.
 4. Use AI as tactical implementation capacity inside explicit constraints and tight feedback loops.
 5. Invest in the design of the system every day.
+6. Keep refining growing features into real modules over time: shared language, simple interfaces, hidden complexity, and tested contracts.
 
 ## Mandatory Loop
 
@@ -44,6 +45,7 @@ Run this before coding unless the task is a tiny mechanical edit:
    - Look for a small number of modules with simple interfaces and hidden complexity.
    - Avoid adding shallow helper sprawl, fragmented files, and leaky interfaces.
    - Test at stable interfaces rather than incidental internals.
+   - When repeated behavior appears, refine it into a named module only if the module creates a better boundary than the scattered code.
 6. Interface-first delegation:
    - Design the public contract, inputs, outputs, invariants, errors, and ownership boundaries first.
    - Delegate or implement internals only after the interface is clear.

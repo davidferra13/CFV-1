@@ -1,0 +1,22 @@
+{
+  "created_at": "2026-04-29T21:44:04.385Z",
+  "goal": "Persist modular refinement build guidance",
+  "primary_skill": "skill-garden",
+  "sidecar_skills": [
+    "omninet",
+    "builder",
+    "software-fundamentals"
+  ],
+  "skill_delta": "patch",
+  "durable_behavior_seen": null,
+  "skill_gap_seen": null,
+  "validation": {
+    "skill_validator": "node devtools/skill-validator.mjs builder software-fundamentals: OK, 0 errors, 0 warnings",
+    "trigger_tests": null,
+    "compliance": "rg em dash scan on changed skill files: no matches",
+    "other": "git diff reviewed for builder and software-fundamentals skill patches"
+  },
+  "commit": null,
+  "pushed": false,
+  "notes": "Patched builder and software-fundamentals so future ChefFlow builds continuously refine growing code into real TypeScript modules with clear boundaries while avoiding shallow helper sprawl."
+}
