@@ -40,6 +40,12 @@ Generate a large candidate run with stricter novelty:
 npm run personas:corpus -- --execute --count 1000 --novelty 0.48 --max-attempts 3500
 ```
 
+Increase edge-case pressure when a domain starts producing generic repeats:
+
+```bash
+npm run personas:corpus -- --execute --count 100 --domain pricing-checkout --edge-mode chaos
+```
+
 Write directly to `Chef Flow Personas/Uncompleted/<Type>/` instead of relying
 only on the inbox import:
 
@@ -72,6 +78,28 @@ The current product-pressure domains are:
 - `adversarial`
 - `loyalty-rewards`
 - `ai-local-private`
+
+## Edge Cases
+
+Every axis plan now includes explicit edge cases. These are not optional prompt
+flavor. The generation prompt requires the persona to build around them and
+requires at least four pass/fail conditions to test those edge cases directly.
+
+List the edge-case pools:
+
+```bash
+npm run personas:corpus -- --list-edge-cases
+```
+
+Choose edge intensity:
+
+- `--edge-mode light`: 2 edge cases per persona for clean focused runs
+- `--edge-mode heavy`: 4 edge cases per persona, default for normal corpus work
+- `--edge-mode chaos`: 7 edge cases per persona for saturation-breaking stress tests
+
+Good edge cases are concrete failure conditions, not vague personality traits.
+They should involve exact roles, devices, payment states, permissions, messages,
+venue constraints, legal states, stale data, or recovery paths.
 
 ## Quality Gates
 
@@ -108,5 +136,6 @@ Recommended rhythm:
 1. Run `--plan-only` to inspect the axis mix.
 2. Run `--execute --count 25` as a smoke batch.
 3. Review the report rejection counts.
-4. Increase to 100, then 1000 only when novelty is holding.
-5. Run the existing synthesis pipeline after import.
+4. Switch to `--edge-mode chaos` when accepted personas start sounding too familiar.
+5. Increase to 100, then 1000 only when novelty is holding.
+6. Run the existing synthesis pipeline after import.

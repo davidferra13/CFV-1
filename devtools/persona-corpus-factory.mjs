@@ -14,6 +14,7 @@
  *   node devtools/persona-corpus-factory.mjs --plan-only --count 50
  *   node devtools/persona-corpus-factory.mjs --execute --count 100 --type Client
  *   node devtools/persona-corpus-factory.mjs --execute --count 1000 --domain dinner-circles --novelty 0.42
+ *   node devtools/persona-corpus-factory.mjs --plan-only --count 25 --edge-mode chaos
  */
 
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
@@ -36,6 +37,12 @@ const DEFAULT_MODEL = process.env.PERSONA_MODEL || "gemma4:e4b";
 const DEFAULT_INBOX_URL = process.env.PERSONA_INBOX_URL || "http://127.0.0.1:3977";
 
 const TYPES = ["Chef", "Client", "Guest", "Vendor", "Staff", "Partner", "Public"];
+const EDGE_MODES = ["light", "heavy", "chaos"];
+const EDGE_MODE_COUNTS = {
+  light: 2,
+  heavy: 4,
+  chaos: 7,
+};
 
 const DOMAINS = [
   {
@@ -205,6 +212,177 @@ const MONEY_POSTURE = ["budget constrained", "value-focused", "comfortable spend
 const WORKFLOW_STYLE = ["hands-off", "impatient", "collaborative", "control-heavy", "minimalist", "archive-driven"];
 const CHANGE_PATTERN = ["stable plan", "late headcount changes", "constant revisions", "last-minute venue uncertainty", "multi-party approvals"];
 
+const GLOBAL_EDGE_CASES = [
+  "the primary decision maker is not the payer, and the payer refuses extra steps",
+  "one participant changes their mind after payment but before the chef has purchased ingredients",
+  "a late VIP addition creates a conflict with seating, dietary notes, or privacy boundaries",
+  "the event crosses midnight, making dates, staffing hours, and payment deadlines ambiguous",
+  "a browser refresh, phone swap, or device handoff must not lose the current configuration",
+  "one person needs view-only access while another person can approve money",
+  "the user starts on mobile, continues on desktop, then confirms from a different phone",
+  "a last-minute cancellation must preserve evidence of who accepted which terms",
+  "some information should be visible to the host but hidden from guests",
+  "guest count changes after a deposit has been captured but before final payment",
+  "a system-generated summary must cite the original message or decision it came from",
+  "the user wants a one-tap flow but still needs legally reliable records later",
+  "two people give conflicting instructions, and the system must show which one wins",
+  "the user has a low tolerance for notifications but needs critical alerts to break through",
+  "the event has private notes that must never appear in guest-facing views",
+  "a repeat guest has stale dietary data that needs confirmation before reuse",
+  "a price, policy, or availability value changes while the user is mid-checkout",
+  "a participant only responds verbally or through a forwarded screenshot",
+  "the user needs to undo a change without erasing the record that it happened",
+  "the system must distinguish a preference from a medical restriction",
+  "someone needs a plain-language explanation without exposing internal operations",
+  "the user needs proof that an assistant, partner, or chef acknowledged a critical detail",
+  "the workflow must survive intermittent connectivity without duplicating actions",
+  "the event is emotionally sensitive, and the user does not want public-facing language",
+  "a participant intentionally or accidentally tries to exploit a pricing or coupon edge",
+  "the user wants full control but refuses to become the project manager",
+  "a change is valid operationally but financially unacceptable to one stakeholder",
+  "the final plan must be simple, but the history must remain fully searchable",
+  "a sensitive detail must expire after the event while the financial record persists",
+  "a human can override the system, but the override needs a reason and audit trail",
+];
+
+const DOMAIN_EDGE_CASES = {
+  "dinner-circles": [
+    "a group vote ties, and the host needs a clean tie-break rule",
+    "old menu options must stay collapsed but recoverable for later questions",
+    "guests keep asking already-answered questions inside the same planning space",
+    "one guest should see arrival details but not budget or host notes",
+    "a decision was made from several messages, reactions, and a poll, not one clean approval",
+    "a late plus-one needs to inherit the current plan without reopening every decision",
+    "the final current-state view must explain why discarded options lost",
+  ],
+  "pricing-checkout": [
+    "market-priced seafood or meat changes cost during configuration",
+    "an add-on is optional per guest, but the base menu is fixed per event",
+    "a user applies a promo, removes a course, then re-adds it to test the price",
+    "service fees, travel fees, and staffing minimums interact with guest count",
+    "the user needs a locked quote window with a visible expiration time",
+    "a quote is valid for payment but invalid for additional customization",
+    "the displayed estimate needs a confidence range without feeling fake",
+  ],
+  "wallet-payments": [
+    "the deposit uses Apple Pay, but the final balance is paid from a different wallet",
+    "the user's browser wallet is available on desktop but not on the event owner's phone",
+    "a saved payment token needs scope limits for add-ons and final charges",
+    "the wallet payment succeeds but the booking confirmation webhook arrives late",
+    "the user rejects raw card entry even as a fallback path",
+    "a group payment split includes one person whose wallet authorization fails",
+    "the receipt must be private, but the payer needs reimbursement documentation",
+  ],
+  "first-timer-guidance": [
+    "the buyer does not know whether their kitchen is usable",
+    "the user cannot tell the difference between plated, family-style, tasting, and class formats",
+    "the user is afraid of looking unsophisticated in front of the chef",
+    "the system must explain what the host provides versus what the chef brings",
+    "the budget is a stretch, so every unknown creates anxiety",
+    "the user wants the chef to lead without feeling upsold",
+    "a simple apartment constraint changes what formats are realistic",
+  ],
+  "premium-concierge": [
+    "the principal wants a polished summary while the assistant needs operational detail",
+    "unlimited budget still requires a defensible explanation of cost drivers",
+    "the event requires Michelin-level expectations without the client knowing the vocabulary",
+    "a household staff member is available but not authorized to approve money",
+    "the client expects recommendations, not a blank customization form",
+    "the system must distinguish luxury optionality from operational necessity",
+    "a concierge needs to prepare multiple scenarios without bothering the principal",
+  ],
+  "privacy-stealth": [
+    "notifications, receipts, calendar entries, and vendor names can reveal the surprise",
+    "a shared credit card or family email account can expose the booking",
+    "the chef needs access instructions but must not call or text at the wrong moment",
+    "the user needs a private execution plan that can be hidden quickly",
+    "a collaborator should know setup timing but not the surprise details",
+    "the user wants records after the event but minimal traces before the reveal",
+    "a delivery, rental, or staff arrival could ruin the surprise if mistimed",
+  ],
+  "venue-logistics": [
+    "the kitchen photos are incomplete and the host does not know what matters",
+    "parking, elevator access, and load-in time change staffing assumptions",
+    "power or water constraints are discovered only after the menu is chosen",
+    "a rental home listing says full kitchen but lacks key equipment",
+    "the venue has noise, fire, or HOA restrictions that affect service style",
+    "an outdoor event needs a weather fallback that changes the prep plan",
+    "the chef must acknowledge venue risk before the host pays",
+  ],
+  "dietary-safety": [
+    "one allergy is life-threatening while another note is only a preference",
+    "the host knows a guest's restriction but does not want it exposed to the group",
+    "a shared fryer, cutting board, or sauce creates cross-contact risk",
+    "a repeat guest's old restriction conflicts with their newest message",
+    "the final menu needs ingredient-level safety confirmation without recipe generation",
+    "a substitution must preserve safety, price, and guest experience",
+    "the system needs a day-of safety snapshot that staff can understand quickly",
+  ],
+  accessibility: [
+    "dynamic price updates must be announced to screen readers without becoming noisy",
+    "keyboard-only users need to configure guest count, courses, add-ons, and payment",
+    "a color-coded safety or pricing state needs non-visual labels",
+    "a user with cognitive overload needs a simplified flow without losing details",
+    "touch targets, timers, and modal focus traps can block checkout",
+    "the same flow needs to work with browser zoom and reduced motion",
+    "a user needs plain-language summaries of legal and payment states",
+  ],
+  international: [
+    "the host pays in one currency while the chef sources and staffs in another",
+    "timezone confusion changes whether an event is today, tomorrow, or next week",
+    "local payment methods differ by country and affect deposit timing",
+    "translation needs to preserve legal, dietary, and service details",
+    "the event crosses jurisdictions with different tax, permit, or invoice requirements",
+    "the user wants local units and language but global payment visibility",
+    "exchange rates change between quote lock, deposit, and final balance",
+  ],
+  "legal-disputes": [
+    "the host cancels after sourcing has started and disputes the non-refundable portion",
+    "a guest claims an allergy was ignored, and the host needs an evidence trail",
+    "a chargeback arrives after the event despite signed approval",
+    "the invoice includes a change that was approved only in a message thread",
+    "terms changed between proposal and payment, and the accepted version matters",
+    "a partial refund must account for deposits, ingredients, labor, and platform fees",
+    "a client needs corporate reimbursement records that match the exact quote",
+  ],
+  "offline-rural": [
+    "the event site has no reliable signal during setup or service",
+    "offline edits from two devices conflict when connection returns",
+    "cached pricing must show whether it is authoritative or stale",
+    "the chef needs guest notes and safety details even when the network is down",
+    "a rural address is hard to geocode and affects travel cost",
+    "payment authorization must be completed before connectivity is lost",
+    "low bandwidth should not block a text-only operational plan",
+  ],
+  adversarial: [
+    "a user rapidly changes headcount to find a pricing loophole",
+    "a coupon is applied to excluded premium add-ons",
+    "a group organizer tries to shift costs unfairly after others have paid",
+    "a fake guest profile is used to trigger a dietary accommodation or discount",
+    "a user cancels and rebooks to bypass a locked quote or cancellation fee",
+    "a participant disputes a charge after consuming the service",
+    "an automated abuse rule must not punish a legitimate edge case",
+  ],
+  "loyalty-rewards": [
+    "the organizer wants rewards for the full booking even when guests split payments",
+    "card category coding determines whether the transaction earns dining rewards",
+    "points expire before the next likely booking",
+    "tier progress should change the booking recommendation",
+    "a refund or adjustment must claw back rewards correctly",
+    "a referral reward conflicts with a promo reward",
+    "the user needs cash value, points value, and perk value shown separately",
+  ],
+  "ai-local-private": [
+    "local AI is allowed to summarize messages but not generate recipes",
+    "the user wants Gemma 4 through an Ollama-compatible endpoint with no cloud fallback",
+    "AI tool calls need field-level permissions and an audit trail",
+    "the model is offline, and the system must fail clearly instead of faking output",
+    "local memory should expire sensitive client data but keep operational history",
+    "a model can read a recipe index but cannot create or edit recipe content",
+    "the user wants to swap local models without changing the rest of the workflow",
+  ],
+};
+
 const STOPWORDS = new Set(
   "the a an and or but if then this that these those with without from into onto over under for to of in on by as is are was were be been being i me my we our you your it its they them their".split(" "),
 );
@@ -228,6 +406,8 @@ function parseArgs(argv) {
     report: null,
     seed: 1,
     listDomains: false,
+    listEdgeCases: false,
+    edgeMode: "heavy",
   };
 
   for (let i = 2; i < argv.length; i++) {
@@ -249,6 +429,8 @@ function parseArgs(argv) {
     else if (arg === "--report" && argv[i + 1]) opts.report = argv[++i];
     else if (arg === "--seed" && argv[i + 1]) opts.seed = Number(argv[++i]) || opts.seed;
     else if (arg === "--list-domains") opts.listDomains = true;
+    else if (arg === "--list-edge-cases") opts.listEdgeCases = true;
+    else if (arg === "--edge-mode" && argv[i + 1]) opts.edgeMode = argv[++i];
     else if (arg === "--help" || arg === "-h") {
       printHelp();
       process.exit(0);
@@ -260,6 +442,9 @@ function parseArgs(argv) {
   }
   if (!opts.listDomains && opts.domain && !DOMAINS.some((domain) => domain.id === opts.domain)) {
     throw new Error(`Invalid --domain "${opts.domain}". Use --list-domains to inspect domains.`);
+  }
+  if (!EDGE_MODES.includes(opts.edgeMode)) {
+    throw new Error(`Invalid --edge-mode "${opts.edgeMode}". Valid: ${EDGE_MODES.join(", ")}`);
   }
   if (!opts.maxAttempts) opts.maxAttempts = Math.max(opts.count * 3, opts.count + 10);
   if (!opts.execute) opts.dryRun = true;
@@ -285,6 +470,8 @@ function printHelp() {
   console.log("  --model <name>           Ollama model (default: PERSONA_MODEL or gemma4:e4b)");
   console.log("  --report <path>          JSON report path");
   console.log("  --list-domains           Print available product-pressure domains");
+  console.log("  --list-edge-cases        Print edge-case pools by domain");
+  console.log("  --edge-mode <mode>       light, heavy, or chaos edge-case pressure (default: heavy)");
 }
 
 function createRng(seed) {
@@ -423,6 +610,35 @@ function scoreNovelty(candidateText, corpus) {
   };
 }
 
+function shuffleCopy(items, rng) {
+  const copy = [...items];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
+function pickEdgeCases(domainId, rng, mode) {
+  const count = EDGE_MODE_COUNTS[mode] || EDGE_MODE_COUNTS.heavy;
+  const domainCases = shuffleCopy(DOMAIN_EDGE_CASES[domainId] || [], rng);
+  const globalCases = shuffleCopy(GLOBAL_EDGE_CASES, rng);
+  const selected = [];
+
+  const domainTarget = Math.max(1, Math.ceil(count * 0.6));
+  for (const item of domainCases) {
+    if (selected.length >= domainTarget) break;
+    selected.push(item);
+  }
+
+  for (const item of [...globalCases, ...domainCases]) {
+    if (selected.length >= count) break;
+    if (!selected.includes(item)) selected.push(item);
+  }
+
+  return selected;
+}
+
 function buildAxisPlan(opts) {
   const rng = createRng(opts.seed);
   const domains = opts.domain ? DOMAINS.filter((domain) => domain.id === opts.domain) : DOMAINS;
@@ -446,6 +662,8 @@ function buildAxisPlan(opts) {
       changePattern: pick(CHANGE_PATTERN, rng),
       featureTargets: domain.featureTargets,
       pressure: domain.pressure,
+      edgeMode: opts.edgeMode,
+      edgeCases: pickEdgeCases(domain.id, rng, opts.edgeMode),
     });
   }
 
@@ -465,6 +683,7 @@ function buildPrompt(axis, corpusHints) {
   }[axis.type];
 
   const avoidList = corpusHints.slice(0, 6).map((item) => `- ${item}`).join("\n") || "- generic pricing, generic messaging, generic scheduling";
+  const edgeCaseList = axis.edgeCases.map((item) => `- ${item}`).join("\n");
 
   return `You are writing one detailed persona profile for stress-testing a food service operations platform.
 
@@ -481,6 +700,9 @@ Hidden product feature targets to pressure: ${axis.featureTargets.join(", ")}
 
 This persona must surface a buildable product gap around:
 ${axis.pressure}
+
+Mandatory edge cases to pressure-test:
+${edgeCaseList}
 
 Avoid repeating these already-common patterns unless you add a new edge case:
 ${avoidList}
@@ -535,6 +757,9 @@ IMPORTANT RULES:
 - Invent a completely fictional name. Do not use any real celebrity or public figure name.
 - Make it feel real: specific dollar amounts, specific tools they currently use, specific frustrations.
 - Every pass/fail condition must be something a software system could concretely implement or fail.
+- At least 4 of the 7 pass/fail conditions must directly test the mandatory edge cases above.
+- Include at least one operational consequence, one financial or legal consequence, and one emotional stake tied to the edge cases.
+- Do not make the edge cases abstract. Anchor them in exact channels, dates, roles, payment states, devices, permissions, or venue constraints.
 - Do not mention ChefFlow by name in the persona text.
 - Treat hidden product feature targets as internal guidance. Do not name product-specific features unless a normal user would naturally say that phrase.
 - Do not generate recipes or tell a chef what to cook.
@@ -701,6 +926,8 @@ async function generateCorpus(opts, plan, corpus) {
         primary_gap: axis.domain,
         severity: axis.stakes.includes("catastrophic") || axis.stakes.includes("legal") ? "high" : "medium",
         feature_implications: axis.featureTargets,
+        edge_cases: axis.edgeCases,
+        edge_mode: axis.edgeMode,
         novelty_score: Number(novelty.novelty.toFixed(3)),
       },
     };
@@ -733,6 +960,7 @@ function makeReport(opts, plan, corpusCount, result, importResult = null, writte
       novelty: opts.novelty,
       minScore: opts.minScore,
       maxAttempts: opts.maxAttempts,
+      edgeMode: opts.edgeMode,
       importInbox: opts.importInbox,
       writeFiles: opts.writeFiles,
     },
@@ -748,6 +976,7 @@ function makeReport(opts, plan, corpusCount, result, importResult = null, writte
       validation_score: item.validation.score,
       novelty_score: Number(item.novelty.novelty.toFixed(3)),
       nearest: item.novelty.nearest,
+      edge_cases: item.axis.edgeCases,
       metadata: item.metadata,
     })),
     import_result: importResult
@@ -786,6 +1015,14 @@ async function main() {
       label: domain.label,
       featureTargets: domain.featureTargets,
     })), null, 2));
+    return;
+  }
+  if (opts.listEdgeCases) {
+    console.log(JSON.stringify({
+      modes: EDGE_MODE_COUNTS,
+      global: GLOBAL_EDGE_CASES,
+      domains: DOMAIN_EDGE_CASES,
+    }, null, 2));
     return;
   }
   const plan = buildAxisPlan(opts);
