@@ -14,6 +14,7 @@ export type ClientWorkItemKind =
   | 'signal_notifications'
   | 'rsvp_pending'
   | 'share_setup'
+  | 'friend_request'
   | 'hub_unread'
   | 'notification_follow_up'
   | 'stub_planning'
@@ -178,6 +179,7 @@ export type ClientWorkGraphSummary = {
   menuApprovalCount: number
   checklistCount: number
   rsvpPendingCount: number
+  friendRequestCount: number
   hubUnreadCount: number
   profileCount: number
   notificationCount: number

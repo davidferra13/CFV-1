@@ -358,6 +358,27 @@ describe('shared client work graph snapshot', () => {
         hasActiveShare: true,
       })
       assert.equal(snapshot?.unreviewedEvent?.id, 'event-past')
+
+      assert.deepEqual(
+        mod.buildClientActionRequiredSummary({
+          proposalCount: 1,
+          paymentDueCount: 0,
+          outstandingBalanceCount: 1,
+          quotePendingCount: 1,
+          inquiryAwaitingCount: 1,
+          friendRequestCount: 1,
+          totalItems: 5,
+        }),
+        {
+          proposalCount: 1,
+          paymentDueCount: 0,
+          outstandingBalanceCount: 1,
+          quotePendingCount: 1,
+          inquiryAwaitingCount: 1,
+          friendRequestCount: 1,
+          totalItems: 5,
+        }
+      )
     } finally {
       restore()
     }

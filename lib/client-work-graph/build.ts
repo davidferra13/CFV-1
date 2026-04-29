@@ -44,6 +44,7 @@ const WORK_ITEM_PRIORITY: Record<ClientWorkItemKind, number> = {
   meal_request: 640,
   signal_notifications: 620,
   share_setup: 600,
+  friend_request: 585,
   stub_seeking_chef: 560,
   stub_planning: 540,
   event_review: 520,
@@ -75,7 +76,7 @@ function normalizeCategory(kind: ClientWorkItemKind): ClientWorkItemCategory {
   if (kind === 'quote_review') return 'quote'
   if (kind === 'inquiry_reply') return 'inquiry'
   if (kind === 'rsvp_pending' || kind === 'share_setup') return 'rsvp'
-  if (kind === 'hub_unread') return 'hub'
+  if (kind === 'friend_request' || kind === 'hub_unread') return 'hub'
   if (kind === 'notification_follow_up') return 'notification'
   if (kind === 'stub_planning' || kind === 'stub_seeking_chef') return 'planning'
   return 'profile'
@@ -95,6 +96,7 @@ function getUrgency(kind: ClientWorkItemKind): ClientWorkItemUrgency {
     case 'event_menu':
     case 'event_checklist':
     case 'hub_unread':
+    case 'friend_request':
     case 'notification_follow_up':
     case 'stub_seeking_chef':
       return 'medium'
@@ -432,19 +434,37 @@ function buildRsvpWorkItems(rsvpSummary: ClientRsvpWorkSummary): ClientWorkItem[
 }
 
 function buildHubWorkItems(hubSummary: ClientWorkGraphInput['hubSummary']): ClientWorkItem[] {
-  if (hubSummary.totalUnreadCount <= 0) return []
+  const items: ClientWorkItem[] = []
 
-  return [
-    createWorkItem(
-      'hub_unread',
-      'hub-unread',
-      'hub',
-      'Read dinner circle updates',
-      `${hubSummary.totalUnreadCount} unread circle message${hubSummary.totalUnreadCount === 1 ? '' : 's'} are waiting for you.`,
-      '/my-hub/notifications',
-      'Open Circles'
-    ),
-  ]
+  if (hubSummary.pendingFriendRequestCount > 0) {
+    items.push(
+      createWorkItem(
+        'friend_request',
+        'friend-requests',
+        'hub',
+        'Review dinner circle friend requests',
+        `${hubSummary.pendingFriendRequestCount} friend request${hubSummary.pendingFriendRequestCount === 1 ? '' : 's'} need your response.`,
+        '/my-hub',
+        'Open Requests'
+      )
+    )
+  }
+
+  if (hubSummary.totalUnreadCount > 0) {
+    items.push(
+      createWorkItem(
+        'hub_unread',
+        'hub-unread',
+        'hub',
+        'Read dinner circle updates',
+        `${hubSummary.totalUnreadCount} unread circle message${hubSummary.totalUnreadCount === 1 ? '' : 's'} are waiting for you.`,
+        '/my-hub/notifications',
+        'Open Circles'
+      )
+    )
+  }
+
+  return items
 }
 
 function buildNotificationWorkItems(
@@ -568,6 +588,7 @@ export function buildClientWorkGraph(input: ClientWorkGraphInput): ClientWorkGra
     menuApprovalCount: items.filter((item) => item.kind === 'event_menu').length,
     checklistCount: items.filter((item) => item.kind === 'event_checklist').length,
     rsvpPendingCount: items.filter((item) => item.kind === 'rsvp_pending').length,
+    friendRequestCount: items.filter((item) => item.kind === 'friend_request').length,
     hubUnreadCount: items.filter((item) => item.kind === 'hub_unread').length,
     profileCount: items.filter((item) =>
       ['profile_completion', 'meal_request', 'signal_notifications'].includes(item.kind)
@@ -607,7 +628,7 @@ function defaultPageSuggestions(message: string): ClientNavSuggestion[] {
   if (/(profile|dietary|allerg|address|phone|preference)/.test(normalized)) {
     return [{ label: 'Open Profile', href: '/my-profile' }]
   }
-  if (/(rsvp|guest|invite|share|circle|hub)/.test(normalized)) {
+  if (/(rsvp|guest|invite|share|circle|hub|friend request|friend)/.test(normalized)) {
     return [{ label: 'Open Circles', href: '/my-hub' }]
   }
   if (/(book|booking|new event)/.test(normalized)) {
@@ -637,12 +658,12 @@ function matchesQuery(item: ClientWorkItem, message: string): boolean {
     )
   }
   if (/(rsvp|guest|invite|share)/.test(normalized)) {
-    return ['rsvp_pending', 'share_setup', 'hub_unread'].includes(item.kind)
+    return ['rsvp_pending', 'share_setup', 'friend_request', 'hub_unread'].includes(item.kind)
   }
   if (/(profile|address|phone|preference|account)/.test(normalized)) {
     return item.category === 'profile'
   }
-  if (/(message|chat|circle|hub)/.test(normalized)) {
+  if (/(message|chat|circle|hub|friend request|friend)/.test(normalized)) {
     return item.category === 'hub' || item.href.startsWith('/my-hub')
   }
   if (/(event|booking|next|upcoming)/.test(normalized)) {

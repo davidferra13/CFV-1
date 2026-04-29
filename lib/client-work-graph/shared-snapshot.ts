@@ -56,6 +56,7 @@ export type ClientActionRequiredSummary = {
   outstandingBalanceCount: number
   quotePendingCount: number
   inquiryAwaitingCount: number
+  friendRequestCount: number
   totalItems: number
 }
 
@@ -122,6 +123,7 @@ export function buildClientActionRequiredSummary(
     | 'outstandingBalanceCount'
     | 'quotePendingCount'
     | 'inquiryAwaitingCount'
+    | 'friendRequestCount'
     | 'totalItems'
   >
 ): ClientActionRequiredSummary {
@@ -131,6 +133,7 @@ export function buildClientActionRequiredSummary(
     outstandingBalanceCount: summary.outstandingBalanceCount,
     quotePendingCount: summary.quotePendingCount,
     inquiryAwaitingCount: summary.inquiryAwaitingCount,
+    friendRequestCount: summary.friendRequestCount,
     totalItems: summary.totalItems,
   }
 }

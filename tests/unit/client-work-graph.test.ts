@@ -304,4 +304,25 @@ describe('client work graph', () => {
       )
     )
   })
+
+  it('surfaces pending dinner circle friend requests in the work graph summary', () => {
+    const graph = buildClientWorkGraph({
+      ...createBaseInput(),
+      hubSummary: {
+        groupCount: 1,
+        friendCount: 2,
+        pendingFriendRequestCount: 2,
+        totalUnreadCount: 0,
+      },
+    })
+
+    assert.equal(graph.items[0]?.kind, 'friend_request')
+    assert.equal(graph.items[0]?.href, '/my-hub')
+    assert.equal(graph.items[0]?.ctaLabel, 'Open Requests')
+    assert.equal(graph.summary.friendRequestCount, 1)
+    assert.equal(graph.summary.totalItems, 1)
+
+    const suggestions = suggestClientNavFromWorkGraph('Do I have friend requests?', graph)
+    assert.deepEqual(suggestions, [{ label: 'Open Requests', href: '/my-hub' }])
+  })
 })
