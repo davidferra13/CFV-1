@@ -55,7 +55,7 @@ Use these tools when the task touches skills or durable agent behavior:
 5. If the request includes a huge persona paste or asks whether one can be pasted, load `persona-dump`.
 6. Inspect branch and dirty work before writing, classify current-task files versus other agents' work, and keep ownership narrow.
 7. State the skill or skills being used in one short line.
-8. Execute the task with the normal ChefFlow hard stops: no main push, no destructive database operations, no `drizzle-kit push`, no manual `types/database.ts`, no `@ts-nocheck`, no em dashes, no unapproved build, no unapproved long-running server.
+8. Execute the task with the normal ChefFlow hard stops: no main push, no destructive database operations, no `drizzle-kit push`, no manual `types/database.ts`, no ts-nocheck directive, no em dashes, no unapproved build, no unapproved long-running server.
 
 ## Skill Router
 
@@ -80,6 +80,8 @@ Use the most specific skill that fits. Combine skills only when their responsibi
 | Thread or feature completeness check                                                 | `audit`                                                    |
 | Highest leverage next move                                                           | `massive-win`                                              |
 | Mixed old or new findings, autodocket, audit findings, backlog triage                | `findings-triage`                                          |
+| YouTube URL, video lecture, channel learning, visual transcript extraction           | `youtube-watch`                                            |
+| Matt Pocock software fundamentals, grill-me, shared language, deep modules           | `software-fundamentals`                                    |
 | Persona pipeline management                                                          | `persona-inbox`                                            |
 | Huge pasted persona material                                                         | `persona-dump`                                             |
 | Persona fitness evaluation                                                           | `persona-stress-test`                                      |

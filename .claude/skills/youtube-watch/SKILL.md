@@ -37,9 +37,50 @@ Convert YouTube videos into grounded, useful work products. Prefer transcript an
 6. Produce the optimized output for the user's goal:
    - Executive brief: conclusion first, then evidence.
    - Learning notes: concepts, examples, counterexamples, and retention prompts.
+   - Software lecture mode: design concept, shared language, feedback loop, deep module lesson, failure mode, ChefFlow adoption action, and grill-me questions.
    - Tactical extraction: steps, inputs, tools, costs, risks, and effort.
    - Implementation plan: ordered tasks, dependencies, files or systems likely affected, and validation.
    - Critique: strong claims, weak claims, missing evidence, incentives, and failure modes.
+
+## Software Lecture Mode
+
+Use this mode for engineering talks, AI coding lectures, architecture walkthroughs, and this Matt Pocock lecture. Combine it with `software-fundamentals` when the video discusses shared understanding, ubiquitous language, feedback loops, TDD, module design, AI-assisted coding, or human versus agent responsibilities.
+
+For each major lesson, capture:
+
+- Timestamp or section.
+- Concept in the speaker's terms.
+- Visual evidence: slide, diagram, terminal, editor, UI, screenshot, or none.
+- Source confidence: manual captions, auto captions, sampled frames, OCR, browser playback, or missing coverage.
+- ChefFlow adoption action: the smallest skill, process, test, or module change implied by the lesson.
+- Grill-me prompt: one question that would expose ambiguity before coding.
+- Feedback loop: the fastest check that would prove the adoption worked.
+
+When the user wants to keep learning from a specific video, create or update a lecture learning ledger outside the skill body. Store durable notes under `system/video-learning/` unless the user asks for a different location.
+
+## Visual Evidence Index
+
+For visual or slide-heavy videos, include a compact index:
+
+```markdown
+Visual evidence:
+
+- [timestamp] Type: [slide | code | terminal | UI | diagram | screenshot | chart]
+  Visible text or object: [short paraphrase or tiny quote]
+  Why it matters: [concept or action it supports]
+  Confidence: [sampled frame | OCR | browser playback | transcript-only gap]
+```
+
+If OCR is available, use it to read slide and screenshot text. If OCR is unavailable, inspect the frame directly and label the evidence as visual observation.
+
+## Referenced Assets
+
+When a video mentions GitHub repos, papers, books, CLIs, models, libraries, products, or docs:
+
+1. Extract the asset name and timestamp.
+2. Prefer official or primary URLs when browsing is needed.
+3. Classify the safe next action: read, vendor, install, ignore, or verify first.
+4. Do not install packages, clone repos, or download large media unless the user asked for that action or it is necessary and safe.
 
 ## Extraction Commands
 
@@ -106,6 +147,19 @@ Verification:
 Visual evidence:
 
 - [timestamp] [slide/code/UI/diagram/screenshot observed, or "not inspected" with reason]
+
+Software lecture adoption:
+
+- Design concept: [shared model or ambiguity]
+- Ubiquitous language: [terms to reuse]
+- Deep module lesson: [interface and hidden complexity]
+- Feedback loop: [fastest meaningful check]
+- Grill-me prompt: [question to resolve before coding]
+- ChefFlow adoption action: [specific skill, process, test, or module change]
+
+Referenced assets:
+
+- [timestamp] [repo/tool/paper/book/doc] [read/vendor/install/verify/ignore]
 
 Open questions:
 

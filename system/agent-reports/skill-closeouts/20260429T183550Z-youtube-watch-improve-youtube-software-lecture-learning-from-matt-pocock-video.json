@@ -1,0 +1,22 @@
+{
+  "created_at": "2026-04-29T18:35:50.393Z",
+  "goal": "Improve YouTube software lecture learning from Matt Pocock video",
+  "primary_skill": "youtube-watch",
+  "sidecar_skills": [
+    "omninet",
+    "software-fundamentals",
+    "skill-garden"
+  ],
+  "skill_delta": "patch",
+  "durable_behavior_seen": "User wants to keep learning from the Matt Pocock YouTube lecture and make the YouTube skill better, so future video-learning turns should produce visual evidence, source confidence, learning drills, and ChefFlow adoption actions.",
+  "skill_gap_seen": "youtube-watch lacked a dedicated software lecture mode, omninet lacked explicit YouTube/video routing, and there was no durable learning ledger for the lecture.",
+  "validation": {
+    "skill_validator": "PASS: node devtools/skill-validator.mjs omninet youtube-watch software-fundamentals skill-garden",
+    "trigger_tests": "PASS: node devtools/skill-trigger-tests.mjs, 17 cases, 0 failures",
+    "compliance": "PASS: hard-stop scan for em dash, ts-nocheck directive, and forbidden public name in changed files",
+    "other": "Added a youtube software lecture learning golden prompt and a Matt Pocock video learning ledger under system/video-learning/."
+  },
+  "commit": "See enclosing git commit for this closeout report.",
+  "pushed": true,
+  "notes": "No production deploy, main push, server restart, build, or database operation was performed."
+}
