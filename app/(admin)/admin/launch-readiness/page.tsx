@@ -6,8 +6,13 @@ import {
   type LaunchReadinessCheck,
   type LaunchReadinessStatus,
 } from '@/lib/validation/launch-readiness'
+import { buildLaunchReadinessEvidenceReviewPayload } from '@/lib/validation/launch-readiness-evidence-snapshot'
 import { buildLaunchReadinessRiskRegister } from '@/lib/validation/launch-readiness-risk-register'
-import { listLaunchReadinessOperatorReviews } from '@/lib/validation/launch-readiness-review-store'
+import {
+  listLaunchReadinessActivityEvents,
+  listLaunchReadinessOperatorReviews,
+  listLaunchReadinessSignoffs,
+} from '@/lib/validation/launch-readiness-review-store'
 import { LaunchReadinessReviewConsole } from '@/components/admin/launch-readiness-review-console'
 import {
   AlertTriangle,
@@ -101,9 +106,11 @@ function CheckRow({ check }: { check: LaunchReadinessCheck }) {
 
 export default async function AdminLaunchReadinessPage() {
   await requireAdmin()
-  const [report, operatorReviews] = await Promise.all([
+  const [report, operatorReviews, signoffs, activityEvents] = await Promise.all([
     getLaunchReadinessReport(),
     listLaunchReadinessOperatorReviews(),
+    listLaunchReadinessSignoffs(),
+    listLaunchReadinessActivityEvents(),
   ])
   const percent = Math.round((report.verifiedChecks / report.totalChecks) * 100)
   const reviewCount = report.checks.filter((check) => check.status === 'operator_review').length
@@ -112,6 +119,12 @@ export default async function AdminLaunchReadinessPage() {
     checks: report.checks,
     nextActions: report.nextActions,
   })
+  const currentEvidenceFingerprints = Object.fromEntries(
+    report.checks.map((check) => [
+      check.key,
+      buildLaunchReadinessEvidenceReviewPayload(check).fingerprint,
+    ])
+  )
 
   return (
     <div className="space-y-6">
@@ -190,7 +203,17 @@ export default async function AdminLaunchReadinessPage() {
         </section>
 
         <aside className="space-y-6">
-          <LaunchReadinessReviewConsole checks={report.checks} initialReviews={operatorReviews} />
+          <LaunchReadinessReviewConsole
+            checks={report.checks}
+            riskRegister={riskRegister}
+            currentEvidenceFingerprints={currentEvidenceFingerprints}
+            initialReviews={operatorReviews}
+            initialSignoffs={signoffs}
+            initialActivityEvents={activityEvents}
+            reportStatus={report.status}
+            verifiedChecks={report.verifiedChecks}
+            totalChecks={report.totalChecks}
+          />
 
           <section className="rounded-xl border border-stone-800 bg-stone-900/70 p-5">
             <h2 className="text-base font-semibold text-stone-100">Risk register</h2>

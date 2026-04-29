@@ -21,6 +21,7 @@ export type LaunchReadinessOperatorReviewRecord = {
   reviewerId?: string | null
   reviewedAt?: string | null
   note?: string | null
+  evidenceFingerprint?: string | null
 }
 
 export type LaunchReadinessOperatorReviewConfig = {
@@ -34,6 +35,7 @@ export type LaunchReadinessOperatorReviewAppliedDecision = {
   reviewerId: string | null
   reviewedAt: string | null
   note: string | null
+  evidenceFingerprint: string | null
 }
 
 export type LaunchReadinessOperatorReviewRejectedDecision = {
@@ -53,6 +55,7 @@ export type LaunchReadinessOperatorReviewRejectedDecision = {
   reviewerId: string | null
   reviewedAt: string | null
   note: string | null
+  evidenceFingerprint: string | null
 }
 
 export type LaunchReadinessOperatorReviewSummary = {
@@ -78,6 +81,7 @@ type ParsedReviewRecord = {
   reviewerId: string | null
   reviewedAt: string | null
   note: string | null
+  evidenceFingerprint: string | null
 }
 
 function normalizeOptionalString(value: unknown): string | null {
@@ -94,6 +98,7 @@ function parseRecord(record: unknown): ParsedReviewRecord | null {
     reviewerId: normalizeOptionalString(value.reviewerId),
     reviewedAt: normalizeOptionalString(value.reviewedAt),
     note: normalizeOptionalString(value.note),
+    evidenceFingerprint: normalizeOptionalString(value.evidenceFingerprint),
   }
 }
 
@@ -112,6 +117,7 @@ function rejectDecision(
     reviewerId: parsed?.reviewerId ?? null,
     reviewedAt: parsed?.reviewedAt ?? null,
     note: parsed?.note ?? null,
+    evidenceFingerprint: parsed?.evidenceFingerprint ?? null,
   }
 }
 
@@ -247,6 +253,9 @@ export function applyLaunchReadinessOperatorReviews(
     }
 
     if (parsed.decision === 'rejected') {
+      check.nextStep = parsed.note
+        ? `Operator rejected this launch-readiness check: ${parsed.note}`
+        : 'Operator rejected this launch-readiness check. Resolve the evidence gap and submit a new review.'
       rejectedDecisions.push(
         rejectDecision(
           index,
@@ -279,6 +288,7 @@ export function applyLaunchReadinessOperatorReviews(
       reviewerId: parsed.reviewerId,
       reviewedAt: parsed.reviewedAt,
       note: parsed.note,
+      evidenceFingerprint: parsed.evidenceFingerprint,
     })
   }
 

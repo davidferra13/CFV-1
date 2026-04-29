@@ -15,6 +15,10 @@ const jsonPacketRouteSource = readFileSync(
   join(process.cwd(), 'app/api/admin/launch-readiness/decision-packet/route.ts'),
   'utf8'
 )
+const signoffRouteSource = readFileSync(
+  join(process.cwd(), 'app/api/admin/launch-readiness/signoffs/route.ts'),
+  'utf8'
+)
 const reviewPreviewRouteSource = readFileSync(
   join(process.cwd(), 'app/api/admin/launch-readiness/review-preview/route.ts'),
   'utf8'
@@ -29,6 +33,14 @@ const reviewConsoleSource = readFileSync(
 )
 const launchReadinessSource = readFileSync(
   join(process.cwd(), 'lib/validation/launch-readiness.ts'),
+  'utf8'
+)
+const reviewStoreSource = readFileSync(
+  join(process.cwd(), 'lib/validation/launch-readiness-review-store.ts'),
+  'utf8'
+)
+const auditMigrationSource = readFileSync(
+  join(process.cwd(), 'database/migrations/20260429000002_launch_readiness_operator_audit.sql'),
   'utf8'
 )
 const adminNavSource = readFileSync(
@@ -68,6 +80,7 @@ test('launch readiness JSON packet route is admin-only and non-cached', () => {
   assert.match(jsonPacketRouteSource, /NextResponse\.json/)
   assert.match(jsonPacketRouteSource, /Cache-Control['"]:\s*['"]no-store/)
   assert.match(jsonPacketRouteSource, /riskRegister/)
+  assert.match(jsonPacketRouteSource, /createLaunchReadinessActivityEvent/)
   assert.match(pageSource, /\/api\/admin\/launch-readiness\/decision-packet/)
 })
 
@@ -94,6 +107,9 @@ test('launch readiness persistent review route is admin-only and cache-busting',
   assert.match(reviewsRouteSource, /ReviewInputSchema\.safeParse/)
   assert.match(reviewsRouteSource, /createLaunchReadinessOperatorReview/)
   assert.match(reviewsRouteSource, /listLaunchReadinessOperatorReviews/)
+  assert.match(reviewsRouteSource, /getLaunchReadinessReport/)
+  assert.match(reviewsRouteSource, /buildLaunchReadinessEvidenceReviewPayload/)
+  assert.match(reviewsRouteSource, /createLaunchReadinessActivityEvent/)
   assert.match(reviewsRouteSource, /revalidatePath\(['"]\/admin\/launch-readiness['"]\)/)
   assert.match(reviewsRouteSource, /Cache-Control['"]:\s*['"]no-store/)
   assert.match(reviewsRouteSource, /superRefine/)
@@ -107,15 +123,57 @@ test('launch readiness persistent review route is admin-only and cache-busting',
 test('launch readiness page connects persistent reviews to an operator console', () => {
   assert.match(pageSource, /LaunchReadinessReviewConsole/)
   assert.match(pageSource, /listLaunchReadinessOperatorReviews/)
+  assert.match(pageSource, /listLaunchReadinessSignoffs/)
+  assert.match(pageSource, /listLaunchReadinessActivityEvents/)
+  assert.match(pageSource, /buildLaunchReadinessEvidenceReviewPayload/)
   assert.match(reviewConsoleSource, /^['"]use client['"]/m)
   assert.match(reviewConsoleSource, /\/api\/admin\/launch-readiness\/reviews/)
+  assert.match(reviewConsoleSource, /\/api\/admin\/launch-readiness\/signoffs/)
   assert.match(reviewConsoleSource, /router\.refresh\(\)/)
   assert.match(reviewConsoleSource, /reviewableChecks/)
+  assert.match(reviewConsoleSource, /riskRegister/)
+  assert.match(reviewConsoleSource, /Evidence changed since this decision/)
+  assert.match(reviewConsoleSource, /Review history/)
+  assert.match(reviewConsoleSource, /Final launch sign-off/)
+  assert.match(reviewConsoleSource, /Launch readiness activity/)
   assert.match(reviewConsoleSource, /No checks are waiting for operator review/)
   assert.match(
     reviewConsoleSource,
     /Verified launch readiness reviews require a note or evidence link/
   )
+})
+
+test('launch readiness signoff route is admin-only and gated on readiness', () => {
+  assert.match(
+    signoffRouteSource,
+    /import\s+\{\s*requireAdmin\s*\}\s+from ['"]@\/lib\/auth\/admin['"]/
+  )
+  assert.match(signoffRouteSource, /await\s+requireAdmin\(\)/)
+  assert.match(signoffRouteSource, /SignoffInputSchema\.safeParse/)
+  assert.match(signoffRouteSource, /getLaunchReadinessReport/)
+  assert.match(signoffRouteSource, /buildLaunchReadinessDecisionPacket/)
+  assert.match(signoffRouteSource, /createLaunchReadinessSignoff/)
+  assert.match(signoffRouteSource, /createLaunchReadinessActivityEvent/)
+  assert.match(signoffRouteSource, /report\.status !== ['"]ready['"]/)
+  assert.match(signoffRouteSource, /revalidatePath\(['"]\/admin\/launch-readiness['"]\)/)
+  assert.match(signoffRouteSource, /Cache-Control['"]:\s*['"]no-store/)
+})
+
+test('launch readiness audit persistence is additive and append-oriented', () => {
+  assert.match(auditMigrationSource, /ALTER TABLE "launch_readiness_operator_reviews"/)
+  assert.match(auditMigrationSource, /ADD COLUMN IF NOT EXISTS "evidence_snapshot" jsonb/)
+  assert.match(auditMigrationSource, /CREATE TABLE IF NOT EXISTS "launch_readiness_signoffs"/)
+  assert.match(
+    auditMigrationSource,
+    /CREATE TABLE IF NOT EXISTS "launch_readiness_activity_events"/
+  )
+  const destructivePatterns = ['DROP' + ' TABLE', 'DROP' + ' COLUMN', 'DELETE' + ' FROM', 'TRUN' + 'CATE']
+  for (const pattern of destructivePatterns) {
+    assert.equal(auditMigrationSource.includes(pattern), false)
+  }
+  assert.match(reviewStoreSource, /createLaunchReadinessSignoff/)
+  assert.match(reviewStoreSource, /listLaunchReadinessActivityEvents/)
+  assert.match(reviewStoreSource, /evidence_fingerprint/)
 })
 
 test('launch readiness report applies stored operator reviews', () => {

@@ -2,11 +2,14 @@ import { revalidatePath } from 'next/cache'
 import { NextResponse, type NextRequest } from 'next/server'
 import { z } from 'zod'
 import { requireAdmin } from '@/lib/auth/admin'
+import { getLaunchReadinessReport } from '@/lib/validation/launch-readiness'
+import { buildLaunchReadinessEvidenceReviewPayload } from '@/lib/validation/launch-readiness-evidence-snapshot'
 import {
   LAUNCH_READINESS_REVIEWABLE_CHECK_KEYS,
   type LaunchReadinessOperatorReviewDecision,
 } from '@/lib/validation/launch-readiness-operator-review'
 import {
+  createLaunchReadinessActivityEvent,
   createLaunchReadinessOperatorReview,
   listLaunchReadinessOperatorReviews,
 } from '@/lib/validation/launch-readiness-review-store'
@@ -71,13 +74,55 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    const report = await getLaunchReadinessReport()
+    const check = report.checks.find((item) => item.key === parsed.data.checkKey)
+
+    if (!check) {
+      return NextResponse.json(
+        { success: false, error: 'Launch readiness check was not found.' },
+        { status: 404 }
+      )
+    }
+
+    if (check.status !== 'operator_review') {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Only checks currently in operator review can receive operator decisions.',
+        },
+        { status: 409 }
+      )
+    }
+
+    const evidence = buildLaunchReadinessEvidenceReviewPayload(check)
     const review = await createLaunchReadinessOperatorReview({
       checkKey: parsed.data.checkKey,
       decision: parsed.data.decision as LaunchReadinessOperatorReviewDecision,
       reviewerUserId: admin.id,
       note: parsed.data.note,
       evidenceUrl: parsed.data.evidenceUrl,
+      checkLabel: check.label,
+      checkStatusAtReview: check.status,
+      checkNextStep: check.nextStep,
+      evidenceSnapshot: evidence.snapshot,
+      evidenceFingerprint: evidence.fingerprint,
+      evidenceGeneratedAt: report.generatedAt,
     })
+
+    try {
+      await createLaunchReadinessActivityEvent({
+        eventType: parsed.data.decision === 'verified' ? 'review_verified' : 'review_rejected',
+        checkKey: parsed.data.checkKey,
+        actorUserId: admin.id,
+        message: `${check.label} was ${parsed.data.decision} by operator review.`,
+        metadata: {
+          reviewId: review.id,
+          evidenceFingerprint: evidence.fingerprint,
+        },
+      })
+    } catch (activityError) {
+      console.warn('[non-blocking] Launch readiness review activity failed', activityError)
+    }
 
     revalidatePath('/admin/launch-readiness')
     return NextResponse.json(

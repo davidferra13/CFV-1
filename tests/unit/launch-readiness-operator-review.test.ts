@@ -98,6 +98,7 @@ describe('launch readiness operator review', () => {
       reviewerId: 'operator-1',
       reviewedAt: '2026-04-29T21:00:00.000Z',
       note: 'Confirmed by watched pilot.',
+      evidenceFingerprint: null,
     })
     assert.ok(
       result.report.nextActions.every(
@@ -161,6 +162,10 @@ describe('launch readiness operator review', () => {
     assert.equal(result.summary.rejectedDecisionCount, 1)
     assert.equal(result.rejectedDecisions[0]?.reason, 'operator_rejected')
     assert.equal(result.rejectedDecisions[0]?.note, 'Tester was internal.')
+    assert.equal(
+      result.report.checks.find((check) => check.key === 'public_booking_test')?.nextStep,
+      'Operator rejected this launch-readiness check: Tester was internal.'
+    )
   })
 
   it('validates malformed external review records deterministically', () => {
