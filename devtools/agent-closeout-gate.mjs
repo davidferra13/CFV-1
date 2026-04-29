@@ -4,9 +4,16 @@ import path from 'node:path'
 import { execFileSync } from 'node:child_process'
 import {
   parseArgs,
+  readJson,
   relative,
   reportsRoot,
 } from './agent-skill-utils.mjs'
+import {
+  claimRootFromArgs,
+  detectClaimConflicts,
+  readClaim,
+  verifyClaimBranch,
+} from './agent-claim-utils.mjs'
 
 const args = parseArgs()
 const bannedEmDash = '\u2014'
@@ -46,6 +53,10 @@ function runGitStatus(paths) {
 
 function gitOutput(args) {
   return execFileSync('git', args, { encoding: 'utf8' }).trim()
+}
+
+function currentBranch() {
+  return gitOutput(['branch', '--show-current'])
 }
 
 function commitContainsOwnedPaths(commit, ownedPaths) {
@@ -135,9 +146,54 @@ function scanEmDashes(ownedPaths) {
 const ownedPaths = collectOwnedPaths()
 const failures = []
 const warnings = []
+const claimsRoot = claimRootFromArgs(args)
+const record = args.record && args.record !== true ? readJson(path.resolve(String(args.record)), null) : null
+const claimFile =
+  args.claim && args.claim !== true
+    ? String(args.claim)
+    : record?.claim_file || null
+
+if (args.record && args.record !== true && !record) {
+  failures.push(`Could not read flight record: ${args.record}`)
+}
+
+if (record?.branch && record.branch !== currentBranch()) {
+  failures.push(
+    `Branch changed during task: started on ${record.branch}, now on ${currentBranch()}`,
+  )
+}
+
+if (claimFile) {
+  const claim = readClaim(claimFile)
+  if (!claim) {
+    failures.push(`Could not read agent claim: ${claimFile}`)
+  } else {
+    const branch = verifyClaimBranch(claim)
+    if (!branch.ok) {
+      failures.push(
+        `Agent claim branch mismatch: started on ${branch.expected}, now on ${branch.actual}`,
+      )
+    }
+  }
+}
 
 if (!ownedPaths.length) {
   failures.push('No owned paths supplied. Use --owned path,other-path or positional paths.')
+}
+
+if (ownedPaths.length) {
+  const conflicts = detectClaimConflicts({
+    claimFile,
+    claimsRoot,
+    owned: ownedPaths.join(','),
+  })
+  if (conflicts.length) {
+    failures.push(
+      `Active agent claim overlap detected: ${conflicts
+        .map((conflict) => `${conflict.claim_file} owns ${conflict.overlap.join(',')}`)
+        .join('; ')}`,
+    )
+  }
 }
 
 let statusEntries = []

@@ -15,6 +15,11 @@ import {
   splitCsv,
   writeJson,
 } from './agent-skill-utils.mjs'
+import {
+  createClaim,
+  finishClaim,
+  readClaim,
+} from './agent-claim-utils.mjs'
 
 function usage() {
   console.log(`Usage:
@@ -58,11 +63,22 @@ function start(args) {
   const sidecarSkills = splitCsv(args.sidecars || routed?.sidecar_skills?.join(',') || '')
   const id = `${nowStamp()}-${slugify(prompt)}`
   const file = path.join(flightRecordsRoot, `${id}.json`)
+  const claim =
+    args.claim && args.claim !== true
+      ? { claim_file: String(args.claim), claim: readClaim(String(args.claim)) }
+      : args['create-claim'] || args.owned
+        ? createClaim({
+            prompt,
+            owned: args.owned,
+          })
+        : null
   const record = {
     id,
     prompt,
     status: 'started',
     branch: currentBranch(),
+    branch_start_commit: claim?.claim?.branch_start_commit || gitOutput(['rev-parse', '--short', 'HEAD'], null),
+    claim_file: claim?.claim_file || null,
     started_at: new Date().toISOString(),
     finished_at: null,
     selected_primary_skill: primarySkill || null,
@@ -94,14 +110,28 @@ function finish(args) {
   const commands = splitCsv(args.commands)
   const touchedFiles = collectTouchedFiles(args.owned)
   const commit = args.commit && args.commit !== true ? String(args.commit) : gitOutput(['rev-parse', '--short', 'HEAD'], null)
+  const branchFinish = currentBranch()
   const pushed = commit
-    ? gitOutput(['merge-base', '--is-ancestor', commit, `origin/${currentBranch()}`], null) === ''
+    ? gitOutput(['merge-base', '--is-ancestor', commit, `origin/${branchFinish}`], null) === ''
     : null
+  const claimFile = args.claim || record.claim_file || null
+  let claim = null
+  if (claimFile) {
+    claim = finishClaim({
+      claimFile,
+      owned: args.owned,
+      commit,
+      pushed,
+    })
+  }
 
   const next = {
     ...record,
     status: 'finished',
     finished_at: new Date().toISOString(),
+    branch_finish: branchFinish,
+    branch_changed: Boolean(record.branch && record.branch !== branchFinish),
+    claim_file: claim?.claim_file || record.claim_file || null,
     used_skills: [...new Set([...(record.used_skills || []), ...usedSkills].filter(Boolean))],
     files_touched: [...new Set([...(record.files_touched || []), ...touchedFiles].filter(Boolean))],
     commands_run: [...new Set([...(record.commands_run || []), ...commands].filter(Boolean))],

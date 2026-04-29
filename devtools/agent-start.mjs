@@ -35,6 +35,7 @@ try {
       router.primary_skill,
       '--sidecars',
       (router.sidecar_skills || []).join(','),
+      '--create-claim',
     ]),
   )
   const result = {
@@ -48,6 +49,7 @@ try {
     risk_level: router.risk_level,
     router_report: router.report_path || null,
     flight_record: flight.record_file,
+    claim_file: flight.record.claim_file || null,
   }
   console.log(JSON.stringify(result, null, 2))
 } catch (error) {

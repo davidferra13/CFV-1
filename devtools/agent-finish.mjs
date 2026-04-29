@@ -43,9 +43,14 @@ try {
     'devtools/agent-closeout-gate.mjs',
     '--owned',
     owned,
+    '--record',
+    String(args.record),
     '--skill-validator-evidence',
     validations.find((item) => item.includes('skill-validator')) || 'provided-by-agent-finish',
   ]
+  if (args.claim && args.claim !== true) {
+    closeoutArgs.push('--claim', String(args.claim))
+  }
   if (args.commit && args.commit !== true) {
     closeoutArgs.push('--commit', String(args.commit))
     if (args['require-pushed'] || args.pushed) closeoutArgs.push('--require-pushed')
