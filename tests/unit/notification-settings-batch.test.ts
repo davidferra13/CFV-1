@@ -32,7 +32,11 @@ test('notification settings batch action authenticates, validates, scopes, and r
 
   assert.equal(requireChefIndex >= 0, true, 'batch action must start with requireChef')
   assert.equal(parseIndex > requireChefIndex, true, 'batch action must validate input after auth')
-  assert.equal(dbIndex > parseIndex, true, 'batch action must validate before creating the DB client')
+  assert.equal(
+    dbIndex > parseIndex,
+    true,
+    'batch action must validate before creating the DB client'
+  )
   assert.match(body, /tenant_id:\s*user\.tenantId/, 'batch rows must be tenant-scoped')
   assert.match(body, /auth_user_id:\s*user\.id/, 'batch rows must be auth-user-scoped')
   assert.match(body, /upsert\(rows,\s*\{\s*onConflict:\s*'auth_user_id,category'\s*\}\)/)
@@ -55,7 +59,30 @@ test('notification settings reads are tenant-scoped and do not hide query failur
 
   assert.match(source, /getNotificationPreferences[\s\S]*\.eq\('tenant_id', user\.tenantId\)/)
   assert.match(source, /getSmsSettings[\s\S]*if \(error\) \{[\s\S]*throw new Error/)
-  assert.match(source, /getNotificationExperienceSettings[\s\S]*if \(error\) \{[\s\S]*throw new Error/)
+  assert.match(
+    source,
+    /getNotificationExperienceSettings[\s\S]*if \(error\) \{[\s\S]*throw new Error/
+  )
+})
+
+test('notification experience settings expose visitor alert preference', () => {
+  const source = readProjectFile('lib/notifications/settings-actions.ts')
+  const typeSource = readProjectFile('lib/notifications/settings-types.ts')
+  const formSource = readProjectFile('components/settings/notification-settings-form.tsx')
+
+  assert.match(typeSource, /visitor_alerts_enabled\?: boolean/)
+  assert.match(
+    source,
+    /getNotificationExperienceSettings[\s\S]*visitor_alerts_enabled[\s\S]*visitor_alerts_enabled: \(data as any\)\?\.visitor_alerts_enabled !== false/
+  )
+  assert.match(
+    source,
+    /updateNotificationExperienceSettings[\s\S]*visitor_alerts_enabled: settings\.visitor_alerts_enabled !== false/
+  )
+  assert.match(formSource, /const \[visitorAlertsEnabled, setVisitorAlertsEnabled\]/)
+  assert.match(formSource, /Client portal activity alerts/)
+  assert.match(formSource, /visitor_alerts_enabled: visitorAlertsEnabled/)
+  assert.match(formSource, /setVisitorAlertsEnabled\(rollbackVisitorAlertsEnabled\)/)
 })
 
 test('sms opt-in requires an E.164 phone number server-side', () => {
@@ -81,7 +108,10 @@ test('notification settings form enables SMS category toggles from saved SMS sta
 
   assert.match(source, /const \[savedSmsPhone, setSavedSmsPhone\]/)
   assert.match(source, /const \[savedSmsOptIn, setSavedSmsOptIn\]/)
-  assert.match(source, /const hasSavedSmsSettings = savedSmsOptIn && Boolean\(savedSmsPhone\.trim\(\)\)/)
+  assert.match(
+    source,
+    /const hasSavedSmsSettings = savedSmsOptIn && Boolean\(savedSmsPhone\.trim\(\)\)/
+  )
   assert.match(source, /setSavedSmsOptIn\(smsOptIn\)/)
   assert.match(source, /setSavedSmsPhone\(smsPhone\.trim\(\)\)/)
   assert.match(source, /disabled=\{isSavingChannelChanges \|\| !hasSavedSmsSettings\}/)

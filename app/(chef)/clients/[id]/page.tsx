@@ -105,6 +105,7 @@ import { ClientHouseholdPanel } from '@/components/clients/client-household-pane
 import { getCallsLoadState } from '@/lib/calls/actions'
 import { buildClientCallMemorySnapshot } from '@/lib/clients/client-call-memory'
 import { ClientCallMemoryPanel } from '@/components/clients/client-call-memory-panel'
+import { ClientPortalActivityCard } from '@/components/clients/client-portal-activity-card'
 
 async function ClientCompletionSection({ clientId }: { clientId: string }) {
   const result = await getCompletionForEntity('client', clientId)
@@ -402,6 +403,12 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
 
       {/* Next Best Action */}
       {clientNBA ? <NextBestActionCard action={clientNBA} /> : null}
+
+      <ClientPortalActivityCard
+        clientId={client.id}
+        clientName={client.full_name}
+        events={clientPortalActivity}
+      />
 
       <ClientCallMemoryPanel
         snapshot={clientCallMemory}

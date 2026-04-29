@@ -288,7 +288,7 @@ export async function getNotificationExperienceSettings(): Promise<NotificationE
   const { data, error } = await db
     .from('chef_preferences')
     .select(
-      'notification_quiet_hours_enabled, notification_quiet_hours_start, notification_quiet_hours_end, notification_digest_enabled, notification_digest_interval_minutes'
+      'notification_quiet_hours_enabled, notification_quiet_hours_start, notification_quiet_hours_end, notification_digest_enabled, notification_digest_interval_minutes, visitor_alerts_enabled'
     )
     .eq('tenant_id', user.tenantId)
     .maybeSingle()
@@ -313,6 +313,7 @@ export async function getNotificationExperienceSettings(): Promise<NotificationE
       typeof (data as any)?.notification_digest_interval_minutes === 'number'
         ? Math.min(120, Math.max(5, (data as any).notification_digest_interval_minutes))
         : 15,
+    visitor_alerts_enabled: (data as any)?.visitor_alerts_enabled !== false,
   }
 }
 
@@ -336,6 +337,7 @@ export async function updateNotificationExperienceSettings(
         quietHoursEnabled && settings.quiet_hours_end ? settings.quiet_hours_end : null,
       notification_digest_enabled: Boolean(settings.digest_enabled),
       notification_digest_interval_minutes: digestInterval,
+      visitor_alerts_enabled: settings.visitor_alerts_enabled !== false,
       updated_at: new Date().toISOString(),
     } as any)
     .eq('tenant_id', user.tenantId)

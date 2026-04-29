@@ -173,6 +173,12 @@ export function NotificationSettingsForm({
   const [digestIntervalMinutes, setDigestIntervalMinutes] = useState(
     String(initialExperienceSettings.digest_interval_minutes || 15)
   )
+  const [visitorAlertsEnabled, setVisitorAlertsEnabled] = useState(
+    initialExperienceSettings.visitor_alerts_enabled !== false
+  )
+  const [savedVisitorAlertsEnabled, setSavedVisitorAlertsEnabled] = useState(
+    initialExperienceSettings.visitor_alerts_enabled !== false
+  )
   const dirtyCategoryList = CHEF_CATEGORIES.filter((cat) => dirtyCategories[cat])
   const hasChannelChanges = dirtyCategoryList.length > 0
   const hasSavedSmsSettings = savedSmsOptIn && Boolean(savedSmsPhone.trim())
@@ -289,6 +295,7 @@ export function NotificationSettingsForm({
   const handleExperienceSave = () => {
     setExperienceSaved(false)
     setExperienceError(null)
+    const rollbackVisitorAlertsEnabled = savedVisitorAlertsEnabled
 
     startSettingsTransition(async () => {
       try {
@@ -299,16 +306,22 @@ export function NotificationSettingsForm({
           quiet_hours_end: quietEnd || null,
           digest_enabled: digestEnabled,
           digest_interval_minutes: Number.isFinite(parsedInterval) ? parsedInterval : 15,
+          visitor_alerts_enabled: visitorAlertsEnabled,
         })
 
         if (result.error) {
+          setVisitorAlertsEnabled(rollbackVisitorAlertsEnabled)
           setExperienceError(result.error)
           return
         }
 
+        setSavedVisitorAlertsEnabled(visitorAlertsEnabled)
         setExperienceSaved(true)
         setTimeout(() => setExperienceSaved(false), 3000)
       } catch (err) {
+        console.error('[notification-settings] Failed to save attention controls', err)
+        setVisitorAlertsEnabled(rollbackVisitorAlertsEnabled)
+        setExperienceError('Failed to save attention controls')
         toast.error('Failed to save attention controls')
       }
     })
@@ -400,6 +413,24 @@ export function NotificationSettingsForm({
               />
             </label>
           </div>
+
+          <label className="flex items-start gap-3 cursor-pointer rounded-lg border border-stone-800 bg-stone-950/40 p-3">
+            <input
+              type="checkbox"
+              checked={visitorAlertsEnabled}
+              onChange={(e) => setVisitorAlertsEnabled(e.target.checked)}
+              className="mt-0.5 rounded border-stone-600 accent-stone-900"
+            />
+            <span className="text-sm text-stone-300">
+              <span className="block font-medium text-stone-100">
+                Client portal activity alerts
+              </span>
+              <span className="mt-1 block text-stone-400">
+                Notify me when clients show high-intent portal activity, such as viewing a quote,
+                payment page, or event details.
+              </span>
+            </span>
+          </label>
 
           {/* Digest batching: settings saved to DB, processor not yet built */}
           {/* Hidden until backend cron processor exists to avoid zero-hallucination violation */}

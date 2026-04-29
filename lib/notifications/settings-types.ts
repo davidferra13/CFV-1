@@ -18,4 +18,5 @@ export type NotificationExperienceSettings = {
   quiet_hours_end: string | null
   digest_enabled: boolean
   digest_interval_minutes: number
+  visitor_alerts_enabled?: boolean
 }
