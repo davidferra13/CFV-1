@@ -1,0 +1,4 @@
+interface:
+  display_name: "Skill Garden"
+  short_description: "Create and improve ChefFlow skills from repeated behavior"
+  default_prompt: "Use Skill Garden to create or improve a ChefFlow skill from observed behavior."

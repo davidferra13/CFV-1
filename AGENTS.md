@@ -255,6 +255,25 @@ await sendNotification(...)
 
 ---
 
+## CODEX OPERATING LOOP
+
+Codex should treat ChefFlow skills as an active operating system, not a passive list.
+
+At the start of every ChefFlow task:
+
+1. Run the `omninet` routing loop mentally or explicitly.
+2. Load any skill named by the user.
+3. Load the most specific skill implied by the task.
+4. If the request contains repeated developer behavior, new operating guidance, a skill failure, or external process notes that should survive this chat, also use `skill-garden`.
+5. If the user pastes many personas or third-party persona output, use `persona-dump`, then hand off to `persona-inbox`.
+6. If a skill failed or missed a recurring rule, use `heal-skill` or `skill-garden` to patch it before finishing.
+
+Codex cannot run literal background daemon skills. The project substitute is a mandatory routing loop plus trigger descriptions that cause future agents to load the right skills automatically from context.
+
+When skill changes are made, validate changed skills, check for em dashes in changed skill files, then commit and push the feature branch before finishing.
+
+---
+
 ## Persistent Operating Standard
 
 Adopt the standards of a high-performance engineering team:
@@ -304,6 +323,8 @@ A skill is a set of local instructions stored in a `SKILL.md` file. Each entry b
 - `health`: Quick health check for ChefFlow - type check, build status, server status, and database connectivity. File: `.claude/skills/health/SKILL.md`
 - `massive-win`: Identify THE single highest-leverage change that would deliver disproportionate value. Not a list - one move that unblocks the most, multiplies the most, or changes the game. File: `.claude/skills/massive-win/SKILL.md`
 - `morning`: One-command daily briefing. Build state, overnight changes, Pi/OpenClaw health, active priorities, session continuity. File: `.claude/skills/morning/SKILL.md`
+- `omninet`: Always-on ChefFlow Codex operating loop. Use at the start of any ChefFlow task, ambiguous request, multi-skill request, build, debug, review, research, planning, persona pipeline work, or when deciding which project skills to load. Routes work through the best existing skills, maintains a task heartbeat, protects ChefFlow hard stops, and captures skill creation or healing opportunities. File: `.claude/skills/omninet/SKILL.md`
+- `persona-dump`: Ingest huge pasted persona conversations or persona blurbs into the ChefFlow persona pipeline. Use when the user wants to paste many personas at once, import third-party ChatGPT persona output, split a large persona dump, classify personas by type, add them to `Chef Flow Personas/Uncompleted/`, or prepare persona material for `persona-inbox`, `persona-stress-test`, or `persona-build`. File: `.claude/skills/persona-dump/SKILL.md`
 - `persona-build`: Process persona pipeline findings into built features. Reads batch synthesis, validates every gap against the actual codebase, filters out already-built features, and builds genuinely missing ones in priority order. The critical step the Ollama analyzer cannot do. File: `.claude/skills/persona-build/SKILL.md`
 - `persona-inbox`: Manage the persona pipeline without a running server. Status, run, synthesize, validate, import, queue, generate, vault, sources. CLI-first, no HTTP needed. File: `.claude/skills/persona-inbox/SKILL.md`
 - `persona-stress-test`: Deterministic persona-based stress test against ChefFlow. Accepts any persona (chef, client, vendor, farm, guest, staff), simulates their full workflow, audits every capability, scores the system, and extracts actionable gaps. Checks the registry to avoid re-testing known personas. Use when evaluating product-market fit, onboarding readiness, or system completeness for a specific user type. File: `.claude/skills/persona-stress-test/SKILL.md`
@@ -316,6 +337,7 @@ A skill is a set of local instructions stored in a `SKILL.md` file. Each entry b
 - `review`: Code review on uncommitted changes before shipping. Quality gate between coding and /ship. File: `.claude/skills/review/SKILL.md`
 - `seam`: "Inside-out and backwards" refinement lens inspired by Adam Savage. Examines ChefFlow surfaces as planar forms meeting under rules and conditions. Finds seam failures, reversed assumptions, and order-of-operations violations. Repeatable - run until dry. File: `.claude/skills/seam/SKILL.md`
 - `ship`: Git add, commit, and push everything to GitHub. The full "ship it" chain. File: `.claude/skills/ship/SKILL.md`
+- `skill-garden`: Create, improve, and self-heal ChefFlow project skills from observed developer behavior. Use when the user gives operating guidance such as "always", "never", "Codex should", "make Codex smarter", "self-heal", "create skills", or "use this behavior going forward"; when a repeated workflow, correction, failure, persona import pattern, Hermes/OpenCloy markdown, or external conversation should become reusable Codex behavior; or when an existing skill needs refinement. File: `.claude/skills/skill-garden/SKILL.md`
 - `soak`: Run the full software aging (soak) pipeline - useEffect cleanup audit, fixes, and soak tests. File: `.claude/skills/soak/SKILL.md`
 - `status`: Quick "where am I?" snapshot - branch, uncommitted work, last commit, what was in progress, what's next. File: `.claude/skills/status/SKILL.md`
 - `tdd`: Test-Driven Development. Write test first, watch it fail, write minimal code to pass, refactor. No production code without a failing test first. File: `.claude/skills/tdd/SKILL.md`

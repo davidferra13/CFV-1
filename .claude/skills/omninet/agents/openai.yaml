@@ -1,0 +1,4 @@
+interface:
+  display_name: "Omninet"
+  short_description: "Route ChefFlow work through the right skills"
+  default_prompt: "Use Omninet to choose the right ChefFlow skills and execute the task."

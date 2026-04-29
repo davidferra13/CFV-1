@@ -1,0 +1,4 @@
+interface:
+  display_name: "Persona Dump"
+  short_description: "Turn pasted persona blobs into pipeline-ready persona files"
+  default_prompt: "Use Persona Dump to parse pasted persona text and import it into the persona pipeline."
