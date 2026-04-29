@@ -256,6 +256,16 @@ async function fetchAllergyCardData(eventId: string): Promise<AllergyCardData | 
   }
 }
 
+function hasRenderableAllergyCardData(data: AllergyCardData): boolean {
+  return (
+    data.criticalAllergies.length > 0 ||
+    data.cautionAllergies.length > 0 ||
+    data.dietaryRestrictions.length > 0 ||
+    data.dislikes.length > 0 ||
+    data.freeTextNotes.length > 0
+  )
+}
+
 // ---- PDF Rendering (landscape, large font, color-coded) ----
 
 function renderAllergyCard(data: AllergyCardData): Buffer {
@@ -539,58 +549,15 @@ export async function generateAllergyCard(eventId: string): Promise<Buffer> {
   const data = await fetchAllergyCardData(eventId)
   if (!data) throw new Error('Cannot generate allergy card: event not found')
 
-  const hasAny =
-    data.criticalAllergies.length > 0 ||
-    data.cautionAllergies.length > 0 ||
-    data.dietaryRestrictions.length > 0 ||
-    data.dislikes.length > 0 ||
-    data.freeTextNotes.length > 0
-
-  if (!hasAny) throw new Error('No allergies or dietary restrictions found for this event')
+  if (!hasRenderableAllergyCardData(data)) {
+    throw new Error('No allergies or dietary restrictions found for this event')
+  }
 
   return renderAllergyCard(data)
 }
 
 /** Check whether an event has any allergy/dietary data worth printing */
 export async function hasAllergyData(eventId: string): Promise<boolean> {
-  const user = await requireChef()
-  const db: any = createServerClient()
-
-  const { data: event } = await db
-    .from('events')
-    .select(
-      `
-      allergies, dietary_restrictions,
-      client:clients(allergies, dietary_restrictions, dislikes)
-    `
-    )
-    .eq('id', eventId)
-    .eq('tenant_id', user.tenantId!)
-    .single()
-
-  if (!event) return false
-
-  const clientData = event.client as unknown as {
-    allergies: string[] | null
-    dietary_restrictions: string[] | null
-    dislikes: string[] | null
-  } | null
-
-  if ((event.allergies ?? []).length > 0) return true
-  if ((event.dietary_restrictions ?? []).length > 0) return true
-  if ((clientData?.allergies ?? []).length > 0) return true
-  if ((clientData?.dietary_restrictions ?? []).length > 0) return true
-  if ((clientData?.dislikes ?? []).length > 0) return true
-
-  // Check guests (including plus-one data)
-  const { count } = await db
-    .from('event_guests')
-    .select('id', { count: 'exact', head: true })
-    .eq('event_id', eventId)
-    .eq('tenant_id', user.tenantId!)
-    .or(
-      'allergies.neq.{},dietary_restrictions.neq.{},plus_one_allergies.neq.{},plus_one_dietary.neq.{}'
-    )
-
-  return (count ?? 0) > 0
+  const data = await fetchAllergyCardData(eventId)
+  return data ? hasRenderableAllergyCardData(data) : false
 }

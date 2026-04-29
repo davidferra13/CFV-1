@@ -41,6 +41,8 @@ export function RecurringMealsManager({
   const [showForm, setShowForm] = useState(false)
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
 
   // Form state
   const [mealType, setMealType] = useState<MealType>('breakfast')
@@ -49,9 +51,19 @@ export function RecurringMealsManager({
   const [dayOfWeek, setDayOfWeek] = useState<number>(0)
 
   useEffect(() => {
+    setIsLoading(true)
+    setLoadError(null)
+    setRecurrings([])
     getRecurringMeals(groupId)
-      .then(setRecurrings)
-      .catch(() => {})
+      .then((meals) => {
+        setRecurrings(meals)
+      })
+      .catch(() => {
+        setLoadError('Failed to load recurring meals')
+      })
+      .finally(() => {
+        setIsLoading(false)
+      })
   }, [groupId])
 
   const handleCreate = () => {
@@ -143,9 +155,11 @@ export function RecurringMealsManager({
       </div>
 
       {error && <p className="mb-2 text-[10px] text-red-400">{error}</p>}
+      {loadError && !isLoading && <p className="mb-2 text-[10px] text-red-400">{loadError}</p>}
+      {isLoading && <p className="text-[10px] text-stone-500">Loading recurring meals...</p>}
 
       {/* Existing recurring meals */}
-      {recurrings.length > 0 && (
+      {!isLoading && !loadError && recurrings.length > 0 && (
         <div className="mb-2 space-y-1">
           {recurrings.map((r) => (
             <div
@@ -170,7 +184,7 @@ export function RecurringMealsManager({
         </div>
       )}
 
-      {recurrings.length === 0 && !showForm && (
+      {!isLoading && !loadError && recurrings.length === 0 && !showForm && (
         <p className="text-[10px] text-stone-600">
           Set up repeating meals (e.g., smoothie bowl every weekday breakfast).
         </p>

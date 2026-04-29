@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useMemo, useState, useTransition } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -26,6 +26,11 @@ export function CharityHoursList({
 }) {
   const [pending, startTransition] = useTransition()
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [deletedEntryIds, setDeletedEntryIds] = useState<Set<string>>(() => new Set())
+  const visibleEntries = useMemo(
+    () => entries.filter((entry) => !deletedEntryIds.has(entry.id)),
+    [deletedEntryIds, entries]
+  )
 
   function handleDelete(entry: CharityHourEntry) {
     if (
@@ -40,6 +45,7 @@ export function CharityHoursList({
     startTransition(async () => {
       try {
         await deleteCharityHours(entry.id)
+        setDeletedEntryIds((currentIds) => new Set(currentIds).add(entry.id))
         toast.success('Volunteer entry deleted.')
       } catch {
         toast.error('Failed to delete entry.')
@@ -51,7 +57,7 @@ export function CharityHoursList({
 
   function handleExportCsv() {
     const header = 'Date,Organization,Address,Website,EIN,501(c) Verified,Hours,Notes'
-    const rows = entries.map((entry) => {
+    const rows = visibleEntries.map((entry) => {
       const escapeCell = (value: string | null) => {
         if (!value) return ''
         const escaped = value.replace(/"/g, '""')
@@ -81,7 +87,7 @@ export function CharityHoursList({
     toast.success('CSV exported.')
   }
 
-  if (entries.length === 0) {
+  if (visibleEntries.length === 0) {
     return (
       <Card className="p-10 text-center">
         <p className="text-lg font-medium text-stone-400">No volunteer entries yet</p>
@@ -96,7 +102,9 @@ export function CharityHoursList({
     <Card className="overflow-hidden">
       <div className="flex items-center justify-between border-b border-stone-800 px-5 py-4">
         <div>
-          <h2 className="text-sm font-medium text-stone-300">Volunteer log ({entries.length})</h2>
+          <h2 className="text-sm font-medium text-stone-300">
+            Volunteer log ({visibleEntries.length})
+          </h2>
           <p className="mt-1 text-xs text-stone-500">
             Structured entries keep organization links and proof attached to each record.
           </p>
@@ -108,7 +116,7 @@ export function CharityHoursList({
       </div>
 
       <div className="divide-y divide-stone-800">
-        {entries.map((entry) => (
+        {visibleEntries.map((entry) => (
           <div
             key={entry.id}
             className="flex items-start justify-between gap-4 px-5 py-4 transition-colors hover:bg-stone-800/30"

@@ -8,6 +8,7 @@ import {
   type OperationalDocumentType,
 } from '@/lib/documents/document-definitions'
 import { getDocumentReadiness } from '@/lib/documents/actions'
+import { hasAllergyData } from '@/lib/documents/generate-allergy-card'
 import { evaluateReadinessForDocumentGeneration } from '@/lib/events/readiness'
 import {
   EVENT_OPERATION_DOCUMENTS,
@@ -34,10 +35,11 @@ function formatEventDate(value: string | null | undefined): string {
 export default async function EventPrintCenterPage({ params }: { params: { id: string } }) {
   await requireChef()
 
-  const [event, readiness, readinessGate] = await Promise.all([
+  const [event, readiness, readinessGate, hasAllergyCardData] = await Promise.all([
     getEventById(params.id),
     getDocumentReadiness(params.id),
     evaluateReadinessForDocumentGeneration(params.id).catch(() => null),
+    hasAllergyData(params.id).catch(() => null),
   ])
 
   if (!event) notFound()
@@ -148,16 +150,38 @@ export default async function EventPrintCenterPage({ params }: { params: { id: s
             High-visibility sheets for hands-on service.
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
-            {EVENT_SAFETY_PRINTS.map((print) => (
-              <Button
-                key={print.id}
-                href={buildEventSafetyPrintHref(params.id, print)}
-                variant="secondary"
-              >
-                {print.title}
-              </Button>
-            ))}
+            {EVENT_SAFETY_PRINTS.map((print) => {
+              const unavailableReason =
+                print.requiresAllergyData && hasAllergyCardData === false
+                  ? 'No allergy or dietary records found'
+                  : print.requiresAllergyData && hasAllergyCardData === null
+                    ? 'Could not verify allergy data'
+                    : null
+
+              if (unavailableReason) {
+                return (
+                  <Button key={print.id} variant="secondary" disabled tooltip={unavailableReason}>
+                    {print.title}
+                  </Button>
+                )
+              }
+
+              return (
+                <Button
+                  key={print.id}
+                  href={buildEventSafetyPrintHref(params.id, print)}
+                  variant="secondary"
+                >
+                  {print.title}
+                </Button>
+              )
+            })}
           </div>
+          {hasAllergyCardData === false && (
+            <p className="mt-3 text-xs text-stone-500">
+              Allergy Card unlocks after event, client, or guest allergy and dietary data exists.
+            </p>
+          )}
         </Card>
       </div>
 

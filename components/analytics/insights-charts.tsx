@@ -70,6 +70,10 @@ function formatMinutes(minutes: number): string {
   return m > 0 ? `${h}h ${m}m` : `${h}h`
 }
 
+function chartNumber(value: unknown): number {
+  return typeof value === 'number' ? value : Number(value ?? 0) || 0
+}
+
 function EmptyChart({ message }: { message: string }) {
   return (
     <div className="flex items-center justify-center h-48 text-stone-400 text-sm italic">
@@ -93,7 +97,7 @@ export function DinnerTimeChart({ data }: { data: DinnerTimeSlot[] }) {
         <YAxis tick={{ fontSize: 12, fill: '#78716c' }} allowDecimals={false} />
         <Tooltip
           contentStyle={{ borderRadius: '8px', border: '1px solid #e7e5e4' }}
-          formatter={(value: number | undefined) => [value ?? 0, 'Events']}
+          formatter={(value: unknown) => [chartNumber(value), 'Events']}
         />
         <Bar dataKey="count" fill="#8b5cf6" radius={[4, 4, 0, 0]} name="Events">
           {data.map((entry, i) => (
@@ -185,7 +189,7 @@ export function ServiceStylePieChart({ data }: { data: ServiceStyleStat[] }) {
         </Pie>
         <Tooltip
           contentStyle={{ borderRadius: '8px', border: '1px solid #e7e5e4' }}
-          formatter={(value: number | undefined) => [value ?? 0, 'Events']}
+          formatter={(value: unknown) => [chartNumber(value), 'Events']}
         />
       </PieChart>
     </ResponsiveContainer>
@@ -205,7 +209,7 @@ export function GuestCountHistogram({ data }: { data: GuestCountBucket[] }) {
         <YAxis tick={{ fontSize: 12, fill: '#78716c' }} allowDecimals={false} />
         <Tooltip
           contentStyle={{ borderRadius: '8px', border: '1px solid #e7e5e4' }}
-          formatter={(value: number | undefined) => [value ?? 0, 'Events']}
+          formatter={(value: unknown) => [chartNumber(value), 'Events']}
         />
         <Bar dataKey="count" fill="#06b6d4" radius={[4, 4, 0, 0]} name="Events" />
       </BarChart>
@@ -230,7 +234,7 @@ export function DietaryFrequencyChart({ data }: { data: DietaryFrequency[] }) {
         />
         <Tooltip
           contentStyle={{ borderRadius: '8px', border: '1px solid #e7e5e4' }}
-          formatter={(value: number | undefined) => [value, 'Occurrences']}
+          formatter={(value: unknown) => [chartNumber(value), 'Occurrences']}
         />
         <Bar dataKey="count" fill="#f59e0b" radius={[0, 4, 4, 0]} name="Occurrences" />
       </BarChart>
@@ -310,7 +314,7 @@ export function DayOfWeekChart({ data }: { data: DayOfWeekStat[] }) {
         <YAxis tick={{ fontSize: 12, fill: '#78716c' }} allowDecimals={false} />
         <Tooltip
           contentStyle={{ borderRadius: '8px', border: '1px solid #e7e5e4' }}
-          formatter={(value: number | undefined) => [value ?? 0, 'Events']}
+          formatter={(value: unknown) => [chartNumber(value), 'Events']}
         />
         <Bar dataKey="count" fill="#06b6d4" radius={[4, 4, 0, 0]} name="Events">
           {data.map((entry, i) => (
@@ -353,7 +357,7 @@ export function RevenueTrendChart({ data }: { data: RevenueTrendPoint[] }) {
         />
         <Tooltip
           contentStyle={{ borderRadius: '8px', border: '1px solid #e7e5e4' }}
-          formatter={(value: number | undefined) => [formatCurrency(value ?? 0), 'Net Revenue']}
+          formatter={(value: unknown) => [formatCurrency(chartNumber(value)), 'Net Revenue']}
         />
         <Area
           type="monotone"
@@ -395,7 +399,7 @@ export function AcquisitionSourcePieChart({ data }: { data: { name: string; coun
         </Pie>
         <Tooltip
           contentStyle={{ borderRadius: '8px', border: '1px solid #e7e5e4' }}
-          formatter={(value: number | undefined) => [value, 'Clients']}
+          formatter={(value: unknown) => [chartNumber(value), 'Clients']}
         />
       </PieChart>
     </ResponsiveContainer>
@@ -426,7 +430,7 @@ export function ClientStatusChart({ data }: { data: { name: string; count: numbe
         />
         <Tooltip
           contentStyle={{ borderRadius: '8px', border: '1px solid #e7e5e4' }}
-          formatter={(value: number | undefined) => [value, 'Clients']}
+          formatter={(value: unknown) => [chartNumber(value), 'Clients']}
         />
         <Bar dataKey="count" radius={[0, 4, 4, 0]} name="Clients">
           {data.map((entry, i) => (
@@ -471,7 +475,7 @@ export function LoyaltyTierPieChart({ data }: { data: { tier: string; count: num
         </Pie>
         <Tooltip
           contentStyle={{ borderRadius: '8px', border: '1px solid #e7e5e4' }}
-          formatter={(value: number | undefined) => [value, 'Clients']}
+          formatter={(value: unknown) => [chartNumber(value), 'Clients']}
         />
       </PieChart>
     </ResponsiveContainer>
@@ -504,7 +508,7 @@ export function EventsPerClientHistogram({
         <YAxis tick={{ fontSize: 12, fill: '#78716c' }} allowDecimals={false} />
         <Tooltip
           contentStyle={{ borderRadius: '8px', border: '1px solid #e7e5e4' }}
-          formatter={(value: number | undefined) => [value, 'Clients']}
+          formatter={(value: unknown) => [chartNumber(value), 'Clients']}
         />
         <Bar dataKey="clients" fill="#8b5cf6" radius={[4, 4, 0, 0]} name="Clients" />
       </BarChart>
@@ -525,7 +529,7 @@ export function LTVDistributionChart({ data }: { data: LTVBucket[] }) {
         <YAxis tick={{ fontSize: 12, fill: '#78716c' }} allowDecimals={false} />
         <Tooltip
           contentStyle={{ borderRadius: '8px', border: '1px solid #e7e5e4' }}
-          formatter={(value: number | undefined) => [value, 'Clients']}
+          formatter={(value: unknown) => [chartNumber(value), 'Clients']}
         />
         <Bar dataKey="clients" fill="#f59e0b" radius={[4, 4, 0, 0]} name="Clients" />
       </BarChart>
@@ -565,7 +569,7 @@ export function PhaseTimeChart({ data }: { data: { phase: string; avg_minutes: n
         />
         <Tooltip
           contentStyle={{ borderRadius: '8px', border: '1px solid #e7e5e4' }}
-          formatter={(value: number | undefined) => [formatMinutes(value ?? 0), 'Avg time']}
+          formatter={(value: unknown) => [formatMinutes(chartNumber(value)), 'Avg time']}
         />
         <Bar dataKey="avg_minutes" radius={[0, 4, 4, 0]} name="Avg time">
           {data.map((entry, i) => (
@@ -659,7 +663,7 @@ export function ForgottenItemsChart({ data }: { data: AARTrends['topForgotten'] 
         />
         <Tooltip
           contentStyle={{ borderRadius: '8px', border: '1px solid #e7e5e4' }}
-          formatter={(value: number | undefined) => [value, 'Times forgotten']}
+          formatter={(value: unknown) => [chartNumber(value), 'Times forgotten']}
         />
         <Bar dataKey="count" fill="#ef4444" radius={[0, 4, 4, 0]} name="Times forgotten" />
       </BarChart>
@@ -729,7 +733,7 @@ export function StyleValueChart({ data }: { data: FinancialIntelligence['avgValu
         />
         <Tooltip
           contentStyle={{ borderRadius: '8px', border: '1px solid #e7e5e4' }}
-          formatter={(value: number | undefined) => [formatCurrency(value ?? 0), 'Avg Event Value']}
+          formatter={(value: unknown) => [formatCurrency(chartNumber(value)), 'Avg Event Value']}
         />
         <Bar dataKey="avg_cents" fill="#10b981" radius={[4, 4, 0, 0]} name="Avg Event Value" />
       </BarChart>
