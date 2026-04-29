@@ -72,7 +72,11 @@ import { getLocalAiPreferences, type LocalAiPreferences } from '@/lib/ai/privacy
 import { LOCAL_AI_PREFERENCES_UPDATED_EVENT } from '@/lib/ai/local-ai-provider'
 import { LocalAiIndicator } from '@/components/ai/local-ai-indicator'
 import { useKitchenMode } from '@/lib/hooks/use-kitchen-mode'
-import type { OpenRemyEventDetail } from '@/lib/ai/remy-launch'
+import {
+  getOpenRemyPrompt,
+  shouldAutoSendOpenRemyPrompt,
+  type OpenRemyEventDetail,
+} from '@/lib/ai/remy-launch'
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -303,16 +307,25 @@ export function RemyDrawer({ allowSuggestions = true }: RemyDrawerProps) {
   useEffect(() => {
     function handleOpenRemy(event: Event) {
       const detail = (event as CustomEvent<OpenRemyEventDetail>).detail
-      const prompt = detail?.prompt?.trim()
+      const prompt = getOpenRemyPrompt(detail)
       if (!prompt) return
       setDrawerView('chat')
+
+      if (shouldAutoSendOpenRemyPrompt(detail)) {
+        setInput('')
+        window.setTimeout(() => {
+          void handleSend(prompt)
+        }, 0)
+        return
+      }
+
       setInput(prompt)
       setTimeout(() => textareaRef.current?.focus(), 100)
     }
 
     window.addEventListener('open-remy', handleOpenRemy)
     return () => window.removeEventListener('open-remy', handleOpenRemy)
-  }, [])
+  }, [handleSend])
 
   // Ollama health check - detect limited mode
   const [ollamaOnline, setOllamaOnline] = useState(true)

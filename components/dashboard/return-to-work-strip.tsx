@@ -59,6 +59,7 @@ export function ReturnToWorkStrip({
               openRemy({
                 prompt: 'Catch me up since I was away',
                 source: 'dashboard-return-to-work',
+                send: true,
               })
             }
             className="inline-flex items-center rounded-lg border border-amber-700 bg-amber-950/40 px-3 py-2 text-sm font-medium text-amber-200 transition-colors hover:bg-amber-900/50"
