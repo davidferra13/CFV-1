@@ -1,0 +1,4 @@
+interface:
+  display_name: "YouTube Watch"
+  short_description: "Extract, verify, and apply YouTube video content."
+  default_prompt: "Watch this YouTube video and turn it into a sourced, actionable brief."
