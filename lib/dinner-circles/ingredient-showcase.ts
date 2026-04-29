@@ -1,5 +1,3 @@
-'use server'
-
 import { createServerClient } from '@/lib/db/server'
 import type { DinnerCircleSourceLink } from '@/lib/dinner-circles/types'
 import type { IngredientShowcaseResult } from '@/lib/dinner-circles/ingredient-showcase-types'

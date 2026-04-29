@@ -24,6 +24,7 @@ interface SourcingBoardProps {
 export function CircleSourcingBoard({ circleId }: SourcingBoardProps) {
   const [data, setData] = useState<CircleSourcingItem[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -32,11 +33,15 @@ export function CircleSourcingBoard({ circleId }: SourcingBoardProps) {
       .then((result) => {
         if (!cancelled) {
           setData(result)
+          setError(null)
           setLoading(false)
         }
       })
-      .catch(() => {
-        if (!cancelled) setLoading(false)
+      .catch((err) => {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : 'Failed to load sourcing data')
+          setLoading(false)
+        }
       })
 
     return () => {
@@ -48,6 +53,14 @@ export function CircleSourcingBoard({ circleId }: SourcingBoardProps) {
     return (
       <div className="rounded-xl border border-stone-700 bg-stone-800/50 p-8 text-center text-sm text-stone-400">
         Loading sourcing data...
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="rounded-xl border border-red-900/60 bg-red-950/30 p-8 text-center text-sm text-red-200">
+        {error}
       </div>
     )
   }

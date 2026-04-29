@@ -39,6 +39,7 @@ export default async function ConsolidatedShoppingPage({ searchParams }: PagePro
     items: [],
     totalEstimatedCostCents: 0,
     shortageCount: 0,
+    budgetGuardrail: null,
   }))
 
   return (

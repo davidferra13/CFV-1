@@ -491,30 +491,36 @@ export async function getCircleSourcingData(circleId: string): Promise<CircleSou
   const tenantId = user.tenantId!
   const db: any = createServerClient({ admin: true })
 
-  const { data: circle } = await db
+  const { data: circle, error: circleError } = await db
     .from('hub_groups')
     .select('id')
     .eq('id', circleId)
     .eq('tenant_id', tenantId)
     .single()
 
+  if (circleError) throw new Error(`Failed to load circle: ${circleError.message}`)
   if (!circle) return []
 
   // 1. Get linked event IDs for this circle
-  const { data: eventLinks } = await db
+  const { data: eventLinks, error: eventLinksError } = await db
     .from('hub_group_events')
     .select('event_id')
     .eq('group_id', circleId)
+
+  if (eventLinksError)
+    throw new Error(`Failed to load circle event links: ${eventLinksError.message}`)
 
   const eventIds = (eventLinks ?? []).map((e: any) => e.event_id)
   if (eventIds.length === 0) return []
 
   // 2. Get event titles (verify tenant ownership)
-  const { data: events } = await db
+  const { data: events, error: eventsError } = await db
     .from('events')
     .select('id, title')
     .in('id', eventIds)
     .eq('tenant_id', tenantId)
+
+  if (eventsError) throw new Error(`Failed to load circle events: ${eventsError.message}`)
 
   const titleMap: Record<string, string> = {}
   for (const e of events ?? []) {
@@ -526,23 +532,32 @@ export async function getCircleSourcingData(circleId: string): Promise<CircleSou
   if (ownedEventIds.length === 0) return []
 
   // 3. Get lifecycle data from the view
-  const { data: lifecycle } = await db
+  const { data: lifecycle, error: lifecycleError } = await db
     .from('event_ingredient_lifecycle')
     .select('*')
     .in('event_id', ownedEventIds)
+    .eq('chef_id', tenantId)
+
+  if (lifecycleError) {
+    throw new Error(`Failed to load circle ingredient lifecycle: ${lifecycleError.message}`)
+  }
 
   if (!lifecycle || lifecycle.length === 0) return []
 
   // 4. Get preferred vendors from ingredients table
   const ingredientIds = [...new Set((lifecycle as any[]).map((l: any) => l.ingredient_id))]
-  let vendorMap: Record<string, string | null> = {}
+  const vendorMap: Record<string, string | null> = {}
 
   if (ingredientIds.length > 0) {
-    const { data: ingredients } = await db
+    const { data: ingredients, error: ingredientsError } = await db
       .from('ingredients')
       .select('id, preferred_vendor')
       .in('id', ingredientIds)
       .eq('tenant_id', tenantId)
+
+    if (ingredientsError) {
+      throw new Error(`Failed to load circle ingredient vendors: ${ingredientsError.message}`)
+    }
 
     for (const ing of ingredients ?? []) {
       vendorMap[ing.id] = ing.preferred_vendor ?? null
