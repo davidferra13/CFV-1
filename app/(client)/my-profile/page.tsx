@@ -6,8 +6,10 @@ import {
   getMyFunQA,
   getMyMealCollaborationData,
 } from '@/lib/clients/client-profile-actions'
+import { getMyDefaultKnowledgeSettings } from '@/lib/clients/client-default-knowledge-actions'
 import { getClientSignalNotificationPref } from '@/lib/calendar/signal-settings-actions'
 import { ClientProfileForm } from './client-profile-form'
+import { DefaultKnowledgePanel } from './default-knowledge-panel'
 import { FunQAForm } from '@/components/clients/fun-qa-form'
 import { ClientSignalNotificationToggle } from '@/components/calendar/client-signal-notification-toggle'
 import { FeedbackForm } from '@/components/feedback/feedback-form'
@@ -32,6 +34,7 @@ export default async function MyProfilePage() {
       favorites: { favoriteDishes: [], favoriteCuisines: [] },
     })),
   ])
+  const defaultKnowledge = await getMyDefaultKnowledgeSettings()
 
   return (
     <div className="max-w-3xl mx-auto space-y-8">
@@ -41,6 +44,8 @@ export default async function MyProfilePage() {
           Keep your info up to date so your chef can deliver the best experience.
         </p>
       </div>
+
+      <DefaultKnowledgePanel initialSnapshot={defaultKnowledge} />
 
       <div data-tour="client-update-profile">
         <ClientProfileForm profile={profile} />
