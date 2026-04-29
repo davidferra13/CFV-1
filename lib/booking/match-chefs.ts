@@ -6,6 +6,7 @@ import {
   resolvePublicLocationQuery,
   type ResolvedPublicLocation,
 } from '@/lib/geo/public-location'
+import { canonicalizeBookingServiceType } from '@/lib/booking/service-types'
 
 export type MatchedChef = DirectoryChef & {
   distance_miles: number | null
@@ -20,6 +21,7 @@ export async function matchChefsForBooking(options: {
   guestCount?: number | null
 }): Promise<{ chefs: MatchedChef[]; resolvedLocation: ResolvedPublicLocation | null }> {
   const { location, serviceType, guestCount } = options
+  const canonicalServiceType = canonicalizeBookingServiceType(serviceType)
 
   // Resolve the client's location to coordinates
   const locationResult = await resolvePublicLocationQuery(location)
@@ -63,10 +65,14 @@ export async function matchChefsForBooking(options: {
     }
 
     // Service type filter (if specified)
-    if (serviceType && chef.discovery.service_types.length > 0) {
-      const normalizedType = serviceType.toLowerCase().trim()
-      const chefTypes = chef.discovery.service_types.map((t: string) => t.toLowerCase().trim())
-      if (!chefTypes.includes(normalizedType)) continue
+    if (canonicalServiceType && chef.discovery.service_types.length > 0) {
+      const chefTypes = chef.discovery.service_types.map((t: string) =>
+        canonicalizeBookingServiceType(t)
+      )
+      const typeMatches =
+        chefTypes.includes(canonicalServiceType) ||
+        (canonicalServiceType === 'private_dinner' && chefTypes.includes('personal_chef'))
+      if (!typeMatches) continue
     }
 
     // Guest count filter (if specified and chef has limits)

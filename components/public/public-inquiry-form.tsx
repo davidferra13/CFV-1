@@ -47,6 +47,7 @@ interface Props {
 interface FormData {
   full_name: string
   address: string
+  address_tbd: boolean
   month: string
   day: string
   year: string
@@ -212,6 +213,7 @@ export function PublicInquiryForm({
   const [formData, setFormData] = useState<FormData>({
     full_name: defaultValues?.full_name ?? '',
     address: defaultValues?.address ?? '',
+    address_tbd: false,
     month: initialEventDate?.month ?? '',
     day: initialEventDate?.day ?? '',
     year: initialEventDate?.year ?? '',
@@ -310,7 +312,7 @@ export function PublicInquiryForm({
       newErrors.full_name = 'Full Name is required'
     }
 
-    if (!formData.address.trim()) {
+    if (!formData.address_tbd && !formData.address.trim()) {
       newErrors.address = 'Address is required'
     }
 
@@ -352,8 +354,11 @@ export function PublicInquiryForm({
 
     if (!formData.serve_time.trim()) {
       newErrors.serve_time = 'Time is required'
-    } else if (!/^(0?[1-9]|1[0-2]):[0-5][0-9]\s?(AM|PM)$/i.test(formData.serve_time.trim())) {
-      newErrors.serve_time = 'Use format HH:MM AM or HH:MM PM'
+    } else if (
+      !/^([01]\d|2[0-3]):[0-5]\d$/.test(formData.serve_time.trim()) &&
+      !/^(0?[1-9]|1[0-2]):[0-5][0-9]\s?(AM|PM)$/i.test(formData.serve_time.trim())
+    ) {
+      newErrors.serve_time = 'Use a valid serving time'
     }
 
     if (!formData.email.trim()) {
@@ -374,10 +379,6 @@ export function PublicInquiryForm({
       newErrors.occasion = 'Occasion is required'
     }
 
-    if (!formData.budget.trim()) {
-      newErrors.budget = 'Budget is required'
-    }
-
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -396,14 +397,17 @@ export function PublicInquiryForm({
       const year = Number(formData.year)
       const eventDate = `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
       const guestCount = parseInt(formData.guest_count, 10)
-      const budgetText = formData.budget.trim()
+      const budgetText = formData.budget.trim() || 'not_sure'
       const budgetCents = parseBudgetCents(budgetText)
-      const budgetMode = budgetCents != null ? 'exact' : budgetText ? 'range' : 'unset'
+      const budgetMode =
+        budgetCents != null ? 'exact' : budgetText === 'not_sure' ? 'not_sure' : 'range'
+      const addressValue = formData.address_tbd ? 'Address TBD' : formData.address.trim()
 
       const result = await submitPublicInquiry({
         chef_slug: chefSlug,
         full_name: formData.full_name.trim(),
-        address: formData.address.trim(),
+        address: addressValue,
+        address_tbd: formData.address_tbd,
         event_date: eventDate,
         serve_time: formData.serve_time.trim().toUpperCase(),
         email: formData.email.trim(),
@@ -412,7 +416,7 @@ export function PublicInquiryForm({
         guest_count: guestCount,
         occasion: formData.occasion.trim(),
         budget_cents: budgetCents,
-        budget_range: budgetText || undefined,
+        budget_range: budgetText,
         allergy_flag:
           dietaryIntake.accommodationFlag === 'yes'
             ? 'yes'
@@ -443,6 +447,7 @@ export function PublicInquiryForm({
       setFormData({
         full_name: '',
         address: '',
+        address_tbd: false,
         month: '',
         day: '',
         year: '',
@@ -701,8 +706,8 @@ export function PublicInquiryForm({
 
           <AddressAutocomplete
             label="Address"
-            required
-            value={formData.address}
+            required={!formData.address_tbd}
+            value={formData.address_tbd ? 'Address TBD' : formData.address}
             onChange={(val) => {
               updateFormData((prev) => ({ ...prev, address: val }))
               if (errors.address) setErrors((prev) => ({ ...prev, address: undefined }))
@@ -714,6 +719,22 @@ export function PublicInquiryForm({
             placeholder="Street, City, State, ZIP"
             error={errors.address}
           />
+          <label className="-mt-4 flex items-start gap-2 rounded-xl border border-stone-800 bg-stone-950/60 px-3 py-2 text-xs text-stone-400">
+            <input
+              type="checkbox"
+              checked={formData.address_tbd}
+              onChange={(e) => {
+                updateFormData((prev) => ({ ...prev, address_tbd: e.target.checked }))
+                if (e.target.checked && errors.address) {
+                  setErrors((prev) => ({ ...prev, address: undefined }))
+                }
+              }}
+              className="mt-0.5 rounded border-stone-600 bg-stone-900 text-brand-600 focus:ring-brand-600"
+            />
+            <span>
+              I do not know the exact address yet. City, venue, or neighborhood can come later.
+            </span>
+          </label>
 
           <div className="space-y-2">
             <h3 className="text-base font-medium text-stone-200">Date and Serving Time</h3>
@@ -751,11 +772,11 @@ export function PublicInquiryForm({
               <Input
                 label="Time"
                 name="serve_time"
-                type="text"
+                type="time"
                 value={formData.serve_time}
                 onChange={handleChange}
                 error={errors.serve_time}
-                placeholder="HH:MM AM"
+                placeholder="Preferred time"
               />
             </div>
             <p className="text-sm text-amber-700">
@@ -834,13 +855,14 @@ export function PublicInquiryForm({
           />
 
           <Input
-            label="Estimated Budget *"
+            label="Estimated Budget"
             name="budget"
             type="text"
             value={formData.budget}
             onChange={handleChange}
             error={errors.budget}
-            placeholder="e.g. $1,500 or 'flexible'"
+            placeholder="e.g. $1,500, flexible, or not sure"
+            helperText="Optional. Blank submissions are marked as not sure."
           />
 
           <Textarea

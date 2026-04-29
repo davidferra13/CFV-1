@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { NEUTRAL_LOCATION_PLACEHOLDER } from '@/lib/site/national-brand-copy'
 import { LocationAutocomplete, type LocationData } from '@/components/ui/location-autocomplete'
+import { canonicalizeBookingServiceType } from '@/lib/booking/service-types'
 
 const SERVICE_OPTIONS = [
   { value: '', label: 'Any service' },
@@ -16,6 +17,50 @@ const SERVICE_OPTIONS = [
   { value: 'event_chef', label: 'Event chef' },
   { value: 'personal_chef', label: 'Personal chef' },
 ]
+
+const QUICK_INTENTS = [
+  {
+    label: 'Private dinner',
+    serviceType: 'private_dinner',
+    occasion: 'Private dinner',
+    hint: 'At-home dinner, tasting menu, or celebration.',
+  },
+  {
+    label: 'Meal prep',
+    serviceType: 'meal_prep',
+    occasion: 'Weekly meal prep',
+    hint: 'Recurring household cooking and fridge resets.',
+  },
+  {
+    label: 'Catering',
+    serviceType: 'catering',
+    occasion: 'Catered event',
+    hint: 'Buffet, stations, drop-off, or staffed service.',
+  },
+  {
+    label: 'This weekend',
+    serviceType: 'private_dinner',
+    occasion: 'This weekend',
+    hint: 'Start a request with timing front and center.',
+  },
+  {
+    label: 'Ongoing',
+    serviceType: 'meal_prep',
+    occasion: 'Ongoing chef support',
+    hint: 'Weekly or recurring help instead of a one-off.',
+  },
+] as const
+
+const SUBMIT_LABELS: Record<string, string> = {
+  private_dinner: 'Find private dinner chefs',
+  meal_prep: 'Find meal prep chefs',
+  catering: 'Find catering chefs',
+  wedding: 'Find event chefs',
+  corporate: 'Find corporate chefs',
+  cooking_class: 'Find cooking instructors',
+  event_chef: 'Find event chefs',
+  personal_chef: 'Find private chefs',
+}
 
 export function HomepageSearch() {
   const router = useRouter()
@@ -34,7 +79,11 @@ export function HomepageSearch() {
     e.preventDefault()
     const params = new URLSearchParams()
     if (location.trim()) params.set('location', location.trim())
-    if (serviceType) params.set('serviceType', serviceType)
+    const canonicalServiceType = canonicalizeBookingServiceType(serviceType)
+    if (canonicalServiceType) {
+      params.set('serviceType', canonicalServiceType)
+      params.set('service_type', canonicalServiceType)
+    }
     // Pass pre-geocoded coordinates when available (skips server-side geocoding)
     if (locationGeo) {
       params.set('lat', String(locationGeo.lat))
@@ -44,8 +93,43 @@ export function HomepageSearch() {
     router.push(`/chefs${qs ? `?${qs}` : ''}`)
   }
 
+  function buildBookingHref(input?: { serviceType?: string; occasion?: string }) {
+    const params = new URLSearchParams()
+    const canonicalServiceType = canonicalizeBookingServiceType(input?.serviceType || serviceType)
+    if (location.trim()) params.set('location', location.trim())
+    if (canonicalServiceType) params.set('service_type', canonicalServiceType)
+    if (input?.occasion) params.set('occasion', input.occasion)
+    const qs = params.toString()
+    return `/book${qs ? `?${qs}` : ''}`
+  }
+
+  const submitLabel = SUBMIT_LABELS[canonicalizeBookingServiceType(serviceType)] || 'Browse chefs'
+
   return (
     <form onSubmit={handleSearch} className="flex flex-col gap-4">
+      <div className="flex flex-wrap justify-center gap-2">
+        {QUICK_INTENTS.map((intent) => {
+          const active =
+            canonicalizeBookingServiceType(serviceType) ===
+            canonicalizeBookingServiceType(intent.serviceType)
+          return (
+            <a
+              key={intent.label}
+              href={buildBookingHref(intent)}
+              onClick={() => setServiceType(intent.serviceType)}
+              title={intent.hint}
+              className={[
+                'rounded-full border px-3 py-1.5 text-xs font-semibold transition-all duration-200 hover:-translate-y-0.5',
+                active
+                  ? 'border-brand-500/50 bg-brand-500/15 text-brand-100'
+                  : 'border-stone-700/80 bg-stone-950/55 text-stone-300 hover:border-stone-600 hover:text-stone-100',
+              ].join(' ')}
+            >
+              {intent.label}
+            </a>
+          )
+        })}
+      </div>
       <div className="flex flex-1 flex-col overflow-hidden rounded-2xl border border-stone-800/60 bg-stone-900/70 shadow-[0_24px_48px_rgba(0,0,0,0.25)] backdrop-blur-md transition-all duration-200 focus-within:border-brand-600/40 focus-within:shadow-[0_24px_48px_rgba(0,0,0,0.3),0_0_0_1px_rgba(237,168,107,0.12)] sm:flex-row">
         <div className="flex min-h-[54px] flex-1 items-center border-b border-stone-800/30 sm:min-h-0 sm:border-b-0 sm:border-r sm:border-stone-800/30">
           <label htmlFor="homepage-location" className="sr-only">
@@ -159,8 +243,16 @@ export function HomepageSearch() {
               d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
             />
           </svg>
-          Browse chefs
+          {submitLabel}
         </button>
+      </div>
+      <div className="flex justify-center">
+        <a
+          href={buildBookingHref()}
+          className="text-xs font-semibold text-brand-300 transition-colors hover:text-brand-200"
+        >
+          Start a booking request instead
+        </a>
       </div>
     </form>
   )

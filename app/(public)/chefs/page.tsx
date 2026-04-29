@@ -316,7 +316,6 @@ function ChefTile({ chef, visualMode = false }: { chef: DirectoryChef; visualMod
               </span>
             )}
           </div>
-
         </div>
 
         <div className="absolute inset-x-0 bottom-0 p-5">
@@ -657,6 +656,14 @@ export default async function ChefDirectoryPage({ searchParams }: PageProps) {
     visualParams.set('visual', '1')
   }
   const visualToggleHref = `/chefs${visualParams.toString() ? `?${visualParams.toString()}` : ''}`
+  const bookingParams = new URLSearchParams()
+  if (activeLocationLabel || requestedLocation) {
+    bookingParams.set('location', activeLocationLabel || requestedLocation)
+  }
+  if (serviceTypeFilter) {
+    bookingParams.set('service_type', serviceTypeFilter)
+  }
+  const bookingHref = `/book${bookingParams.toString() ? `?${bookingParams.toString()}` : ''}`
 
   return (
     <div className="min-h-screen bg-stone-800">
@@ -838,7 +845,7 @@ export default async function ChefDirectoryPage({ searchParams }: PageProps) {
             </div>
             <div className="mt-5 flex flex-wrap gap-3">
               <TrackedLink
-                href={PUBLIC_PRIMARY_CONSUMER_CTA.href}
+                href={bookingHref}
                 analyticsName="directory_primary_cta"
                 analyticsProps={{ section: 'request_fallback' }}
                 className="inline-flex items-center justify-center rounded-xl gradient-accent px-5 py-3 text-sm font-semibold text-white"
@@ -978,7 +985,7 @@ export default async function ChefDirectoryPage({ searchParams }: PageProps) {
             )}
             <div className="mt-6 flex items-center justify-center gap-4">
               <Link
-                href={PUBLIC_PRIMARY_CONSUMER_CTA.href}
+                href={bookingHref}
                 className="rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
               >
                 {PUBLIC_PRIMARY_CONSUMER_CTA.label}

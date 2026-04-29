@@ -17,6 +17,7 @@ import {
 import { PUBLIC_INTAKE_LANE_KEYS, withSubmissionSource } from '@/lib/public/intake-lane-config'
 import { parseBudgetToCents } from '@/lib/booking/budget-parser'
 import { resolveGuestCountRange } from '@/lib/booking/guest-count-map'
+import { canonicalizeBookingServiceType } from '@/lib/booking/service-types'
 
 function stripHtml(value: string) {
   return value.replace(/<[^>]*>/g, '').trim()
@@ -116,6 +117,7 @@ export async function POST(request: NextRequest) {
     }
 
     const data = parseResult.data
+    const serviceType = canonicalizeBookingServiceType(data.service_type)
 
     // Email validation
     try {
@@ -137,7 +139,7 @@ export async function POST(request: NextRequest) {
     // Match chefs by location + service type + guest count
     const { chefs: matchedChefs, resolvedLocation } = await matchChefsForBooking({
       location: data.location,
-      serviceType: data.service_type || null,
+      serviceType: serviceType || null,
       guestCount: data.guest_count,
     })
 
@@ -192,7 +194,7 @@ export async function POST(request: NextRequest) {
         guest_count_range_min: guestRange?.min ?? null,
         guest_count_range_max: guestRange?.max ?? null,
         occasion: stripHtml(data.occasion),
-        service_type: data.service_type?.trim() ? stripHtml(data.service_type) : null,
+        service_type: serviceType || null,
         budget_range: data.budget_range?.trim() ? stripHtml(data.budget_range) : null,
         budget_cents_per_person: budgetCentsPerPerson,
         location: stripHtml(data.location),
@@ -272,7 +274,7 @@ export async function POST(request: NextRequest) {
       `Location: ${resolvedLocation.displayLabel || stripHtml(data.location)}`,
       data.serve_time ? `Serve time: ${stripHtml(data.serve_time)}` : null,
       data.budget_range ? `Budget: ${stripHtml(data.budget_range)}` : null,
-      data.service_type ? `Service type: ${stripHtml(data.service_type)}` : null,
+      serviceType ? `Service type: ${serviceType}` : null,
       seasonalIntent ? buildPublicSeasonalMarketPulseSourceMessageLine(seasonalIntent) : null,
       data.dietary_restrictions?.trim()
         ? `Dietary restrictions: ${stripHtml(data.dietary_restrictions)}`
@@ -380,7 +382,7 @@ export async function POST(request: NextRequest) {
               open_booking_id: bookingId,
               referral_source: referralSource,
               referral_partner_id: referralPartnerId,
-              service_type: data.service_type?.trim() ? stripHtml(data.service_type) : null,
+              service_type: serviceType || null,
               budget_range: data.budget_range?.trim() ? stripHtml(data.budget_range) : null,
               budget_cents_per_person: budgetCentsPerPerson,
               guest_count_range_label: guestRange?.label ?? null,

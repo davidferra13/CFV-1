@@ -24,6 +24,7 @@ import {
   readPublicMarketScopeFromSearchParams,
   type PublicMarketScope,
 } from '@/lib/public/public-market-scope'
+import { canonicalizeBookingServiceType } from '@/lib/booking/service-types'
 
 const MARKET_CONTEXT_KEY = 'market_context'
 const LEGACY_BOOKING_CONTEXT_KEY = 'booking_context'
@@ -601,10 +602,13 @@ export async function getPublicSeasonalMarketPulse(
 export function readPublicOpenBookingPrefillFromSearchParams(
   input: SearchParamInput
 ): PublicOpenBookingPrefill {
+  const serviceType =
+    getSearchParamValue(input, 'service_type') ?? getSearchParamValue(input, 'serviceType')
+
   return {
     location: sanitizePrefillValue(getSearchParamValue(input, 'location'), 500),
     occasion: sanitizePrefillValue(getSearchParamValue(input, 'occasion'), 500),
-    service_type: sanitizePrefillValue(getSearchParamValue(input, 'service_type'), 100),
+    service_type: canonicalizeBookingServiceType(sanitizePrefillValue(serviceType, 100)),
     additional_notes: sanitizePrefillValue(getSearchParamValue(input, 'additional_notes'), 5000),
   }
 }
@@ -838,7 +842,7 @@ function buildResolvedBookingPrefill(input: {
 }): ResolvedPublicOpenBookingPrefill {
   return {
     occasion: '',
-    service_type: 'dinner_party',
+    service_type: 'private_dinner',
     additional_notes: buildBookingAdditionalNotes(input),
   }
 }

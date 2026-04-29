@@ -12,6 +12,10 @@ import {
   resolvePublicMarketScope,
 } from '@/lib/public/public-market-scope'
 import {
+  canonicalizeBookingServiceType,
+  isPrivateDinnerServiceType,
+} from '@/lib/booking/service-types'
+import {
   NEUTRAL_BOOKING_REQUEST_EXAMPLE,
   NEUTRAL_LOCATION_PLACEHOLDER,
 } from '@/lib/site/national-brand-copy'
@@ -55,7 +59,9 @@ function applyPrefill(form: FormState, prefill?: PublicOpenBookingPrefill | null
     ...form,
     ...(prefill.location ? { location: prefill.location } : {}),
     ...(prefill.occasion ? { occasion: prefill.occasion } : {}),
-    ...(prefill.service_type ? { service_type: prefill.service_type } : {}),
+    ...(prefill.service_type
+      ? { service_type: canonicalizeBookingServiceType(prefill.service_type) }
+      : {}),
     ...(prefill.additional_notes ? { additional_notes: prefill.additional_notes } : {}),
   }
 }
@@ -80,7 +86,7 @@ function clearDraft() {
 
 const SERVICE_OPTIONS = [
   { value: '', label: 'What type of service?' },
-  { value: 'dinner_party', label: 'Dinner party (private dining for your guests)' },
+  { value: 'private_dinner', label: 'Dinner party (private dining for your guests)' },
   { value: 'meal_prep', label: 'Meal prep (weekly meals in your kitchen)' },
   { value: 'catering', label: 'Catering (buffet or stations for groups)' },
   { value: 'wedding', label: 'Wedding or celebration' },
@@ -267,7 +273,9 @@ export function BookDinnerForm({
       setForm((prev) => {
         const next = { ...prev }
         if (fields.occasion) next.occasion = fields.occasion
-        if (fields.service_type) next.service_type = fields.service_type
+        if (fields.service_type) {
+          next.service_type = canonicalizeBookingServiceType(fields.service_type)
+        }
         if (fields.guest_count) next.guest_count = fields.guest_count
         if (fields.event_date) next.event_date = fields.event_date
         if (fields.serve_time) next.serve_time = fields.serve_time
@@ -320,6 +328,7 @@ export function BookDinnerForm({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...form,
+          service_type: canonicalizeBookingServiceType(form.service_type),
           additional_notes: additionalNotes,
           seasonal_intent: seasonalIntent,
           referral_source: trackingParams?.referral_source || '',
@@ -372,7 +381,7 @@ export function BookDinnerForm({
     if (form.guest_count > 0) browseParams.set('partySize', String(form.guest_count))
     if (form.service_type === 'meal_prep') browseParams.set('intent', 'meal_prep')
     if (form.service_type === 'catering') browseParams.set('intent', 'team_dinner')
-    if (form.service_type === 'dinner_party') browseParams.set('intent', 'dinner_party')
+    if (isPrivateDinnerServiceType(form.service_type)) browseParams.set('intent', 'dinner_party')
     const browseHref = `/eat${browseParams.toString() ? `?${browseParams.toString()}` : ''}`
     const steps = [
       { label: 'Request received', note: 'Your details are with the chef.', done: true },

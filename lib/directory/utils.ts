@@ -414,6 +414,13 @@ function countFeaturedLocations(chef: DirectoryChef) {
   return getChefLocationExperiences(chef).filter((location) => location.is_featured).length
 }
 
+function bookingReadinessScore(chef: DirectoryChef) {
+  if (chef.booking_enabled && chef.booking_slug && chef.booking_model === 'instant_book') return 3
+  if (chef.booking_enabled && chef.booking_slug) return 2
+  if (chef.discovery.accepting_inquiries) return 1
+  return 0
+}
+
 export function sortDirectoryChefs(chefs: DirectoryChef[], sortMode: DirectorySortMode) {
   const sorted = [...chefs]
 
@@ -433,6 +440,8 @@ export function sortDirectoryChefs(chefs: DirectoryChef[], sortMode: DirectorySo
 
   if (sortMode === 'availability') {
     sorted.sort((a, b) => {
+      const byBookingReadiness = bookingReadinessScore(b) - bookingReadinessScore(a)
+      if (byBookingReadiness !== 0) return byBookingReadiness
       if (a.discovery.accepting_inquiries !== b.discovery.accepting_inquiries) {
         return a.discovery.accepting_inquiries ? -1 : 1
       }
@@ -451,6 +460,8 @@ export function sortDirectoryChefs(chefs: DirectoryChef[], sortMode: DirectorySo
     if (a.discovery.accepting_inquiries !== b.discovery.accepting_inquiries) {
       return a.discovery.accepting_inquiries ? -1 : 1
     }
+    const byBookingReadiness = bookingReadinessScore(b) - bookingReadinessScore(a)
+    if (byBookingReadiness !== 0) return byBookingReadiness
     const byFeaturedLocations = countFeaturedLocations(b) - countFeaturedLocations(a)
     if (byFeaturedLocations !== 0) return byFeaturedLocations
     const byLocationCount = countPublicLocations(b) - countPublicLocations(a)

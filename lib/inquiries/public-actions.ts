@@ -34,6 +34,7 @@ const PublicInquirySchema = z.object({
   full_name: z.string().min(1, 'Name is required'),
   email: z.string().email('Valid email required'),
   address: z.string().min(1, 'Address is required'),
+  address_tbd: z.boolean().optional(),
   event_date: z.string().min(1, 'Event date is required'),
   serve_time: z.string().min(1, 'Serve time is required'),
   guest_count: z.number().int().positive(),
@@ -369,6 +370,7 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
       schedule_request_jsonb: validated.schedule_request_jsonb ?? null,
       unknown_fields: withSubmissionSource(PUBLIC_INTAKE_LANE_KEYS.public_profile_inquiry, {
         address: validated.address.trim(),
+        address_tbd: validated.address_tbd === true,
         serve_time: validated.serve_time.trim(),
         allergy_flag: validated.allergy_flag ?? null,
         budget_mode: budgetMode,
