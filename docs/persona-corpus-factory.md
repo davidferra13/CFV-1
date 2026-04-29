@@ -135,6 +135,13 @@ Verify the structured report path without calling Ollama:
 npm run personas:corpus -- --self-test --domain dinner-circles --edge-mode chaos
 ```
 
+Compile generated reports into coverage gaps, requirement specs, workflow DSL
+fixtures, review queues, and next-run commands:
+
+```bash
+npm run personas:compile-evals -- --write
+```
+
 ## Quality Gates
 
 Each candidate is rejected if:
