@@ -1,0 +1,46 @@
+{
+  "id": "20260429T162207Z-codex-should-score-skill-outcomes-and-update-reliability-stats",
+  "prompt": "Codex should score skill outcomes and update reliability stats",
+  "status": "finished",
+  "branch": "feature/procrastination-execution-engine",
+  "started_at": "2026-04-29T16:22:07.971Z",
+  "finished_at": "2026-04-29T16:22:15.912Z",
+  "selected_primary_skill": "skill-garden",
+  "selected_sidecar_skills": [
+    "omninet"
+  ],
+  "router_decision": null,
+  "used_skills": [
+    "skill-garden",
+    "omninet",
+    "builder"
+  ],
+  "files_touched": [
+    ".claude/skills/omninet/SKILL.md",
+    ".claude/skills/skill-garden/SKILL.md",
+    "devtools/agent-skill-utils.mjs",
+    "devtools/agent-finish.mjs",
+    "devtools/skill-dashboard.mjs",
+    "devtools/skill-health-report.mjs",
+    "devtools/skill-outcome-scorer.mjs",
+    "devtools/skill-repair-queue.mjs",
+    "devtools/agent-session-digest.mjs",
+    "system/agent-golden-prompts/default.json",
+    "tests/unit/agent-harness-tools.test.ts"
+  ],
+  "commands_run": [],
+  "validations_run": [
+    "node --check harness scripts",
+    "skill-validator omninet skill-garden",
+    "skill-trigger-tests",
+    "agent-harness unit tests",
+    "targeted em dash scan",
+    "git push hook typecheck and regression"
+  ],
+  "commit_hash": "bb5f96c9a0e062e2842726f3c9339361d33076cd",
+  "pushed": true,
+  "missed_skills": [],
+  "skill_garden_triggered": true,
+  "heal_skill_triggered": false,
+  "notes": null
+}

@@ -1,6 +1,6 @@
 # Agent Skill Dashboard
 
-Generated: 2026-04-29T15:43:04.219Z
+Generated: 2026-04-29T16:22:20.735Z
 
 ## Coverage
 
@@ -24,6 +24,17 @@ Generated: 2026-04-29T15:43:04.219Z
 - Needs healing: 0
 - Deprecated: 0
 - Implicit defaults: 37
+
+## Reliability
+
+- Tracked skills: 3
+- Recorded sessions: 1
+- Skills with failures: 0
+
+## Repair Queue
+
+- Open repairs: 0
+- High priority repairs: 0
 
 ## Health
 

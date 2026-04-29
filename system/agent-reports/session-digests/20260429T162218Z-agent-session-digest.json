@@ -1,0 +1,42 @@
+{
+  "generated_at": "2026-04-29T16:22:18.783Z",
+  "record_count": 1,
+  "records": [
+    {
+      "file": "system/agent-reports/flight-records/20260429T162207Z-codex-should-score-skill-outcomes-and-update-reliability-stats.json",
+      "id": "20260429T162207Z-codex-should-score-skill-outcomes-and-update-reliability-stats",
+      "prompt": "Codex should score skill outcomes and update reliability stats",
+      "status": "finished",
+      "commit_hash": "bb5f96c9a0e062e2842726f3c9339361d33076cd",
+      "pushed": true,
+      "used_skills": [
+        "skill-garden",
+        "omninet",
+        "builder"
+      ],
+      "validations_run": [
+        "node --check harness scripts",
+        "skill-validator omninet skill-garden",
+        "skill-trigger-tests",
+        "agent-harness unit tests",
+        "targeted em dash scan",
+        "git push hook typecheck and regression"
+      ],
+      "missed_skills": []
+    }
+  ],
+  "skills_used": [
+    "builder",
+    "omninet",
+    "skill-garden"
+  ],
+  "validations_run": [
+    "agent-harness unit tests",
+    "git push hook typecheck and regression",
+    "node --check harness scripts",
+    "skill-trigger-tests",
+    "skill-validator omninet skill-garden",
+    "targeted em dash scan"
+  ],
+  "missed_skills": []
+}

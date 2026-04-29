@@ -1,0 +1,21 @@
+{
+  "created_at": "2026-04-29T16:22:43.467Z",
+  "goal": "score skill outcomes and reliability",
+  "primary_skill": "skill-garden",
+  "sidecar_skills": [
+    "omninet",
+    "builder"
+  ],
+  "skill_delta": "patch",
+  "durable_behavior_seen": null,
+  "skill_gap_seen": null,
+  "validation": {
+    "skill_validator": null,
+    "trigger_tests": null,
+    "compliance": null,
+    "other": null
+  },
+  "commit": "bb5f96c9a0e062e2842726f3c9339361d33076cd",
+  "pushed": true,
+  "notes": "Added outcome scoring, reliability stats, auto maturity updates, repair queue generation, and session digest reporting. First scored harness session passed 100 of 100."
+}

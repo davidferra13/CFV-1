@@ -1,0 +1,511 @@
+{
+  "generated_at": "2026-04-29T16:22:43.501Z",
+  "skill_count": 43,
+  "unhealthy_count": 6,
+  "overlaps": [],
+  "open_learning_items": [],
+  "stale_generated_reports": [
+    {
+      "directory": "system/agent-reports/skill-closeouts",
+      "file": "system/agent-reports/skill-closeouts/20260429T024049Z-skill-garden-build-complete-chefflow-skill-operating-harness.json"
+    },
+    {
+      "directory": "system/agent-reports/skill-closeouts",
+      "file": "system/agent-reports/skill-closeouts/20260429T030458Z-skill-garden-build-all-14-chefflow-agent-harness-improvements.json"
+    },
+    {
+      "directory": "system/agent-reports/skill-closeouts",
+      "file": "system/agent-reports/skill-closeouts/20260429T032048Z-skill-garden-continue-orchestrated-agent-harness-improvement.json"
+    },
+    {
+      "directory": "system/agent-reports/skill-closeouts",
+      "file": "system/agent-reports/skill-closeouts/20260429T154325Z-skill-garden-build-codex-self-improvement-harness.json"
+    },
+    {
+      "directory": "system/agent-reports/skill-coverage",
+      "file": "system/agent-reports/skill-coverage/20260429T030250Z-skill-coverage.json"
+    },
+    {
+      "directory": "system/agent-reports/skill-coverage",
+      "file": "system/agent-reports/skill-coverage/20260429T032017Z-skill-coverage.json"
+    },
+    {
+      "directory": "system/agent-reports/skill-dependencies",
+      "file": "system/agent-reports/skill-dependencies/20260429T030250Z-skill-dependencies.json"
+    },
+    {
+      "directory": "system/agent-reports/skill-dependencies",
+      "file": "system/agent-reports/skill-dependencies/20260429T032017Z-skill-dependencies.json"
+    },
+    {
+      "directory": "system/agent-reports/skill-health",
+      "file": "system/agent-reports/skill-health/20260429T030250Z-skill-health.json"
+    },
+    {
+      "directory": "system/agent-reports/skill-health",
+      "file": "system/agent-reports/skill-health/20260429T032017Z-skill-health.json"
+    },
+    {
+      "directory": "system/agent-reports/router-decisions",
+      "file": "system/agent-reports/router-decisions/20260429T032017Z-fix-stripe-webhook-ledger-reconciliation.json"
+    },
+    {
+      "directory": "system/agent-reports/router-decisions",
+      "file": "system/agent-reports/router-decisions/20260429T154448Z-codex-should-record-selected-skills-and-detect-missed-skills.json"
+    },
+    {
+      "directory": "system/agent-reports/skill-maturity",
+      "file": "system/agent-reports/skill-maturity/20260429T154325Z-skill-maturity.json"
+    },
+    {
+      "directory": "system/agent-reports/skill-dashboard",
+      "file": "system/agent-reports/skill-dashboard/20260429T154304Z-skill-dashboard.json"
+    }
+  ],
+  "skills": [
+    {
+      "name": "5-whys",
+      "file": ".claude/skills/5-whys/SKILL.md",
+      "description": "Root cause analysis. Keep asking why until the real cause surfaces. Use for systemic bugs and recurring issues.",
+      "age_days": 12,
+      "line_count": 49,
+      "has_em_dash": false,
+      "missing_frontmatter": false,
+      "reference_warnings": []
+    },
+    {
+      "name": "audit",
+      "file": ".claude/skills/audit/SKILL.md",
+      "description": "Thread completeness audit, cohesion check, hidden dependency scan, stress-test question set, and improvement pass. Use after discussing a feature to lock it down.",
+      "age_days": 12,
+      "line_count": 57,
+      "has_em_dash": false,
+      "missing_frontmatter": false,
+      "reference_warnings": []
+    },
+    {
+      "name": "backup",
+      "file": ".claude/skills/backup/SKILL.md",
+      "description": "Back up the ChefFlow database. Use when the user asks for a backup, database dump, restore point, or pre-risk safety copy. Runs pg_dump via the backup script.",
+      "age_days": 1,
+      "line_count": 18,
+      "has_em_dash": false,
+      "missing_frontmatter": false,
+      "reference_warnings": []
+    },
+    {
+      "name": "billing-monetization",
+      "file": ".claude/skills/billing-monetization/SKILL.md",
+      "description": "Preserve ChefFlow free and paid tier behavior. Use when work touches billing gates, feature classification, modules, subscription checks, upgrade prompts, Stripe pricing, entitlement logic, trial behavior, or any UI that changes what free or paid chefs can do.",
+      "age_days": 1,
+      "line_count": 33,
+      "has_em_dash": false,
+      "missing_frontmatter": false,
+      "reference_warnings": []
+    },
+    {
+      "name": "builder",
+      "file": ".claude/skills/builder/SKILL.md",
+      "description": "Full Builder Gate procedure for execution agents. Use when building from a spec or implementing features.",
+      "age_days": 26,
+      "line_count": 99,
+      "has_em_dash": false,
+      "missing_frontmatter": false,
+      "reference_warnings": []
+    },
+    {
+      "name": "close-session",
+      "file": ".claude/skills/close-session/SKILL.md",
+      "description": "Standard session close-out. Stage, commit, and push current agent work, update session log and build state when applicable, and preserve unrelated dirty work unless the user explicitly asks to ship everything.",
+      "age_days": 1,
+      "line_count": 37,
+      "has_em_dash": false,
+      "missing_frontmatter": false,
+      "reference_warnings": []
+    },
+    {
+      "name": "compliance",
+      "file": ".claude/skills/compliance/SKILL.md",
+      "description": "Run compliance scan. Use when checking em dashes, OpenClaw in UI, ts-nocheck exports, invalid server exports, or quick ChefFlow rule violations.",
+      "age_days": 1,
+      "line_count": 16,
+      "has_em_dash": false,
+      "missing_frontmatter": false,
+      "reference_warnings": []
+    },
+    {
+      "name": "debug",
+      "file": ".claude/skills/debug/SKILL.md",
+      "description": "Systematic 4-phase debugging. NO fixes without root cause investigation first. Prevents thrashing and random guessing.",
+      "age_days": 15,
+      "line_count": 53,
+      "has_em_dash": false,
+      "missing_frontmatter": false,
+      "reference_warnings": []
+    },
+    {
+      "name": "document",
+      "file": ".claude/skills/document/SKILL.md",
+      "description": "Auto-update living docs (USER_MANUAL.md, app-complete-audit.md) after code changes. Keeps docs in sync with reality.",
+      "age_days": 12,
+      "line_count": 56,
+      "has_em_dash": false,
+      "missing_frontmatter": false,
+      "reference_warnings": []
+    },
+    {
+      "name": "evidence-integrity",
+      "file": ".claude/skills/evidence-integrity/SKILL.md",
+      "description": "Verify whether ChefFlow evidence surfaces deserve trust before drawing conclusions. Use when a task involves build health, \"green\" claims, test failures, stale tests, dirty working trees, docs/build-state.md, docs/sync-status.json, OpenClaw or system health, scheduled tasks, watchdogs, live processes, operational status files, old audit findings, or any conflict between docs, logs, code, tests, and runtime behavior.",
+      "age_days": 1,
+      "line_count": 85,
+      "has_em_dash": false,
+      "missing_frontmatter": false,
+      "reference_warnings": []
+    },
+    {
+      "name": "feature-closeout",
+      "file": ".claude/skills/feature-closeout/SKILL.md",
+      "description": "Feature close-out - type check, build, commit, push. Run when user asks to close out a feature.",
+      "age_days": 26,
+      "line_count": 18,
+      "has_em_dash": false,
+      "missing_frontmatter": false,
+      "reference_warnings": []
+    },
+    {
+      "name": "findings-triage",
+      "file": ".claude/skills/findings-triage/SKILL.md",
+      "description": "Normalize old and new ChefFlow findings into safe action classes before planning or building. Use when processing docs/autodocket.md, persona batch synthesis, regression reports, audit findings, memory backlog, build queues, \"proceed improving using findings\", or any mixed list containing specs, gaps, partial implementations, contradictions, stale entries, developer-only blockers, security items, or persona-generated product demands.",
+      "age_days": 1,
+      "line_count": 107,
+      "has_em_dash": false,
+      "missing_frontmatter": false,
+      "reference_warnings": []
+    },
+    {
+      "name": "first-principles",
+      "file": ".claude/skills/first-principles/SKILL.md",
+      "description": "Structured reasoning before building. Breaks assumptions, finds the real problem, validates the approach.",
+      "age_days": 12,
+      "line_count": 61,
+      "has_em_dash": false,
+      "missing_frontmatter": false,
+      "reference_warnings": []
+    },
+    {
+      "name": "hallucination-scan",
+      "file": ".claude/skills/hallucination-scan/SKILL.md",
+      "description": "Run the full Zero Hallucination audit - optimistic updates, silent failures, no-op handlers, hardcoded values, stale cache, ts-nocheck exports.",
+      "age_days": 26,
+      "line_count": 22,
+      "has_em_dash": false,
+      "missing_frontmatter": false,
+      "reference_warnings": []
+    },
+    {
+      "name": "heal-skill",
+      "file": ".claude/skills/heal-skill/SKILL.md",
+      "description": "Self-repair a skill that failed or produced bad results. Analyze what went wrong and update the skill definition.",
+      "age_days": 12,
+      "line_count": 44,
+      "has_em_dash": false,
+      "missing_frontmatter": false,
+      "reference_warnings": []
+    },
+    {
+      "name": "health",
+      "file": ".claude/skills/health/SKILL.md",
+      "description": "Quick health check for ChefFlow - type check, build status, server status, and database connectivity.",
+      "age_days": 29,
+      "line_count": 63,
+      "has_em_dash": false,
+      "missing_frontmatter": false,
+      "reference_warnings": []
+    },
+    {
+      "name": "host-integrity",
+      "file": ".claude/skills/host-integrity/SKILL.md",
+      "description": "Audit ChefFlow Windows host, scheduled task, launcher, watchdog, tunnel, port, and process truth without disrupting running services. Use when work involves Task Scheduler, watchdogs, Cloudflare tunnels, ports 3100/3200/3300, dev/beta/prod servers, hidden launchers, popup windows, zombie Playwright or Node processes, process resurrection, startup scripts, host topology, or old audit findings about Windows process hygiene.",
+      "age_days": 0,
+      "line_count": 102,
+      "has_em_dash": false,
+      "missing_frontmatter": false,
+      "reference_warnings": []
+    },
+    {
+      "name": "ledger-safety",
+      "file": ".claude/skills/ledger-safety/SKILL.md",
+      "description": "Protect ChefFlow ledger-first financial behavior. Use when work touches ledger entries, balances, payments, refunds, payouts, credits, invoices, event financial state, monetary calculations, or database changes that affect financial records.",
+      "age_days": 1,
+      "line_count": 33,
+      "has_em_dash": false,
+      "missing_frontmatter": false,
+      "reference_warnings": []
+    },
+    {
+      "name": "massive-win",
+      "file": ".claude/skills/massive-win/SKILL.md",
+      "description": "Identify THE single highest-leverage change. Use when the user asks for the biggest opportunity, highest leverage move, massive win, or one priority instead of a list.",
+      "age_days": 1,
+      "line_count": 71,
+      "has_em_dash": false,
+      "missing_frontmatter": false,
+      "reference_warnings": [
+        "missing referenced path memory/project_current_priorities.md",
+        "missing referenced path memory/user_business_reality_april2026.md"
+      ]
+    },
+    {
+      "name": "morning",
+      "file": ".claude/skills/morning/SKILL.md",
+      "description": "One-command daily briefing. Build state, overnight changes, Pi/OpenClaw health, active priorities, session continuity.",
+      "age_days": 12,
+      "line_count": 106,
+      "has_em_dash": false,
+      "missing_frontmatter": false,
+      "reference_warnings": [
+        "missing referenced path memory/project_current_priorities.md"
+      ]
+    },
+    {
+      "name": "omninet",
+      "file": ".claude/skills/omninet/SKILL.md",
+      "description": "Always-on ChefFlow Codex operating loop and mandatory router. Use at the start of any ChefFlow task, ambiguous request, multi-skill request, build, debug, review, research, planning, persona pipeline work, or when deciding which project skills to load. Routes work through the best existing skills, maintains a task heartbeat, protects ChefFlow hard stops, and triggers skill creation or self-healing through skill-garden when developer behavior should become durable.",
+      "age_days": 0,
+      "line_count": 132,
+      "has_em_dash": false,
+      "missing_frontmatter": false,
+      "reference_warnings": []
+    },
+    {
+      "name": "persona-build",
+      "file": ".claude/skills/persona-build/SKILL.md",
+      "description": "Process persona pipeline findings into built features. Reads batch synthesis, validates every gap against the actual codebase, filters out already-built features, and builds genuinely missing ones in priority order. The critical step the Ollama analyzer cannot do.",
+      "age_days": 1,
+      "line_count": 110,
+      "has_em_dash": false,
+      "missing_frontmatter": false,
+      "reference_warnings": [
+        "missing referenced path system/persona-reports/"
+      ]
+    },
+    {
+      "name": "persona-dump",
+      "file": ".claude/skills/persona-dump/SKILL.md",
+      "description": "Ingest huge pasted persona conversations or persona blurbs into the ChefFlow persona pipeline. Use when the user wants to paste many personas at once, import third-party ChatGPT persona output, split a large persona dump, classify personas by type, add them to `Chef Flow Personas/Uncompleted/`, or prepare persona material for `persona-inbox`, `persona-stress-test`, or `persona-build`.",
+      "age_days": 1,
+      "line_count": 100,
+      "has_em_dash": false,
+      "missing_frontmatter": false,
+      "reference_warnings": []
+    },
+    {
+      "name": "persona-inbox",
+      "file": ".claude/skills/persona-inbox/SKILL.md",
+      "description": "Manage the persona pipeline without a running server. Status, run, synthesize, validate, import, queue, generate, vault, sources. CLI-first, no HTTP needed.",
+      "age_days": 1,
+      "line_count": 134,
+      "has_em_dash": false,
+      "missing_frontmatter": false,
+      "reference_warnings": []
+    },
+    {
+      "name": "persona-stress-test",
+      "file": ".claude/skills/persona-stress-test/SKILL.md",
+      "description": "Deterministic persona-based stress test against ChefFlow. Accepts any persona (chef, client, vendor, farm, guest, staff), simulates their full workflow, audits every capability, scores the system, and extracts actionable gaps. Checks the registry to avoid re-testing known personas. Use when evaluating product-market fit, onboarding readiness, or system completeness for a specific user type.",
+      "age_days": 4,
+      "line_count": 563,
+      "has_em_dash": false,
+      "missing_frontmatter": false,
+      "reference_warnings": []
+    },
+    {
+      "name": "pi",
+      "file": ".claude/skills/pi/SKILL.md",
+      "description": "Raspberry Pi health check and OpenClaw status. Use when the user asks about Pi health, Pi overnight work, OpenClaw runtime status, or whether the Pi is alive.",
+      "age_days": 1,
+      "line_count": 58,
+      "has_em_dash": false,
+      "missing_frontmatter": false,
+      "reference_warnings": []
+    },
+    {
+      "name": "pipeline",
+      "file": ".claude/skills/pipeline/SKILL.md",
+      "description": "OpenClaw pricing pipeline status. Use when the user asks about pricing pipeline coverage, freshness, targets, actuals, sync health, or ingredient price data progress.",
+      "age_days": 1,
+      "line_count": 16,
+      "has_em_dash": false,
+      "missing_frontmatter": false,
+      "reference_warnings": []
+    },
+    {
+      "name": "planner",
+      "file": ".claude/skills/planner/SKILL.md",
+      "description": "Full Planner Gate procedure for spec agents. Use when writing or reviewing a spec.",
+      "age_days": 26,
+      "line_count": 74,
+      "has_em_dash": false,
+      "missing_frontmatter": false,
+      "reference_warnings": []
+    },
+    {
+      "name": "pre-flight",
+      "file": ".claude/skills/pre-flight/SKILL.md",
+      "description": "Builder pre-flight check - git status, type check, and build check.",
+      "age_days": 26,
+      "line_count": 18,
+      "has_em_dash": false,
+      "missing_frontmatter": false,
+      "reference_warnings": []
+    },
+    {
+      "name": "quick-wins",
+      "file": ".claude/skills/quick-wins/SKILL.md",
+      "description": "Scan real gap sources, extract parallel-safe quick wins (additive-only, independent, under 30 min each), output as Codex-ready specs or grouped task list.",
+      "age_days": 2,
+      "line_count": 86,
+      "has_em_dash": false,
+      "missing_frontmatter": false,
+      "reference_warnings": [
+        "missing referenced path system/persona-reports/",
+        "missing referenced path memory/project_mempalace_backlog.md"
+      ]
+    },
+    {
+      "name": "regression",
+      "file": ".claude/skills/regression/SKILL.md",
+      "description": "Unified regression detection system. Use when the user asks whether changes are safe, requests regression checks, blast radius, auto-recovery, live watcher, dashboard, fragile files, trends, blame, or snapshots.",
+      "age_days": 1,
+      "line_count": 259,
+      "has_em_dash": false,
+      "missing_frontmatter": false,
+      "reference_warnings": []
+    },
+    {
+      "name": "research",
+      "file": ".claude/skills/research/SKILL.md",
+      "description": "Full Research Gate procedure for research agents. Use when investigating questions and producing written reports.",
+      "age_days": 26,
+      "line_count": 74,
+      "has_em_dash": false,
+      "missing_frontmatter": false,
+      "reference_warnings": []
+    },
+    {
+      "name": "review",
+      "file": ".claude/skills/review/SKILL.md",
+      "description": "Code review on uncommitted changes before shipping. Quality gate between coding and /ship.",
+      "age_days": 12,
+      "line_count": 54,
+      "has_em_dash": false,
+      "missing_frontmatter": false,
+      "reference_warnings": []
+    },
+    {
+      "name": "seam",
+      "file": ".claude/skills/seam/SKILL.md",
+      "description": "Use as an inside-out and backwards refinement lens inspired by Adam Savage. Examines ChefFlow surfaces as planar forms meeting under rules and conditions. Finds seam failures, reversed assumptions, and order-of-operations violations. Repeatable - run until dry.",
+      "age_days": 1,
+      "line_count": 79,
+      "has_em_dash": false,
+      "missing_frontmatter": false,
+      "reference_warnings": []
+    },
+    {
+      "name": "ship",
+      "file": ".claude/skills/ship/SKILL.md",
+      "description": "Git add, commit, and push the intended work to GitHub. Use when the user says ship, close out, commit, push, or asks to publish current agent work. If the user explicitly says \"ship everything\" or \"commit all dirty files\", include all dirty files; otherwise stage only the files owned by the current task and preserve unrelated dirty work.",
+      "age_days": 1,
+      "line_count": 30,
+      "has_em_dash": false,
+      "missing_frontmatter": false,
+      "reference_warnings": []
+    },
+    {
+      "name": "skill-garden",
+      "file": ".claude/skills/skill-garden/SKILL.md",
+      "description": "Create, improve, and self-heal ChefFlow project skills from observed developer behavior. Use proactively when the user gives operating guidance such as \"always\", \"never\", \"Codex should\", \"make Codex smarter\", \"self-heal\", \"create skills\", \"knows when to\", or \"use this behavior going forward\"; when a repeated workflow, correction, failure, persona import pattern, Hermes/OpenCloy markdown, or external conversation should become reusable Codex behavior; or when an existing skill needs refinement.",
+      "age_days": 0,
+      "line_count": 159,
+      "has_em_dash": false,
+      "missing_frontmatter": false,
+      "reference_warnings": []
+    },
+    {
+      "name": "soak",
+      "file": ".claude/skills/soak/SKILL.md",
+      "description": "Run the full software aging (soak) pipeline - useEffect cleanup audit, fixes, and soak tests.",
+      "age_days": 26,
+      "line_count": 20,
+      "has_em_dash": false,
+      "missing_frontmatter": false,
+      "reference_warnings": []
+    },
+    {
+      "name": "status",
+      "file": ".claude/skills/status/SKILL.md",
+      "description": "Quick \"where am I?\" snapshot. Use when the user asks for status, current branch, uncommitted work, last commit, what was in progress, or what is next.",
+      "age_days": 1,
+      "line_count": 71,
+      "has_em_dash": false,
+      "missing_frontmatter": false,
+      "reference_warnings": [
+        "missing referenced path memory/project_current_priorities.md"
+      ]
+    },
+    {
+      "name": "stripe-webhook-integrity",
+      "file": ".claude/skills/stripe-webhook-integrity/SKILL.md",
+      "description": "Protect ChefFlow Stripe webhook correctness. Use when work touches Stripe webhooks, checkout completion, subscription events, payment intents, refunds, invoices, webhook idempotency, signature verification, raw request bodies, or ledger updates caused by Stripe events.",
+      "age_days": 1,
+      "line_count": 32,
+      "has_em_dash": false,
+      "missing_frontmatter": false,
+      "reference_warnings": []
+    },
+    {
+      "name": "tdd",
+      "file": ".claude/skills/tdd/SKILL.md",
+      "description": "Test-Driven Development. Use when the user asks for TDD, test-first implementation, regression-first bug fixing, or production code that must start with a failing test.",
+      "age_days": 1,
+      "line_count": 65,
+      "has_em_dash": false,
+      "missing_frontmatter": false,
+      "reference_warnings": []
+    },
+    {
+      "name": "validation-gate",
+      "file": ".claude/skills/validation-gate/SKILL.md",
+      "description": "Check user-validation evidence before building new ChefFlow features. Use when a task proposes new product surface, backlog expansion, persona-driven features, survey or Wave-1 operator validation, launch readiness, \"validation phase\", \"no new features without feedback\", or when old findings show the team is building without real user evidence.",
+      "age_days": 1,
+      "line_count": 85,
+      "has_em_dash": false,
+      "missing_frontmatter": false,
+      "reference_warnings": []
+    },
+    {
+      "name": "verify",
+      "file": ".claude/skills/verify/SKILL.md",
+      "description": "Run the full ChefFlow verification protocol - spec audit, build integrity, production parity, and Playwright pressure testing.",
+      "age_days": 29,
+      "line_count": 119,
+      "has_em_dash": false,
+      "missing_frontmatter": false,
+      "reference_warnings": []
+    },
+    {
+      "name": "warmup",
+      "file": ".claude/skills/warmup/SKILL.md",
+      "description": "Get a chef account warm and on standby. Use when the user asks for warmup, standby, authenticated chef session readiness, route precompile, or browser-ready account setup. Usage - /warmup [account] where account is chef-bob (default), agent, or developer.",
+      "age_days": 1,
+      "line_count": 73,
+      "has_em_dash": false,
+      "missing_frontmatter": false,
+      "reference_warnings": [
+        "missing referenced path .auth/<account>.json"
+      ]
+    }
+  ]
+}

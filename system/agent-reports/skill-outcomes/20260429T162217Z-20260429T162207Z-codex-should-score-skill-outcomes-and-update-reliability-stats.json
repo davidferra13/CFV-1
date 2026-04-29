@@ -1,0 +1,73 @@
+{
+  "ok": true,
+  "score": 100,
+  "max_score": 100,
+  "selected_skills": [
+    "skill-garden",
+    "omninet"
+  ],
+  "used_skills": [
+    "skill-garden",
+    "omninet",
+    "builder"
+  ],
+  "missed_skills": [],
+  "validations": [
+    "node --check harness scripts",
+    "skill-validator omninet skill-garden",
+    "skill-trigger-tests",
+    "agent-harness unit tests",
+    "targeted em dash scan",
+    "git push hook typecheck and regression"
+  ],
+  "dirty_owned": [],
+  "checks": [
+    {
+      "id": "routed",
+      "ok": true,
+      "points": 15,
+      "detail": "skill-garden"
+    },
+    {
+      "id": "selected_skill_used",
+      "ok": true,
+      "points": 15,
+      "detail": "primary=skill-garden"
+    },
+    {
+      "id": "no_missed_skills",
+      "ok": true,
+      "points": 25,
+      "detail": "none"
+    },
+    {
+      "id": "validations_present",
+      "ok": true,
+      "points": 15,
+      "detail": "node --check harness scripts, skill-validator omninet skill-garden, skill-trigger-tests, agent-harness unit tests, targeted em dash scan, git push hook typecheck and regression"
+    },
+    {
+      "id": "commit_present",
+      "ok": true,
+      "points": 10,
+      "detail": "bb5f96c9a0e062e2842726f3c9339361d33076cd"
+    },
+    {
+      "id": "pushed",
+      "ok": true,
+      "points": 10,
+      "detail": "true"
+    },
+    {
+      "id": "owned_clean",
+      "ok": true,
+      "points": 10,
+      "detail": "clean"
+    }
+  ],
+  "record_id": "20260429T162207Z-codex-should-score-skill-outcomes-and-update-reliability-stats",
+  "record_file": "system/agent-reports/flight-records/20260429T162207Z-codex-should-score-skill-outcomes-and-update-reliability-stats.json",
+  "generated_at": "2026-04-29T16:22:17.567Z",
+  "stats_updated": true,
+  "maturity_updates": []
+}
