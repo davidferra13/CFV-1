@@ -26,6 +26,8 @@ const RequestRevisionSchema = z.object({
   notes: z.string().min(1, 'Please describe what you would like changed'),
 })
 
+const EventIdSchema = z.string().uuid()
+
 export type RequestRevisionInput = z.infer<typeof RequestRevisionSchema>
 
 export type MenuSendValidation = {
@@ -452,6 +454,36 @@ export async function getClientMenuApprovalRequest(requestId: string) {
     .eq('id', requestId)
     .eq('client_id', user.entityId)
     .single()) as { data: Record<string, any> | null }
+
+  return data
+}
+
+/**
+ * Get the latest active approval request for a client event.
+ */
+export async function getLatestClientActiveMenuApprovalRequestForEvent(eventId: string) {
+  const user = await requireClient()
+  const validatedEventId = EventIdSchema.safeParse(eventId)
+
+  if (!validatedEventId.success) {
+    throw new Error('Invalid event id')
+  }
+
+  const db: any = createServerClient()
+
+  const { data, error } = (await db
+    .from('menu_approval_requests')
+    .select('*')
+    .eq('event_id', validatedEventId.data)
+    .eq('client_id', user.entityId)
+    .eq('status', 'sent')
+    .order('sent_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()) as { data: Record<string, any> | null; error: { message?: string } | null }
+
+  if (error) {
+    throw new Error(error.message || 'Failed to load menu approval request')
+  }
 
   return data
 }

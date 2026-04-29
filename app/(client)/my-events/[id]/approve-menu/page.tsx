@@ -3,8 +3,11 @@
 // Shows the rich menu snapshot and lets the client approve or request revisions.
 
 import { requireClient } from '@/lib/auth/get-user'
-import { getClientMenuApprovalRequest } from '@/lib/events/menu-approval-actions'
-import { notFound, redirect } from 'next/navigation'
+import {
+  getClientMenuApprovalRequest,
+  getLatestClientActiveMenuApprovalRequestForEvent,
+} from '@/lib/events/menu-approval-actions'
+import { notFound } from 'next/navigation'
 import { MenuApprovalClient } from './menu-approval-client'
 
 export default async function MenuApprovalPage({
@@ -16,12 +19,12 @@ export default async function MenuApprovalPage({
 }) {
   await requireClient()
 
-  const requestId = searchParams.req
-  if (!requestId) redirect(`/my-events/${params.id}`)
-
-  const request = await getClientMenuApprovalRequest(requestId)
+  const request = searchParams.req
+    ? await getClientMenuApprovalRequest(searchParams.req)
+    : await getLatestClientActiveMenuApprovalRequestForEvent(params.id)
   if (!request) notFound()
 
+  const requestId = (request as any).id as string
   const snapshot = (request as any).menu_snapshot ?? []
 
   return (
