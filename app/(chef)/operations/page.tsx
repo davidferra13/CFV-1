@@ -94,6 +94,12 @@ const sections = [
     heading: 'Equipment and Space',
     items: [
       {
+        href: '/operations/readiness',
+        label: 'Readiness',
+        description: 'Event, task, equipment, kitchen, safety, and insurance checkpoints',
+        icon: 'OK',
+      },
+      {
         href: '/operations/equipment',
         label: 'Equipment Inventory',
         description: 'Track owned kit, maintenance schedules, and rental costs',

@@ -42,6 +42,7 @@ type RouteMatcher = {
 const DEFAULT_SOURCE_ROOTS = ['app', 'components']
 const SOURCE_EXTENSIONS = new Set(['.ts', '.tsx', '.js', '.jsx'])
 const IGNORED_DIRECTORIES = new Set(['.git', '.next', 'node_modules'])
+const APP_ROUTE_FILE_PATTERN = /^(?:page|route)\.(?:t|j)sx?$/
 
 function normalizePathname(input: string): string | null {
   const value = input.trim()
@@ -86,10 +87,25 @@ function routeTemplateToRegex(template: string): RegExp {
 }
 
 function buildRouteMatchers(appDir: string): RouteMatcher[] {
-  return discoverPageRouteEntriesInAppDir(appDir).map((entry) => ({
+  const pageMatchers = discoverPageRouteEntriesInAppDir(appDir).map((entry) => ({
     template: entry.route ?? entry.template,
     regex: routeTemplateToRegex(entry.route ?? entry.template),
   }))
+
+  const routeHandlerMatchers = walkAppRouteFiles(appDir).map((file) => {
+    const template = routeTemplateFromAppFile(file, appDir)
+    return {
+      template,
+      regex: routeTemplateToRegex(template),
+    }
+  })
+
+  const unique = new Map<string, RouteMatcher>()
+  for (const matcher of [...pageMatchers, ...routeHandlerMatchers]) {
+    unique.set(matcher.template, matcher)
+  }
+
+  return [...unique.values()].sort((left, right) => left.template.localeCompare(right.template))
 }
 
 function isCoveredRoute(href: string, matchers: RouteMatcher[]): boolean {
@@ -136,6 +152,18 @@ function walkSourceFiles(root: string): string[] {
   }
 
   return files.sort()
+}
+
+function walkAppRouteFiles(appDir: string): string[] {
+  return walkSourceFiles(appDir).filter((file) => APP_ROUTE_FILE_PATTERN.test(path.basename(file)))
+}
+
+function routeTemplateFromAppFile(file: string, appDir: string): string {
+  const relativeFile = path.relative(appDir, file).replace(/\\/g, '/')
+  const segments = relativeFile.split('/').slice(0, -1)
+  const visibleSegments = segments.filter((segment) => !/^\(.+\)$/.test(segment))
+  if (visibleSegments.length === 0) return '/'
+  return `/${visibleSegments.join('/')}`.replace(/\/+/g, '/').replace(/\/$/g, '') || '/'
 }
 
 function templateHrefProbe(href: string): string {
@@ -186,7 +214,7 @@ function scanSourceFile(file: string, matchers: RouteMatcher[]): RouteIntegrityF
   const emptyHandlerPattern = /\bon[A-Z][A-Za-z0-9]*\s*=\s*\{\s*(?:\(\)\s*=>\s*)?\{\s*\}\s*\}/g
   const undefinedHandlerPattern = /\bon[A-Z][A-Za-z0-9]*\s*=\s*\{\s*undefined\s*\}/g
   const placeholderHandlerPattern =
-    /\bon[A-Z][A-Za-z0-9]*\s*=\s*\{\s*(?:\([^)]*\)|[A-Za-z_$][\w$]*)?\s*(?:=>)?\s*(?:\{\s*)?(?:\/\/\s*)?(?:todo|noop|no-op|not implemented|placeholder|console\.log\s*\(|alert\s*\()/gi
+    /\bon[A-Z][A-Za-z0-9]*\s*=\s*\{\s*(?:\([^)]*\)|[A-Za-z_$][\w$]*)?\s*(?:=>)?\s*(?:\{\s*)?(?:\/\/\s*)?(?:\b(?:todo|noop|no-op|not implemented|placeholder)\b|console\.log\s*\(|alert\s*\()/gi
   let match: RegExpExecArray | null
 
   while ((match = hrefAttributePattern.exec(source))) {

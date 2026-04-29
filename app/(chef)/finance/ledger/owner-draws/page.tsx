@@ -10,6 +10,7 @@ import { getOwnerDraws } from '@/lib/finance/owner-draw-actions'
 import { formatCurrency } from '@/lib/utils/currency'
 import { Card } from '@/components/ui/card'
 import { OwnerDrawsClient } from './owner-draws-client'
+import { OwnerDrawsYearSelect } from './owner-draws-year-select'
 
 export const metadata: Metadata = { title: 'Owner Draws' }
 
@@ -27,6 +28,7 @@ export default async function OwnerDrawsPage({
   const draws = await getOwnerDraws(validYear)
 
   const totalCents = draws.reduce((s, d) => s + d.amountCents, 0)
+  const yearOptions = [currentYear, currentYear - 1, currentYear - 2]
 
   return (
     <div className="space-y-6">
@@ -41,17 +43,7 @@ export default async function OwnerDrawsPage({
               Record equity draws from your business. These are excluded from profit and loss.
             </p>
           </div>
-          <select
-            defaultValue={validYear}
-            onChange={undefined}
-            className="text-sm border border-stone-600 rounded-md px-3 py-2 text-stone-300 bg-stone-900"
-          >
-            {[currentYear, currentYear - 1, currentYear - 2].map((y) => (
-              <option key={y} value={y}>
-                {y}
-              </option>
-            ))}
-          </select>
+          <OwnerDrawsYearSelect selectedYear={validYear} years={yearOptions} />
         </div>
       </div>
 
