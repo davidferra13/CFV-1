@@ -119,7 +119,7 @@
 - Task: Build the Launch Readiness operator review console
 - Status: completed
 - Files touched: `app/(admin)/admin/launch-readiness/page.tsx`, `app/api/admin/launch-readiness/reviews/route.ts`, `components/admin/launch-readiness-review-console.tsx`, `tests/unit/launch-readiness-admin-gate.test.ts`, `docs/session-log.md`
-- Commits: current feature commit
+- Commits: `2397bcf87`
 - Build state on departure: scoped launch readiness tests passed; full typecheck still blocked by unrelated existing missing dependency and chart formatter errors
 - Verification commands run: `node --test --import tsx tests/unit/launch-readiness-admin-gate.test.ts tests/unit/launch-readiness-operator-review.test.ts tests/unit/launch-readiness-risk-register.test.ts tests/unit/launch-readiness-decision-packet.test.ts tests/unit/launch-readiness-export-contract.test.ts`; `$env:NODE_OPTIONS='--max-old-space-size=8192'; npx tsc --noEmit --skipLibCheck --pretty false` with no launch readiness diagnostics; touched-file compliance scan
 - Notes: Added the admin-side operator review console for `operator_review` checks, connected it to the persistent review API, avoided optimistic status changes until the POST succeeds, refreshed launch readiness after confirmed saves, displayed recent review history, and returned specific validation errors for verified reviews missing both note and evidence link. No build, server start, migration push, or production deploy was run.
