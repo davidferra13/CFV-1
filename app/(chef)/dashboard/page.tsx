@@ -96,6 +96,7 @@ import {
 import { CompletionSummaryWidgetServer } from '@/components/completion/completion-summary-server'
 import { EventDeadlineAlerts } from './_sections/event-deadline-alerts'
 import { NetworkActivitySection } from './_sections/network-activity'
+import { NetworkIntelligenceSection } from './_sections/network-intelligence'
 import { OnboardingChecklistWidget } from '@/components/dashboard/onboarding-checklist-widget'
 import { getOnboardingProgress } from '@/lib/onboarding/progress-actions'
 import { getDashboardWorkSurface } from '@/lib/workflow/actions'
@@ -2124,6 +2125,14 @@ export default async function ChefDashboard() {
         <WidgetErrorBoundary name="Network Activity" compact>
           <Suspense fallback={null}>
             <NetworkActivitySection />
+          </Suspense>
+        </WidgetErrorBoundary>
+      )}
+
+      {!isMinimalDensity && (
+        <WidgetErrorBoundary name="Network Intelligence" compact>
+          <Suspense fallback={<WidgetCardSkeleton size="md" />}>
+            <NetworkIntelligenceSection />
           </Suspense>
         </WidgetErrorBoundary>
       )}
