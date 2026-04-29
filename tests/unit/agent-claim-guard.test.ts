@@ -162,3 +162,74 @@ test('agent-closeout-gate fails when a flight record started on a different bran
     fs.rmSync(tempDir, { recursive: true, force: true })
   }
 })
+
+test('agent-commit-claim-warning warns when staged files have no active claim', () => {
+  const claimsDir = makeTempDir('chefflow-agent-claim-warning-')
+
+  try {
+    const output = runNode([
+      'devtools/agent-commit-claim-warning.mjs',
+      '--staged',
+      'devtools/agent-start.mjs',
+      '--claims-dir',
+      claimsDir,
+      '--branch',
+      'feature/test-branch',
+      '--json',
+    ])
+    const result = JSON.parse(output) as {
+      ok: boolean
+      warnings: string[]
+      covering_claims: unknown[]
+    }
+
+    assert.equal(result.ok, true)
+    assert.equal(result.covering_claims.length, 0)
+    assert.ok(result.warnings.some((warning) => warning.includes('No active agent claim')))
+  } finally {
+    fs.rmSync(claimsDir, { recursive: true, force: true })
+  }
+})
+
+test('agent-commit-claim-warning recognizes current branch claim coverage', () => {
+  const claimsDir = makeTempDir('chefflow-agent-claim-warning-covered-')
+
+  try {
+    fs.writeFileSync(
+      path.join(claimsDir, 'claim.json'),
+      JSON.stringify(
+        {
+          id: 'unit-covered-claim',
+          status: 'active',
+          branch: 'feature/test-branch',
+          agent: 'unit',
+          owned_paths: ['devtools/agent-start.mjs'],
+        },
+        null,
+        2
+      )
+    )
+
+    const output = runNode([
+      'devtools/agent-commit-claim-warning.mjs',
+      '--staged',
+      'devtools/agent-start.mjs',
+      '--claims-dir',
+      claimsDir,
+      '--branch',
+      'feature/test-branch',
+      '--json',
+    ])
+    const result = JSON.parse(output) as {
+      ok: boolean
+      warnings: string[]
+      covering_claims: Array<{ owned_paths: string[] }>
+    }
+
+    assert.equal(result.ok, true)
+    assert.deepEqual(result.warnings, [])
+    assert.deepEqual(result.covering_claims[0]?.owned_paths, ['devtools/agent-start.mjs'])
+  } finally {
+    fs.rmSync(claimsDir, { recursive: true, force: true })
+  }
+})

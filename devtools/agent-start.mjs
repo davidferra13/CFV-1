@@ -1,9 +1,6 @@
 #!/usr/bin/env node
 import { execFileSync } from 'node:child_process'
-import {
-  parseArgs,
-  readStdin,
-} from './agent-skill-utils.mjs'
+import { parseArgs, readStdin } from './agent-skill-utils.mjs'
 
 function runNode(args) {
   return execFileSync('node', args, { encoding: 'utf8' })
@@ -11,9 +8,10 @@ function runNode(args) {
 
 function usage() {
   console.log(`Usage:
-  node devtools/agent-start.mjs --prompt "..."
+  node devtools/agent-start.mjs --prompt "..." [--owned path,other-path]
 
-Routes the prompt, writes a flight record, and prints the required harness state.`)
+Routes the prompt, writes a flight record, creates an agent claim, and prints the required harness state.
+Use --owned to claim the files this agent expects to touch.`)
 }
 
 try {
@@ -36,7 +34,8 @@ try {
       '--sidecars',
       (router.sidecar_skills || []).join(','),
       '--create-claim',
-    ]),
+      ...(args.owned && args.owned !== true ? ['--owned', String(args.owned)] : []),
+    ])
   )
   const result = {
     prompt,
