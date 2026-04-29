@@ -7,6 +7,7 @@ import {
   Globe,
   Search,
   Users,
+  Activity,
 } from '@/components/ui/icons'
 import type { LucideIcon } from '@/components/ui/icons'
 
@@ -31,6 +32,30 @@ export function getStartersForPage(pathname: string): StarterPrompt[] {
       { text: 'Draft a follow-up email for this client', icon: Mail },
       { text: 'What should I prep for this event?', icon: ChefHat },
       { text: 'Search the web for menu inspiration', icon: Globe },
+    ]
+  }
+  if (pathname === '/dashboard') {
+    return [
+      { text: 'Catch me up since I was away', icon: Activity },
+      { text: 'What needs action first?', icon: Brain },
+      { text: "What's on my plate this week?", icon: CalendarDays },
+      { text: "How's business looking this month?", icon: TrendingUp },
+    ]
+  }
+  if (pathname.startsWith('/activity')) {
+    return [
+      { text: 'What changed since my last session?', icon: Activity },
+      { text: 'Where did I leave off?', icon: Search },
+      { text: 'What needs action first?', icon: Brain },
+      { text: 'Show my recent client activity', icon: Users },
+    ]
+  }
+  if (pathname.startsWith('/notifications')) {
+    return [
+      { text: 'Catch me up on unread notifications', icon: Activity },
+      { text: 'Which notification needs action first?', icon: Brain },
+      { text: 'What changed since I was away?', icon: Activity },
+      { text: 'Show my open inquiries', icon: Mail },
     ]
   }
   if (pathname === '/events' || pathname === '/events/upcoming') {

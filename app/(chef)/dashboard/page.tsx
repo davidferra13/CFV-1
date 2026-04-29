@@ -120,6 +120,10 @@ import { eventsOverlapInTime } from '@/lib/staff/time-overlap'
 import { getSupportStatus } from '@/lib/monetization/status'
 import { getDecisionQueue, type DecisionQueueResult } from '@/lib/decision-queue/actions'
 import { OverwhelmTriageBanner } from './_sections/overwhelm-triage-banner'
+import { loadContinuityDigest, type ContinuityDigest } from '@/lib/activity/continuity-digest'
+import { getResumeItems } from '@/lib/activity/resume'
+import { getUnreadCount } from '@/lib/notifications/actions'
+import { ReturnToWorkStrip } from '@/components/dashboard/return-to-work-strip'
 
 export const metadata: Metadata = { title: 'Dashboard' }
 
@@ -1837,6 +1841,9 @@ export default async function ChefDashboard() {
     supportStatus,
     userIsPrivileged,
     workspaceDensity,
+    returnDigestResult,
+    resumeItemsResult,
+    unreadNotificationResult,
   ] = await Promise.all([
     safe('archetype', () => getCachedChefArchetype(user.entityId), null),
     safe('onboardingProgress', () => getOnboardingProgress(), null),
@@ -1862,6 +1869,14 @@ export default async function ChefDashboard() {
     safe('supportStatus', () => getSupportStatus(user.entityId), null),
     safe('privilegedAccess', () => getCachedIsPrivileged(user.id), false),
     safe('workspaceDensity', getWorkspaceDensity, 'standard' as const),
+    safeResult<ContinuityDigest | null>(
+      'returnContinuity',
+      () => loadContinuityDigest(user.tenantId!),
+      null,
+      'return context'
+    ),
+    safeResult('resumeItems', () => getResumeItems(), [], 'resume suggestions'),
+    safeResult<number | null>('unreadNotifications', () => getUnreadCount(), null, 'notifications'),
   ])
   const isNewChef = presence ? isBrandNewChef(presence) : false
   const bypassProgressiveDisclosure = userIsPrivileged || process.env.DEMO_MODE_ENABLED === 'true'
@@ -1940,6 +1955,19 @@ export default async function ChefDashboard() {
           </Link>
         </div>
       </header>
+
+      {!isMinimalDensity && (
+        <ReturnToWorkStrip
+          digest={returnDigestResult.data}
+          resumeItems={resumeItemsResult.data}
+          unreadNotificationCount={unreadNotificationResult.data}
+          unavailableLabels={[
+            returnDigestResult.error,
+            resumeItemsResult.error,
+            unreadNotificationResult.error,
+          ].filter((label): label is string => Boolean(label))}
+        />
+      )}
 
       {/* Overwhelm Detection - shows when too many items are stalling */}
       <WidgetErrorBoundary name="Overwhelm Detection" compact>
