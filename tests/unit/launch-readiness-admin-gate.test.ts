@@ -15,6 +15,10 @@ const jsonPacketRouteSource = readFileSync(
   join(process.cwd(), 'app/api/admin/launch-readiness/decision-packet/route.ts'),
   'utf8'
 )
+const reviewPreviewRouteSource = readFileSync(
+  join(process.cwd(), 'app/api/admin/launch-readiness/review-preview/route.ts'),
+  'utf8'
+)
 const adminNavSource = readFileSync(
   join(process.cwd(), 'components/navigation/admin-nav-config.ts'),
   'utf8'
@@ -53,6 +57,20 @@ test('launch readiness JSON packet route is admin-only and non-cached', () => {
   assert.match(jsonPacketRouteSource, /Cache-Control['"]:\s*['"]no-store/)
   assert.match(jsonPacketRouteSource, /riskRegister/)
   assert.match(pageSource, /\/api\/admin\/launch-readiness\/decision-packet/)
+})
+
+test('launch readiness review preview route is admin-only and non-persistent', () => {
+  assert.match(
+    reviewPreviewRouteSource,
+    /import\s+\{\s*requireAdmin\s*\}\s+from ['"]@\/lib\/auth\/admin['"]/
+  )
+  assert.match(reviewPreviewRouteSource, /await\s+requireAdmin\(\)/)
+  assert.match(reviewPreviewRouteSource, /applyLaunchReadinessOperatorReviews/)
+  assert.match(reviewPreviewRouteSource, /records must be an array/)
+  assert.match(reviewPreviewRouteSource, /Cache-Control['"]:\s*['"]no-store/)
+  assert.doesNotMatch(reviewPreviewRouteSource, /\.from\(/)
+  assert.doesNotMatch(reviewPreviewRouteSource, /\.insert\(/)
+  assert.doesNotMatch(reviewPreviewRouteSource, /\.upsert\(/)
 })
 
 test('launch readiness page connects the risk register helper', () => {
