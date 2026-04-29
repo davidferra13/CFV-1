@@ -103,8 +103,8 @@ export const CHEF_PORTAL_CLIENTS_PAGE_INFO: Record<string, PageInfoEntry> = {
 
   '/clients/presence': {
     title: 'Client Presence',
-    description: 'See which clients are currently active in their portal.',
-    features: ['Live online status', 'Last seen timestamps', 'Activity indicators'],
+    description: 'See recent client activity signals from the client portal.',
+    features: ['Recent activity signals', 'Last seen timestamps', 'Activity indicators'],
   },
 
   '/clients/vip': {

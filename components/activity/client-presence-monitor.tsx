@@ -3,7 +3,7 @@
 // and a live activity stream. Subscribes via SSE for instant updates.
 'use client'
 
-import { useEffect, useRef, useState, useCallback } from 'react'
+import { useRef, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { useSSE } from '@/lib/realtime/sse-client'
 import type {
@@ -11,11 +11,17 @@ import type {
   ActivityEvent,
   ActivityEventType,
 } from '@/lib/activity/types'
+import {
+  ACTIVE_CLIENT_SIGNAL_WINDOW_MINUTES,
+  formatActivitySignalAge,
+  formatActivityWindowLabel,
+  getActiveSignalExplanation,
+  isActiveClientSignal,
+} from '@/lib/activity/presence-copy'
 import { EngagementBadge } from './engagement-badge'
 
-// Presence windows
-const ONLINE_WINDOW_MS = 5 * 60 * 1000 // < 5 min = "Online Now"
-const RECENT_WINDOW_MS = 60 * 60 * 1000 // up to 60 min shown on this page
+const RECENT_WINDOW_MINUTES = 60
+const RECENT_WINDOW_MS = RECENT_WINDOW_MINUTES * 60 * 1000
 
 // Max events to keep in the live stream
 const MAX_STREAM_EVENTS = 50
@@ -70,21 +76,6 @@ type StreamItem = {
 
 function getLabel(eventType: string): string {
   return EVENT_LABELS[eventType] || 'on the portal'
-}
-
-function formatTimeAgo(dateStr: string): string {
-  const diffMs = Date.now() - new Date(dateStr).getTime()
-  const mins = Math.floor(diffMs / 60000)
-  if (mins < 1) return 'now'
-  if (mins === 1) return '1m ago'
-  if (mins < 60) return `${mins}m ago`
-  const hrs = Math.floor(diffMs / 3600000)
-  if (hrs === 1) return '1h ago'
-  return `${hrs}h ago`
-}
-
-function isOnlineNow(lastActivity: string): boolean {
-  return Date.now() - new Date(lastActivity).getTime() < ONLINE_WINDOW_MS
 }
 
 interface ClientPresenceMonitorProps {
@@ -197,8 +188,8 @@ export function ClientPresenceMonitor({
 
   useSSE(`activity_events:${tenantId}`, { onMessage: handleMessage })
 
-  const onlineNow = clients.filter((c) => isOnlineNow(c.last_activity))
-  const recentlyActive = clients.filter((c) => !isOnlineNow(c.last_activity))
+  const activeSignals = clients.filter((c) => isActiveClientSignal(c.last_activity))
+  const recentlyActive = clients.filter((c) => !isActiveClientSignal(c.last_activity))
 
   return (
     <div className="space-y-6">
@@ -206,48 +197,53 @@ export function ClientPresenceMonitor({
       <div className="border border-stone-700 rounded-lg overflow-hidden">
         <div className="flex items-center justify-between px-4 py-3 bg-stone-800 border-b border-stone-700">
           <h2 className="text-sm font-semibold text-stone-300">Active Clients</h2>
-          {onlineNow.length > 0 && (
+          {activeSignals.length > 0 && (
             <span className="flex items-center gap-1.5 text-xs text-emerald-600 font-medium">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              {onlineNow.length} online now
+              {activeSignals.length} active signal{activeSignals.length === 1 ? '' : 's'}
             </span>
           )}
         </div>
 
         {clients.length === 0 ? (
           <div className="px-4 py-8 text-center text-stone-300 text-sm">
-            No clients active in the last hour. Activity will appear here as clients browse the
-            portal.
+            No client activity signals in the {formatActivityWindowLabel(RECENT_WINDOW_MINUTES)}.
+            Activity will appear here as clients browse the portal.
           </div>
         ) : (
           <div>
-            {/* Online Now */}
-            {onlineNow.length > 0 && (
+            {/* Active signals */}
+            {activeSignals.length > 0 && (
               <div>
                 <div className="px-4 py-2 bg-emerald-950 border-b border-emerald-100">
                   <p className="text-xs-tight font-semibold text-emerald-700 uppercase tracking-wide">
-                    Online Now
+                    Active Signals (last {ACTIVE_CLIENT_SIGNAL_WINDOW_MINUTES} min)
                   </p>
+                  <p className="text-xxs text-emerald-700 mt-0.5">{getActiveSignalExplanation()}</p>
                 </div>
                 <div className="divide-y divide-stone-800">
-                  {onlineNow.map((client) => (
-                    <ClientPresenceRow key={client.client_id} client={client} isOnline />
+                  {activeSignals.map((client) => (
+                    <ClientPresenceRow key={client.client_id} client={client} isActiveSignal />
                   ))}
                 </div>
               </div>
             )}
 
-            {/* Recently Active */}
+            {/* Earlier activity signals */}
             {recentlyActive.length > 0 && (
               <div>
                 <div className="px-4 py-2 bg-stone-800 border-b border-stone-800">
                   <p className="text-xs-tight font-semibold text-stone-300 uppercase tracking-wide">
-                    Recently Active (last hour)
+                    Earlier Signals ({formatActivityWindowLabel(RECENT_WINDOW_MINUTES)})
                   </p>
                 </div>
                 <div className="divide-y divide-stone-800">
                   {recentlyActive.map((client) => (
-                    <ClientPresenceRow key={client.client_id} client={client} isOnline={false} />
+                    <ClientPresenceRow
+                      key={client.client_id}
+                      client={client}
+                      isActiveSignal={false}
+                    />
                   ))}
                 </div>
               </div>
@@ -285,10 +281,10 @@ export function ClientPresenceMonitor({
 
 function ClientPresenceRow({
   client,
-  isOnline,
+  isActiveSignal,
 }: {
   client: ActiveClientWithContext
-  isOnline: boolean
+  isActiveSignal: boolean
 }) {
   const isHighIntent = HIGH_INTENT.has(client.event_type)
 
@@ -296,7 +292,7 @@ function ClientPresenceRow({
     <Link
       href={`/clients/${client.client_id}`}
       className={`flex items-center gap-3 px-4 py-3 hover:bg-stone-800 transition-colors ${
-        isOnline ? '' : 'opacity-70'
+        isActiveSignal ? '' : 'opacity-70'
       }`}
     >
       {/* Avatar */}
@@ -308,8 +304,11 @@ function ClientPresenceRow({
         >
           {client.client_name.charAt(0).toUpperCase()}
         </span>
-        {isOnline && (
-          <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white" />
+        {isActiveSignal && (
+          <span
+            className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white"
+            title={`Activity signal in the last ${ACTIVE_CLIENT_SIGNAL_WINDOW_MINUTES} minutes`}
+          />
         )}
       </div>
 
@@ -332,7 +331,9 @@ function ClientPresenceRow({
       </div>
 
       {/* Time */}
-      <span className="text-xs text-stone-300 shrink-0">{formatTimeAgo(client.last_activity)}</span>
+      <span className="text-xs text-stone-300 shrink-0">
+        {formatActivitySignalAge(client.last_activity)}
+      </span>
     </Link>
   )
 }
@@ -358,7 +359,9 @@ function StreamRow({ item }: { item: StreamItem }) {
           {label}
         </p>
       </div>
-      <span className="text-xs text-stone-300 shrink-0">{formatTimeAgo(event.created_at)}</span>
+      <span className="text-xs text-stone-300 shrink-0">
+        {formatActivitySignalAge(event.created_at)}
+      </span>
     </div>
   )
 
