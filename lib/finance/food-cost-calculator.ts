@@ -6,11 +6,31 @@ import { computeIngredientCost, lookupDensity } from '@/lib/units/conversion-eng
 import { OPERATOR_TARGETS, type OperatorType } from '@/lib/costing/knowledge'
 
 export type FoodCostRating = 'excellent' | 'good' | 'fair' | 'high'
+export type IngredientCostLineStatus = 'priced' | 'precomputed' | 'no_price' | 'unit_mismatch'
 
 export interface FoodCostRatingResult {
   rating: FoodCostRating
   label: string
   color: string // tailwind color class
+}
+
+export interface IngredientCostLineInput {
+  qty: number
+  recipeUnit: string
+  costPerUnitCents: number | null | undefined
+  costUnit: string | null | undefined
+  ingredientName?: string | null
+  densityGPerMl?: number | null
+  yieldPct?: number | null
+  precomputedCostCents?: number | null
+}
+
+export interface IngredientCostLineResult {
+  unitCostCents: number
+  totalCostCents: number
+  hasCostData: boolean
+  converted: boolean
+  status: IngredientCostLineStatus
 }
 
 /**
@@ -70,6 +90,69 @@ export function calculateRecipeFoodCostWithUnits(
   }
 
   return { totalCents, itemCosts }
+}
+
+/**
+ * Cost one recipe ingredient line without silently inventing values.
+ * If units cannot be converted, the result is marked incomplete and contributes 0.
+ */
+export function computeIngredientCostLine(input: IngredientCostLineInput): IngredientCostLineResult {
+  const qty = Number.isFinite(input.qty) ? input.qty : 0
+  const costPerUnitCents =
+    typeof input.costPerUnitCents === 'number' && Number.isFinite(input.costPerUnitCents)
+      ? input.costPerUnitCents
+      : null
+
+  if (costPerUnitCents == null || costPerUnitCents <= 0) {
+    return {
+      unitCostCents: 0,
+      totalCostCents: 0,
+      hasCostData: false,
+      converted: false,
+      status: 'no_price',
+    }
+  }
+
+  if (input.precomputedCostCents != null && Number.isFinite(input.precomputedCostCents)) {
+    const totalCostCents = Math.max(0, Math.round(input.precomputedCostCents))
+    return {
+      unitCostCents: qty > 0 ? Math.round(totalCostCents / qty) : costPerUnitCents,
+      totalCostCents,
+      hasCostData: true,
+      converted: true,
+      status: 'precomputed',
+    }
+  }
+
+  const recipeUnit = input.recipeUnit || input.costUnit || 'each'
+  const costUnit = input.costUnit || recipeUnit
+  const density =
+    input.densityGPerMl ?? (input.ingredientName ? lookupDensity(input.ingredientName) : null)
+  const rawCost = computeIngredientCost(qty, recipeUnit, costPerUnitCents, costUnit, density)
+
+  if (rawCost === null) {
+    return {
+      unitCostCents: costPerUnitCents,
+      totalCostCents: 0,
+      hasCostData: false,
+      converted: false,
+      status: 'unit_mismatch',
+    }
+  }
+
+  const yieldPct =
+    typeof input.yieldPct === 'number' && Number.isFinite(input.yieldPct) && input.yieldPct > 0
+      ? input.yieldPct
+      : 100
+  const totalCostCents = yieldPct < 100 ? Math.round((rawCost * 100) / yieldPct) : rawCost
+
+  return {
+    unitCostCents: costPerUnitCents,
+    totalCostCents,
+    hasCostData: true,
+    converted: true,
+    status: 'priced',
+  }
 }
 
 /**

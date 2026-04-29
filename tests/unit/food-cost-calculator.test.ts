@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import {
   calculateRecipeFoodCost,
   calculateRecipeFoodCostWithUnits,
+  computeIngredientCostLine,
   calculateFoodCostPercentage,
   getFoodCostRating,
   getFoodCostBadgeColor,
@@ -159,6 +160,89 @@ test('calculateRecipeFoodCostWithUnits returns empty for no ingredients', () => 
 })
 
 // ── calculateFoodCostPercentage ──────────────────────────────────────
+
+test('computeIngredientCostLine uses precomputed recipe ingredient cost first', () => {
+  const result = computeIngredientCostLine({
+    qty: 2,
+    recipeUnit: 'cup',
+    costPerUnitCents: 300,
+    costUnit: 'lb',
+    ingredientName: 'flour',
+    precomputedCostCents: 475,
+  })
+
+  assert.equal(result.totalCostCents, 475)
+  assert.equal(result.hasCostData, true)
+  assert.equal(result.status, 'precomputed')
+})
+
+test('computeIngredientCostLine does not trust precomputed zero without a price', () => {
+  const result = computeIngredientCostLine({
+    qty: 2,
+    recipeUnit: 'lb',
+    costPerUnitCents: null,
+    costUnit: 'lb',
+    precomputedCostCents: 0,
+  })
+
+  assert.equal(result.totalCostCents, 0)
+  assert.equal(result.hasCostData, false)
+  assert.equal(result.status, 'no_price')
+})
+
+test('computeIngredientCostLine converts recipe units without naive fallback', () => {
+  const result = computeIngredientCostLine({
+    qty: 2,
+    recipeUnit: 'cup',
+    costPerUnitCents: 300,
+    costUnit: 'lb',
+    ingredientName: 'flour',
+  })
+
+  assert.equal(result.hasCostData, true)
+  assert.equal(result.status, 'priced')
+  assert.ok(result.totalCostCents > 0)
+})
+
+test('computeIngredientCostLine marks unpriced ingredients incomplete', () => {
+  const result = computeIngredientCostLine({
+    qty: 2,
+    recipeUnit: 'lb',
+    costPerUnitCents: null,
+    costUnit: 'lb',
+  })
+
+  assert.equal(result.totalCostCents, 0)
+  assert.equal(result.hasCostData, false)
+  assert.equal(result.status, 'no_price')
+})
+
+test('computeIngredientCostLine does not invent costs for impossible unit conversion', () => {
+  const result = computeIngredientCostLine({
+    qty: 3,
+    recipeUnit: 'each',
+    costPerUnitCents: 500,
+    costUnit: 'lb',
+    ingredientName: 'unknown garnish',
+  })
+
+  assert.equal(result.totalCostCents, 0)
+  assert.equal(result.hasCostData, false)
+  assert.equal(result.status, 'unit_mismatch')
+})
+
+test('computeIngredientCostLine applies yield after conversion', () => {
+  const result = computeIngredientCostLine({
+    qty: 1,
+    recipeUnit: 'lb',
+    costPerUnitCents: 1000,
+    costUnit: 'lb',
+    yieldPct: 80,
+  })
+
+  assert.equal(result.totalCostCents, 1250)
+  assert.equal(result.hasCostData, true)
+})
 
 test('calculateFoodCostPercentage computes correct percentage', () => {
   // 2500 food cost / 10000 revenue = 25%

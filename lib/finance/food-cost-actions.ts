@@ -9,8 +9,10 @@ import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import {
   calculateFoodCostPercentage,
+  computeIngredientCostLine,
   getFoodCostRating,
   type FoodCostRatingResult,
+  type IngredientCostLineStatus,
 } from './food-cost-calculator'
 import { dateToMonthString } from '@/lib/utils/format'
 
@@ -23,6 +25,7 @@ export interface IngredientBreakdown {
   unitCostCents: number
   totalCostCents: number
   hasCostData: boolean
+  costStatus?: IngredientCostLineStatus
 }
 
 export interface DishBreakdown {
@@ -148,7 +151,7 @@ export async function getEventFoodCost(eventId: string): Promise<EventFoodCost> 
         const { data: recipeIngredients } = await db
           .from('recipe_ingredients')
           .select(
-            'recipe_id, quantity, unit, ingredient_id, ingredients(name, cost_per_unit_cents, last_price_cents, default_unit)'
+            'recipe_id, quantity, unit, ingredient_id, computed_cost_cents, yield_pct, ingredients(name, cost_per_unit_cents, last_price_cents, price_unit, default_unit, weight_to_volume_ratio, default_yield_pct)'
           )
           .in('recipe_id', recipeIds)
 
@@ -157,16 +160,25 @@ export async function getEventFoodCost(eventId: string): Promise<EventFoodCost> 
           if (!ing) continue
 
           const costPerUnit = ing.cost_per_unit_cents ?? ing.last_price_cents ?? 0
-          const hasCostData = !!(ing.cost_per_unit_cents || ing.last_price_cents)
-          const totalCost = Math.round(ri.quantity * costPerUnit)
+          const lineCost = computeIngredientCostLine({
+            qty: ri.quantity ?? 0,
+            recipeUnit: ri.unit || ing.default_unit || 'each',
+            costPerUnitCents: costPerUnit,
+            costUnit: ing.price_unit || ing.default_unit || 'each',
+            ingredientName: ing.name,
+            densityGPerMl: ing.weight_to_volume_ratio,
+            yieldPct: ri.yield_pct ?? ing.default_yield_pct,
+            precomputedCostCents: ri.computed_cost_cents,
+          })
 
           const entry: IngredientBreakdown = {
             name: ing.name,
             qty: ri.quantity,
             unit: ri.unit || ing.default_unit || 'ea',
-            unitCostCents: costPerUnit,
-            totalCostCents: totalCost,
-            hasCostData,
+            unitCostCents: lineCost.unitCostCents,
+            totalCostCents: lineCost.totalCostCents,
+            hasCostData: lineCost.hasCostData,
+            costStatus: lineCost.status,
           }
 
           const existing = recipeIngredientMap.get(ri.recipe_id) ?? []
@@ -327,25 +339,41 @@ export async function deleteGrocerySpend(
 export async function getIngredientCostEstimate(
   ingredientId: string,
   quantity: number,
-  _unit: string
-): Promise<{ unitCostCents: number; totalCostCents: number; hasCostData: boolean }> {
+  unit: string
+): Promise<{
+  unitCostCents: number
+  totalCostCents: number
+  hasCostData: boolean
+  costStatus: IngredientCostLineStatus
+}> {
   const user = await requireChef()
   const db: any = createServerClient()
 
   const { data: ingredient } = await db
     .from('ingredients')
-    .select('cost_per_unit_cents, last_price_cents')
+    .select(
+      'name, cost_per_unit_cents, last_price_cents, price_unit, default_unit, weight_to_volume_ratio, default_yield_pct'
+    )
     .eq('id', ingredientId)
     .eq('tenant_id', user.tenantId!)
     .single()
 
   const unitCostCents = ingredient?.cost_per_unit_cents ?? ingredient?.last_price_cents ?? 0
-  const hasCostData = !!(ingredient?.cost_per_unit_cents || ingredient?.last_price_cents)
+  const lineCost = computeIngredientCostLine({
+    qty: quantity,
+    recipeUnit: unit,
+    costPerUnitCents: unitCostCents,
+    costUnit: ingredient?.price_unit || ingredient?.default_unit || unit,
+    ingredientName: ingredient?.name,
+    densityGPerMl: ingredient?.weight_to_volume_ratio,
+    yieldPct: ingredient?.default_yield_pct,
+  })
 
   return {
-    unitCostCents,
-    totalCostCents: Math.round(quantity * unitCostCents),
-    hasCostData,
+    unitCostCents: lineCost.unitCostCents,
+    totalCostCents: lineCost.totalCostCents,
+    hasCostData: lineCost.hasCostData,
+    costStatus: lineCost.status,
   }
 }
 
