@@ -1312,7 +1312,7 @@ export async function sendRemyMessage(
 
     // ─── INSTANT ANSWER path (Formula > AI - skip Ollama for simple facts) ──
     if (classification.intent === 'question') {
-      const instant = tryInstantAnswer(userMessage, context)
+      const instant = tryInstantAnswer(userMessage, context, memories)
       if (instant) {
         return {
           text: instant.text,

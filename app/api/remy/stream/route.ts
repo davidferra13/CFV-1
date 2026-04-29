@@ -720,7 +720,7 @@ export async function POST(req: NextRequest) {
     // For simple factual questions where the answer is already in the loaded context,
     // return an instant response without waiting 30-90s for Ollama.
     if (classification.intent === 'question') {
-      const instant = tryInstantAnswer(message, context)
+      const instant = tryInstantAnswer(message, context, memories)
       if (instant) {
         releaseInteractiveLock()
         const encoder = new TextEncoder()

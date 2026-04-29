@@ -8,6 +8,7 @@
 // the question pattern and format the answer in Remy's voice.
 
 import type { RemyContext } from '@/lib/ai/remy-types'
+import type { RemyMemory } from '@/lib/ai/remy-memory-types'
 import { findMetricDefinitionsByQuery } from '@/lib/analytics/metric-registry'
 
 interface InstantAnswer {
@@ -17,8 +18,40 @@ interface InstantAnswer {
 
 interface AnswerPattern {
   pattern: RegExp
-  answer: (ctx: RemyContext, match: RegExpMatchArray) => InstantAnswer | null
+  answer: (
+    ctx: RemyContext,
+    match: RegExpMatchArray,
+    options: { message: string; memories: RemyMemory[] }
+  ) => InstantAnswer | null
 }
+
+const MEMORY_CONTEXT_ALWAYS_INCLUDE = new Set(['client_insight', 'business_rule'])
+
+const MEMORY_CONTEXT_STOP_WORDS = new Set([
+  'the',
+  'and',
+  'for',
+  'with',
+  'that',
+  'this',
+  'from',
+  'what',
+  'when',
+  'where',
+  'which',
+  'about',
+  'event',
+  'events',
+  'dinner',
+  'service',
+  'ready',
+  'complete',
+  'completion',
+  'missing',
+  'blocked',
+  'next',
+  'step',
+])
 
 function formatMetricFreshness(minutes: number): string {
   if (minutes < 60) return `${minutes}m`
@@ -49,7 +82,71 @@ function findEventCompletionContext(ctx: RemyContext) {
   return candidates.find((entity) => entity.type === 'event' && entity.completion)
 }
 
-function formatEventCompletionAnswer(ctx: RemyContext): InstantAnswer | null {
+function tokenizeMemoryContext(value: string): Set<string> {
+  return new Set(
+    value
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, ' ')
+      .split(/\s+/)
+      .filter((word) => word.length > 2 && !MEMORY_CONTEXT_STOP_WORDS.has(word))
+  )
+}
+
+function formatMemoryCategory(category: string): string {
+  return category
+    .split('_')
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ')
+}
+
+function appendRelevantMemoryContext(
+  lines: string[],
+  ctx: RemyContext,
+  message: string,
+  memories: RemyMemory[]
+) {
+  if (memories.length === 0) return
+
+  const entityText = [ctx.pageEntity, ...(ctx.mentionedEntities ?? [])]
+    .filter((entity): entity is NonNullable<typeof entity> => Boolean(entity))
+    .map((entity) => entity.summary)
+    .join(' ')
+  const queryWords = tokenizeMemoryContext(`${message} ${entityText}`)
+
+  const scored = memories
+    .map((memory) => {
+      let score = MEMORY_CONTEXT_ALWAYS_INCLUDE.has(memory.category) ? 1000 : 0
+      const memoryWords = tokenizeMemoryContext(
+        `${memory.content} ${memory.relatedClientName ?? ''} ${memory.category}`
+      )
+      for (const word of memoryWords) {
+        if (queryWords.has(word)) score += 4
+      }
+      if (memory.relatedClientName && entityText.includes(memory.relatedClientName)) score += 12
+      score += Math.max(0, Math.min(memory.importance ?? 0, 5))
+      return { memory, score }
+    })
+    .filter(({ score }) => score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 3)
+
+  if (scored.length === 0) return
+
+  lines.push('')
+  lines.push('Relevant memory context:')
+  for (const { memory } of scored) {
+    const content =
+      memory.content.length > 140 ? `${memory.content.slice(0, 137).trim()}...` : memory.content
+    lines.push(`- ${formatMemoryCategory(memory.category)}: ${content}`)
+  }
+}
+
+function formatEventCompletionAnswer(
+  ctx: RemyContext,
+  message: string,
+  memories: RemyMemory[]
+): InstantAnswer | null {
   const entity = findEventCompletionContext(ctx)
   const completion = entity?.completion
   if (!entity || !completion) return null
@@ -80,6 +177,8 @@ function formatEventCompletionAnswer(ctx: RemyContext): InstantAnswer | null {
     lines.push(`Next step: **${completion.nextAction.label}**.`)
   }
 
+  appendRelevantMemoryContext(lines, ctx, message, memories)
+
   return {
     text: lines.join('\n'),
     navSuggestions: completion.nextAction
@@ -92,7 +191,8 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
   {
     pattern:
       /(?:is|am|are|what|why|how).*(?:event|dinner|booking|service|gig|this).*(?:ready|complete|completion|block|blocked|missing|next)|(?:ready|complete|completion|block|blocked|missing|next).*(?:event|dinner|booking|service|gig|this)/i,
-    answer: (ctx) => formatEventCompletionAnswer(ctx),
+    answer: (ctx, _match, options) =>
+      formatEventCompletionAnswer(ctx, options.message, options.memories),
   },
   {
     pattern:
@@ -2027,13 +2127,17 @@ function getAnswerTopic(pattern: RegExp): string {
  * It only handles simple factual questions - anything requiring analysis,
  * judgment, or multi-step reasoning still goes to the LLM.
  */
-export function tryInstantAnswer(message: string, context: RemyContext): InstantAnswer | null {
+export function tryInstantAnswer(
+  message: string,
+  context: RemyContext,
+  memories: RemyMemory[] = []
+): InstantAnswer | null {
   const trimmed = message.trim()
 
   for (const { pattern, answer } of INSTANT_PATTERNS) {
     const match = trimmed.match(pattern)
     if (match) {
-      const result = answer(context, match)
+      const result = answer(context, match, { message: trimmed, memories })
       if (result) {
         // Enrich with contextual follow-up intelligence
         const topic = getAnswerTopic(pattern)

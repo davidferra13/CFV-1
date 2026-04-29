@@ -330,7 +330,7 @@ export async function POST(req: NextRequest) {
 
     // Instant answers (no LLM needed)
     if (classification.intent === 'question') {
-      const instant = tryInstantAnswer(message, context)
+      const instant = tryInstantAnswer(message, context, memories)
       if (instant) {
         return NextResponse.json({
           blocked: false,
