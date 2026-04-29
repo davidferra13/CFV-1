@@ -1,0 +1,753 @@
+{
+  "generated_at": "2026-04-29T19:21:47.669Z",
+  "skill_count": 46,
+  "edge_count": 76,
+  "external_ref_count": 1,
+  "unknown_ref_count": 0,
+  "orphan_count": 12,
+  "edges": [
+    {
+      "from": "close-session",
+      "to": "evidence-integrity",
+      "kinds": [
+        "backtick",
+        "verb"
+      ],
+      "evidence": "`evidence-integrity`"
+    },
+    {
+      "from": "findings-triage",
+      "to": "builder",
+      "kinds": [
+        "backtick",
+        "verb"
+      ],
+      "evidence": "`builder`"
+    },
+    {
+      "from": "findings-triage",
+      "to": "debug",
+      "kinds": [
+        "backtick"
+      ],
+      "evidence": "`debug`"
+    },
+    {
+      "from": "findings-triage",
+      "to": "evidence-integrity",
+      "kinds": [
+        "backtick",
+        "verb"
+      ],
+      "evidence": "`evidence-integrity`"
+    },
+    {
+      "from": "findings-triage",
+      "to": "hallucination-scan",
+      "kinds": [
+        "backtick",
+        "verb"
+      ],
+      "evidence": "`hallucination-scan`"
+    },
+    {
+      "from": "findings-triage",
+      "to": "host-integrity",
+      "kinds": [
+        "backtick",
+        "verb"
+      ],
+      "evidence": "`host-integrity`"
+    },
+    {
+      "from": "findings-triage",
+      "to": "persona-build",
+      "kinds": [
+        "backtick",
+        "verb"
+      ],
+      "evidence": "`persona-build`"
+    },
+    {
+      "from": "findings-triage",
+      "to": "planner",
+      "kinds": [
+        "backtick",
+        "verb"
+      ],
+      "evidence": "`planner`"
+    },
+    {
+      "from": "findings-triage",
+      "to": "quick-wins",
+      "kinds": [
+        "backtick",
+        "verb"
+      ],
+      "evidence": "`quick-wins`"
+    },
+    {
+      "from": "findings-triage",
+      "to": "validation-gate",
+      "kinds": [
+        "backtick",
+        "verb"
+      ],
+      "evidence": "`validation-gate`"
+    },
+    {
+      "from": "omninet",
+      "to": "5-whys",
+      "kinds": [
+        "backtick"
+      ],
+      "evidence": "`5-whys`"
+    },
+    {
+      "from": "omninet",
+      "to": "audit",
+      "kinds": [
+        "backtick"
+      ],
+      "evidence": "`audit`"
+    },
+    {
+      "from": "omninet",
+      "to": "billing-monetization",
+      "kinds": [
+        "backtick"
+      ],
+      "evidence": "`billing-monetization`"
+    },
+    {
+      "from": "omninet",
+      "to": "builder",
+      "kinds": [
+        "backtick"
+      ],
+      "evidence": "`builder`"
+    },
+    {
+      "from": "omninet",
+      "to": "close-session",
+      "kinds": [
+        "backtick"
+      ],
+      "evidence": "`close-session`"
+    },
+    {
+      "from": "omninet",
+      "to": "compliance",
+      "kinds": [
+        "backtick"
+      ],
+      "evidence": "`compliance`"
+    },
+    {
+      "from": "omninet",
+      "to": "debug",
+      "kinds": [
+        "backtick"
+      ],
+      "evidence": "`debug`"
+    },
+    {
+      "from": "omninet",
+      "to": "evidence-integrity",
+      "kinds": [
+        "backtick"
+      ],
+      "evidence": "`evidence-integrity`"
+    },
+    {
+      "from": "omninet",
+      "to": "findings-triage",
+      "kinds": [
+        "backtick"
+      ],
+      "evidence": "`findings-triage`"
+    },
+    {
+      "from": "omninet",
+      "to": "first-principles",
+      "kinds": [
+        "backtick"
+      ],
+      "evidence": "`first-principles`"
+    },
+    {
+      "from": "omninet",
+      "to": "hallucination-scan",
+      "kinds": [
+        "backtick"
+      ],
+      "evidence": "`hallucination-scan`"
+    },
+    {
+      "from": "omninet",
+      "to": "heal-skill",
+      "kinds": [
+        "backtick",
+        "verb"
+      ],
+      "evidence": "`heal-skill`"
+    },
+    {
+      "from": "omninet",
+      "to": "host-integrity",
+      "kinds": [
+        "backtick"
+      ],
+      "evidence": "`host-integrity`"
+    },
+    {
+      "from": "omninet",
+      "to": "ledger-safety",
+      "kinds": [
+        "backtick"
+      ],
+      "evidence": "`ledger-safety`"
+    },
+    {
+      "from": "omninet",
+      "to": "massive-win",
+      "kinds": [
+        "backtick"
+      ],
+      "evidence": "`massive-win`"
+    },
+    {
+      "from": "omninet",
+      "to": "persona-build",
+      "kinds": [
+        "backtick"
+      ],
+      "evidence": "`persona-build`"
+    },
+    {
+      "from": "omninet",
+      "to": "persona-dump",
+      "kinds": [
+        "backtick",
+        "verb"
+      ],
+      "evidence": "`persona-dump`"
+    },
+    {
+      "from": "omninet",
+      "to": "persona-inbox",
+      "kinds": [
+        "backtick"
+      ],
+      "evidence": "`persona-inbox`"
+    },
+    {
+      "from": "omninet",
+      "to": "persona-stress-test",
+      "kinds": [
+        "backtick"
+      ],
+      "evidence": "`persona-stress-test`"
+    },
+    {
+      "from": "omninet",
+      "to": "planner",
+      "kinds": [
+        "backtick"
+      ],
+      "evidence": "`planner`"
+    },
+    {
+      "from": "omninet",
+      "to": "queue-batcher",
+      "kinds": [
+        "backtick",
+        "verb"
+      ],
+      "evidence": "`queue-batcher`"
+    },
+    {
+      "from": "omninet",
+      "to": "quick-wins",
+      "kinds": [
+        "backtick"
+      ],
+      "evidence": "`quick-wins`"
+    },
+    {
+      "from": "omninet",
+      "to": "research",
+      "kinds": [
+        "backtick"
+      ],
+      "evidence": "`research`"
+    },
+    {
+      "from": "omninet",
+      "to": "review",
+      "kinds": [
+        "backtick"
+      ],
+      "evidence": "`review`"
+    },
+    {
+      "from": "omninet",
+      "to": "ship",
+      "kinds": [
+        "backtick"
+      ],
+      "evidence": "`ship`"
+    },
+    {
+      "from": "omninet",
+      "to": "skill-garden",
+      "kinds": [
+        "backtick",
+        "verb"
+      ],
+      "evidence": "`skill-garden`"
+    },
+    {
+      "from": "omninet",
+      "to": "software-fundamentals",
+      "kinds": [
+        "backtick",
+        "verb"
+      ],
+      "evidence": "`software-fundamentals`"
+    },
+    {
+      "from": "omninet",
+      "to": "stripe-webhook-integrity",
+      "kinds": [
+        "backtick"
+      ],
+      "evidence": "`stripe-webhook-integrity`"
+    },
+    {
+      "from": "omninet",
+      "to": "tdd",
+      "kinds": [
+        "backtick"
+      ],
+      "evidence": "`tdd`"
+    },
+    {
+      "from": "omninet",
+      "to": "validation-gate",
+      "kinds": [
+        "backtick"
+      ],
+      "evidence": "`validation-gate`"
+    },
+    {
+      "from": "omninet",
+      "to": "verify",
+      "kinds": [
+        "backtick"
+      ],
+      "evidence": "`verify`"
+    },
+    {
+      "from": "omninet",
+      "to": "warmup",
+      "kinds": [
+        "backtick",
+        "verb"
+      ],
+      "evidence": "`warmup`"
+    },
+    {
+      "from": "omninet",
+      "to": "youtube-watch",
+      "kinds": [
+        "backtick"
+      ],
+      "evidence": "`youtube-watch`"
+    },
+    {
+      "from": "persona-build",
+      "to": "findings-triage",
+      "kinds": [
+        "backtick",
+        "verb"
+      ],
+      "evidence": "`findings-triage`"
+    },
+    {
+      "from": "persona-dump",
+      "to": "findings-triage",
+      "kinds": [
+        "backtick"
+      ],
+      "evidence": "`findings-triage`"
+    },
+    {
+      "from": "persona-dump",
+      "to": "persona-build",
+      "kinds": [
+        "backtick"
+      ],
+      "evidence": "`persona-build`"
+    },
+    {
+      "from": "persona-dump",
+      "to": "persona-inbox",
+      "kinds": [
+        "backtick",
+        "verb"
+      ],
+      "evidence": "`persona-inbox`"
+    },
+    {
+      "from": "persona-dump",
+      "to": "persona-stress-test",
+      "kinds": [
+        "backtick"
+      ],
+      "evidence": "`persona-stress-test`"
+    },
+    {
+      "from": "persona-dump",
+      "to": "skill-garden",
+      "kinds": [
+        "backtick"
+      ],
+      "evidence": "`skill-garden`"
+    },
+    {
+      "from": "persona-inbox",
+      "to": "findings-triage",
+      "kinds": [
+        "backtick"
+      ],
+      "evidence": "`findings-triage`"
+    },
+    {
+      "from": "persona-inbox",
+      "to": "persona-build",
+      "kinds": [
+        "backtick"
+      ],
+      "evidence": "`persona-build`"
+    },
+    {
+      "from": "persona-inbox",
+      "to": "quick-wins",
+      "kinds": [
+        "backtick"
+      ],
+      "evidence": "`quick-wins`"
+    },
+    {
+      "from": "queue-batcher",
+      "to": "builder",
+      "kinds": [
+        "backtick"
+      ],
+      "evidence": "`builder`"
+    },
+    {
+      "from": "queue-batcher",
+      "to": "evidence-integrity",
+      "kinds": [
+        "backtick"
+      ],
+      "evidence": "`evidence-integrity`"
+    },
+    {
+      "from": "queue-batcher",
+      "to": "findings-triage",
+      "kinds": [
+        "backtick"
+      ],
+      "evidence": "`findings-triage`"
+    },
+    {
+      "from": "queue-batcher",
+      "to": "review",
+      "kinds": [
+        "backtick"
+      ],
+      "evidence": "`review`"
+    },
+    {
+      "from": "queue-batcher",
+      "to": "software-fundamentals",
+      "kinds": [
+        "backtick"
+      ],
+      "evidence": "`software-fundamentals`"
+    },
+    {
+      "from": "queue-batcher",
+      "to": "validation-gate",
+      "kinds": [
+        "backtick"
+      ],
+      "evidence": "`validation-gate`"
+    },
+    {
+      "from": "skill-garden",
+      "to": "findings-triage",
+      "kinds": [
+        "backtick",
+        "verb"
+      ],
+      "evidence": "`findings-triage`"
+    },
+    {
+      "from": "skill-garden",
+      "to": "heal-skill",
+      "kinds": [
+        "backtick",
+        "verb"
+      ],
+      "evidence": "`heal-skill`"
+    },
+    {
+      "from": "skill-garden",
+      "to": "omninet",
+      "kinds": [
+        "backtick"
+      ],
+      "evidence": "`omninet`"
+    },
+    {
+      "from": "skill-garden",
+      "to": "persona-dump",
+      "kinds": [
+        "backtick"
+      ],
+      "evidence": "`persona-dump`"
+    },
+    {
+      "from": "software-fundamentals",
+      "to": "billing-monetization",
+      "kinds": [
+        "backtick"
+      ],
+      "evidence": "`billing-monetization`"
+    },
+    {
+      "from": "software-fundamentals",
+      "to": "builder",
+      "kinds": [
+        "backtick"
+      ],
+      "evidence": "`builder`"
+    },
+    {
+      "from": "software-fundamentals",
+      "to": "debug",
+      "kinds": [
+        "backtick"
+      ],
+      "evidence": "`debug`"
+    },
+    {
+      "from": "software-fundamentals",
+      "to": "ledger-safety",
+      "kinds": [
+        "backtick"
+      ],
+      "evidence": "`ledger-safety`"
+    },
+    {
+      "from": "software-fundamentals",
+      "to": "planner",
+      "kinds": [
+        "backtick"
+      ],
+      "evidence": "`planner`"
+    },
+    {
+      "from": "software-fundamentals",
+      "to": "review",
+      "kinds": [
+        "backtick"
+      ],
+      "evidence": "`review`"
+    },
+    {
+      "from": "software-fundamentals",
+      "to": "stripe-webhook-integrity",
+      "kinds": [
+        "backtick"
+      ],
+      "evidence": "`stripe-webhook-integrity`"
+    },
+    {
+      "from": "software-fundamentals",
+      "to": "tdd",
+      "kinds": [
+        "backtick"
+      ],
+      "evidence": "`tdd`"
+    },
+    {
+      "from": "software-fundamentals",
+      "to": "validation-gate",
+      "kinds": [
+        "backtick"
+      ],
+      "evidence": "`validation-gate`"
+    },
+    {
+      "from": "validation-gate",
+      "to": "evidence-integrity",
+      "kinds": [
+        "backtick"
+      ],
+      "evidence": "`evidence-integrity`"
+    },
+    {
+      "from": "validation-gate",
+      "to": "findings-triage",
+      "kinds": [
+        "backtick",
+        "verb"
+      ],
+      "evidence": "`findings-triage`"
+    },
+    {
+      "from": "validation-gate",
+      "to": "planner",
+      "kinds": [
+        "backtick",
+        "verb"
+      ],
+      "evidence": "`planner`"
+    },
+    {
+      "from": "warmup",
+      "to": "host-integrity",
+      "kinds": [
+        "backtick",
+        "verb"
+      ],
+      "evidence": "`host-integrity`"
+    },
+    {
+      "from": "youtube-watch",
+      "to": "software-fundamentals",
+      "kinds": [
+        "backtick",
+        "verb"
+      ],
+      "evidence": "`software-fundamentals`"
+    }
+  ],
+  "external_refs": [
+    {
+      "from": "skill-garden",
+      "to": "skill-creator",
+      "kinds": [
+        "backtick",
+        "verb"
+      ],
+      "evidence": "`skill-creator`"
+    }
+  ],
+  "unknown_refs": [],
+  "orphan_skills": [
+    {
+      "name": "backup",
+      "file": ".claude/skills/backup/SKILL.md"
+    },
+    {
+      "name": "document",
+      "file": ".claude/skills/document/SKILL.md"
+    },
+    {
+      "name": "feature-closeout",
+      "file": ".claude/skills/feature-closeout/SKILL.md"
+    },
+    {
+      "name": "health",
+      "file": ".claude/skills/health/SKILL.md"
+    },
+    {
+      "name": "morning",
+      "file": ".claude/skills/morning/SKILL.md"
+    },
+    {
+      "name": "pi",
+      "file": ".claude/skills/pi/SKILL.md"
+    },
+    {
+      "name": "pipeline",
+      "file": ".claude/skills/pipeline/SKILL.md"
+    },
+    {
+      "name": "pre-flight",
+      "file": ".claude/skills/pre-flight/SKILL.md"
+    },
+    {
+      "name": "regression",
+      "file": ".claude/skills/regression/SKILL.md"
+    },
+    {
+      "name": "seam",
+      "file": ".claude/skills/seam/SKILL.md"
+    },
+    {
+      "name": "soak",
+      "file": ".claude/skills/soak/SKILL.md"
+    },
+    {
+      "name": "status",
+      "file": ".claude/skills/status/SKILL.md"
+    }
+  ],
+  "no_incoming": [
+    "backup",
+    "document",
+    "feature-closeout",
+    "health",
+    "morning",
+    "pi",
+    "pipeline",
+    "pre-flight",
+    "regression",
+    "seam",
+    "soak",
+    "status"
+  ],
+  "no_outgoing": [
+    "5-whys",
+    "audit",
+    "backup",
+    "billing-monetization",
+    "builder",
+    "compliance",
+    "debug",
+    "document",
+    "evidence-integrity",
+    "feature-closeout",
+    "first-principles",
+    "hallucination-scan",
+    "heal-skill",
+    "health",
+    "host-integrity",
+    "ledger-safety",
+    "massive-win",
+    "morning",
+    "persona-stress-test",
+    "pi",
+    "pipeline",
+    "planner",
+    "pre-flight",
+    "quick-wins",
+    "regression",
+    "research",
+    "review",
+    "seam",
+    "ship",
+    "soak",
+    "status",
+    "stripe-webhook-integrity",
+    "tdd",
+    "verify"
+  ]
+}

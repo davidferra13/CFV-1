@@ -33,7 +33,7 @@ If an agent cannot state the shared design concept, module boundary, invariant, 
 
 ## Runtime Visibility
 
-For UI, browser behavior, or app-flow work, runtime truth matters. Prefer visible Playwright or browser inspection when the server is already available and the task warrants it.
+For UI, browser behavior, app-flow work, runtime truth, or anything where visual inspection materially reduces risk, Codex should use visible Playwright or browser inspection automatically when it is necessary and permitted.
 
 Constraints:
 
@@ -51,6 +51,9 @@ Dirty-tree management is part of the system design.
 - If unrelated dirty work blocks a task, report the exact blocker and queue the task instead of mixing changes.
 - Stage, commit, and push only files owned by the current task.
 - Prefer build queue, ready task, or spec handoff over broad opportunistic cleanup.
+- Use `queue-batcher` to process queued work in small batches instead of overloading the repo.
+- Treat 100 percent queue health as every item classified, owned, built or blocked, validated, committed, pushed, and removed from the active queue.
+- Use task ID as the primary ownership unit, module boundary second, branch or worktree third, and file paths as the final enforcement detail.
 
 ## YouTube Optimization Protocol
 
@@ -62,6 +65,26 @@ For any YouTube link:
 4. Map lessons to ChefFlow app architecture, Remy, skills, queues, UI, data, tests, and docs.
 5. Separate safe skill/process changes from app refactors that need specs.
 6. Update a video-learning ledger when the video is a continuing source.
+7. Default to a full operating packet when the user wants app optimization: source evidence, visual evidence, principles, ChefFlow optimization map, safe-now changes, needs-spec changes, and queue entries.
+
+## Remy Safety
+
+Remy must not perform or imply authority over restricted actions without explicit, safe server-side contracts.
+
+Hard restrictions:
+
+- No recipe generation or restricted recipe mutations.
+- No silent AI fallback when inference is required for truth.
+- No money movement.
+- No client deletion.
+- No event state transitions.
+- No messages to clients.
+- No prospecting actions for non-admin users.
+- No admin actions.
+- No cross-tenant access.
+- No hidden writes behind conversational wording.
+
+Remy expansion should move toward a deep tool registry with task type, input schema, policy tier, executor, deterministic examples, and golden tests.
 
 ## Current Highest-Risk Areas
 
@@ -71,6 +94,22 @@ For any YouTube link:
 - Financial and ledger display logic leaking into pages.
 - Server-action files exporting types or internal helpers.
 - AI fallback language causing agents to confuse truthful deterministic formula floors with failed AI inference.
+
+## First Deep Module Priority
+
+The first deep-module push should target ChefFlow's highest-value financial and food-costing boundary: ledger-backed food costing, price cascades, inventory cost truth, and finance read models.
+
+Target shape:
+
+- One or a small number of public read-model interfaces for displayed food cost and finance numbers.
+- Clear cents/minor-unit invariants.
+- No page-local financial reductions.
+- Tests that cover payment, tip, refund, credit, add-on, ingredient cost, and inventory price cases.
+- Human inspection of money and tenant-scope internals before delegation.
+
+## Ground Truth Hierarchy
+
+`AGENTS.md` remains law. This working agreement is the strategy layer for how Codex should apply that law while improving ChefFlow architecture and agent behavior.
 
 ## Next Grill Questions
 

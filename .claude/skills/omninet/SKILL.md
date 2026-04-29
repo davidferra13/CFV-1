@@ -82,6 +82,7 @@ Use the most specific skill that fits. Combine skills only when their responsibi
 | Thread or feature completeness check                                                 | `audit`                                                    |
 | Highest leverage next move                                                           | `massive-win`                                              |
 | Mixed old or new findings, autodocket, audit findings, backlog triage                | `findings-triage`                                          |
+| Build queue batching, ready task processing, dirty-tree bottleneck reduction         | `queue-batcher`                                            |
 | YouTube URL, video lecture, channel learning, visual transcript extraction           | `youtube-watch`                                            |
 | Matt Pocock software fundamentals, grill-me, shared language, deep modules           | `software-fundamentals`                                    |
 | Persona pipeline management                                                          | `persona-inbox`                                            |
@@ -111,7 +112,7 @@ The developer wants visible runtime feedback whenever Codex is working on UI, br
 
 ## Dirty Tree And Queue Discipline
 
-Do not use a dirty tree as a reason to drift into unrelated cleanup. If unrelated dirty work blocks a task, preserve it, report the exact blocker, and route the work into the appropriate queue or isolated feature worktree. For build queue triage, use `findings-triage`, `quick-wins`, `persona-build`, or `builder` depending on whether the item is a finding, quick win, persona-derived feature, or ready spec.
+Do not use a dirty tree as a reason to drift into unrelated cleanup. If unrelated dirty work blocks a task, preserve it, report the exact blocker, and route the work into the appropriate queue or isolated feature worktree. For build queue triage, use `queue-batcher` first, then `findings-triage`, `quick-wins`, `persona-build`, or `builder` depending on whether the item is a vague finding, quick win, persona-derived feature, or ready spec.
 
 ## Heartbeat
 

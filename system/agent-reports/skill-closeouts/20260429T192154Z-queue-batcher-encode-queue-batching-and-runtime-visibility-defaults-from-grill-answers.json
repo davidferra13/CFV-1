@@ -1,0 +1,23 @@
+{
+  "created_at": "2026-04-29T19:21:54.907Z",
+  "goal": "Encode queue batching and runtime visibility defaults from grill answers",
+  "primary_skill": "queue-batcher",
+  "sidecar_skills": [
+    "omninet",
+    "youtube-watch",
+    "software-fundamentals",
+    "skill-garden"
+  ],
+  "skill_delta": "new-skill",
+  "durable_behavior_seen": "User clarified that runtime visibility should happen automatically when necessary, queue work should be built in safe batches, ownership should use the best project model, Remy restrictions should include all high-risk actions, food costing should be the first deep-module priority, YouTube links should produce the best operating packet by default, and AGENTS plus the working agreement should define ground truth.",
+  "skill_gap_seen": "Existing builder and findings-triage skills did not own the full queue batching workflow: classification, limited concurrency, ownership boundaries, dirty-tree blockers, batch closeout, and runtime visibility constraints.",
+  "validation": {
+    "skill_validator": "PASS: node devtools/skill-validator.mjs omninet youtube-watch queue-batcher software-fundamentals skill-garden",
+    "trigger_tests": "PASS: node devtools/skill-trigger-tests.mjs, 21 cases, 0 failures",
+    "compliance": "PASS: hard-stop scan for em dash, ts-nocheck directive, and forbidden public name in changed files",
+    "other": "PASS: node devtools/skill-coverage-map.mjs, node devtools/skill-dependency-graph.mjs, node devtools/skill-dashboard.mjs"
+  },
+  "commit": "See enclosing git commit for this closeout report.",
+  "pushed": true,
+  "notes": "No production deploy, main push, server restart, build, or database operation was performed."
+}

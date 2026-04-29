@@ -94,6 +94,8 @@ When the user says a YouTube video should optimize the app:
 5. Use `software-fundamentals` to identify shared design concept, ubiquitous language, deep module boundary, fastest feedback loop, and design investment.
 6. Update the video ledger under `system/video-learning/` when the same video remains an ongoing learning source.
 
+Default to a full operating packet for ChefFlow videos unless the user asks for a short summary. Include source evidence, visual evidence, principles, ChefFlow optimization map, safe-now changes, needs-spec changes, and queue entries.
+
 ## Extraction Commands
 
 Use commands only when they fit the environment and the user has provided a public URL. Keep downloaded files in a temporary task folder, not the repo, unless the user asks to keep artifacts.

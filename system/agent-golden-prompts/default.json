@@ -69,6 +69,16 @@
     }
   },
   {
+    "name": "build queue in batches",
+    "prompt": "Build everything on the queue in batches so it does not overload and keep the dirty tree from becoming a bottleneck.",
+    "expect": ["omninet", "queue-batcher", "software-fundamentals"],
+    "evidence": {
+      "omninet": ["queue-batcher", "Dirty Tree And Queue Discipline"],
+      "queue-batcher": ["Definition Of 100 Percent", "Batch Selection"],
+      "software-fundamentals": ["shared design concept", "fastest feedback loop"]
+    }
+  },
+  {
     "name": "skill repair",
     "prompt": "This skill failed and needs to self-heal before future tasks.",
     "expect": ["omninet", "heal-skill", "skill-garden"],
