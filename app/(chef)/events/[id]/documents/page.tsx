@@ -14,7 +14,6 @@ import {
   type SnapshotDrilldownOrder,
 } from '@/lib/documents/snapshot-actions'
 import { SNAPSHOT_DOCUMENT_LABELS } from '@/lib/documents/snapshot-constants'
-import { SNAPSHOT_DOCUMENT_TYPES as CANONICAL_SNAPSHOT_DOCUMENT_TYPES } from '@/lib/documents/document-definitions'
 import { getArchetypeDocumentPack } from '@/lib/documents/archetype-packs'
 import {
   DOCUMENT_REQUEST_LABELS,
@@ -22,6 +21,12 @@ import {
   getEventDocumentGenerationHealth,
 } from '@/lib/documents/generation-jobs-actions'
 import type { OperationalDocumentType } from '@/lib/documents/template-catalog'
+import {
+  EVENT_SNAPSHOT_DOCUMENT_TYPES,
+  buildEventOperationWorkspaceHref,
+  isEventCorePacketDocument,
+  isEventOperationDocumentReady,
+} from '@/lib/events/operation-registry'
 import { BulkGenerateRunner } from '@/components/documents/bulk-generate-runner'
 import { DocumentSection } from '@/components/documents/document-section'
 import { ReadinessAwareDocumentButton } from '@/components/documents/readiness-aware-document-button'
@@ -41,7 +46,7 @@ type DrilldownQueryState = {
   page: number
 }
 
-const SNAPSHOT_DOCUMENT_TYPES: SnapshotDocumentType[] = [...CANONICAL_SNAPSHOT_DOCUMENT_TYPES]
+const SNAPSHOT_DOCUMENT_TYPES: SnapshotDocumentType[] = [...EVENT_SNAPSHOT_DOCUMENT_TYPES]
 
 const SNAPSHOT_TYPE_FILTERS: Array<{ value: SnapshotDocFilter; label: string }> = [
   { value: 'any', label: 'Any Type' },
@@ -49,17 +54,6 @@ const SNAPSHOT_TYPE_FILTERS: Array<{ value: SnapshotDocFilter; label: string }> 
     value: type,
     label: SNAPSHOT_DOCUMENT_LABELS[type],
   })),
-]
-
-const CORE_PACKET_OPERATIONAL_TYPES: OperationalDocumentType[] = [
-  'summary',
-  'grocery',
-  'foh',
-  'prep',
-  'execution',
-  'checklist',
-  'packing',
-  'reset',
 ]
 
 function formatBytes(bytes: number): string {
@@ -96,21 +90,6 @@ function formatMarginComparison(value: number | null | undefined): string {
   return 'in line with your completed-event average'
 }
 
-function isOperationalTypeReady(type: OperationalDocumentType, readiness: any): boolean {
-  if (type === 'summary') return readiness.eventSummary.ready
-  if (type === 'grocery') return readiness.groceryList.ready
-  if (type === 'foh') return readiness.frontOfHouseMenu.ready
-  if (type === 'prep') return readiness.prepSheet.ready
-  if (type === 'execution') return readiness.executionSheet.ready
-  if (type === 'checklist') return readiness.checklist.ready
-  if (type === 'packing') return readiness.packingList.ready
-  if (type === 'reset') return readiness.resetChecklist.ready
-  if (type === 'travel') return readiness.travelRoute.ready
-  if (type === 'shots') return true
-  if (type === 'beo') return readiness.eventSummary.ready
-  return false
-}
-
 function isSnapshotDocumentType(value: string): value is SnapshotDocumentType {
   return SNAPSHOT_DOCUMENT_TYPES.includes(value as SnapshotDocumentType)
 }
@@ -129,16 +108,6 @@ function normalizePage(value: string | undefined): number {
   const parsed = Number.parseInt(value, 10)
   if (!Number.isInteger(parsed) || parsed < 1) return 1
   return parsed
-}
-
-function isCorePacketOperationalType(type: OperationalDocumentType): boolean {
-  return CORE_PACKET_OPERATIONAL_TYPES.includes(type)
-}
-
-function buildOperationalDocWorkspaceHref(eventId: string, type: OperationalDocumentType): string {
-  if (type === 'travel') return `/events/${eventId}/travel`
-  if (type === 'packing') return `/events/${eventId}/pack`
-  return `/events/${eventId}/interactive?type=${type}`
 }
 
 function buildDrilldownHref(
@@ -259,7 +228,7 @@ export default async function EventDocumentsPage({
 
   const pack = getArchetypeDocumentPack(archetype)
   const readyCount = pack.recommendedOperationalDocs.filter((type) =>
-    isOperationalTypeReady(type, readiness)
+    isEventOperationDocumentReady(type, readiness)
   ).length
   const packTypesParam = pack.recommendedOperationalDocs.join(',')
   const filteredSnapshots = drilldown.items
@@ -280,10 +249,10 @@ export default async function EventDocumentsPage({
   const packetLatestSnapshot = archiveStatsByType.get('all')?.latest ?? null
 
   const recommendedDocReadiness = pack.recommendedOperationalDocs.map((type) => {
-    const ready = isOperationalTypeReady(type, readiness)
+    const ready = isEventOperationDocumentReady(type, readiness)
     const typeStat = archiveStatsByType.get(type)
     const individualArchivedCount = typeStat?.count ?? 0
-    const coveredByPacket = isCorePacketOperationalType(type) && packetSnapshotCount > 0
+    const coveredByPacket = isEventCorePacketDocument(type) && packetSnapshotCount > 0
     const archived = individualArchivedCount > 0 || coveredByPacket
     return {
       type,
@@ -398,7 +367,7 @@ export default async function EventDocumentsPage({
                 : `${missingDataRows.length} doc${missingDataRows.length === 1 ? '' : 's'} still need data.`}
             </p>
             {firstMissingDataType ? (
-              <Link href={buildOperationalDocWorkspaceHref(event.id, firstMissingDataType)}>
+              <Link href={buildEventOperationWorkspaceHref(event.id, firstMissingDataType)}>
                 <Button variant="secondary" size="sm">
                   Open First Missing Doc
                 </Button>
@@ -478,12 +447,12 @@ export default async function EventDocumentsPage({
                 <p className="text-sm text-stone-200">{SNAPSHOT_DOCUMENT_LABELS[type]}</p>
                 <span
                   className={
-                    isOperationalTypeReady(type, readiness)
+                    isEventOperationDocumentReady(type, readiness)
                       ? 'text-xs text-emerald-500'
                       : 'text-xs text-amber-500'
                   }
                 >
-                  {isOperationalTypeReady(type, readiness) ? 'Ready' : 'Needs data'}
+                  {isEventOperationDocumentReady(type, readiness) ? 'Ready' : 'Needs data'}
                 </span>
               </div>
             ))}
@@ -594,7 +563,7 @@ export default async function EventDocumentsPage({
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                   {!row.ready ? (
-                    <Link href={buildOperationalDocWorkspaceHref(event.id, row.type)}>
+                    <Link href={buildEventOperationWorkspaceHref(event.id, row.type)}>
                       <Button variant="secondary" size="sm">
                         Fill Data
                       </Button>
