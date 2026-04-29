@@ -61,6 +61,12 @@ type CostData = {
   hasAllCosts: boolean
 } | null
 
+type ReadinessItem = {
+  label: string
+  ready: boolean
+  detail: string
+}
+
 type Props = {
   menuId: string
   menuName: string
@@ -175,6 +181,45 @@ export function MenuBreakdownPanel({
     .filter(Boolean)
     .join(' · ')
 
+  const namedDishCount = dishes.filter((dish) => dish.name?.trim()).length
+  const linkedRecipeCount = recipeMatches.filter((match) => match.linked).length
+  const readinessItems: ReadinessItem[] = [
+    {
+      label: 'Courses named',
+      ready: dishes.length > 0 && namedDishCount === dishes.length,
+      detail:
+        namedDishCount === dishes.length
+          ? `${namedDishCount} of ${dishes.length} courses have dish names`
+          : `${dishes.length - namedDishCount} course${dishes.length - namedDishCount === 1 ? '' : 's'} still need dish names`,
+    },
+    {
+      label: 'Recipe book linked',
+      ready: dishes.length > 0 && linkedRecipeCount === dishes.length,
+      detail:
+        linkedRecipeCount > 0
+          ? `${linkedRecipeCount} of ${dishes.length} courses linked to saved recipes`
+          : 'Link saved recipes to unlock prep, costing, and grocery detail',
+    },
+    {
+      label: 'Costing available',
+      ready: Boolean(costData && costData.costPerGuestCents != null && costData.hasAllCosts),
+      detail: costLoading
+        ? 'Costing is still loading'
+        : costData?.hasAllCosts
+          ? 'Ingredient costs are available for linked recipes'
+          : 'Some linked recipes still need priced ingredients',
+    },
+    {
+      label: 'Service context set',
+      ready: Boolean(guestCount && serviceStyle),
+      detail:
+        guestCount && serviceStyle
+          ? `${guestCount} guests, ${SERVICE_STYLE_LABELS[serviceStyle] || serviceStyle}`
+          : 'Set guest count and service style before production planning',
+    },
+  ]
+  const readyCount = readinessItems.filter((item) => item.ready).length
+
   function formatCents(cents: number) {
     return `$${(cents / 100).toFixed(2)}`
   }
@@ -197,6 +242,37 @@ export function MenuBreakdownPanel({
         <div>
           <h2 className="text-xl font-semibold text-stone-100">{menuName}</h2>
           <p className="text-sm text-stone-400 mt-0.5">{tagLine}</p>
+        </div>
+      </div>
+
+      {/* Readiness checklist */}
+      <div className="rounded-lg border border-stone-800 bg-stone-900/50 p-4">
+        <div className="flex items-center justify-between gap-3 mb-3">
+          <div>
+            <h3 className="text-xs font-semibold text-stone-500 uppercase tracking-wider">
+              Menu Readiness
+            </h3>
+            <p className="text-sm text-stone-300 mt-1">
+              {readyCount} of {readinessItems.length} checks ready for production planning.
+            </p>
+          </div>
+          <Badge variant={readyCount === readinessItems.length ? 'success' : 'warning'}>
+            {readyCount === readinessItems.length ? 'Ready' : 'Needs Review'}
+          </Badge>
+        </div>
+        <div className="space-y-2">
+          {readinessItems.map((item) => (
+            <div key={item.label} className="flex items-start gap-2 text-sm">
+              <span
+                className={`mt-1 h-2 w-2 rounded-full ${item.ready ? 'bg-green-400' : 'bg-amber-400'}`}
+                aria-hidden="true"
+              />
+              <div>
+                <p className="text-stone-200">{item.label}</p>
+                <p className="text-xs text-stone-500">{item.detail}</p>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
