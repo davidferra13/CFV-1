@@ -82,6 +82,7 @@ function RemyInner({ allowSuggestions = true }: RemyWrapperProps) {
   const [dockCorner, setDockCorner] = useState<RemyDockCorner>('bottom-right')
   const denseSuppressionActiveRef = useRef(false)
   const preDenseSuppressionModeRef = useRef<'hidden' | 'docked' | 'expanded'>('docked')
+  const explicitOpenRemyRef = useRef(false)
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -128,12 +129,29 @@ function RemyInner({ allowSuggestions = true }: RemyWrapperProps) {
   }, [mode, isMascotChatOpen, closeMascotChat])
 
   useEffect(() => {
-    // Hidden mode should be a hard off state. Close the drawer if anything
-    // (keyboard shortcut, custom events) opens it while hidden.
-    if (mode === 'hidden' && isDrawerOpen) {
+    if (!isDrawerOpen) {
+      explicitOpenRemyRef.current = false
+      return
+    }
+
+    // Hidden mode stays quiet for passive toggles. Explicit Remy actions,
+    // like return-to-work catch-up buttons, are allowed to open the drawer.
+    if (mode === 'hidden' && !explicitOpenRemyRef.current) {
       closeDrawer()
     }
   }, [mode, isDrawerOpen, closeDrawer])
+
+  useEffect(() => {
+    function handleExplicitOpenRemy() {
+      explicitOpenRemyRef.current = true
+      if (!isMobile && mode === 'hidden') {
+        setMode('docked')
+      }
+    }
+
+    window.addEventListener('open-remy', handleExplicitOpenRemy)
+    return () => window.removeEventListener('open-remy', handleExplicitOpenRemy)
+  }, [isMobile, mode, setMode])
 
   // If a chef starts typing in a form while the mascot is expanded, dock Remy
   // automatically so he does not block fields.
