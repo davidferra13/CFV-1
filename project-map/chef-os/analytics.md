@@ -11,6 +11,7 @@
 - Clientele Insights: client patterns, seasons, operations, Take a Chef ROI, Culinary Usage rankings for most-used ingredients, recipes, and menus, plus the Metric Truth Registry for canonical analytics definitions
 - Intelligence hub: Ollama-powered predictive pricing, demand forecasting, client clustering, anomaly detection
 - Activity log: summary/retrace modes, domain filters, heat map, real-time PostgreSQL subscription
+- Activity command panel on `/activity`: right-side desktop panel and mobile drawer expose active filters, summary-feed counts, retrace state, and resume cues. The Summary, Retrace, and Desire Paths switcher is styled as a platform-history segmented control.
 - Priority queue: filtered by domain/urgency, snooze (1h/4h/Tomorrow/Next Week), 4 KPIs
 
 ## Open Items

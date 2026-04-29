@@ -106,6 +106,11 @@ import { getCallsLoadState } from '@/lib/calls/actions'
 import { buildClientCallMemorySnapshot } from '@/lib/clients/client-call-memory'
 import { ClientCallMemoryPanel } from '@/components/clients/client-call-memory-panel'
 import { ClientPortalActivityCard } from '@/components/clients/client-portal-activity-card'
+import { ContextCommandPanel } from '@/components/platform-shell/context-command-panel'
+import type {
+  ContextPanelSection,
+  PlatformStatusChip,
+} from '@/components/platform-shell/context-panel-types'
 
 async function ClientCompletionSection({ clientId }: { clientId: string }) {
   const result = await getCompletionForEntity('client', clientId)
@@ -285,6 +290,135 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
       : null
   const clientCallMemory =
     clientCallsState.status === 'ok' ? buildClientCallMemorySnapshot(clientCallsState.data) : null
+  const clientCommandPanelChips: PlatformStatusChip[] = [
+    { label: ((client as any).status ?? 'active').replace(/_/g, ' '), tone: 'info' },
+    {
+      label: client.outstandingBalanceCents > 0 ? 'Balance due' : 'Payment clear',
+      tone: client.outstandingBalanceCents > 0 ? 'warning' : 'success',
+    },
+    {
+      label: allergyRecords.length > 0 ? 'Allergy records' : 'No allergies recorded',
+      tone: allergyRecords.length > 0 ? 'warning' : 'default',
+    },
+  ]
+  const clientCommandPanelSections: ContextPanelSection[] = [
+    {
+      id: 'client-ops',
+      title: 'Client ops snapshot',
+      description: clientOpsSnapshot
+        ? 'Shared client workspace state loaded for booking, payment, profile, and RSVP readiness.'
+        : 'The shared client workspace state did not load, so this panel is not showing fake clear states.',
+      state: clientOpsSnapshot ? 'populated' : 'error',
+      status: {
+        label: clientOpsSnapshot
+          ? (clientOpsActionRequired?.totalItems ?? 0) > 0
+            ? 'Client waiting'
+            : 'Clear'
+          : 'Unavailable',
+        tone: clientOpsSnapshot
+          ? (clientOpsActionRequired?.totalItems ?? 0) > 0
+            ? 'warning'
+            : 'success'
+          : 'error',
+      },
+      metrics: clientOpsSnapshot
+        ? [
+            { label: 'Actions', value: clientOpsActionRequired?.totalItems ?? 0 },
+            { label: 'Profile', value: `${clientOpsSnapshot.profileSummary.completionPercent}%` },
+          ]
+        : [],
+      actions: [{ label: 'Open activity', href: `/activity?domain=client` }],
+    },
+    {
+      id: 'client-events',
+      title: 'Upcoming and history',
+      description:
+        client.totalEvents > 0
+          ? 'This client has recorded event history in ChefFlow.'
+          : 'No events are recorded for this client yet.',
+      state: client.totalEvents > 0 ? 'populated' : 'empty',
+      status: {
+        label: `${client.totalEvents} event(s)`,
+        tone: client.totalEvents > 0 ? 'info' : 'default',
+      },
+      metrics: [
+        { label: 'Total', value: client.totalEvents },
+        { label: 'Completed', value: client.completedEvents },
+      ],
+      actions: [{ label: 'Create event', href: `/events/new?client_id=${client.id}` }],
+    },
+    {
+      id: 'client-preferences',
+      title: 'Preferences and allergy flags',
+      description:
+        allergyRecords.length > 0
+          ? 'Allergy records exist and should stay visible before menu planning.'
+          : 'No allergy records loaded for this client.',
+      status: {
+        label: allergyRecords.length > 0 ? 'Review' : 'Clear',
+        tone: allergyRecords.length > 0 ? 'warning' : 'success',
+      },
+      metrics: [
+        { label: 'Allergies', value: allergyRecords.length },
+        {
+          label: 'Favorites',
+          value:
+            (((client as any).favorite_dishes as string[] | null)?.length ?? 0) +
+            (((client as any).favorite_cuisines as string[] | null)?.length ?? 0),
+        },
+      ],
+      actions: [{ label: 'Preferences', href: `/clients/${client.id}/preferences` }],
+    },
+    {
+      id: 'client-payment',
+      title: 'Payment and value',
+      description: 'Values come from the loaded client statistics and financial detail surfaces.',
+      status: {
+        label: client.outstandingBalanceCents > 0 ? 'Open' : 'Clear',
+        tone: client.outstandingBalanceCents > 0 ? 'warning' : 'success',
+      },
+      metrics: [
+        { label: 'Balance', value: formatCurrency(client.outstandingBalanceCents) },
+        { label: 'Total spent', value: formatCurrency(client.totalSpentCents) },
+      ],
+      actions: financialDetail
+        ? [{ label: 'Financials', href: `/clients/${client.id}#financials` }]
+        : [],
+    },
+    {
+      id: 'client-contact',
+      title: 'Last contact and follow-up',
+      description: clientNBA
+        ? clientNBA.description
+        : 'No next-best-action recommendation is active for this client.',
+      status: { label: clientNBA ? 'Action' : 'Clear', tone: clientNBA ? 'warning' : 'success' },
+      metrics: [
+        { label: 'Messages', value: messages.length },
+        {
+          label: 'Calls',
+          value: clientCallsState.status === 'ok' ? clientCallsState.data.length : 'Unavailable',
+        },
+      ],
+      actions: [
+        { label: 'Send message', href: `/clients/${client.id}#outreach` },
+        ...(client.phone ? [{ label: 'Call', href: `tel:${client.phone}` }] : []),
+      ],
+    },
+    {
+      id: 'client-activity',
+      title: 'Recent client activity',
+      description:
+        chefActivity.length + clientPortalActivity.length > 0
+          ? 'Chef and client portal activity is available for this client.'
+          : 'No recent activity is recorded for this client.',
+      state: chefActivity.length + clientPortalActivity.length > 0 ? 'populated' : 'empty',
+      metrics: [
+        { label: 'Chef actions', value: chefActivity.length },
+        { label: 'Portal signals', value: clientPortalActivity.length },
+      ],
+      actions: [{ label: 'Open activity', href: `/activity?domain=client` }],
+    },
+  ]
 
   return (
     <div className="space-y-8">
@@ -376,1009 +510,1032 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
         </div>
       </div>
 
-      {/* Dormancy Warning */}
-      {dormancyInfo?.isDormant && (
-        <div className="flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-950 px-4 py-3">
-          <span className="text-amber-600 text-lg">⏳</span>
-          <div className="flex-1">
-            <p className="text-sm font-semibold text-amber-900">
-              No events in {dormancyInfo.daysSinceLastEvent ?? 180}+ days
-            </p>
-            <p className="text-xs text-amber-700 mt-0.5">
-              Last event:{' '}
-              {dormancyInfo.lastEventDate
-                ? format(new Date(dormancyInfo.lastEventDate), 'MMMM d, yyyy')
-                : 'None recorded'}
-              . Consider reaching out to re-engage.
-            </p>
-          </div>
-          <Link
-            href={`/clients/${client.id}#outreach`}
-            className="text-xs font-medium text-amber-800 underline shrink-0"
-          >
-            Send Message
-          </Link>
-        </div>
-      )}
-
-      {/* Next Best Action */}
-      {clientNBA ? <NextBestActionCard action={clientNBA} /> : null}
-
-      <ClientPortalActivityCard
-        clientId={client.id}
-        clientName={client.full_name}
-        events={clientPortalActivity}
-      />
-
-      <ClientCallMemoryPanel
-        snapshot={clientCallMemory}
-        unavailable={clientCallsState.status === 'unavailable'}
-      />
-
-      {/* Client Ops Snapshot */}
-      {clientOpsSnapshot ? (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Client Ops Snapshot</CardTitle>
-            <p className="text-sm text-stone-400">
-              Shared from the authenticated client workspace, focused on booking, payment, profile,
-              and RSVP readiness.
-            </p>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              <div className="rounded-lg border border-stone-700 bg-stone-800/60 p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
-                      Action Required
-                    </p>
-                    <p className="mt-2 text-2xl font-bold text-stone-100">
-                      {clientOpsActionRequired?.totalItems ?? 0}
-                    </p>
-                  </div>
-                  <Badge
-                    variant={(clientOpsActionRequired?.totalItems ?? 0) > 0 ? 'warning' : 'success'}
-                    className="shrink-0"
-                  >
-                    {(clientOpsActionRequired?.totalItems ?? 0) > 0 ? 'Client waiting' : 'Clear'}
-                  </Badge>
-                </div>
-                <p className="mt-2 text-sm text-stone-400">
-                  {clientOpsWorkGraph?.primary
-                    ? clientOpsWorkGraph.primary.title
-                    : 'No active client-side blockers in the shared queue.'}
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
+        <div className="min-w-0 space-y-8">
+          {/* Dormancy Warning */}
+          {dormancyInfo?.isDormant && (
+            <div className="flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-950 px-4 py-3">
+              <span className="text-amber-600 text-lg">⏳</span>
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-amber-900">
+                  No events in {dormancyInfo.daysSinceLastEvent ?? 180}+ days
                 </p>
-                <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <dt className="text-stone-500">Proposals</dt>
-                    <dd className="mt-1 font-semibold text-stone-100">
-                      {clientOpsActionRequired?.proposalCount ?? 0}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-stone-500">Payments</dt>
-                    <dd className="mt-1 font-semibold text-stone-100">
-                      {paymentAttentionCount ?? 0}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-stone-500">Quotes</dt>
-                    <dd className="mt-1 font-semibold text-stone-100">
-                      {clientOpsActionRequired?.quotePendingCount ?? 0}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-stone-500">Replies + RSVPs</dt>
-                    <dd className="mt-1 font-semibold text-stone-100">
-                      {replyAttentionCount ?? 0}
-                    </dd>
-                  </div>
-                </dl>
+                <p className="text-xs text-amber-700 mt-0.5">
+                  Last event:{' '}
+                  {dormancyInfo.lastEventDate
+                    ? format(new Date(dormancyInfo.lastEventDate), 'MMMM d, yyyy')
+                    : 'None recorded'}
+                  . Consider reaching out to re-engage.
+                </p>
               </div>
+              <Link
+                href={`/clients/${client.id}#outreach`}
+                className="text-xs font-medium text-amber-800 underline shrink-0"
+              >
+                Send Message
+              </Link>
+            </div>
+          )}
 
-              <div className="rounded-lg border border-stone-700 bg-stone-800/60 p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
-                  Balance + Payment
-                </p>
-                <p
-                  className={`mt-2 text-2xl font-bold ${
-                    client.outstandingBalanceCents > 0 ? 'text-red-400' : 'text-stone-100'
-                  }`}
-                >
-                  {formatCurrency(client.outstandingBalanceCents)}
-                </p>
-                <p className="mt-2 text-sm text-stone-400">
-                  {paymentAttentionCount && paymentAttentionCount > 0
-                    ? `${paymentAttentionCount} payment step(s) are still open for this client.`
-                    : 'No published balance or payment step is open right now.'}
-                </p>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  <Badge variant={client.outstandingBalanceCents > 0 ? 'error' : 'success'}>
-                    {client.outstandingBalanceCents > 0 ? 'Balance due' : 'Paid up'}
-                  </Badge>
-                  <Badge
-                    variant={
-                      (clientOpsActionRequired?.paymentDueCount ?? 0) > 0 ? 'warning' : 'default'
-                    }
-                  >
-                    {clientOpsActionRequired?.paymentDueCount ?? 0} payment request(s)
-                  </Badge>
-                  <Badge
-                    variant={
-                      (clientOpsActionRequired?.outstandingBalanceCount ?? 0) > 0
-                        ? 'warning'
-                        : 'default'
-                    }
-                  >
-                    {clientOpsActionRequired?.outstandingBalanceCount ?? 0} overdue balance item(s)
-                  </Badge>
-                </div>
-              </div>
+          {/* Next Best Action */}
+          {clientNBA ? <NextBestActionCard action={clientNBA} /> : null}
 
-              <div className="rounded-lg border border-stone-700 bg-stone-800/60 p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
-                  Profile Readiness
-                </p>
-                <p className="mt-2 text-2xl font-bold text-stone-100">
-                  {clientOpsSnapshot.profileSummary.completionPercent}%
-                </p>
-                <p className="mt-2 text-sm text-stone-400">
-                  {clientOpsSnapshot.profileSummary.completedFields}/
-                  {clientOpsSnapshot.profileSummary.totalFields} core fields complete.
-                </p>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  <Badge
-                    variant={
-                      clientOpsSnapshot.profileSummary.completionPercent >= 100
-                        ? 'success'
-                        : 'warning'
-                    }
-                  >
-                    {clientOpsSnapshot.profileSummary.completionPercent >= 100
-                      ? 'Profile complete'
-                      : 'Profile incomplete'}
-                  </Badge>
-                  <Badge
-                    variant={
-                      clientOpsSnapshot.profileSummary.pendingMealRequests > 0
-                        ? 'warning'
-                        : 'success'
-                    }
-                  >
-                    {clientOpsSnapshot.profileSummary.pendingMealRequests} pending meal request(s)
-                  </Badge>
-                  <Badge
-                    variant={
-                      clientOpsSnapshot.profileSummary.signalNotificationsEnabled
-                        ? 'success'
-                        : 'warning'
-                    }
-                  >
-                    Signal alerts{' '}
-                    {clientOpsSnapshot.profileSummary.signalNotificationsEnabled ? 'on' : 'off'}
-                  </Badge>
-                </div>
-              </div>
+          <ClientPortalActivityCard
+            clientId={client.id}
+            clientName={client.full_name}
+            events={clientPortalActivity}
+          />
 
-              <div className="rounded-lg border border-stone-700 bg-stone-800/60 p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
-                  Next Active RSVP
+          <ClientCallMemoryPanel
+            snapshot={clientCallMemory}
+            unavailable={clientCallsState.status === 'unavailable'}
+          />
+
+          {/* Client Ops Snapshot */}
+          {clientOpsSnapshot ? (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Client Ops Snapshot</CardTitle>
+                <p className="text-sm text-stone-400">
+                  Shared from the authenticated client workspace, focused on booking, payment,
+                  profile, and RSVP readiness.
                 </p>
-                {clientOpsSnapshot.rsvpSummary ? (
-                  <>
-                    <p className="mt-2 text-lg font-semibold text-stone-100">
-                      {clientOpsSnapshot.rsvpSummary.occasion || 'Upcoming event'}
-                    </p>
-                    <p className="mt-1 text-sm text-stone-400">
-                      {activeRsvpEvent?.event_date
-                        ? format(new Date(activeRsvpEvent.event_date), 'MMM d, yyyy')
-                        : 'Date pending'}
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                  <div className="rounded-lg border border-stone-700 bg-stone-800/60 p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
+                          Action Required
+                        </p>
+                        <p className="mt-2 text-2xl font-bold text-stone-100">
+                          {clientOpsActionRequired?.totalItems ?? 0}
+                        </p>
+                      </div>
+                      <Badge
+                        variant={
+                          (clientOpsActionRequired?.totalItems ?? 0) > 0 ? 'warning' : 'success'
+                        }
+                        className="shrink-0"
+                      >
+                        {(clientOpsActionRequired?.totalItems ?? 0) > 0
+                          ? 'Client waiting'
+                          : 'Clear'}
+                      </Badge>
+                    </div>
+                    <p className="mt-2 text-sm text-stone-400">
+                      {clientOpsWorkGraph?.primary
+                        ? clientOpsWorkGraph.primary.title
+                        : 'No active client-side blockers in the shared queue.'}
                     </p>
                     <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
                       <div>
-                        <dt className="text-stone-500">Guests</dt>
+                        <dt className="text-stone-500">Proposals</dt>
                         <dd className="mt-1 font-semibold text-stone-100">
-                          {clientOpsSnapshot.rsvpSummary.totalGuests}
+                          {clientOpsActionRequired?.proposalCount ?? 0}
                         </dd>
                       </div>
                       <div>
-                        <dt className="text-stone-500">Attending</dt>
+                        <dt className="text-stone-500">Payments</dt>
                         <dd className="mt-1 font-semibold text-stone-100">
-                          {clientOpsSnapshot.rsvpSummary.attendingCount}
+                          {paymentAttentionCount ?? 0}
                         </dd>
                       </div>
                       <div>
-                        <dt className="text-stone-500">Pending</dt>
+                        <dt className="text-stone-500">Quotes</dt>
                         <dd className="mt-1 font-semibold text-stone-100">
-                          {clientOpsSnapshot.rsvpSummary.pendingCount}
+                          {clientOpsActionRequired?.quotePendingCount ?? 0}
                         </dd>
                       </div>
                       <div>
-                        <dt className="text-stone-500">Share</dt>
+                        <dt className="text-stone-500">Replies + RSVPs</dt>
                         <dd className="mt-1 font-semibold text-stone-100">
-                          {clientOpsSnapshot.rsvpSummary.hasActiveShare ? 'Active' : 'Inactive'}
+                          {replyAttentionCount ?? 0}
                         </dd>
                       </div>
                     </dl>
-                  </>
-                ) : (
-                  <div className="mt-2 space-y-2">
-                    <p className="text-lg font-semibold text-stone-100">No active RSVP lane</p>
-                    <p className="text-sm text-stone-400">
-                      This client does not currently have an accepted, paid, confirmed, or in
-                      progress event in the RSVP/share flow.
+                  </div>
+
+                  <div className="rounded-lg border border-stone-700 bg-stone-800/60 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
+                      Balance + Payment
+                    </p>
+                    <p
+                      className={`mt-2 text-2xl font-bold ${
+                        client.outstandingBalanceCents > 0 ? 'text-red-400' : 'text-stone-100'
+                      }`}
+                    >
+                      {formatCurrency(client.outstandingBalanceCents)}
+                    </p>
+                    <p className="mt-2 text-sm text-stone-400">
+                      {paymentAttentionCount && paymentAttentionCount > 0
+                        ? `${paymentAttentionCount} payment step(s) are still open for this client.`
+                        : 'No published balance or payment step is open right now.'}
+                    </p>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <Badge variant={client.outstandingBalanceCents > 0 ? 'error' : 'success'}>
+                        {client.outstandingBalanceCents > 0 ? 'Balance due' : 'Paid up'}
+                      </Badge>
+                      <Badge
+                        variant={
+                          (clientOpsActionRequired?.paymentDueCount ?? 0) > 0
+                            ? 'warning'
+                            : 'default'
+                        }
+                      >
+                        {clientOpsActionRequired?.paymentDueCount ?? 0} payment request(s)
+                      </Badge>
+                      <Badge
+                        variant={
+                          (clientOpsActionRequired?.outstandingBalanceCount ?? 0) > 0
+                            ? 'warning'
+                            : 'default'
+                        }
+                      >
+                        {clientOpsActionRequired?.outstandingBalanceCount ?? 0} overdue balance
+                        item(s)
+                      </Badge>
+                    </div>
+                  </div>
+
+                  <div className="rounded-lg border border-stone-700 bg-stone-800/60 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
+                      Profile Readiness
+                    </p>
+                    <p className="mt-2 text-2xl font-bold text-stone-100">
+                      {clientOpsSnapshot.profileSummary.completionPercent}%
+                    </p>
+                    <p className="mt-2 text-sm text-stone-400">
+                      {clientOpsSnapshot.profileSummary.completedFields}/
+                      {clientOpsSnapshot.profileSummary.totalFields} core fields complete.
+                    </p>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <Badge
+                        variant={
+                          clientOpsSnapshot.profileSummary.completionPercent >= 100
+                            ? 'success'
+                            : 'warning'
+                        }
+                      >
+                        {clientOpsSnapshot.profileSummary.completionPercent >= 100
+                          ? 'Profile complete'
+                          : 'Profile incomplete'}
+                      </Badge>
+                      <Badge
+                        variant={
+                          clientOpsSnapshot.profileSummary.pendingMealRequests > 0
+                            ? 'warning'
+                            : 'success'
+                        }
+                      >
+                        {clientOpsSnapshot.profileSummary.pendingMealRequests} pending meal
+                        request(s)
+                      </Badge>
+                      <Badge
+                        variant={
+                          clientOpsSnapshot.profileSummary.signalNotificationsEnabled
+                            ? 'success'
+                            : 'warning'
+                        }
+                      >
+                        Signal alerts{' '}
+                        {clientOpsSnapshot.profileSummary.signalNotificationsEnabled ? 'on' : 'off'}
+                      </Badge>
+                    </div>
+                  </div>
+
+                  <div className="rounded-lg border border-stone-700 bg-stone-800/60 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
+                      Next Active RSVP
+                    </p>
+                    {clientOpsSnapshot.rsvpSummary ? (
+                      <>
+                        <p className="mt-2 text-lg font-semibold text-stone-100">
+                          {clientOpsSnapshot.rsvpSummary.occasion || 'Upcoming event'}
+                        </p>
+                        <p className="mt-1 text-sm text-stone-400">
+                          {activeRsvpEvent?.event_date
+                            ? format(new Date(activeRsvpEvent.event_date), 'MMM d, yyyy')
+                            : 'Date pending'}
+                        </p>
+                        <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                          <div>
+                            <dt className="text-stone-500">Guests</dt>
+                            <dd className="mt-1 font-semibold text-stone-100">
+                              {clientOpsSnapshot.rsvpSummary.totalGuests}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt className="text-stone-500">Attending</dt>
+                            <dd className="mt-1 font-semibold text-stone-100">
+                              {clientOpsSnapshot.rsvpSummary.attendingCount}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt className="text-stone-500">Pending</dt>
+                            <dd className="mt-1 font-semibold text-stone-100">
+                              {clientOpsSnapshot.rsvpSummary.pendingCount}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt className="text-stone-500">Share</dt>
+                            <dd className="mt-1 font-semibold text-stone-100">
+                              {clientOpsSnapshot.rsvpSummary.hasActiveShare ? 'Active' : 'Inactive'}
+                            </dd>
+                          </div>
+                        </dl>
+                      </>
+                    ) : (
+                      <div className="mt-2 space-y-2">
+                        <p className="text-lg font-semibold text-stone-100">No active RSVP lane</p>
+                        <p className="text-sm text-stone-400">
+                          This client does not currently have an accepted, paid, confirmed, or in
+                          progress event in the RSVP/share flow.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className="border-red-800/40 bg-red-950/20">
+              <CardHeader>
+                <CardTitle className="text-base text-red-200">
+                  Client Ops Snapshot Unavailable
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-red-300">
+                  The shared authenticated client snapshot did not load, so this page is not showing
+                  synthetic zero states for action items, profile readiness, or RSVP status.
+                </p>
+                {clientOpsSnapshotState.error ? (
+                  <p className="mt-2 text-xs text-red-400">{clientOpsSnapshotState.error}</p>
+                ) : null}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Potential Duplicates */}
+          <WidgetErrorBoundary name="Duplicates" compact>
+            <Suspense fallback={null}>
+              <DuplicatesSection clientId={client.id} clientName={client.full_name} />
+            </Suspense>
+          </WidgetErrorBoundary>
+
+          {/* Relationship Intelligence */}
+          <WidgetErrorBoundary name="Intelligence" compact>
+            <Suspense fallback={null}>
+              <ClientIntelligencePanel clientId={client.id} />
+            </Suspense>
+          </WidgetErrorBoundary>
+
+          {/* Completion Contract */}
+          <WidgetErrorBoundary name="Completion" compact>
+            <Suspense fallback={<CompletionCardSkeleton />}>
+              <ClientCompletionSection clientId={client.id} />
+            </Suspense>
+          </WidgetErrorBoundary>
+
+          {/* Client Details */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Client Information</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <p className="text-sm font-medium text-stone-500">Full Name</p>
+                  <p className="text-lg text-stone-100 mt-1">{client.full_name}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-stone-500">Email</p>
+                  <p className="text-lg text-stone-100 mt-1">
+                    <EmailHandoff
+                      email={client.email}
+                      subject={`ChefFlow update for ${client.full_name}`}
+                    />
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-stone-500">Phone</p>
+                  <p className="text-lg text-stone-100 mt-1">
+                    {client.phone ? <PhoneHandoff phone={client.phone} /> : 'Not provided'}
+                  </p>
+                </div>
+                {(client as any).address && (
+                  <div>
+                    <p className="text-sm font-medium text-stone-500">Primary Address</p>
+                    <p className="text-lg text-stone-100 mt-1">
+                      <AddressHandoff address={(client as any).address} />
                     </p>
                   </div>
                 )}
+                <div>
+                  <p className="text-sm font-medium text-stone-500">Client Since</p>
+                  <p className="text-lg text-stone-100 mt-1">
+                    {format(new Date(client.created_at), 'PPPP')}
+                  </p>
+                </div>
+                <div>
+                  <ClientEmailToggle
+                    clientId={client.id}
+                    initialEnabled={(client as any).automated_emails_enabled !== false}
+                  />
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <Card className="border-red-800/40 bg-red-950/20">
-          <CardHeader>
-            <CardTitle className="text-base text-red-200">
-              Client Ops Snapshot Unavailable
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-red-300">
-              The shared authenticated client snapshot did not load, so this page is not showing
-              synthetic zero states for action items, profile readiness, or RSVP status.
-            </p>
-            {clientOpsSnapshotState.error ? (
-              <p className="mt-2 text-xs text-red-400">{clientOpsSnapshotState.error}</p>
-            ) : null}
-          </CardContent>
-        </Card>
-      )}
+            </CardContent>
+          </Card>
 
-      {/* Potential Duplicates */}
-      <WidgetErrorBoundary name="Duplicates" compact>
-        <Suspense fallback={null}>
-          <DuplicatesSection clientId={client.id} clientName={client.full_name} />
-        </Suspense>
-      </WidgetErrorBoundary>
+          {/* Demographics & Identity */}
+          <DemographicsEditor
+            clientId={client.id}
+            chefId={chefUser.entityId}
+            occupation={(client as any).occupation ?? null}
+            companyName={(client as any).company_name ?? null}
+            birthday={(client as any).birthday ?? null}
+            anniversary={(client as any).anniversary ?? null}
+            instagramHandle={(client as any).instagram_handle ?? null}
+            preferredContactMethod={(client as any).preferred_contact_method ?? null}
+            referralSource={(client as any).referral_source ?? null}
+            referralSourceDetail={(client as any).referral_source_detail ?? null}
+            formality={(client as any).formality_level ?? null}
+          />
 
-      {/* Relationship Intelligence */}
-      <WidgetErrorBoundary name="Intelligence" compact>
-        <Suspense fallback={null}>
-          <ClientIntelligencePanel clientId={client.id} />
-        </Suspense>
-      </WidgetErrorBoundary>
+          {/* Statistics */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-sm font-medium text-stone-500">Total Events</div>
+                <div className="text-2xl sm:text-3xl font-bold text-stone-100 mt-2">
+                  {client.totalEvents}
+                </div>
+              </CardContent>
+            </Card>
 
-      {/* Completion Contract */}
-      <WidgetErrorBoundary name="Completion" compact>
-        <Suspense fallback={<CompletionCardSkeleton />}>
-          <ClientCompletionSection clientId={client.id} />
-        </Suspense>
-      </WidgetErrorBoundary>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-sm font-medium text-stone-500">Completed Events</div>
+                <div className="text-2xl sm:text-3xl font-bold text-stone-100 mt-2">
+                  {client.completedEvents}
+                </div>
+              </CardContent>
+            </Card>
 
-      {/* Client Details */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Client Information</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <p className="text-sm font-medium text-stone-500">Full Name</p>
-              <p className="text-lg text-stone-100 mt-1">{client.full_name}</p>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-stone-500">Email</p>
-              <p className="text-lg text-stone-100 mt-1">
-                <EmailHandoff
-                  email={client.email}
-                  subject={`ChefFlow update for ${client.full_name}`}
-                />
-              </p>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-stone-500">Phone</p>
-              <p className="text-lg text-stone-100 mt-1">
-                {client.phone ? <PhoneHandoff phone={client.phone} /> : 'Not provided'}
-              </p>
-            </div>
-            {(client as any).address && (
-              <div>
-                <p className="text-sm font-medium text-stone-500">Primary Address</p>
-                <p className="text-lg text-stone-100 mt-1">
-                  <AddressHandoff address={(client as any).address} />
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-sm font-medium text-stone-500">Total Spent</div>
+                <div className="text-2xl sm:text-3xl font-bold text-stone-100 mt-2">
+                  {formatCurrency(client.totalSpentCents)}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-sm font-medium text-stone-500">Average Event Value</div>
+                <div className="text-2xl sm:text-3xl font-bold text-stone-100 mt-2">
+                  {formatCurrency(client.averageEventValueCents)}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Favorites</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="rounded-lg border border-stone-700 bg-stone-800/60 p-3">
+                <p className="text-sm text-stone-200">
+                  Treat favorites as positive planning signals from the client.
+                </p>
+                <p className="mt-1 text-xs text-stone-500">
+                  Favorite dishes are explicit repeats they want back. Favorite cuisines are broader
+                  menu direction. Allergies, dislikes, dietary protocols, and active avoid requests
+                  still take priority over favorites.
                 </p>
               </div>
+
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-sm font-medium text-stone-300">Favorite Dishes</p>
+                    <span className="text-xs text-stone-500">
+                      {((client as any).favorite_dishes as string[] | null)?.length ?? 0} saved
+                    </span>
+                  </div>
+                  {(client as any).favorite_dishes &&
+                  ((client as any).favorite_dishes as string[]).length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {((client as any).favorite_dishes as string[]).map((dish) => (
+                        <Badge key={dish} variant="info">
+                          {dish}
+                        </Badge>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-stone-500">No favorite dishes saved yet.</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-sm font-medium text-stone-300">Favorite Cuisines</p>
+                    <span className="text-xs text-stone-500">
+                      {((client as any).favorite_cuisines as string[] | null)?.length ?? 0} saved
+                    </span>
+                  </div>
+                  {(client as any).favorite_cuisines &&
+                  ((client as any).favorite_cuisines as string[]).length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {((client as any).favorite_cuisines as string[]).map((cuisine) => (
+                        <Badge key={cuisine} variant="default">
+                          {cuisine}
+                        </Badge>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-stone-500">No favorite cuisines saved yet.</p>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Profitability History */}
+          {profitabilityHistory &&
+            profitabilityHistory.eventCount > 0 &&
+            profitabilityHistory.avgMarginPercent !== null && (
+              <Card>
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <CardTitle className="text-base">
+                      Profitability with {client.full_name.split(' ')[0]}
+                    </CardTitle>
+                    <span
+                      className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                        profitabilityHistory.trend === 'improving'
+                          ? 'bg-emerald-900 text-emerald-700'
+                          : profitabilityHistory.trend === 'declining'
+                            ? 'bg-red-900 text-red-700'
+                            : profitabilityHistory.trend === 'stable'
+                              ? 'bg-stone-800 text-stone-300'
+                              : 'bg-stone-800 text-stone-300'
+                      }`}
+                    >
+                      {profitabilityHistory.trend === 'improving'
+                        ? '↑ Improving'
+                        : profitabilityHistory.trend === 'declining'
+                          ? '↓ Declining'
+                          : profitabilityHistory.trend === 'stable'
+                            ? '→ Stable'
+                            : 'Early days'}
+                    </span>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div>
+                      <p className="text-sm text-stone-500">Avg Margin</p>
+                      <p
+                        className={`text-xl font-bold mt-0.5 ${
+                          profitabilityHistory.avgMarginPercent >= 40
+                            ? 'text-emerald-600'
+                            : profitabilityHistory.avgMarginPercent >= 20
+                              ? 'text-amber-600'
+                              : 'text-red-600'
+                        }`}
+                      >
+                        {profitabilityHistory.avgMarginPercent}%
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-stone-500">Avg Food Cost</p>
+                      <p className="text-xl font-bold text-stone-100 mt-0.5">
+                        {profitabilityHistory.avgFoodCostPercent !== null
+                          ? `${profitabilityHistory.avgFoodCostPercent}%`
+                          : '-'}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-stone-500">Avg $/hr</p>
+                      <p className="text-xl font-bold text-stone-100 mt-0.5">
+                        {profitabilityHistory.avgHourlyRateCents !== null
+                          ? `${formatCurrency(profitabilityHistory.avgHourlyRateCents)}`
+                          : '-'}
+                      </p>
+                    </div>
+                  </div>
+                  {profitabilityHistory.events.length >= 3 && (
+                    <div className="mt-4 pt-3 border-t border-stone-800">
+                      <p className="text-xs text-stone-300 mb-2">
+                        Per-event margins ({profitabilityHistory.eventCount} events)
+                      </p>
+                      <div className="flex gap-1 items-end h-8">
+                        {profitabilityHistory.events.slice(-8).map((e) => {
+                          const heightClass =
+                            e.marginPercent >= 70
+                              ? 'h-8'
+                              : e.marginPercent >= 60
+                                ? 'h-7'
+                                : e.marginPercent >= 50
+                                  ? 'h-6'
+                                  : e.marginPercent >= 40
+                                    ? 'h-5'
+                                    : e.marginPercent >= 30
+                                      ? 'h-4'
+                                      : e.marginPercent >= 20
+                                        ? 'h-3'
+                                        : e.marginPercent >= 10
+                                          ? 'h-2'
+                                          : 'h-1'
+                          const color =
+                            e.marginPercent >= 40
+                              ? 'bg-emerald-400'
+                              : e.marginPercent >= 20
+                                ? 'bg-amber-400'
+                                : 'bg-red-400'
+                          return (
+                            <div
+                              key={e.eventId}
+                              title={`${e.occasion || 'Event'} | ${e.marginPercent}% margin`}
+                              className={`flex-1 rounded-sm min-w-2 ${heightClass} ${color}`}
+                            />
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             )}
-            <div>
-              <p className="text-sm font-medium text-stone-500">Client Since</p>
-              <p className="text-lg text-stone-100 mt-1">
-                {format(new Date(client.created_at), 'PPPP')}
-              </p>
-            </div>
-            <div>
-              <ClientEmailToggle
+
+          {/* LTV Trajectory Chart */}
+          {ltvTrajectory && ltvTrajectory.eventCount >= 2 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Lifetime Value Trajectory</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <LTVChart
+                  points={ltvTrajectory.points}
+                  totalLifetimeValueCents={ltvTrajectory.totalLifetimeValueCents}
+                />
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Culinary History - menus/dishes served to this client */}
+          {menuHistory && <MenuHistoryPanel history={menuHistory} />}
+
+          {/* Direct Outreach */}
+          <Card id="outreach">
+            <CardHeader>
+              <CardTitle className="text-base">Send Message</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <DirectOutreachPanel
                 clientId={client.id}
-                initialEnabled={(client as any).automated_emails_enabled !== false}
+                clientEmail={client.email ?? null}
+                clientPhone={(client as any).phone ?? null}
+                preferredContactMethod={(client as any).preferred_contact_method ?? null}
+                history={outreachHistory as any}
               />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
 
-      {/* Demographics & Identity */}
-      <DemographicsEditor
-        clientId={client.id}
-        chefId={chefUser.entityId}
-        occupation={(client as any).occupation ?? null}
-        companyName={(client as any).company_name ?? null}
-        birthday={(client as any).birthday ?? null}
-        anniversary={(client as any).anniversary ?? null}
-        instagramHandle={(client as any).instagram_handle ?? null}
-        preferredContactMethod={(client as any).preferred_contact_method ?? null}
-        referralSource={(client as any).referral_source ?? null}
-        referralSourceDetail={(client as any).referral_source_detail ?? null}
-        formality={(client as any).formality_level ?? null}
-      />
+          {/* Financial Detail */}
+          {financialDetail && (
+            <ClientFinancialPanel
+              eventBreakdown={financialDetail.eventBreakdown}
+              ledgerEntries={financialDetail.ledgerEntries as any}
+              summary={financialDetail.summary}
+            />
+          )}
 
-      {/* Statistics */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-sm font-medium text-stone-500">Total Events</div>
-            <div className="text-2xl sm:text-3xl font-bold text-stone-100 mt-2">
-              {client.totalEvents}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-sm font-medium text-stone-500">Completed Events</div>
-            <div className="text-2xl sm:text-3xl font-bold text-stone-100 mt-2">
-              {client.completedEvents}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-sm font-medium text-stone-500">Total Spent</div>
-            <div className="text-2xl sm:text-3xl font-bold text-stone-100 mt-2">
-              {formatCurrency(client.totalSpentCents)}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-sm font-medium text-stone-500">Average Event Value</div>
-            <div className="text-2xl sm:text-3xl font-bold text-stone-100 mt-2">
-              {formatCurrency(client.averageEventValueCents)}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Favorites</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="rounded-lg border border-stone-700 bg-stone-800/60 p-3">
-            <p className="text-sm text-stone-200">
-              Treat favorites as positive planning signals from the client.
-            </p>
-            <p className="mt-1 text-xs text-stone-500">
-              Favorite dishes are explicit repeats they want back. Favorite cuisines are broader
-              menu direction. Allergies, dislikes, dietary protocols, and active avoid requests
-              still take priority over favorites.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <div className="flex items-center justify-between gap-2">
-                <p className="text-sm font-medium text-stone-300">Favorite Dishes</p>
-                <span className="text-xs text-stone-500">
-                  {((client as any).favorite_dishes as string[] | null)?.length ?? 0} saved
+          {/* Loyalty Program */}
+          {loyaltyProfile && (
+            <Card className="p-6">
+              <div className="flex justify-between items-start mb-4">
+                <h2 className="text-xl font-semibold">Loyalty</h2>
+                <span
+                  className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${TIER_COLORS[loyaltyProfile.currentTier]}`}
+                >
+                  {TIER_LABELS[loyaltyProfile.currentTier]}
                 </span>
               </div>
-              {(client as any).favorite_dishes &&
-              ((client as any).favorite_dishes as string[]).length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                  {((client as any).favorite_dishes as string[]).map((dish) => (
-                    <Badge key={dish} variant="info">
-                      {dish}
-                    </Badge>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-stone-500">No favorite dishes saved yet.</p>
-              )}
-            </div>
 
-            <div className="space-y-2">
-              <div className="flex items-center justify-between gap-2">
-                <p className="text-sm font-medium text-stone-300">Favorite Cuisines</p>
-                <span className="text-xs text-stone-500">
-                  {((client as any).favorite_cuisines as string[] | null)?.length ?? 0} saved
-                </span>
+              {/* Loyalty Stats */}
+              <dl className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div>
+                  <dt className="text-sm font-medium text-stone-500">Points Balance</dt>
+                  <dd className="text-xl sm:text-2xl font-bold text-stone-100 mt-1">
+                    {loyaltyProfile.pointsBalance.toLocaleString()}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-sm font-medium text-stone-500">Lifetime Earned</dt>
+                  <dd className="text-xl sm:text-2xl font-bold text-stone-100 mt-1">
+                    {loyaltyProfile.lifetimePointsEarned.toLocaleString()}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-sm font-medium text-stone-500">Events Completed</dt>
+                  <dd className="text-xl sm:text-2xl font-bold text-stone-100 mt-1">
+                    {loyaltyProfile.totalEventsCompleted}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-sm font-medium text-stone-500">Guests Served</dt>
+                  <dd className="text-xl sm:text-2xl font-bold text-stone-100 mt-1">
+                    {loyaltyProfile.totalGuestsServed}
+                  </dd>
+                </div>
+              </dl>
+
+              {/* Progress to Next Tier */}
+              {loyaltyProfile.nextTierName && loyaltyProfile.pointsToNextTier > 0 && (
+                <div className="mb-6 p-3 rounded-lg bg-stone-800">
+                  <div className="flex justify-between text-sm mb-1">
+                    <span className="text-stone-300">
+                      Progress to {loyaltyProfile.nextTierName}
+                    </span>
+                    <span className="font-medium text-stone-100">
+                      {loyaltyProfile.pointsToNextTier} pts to go
+                    </span>
+                  </div>
+                  <div className="w-full bg-stone-700 rounded-full h-2">
+                    <div
+                      className="bg-brand-500 h-2 rounded-full transition-all"
+                      style={{
+                        width: `${Math.min(100, Math.max(5, (loyaltyProfile.lifetimePointsEarned / (loyaltyProfile.lifetimePointsEarned + loyaltyProfile.pointsToNextTier)) * 100))}%`,
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Next Milestone */}
+              {loyaltyProfile.nextMilestone && (
+                <p className="text-sm text-stone-500 mb-4">
+                  Next milestone: {loyaltyProfile.nextMilestone.eventsNeeded} more event
+                  {loyaltyProfile.nextMilestone.eventsNeeded > 1 ? 's' : ''} for a{' '}
+                  {loyaltyProfile.nextMilestone.bonus}-point bonus
+                </p>
+              )}
+
+              {/* Available Rewards */}
+              {loyaltyProfile.availableRewards.length > 0 && (
+                <div className="mb-4">
+                  <h3 className="text-sm font-medium text-stone-300 mb-2">Available Rewards</h3>
+                  <div className="space-y-2">
+                    {loyaltyProfile.availableRewards.map((reward) => (
+                      <div
+                        key={reward.id}
+                        className="flex items-center justify-between py-2 px-3 rounded-lg bg-green-950 border border-green-100"
+                      >
+                        <div>
+                          <p className="text-sm font-medium text-green-900">{reward.name}</p>
+                          <p className="text-xs text-green-700">{reward.points_required} points</p>
+                        </div>
+                        <RedeemRewardButton clientId={client.id} reward={reward} />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Award Bonus Points + Manual Adjustment */}
+              <div className="flex gap-2 flex-wrap">
+                <AwardBonusForm clientId={client.id} />
+                <ManualLoyaltyAdjustment
+                  clientId={client.id}
+                  currentPoints={loyaltyProfile.pointsBalance}
+                  currentTier={loyaltyProfile.currentTier}
+                  currentEventsCompleted={loyaltyProfile.totalEventsCompleted}
+                  currentGuestsServed={loyaltyProfile.totalGuestsServed}
+                />
               </div>
-              {(client as any).favorite_cuisines &&
-              ((client as any).favorite_cuisines as string[]).length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                  {((client as any).favorite_cuisines as string[]).map((cuisine) => (
-                    <Badge key={cuisine} variant="default">
-                      {cuisine}
-                    </Badge>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-stone-500">No favorite cuisines saved yet.</p>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
-      {/* Profitability History */}
-      {profitabilityHistory &&
-        profitabilityHistory.eventCount > 0 &&
-        profitabilityHistory.avgMarginPercent !== null && (
+              {/* Recent Transactions */}
+              {loyaltyProfile.transactionHistory.length > 0 && (
+                <div className="mt-4 pt-4 border-t border-stone-800">
+                  <h3 className="text-sm font-medium text-stone-300 mb-2">Recent Activity</h3>
+                  <div className="space-y-1">
+                    {loyaltyProfile.transactionHistory.slice(0, 5).map((tx) => (
+                      <div key={tx.id} className="flex items-center justify-between text-sm py-1">
+                        <span className="text-stone-300">{tx.description}</span>
+                        <span
+                          className={`font-medium ${tx.points > 0 ? 'text-emerald-600' : 'text-red-600'}`}
+                        >
+                          {tx.points > 0 ? '+' : ''}
+                          {tx.points}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </Card>
+          )}
+
+          {/* Personal Details (nickname, partner, family) */}
+          <PersonalInfoEditor
+            clientId={client.id}
+            chefId={chefUser.entityId}
+            initialData={{
+              preferred_name: (client as any).preferred_name ?? null,
+              partner_name: (client as any).partner_name ?? null,
+              partner_preferred_name: (client as any).partner_preferred_name ?? null,
+              family_notes: (client as any).family_notes ?? null,
+            }}
+          />
+
+          {/* Country Details - currency, timezone, languages for international clients */}
+          <ClientCountryPanel />
+
+          {/* Pets */}
+          <PetManager
+            clientId={client.id}
+            initialPets={
+              ((client as any).pets as Array<{ name: string; type: string; notes?: string }>) ?? []
+            }
+          />
+
+          {/* Client Photos */}
+          <ClientPhotoGallery clientId={client.id} initialPhotos={clientPhotos as any} />
+
+          {/* Kitchen Profile */}
+          <KitchenProfilePanel
+            clientId={client.id}
+            initialData={{
+              kitchen_size: (client as any).kitchen_size ?? null,
+              kitchen_constraints: (client as any).kitchen_constraints ?? null,
+              kitchen_oven_notes: (client as any).kitchen_oven_notes ?? null,
+              kitchen_burner_notes: (client as any).kitchen_burner_notes ?? null,
+              kitchen_counter_notes: (client as any).kitchen_counter_notes ?? null,
+              kitchen_refrigeration_notes: (client as any).kitchen_refrigeration_notes ?? null,
+              kitchen_plating_notes: (client as any).kitchen_plating_notes ?? null,
+              kitchen_sink_notes: (client as any).kitchen_sink_notes ?? null,
+              equipment_available: (client as any).equipment_available ?? null,
+              equipment_must_bring: (client as any).equipment_must_bring ?? null,
+              kitchen_profile_updated_at: (client as any).kitchen_profile_updated_at ?? null,
+              has_dishwasher: (client as any).has_dishwasher ?? null,
+              outdoor_cooking_notes: (client as any).outdoor_cooking_notes ?? null,
+              nearest_grocery_store: (client as any).nearest_grocery_store ?? null,
+              water_quality_notes: (client as any).water_quality_notes ?? null,
+              available_place_settings: (client as any).available_place_settings ?? null,
+            }}
+          />
+
+          {/* Security & Access */}
+          <SecurityAccessPanel
+            clientId={client.id}
+            gateCode={(client as any).gate_code ?? null}
+            wifiPassword={(client as any).wifi_password ?? null}
+            securityNotes={(client as any).security_notes ?? null}
+            parkingInstructions={(client as any).parking_instructions ?? null}
+            accessInstructions={(client as any).access_instructions ?? null}
+            houseRules={(client as any).house_rules ?? null}
+          />
+
+          {/* Service Defaults */}
+          <ServiceDefaultsPanel
+            clientId={client.id}
+            preferredServiceStyle={(client as any).preferred_service_style ?? null}
+            typicalGuestCount={(client as any).typical_guest_count ?? null}
+            preferredEventDays={(client as any).preferred_event_days ?? null}
+            budgetRangeMinCents={(client as any).budget_range_min_cents ?? null}
+            budgetRangeMaxCents={(client as any).budget_range_max_cents ?? null}
+            recurringPricingModel={(client as any).recurring_pricing_model ?? null}
+            recurringPriceCents={(client as any).recurring_price_cents ?? null}
+            recurringPricingNotes={(client as any).recurring_pricing_notes ?? null}
+            cleanupExpectations={(client as any).cleanup_expectations ?? null}
+            leftoversPref={(client as any).leftovers_preference ?? null}
+          />
+
+          {/* Client Connections */}
+          <ClientConnections
+            clientId={client.id}
+            connections={connections}
+            allClients={allClients.map((c: any) => ({
+              id: c.id,
+              full_name: c.full_name,
+              email: c.email,
+            }))}
+          />
+
+          {/* Fun Q&A - client's personality answers */}
+          <FunQADisplay answers={funQAAnswers} clientName={client.full_name} />
+
+          {/* Allergy & Dietary Records */}
+          <AllergyRecordsPanel clientId={client.id} initialRecords={allergyRecords as any} />
+
+          {/* Household Members */}
+          {householdData && <ClientHouseholdPanel clientId={client.id} household={householdData} />}
+
+          {/* Taste Profile */}
+          <WidgetErrorBoundary name="Taste Profile" compact>
+            <Card>
+              <CardHeader>
+                <CardTitle>Taste Profile</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <TasteProfileForm clientId={client.id} initial={tasteProfile} />
+              </CardContent>
+            </Card>
+          </WidgetErrorBoundary>
+
+          {/* Culinary Profile Intelligence (CP-Engine vector) */}
+          {culinaryGuidance && (
+            <WidgetErrorBoundary name="Culinary Profile" compact>
+              <CulinaryProfilePanel guidance={culinaryGuidance} clientName={client.full_name} />
+            </WidgetErrorBoundary>
+          )}
+
+          {/* NDA & Photo Permissions */}
+          <NDAPanel
+            clientId={client.id}
+            initial={{
+              nda_active: (client as any).nda_active ?? false,
+              nda_coverage: (client as any).nda_coverage ?? null,
+              nda_effective_date: (client as any).nda_effective_date ?? null,
+              nda_expiry_date: (client as any).nda_expiry_date ?? null,
+              nda_document_url: (client as any).nda_document_url ?? null,
+              photo_permission: (client as any).photo_permission ?? 'none',
+            }}
+          />
+
+          {/* Quick Notes */}
+          <QuickNotes clientId={client.id} initialNotes={clientNotes} />
+
+          {/* Milestones */}
+          <MilestoneManager
+            clientId={client.id}
+            initialMilestones={((client as any).personal_milestones as Milestone[]) ?? []}
+          />
+
+          {/* Additional Addresses */}
+          <AddressManager
+            clientId={client.id}
+            initialAddresses={((client as any).additional_addresses as any[]) ?? []}
+          />
+
+          {/* Communication History */}
+          <Card id="communication">
+            <CardHeader>
+              <CardTitle>Communication History</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <SentimentBadge clientId={params.id} />
+              <MessageThread messages={messages} showEntityLinks />
+              <div className="mt-4 pt-4 border-t border-stone-700">
+                <MessageLogForm clientId={client.id} templates={templates} />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* AI Client Preference Panel */}
+          <ClientPreferencePanel clientId={params.id} />
+
+          {/* Chef's Internal Assessment */}
+          <BusinessIntelPanel
+            clientId={client.id}
+            referralPotential={(client as any).referral_potential ?? null}
+            redFlags={(client as any).red_flags ?? null}
+            acquisitionCostCents={(client as any).acquisition_cost_cents ?? null}
+            complaintHandling={(client as any).complaint_handling_notes ?? null}
+            wowFactors={(client as any).wow_factors ?? null}
+            paymentBehavior={(client as any).payment_behavior ?? null}
+            tippingPattern={(client as any).tipping_pattern ?? null}
+            farewellStyle={(client as any).farewell_style ?? null}
+          />
+
+          {/* Private Notes (chef-only, never visible to clients) */}
+          <PrivateContextPanel
+            entityType="client"
+            entityId={params.id}
+            contexts={clientPrivateContexts as any[]}
+          />
+
+          {/* Unified Client Timeline */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Full Relationship Timeline</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <UnifiedClientTimeline items={unifiedTimeline} />
+            </CardContent>
+          </Card>
+
+          {/* Event History */}
           <Card>
             <CardHeader>
               <div className="flex justify-between items-center">
-                <CardTitle className="text-base">
-                  Profitability with {client.full_name.split(' ')[0]}
-                </CardTitle>
-                <span
-                  className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                    profitabilityHistory.trend === 'improving'
-                      ? 'bg-emerald-900 text-emerald-700'
-                      : profitabilityHistory.trend === 'declining'
-                        ? 'bg-red-900 text-red-700'
-                        : profitabilityHistory.trend === 'stable'
-                          ? 'bg-stone-800 text-stone-300'
-                          : 'bg-stone-800 text-stone-300'
-                  }`}
-                >
-                  {profitabilityHistory.trend === 'improving'
-                    ? '↑ Improving'
-                    : profitabilityHistory.trend === 'declining'
-                      ? '↓ Declining'
-                      : profitabilityHistory.trend === 'stable'
-                        ? '→ Stable'
-                        : 'Early days'}
-                </span>
+                <CardTitle>Event History</CardTitle>
+                <Link href={`/events/new?client_id=${client.id}`}>
+                  <Button variant="secondary" size="sm">
+                    Create Event
+                  </Button>
+                </Link>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div>
-                  <p className="text-sm text-stone-500">Avg Margin</p>
-                  <p
-                    className={`text-xl font-bold mt-0.5 ${
-                      profitabilityHistory.avgMarginPercent >= 40
-                        ? 'text-emerald-600'
-                        : profitabilityHistory.avgMarginPercent >= 20
-                          ? 'text-amber-600'
-                          : 'text-red-600'
-                    }`}
-                  >
-                    {profitabilityHistory.avgMarginPercent}%
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-stone-500">Avg Food Cost</p>
-                  <p className="text-xl font-bold text-stone-100 mt-0.5">
-                    {profitabilityHistory.avgFoodCostPercent !== null
-                      ? `${profitabilityHistory.avgFoodCostPercent}%`
-                      : '-'}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-stone-500">Avg $/hr</p>
-                  <p className="text-xl font-bold text-stone-100 mt-0.5">
-                    {profitabilityHistory.avgHourlyRateCents !== null
-                      ? `${formatCurrency(profitabilityHistory.avgHourlyRateCents)}`
-                      : '-'}
-                  </p>
-                </div>
-              </div>
-              {profitabilityHistory.events.length >= 3 && (
-                <div className="mt-4 pt-3 border-t border-stone-800">
-                  <p className="text-xs text-stone-300 mb-2">
-                    Per-event margins ({profitabilityHistory.eventCount} events)
-                  </p>
-                  <div className="flex gap-1 items-end h-8">
-                    {profitabilityHistory.events.slice(-8).map((e) => {
-                      const heightClass =
-                        e.marginPercent >= 70
-                          ? 'h-8'
-                          : e.marginPercent >= 60
-                            ? 'h-7'
-                            : e.marginPercent >= 50
-                              ? 'h-6'
-                              : e.marginPercent >= 40
-                                ? 'h-5'
-                                : e.marginPercent >= 30
-                                  ? 'h-4'
-                                  : e.marginPercent >= 20
-                                    ? 'h-3'
-                                    : e.marginPercent >= 10
-                                      ? 'h-2'
-                                      : 'h-1'
-                      const color =
-                        e.marginPercent >= 40
-                          ? 'bg-emerald-400'
-                          : e.marginPercent >= 20
-                            ? 'bg-amber-400'
-                            : 'bg-red-400'
-                      return (
-                        <div
-                          key={e.eventId}
-                          title={`${e.occasion || 'Event'} | ${e.marginPercent}% margin`}
-                          className={`flex-1 rounded-sm min-w-2 ${heightClass} ${color}`}
-                        />
-                      )
-                    })}
-                  </div>
-                </div>
-              )}
+              <WidgetErrorBoundary name="Events" compact>
+                <Suspense
+                  fallback={<div className="text-sm text-stone-500">Loading events...</div>}
+                >
+                  <ClientEventsContent clientId={client.id} />
+                </Suspense>
+              </WidgetErrorBoundary>
             </CardContent>
           </Card>
-        )}
 
-      {/* LTV Trajectory Chart */}
-      {ltvTrajectory && ltvTrajectory.eventCount >= 2 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Lifetime Value Trajectory</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <LTVChart
-              points={ltvTrajectory.points}
-              totalLifetimeValueCents={ltvTrajectory.totalLifetimeValueCents}
-            />
-          </CardContent>
-        </Card>
-      )}
+          {/* Menu History */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Menu History</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ClientMenuHistory clientId={client.id} />
+            </CardContent>
+          </Card>
 
-      {/* Culinary History - menus/dishes served to this client */}
-      {menuHistory && <MenuHistoryPanel history={menuHistory} />}
-
-      {/* Direct Outreach */}
-      <Card id="outreach">
-        <CardHeader>
-          <CardTitle className="text-base">Send Message</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <DirectOutreachPanel
-            clientId={client.id}
-            clientEmail={client.email ?? null}
-            clientPhone={(client as any).phone ?? null}
-            preferredContactMethod={(client as any).preferred_contact_method ?? null}
-            history={outreachHistory as any}
-          />
-        </CardContent>
-      </Card>
-
-      {/* Financial Detail */}
-      {financialDetail && (
-        <ClientFinancialPanel
-          eventBreakdown={financialDetail.eventBreakdown}
-          ledgerEntries={financialDetail.ledgerEntries as any}
-          summary={financialDetail.summary}
-        />
-      )}
-
-      {/* Loyalty Program */}
-      {loyaltyProfile && (
-        <Card className="p-6">
-          <div className="flex justify-between items-start mb-4">
-            <h2 className="text-xl font-semibold">Loyalty</h2>
-            <span
-              className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${TIER_COLORS[loyaltyProfile.currentTier]}`}
-            >
-              {TIER_LABELS[loyaltyProfile.currentTier]}
-            </span>
-          </div>
-
-          {/* Loyalty Stats */}
-          <dl className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-            <div>
-              <dt className="text-sm font-medium text-stone-500">Points Balance</dt>
-              <dd className="text-xl sm:text-2xl font-bold text-stone-100 mt-1">
-                {loyaltyProfile.pointsBalance.toLocaleString()}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-sm font-medium text-stone-500">Lifetime Earned</dt>
-              <dd className="text-xl sm:text-2xl font-bold text-stone-100 mt-1">
-                {loyaltyProfile.lifetimePointsEarned.toLocaleString()}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-sm font-medium text-stone-500">Events Completed</dt>
-              <dd className="text-xl sm:text-2xl font-bold text-stone-100 mt-1">
-                {loyaltyProfile.totalEventsCompleted}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-sm font-medium text-stone-500">Guests Served</dt>
-              <dd className="text-xl sm:text-2xl font-bold text-stone-100 mt-1">
-                {loyaltyProfile.totalGuestsServed}
-              </dd>
-            </div>
-          </dl>
-
-          {/* Progress to Next Tier */}
-          {loyaltyProfile.nextTierName && loyaltyProfile.pointsToNextTier > 0 && (
-            <div className="mb-6 p-3 rounded-lg bg-stone-800">
-              <div className="flex justify-between text-sm mb-1">
-                <span className="text-stone-300">Progress to {loyaltyProfile.nextTierName}</span>
-                <span className="font-medium text-stone-100">
-                  {loyaltyProfile.pointsToNextTier} pts to go
-                </span>
-              </div>
-              <div className="w-full bg-stone-700 rounded-full h-2">
-                <div
-                  className="bg-brand-500 h-2 rounded-full transition-all"
-                  style={{
-                    width: `${Math.min(100, Math.max(5, (loyaltyProfile.lifetimePointsEarned / (loyaltyProfile.lifetimePointsEarned + loyaltyProfile.pointsToNextTier)) * 100))}%`,
-                  }}
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Next Milestone */}
-          {loyaltyProfile.nextMilestone && (
-            <p className="text-sm text-stone-500 mb-4">
-              Next milestone: {loyaltyProfile.nextMilestone.eventsNeeded} more event
-              {loyaltyProfile.nextMilestone.eventsNeeded > 1 ? 's' : ''} for a{' '}
-              {loyaltyProfile.nextMilestone.bonus}-point bonus
-            </p>
-          )}
-
-          {/* Available Rewards */}
-          {loyaltyProfile.availableRewards.length > 0 && (
-            <div className="mb-4">
-              <h3 className="text-sm font-medium text-stone-300 mb-2">Available Rewards</h3>
-              <div className="space-y-2">
-                {loyaltyProfile.availableRewards.map((reward) => (
-                  <div
-                    key={reward.id}
-                    className="flex items-center justify-between py-2 px-3 rounded-lg bg-green-950 border border-green-100"
-                  >
-                    <div>
-                      <p className="text-sm font-medium text-green-900">{reward.name}</p>
-                      <p className="text-xs text-green-700">{reward.points_required} points</p>
+          {/* Client Reviews / Feedback */}
+          {clientReviews.length > 0 && (
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <CardTitle>Client Feedback</CardTitle>
+                  {avgRating !== null && (
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-2xl font-bold text-stone-100">{avgRating}</span>
+                      <span className="text-stone-300">/5</span>
+                      <span className="text-xs text-stone-500 ml-1">
+                        ({clientReviews.length} {clientReviews.length === 1 ? 'review' : 'reviews'})
+                      </span>
                     </div>
-                    <RedeemRewardButton clientId={client.id} reward={reward} />
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Award Bonus Points + Manual Adjustment */}
-          <div className="flex gap-2 flex-wrap">
-            <AwardBonusForm clientId={client.id} />
-            <ManualLoyaltyAdjustment
-              clientId={client.id}
-              currentPoints={loyaltyProfile.pointsBalance}
-              currentTier={loyaltyProfile.currentTier}
-              currentEventsCompleted={loyaltyProfile.totalEventsCompleted}
-              currentGuestsServed={loyaltyProfile.totalGuestsServed}
-            />
-          </div>
-
-          {/* Recent Transactions */}
-          {loyaltyProfile.transactionHistory.length > 0 && (
-            <div className="mt-4 pt-4 border-t border-stone-800">
-              <h3 className="text-sm font-medium text-stone-300 mb-2">Recent Activity</h3>
-              <div className="space-y-1">
-                {loyaltyProfile.transactionHistory.slice(0, 5).map((tx) => (
-                  <div key={tx.id} className="flex items-center justify-between text-sm py-1">
-                    <span className="text-stone-300">{tx.description}</span>
-                    <span
-                      className={`font-medium ${tx.points > 0 ? 'text-emerald-600' : 'text-red-600'}`}
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {clientReviews.map((review: any) => (
+                    <div
+                      key={review.id}
+                      className="border-b border-stone-800 pb-4 last:border-0 last:pb-0"
                     >
-                      {tx.points > 0 ? '+' : ''}
-                      {tx.points}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </Card>
-      )}
-
-      {/* Personal Details (nickname, partner, family) */}
-      <PersonalInfoEditor
-        clientId={client.id}
-        chefId={chefUser.entityId}
-        initialData={{
-          preferred_name: (client as any).preferred_name ?? null,
-          partner_name: (client as any).partner_name ?? null,
-          partner_preferred_name: (client as any).partner_preferred_name ?? null,
-          family_notes: (client as any).family_notes ?? null,
-        }}
-      />
-
-      {/* Country Details - currency, timezone, languages for international clients */}
-      <ClientCountryPanel />
-
-      {/* Pets */}
-      <PetManager
-        clientId={client.id}
-        initialPets={
-          ((client as any).pets as Array<{ name: string; type: string; notes?: string }>) ?? []
-        }
-      />
-
-      {/* Client Photos */}
-      <ClientPhotoGallery clientId={client.id} initialPhotos={clientPhotos as any} />
-
-      {/* Kitchen Profile */}
-      <KitchenProfilePanel
-        clientId={client.id}
-        initialData={{
-          kitchen_size: (client as any).kitchen_size ?? null,
-          kitchen_constraints: (client as any).kitchen_constraints ?? null,
-          kitchen_oven_notes: (client as any).kitchen_oven_notes ?? null,
-          kitchen_burner_notes: (client as any).kitchen_burner_notes ?? null,
-          kitchen_counter_notes: (client as any).kitchen_counter_notes ?? null,
-          kitchen_refrigeration_notes: (client as any).kitchen_refrigeration_notes ?? null,
-          kitchen_plating_notes: (client as any).kitchen_plating_notes ?? null,
-          kitchen_sink_notes: (client as any).kitchen_sink_notes ?? null,
-          equipment_available: (client as any).equipment_available ?? null,
-          equipment_must_bring: (client as any).equipment_must_bring ?? null,
-          kitchen_profile_updated_at: (client as any).kitchen_profile_updated_at ?? null,
-          has_dishwasher: (client as any).has_dishwasher ?? null,
-          outdoor_cooking_notes: (client as any).outdoor_cooking_notes ?? null,
-          nearest_grocery_store: (client as any).nearest_grocery_store ?? null,
-          water_quality_notes: (client as any).water_quality_notes ?? null,
-          available_place_settings: (client as any).available_place_settings ?? null,
-        }}
-      />
-
-      {/* Security & Access */}
-      <SecurityAccessPanel
-        clientId={client.id}
-        gateCode={(client as any).gate_code ?? null}
-        wifiPassword={(client as any).wifi_password ?? null}
-        securityNotes={(client as any).security_notes ?? null}
-        parkingInstructions={(client as any).parking_instructions ?? null}
-        accessInstructions={(client as any).access_instructions ?? null}
-        houseRules={(client as any).house_rules ?? null}
-      />
-
-      {/* Service Defaults */}
-      <ServiceDefaultsPanel
-        clientId={client.id}
-        preferredServiceStyle={(client as any).preferred_service_style ?? null}
-        typicalGuestCount={(client as any).typical_guest_count ?? null}
-        preferredEventDays={(client as any).preferred_event_days ?? null}
-        budgetRangeMinCents={(client as any).budget_range_min_cents ?? null}
-        budgetRangeMaxCents={(client as any).budget_range_max_cents ?? null}
-        recurringPricingModel={(client as any).recurring_pricing_model ?? null}
-        recurringPriceCents={(client as any).recurring_price_cents ?? null}
-        recurringPricingNotes={(client as any).recurring_pricing_notes ?? null}
-        cleanupExpectations={(client as any).cleanup_expectations ?? null}
-        leftoversPref={(client as any).leftovers_preference ?? null}
-      />
-
-      {/* Client Connections */}
-      <ClientConnections
-        clientId={client.id}
-        connections={connections}
-        allClients={allClients.map((c: any) => ({
-          id: c.id,
-          full_name: c.full_name,
-          email: c.email,
-        }))}
-      />
-
-      {/* Fun Q&A - client's personality answers */}
-      <FunQADisplay answers={funQAAnswers} clientName={client.full_name} />
-
-      {/* Allergy & Dietary Records */}
-      <AllergyRecordsPanel clientId={client.id} initialRecords={allergyRecords as any} />
-
-      {/* Household Members */}
-      {householdData && <ClientHouseholdPanel clientId={client.id} household={householdData} />}
-
-      {/* Taste Profile */}
-      <WidgetErrorBoundary name="Taste Profile" compact>
-        <Card>
-          <CardHeader>
-            <CardTitle>Taste Profile</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <TasteProfileForm clientId={client.id} initial={tasteProfile} />
-          </CardContent>
-        </Card>
-      </WidgetErrorBoundary>
-
-      {/* Culinary Profile Intelligence (CP-Engine vector) */}
-      {culinaryGuidance && (
-        <WidgetErrorBoundary name="Culinary Profile" compact>
-          <CulinaryProfilePanel guidance={culinaryGuidance} clientName={client.full_name} />
-        </WidgetErrorBoundary>
-      )}
-
-      {/* NDA & Photo Permissions */}
-      <NDAPanel
-        clientId={client.id}
-        initial={{
-          nda_active: (client as any).nda_active ?? false,
-          nda_coverage: (client as any).nda_coverage ?? null,
-          nda_effective_date: (client as any).nda_effective_date ?? null,
-          nda_expiry_date: (client as any).nda_expiry_date ?? null,
-          nda_document_url: (client as any).nda_document_url ?? null,
-          photo_permission: (client as any).photo_permission ?? 'none',
-        }}
-      />
-
-      {/* Quick Notes */}
-      <QuickNotes clientId={client.id} initialNotes={clientNotes} />
-
-      {/* Milestones */}
-      <MilestoneManager
-        clientId={client.id}
-        initialMilestones={((client as any).personal_milestones as Milestone[]) ?? []}
-      />
-
-      {/* Additional Addresses */}
-      <AddressManager
-        clientId={client.id}
-        initialAddresses={((client as any).additional_addresses as any[]) ?? []}
-      />
-
-      {/* Communication History */}
-      <Card id="communication">
-        <CardHeader>
-          <CardTitle>Communication History</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <SentimentBadge clientId={params.id} />
-          <MessageThread messages={messages} showEntityLinks />
-          <div className="mt-4 pt-4 border-t border-stone-700">
-            <MessageLogForm clientId={client.id} templates={templates} />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* AI Client Preference Panel */}
-      <ClientPreferencePanel clientId={params.id} />
-
-      {/* Chef's Internal Assessment */}
-      <BusinessIntelPanel
-        clientId={client.id}
-        referralPotential={(client as any).referral_potential ?? null}
-        redFlags={(client as any).red_flags ?? null}
-        acquisitionCostCents={(client as any).acquisition_cost_cents ?? null}
-        complaintHandling={(client as any).complaint_handling_notes ?? null}
-        wowFactors={(client as any).wow_factors ?? null}
-        paymentBehavior={(client as any).payment_behavior ?? null}
-        tippingPattern={(client as any).tipping_pattern ?? null}
-        farewellStyle={(client as any).farewell_style ?? null}
-      />
-
-      {/* Private Notes (chef-only, never visible to clients) */}
-      <PrivateContextPanel
-        entityType="client"
-        entityId={params.id}
-        contexts={clientPrivateContexts as any[]}
-      />
-
-      {/* Unified Client Timeline */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Full Relationship Timeline</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <UnifiedClientTimeline items={unifiedTimeline} />
-        </CardContent>
-      </Card>
-
-      {/* Event History */}
-      <Card>
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <CardTitle>Event History</CardTitle>
-            <Link href={`/events/new?client_id=${client.id}`}>
-              <Button variant="secondary" size="sm">
-                Create Event
-              </Button>
-            </Link>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <WidgetErrorBoundary name="Events" compact>
-            <Suspense fallback={<div className="text-sm text-stone-500">Loading events...</div>}>
-              <ClientEventsContent clientId={client.id} />
-            </Suspense>
-          </WidgetErrorBoundary>
-        </CardContent>
-      </Card>
-
-      {/* Menu History */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Menu History</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ClientMenuHistory clientId={client.id} />
-        </CardContent>
-      </Card>
-
-      {/* Client Reviews / Feedback */}
-      {clientReviews.length > 0 && (
-        <Card>
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <CardTitle>Client Feedback</CardTitle>
-              {avgRating !== null && (
-                <div className="flex items-center gap-1.5">
-                  <span className="text-2xl font-bold text-stone-100">{avgRating}</span>
-                  <span className="text-stone-300">/5</span>
-                  <span className="text-xs text-stone-500 ml-1">
-                    ({clientReviews.length} {clientReviews.length === 1 ? 'review' : 'reviews'})
-                  </span>
-                </div>
-              )}
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {clientReviews.map((review: any) => (
-                <div
-                  key={review.id}
-                  className="border-b border-stone-800 pb-4 last:border-0 last:pb-0"
-                >
-                  <div className="flex items-center justify-between mb-1">
-                    <div className="flex gap-0.5">
-                      {[1, 2, 3, 4, 5].map((n) => (
-                        <span
-                          key={n}
-                          className={n <= review.rating ? 'text-amber-400' : 'text-stone-200'}
-                        >
-                          ★
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="flex gap-0.5">
+                          {[1, 2, 3, 4, 5].map((n) => (
+                            <span
+                              key={n}
+                              className={n <= review.rating ? 'text-amber-400' : 'text-stone-200'}
+                            >
+                              ★
+                            </span>
+                          ))}
+                        </div>
+                        <span className="text-xs text-stone-300">
+                          {review.event?.occasion || 'Event'} ·{' '}
+                          {review.event?.event_date
+                            ? format(new Date(review.event.event_date), 'MMM d, yyyy')
+                            : ''}
                         </span>
-                      ))}
+                      </div>
+                      {review.what_they_loved && (
+                        <p className="text-sm text-stone-300 mt-1">
+                          <span className="font-medium text-emerald-700">Loved: </span>
+                          {review.what_they_loved}
+                        </p>
+                      )}
+                      {review.feedback_text && (
+                        <p className="text-sm text-stone-300 mt-1">{review.feedback_text}</p>
+                      )}
+                      {review.what_could_improve && (
+                        <p className="text-sm text-stone-300 mt-1">
+                          <span className="font-medium text-amber-700">Improve: </span>
+                          {review.what_could_improve}
+                        </p>
+                      )}
                     </div>
-                    <span className="text-xs text-stone-300">
-                      {review.event?.occasion || 'Event'} ·{' '}
-                      {review.event?.event_date
-                        ? format(new Date(review.event.event_date), 'MMM d, yyyy')
-                        : ''}
-                    </span>
-                  </div>
-                  {review.what_they_loved && (
-                    <p className="text-sm text-stone-300 mt-1">
-                      <span className="font-medium text-emerald-700">Loved: </span>
-                      {review.what_they_loved}
-                    </p>
-                  )}
-                  {review.feedback_text && (
-                    <p className="text-sm text-stone-300 mt-1">{review.feedback_text}</p>
-                  )}
-                  {review.what_could_improve && (
-                    <p className="text-sm text-stone-300 mt-1">
-                      <span className="font-medium text-amber-700">Improve: </span>
-                      {review.what_could_improve}
-                    </p>
-                  )}
+                  ))}
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+              </CardContent>
+            </Card>
+          )}
+        </div>
+        <ContextCommandPanel
+          family="client"
+          title="Client command"
+          subtitle="Booking, payment, profile, contact, and activity signals for this client."
+          statusChips={clientCommandPanelChips}
+          sections={clientCommandPanelSections}
+        />
+      </div>
     </div>
   )
 }

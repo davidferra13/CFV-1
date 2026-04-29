@@ -11,6 +11,13 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { createDropdownItems } from './nav-config'
 
+const GROUP_LABELS: Record<string, string> = {
+  creative: 'Creative',
+  pipeline: 'Pipeline',
+  operational: 'Operational',
+  upload: 'Upload',
+}
+
 type CreateMenuDropdownProps = {
   /** Render as a compact icon-only button (rail mode) */
   compact?: boolean
@@ -34,11 +41,15 @@ export function CreateMenuDropdown({
           <button
             className="flex h-10 w-10 items-center justify-center rounded-md text-stone-400 hover:bg-stone-800 hover:text-stone-300 transition-colors"
             title="Create"
+            aria-label="Create"
           >
             <Plus className="h-[18px] w-[18px]" weight="bold" />
           </button>
         ) : (
-          <button className="flex w-full items-center gap-2 rounded-md border border-brand-600/30 bg-brand-950/40 px-3 py-2 text-sm font-medium text-brand-400 hover:bg-brand-950/60 hover:text-brand-300 transition-colors">
+          <button
+            className="flex w-full items-center gap-2 rounded-md border border-brand-600/30 bg-brand-950/40 px-3 py-2 text-sm font-medium text-brand-400 hover:bg-brand-950/60 hover:text-brand-300 transition-colors"
+            aria-label="Create"
+          >
             <Plus className="h-4 w-4" weight="bold" />
             <span>Create</span>
           </button>
@@ -48,15 +59,21 @@ export function CreateMenuDropdown({
         side={side}
         align={align}
         sideOffset={8}
-        className="z-50 min-w-[220px] max-h-[80vh] overflow-y-auto rounded-lg border border-stone-700 bg-stone-900 p-1 shadow-xl"
+        className="z-50 max-h-[80vh] min-w-[240px] overflow-y-auto rounded-lg border border-stone-700 bg-stone-900 p-1 shadow-xl"
       >
-        {createDropdownItems.map((item, i) => {
+        {createDropdownItems.map((item) => {
           const showSeparator = lastGroup !== null && lastGroup !== item.group
+          const showGroupLabel = lastGroup !== item.group
           lastGroup = item.group
           const Icon = item.icon
           return (
             <div key={item.href}>
               {showSeparator && <DropdownMenuSeparator className="my-1 h-px bg-stone-700/60" />}
+              {showGroupLabel && (
+                <p className="px-2.5 pb-1 pt-2 text-xxs font-semibold uppercase tracking-[0.18em] text-stone-500">
+                  {GROUP_LABELS[item.group] ?? item.group}
+                </p>
+              )}
               <DropdownMenuItem asChild>
                 <Link
                   href={item.href}

@@ -15,6 +15,11 @@ import { RetraceTimeline } from '@/components/activity/retrace-timeline'
 import { DesirePathInsights as DesirePathReport } from '@/components/activity/desire-path-insights'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
+import { ContextCommandPanel } from '@/components/platform-shell/context-command-panel'
+import type {
+  ContextPanelSection,
+  PlatformStatusChip,
+} from '@/components/platform-shell/context-panel-types'
 
 type ActivityTab = 'my' | 'client' | 'all'
 type TimeRange = '1' | '7' | '30' | '90' | '180' | '365' | 'all'
@@ -278,6 +283,66 @@ export function ActivityPageClient({
     timeRange === 'all'
       ? 'Loading all activity...'
       : `Loading activity from the last ${daysBack} day(s)...`
+  const totalDomainCount = Object.values(domainCounts).reduce((sum, count) => sum + (count ?? 0), 0)
+  const activityCommandPanelChips: PlatformStatusChip[] = [
+    { label: viewMode, tone: 'info' },
+    {
+      label: activityLogEnabled ? 'Tracking on' : 'Tracking off',
+      tone: activityLogEnabled ? 'success' : 'warning',
+    },
+    {
+      label: retraceLoadError ? 'Retrace unavailable' : 'Retrace ready',
+      tone: retraceLoadError ? 'error' : 'success',
+    },
+  ]
+  const activityCommandPanelSections: ContextPanelSection[] = [
+    {
+      id: 'activity-filters',
+      title: 'Filters',
+      description: 'The active filters determine which source-backed activity rows appear.',
+      status: { label: activeTab, tone: 'info' },
+      metrics: [
+        { label: 'Range', value: timeRange === 'all' ? 'All time' : `${daysBack} day(s)` },
+        { label: 'Domain rows', value: totalDomainCount },
+      ],
+    },
+    {
+      id: 'activity-feed',
+      title: 'Summary feed',
+      description: error
+        ? 'The activity feed request failed. Loaded rows remain visible without fake empty state.'
+        : 'Chef and client portal activity are merged from loaded sources.',
+      state: error
+        ? 'error'
+        : chefActivity.length + clientActivity.length > 0
+          ? 'populated'
+          : 'empty',
+      metrics: [
+        { label: 'Chef actions', value: chefActivity.length },
+        { label: 'Client signals', value: clientActivity.length },
+      ],
+    },
+    {
+      id: 'activity-retrace',
+      title: 'Retrace',
+      description: retraceLoadError
+        ? 'Breadcrumb sessions did not load.'
+        : 'Breadcrumb sessions let the chef replay navigation and interaction paths.',
+      state: retraceLoadError ? 'error' : breadcrumbSessions.length > 0 ? 'populated' : 'empty',
+      metrics: [{ label: 'Sessions', value: breadcrumbSessions.length }],
+    },
+    {
+      id: 'activity-resume',
+      title: 'Resume',
+      description:
+        resumeItems.length > 0
+          ? 'Resume items are available as recent work-entry points.'
+          : 'No resume items are available yet.',
+      state: resumeItems.length > 0 ? 'populated' : 'empty',
+      metrics: [{ label: 'Items', value: resumeItems.length }],
+      actions: [{ label: 'Resume section', href: '#resume' }],
+    },
+  ]
 
   function handleViewModeChange(mode: ViewMode) {
     setViewMode(mode)
@@ -302,225 +367,248 @@ export function ActivityPageClient({
 
       <ResumeSection items={resumeItems} />
 
-      {/* View Mode Toggle - Summary vs Retrace */}
-      <div className="flex items-center gap-2">
-        <div className="flex gap-1 bg-stone-800 rounded-lg p-1">
-          <button
-            type="button"
-            onClick={() => handleViewModeChange('summary')}
-            className={`text-xs font-medium py-1.5 px-4 rounded-md transition-colors ${
-              viewMode === 'summary'
-                ? 'bg-stone-900 text-stone-200 shadow-sm'
-                : 'text-stone-500 hover:text-stone-300'
-            }`}
-          >
-            Summary
-          </button>
-          <button
-            type="button"
-            onClick={() => handleViewModeChange('retrace')}
-            className={`text-xs font-medium py-1.5 px-4 rounded-md transition-colors ${
-              viewMode === 'retrace'
-                ? 'bg-stone-900 text-stone-200 shadow-sm'
-                : 'text-stone-500 hover:text-stone-300'
-            }`}
-          >
-            Retrace My Steps
-          </button>
-          <button
-            type="button"
-            onClick={() => handleViewModeChange('desire')}
-            className={`text-xs font-medium py-1.5 px-4 rounded-md transition-colors ${
-              viewMode === 'desire'
-                ? 'bg-stone-900 text-stone-200 shadow-sm'
-                : 'text-stone-500 hover:text-stone-300'
-            }`}
-          >
-            Desire Paths
-          </button>
-        </div>
-        <p className="text-xxs text-stone-400">
-          {viewMode === 'summary'
-            ? 'Key actions and decisions'
-            : viewMode === 'retrace'
-              ? 'Every page and click, step by step'
-              : 'Observed route patterns'}
-        </p>
-      </div>
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
+        <div className="min-w-0 space-y-6">
+          {/* View Mode Toggle - Summary vs Retrace */}
+          <div className="rounded-xl border border-stone-800 bg-stone-950/50 p-3">
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+              <div>
+                <p className="text-xxs font-semibold uppercase tracking-[0.2em] text-brand-400">
+                  Platform history
+                </p>
+                <p className="mt-1 text-sm text-stone-300">
+                  Summary, retrace, and desire-path views share one source-aware activity surface.
+                </p>
+              </div>
+              <div className="flex gap-1 self-start rounded-lg bg-stone-800 p-1 md:self-auto">
+                <button
+                  type="button"
+                  onClick={() => handleViewModeChange('summary')}
+                  className={`text-xs font-medium py-1.5 px-4 rounded-md transition-colors ${
+                    viewMode === 'summary'
+                      ? 'bg-stone-900 text-stone-200 shadow-sm'
+                      : 'text-stone-500 hover:text-stone-300'
+                  }`}
+                >
+                  Summary
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleViewModeChange('retrace')}
+                  className={`text-xs font-medium py-1.5 px-4 rounded-md transition-colors ${
+                    viewMode === 'retrace'
+                      ? 'bg-stone-900 text-stone-200 shadow-sm'
+                      : 'text-stone-500 hover:text-stone-300'
+                  }`}
+                >
+                  Retrace My Steps
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleViewModeChange('desire')}
+                  className={`text-xs font-medium py-1.5 px-4 rounded-md transition-colors ${
+                    viewMode === 'desire'
+                      ? 'bg-stone-900 text-stone-200 shadow-sm'
+                      : 'text-stone-500 hover:text-stone-300'
+                  }`}
+                >
+                  Desire Paths
+                </button>
+              </div>
+            </div>
+            <p className="mt-3 text-xxs text-stone-400">
+              {viewMode === 'summary'
+                ? 'Key actions and decisions'
+                : viewMode === 'retrace'
+                  ? 'Every page and click, step by step'
+                  : 'Observed route patterns'}
+            </p>
+          </div>
 
-      {/* Summary mode: existing activity feed */}
-      {viewMode === 'summary' && (
-        <>
-          <ActivityFilters
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
-            activeDomain={activeDomain}
-            onDomainChange={setActiveDomain}
-            actorFilter={actorFilter}
-            onActorFilterChange={setActorFilter}
-            timeRange={timeRange}
-            onTimeRangeChange={setTimeRange}
-            domainCounts={domainCounts}
-          />
+          {/* Summary mode: existing activity feed */}
+          {viewMode === 'summary' && (
+            <>
+              <ActivityFilters
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
+                activeDomain={activeDomain}
+                onDomainChange={setActiveDomain}
+                actorFilter={actorFilter}
+                onActorFilterChange={setActorFilter}
+                timeRange={timeRange}
+                onTimeRangeChange={setTimeRange}
+                domainCounts={domainCounts}
+              />
 
-          {/* Activity Heat Map */}
-          {activeTab === 'my' && chefActivity.length > 0 && (
-            <div className="border border-stone-700 rounded-lg p-4 bg-stone-900">
-              <p className="text-xs font-medium text-stone-500 uppercase tracking-wider mb-3">
-                When you&apos;re most active
-              </p>
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse">
-                  <thead>
-                    <tr>
-                      <th className="w-10">
-                        <span className="sr-only">Day</span>
-                      </th>
-                      {HOUR_LABELS.map((h) => (
-                        <th
-                          key={h}
-                          className="text-2xs text-stone-400 font-normal px-0 py-0.5 text-center"
-                        >
-                          {h}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {DAY_LABELS.map((day, dayIdx) => (
-                      <tr key={day}>
-                        <td className="text-xxs text-stone-500 font-medium pr-2 text-right">
-                          {day}
-                        </td>
-                        {heatMapData[dayIdx].map((count, hourIdx) => (
-                          <td key={hourIdx} className="p-[1px]">
-                            <div
-                              className="w-full aspect-square rounded-sm"
-                              style={{
-                                backgroundColor:
-                                  count === 0
-                                    ? '#f5f5f4'
-                                    : `rgba(232, 143, 71, ${0.2 + (count / Math.max(heatMapMax, 1)) * 0.8})`,
-                              }}
-                              title={`${day} ${HOUR_LABELS[hourIdx]}: ${count} action${count === 1 ? '' : 's'}`}
-                            />
-                          </td>
+              {/* Activity Heat Map */}
+              {activeTab === 'my' && chefActivity.length > 0 && (
+                <div className="border border-stone-700 rounded-lg p-4 bg-stone-900">
+                  <p className="text-xs font-medium text-stone-500 uppercase tracking-wider mb-3">
+                    When you&apos;re most active
+                  </p>
+                  <div className="overflow-x-auto">
+                    <table className="w-full border-collapse">
+                      <thead>
+                        <tr>
+                          <th className="w-10">
+                            <span className="sr-only">Day</span>
+                          </th>
+                          {HOUR_LABELS.map((h) => (
+                            <th
+                              key={h}
+                              className="text-2xs text-stone-400 font-normal px-0 py-0.5 text-center"
+                            >
+                              {h}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {DAY_LABELS.map((day, dayIdx) => (
+                          <tr key={day}>
+                            <td className="text-xxs text-stone-500 font-medium pr-2 text-right">
+                              {day}
+                            </td>
+                            {heatMapData[dayIdx].map((count, hourIdx) => (
+                              <td key={hourIdx} className="p-[1px]">
+                                <div
+                                  className="w-full aspect-square rounded-sm"
+                                  style={{
+                                    backgroundColor:
+                                      count === 0
+                                        ? '#f5f5f4'
+                                        : `rgba(232, 143, 71, ${0.2 + (count / Math.max(heatMapMax, 1)) * 0.8})`,
+                                  }}
+                                  title={`${day} ${HOUR_LABELS[hourIdx]}: ${count} action${count === 1 ? '' : 's'}`}
+                                />
+                              </td>
+                            ))}
+                          </tr>
                         ))}
-                      </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div className="flex items-center justify-end gap-1 mt-2">
+                    <span className="text-2xs text-stone-400">Less</span>
+                    {[0, 0.2, 0.4, 0.6, 0.8, 1].map((level) => (
+                      <div
+                        key={level}
+                        className="w-2.5 h-2.5 rounded-sm"
+                        style={{
+                          backgroundColor:
+                            level === 0 ? '#f5f5f4' : `rgba(232, 143, 71, ${0.2 + level * 0.8})`,
+                        }}
+                      />
                     ))}
-                  </tbody>
-                </table>
-              </div>
-              <div className="flex items-center justify-end gap-1 mt-2">
-                <span className="text-2xs text-stone-400">Less</span>
-                {[0, 0.2, 0.4, 0.6, 0.8, 1].map((level) => (
-                  <div
-                    key={level}
-                    className="w-2.5 h-2.5 rounded-sm"
-                    style={{
-                      backgroundColor:
-                        level === 0 ? '#f5f5f4' : `rgba(232, 143, 71, ${0.2 + level * 0.8})`,
-                    }}
-                  />
-                ))}
-                <span className="text-2xs text-stone-400">More</span>
-              </div>
-            </div>
-          )}
-
-          <div className="border border-stone-700 rounded-lg overflow-hidden">
-            <div className="max-h-[600px] overflow-y-auto p-3">
-              {error && (
-                <div className="mb-3 text-xs text-red-600 bg-red-950 border border-red-200 rounded px-2 py-1.5">
-                  {error}
+                    <span className="text-2xs text-stone-400">More</span>
+                  </div>
                 </div>
               )}
-              {loading && <div className="text-xs text-stone-400 px-1 py-4">{loadingText}</div>}
-              {!loading && activeTab === 'my' && <ChefActivityFeed entries={chefActivity} />}
-              {!loading && activeTab === 'client' && <ClientActivityFeed events={clientActivity} />}
-              {!loading && activeTab === 'all' && (
-                <div className="space-y-4">
-                  <div className="text-xs text-stone-400 px-1">{clientCountLabel}</div>
-                  <AllActivityTimeline items={mergedAllItems} />
+
+              <div className="border border-stone-700 rounded-lg overflow-hidden">
+                <div className="max-h-[600px] overflow-y-auto p-3">
+                  {error && (
+                    <div className="mb-3 text-xs text-red-600 bg-red-950 border border-red-200 rounded px-2 py-1.5">
+                      {error}
+                    </div>
+                  )}
+                  {loading && <div className="text-xs text-stone-400 px-1 py-4">{loadingText}</div>}
+                  {!loading && activeTab === 'my' && <ChefActivityFeed entries={chefActivity} />}
+                  {!loading && activeTab === 'client' && (
+                    <ClientActivityFeed events={clientActivity} />
+                  )}
+                  {!loading && activeTab === 'all' && (
+                    <div className="space-y-4">
+                      <div className="text-xs text-stone-400 px-1">{clientCountLabel}</div>
+                      <AllActivityTimeline items={mergedAllItems} />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {hasMore && (
+                <div className="flex justify-center">
+                  <button
+                    type="button"
+                    onClick={() => void loadFeed({ append: true })}
+                    disabled={loadingMore}
+                    className="text-xs font-medium border border-stone-700 rounded-md px-3 py-1.5 text-stone-400 bg-stone-900 hover:bg-stone-800 disabled:opacity-50"
+                  >
+                    {loadingMore ? 'Loading...' : 'Load more'}
+                  </button>
                 </div>
               )}
-            </div>
-          </div>
-
-          {hasMore && (
-            <div className="flex justify-center">
-              <button
-                type="button"
-                onClick={() => void loadFeed({ append: true })}
-                disabled={loadingMore}
-                className="text-xs font-medium border border-stone-700 rounded-md px-3 py-1.5 text-stone-400 bg-stone-900 hover:bg-stone-800 disabled:opacity-50"
-              >
-                {loadingMore ? 'Loading...' : 'Load more'}
-              </button>
-            </div>
+            </>
           )}
-        </>
-      )}
 
-      {/* Retrace mode: step-by-step navigation history */}
-      {viewMode === 'retrace' && (
-        <>
-          {/* Time range selector for retrace */}
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-stone-500">Show:</span>
-            <select
-              value={timeRange}
-              onChange={(e) => setTimeRange(e.target.value as TimeRange)}
-              aria-label="Time range for retrace view"
-              className="text-xs border border-stone-700 rounded-md px-2 py-1 text-stone-400 bg-stone-900"
-            >
-              <option value="1">Today</option>
-              <option value="7">This Week</option>
-              <option value="30">This Month</option>
-            </select>
-          </div>
+          {/* Retrace mode: step-by-step navigation history */}
+          {viewMode === 'retrace' && (
+            <>
+              {/* Time range selector for retrace */}
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-stone-500">Show:</span>
+                <select
+                  value={timeRange}
+                  onChange={(e) => setTimeRange(e.target.value as TimeRange)}
+                  aria-label="Time range for retrace view"
+                  className="text-xs border border-stone-700 rounded-md px-2 py-1 text-stone-400 bg-stone-900"
+                >
+                  <option value="1">Today</option>
+                  <option value="7">This Week</option>
+                  <option value="30">This Month</option>
+                </select>
+              </div>
 
-          {retraceLoadError ? (
-            <p className="text-sm text-stone-500 py-4 text-center">
-              Could not load navigation history. Refresh to try again.
-            </p>
-          ) : (
-            <RetraceTimeline
-              sessions={breadcrumbSessions}
-              loading={retraceLoading}
-              hasMore={Boolean(breadcrumbCursor)}
-              onLoadMore={() => void loadRetraceSessions({ append: true })}
-              loadingMore={retraceLoadingMore}
-            />
+              {retraceLoadError ? (
+                <p className="text-sm text-stone-500 py-4 text-center">
+                  Could not load navigation history. Refresh to try again.
+                </p>
+              ) : (
+                <RetraceTimeline
+                  sessions={breadcrumbSessions}
+                  loading={retraceLoading}
+                  hasMore={Boolean(breadcrumbCursor)}
+                  onLoadMore={() => void loadRetraceSessions({ append: true })}
+                  loadingMore={retraceLoadingMore}
+                />
+              )}
+            </>
           )}
-        </>
-      )}
 
-      {viewMode === 'desire' && (
-        <>
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-stone-500">Show:</span>
-            <select
-              value={timeRange}
-              onChange={(e) => setTimeRange(e.target.value as TimeRange)}
-              aria-label="Time range for desire path view"
-              className="text-xs border border-stone-700 rounded-md px-2 py-1 text-stone-400 bg-stone-900"
-            >
-              <option value="1">Today</option>
-              <option value="7">This Week</option>
-              <option value="30">This Month</option>
-            </select>
-          </div>
+          {viewMode === 'desire' && (
+            <>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-stone-500">Show:</span>
+                <select
+                  value={timeRange}
+                  onChange={(e) => setTimeRange(e.target.value as TimeRange)}
+                  aria-label="Time range for desire path view"
+                  className="text-xs border border-stone-700 rounded-md px-2 py-1 text-stone-400 bg-stone-900"
+                >
+                  <option value="1">Today</option>
+                  <option value="7">This Week</option>
+                  <option value="30">This Month</option>
+                </select>
+              </div>
 
-          {retraceLoadError ? (
-            <p className="text-sm text-stone-500 py-4 text-center">
-              Could not load navigation history. Refresh to try again.
-            </p>
-          ) : (
-            <DesirePathReport sessions={breadcrumbSessions} loading={retraceLoading} />
+              {retraceLoadError ? (
+                <p className="text-sm text-stone-500 py-4 text-center">
+                  Could not load navigation history. Refresh to try again.
+                </p>
+              ) : (
+                <DesirePathReport sessions={breadcrumbSessions} loading={retraceLoading} />
+              )}
+            </>
           )}
-        </>
-      )}
+        </div>
+        <ContextCommandPanel
+          family="activity"
+          title="Activity command"
+          subtitle="Filters, feeds, retrace sessions, and resume points in one shell panel."
+          statusChips={activityCommandPanelChips}
+          sections={activityCommandPanelSections}
+        />
+      </div>
     </div>
   )
 }

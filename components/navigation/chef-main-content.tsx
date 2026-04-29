@@ -8,6 +8,7 @@ import { usePathname } from 'next/navigation'
 
 export function ChefMainContent({
   children,
+  rightPanel,
   showDesktopSidebar = true,
   showMobileNav = true,
   showBreadcrumbBar = true,
@@ -15,6 +16,7 @@ export function ChefMainContent({
   contentWidth = 'constrained',
 }: {
   children: React.ReactNode
+  rightPanel?: React.ReactNode
   showDesktopSidebar?: boolean
   showMobileNav?: boolean
   showBreadcrumbBar?: boolean
@@ -42,7 +44,14 @@ export function ChefMainContent({
             : 'max-w-content mx-auto px-4 py-6 sm:px-6 lg:px-8 lg:py-8'
         }`}
       >
-        {children}
+        {rightPanel ? (
+          <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
+            <div className="min-w-0">{children}</div>
+            {rightPanel}
+          </div>
+        ) : (
+          children
+        )}
       </div>
     </main>
   )

@@ -78,6 +78,7 @@ export function ActionBar({
               key={item.href}
               href={item.href}
               title={item.label}
+              aria-label={item.label}
               onClick={() => setPendingHref(item.href)}
               className={`relative flex h-10 w-10 items-center justify-center rounded-md transition-colors ${
                 active
@@ -138,9 +139,15 @@ export function ActionBar({
                 className={`w-[18px] h-[18px] flex-shrink-0 ${active || isPending ? 'text-brand-600' : 'text-stone-400'}`}
               />
               <span className="truncate">{item.label}</span>
-              {item.href === '/inbox' && <InboxUnreadBadge sseChannel={tenantId ? `tenant:${tenantId}` : undefined} />}
-              {item.href === '/notifications' && <NotificationsUnreadBadge sseChannel={userId ? `user:${userId}` : undefined} />}
-              {item.href === '/events' && <InquiriesUnreadBadge sseChannel={tenantId ? `chef-${tenantId}` : undefined} />}
+              {item.href === '/inbox' && (
+                <InboxUnreadBadge sseChannel={tenantId ? `tenant:${tenantId}` : undefined} />
+              )}
+              {item.href === '/notifications' && (
+                <NotificationsUnreadBadge sseChannel={userId ? `user:${userId}` : undefined} />
+              )}
+              {item.href === '/events' && (
+                <InquiriesUnreadBadge sseChannel={tenantId ? `chef-${tenantId}` : undefined} />
+              )}
             </Link>
           )
         })}

@@ -198,6 +198,11 @@ import { loadBehindTheScenes } from '@/lib/private-context/loaders'
 import { CollaborateSection } from './components/CollaborateSection'
 import { buildThreadCoordinationBrief } from '@/lib/events/thread-coordination-brief'
 import { buildEventMobileRunModeHref } from '@/lib/events/operation-registry'
+import { ContextCommandPanel } from '@/components/platform-shell/context-command-panel'
+import type {
+  ContextPanelSection,
+  PlatformStatusChip,
+} from '@/components/platform-shell/context-panel-types'
 
 async function EventCompletionSection({ eventId }: { eventId: string }) {
   const result = await getCompletionForEntity('event', eventId)
@@ -1322,6 +1327,125 @@ export default async function EventDetailPage({
     tickets: ticketList as any[],
     productLibrary: popUpProductLibrary,
   })
+  const eventCommandPanelChips: PlatformStatusChip[] = [
+    {
+      label: event.status.replace(/_/g, ' '),
+      tone: event.status === 'cancelled' ? 'error' : 'info',
+    },
+    {
+      label: financialAvailable
+        ? outstandingBalance > 0
+          ? 'Balance due'
+          : 'Payment clear'
+        : 'Payment unavailable',
+      tone: financialAvailable ? (outstandingBalance > 0 ? 'warning' : 'success') : 'error',
+    },
+    {
+      label: allGuestAllergies.length > 0 ? 'Allergy risk' : 'Allergy clear',
+      tone: allGuestAllergies.length > 0 ? 'warning' : 'success',
+    },
+  ]
+  const eventCommandPanelSections: ContextPanelSection[] = [
+    {
+      id: 'event-next-action',
+      title: 'Next required action',
+      description: operatingSpine.nextAction.reason,
+      status: { label: operatingSpine.readinessLabel, tone: 'info' },
+      metrics: [
+        { label: 'Owner', value: operatingSpine.nextAction.owner },
+        { label: 'Mode', value: operatingSpine.mode },
+      ],
+      actions: [{ label: operatingSpine.nextAction.label, href: operatingSpine.nextAction.href }],
+    },
+    {
+      id: 'event-payment',
+      title: 'Payment state',
+      description: financialAvailable
+        ? outstandingBalance > 0
+          ? 'The event still has an outstanding balance from the real financial summary.'
+          : 'The financial summary loaded and no outstanding balance is open.'
+        : 'The financial summary did not load, so the shell is not showing synthetic money state.',
+      state: financialAvailable ? 'populated' : 'error',
+      status: {
+        label: financialAvailable ? (outstandingBalance > 0 ? 'Open' : 'Clear') : 'Unavailable',
+        tone: financialAvailable ? (outstandingBalance > 0 ? 'warning' : 'success') : 'error',
+      },
+      metrics: financialAvailable
+        ? [
+            { label: 'Paid', value: formatCurrency(totalPaid) },
+            { label: 'Outstanding', value: formatCurrency(outstandingBalance) },
+          ]
+        : [],
+      actions: [{ label: 'Open money', href: `/events/${event.id}?tab=money` }],
+    },
+    {
+      id: 'event-dietary',
+      title: 'Dietary and allergy risk',
+      description:
+        allGuestAllergies.length > 0 || allGuestRestrictions.length > 0
+          ? 'Guest records contain dietary or allergy constraints that should stay visible while planning.'
+          : 'No guest dietary restrictions or allergies are recorded in the loaded guest list.',
+      status: {
+        label: allGuestAllergies.length > 0 ? 'Review' : 'Clear',
+        tone: allGuestAllergies.length > 0 ? 'warning' : 'success',
+      },
+      metrics: [
+        { label: 'Allergies', value: allGuestAllergies.length },
+        { label: 'Restrictions', value: allGuestRestrictions.length },
+      ],
+      actions: [{ label: 'Open ops', href: `/events/${event.id}?tab=ops` }],
+    },
+    {
+      id: 'event-prep',
+      title: 'Prep readiness',
+      description: prepTimelineReady
+        ? 'Prep timeline data is available for this event.'
+        : 'No prep timeline is ready yet. Keep prep setup visible before service day.',
+      status: {
+        label: prepTimelineReady ? 'Ready' : 'Needs prep',
+        tone: prepTimelineReady ? 'success' : 'warning',
+      },
+      metrics: [
+        { label: 'Prep blocks', value: (prepBlocks as any[]).length },
+        { label: 'Packed', value: packingConfirmedCount },
+      ],
+      actions: [
+        { label: 'Open prep', href: `/events/${event.id}?tab=prep` },
+        { label: 'Run mode', href: dopMobileHref },
+      ],
+    },
+    {
+      id: 'event-client',
+      title: 'Client and communication',
+      description: event.client_id
+        ? 'Client, messages, and call recommendation signals are connected to this event.'
+        : 'This event does not have a linked client yet.',
+      state: event.client_id ? 'populated' : 'empty',
+      status: {
+        label: event.client_id ? 'Linked' : 'No client',
+        tone: event.client_id ? 'success' : 'warning',
+      },
+      metrics: [
+        { label: 'Messages', value: messages.length },
+        { label: 'Calls', value: eventScheduledCalls.length },
+      ],
+      actions: [
+        ...(event.client_id ? [{ label: 'Open client', href: `/clients/${event.client_id}` }] : []),
+        { label: 'Open chat', href: `/events/${event.id}?tab=chat` },
+      ],
+    },
+    {
+      id: 'event-history',
+      title: 'Recent event activity',
+      description:
+        timelineEntries.length > 0
+          ? 'Recent entity activity loaded for this event.'
+          : 'No activity timeline entries are recorded yet.',
+      state: timelineEntries.length > 0 ? 'populated' : 'empty',
+      metrics: [{ label: 'Entries', value: timelineEntries.length }],
+      actions: [{ label: 'Open activity', href: `/activity?domain=event` }],
+    },
+  ]
 
   return (
     <div className="space-y-6">
@@ -1461,562 +1585,583 @@ export default async function EventDetailPage({
         </div>
       </div>
 
-      <EventRunModeRail
-        eventId={event.id}
-        status={event.status}
-        compact
-        showDocuments={false}
-        className="rounded-lg border border-stone-800 bg-stone-900/50 p-3"
-      />
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
+        <div className="min-w-0 space-y-6">
+          <EventRunModeRail
+            eventId={event.id}
+            status={event.status}
+            compact
+            showDocuments={false}
+            className="rounded-lg border border-stone-800 bg-stone-900/50 p-3"
+          />
 
-      {eventCallRecommendation && eventCallRecommendationHref && event.client_id && (
-        <CallRecommendationCard
-          recommendation={eventCallRecommendation}
-          href={eventCallRecommendationHref}
-          phoneHref={eventPhoneHref}
-        />
-      )}
+          {eventCallRecommendation && eventCallRecommendationHref && event.client_id && (
+            <CallRecommendationCard
+              recommendation={eventCallRecommendation}
+              href={eventCallRecommendationHref}
+              phoneHref={eventPhoneHref}
+            />
+          )}
 
-      {/* Pre-Event Nerve Center: unified T-minus card for events within 48 hours */}
-      {isEventWithinDays(event.event_date, 2) &&
-        !['cancelled', 'completed'].includes(event.status) && (
-          <WidgetErrorBoundary name="Pre-Event Nerve Center" compact>
+          {/* Pre-Event Nerve Center: unified T-minus card for events within 48 hours */}
+          {isEventWithinDays(event.event_date, 2) &&
+            !['cancelled', 'completed'].includes(event.status) && (
+              <WidgetErrorBoundary name="Pre-Event Nerve Center" compact>
+                <Suspense fallback={null}>
+                  <PreEventNerveCenter
+                    eventId={params.id}
+                    eventDate={event.event_date}
+                    serveTime={(event as any).serve_time}
+                    status={event.status}
+                    occasion={event.occasion}
+                    guestCount={event.guest_count ?? 0}
+                    locationLat={(event as any).location_lat}
+                    locationLng={(event as any).location_lng}
+                    locationAddress={event.location_address}
+                    prepTimeline={
+                      prepTimeline
+                        ? {
+                            days: ((prepTimeline as any).days ?? []).map((d: any) => ({
+                              label: d.label,
+                              items: (d.items ?? []).map((item: any) => ({
+                                recipeName: item.recipeName,
+                                componentName: item.componentName,
+                              })),
+                              totalPrepMinutes: d.totalPrepMinutes ?? 0,
+                              isToday: d.isToday ?? false,
+                              isPast: d.isPast ?? false,
+                              isServiceDay: d.isServiceDay ?? false,
+                            })),
+                            untimedItems: ((prepTimeline as any).untimedItems ?? []).map(
+                              (item: any) => ({
+                                recipeName: item.recipeName,
+                              })
+                            ),
+                            groceryDeadline: (prepTimeline as any).groceryDeadline
+                              ? dateToDateString((prepTimeline as any).groceryDeadline)
+                              : null,
+                          }
+                        : null
+                    }
+                    readinessBlockers={
+                      eventReadiness
+                        ? ((eventReadiness as any).blockers ?? []).map((b: any) => ({
+                            label: b.label,
+                            description: b.description,
+                            ctaLabel: b.ctaLabel,
+                            verifyRoute: b.verifyRoute,
+                          }))
+                        : []
+                    }
+                    readinessConfidence={(eventReadiness as any)?.confidence ?? null}
+                    travelInfo={travelInfo}
+                    packingStatus={
+                      (event as any).car_packed
+                        ? 'packed'
+                        : packingConfirmedCount > 0
+                          ? 'in_progress'
+                          : 'not_started'
+                    }
+                    packingConfirmedCount={packingConfirmedCount}
+                    lastMessageAt={
+                      messages.length > 0
+                        ? ((messages[messages.length - 1] as any)?.created_at ?? null)
+                        : null
+                    }
+                    unreadMessageCount={0}
+                    staffAssignedCount={(staffAssignments as any[]).length}
+                    clientName={event.client?.full_name ?? null}
+                  />
+                </Suspense>
+              </WidgetErrorBoundary>
+            )}
+
+          {event.status !== 'cancelled' && serviceSimulationState ? (
+            <ServiceSimulationRollupCard
+              eventId={params.id}
+              panelState={serviceSimulationState}
+              compact
+              returnToHref={`/events/${params.id}?tab=ops#service-simulation`}
+              description="Day-of snapshot from live event truth. Keep the full walkthrough in Ops, but keep this signal visible above the fold."
+            />
+          ) : null}
+
+          {isEventWithinDays(event.event_date, 1) &&
+            !['cancelled', 'completed'].includes(event.status) && (
+              <WidgetErrorBoundary name="Pre-Service Checklist" compact>
+                <Suspense fallback={null}>
+                  <PreServiceChecklistSection eventId={params.id} compact />
+                </Suspense>
+              </WidgetErrorBoundary>
+            )}
+
+          {eventReadinessEngine && !['completed', 'cancelled'].includes(event.status) && (
+            <EventReadinessEnginePanel eventId={params.id} readiness={eventReadinessEngine} />
+          )}
+
+          <EventOperatingSpineCard
+            spine={operatingSpine}
+            audience="chef"
+            title="Event operating spine"
+            description="One event view connects booking status, client readiness, menu, prep, stock, finance, communication, and follow-up."
+          />
+
+          <EventDefaultFlowPanel eventId={params.id} snapshot={defaultFlowSnapshot} />
+
+          <DinnerCircleCommandCenter
+            snapshot={dinnerCircleSnapshot}
+            collaborators={eventCollaborators as any[]}
+            ticketHolders={ticketList as any[]}
+            approvalGates={approvalGates}
+          />
+
+          <CollaborateSection
+            eventStatus={event.status}
+            eventGuestCount={event.guest_count ?? null}
+            activeShare={activeShare as any}
+            shares={guestShares as any[]}
+            guests={guestList as any[]}
+            rsvpSummary={rsvpSummary as any}
+            collaborators={eventCollaborators as any[]}
+            shortShareUrl={shortShareUrl}
+            fullShareUrl={fullShareUrl}
+            coordinationBrief={threadCoordinationBrief}
+          />
+
+          {(eventCollaborators as any[]).length > 0 && !['cancelled'].includes(event.status) && (
+            <WidgetErrorBoundary name="Kitchen Stations" compact>
+              <StationBoard eventId={params.id} />
+            </WidgetErrorBoundary>
+          )}
+
+          {/* Collaborator role banner â€” shown when viewing another chef's event */}
+          {!isEventOwner && myCollaboratorRow && (
+            <div className="rounded-lg border border-brand-700 bg-brand-950/50 px-4 py-3 flex items-center gap-3">
+              <div className="flex-1">
+                <p className="text-sm font-medium text-brand-200">
+                  You are collaborating on this event as{' '}
+                  <span className="font-semibold">
+                    {COLLAB_ROLE_LABELS[myCollaboratorRow.role] ?? myCollaboratorRow.role}
+                  </span>
+                </p>
+                <p className="text-xs text-brand-400 mt-0.5">
+                  This event is owned by another chef. Some sections may be limited to the owner.
+                </p>
+              </div>
+              <Link href="/dashboard">
+                <Button variant="ghost" size="sm">
+                  Back to Dashboard
+                </Button>
+              </Link>
+            </div>
+          )}
+
+          {/* Deposit Shortfall Banner â€” accepted/paid events with uncollected deposit */}
+          {['accepted', 'paid'].includes(event.status) &&
+            (event as any).deposit_amount_cents > 0 &&
+            totalPaid < (event as any).deposit_amount_cents && (
+              <div className="rounded-lg border border-amber-300 bg-amber-950 px-4 py-3">
+                <p className="text-sm font-medium text-amber-900">
+                  Awaiting {formatCurrency((event as any).deposit_amount_cents - totalPaid)} deposit
+                </p>
+                <p className="text-xs text-amber-700 mt-0.5">
+                  {formatCurrency((event as any).deposit_amount_cents)} required â€¢{' '}
+                  {formatCurrency(totalPaid)} collected â€” record payment below to proceed to
+                  confirmation.
+                </p>
+              </div>
+            )}
+
+          {/* Take a Chef â†’ Direct Conversion Banner */}
+          {/* Marketplace Convert Banner â€" works for all platforms (TAC, Yhangry, Cozymeal, etc.) */}
+          {marketplaceConversion?.isMarketplace && marketplaceConversion.directBookingUrl && (
+            <MarketplaceConvertBanner
+              clientName={marketplaceConversion.clientName}
+              directBookingUrl={marketplaceConversion.directBookingUrl}
+              eventId={params.id}
+              platformLabel={marketplaceConversion.platformLabel!}
+            />
+          )}
+
+          {/* Quick Debrief â€” surfaces within 48h of completion when no AAR exists */}
+          {event.status === 'completed' && (
+            <QuickDebriefPrompt
+              eventId={params.id}
+              hasAAR={!!aar}
+              completedAt={(event as any).service_completed_at ?? event.updated_at}
+            />
+          )}
+
+          {/* Event Intelligence */}
+          <WidgetErrorBoundary name="Event Intelligence" compact>
             <Suspense fallback={null}>
-              <PreEventNerveCenter
+              <EventIntelligencePanel
                 eventId={params.id}
-                eventDate={event.event_date}
-                serveTime={(event as any).serve_time}
+                guestCount={event.guest_count ?? null}
+                occasion={event.occasion ?? null}
+                quotedPriceCents={(event as any).quoted_price_cents ?? null}
                 status={event.status}
-                occasion={event.occasion}
-                guestCount={event.guest_count ?? 0}
-                locationLat={(event as any).location_lat}
-                locationLng={(event as any).location_lng}
-                locationAddress={event.location_address}
-                prepTimeline={
-                  prepTimeline
-                    ? {
-                        days: ((prepTimeline as any).days ?? []).map((d: any) => ({
-                          label: d.label,
-                          items: (d.items ?? []).map((item: any) => ({
-                            recipeName: item.recipeName,
-                            componentName: item.componentName,
-                          })),
-                          totalPrepMinutes: d.totalPrepMinutes ?? 0,
-                          isToday: d.isToday ?? false,
-                          isPast: d.isPast ?? false,
-                          isServiceDay: d.isServiceDay ?? false,
-                        })),
-                        untimedItems: ((prepTimeline as any).untimedItems ?? []).map(
-                          (item: any) => ({
-                            recipeName: item.recipeName,
-                          })
-                        ),
-                        groceryDeadline: (prepTimeline as any).groceryDeadline
-                          ? dateToDateString((prepTimeline as any).groceryDeadline)
-                          : null,
-                      }
-                    : null
-                }
-                readinessBlockers={
-                  eventReadiness
-                    ? ((eventReadiness as any).blockers ?? []).map((b: any) => ({
-                        label: b.label,
-                        description: b.description,
-                        ctaLabel: b.ctaLabel,
-                        verifyRoute: b.verifyRoute,
-                      }))
-                    : []
-                }
-                readinessConfidence={(eventReadiness as any)?.confidence ?? null}
-                travelInfo={travelInfo}
-                packingStatus={
-                  (event as any).car_packed
-                    ? 'packed'
-                    : packingConfirmedCount > 0
-                      ? 'in_progress'
-                      : 'not_started'
-                }
-                packingConfirmedCount={packingConfirmedCount}
-                lastMessageAt={
-                  messages.length > 0
-                    ? ((messages[messages.length - 1] as any)?.created_at ?? null)
-                    : null
-                }
-                unreadMessageCount={0}
-                staffAssignedCount={(staffAssignments as any[]).length}
-                clientName={event.client?.full_name ?? null}
+                eventDate={event.event_date ?? null}
               />
             </Suspense>
           </WidgetErrorBoundary>
-        )}
 
-      {event.status !== 'cancelled' && serviceSimulationState ? (
-        <ServiceSimulationRollupCard
-          eventId={params.id}
-          panelState={serviceSimulationState}
-          compact
-          returnToHref={`/events/${params.id}?tab=ops#service-simulation`}
-          description="Day-of snapshot from live event truth. Keep the full walkthrough in Ops, but keep this signal visible above the fold."
-        />
-      ) : null}
+          {/* Lifecycle Progress */}
+          {lifecycleProgress && lifecycleProgress.stages.length > 0 && (
+            <WidgetErrorBoundary name="Lifecycle Progress" compact>
+              <LifecycleProgressPanel
+                eventId={params.id}
+                inquiryId={event.inquiry_id ?? undefined}
+                stages={lifecycleProgress.stages}
+                overallPercent={lifecycleProgress.overallPercent}
+                currentStage={lifecycleProgress.currentStage}
+                nextActions={lifecycleProgress.nextActions}
+              />
+            </WidgetErrorBoundary>
+          )}
 
-      {isEventWithinDays(event.event_date, 1) &&
-        !['cancelled', 'completed'].includes(event.status) && (
-          <WidgetErrorBoundary name="Pre-Service Checklist" compact>
-            <Suspense fallback={null}>
-              <PreServiceChecklistSection eventId={params.id} compact />
+          {/* Completion Contract */}
+          <WidgetErrorBoundary name="Completion" compact>
+            <Suspense fallback={<CompletionCardSkeleton />}>
+              <EventCompletionSection eventId={params.id} />
             </Suspense>
           </WidgetErrorBoundary>
-        )}
 
-      {eventReadinessEngine && !['completed', 'cancelled'].includes(event.status) && (
-        <EventReadinessEnginePanel eventId={params.id} readiness={eventReadinessEngine} />
-      )}
+          {/* Ops Pulse: inside-out operational summary */}
+          {!['cancelled', 'completed'].includes(event.status) && (
+            <WidgetErrorBoundary name="Ops Pulse" compact>
+              <Suspense fallback={null}>
+                <OpsPulseSection
+                  eventId={params.id}
+                  eventDate={dateToDateString(event.event_date)}
+                  serveTime={(event as any).serve_time}
+                  status={event.status}
+                  prepDays={
+                    prepTimeline
+                      ? (prepTimeline as any).days?.map((d: any) => ({
+                          label: d.label,
+                          itemCount: d.items?.length ?? 0,
+                          totalMinutes: d.totalPrepMinutes ?? 0,
+                          isPast: d.isPast,
+                          isToday: d.isToday,
+                        }))
+                      : undefined
+                  }
+                  groceryDeadline={
+                    prepTimeline
+                      ? (prepTimeline as any).groceryDeadline
+                        ? dateToDateString((prepTimeline as any).groceryDeadline)
+                        : null
+                      : undefined
+                  }
+                  untimedCount={(prepTimeline as any)?.untimedItems?.length}
+                />
+              </Suspense>
+            </WidgetErrorBoundary>
+          )}
 
-      <EventOperatingSpineCard
-        spine={operatingSpine}
-        audience="chef"
-        title="Event operating spine"
-        description="One event view connects booking status, client readiness, menu, prep, stock, finance, communication, and follow-up."
-      />
+          {/* Schedule Summary & DOP Progress */}
+          {dopProgress && !['cancelled'].includes(event.status) && (
+            <Card className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-2">
+                    <h3 className="text-sm font-semibold text-stone-300">Preparation Progress</h3>
+                    <Link
+                      href={`/events/${event.id}/schedule`}
+                      className="text-xs text-brand-500 hover:text-brand-400"
+                    >
+                      View full schedule &rarr;
+                    </Link>
+                    <Link
+                      href={dopMobileHref}
+                      className="text-xs text-brand-500 hover:text-brand-400"
+                    >
+                      Run Mode &rarr;
+                    </Link>
+                  </div>
+                  <DOPProgressBar completed={dopProgress.completed} total={dopProgress.total} />
+                </div>
+              </div>
+            </Card>
+          )}
 
-      <EventDefaultFlowPanel eventId={params.id} snapshot={defaultFlowSnapshot} />
+          {/* Packing Progress â€” for confirmed/in_progress events */}
+          {['confirmed', 'in_progress'].includes(event.status) && (
+            <Card className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-1">
+                    <h3 className="text-sm font-semibold text-stone-300">Packing</h3>
+                    <Link
+                      href={packingHref}
+                      className="text-xs text-brand-500 hover:text-brand-400"
+                    >
+                      Open packing view &rarr;
+                    </Link>
+                  </div>
+                  {(event as any).car_packed ? (
+                    <p className="text-sm text-emerald-700 font-medium">Car packed</p>
+                  ) : packingConfirmedCount > 0 ? (
+                    <p className="text-sm text-stone-300">
+                      {packingConfirmedCount} item{packingConfirmedCount !== 1 ? 's' : ''} confirmed
+                      packed
+                    </p>
+                  ) : (
+                    <p className="text-sm text-stone-300">
+                      Not started â€” open packing view to begin
+                    </p>
+                  )}
+                </div>
+                {(event as any).car_packed && (
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-900 text-emerald-800">
+                    Packed
+                  </span>
+                )}
+              </div>
+            </Card>
+          )}
 
-      <DinnerCircleCommandCenter
-        snapshot={dinnerCircleSnapshot}
-        collaborators={eventCollaborators as any[]}
-        ticketHolders={ticketList as any[]}
-        approvalGates={approvalGates}
-      />
+          {/* Prep Block Nudge - confirmed events with no prep blocks scheduled */}
+          {event.status === 'confirmed' && (prepBlocks as any[]).length === 0 && (
+            <PrepBlockNudgeBanner eventId={event.id} />
+          )}
 
-      <CollaborateSection
-        eventStatus={event.status}
-        eventGuestCount={event.guest_count ?? null}
-        activeShare={activeShare as any}
-        shares={guestShares as any[]}
-        guests={guestList as any[]}
-        rsvpSummary={rsvpSummary as any}
-        collaborators={eventCollaborators as any[]}
-        shortShareUrl={shortShareUrl}
-        fullShareUrl={fullShareUrl}
-        coordinationBrief={threadCoordinationBrief}
-      />
-
-      {(eventCollaborators as any[]).length > 0 && !['cancelled'].includes(event.status) && (
-        <WidgetErrorBoundary name="Kitchen Stations" compact>
-          <StationBoard eventId={params.id} />
-        </WidgetErrorBoundary>
-      )}
-
-      {/* Collaborator role banner â€” shown when viewing another chef's event */}
-      {!isEventOwner && myCollaboratorRow && (
-        <div className="rounded-lg border border-brand-700 bg-brand-950/50 px-4 py-3 flex items-center gap-3">
-          <div className="flex-1">
-            <p className="text-sm font-medium text-brand-200">
-              You are collaborating on this event as{' '}
-              <span className="font-semibold">
-                {COLLAB_ROLE_LABELS[myCollaboratorRow.role] ?? myCollaboratorRow.role}
-              </span>
-            </p>
-            <p className="text-xs text-brand-400 mt-0.5">
-              This event is owned by another chef. Some sections may be limited to the owner.
-            </p>
-          </div>
-          <Link href="/dashboard">
-            <Button variant="ghost" size="sm">
-              Back to Dashboard
-            </Button>
-          </Link>
-        </div>
-      )}
-
-      {/* Deposit Shortfall Banner â€” accepted/paid events with uncollected deposit */}
-      {['accepted', 'paid'].includes(event.status) &&
-        (event as any).deposit_amount_cents > 0 &&
-        totalPaid < (event as any).deposit_amount_cents && (
-          <div className="rounded-lg border border-amber-300 bg-amber-950 px-4 py-3">
-            <p className="text-sm font-medium text-amber-900">
-              Awaiting {formatCurrency((event as any).deposit_amount_cents - totalPaid)} deposit
-            </p>
-            <p className="text-xs text-amber-700 mt-0.5">
-              {formatCurrency((event as any).deposit_amount_cents)} required â€¢{' '}
-              {formatCurrency(totalPaid)} collected â€” record payment below to proceed to
-              confirmation.
-            </p>
-          </div>
-        )}
-
-      {/* Take a Chef â†’ Direct Conversion Banner */}
-      {/* Marketplace Convert Banner â€" works for all platforms (TAC, Yhangry, Cozymeal, etc.) */}
-      {marketplaceConversion?.isMarketplace && marketplaceConversion.directBookingUrl && (
-        <MarketplaceConvertBanner
-          clientName={marketplaceConversion.clientName}
-          directBookingUrl={marketplaceConversion.directBookingUrl}
-          eventId={params.id}
-          platformLabel={marketplaceConversion.platformLabel!}
-        />
-      )}
-
-      {/* Quick Debrief â€” surfaces within 48h of completion when no AAR exists */}
-      {event.status === 'completed' && (
-        <QuickDebriefPrompt
-          eventId={params.id}
-          hasAAR={!!aar}
-          completedAt={(event as any).service_completed_at ?? event.updated_at}
-        />
-      )}
-
-      {/* Event Intelligence */}
-      <WidgetErrorBoundary name="Event Intelligence" compact>
-        <Suspense fallback={null}>
-          <EventIntelligencePanel
-            eventId={params.id}
-            guestCount={event.guest_count ?? null}
-            occasion={event.occasion ?? null}
-            quotedPriceCents={(event as any).quoted_price_cents ?? null}
-            status={event.status}
-            eventDate={event.event_date ?? null}
-          />
-        </Suspense>
-      </WidgetErrorBoundary>
-
-      {/* Lifecycle Progress */}
-      {lifecycleProgress && lifecycleProgress.stages.length > 0 && (
-        <WidgetErrorBoundary name="Lifecycle Progress" compact>
-          <LifecycleProgressPanel
-            eventId={params.id}
-            inquiryId={event.inquiry_id ?? undefined}
-            stages={lifecycleProgress.stages}
-            overallPercent={lifecycleProgress.overallPercent}
-            currentStage={lifecycleProgress.currentStage}
-            nextActions={lifecycleProgress.nextActions}
-          />
-        </WidgetErrorBoundary>
-      )}
-
-      {/* Completion Contract */}
-      <WidgetErrorBoundary name="Completion" compact>
-        <Suspense fallback={<CompletionCardSkeleton />}>
-          <EventCompletionSection eventId={params.id} />
-        </Suspense>
-      </WidgetErrorBoundary>
-
-      {/* Ops Pulse: inside-out operational summary */}
-      {!['cancelled', 'completed'].includes(event.status) && (
-        <WidgetErrorBoundary name="Ops Pulse" compact>
-          <Suspense fallback={null}>
-            <OpsPulseSection
-              eventId={params.id}
-              eventDate={dateToDateString(event.event_date)}
-              serveTime={(event as any).serve_time}
-              status={event.status}
-              prepDays={
-                prepTimeline
-                  ? (prepTimeline as any).days?.map((d: any) => ({
-                      label: d.label,
-                      itemCount: d.items?.length ?? 0,
-                      totalMinutes: d.totalPrepMinutes ?? 0,
-                      isPast: d.isPast,
-                      isToday: d.isToday,
-                    }))
-                  : undefined
-              }
-              groceryDeadline={
-                prepTimeline
-                  ? (prepTimeline as any).groceryDeadline
-                    ? dateToDateString((prepTimeline as any).groceryDeadline)
-                    : null
-                  : undefined
-              }
-              untimedCount={(prepTimeline as any)?.untimedItems?.length}
-            />
-          </Suspense>
-        </WidgetErrorBoundary>
-      )}
-
-      {/* Schedule Summary & DOP Progress */}
-      {dopProgress && !['cancelled'].includes(event.status) && (
-        <Card className="p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex-1">
-              <div className="flex items-center gap-3 mb-2">
-                <h3 className="text-sm font-semibold text-stone-300">Preparation Progress</h3>
+          {/* Par Level Alert - items below par for upcoming events */}
+          {(parAlerts as any[]).length > 0 && (
+            <Card className="p-4 border-amber-700/50 bg-amber-950/20">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-sm font-medium text-amber-400">
+                    {(parAlerts as any[]).length} item{(parAlerts as any[]).length !== 1 ? 's' : ''}{' '}
+                    below par level
+                  </p>
+                  <p className="text-xs text-stone-400 mt-0.5">
+                    {(parAlerts as any[])
+                      .slice(0, 3)
+                      .map((a: any) => a.ingredientName)
+                      .join(', ')}
+                    {(parAlerts as any[]).length > 3
+                      ? ` +${(parAlerts as any[]).length - 3} more`
+                      : ''}
+                  </p>
+                </div>
                 <Link
-                  href={`/events/${event.id}/schedule`}
-                  className="text-xs text-brand-500 hover:text-brand-400"
+                  href="/inventory"
+                  className="shrink-0 text-xs text-amber-400 hover:underline font-medium"
                 >
-                  View full schedule &rarr;
-                </Link>
-                <Link href={dopMobileHref} className="text-xs text-brand-500 hover:text-brand-400">
-                  Run Mode &rarr;
+                  Check inventory
                 </Link>
               </div>
-              <DOPProgressBar completed={dopProgress.completed} total={dopProgress.total} />
-            </div>
-          </div>
-        </Card>
-      )}
+            </Card>
+          )}
 
-      {/* Packing Progress â€” for confirmed/in_progress events */}
-      {['confirmed', 'in_progress'].includes(event.status) && (
-        <Card className="p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex-1">
-              <div className="flex items-center gap-3 mb-1">
-                <h3 className="text-sm font-semibold text-stone-300">Packing</h3>
-                <Link href={packingHref} className="text-xs text-brand-500 hover:text-brand-400">
-                  Open packing view &rarr;
-                </Link>
-              </div>
-              {(event as any).car_packed ? (
-                <p className="text-sm text-emerald-700 font-medium">Car packed</p>
-              ) : packingConfirmedCount > 0 ? (
-                <p className="text-sm text-stone-300">
-                  {packingConfirmedCount} item{packingConfirmedCount !== 1 ? 's' : ''} confirmed
-                  packed
-                </p>
-              ) : (
-                <p className="text-sm text-stone-300">Not started â€” open packing view to begin</p>
-              )}
-            </div>
-            {(event as any).car_packed && (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-900 text-emerald-800">
-                Packed
-              </span>
-            )}
-          </div>
-        </Card>
-      )}
+          {/* Prep Schedule */}
+          {event.status !== 'cancelled' && (
+            <EventPrepSchedule eventId={event.id} initialBlocks={prepBlocks as any} />
+          )}
 
-      {/* Prep Block Nudge - confirmed events with no prep blocks scheduled */}
-      {event.status === 'confirmed' && (prepBlocks as any[]).length === 0 && (
-        <PrepBlockNudgeBanner eventId={event.id} />
-      )}
+          {/* Context Inspector - consolidated client/event reference */}
+          <ContextInspector
+            clientId={event.client_id}
+            eventId={event.id}
+            sections={[
+              'client',
+              'dietary',
+              'preferences',
+              'pastMeals',
+              'feedback',
+              'venue',
+              'milestones',
+            ]}
+            defaultCollapsed={true}
+          />
 
-      {/* Par Level Alert - items below par for upcoming events */}
-      {(parAlerts as any[]).length > 0 && (
-        <Card className="p-4 border-amber-700/50 bg-amber-950/20">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="text-sm font-medium text-amber-400">
-                {(parAlerts as any[]).length} item{(parAlerts as any[]).length !== 1 ? 's' : ''}{' '}
-                below par level
-              </p>
-              <p className="text-xs text-stone-400 mt-0.5">
-                {(parAlerts as any[])
-                  .slice(0, 3)
-                  .map((a: any) => a.ingredientName)
-                  .join(', ')}
-                {(parAlerts as any[]).length > 3 ? ` +${(parAlerts as any[]).length - 3} more` : ''}
-              </p>
-            </div>
-            <Link
-              href="/inventory"
-              className="shrink-0 text-xs text-amber-400 hover:underline font-medium"
-            >
-              Check inventory
-            </Link>
-          </div>
-        </Card>
-      )}
+          {/* Behind the Scenes: private notes, secrets, comp items (chef-only) */}
+          <BehindTheScenesPanel
+            eventId={event.id}
+            privateContexts={behindTheScenes.privateContexts}
+            secrets={behindTheScenes.secrets}
+            compItems={behindTheScenes.compItems}
+            compSuggestions={behindTheScenes.compSuggestions}
+          />
 
-      {/* Prep Schedule */}
-      {event.status !== 'cancelled' && (
-        <EventPrepSchedule eventId={event.id} initialBlocks={prepBlocks as any} />
-      )}
+          {/* ============================================ */}
+          {/* MOBILE TAB NAV - hidden on md+               */}
+          {/* ============================================ */}
+          <EventDetailMobileNav />
 
-      {/* Context Inspector - consolidated client/event reference */}
-      <ContextInspector
-        clientId={event.client_id}
-        eventId={event.id}
-        sections={[
-          'client',
-          'dietary',
-          'preferences',
-          'pastMeals',
-          'feedback',
-          'venue',
-          'milestones',
-        ]}
-        defaultCollapsed={true}
-      />
+          <EventDetailSection tab="popup" activeTab={activeTab}>
+            <PopUpOperatingPanel
+              initialConfig={popUpConfig}
+              snapshot={popUpSnapshot}
+              productLibrary={popUpProductLibrary}
+            />
+          </EventDetailSection>
 
-      {/* Behind the Scenes: private notes, secrets, comp items (chef-only) */}
-      <BehindTheScenesPanel
-        eventId={event.id}
-        privateContexts={behindTheScenes.privateContexts}
-        secrets={behindTheScenes.secrets}
-        compItems={behindTheScenes.compItems}
-        compSuggestions={behindTheScenes.compSuggestions}
-      />
+          {/* ============================================ */}
+          {/* ============================================ */}
+          {/* TAB: OVERVIEW - Event details, client, comms */}
+          {/* ============================================ */}
+          <EventDetailOverviewTab
+            activeTab={activeTab}
+            event={event}
+            dopProgress={dopProgress}
+            packingConfirmedCount={packingConfirmedCount}
+            travelInfo={travelInfo}
+            eventLoyaltyImpact={eventLoyaltyImpact}
+            eventLoyaltyPoints={eventLoyaltyPoints}
+            activeShare={activeShare}
+            shortShareUrl={shortShareUrl}
+            fullShareUrl={fullShareUrl}
+            eventMenus={eventMenus as any}
+            hubGroupToken={hubGroupToken as string | null}
+            hubProfileToken={chefHubProfileToken as string | null}
+            guestList={guestList as any[]}
+            rsvpSummary={rsvpSummary as any}
+            chefDisplayName={chefDisplayName}
+            guestLeadCount={guestLeadCount as number}
+            guestWallMessages={guestWallMessages as any[]}
+            messages={messages}
+            templates={templates}
+            chatConversationId={eventChatConversationId as string | null}
+            collaborators={eventCollaborators as any[]}
+            eventContacts={eventContacts as any[]}
+            eventMenuData={eventMenuData}
+            constraintRadarData={constraintRadarData}
+            clientMemories={clientMemories as any[]}
+            callRecommendation={eventCallRecommendation}
+            callRecommendationHref={eventCallRecommendationHref}
+            callPhoneHref={eventPhoneHref}
+            eventCalls={eventScheduledCalls}
+          />
 
-      {/* ============================================ */}
-      {/* MOBILE TAB NAV - hidden on md+               */}
-      {/* ============================================ */}
-      <EventDetailMobileNav />
+          {/* TAB: CHAT - Inline circle chat thread        */}
+          {/* ============================================ */}
+          <EventDetailChatTab
+            activeTab={activeTab}
+            eventId={event.id}
+            hubGroupToken={hubGroupToken as string | null}
+            hubProfileToken={chefHubProfileToken as string | null}
+          />
 
-      <EventDetailSection tab="popup" activeTab={activeTab}>
-        <PopUpOperatingPanel
-          initialConfig={popUpConfig}
-          snapshot={popUpSnapshot}
-          productLibrary={popUpProductLibrary}
+          {/* TAB: MONEY - Financials, payments, expenses  */}
+          {/* ============================================ */}
+          <EventDetailMoneyTab
+            activeTab={activeTab}
+            event={event}
+            menuLibraryData={menuLibraryData}
+            eventMenus={eventMenus as any}
+            menuApprovalData={menuApprovalData}
+            totalPaid={totalPaid}
+            outstandingBalance={outstandingBalance}
+            paymentPlanInstallments={paymentPlanInstallments}
+            mileageEntries={mileageEntries}
+            eventTips={eventTips}
+            refundRecommendationData={refundRecommendationData}
+            totalRefunded={totalRefunded}
+            budgetGuardrail={budgetGuardrail}
+            eventExpenseData={eventExpenseData}
+            profitSummary={profitSummary}
+            eventLoyaltyPoints={eventLoyaltyPoints}
+            takeAChefFinance={takeAChefFinance}
+            costForecast={costForecast}
+            menuCostSummary={menuCostSummary}
+            chefArchetype={chefArchetype}
+            pricingIntelligence={pricingIntelligence}
+            readinessAssistant={readinessAssistant}
+            settlement={settlement}
+            ledgerEntries={ledgerEntries as any[]}
+            guestCountChanges={guestCountChanges}
+            regionalSettings={regionalSettings}
+            eventCommerceSale={eventCommerceSale as any}
+            eventPosSummary={eventPosSummary}
+          />
+
+          {/* TAB: PREP - Peak window prep timeline         */}
+          {/* ============================================ */}
+          <EventDetailPrepTab
+            activeTab={activeTab}
+            timeline={prepTimeline}
+            eventId={event.id}
+            hasMenu={!!eventMenus}
+          />
+
+          {/* TAB: TICKETS - Ticket sales and management   */}
+          {/* ============================================ */}
+          <EventDetailTicketsTab
+            activeTab={activeTab}
+            eventId={event.id}
+            eventStatus={event.status}
+            ticketTypes={ticketTypes as any[]}
+            tickets={ticketList as any[]}
+            summary={ticketSummary}
+            shareToken={publicTicketShareToken}
+            ticketsEnabled={ticketsEnabled}
+          />
+
+          {/* ============================================ */}
+          {/* TAB: OPS - Staff, temps, docs, transitions   */}
+          {/* ============================================ */}
+          <EventDetailOpsTab
+            activeTab={activeTab}
+            event={event}
+            canTrackTime={canTrackTime}
+            updateEventTimeAndCard={updateEventTimeAndCard}
+            startEventActivity={startEventActivity}
+            stopEventActivity={stopEventActivity}
+            staffMembers={staffMembers as any[]}
+            staffAssignments={staffAssignments as any[]}
+            isEventOwner={isEventOwner}
+            eventCollaborators={eventCollaborators as any[]}
+            tempLogs={tempLogs as any[]}
+            substitutionItems={substitutionItems}
+            isCompletedOrBeyond={isCompletedOrBeyond}
+            menuMods={menuMods as any[]}
+            carryForwardItems={carryForwardItems}
+            unusedItems={unusedItems as any[]}
+            contingencyNotes={contingencyNotes as any[]}
+            emergencyContacts={emergencyContacts as any[]}
+            docReadiness={docReadiness}
+            businessDocs={businessDocs}
+            eventReadiness={eventReadiness}
+            documentReadinessGate={documentReadinessGate}
+            closureStatus={closureStatus}
+            aar={aar}
+            eventPhotos={eventPhotos}
+            eventMenus={eventMenus as any}
+            unrecordedComponents={unrecordedComponents}
+            aiConfigured={aiConfigured}
+            hasAllergyData={eventHasAllergyData as boolean}
+            eventTotalCents={eventTotalCents}
+            serviceSimulationState={serviceSimulationState}
+            courseProgress={courseProgress}
+          />
+          {/* TAB: WRAP-UP â€” Debrief, survey, history      */}
+          {/* ============================================ */}
+          <EventDetailWrapTab
+            activeTab={activeTab}
+            eventId={event.id}
+            eventStatus={event.status}
+            eventClientId={event.client_id}
+            followUpSent={(event as any).follow_up_sent ?? false}
+            followUpSentAt={(event as any).follow_up_sent_at ?? null}
+            debriefCompletedAt={(event as any).debrief_completed_at ?? null}
+            hasAAR={!!aar}
+            hasClosureStatus={!!closureStatus}
+            transitions={transitions as any[]}
+            timelineEntries={timelineEntries}
+            compItems={behindTheScenes.compItems}
+          />
+        </div>
+        <ContextCommandPanel
+          family="event"
+          title="Event command"
+          subtitle="Status, money, prep, client, and recent activity from loaded event sources."
+          statusChips={eventCommandPanelChips}
+          sections={eventCommandPanelSections}
         />
-      </EventDetailSection>
-
-      {/* ============================================ */}
-      {/* ============================================ */}
-      {/* TAB: OVERVIEW - Event details, client, comms */}
-      {/* ============================================ */}
-      <EventDetailOverviewTab
-        activeTab={activeTab}
-        event={event}
-        dopProgress={dopProgress}
-        packingConfirmedCount={packingConfirmedCount}
-        travelInfo={travelInfo}
-        eventLoyaltyImpact={eventLoyaltyImpact}
-        eventLoyaltyPoints={eventLoyaltyPoints}
-        activeShare={activeShare}
-        shortShareUrl={shortShareUrl}
-        fullShareUrl={fullShareUrl}
-        eventMenus={eventMenus as any}
-        hubGroupToken={hubGroupToken as string | null}
-        hubProfileToken={chefHubProfileToken as string | null}
-        guestList={guestList as any[]}
-        rsvpSummary={rsvpSummary as any}
-        chefDisplayName={chefDisplayName}
-        guestLeadCount={guestLeadCount as number}
-        guestWallMessages={guestWallMessages as any[]}
-        messages={messages}
-        templates={templates}
-        chatConversationId={eventChatConversationId as string | null}
-        collaborators={eventCollaborators as any[]}
-        eventContacts={eventContacts as any[]}
-        eventMenuData={eventMenuData}
-        constraintRadarData={constraintRadarData}
-        clientMemories={clientMemories as any[]}
-        callRecommendation={eventCallRecommendation}
-        callRecommendationHref={eventCallRecommendationHref}
-        callPhoneHref={eventPhoneHref}
-        eventCalls={eventScheduledCalls}
-      />
-
-      {/* TAB: CHAT - Inline circle chat thread        */}
-      {/* ============================================ */}
-      <EventDetailChatTab
-        activeTab={activeTab}
-        eventId={event.id}
-        hubGroupToken={hubGroupToken as string | null}
-        hubProfileToken={chefHubProfileToken as string | null}
-      />
-
-      {/* TAB: MONEY - Financials, payments, expenses  */}
-      {/* ============================================ */}
-      <EventDetailMoneyTab
-        activeTab={activeTab}
-        event={event}
-        menuLibraryData={menuLibraryData}
-        eventMenus={eventMenus as any}
-        menuApprovalData={menuApprovalData}
-        totalPaid={totalPaid}
-        outstandingBalance={outstandingBalance}
-        paymentPlanInstallments={paymentPlanInstallments}
-        mileageEntries={mileageEntries}
-        eventTips={eventTips}
-        refundRecommendationData={refundRecommendationData}
-        totalRefunded={totalRefunded}
-        budgetGuardrail={budgetGuardrail}
-        eventExpenseData={eventExpenseData}
-        profitSummary={profitSummary}
-        eventLoyaltyPoints={eventLoyaltyPoints}
-        takeAChefFinance={takeAChefFinance}
-        costForecast={costForecast}
-        menuCostSummary={menuCostSummary}
-        chefArchetype={chefArchetype}
-        pricingIntelligence={pricingIntelligence}
-        readinessAssistant={readinessAssistant}
-        settlement={settlement}
-        ledgerEntries={ledgerEntries as any[]}
-        guestCountChanges={guestCountChanges}
-        regionalSettings={regionalSettings}
-        eventCommerceSale={eventCommerceSale as any}
-        eventPosSummary={eventPosSummary}
-      />
-
-      {/* TAB: PREP - Peak window prep timeline         */}
-      {/* ============================================ */}
-      <EventDetailPrepTab
-        activeTab={activeTab}
-        timeline={prepTimeline}
-        eventId={event.id}
-        hasMenu={!!eventMenus}
-      />
-
-      {/* TAB: TICKETS - Ticket sales and management   */}
-      {/* ============================================ */}
-      <EventDetailTicketsTab
-        activeTab={activeTab}
-        eventId={event.id}
-        eventStatus={event.status}
-        ticketTypes={ticketTypes as any[]}
-        tickets={ticketList as any[]}
-        summary={ticketSummary}
-        shareToken={publicTicketShareToken}
-        ticketsEnabled={ticketsEnabled}
-      />
-
-      {/* ============================================ */}
-      {/* TAB: OPS - Staff, temps, docs, transitions   */}
-      {/* ============================================ */}
-      <EventDetailOpsTab
-        activeTab={activeTab}
-        event={event}
-        canTrackTime={canTrackTime}
-        updateEventTimeAndCard={updateEventTimeAndCard}
-        startEventActivity={startEventActivity}
-        stopEventActivity={stopEventActivity}
-        staffMembers={staffMembers as any[]}
-        staffAssignments={staffAssignments as any[]}
-        isEventOwner={isEventOwner}
-        eventCollaborators={eventCollaborators as any[]}
-        tempLogs={tempLogs as any[]}
-        substitutionItems={substitutionItems}
-        isCompletedOrBeyond={isCompletedOrBeyond}
-        menuMods={menuMods as any[]}
-        carryForwardItems={carryForwardItems}
-        unusedItems={unusedItems as any[]}
-        contingencyNotes={contingencyNotes as any[]}
-        emergencyContacts={emergencyContacts as any[]}
-        docReadiness={docReadiness}
-        businessDocs={businessDocs}
-        eventReadiness={eventReadiness}
-        documentReadinessGate={documentReadinessGate}
-        closureStatus={closureStatus}
-        aar={aar}
-        eventPhotos={eventPhotos}
-        eventMenus={eventMenus as any}
-        unrecordedComponents={unrecordedComponents}
-        aiConfigured={aiConfigured}
-        hasAllergyData={eventHasAllergyData as boolean}
-        eventTotalCents={eventTotalCents}
-        serviceSimulationState={serviceSimulationState}
-        courseProgress={courseProgress}
-      />
-      {/* TAB: WRAP-UP â€” Debrief, survey, history      */}
-      {/* ============================================ */}
-      <EventDetailWrapTab
-        activeTab={activeTab}
-        eventId={event.id}
-        eventStatus={event.status}
-        eventClientId={event.client_id}
-        followUpSent={(event as any).follow_up_sent ?? false}
-        followUpSentAt={(event as any).follow_up_sent_at ?? null}
-        debriefCompletedAt={(event as any).debrief_completed_at ?? null}
-        hasAAR={!!aar}
-        hasClosureStatus={!!closureStatus}
-        transitions={transitions as any[]}
-        timelineEntries={timelineEntries}
-        compItems={behindTheScenes.compItems}
-      />
+      </div>
     </div>
   )
 }

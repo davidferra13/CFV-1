@@ -21,6 +21,7 @@
 - AI-powered duplicate detection
 - Real-time portal presence monitoring (SSE)
 - Engagement badges (HOT/WARM/COLD based on 14-day portal activity)
+- Client command panel on `/clients/[id]`: right-side desktop panel and mobile drawer summarize client ops, upcoming/history counts, allergies and restrictions, payment/value status, contact follow-up, and recent activity from the existing client ops snapshot and loaded relationship data.
 
 ## Open Items
 

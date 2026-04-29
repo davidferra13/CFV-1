@@ -22,6 +22,7 @@
 - Allergen conflict detection (FDA Big 9)
 - Service lifecycle intelligence (auto-detects stage from conversations)
 - Service simulation run history with deterministic stale detection against current event conditions
+- Event command panel on `/events/[id]`: right-side desktop panel and mobile drawer summarize next action, payment state, dietary/allergy risk, prep readiness, client communication, and recent activity using only loaded event data. If finance data is unavailable, the panel shows an unavailable state instead of rendering zero balances.
 
 ## Open Items
 

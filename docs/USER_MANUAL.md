@@ -44,13 +44,15 @@ Dismissing the setup banner on the dashboard only hides that dashboard reminder.
 
 The sidebar on the left is your primary navigation. It has three layers:
 
-**Action Bar (top):** Daily-driver shortcuts plus a Create button. The primary domains are Today, Inbox, Events, Clients, Culinary, and Finance. Pipeline work stays available from the Pipeline group, search, All Features, and direct inquiry links.
+**Action Bar (top):** Daily-driver shortcuts plus a Create button. The primary domains are Today, Inbox, Events, Clients, Culinary, and Finance. Pipeline work stays available from the Pipeline group, search, All Features, and direct inquiry links. The Create menu is grouped by Creative, Pipeline, Operational, and Upload actions so new menus, recipes, events, clients, quotes, inquiries, prep, shopping, documents, and uploads all start from one place.
 
 **Core Groups (middle):** Expandable sections for deeper navigation within each workflow area. Pipeline, Events, Clients, Culinary, and Finance expand into their operational pages. Advanced groups appear as your data grows. Use **Show all features** at the bottom of the sidebar to reveal the full menu; the preference is remembered in your browser.
 
 **All Features (bottom):** Everything else - Analytics, Marketing, Social Media, Integrations, Activity Log, Briefing, and more - is organized at **All Features** (`/features`). Click it to browse everything by workflow category. Nothing is hidden; it just lives here instead of taking up space in the sidebar you see every day.
 
 You can also use the search bar at the top of the sidebar or press **Cmd+K** to jump directly to any page in the app by name.
+
+On wide screens, Event, Client, and Activity detail surfaces include a right-side command panel. It keeps the current status, money or readiness signals, next actions, and recent activity visible while you work. On smaller screens the same panel opens as a drawer, and the left navigation can collapse into an icon rail without losing active route state.
 
 ---
 
@@ -165,6 +167,8 @@ Every event moves through 8 states:
 
 At the top of event detail, the **Event Operating Spine** shows the next action, owner, missing information, and status across intake, booking, menu and dietary, prep and stock, Finance, and communication. It fails closed if payment status is unavailable instead of showing a fake zero balance.
 
+The event detail page also has an **Event Command** panel on the right side of wide screens. It summarizes event status, real payment state, dietary and allergy risk, prep readiness, client communication, and recent event activity. If a source fails, the panel marks that section unavailable instead of filling in fake clear values.
+
 Each event has four tabs:
 
 **Overview:** Client info, guest RSVP tracker, allergen cross-check (compares menu against guest dietary restrictions), and attached contracts.
@@ -215,6 +219,8 @@ The relationship timeline on the client profile is the canonical interaction fee
 The Next Best Action card on the client profile is projected from that same canonical interaction ledger, plus the existing relationship health and milestone inputs where those are already authoritative. The card now shows the winning action with short reason chips instead of a separate one-off summary.
 
 The main chef-side client detail also includes a **Client Ops Snapshot** card sourced from the authenticated client workspace. It highlights action-required counts, balance due, core profile completeness, pending meal requests, signal-alert state, and the next active RSVP or share lane when one exists. If that shared snapshot cannot load, ChefFlow shows an unavailable state instead of pretending the client has zero blockers.
+
+The client detail page also includes a **Client Command** panel on wide screens. It keeps booking state, balance, profile readiness, allergy records, next follow-up, and recent portal or chef activity visible while you work through the full profile.
 
 Client detail includes a **Household** panel for residency clients. Add, edit, or remove household members, then record relationship, age group, allergies, dietary restrictions, dislikes, favorites, and notes for each person. The panel rolls those records into a summary such as adult and child counts plus attributed allergy warnings.
 
@@ -516,7 +522,7 @@ Analytics > Intelligence provides AI-powered insights:
 
 ### Activity Log
 
-**All Features > Activity Log** (`/activity`) shows a timeline of all system changes. Use Summary mode for an overview or Retrace mode to see the system's state at any past date. Filter by domain (Events, Clients, Finances, etc.).
+**All Features > Activity Log** (`/activity`) shows a timeline of all system changes. Use Summary mode for an overview, Retrace mode to replay page and click history, or Desire Paths to inspect route patterns. Filter by domain (Events, Clients, Finances, etc.). The Activity Command panel summarizes tracking state, active filters, feed counts, retrace sessions, and resume points.
 
 ### Priority Queue
 

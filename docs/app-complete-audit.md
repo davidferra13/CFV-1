@@ -392,6 +392,14 @@
 - **Each lane shows:** status, owner, next step, link to the fixing surface, and missing information when applicable
 - **Failure honesty:** Finance lane shows "Payment status unavailable" and a blocked badge if the event financial summary failed to load
 
+#### Event Command Panel
+
+- **Component:** `ContextCommandPanel` with `family="event"`
+- **Desktop:** right-side sticky command panel beside the event body
+- **Tablet/mobile:** "Context" toggle opens the same panel as a drawer
+- **Sections:** next required action, payment state, dietary and allergy risk, prep readiness, client and communication, recent event activity
+- **Failure honesty:** financial summary failures render an unavailable section instead of fake zero balance; missing client and empty activity render explicit empty states
+
 #### Banners (conditional)
 
 - Collaborator Role Banner (when viewing as collaborator)
@@ -527,6 +535,8 @@
 **All panels on client detail (in order):**
 
 Shared client-ops reuse note: the page now includes a Client Ops Snapshot card sourced from the authenticated client workspace. It contains four sub-cards, Action Required, Balance + Payment, Profile Readiness, and Next Active RSVP. If that shared snapshot fails to load, the page renders Client Ops Snapshot Unavailable instead of synthetic zero states.
+
+Client command panel: the page also renders `ContextCommandPanel` with `family="client"` on wide screens and as a drawer on smaller screens. Sections cover client ops snapshot, upcoming/history counts, preferences and allergy flags, payment/value, contact and follow-up, and recent client activity. If the shared client ops snapshot fails, the panel marks that section unavailable instead of showing a clear state.
 
 1. **Dormancy Warning** - amber banner with "Send Message" link (conditional: 90+ days inactive)
 2. **Next Best Action Card** - urgency-colored link to action page
@@ -802,6 +812,10 @@ Founder-owned operator walkthrough requests from `/for-operators/walkthrough` al
 - **`/culinary/ingredients`** - Full library with add form (name, category, unit, price, staple checkbox). Price column uses `PriceAttribution` component showing store name, confidence dot, and trend arrow when OpenClaw enrichment data is available. **Price Watch List** section at bottom: add ingredients with target prices, get alerted when prices drop below threshold. CRUD via `price_watch_list` table.
 - **`/culinary/ingredients/seasonal-availability`** - 4 season cards + year-round section.
 - **`/culinary/ingredients/vendor-notes`** - Grouped by vendor.
+
+### 6.3a Culinary Dictionary
+
+- **`/culinary/dictionary`** - Chef-facing canonical culinary dictionary. Header explains that dictionary data feeds costing, search, recipes, menus, and public ingredient pages. Stats cards show real counts for terms, public terms, aliases, and pending reviews. Search form filters by query and term type. Results render term cards with public/private state, type, category, definition, aliases, safety flags, and an inline chef alias form. Review queue panel shows pending low-confidence terms and approve/reject/dismiss actions. Reads from `culinary_dictionary_*` tables when migrated and falls back to the deterministic seed list when the tables are not available yet.
 
 ### 6.3b Price Catalog (chef-facing)
 
@@ -1182,7 +1196,7 @@ Completion state stored in localStorage per event. Progress bar. Critical items 
 
 ## 12. ACTIVITY & QUEUE
 
-**Route:** `/activity` - Activity log with Summary/Retrace toggle. Summary: tab selector (My/Client/All), domain filter, time range, activity heat map (7�-24 grid), feeds with "Load more". Retrace: breadcrumb session timeline. Activity logging on/off toggle. Real-time PostgreSQL subscription.
+**Route:** `/activity` - Activity log with platform-history shell, Summary/Retrace/Desire Paths segmented control, Summary tab selector (My/Client/All), domain filter, time range, activity heat map (7-by-24 grid), feeds with "Load more". Retrace: breadcrumb session timeline. Activity logging on/off toggle. Real-time PostgreSQL subscription. The Activity Command panel summarizes tracking state, current filters, feed counts, breadcrumb sessions, and resume points, with explicit unavailable state when retrace data fails.
 
 **Route:** `/queue` - Priority Queue with `QueueSummaryBar` (4 stat cards) + `QueueList` (domain/urgency filters, items as links with colored borders). Per-item snooze button via `snooze-popover.tsx` (1h, 4h, Tomorrow, Next Week). Snoozed items hidden with "X snoozed" count chip.
 
@@ -1314,7 +1328,7 @@ Each category has a unique lucide-react icon and animated chevron expand/collaps
 | --- | ------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------- |
 | 1   | Business Defaults   | Building2     | Home base, stores, timing, revenue goals, dashboard layout, primary nav customization, store preferences (OpenClaw integration) |
 | 2   | Profile & Branding  | Palette       | My Profile, portal background, availability signal, public profile, favorite chefs, client preview                              |
-| 3   | Availability Rules  | CalendarClock | Hard blocks, event limits, buffer time, Schedule Blocks link to `/settings/schedule`                                             |
+| 3   | Availability Rules  | CalendarClock | Hard blocks, event limits, buffer time, Schedule Blocks link to `/settings/schedule`                                            |
 | 4   | Booking Page        | CalendarCheck | Shareable link with slug, headline, bio, min notice, pricing model, deposit                                                     |
 | 5   | Event Configuration | Settings2     | Event types & labels, custom fields                                                                                             |
 | 6   | Payments & Billing  | CreditCard    | Stripe payouts, subscription & billing, module toggles, payment methods (Apple Pay/Google Pay)                                  |
@@ -1653,6 +1667,8 @@ The Remy drawer (`components/ai/remy-drawer.tsx`) has 5 views accessible via ico
 | Element                         | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Sidebar Navigation**          | `ChefSidebar` (`components/navigation/chef-nav.tsx`) renders the Action Bar, progressive nav groups, Recent Pages, All Features, and Settings. Primary shortcuts follow the approved six-domain contract: Today, Inbox, Events, Clients, Culinary, Finance. Pipeline remains a secondary workflow group and direct inquiry routes stay available. Advanced groups and items appear from `TenantDataPresence` or the persisted "Show all features" localStorage toggle. Direct routes remain accessible and active routes stay visible. |
+| **Platform Command Panel**      | `ContextCommandPanel` (`components/platform-shell/context-command-panel.tsx`) provides a source-aware right-side command surface for Event, Client, and Activity pages on wide screens. Tablet and mobile render the same panel as a dismissible drawer. Panel state uses session-only route-family storage keys and never stores entity IDs or client/event names.                                                                                                                                                                    |
+| **Create Menu**                 | `CreateMenuDropdown` groups direct navigation actions by Creative, Pipeline, Operational, and Upload. Every item links to a real route. Recipe entries only navigate to recipe surfaces and do not generate recipe content.                                                                                                                                                                                                                                                                                                            |
 | **Archetype Selector**          | Full-screen onboarding gate for new chefs - pick from 6 archetypes (Private Chef, Caterer, Meal Prep, Restaurant, Food Truck, Bakery) to set nav defaults. Nothing locked out.                                                                                                                                                                                                                                                                                                                                                         |
 | **Mobile Tab Bar**              | Home, Inbox, Events, Clients (customizable per archetype)                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | **Remy Floating Widget**        | Draggable/resizable concierge on all pages. 5-view drawer (Chat, List, Search, Actions, Templates). Projects, bookmarks, pin/archive. All data in browser IndexedDB.                                                                                                                                                                                                                                                                                                                                                                   |
@@ -2050,6 +2066,7 @@ Public culinary encyclopedia. Searchable A-Z browse of enriched ingredients with
 | Element             | Description                                                                                                                                                              |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Header              | "Ingredient Guide" heading, total count ("X culinary ingredients with flavor profiles, origin, dietary info, and live pricing")                                          |
+| Dictionary link     | Link to `/dictionary`, preserving seasonal market context query params when present.                                                                                     |
 | Category tab pills  | Scrollable pills linking to `/ingredients/[category]` - shown only on page 1 with no search query                                                                        |
 | Search bar          | `GET` form with `?q=` param. Searches `si.name ILIKE '%q%'` server-side. Minimum 2 chars to activate search filter.                                                      |
 | Recently Added grid | 8 square photo cards of most recently enriched ingredients (with images). Links to `/ingredient/[slug]`. Hidden during search or pagination.                             |
@@ -2084,6 +2101,7 @@ Full ingredient knowledge page. Wiki summary, flavor profile, dietary flags, ori
 | Quick facts sidebar  | Origin countries, season, flavor profile, dietary badges (vegan, gluten-free, etc.), allergen warnings (FDA Big 9)                                             |
 | Wiki summary         | Full Wikipedia-sourced description. Shown in `FullIngredientPage` when available.                                                                              |
 | Culinary uses        | Prepared uses, cooking methods, technique tags. From `ingredient_knowledge`.                                                                                   |
+| Also known as        | Public-safe aliases from the Culinary Dictionary when a matching dictionary term exists.                                                                       |
 | Substitutes panel    | Substitution suggestions with reason and confidence.                                                                                                           |
 | Price data panel     | Average price across stores, price history chart, store breakdown. Source-attributed.                                                                          |
 | Chef CTA             | Category-tailored booking conversion block. 15 copy variants keyed to ingredient category (produce, protein, dairy, spice, etc.). Links to `/book` + `/chefs`. |
@@ -2092,6 +2110,19 @@ Full ingredient knowledge page. Wiki summary, flavor profile, dietary flags, ori
 | 404                  | "Ingredient not found" with link back to `/ingredients`.                                                                                                       |
 
 **SEO:** schema.org `ItemPage` JSON-LD with `name`, `description`, `nutrition`, `image`. Canonical at `/ingredient/[slug]`.
+
+### Culinary Dictionary (`/dictionary`)
+
+Public-safe culinary vocabulary browse. Searchable by term, alias, ingredient, technique, cut, sauce, flavor, texture, dietary, allergen, equipment, service, composition, and other term types.
+
+| Element       | Description                                                                                                       |
+| ------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Header        | "Culinary Dictionary" heading with public term count.                                                             |
+| Search form   | `GET` form with `?q=` and `?type=` params.                                                                        |
+| Results grid  | Responsive cards showing canonical name, public badge, term type, category, definition, aliases, and safety tags. |
+| Empty state   | Honest no-match state, no fake counts.                                                                            |
+| Detail route  | `/dictionary/[slug]` shows public-safe definition, aliases, category, and safety flags. Non-public terms 404.     |
+| Fallback data | Uses deterministic seed terms if dictionary tables have not been migrated yet.                                    |
 
 ### FAQ (`/faq`)
 

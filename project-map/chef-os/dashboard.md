@@ -18,6 +18,8 @@
 - Onboarding banner (dismissible, non-blocking)
 - First-time progressive disclosure: new chefs with fewer than 3 populated feature areas see a focused Getting Started section and do not see empty Event Readiness, Network Activity, Dinner Circles, or Secondary Insights shells until relevant data exists. Admin and privileged users keep the full dashboard surface.
 - Sidebar progressive disclosure: `ChefSidebar` uses tenant data presence to show starter navigation in Pipeline, Events, Clients, and Culinary order by default, reveals advanced groups after use, keeps active direct-route destinations visible, and keeps a persisted "Show all features" toggle for power users
+- Platform shell command pattern: collapsed rail links now keep accessible labels, the global Create menu is grouped by Creative, Pipeline, Operational, and Upload work, and compact shell states preserve core routes while moving dense context into route-owned panels.
+- Context command panel contract: event detail, client detail, and activity can render a right-side command panel on desktop and a drawer on smaller screens. Collapse state is persisted per route family only, never per client or event id.
 
 ## Open Items
 
