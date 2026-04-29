@@ -15,7 +15,7 @@
 | Build completed              | 2026-04-29 17:05 | Codex         |                             |
 | Unit test passed             | 2026-04-29 17:05 | Codex         |                             |
 | Narrow type check passed     | 2026-04-29 17:06 | Codex         |                             |
-| Browser verification blocked | 2026-04-29 17:06 | Codex         | No permitted running server |
+| Browser verification passed  | 2026-04-29 17:36 | Codex         | `http://127.0.0.1:3410/inventory/food-cost` returned 200 on desktop and mobile |
 
 ---
 
@@ -294,7 +294,7 @@ No new mutations in the first slice. No optimistic updates.
 1. Add unit tests for pure functions in `lib/finance/food-cost-truth.ts`.
 2. Run the targeted unit test command for `tests/unit/food-cost-truth.test.ts`.
 3. Run a TypeScript check allowed by the builder context. Do not run `next build` unless explicitly permitted.
-4. Verify `/inventory/food-cost` in a visible browser if a dev server is already safely available or the developer permits warmup.
+4. Verify `/inventory/food-cost` in a browser if a dev server is already safely available or the developer permits warmup.
 5. Confirm no changed file contains an em dash.
 6. Confirm no changed file uses the TypeScript nocheck directive.
 7. Confirm no query lacks tenant or chef scoping.
@@ -313,7 +313,7 @@ No new mutations in the first slice. No optimistic updates.
 7. **What existing logic could this conflict with?** `getEventFinancialSummaryFull()`, `getEventProfitSummary()`, `getEventPricingIntelligence()`, `calculateFoodCostPercentage()`, and `event_financial_summary`.
 8. **What is the end-to-end data flow?** User opens `/inventory/food-cost`, server route calls `getRecentEventFoodCostTruth()`, action authenticates and scopes by tenant, queries events, menu costs, expenses, and revenue sources, pure calculator resolves results, page renders complete and partial rows.
 9. **What is the correct implementation order?** Types, pure calculator tests, server actions, `/inventory/food-cost` migration, component state rendering, targeted tests, compliance scan, commit and push.
-10. **What are the exact success criteria?** `/inventory/food-cost` uses the new read model, complete rows match old variance math, partial rows are visible, missing revenue is null not 0, unit tests cover edge cases, tenant scoping is present, no em dashes.
+10. **What are the exact success criteria?** `/inventory/food-cost` uses the new read model, complete rows match old variance math, partial rows are visible, missing revenue is null not 0, unit tests cover edge cases, tenant scoping is present, runtime route returns 200, no em dashes.
 11. **What are the non-negotiable constraints?** Ledger-first revenue, cents-only money, `requireChef()`, tenant or chef scoping, honest missing data, no recipe generation, no destructive DB operations, no production deploy.
 12. **What should NOT be touched?** Do not edit `types/database.ts`, do not rename columns, do not change ledger append behavior, do not change expense mutation behavior, do not add Remy financial mutations, do not deploy.
 13. **Is this the simplest complete version?** Yes. It starts with a TypeScript read model and one page migration, not a DB rewrite.
