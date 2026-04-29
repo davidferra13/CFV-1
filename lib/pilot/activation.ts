@@ -28,6 +28,7 @@ export type PilotActivationFacts = {
   firstWeek: FirstWeekActivationProgress
   bookingEnabled: boolean
   bookingSlug: string | null
+  openBookingTestCount: number
   surveysSentCount: number
   surveysCompletedCount: number
   feedbackLoggedCount: number
@@ -67,7 +68,7 @@ export function buildPilotActivationStatus(input: {
   const publicBookingHref =
     facts.bookingEnabled && facts.bookingSlug ? `/book/${facts.bookingSlug}` : null
   const firstWeekComplete = facts.firstWeek.completedSteps >= facts.firstWeek.totalSteps
-  const bookingTestCaptured = getStepDone(facts.firstWeek, 'lead_captured')
+  const bookingTestCaptured = facts.openBookingTestCount > 0
   const eventCreated = getStepDone(facts.firstWeek, 'event_created')
   const invoiceReady = getStepDone(facts.firstWeek, 'invoice_ready')
   const feedbackSignals = facts.surveysCompletedCount + facts.feedbackLoggedCount
@@ -95,7 +96,10 @@ export function buildPilotActivationStatus(input: {
       key: 'booking_test_captured',
       label: 'Capture a booking test',
       description: 'A public booking test should create a real inquiry or lead record.',
-      evidence: getStepEvidence(facts.firstWeek, 'lead_captured'),
+      evidence:
+        facts.openBookingTestCount > 0
+          ? countLabel(facts.openBookingTestCount, 'public booking test', 'public booking tests')
+          : `${getStepEvidence(facts.firstWeek, 'lead_captured')}; no public booking test found`,
       href: '/inquiries',
       status: bookingTestCaptured ? 'done' : 'needs_action',
     },
@@ -158,23 +162,28 @@ export async function getPilotActivationStatus(): Promise<PilotActivationStatus>
   const db: any = createServerClient()
   const firstWeek = await getFirstWeekActivationProgress()
 
-  const [chefRow, surveysSent, surveysCompleted, feedbackLogged] = await Promise.all([
-    db
-      .from('chefs')
-      .select('business_name, display_name, booking_enabled, booking_slug')
-      .eq('id', tenantId)
-      .single(),
-    db
-      .from('post_event_surveys')
-      .select('id', { count: 'exact', head: true })
-      .eq('tenant_id', tenantId),
-    db
-      .from('post_event_surveys')
-      .select('id', { count: 'exact', head: true })
-      .eq('tenant_id', tenantId)
-      .not('completed_at', 'is', null),
-    db.from('chef_feedback').select('id', { count: 'exact', head: true }).eq('tenant_id', tenantId),
-  ])
+  const [chefRow, openBookingTests, surveysSent, surveysCompleted, feedbackLogged] =
+    await Promise.all([
+      db
+        .from('chefs')
+        .select('business_name, display_name, booking_enabled, booking_slug')
+        .eq('id', tenantId)
+        .single(),
+      db
+        .from('open_booking_inquiries')
+        .select('booking_id', { count: 'exact', head: true })
+        .eq('chef_id', tenantId),
+      db
+        .from('post_event_surveys')
+        .select('id', { count: 'exact', head: true })
+        .eq('tenant_id', tenantId),
+      db
+        .from('post_event_surveys')
+        .select('id', { count: 'exact', head: true })
+        .eq('tenant_id', tenantId)
+        .not('completed_at', 'is', null),
+      db.from('chef_feedback').select('id', { count: 'exact', head: true }).eq('tenant_id', tenantId),
+    ])
 
   if (chefRow.error) {
     throw chefRow.error
@@ -190,6 +199,7 @@ export async function getPilotActivationStatus(): Promise<PilotActivationStatus>
       firstWeek,
       bookingEnabled: chef?.booking_enabled === true,
       bookingSlug: chef?.booking_slug?.trim() || null,
+      openBookingTestCount: getCount(openBookingTests),
       surveysSentCount: getCount(surveysSent),
       surveysCompletedCount: getCount(surveysCompleted),
       feedbackLoggedCount: getCount(feedbackLogged),

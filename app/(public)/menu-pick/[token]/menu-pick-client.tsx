@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import { submitTokenMenuSelections, type PublicMenuData } from '@/lib/menus/menu-share-actions'
+import { PostActionFooter } from '@/components/public/post-action-footer'
 
 type Props = {
   menu: PublicMenuData
@@ -81,9 +82,15 @@ export function MenuPickClient({ menu, token }: Props) {
           Your picks have been sent to the chef!
         </h1>
         <p className="text-sm text-stone-400">
-          {menu.chefName ? `${menu.chefName} will` : 'The chef will'} see your selections. You can
-          close this page.
+          {menu.chefName ? `${menu.chefName} will` : 'The chef will'} see your selections.
         </p>
+        <PostActionFooter
+          chefSlug={menu.chefSlug}
+          chefName={menu.chefName}
+          crossLink={
+            menu.chefSlug ? { href: `/chef/${menu.chefSlug}/inquire`, label: 'Book Again' } : null
+          }
+        />
       </div>
     )
   }

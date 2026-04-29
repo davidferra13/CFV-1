@@ -36,6 +36,17 @@ export default async function FeedbackPage({ params }: { params: { token: string
     )
   }
 
+  const rebookLink = surveyData.chefSlug
+    ? { href: `/chef/${surveyData.chefSlug}/inquire`, label: 'Book Again' }
+    : null
+  const postActionFooter = (
+    <PostActionFooter
+      chefSlug={surveyData.chefSlug}
+      chefName={surveyData.chefName}
+      crossLink={rebookLink}
+    />
+  )
+
   if (surveyData.alreadyCompleted) {
     return (
       <div className="min-h-screen bg-stone-950 flex items-center justify-center p-4">
@@ -46,7 +57,7 @@ export default async function FeedbackPage({ params }: { params: { token: string
               You have already submitted your feedback. We appreciate it!
             </p>
           </div>
-          <PostActionFooter chefSlug={surveyData.chefSlug} chefName={surveyData.chefName} />
+          {postActionFooter}
         </div>
       </div>
     )
@@ -68,7 +79,7 @@ export default async function FeedbackPage({ params }: { params: { token: string
           dishes={surveyData.dishes}
           chefName={surveyData.chefName}
         />
-        <PostActionFooter chefSlug={surveyData.chefSlug} chefName={surveyData.chefName} />
+        {postActionFooter}
       </div>
     </div>
   )

@@ -4,6 +4,7 @@
 
 import { getEventShareByToken, getGuestByToken } from '@/lib/sharing/actions'
 import { format } from 'date-fns'
+import Link from 'next/link'
 import { TokenExpiredPage } from '@/components/ui/token-expired-page'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -75,6 +76,26 @@ export default async function SharePage({ params }: { params: { token: string } 
         {/* Countdown - only for upcoming events */}
         {eventData.status !== 'completed' && eventData.eventDate && (
           <EventCountdown eventDate={eventData.eventDate} serveTime={eventData.serveTime} />
+        )}
+
+        {eventData.status === 'completed' && (
+          <Card className="mb-6 border-emerald-900 bg-emerald-950/30">
+            <CardHeader>
+              <CardTitle>Event Recap Ready</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="mb-4 text-sm text-emerald-200">
+                The dinner is complete. View the shared recap for photos, memories, and event
+                highlights.
+              </p>
+              <Link
+                href={`/share/${params.token}/recap`}
+                className="inline-flex min-h-[44px] items-center justify-center rounded-lg bg-emerald-500 px-4 text-sm font-semibold text-stone-950 transition-colors hover:bg-emerald-400"
+              >
+                View Recap
+              </Link>
+            </CardContent>
+          </Card>
         )}
 
         {/* Event Details Card */}

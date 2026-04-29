@@ -32,6 +32,7 @@ describe('pilot activation status', () => {
         firstWeek: firstWeek(),
         bookingEnabled: false,
         bookingSlug: null,
+        openBookingTestCount: 0,
         surveysSentCount: 0,
         surveysCompletedCount: 0,
         feedbackLoggedCount: 0,
@@ -51,6 +52,7 @@ describe('pilot activation status', () => {
         firstWeek: firstWeek({ inquiriesCount: 1 }),
         bookingEnabled: true,
         bookingSlug: 'pilot-chef',
+        openBookingTestCount: 1,
         surveysSentCount: 0,
         surveysCompletedCount: 0,
         feedbackLoggedCount: 0,
@@ -60,6 +62,27 @@ describe('pilot activation status', () => {
     assert.equal(result.publicBookingHref, '/book/pilot-chef')
     assert.equal(result.steps.find((step) => step.key === 'public_booking_ready')?.status, 'done')
     assert.equal(result.steps.find((step) => step.key === 'booking_test_captured')?.status, 'done')
+  })
+
+  it('does not treat generic lead capture as a public booking test', () => {
+    const result = buildPilotActivationStatus({
+      chefName: 'Pilot Chef',
+      facts: {
+        firstWeek: firstWeek({ inquiriesCount: 1 }),
+        bookingEnabled: true,
+        bookingSlug: 'pilot-chef',
+        openBookingTestCount: 0,
+        surveysSentCount: 0,
+        surveysCompletedCount: 0,
+        feedbackLoggedCount: 0,
+      },
+    })
+
+    assert.equal(result.steps.find((step) => step.key === 'booking_test_captured')?.status, 'needs_action')
+    assert.match(
+      result.steps.find((step) => step.key === 'booking_test_captured')?.evidence ?? '',
+      /no public booking test found/
+    )
   })
 
   it('marks system-verifiable proof complete while keeping pay intent manual', () => {
@@ -75,6 +98,7 @@ describe('pilot activation status', () => {
         }),
         bookingEnabled: true,
         bookingSlug: 'pilot-chef',
+        openBookingTestCount: 1,
         surveysSentCount: 1,
         surveysCompletedCount: 1,
         feedbackLoggedCount: 0,

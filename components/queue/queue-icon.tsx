@@ -29,6 +29,7 @@ import {
   Cake,
   Gift,
   Leaf,
+  PhoneCall,
   CircleDot,
 } from '@/components/ui/icons'
 
@@ -60,6 +61,7 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   Cake,
   Gift,
   Leaf,
+  PhoneCall,
   CircleDot,
 }
 

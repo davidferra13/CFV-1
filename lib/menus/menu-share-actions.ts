@@ -25,6 +25,7 @@ export type PublicMenuData = {
   eventOccasion: string | null
   eventDate: string | null
   chefName: string | null
+  chefSlug: string | null
   menuName: string | null
   dishes: Array<{
     id: string
@@ -190,6 +191,7 @@ export async function getMenuByToken(token: string): Promise<PublicMenuData | nu
     .from('events')
     .select('id, occasion, event_date, menu_id')
     .eq('id', tokenRow.event_id)
+    .eq('tenant_id', tokenRow.tenant_id)
     .single()
 
   if (!event || !event.menu_id) return null
@@ -197,7 +199,7 @@ export async function getMenuByToken(token: string): Promise<PublicMenuData | nu
   // Get chef name
   const { data: chef } = await db
     .from('chefs')
-    .select('display_name, business_name')
+    .select('display_name, business_name, booking_slug')
     .eq('id', tokenRow.tenant_id)
     .single()
 
@@ -217,6 +219,7 @@ export async function getMenuByToken(token: string): Promise<PublicMenuData | nu
     eventOccasion: event.occasion,
     eventDate: event.event_date,
     chefName: chef?.business_name || chef?.display_name || null,
+    chefSlug: chef?.booking_slug || null,
     menuName: menu.name,
     dishes: (dishes || []).map((d: any) => ({
       id: d.id,
