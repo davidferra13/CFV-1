@@ -49,7 +49,7 @@ export async function loadRemyPublicContext(tenantId: string): Promise<RemyPubli
     const { data: profile } = await (db
       .from('chef_culinary_profiles' as any)
       .select('question_key, answer')
-      .eq('tenant_id', tenantId) as any)
+      .eq('chef_id', tenantId) as any)
 
     if (profile && profile.length > 0) {
       const PUBLIC_SAFE_KEYS = [
