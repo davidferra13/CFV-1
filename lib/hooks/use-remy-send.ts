@@ -305,12 +305,17 @@ export function useRemySend(config: UseRemySendConfig) {
           signal: controller.signal,
         })
 
-        if (!contextRes.ok) return { handled: false }
+        if (!contextRes.ok) return { handled: false, fallback: true }
 
         const ctx = await contextRes.json()
 
         // Blocked or error from server
-        if (ctx.blocked) return { handled: false }
+        if (ctx.blocked) {
+          return {
+            handled: true,
+            content: ctx.blockReason ?? 'Local AI is not available for this request.',
+          }
+        }
 
         // Instant responses (greeting, guardrail blocks, instant answers)
         if (ctx.instantResponse) {

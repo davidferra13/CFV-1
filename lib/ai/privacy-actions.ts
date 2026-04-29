@@ -342,6 +342,9 @@ export async function saveLocalAiPreferences(input: {
   if (parsed.data.enabled !== undefined) updates.local_ai_enabled = parsed.data.enabled
   if (parsed.data.url !== undefined) updates.local_ai_url = parsed.data.url
   if (parsed.data.model !== undefined) updates.local_ai_model = parsed.data.model
+  if (parsed.data.url !== undefined || parsed.data.model !== undefined) {
+    updates.local_ai_verified_at = null
+  }
 
   const { error } = await db.from('ai_preferences').upsert(updates, { onConflict: 'tenant_id' })
 

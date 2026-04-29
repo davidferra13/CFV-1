@@ -8,8 +8,17 @@ import {
   markLocalAiVerified,
   type LocalAiPreferences,
 } from '@/lib/ai/privacy-actions'
+import {
+  LOCAL_AI_PREFERENCES_UPDATED_EVENT,
+  pickOllamaModelVariant,
+  resolveOllamaApiUrl,
+} from '@/lib/ai/local-ai-provider'
 
 type ConnectionStatus = 'untested' | 'testing' | 'connected' | 'unreachable'
+
+function publishLocalAiPreferences(prefs: LocalAiPreferences) {
+  window.dispatchEvent(new CustomEvent(LOCAL_AI_PREFERENCES_UPDATED_EVENT, { detail: prefs }))
+}
 
 export function LocalAiSettings({ initialPrefs }: { initialPrefs?: LocalAiPreferences | null }) {
   const [expanded, setExpanded] = useState(false)
@@ -31,50 +40,72 @@ export function LocalAiSettings({ initialPrefs }: { initialPrefs?: LocalAiPrefer
   const testConnection = useCallback(async () => {
     setConnectionStatus('testing')
     try {
-      const res = await fetch(`${url}/api/tags`, {
+      const res = await fetch(resolveOllamaApiUrl(url, 'tags'), {
         signal: AbortSignal.timeout(5000),
       })
       if (res.ok) {
         // Verify the configured model is actually available (Q27 fix)
         const data = await res.json()
         const models: Array<{ name: string }> = data?.models ?? []
-        const modelNames = models.map((m) => m.name.split(':')[0])
-        if (modelNames.length > 0 && !modelNames.includes(model)) {
+        const modelNames = models.map((m) => m.name)
+        const resolvedModel = pickOllamaModelVariant(model, modelNames)
+        if (modelNames.length > 0 && !modelNames.includes(resolvedModel)) {
           setConnectionStatus('unreachable')
           toast.error(
             `Ollama is running but model "${model}" is not installed. Run: ollama pull ${model}`
           )
           return
         }
+
+        const saveResult = await saveLocalAiPreferences({ url, model })
+        if (!saveResult.success) {
+          setConnectionStatus('unreachable')
+          toast.error(saveResult.error ?? 'Failed to save local AI settings')
+          return
+        }
+
+        const verifiedResult = await markLocalAiVerified()
+        if (!verifiedResult.success) {
+          setConnectionStatus('unreachable')
+          toast.error('Failed to mark local AI as verified')
+          return
+        }
+
+        const nextPrefs = { ...prefs, url, model, verifiedAt: new Date().toISOString() }
         setConnectionStatus('connected')
-        await markLocalAiVerified()
+        setPrefs(nextPrefs)
+        publishLocalAiPreferences(nextPrefs)
       } else {
         setConnectionStatus('unreachable')
       }
     } catch {
       setConnectionStatus('unreachable')
     }
-  }, [url, model])
+  }, [url, model, prefs])
 
   const handleToggle = useCallback(async () => {
     const newEnabled = !prefs.enabled
     setSaving(true)
     const result = await saveLocalAiPreferences({ enabled: newEnabled })
     if (result.success) {
-      setPrefs((p) => ({ ...p, enabled: newEnabled }))
+      const nextPrefs = { ...prefs, enabled: newEnabled }
+      setPrefs(nextPrefs)
+      publishLocalAiPreferences(nextPrefs)
     }
     setSaving(false)
-  }, [prefs.enabled])
+  }, [prefs])
 
   const handleSave = useCallback(async () => {
     setSaving(true)
     const result = await saveLocalAiPreferences({ url, model })
     if (result.success) {
-      setPrefs((p) => ({ ...p, url, model }))
+      const nextPrefs = { ...prefs, url, model, verifiedAt: null }
+      setPrefs(nextPrefs)
+      publishLocalAiPreferences(nextPrefs)
       setConnectionStatus('untested')
     }
     setSaving(false)
-  }, [url, model])
+  }, [url, model, prefs])
 
   const statusBadge = {
     untested: { color: 'bg-stone-700 text-stone-400', label: 'Not tested' },

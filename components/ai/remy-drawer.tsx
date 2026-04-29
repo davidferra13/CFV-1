@@ -69,6 +69,7 @@ import {
 import { useConversationManagement } from '@/lib/hooks/use-conversation-management'
 import { useRemySend } from '@/lib/hooks/use-remy-send'
 import { getLocalAiPreferences, type LocalAiPreferences } from '@/lib/ai/privacy-actions'
+import { LOCAL_AI_PREFERENCES_UPDATED_EVENT } from '@/lib/ai/local-ai-provider'
 import { LocalAiIndicator } from '@/components/ai/local-ai-indicator'
 import { useKitchenMode } from '@/lib/hooks/use-kitchen-mode'
 
@@ -108,11 +109,21 @@ export function RemyDrawer() {
   const [curatedGreetingLoaded, setCuratedGreetingLoaded] = useState(false)
   const [localAiConfig, setLocalAiConfig] = useState<LocalAiPreferences | null>(null)
 
-  // Load local AI preferences once on mount
+  // Keep the drawer aligned with AI & Privacy settings changes in the same browser session.
   useEffect(() => {
     getLocalAiPreferences()
       .then(setLocalAiConfig)
       .catch(() => {})
+
+    const handleLocalAiPreferencesUpdated = (event: Event) => {
+      const detail = (event as CustomEvent<LocalAiPreferences>).detail
+      if (detail) setLocalAiConfig(detail)
+    }
+
+    window.addEventListener(LOCAL_AI_PREFERENCES_UPDATED_EVENT, handleLocalAiPreferencesUpdated)
+    return () => {
+      window.removeEventListener(LOCAL_AI_PREFERENCES_UPDATED_EVENT, handleLocalAiPreferencesUpdated)
+    }
   }, [])
 
   const drawerResizingRef = useRef<{ startX: number; startW: number } | null>(null)

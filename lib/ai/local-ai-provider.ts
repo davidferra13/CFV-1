@@ -15,6 +15,8 @@ export interface LocalAIProvider {
   ): Promise<void>
 }
 
+export const LOCAL_AI_PREFERENCES_UPDATED_EVENT = 'cheflow:local-ai-preferences-updated'
+
 function trimTrailingSlashes(value: string): string {
   return value.replace(/\/+$/, '')
 }
