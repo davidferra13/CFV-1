@@ -12,12 +12,13 @@ import { ChefActivityFeed } from '@/components/activity/chef-activity-feed'
 import { ActivityFilters } from '@/components/activity/activity-filters'
 import { ClientActivityFeed } from '@/components/activity/client-activity-feed'
 import { RetraceTimeline } from '@/components/activity/retrace-timeline'
+import { DesirePathInsights as DesirePathReport } from '@/components/activity/desire-path-insights'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 
 type ActivityTab = 'my' | 'client' | 'all'
 type TimeRange = '1' | '7' | '30' | '90' | '180' | '365' | 'all'
-type ViewMode = 'summary' | 'retrace'
+type ViewMode = 'summary' | 'retrace' | 'desire'
 
 interface ActivityPageClientProps {
   resumeItems: ResumeItem[]
@@ -86,7 +87,7 @@ const HOUR_LABELS = [
 const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 function parseViewMode(value: string | null): ViewMode {
-  return value === 'retrace' || value === 'summary' ? value : 'summary'
+  return value === 'retrace' || value === 'summary' || value === 'desire' ? value : 'summary'
 }
 
 function replaceModeInUrl(mode: ViewMode) {
@@ -186,6 +187,7 @@ export function ActivityPageClient({
       const append = opts?.append ?? false
       if (append) setRetraceLoadingMore(true)
       else setRetraceLoading(true)
+      setRetraceLoadError(false)
 
       try {
         const { getBreadcrumbSessions } = await import('@/lib/activity/breadcrumb-actions')
@@ -221,9 +223,9 @@ export function ActivityPageClient({
     }
   }, [activeTab, timeRange, activeDomain, actorFilter, loadFeed, viewMode])
 
-  // When switching to retrace or changing time range in retrace mode, reload sessions
+  // When switching to a breadcrumb-backed view or changing time range, reload sessions.
   useEffect(() => {
-    if (viewMode !== 'retrace') return
+    if (viewMode !== 'retrace' && viewMode !== 'desire') return
     // Only reload if timeRange changed (initial load handled by SSR)
     const isDefault = timeRange === '7'
     if (isDefault && initialBreadcrumbSessions.length > 0) return
@@ -325,11 +327,24 @@ export function ActivityPageClient({
           >
             Retrace My Steps
           </button>
+          <button
+            type="button"
+            onClick={() => handleViewModeChange('desire')}
+            className={`text-xs font-medium py-1.5 px-4 rounded-md transition-colors ${
+              viewMode === 'desire'
+                ? 'bg-stone-900 text-stone-200 shadow-sm'
+                : 'text-stone-500 hover:text-stone-300'
+            }`}
+          >
+            Desire Paths
+          </button>
         </div>
         <p className="text-xxs text-stone-400">
           {viewMode === 'summary'
             ? 'Key actions and decisions'
-            : 'Every page and click, step by step'}
+            : viewMode === 'retrace'
+              ? 'Every page and click, step by step'
+              : 'Observed route patterns'}
         </p>
       </div>
 
@@ -477,6 +492,32 @@ export function ActivityPageClient({
               onLoadMore={() => void loadRetraceSessions({ append: true })}
               loadingMore={retraceLoadingMore}
             />
+          )}
+        </>
+      )}
+
+      {viewMode === 'desire' && (
+        <>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-stone-500">Show:</span>
+            <select
+              value={timeRange}
+              onChange={(e) => setTimeRange(e.target.value as TimeRange)}
+              aria-label="Time range for desire path view"
+              className="text-xs border border-stone-700 rounded-md px-2 py-1 text-stone-400 bg-stone-900"
+            >
+              <option value="1">Today</option>
+              <option value="7">This Week</option>
+              <option value="30">This Month</option>
+            </select>
+          </div>
+
+          {retraceLoadError ? (
+            <p className="text-sm text-stone-500 py-4 text-center">
+              Could not load navigation history. Refresh to try again.
+            </p>
+          ) : (
+            <DesirePathReport sessions={breadcrumbSessions} loading={retraceLoading} />
           )}
         </>
       )}
