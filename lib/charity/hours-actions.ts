@@ -317,6 +317,10 @@ async function revalidateCommunityImpactPaths(chefId: string) {
   }
 }
 
+function warnBroadcastFailure(action: 'insert' | 'update' | 'delete', err: unknown) {
+  console.warn(`[charity/hours-actions] ${action} broadcast failed`, err)
+}
+
 export async function logCharityHours(
   input: z.input<typeof LogHoursSchema>
 ): Promise<CharityHourEntry> {
@@ -349,7 +353,9 @@ export async function logCharityHours(
       action: 'insert',
       reason: 'Charity hours logged',
     })
-  } catch {}
+  } catch (err) {
+    warnBroadcastFailure('insert', err)
+  }
   return mapRow(data as CharityHourRow, organization)
 }
 
@@ -393,11 +399,13 @@ export async function updateCharityHours(
       action: 'update',
       reason: 'Charity hours updated',
     })
-  } catch {}
+  } catch (err) {
+    warnBroadcastFailure('update', err)
+  }
   return mapRow(data as CharityHourRow, organization)
 }
 
-export async function deleteCharityHours(id: string): Promise<void> {
+export async function deleteCharityHours(id: string): Promise<{ success: true }> {
   const user = await requireChef()
   z.string().uuid().parse(id)
   const db: any = createServerClient()
@@ -416,7 +424,11 @@ export async function deleteCharityHours(id: string): Promise<void> {
       action: 'delete',
       reason: 'Charity hours deleted',
     })
-  } catch {}
+  } catch (err) {
+    warnBroadcastFailure('delete', err)
+  }
+
+  return { success: true }
 }
 
 export async function getCharityHours(filters?: {
