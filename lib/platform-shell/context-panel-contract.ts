@@ -14,6 +14,7 @@ export function getContextPanelStorageKey(family: ContextPanelRouteFamily): stri
 
 export function resolveContextPanelRouteFamily(pathname: string): ContextPanelRouteFamily | null {
   if (pathname === '/activity' || pathname.startsWith('/activity?')) return 'activity'
+  if (pathname === '/replay' || pathname.startsWith('/replay?')) return 'activity'
   if (/^\/events\/[^/]+/.test(pathname)) return 'event'
   if (/^\/clients\/[^/]+/.test(pathname)) return 'client'
   return null

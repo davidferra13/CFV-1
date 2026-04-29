@@ -48,7 +48,7 @@ The sidebar on the left is your primary navigation. It has three layers:
 
 **Core Groups (middle):** Expandable sections for deeper navigation within each workflow area. Pipeline, Events, Clients, Culinary, and Finance expand into their operational pages. Advanced groups appear as your data grows. Use **Show all features** at the bottom of the sidebar to reveal the full menu; the preference is remembered in your browser.
 
-**All Features (bottom):** Everything else - Analytics, Marketing, Social Media, Integrations, Activity Log, Briefing, and more - is organized at **All Features** (`/features`). Click it to browse everything by workflow category. Nothing is hidden; it just lives here instead of taking up space in the sidebar you see every day.
+**All Features (bottom):** Everything else - Analytics, Marketing, Social Media, Integrations, Replay, Activity Log, Briefing, and more - is organized at **All Features** (`/features`). Click it to browse everything by workflow category. Nothing is hidden; it just lives here instead of taking up space in the sidebar you see every day.
 
 You can also use the search bar at the top of the sidebar or press **Cmd+K** to jump directly to any page in the app by name.
 
@@ -519,6 +519,10 @@ Analytics > Intelligence provides AI-powered insights:
 - Demand forecasting (upcoming busy seasons)
 - Client clustering (who's most likely to rebook)
 - Anomaly detection (unusually priced events)
+
+### ChefFlow Replay
+
+**All Features > Replay** (`/replay`) shows what changed across the last week and where to resume. It combines existing resume suggestions, chef activity, client portal signals, and retrace sessions into Today, Yesterday, and Earlier This Week sections. Counts and links come from loaded activity sources only.
 
 ### Activity Log
 

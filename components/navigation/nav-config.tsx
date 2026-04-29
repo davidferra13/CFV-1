@@ -1376,6 +1376,11 @@ export const navGroups: NavGroup[] = [
     module: 'more',
     items: [
       {
+        href: '/replay',
+        label: 'Replay',
+        icon: Clock,
+      },
+      {
         href: '/activity',
         label: 'Activity Log',
         icon: Activity,

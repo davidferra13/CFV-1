@@ -12,6 +12,7 @@ test('context panel route family resolution is limited to supported shell surfac
   assert.equal(resolveContextPanelRouteFamily('/events/123?tab=ops'), 'event')
   assert.equal(resolveContextPanelRouteFamily('/clients/abc'), 'client')
   assert.equal(resolveContextPanelRouteFamily('/activity'), 'activity')
+  assert.equal(resolveContextPanelRouteFamily('/replay'), 'activity')
   assert.equal(resolveContextPanelRouteFamily('/dashboard'), null)
 })
 
