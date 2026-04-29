@@ -4,6 +4,7 @@ import type { ChefActivityEntry } from '@/lib/activity/chef-types'
 import type { ActivityEvent } from '@/lib/activity/types'
 import { DOMAIN_CONFIG } from '@/lib/activity/chef-types'
 import { getChefActivityEntityHref } from '@/lib/activity/entity-routes'
+import { ActivityTimestamp } from '@/components/ui/activity-timestamp'
 import Link from 'next/link'
 
 interface ClientActivityTimelineProps {
@@ -77,8 +78,6 @@ export function ClientActivityTimeline({
 }
 
 function TimelineRow({ entry }: { entry: TimelineEntry }) {
-  const timeAgo = formatTimeAgo(entry.created_at)
-
   const badge =
     entry.source === 'chef'
       ? { bg: 'bg-emerald-900 text-emerald-700', label: 'You' }
@@ -103,7 +102,7 @@ function TimelineRow({ entry }: { entry: TimelineEntry }) {
         )}
         <span className="text-stone-300 truncate">{entry.description}</span>
       </div>
-      <span className="text-stone-400 shrink-0 ml-2">{timeAgo}</span>
+      <ActivityTimestamp at={entry.created_at} className="text-stone-400 shrink-0 ml-2" />
     </div>
   )
 
@@ -111,19 +110,4 @@ function TimelineRow({ entry }: { entry: TimelineEntry }) {
     return <Link href={entry.href}>{inner}</Link>
   }
   return inner
-}
-
-function formatTimeAgo(dateStr: string): string {
-  const date = new Date(dateStr)
-  const now = new Date()
-  const diffMs = now.getTime() - date.getTime()
-  const diffMins = Math.floor(diffMs / 60000)
-  const diffHours = Math.floor(diffMs / 3600000)
-  const diffDays = Math.floor(diffMs / 86400000)
-
-  if (diffMins < 1) return 'now'
-  if (diffMins < 60) return `${diffMins}m`
-  if (diffHours < 24) return `${diffHours}h`
-  if (diffDays < 7) return `${diffDays}d`
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }

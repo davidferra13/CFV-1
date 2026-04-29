@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+import { ActivityTimestamp } from '@/components/ui/activity-timestamp'
 import type { ChefActivityEntry } from '@/lib/activity/chef-types'
 import { DOMAIN_CONFIG } from '@/lib/activity/chef-types'
 import { getChefActivityEntityHref } from '@/lib/activity/entity-routes'
@@ -112,9 +113,10 @@ export function ActivityDot({ collapsed }: ActivityDotProps) {
                     <p className="text-xs text-stone-300 leading-snug line-clamp-2">
                       {entry.summary}
                     </p>
-                    <p className="text-xxs text-stone-400 mt-0.5">
-                      {formatTimeAgo(entry.created_at)}
-                    </p>
+                    <ActivityTimestamp
+                      at={entry.created_at}
+                      className="block text-xxs text-stone-400 mt-0.5"
+                    />
                   </div>
                 </div>
               )
@@ -142,18 +144,4 @@ export function ActivityDot({ collapsed }: ActivityDotProps) {
       )}
     </div>
   )
-}
-
-function formatTimeAgo(dateStr: string): string {
-  const d = new Date(dateStr)
-  const now = new Date()
-  const ms = now.getTime() - d.getTime()
-  const mins = Math.floor(ms / 60000)
-  const hrs = Math.floor(ms / 3600000)
-  const days = Math.floor(ms / 86400000)
-  if (mins < 1) return 'just now'
-  if (mins < 60) return `${mins}m ago`
-  if (hrs < 24) return `${hrs}h ago`
-  if (days < 7) return `${days}d ago`
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
