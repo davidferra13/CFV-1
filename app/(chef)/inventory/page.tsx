@@ -11,6 +11,8 @@ import { Card } from '@/components/ui/card'
 
 export const metadata: Metadata = { title: 'Inventory' }
 
+type ParAlert = Awaited<ReturnType<typeof getParAlerts>>[number]
+
 const SUB_PAGES = [
   {
     href: '/inventory/transactions',
@@ -114,7 +116,15 @@ const ICON_MAP: Record<string, string> = {
 export default async function InventoryPage() {
   await requireChef()
 
-  const parAlerts = await getParAlerts().catch(() => [])
+  let parAlerts: ParAlert[] = []
+  let parAlertsError = false
+
+  try {
+    parAlerts = await getParAlerts()
+  } catch (error) {
+    parAlertsError = true
+    console.error('[inventory] Failed to load par alerts', error)
+  }
 
   return (
     <div className="space-y-6">
@@ -127,10 +137,20 @@ export default async function InventoryPage() {
       </div>
 
       {/* Par Alerts - shown prominently when items are below par */}
-      {(parAlerts as any[]).length > 0 && <ParAlertPanel alerts={parAlerts as any[]} />}
+      {parAlertsError && (
+        <Card className="border-red-900/60 bg-red-950/20 p-5">
+          <h2 className="font-semibold text-red-200">Par alerts could not be loaded</h2>
+          <p className="mt-1 text-sm text-red-100/80">
+            Inventory navigation is still available, but ChefFlow could not verify whether items are
+            below par right now. Try refreshing this page before relying on par status.
+          </p>
+        </Card>
+      )}
+
+      {!parAlertsError && parAlerts.length > 0 && <ParAlertPanel alerts={parAlerts} />}
 
       {/* Auto-reorder from par shortfalls */}
-      {(parAlerts as any[]).length > 0 && <AutoReorderPanel />}
+      {!parAlertsError && parAlerts.length > 0 && <AutoReorderPanel />}
 
       {/* Sub-page navigation */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -149,7 +169,7 @@ export default async function InventoryPage() {
         ))}
       </div>
 
-      {(parAlerts as any[]).length === 0 && (
+      {!parAlertsError && parAlerts.length === 0 && (
         <div className="rounded-lg border border-stone-700 bg-stone-800 p-6 text-center">
           <p className="text-stone-500 text-sm">
             All inventory items are at or above par levels. Start by adding{' '}

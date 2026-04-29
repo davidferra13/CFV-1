@@ -27,7 +27,7 @@ export function SupplierDirectory({ initialSuppliers }: Props) {
 
     startTransition(async () => {
       try {
-        await createSupplier({
+        const supplier = await createSupplier({
           name: name.trim(),
           vendorType,
           phone: phone.trim() || undefined,
@@ -35,20 +35,7 @@ export function SupplierDirectory({ initialSuppliers }: Props) {
           isPreferred,
         })
 
-        setSuppliers((prev) => [
-          {
-            id: `local-${Date.now()}`,
-            name: name.trim(),
-            vendorType,
-            phone: phone || null,
-            email: email || null,
-            address: null,
-            isPreferred,
-            itemCount: 0,
-            openOrderCount: 0,
-          },
-          ...prev,
-        ])
+        setSuppliers((prev) => [supplier, ...prev])
 
         setName('')
         setVendorType('grocery')
@@ -64,7 +51,7 @@ export function SupplierDirectory({ initialSuppliers }: Props) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>SupplierDirectory</CardTitle>
+        <CardTitle>Supplier Directory</CardTitle>
         <p className="text-sm text-stone-500">
           Supplier CRM with contact details, preferred status, and purchasing context.
         </p>

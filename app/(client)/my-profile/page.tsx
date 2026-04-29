@@ -74,7 +74,18 @@ export default async function MyProfilePage() {
       </div>
 
       {/* Account management */}
-      <div className="pt-4 border-t border-stone-800">
+      <div className="space-y-3 border-t border-stone-800 pt-4">
+        <div>
+          <Link
+            href="/my-profile/data-export"
+            className="text-sm text-stone-300 hover:text-brand-400 transition-colors"
+          >
+            Download my data
+          </Link>
+          <p className="mt-1 text-xs text-stone-500">
+            Export your profile and event records without deleting your account.
+          </p>
+        </div>
         <Link
           href="/my-profile/delete-account"
           className="text-sm text-stone-500 hover:text-red-400 transition-colors"

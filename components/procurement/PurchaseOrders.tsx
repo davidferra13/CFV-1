@@ -126,7 +126,7 @@ export function PurchaseOrders({ initialOrders, references }: Props) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>PurchaseOrders</CardTitle>
+        <CardTitle>Purchase Orders</CardTitle>
         <p className="text-sm text-stone-500">
           Create, send, and fulfill purchase orders with optional stock auto-updates.
         </p>

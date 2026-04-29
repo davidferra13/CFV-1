@@ -98,7 +98,7 @@ export async function createSupplier(input: {
   isPreferred?: boolean
 }) {
   const parsed = CreateSupplierSchema.parse(input)
-  await createVendor({
+  const vendor = await createVendor({
     name: parsed.name,
     vendor_type: parsed.vendorType,
     phone: parsed.phone,
@@ -109,9 +109,19 @@ export async function createSupplier(input: {
     is_preferred: parsed.isPreferred,
   })
 
-  revalidatePath('/procurement')
+  revalidatePath('/inventory/procurement')
   revalidatePath('/inventory')
-  return { ok: true }
+  return {
+    id: vendor.id,
+    name: vendor.name,
+    vendorType: vendor.vendor_type,
+    phone: vendor.phone,
+    email: vendor.email,
+    address: vendor.address,
+    isPreferred: vendor.is_preferred,
+    itemCount: 0,
+    openOrderCount: 0,
+  } satisfies SupplierDirectoryEntry
 }
 
 export async function getProcurementReferenceData(): Promise<ProcurementReferenceData> {
@@ -180,7 +190,7 @@ export async function createProcurementOrder(input: {
     notes: parsed.notes,
   })
 
-  revalidatePath('/procurement')
+  revalidatePath('/inventory/procurement')
   revalidatePath('/inventory/purchase-orders')
   return created
 }
@@ -203,14 +213,15 @@ export async function addProcurementOrderItem(input: {
     estimatedUnitPriceCents: parsed.estimatedUnitPriceCents,
   })
 
-  revalidatePath('/procurement')
+  revalidatePath('/inventory/procurement')
   revalidatePath('/inventory/purchase-orders')
   return { ok: true }
 }
 
 export async function sendProcurementOrder(orderId: string) {
   await submitPO(orderId)
-  revalidatePath('/procurement')
+  revalidatePath('/inventory/procurement')
+  revalidatePath('/inventory/purchase-orders')
   return { ok: true }
 }
 
@@ -264,7 +275,7 @@ export async function fulfillProcurementOrder(orderId: string, autoUpdateStock =
       .eq('chef_id', user.tenantId!)
   }
 
-  revalidatePath('/procurement')
+  revalidatePath('/inventory/procurement')
   revalidatePath('/inventory/purchase-orders')
   return { ok: true }
 }

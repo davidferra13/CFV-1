@@ -25,13 +25,23 @@ type Props = {
 }
 
 const ACTION_TYPE_COLORS: Record<string, 'default' | 'success' | 'warning' | 'error' | 'info'> = {
+  check_in: 'success',
+  check_out: 'success',
+  prep_complete: 'success',
+  prep_verified: 'success',
+  component_86: 'error',
+  component_un86: 'warning',
+  order_created: 'info',
+  order_status_changed: 'warning',
+  service_day_opened: 'success',
+  service_day_closed: 'default',
+  sales_recorded: 'info',
+  waste_logged: 'error',
   clipboard_update: 'info',
   shift_check_in: 'success',
   shift_check_out: 'success',
   mark_86: 'error',
   unmark_86: 'warning',
-  waste_logged: 'error',
-  order_created: 'info',
   order_ordered: 'warning',
   order_received: 'success',
   station_created: 'default',
@@ -110,6 +120,22 @@ export function OpsLogViewer({ stations, initialStationId }: Props) {
   }
 
   function formatActionType(type: string): string {
+    const labels: Record<string, string> = {
+      check_in: 'Check In',
+      check_out: 'Check Out',
+      prep_complete: 'Prep Complete',
+      prep_verified: 'Prep Verified',
+      component_86: '86 Component',
+      component_un86: 'Un-86 Component',
+      order_created: 'Order Created',
+      order_status_changed: 'Order Status Changed',
+      service_day_opened: 'Service Day Opened',
+      service_day_closed: 'Service Day Closed',
+      sales_recorded: 'Sales Recorded',
+      waste_logged: 'Waste Logged',
+    }
+    if (labels[type]) return labels[type]
+
     return type
       .split('_')
       .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
