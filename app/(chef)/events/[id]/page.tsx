@@ -758,7 +758,7 @@ export default async function EventDetailPage({
       locale: 'en-US' as const,
       measurementSystem: 'imperial' as const,
     })),
-    getEventConstraintRadar(params.id).catch((error) => {
+    getEventConstraintRadar(params.id).catch((error: unknown) => {
       console.warn('[EventDetailPage] constraint radar failed', error)
       return null
     }),
@@ -1536,7 +1536,6 @@ export default async function EventDetailPage({
         tickets={ticketList as any[]}
         summary={ticketSummary}
         shareToken={publicTicketShareToken}
-        ticketsEnabled={ticketsEnabled}
       />
 
       {/* ============================================ */}

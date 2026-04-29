@@ -6,7 +6,7 @@ import { CheckCircle, Clock, DollarSign, Shield } from 'lucide-react'
 import { Badge, type BadgeProps } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import { detectConstraintCollisions } from '@/lib/events/constraint-collisions'
-import type { ConstraintRadarData } from '@/lib/events/constraint-radar-actions'
+import type { ConstraintRadarData } from '@/lib/events/constraint-radar-types'
 
 type ConstraintRadarPanelProps = {
   data: ConstraintRadarData

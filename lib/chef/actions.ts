@@ -522,3 +522,17 @@ export async function setBusinessMode(input: {
   revalidatePath('/settings')
   return { success: true }
 }
+
+export async function getRegionalSettings(): Promise<{
+  currencyCode: string
+  locale: string
+  measurementSystem: 'imperial' | 'metric'
+}> {
+  await requireChef()
+
+  return {
+    currencyCode: 'USD',
+    locale: 'en-US',
+    measurementSystem: 'imperial',
+  }
+}

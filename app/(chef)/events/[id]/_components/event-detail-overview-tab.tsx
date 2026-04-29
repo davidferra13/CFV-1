@@ -34,7 +34,7 @@ import type { EventCollaborator } from '@/lib/collaboration/types'
 import { ChefDecisionBriefPanel } from '@/components/hub/chef-decision-brief'
 import { GarmentFlipToggle } from '@/components/events/garment-flip-toggle'
 import { ConstraintRadarPanel } from '@/components/events/constraint-radar-panel'
-import type { ConstraintRadarData } from '@/lib/events/constraint-radar-actions'
+import type { ConstraintRadarData } from '@/lib/events/constraint-radar-types'
 import { MenuSharePanel } from '@/components/menus/menu-share-panel'
 import { ShareSplitButton } from '@/components/payments/share-split-button'
 

@@ -1,4 +1,4 @@
-import type { ConstraintRadarData } from '@/lib/events/constraint-radar-actions'
+import type { ConstraintRadarData } from '@/lib/events/constraint-radar-types'
 
 export type CollisionAlert = {
   severity: 'warning' | 'critical'
