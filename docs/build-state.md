@@ -41,6 +41,7 @@ _Newest first. Keep the last 10 entries. Prune older ones._
 
 | Date       | tsc   | build | Agent           | Notes                                                                                                                                        |
 | ---------- | ----- | ----- | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-04-29 | fail  | -     | Codex           | Scoped launch readiness tests passed. Full tsc with 8GB heap failed on unrelated existing missing `@dnd-kit`, `@fullcalendar`, `@capacitor/cli`, `next-auth/jwt` encode, and chart formatter typing errors. |
 | 2026-04-27 | green | green | Claude Opus 4.6 | Regression detection system: 19 scripts, 5 layers, pre-commit/pre-push hooks, /regression skill. 241 registry checks passing. Self-test 6/6. |
 | 2026-04-27 | green | green | Claude Opus 4.6 | tsc + build clean on dirty checkout. 16GB heap required. BUILD_ID 0abc27ebf. 11 worktrees cleaned. Compliance: ALL CLEAR.                    |
 | 2026-04-24 | green | green | Codex           | First-time progressive disclosure. Starter dashboard, sparse-data hiding, progressive nav.                                                   |

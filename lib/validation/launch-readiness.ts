@@ -15,6 +15,11 @@ import { summarizeOperatorSurveyReadiness } from '@/lib/validation/operator-surv
 import { summarizePublicBookingProof } from '@/lib/validation/public-booking-proof'
 import { buildAcquisitionReadiness } from '@/lib/validation/acquisition-readiness'
 import { buildOnboardingTestReadiness } from '@/lib/validation/onboarding-test-readiness'
+import {
+  applyLaunchReadinessOperatorReviews,
+  LAUNCH_READINESS_REVIEWABLE_CHECK_KEYS,
+} from '@/lib/validation/launch-readiness-operator-review'
+import { listLaunchReadinessOperatorReviews } from '@/lib/validation/launch-readiness-review-store'
 
 export type LaunchReadinessStatus = 'verified' | 'needs_action' | 'operator_review'
 
@@ -1041,6 +1046,7 @@ export async function getLaunchReadinessReport(): Promise<LaunchReadinessReport>
     acquisition,
     buildIntegrity,
     backupIntegrity,
+    operatorReviews,
   ] = await Promise.all([
     Promise.all((chefs ?? []).map((chef: any) => loadPilotCandidate(db, chef, generatedAt))),
     loadOperatorSurveyFacts(db),
@@ -1048,9 +1054,10 @@ export async function getLaunchReadinessReport(): Promise<LaunchReadinessReport>
     loadAcquisitionFacts(db),
     loadBuildIntegrity(),
     loadBackupIntegrity(db, generatedAt),
+    listLaunchReadinessOperatorReviews(),
   ])
 
-  return buildLaunchReadinessReport({
+  const report = buildLaunchReadinessReport({
     generatedAt,
     pilotCandidates,
     operatorSurvey,
@@ -1059,4 +1066,8 @@ export async function getLaunchReadinessReport(): Promise<LaunchReadinessReport>
     buildIntegrity,
     backupIntegrity,
   })
+
+  return applyLaunchReadinessOperatorReviews(report, operatorReviews, {
+    allowedCheckKeys: LAUNCH_READINESS_REVIEWABLE_CHECK_KEYS,
+  }).report
 }

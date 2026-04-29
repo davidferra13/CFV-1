@@ -19,6 +19,14 @@ const reviewPreviewRouteSource = readFileSync(
   join(process.cwd(), 'app/api/admin/launch-readiness/review-preview/route.ts'),
   'utf8'
 )
+const reviewsRouteSource = readFileSync(
+  join(process.cwd(), 'app/api/admin/launch-readiness/reviews/route.ts'),
+  'utf8'
+)
+const launchReadinessSource = readFileSync(
+  join(process.cwd(), 'lib/validation/launch-readiness.ts'),
+  'utf8'
+)
 const adminNavSource = readFileSync(
   join(process.cwd(), 'components/navigation/admin-nav-config.ts'),
   'utf8'
@@ -71,6 +79,25 @@ test('launch readiness review preview route is admin-only and non-persistent', (
   assert.doesNotMatch(reviewPreviewRouteSource, /\.from\(/)
   assert.doesNotMatch(reviewPreviewRouteSource, /\.insert\(/)
   assert.doesNotMatch(reviewPreviewRouteSource, /\.upsert\(/)
+})
+
+test('launch readiness persistent review route is admin-only and cache-busting', () => {
+  assert.match(
+    reviewsRouteSource,
+    /import\s+\{\s*requireAdmin\s*\}\s+from ['"]@\/lib\/auth\/admin['"]/
+  )
+  assert.match(reviewsRouteSource, /await\s+requireAdmin\(\)/)
+  assert.match(reviewsRouteSource, /ReviewInputSchema\.safeParse/)
+  assert.match(reviewsRouteSource, /createLaunchReadinessOperatorReview/)
+  assert.match(reviewsRouteSource, /listLaunchReadinessOperatorReviews/)
+  assert.match(reviewsRouteSource, /revalidatePath\(['"]\/admin\/launch-readiness['"]\)/)
+  assert.match(reviewsRouteSource, /Cache-Control['"]:\s*['"]no-store/)
+})
+
+test('launch readiness report applies stored operator reviews', () => {
+  assert.match(launchReadinessSource, /listLaunchReadinessOperatorReviews/)
+  assert.match(launchReadinessSource, /applyLaunchReadinessOperatorReviews/)
+  assert.match(launchReadinessSource, /LAUNCH_READINESS_REVIEWABLE_CHECK_KEYS/)
 })
 
 test('launch readiness page connects the risk register helper', () => {

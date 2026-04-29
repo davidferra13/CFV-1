@@ -1,16 +1,10 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { requireAdmin } from '@/lib/auth/admin'
 import { getLaunchReadinessReport } from '@/lib/validation/launch-readiness'
-import { applyLaunchReadinessOperatorReviews } from '@/lib/validation/launch-readiness-operator-review'
-
-const REVIEWABLE_CHECK_KEYS = [
-  'real_chef_two_weeks',
-  'public_booking_test',
-  'operator_survey',
-  'operator_survey_signal',
-  'onboarding_test',
-  'acquisition_attribution',
-] as const
+import {
+  applyLaunchReadinessOperatorReviews,
+  LAUNCH_READINESS_REVIEWABLE_CHECK_KEYS,
+} from '@/lib/validation/launch-readiness-operator-review'
 
 export async function POST(request: NextRequest) {
   await requireAdmin()
@@ -36,7 +30,7 @@ export async function POST(request: NextRequest) {
 
   const report = await getLaunchReadinessReport()
   const review = applyLaunchReadinessOperatorReviews(report, records, {
-    allowedCheckKeys: REVIEWABLE_CHECK_KEYS,
+    allowedCheckKeys: LAUNCH_READINESS_REVIEWABLE_CHECK_KEYS,
   })
 
   return NextResponse.json(

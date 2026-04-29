@@ -6,6 +6,15 @@ import type {
 
 export type LaunchReadinessOperatorReviewDecision = 'verified' | 'rejected'
 
+export const LAUNCH_READINESS_REVIEWABLE_CHECK_KEYS = [
+  'real_chef_two_weeks',
+  'public_booking_test',
+  'operator_survey',
+  'operator_survey_signal',
+  'onboarding_test',
+  'acquisition_attribution',
+] as const satisfies readonly LaunchReadinessCheckKey[]
+
 export type LaunchReadinessOperatorReviewRecord = {
   checkKey: string
   decision: LaunchReadinessOperatorReviewDecision
