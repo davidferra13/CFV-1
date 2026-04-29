@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { Plus, Phone } from '@/components/ui/icons'
 import { getCallsLoadState, type CallType } from '@/lib/calls/actions'
 import { getCallIntelligenceSnapshot } from '@/lib/calls/intelligence-actions'
+import { callNeedsOutcome } from '@/lib/calls/outcome-state'
 import { CallCard } from '@/components/calls/call-card'
 import { CallIntelligencePanel } from '@/components/calls/call-intelligence-panel'
 
@@ -18,6 +19,7 @@ type Props = {
 export default async function CallsPage({ searchParams }: Props) {
   const statusFilter = searchParams.status
   const typeFilter = searchParams.type
+  const needsOutcomeFilter = statusFilter === 'needs_outcome'
 
   // Fetch upcoming + past in parallel
   const [upcomingResult, pastResult, intelligence] = await Promise.all([
@@ -38,7 +40,9 @@ export default async function CallsPage({ searchParams }: Props) {
     getCallIntelligenceSnapshot(),
   ])
   const upcoming = upcomingResult.data
-  const past = pastResult.data
+  const past = needsOutcomeFilter
+    ? pastResult.data.filter((call) => callNeedsOutcome(call))
+    : pastResult.data
 
   const showAll = !statusFilter || statusFilter === 'all'
 
@@ -83,6 +87,7 @@ export default async function CallsPage({ searchParams }: Props) {
             { label: 'All', href: '/calls' },
             { label: 'Upcoming', href: '/calls?status=scheduled' },
             { label: 'Completed', href: '/calls?status=completed' },
+            { label: 'Needs outcome', href: '/calls?status=needs_outcome' },
             { label: 'No-show', href: '/calls?status=no_show' },
             { label: 'Cancelled', href: '/calls?status=cancelled' },
           ].map((tab) => {
@@ -136,10 +141,11 @@ export default async function CallsPage({ searchParams }: Props) {
       )}
 
       {/* Past section */}
-      {(showAll || ['completed', 'no_show', 'cancelled'].includes(statusFilter ?? '')) && (
+      {(showAll ||
+        ['completed', 'needs_outcome', 'no_show', 'cancelled'].includes(statusFilter ?? '')) && (
         <section className="space-y-3">
           <h2 className="text-sm font-semibold text-stone-400 uppercase tracking-wide">
-            Past ({past.length})
+            {needsOutcomeFilter ? 'Needs outcome' : 'Past'} ({past.length})
           </h2>
           {pastResult.status === 'unavailable' ? (
             <UnavailableCallsState message="Past calls could not be loaded." />
@@ -158,9 +164,13 @@ export default async function CallsPage({ searchParams }: Props) {
                   d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z"
                 />
               </svg>
-              <p className="text-sm text-stone-500">No past calls yet</p>
+              <p className="text-sm text-stone-500">
+                {needsOutcomeFilter ? 'No completed calls need outcomes' : 'No past calls yet'}
+              </p>
               <p className="text-xs text-stone-600 mt-1">
-                Completed and missed calls will appear here
+                {needsOutcomeFilter
+                  ? 'Completed calls with logged outcomes are already closed out'
+                  : 'Completed and missed calls will appear here'}
               </p>
             </div>
           ) : (

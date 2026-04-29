@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { format, formatDistanceToNow, isPast } from 'date-fns'
 import { Phone, Clock, User, ChevronRight, AlertCircle } from '@/components/ui/icons'
 import type { ScheduledCall } from '@/lib/calls/actions'
+import { callNeedsOutcome } from '@/lib/calls/outcome-state'
 import { CallTypeBadge } from './call-type-badge'
 
 const STATUS_COLORS: Record<string, string> = {
@@ -32,6 +33,7 @@ function getCallTitle(call: ScheduledCall): string {
 
 export function CallCard({ call }: { call: ScheduledCall }) {
   const isOverdue = isPast(new Date(call.scheduled_at)) && call.status === 'scheduled'
+  const needsOutcome = callNeedsOutcome(call)
   const isTerminal =
     call.status === 'completed' || call.status === 'cancelled' || call.status === 'no_show'
 
@@ -55,6 +57,11 @@ export function CallCard({ call }: { call: ScheduledCall }) {
             {isOverdue && (
               <span className="flex items-center gap-1 text-xs text-amber-600">
                 <AlertCircle className="w-3 h-3" /> Overdue
+              </span>
+            )}
+            {needsOutcome && (
+              <span className="flex items-center gap-1 rounded-full border border-amber-700/70 bg-amber-950/40 px-2 py-0.5 text-xs font-medium text-amber-300">
+                <AlertCircle className="w-3 h-3" /> Needs outcome
               </span>
             )}
           </div>
