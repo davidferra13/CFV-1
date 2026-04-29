@@ -298,6 +298,9 @@ export type CourseInput = {
   course_label: string
   dish_name?: string
   description?: string
+  recipe_id?: string
+  dietary_tags?: string[]
+  allergen_flags?: string[]
 }
 
 /**
@@ -325,10 +328,24 @@ export async function createMenuWithCourses(
         course_name: course.course_label || `Course ${courseNumber}`,
         name: course.dish_name || undefined,
         description: course.description || undefined,
-        dietary_tags: [],
-        allergen_flags: [],
+        dietary_tags: course.dietary_tags ?? [],
+        allergen_flags: course.allergen_flags ?? [],
       })
-      if ((result as any).dish) dishes.push((result as any).dish)
+      const dish = (result as any).dish
+      if (dish) {
+        if (course.recipe_id) {
+          await addComponentToDish({
+            dish_id: dish.id,
+            name: course.dish_name || course.course_label || `Course ${courseNumber}`,
+            category: 'other',
+            description: course.description,
+            recipe_id: course.recipe_id,
+            scale_factor: 1,
+            is_make_ahead: false,
+          })
+        }
+        dishes.push(dish)
+      }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : `Course ${courseNumber} failed`
       courseErrors.push(msg)

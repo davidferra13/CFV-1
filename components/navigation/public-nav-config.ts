@@ -18,7 +18,7 @@ import {
   PUBLIC_PRIMARY_CONSUMER_CTA,
   PUBLIC_SECONDARY_CONSUMER_CTA,
   PUBLIC_SUPPORTING_DIRECTORY_ENTRY,
-} from '@/lib/public/public-surface-config'
+} from '@/lib/public/public-navigation-config'
 
 export type PublicNavItem = {
   href: string

@@ -2,21 +2,45 @@
 
 // MenuAISuggestionsPanel
 // Appears in Step 2 of the menu creation wizard.
-// Chef clicks "Suggest Menus" - sends current metadata context to Ollama.
-// Returns 3 themed menu options. Chef can apply one to pre-fill courses.
+// Searches the chef's recipe book only. It never asks AI to invent dishes.
 
 import { useState, useTransition } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Sparkles } from '@/components/ui/icons'
-import { getAIMenuSuggestionsFromContext } from '@/lib/ai/menu-suggestions'
-import type { MenuSuggestion, MenuSuggestionContext } from '@/lib/ai/menu-suggestions'
+import { BookOpen } from '@/components/ui/icons'
+import { getRecipeBookMenuSuggestions } from '@/lib/menus/recipe-book-suggestions-actions'
 
 type CourseRow = {
   localId: string
   label: string
   dishName: string
   description: string
+  recipeId?: string
+  dietaryTags?: string[]
+  allergenFlags?: string[]
+}
+
+type MenuSuggestionContext = {
+  sceneType?: string
+  cuisineType?: string
+  serviceStyle?: string
+  guestCount?: number
+  season?: string
+  notes?: string
+  allergies?: string[] | string
+}
+
+type MenuSuggestion = {
+  name: string
+  rationale: string
+  courses: Array<{
+    course: string
+    dish: string
+    description: string
+    recipeId?: string
+    dietaryTags?: string[]
+    allergenFlags?: string[]
+  }>
 }
 
 interface Props {
@@ -36,10 +60,10 @@ export function MenuAISuggestionsPanel({ context, onApply }: Props) {
     setAppliedIndex(null)
     startTransition(async () => {
       try {
-        const results = await getAIMenuSuggestionsFromContext(context)
+        const results = await getRecipeBookMenuSuggestions(context)
         setSuggestions(results)
       } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : 'Could not generate suggestions'
+        const msg = err instanceof Error ? err.message : 'Could not load recipe book matches'
         setError(msg)
       }
     })
@@ -47,10 +71,13 @@ export function MenuAISuggestionsPanel({ context, onApply }: Props) {
 
   function applyOption(index: number, suggestion: MenuSuggestion) {
     const courses: CourseRow[] = suggestion.courses.map((c) => ({
-      localId: `ai-${index}-${crypto.randomUUID()}`,
+      localId: `recipe-${index}-${crypto.randomUUID()}`,
       label: c.course,
       dishName: c.dish,
       description: c.description,
+      recipeId: c.recipeId,
+      dietaryTags: c.dietaryTags,
+      allergenFlags: c.allergenFlags,
     }))
     onApply(courses)
     setAppliedIndex(index)
@@ -61,8 +88,8 @@ export function MenuAISuggestionsPanel({ context, onApply }: Props) {
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-brand-400" weight="fill" />
-            <CardTitle className="text-base">AI Suggestions</CardTitle>
+            <BookOpen className="h-4 w-4 text-brand-400" />
+            <CardTitle className="text-base">Recipe Book Matches</CardTitle>
           </div>
           {suggestions && (
             <button
@@ -75,20 +102,20 @@ export function MenuAISuggestionsPanel({ context, onApply }: Props) {
             </button>
           )}
         </div>
-        <p className="text-xs text-stone-500 mt-1">Based on your recipe book and event details</p>
+        <p className="text-xs text-stone-500 mt-1">Existing recipes matched to this menu context</p>
       </CardHeader>
       <CardContent>
         {!suggestions && !isPending && !error && (
           <Button type="button" variant="secondary" onClick={fetchSuggestions} className="w-full">
-            <Sparkles className="h-4 w-4 mr-2" />
-            Suggest Menus
+            <BookOpen className="h-4 w-4 mr-2" />
+            Find Recipe Matches
           </Button>
         )}
 
         {isPending && (
           <div className="flex flex-col items-center gap-2 py-4 text-stone-500">
             <div className="w-5 h-5 border-2 border-stone-600 border-t-brand-400 rounded-full animate-spin" />
-            <p className="text-xs">Thinking through options...</p>
+            <p className="text-xs">Searching your recipe book...</p>
           </div>
         )}
 
@@ -101,7 +128,19 @@ export function MenuAISuggestionsPanel({ context, onApply }: Props) {
           </div>
         )}
 
-        {suggestions && (
+        {suggestions && suggestions.length === 0 && (
+          <div className="space-y-2">
+            <p className="text-xs text-stone-400">
+              No saved recipes are available yet. Add courses manually or add recipes to your book
+              first.
+            </p>
+            <Button type="button" variant="secondary" href="/recipes/new" className="w-full">
+              Add Recipe
+            </Button>
+          </div>
+        )}
+
+        {suggestions && suggestions.length > 0 && (
           <div className="space-y-3">
             {suggestions.map((s, i) => (
               <div
@@ -131,9 +170,19 @@ export function MenuAISuggestionsPanel({ context, onApply }: Props) {
                 </div>
                 <div className="space-y-0.5">
                   {s.courses.map((c, ci) => (
-                    <div key={ci} className="flex items-baseline gap-1.5 text-xs">
-                      <span className="text-stone-600 flex-shrink-0">{c.course}:</span>
-                      <span className="text-stone-300">{c.dish}</span>
+                    <div key={ci} className="space-y-0.5 text-xs">
+                      <div className="flex items-baseline gap-1.5">
+                        <span className="text-stone-600 flex-shrink-0">{c.course}:</span>
+                        <span className="text-stone-300">{c.dish}</span>
+                      </div>
+                      {(c.dietaryTags?.length || c.allergenFlags?.length) && (
+                        <div className="pl-12 text-[11px] text-stone-500">
+                          {[
+                            ...(c.dietaryTags ?? []).slice(0, 3),
+                            ...(c.allergenFlags ?? []).slice(0, 3).map((flag) => `Contains ${flag}`),
+                          ].join(' | ')}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>

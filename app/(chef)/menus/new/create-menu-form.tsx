@@ -87,6 +87,9 @@ type CourseRow = {
   label: string
   dishName: string
   description: string
+  recipeId?: string
+  dietaryTags?: string[]
+  allergenFlags?: string[]
 }
 
 type DraftData = {
@@ -290,6 +293,9 @@ export function CreateMenuForm({ tenantId }: { tenantId: string }) {
             course_label: c.label || 'Course',
             dish_name: c.dishName || undefined,
             description: c.description || undefined,
+            recipe_id: c.recipeId,
+            dietary_tags: c.dietaryTags ?? [],
+            allergen_flags: c.allergenFlags ?? [],
           })),
         })
 
