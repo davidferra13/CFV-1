@@ -84,138 +84,7 @@ import {
 } from '@/lib/ai/remy-approval-policy-core'
 import { getTenantRemyApprovalPolicyMap } from '@/lib/ai/remy-approval-policy-actions'
 import { validateSignificantApprovalPhrase } from '@/lib/ai/remy-significant-approval'
-import {
-  executeContractGeneration,
-  executeContingencyPlanning,
-  executeSeasonalProduce,
-  executeGroceryConsolidation,
-  executeRevenueForecast,
-  executePnLReport,
-  executeTaxSummary,
-  executePricingAnalysis,
-  executeUtilizationAnalysis,
-  executeClientMilestones,
-  executeReEngagementScoring,
-  executeAcquisitionFunnel,
-  executeMultiEventComparison,
-  executeGoalsDashboard,
-  executeEquipmentList,
-  executeEquipmentMaintenance,
-  executeVendorsList,
-  executeMorningBriefing,
-  executeCancellationImpact,
-  executePostEventSequence,
-  executeIngredientSubstitution,
-  executeFoodSafetyQuery,
-  executeDietaryCheck as executeIngredientDietaryCheck,
-} from '@/lib/ai/remy-intelligence-actions'
-import {
-  executeClientSpending,
-  executeClientChurnRisk,
-  executeClientBirthdays,
-  executeClientNextBestActions,
-  executeClientCooling,
-  executeClientLTVTrajectory,
-  executeClientMenuHistory,
-  executeClientReferralHealth,
-  executeClientNDAStatus,
-  executeClientPaymentPlans,
-  executeEventDietaryConflicts,
-  executeEventDebrief,
-  executeEventCountdown,
-  executeInvoiceLookup,
-  executeInquiryFollowUps,
-  executeInquiryLikelihood,
-  executeMenuFoodCost,
-  executeMenuDishIndex,
-  executeMenuShowcase,
-  executeRecipeAllergens,
-  executeRecipeNutrition,
-  executeRecipeProductionLogs,
-  executeCashFlowForecast,
-  executeMileageSummary,
-  executeTipSummary,
-  executeContractorSummary,
-  executeDisputes,
-  executePaymentPlanLookup,
-  executeRecurringInvoices,
-  executeTaxPackage,
-  executePayrollSummary,
-  executeVendorInvoices,
-  executeVendorPriceInsights,
-  executeVendorPaymentAging,
-  executeEquipmentRentals,
-  executeStaffAvailability,
-  executeStaffBriefing,
-  executeStaffClockSummary,
-  executeStaffPerformance,
-  executeStaffLaborDashboard,
-  executeCapacityCheck,
-  executePrepBlocks,
-  executeProtectedTime,
-  executeSchedulingGaps,
-  executePipelineAnalytics,
-  executeYearOverYear,
-  executeDemandForecast,
-  executeBenchmarks,
-  executePricingSuggestions,
-  executeResponseTimeMetrics,
-  executeCostTrends,
-  executeReferralAnalytics,
-  executeQuoteLossAnalysis,
-  executeRevenueByServiceType,
-  executeGoalHistory,
-  executeGoalCheckIns,
-  executeCertificationStatus,
-  executeBusinessHealthScore,
-  executeLoyaltyRedemptions,
-  executeLoyaltyGiftCards,
-  executeInventoryStatus,
-  executePurchaseOrders,
-  executeCommerceSalesSummary,
-  executeGuestList,
-  executeMarketingCampaigns,
-  executeNewsletterStatus,
-  executeReviewsSummary,
-  executeGmailSenderReputation,
-  executeNotificationPreferences,
-  executeDocumentSnapshots,
-} from '@/lib/ai/remy-intelligence-actions-2'
-import {
-  executeCirclesList,
-  executeCirclesUnread,
-  executeCircleEvents,
-  executeRateCard,
-  executeTasksList,
-  executeTasksByDate,
-  executeTasksOverdue,
-  executeTravelPlan,
-  executeTravelUpcoming,
-  executeCommerceProducts,
-  executeCommerceRecentSales,
-  executeCommerceDailyReport,
-  executeCommerceProductReport,
-  executeCommerceInventoryLow,
-  executeDailyPlan,
-  executeDailyPlanStats,
-  executePriorityQueue,
-  executeStationsList,
-  executeStationDetail,
-  executeOpsLog,
-  executeWasteLog,
-  executeTestimonialsList,
-  executeTestimonialsPending,
-  executePartnersList,
-  executePartnerEvents,
-  executePartnerPerformance,
-  executeActivityFeed,
-  executeEngagementStats,
-  executeAARList,
-  executeAARStats,
-  executeEventsWithoutAAR,
-  executeAARForgottenItems,
-  executeWaitlistStatus,
-} from '@/lib/ai/remy-intelligence-actions-3'
+import { executeRegisteredRemyReadTask } from '@/lib/ai/remy-read-task-registry'
 
 // ─── Individual Task Executors ────────────────────────────────────────────────
 
@@ -1367,764 +1236,291 @@ async function executeSingleTask(
       }
     }
 
-    switch (task.taskType) {
-      case 'client.search':
-        data = await executeClientSearch(task.inputs)
-        break
-      case 'calendar.availability':
-        data = await executeCalendarAvailability(task.inputs)
-        break
-      case 'event.list_upcoming':
-        data = await executeEventListUpcoming(tenantId)
-        break
-      case 'finance.summary':
-        data = await executeFinanceSummary(tenantId)
-        break
-      case 'email.followup':
-        data = await executeEmailFollowup(task.inputs, resolvedDeps)
-        break
-      case 'event.create_draft':
-        data = await executeEventCreateDraft(task.inputs)
-        break
-      case 'client.count': {
-        const allForCount = await getClients()
-        data = { totalClients: (allForCount ?? []).length }
-        break
-      }
-      case 'client.list_recent':
-        data = await executeClientListRecent(task.inputs)
-        break
-      case 'client.details':
-        data = await executeClientDetails(task.inputs)
-        break
-      case 'event.details':
-        data = await executeEventDetails(task.inputs, tenantId)
-        break
-      case 'event.readiness':
-        data = await executeEventReadiness(task.inputs, tenantId)
-        break
-      case 'event.list_by_status':
-        data = await executeEventListByStatus(task.inputs, tenantId)
-        break
-      case 'inquiry.list_open':
-        data = await executeInquiryListOpen()
-        break
-      case 'inquiry.details':
-        data = await executeInquiryDetails(task.inputs)
-        break
-      case 'finance.monthly_snapshot':
-        data = await executeFinanceMonthlySnapshot()
-        break
-      case 'recipe.search':
-        data = await executeRecipeSearch(task.inputs)
-        break
-      case 'menu.list':
-        data = await executeMenuList(task.inputs)
-        break
-      case 'scheduling.next_available':
-        data = await executeSchedulingNextAvailable(task.inputs)
-        break
-      case 'web.search':
-        data = await executeWebSearch(task.inputs)
-        break
-      case 'web.read':
-        data = await executeWebRead(task.inputs)
-        break
-      case 'dietary.check':
-      case 'client.dietary':
-      case 'client.dietary_restrictions':
-        data = await executeDietaryCheck(task.inputs)
-        break
-      case 'chef.favorite_chefs':
-        data = await executeFavoriteChefs()
-        break
-      case 'chef.culinary_profile':
-        data = await executeCulinaryProfile()
-        break
-      case 'prep.timeline':
-        data = await executePrepTimeline(task.inputs)
-        break
-      case 'nudge.list':
-        data = await executeNudgeList()
-        break
-      case 'grocery.quick_add':
-        data = await executeGroceryQuickAdd(task.inputs)
-        break
-      case 'document.search':
-        data = await executeDocumentSearch(task.inputs)
-        break
-      case 'document.list_folders':
-        data = await executeListFolders()
-        break
-      case 'document.create_folder':
-        data = await executeCreateFolder(task.inputs)
-        break
-      case 'email.generic':
-        data = await executeEmailGeneric(task.inputs)
-        break
-      case 'email.recent':
-        data = await executeEmailRecent(task.inputs)
-        break
-      case 'email.search':
-        data = await executeEmailSearch(task.inputs)
-        break
-      case 'email.thread':
-        data = await executeEmailThread(task.inputs)
-        break
-      case 'email.inbox_summary':
-      case 'email.status':
-        data = await executeEmailInboxSummary()
-        break
-      case 'email.draft_reply':
-        data = await executeEmailDraftReply(task.inputs)
-        break
-      case 'draft.thank_you':
-        data = await executeDraftThankYou(task.inputs)
-        break
-      case 'draft.referral_request':
-        data = await executeDraftReferralRequest(task.inputs)
-        break
-      case 'draft.testimonial_request':
-        data = await executeDraftTestimonialRequest(task.inputs)
-        break
-      case 'draft.quote_cover_letter':
-        data = await executeDraftQuoteCoverLetter(task.inputs)
-        break
-      case 'draft.decline_response':
-        data = await executeDraftDeclineResponse(task.inputs)
-        break
-      case 'draft.cancellation_response':
-        data = await executeDraftCancellationResponse(task.inputs)
-        break
-      case 'draft.payment_reminder':
-        data = await executeDraftPaymentReminder(task.inputs)
-        break
-      case 'draft.re_engagement':
-        data = await executeDraftReEngagement(task.inputs)
-        break
-      case 'draft.milestone_recognition':
-        data = await executeDraftMilestoneRecognition(task.inputs)
-        break
-      case 'draft.food_safety_incident':
-        data = await executeDraftFoodSafetyIncident(task.inputs)
-        break
-      case 'draft.confirmation':
-        data = await executeDraftConfirmation(task.inputs)
-        break
-      case 'ops.portion_calc':
-        data = await executePortionCalc(task.inputs)
-        break
-      case 'ops.packing_list':
-        data = await executePackingList(task.inputs)
-        break
-      case 'ops.cross_contamination':
-        data = await executeCrossContamination(task.inputs)
-        break
-      case 'analytics.break_even':
-        data = await executeBreakEven(task.inputs)
-        break
-      case 'analytics.client_ltv':
-        data = await executeClientLTV(task.inputs)
-        break
-      case 'analytics.recipe_cost':
-        data = await executeRecipeCost(task.inputs)
-        break
-      case 'client.event_recap':
-        data = await executeEventRecap(task.inputs)
-        break
-      case 'client.menu_explanation':
-        data = await executeMenuExplanation(task.inputs)
-        break
-
-      // ─── New tools (Remy upgrade) ──────────────────────────────────────────
-      case 'nav.go':
-      case 'navigation.goto':
-        data = executeNavGo(task.inputs)
-        break
-      case 'loyalty.status':
-        data = await executeLoyaltyStatus(task.inputs, tenantId)
-        break
-      case 'safety.event_allergens':
-        data = await executeEventAllergens(task.inputs, tenantId)
-        break
-      case 'waitlist.list':
-        data = await executeWaitlistList(tenantId)
-        break
-      case 'quote.compare':
-        data = await executeQuoteCompare(task.inputs, tenantId)
-        break
-
-      // ─── Phase 1: Wire existing features ──────────────────────────────────
-      case 'contract.generate':
-        data = await executeContractGeneration(task.inputs)
-        break
-      case 'contingency.plan':
-        data = await executeContingencyPlanning(task.inputs)
-        break
-      case 'seasonal.produce':
-        data = executeSeasonalProduce()
-        break
-      case 'grocery.consolidate':
-        data = await executeGroceryConsolidation(task.inputs)
-        break
-
-      // ─── Phase 2: Financial intelligence ──────────────────────────────────
-      case 'finance.forecast':
-        data = await executeRevenueForecast(tenantId)
-        break
-      case 'finance.pnl':
-        data = await executePnLReport(tenantId, task.inputs)
-        break
-      case 'finance.tax_summary':
-        data = await executeTaxSummary(tenantId, task.inputs)
-        break
-      case 'finance.pricing':
-        data = await executePricingAnalysis(tenantId)
-        break
-
-      // ─── Phase 3: Capacity ────────────────────────────────────────────────
-      case 'capacity.utilization':
-        data = await executeUtilizationAnalysis(tenantId, task.inputs)
-        break
-
-      // ─── Phase 4: Relationship intelligence ───────────────────────────────
-      case 'relationship.milestones':
-        data = await executeClientMilestones(tenantId)
-        break
-      case 'relationship.reengagement':
-        data = await executeReEngagementScoring(tenantId)
-        break
-      case 'relationship.acquisition':
-        data = await executeAcquisitionFunnel(tenantId)
-        break
-
-      // ─── Phase 5: Entity awareness ────────────────────────────────────────
-      case 'goals.dashboard':
-        data = await executeGoalsDashboard()
-        break
-      case 'equipment.list':
-        data = await executeEquipmentList()
-        break
-      case 'equipment.maintenance':
-        data = await executeEquipmentMaintenance()
-        break
-      case 'vendors.list':
-        data = await executeVendorsList(tenantId)
-        break
-
-      // ─── Phase 6: Multi-event intelligence ────────────────────────────────
-      case 'analytics.compare_events':
-        data = await executeMultiEventComparison(task.inputs, tenantId)
-        break
-
-      // ─── Phase 7: Day-of support ──────────────────────────────────────────
-      case 'briefing.morning':
-        data = await executeMorningBriefing(tenantId)
-        break
-
-      // ─── Phase 6: Workflow chains ─────────────────────────────────────────
-      case 'workflow.cancellation_impact':
-        data = await executeCancellationImpact(task.inputs, tenantId)
-        break
-      case 'workflow.post_event':
-        data = await executePostEventSequence(task.inputs)
-        break
-
-      // ─── Phase 8-9: Operational intelligence ──────────────────────────────
-      case 'ops.ingredient_sub':
-        data = executeIngredientSubstitution(task.inputs)
-        break
-
-      // ─── Food Safety & Dietary Intelligence ──────────────────────────────
-      case 'food.safety':
-        data = await executeFoodSafetyQuery(task.inputs)
-        break
-      case 'food.dietary_ingredients':
-        data = await executeIngredientDietaryCheck(task.inputs)
-        break
-
-      // ─── Batch 2: Complete Domain Coverage ────────────────────────────────
-
-      // Client Intelligence
-      case 'client.spending':
-        data = await executeClientSpending()
-        break
-      case 'client.churn_risk':
-        data = await executeClientChurnRisk()
-        break
-      case 'client.birthdays':
-        data = await executeClientBirthdays()
-        break
-      case 'client.next_best_action':
-        data = await executeClientNextBestActions()
-        break
-      case 'client.cooling':
-        data = await executeClientCooling()
-        break
-      case 'client.ltv_trajectory':
-        data = await executeClientLTVTrajectory(task.inputs)
-        break
-      case 'client.menu_history':
-        data = await executeClientMenuHistory(task.inputs)
-        break
-      case 'client.referral_health':
-        data = await executeClientReferralHealth()
-        break
-      case 'client.nda_status':
-        data = await executeClientNDAStatus()
-        break
-      case 'client.payment_plans':
-        data = await executeClientPaymentPlans(task.inputs)
-        break
-
-      // Event Intelligence
-      case 'event.dietary_conflicts':
-        data = await executeEventDietaryConflicts(task.inputs)
-        break
-      case 'event.debrief':
-        data = await executeEventDebrief(task.inputs)
-        break
-      case 'event.countdown':
-        data = await executeEventCountdown(task.inputs)
-        break
-      case 'event.invoice':
-        data = await executeInvoiceLookup(task.inputs)
-        break
-
-      // Inquiry Intelligence
-      case 'inquiry.follow_ups':
-        data = await executeInquiryFollowUps()
-        break
-      case 'inquiry.likelihood':
-        data = await executeInquiryLikelihood()
-        break
-
-      // Menu Intelligence
-      case 'menu.food_cost':
-        data = await executeMenuFoodCost()
-        break
-      case 'menu.dish_index':
-        data = await executeMenuDishIndex()
-        break
-      case 'menu.showcase':
-        data = await executeMenuShowcase()
-        break
-
-      // Recipe Intelligence
-      case 'recipe.allergens':
-        data = await executeRecipeAllergens()
-        break
-      case 'recipe.nutrition':
-        data = await executeRecipeNutrition(task.inputs)
-        break
-      case 'recipe.production_logs':
-        data = await executeRecipeProductionLogs()
-        break
-
-      // Finance Intelligence
-      case 'finance.cash_flow':
-        data = await executeCashFlowForecast()
-        break
-      case 'finance.mileage':
-        data = await executeMileageSummary()
-        break
-      case 'finance.tips':
-        data = await executeTipSummary()
-        break
-      case 'finance.contractors':
-        data = await executeContractorSummary()
-        break
-      case 'finance.disputes':
-        data = await executeDisputes()
-        break
-      case 'finance.payment_plan':
-        data = await executePaymentPlanLookup(task.inputs)
-        break
-      case 'finance.recurring_invoices':
-        data = await executeRecurringInvoices()
-        break
-      case 'finance.tax_package':
-        data = await executeTaxPackage()
-        break
-      case 'finance.payroll':
-        data = await executePayrollSummary()
-        break
-
-      // Vendor Intelligence
-      case 'vendor.invoices':
-        data = await executeVendorInvoices(task.inputs)
-        break
-      case 'vendor.price_insights':
-        data = await executeVendorPriceInsights()
-        break
-      case 'vendor.payment_aging':
-        data = await executeVendorPaymentAging()
-        break
-      case 'price.check': {
-        const ingredientNames = (task.inputs.ingredients as string[]) || []
-        if (ingredientNames.length === 0) {
-          data = { message: 'Please specify which ingredients to check prices for.' }
+    const registeredReadTask = await executeRegisteredRemyReadTask(task, { tenantId })
+    if (registeredReadTask.handled) {
+      data = registeredReadTask.data
+    } else {
+      switch (task.taskType) {
+        case 'client.search':
+          data = await executeClientSearch(task.inputs)
+          break
+        case 'calendar.availability':
+          data = await executeCalendarAvailability(task.inputs)
+          break
+        case 'event.list_upcoming':
+          data = await executeEventListUpcoming(tenantId)
+          break
+        case 'finance.summary':
+          data = await executeFinanceSummary(tenantId)
+          break
+        case 'email.followup':
+          data = await executeEmailFollowup(task.inputs, resolvedDeps)
+          break
+        case 'event.create_draft':
+          data = await executeEventCreateDraft(task.inputs)
+          break
+        case 'client.count': {
+          const allForCount = await getClients()
+          data = { totalClients: (allForCount ?? []).length }
           break
         }
-        const pcDb: any = createServerClient()
-        const { data: priceRows } = await pcDb
-          .from('ingredients')
-          .select('id, name')
-          .eq('tenant_id', tenantId)
-          .in(
-            'name',
-            ingredientNames.map((n: string) => n.toLowerCase())
-          )
+        case 'client.list_recent':
+          data = await executeClientListRecent(task.inputs)
+          break
+        case 'client.details':
+          data = await executeClientDetails(task.inputs)
+          break
+        case 'event.details':
+          data = await executeEventDetails(task.inputs, tenantId)
+          break
+        case 'event.readiness':
+          data = await executeEventReadiness(task.inputs, tenantId)
+          break
+        case 'event.list_by_status':
+          data = await executeEventListByStatus(task.inputs, tenantId)
+          break
+        case 'inquiry.list_open':
+          data = await executeInquiryListOpen()
+          break
+        case 'inquiry.details':
+          data = await executeInquiryDetails(task.inputs)
+          break
+        case 'finance.monthly_snapshot':
+          data = await executeFinanceMonthlySnapshot()
+          break
+        case 'recipe.search':
+          data = await executeRecipeSearch(task.inputs)
+          break
+        case 'menu.list':
+          data = await executeMenuList(task.inputs)
+          break
+        case 'scheduling.next_available':
+          data = await executeSchedulingNextAvailable(task.inputs)
+          break
+        case 'web.search':
+          data = await executeWebSearch(task.inputs)
+          break
+        case 'web.read':
+          data = await executeWebRead(task.inputs)
+          break
+        case 'dietary.check':
+        case 'client.dietary':
+        case 'client.dietary_restrictions':
+          data = await executeDietaryCheck(task.inputs)
+          break
+        case 'chef.favorite_chefs':
+          data = await executeFavoriteChefs()
+          break
+        case 'chef.culinary_profile':
+          data = await executeCulinaryProfile()
+          break
+        case 'prep.timeline':
+          data = await executePrepTimeline(task.inputs)
+          break
+        case 'nudge.list':
+          data = await executeNudgeList()
+          break
+        case 'grocery.quick_add':
+          data = await executeGroceryQuickAdd(task.inputs)
+          break
+        case 'document.search':
+          data = await executeDocumentSearch(task.inputs)
+          break
+        case 'document.list_folders':
+          data = await executeListFolders()
+          break
+        case 'document.create_folder':
+          data = await executeCreateFolder(task.inputs)
+          break
+        case 'email.generic':
+          data = await executeEmailGeneric(task.inputs)
+          break
+        case 'email.recent':
+          data = await executeEmailRecent(task.inputs)
+          break
+        case 'email.search':
+          data = await executeEmailSearch(task.inputs)
+          break
+        case 'email.thread':
+          data = await executeEmailThread(task.inputs)
+          break
+        case 'email.inbox_summary':
+        case 'email.status':
+          data = await executeEmailInboxSummary()
+          break
+        case 'email.draft_reply':
+          data = await executeEmailDraftReply(task.inputs)
+          break
+        case 'draft.thank_you':
+          data = await executeDraftThankYou(task.inputs)
+          break
+        case 'draft.referral_request':
+          data = await executeDraftReferralRequest(task.inputs)
+          break
+        case 'draft.testimonial_request':
+          data = await executeDraftTestimonialRequest(task.inputs)
+          break
+        case 'draft.quote_cover_letter':
+          data = await executeDraftQuoteCoverLetter(task.inputs)
+          break
+        case 'draft.decline_response':
+          data = await executeDraftDeclineResponse(task.inputs)
+          break
+        case 'draft.cancellation_response':
+          data = await executeDraftCancellationResponse(task.inputs)
+          break
+        case 'draft.payment_reminder':
+          data = await executeDraftPaymentReminder(task.inputs)
+          break
+        case 'draft.re_engagement':
+          data = await executeDraftReEngagement(task.inputs)
+          break
+        case 'draft.milestone_recognition':
+          data = await executeDraftMilestoneRecognition(task.inputs)
+          break
+        case 'draft.food_safety_incident':
+          data = await executeDraftFoodSafetyIncident(task.inputs)
+          break
+        case 'draft.confirmation':
+          data = await executeDraftConfirmation(task.inputs)
+          break
+        case 'ops.portion_calc':
+          data = await executePortionCalc(task.inputs)
+          break
+        case 'ops.packing_list':
+          data = await executePackingList(task.inputs)
+          break
+        case 'ops.cross_contamination':
+          data = await executeCrossContamination(task.inputs)
+          break
+        case 'analytics.break_even':
+          data = await executeBreakEven(task.inputs)
+          break
+        case 'analytics.client_ltv':
+          data = await executeClientLTV(task.inputs)
+          break
+        case 'analytics.recipe_cost':
+          data = await executeRecipeCost(task.inputs)
+          break
+        case 'client.event_recap':
+          data = await executeEventRecap(task.inputs)
+          break
+        case 'client.menu_explanation':
+          data = await executeMenuExplanation(task.inputs)
+          break
 
-        // Also try case-insensitive match via ilike for each name
-        let matchedRows: { id: string; name: string }[] = priceRows ?? []
-        if (matchedRows.length === 0) {
-          // Fallback: search with ILIKE for partial matches
-          const { data: fuzzyRows } = await pcDb
+        // ─── New tools (Remy upgrade) ──────────────────────────────────────────
+        case 'nav.go':
+        case 'navigation.goto':
+          data = executeNavGo(task.inputs)
+          break
+        case 'loyalty.status':
+          data = await executeLoyaltyStatus(task.inputs, tenantId)
+          break
+        case 'safety.event_allergens':
+          data = await executeEventAllergens(task.inputs, tenantId)
+          break
+        case 'waitlist.list':
+          data = await executeWaitlistList(tenantId)
+          break
+        case 'quote.compare':
+          data = await executeQuoteCompare(task.inputs, tenantId)
+          break
+
+        // ─── Phase 1: Wire existing features ──────────────────────────────────
+        case 'price.check': {
+          const ingredientNames = (task.inputs.ingredients as string[]) || []
+          if (ingredientNames.length === 0) {
+            data = { message: 'Please specify which ingredients to check prices for.' }
+            break
+          }
+          const pcDb: any = createServerClient()
+          const { data: priceRows } = await pcDb
             .from('ingredients')
             .select('id, name')
             .eq('tenant_id', tenantId)
-          matchedRows = ((fuzzyRows ?? []) as { id: string; name: string }[]).filter(
-            (r: { id: string; name: string }) =>
-              ingredientNames.some((n: string) => r.name.toLowerCase().includes(n.toLowerCase()))
-          )
-        }
+            .in(
+              'name',
+              ingredientNames.map((n: string) => n.toLowerCase())
+            )
 
-        if (matchedRows.length === 0) {
-          data = { message: 'No matching ingredients found in your library.' }
+          // Also try case-insensitive match via ilike for each name
+          let matchedRows: { id: string; name: string }[] = priceRows ?? []
+          if (matchedRows.length === 0) {
+            // Fallback: search with ILIKE for partial matches
+            const { data: fuzzyRows } = await pcDb
+              .from('ingredients')
+              .select('id, name')
+              .eq('tenant_id', tenantId)
+            matchedRows = ((fuzzyRows ?? []) as { id: string; name: string }[]).filter(
+              (r: { id: string; name: string }) =>
+                ingredientNames.some((n: string) => r.name.toLowerCase().includes(n.toLowerCase()))
+            )
+          }
+
+          if (matchedRows.length === 0) {
+            data = { message: 'No matching ingredients found in your library.' }
+            break
+          }
+
+          const pcIds = matchedRows.map((r: { id: string }) => r.id)
+          const { resolvePricesBatch } = await import('@/lib/pricing/resolve-price')
+          const resolved = await resolvePricesBatch(pcIds, tenantId)
+
+          // Also query Pi for live market comparison (non-blocking)
+          const piApi = process.env.OPENCLAW_API_URL || 'http://10.0.0.177:8081'
+          let piPrices: Map<string, { cents: number; store: string }> = new Map()
+          try {
+            const piRes = await fetch(`${piApi}/api/lookup/batch`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                ingredients: matchedRows.map((r: { name: string }) => r.name),
+              }),
+              signal: AbortSignal.timeout(3000),
+            })
+            if (piRes.ok) {
+              const piData = await piRes.json()
+              for (const item of piData.results || piData.ingredients || []) {
+                const name = (item.name || item.query || '').toLowerCase()
+                const cents = item.best_price_cents || item.price_cents
+                const store = item.best_store || item.store || ''
+                if (name && cents) piPrices.set(name, { cents, store })
+              }
+            }
+          } catch {
+            // Pi offline; continue with DB-only data
+          }
+
+          data = {
+            prices: matchedRows.map((row: { id: string; name: string }) => {
+              const price = resolved.get(row.id)
+              const piMatch = piPrices.get(row.name.toLowerCase())
+              return {
+                ingredient: row.name,
+                cents: price?.cents || null,
+                unit: price?.unit || 'each',
+                store: price?.store || null,
+                source: price?.source || 'none',
+                confidence: price?.confidence || 0,
+                piCents: piMatch?.cents || null,
+                piStore: piMatch?.store || null,
+              }
+            }),
+          }
           break
         }
 
-        const pcIds = matchedRows.map((r: { id: string }) => r.id)
-        const { resolvePricesBatch } = await import('@/lib/pricing/resolve-price')
-        const resolved = await resolvePricesBatch(pcIds, tenantId)
-
-        // Also query Pi for live market comparison (non-blocking)
-        const piApi = process.env.OPENCLAW_API_URL || 'http://10.0.0.177:8081'
-        let piPrices: Map<string, { cents: number; store: string }> = new Map()
-        try {
-          const piRes = await fetch(`${piApi}/api/lookup/batch`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              ingredients: matchedRows.map((r: { name: string }) => r.name),
-            }),
-            signal: AbortSignal.timeout(3000),
-          })
-          if (piRes.ok) {
-            const piData = await piRes.json()
-            for (const item of piData.results || piData.ingredients || []) {
-              const name = (item.name || item.query || '').toLowerCase()
-              const cents = item.best_price_cents || item.price_cents
-              const store = item.best_store || item.store || ''
-              if (name && cents) piPrices.set(name, { cents, store })
-            }
+        default:
+          return {
+            taskId: task.id,
+            taskType: task.taskType,
+            tier: 3,
+            name: task.taskType,
+            status: 'held',
+            holdReason: `"${task.taskType}" is not currently supported. Try rephrasing your request.`,
           }
-        } catch {
-          // Pi offline; continue with DB-only data
-        }
-
-        data = {
-          prices: matchedRows.map((row: { id: string; name: string }) => {
-            const price = resolved.get(row.id)
-            const piMatch = piPrices.get(row.name.toLowerCase())
-            return {
-              ingredient: row.name,
-              cents: price?.cents || null,
-              unit: price?.unit || 'each',
-              store: price?.store || null,
-              source: price?.source || 'none',
-              confidence: price?.confidence || 0,
-              piCents: piMatch?.cents || null,
-              piStore: piMatch?.store || null,
-            }
-          }),
-        }
-        break
       }
-
-      // Equipment Intelligence
-      case 'equipment.rentals':
-        data = await executeEquipmentRentals(task.inputs)
-        break
-
-      // Staff Intelligence
-      case 'staff.availability':
-        data = await executeStaffAvailability(task.inputs)
-        break
-      case 'staff.briefing':
-        data = await executeStaffBriefing(task.inputs)
-        break
-      case 'staff.clock_summary':
-        data = await executeStaffClockSummary(task.inputs)
-        break
-      case 'staff.performance':
-        data = await executeStaffPerformance()
-        break
-      case 'staff.labor_dashboard':
-        data = await executeStaffLaborDashboard(task.inputs)
-        break
-
-      // Scheduling Intelligence
-      case 'scheduling.capacity':
-        data = await executeCapacityCheck(task.inputs)
-        break
-      case 'scheduling.prep_blocks':
-        data = await executePrepBlocks(task.inputs)
-        break
-      case 'scheduling.protected_time':
-        data = await executeProtectedTime()
-        break
-      case 'scheduling.gaps':
-        data = await executeSchedulingGaps()
-        break
-
-      // Analytics Intelligence
-      case 'analytics.pipeline':
-        data = await executePipelineAnalytics()
-        break
-      case 'analytics.yoy':
-        data = await executeYearOverYear()
-        break
-      case 'analytics.demand_forecast':
-        data = await executeDemandForecast()
-        break
-      case 'analytics.benchmarks':
-        data = await executeBenchmarks()
-        break
-      case 'analytics.pricing_suggestions':
-        data = await executePricingSuggestions(task.inputs)
-        break
-      case 'analytics.response_time':
-        data = await executeResponseTimeMetrics()
-        break
-      case 'analytics.cost_trends':
-        data = await executeCostTrends()
-        break
-      case 'analytics.referrals':
-        data = await executeReferralAnalytics()
-        break
-      case 'analytics.quote_loss':
-        data = await executeQuoteLossAnalysis()
-        break
-      case 'analytics.service_mix':
-        data = await executeRevenueByServiceType()
-        break
-
-      // Goal Intelligence
-      case 'goals.history':
-        data = await executeGoalHistory(task.inputs)
-        break
-      case 'goals.check_ins':
-        data = await executeGoalCheckIns(task.inputs)
-        break
-
-      // Protection & Compliance
-      case 'protection.certifications':
-        data = await executeCertificationStatus()
-        break
-      case 'protection.business_health':
-        data = await executeBusinessHealthScore()
-        break
-
-      // Loyalty Intelligence
-      case 'loyalty.redemptions':
-        data = await executeLoyaltyRedemptions()
-        break
-      case 'loyalty.gift_cards':
-        data = await executeLoyaltyGiftCards()
-        break
-
-      // Inventory Intelligence
-      case 'inventory.status':
-        data = await executeInventoryStatus()
-        break
-      case 'inventory.purchase_orders':
-        data = await executePurchaseOrders()
-        break
-
-      // Commerce Intelligence
-      case 'commerce.sales_summary':
-        data = await executeCommerceSalesSummary()
-        break
-
-      // Guest Intelligence
-      case 'guest.list':
-        data = await executeGuestList(task.inputs)
-        break
-
-      // Marketing Intelligence
-      case 'marketing.campaigns':
-        data = await executeMarketingCampaigns()
-        break
-      case 'marketing.newsletters':
-        data = await executeNewsletterStatus()
-        break
-
-      // Review Intelligence
-      case 'reviews.summary':
-        data = await executeReviewsSummary()
-        break
-
-      // Gmail Intelligence
-      case 'gmail.sender_reputation':
-        data = await executeGmailSenderReputation()
-        break
-
-      // Notification Intelligence
-      case 'notifications.preferences':
-        data = await executeNotificationPreferences()
-        break
-
-      // Document Intelligence
-      case 'document.snapshots':
-        data = await executeDocumentSnapshots(task.inputs)
-        break
-
-      // ─── Batch 3: Gap Closure ─────────────────────────────────────────────
-
-      // Hub Circles
-      case 'circles.list':
-        data = await executeCirclesList()
-        break
-      case 'circles.unread':
-        data = await executeCirclesUnread()
-        break
-      case 'circles.events':
-        data = await executeCircleEvents(task.inputs)
-        break
-      case 'circles.discover':
-        data = {
-          route: '/hub/circles',
-          navigated: true,
-          message:
-            'Opening community circles discovery page. You can browse, search, and join public circles.',
-        }
-        break
-
-      // Rate Card
-      case 'rate_card.summary':
-        data = await executeRateCard()
-        break
-
-      // Tasks / Kanban
-      case 'tasks.list':
-        data = await executeTasksList(task.inputs)
-        break
-      case 'tasks.by_date':
-        data = await executeTasksByDate(task.inputs)
-        break
-      case 'tasks.overdue':
-        data = await executeTasksOverdue()
-        break
-
-      // Travel
-      case 'travel.plan':
-        data = await executeTravelPlan(task.inputs)
-        break
-      case 'travel.upcoming':
-        data = await executeTravelUpcoming()
-        break
-
-      // Commerce / POS
-      case 'commerce.products':
-        data = await executeCommerceProducts()
-        break
-      case 'commerce.recent_sales':
-        data = await executeCommerceRecentSales()
-        break
-      case 'commerce.daily_report':
-        data = await executeCommerceDailyReport()
-        break
-      case 'commerce.product_report':
-        data = await executeCommerceProductReport()
-        break
-      case 'commerce.inventory_low':
-        data = await executeCommerceInventoryLow()
-        break
-
-      // Daily Ops
-      case 'daily.plan':
-        data = await executeDailyPlan()
-        break
-      case 'daily.stats':
-        data = await executeDailyPlanStats()
-        break
-
-      // Priority Queue
-      case 'queue.status':
-        data = await executePriorityQueue()
-        break
-
-      // Stations
-      case 'stations.list':
-        data = await executeStationsList()
-        break
-      case 'stations.detail':
-        data = await executeStationDetail(task.inputs)
-        break
-      case 'stations.ops_log':
-        data = await executeOpsLog(task.inputs)
-        break
-      case 'stations.waste_log':
-        data = await executeWasteLog()
-        break
-
-      // Testimonials
-      case 'testimonials.list':
-        data = await executeTestimonialsList()
-        break
-      case 'testimonials.pending':
-        data = await executeTestimonialsPending()
-        break
-
-      // Partners / Referrals
-      case 'partners.list':
-        data = await executePartnersList()
-        break
-      case 'partners.events':
-        data = await executePartnerEvents(task.inputs)
-        break
-      case 'partners.performance':
-        data = await executePartnerPerformance()
-        break
-
-      // Activity Feed
-      case 'activity.feed':
-        data = await executeActivityFeed()
-        break
-      case 'activity.engagement':
-        data = await executeEngagementStats()
-        break
-
-      // AAR (After-Action Reviews)
-      case 'aar.list':
-        data = await executeAARList()
-        break
-      case 'aar.stats':
-        data = await executeAARStats()
-        break
-      case 'aar.events_without':
-        data = await executeEventsWithoutAAR()
-        break
-      case 'aar.forgotten_items':
-        data = await executeAARForgottenItems()
-        break
-
-      // Waitlist
-      case 'waitlist.status':
-        data = await executeWaitlistStatus()
-        break
-
-      default:
-        return {
-          taskId: task.id,
-          taskType: task.taskType,
-          tier: 3,
-          name: task.taskType,
-          status: 'held',
-          holdReason: `"${task.taskType}" is not currently supported. Try rephrasing your request.`,
-        }
     }
 
     return {
