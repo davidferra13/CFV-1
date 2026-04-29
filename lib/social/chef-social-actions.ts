@@ -7,6 +7,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { assertCanRepostVisibility } from '@/lib/social/repost-policy'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -227,7 +228,8 @@ async function hydratePost(
   myReactions: Map<string, ReactionType>,
   mySaves: Set<string>,
   chefId: string,
-  channelMap?: Map<string, any>
+  channelMap?: Map<string, any>,
+  originalPostMap?: Map<string, SocialPost>
 ): Promise<SocialPost> {
   const author = authorMap.get(raw.chef_id) ?? {
     id: raw.chef_id,
@@ -257,7 +259,9 @@ async function hydratePost(
     hashtags: raw.hashtags ?? [],
     location_tag: raw.location_tag ?? null,
     original_post_id: raw.original_post_id ?? null,
-    original_post: null, // loaded separately when needed
+    original_post: raw.original_post_id
+      ? (originalPostMap?.get(raw.original_post_id) ?? null)
+      : null,
     share_comment: raw.share_comment ?? null,
     poll_question: raw.poll_question ?? null,
     poll_options: raw.poll_options ?? null,
@@ -434,6 +438,9 @@ async function hydratePostList(db: any, posts: any[], chefId: string): Promise<S
   const postIds = posts.map((p) => p.id)
   const authorIds = Array.from(new Set(posts.map((p) => p.chef_id)))
   const channelIds = Array.from(new Set(posts.map((p) => p.channel_id).filter(Boolean)))
+  const originalPostIds = Array.from(
+    new Set(posts.map((p) => p.original_post_id).filter(Boolean))
+  ) as string[]
 
   const [authorMap, myReactions, mySaves] = await Promise.all([
     buildAuthorMap(db, authorIds),
@@ -450,8 +457,46 @@ async function hydratePostList(db: any, posts: any[], chefId: string): Promise<S
     for (const ch of (channels || []) as any[]) channelMap.set(ch.id, ch)
   }
 
+  let originalPostMap = new Map<string, SocialPost>()
+  if (originalPostIds.length) {
+    const { data: originalRows } = await db
+      .from('chef_social_posts')
+      .select('*')
+      .in('id', originalPostIds)
+      .eq('visibility', 'public')
+
+    const originals = (originalRows || []) as any[]
+    if (originals.length) {
+      const originalAuthorIds = Array.from(new Set(originals.map((p) => p.chef_id)))
+      const originalChannelIds = Array.from(
+        new Set(originals.map((p) => p.channel_id).filter(Boolean))
+      )
+
+      const originalAuthorMap = await buildAuthorMap(db, originalAuthorIds)
+      let originalChannelMap = new Map<string, any>()
+      if (originalChannelIds.length) {
+        const { data: originalChannels } = await db
+          .from('chef_social_channels')
+          .select('id, slug, name, icon, color')
+          .in('id', originalChannelIds)
+        for (const ch of (originalChannels || []) as any[]) originalChannelMap.set(ch.id, ch)
+      }
+
+      const emptyReactions = new Map<string, ReactionType>()
+      const emptySaves = new Set<string>()
+      const hydratedOriginals = await Promise.all(
+        originals.map((p) =>
+          hydratePost(p, originalAuthorMap, emptyReactions, emptySaves, chefId, originalChannelMap)
+        )
+      )
+      originalPostMap = new Map(hydratedOriginals.map((post) => [post.id, post]))
+    }
+  }
+
   return Promise.all(
-    posts.map((p) => hydratePost(p, authorMap, myReactions, mySaves, chefId, channelMap))
+    posts.map((p) =>
+      hydratePost(p, authorMap, myReactions, mySaves, chefId, channelMap, originalPostMap)
+    )
   )
 }
 
@@ -701,10 +746,34 @@ const CreatePostSchema = z.object({
   poll_closes_at: z.string().datetime().nullable().optional(),
 })
 
+const CreateRepostSchema = z.object({
+  originalPostId: z.string().uuid(),
+  shareComment: z.string().trim().max(1000).optional().nullable(),
+  visibility: z.enum(['public', 'followers', 'connections', 'private']).default('public'),
+})
+
 export async function createSocialPost(input: z.infer<typeof CreatePostSchema>) {
   const user = await requireChef()
   const validated = CreatePostSchema.parse(input)
   const db = createServerClient({ admin: true })
+
+  if (validated.post_type === 'share' && !validated.original_post_id) {
+    throw new Error('Reposts require an original post')
+  }
+
+  if (validated.original_post_id) {
+    const { data: original, error: originalError } = await db
+      .from('chef_social_posts')
+      .select('visibility')
+      .eq('id', validated.original_post_id)
+      .single()
+
+    if (originalError || !original) {
+      throw new Error('Post not found')
+    }
+
+    assertCanRepostVisibility((original as any).visibility as PostVisibility)
+  }
 
   const hashtags = extractHashtags(validated.content)
 
@@ -772,6 +841,68 @@ export async function createSocialPost(input: z.infer<typeof CreatePostSchema>) 
   revalidatePath('/network')
   revalidatePath('/network/feed')
   return { success: true, post_id: (post as any).id }
+}
+
+export async function createRepost(input: z.infer<typeof CreateRepostSchema>) {
+  const user = await requireChef()
+  const validated = CreateRepostSchema.parse(input)
+  const db = createServerClient({ admin: true })
+
+  const { data: original, error: originalError } = await db
+    .from('chef_social_posts')
+    .select('id, chef_id, visibility')
+    .eq('id', validated.originalPostId)
+    .single()
+
+  if (originalError || !original) {
+    throw new Error('Post not found')
+  }
+
+  assertCanRepostVisibility((original as any).visibility as PostVisibility)
+
+  const shareComment = validated.shareComment?.trim() ?? ''
+  const content = shareComment || 'Reposted'
+  const hashtags = extractHashtags(content)
+
+  const { data: repost, error: repostError } = await db
+    .from('chef_social_posts')
+    .insert({
+      chef_id: user.entityId,
+      content,
+      media_urls: [],
+      media_types: [],
+      post_type: 'share',
+      visibility: validated.visibility,
+      hashtags,
+      original_post_id: validated.originalPostId,
+      share_comment: shareComment || null,
+      location_tag: null,
+    })
+    .select('id')
+    .single()
+
+  if (repostError || !repost) {
+    console.error('[createRepost]', repostError)
+    throw new Error('Failed to repost')
+  }
+
+  if ((original as any).chef_id !== user.entityId) {
+    try {
+      await db.from('chef_social_notifications').insert({
+        recipient_chef_id: (original as any).chef_id,
+        actor_chef_id: user.entityId,
+        notification_type: 'post_share',
+        entity_type: 'post',
+        entity_id: (repost as any).id,
+      })
+    } catch (err) {
+      console.warn('[createRepost] notification failed:', err)
+    }
+  }
+
+  revalidatePath('/network')
+  revalidatePath('/network/feed')
+  return { success: true, post_id: (repost as any).id }
 }
 
 export async function deleteSocialPost(postId: string) {

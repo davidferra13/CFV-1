@@ -17,6 +17,7 @@ import {
   Repeat2,
   DollarSign,
   Sparkles,
+  X,
 } from '@/components/ui/icons'
 import type { SocialPost, ReactionType, SocialComment } from '@/lib/social/chef-social-actions'
 import {
@@ -26,7 +27,9 @@ import {
   deleteSocialPost,
   createComment,
   getPostComments,
+  createRepost,
 } from '@/lib/social/chef-social-actions'
+import { getRepostBlockedReason } from '@/lib/social/repost-policy'
 import {
   getOpportunityDetail,
   expressInterest,
@@ -710,6 +713,45 @@ function OpportunityBanner({
 }
 
 // ── Main post card ───────────────────────────────────────────
+function OriginalPostPreview({ post }: { post: SocialPost | null }) {
+  if (!post) {
+    return (
+      <div className="rounded-xl border border-stone-700 bg-stone-800/50 px-3 py-2">
+        <p className="text-xs text-stone-500">Original post is no longer available.</p>
+      </div>
+    )
+  }
+
+  const authorName = post.author.display_name ?? post.author.business_name
+
+  return (
+    <div className="rounded-xl border border-stone-700 bg-stone-800/50 px-3 py-2 space-y-2">
+      <div className="flex items-center gap-2">
+        <ChefAvatar author={post.author} size={24} />
+        <div className="min-w-0">
+          <Link
+            href={`/network/${post.chef_id}`}
+            className="block truncate text-xs font-semibold text-stone-200 hover:underline"
+          >
+            {authorName}
+          </Link>
+          <p className="text-xxs text-stone-500">
+            {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
+          </p>
+        </div>
+      </div>
+      <p className="line-clamp-4 whitespace-pre-wrap break-words text-sm text-stone-300">
+        {post.content}
+      </p>
+      {post.media_urls.length > 0 && (
+        <div className="overflow-hidden rounded-lg border border-stone-700">
+          <MediaGrid urls={post.media_urls.slice(0, 4)} types={post.media_types.slice(0, 4)} />
+        </div>
+      )}
+    </div>
+  )
+}
+
 export function SocialPostCard({
   post,
   onDelete,
@@ -721,13 +763,18 @@ export function SocialPostCard({
   const [reactionsCount, setReactionsCount] = useState(post.reactions_count)
   const [isSaved, setIsSaved] = useState(post.is_saved)
   const [savesCount, setSavesCount] = useState(post.saves_count)
+  const [sharesCount, setSharesCount] = useState(post.shares_count)
   const [showMenu, setShowMenu] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [showRepostPanel, setShowRepostPanel] = useState(false)
+  const [repostComment, setRepostComment] = useState('')
+  const [repostPending, startRepostTransition] = useTransition()
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleted, setDeleted] = useState(false)
   const [, startTransition] = useTransition()
 
   const authorName = post.author.display_name ?? post.author.business_name
+  const repostBlockedReason = getRepostBlockedReason(post.visibility)
 
   function handleReactionChange(r: ReactionType | null) {
     const prev = myReaction
@@ -752,11 +799,45 @@ export function SocialPostCard({
     })
   }
 
-  function handleShare() {
+  function copyPostLink() {
     const url = `${window.location.origin}/network?post=${post.id}`
     navigator.clipboard.writeText(url).then(() => {
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
+    })
+  }
+
+  function handleShare() {
+    if (repostBlockedReason) {
+      copyPostLink()
+      toast.info(repostBlockedReason)
+      return
+    }
+    setShowRepostPanel((value) => !value)
+  }
+
+  function handleRepost() {
+    const previousSharesCount = sharesCount
+    setSharesCount((count) => count + 1)
+    startRepostTransition(async () => {
+      try {
+        const result = await createRepost({
+          originalPostId: post.id,
+          shareComment: repostComment.trim() || null,
+          visibility: 'public',
+        })
+        if (!result.success) {
+          setSharesCount(previousSharesCount)
+          toast.error('Failed to repost')
+          return
+        }
+        setRepostComment('')
+        setShowRepostPanel(false)
+        toast.success('Reposted to the community')
+      } catch (err: any) {
+        setSharesCount(previousSharesCount)
+        toast.error(err.message ?? 'Failed to repost')
+      }
     })
   }
 
@@ -871,6 +952,12 @@ export function SocialPostCard({
           {post.content}
         </p>
 
+        {post.post_type === 'share' && (
+          <div className="mt-3">
+            <OriginalPostPreview post={post.original_post ?? null} />
+          </div>
+        )}
+
         {/* Hashtags */}
         {post.hashtags.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mt-2">
@@ -913,10 +1000,7 @@ export function SocialPostCard({
       </div>
 
       {/* Stats row */}
-      {(reactionsCount > 0 ||
-        post.comments_count > 0 ||
-        savesCount > 0 ||
-        post.shares_count > 0) && (
+      {(reactionsCount > 0 || post.comments_count > 0 || savesCount > 0 || sharesCount > 0) && (
         <div className="px-4 pt-2 pb-0">
           <div className="flex items-center justify-between text-xs text-stone-400 pb-2 border-b border-stone-800">
             <div className="flex items-center gap-3">
@@ -933,7 +1017,7 @@ export function SocialPostCard({
                 </span>
               )}
               {savesCount > 0 && <span>{savesCount} saves</span>}
-              {post.shares_count > 0 && <span>{post.shares_count} shares</span>}
+              {sharesCount > 0 && <span>{sharesCount} shares</span>}
             </div>
           </div>
         </div>
@@ -965,11 +1049,65 @@ export function SocialPostCard({
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
             copied ? 'text-green-700 bg-green-950' : 'text-stone-400 hover:bg-stone-700'
           }`}
+          title={repostBlockedReason ?? 'Repost this to the chef community'}
         >
-          {copied ? <Check className="h-4 w-4" /> : <Share2 className="h-4 w-4" />}
-          <span>{copied ? 'Copied!' : 'Share'}</span>
+          {copied ? (
+            <Check className="h-4 w-4" />
+          ) : repostBlockedReason ? (
+            <Share2 className="h-4 w-4" />
+          ) : (
+            <Repeat2 className="h-4 w-4" />
+          )}
+          <span>{copied ? 'Copied!' : repostBlockedReason ? 'Copy' : 'Repost'}</span>
         </button>
       </div>
+
+      {showRepostPanel && !repostBlockedReason && (
+        <div className="border-t border-stone-800 px-4 py-3 space-y-3">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-semibold text-stone-200">Repost to community</p>
+            <button
+              type="button"
+              onClick={() => setShowRepostPanel(false)}
+              className="rounded-lg p-1 text-stone-500 hover:bg-stone-800 hover:text-stone-300"
+              title="Close"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+          <textarea
+            value={repostComment}
+            onChange={(event) => setRepostComment(event.target.value)}
+            placeholder="Add your take, why this matters, or who should see it..."
+            rows={2}
+            maxLength={1000}
+            className="w-full resize-none rounded-xl border border-stone-700 bg-stone-800 px-3 py-2 text-sm text-stone-100 placeholder:text-stone-500 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-amber-400"
+          />
+          <OriginalPostPreview post={post.original_post ?? post} />
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <button
+              type="button"
+              onClick={copyPostLink}
+              className="text-xs font-medium text-stone-500 hover:text-stone-300"
+            >
+              Copy link instead
+            </button>
+            <div className="flex gap-2">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setShowRepostPanel(false)}
+                disabled={repostPending}
+              >
+                Cancel
+              </Button>
+              <Button variant="primary" size="sm" onClick={handleRepost} disabled={repostPending}>
+                {repostPending ? 'Reposting...' : 'Repost'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <ConfirmModal
         open={showDeleteConfirm}
