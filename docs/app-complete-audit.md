@@ -156,6 +156,12 @@
 - Per call row: link to `/calls/${id}` showing date, time, contact name, call type, duration, agenda progress
 - "View all calls" link → `/calls`
 
+#### Call Intelligence Widget
+
+- **Condition:** Active intervention signals, unavailable call sources, missing outcomes, or missing transcripts.
+- Dashboard Focus grid now surfaces the same Call Intelligence engine used by `/calls`, with the top human intervention, overdue call count, missing outcome count, missing transcript count, and links to the real call or full Calls page.
+- If call intelligence cannot load, the dashboard shows an unavailable warning instead of pretending no one needs a call.
+
 #### Collaboration Invitations
 
 - **Condition:** `pendingCollabInvitations.length > 0`

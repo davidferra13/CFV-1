@@ -21,7 +21,9 @@ import UpcomingTouchpoints from '@/components/clients/upcoming-touchpoints'
 import GiftSuggestionsWidget from '@/components/dashboard/gift-suggestions-widget'
 import { getUpcomingTouchpoints } from '@/lib/clients/touchpoint-actions'
 import { getUpcomingCalls } from '@/lib/calls/actions'
+import { getCallIntelligenceSnapshot } from '@/lib/calls/intelligence-actions'
 import { UpcomingCallsWidget } from '@/components/calls/upcoming-calls-widget'
+import { DashboardCallIntelligenceWidget } from '@/components/calls/dashboard-call-intelligence-widget'
 import { ActionSurfaceCard } from '@/components/dashboard/action-surface-card'
 import { ResolveNextCard } from '@/components/dashboard/resolve-next-card'
 import { DecisionQueueWidget } from '@/components/dashboard/decision-queue-widget'
@@ -1660,6 +1662,21 @@ async function DashboardUpcomingCallsSection() {
   return <UpcomingCallsWidget calls={callsResult.data} />
 }
 
+async function DashboardCallIntelligenceSection() {
+  try {
+    const intelligence = await getCallIntelligenceSnapshot()
+    return <DashboardCallIntelligenceWidget snapshot={intelligence.snapshot} />
+  } catch (err) {
+    console.error('[Dashboard] callIntelligence failed:', err)
+    return (
+      <DegradedDataNotice
+        title="Call intelligence unavailable"
+        detail="Call intervention data could not be loaded, so the dashboard cannot safely summarize who needs a human call."
+      />
+    )
+  }
+}
+
 async function PostEventActionLayerSection() {
   const [eventsNeedingClosureResult, trustLoopCandidatesResult] = await Promise.all([
     safeResult(
@@ -2135,6 +2152,12 @@ export default async function ChefDashboard() {
           <WidgetErrorBoundary name="Upcoming Calls" compact>
             <Suspense fallback={<WidgetCardSkeleton size="md" />}>
               <DashboardUpcomingCallsSection />
+            </Suspense>
+          </WidgetErrorBoundary>
+
+          <WidgetErrorBoundary name="Call Intelligence" compact>
+            <Suspense fallback={<WidgetCardSkeleton size="md" />}>
+              <DashboardCallIntelligenceSection />
             </Suspense>
           </WidgetErrorBoundary>
 
