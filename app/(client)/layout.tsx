@@ -10,6 +10,7 @@ import {
   ClientMainContent,
 } from '@/components/navigation/client-nav'
 import { ActivityTracker } from '@/components/activity/activity-tracker'
+import { ClientActivityDisclosure } from '@/components/activity/client-activity-disclosure'
 import { ClientPortalPresenceBeacon } from '@/components/activity/client-portal-presence-beacon'
 import { NotificationProvider } from '@/components/notifications/notification-provider'
 import { ToastProvider } from '@/components/notifications/toast-provider'
@@ -64,6 +65,7 @@ export default async function ClientLayout({ children }: { children: React.React
               surveyType="market_research_client"
               channel="client_portal"
             />
+            <ClientActivityDisclosure />
             <ClientTourWrapper>{children}</ClientTourWrapper>
           </ClientMainContent>
           <AnalyticsIdentify

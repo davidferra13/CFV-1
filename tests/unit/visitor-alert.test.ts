@@ -9,6 +9,7 @@ type VisitorMockOptions = {
   prefs?: { visitor_alerts_enabled: boolean } | null
   chef?: { auth_user_id?: string } | null
   client?: { full_name?: string } | null
+  eqCalls?: Array<{ table: string; column: string; value: unknown }>
 }
 
 class VisitorQueryBuilder {
@@ -24,7 +25,8 @@ class VisitorQueryBuilder {
     return this
   }
 
-  eq() {
+  eq(column: string, value: unknown) {
+    this.options.eqCalls?.push({ table: this.table, column, value })
     return this
   }
 
@@ -186,6 +188,7 @@ test('triggerVisitorAlert respects visitor_alerts_enabled=false preference', asy
 
 test('triggerVisitorAlert sends high-intent payload with resolved client name', async () => {
   const sent: any[] = []
+  const eqCalls: NonNullable<VisitorMockOptions['eqCalls']> = []
   const { triggerVisitorAlert, restore } = loadVisitorAlertWithMocks({
     createServerClient: () =>
       createVisitorDb({
@@ -193,6 +196,7 @@ test('triggerVisitorAlert sends high-intent payload with resolved client name', 
         prefs: { visitor_alerts_enabled: true },
         chef: { auth_user_id: 'chef-auth-1' },
         client: { full_name: 'Taylor Brooks' },
+        eqCalls,
       }),
     sendNotification: async (payload: any) => {
       sent.push(payload)
@@ -213,10 +217,14 @@ test('triggerVisitorAlert sends high-intent payload with resolved client name', 
   assert.equal(sent.length, 1)
   assert.equal(sent[0].recipientId, 'chef-auth-1')
   assert.match(sent[0].title, /Taylor Brooks/)
-  assert.match(sent[0].title, /🔥/)
+  assert.match(sent[0].title, /High intent:/)
   assert.match(sent[0].message, /High-intent signal/)
   assert.equal(sent[0].metadata.eventType, 'payment_page_visited')
   assert.equal(sent[0].metadata.isHighIntent, true)
+  assert.deepEqual(
+    eqCalls.filter((call) => call.column === 'tenant_id').map((call) => call.table),
+    ['notifications', 'chef_preferences', 'clients']
+  )
 })
 
 test('triggerVisitorAlert swallows sendNotification errors (non-blocking)', async () => {

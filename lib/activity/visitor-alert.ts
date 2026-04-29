@@ -45,7 +45,7 @@ export async function triggerVisitorAlert(params: {
     // Check debounce: was an alert sent for this client in the last 30 minutes?
     const cutoff = new Date(Date.now() - DEBOUNCE_MINUTES * 60 * 1000).toISOString()
 
-    const { data: recentAlert } = await db
+    const { data: recentAlert, error: recentAlertError } = await db
       .from('notifications')
       .select('id')
       .eq('tenant_id', params.tenantId)
@@ -55,36 +55,59 @@ export async function triggerVisitorAlert(params: {
       .limit(1)
       .maybeSingle()
 
+    if (recentAlertError) {
+      console.error('[visitor-alert] Debounce lookup failed (non-fatal):', recentAlertError)
+      return
+    }
+
     if (recentAlert) return // Already alerted recently - skip
 
     // Check if visitor alerts are enabled for this chef
-    const { data: prefs } = await db
+    const { data: prefs, error: prefsError } = await db
       .from('chef_preferences')
       .select('visitor_alerts_enabled')
       .eq('chef_id', params.tenantId)
+      .eq('tenant_id', params.tenantId)
       .maybeSingle()
+
+    if (prefsError) {
+      console.error('[visitor-alert] Preference lookup failed (non-fatal):', prefsError)
+      return
+    }
 
     // Default to enabled if no preference row exists
     if (prefs && prefs.visitor_alerts_enabled === false) return
 
     // Resolve the chef's auth_user_id (needed for sendNotification)
-    const { data: chef } = await db
+    const { data: chef, error: chefError } = await db
       .from('chefs')
       .select('auth_user_id')
       .eq('id', params.tenantId)
       .single()
 
+    if (chefError) {
+      console.error('[visitor-alert] Chef lookup failed (non-fatal):', chefError)
+      return
+    }
     if (!chef?.auth_user_id) return
 
     // Resolve client name if not provided
     let clientName = params.clientName
     if (!clientName || clientName === 'A client') {
-      const { data: client } = await db
+      const { data: client, error: clientError } = await db
         .from('clients')
         .select('full_name')
         .eq('id', params.clientId)
+        .eq('tenant_id', params.tenantId)
         .single()
-      clientName = client?.full_name || 'A client'
+
+      if (clientError) {
+        console.error('[visitor-alert] Client lookup failed (non-fatal):', clientError)
+        return
+      }
+      if (!client) return
+
+      clientName = client.full_name || 'A client'
     }
 
     const label = EVENT_LABELS[params.eventType] || 'is active on your site'
@@ -96,7 +119,7 @@ export async function triggerVisitorAlert(params: {
       tenantId: params.tenantId,
       recipientId: chef.auth_user_id,
       type: 'client_portal_visit',
-      title: `${clientName} ${isHighIntent ? '🔥 ' : ''}${label}`,
+      title: isHighIntent ? `High intent: ${clientName} ${label}` : `${clientName} ${label}`,
       message: isHighIntent
         ? `High-intent signal: ${clientName} ${label}. Consider reaching out now.`
         : `${clientName} ${label}.`,

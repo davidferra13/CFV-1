@@ -21,12 +21,18 @@ interface IntentNotificationInput {
  */
 async function getChefRecipientId(tenantId: string): Promise<string | null> {
   const db = createServerClient({ admin: true })
-  const { data } = await db
+  const { data, error } = await db
     .from('user_roles')
     .select('auth_user_id')
     .eq('entity_id', tenantId)
     .eq('role', 'chef')
     .maybeSingle()
+
+  if (error) {
+    console.error('[intent-notifications] chef recipient lookup failed:', error)
+    return null
+  }
+
   return data?.auth_user_id ?? null
 }
 
@@ -42,7 +48,7 @@ async function isDuplicate(
 ): Promise<boolean> {
   const db = createServerClient({ admin: true })
   const since = new Date(Date.now() - windowMs).toISOString()
-  const { data } = await db
+  const { data, error } = await db
     .from('notifications')
     .select('id')
     .eq('tenant_id', tenantId)
@@ -50,6 +56,12 @@ async function isDuplicate(
     .eq('client_id', clientId)
     .gte('created_at', since)
     .limit(1)
+
+  if (error) {
+    console.error('[intent-notifications] duplicate lookup failed:', error)
+    return true
+  }
+
   return (data?.length ?? 0) > 0
 }
 
@@ -78,12 +90,20 @@ export async function checkAndFireIntentNotifications(
     if (!recipientId) return
 
     // Get client name for notification body
-    const { data: client } = await db
+    const { data: client, error: clientError } = await db
       .from('clients')
       .select('full_name')
       .eq('id', clientId)
-      .single()
-    const clientName = client?.full_name || 'A client'
+      .eq('tenant_id', tenantId)
+      .maybeSingle()
+
+    if (clientError) {
+      console.error('[intent-notifications] client lookup failed:', clientError)
+      return
+    }
+    if (!client) return
+
+    const clientName = client.full_name || 'A client'
 
     if (eventType === 'payment_page_visited') {
       // Dedup: once per 30 minutes per client
@@ -136,12 +156,18 @@ export async function checkAndFireIntentNotifications(
       if (!entityId) return
 
       // Look up the quote to check how long ago it was sent
-      const { data: quote } = await db
+      const { data: quote, error: quoteError } = await db
         .from('quotes')
         .select('sent_at, quote_name')
         .eq('id', entityId)
+        .eq('tenant_id', tenantId)
+        .eq('client_id', clientId)
         .maybeSingle()
 
+      if (quoteError) {
+        console.error('[intent-notifications] quote lookup failed:', quoteError)
+        return
+      }
       if (!quote?.sent_at) return
 
       const hoursSinceSent = (Date.now() - new Date(quote.sent_at).getTime()) / (1000 * 60 * 60)
