@@ -1,6 +1,7 @@
 import { createServerClient } from '@/lib/db/server'
 import type { BreadcrumbEntry } from '@/lib/activity/breadcrumb-types'
 import type { ChefActivityEntry } from '@/lib/activity/chef-types'
+import { getChefActivityEntityHref } from '@/lib/activity/entity-routes'
 
 const SESSION_GAP_MS = 30 * 60 * 1000
 const DEFAULT_FALLBACK_HOURS = 24
@@ -267,31 +268,8 @@ function resolveEntityHref(
   domain: ChefActivityEntry['domain']
 ): string | null {
   const normalizedType = entityType.toLowerCase()
-  const safeId = encodeURIComponent(entityId)
-
-  switch (normalizedType) {
-    case 'event':
-      return `/events/${safeId}`
-    case 'inquiry':
-      return `/inquiries/${safeId}`
-    case 'quote':
-      return `/quotes/${safeId}`
-    case 'menu':
-      return `/culinary/menus/${safeId}`
-    case 'recipe':
-      return `/recipes/${safeId}`
-    case 'client':
-      return `/clients/${safeId}`
-    default:
-      break
-  }
-
-  if (domain === 'event') return `/events/${safeId}`
-  if (domain === 'inquiry') return `/inquiries/${safeId}`
-  if (domain === 'quote') return `/quotes/${safeId}`
-  if (domain === 'menu') return `/culinary/menus/${safeId}`
-  if (domain === 'recipe') return `/recipes/${safeId}`
-  if (domain === 'client') return `/clients/${safeId}`
-
-  return null
+  return (
+    getChefActivityEntityHref(normalizedType, entityId) ??
+    getChefActivityEntityHref(domain, entityId)
+  )
 }

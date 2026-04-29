@@ -13,6 +13,7 @@ import { getArchetype } from '@/lib/ai/remy-archetypes'
 import type { SurveyState } from '@/lib/ai/remy-survey-constants'
 import type { RemyMessage, RemyContext } from '@/lib/ai/remy-types'
 import type { RemyMemory } from '@/lib/ai/remy-memory-types'
+import type { ContinuityDigest } from '@/lib/activity/continuity-digest'
 import { formatMetricRegistryForPrompt } from '@/lib/analytics/metric-registry'
 import { getChefClock } from '@/lib/time/chef-clock'
 
@@ -254,6 +255,62 @@ function formatContextHealthForPrompt(context: RemyContext): string | null {
 Be honest about missing data. Do not claim a complete view of the business when answering questions related to those areas.`
 }
 
+function formatReturnContextForPrompt(digest?: ContinuityDigest | null): string | null {
+  if (!digest) return null
+
+  const lines = ['\nRETURNING CHEF CONTEXT:']
+  lines.push(`- Generated: ${digest.generatedAt}`)
+  lines.push(`- Since: ${digest.cutoff} (${digest.cutoffSource})`)
+
+  if (digest.loadState === 'unavailable') {
+    lines.push(
+      `- Status: unavailable. Could not load ${digest.failedSources.join(', ')} data. Do not claim to know what changed while the chef was away.`
+    )
+    return lines.join('\n')
+  }
+
+  if (digest.loadState === 'degraded') {
+    lines.push(
+      `- Status: partial. Missing ${digest.failedSources.join(', ')} data. Be explicit that this is partial context.`
+    )
+  } else {
+    lines.push('- Status: available.')
+  }
+
+  if (digest.lastPath) {
+    lines.push(`- Last place: ${digest.lastPath}`)
+  }
+
+  if (digest.activityCount === 0) {
+    lines.push('- Tracked changes: none after the cutoff.')
+  } else {
+    lines.push(`- Tracked changes: ${digest.activityCount}`)
+  }
+
+  if (digest.topChangedEntities.length > 0) {
+    lines.push('- Top changed entities:')
+    for (const entity of digest.topChangedEntities.slice(0, 5)) {
+      lines.push(
+        `  - ${entity.entityType}:${entity.entityId} (${entity.changeCount} change${entity.changeCount === 1 ? '' : 's'}, last ${entity.lastChangedAt})${entity.href ? ` -> ${entity.href}` : ''}`
+      )
+    }
+  }
+
+  if (digest.activities.length > 0) {
+    lines.push('- Recent verified activity:')
+    for (const activity of digest.activities.slice(0, 6)) {
+      lines.push(
+        `  - ${sanitizeForPrompt(activity.summary)} (${activity.domain}/${activity.action}, ${activity.createdAt})`
+      )
+    }
+  }
+
+  lines.push(
+    'Use this only for return-to-work, catch-up, or resume questions. Do not infer untracked work.'
+  )
+  return lines.join('\n')
+}
+
 export function buildRemySystemPrompt(
   context: Awaited<ReturnType<typeof loadRemyContext>>,
   memories: RemyMemory[] = [],
@@ -273,7 +330,8 @@ export function buildRemySystemPrompt(
   recentConversationSummaries?: Array<{ summary: string; generatedAt: string }> | null,
   isLocalAi?: boolean,
   dynamicPersonalityBlock?: string,
-  allowSuggestions = true
+  allowSuggestions = true,
+  returnContextDigest?: ContinuityDigest | null
 ): string {
   const parts: string[] = []
   const contextScope: ContextScope = _contextScope ?? 'focused'
@@ -314,6 +372,10 @@ export function buildRemySystemPrompt(
   const contextHealth = formatContextHealthForPrompt(context)
   if (contextHealth) {
     parts.push(contextHealth)
+  }
+  if (includeSessionContext) {
+    const returnContext = formatReturnContextForPrompt(returnContextDigest)
+    if (returnContext) parts.push(returnContext)
   }
 
   // Inject culinary profile if available

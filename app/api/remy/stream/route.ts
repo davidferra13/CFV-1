@@ -717,6 +717,22 @@ export async function POST(req: NextRequest) {
     // Build survey prompt section if in survey mode
     const surveyPromptSection =
       activeForm === 'remy-survey' ? buildSurveyPromptSection(surveyState) : null
+    const wantsContinuityDigest = isContinuityDigestPrompt(message)
+    const shouldLoadReturnContext =
+      wantsContinuityDigest ||
+      (history.length === 0 &&
+        (recentPages?.length ?? 0) === 0 &&
+        (recentActions?.length ?? 0) === 0 &&
+        (!currentPage ||
+          currentPage === '/dashboard' ||
+          currentPage.startsWith('/activity') ||
+          currentPage.startsWith('/notifications')))
+    const continuityDigest = shouldLoadReturnContext
+      ? await loadContinuityDigest(user.tenantId!).catch((err) => {
+          console.error('[non-blocking] Continuity digest failed:', err)
+          return null
+        })
+      : null
 
     //  INTENT OVERRIDES (Formula > AI - correct misclassifications)
 
@@ -757,12 +773,33 @@ export async function POST(req: NextRequest) {
     // For simple factual questions where the answer is already in the loaded context,
     // return an instant response without waiting 30-90s for Ollama.
     if (classification.intent === 'question') {
-      const continuityDigest = isContinuityDigestPrompt(message)
-        ? await loadContinuityDigest(user.tenantId!).catch((err) => {
-            console.error('[non-blocking] Continuity digest failed:', err)
-            return null
-          })
-        : null
+      if (wantsContinuityDigest && !continuityDigest) {
+        releaseInteractiveLock()
+        const encoder = new TextEncoder()
+        const stream = new ReadableStream({
+          start(controller) {
+            controller.enqueue(encoder.encode(encodeSSE({ type: 'intent', data: 'question' })))
+            controller.enqueue(
+              encoder.encode(
+                encodeSSE({
+                  type: 'token',
+                  data: 'I could not load verified return context right now. Open Activity to review the latest tracked work, or try again in a moment.',
+                })
+              )
+            )
+            if (allowSuggestions) {
+              controller.enqueue(
+                encoder.encode(
+                  encodeSSE({ type: 'nav', data: [{ label: 'Open Activity', href: '/activity' }] })
+                )
+              )
+            }
+            controller.enqueue(encoder.encode(encodeSSE({ type: 'done', data: null })))
+            controller.close()
+          },
+        })
+        return new Response(stream, { headers: sseHeaders() })
+      }
       const instant = tryInstantAnswer(message, context, memories, {
         allowSuggestions,
         continuityDigest,
@@ -958,7 +995,8 @@ export async function POST(req: NextRequest) {
       recentConversationSummaries,
       false,
       dynamicPersonalityBlock,
-      allowSuggestions
+      allowSuggestions,
+      continuityDigest
     )
 
     if (systemPrompt.length > 24_000) {

@@ -312,6 +312,22 @@ export async function POST(req: NextRequest) {
         .map((c) => `- ${c.chefName}${c.reason ? `: ${c.reason}` : ''}`)
         .join('\n')
     }
+    const wantsContinuityDigest = isContinuityDigestPrompt(message)
+    const shouldLoadReturnContext =
+      wantsContinuityDigest ||
+      (history.length === 0 &&
+        (recentPages?.length ?? 0) === 0 &&
+        (recentActions?.length ?? 0) === 0 &&
+        (!currentPage ||
+          currentPage === '/dashboard' ||
+          currentPage.startsWith('/activity') ||
+          currentPage.startsWith('/notifications')))
+    const continuityDigest = shouldLoadReturnContext
+      ? await loadContinuityDigest(user.tenantId!).catch((err) => {
+          console.error('[non-blocking] Continuity digest failed:', err)
+          return null
+        })
+      : null
 
     // Intent overrides (same rules as stream route)
     if (
@@ -344,12 +360,16 @@ export async function POST(req: NextRequest) {
 
     // Instant answers (no LLM needed)
     if (classification.intent === 'question') {
-      const continuityDigest = isContinuityDigestPrompt(message)
-        ? await loadContinuityDigest(user.tenantId!).catch((err) => {
-            console.error('[non-blocking] Continuity digest failed:', err)
-            return null
-          })
-        : null
+      if (wantsContinuityDigest && !continuityDigest) {
+        return NextResponse.json({
+          blocked: false,
+          intent: 'question',
+          systemPrompt: null,
+          instantResponse:
+            'I could not load verified return context right now. Open Activity to review the latest tracked work, or try again in a moment.',
+          navSuggestions: allowSuggestions ? [{ label: 'Open Activity', href: '/activity' }] : null,
+        })
+      }
       const instant = tryInstantAnswer(message, context, memories, {
         allowSuggestions,
         continuityDigest,
@@ -439,7 +459,8 @@ export async function POST(req: NextRequest) {
         recentConversationSummaries,
         true,
         dynamicPersonalityBlock,
-        allowSuggestions
+        allowSuggestions,
+        continuityDigest
       )
 
       const historyStr = formatConversationHistory(history)
@@ -490,7 +511,8 @@ export async function POST(req: NextRequest) {
       recentConversationSummaries,
       true,
       dynamicPersonalityBlock,
-      allowSuggestions
+      allowSuggestions,
+      continuityDigest
     )
 
     const historyStr = formatConversationHistory(history)

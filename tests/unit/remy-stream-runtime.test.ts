@@ -187,6 +187,8 @@ test('Remy answers away catch-up from deterministic continuity digest', () => {
         cutoff: '2026-04-29T10:00:00.000Z',
         cutoffSource: 'previous_session',
         generatedAt: '2026-04-29T16:00:00.000Z',
+        loadState: 'available',
+        failedSources: [],
         activityCount: 1,
         activities: [
           {
@@ -200,6 +202,27 @@ test('Remy answers away catch-up from deterministic continuity digest', () => {
           },
         ],
         recentSessions: [],
+        lastSession: null,
+        lastPath: null,
+        changedEntityLinks: [
+          {
+            entityType: 'quote',
+            entityId: 'quote-1',
+            href: '/quotes/quote-1',
+            changeCount: 1,
+            lastChangedAt: '2026-04-29T11:00:00.000Z',
+          },
+        ],
+        topChangedEntities: [
+          {
+            entityType: 'quote',
+            entityId: 'quote-1',
+            domain: 'quote',
+            changeCount: 1,
+            lastChangedAt: '2026-04-29T11:00:00.000Z',
+            href: '/quotes/quote-1',
+          },
+        ],
       },
     }
   )
@@ -207,6 +230,119 @@ test('Remy answers away catch-up from deterministic continuity digest', () => {
   assert.ok(answer)
   assert.match(answer.text, /Quote sent to Maya Chen/)
   assert.equal(answer.navSuggestions?.[0]?.href, '/activity')
+})
+
+test('Remy catch-up answer is explicit when continuity context is unavailable', () => {
+  const answer = tryInstantAnswer(
+    'catch me up',
+    {
+      chefName: 'Chef',
+      businessName: 'Test Kitchen',
+      tagline: null,
+      chefCity: null,
+      chefState: null,
+      chefArchetype: null,
+      clientCount: 0,
+      upcomingEventCount: 0,
+      openInquiryCount: 0,
+    },
+    [],
+    {
+      continuityDigest: {
+        cutoff: '2026-04-29T10:00:00.000Z',
+        cutoffSource: 'previous_session',
+        generatedAt: '2026-04-29T16:00:00.000Z',
+        loadState: 'unavailable',
+        failedSources: ['activity', 'breadcrumbs'],
+        activityCount: 0,
+        activities: [],
+        recentSessions: [],
+        lastSession: null,
+        lastPath: null,
+        changedEntityLinks: [],
+        topChangedEntities: [],
+      },
+    }
+  )
+
+  assert.ok(answer)
+  assert.match(answer.text, /could not load return context/i)
+  assert.doesNotMatch(answer.text, /Nothing changed/)
+  assert.equal(answer.navSuggestions?.[0]?.href, '/activity')
+})
+
+test('stream prompt includes compact returning chef context when provided', () => {
+  const context = {
+    chefName: 'Chef',
+    businessName: 'Test Kitchen',
+    tagline: null,
+    chefCity: null,
+    chefState: null,
+    chefArchetype: null,
+    clientCount: 0,
+    upcomingEventCount: 0,
+    openInquiryCount: 0,
+  }
+
+  const prompt = buildRemySystemPrompt(
+    context,
+    [],
+    undefined,
+    undefined,
+    null,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    null,
+    null,
+    null,
+    'Catch me up since I was away',
+    'focused',
+    null,
+    false,
+    undefined,
+    true,
+    {
+      cutoff: '2026-04-29T10:00:00.000Z',
+      cutoffSource: 'previous_session',
+      generatedAt: '2026-04-29T16:00:00.000Z',
+      loadState: 'degraded',
+      failedSources: ['breadcrumbs'],
+      activityCount: 1,
+      activities: [
+        {
+          id: 'activity-1',
+          summary: 'Quote sent to Maya Chen',
+          domain: 'quote',
+          action: 'quote_sent',
+          entityType: 'quote',
+          entityId: 'quote-1',
+          createdAt: '2026-04-29T11:00:00.000Z',
+        },
+      ],
+      recentSessions: [],
+      lastSession: null,
+      lastPath: '/quotes/quote-1',
+      changedEntityLinks: [],
+      topChangedEntities: [
+        {
+          entityType: 'quote',
+          entityId: 'quote-1',
+          domain: 'quote',
+          changeCount: 1,
+          lastChangedAt: '2026-04-29T11:00:00.000Z',
+          href: '/quotes/quote-1',
+        },
+      ],
+    }
+  )
+
+  assert.match(prompt, /RETURNING CHEF CONTEXT/)
+  assert.match(prompt, /Status: partial/)
+  assert.match(prompt, /Quote sent to Maya Chen/)
+  assert.match(prompt, /\/quotes\/quote-1/)
 })
 
 test('Remy answers mentioned event readiness from completion context', () => {

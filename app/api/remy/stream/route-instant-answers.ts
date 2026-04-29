@@ -2171,14 +2171,31 @@ function formatContinuityDigestAnswer(digest: ContinuityDigest): InstantAnswer {
     minute: '2-digit',
   })
 
+  if (digest.loadState === 'unavailable') {
+    return {
+      text: `I could not load return context for tracked activity or navigation history. I do not have enough verified context to say what changed since ${sinceLabel}.`,
+      navSuggestions: [{ label: 'Open Activity', href: '/activity' }],
+    }
+  }
+
   if (digest.activityCount === 0) {
     return {
-      text: `Nothing changed in tracked ChefFlow activity since ${sinceLabel}.`,
+      text: [
+        digest.loadState === 'degraded'
+          ? `I could only load partial return context because ${digest.failedSources.join(', ')} data is unavailable.`
+          : null,
+        `Nothing changed in tracked ChefFlow activity since ${sinceLabel}.`,
+      ]
+        .filter(Boolean)
+        .join('\n\n'),
       navSuggestions: [{ label: 'Open Activity', href: '/activity' }],
     }
   }
 
   const lines = [
+    digest.loadState === 'degraded'
+      ? `Partial context: ${digest.failedSources.join(', ')} data is unavailable.`
+      : null,
     `**Changed since ${sinceLabel}:**`,
     '',
     ...digest.activities.map((activity) => {
@@ -2192,12 +2209,14 @@ function formatContinuityDigestAnswer(digest: ContinuityDigest): InstantAnswer {
     }),
   ]
 
+  const output = lines.filter(Boolean) as string[]
+
   if (digest.activityCount > digest.activities.length) {
-    lines.push('', `${digest.activityCount - digest.activities.length} more tracked update(s).`)
+    output.push('', `${digest.activityCount - digest.activities.length} more tracked update(s).`)
   }
 
   return {
-    text: lines.join('\n'),
+    text: output.join('\n'),
     navSuggestions: [{ label: 'Open Activity', href: '/activity' }],
   }
 }
