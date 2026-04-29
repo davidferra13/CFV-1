@@ -1,6 +1,8 @@
 import 'server-only'
 
 import type { PlannedTask } from '@/lib/ai/command-types'
+import { createServerClient } from '@/lib/db/server'
+import { resolvePricesBatch } from '@/lib/pricing/resolve-price'
 import {
   executeCancellationImpact,
   executeClientMilestones,
@@ -200,6 +202,7 @@ const REMY_READ_TASK_EXECUTORS: Record<string, ReadTaskExecutor> = {
   'vendor.invoices': (task) => executeVendorInvoices(task.inputs),
   'vendor.price_insights': () => executeVendorPriceInsights(),
   'vendor.payment_aging': () => executeVendorPaymentAging(),
+  'price.check': (task, ctx) => executePriceCheck(task, ctx),
   'equipment.rentals': (task) => executeEquipmentRentals(task.inputs),
   'staff.availability': (task) => executeStaffAvailability(task.inputs),
   'staff.briefing': (task) => executeStaffBriefing(task.inputs),
@@ -285,4 +288,90 @@ export async function executeRegisteredRemyReadTask(
   const executor = REMY_READ_TASK_EXECUTORS[task.taskType]
   if (!executor) return { handled: false }
   return { handled: true, data: await executor(task, ctx) }
+}
+
+async function executePriceCheck(task: PlannedTask, ctx: ReadTaskContext) {
+  const ingredientNames = (task.inputs.ingredients as string[]) || []
+  if (ingredientNames.length === 0) {
+    return { message: 'Please specify which ingredients to check prices for.' }
+  }
+
+  const db: any = createServerClient()
+  const { data: priceRows } = await db
+    .from('ingredients')
+    .select('id, name')
+    .eq('tenant_id', ctx.tenantId)
+    .in(
+      'name',
+      ingredientNames.map((name: string) => name.toLowerCase())
+    )
+
+  let matchedRows: { id: string; name: string }[] = priceRows ?? []
+  if (matchedRows.length === 0) {
+    const { data: fuzzyRows } = await db
+      .from('ingredients')
+      .select('id, name')
+      .eq('tenant_id', ctx.tenantId)
+
+    matchedRows = ((fuzzyRows ?? []) as { id: string; name: string }[]).filter((row) =>
+      ingredientNames.some((name: string) => row.name.toLowerCase().includes(name.toLowerCase()))
+    )
+  }
+
+  if (matchedRows.length === 0) {
+    return { message: 'No matching ingredients found in your library.' }
+  }
+
+  const resolved = await resolvePricesBatch(
+    matchedRows.map((row) => row.id),
+    ctx.tenantId
+  )
+  const piPrices = await lookupPiPrices(matchedRows.map((row) => row.name))
+
+  return {
+    prices: matchedRows.map((row) => {
+      const price = resolved.get(row.id)
+      const piMatch = piPrices.get(row.name.toLowerCase())
+      return {
+        ingredient: row.name,
+        cents: price?.cents || null,
+        unit: price?.unit || 'each',
+        store: price?.store || null,
+        source: price?.source || 'none',
+        confidence: price?.confidence || 0,
+        piCents: piMatch?.cents || null,
+        piStore: piMatch?.store || null,
+      }
+    }),
+  }
+}
+
+async function lookupPiPrices(
+  ingredients: string[]
+): Promise<Map<string, { cents: number; store: string }>> {
+  const piApi = process.env.OPENCLAW_API_URL || 'http://10.0.0.177:8081'
+  const piPrices = new Map<string, { cents: number; store: string }>()
+
+  try {
+    const piRes = await fetch(`${piApi}/api/lookup/batch`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ingredients }),
+      signal: AbortSignal.timeout(3000),
+    })
+
+    if (!piRes.ok) return piPrices
+
+    const piData = await piRes.json()
+    for (const item of piData.results || piData.ingredients || []) {
+      const name = (item.name || item.query || '').toLowerCase()
+      const cents = item.best_price_cents || item.price_cents
+      const store = item.best_store || item.store || ''
+      if (name && cents) piPrices.set(name, { cents, store })
+    }
+  } catch {
+    // Pi lookup is non-blocking. DB prices still answer the command.
+  }
+
+  return piPrices
 }
