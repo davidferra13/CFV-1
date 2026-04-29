@@ -78,7 +78,7 @@ export async function getCallIntelligenceSnapshot(): Promise<{
               'created_at',
             ].join(', ')
           )
-          .eq('chef_id', user.tenantId!)
+          .eq('chef_id', user.entityId)
           .order('created_at', { ascending: false })
           .limit(200)
 
@@ -106,7 +106,7 @@ export async function getCallIntelligenceSnapshot(): Promise<{
               'created_at',
             ].join(', ')
           )
-          .eq('chef_id', user.tenantId!)
+          .eq('chef_id', user.entityId)
           .order('created_at', { ascending: false })
           .limit(200)
 
