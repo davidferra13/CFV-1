@@ -1,5 +1,14 @@
+import type { Database } from '@/types/database'
+
 // Client Dashboard Widget Types
 // Shared widget IDs + preference defaults for the client dashboard surface.
+
+type EventRow = Database['public']['Tables']['events']['Row']
+
+export type ClientDashboardEvent = EventRow & {
+  client: { id: string; full_name: string; email: string }
+  hub_group?: { group_token: string } | null
+}
 
 export const CLIENT_DASHBOARD_WIDGET_IDS = [
   'action_required',

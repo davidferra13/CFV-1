@@ -9,6 +9,7 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { createNotification, getChefAuthUserId } from '@/lib/notifications/actions'
 import { FUN_QA_QUESTIONS, type FunQAKey, type FunQAAnswers } from './fun-qa-constants'
+import { invalidateRemyContextCache } from '@/lib/ai/remy-context'
 
 // Re-export for any server-side consumers that previously imported from here.
 // Client components should import directly from '@/lib/clients/fun-qa-constants'.
@@ -128,6 +129,10 @@ function serializePreferenceList(values: string[] | null | undefined): string {
   return JSON.stringify(normalizeClientPreferenceList(values ?? [], 500))
 }
 
+function hasOwnInputField(input: object, field: string): boolean {
+  return Object.prototype.hasOwnProperty.call(input, field)
+}
+
 /**
  * Get the current client's own profile
  */
@@ -202,6 +207,10 @@ export async function updateMyProfile(input: UpdateClientProfileInput) {
     throw new Error('Failed to update profile')
   }
 
+  if (oldProfile?.tenant_id) {
+    await invalidateRemyContextCache(oldProfile.tenant_id)
+  }
+
   revalidatePath('/my-profile')
   revalidatePath('/my-events')
 
@@ -209,6 +218,10 @@ export async function updateMyProfile(input: UpdateClientProfileInput) {
   revalidatePath(`/clients/${user.entityId}`)
   revalidatePath('/clients/preferences')
   revalidatePath('/clients/preferences/favorite-dishes')
+
+  const changedDietaryFields = (['allergies', 'dietary_restrictions'] as const).filter((field) =>
+    hasOwnInputField(validated, field)
+  )
 
   // Non-blocking: notify chef if allergy or dietary fields changed (food safety)
   try {
@@ -286,6 +299,85 @@ export async function updateMyProfile(input: UpdateClientProfileInput) {
     }
   } catch (err) {
     console.error('[updateMyProfile] Non-blocking preference notification failed:', err)
+  }
+
+  // Non-blocking: keep chef-side food safety surfaces aligned with client profile edits.
+  try {
+    if (oldProfile?.tenant_id && changedDietaryFields.length > 0) {
+      const { logDietaryChange } = await import('@/lib/clients/dietary-alert-actions')
+      for (const field of changedDietaryFields) {
+        const oldVal = oldProfile[field]
+        const newVal = (cleanedData as Record<string, unknown>)[field] ?? []
+        const oldStr = Array.isArray(oldVal) ? oldVal.join(', ') : String(oldVal ?? '')
+        const newStr = Array.isArray(newVal)
+          ? (newVal as string[]).join(', ')
+          : String(newVal ?? '')
+
+        if (oldStr !== newStr) {
+          const oldArr = Array.isArray(oldVal) ? oldVal : []
+          const newArr = Array.isArray(newVal) ? (newVal as string[]) : []
+          const isRemoval = newArr.length < oldArr.length
+          const changeType =
+            field === 'allergies'
+              ? isRemoval
+                ? 'allergy_removed'
+                : 'allergy_added'
+              : isRemoval
+                ? 'restriction_removed'
+                : 'restriction_added'
+          await logDietaryChange(user.entityId, changeType, field, oldStr || null, newStr || null)
+        }
+      }
+    }
+  } catch (err) {
+    console.error('[updateMyProfile] Dietary change log failed (non-blocking):', err)
+  }
+
+  try {
+    if (oldProfile?.tenant_id && changedDietaryFields.includes('allergies')) {
+      const { syncFlatToStructured } = await import('@/lib/dietary/allergy-sync')
+      await syncFlatToStructured({ tenantId: oldProfile.tenant_id, clientId: user.entityId, db })
+    }
+  } catch (err) {
+    console.error('[updateMyProfile] Allergy sync failed (non-blocking):', err)
+  }
+
+  try {
+    if (oldProfile?.tenant_id && changedDietaryFields.length > 0) {
+      const { recheckUpcomingMenusForClient } = await import('@/lib/dietary/menu-recheck')
+      await recheckUpcomingMenusForClient({
+        tenantId: oldProfile.tenant_id,
+        clientId: user.entityId,
+        db,
+      })
+    }
+  } catch (err) {
+    console.error('[updateMyProfile] Menu recheck failed (non-blocking):', err)
+  }
+
+  try {
+    if (oldProfile?.tenant_id && changedDietaryFields.length > 0) {
+      const activeStatuses = ['accepted', 'paid', 'confirmed', 'in_progress']
+      const propagateFields: Record<string, unknown> = {}
+      for (const field of changedDietaryFields) {
+        propagateFields[field] = (cleanedData as Record<string, unknown>)[field] ?? []
+      }
+
+      const { data: affectedEvents } = await db
+        .from('events')
+        .update(propagateFields)
+        .eq('client_id', user.entityId)
+        .eq('tenant_id', oldProfile.tenant_id)
+        .in('status', activeStatuses)
+        .select('id')
+
+      for (const event of affectedEvents ?? []) {
+        revalidatePath(`/events/${event.id}`)
+        revalidatePath(`/my-events/${event.id}`)
+      }
+    }
+  } catch (err) {
+    console.error('[updateMyProfile] Dietary propagation to events failed (non-blocking):', err)
   }
 
   // Loyalty trigger: profile completion (non-blocking)

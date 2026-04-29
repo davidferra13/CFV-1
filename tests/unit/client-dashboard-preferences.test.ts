@@ -1,5 +1,7 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import {
   cloneDefaultClientDashboardWidgets,
   getClientDashboardWidgetsFromUnknown,
@@ -46,5 +48,39 @@ describe('client dashboard preferences', () => {
     assert.equal(message.enabled, true)
     const notReal = widgets.find((widget) => widget.id === ('not_real' as any))
     assert.equal(notReal, undefined)
+  })
+
+  it('revalidates the client dashboard after profile preference saves', () => {
+    const actionsSource = readFileSync(
+      join(process.cwd(), 'lib/client-dashboard/actions.ts'),
+      'utf8'
+    )
+    const profileFormSource = readFileSync(
+      join(process.cwd(), 'app/(client)/my-profile/client-profile-form.tsx'),
+      'utf8'
+    )
+
+    assert.match(actionsSource, /async function revalidateClientDashboardProfileState\(\)/)
+    assert.match(actionsSource, /await requireClient\(\)/)
+    assert.match(actionsSource, /revalidatePath\('\/my-events'\)/)
+    assert.match(actionsSource, /revalidatePath\('\/my-profile'\)/)
+    assert.match(profileFormSource, /await updateMyProfile\(input\)/)
+    assert.match(
+      profileFormSource,
+      /try\s+{\s+await revalidateClientDashboardProfileState\(\)\s+}\s+catch \(cacheErr\)/
+    )
+  })
+
+  it('scopes dashboard preference persistence by client and tenant', () => {
+    const actionsSource = readFileSync(
+      join(process.cwd(), 'lib/client-dashboard/actions.ts'),
+      'utf8'
+    )
+
+    const clientScopedQueries = actionsSource.match(/\.eq\('client_id', user\.entityId\)/g) ?? []
+    const tenantScopedQueries = actionsSource.match(/\.eq\('tenant_id', user\.tenantId!\)/g) ?? []
+
+    assert.ok(clientScopedQueries.length >= 3)
+    assert.ok(tenantScopedQueries.length >= clientScopedQueries.length)
   })
 })

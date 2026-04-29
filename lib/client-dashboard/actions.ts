@@ -11,8 +11,10 @@ import { getClientSpendingSummary } from '@/lib/clients/spending-actions'
 import { getClientWorkGraphSnapshot } from '@/lib/client-work-graph/actions'
 import type { ClientWorkGraph } from '@/lib/client-work-graph/types'
 import { buildClientActionRequiredSummary } from '@/lib/client-work-graph/shared-snapshot'
-import type { Database } from '@/types/database'
-import type { ClientDashboardWidgetPreference } from '@/lib/client-dashboard/types'
+import type {
+  ClientDashboardEvent,
+  ClientDashboardWidgetPreference,
+} from '@/lib/client-dashboard/types'
 import { CLIENT_DASHBOARD_WIDGET_IDS } from '@/lib/client-dashboard/types'
 import {
   cloneDefaultClientDashboardWidgets,
@@ -29,15 +31,7 @@ const UpdateClientDashboardPreferencesSchema = z.object({
   dashboard_widgets: z.array(ClientDashboardWidgetPreferenceSchema).optional(),
 })
 
-export type UpdateClientDashboardPreferencesInput = z.infer<
-  typeof UpdateClientDashboardPreferencesSchema
->
-
-type EventRow = Database['public']['Tables']['events']['Row']
-export type ClientDashboardEvent = EventRow & {
-  client: { id: string; full_name: string; email: string }
-  hub_group?: { group_token: string } | null
-}
+type UpdateClientDashboardPreferencesInput = z.infer<typeof UpdateClientDashboardPreferencesSchema>
 
 function fromClientPreferences(db: any): any {
   return db.from('client_preferences')
@@ -52,6 +46,7 @@ export async function getClientDashboardPreferences(): Promise<{
   const { data, error } = await fromClientPreferences(db)
     .select('dashboard_widgets')
     .eq('client_id', user.entityId)
+    .eq('tenant_id', user.tenantId!)
     .single()
 
   if (error || !data) {
@@ -82,10 +77,14 @@ export async function updateClientDashboardPreferences(
   const { data: existing } = await fromClientPreferences(db)
     .select('id')
     .eq('client_id', user.entityId)
+    .eq('tenant_id', user.tenantId!)
     .single()
 
   if (existing) {
-    const { error } = await fromClientPreferences(db).update(payload).eq('client_id', user.entityId)
+    const { error } = await fromClientPreferences(db)
+      .update(payload)
+      .eq('client_id', user.entityId)
+      .eq('tenant_id', user.tenantId!)
 
     if (error) {
       console.error('[updateClientDashboardPreferences] Update error:', error)
@@ -106,6 +105,14 @@ export async function updateClientDashboardPreferences(
 
   revalidatePath('/my-events')
   revalidatePath('/my-events/settings/dashboard')
+  return { success: true }
+}
+
+export async function revalidateClientDashboardProfileState(): Promise<{ success: true }> {
+  await requireClient()
+
+  revalidatePath('/my-events')
+  revalidatePath('/my-profile')
   return { success: true }
 }
 

@@ -7,6 +7,7 @@ import {
   updateMyProfile,
   type UpdateClientProfileInput,
 } from '@/lib/clients/client-profile-actions'
+import { revalidateClientDashboardProfileState } from '@/lib/client-dashboard/actions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
@@ -273,6 +274,11 @@ export function ClientProfileForm({ profile }: ClientProfileFormProps) {
     startTransition(async () => {
       try {
         await updateMyProfile(input)
+        try {
+          await revalidateClientDashboardProfileState()
+        } catch (cacheErr) {
+          console.warn('[ClientProfileForm] Dashboard cache revalidation failed:', cacheErr)
+        }
         setSuccess(true)
         setTimeout(() => setSuccess(false), 3000)
       } catch (err: any) {

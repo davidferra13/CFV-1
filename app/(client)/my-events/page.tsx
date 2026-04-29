@@ -6,11 +6,10 @@ import { format } from 'date-fns'
 import {
   getClientDashboardData,
   getClientDashboardPreferences,
-  type ClientDashboardEvent,
 } from '@/lib/client-dashboard/actions'
 import type { ClientEventAction, ClientWorkItem } from '@/lib/client-work-graph/types'
 import type { Database } from '@/types/database'
-import type { ClientDashboardWidgetId } from '@/lib/client-dashboard/types'
+import type { ClientDashboardEvent, ClientDashboardWidgetId } from '@/lib/client-dashboard/types'
 import {
   CLIENT_DASHBOARD_WIDGET_LABELS,
   CLIENT_DASHBOARD_WIDGET_DESCRIPTIONS,
