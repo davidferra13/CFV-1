@@ -189,7 +189,7 @@ export async function checkAndFireIntentNotifications(
         action,
         title,
         body: quote.quote_name || undefined,
-        actionUrl: `/inquiries`,
+        actionUrl: `/quotes/${entityId}`,
         clientId,
         metadata: {
           quote_id: entityId,
