@@ -1,6 +1,10 @@
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'
 import { requireAdmin } from '@/lib/auth/admin'
+import {
+  analyzeWave1SurveyResponses,
+  type Wave1SurveyAnalysisRecord,
+} from '@/lib/beta-survey/analysis'
 import { createAdminClient } from '@/lib/db/admin'
 import {
   buildFirstWeekActivationProgress,
@@ -21,6 +25,7 @@ export type LaunchReadinessCheckKey =
   | 'event_money_loop'
   | 'feedback_captured'
   | 'operator_survey'
+  | 'operator_survey_signal'
   | 'onboarding_test'
   | 'acquisition_attribution'
   | 'build_integrity'
@@ -72,6 +77,18 @@ export type LaunchReadinessFacts = {
     submittedResponses: number
     totalResponses: number
     lastResponseAt: string | null
+    analysis: {
+      readinessStatus: 'ready' | 'needs_more_signal' | 'not_ready'
+      readinessScore: number
+      qualifiedResponses: number
+      wouldPayYes: number
+      topObjectionLabel: string | null
+      topThemeLabel: string | null
+      nextActions: Array<{
+        label: string
+        reason: string
+      }>
+    }
   }
   productFeedbackSignals: number
   acquisition: {
@@ -231,6 +248,7 @@ export function buildLaunchReadinessReport(facts: LaunchReadinessFacts): LaunchR
     ...facts.operatorSurvey,
     lastResponseAt: facts.operatorSurvey.lastResponseAt,
   })
+  const operatorSurveySignalReady = facts.operatorSurvey.analysis.readinessStatus === 'ready'
   const feedbackSignals = pilotFeedbackSignals + facts.productFeedbackSignals
   const moneyLoopCandidates = facts.pilotCandidates.filter(
     (chef) => chef.evidence.events > 0 && chef.evidence.invoiceArtifacts > 0
@@ -442,6 +460,49 @@ export function buildLaunchReadinessReport(facts: LaunchReadinessFacts): LaunchR
       href: operatorSurveyReadiness.href,
     },
     {
+      key: 'operator_survey_signal',
+      label: 'Wave-1 survey signal supports launch',
+      status: operatorSurveySignalReady
+        ? 'verified'
+        : facts.operatorSurvey.submittedResponses > 0
+          ? 'operator_review'
+          : 'needs_action',
+      evidence:
+        facts.operatorSurvey.submittedResponses > 0
+          ? `Survey signal score is ${facts.operatorSurvey.analysis.readinessScore}% with ${countLabel(
+              facts.operatorSurvey.analysis.qualifiedResponses,
+              'qualified response',
+              'qualified responses'
+            )} and ${countLabel(
+              facts.operatorSurvey.analysis.wouldPayYes,
+              'would-pay yes',
+              'would-pay yes responses'
+            )}`
+          : 'No submitted operator survey responses to analyze yet',
+      evidenceItems: [
+        {
+          label: 'Readiness status',
+          value: facts.operatorSurvey.analysis.readinessStatus.replaceAll('_', ' '),
+          source: 'deterministic Wave-1 survey analysis',
+          href: '/admin/beta-surveys',
+        },
+        {
+          label: 'Top signal',
+          value:
+            facts.operatorSurvey.analysis.topThemeLabel ??
+            facts.operatorSurvey.analysis.topObjectionLabel ??
+            'No theme or objection detected',
+          source: 'submitted survey text fields',
+          href: '/admin/beta-surveys',
+        },
+      ],
+      nextStep: operatorSurveySignalReady
+        ? 'Use the analyzed operator findings to decide launch claims and pilot follow-ups.'
+        : (facts.operatorSurvey.analysis.nextActions[0]?.reason ??
+          'Collect enough qualified operator responses before using survey proof for launch.'),
+      href: '/admin/beta-surveys',
+    },
+    {
       key: 'onboarding_test',
       label: 'Onboarding tested with a non-technical user',
       status:
@@ -617,8 +678,12 @@ export function buildLaunchReadinessReport(facts: LaunchReadinessFacts): LaunchR
       },
       {
         label: 'Operator survey responses',
-        value: countLabel(facts.operatorSurvey.submittedResponses, 'response', 'responses'),
-        source: 'beta_survey_responses',
+        value: `${countLabel(
+          facts.operatorSurvey.submittedResponses,
+          'response',
+          'responses'
+        )}, ${facts.operatorSurvey.analysis.readinessScore}% signal score`,
+        source: 'beta_survey_responses and Wave-1 analysis',
         href: '/admin/beta-surveys',
       },
       {
@@ -815,6 +880,31 @@ async function loadOperatorSurveyFacts(db: any) {
   if (latestResponse.error) {
     throw new Error('Launch readiness query failed: latest beta survey response')
   }
+  const responseRows = await db
+    .from('beta_survey_responses')
+    .select(
+      'id, submitted_at, respondent_role, nps_score, overall_satisfaction, would_pay, tech_comfort, answers'
+    )
+    .not('submitted_at', 'is', null)
+    .order('submitted_at', { ascending: false })
+    .limit(500)
+
+  if (responseRows.error) {
+    throw new Error('Launch readiness query failed: beta survey analysis rows')
+  }
+
+  const analysis = analyzeWave1SurveyResponses(
+    (Array.isArray(responseRows.data) ? responseRows.data : []).map((row: any) => ({
+      id: row.id,
+      submitted_at: row.submitted_at,
+      respondent_role: row.respondent_role,
+      nps_score: row.nps_score,
+      overall_satisfaction: row.overall_satisfaction,
+      would_pay: row.would_pay,
+      tech_comfort: row.tech_comfort,
+      answers: row.answers,
+    })) satisfies Wave1SurveyAnalysisRecord[]
+  )
 
   return {
     activeSurveys,
@@ -824,6 +914,18 @@ async function loadOperatorSurveyFacts(db: any) {
       typeof latestResponse.data?.submitted_at === 'string'
         ? latestResponse.data.submitted_at
         : null,
+    analysis: {
+      readinessStatus: analysis.readiness.status,
+      readinessScore: analysis.readiness.score,
+      qualifiedResponses: analysis.counts.qualified,
+      wouldPayYes: analysis.counts.wouldPayYes,
+      topObjectionLabel: analysis.objections[0]?.label ?? null,
+      topThemeLabel: analysis.themes[0]?.label ?? null,
+      nextActions: analysis.nextActions.slice(0, 3).map((action) => ({
+        label: action.label,
+        reason: action.reason,
+      })),
+    },
   }
 }
 
