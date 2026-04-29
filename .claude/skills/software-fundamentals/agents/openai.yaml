@@ -1,0 +1,4 @@
+interface:
+  display_name: "Software Fundamentals"
+  short_description: "Apply AI-era software fundamentals before planning or coding."
+  default_prompt: "Apply the software fundamentals operating model to this task before writing code."
