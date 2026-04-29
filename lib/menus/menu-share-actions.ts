@@ -258,13 +258,49 @@ export async function submitTokenMenuSelections(input: {
     return { success: false, error: 'This link has expired' }
   }
 
+  const { data: eventRow, error: eventError } = await db
+    .from('events')
+    .select('id, menu_id')
+    .eq('id', tokenRow.event_id)
+    .eq('tenant_id', tokenRow.tenant_id)
+    .single()
+
+  if (eventError || !eventRow?.menu_id) {
+    return { success: false, error: 'This menu is no longer available' }
+  }
+
+  const { data: selectedDishes, error: selectedDishesError } = await db
+    .from('dishes')
+    .select('id, name, course_name, course_number, sort_order')
+    .eq('menu_id', eventRow.menu_id)
+    .in('id', parsed.dishIds)
+    .order('course_number', { ascending: true })
+    .order('sort_order', { ascending: true })
+
+  if (selectedDishesError) {
+    console.error('[submitTokenMenuSelections] Dish lookup failed:', selectedDishesError)
+    return { success: false, error: 'Failed to verify selections. Please try again.' }
+  }
+
+  const selectedDishNames = (selectedDishes || []).map((dish: any) => String(dish.name || '').trim()).filter(Boolean)
+  if (selectedDishNames.length !== parsed.dishIds.length) {
+    return { success: false, error: 'One or more selected dishes are no longer available.' }
+  }
+
+  const specialRequests = [
+    `Selected dishes:\n${selectedDishNames.map((name: string) => `- ${name}`).join('\n')}`,
+    parsed.notes ? `Notes:\n${parsed.notes}` : null,
+  ]
+    .filter(Boolean)
+    .join('\n\n')
+
   // Write to menu_preferences with token reference, no client_id
   const { error: insertError } = await db.from('menu_preferences').insert({
     event_id: tokenRow.event_id,
     tenant_id: tokenRow.tenant_id,
     menu_token_id: tokenRow.id,
     submitter_name: parsed.name,
-    special_requests: parsed.notes || null,
+    special_requests: specialRequests,
     selection_mode: 'picked',
     adventurousness: 'balanced',
     submitted_at: new Date().toISOString(),

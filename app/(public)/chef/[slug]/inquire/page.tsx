@@ -27,7 +27,23 @@ import { PUBLIC_SECONDARY_ENTRY_CONFIG } from '@/lib/public/public-secondary-ent
 import { getPublicChefBuyerSignals } from '@/lib/public/chef-profile-readiness'
 import type { PublicChefLocationExperience } from '@/lib/partners/location-experiences'
 
-type Props = { params: { slug: string }; searchParams: { ref?: string; loc?: string } }
+type Props = { params: { slug: string }; searchParams: { ref?: string; loc?: string; date?: string } }
+
+function getValidInquiryDate(dateParam?: string): string | null {
+  if (!dateParam || !/^\d{4}-\d{2}-\d{2}$/.test(dateParam)) return null
+
+  const [yearText, monthText, dayText] = dateParam.split('-')
+  const year = Number(yearText)
+  const month = Number(monthText)
+  const day = Number(dayText)
+  const candidate = new Date(Date.UTC(year, month - 1, day))
+  const isValidDate =
+    candidate.getUTCFullYear() === year &&
+    candidate.getUTCMonth() === month - 1 &&
+    candidate.getUTCDate() === day
+
+  return isValidDate ? dateParam : null
+}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const data = await getPublicChefProfile(params.slug)
@@ -88,6 +104,7 @@ export default async function InquirePage({ params, searchParams }: Props) {
   const referralPartnerId =
     selectedLocation?.partner.id ??
     (searchParams.ref && validPartnerIds.has(searchParams.ref) ? searchParams.ref : null)
+  const defaultEventDate = getValidInquiryDate(searchParams.date)
 
   const [
     reviewFeed,
@@ -214,6 +231,7 @@ export default async function InquirePage({ params, searchParams }: Props) {
                 referralPartnerId={referralPartnerId}
                 partnerLocationId={selectedLocation?.id ?? null}
                 selectedLocation={selectedLocation}
+                defaultEventDate={defaultEventDate}
               />
             </div>
 

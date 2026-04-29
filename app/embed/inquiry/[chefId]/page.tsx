@@ -3,6 +3,7 @@
 // Submits to /api/embed/inquiry (CORS-enabled API route)
 
 import type { Metadata } from 'next'
+import type { CSSProperties } from 'react'
 import { createAdminClient } from '@/lib/db/admin'
 import { EmbedInquiryForm } from '@/components/embed/embed-inquiry-form'
 import { notFound } from 'next/navigation'
@@ -50,15 +51,29 @@ export default async function EmbedInquiryPage({ params, searchParams }: Props) 
       : `#${rawAccent}`
     : '#e88f47'
   const theme = searchParams.theme === 'dark' ? 'dark' : 'light'
+  const wrapperStyle: CSSProperties = {
+    colorScheme: theme,
+  }
+  const pageStyle: CSSProperties = {
+    minHeight: '100vh',
+    padding: '16px',
+    backgroundColor: theme === 'dark' ? '#1c1917' : 'transparent',
+  }
 
   return (
-    <div className={theme === 'dark' ? 'dark' : undefined}>
-      <div
-        className="min-h-screen p-4 md:p-6"
-        style={{
-          backgroundColor: theme === 'dark' ? 'var(--surface-1)' : 'transparent',
-        }}
-      >
+    <div style={wrapperStyle}>
+      <style>{`
+        [data-embed-inquiry-page] {
+          box-sizing: border-box;
+        }
+
+        @media (min-width: 768px) {
+          [data-embed-inquiry-page] {
+            padding: 24px !important;
+          }
+        }
+      `}</style>
+      <div data-embed-inquiry-page style={pageStyle}>
         <EmbedInquiryForm
           chefId={chef.id as string}
           chefName={chefName}

@@ -2003,6 +2003,23 @@ export async function convertInquiryToEventWithContext(
     throw new ValidationError('Inquiry not found')
   }
 
+  if (inquiry.converted_to_event_id) {
+    const { data: existingEvent, error: existingEventError } = await db
+      .from('events')
+      .select('*')
+      .eq('id', inquiry.converted_to_event_id)
+      .eq('tenant_id', tenantId)
+      .is('deleted_at' as any, null)
+      .single()
+
+    if (existingEventError || !existingEvent) {
+      console.error('[convertInquiryToEvent] Converted event lookup failed:', existingEventError)
+      throw new UnknownAppError('Inquiry is already converted, but the event could not be loaded')
+    }
+
+    return { success: true, event: existingEvent, alreadyConverted: true }
+  }
+
   if (inquiry.status !== 'confirmed') {
     throw new ValidationError('Only confirmed inquiries can be converted to events')
   }
@@ -2399,6 +2416,23 @@ export async function convertInquiryToEvent(inquiryId: string) {
 
   if (!inquiry) {
     throw new ValidationError('Inquiry not found')
+  }
+
+  if (inquiry.converted_to_event_id) {
+    const { data: existingEvent, error: existingEventError } = await db
+      .from('events')
+      .select('*')
+      .eq('id', inquiry.converted_to_event_id)
+      .eq('tenant_id', user.tenantId!)
+      .is('deleted_at' as any, null)
+      .single()
+
+    if (existingEventError || !existingEvent) {
+      console.error('[convertInquiryToEvent] Converted event lookup failed:', existingEventError)
+      throw new UnknownAppError('Inquiry is already converted, but the event could not be loaded')
+    }
+
+    return { success: true, event: existingEvent, alreadyConverted: true }
   }
 
   if (inquiry.status !== 'confirmed') {

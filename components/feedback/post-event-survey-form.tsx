@@ -2,6 +2,7 @@
 
 import { useState, useTransition, useRef, useEffect } from 'react'
 import { submitSurveyResponse } from '@/lib/feedback/surveys-actions'
+import { CheckCircle, Star } from '@/components/ui/icons'
 
 type Props = {
   token: string
@@ -39,11 +40,15 @@ function StarRating({
             aria-checked={value === star ? 'true' : 'false'}
             aria-label={`Rate ${star} out of 5 stars`}
             onClick={() => onChange(star)}
-            className={`text-2xl transition-colors ${
+            className={`inline-flex h-8 w-8 items-center justify-center rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 ${
               star <= value ? 'text-amber-400' : 'text-stone-600 hover:text-stone-500'
             }`}
           >
-            ★
+            <Star
+              className={`h-7 w-7 ${star <= value ? 'text-amber-400' : 'text-stone-600'}`}
+              aria-hidden="true"
+              weight={star <= value ? 'fill' : 'regular'}
+            />
           </button>
         ))}
       </div>
@@ -142,7 +147,7 @@ export function PostEventSurveyForm({ token, occasion, dishes, chefName }: Props
   if (submitted) {
     return (
       <div ref={successRef} tabIndex={-1} role="status" className="rounded-lg border border-stone-800 bg-stone-900 p-8 text-center">
-        <div className="mb-4 text-4xl">🙏</div>
+        <CheckCircle className="mx-auto mb-4 h-10 w-10 text-emerald-400" aria-hidden="true" weight="fill" />
         <h2 className="mb-2 text-xl font-bold text-stone-100">Thank you for your feedback!</h2>
         <p className="text-stone-400">
           {chefName} will use your input to make future events even better.

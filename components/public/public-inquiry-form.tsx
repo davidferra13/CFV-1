@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, FormEvent } from 'react'
+import { useState, useEffect, useCallback, useMemo, FormEvent } from 'react'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select } from '@/components/ui/select'
@@ -34,6 +34,7 @@ interface Props {
   partnerLocationId?: string | null
   selectedLocation?: PublicChefLocationExperience | null
   circleId?: string | null
+  defaultEventDate?: string | null
   defaultValues?: {
     full_name?: string
     email?: string
@@ -183,6 +184,17 @@ function createInitialDietaryIntake(defaultValues: Props['defaultValues']): Diet
   }
 }
 
+function getEventDateParts(date?: string | null): Pick<FormData, 'month' | 'day' | 'year'> | null {
+  if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return null
+
+  const [year, month, day] = date.split('-')
+  return {
+    month: String(Number(month)),
+    day: String(Number(day)),
+    year,
+  }
+}
+
 export function PublicInquiryForm({
   chefSlug,
   chefName,
@@ -192,15 +204,17 @@ export function PublicInquiryForm({
   partnerLocationId,
   selectedLocation,
   circleId,
+  defaultEventDate,
   defaultValues,
 }: Props) {
   const hasDefaultValues = hasPrefillValues(defaultValues)
+  const initialEventDate = useMemo(() => getEventDateParts(defaultEventDate), [defaultEventDate])
   const [formData, setFormData] = useState<FormData>({
     full_name: defaultValues?.full_name ?? '',
     address: defaultValues?.address ?? '',
-    month: '',
-    day: '',
-    year: '',
+    month: initialEventDate?.month ?? '',
+    day: initialEventDate?.day ?? '',
+    year: initialEventDate?.year ?? '',
     serve_time: '',
     email: defaultValues?.email ?? '',
     phone: defaultValues?.phone ?? '',
@@ -250,11 +264,11 @@ export function PublicInquiryForm({
 
   // Restore draft from sessionStorage on mount
   useEffect(() => {
-    if (hasDefaultValues) return
+    if (hasDefaultValues || initialEventDate) return
 
     const draft = loadDraft(chefSlug)
     if (draft) setFormData(draft)
-  }, [chefSlug, hasDefaultValues])
+  }, [chefSlug, hasDefaultValues, initialEventDate])
 
   // Save draft on every form change
   const updateFormData = useCallback(

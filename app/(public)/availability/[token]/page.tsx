@@ -8,10 +8,13 @@ import { PostActionFooter } from '@/components/public/post-action-footer'
 
 export default async function PublicAvailabilityPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ token: string }>
+  searchParams?: Promise<{ ref?: string; loc?: string }>
 }) {
   const { token } = await params
+  const query = (await searchParams) ?? {}
 
   const ip = (await headers()).get('x-forwarded-for') ?? 'unknown'
   try {
@@ -133,6 +136,17 @@ export default async function PublicAvailabilityPage({
     .eq('id', shareToken.tenant_id)
     .single()
   const chefSlug: string | null = chefProfile?.booking_slug || null
+  const createInquiryHref = (date?: string) => {
+    if (!chefSlug) return '#'
+
+    const inquiryParams = new URLSearchParams()
+    if (query.ref) inquiryParams.set('ref', query.ref)
+    if (query.loc) inquiryParams.set('loc', query.loc)
+    if (date) inquiryParams.set('date', date)
+
+    const queryString = inquiryParams.toString()
+    return `/chef/${chefSlug}/inquire${queryString ? `?${queryString}` : ''}`
+  }
 
   return (
     <div className="max-w-2xl mx-auto py-12 px-4 space-y-6">
@@ -164,18 +178,29 @@ export default async function PublicAvailabilityPage({
             {Array.from({ length: days[0]?.dayOfWeek ?? 0 }).map((_, i) => (
               <div key={`pad-${i}`} />
             ))}
-            {days.map((day) => (
-              <div
-                key={day.date}
-                className={`py-2 rounded text-xs ${
-                  day.busy
-                    ? 'bg-stone-300 text-stone-500'
-                    : 'bg-stone-900 border border-stone-700 text-stone-300'
-                }`}
-              >
-                {new Date(day.date + 'T12:00:00').getDate()}
-              </div>
-            ))}
+            {days.map((day) =>
+              day.busy || !chefSlug ? (
+                <div
+                  key={day.date}
+                  className={`py-2 rounded text-xs ${
+                    day.busy
+                      ? 'bg-stone-300 text-stone-500'
+                      : 'bg-stone-900 border border-stone-700 text-stone-300'
+                  }`}
+                >
+                  {new Date(day.date + 'T12:00:00').getDate()}
+                </div>
+              ) : (
+                <Link
+                  key={day.date}
+                  href={createInquiryHref(day.date)}
+                  className="rounded border border-stone-700 bg-stone-900 py-2 text-xs text-stone-300 transition-colors hover:border-stone-500 hover:bg-stone-800 hover:text-stone-100"
+                  aria-label={`Inquire for ${day.date}`}
+                >
+                  {new Date(day.date + 'T12:00:00').getDate()}
+                </Link>
+              )
+            )}
           </div>
         </CardContent>
       </Card>
@@ -185,7 +210,7 @@ export default async function PublicAvailabilityPage({
         <div className="flex flex-col items-center gap-3">
           <p className="text-center text-sm text-stone-300">See a date that works?</p>
           <Link
-            href={`/chef/${chefSlug}/inquire`}
+            href={createInquiryHref()}
             className="inline-flex items-center justify-center rounded-xl gradient-accent px-6 py-3 text-sm font-semibold text-white"
           >
             Inquire with {chefName}
