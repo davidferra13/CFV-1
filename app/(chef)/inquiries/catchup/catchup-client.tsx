@@ -19,6 +19,9 @@ export function CatchupClient() {
   const [entries, setEntries] = useState<(CatchupEntry & { included: boolean })[]>([])
   const [warnings, setWarnings] = useState<string[]>([])
   const [createdCount, setCreatedCount] = useState(0)
+  const [createdInquiries, setCreatedInquiries] = useState<
+    Array<{ id: string; clientName: string; occasion: string; href: string }>
+  >([])
   const [createErrors, setCreateErrors] = useState<string[]>([])
   const [error, setError] = useState('')
   const [isParsing, startParsing] = useTransition()
@@ -55,6 +58,7 @@ export function CatchupClient() {
           selected.map(({ included: _, ...entry }) => entry)
         )
         setCreatedCount(result.created)
+        setCreatedInquiries(result.createdInquiries)
         setCreateErrors(result.errors)
         setPhase('done')
       } catch (err) {
@@ -66,15 +70,11 @@ export function CatchupClient() {
   }
 
   function updateEntry(index: number, field: keyof CatchupEntry, value: string | number | null) {
-    setEntries((prev) =>
-      prev.map((e, i) => (i === index ? { ...e, [field]: value } : e))
-    )
+    setEntries((prev) => prev.map((e, i) => (i === index ? { ...e, [field]: value } : e)))
   }
 
   function toggleEntry(index: number) {
-    setEntries((prev) =>
-      prev.map((e, i) => (i === index ? { ...e, included: !e.included } : e))
-    )
+    setEntries((prev) => prev.map((e, i) => (i === index ? { ...e, included: !e.included } : e)))
   }
 
   // Phase 1: Input
@@ -84,8 +84,8 @@ export function CatchupClient() {
         <div>
           <h1 className="text-2xl font-bold text-stone-100">Quick Catchup</h1>
           <p className="mt-1 text-stone-400">
-            Got active dinners that aren't in the system yet? Paste everything you know and
-            AI will sort it into inquiries you can review.
+            Got active dinners that aren't in the system yet? Paste everything you know and AI will
+            sort it into inquiries you can review.
           </p>
         </div>
 
@@ -124,8 +124,8 @@ export function CatchupClient() {
         <div>
           <h1 className="text-2xl font-bold text-stone-100">Review Entries</h1>
           <p className="mt-1 text-stone-400">
-            {entries.length} {entries.length === 1 ? 'entry' : 'entries'} extracted.
-            Edit details and uncheck any you want to skip.
+            {entries.length} {entries.length === 1 ? 'entry' : 'entries'} extracted. Edit details
+            and uncheck any you want to skip.
           </p>
         </div>
 
@@ -139,7 +139,10 @@ export function CatchupClient() {
 
         <div className="space-y-4">
           {entries.map((entry, index) => (
-            <Card key={index} className={`border-stone-700 bg-stone-800/50 p-4 ${!entry.included ? 'opacity-50' : ''}`}>
+            <Card
+              key={index}
+              className={`border-stone-700 bg-stone-800/50 p-4 ${!entry.included ? 'opacity-50' : ''}`}
+            >
               <div className="flex items-start gap-3">
                 <input
                   type="checkbox"
@@ -251,6 +254,12 @@ export function CatchupClient() {
   }
 
   // Phase 3: Done
+  const primaryDoneHref =
+    createdInquiries.length === 1
+      ? createdInquiries[0]?.href || '/inquiries'
+      : '/inquiries?status=respond_next'
+  const primaryDoneLabel = createdInquiries.length === 1 ? 'Open Inquiry' : 'Respond Next'
+
   return (
     <div className="mx-auto max-w-3xl space-y-6 p-6">
       <div className="rounded-lg border border-green-800 bg-green-950/50 p-6 text-center">
@@ -258,22 +267,54 @@ export function CatchupClient() {
           {createdCount} {createdCount === 1 ? 'Inquiry' : 'Inquiries'} Created
         </h1>
         <p className="mt-2 text-stone-400">
-          Your active dinners are now in the pipeline. Review and update them from the inquiries
-          page.
+          Your active dinners are now in the pipeline. Open the new inquiries directly or start with
+          the response queue.
         </p>
+
+        {createdInquiries.length > 0 && (
+          <div className="mt-5 rounded-lg border border-stone-700 bg-stone-900/70 p-3 text-left">
+            <p className="text-xs font-medium uppercase tracking-wide text-stone-500">
+              Created inquiries
+            </p>
+            <div className="mt-2 space-y-2">
+              {createdInquiries.map((inquiry) => (
+                <Link
+                  key={inquiry.id}
+                  href={inquiry.href}
+                  className="block rounded-md border border-stone-800 bg-stone-950/70 px-3 py-2 transition-colors hover:border-stone-700 hover:bg-stone-900"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="min-w-0 truncate text-sm font-medium text-stone-200">
+                      {inquiry.clientName}
+                    </span>
+                    <span className="shrink-0 text-xs font-medium text-green-300">Open</span>
+                  </div>
+                  {inquiry.occasion && (
+                    <p className="mt-1 truncate text-xs text-stone-500">{inquiry.occasion}</p>
+                  )}
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
 
         {createErrors.length > 0 && (
           <div className="mt-4 rounded-lg border border-amber-800 bg-amber-950/50 p-3 text-left text-sm text-amber-300">
             <p className="font-medium">Some entries had issues:</p>
             {createErrors.map((e, i) => (
-              <p key={i} className="mt-1">{e}</p>
+              <p key={i} className="mt-1">
+                {e}
+              </p>
             ))}
           </div>
         )}
 
-        <div className="mt-6 flex justify-center gap-3">
+        <div className="mt-6 flex flex-wrap justify-center gap-3">
+          <Link href={primaryDoneHref}>
+            <Button variant="primary">{primaryDoneLabel}</Button>
+          </Link>
           <Link href="/inquiries">
-            <Button variant="primary">View Inquiries</Button>
+            <Button variant="secondary">View All</Button>
           </Link>
           <Button
             variant="ghost"
@@ -283,6 +324,7 @@ export function CatchupClient() {
               setEntries([])
               setWarnings([])
               setCreatedCount(0)
+              setCreatedInquiries([])
               setCreateErrors([])
               setError('')
             }}

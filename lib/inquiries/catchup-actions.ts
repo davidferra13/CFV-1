@@ -15,6 +15,13 @@ export type CatchupEntry = {
   phone: string
 }
 
+type CreatedCatchupInquiry = {
+  id: string
+  clientName: string
+  occasion: string
+  href: string
+}
+
 /**
  * Parse a free-text brain dump into structured catchup entries.
  * Uses the AI brain dump parser to extract client/event information.
@@ -50,9 +57,7 @@ export async function parseCatchupDump(
           : '',
         client.allergies?.length ? `Allergies: ${client.allergies.join(', ')}` : '',
         client.vibe_notes || '',
-        client.favorite_cuisines?.length
-          ? `Cuisines: ${client.favorite_cuisines.join(', ')}`
-          : '',
+        client.favorite_cuisines?.length ? `Cuisines: ${client.favorite_cuisines.join(', ')}` : '',
       ]
         .filter(Boolean)
         .join('. '),
@@ -65,12 +70,11 @@ export async function parseCatchupDump(
   for (const note of result.parsed.notes) {
     if (
       note.type === 'follow_up' &&
-      !entries.some((e) =>
-        note.content.toLowerCase().includes(e.clientName.toLowerCase())
-      )
+      !entries.some((e) => note.content.toLowerCase().includes(e.clientName.toLowerCase()))
     ) {
       entries.push({
-        clientName: note.content.split(/\s+(about|for|with)\s+/i)[0]?.trim() || note.content.slice(0, 50),
+        clientName:
+          note.content.split(/\s+(about|for|with)\s+/i)[0]?.trim() || note.content.slice(0, 50),
         occasion: note.content,
         date: '',
         guestCount: null,
@@ -93,14 +97,15 @@ export async function parseCatchupDump(
  */
 export async function createCatchupInquiries(
   entries: CatchupEntry[]
-): Promise<{ created: number; errors: string[] }> {
+): Promise<{ created: number; createdInquiries: CreatedCatchupInquiry[]; errors: string[] }> {
   await requireChef()
 
   if (!entries || entries.length === 0) {
-    return { created: 0, errors: ['No entries provided.'] }
+    return { created: 0, createdInquiries: [], errors: ['No entries provided.'] }
   }
 
   let created = 0
+  const createdInquiries: CreatedCatchupInquiry[] = []
   const errors: string[] = []
 
   for (const entry of entries) {
@@ -117,8 +122,14 @@ export async function createCatchupInquiries(
         source_message: `Imported via Quick Catchup`,
       })
 
-      if (result.success) {
+      if (result.success && result.inquiry) {
         created++
+        createdInquiries.push({
+          id: result.inquiry.id,
+          clientName: entry.clientName,
+          occasion: entry.occasion,
+          href: `/inquiries/${result.inquiry.id}`,
+        })
       } else {
         errors.push(`${entry.clientName}: ${result.error || 'Unknown error'}`)
       }
@@ -130,5 +141,5 @@ export async function createCatchupInquiries(
     }
   }
 
-  return { created, errors }
+  return { created, createdInquiries, errors }
 }
