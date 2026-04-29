@@ -24,6 +24,7 @@ import { PaymentStructureSummary } from '@/components/quotes/payment-structure-s
 import { readPaymentStructure } from '@/lib/payments/payment-structure'
 import { QuotePriceConfidenceWarning } from '@/components/quotes/quote-price-confidence-warning'
 import { QuotePriceFreshnessWarning } from '@/components/quotes/quote-price-freshness-warning'
+import { getChefQuoteAction } from '@/lib/action-graph/bookings'
 import { Suspense } from 'react'
 
 function buildCreateEventHref(quote: any) {
@@ -65,6 +66,31 @@ export default async function QuoteDetailPage({ params }: { params: { id: string
   }
 
   const { quote, versionHistory, timelineEntries } = result.data
+  const quoteAction = quote
+    ? getChefQuoteAction({
+        id: quote.id,
+        client_id: (quote as any).client_id ?? null,
+        inquiry_id: (quote as any).inquiry_id ?? null,
+        event_id: (quote as any).event_id ?? null,
+        status: quote.status,
+        quote_name: quote.quote_name,
+        valid_until: quote.valid_until,
+        sent_at: quote.sent_at,
+        rejected_reason: quote.rejected_reason,
+        pricing_model: quote.pricing_model,
+        guest_count_estimated: quote.guest_count_estimated,
+        total_quoted_cents: quote.total_quoted_cents,
+        price_per_person_cents: (quote as any).price_per_person_cents ?? null,
+        deposit_required: quote.deposit_required,
+        deposit_amount_cents: quote.deposit_amount_cents,
+        deposit_percentage: quote.deposit_percentage,
+        pricing_notes: quote.pricing_notes,
+        internal_notes: quote.internal_notes,
+        inquiry: quote.inquiry,
+        event: quote.event,
+      })
+    : null
+  const quoteActionProjection = quoteAction?.chef ?? null
   const paymentStructure = readPaymentStructure((quote as any).pricing_context ?? null)
 
   if (!quote) {
@@ -257,6 +283,25 @@ export default async function QuoteDetailPage({ params }: { params: { id: string
           />
         </div>
       </div>
+
+      {quoteActionProjection && (
+        <Card className="border-amber-700/40 bg-amber-950/20 p-5">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-amber-300">
+                Recommended quote action
+              </p>
+              <h2 className="mt-1 text-lg font-semibold text-stone-100">
+                {quoteActionProjection.label}
+              </h2>
+              <p className="mt-1 text-sm text-stone-400">{quoteActionProjection.description}</p>
+            </div>
+            <Link href={quoteActionProjection.href}>
+              <Button variant="primary">{quoteActionProjection.ctaLabel}</Button>
+            </Link>
+          </div>
+        </Card>
+      )}
 
       {/* Linked Resources */}
       {(quote.inquiry ||
