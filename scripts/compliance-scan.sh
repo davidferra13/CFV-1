@@ -28,6 +28,10 @@ fi
 VIOLATIONS=0
 PASS_COUNT=0
 
+staged_files() {
+  git diff --cached --name-only --diff-filter=ACMR -- "$@" | grep -v '^$' || true
+}
+
 header() {
   echo ""
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
@@ -50,7 +54,12 @@ fail() {
 header "1. Em Dash Scan"
 
 if [ "$STAGED_ONLY" = true ]; then
-  EM_DASH_FILES=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '\.(tsx?|jsx?|md|json)$' | xargs grep -l $'\xe2\x80\x94' 2>/dev/null || true)
+  EM_DASH_FILES=$(staged_files | grep -E '\.(tsx?|jsx?|md|json)$' | {
+    files=$(cat)
+    if [ -n "$files" ]; then
+      printf '%s\n' "$files" | xargs grep -l $'\xe2\x80\x94' 2>/dev/null || true
+    fi
+  })
 else
   # Scan source files, skip node_modules/.next/docs/specs (specs may have legitimate em dashes in verdicts)
   EM_DASH_FILES=$(grep -rl $'\xe2\x80\x94' \
@@ -78,7 +87,12 @@ header "2. OpenClaw Surface Scan"
 # Allowed: import paths, variable names, function names, type annotations, comments, admin pages.
 # Violation: literal "OpenClaw" text rendered to non-admin users.
 if [ "$STAGED_ONLY" = true ]; then
-  OC_CANDIDATES=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '\.(tsx?|jsx?)$' | xargs grep -li 'openclaw' 2>/dev/null || true)
+  OC_CANDIDATES=$(staged_files | grep -E '\.(tsx?|jsx?)$' | {
+    files=$(cat)
+    if [ -n "$files" ]; then
+      printf '%s\n' "$files" | xargs grep -li 'openclaw' 2>/dev/null || true
+    fi
+  })
 else
   OC_CANDIDATES=$(grep -rli 'openclaw' \
     --include='*.tsx' --include='*.jsx' \
@@ -143,10 +157,21 @@ header "3. @ts-nocheck Export Scan"
 # Only match files with actual @ts-nocheck directive (first non-empty line starting with //)
 # Not files that merely mention @ts-nocheck in comments about other files.
 TSNOCHECK_FILES=""
-for f in $(grep -rl '@ts-nocheck' \
-  --include='*.ts' --include='*.tsx' \
-  --exclude-dir=node_modules --exclude-dir=.next --exclude-dir=.claude \
-  app/ components/ lib/ hooks/ features/ 2>/dev/null || true); do
+if [ "$STAGED_ONLY" = true ]; then
+  STAGED_TS_FILES=$(staged_files '*.ts' '*.tsx')
+  if [ -n "$STAGED_TS_FILES" ]; then
+    TSNOCHECK_CANDIDATES=$(printf '%s\n' "$STAGED_TS_FILES" | xargs grep -l '@ts-nocheck' 2>/dev/null || true)
+  else
+    TSNOCHECK_CANDIDATES=""
+  fi
+else
+  TSNOCHECK_CANDIDATES=$(grep -rl '@ts-nocheck' \
+    --include='*.ts' --include='*.tsx' \
+    --exclude-dir=node_modules --exclude-dir=.next --exclude-dir=.claude \
+    app/ components/ lib/ hooks/ features/ 2>/dev/null || true)
+fi
+
+for f in $TSNOCHECK_CANDIDATES; do
   # Check if the file has an actual @ts-nocheck directive (// @ts-nocheck at start of line)
   if head -5 "$f" | grep -q '^// @ts-nocheck\|^/\* @ts-nocheck'; then
     TSNOCHECK_FILES="$TSNOCHECK_FILES $f"
@@ -181,10 +206,21 @@ header "4. Server Action Export Scan"
 # Per-function 'use server' inside page components is valid Next.js and not a violation.
 # Fast approach: head -3 is O(1) per file vs reading entire file.
 USE_SERVER_FILES=""
-for f in $(grep -rl "'use server'" \
-  --include='*.ts' --include='*.tsx' \
-  --exclude-dir=node_modules --exclude-dir=.next --exclude-dir=.claude \
-  app/ components/ lib/ hooks/ features/ 2>/dev/null || true); do
+if [ "$STAGED_ONLY" = true ]; then
+  STAGED_TS_FILES=$(staged_files '*.ts' '*.tsx')
+  if [ -n "$STAGED_TS_FILES" ]; then
+    USE_SERVER_CANDIDATES=$(printf '%s\n' "$STAGED_TS_FILES" | xargs grep -l "'use server'" 2>/dev/null || true)
+  else
+    USE_SERVER_CANDIDATES=""
+  fi
+else
+  USE_SERVER_CANDIDATES=$(grep -rl "'use server'" \
+    --include='*.ts' --include='*.tsx' \
+    --exclude-dir=node_modules --exclude-dir=.next --exclude-dir=.claude \
+    app/ components/ lib/ hooks/ features/ 2>/dev/null || true)
+fi
+
+for f in $USE_SERVER_CANDIDATES; do
   if head -3 "$f" | grep -q "^'use server'"; then
     USE_SERVER_FILES="$USE_SERVER_FILES $f"
   fi
@@ -227,9 +263,12 @@ RAW_SELECT_COUNT=0
   # Count files where a raw element has inline Tailwind on the SAME line
   # (stricter than separate grep -l passes which match any bg- anywhere in file)
 if [ "$STAGED_ONLY" = true ]; then
-  RAW_BUTTON_COUNT=$(git diff --cached --name-only -- '*.tsx' | xargs grep -n '<button' 2>/dev/null | grep -v 'components/ui/' | grep -v 'error.tsx' | grep 'className' | wc -l)
-  RAW_INPUT_COUNT=$(git diff --cached --name-only -- '*.tsx' | xargs grep -n '<input' 2>/dev/null | grep -v 'components/ui/' | grep 'className' | wc -l)
-  RAW_SELECT_COUNT=$(git diff --cached --name-only -- '*.tsx' | xargs grep -n '<select' 2>/dev/null | grep -v 'components/ui/' | grep 'className' | wc -l)
+  STAGED_TSX_FILES=$(staged_files '*.tsx')
+  if [ -n "$STAGED_TSX_FILES" ]; then
+    RAW_BUTTON_COUNT=$(printf '%s\n' "$STAGED_TSX_FILES" | xargs grep -n '<button' 2>/dev/null | grep -v 'components/ui/' | grep -v 'error.tsx' | grep 'className' | wc -l)
+    RAW_INPUT_COUNT=$(printf '%s\n' "$STAGED_TSX_FILES" | xargs grep -n '<input' 2>/dev/null | grep -v 'components/ui/' | grep 'className' | wc -l)
+    RAW_SELECT_COUNT=$(printf '%s\n' "$STAGED_TSX_FILES" | xargs grep -n '<select' 2>/dev/null | grep -v 'components/ui/' | grep 'className' | wc -l)
+  fi
 else
   RAW_BUTTON_COUNT=$(grep -rn '<button' --include='*.tsx' app/ components/ 2>/dev/null | grep -v 'components/ui/' | grep -v 'error.tsx' | grep 'className' | wc -l)
   RAW_INPUT_COUNT=$(grep -rn '<input' --include='*.tsx' app/ components/ 2>/dev/null | grep -v 'components/ui/' | grep 'className' | wc -l)
