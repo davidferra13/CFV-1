@@ -1041,6 +1041,22 @@ export default async function CannabisAboutPage() {
           </AboutSection>
 
           {/* ── Section 5: How This Portal Was Built ── */}
+          <AboutSection title="Daily Operational Checklist" icon="OPS">
+            <AboutParagraph>
+              ChefFlow daily operations use the existing Tasks, Templates, and Daily Ops surfaces to
+              track opening checks, inventory counts, cleaning work, station prep, and completion
+              status without adding a separate checklist database.
+            </AboutParagraph>
+            <AboutParagraph>
+              Chefs can build reusable checklist templates, generate them for the day, assign due
+              times and stations, and mark tasks complete from the daily task board.
+            </AboutParagraph>
+            <div className="flex flex-wrap gap-3 pt-2">
+              <AboutExternalLink href="/daily-checklist">Open Daily Checklist</AboutExternalLink>
+              <AboutExternalLink href="/tasks/templates">Task Templates</AboutExternalLink>
+            </div>
+          </AboutSection>
+
           <AboutSection title="How This Portal Was Built" icon="🔥">
             <AboutParagraph>
               The person who built this portal has been a private chef for over 15 years and has

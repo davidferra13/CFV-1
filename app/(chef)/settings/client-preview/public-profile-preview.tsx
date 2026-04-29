@@ -183,7 +183,7 @@ export function PublicProfilePreview({
       <div
         className={[
           'rounded-xl border-2 border-stone-700 overflow-y-auto',
-          isMobile ? 'w-[390px]' : 'w-full',
+          isMobile ? 'w-full max-w-[390px]' : 'w-full',
         ].join(' ')}
         style={{ maxHeight: '680px' }}
       >

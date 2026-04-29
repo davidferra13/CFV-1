@@ -2121,7 +2121,7 @@ export default async function ChefProfilePage({ params }: Props) {
                 return (
                   <div
                     key={signal.id}
-                    className="flex items-center justify-between bg-green-950 border border-green-200 rounded-xl px-5 py-4"
+                    className="flex flex-col gap-3 bg-green-950 border border-green-200 rounded-xl px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
                   >
                     <div>
                       <p className="font-semibold text-stone-100">{dateLabel}</p>
@@ -2133,7 +2133,7 @@ export default async function ChefProfilePage({ params }: Props) {
                       href={`/chef/${publicSlug}/inquire?date=${signal.start_date}`}
                       analyticsName="public_profile_availability_inquire"
                       analyticsProps={{ chef_slug: publicSlug, date: signal.start_date }}
-                      className="flex-shrink-0 ml-4 px-4 py-2 text-sm font-medium text-white rounded-lg transition-opacity hover:opacity-90"
+                      className="w-full flex-shrink-0 px-4 py-2 text-center text-sm font-medium text-white rounded-lg transition-opacity hover:opacity-90 sm:w-auto"
                       style={{ backgroundColor: primaryColor }}
                     >
                       Inquire
