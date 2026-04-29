@@ -233,3 +233,80 @@ test('agent-commit-claim-warning recognizes current branch claim coverage', () =
     fs.rmSync(claimsDir, { recursive: true, force: true })
   }
 })
+
+test('agent-commit-claim-warning can block and reports coverage percentage', () => {
+  const claimsDir = makeTempDir('chefflow-agent-claim-warning-block-')
+
+  try {
+    const result = runNodeAllowFailure([
+      'devtools/agent-commit-claim-warning.mjs',
+      '--mode',
+      'block',
+      '--staged',
+      'devtools/agent-start.mjs,devtools/agent-finish.mjs',
+      '--claims-dir',
+      claimsDir,
+      '--branch',
+      'feature/test-branch',
+      '--json',
+    ])
+    const parsed = JSON.parse(result.stdout) as {
+      ok: boolean
+      mode: string
+      coverage_percent: number
+      warnings: string[]
+    }
+
+    assert.equal(result.ok, false)
+    assert.equal(parsed.ok, false)
+    assert.equal(parsed.mode, 'block')
+    assert.equal(parsed.coverage_percent, 0)
+    assert.ok(parsed.warnings.length > 0)
+  } finally {
+    fs.rmSync(claimsDir, { recursive: true, force: true })
+  }
+})
+
+test('agent-commit-claim-warning reports stale active claims', () => {
+  const claimsDir = makeTempDir('chefflow-agent-claim-warning-stale-')
+
+  try {
+    fs.writeFileSync(
+      path.join(claimsDir, 'claim.json'),
+      JSON.stringify(
+        {
+          id: 'unit-stale-claim',
+          status: 'active',
+          branch: 'feature/test-branch',
+          agent: 'unit',
+          created_at: new Date(Date.now() - 48 * 36e5).toISOString(),
+          owned_paths: ['devtools/agent-start.mjs'],
+        },
+        null,
+        2
+      )
+    )
+
+    const output = runNode([
+      'devtools/agent-commit-claim-warning.mjs',
+      '--staged',
+      'devtools/agent-start.mjs',
+      '--claims-dir',
+      claimsDir,
+      '--branch',
+      'feature/test-branch',
+      '--max-age-hours',
+      '1',
+      '--json',
+    ])
+    const parsed = JSON.parse(output) as {
+      stale_claims: Array<{ claim_id: string }>
+      warnings: string[]
+    }
+
+    assert.equal(parsed.stale_claims[0]?.claim_id, 'unit-stale-claim')
+    assert.ok(parsed.warnings.some((warning) => warning.includes('stale')))
+  } finally {
+    fs.rmSync(claimsDir, { recursive: true, force: true })
+  }
+})
