@@ -31,7 +31,7 @@ export async function updateRecipePeakWindow(input: {
     input.peakHoursMax != null &&
     input.peakHoursMin > input.peakHoursMax
   ) {
-    return { success: false, error: 'Earliest prep time must be greater than latest prep time.' }
+    return { success: false, error: 'Earliest prep time cannot be greater than latest prep time.' }
   }
 
   if (input.peakHoursMin != null && input.peakHoursMin < 0) {

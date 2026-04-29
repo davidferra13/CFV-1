@@ -7,6 +7,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { dateToDateString } from '@/lib/utils/format'
+import { revalidatePath } from 'next/cache'
 import type {
   TravelLeg,
   TravelLegType,
@@ -22,6 +23,39 @@ import type {
 
 function createClient() {
   return createServerClient()
+}
+
+type TravelInvalidationLeg = {
+  primary_event_id?: string | null
+  linked_event_ids?: unknown
+}
+
+function getTravelEventIds(leg: TravelInvalidationLeg | null | undefined) {
+  if (!leg) return []
+
+  const eventIds = new Set<string>()
+  if (leg.primary_event_id) eventIds.add(leg.primary_event_id)
+
+  if (Array.isArray(leg.linked_event_ids)) {
+    for (const eventId of leg.linked_event_ids) {
+      if (typeof eventId === 'string' && eventId) eventIds.add(eventId)
+    }
+  }
+
+  return [...eventIds]
+}
+
+function revalidateTravelPaths(eventIds: string[]) {
+  revalidatePath('/travel')
+
+  for (const eventId of eventIds) {
+    revalidatePath(`/events/${eventId}`)
+    revalidatePath(`/events/${eventId}/travel`)
+  }
+}
+
+function revalidateTravelLegPaths(leg: TravelInvalidationLeg | null | undefined) {
+  revalidateTravelPaths(getTravelEventIds(leg))
 }
 
 // ============================================================
@@ -233,6 +267,8 @@ export async function createTravelLeg(input: CreateTravelLegInput): Promise<Trav
 
   if (error) throw new Error(`Failed to create travel leg: ${error.message}`)
 
+  revalidateTravelLegPaths(data)
+
   return {
     ...data!,
     leg_type: data!.leg_type as TravelLegType,
@@ -273,6 +309,8 @@ export async function updateTravelLeg(input: UpdateTravelLegInput): Promise<Trav
 
   if (error) throw new Error(`Failed to update travel leg: ${error.message}`)
 
+  revalidateTravelLegPaths(data)
+
   return {
     ...data!,
     leg_type: data!.leg_type as TravelLegType,
@@ -289,39 +327,48 @@ export async function markLegComplete(legId: string): Promise<void> {
   const user = await requireChef()
   const db = createClient()
 
-  const { error } = await db
+  const { data, error } = await db
     .from('event_travel_legs')
     .update({ status: 'completed', completed_at: new Date().toISOString() })
     .eq('id', legId)
     .eq('tenant_id', user.tenantId!)
+    .select('primary_event_id, linked_event_ids')
+    .single()
 
   if (error) throw new Error(`Failed to mark leg complete: ${error.message}`)
+  revalidateTravelLegPaths(data)
 }
 
 export async function markLegInProgress(legId: string): Promise<void> {
   const user = await requireChef()
   const db = createClient()
 
-  const { error } = await db
+  const { data, error } = await db
     .from('event_travel_legs')
     .update({ status: 'in_progress' })
     .eq('id', legId)
     .eq('tenant_id', user.tenantId!)
+    .select('primary_event_id, linked_event_ids')
+    .single()
 
   if (error) throw new Error(`Failed to start leg: ${error.message}`)
+  revalidateTravelLegPaths(data)
 }
 
 export async function cancelTravelLeg(legId: string): Promise<void> {
   const user = await requireChef()
   const db = createClient()
 
-  const { error } = await db
+  const { data, error } = await db
     .from('event_travel_legs')
     .update({ status: 'cancelled' })
     .eq('id', legId)
     .eq('tenant_id', user.tenantId!)
+    .select('primary_event_id, linked_event_ids')
+    .single()
 
   if (error) throw new Error(`Failed to cancel leg: ${error.message}`)
+  revalidateTravelLegPaths(data)
 }
 
 // ============================================================
@@ -332,6 +379,13 @@ export async function deleteTravelLeg(legId: string): Promise<void> {
   const user = await requireChef()
   const db = createClient()
 
+  const { data: leg } = await db
+    .from('event_travel_legs')
+    .select('primary_event_id, linked_event_ids')
+    .eq('id', legId)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
   const { error } = await db
     .from('event_travel_legs')
     .delete()
@@ -339,6 +393,7 @@ export async function deleteTravelLeg(legId: string): Promise<void> {
     .eq('tenant_id', user.tenantId!)
 
   if (error) throw new Error(`Failed to delete travel leg: ${error.message}`)
+  revalidateTravelLegPaths(leg)
 }
 
 // ============================================================
@@ -354,7 +409,7 @@ export async function upsertLegIngredient(
   // Verify leg ownership
   const { data: leg } = await db
     .from('event_travel_legs')
-    .select('id')
+    .select('id, primary_event_id, linked_event_ids')
     .eq('id', input.leg_id)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -380,6 +435,7 @@ export async function upsertLegIngredient(
     .single()
 
   if (error) throw new Error(`Failed to upsert leg ingredient: ${error.message}`)
+  revalidateTravelLegPaths(leg)
 
   return {
     id: data!.id,
@@ -411,7 +467,7 @@ export async function markIngredientSourced(ingredientRowId: string): Promise<vo
 
   const { data: leg } = await db
     .from('event_travel_legs')
-    .select('id')
+    .select('id, primary_event_id, linked_event_ids')
     .eq('id', row.leg_id)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -424,6 +480,7 @@ export async function markIngredientSourced(ingredientRowId: string): Promise<vo
     .eq('id', ingredientRowId)
 
   if (error) throw new Error(`Failed to mark ingredient sourced: ${error.message}`)
+  revalidateTravelLegPaths(leg)
 }
 
 export async function updateIngredientStatus(
@@ -444,7 +501,7 @@ export async function updateIngredientStatus(
 
   const { data: leg }: any = await db
     .from('event_travel_legs')
-    .select('id')
+    .select('id, primary_event_id, linked_event_ids')
     .eq('id', row.leg_id)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -460,6 +517,7 @@ export async function updateIngredientStatus(
     .eq('id', ingredientRowId)
 
   if (error) throw new Error(`Failed to update ingredient status: ${error.message}`)
+  revalidateTravelLegPaths(leg)
 }
 
 export async function deleteLegIngredient(ingredientRowId: string): Promise<void> {
@@ -477,7 +535,7 @@ export async function deleteLegIngredient(ingredientRowId: string): Promise<void
 
   const { data: leg }: any = await db
     .from('event_travel_legs')
-    .select('id')
+    .select('id, primary_event_id, linked_event_ids')
     .eq('id', row.leg_id)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -487,6 +545,7 @@ export async function deleteLegIngredient(ingredientRowId: string): Promise<void
   const { error } = await db.from('travel_leg_ingredients').delete().eq('id', ingredientRowId)
 
   if (error) throw new Error(`Failed to delete leg ingredient: ${error.message}`)
+  revalidateTravelLegPaths(leg)
 }
 
 // ============================================================
@@ -572,6 +631,7 @@ export async function autoCreateServiceLegs(eventId: string): Promise<void> {
     .from('event_travel_legs')
     .select('leg_type')
     .eq('primary_event_id', eventId)
+    .eq('tenant_id', user.tenantId!)
     .in('leg_type', ['service_travel', 'return_home'])
 
   const hasServiceTravel = (existing ?? []).some((l: any) => l.leg_type === 'service_travel')
@@ -661,4 +721,6 @@ export async function autoCreateServiceLegs(eventId: string): Promise<void> {
       status: 'planned',
     })
   }
+
+  revalidateTravelPaths([eventId])
 }

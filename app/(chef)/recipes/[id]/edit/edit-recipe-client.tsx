@@ -93,6 +93,12 @@ function formatYieldHint(ingredientName: string, hint: YieldHint) {
   return `${ingredientName}${prepLabel}: ~${hint.yieldPct}% yield${wasteLabel}`
 }
 
+function parseOptionalHours(value: string) {
+  if (!value) return null
+  const parsed = Number.parseInt(value, 10)
+  return Number.isNaN(parsed) ? null : parsed
+}
+
 export function EditRecipeClient({ recipe, chefId }: Props) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
@@ -354,6 +360,35 @@ export function EditRecipeClient({ recipe, chefId }: Props) {
       return
     }
 
+    const parsedPeakHoursMin = parseOptionalHours(peakHoursMin)
+    const parsedPeakHoursMax = parseOptionalHours(peakHoursMax)
+    const parsedSafetyHoursMax = parseOptionalHours(safetyHoursMax)
+
+    if (
+      parsedPeakHoursMin != null &&
+      parsedPeakHoursMax != null &&
+      parsedPeakHoursMin > parsedPeakHoursMax
+    ) {
+      setError('Earliest prep time cannot be greater than latest prep time.')
+      return
+    }
+
+    if (parsedPeakHoursMin != null && parsedPeakHoursMin < 0) {
+      setError('Peak hours cannot be negative.')
+      return
+    }
+
+    if (
+      parsedSafetyHoursMax != null &&
+      parsedPeakHoursMin != null &&
+      parsedSafetyHoursMax < parsedPeakHoursMin
+    ) {
+      setError(
+        'Safety ceiling is shorter than earliest peak time. This recipe cannot reach peak quality within its safety window.'
+      )
+      return
+    }
+
     setLoading(true)
     setError('')
 
@@ -431,20 +466,24 @@ export function EditRecipeClient({ recipe, chefId }: Props) {
 
       await recalculateAndSaveRecipeNutrition(recipe.id).catch(() => null)
 
-      // Save peak window (non-blocking, parallel with nutrition)
-      await updateRecipePeakWindow({
+      // Peak window edits are visible recipe data, so failed saves must stay visible.
+      const peakResult = await updateRecipePeakWindow({
         recipeId: recipe.id,
-        peakHoursMin: peakHoursMin ? parseInt(peakHoursMin) : null,
-        peakHoursMax: peakHoursMax ? parseInt(peakHoursMax) : null,
-        safetyHoursMax: safetyHoursMax ? parseInt(safetyHoursMax) : null,
+        peakHoursMin: parsedPeakHoursMin,
+        peakHoursMax: parsedPeakHoursMax,
+        safetyHoursMax: parsedSafetyHoursMax,
         storageMethod,
         freezable,
-        frozenExtendsHours: frozenExtendsHours ? parseInt(frozenExtendsHours) : null,
+        frozenExtendsHours: parseOptionalHours(frozenExtendsHours),
         activeMinutes: null,
         passiveMinutes: null,
         holdClass: null,
         prepTier: null,
-      }).catch(() => null)
+      })
+
+      if (!peakResult.success) {
+        throw new Error(peakResult.error || 'Failed to save peak window.')
+      }
 
       protection.markCommitted()
       router.push(`/recipes/${recipe.id}`)

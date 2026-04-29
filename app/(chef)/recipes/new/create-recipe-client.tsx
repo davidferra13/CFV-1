@@ -66,6 +66,7 @@ export function CreateRecipeClient({ aiConfigured, chefId, prefillComponent }: P
   const [mode, setMode] = useState<'import' | 'manual'>(aiConfigured ? 'import' : 'manual')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [partialSaveHref, setPartialSaveHref] = useState<string | null>(null)
 
   // Taxonomy-driven options (system defaults shown instantly, chef customizations merged async)
   const { entries: cuisineEntries } = useTaxonomy('cuisine')
@@ -231,6 +232,7 @@ export function CreateRecipeClient({ aiConfigured, chefId, prefillComponent }: P
     if (!rawText.trim()) return
     setLoading(true)
     setError('')
+    setPartialSaveHref(null)
 
     try {
       const result = await parseRecipeFromText(rawText)
@@ -379,9 +381,19 @@ export function CreateRecipeClient({ aiConfigured, chefId, prefillComponent }: P
 
       const recipeId = result.recipeId
 
-      // If created from a component prompt, link it (non-blocking)
+      // If created from a component prompt, the link is part of the requested save.
       if (prefillComponent?.componentId) {
-        await linkRecipeToComponent(recipeId, prefillComponent.componentId).catch(() => null)
+        try {
+          await linkRecipeToComponent(recipeId, prefillComponent.componentId)
+        } catch (err: unknown) {
+          setPartialSaveHref(`/recipes/${recipeId}`)
+          setError(
+            (err instanceof Error ? err.message : '') ||
+              'Recipe was created, but ChefFlow could not link it to the requested component.'
+          )
+          setLoading(false)
+          return
+        }
       }
 
       // Nutrition enrichment is non-blocking for the primary save path.
@@ -459,7 +471,18 @@ export function CreateRecipeClient({ aiConfigured, chefId, prefillComponent }: P
           </Link>
         </div>
 
-        {error && <Alert variant="error">{error}</Alert>}
+        {error && (
+          <Alert variant="error">
+            <div className="space-y-2">
+              <p>{error}</p>
+              {partialSaveHref && (
+                <Link href={partialSaveHref} className="inline-block text-sm underline">
+                  Open saved recipe
+                </Link>
+              )}
+            </div>
+          </Alert>
+        )}
 
         {/* Mode Tabs */}
         <div className="flex gap-1 border-b border-stone-700">
