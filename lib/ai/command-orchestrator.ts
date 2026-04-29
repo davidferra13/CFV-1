@@ -10,6 +10,8 @@ import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 import { parseCommandIntent } from '@/lib/ai/command-intent-parser'
 import { getAgentAction, isAgentAction } from '@/lib/ai/agent-registry'
 import { ensureAgentActionsRegistered } from '@/lib/ai/agent-actions'
+import { areDocumentDraftsAllowedForTenant } from '@/lib/ai/privacy-internal'
+import { isAiDocumentDraftTaskType } from '@/lib/ai/private-runtime-policy'
 import { searchClientsByName, getClients, getClientById } from '@/lib/clients/actions'
 import { getEvents, getEventById } from '@/lib/events/actions'
 import { getInquiries, getInquiryById } from '@/lib/inquiries/actions'
@@ -1278,6 +1280,20 @@ async function executeSingleTask(
       name,
       status: 'held',
       holdReason: task.holdReason ?? 'This action requires your review before proceeding.',
+    }
+  }
+
+  if (isAiDocumentDraftTaskType(task.taskType)) {
+    const allowed = await areDocumentDraftsAllowedForTenant(tenantId)
+    if (!allowed) {
+      return {
+        taskId: task.id,
+        taskType: task.taskType,
+        tier: task.tier,
+        name,
+        status: 'held',
+        holdReason: 'Document and email drafts are turned off in AI & Privacy.',
+      }
     }
   }
 

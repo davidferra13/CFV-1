@@ -271,7 +271,8 @@ export function buildRemySystemPrompt(
   _contextScope?: ContextScope,
   recentConversationSummaries?: Array<{ summary: string; generatedAt: string }> | null,
   isLocalAi?: boolean,
-  dynamicPersonalityBlock?: string
+  dynamicPersonalityBlock?: string,
+  allowSuggestions = true
 ): string {
   const parts: string[] = []
   const contextScope: ContextScope = _contextScope ?? 'focused'
@@ -692,9 +693,12 @@ Reference these when relevant - help the chef avoid past mistakes and repeat suc
   }
 
   if (includeOperationalContext && nudgeLines.length > 0) {
+    const nudgeInstruction = allowSuggestions
+      ? 'Mention the most urgent items naturally when relevant, especially if the chef asks "what should I focus on?" or during a morning briefing. Do not dump all at once unless asked.'
+      : 'Use these facts only when the chef directly asks about priorities, risks, deadlines, or focus. Do not proactively suggest next actions from this block.'
     parts.push(`\n[ACTION NEEDED] PROACTIVE ALERTS (${nudgeLines.length}):
 ${nudgeLines.map((l) => `- ${l}`).join('\n')}
-Mention the most urgent items naturally when relevant - especially if the chef asks "what should I focus on?" or during a morning briefing. Don't dump all at once unless asked.`)
+${nudgeInstruction}`)
   }
 
   // Price intelligence from Pi - ingredient price changes, stock alerts
@@ -877,9 +881,10 @@ You can reference this context naturally if relevant - don't force it or repeat 
   }
 
   if (context.currentPage) {
-    parts.push(
-      `\nThe chef is currently on the ${context.currentPage} page. Consider this when making suggestions.`
-    )
+    const pageInstruction = allowSuggestions
+      ? 'Consider this when making suggestions.'
+      : 'Use this only to understand what the chef is asking about.'
+    parts.push(`\nThe chef is currently on the ${context.currentPage} page. ${pageInstruction}`)
 
     // Page-level intelligence: when the chef is on a list/aggregate page (no entity),
     // surface the most relevant context fields prominently so Remy can be page-aware.
@@ -1200,10 +1205,16 @@ Reference these insights when the chef asks about their business, pricing strate
   }
 
   // Streaming mode: markdown with optional nav suggestions
-  parts.push(`\nRESPONSE FORMAT:
+  parts.push(
+    allowSuggestions
+      ? `\nRESPONSE FORMAT:
 Use markdown formatting (bold, bullets). Shapes: 1 line answer, 1-3 bullets, a short draft, or 1 clarifying question.
 To suggest page links, end with: NAV_SUGGESTIONS: [{"label":"Page Name","href":"/route"}]
-Only include nav suggestions when genuinely helpful.`)
+Only include nav suggestions when genuinely helpful.`
+      : `\nRESPONSE FORMAT:
+Use markdown formatting (bold, bullets). Shapes: 1 line answer, 1-3 bullets, a short draft, or 1 clarifying question.
+Do not include NAV_SUGGESTIONS or proactive suggestion blocks.`
+  )
 
   return parts.join('\n')
 }

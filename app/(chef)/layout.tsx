@@ -37,7 +37,7 @@ import { getRegionalSettings } from '@/lib/chef/actions'
 import type { FormatContext } from '@/lib/hooks/use-format-context'
 import { PermissionProvider } from '@/lib/context/permission-context'
 import { resolveCurrentUserPermissions } from '@/lib/auth/permissions'
-import { isAiEnabledForTenant } from '@/lib/ai/privacy-internal'
+import { areAiSuggestionsAllowedForTenant, isAiEnabledForTenant } from '@/lib/ai/privacy-internal'
 import { PATHNAME_HEADER } from '@/lib/auth/request-auth-context'
 import {
   resolveChefShellBudgetWithDensity,
@@ -142,6 +142,7 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
     deletionStatus,
     permissionSet,
     remyEnabled,
+    remySuggestionsAllowed,
     chefArchetype,
     tenantPresence,
     regionalSettings,
@@ -168,6 +169,8 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
     resolveCurrentUserPermissions(user.id, user.tenantId).catch(() => null),
     // AI/Remy enabled check - controls whether Remy UI renders
     isAiEnabledForTenant(user.entityId).catch(() => false),
+    // AI suggestion preference - controls proactive nudges and quick reply chips
+    areAiSuggestionsAllowedForTenant(user.entityId).catch(() => true),
     // Archetype for nav label adaptation (cached 60s)
     getCachedChefArchetype(user.entityId).catch(() => null),
     // Tenant data presence for progressive disclosure (short cached)
@@ -306,7 +309,9 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
                       <CommandPalette userId={user.id} tenantId={user.tenantId ?? user.entityId} />
 
                       {/* Remy - AI companion chatbot, available to all chefs */}
-                      {shouldRenderRemy && shellBudget.showRemy ? <RemyWrapper /> : null}
+                      {shouldRenderRemy && shellBudget.showRemy ? (
+                        <RemyWrapper allowSuggestions={remySuggestionsAllowed} />
+                      ) : null}
 
                       {/* Mobile quick capture FAB - mobile-only, hidden on desktop */}
                       {shellBudget.showQuickCapture ? <QuickCapture /> : null}

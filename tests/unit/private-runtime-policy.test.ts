@@ -1,7 +1,13 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
-import { resolvePrivateRuntimePolicy } from '@/lib/ai/private-runtime-policy'
+import {
+  canDraftAiDocuments,
+  isAiDocumentDraftTaskType,
+  resolvePrivateRuntimePolicy,
+  shouldEmitAiSuggestions,
+  shouldUseAiMemory,
+} from '@/lib/ai/private-runtime-policy'
 
 const basePrefs = {
   localAiEnabled: false,
@@ -45,4 +51,21 @@ test('resolvePrivateRuntimePolicy selects local when local AI is verified', () =
   assert.equal(policy.localAvailable, true)
   assert.equal(policy.canUsePlatformFallback, false)
   assert.equal(policy.blockReason, null)
+})
+
+test('AI access helpers mirror explicit privacy controls', () => {
+  assert.equal(shouldUseAiMemory({ allowMemory: false }), false)
+  assert.equal(shouldUseAiMemory({ allowMemory: true }), true)
+  assert.equal(shouldEmitAiSuggestions({ allowSuggestions: false }), false)
+  assert.equal(shouldEmitAiSuggestions({ allowSuggestions: true }), true)
+  assert.equal(canDraftAiDocuments({ allowDocumentDrafts: false }), false)
+  assert.equal(canDraftAiDocuments({ allowDocumentDrafts: true }), true)
+})
+
+test('document draft task classifier covers draft-producing Remy actions', () => {
+  assert.equal(isAiDocumentDraftTaskType('email.generic'), true)
+  assert.equal(isAiDocumentDraftTaskType('draft.menu_proposal'), true)
+  assert.equal(isAiDocumentDraftTaskType('agent.draft_email'), true)
+  assert.equal(isAiDocumentDraftTaskType('client.search'), false)
+  assert.equal(isAiDocumentDraftTaskType('recipe.search'), false)
 })

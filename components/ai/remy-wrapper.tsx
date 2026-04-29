@@ -43,7 +43,11 @@ function hasExternalDenseOverlay(): boolean {
   return false
 }
 
-function RemyInner() {
+type RemyWrapperProps = {
+  allowSuggestions?: boolean
+}
+
+function RemyInner({ allowSuggestions = true }: RemyWrapperProps) {
   const {
     toggleMascotChat,
     toggleDrawer,
@@ -68,6 +72,7 @@ function RemyInner() {
     isDrawerOpen,
     isMascotLoading,
     isLoading,
+    allowSuggestions,
   })
   const { mode, isMobile, isHydrated, setMode } = useRemyDisplayMode({
     storageKey: 'cf:remy:chef:display-mode',
@@ -297,17 +302,17 @@ function RemyInner() {
       )}
 
       {/* Full chat window */}
-      <RemyDrawer />
+      <RemyDrawer allowSuggestions={allowSuggestions} />
     </>
   )
 }
 
-export function RemyWrapper() {
+export function RemyWrapper({ allowSuggestions = true }: RemyWrapperProps) {
   const isDemo = useIsDemoMode()
   if (isDemo) return null
   return (
     <RemyProvider>
-      <RemyInner />
+      <RemyInner allowSuggestions={allowSuggestions} />
     </RemyProvider>
   )
 }

@@ -50,7 +50,11 @@ import {
   getCuratedStreamGreeting,
   getCuratedStreamReplyForMessage,
 } from '../stream/route-personality-utils'
-import { resolvePrivateRuntimePolicy } from '@/lib/ai/private-runtime-policy'
+import {
+  resolvePrivateRuntimePolicy,
+  shouldEmitAiSuggestions,
+  shouldUseAiMemory,
+} from '@/lib/ai/private-runtime-policy'
 
 export async function POST(req: NextRequest) {
   try {
@@ -85,6 +89,10 @@ export async function POST(req: NextRequest) {
         { status: 412 }
       )
     }
+    const allowMemory = shouldUseAiMemory({ allowMemory: prefs.allow_memory })
+    const allowSuggestions = shouldEmitAiSuggestions({
+      allowSuggestions: prefs.allow_suggestions,
+    })
 
     if (!rawBody) {
       return NextResponse.json({ blocked: true, blockReason: 'Invalid request.' }, { status: 400 })
@@ -214,7 +222,7 @@ export async function POST(req: NextRequest) {
         intent: 'question',
         systemPrompt: null,
         instantResponse: curatedReply.text,
-        quickReplies: curatedReply.quickReplies,
+        quickReplies: allowSuggestions ? curatedReply.quickReplies : [],
       })
     }
 
@@ -241,7 +249,7 @@ export async function POST(req: NextRequest) {
           intent: 'question',
           systemPrompt: null,
           instantResponse: curatedGreeting.text,
-          quickReplies: curatedGreeting.quickReplies,
+          quickReplies: allowSuggestions ? curatedGreeting.quickReplies : [],
         })
       }
 
@@ -264,7 +272,7 @@ export async function POST(req: NextRequest) {
       await Promise.all([
         loadRemyContext(currentPage, earlyScopeHint),
         classifyIntent(message),
-        earlyScopeHint === 'minimal' || !prefs.allow_memory
+        earlyScopeHint === 'minimal' || !allowMemory
           ? Promise.resolve([])
           : loadRelevantMemories(message, undefined, undefined),
         earlyScopeHint === 'minimal'
@@ -274,7 +282,7 @@ export async function POST(req: NextRequest) {
         resolveMessageEntities(message).catch(() => []),
         earlyScopeHint === 'minimal' ? Promise.resolve(null) : getRemyArchetype().catch(() => null),
         activeForm === 'remy-survey' ? getSurveyState().catch(() => null) : Promise.resolve(null),
-        prefs.allow_memory && history.length === 0 && earlyScopeHint !== 'minimal'
+        allowMemory && history.length === 0 && earlyScopeHint !== 'minimal'
           ? searchRemyConversationSummaries(message, { limit: 3 }).catch(() => [])
           : Promise.resolve([]),
       ])
@@ -330,14 +338,14 @@ export async function POST(req: NextRequest) {
 
     // Instant answers (no LLM needed)
     if (classification.intent === 'question') {
-      const instant = tryInstantAnswer(message, context, memories)
+      const instant = tryInstantAnswer(message, context, memories, { allowSuggestions })
       if (instant) {
         return NextResponse.json({
           blocked: false,
           intent: 'question',
           systemPrompt: null,
           instantResponse: instant.text,
-          navSuggestions: instant.navSuggestions ?? null,
+          navSuggestions: allowSuggestions ? (instant.navSuggestions ?? null) : null,
         })
       }
     }
@@ -415,7 +423,8 @@ export async function POST(req: NextRequest) {
         contextScope,
         recentConversationSummaries,
         true,
-        dynamicPersonalityBlock
+        dynamicPersonalityBlock,
+        allowSuggestions
       )
 
       const historyStr = formatConversationHistory(history)
@@ -465,7 +474,8 @@ export async function POST(req: NextRequest) {
       contextScope,
       recentConversationSummaries,
       true,
-      dynamicPersonalityBlock
+      dynamicPersonalityBlock,
+      allowSuggestions
     )
 
     const historyStr = formatConversationHistory(history)

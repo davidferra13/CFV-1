@@ -81,7 +81,11 @@ const DRAWER_DEFAULT_WIDTH = 448 // max-w-md equivalent
 
 // ─── Main Component ──────────────────────────────────────────────────────────
 
-export function RemyDrawer() {
+type RemyDrawerProps = {
+  allowSuggestions?: boolean
+}
+
+export function RemyDrawer({ allowSuggestions = true }: RemyDrawerProps) {
   const {
     isDrawerOpen: open,
     closeDrawer,
@@ -109,6 +113,12 @@ export function RemyDrawer() {
   const [curatedGreetingLoaded, setCuratedGreetingLoaded] = useState(false)
   const [localAiConfig, setLocalAiConfig] = useState<LocalAiPreferences | null>(null)
 
+  useEffect(() => {
+    if (!allowSuggestions) {
+      setCuratedQuickReplies([])
+    }
+  }, [allowSuggestions])
+
   // Keep the drawer aligned with AI & Privacy settings changes in the same browser session.
   useEffect(() => {
     getLocalAiPreferences()
@@ -122,7 +132,10 @@ export function RemyDrawer() {
 
     window.addEventListener(LOCAL_AI_PREFERENCES_UPDATED_EVENT, handleLocalAiPreferencesUpdated)
     return () => {
-      window.removeEventListener(LOCAL_AI_PREFERENCES_UPDATED_EVENT, handleLocalAiPreferencesUpdated)
+      window.removeEventListener(
+        LOCAL_AI_PREFERENCES_UPDATED_EVENT,
+        handleLocalAiPreferencesUpdated
+      )
     }
   }, [])
 
@@ -390,12 +403,12 @@ export function RemyDrawer() {
         }
         setMessages([curatedMsg])
         setLastCuratedMsgId(msgId)
-        if (greeting.quickReplies.length > 0) {
+        if (allowSuggestions && greeting.quickReplies.length > 0) {
           setCuratedQuickReplies(greeting.quickReplies)
         }
       })
       .catch(() => {})
-  }, [open, conversationsLoaded, curatedGreetingLoaded, messages, setMessages])
+  }, [open, conversationsLoaded, curatedGreetingLoaded, messages, setMessages, allowSuggestions])
 
   // Reset curated greeting state when a new conversation starts
   useEffect(() => {
@@ -1238,6 +1251,7 @@ export function RemyDrawer() {
 
                       {/* Navigation suggestions */}
                       {msg.role === 'remy' &&
+                        allowSuggestions &&
                         msg.navSuggestions &&
                         msg.navSuggestions.length > 0 && (
                           <div className="flex flex-wrap gap-1.5">
@@ -1269,6 +1283,7 @@ export function RemyDrawer() {
                         )}
 
                       {msg.role === 'remy' &&
+                        allowSuggestions &&
                         msg.quickReplies &&
                         msg.quickReplies.length > 0 &&
                         messages[messages.length - 1]?.id === msg.id &&
@@ -1380,7 +1395,8 @@ export function RemyDrawer() {
                 ))}
 
                 {/* Curated onboarding quick-reply chips */}
-                {curatedQuickReplies.length > 0 &&
+                {allowSuggestions &&
+                  curatedQuickReplies.length > 0 &&
                   lastCuratedMsgId !== null &&
                   messages[messages.length - 1]?.id === lastCuratedMsgId &&
                   !loading && (

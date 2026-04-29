@@ -26,6 +26,8 @@ export interface UseRemyNudgesConfig {
   isLoading: boolean
   /** Whether the survey has been completed (skip survey-nudge if so) */
   surveyCompleted?: boolean
+  /** Whether proactive suggestions are allowed by AI privacy settings */
+  allowSuggestions?: boolean
 }
 
 export interface UseRemyNudgesResult {
@@ -44,6 +46,7 @@ export function useRemyNudges(config: UseRemyNudgesConfig): UseRemyNudgesResult 
     isMascotLoading,
     isLoading,
     surveyCompleted = false,
+    allowSuggestions = true,
   } = config
 
   const [nudgeMessage, setNudgeMessage] = useState<string | null>(null)
@@ -59,6 +62,15 @@ export function useRemyNudges(config: UseRemyNudgesConfig): UseRemyNudgesResult 
   }, [])
 
   useEffect(() => {
+    if (!allowSuggestions) {
+      setNudgeMessage(null)
+      if (dismissTimerRef.current) {
+        clearTimeout(dismissTimerRef.current)
+        dismissTimerRef.current = null
+      }
+      return
+    }
+
     const interval = setInterval(() => {
       // Safety guards - don't nudge in these situations
       if (isMascotChatOpen || isDrawerOpen) return
@@ -101,6 +113,7 @@ export function useRemyNudges(config: UseRemyNudgesConfig): UseRemyNudgesResult 
     isLoading,
     nudgeMessage,
     surveyCompleted,
+    allowSuggestions,
   ])
 
   return { nudgeMessage, dismissNudge }

@@ -78,12 +78,17 @@ import {
   processVoiceMemo,
 } from '@/lib/ai/remy-vision-actions'
 import { formatVoiceMemoResponse } from '@/lib/ai/voice-memo-format'
+import { shouldEmitAiSuggestions, shouldUseAiMemory } from '@/lib/ai/private-runtime-policy'
 
 //  POST Handler
 
-async function getRemyRuntimeState(
-  tenantId: string
-): Promise<{ allowed: boolean; message?: string; prefs: Awaited<ReturnType<typeof getAiPreferences>> }> {
+type RemyRuntimeState = {
+  allowed: boolean
+  message?: string
+  prefs: Awaited<ReturnType<typeof getAiPreferences>>
+}
+
+async function getRemyRuntimeState(tenantId: string): Promise<RemyRuntimeState> {
   const prefs = await getAiPreferences()
   if (prefs && !prefs.remy_enabled) {
     return {
@@ -110,6 +115,10 @@ export async function POST(req: NextRequest) {
       return sseErrorResponse(runtimeState.message ?? 'Remy is disabled for this account.', 403)
     }
     const prefs = runtimeState.prefs
+    const allowMemory = shouldUseAiMemory({ allowMemory: prefs.allow_memory })
+    const allowSuggestions = shouldEmitAiSuggestions({
+      allowSuggestions: prefs.allow_suggestions,
+    })
     if (!rawBody) {
       return sseErrorResponse('Request body must be valid JSON.', 400)
     }
@@ -236,7 +245,13 @@ export async function POST(req: NextRequest) {
 
     const curatedReply = await getCuratedStreamReplyForMessage(user.tenantId!, message)
     if (curatedReply) {
-      return new Response(encodeCuratedStreamMessage(curatedReply), { headers: sseHeaders() })
+      return new Response(
+        encodeCuratedStreamMessage({
+          text: curatedReply.text,
+          quickReplies: allowSuggestions ? curatedReply.quickReplies : [],
+        }),
+        { headers: sseHeaders() }
+      )
     }
 
     //  VISION PATH (4A: receipt scanning, 4B: dish photos)
@@ -328,6 +343,16 @@ export async function POST(req: NextRequest) {
 
     //  MEMORY PATH (no streaming needed)
     const memoryIntent = detectMemoryIntent(message)
+    if (memoryIntent && !allowMemory) {
+      const body =
+        encodeSSE({ type: 'intent', data: 'memory' }) +
+        encodeSSE({
+          type: 'token',
+          data: 'Memory is disabled in AI & Privacy. Turn it back on before asking Remy to save or inspect memories.',
+        }) +
+        encodeSSE({ type: 'done', data: null })
+      return new Response(body, { headers: sseHeaders() })
+    }
     if (memoryIntent === 'list') {
       const memories = await listRemyMemories({ limit: 200 })
       const runtimeMemoryCount = memories.filter((memory) => !memory.editable).length
@@ -552,7 +577,13 @@ export async function POST(req: NextRequest) {
     if (GREETING_REGEX.test(message.trim())) {
       const curatedGreeting = await getCuratedStreamGreeting(user.tenantId!)
       if (curatedGreeting) {
-        return new Response(encodeCuratedStreamMessage(curatedGreeting), { headers: sseHeaders() })
+        return new Response(
+          encodeCuratedStreamMessage({
+            text: curatedGreeting.text,
+            quickReplies: allowSuggestions ? curatedGreeting.quickReplies : [],
+          }),
+          { headers: sseHeaders() }
+        )
       }
 
       // Keep greetings truly instant. Full context loading can stall on slow
@@ -608,7 +639,7 @@ export async function POST(req: NextRequest) {
           loadRemyContext(currentPage, earlyScopeHint),
           classifyIntent(message),
           // Skip heavy lookups for minimal scope - they won't be included in the prompt anyway
-          earlyScopeHint === 'minimal' || !prefs.allow_memory
+          earlyScopeHint === 'minimal' || !allowMemory
             ? Promise.resolve([])
             : loadRelevantMemories(message, undefined, undefined),
           earlyScopeHint === 'minimal'
@@ -623,7 +654,7 @@ export async function POST(req: NextRequest) {
             ? Promise.resolve(null)
             : getRemyArchetype().catch(() => null),
           activeForm === 'remy-survey' ? getSurveyState().catch(() => null) : Promise.resolve(null),
-          prefs.allow_memory && history.length === 0 && earlyScopeHint !== 'minimal'
+          allowMemory && history.length === 0 && earlyScopeHint !== 'minimal'
             ? searchRemyConversationSummaries(message, { limit: 3 }).catch(() => [])
             : Promise.resolve([]),
           getStreamOnboardingStage(user.tenantId!).catch(() => null),
@@ -720,7 +751,7 @@ export async function POST(req: NextRequest) {
     // For simple factual questions where the answer is already in the loaded context,
     // return an instant response without waiting 30-90s for Ollama.
     if (classification.intent === 'question') {
-      const instant = tryInstantAnswer(message, context, memories)
+      const instant = tryInstantAnswer(message, context, memories, { allowSuggestions })
       if (instant) {
         releaseInteractiveLock()
         const encoder = new TextEncoder()
@@ -728,7 +759,7 @@ export async function POST(req: NextRequest) {
           start(controller) {
             controller.enqueue(encoder.encode(encodeSSE({ type: 'intent', data: 'question' })))
             controller.enqueue(encoder.encode(encodeSSE({ type: 'token', data: instant.text })))
-            if (instant.navSuggestions && instant.navSuggestions.length > 0) {
+            if (allowSuggestions && instant.navSuggestions && instant.navSuggestions.length > 0) {
               controller.enqueue(
                 encoder.encode(encodeSSE({ type: 'nav', data: instant.navSuggestions }))
               )
@@ -911,7 +942,8 @@ export async function POST(req: NextRequest) {
       contextScope,
       recentConversationSummaries,
       false,
-      dynamicPersonalityBlock
+      dynamicPersonalityBlock,
+      allowSuggestions
     )
 
     if (systemPrompt.length > 24_000) {
@@ -980,28 +1012,30 @@ export async function POST(req: NextRequest) {
             controller.enqueue(encoder.encode(encodeSSE({ type: 'tasks', data: mixedTasks })))
           }
 
-          // Nav suggestions from LLM response
-          const navSuggestions = extractNavSuggestions(fullResponse)
-          if (navSuggestions.length > 0) {
-            controller.enqueue(encoder.encode(encodeSSE({ type: 'nav', data: navSuggestions })))
-          }
+          if (allowSuggestions) {
+            // Nav suggestions from LLM response
+            const navSuggestions = extractNavSuggestions(fullResponse)
+            if (navSuggestions.length > 0) {
+              controller.enqueue(encoder.encode(encodeSSE({ type: 'nav', data: navSuggestions })))
+            }
 
-          // Deterministic action suggestions when LLM didn't provide nav
-          if (navSuggestions.length === 0) {
-            const actionHints = suggestFollowUpActions(userMessage, fullResponse)
-            if (actionHints.length > 0) {
-              controller.enqueue(
-                encoder.encode(
-                  encodeSSE({
-                    type: 'nav',
-                    data: actionHints.map((a) => ({
-                      label: a.label,
-                      href: `remy:${a.prompt}`,
-                      description: a.description,
-                    })),
-                  })
+            // Deterministic action suggestions when LLM didn't provide nav
+            if (navSuggestions.length === 0) {
+              const actionHints = suggestFollowUpActions(userMessage, fullResponse)
+              if (actionHints.length > 0) {
+                controller.enqueue(
+                  encoder.encode(
+                    encodeSSE({
+                      type: 'nav',
+                      data: actionHints.map((a) => ({
+                        label: a.label,
+                        href: `remy:${a.prompt}`,
+                        description: a.description,
+                      })),
+                    })
+                  )
                 )
-              )
+              }
             }
           }
 

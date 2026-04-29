@@ -2130,22 +2130,27 @@ function getAnswerTopic(pattern: RegExp): string {
 export function tryInstantAnswer(
   message: string,
   context: RemyContext,
-  memories: RemyMemory[] = []
+  memories: RemyMemory[] = [],
+  options: { allowSuggestions?: boolean } = {}
 ): InstantAnswer | null {
   const trimmed = message.trim()
+  const allowSuggestions = options.allowSuggestions !== false
 
   for (const { pattern, answer } of INSTANT_PATTERNS) {
     const match = trimmed.match(pattern)
     if (match) {
       const result = answer(context, match, { message: trimmed, memories })
       if (result) {
+        const answerResult = allowSuggestions
+          ? result
+          : { text: result.text, navSuggestions: undefined }
         // Enrich with contextual follow-up intelligence
         const topic = getAnswerTopic(pattern)
-        const followUp = buildContextualFollowUp(context, topic)
+        const followUp = allowSuggestions ? buildContextualFollowUp(context, topic) : null
         if (followUp) {
-          return { ...result, text: result.text + followUp }
+          return { ...answerResult, text: answerResult.text + followUp }
         }
-        return result
+        return answerResult
       }
     }
   }
