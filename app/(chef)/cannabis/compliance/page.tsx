@@ -55,8 +55,34 @@ export default async function CannabisCompliancePage() {
               className="rounded-xl p-6 text-sm text-[#8ebf92]"
               style={{ background: '#0f1a0f', border: '1px solid #27432b' }}
             >
-              No active cannabis events found. Open a cannabis event first to generate its control
-              packet.
+              <p>
+                No active cannabis events found. Open a cannabis event first to generate its control
+                packet.
+              </p>
+              <div className="mt-4 flex flex-wrap gap-3">
+                <Link
+                  href="/cannabis/events"
+                  className="px-3 py-1.5 text-xs font-semibold rounded-lg transition-all"
+                  style={{
+                    background: 'rgba(45, 122, 90, 0.25)',
+                    color: '#d2e8d4',
+                    border: '1px solid rgba(106, 170, 110, 0.35)',
+                  }}
+                >
+                  View cannabis events
+                </Link>
+                <Link
+                  href="/events/new?cannabis=true"
+                  className="px-3 py-1.5 text-xs font-semibold rounded-lg transition-all"
+                  style={{
+                    background: 'linear-gradient(135deg, #2d5a30 0%, #4a7c4e 100%)',
+                    color: '#e8f5e9',
+                    boxShadow: '0 0 12px rgba(74, 124, 78, 0.3)',
+                  }}
+                >
+                  Create cannabis event
+                </Link>
+              </div>
             </div>
           ) : (
             activeEvents.map((event: any) => (
