@@ -97,9 +97,43 @@ Choose edge intensity:
 - `--edge-mode heavy`: 4 edge cases per persona, default for normal corpus work
 - `--edge-mode chaos`: 7 edge cases per persona for saturation-breaking stress tests
 
+Evaluator personas are mixed in by default with `--evaluator-rate 0.2`. These
+are still written as real stakeholders, but their lens is sharper: QA breaker,
+legal reviewer, accessibility reviewer, security reviewer, or operations replay.
+Set `--evaluator-rate 0` to disable that pressure.
+
 Good edge cases are concrete failure conditions, not vague personality traits.
 They should involve exact roles, devices, payment states, permissions, messages,
 venue constraints, legal states, stale data, or recovery paths.
+
+## Structured Eval Output
+
+The JSON report is designed to become training and evaluation data. In addition
+to the accepted personas, it includes:
+
+- `edge_coverage`: every planned edge case, accepted coverage count, and missed
+  edge IDs
+- `requirements`: extracted pass/fail requirements with domain, feature area,
+  edge-case match, testability, and duplicate counts
+- `scenario_packs`: deterministic replay scripts for each accepted persona
+- `mutation_plans`: controlled variants to generate next without losing the
+  original persona's core context
+- `build_gap_ranking`: ranked product gaps derived from repeated requirements,
+  edge-case pressure, and severity
+- `saturation_pivots`: how often the generator escalated into chaos mode after
+  repeated low-novelty rejections
+
+Useful stress command:
+
+```bash
+npm run personas:corpus -- --execute --count 100 --domain legal-disputes --edge-mode chaos --evaluator-rate 0.5 --mutations-per-persona 5
+```
+
+Verify the structured report path without calling Ollama:
+
+```bash
+npm run personas:corpus -- --self-test --domain dinner-circles --edge-mode chaos
+```
 
 ## Quality Gates
 

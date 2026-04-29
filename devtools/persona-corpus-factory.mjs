@@ -212,6 +212,60 @@ const MONEY_POSTURE = ["budget constrained", "value-focused", "comfortable spend
 const WORKFLOW_STYLE = ["hands-off", "impatient", "collaborative", "control-heavy", "minimalist", "archive-driven"];
 const CHANGE_PATTERN = ["stable plan", "late headcount changes", "constant revisions", "last-minute venue uncertainty", "multi-party approvals"];
 
+const CONTRADICTIONS = [
+  "I want zero friction, but I need a complete audit trail if something goes wrong",
+  "I want the system to lead me, but I do not want to feel upsold or boxed in",
+  "I want total privacy, but I still need clean reimbursement and legal records",
+  "I want instant checkout, but I expect every constraint to be validated before payment",
+  "I want full customization, but I refuse to become the project manager",
+  "I want the lowest possible effort, but I blame the system if a detail is missed",
+  "I want everything visible to me, but only selected details visible to other participants",
+  "I want pricing locked, but I also expect late changes to be supported cleanly",
+  "I trust professionals, but I want proof that critical details were acknowledged",
+  "I want automation, but I need human override with traceable responsibility",
+];
+
+const EVALUATOR_LENSES = [
+  {
+    id: "qa-breaker",
+    label: "QA engineer trying to break state, validation, and recovery paths",
+    pressure: "they intentionally test rapid changes, invalid combinations, stale screens, and inconsistent totals",
+  },
+  {
+    id: "legal-reviewer",
+    label: "lawyer reviewing terms, refunds, evidence, and invoice defensibility",
+    pressure: "they care about who accepted what, when terms changed, and whether records survive disputes",
+  },
+  {
+    id: "accessibility-reviewer",
+    label: "accessibility tester using assistive technology and keyboard-only flows",
+    pressure: "they verify dynamic updates, labels, focus order, plain language, and non-visual states",
+  },
+  {
+    id: "security-reviewer",
+    label: "security reviewer checking privacy boundaries and least-privilege access",
+    pressure: "they look for overexposed data, weak permissions, unsafe defaults, and hidden retention",
+  },
+  {
+    id: "ops-replay",
+    label: "operations manager replaying the event from intake to recovery",
+    pressure: "they need every handoff, decision, failure, and recovery step to be reconstructable",
+  },
+];
+
+const MUTATION_AXES = [
+  "same persona, but the payer and planner are different people",
+  "same persona, but the event moves from a home kitchen to a rural outdoor venue",
+  "same persona, but one strict allergy becomes a life-safety issue",
+  "same persona, but payment changes from single payer to split group payment",
+  "same persona, but connectivity fails during setup or checkout",
+  "same persona, but a VIP is added after the plan is locked",
+  "same persona, but the assistant can edit logistics and cannot approve money",
+  "same persona, but the user needs screen reader and keyboard-only access",
+  "same persona, but the booking becomes a cancellation or refund dispute",
+  "same persona, but private details must expire after the event",
+];
+
 const GLOBAL_EDGE_CASES = [
   "the primary decision maker is not the payer, and the payer refuses extra steps",
   "one participant changes their mind after payment but before the chef has purchased ingredients",
@@ -407,7 +461,11 @@ function parseArgs(argv) {
     seed: 1,
     listDomains: false,
     listEdgeCases: false,
+    selfTest: false,
     edgeMode: "heavy",
+    evaluatorRate: 0.2,
+    mutationsPerPersona: 3,
+    scenarioPacks: true,
   };
 
   for (let i = 2; i < argv.length; i++) {
@@ -430,7 +488,11 @@ function parseArgs(argv) {
     else if (arg === "--seed" && argv[i + 1]) opts.seed = Number(argv[++i]) || opts.seed;
     else if (arg === "--list-domains") opts.listDomains = true;
     else if (arg === "--list-edge-cases") opts.listEdgeCases = true;
+    else if (arg === "--self-test") opts.selfTest = true;
     else if (arg === "--edge-mode" && argv[i + 1]) opts.edgeMode = argv[++i];
+    else if (arg === "--evaluator-rate" && argv[i + 1]) opts.evaluatorRate = Math.max(0, Math.min(1, Number(argv[++i]) || 0));
+    else if (arg === "--mutations-per-persona" && argv[i + 1]) opts.mutationsPerPersona = Math.max(0, Number(argv[++i]) || 0);
+    else if (arg === "--no-scenario-packs") opts.scenarioPacks = false;
     else if (arg === "--help" || arg === "-h") {
       printHelp();
       process.exit(0);
@@ -471,7 +533,11 @@ function printHelp() {
   console.log("  --report <path>          JSON report path");
   console.log("  --list-domains           Print available product-pressure domains");
   console.log("  --list-edge-cases        Print edge-case pools by domain");
+  console.log("  --self-test              Build a deterministic report fixture without Ollama");
   console.log("  --edge-mode <mode>       light, heavy, or chaos edge-case pressure (default: heavy)");
+  console.log("  --evaluator-rate <0-1>   Share of plans using evaluator personas (default: 0.2)");
+  console.log("  --mutations-per-persona <N>  Mutation ideas per accepted persona (default: 3)");
+  console.log("  --no-scenario-packs      Do not include deterministic replay packs in reports");
 }
 
 function createRng(seed) {
@@ -639,6 +705,64 @@ function pickEdgeCases(domainId, rng, mode) {
   return selected;
 }
 
+function pickMany(items, rng, count) {
+  return shuffleCopy(items, rng).slice(0, Math.max(0, count));
+}
+
+function edgeCaseId(domainId, text) {
+  const pool = (DOMAIN_EDGE_CASES[domainId] || []).includes(text) ? domainId : "global";
+  return `${pool}.${slugify(text, 72)}`;
+}
+
+function edgeCaseRecords(domainId, edgeCases) {
+  return edgeCases.map((text) => ({
+    id: edgeCaseId(domainId, text),
+    domain: (DOMAIN_EDGE_CASES[domainId] || []).includes(text) ? domainId : "global",
+    text,
+  }));
+}
+
+function buildCoverageLedger(plan, accepted = []) {
+  const ledger = new Map();
+  for (const axis of plan) {
+    for (const edge of edgeCaseRecords(axis.domain, axis.edgeCases || [])) {
+      if (!ledger.has(edge.id)) {
+        ledger.set(edge.id, {
+          ...edge,
+          planned: 0,
+          accepted: 0,
+          accepted_personas: [],
+        });
+      }
+      ledger.get(edge.id).planned++;
+    }
+  }
+
+  for (const item of accepted) {
+    for (const edge of edgeCaseRecords(item.axis.domain, item.axis.edgeCases || [])) {
+      if (!ledger.has(edge.id)) {
+        ledger.set(edge.id, {
+          ...edge,
+          planned: 0,
+          accepted: 0,
+          accepted_personas: [],
+        });
+      }
+      const record = ledger.get(edge.id);
+      record.accepted++;
+      record.accepted_personas.push(item.name);
+    }
+  }
+
+  const records = [...ledger.values()].sort((a, b) => a.id.localeCompare(b.id));
+  return {
+    planned_edge_cases: records.length,
+    accepted_edge_cases: records.filter((item) => item.accepted > 0).length,
+    uncovered_edge_cases: records.filter((item) => item.accepted === 0).map((item) => item.id),
+    records,
+  };
+}
+
 function buildAxisPlan(opts) {
   const rng = createRng(opts.seed);
   const domains = opts.domain ? DOMAINS.filter((domain) => domain.id === opts.domain) : DOMAINS;
@@ -664,10 +788,34 @@ function buildAxisPlan(opts) {
       pressure: domain.pressure,
       edgeMode: opts.edgeMode,
       edgeCases: pickEdgeCases(domain.id, rng, opts.edgeMode),
+      contradictions: pickMany(CONTRADICTIONS, rng, 2),
+      evaluatorLens: rng() < opts.evaluatorRate ? pick(EVALUATOR_LENSES, rng) : null,
     });
   }
 
   return plan;
+}
+
+function intensifyAxisForSaturation(axis, lowNoveltyStreak) {
+  if (lowNoveltyStreak < 2) return axis;
+  const rng = createRng(axis.index * 997 + lowNoveltyStreak);
+  const extraEdges = pickMany([...GLOBAL_EDGE_CASES, ...(DOMAIN_EDGE_CASES[axis.domain] || [])], rng, EDGE_MODE_COUNTS.chaos);
+  const mergedEdges = [...axis.edgeCases];
+  for (const edge of extraEdges) {
+    if (mergedEdges.length >= EDGE_MODE_COUNTS.chaos) break;
+    if (!mergedEdges.includes(edge)) mergedEdges.push(edge);
+  }
+  return {
+    ...axis,
+    edgeMode: "chaos",
+    edgeCases: mergedEdges,
+    contradictions: pickMany(CONTRADICTIONS, rng, 3),
+    evaluatorLens: axis.evaluatorLens || pick(EVALUATOR_LENSES, rng),
+    saturationPivot: {
+      reason: "low_novelty_streak",
+      streak: lowNoveltyStreak,
+    },
+  };
 }
 
 function buildPrompt(axis, corpusHints) {
@@ -684,6 +832,11 @@ function buildPrompt(axis, corpusHints) {
 
   const avoidList = corpusHints.slice(0, 6).map((item) => `- ${item}`).join("\n") || "- generic pricing, generic messaging, generic scheduling";
   const edgeCaseList = axis.edgeCases.map((item) => `- ${item}`).join("\n");
+  const contradictionList = axis.contradictions.map((item) => `- ${item}`).join("\n");
+  const evaluatorText = axis.evaluatorLens
+    ? `Evaluator lens: ${axis.evaluatorLens.label}
+Evaluator pressure: ${axis.evaluatorLens.pressure}`
+    : "Evaluator lens: none. Write as the actual stakeholder, not as a product reviewer.";
 
   return `You are writing one detailed persona profile for stress-testing a food service operations platform.
 
@@ -697,12 +850,16 @@ Money posture: ${axis.moneyPosture}
 Workflow style: ${axis.workflowStyle}
 Change pattern: ${axis.changePattern}
 Hidden product feature targets to pressure: ${axis.featureTargets.join(", ")}
+${evaluatorText}
 
 This persona must surface a buildable product gap around:
 ${axis.pressure}
 
 Mandatory edge cases to pressure-test:
 ${edgeCaseList}
+
+Mandatory contradictions to include:
+${contradictionList}
 
 Avoid repeating these already-common patterns unless you add a new edge case:
 ${avoidList}
@@ -760,6 +917,8 @@ IMPORTANT RULES:
 - At least 4 of the 7 pass/fail conditions must directly test the mandatory edge cases above.
 - Include at least one operational consequence, one financial or legal consequence, and one emotional stake tied to the edge cases.
 - Do not make the edge cases abstract. Anchor them in exact channels, dates, roles, payment states, devices, permissions, or venue constraints.
+- Preserve the mandatory contradictions as real tradeoffs. Do not resolve them with a generic "balance" statement.
+- If an evaluator lens is present, make the persona feel like a real buyer or operator who evaluates systems through that lens, not like an auditor checklist.
 - Do not mention ChefFlow by name in the persona text.
 - Treat hidden product feature targets as internal guidance. Do not name product-specific features unless a normal user would naturally say that phrase.
 - Do not generate recipes or tell a chef what to cook.
@@ -880,44 +1039,229 @@ function rejection(reason, axis, extra = {}) {
   };
 }
 
+function splitPassFailRequirements(text) {
+  const passFail = extractPassFail(text);
+  const matches = [...passFail.matchAll(/^\s*(?:\d+\.|-|\*)\s+(.+?)(?=\n\s*(?:\d+\.|-|\*)\s+|\n*$)/gms)];
+  return matches
+    .map((match) => match[1].replace(/\s+/g, " ").trim())
+    .filter((item) => item.length > 20)
+    .slice(0, 12);
+}
+
+function edgeCaseMatch(requirement, edgeRecords) {
+  const reqTokens = tokenSet(requirement);
+  let best = null;
+  let bestScore = 0;
+  for (const edge of edgeRecords) {
+    const score = jaccard(reqTokens, tokenSet(edge.text));
+    if (score > bestScore) {
+      best = edge;
+      bestScore = score;
+    }
+  }
+  return bestScore >= 0.08 ? { ...best, score: Number(bestScore.toFixed(3)) } : null;
+}
+
+function classifyRequirement(requirement, axis) {
+  const text = normalizeText(requirement);
+  const feature = axis.featureTargets.find((target) => {
+    const targetWords = words(target);
+    return targetWords.some((word) => text.includes(word));
+  });
+  const signals = [
+    ["payment", "payment"],
+    ["price", "pricing"],
+    ["quote", "pricing"],
+    ["invoice", "finance"],
+    ["refund", "finance"],
+    ["permission", "access-control"],
+    ["role", "access-control"],
+    ["allergy", "dietary-safety"],
+    ["dietary", "dietary-safety"],
+    ["offline", "offline"],
+    ["sync", "sync"],
+    ["audit", "audit"],
+    ["history", "audit"],
+    ["wallet", "wallet"],
+    ["notification", "communication"],
+    ["message", "communication"],
+    ["venue", "venue"],
+  ];
+  const signal = signals.find(([needle]) => text.includes(needle));
+  return feature || signal?.[1] || axis.domain;
+}
+
+function extractRequirementRecords(accepted) {
+  const seen = new Map();
+  const records = [];
+
+  for (const item of accepted) {
+    const edgeRecords = edgeCaseRecords(item.axis.domain, item.axis.edgeCases || []);
+    for (const requirement of splitPassFailRequirements(item.content)) {
+      const normalized = slugify(requirement, 96);
+      const existing = seen.get(normalized);
+      const edgeMatch = edgeCaseMatch(requirement, edgeRecords);
+      const record = {
+        id: normalized,
+        requirement,
+        type: item.type,
+        persona: item.name,
+        domain: item.axis.domain,
+        feature_area: classifyRequirement(requirement, item.axis),
+        edge_case_id: edgeMatch?.id || null,
+        edge_case_match_score: edgeMatch?.score || 0,
+        testability: requirement.length > 45 && /\b(must|allow|provide|track|show|support|prevent|maintain|generate|alert|ensure)\b/i.test(requirement)
+          ? "high"
+          : "medium",
+      };
+
+      if (existing) {
+        existing.personas.push(item.name);
+        existing.count++;
+      } else {
+        seen.set(normalized, {
+          ...record,
+          personas: [item.name],
+          count: 1,
+        });
+        records.push(seen.get(normalized));
+      }
+    }
+  }
+
+  return records.sort((a, b) => b.count - a.count || a.domain.localeCompare(b.domain));
+}
+
+function buildScenarioPack(item) {
+  const edges = edgeCaseRecords(item.axis.domain, item.axis.edgeCases || []);
+  const requirements = splitPassFailRequirements(item.content);
+  return {
+    persona: item.name,
+    type: item.type,
+    domain: item.axis.domain,
+    setup: {
+      context: item.axis.context,
+      stakes: item.axis.stakes,
+      workflowStyle: item.axis.workflowStyle,
+      changePattern: item.axis.changePattern,
+      evaluatorLens: item.axis.evaluatorLens?.id || null,
+    },
+    replay_steps: [
+      "Start from the first inquiry or planning action and capture the initial source channel.",
+      "Apply the first edge case and verify current state, history, permissions, and pricing remain coherent.",
+      "Apply the second edge case as a mid-flow change and verify the system shows who changed what.",
+      "Force one contradiction into the workflow and verify the system supports both sides without hiding risk.",
+      "Lock the final state and verify it can be traced back to original inputs.",
+      "Trigger a failure or dispute path and verify the evidence, recovery step, and responsible actor are visible.",
+    ],
+    edge_case_ids: edges.map((edge) => edge.id),
+    expected_assertions: requirements.slice(0, 7),
+  };
+}
+
+function buildMutationPlans(accepted, perPersona) {
+  if (perPersona <= 0) return [];
+  const plans = [];
+  for (const item of accepted) {
+    const rng = createRng(words(item.name).join("").length + item.axis.index);
+    for (const mutation of pickMany(MUTATION_AXES, rng, perPersona)) {
+      plans.push({
+        source_persona: item.name,
+        type: item.type,
+        domain: item.axis.domain,
+        mutation,
+        expected_new_pressure: `${item.axis.domain}: ${mutation}`,
+        keep_constant: ["persona voice", "core business context", "primary domain"],
+        change_only: mutation,
+      });
+    }
+  }
+  return plans;
+}
+
+function rankBuildGaps(requirements, accepted) {
+  const severityWeights = new Map();
+  for (const item of accepted) {
+    const weight = item.metadata.severity === "high" ? 3 : 2;
+    for (const target of item.axis.featureTargets || []) {
+      severityWeights.set(target, (severityWeights.get(target) || 0) + weight);
+    }
+  }
+
+  const groups = new Map();
+  for (const requirement of requirements) {
+    const key = `${requirement.domain}:${requirement.feature_area}`;
+    if (!groups.has(key)) {
+      groups.set(key, {
+        id: slugify(key, 96),
+        domain: requirement.domain,
+        feature_area: requirement.feature_area,
+        requirement_count: 0,
+        persona_count: 0,
+        edge_case_count: 0,
+        score: 0,
+        sample_requirements: [],
+      });
+    }
+    const group = groups.get(key);
+    group.requirement_count += requirement.count;
+    group.persona_count += requirement.personas.length;
+    if (requirement.edge_case_id) group.edge_case_count++;
+    if (group.sample_requirements.length < 3) group.sample_requirements.push(requirement.requirement);
+  }
+
+  for (const group of groups.values()) {
+    const featureWeight = severityWeights.get(group.feature_area) || 1;
+    group.score = group.requirement_count * 2 + group.persona_count + group.edge_case_count * 3 + featureWeight;
+  }
+
+  return [...groups.values()].sort((a, b) => b.score - a.score).slice(0, 25);
+}
+
 async function generateCorpus(opts, plan, corpus) {
   const accepted = [];
   const rejected = [];
   const corpusHints = buildCorpusHints(corpus);
+  let lowNoveltyStreak = 0;
 
   for (const axis of plan) {
     if (accepted.length >= opts.count) break;
 
-    process.stderr.write(`${TAG} attempt ${axis.index}/${plan.length}: ${axis.type} ${axis.domain} (${accepted.length}/${opts.count} kept)\n`);
+    const activeAxis = intensifyAxisForSaturation(axis, lowNoveltyStreak);
+    const pivotText = activeAxis.saturationPivot ? ` pivot=${activeAxis.saturationPivot.streak}` : "";
+    process.stderr.write(`${TAG} attempt ${axis.index}/${plan.length}: ${activeAxis.type} ${activeAxis.domain}${pivotText} (${accepted.length}/${opts.count} kept)\n`);
 
     let raw;
     try {
-      raw = await callOllama(buildPrompt(axis, corpusHints), opts);
+      raw = await callOllama(buildPrompt(activeAxis, corpusHints), opts);
     } catch (err) {
-      rejected.push(rejection("ollama_error", axis, { error: err.message }));
+      rejected.push(rejection("ollama_error", activeAxis, { error: err.message }));
       continue;
     }
 
     const content = cleanGeneratedText(raw);
-    const identity = inferNameAndType(content, axis.type);
+    const identity = inferNameAndType(content, activeAxis.type);
     const validation = validatePersonaContent(content, { name: identity.name, type: identity.type });
     if (!validation.valid || validation.score < opts.minScore) {
-      rejected.push(rejection("validation_failed", axis, { validation }));
+      lowNoveltyStreak = 0;
+      rejected.push(rejection("validation_failed", activeAxis, { validation }));
       continue;
     }
 
     const novelty = scoreNovelty(content, corpus);
     if (novelty.novelty < opts.novelty) {
-      rejected.push(rejection("low_novelty", axis, { novelty }));
+      lowNoveltyStreak++;
+      rejected.push(rejection("low_novelty", activeAxis, { novelty }));
       continue;
     }
 
+    lowNoveltyStreak = 0;
     const acceptedItem = {
       type: identity.type,
       name: identity.name,
       slug: slugify(identity.name),
       content,
-      axis,
+      axis: activeAxis,
       validation,
       novelty,
       metadata: {
@@ -927,7 +1271,10 @@ async function generateCorpus(opts, plan, corpus) {
         severity: axis.stakes.includes("catastrophic") || axis.stakes.includes("legal") ? "high" : "medium",
         feature_implications: axis.featureTargets,
         edge_cases: axis.edgeCases,
+        edge_case_ids: edgeCaseRecords(axis.domain, axis.edgeCases).map((item) => item.id),
         edge_mode: axis.edgeMode,
+        contradictions: axis.contradictions,
+        evaluator_lens: axis.evaluatorLens?.id || null,
         novelty_score: Number(novelty.novelty.toFixed(3)),
       },
     };
@@ -961,6 +1308,9 @@ function makeReport(opts, plan, corpusCount, result, importResult = null, writte
       minScore: opts.minScore,
       maxAttempts: opts.maxAttempts,
       edgeMode: opts.edgeMode,
+      evaluatorRate: opts.evaluatorRate,
+      mutationsPerPersona: opts.mutationsPerPersona,
+      scenarioPacks: opts.scenarioPacks,
       importInbox: opts.importInbox,
       writeFiles: opts.writeFiles,
     },
@@ -969,6 +1319,13 @@ function makeReport(opts, plan, corpusCount, result, importResult = null, writte
     accepted_count: result.accepted.length,
     rejected_count: result.rejected.length,
     rejection_counts: summarizeRejected(result.rejected),
+    saturation_pivots: result.rejected.filter((item) => item.axis?.saturationPivot).length
+      + result.accepted.filter((item) => item.axis?.saturationPivot).length,
+    edge_coverage: buildCoverageLedger(plan, result.accepted),
+    requirements: extractRequirementRecords(result.accepted),
+    scenario_packs: opts.scenarioPacks ? result.accepted.map((item) => buildScenarioPack(item)) : [],
+    mutation_plans: buildMutationPlans(result.accepted, opts.mutationsPerPersona),
+    build_gap_ranking: rankBuildGaps(extractRequirementRecords(result.accepted), result.accepted),
     accepted: result.accepted.map((item) => ({
       name: item.name,
       type: item.type,
@@ -977,6 +1334,8 @@ function makeReport(opts, plan, corpusCount, result, importResult = null, writte
       novelty_score: Number(item.novelty.novelty.toFixed(3)),
       nearest: item.novelty.nearest,
       edge_cases: item.axis.edgeCases,
+      contradictions: item.axis.contradictions,
+      evaluator_lens: item.axis.evaluatorLens?.id || null,
       metadata: item.metadata,
     })),
     import_result: importResult
@@ -998,6 +1357,90 @@ function defaultReportPath() {
 function writeReport(path, report) {
   mkdirSync(dirname(path), { recursive: true });
   writeFileSync(path, `${JSON.stringify(report, null, 2)}\n`, "utf8");
+}
+
+function selfTestPersonaContent(axis) {
+  return `**Client Profile: "Marina Vale" - Operations Host (Verifier)**
+
+I coordinate private dinners for partners who expect the plan to be exact before money moves. I am willing to pay, but I need proof that every decision, payment, and change remains traceable.
+
+### Business Reality
+
+Right now:
+* I book 8 private dinners per year with 8-14 guests and budgets from $4,000 to $12,000.
+* Deposits are usually 40%, final invoices need approval from my finance lead, and guest count changes happen until 48 hours before service.
+* One guest has a strict nut allergy, one stakeholder is view-only, and the payer refuses extra account setup.
+* Events happen in rented homes, partner offices, and private residences across 3 cities.
+* I coordinate through email, SMS, shared docs, calendar holds, and forwarded screenshots.
+
+### Primary Failure: Missing Decision Proof
+
+The biggest problem is that final plans lose the evidence behind them. If a menu, guest count, or payment term changes, I need to know who approved it, when it changed, and whether the payer saw the final amount. My workaround is copying messages into a document, but it creates stale versions and still does not prove what was accepted.
+
+### Structural Issue: Split Authority
+
+The person choosing the experience is often not the payer. I currently forward summaries to finance, but that creates delays and unclear responsibility when the price changes.
+
+### Structural Issue: Collapsed Context
+
+I need a clean final view, but old options cannot disappear. When someone asks why a choice was rejected, I need the poll, messages, and final decision available without cluttering the current plan.
+
+### Structural Issue: Late Safety Changes
+
+Dietary notes can arrive after the deposit. I need those updates to affect the final plan without reopening every approved decision.
+
+### Psychological Model
+
+I optimize for: traceability, speed, and clean approvals
+I refuse to compromise on: payment clarity, allergy safety, and decision evidence
+I avoid: stale summaries, hidden changes, and repeated explanations
+I evaluate tools by: whether they preserve proof while keeping the current plan simple
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. Maintain a locked quote snapshot with payer approval, timestamp, accepted terms, and exact total.
+2. Show who changed guest count after deposit and automatically recalculate the final balance.
+3. Preserve discarded menu options in a collapsed history with the reason each option lost.
+4. Separate host, payer, guest, and view-only stakeholder permissions without duplicating the event.
+5. Link every final decision to its source message, poll, file, or screenshot.
+6. Distinguish medical allergies from preferences and require acknowledgement before final service.
+7. Generate an invoice and evidence packet that match the final approved quote exactly.`;
+}
+
+function runSelfTest(opts) {
+  const plan = buildAxisPlan({ ...opts, count: 1, maxAttempts: 1, type: opts.type || "Client", domain: opts.domain || "dinner-circles" });
+  const axis = plan[0];
+  const content = selfTestPersonaContent(axis);
+  const identity = inferNameAndType(content, axis.type);
+  const validation = validatePersonaContent(content, { name: identity.name, type: identity.type });
+  const novelty = scoreNovelty(content, []);
+  const accepted = [
+    {
+      type: identity.type,
+      name: identity.name,
+      slug: slugify(identity.name),
+      content,
+      axis,
+      validation,
+      novelty,
+      metadata: {
+        persona_type: identity.type,
+        domain: axis.domain,
+        primary_gap: axis.domain,
+        severity: "high",
+        feature_implications: axis.featureTargets,
+        edge_cases: axis.edgeCases,
+        edge_case_ids: edgeCaseRecords(axis.domain, axis.edgeCases).map((item) => item.id),
+        edge_mode: axis.edgeMode,
+        contradictions: axis.contradictions,
+        evaluator_lens: axis.evaluatorLens?.id || null,
+        novelty_score: Number(novelty.novelty.toFixed(3)),
+      },
+    },
+  ];
+  return makeReport({ ...opts, execute: false }, plan, 0, { accepted, rejected: [] });
 }
 
 async function assertOllamaReachable(opts) {
@@ -1022,7 +1465,14 @@ async function main() {
       modes: EDGE_MODE_COUNTS,
       global: GLOBAL_EDGE_CASES,
       domains: DOMAIN_EDGE_CASES,
+      contradictions: CONTRADICTIONS,
+      evaluator_lenses: EVALUATOR_LENSES,
+      mutation_axes: MUTATION_AXES,
     }, null, 2));
+    return;
+  }
+  if (opts.selfTest) {
+    console.log(JSON.stringify(runSelfTest(opts), null, 2));
     return;
   }
   const plan = buildAxisPlan(opts);
