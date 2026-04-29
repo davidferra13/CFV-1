@@ -6,6 +6,7 @@ import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import type Stripe from 'stripe'
 import { log } from '@/lib/logger'
+import { appendLedgerEntryFromWebhook } from '@/lib/ledger/append-internal'
 
 async function releaseTicketCapacity(db: any, ticket: any) {
   if (!ticket?.ticket_type_id || ticket.capacity_released_at) return
@@ -25,6 +26,136 @@ async function releaseTicketCapacity(db: any, ticket: any) {
     })
     .eq('id', ticket.ticket_type_id)
     .eq('sold_count', ticketType.sold_count)
+}
+
+async function getOrCreateTicketBuyerClient({
+  db,
+  tenantId,
+  buyerName,
+  buyerEmail,
+  buyerPhone,
+  dietaryRestrictions,
+  allergies,
+}: {
+  db: any
+  tenantId: string
+  buyerName: string
+  buyerEmail: string
+  buyerPhone: string | null
+  dietaryRestrictions: string[] | null
+  allergies: string[] | null
+}) {
+  const normalizedEmail = buyerEmail.toLowerCase().trim()
+
+  const { data: existing } = await db
+    .from('clients')
+    .select('id')
+    .eq('tenant_id', tenantId)
+    .eq('email', normalizedEmail)
+    .maybeSingle()
+
+  if (existing?.id) return existing.id as string
+
+  const insertData: Record<string, unknown> = {
+    tenant_id: tenantId,
+    full_name: buyerName.trim() || normalizedEmail,
+    email: normalizedEmail,
+    phone: buyerPhone ?? null,
+    status: 'active',
+    referral_source: 'website',
+  }
+
+  if (dietaryRestrictions?.length) insertData.dietary_restrictions = dietaryRestrictions
+  if (allergies?.length) insertData.allergies = allergies
+
+  const { data: created, error } = await db.from('clients').insert(insertData).select('id').single()
+
+  if (error) {
+    if (error.code === '23505') {
+      const { data: raced } = await db
+        .from('clients')
+        .select('id')
+        .eq('tenant_id', tenantId)
+        .eq('email', normalizedEmail)
+        .maybeSingle()
+      if (raced?.id) return raced.id as string
+    }
+    throw error
+  }
+
+  return created.id as string
+}
+
+async function appendTicketRevenueLedgerEntry({
+  db,
+  session,
+  ticket,
+  ticketId,
+  eventId,
+  tenantId,
+  paymentIntentId,
+}: {
+  db: any
+  session: Stripe.Checkout.Session
+  ticket: any
+  ticketId: string
+  eventId: string
+  tenantId: string
+  paymentIntentId: string | null
+}) {
+  const ticketCents = Number(ticket.total_cents ?? 0)
+  const { data: addonRows } = await db
+    .from('event_ticket_addon_purchases')
+    .select('total_cents')
+    .eq('ticket_id', ticketId)
+
+  const addonCents = (addonRows ?? []).reduce(
+    (sum: number, row: any) => sum + Number(row.total_cents ?? 0),
+    0
+  )
+  const totalCents = ticketCents + addonCents
+  if (totalCents <= 0) return
+
+  const { data: event } = await db
+    .from('events')
+    .select('id, tenant_id, client_id, occasion')
+    .eq('id', eventId)
+    .eq('tenant_id', tenantId)
+    .maybeSingle()
+
+  if (!event) {
+    throw new Error('Ticket event not found for ledger entry')
+  }
+
+  const clientId =
+    event.client_id ??
+    (await getOrCreateTicketBuyerClient({
+      db,
+      tenantId,
+      buyerName: ticket.buyer_name,
+      buyerEmail: ticket.buyer_email,
+      buyerPhone: ticket.buyer_phone ?? null,
+      dietaryRestrictions: ticket.dietary_restrictions ?? null,
+      allergies: ticket.allergies ?? null,
+    }))
+
+  const transactionReference = `stripe_ticket_${paymentIntentId ?? session.id}`
+  const eventLabel = event.occasion ? ` for ${event.occasion}` : ''
+
+  await appendLedgerEntryFromWebhook({
+    tenant_id: tenantId,
+    client_id: clientId,
+    entry_type: 'payment',
+    amount_cents: totalCents,
+    payment_method: 'card',
+    description: `Ticket purchase${eventLabel}`,
+    event_id: eventId,
+    transaction_reference: transactionReference,
+    internal_notes: `Stripe checkout session ${session.id}; ticket ${ticketId}`,
+    is_refund: false,
+    received_at: new Date().toISOString(),
+    created_by: null,
+  })
 }
 
 export async function handleTicketPaymentFailed(paymentIntent: Stripe.PaymentIntent) {
@@ -184,7 +315,7 @@ export async function handleTicketPurchaseCompleted(session: Stripe.Checkout.Ses
   const { data: ticket } = await db
     .from('event_tickets')
     .select(
-      'id, payment_status, buyer_name, buyer_email, buyer_phone, quantity, dietary_restrictions, allergies, plus_one_name, plus_one_dietary, plus_one_allergies, notes'
+      'id, payment_status, buyer_name, buyer_email, buyer_phone, quantity, total_cents, dietary_restrictions, allergies, plus_one_name, plus_one_dietary, plus_one_allergies, notes'
     )
     .eq('id', ticket_id)
     .single()
@@ -194,18 +325,28 @@ export async function handleTicketPurchaseCompleted(session: Stripe.Checkout.Ses
     return
   }
 
-  if (ticket.payment_status === 'paid') {
-    console.info('[handleTicketPurchaseCompleted] Already paid (idempotent):', ticket_id)
-    return
-  }
-
-  // 1. Mark ticket as paid
   const paymentIntentId =
     typeof session.payment_intent === 'string'
       ? session.payment_intent
       : ((session.payment_intent as any)?.id ?? null)
 
-  await db
+  if (ticket.payment_status === 'paid') {
+    await appendTicketRevenueLedgerEntry({
+      db,
+      session,
+      ticket,
+      ticketId: ticket_id,
+      eventId: event_id,
+      tenantId: tenant_id,
+      paymentIntentId,
+    })
+    console.info('[handleTicketPurchaseCompleted] Already paid (idempotent):', ticket_id)
+    return
+  }
+
+  // 1. Mark ticket as paid
+
+  const { data: paidUpdate, error: paidUpdateError } = await db
     .from('event_tickets')
     .update({
       payment_status: 'paid',
@@ -216,6 +357,22 @@ export async function handleTicketPurchaseCompleted(session: Stripe.Checkout.Ses
     })
     .eq('id', ticket_id)
     .eq('payment_status', 'pending') // CAS guard
+    .select('id')
+    .maybeSingle()
+
+  if (paidUpdateError || !paidUpdate) {
+    throw new Error('Ticket payment state changed before confirmation could be recorded')
+  }
+
+  await appendTicketRevenueLedgerEntry({
+    db,
+    session,
+    ticket,
+    ticketId: ticket_id,
+    eventId: event_id,
+    tenantId: tenant_id,
+    paymentIntentId,
+  })
 
   // 2. Create/match hub guest profile
   let hubProfileId: string | null = null
@@ -489,6 +646,7 @@ export async function handleTicketPurchaseCompleted(session: Stripe.Checkout.Ses
     revalidatePath(`/events/${event_id}`)
     revalidatePath('/events')
     revalidatePath('/dashboard')
+    revalidatePath('/finance')
   } catch (cacheErr) {
     console.error(
       '[handleTicketPurchaseCompleted] Cache invalidation failed (non-blocking):',
