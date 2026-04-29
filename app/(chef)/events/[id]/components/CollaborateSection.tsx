@@ -317,14 +317,43 @@ function ThreadDerivedCoordinationPanel({ brief }: { brief: ThreadCoordinationBr
           No actionable coordination signals were found in the current thread.
         </p>
       ) : (
-        <div className="mt-4 grid gap-3 lg:grid-cols-3">
-          {visibleRoleViews.map((view) => (
-            <RoleSignalCard
-              key={view.role}
-              view={view}
-              shareExpiresAt={brief.retention.shareExpiresAt}
-            />
-          ))}
+        <div className="mt-4 space-y-3">
+          {brief.humanIntervention.recommended && (
+            <div className="rounded-lg border border-amber-800 bg-amber-950/30 p-3">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-amber-100">
+                    Human intervention recommended
+                  </p>
+                  {brief.humanIntervention.reason && (
+                    <p className="mt-1 text-sm text-amber-200/80">
+                      {brief.humanIntervention.reason}
+                    </p>
+                  )}
+                  {brief.humanIntervention.nextStep && (
+                    <p className="mt-1 text-xs text-amber-300">
+                      {brief.humanIntervention.nextStep}
+                    </p>
+                  )}
+                </div>
+                <Badge
+                  variant={brief.humanIntervention.urgency === 'critical' ? 'error' : 'warning'}
+                >
+                  {brief.humanIntervention.urgency}
+                </Badge>
+              </div>
+            </div>
+          )}
+
+          <div className="grid gap-3 lg:grid-cols-3">
+            {visibleRoleViews.map((view) => (
+              <RoleSignalCard
+                key={view.role}
+                view={view}
+                shareExpiresAt={brief.retention.shareExpiresAt}
+              />
+            ))}
+          </div>
         </div>
       )}
 

@@ -39,10 +39,19 @@ export type CoordinationRoleView = {
   hiddenSignalCount: number
 }
 
+export type CoordinationHumanIntervention = {
+  recommended: boolean
+  urgency: CoordinationUrgency
+  reason: string | null
+  nextStep: string | null
+  signalIds: string[]
+}
+
 export type ThreadCoordinationBrief = {
   sourceMessageCount: number
   signals: CoordinationSignal[]
   roleViews: CoordinationRoleView[]
+  humanIntervention: CoordinationHumanIntervention
   retentionSummary: Record<CoordinationRetentionPolicy, number>
   retention: {
     source: 'communication_thread'
@@ -135,6 +144,7 @@ export function buildThreadCoordinationBrief(
     sourceMessageCount: sourceMessages.length,
     signals,
     roleViews,
+    humanIntervention: buildHumanIntervention(signals),
     retentionSummary: summarizeRetention(signals),
     retention: {
       source: 'communication_thread',
@@ -230,6 +240,51 @@ function getAllowedRolesForSignal(
   return internal
 }
 
+function buildHumanIntervention(signals: CoordinationSignal[]): CoordinationHumanIntervention {
+  const neverStoreSignals = signals.filter((signal) => signal.retentionPolicy === 'never-store')
+  const criticalSignals = signals.filter((signal) => signal.urgency === 'critical')
+  const highSignals = signals.filter((signal) => signal.urgency === 'high')
+  const actionSignals = signals.filter((signal) => signal.kind === 'action')
+
+  if (neverStoreSignals.length > 0) {
+    return {
+      recommended: true,
+      urgency: 'critical',
+      reason: 'Private or sensitive coordination appeared in the thread.',
+      nextStep: 'Handle this by direct human follow-up before sharing role briefs.',
+      signalIds: collectSignalIds(neverStoreSignals),
+    }
+  }
+
+  if (criticalSignals.length > 0) {
+    return {
+      recommended: true,
+      urgency: 'critical',
+      reason: 'Safety-critical dietary or allergy information appeared in the thread.',
+      nextStep: 'Call or message the responsible person and confirm the operational change.',
+      signalIds: collectSignalIds(criticalSignals),
+    }
+  }
+
+  if (highSignals.length >= 2 || (highSignals.length > 0 && actionSignals.length > 0)) {
+    return {
+      recommended: true,
+      urgency: 'high',
+      reason: 'Multiple high-urgency coordination signals appeared in the thread.',
+      nextStep: 'Use a human call to resolve ambiguity, then log the outcome.',
+      signalIds: collectSignalIds([...highSignals, ...actionSignals]),
+    }
+  }
+
+  return {
+    recommended: false,
+    urgency: 'normal',
+    reason: null,
+    nextStep: null,
+    signalIds: [],
+  }
+}
+
 function getRetentionPolicyForSignal(
   kind: CoordinationSignalKind,
   body: string
@@ -283,6 +338,10 @@ function summarizeRetention(
       number
     >
   )
+}
+
+function collectSignalIds(signals: CoordinationSignal[]): string[] {
+  return Array.from(new Set(signals.map((signal) => signal.id)))
 }
 
 function urgencyRank(urgency: CoordinationUrgency): number {

@@ -37,6 +37,10 @@ describe('thread coordination brief', () => {
     assert.equal(brief.retentionSummary.persist, 1)
     assert.equal(brief.retentionSummary['auto-expire'], 4)
     assert.equal(brief.retentionSummary['never-store'], 0)
+    assert.equal(brief.humanIntervention.recommended, true)
+    assert.equal(brief.humanIntervention.urgency, 'critical')
+    assert.match(brief.humanIntervention.reason ?? '', /dietary|allergy/i)
+    assert.ok(brief.humanIntervention.signalIds.some((id) => id.endsWith(':dietary')))
   })
 
   it('compartmentalizes role views based on share visibility', () => {
@@ -147,9 +151,34 @@ describe('thread coordination brief', () => {
 
     assert.ok(neverStoreSignals.length > 0)
     assert.equal(brief.retentionSummary['never-store'], neverStoreSignals.length)
+    assert.equal(brief.humanIntervention.recommended, true)
+    assert.equal(brief.humanIntervention.urgency, 'critical')
+    assert.deepEqual(
+      brief.humanIntervention.signalIds.sort(),
+      neverStoreSignals.map((signal) => signal.id).sort()
+    )
     assert.equal(
       guestView.visibleSignals.some((signal) => signal.retentionPolicy === 'never-store'),
       false
     )
+  })
+
+  it('does not recommend human intervention for normal low-risk signals', () => {
+    const brief = buildThreadCoordinationBrief({
+      messages: [
+        {
+          id: 'msg-1',
+          body: 'We have 18 guests for the dinner.',
+          sent_at: '2026-04-28T14:00:00.000Z',
+        },
+      ],
+      visibility: {
+        show_guest_count: true,
+      },
+    })
+
+    assert.equal(brief.humanIntervention.recommended, false)
+    assert.equal(brief.humanIntervention.urgency, 'normal')
+    assert.deepEqual(brief.humanIntervention.signalIds, [])
   })
 })
