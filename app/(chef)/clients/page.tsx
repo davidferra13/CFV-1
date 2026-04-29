@@ -5,6 +5,7 @@ import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
 import Link from 'next/link'
+import { Archive, ClipboardList, Crown, GitMerge, Tags, UsersRound } from 'lucide-react'
 import { requireChef } from '@/lib/auth/get-user'
 import { getClientsWithStats, getPendingInvitations } from '@/lib/clients/actions'
 import { getClientHealthScores } from '@/lib/clients/health-score'
@@ -61,6 +62,45 @@ const hubTiles = [
   },
 ]
 
+const compactHubTiles = [
+  {
+    href: '/clients/active',
+    label: 'Active',
+    description: 'Clients currently in motion',
+    icon: UsersRound,
+  },
+  {
+    href: '/clients/inactive',
+    label: 'Inactive',
+    description: 'Dormant client records',
+    icon: Archive,
+  },
+  {
+    href: '/clients/vip',
+    label: 'VIP',
+    description: 'Priority relationships',
+    icon: Crown,
+  },
+  {
+    href: '/clients/duplicates',
+    label: 'Duplicates',
+    description: 'Possible duplicate profiles',
+    icon: GitMerge,
+  },
+  {
+    href: '/clients/segments',
+    label: 'Segments',
+    description: 'Grouped client audiences',
+    icon: Tags,
+  },
+  {
+    href: '/clients/intake',
+    label: 'Intake',
+    description: 'Client intake forms',
+    icon: ClipboardList,
+  },
+]
+
 export default async function ClientsPage() {
   await requireChef()
 
@@ -106,6 +146,32 @@ export default async function ClientsPage() {
             </Card>
           </Link>
         ))}
+      </div>
+
+      {/* Compact client route links */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
+        {compactHubTiles.map((tile) => {
+          const Icon = tile.icon
+
+          return (
+            <Link key={tile.href} href={tile.href} className="group block">
+              <Card className="h-full transition-colors group-hover:border-brand-700/60 group-hover:bg-stone-800/60">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2">
+                    <Icon
+                      className="h-4 w-4 flex-shrink-0 text-stone-400 group-hover:text-brand-400 transition-colors"
+                      aria-hidden="true"
+                    />
+                    <p className="font-semibold text-sm text-stone-100 group-hover:text-brand-400 transition-colors">
+                      {tile.label}
+                    </p>
+                  </div>
+                  <p className="text-xs text-stone-500 mt-2">{tile.description}</p>
+                </CardContent>
+              </Card>
+            </Link>
+          )
+        })}
       </div>
 
       {/* Rebooking Intelligence */}

@@ -44,6 +44,34 @@ const TRANSPORT_STYLES: Record<string, string> = {
   liquid: 'bg-brand-900 text-brand-700',
 }
 
+const COMPONENT_CATEGORY_LINKS = [
+  {
+    href: '/culinary/components/sauces',
+    label: 'Sauces',
+    description: 'Sauce components by menu and recipe link',
+  },
+  {
+    href: '/culinary/components/stocks',
+    label: 'Stocks & Broths',
+    description: 'Stock, broth, fond, jus, and fumet preparations',
+  },
+  {
+    href: '/culinary/components/ferments',
+    label: 'Ferments',
+    description: 'Fermented, pickled, and cured preparations',
+  },
+  {
+    href: '/culinary/components/garnishes',
+    label: 'Garnishes',
+    description: 'Garnish components across menus',
+  },
+  {
+    href: '/culinary/components/shared-elements',
+    label: 'Shared Elements',
+    description: 'Reusable components linked to recipes',
+  },
+]
+
 export default async function ComponentsPage() {
   await requireChef()
   const [components, dishes] = await Promise.all([getAllComponents(), getAllDishes()])
@@ -68,6 +96,21 @@ export default async function ComponentsPage() {
           <AddComponentForm dishes={dishes} />
         </div>
         <p className="text-stone-500 mt-1">Building blocks across all your menus</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-3">
+        {COMPONENT_CATEGORY_LINKS.map((category) => (
+          <Link
+            key={category.href}
+            href={category.href}
+            className="rounded-lg border border-stone-800 bg-stone-900/70 p-4 transition-colors hover:border-brand-700 hover:bg-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-600"
+          >
+            <span className="block text-sm font-semibold text-stone-100">{category.label}</span>
+            <span className="mt-1 block text-xs leading-5 text-stone-500">
+              {category.description}
+            </span>
+          </Link>
+        ))}
       </div>
 
       {components.length > 0 && (
