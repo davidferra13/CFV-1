@@ -419,7 +419,7 @@ export function checkDangerousActionBlock(message: string): string | null {
 // ─── Prompt Injection Sanitization ────────────────────────────────────────────
 
 // Shared patterns - single source of truth for both guardrails and sanitization
-import { PROMPT_INJECTION_REGEXPS } from './remy-injection-patterns'
+import { PROMPT_INJECTION_REGEXPS } from './remy-pattern-registry'
 
 /**
  * Strip injection patterns, collapse excessive newlines, and collapse whitespace padding.
