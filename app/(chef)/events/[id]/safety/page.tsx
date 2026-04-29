@@ -30,6 +30,13 @@ function safetyKey(value: string): string {
   return value.trim().toLowerCase()
 }
 
+type HandoffLink = {
+  href: string
+  label: string
+  title: string
+  body: string
+}
+
 export default async function EventSafetyPage({ params }: { params: { id: string } }) {
   const user = await requireChef()
   const db: any = createServerClient()
@@ -132,6 +139,59 @@ export default async function EventSafetyPage({ params }: { params: { id: string
     }
   })
 
+  const unresolvedConflictCount = (dietaryConflicts as any[]).filter(
+    (conflict) => !conflict.acknowledged
+  ).length
+  const matrixConflictCount = matrixRows.reduce((total, row) => total + row.activeConflicts, 0)
+  const checklistItems = (
+    ((checklist as any)?.items ?? []) as Array<{ completed?: boolean }>
+  ).filter(Boolean)
+  const checklistComplete =
+    allergens.length > 0 &&
+    checklistItems.length > 0 &&
+    checklistItems.every((item) => item.completed === true)
+  const safetyHandoffReady =
+    matrixRows.length > 0 &&
+    matrixConflictCount === 0 &&
+    unresolvedConflictCount === 0 &&
+    checklistComplete &&
+    allergyCardReady
+
+  let handoffLink: HandoffLink
+  if (unresolvedConflictCount > 0 || matrixConflictCount > 0) {
+    handoffLink = {
+      href: '#dietary-conflict-review',
+      label: 'Review unresolved conflicts',
+      title: 'Conflict review is next',
+      body: `${unresolvedConflictCount || matrixConflictCount} unresolved conflict${
+        (unresolvedConflictCount || matrixConflictCount) === 1 ? '' : 's'
+      } must be reviewed before prep handoff.`,
+    }
+  } else if (safetyHandoffReady) {
+    handoffLink = {
+      href: `/events/${params.id}/mise-en-place?returnTo=${encodeURIComponent(
+        `/events/${params.id}/safety`
+      )}`,
+      label: 'Go to Mise en Place',
+      title: 'Safety handoff is ready',
+      body: 'The allergy matrix, cross-contamination checklist, and printable card are ready for prep.',
+    }
+  } else if (allergens.length > 0) {
+    handoffLink = {
+      href: `/events/${params.id}/menu-approval`,
+      label: 'Review menu approval',
+      title: 'Approval should happen before prep',
+      body: 'Safety data exists, but the checklist or allergy card is not ready for prep handoff yet.',
+    }
+  } else {
+    handoffLink = {
+      href: `/events/${params.id}`,
+      label: 'Back to event overview',
+      title: 'No allergy handoff is needed yet',
+      body: 'No restriction matrix is loaded for this event, so the overview is the next source of truth.',
+    }
+  }
+
   return (
     <div className="mx-auto max-w-5xl space-y-6">
       <div>
@@ -213,11 +273,13 @@ export default async function EventSafetyPage({ params }: { params: { id: string
         </Card>
       )}
 
-      <AllergenConflictAlert eventId={params.id} />
+      <div id="dietary-conflict-review" className="scroll-mt-6 space-y-6">
+        <AllergenConflictAlert eventId={params.id} />
 
-      {(dietaryConflicts as any[]).length > 0 ? (
-        <DietaryConflictAlert conflicts={dietaryConflicts as any} eventId={params.id} />
-      ) : null}
+        {(dietaryConflicts as any[]).length > 0 ? (
+          <DietaryConflictAlert conflicts={dietaryConflicts as any} eventId={params.id} />
+        ) : null}
+      </div>
 
       {checklist ? (
         <Card className="p-6">
@@ -243,6 +305,48 @@ export default async function EventSafetyPage({ params }: { params: { id: string
           </div>
         </Card>
       ) : null}
+
+      <Card className="border-stone-800 bg-stone-950/70 p-6">
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-xs font-medium uppercase tracking-[0.16em] text-stone-500">
+              Safety handoff
+            </p>
+            <h2 className="mt-2 text-lg font-semibold text-stone-100">{handoffLink.title}</h2>
+            <p className="mt-2 max-w-2xl text-sm text-stone-400">{handoffLink.body}</p>
+            <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-4">
+              <div>
+                <dt className="text-xs uppercase tracking-[0.14em] text-stone-500">Restrictions</dt>
+                <dd className="mt-1 font-medium text-stone-200">{matrixRows.length}</dd>
+              </div>
+              <div>
+                <dt className="text-xs uppercase tracking-[0.14em] text-stone-500">Conflicts</dt>
+                <dd className="mt-1 font-medium text-stone-200">
+                  {unresolvedConflictCount || matrixConflictCount}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-xs uppercase tracking-[0.14em] text-stone-500">Checklist</dt>
+                <dd className="mt-1 font-medium text-stone-200">
+                  {checklistComplete ? 'Ready' : checklist ? 'Open' : 'Not started'}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-xs uppercase tracking-[0.14em] text-stone-500">Card</dt>
+                <dd className="mt-1 font-medium text-stone-200">
+                  {allergyCardReady ? 'Ready' : 'Not ready'}
+                </dd>
+              </div>
+            </dl>
+          </div>
+          <Link
+            href={handoffLink.href}
+            className="inline-flex shrink-0 items-center justify-center rounded-md bg-stone-100 px-4 py-2 text-sm font-semibold text-stone-950 transition-colors hover:bg-white"
+          >
+            {handoffLink.label}
+          </Link>
+        </div>
+      </Card>
     </div>
   )
 }
