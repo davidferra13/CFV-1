@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { shouldRefreshForLiveRouteMutation } from '@/lib/realtime/live-route-invalidation'
+import { recordRefreshTelemetry } from '@/lib/runtime/refresh-telemetry'
 import { useSSE } from '@/lib/realtime/sse-client'
 
 type LiveSystemSyncProps = {
@@ -84,7 +85,17 @@ export function LiveSystemSync({ tenantId, userId, role }: LiveSystemSyncProps) 
   const reconcile = useCallback(
     (message: LiveMessage) => {
       if (IGNORED_EVENTS.has(message.event)) return
-      if (!shouldRefreshForLiveRouteMutation(pathname, message)) return
+      if (!shouldRefreshForLiveRouteMutation(pathname, message)) {
+        recordRefreshTelemetry({
+          kind: 'skip',
+          pathname,
+          source: 'live-system-sync',
+          entity: message.data?.entity,
+          event: message.event,
+          reason: message.data?.reason ?? 'route-gated',
+        })
+        return
+      }
 
       setSyncState({ phase: 'syncing', label: labelFromMessage(message) })
 
@@ -94,6 +105,13 @@ export function LiveSystemSync({ tenantId, userId, role }: LiveSystemSyncProps) 
 
       refreshTimerRef.current = setTimeout(() => {
         startTransition(() => {
+          recordRefreshTelemetry({
+            kind: 'refresh',
+            pathname,
+            source: 'live-system-sync',
+            entity: message.data?.entity,
+            event: message.event,
+          })
           router.refresh()
           setSyncState({ phase: 'updated', label: 'Updated just now' })
           settleToIdle()
