@@ -4,6 +4,7 @@ import { format } from 'date-fns'
 import { requireChef } from '@/lib/auth/get-user'
 import { getEventById } from '@/lib/events/actions'
 import { getBusinessDocInfo, getDocumentReadiness } from '@/lib/documents/actions'
+import { hasAllergyData } from '@/lib/documents/generate-allergy-card'
 import { getEventFinancialSummaryFull } from '@/lib/events/financial-summary-actions'
 import { evaluateReadinessForDocumentGeneration } from '@/lib/events/readiness'
 import { getChefArchetype } from '@/lib/archetypes/actions'
@@ -13,6 +14,7 @@ import {
   type SnapshotDrilldownOrder,
 } from '@/lib/documents/snapshot-actions'
 import { SNAPSHOT_DOCUMENT_LABELS } from '@/lib/documents/snapshot-constants'
+import { SNAPSHOT_DOCUMENT_TYPES as CANONICAL_SNAPSHOT_DOCUMENT_TYPES } from '@/lib/documents/document-definitions'
 import { getArchetypeDocumentPack } from '@/lib/documents/archetype-packs'
 import {
   DOCUMENT_REQUEST_LABELS,
@@ -39,19 +41,7 @@ type DrilldownQueryState = {
   page: number
 }
 
-const SNAPSHOT_DOCUMENT_TYPES: SnapshotDocumentType[] = [
-  'summary',
-  'grocery',
-  'foh',
-  'prep',
-  'execution',
-  'checklist',
-  'packing',
-  'reset',
-  'travel',
-  'shots',
-  'all',
-]
+const SNAPSHOT_DOCUMENT_TYPES: SnapshotDocumentType[] = [...CANONICAL_SNAPSHOT_DOCUMENT_TYPES]
 
 const SNAPSHOT_TYPE_FILTERS: Array<{ value: SnapshotDocFilter; label: string }> = [
   { value: 'any', label: 'Any Type' },
@@ -117,6 +107,7 @@ function isOperationalTypeReady(type: OperationalDocumentType, readiness: any): 
   if (type === 'reset') return readiness.resetChecklist.ready
   if (type === 'travel') return readiness.travelRoute.ready
   if (type === 'shots') return true
+  if (type === 'beo') return readiness.eventSummary.ready
   return false
 }
 
@@ -238,6 +229,7 @@ export default async function EventDocumentsPage({
     bulkRunHistory,
     financialSummary,
     readinessGate,
+    hasAllergyCardData,
   ] = await Promise.all([
     getEventById(params.id),
     getDocumentReadiness(params.id),
@@ -260,6 +252,7 @@ export default async function EventDocumentsPage({
     getEventDocumentBulkRunHistory(params.id),
     getEventFinancialSummaryFull(params.id).catch(() => null),
     evaluateReadinessForDocumentGeneration(params.id).catch(() => null),
+    hasAllergyData(params.id).catch(() => false),
   ])
 
   if (!event) notFound()
@@ -772,6 +765,59 @@ export default async function EventDocumentsPage({
         businessDocs={businessDocs}
         readinessGate={readinessGate}
       />
+
+      <Card className="p-6 border-stone-700">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+          <div>
+            <h2 className="text-xl font-semibold">Safety and Venue Handoff</h2>
+            <p className="text-sm text-stone-400 mt-1">
+              Fast access to high-visibility printouts that already use event data.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {hasAllergyCardData ? (
+              <Button
+                variant="primary"
+                size="sm"
+                href={`/api/documents/${event.id}?type=allergy-card`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Allergy Card
+              </Button>
+            ) : (
+              <Button variant="secondary" size="sm" disabled>
+                Allergy Card
+              </Button>
+            )}
+            <Button
+              variant="secondary"
+              size="sm"
+              href={`/api/documents/${event.id}?type=beo&archive=1`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Banquet Event Order
+            </Button>
+          </div>
+        </div>
+        <div className="mt-4 grid gap-2 md:grid-cols-2">
+          <div className="rounded border border-stone-800 px-3 py-2">
+            <p className="text-sm font-medium text-stone-100">Allergy Card</p>
+            <p className="text-xs text-stone-500 mt-1">
+              {hasAllergyCardData
+                ? 'Available from recorded event, client, or guest dietary data.'
+                : 'No allergy or dietary records found for this event yet.'}
+            </p>
+          </div>
+          <div className="rounded border border-stone-800 px-3 py-2">
+            <p className="text-sm font-medium text-stone-100">Banquet Event Order</p>
+            <p className="text-xs text-stone-500 mt-1">
+              Generates a consolidated handoff PDF and saves it to the document archive.
+            </p>
+          </div>
+        </div>
+      </Card>
 
       <details className="rounded border border-stone-800 px-4 py-3">
         <summary className="cursor-pointer text-sm text-stone-300">
