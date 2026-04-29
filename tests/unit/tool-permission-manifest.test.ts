@@ -4,6 +4,7 @@ import test from 'node:test'
 import {
   getAiToolPermission,
   getAiToolPermissionManifest,
+  hasAiToolPermission,
   isAiToolControlledBy,
 } from '@/lib/ai/tool-permission-manifest'
 
@@ -24,6 +25,20 @@ test('manifest keeps recipe search read-only', () => {
   assert.deepEqual(permission.writes, [])
   assert.equal(permission.requiresPrivateModel, true)
   assert.equal(permission.requiresApproval, false)
+})
+
+test('manifest does not infer permissions for recipe write task names', () => {
+  const blockedTaskTypes = ['recipe.create', 'recipe.update', 'recipe.add_ingredient']
+
+  for (const taskType of blockedTaskTypes) {
+    const permission = getAiToolPermission(taskType)
+
+    assert.equal(hasAiToolPermission(taskType), false)
+    assert.deepEqual(permission.reads, [])
+    assert.deepEqual(permission.writes, [])
+    assert.equal(permission.requiresPrivateModel, false)
+    assert.equal(permission.requiresApproval, false)
+  }
 })
 
 test('manifest infers permissions for registered agent actions', () => {

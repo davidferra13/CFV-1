@@ -2,10 +2,12 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Calendar, Image, Link2, Settings } from '@/components/ui/icons'
+import { BookTemplate, Calendar, CalendarDays, Image, Link2, Settings } from '@/components/ui/icons'
 
 const TABS = [
   { href: '/social/planner', label: 'Planner', icon: Calendar },
+  { href: '/social/calendar', label: 'Calendar', icon: CalendarDays },
+  { href: '/social/templates', label: 'Templates', icon: BookTemplate },
   { href: '/social/vault', label: 'Media Vault', icon: Image },
   { href: '/social/connections', label: 'Connections', icon: Link2 },
   { href: '/social/settings', label: 'Settings', icon: Settings },

@@ -46,6 +46,7 @@ export function OpsLogViewer({ stations, initialStationId }: Props) {
   const [totalPages, setTotalPages] = useState(1)
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [actionTypes, setActionTypes] = useState<string[]>([])
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   // Filters
   const [stationFilter, setStationFilter] = useState(initialStationId ?? '')
@@ -80,6 +81,7 @@ export function OpsLogViewer({ stations, initialStationId }: Props) {
 
   async function loadEntries() {
     setLoading(true)
+    setErrorMessage(null)
     try {
       const filters: OpsLogFilterInput = {
         page,
@@ -95,6 +97,9 @@ export function OpsLogViewer({ stations, initialStationId }: Props) {
       setTotalPages(result.total_pages)
     } catch (err) {
       console.error('[OpsLogViewer] Load error:', err)
+      setEntries([])
+      setTotalPages(1)
+      setErrorMessage('Unable to load operations log. Adjust filters or try again.')
     } finally {
       setLoading(false)
     }
@@ -187,6 +192,18 @@ export function OpsLogViewer({ stations, initialStationId }: Props) {
         {/* Log entries */}
         {loading ? (
           <div className="py-4 text-center text-sm text-stone-500">Loading...</div>
+        ) : errorMessage ? (
+          <div
+            className="rounded-lg border border-red-900/60 bg-red-950/30 px-4 py-4 text-sm text-red-200"
+            role="alert"
+            aria-live="polite"
+          >
+            <div className="font-medium">Operations log failed to load.</div>
+            <div className="mt-1 text-red-200/80">{errorMessage}</div>
+            <Button variant="secondary" size="sm" onClick={loadEntries} className="mt-3">
+              Retry
+            </Button>
+          </div>
         ) : entries.length === 0 ? (
           <div className="py-4 text-center text-sm text-stone-500">No log entries found.</div>
         ) : (

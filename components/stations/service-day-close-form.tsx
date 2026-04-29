@@ -9,6 +9,7 @@ export function ServiceDayCloseForm({ id }: { id: string }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
+  const [resultMessage, setResultMessage] = useState<string | null>(null)
 
   const [actualCovers, setActualCovers] = useState('')
   const [revenue, setRevenue] = useState('')
@@ -17,32 +18,55 @@ export function ServiceDayCloseForm({ id }: { id: string }) {
   const [wasteCost, setWasteCost] = useState('')
   const [notes, setNotes] = useState('')
 
-  function dollarsToCents(val: string): number | null {
-    const n = parseFloat(val)
-    if (isNaN(n)) return null
+  function dollarsToCents(val: string, label: string): number | null {
+    if (!val.trim()) return null
+    const n = Number(val)
+    if (!Number.isFinite(n) || n < 0) {
+      throw new Error(`${label} must be a valid zero or positive dollar amount.`)
+    }
     return Math.round(n * 100)
+  }
+
+  function parseActualCovers(val: string): number | null {
+    if (!val.trim()) return null
+    const n = Number(val)
+    if (!Number.isInteger(n) || n < 0) {
+      throw new Error('Actual covers must be a valid zero or positive whole number.')
+    }
+    return n
   }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
+    setResultMessage(null)
+
+    let payload: Parameters<typeof closeServiceDay>[1]
+
+    try {
+      payload = {
+        actual_covers: parseActualCovers(actualCovers),
+        total_revenue_cents: dollarsToCents(revenue, 'Total revenue'),
+        total_food_cost_cents: dollarsToCents(foodCost, 'Food cost'),
+        total_labor_cost_cents: dollarsToCents(laborCost, 'Labor cost'),
+        total_waste_cents: dollarsToCents(wasteCost, 'Waste cost'),
+        notes: notes.trim() || null,
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Invalid closeout value.')
+      return
+    }
 
     startTransition(async () => {
       try {
-        const result = await closeServiceDay(id, {
-          actual_covers: actualCovers ? parseInt(actualCovers, 10) : null,
-          total_revenue_cents: dollarsToCents(revenue),
-          total_food_cost_cents: dollarsToCents(foodCost),
-          total_labor_cost_cents: dollarsToCents(laborCost),
-          total_waste_cents: dollarsToCents(wasteCost),
-          notes: notes.trim() || null,
-        })
+        const result = await closeServiceDay(id, payload)
 
         if (!result.success) {
           setError(result.error || 'Failed to close service day')
           return
         }
 
+        setResultMessage('Service day closed. Refreshing summary...')
         router.refresh()
       } catch {
         setError('Something went wrong. Please try again.')
@@ -61,8 +85,11 @@ export function ServiceDayCloseForm({ id }: { id: string }) {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className={labelClass}>Actual Covers</label>
+              <label htmlFor="actual-covers" className={labelClass}>
+                Actual Covers
+              </label>
               <input
+                id="actual-covers"
                 type="number"
                 min="0"
                 className={inputClass}
@@ -72,8 +99,11 @@ export function ServiceDayCloseForm({ id }: { id: string }) {
               />
             </div>
             <div>
-              <label className={labelClass}>Total Revenue ($)</label>
+              <label htmlFor="total-revenue" className={labelClass}>
+                Total Revenue ($)
+              </label>
               <input
+                id="total-revenue"
                 type="number"
                 min="0"
                 step="0.01"
@@ -84,8 +114,11 @@ export function ServiceDayCloseForm({ id }: { id: string }) {
               />
             </div>
             <div>
-              <label className={labelClass}>Food Cost ($)</label>
+              <label htmlFor="food-cost" className={labelClass}>
+                Food Cost ($)
+              </label>
               <input
+                id="food-cost"
                 type="number"
                 min="0"
                 step="0.01"
@@ -96,8 +129,11 @@ export function ServiceDayCloseForm({ id }: { id: string }) {
               />
             </div>
             <div>
-              <label className={labelClass}>Labor Cost ($)</label>
+              <label htmlFor="labor-cost" className={labelClass}>
+                Labor Cost ($)
+              </label>
               <input
+                id="labor-cost"
                 type="number"
                 min="0"
                 step="0.01"
@@ -108,8 +144,11 @@ export function ServiceDayCloseForm({ id }: { id: string }) {
               />
             </div>
             <div>
-              <label className={labelClass}>Waste Cost ($)</label>
+              <label htmlFor="waste-cost" className={labelClass}>
+                Waste Cost ($)
+              </label>
               <input
+                id="waste-cost"
                 type="number"
                 min="0"
                 step="0.01"
@@ -122,8 +161,11 @@ export function ServiceDayCloseForm({ id }: { id: string }) {
           </div>
 
           <div>
-            <label className={labelClass}>Notes (what went well, what went wrong)</label>
+            <label htmlFor="closeout-notes" className={labelClass}>
+              Notes (what went well, what went wrong)
+            </label>
             <textarea
+              id="closeout-notes"
               className={inputClass + ' min-h-[100px]'}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
@@ -131,7 +173,16 @@ export function ServiceDayCloseForm({ id }: { id: string }) {
             />
           </div>
 
-          {error && <p className="text-sm text-red-400">{error}</p>}
+          {error && (
+            <p role="alert" className="text-sm text-red-400">
+              {error}
+            </p>
+          )}
+          {resultMessage && (
+            <p aria-live="polite" className="text-sm text-emerald-300">
+              {resultMessage}
+            </p>
+          )}
 
           <button
             type="submit"

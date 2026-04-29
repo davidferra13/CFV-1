@@ -6,6 +6,8 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getOpsLog } from '@/lib/stations/ops-log-actions'
+import { listStations } from '@/lib/stations/actions'
+import { OpsLogViewer } from '@/components/stations/ops-log-viewer'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 
@@ -26,7 +28,7 @@ const ACTION_COLORS: Record<string, 'success' | 'warning' | 'error' | 'default' 
   check_in: 'success',
   check_out: 'default',
   prep_complete: 'success',
-  stock_update: 'info' as any,
+  stock_update: 'info',
   order_request: 'warning',
   delivery_received: 'success',
   waste: 'error',
@@ -36,8 +38,11 @@ const ACTION_COLORS: Record<string, 'success' | 'warning' | 'error' | 'default' 
 export default async function OpsLogPage() {
   await requireChef()
 
-  const result: any = await getOpsLog({ limit: 100 } as any)
-  const entries = Array.isArray(result) ? result : (result?.entries ?? [])
+  const [result, stations] = await Promise.all([
+    getOpsLog({ page: 1, per_page: 100 }),
+    listStations(),
+  ])
+  const entries = result.entries
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
@@ -93,6 +98,8 @@ export default async function OpsLogPage() {
           )}
         </CardContent>
       </Card>
+
+      <OpsLogViewer stations={stations} />
     </div>
   )
 }

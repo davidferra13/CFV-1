@@ -93,9 +93,14 @@ export default async function QuoteDetailPage({ params }: { params: { id: string
             />
           </div>
         </div>
-        <Link href="/quotes">
-          <Button variant="ghost">Back to Quotes</Button>
-        </Link>
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <Link href={`/api/documents/quote/${quote.id}`} target="_blank" prefetch={false}>
+            <Button variant="secondary">Download PDF</Button>
+          </Link>
+          <Link href="/quotes">
+            <Button variant="ghost">Back to Quotes</Button>
+          </Link>
+        </div>
       </div>
 
       {/* Frozen Snapshot Notice */}

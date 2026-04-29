@@ -38,7 +38,9 @@ export function getAiToolPermission(taskType: string): AiToolPermission {
 
 export function hasAiToolPermission(taskType: string): boolean {
   const normalizedTaskType = normalizeTaskType(taskType)
-  return Boolean(AI_TOOL_PERMISSION_MANIFEST[normalizedTaskType] || inferAiToolPermission(normalizedTaskType))
+  return Boolean(
+    AI_TOOL_PERMISSION_MANIFEST[normalizedTaskType] || inferAiToolPermission(normalizedTaskType)
+  )
 }
 
 export function isAiToolControlledBy(taskType: string, control: AiPrivacyControl): boolean {
@@ -48,6 +50,8 @@ export function isAiToolControlledBy(taskType: string, control: AiPrivacyControl
 export function getAiToolPermissionManifest(): AiToolPermission[] {
   return Object.values(AI_TOOL_PERMISSION_MANIFEST)
 }
+
+const READ_ONLY_RECIPE_TASKS = new Set(['recipe.search'])
 
 function inferAiToolPermission(taskType: string): AiToolPermission | null {
   if (taskType.startsWith('draft.')) {
@@ -85,7 +89,7 @@ function inferAiToolPermission(taskType: string): AiToolPermission | null {
     return createPermission(taskType, 'Event data', ['events', 'clients'], writes, true, true)
   }
 
-  if (taskType.startsWith('recipe.')) {
+  if (READ_ONLY_RECIPE_TASKS.has(taskType)) {
     return createPermission(taskType, 'Recipe book search', ['recipes'], [], true, false)
   }
 

@@ -5,30 +5,35 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
-import { getWasteLog, getWasteSummary } from '@/lib/stations/waste-actions'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { getWasteSummary } from '@/lib/stations/waste-actions'
+import { WasteLog } from '@/components/stations/waste-log'
+import { Card, CardContent } from '@/components/ui/card'
 
 export const metadata: Metadata = { title: 'Waste Log' }
+
+type WasteSummary = {
+  total_entries: number
+  total_value_cents: number
+  by_reason: Array<{ reason: string; count: number }>
+}
 
 const REASON_LABELS: Record<string, string> = {
   expired: 'Expired',
   damaged: 'Damaged',
   overproduced: 'Overproduced',
+  over_production: 'Overproduced',
   dropped: 'Dropped',
+  contamination: 'Contamination',
+  quality: 'Quality Issue',
   other: 'Other',
 }
 
-const REASON_COLORS: Record<string, 'error' | 'warning' | 'default'> = {
-  expired: 'error',
-  damaged: 'error',
-  overproduced: 'warning',
-  dropped: 'warning',
-  other: 'default',
+function getTopReason(summary: WasteSummary) {
+  return [...summary.by_reason].sort((a, b) => b.count - a.count)[0]?.reason ?? null
 }
 
 export default async function WasteLogPage() {
-  const user = await requireChef()
+  await requireChef()
 
   // Get last 7 days of waste
   const now = new Date()
@@ -36,10 +41,8 @@ export default async function WasteLogPage() {
   const startDate = `${weekAgo.getFullYear()}-${String(weekAgo.getMonth() + 1).padStart(2, '0')}-${String(weekAgo.getDate()).padStart(2, '0')}`
   const endDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
 
-  const [wasteEntries, summary]: [any, any] = await Promise.all([
-    getWasteLog(startDate, endDate),
-    getWasteSummary(startDate, endDate),
-  ])
+  const summary = (await getWasteSummary(startDate, endDate)) as WasteSummary
+  const topReason = getTopReason(summary)
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
@@ -67,14 +70,14 @@ export default async function WasteLogPage() {
         <Card>
           <CardContent className="pt-4">
             <p className="text-sm text-stone-500">Total Waste (7 days)</p>
-            <p className="text-3xl font-bold text-stone-100">{summary.totalEntries ?? 0} items</p>
+            <p className="text-3xl font-bold text-stone-100">{summary.total_entries} items</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-4">
             <p className="text-sm text-stone-500">Waste Value (7 days)</p>
             <p className="text-3xl font-bold text-stone-100">
-              ${((summary.totalValueCents ?? 0) / 100).toFixed(2)}
+              ${(summary.total_value_cents / 100).toFixed(2)}
             </p>
           </CardContent>
         </Card>
@@ -82,55 +85,13 @@ export default async function WasteLogPage() {
           <CardContent className="pt-4">
             <p className="text-sm text-stone-500">Top Reason</p>
             <p className="text-3xl font-bold text-stone-100">
-              {summary.topReason ? (REASON_LABELS[summary.topReason] ?? summary.topReason) : '-'}
+              {topReason ? (REASON_LABELS[topReason] ?? topReason) : '-'}
             </p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Waste Entries */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">
-            Recent Waste Entries
-            <span className="ml-2 text-sm font-normal text-stone-500">
-              ({startDate} to {endDate})
-            </span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {wasteEntries.length === 0 ? (
-            <p className="text-sm text-stone-500">No waste logged in the last 7 days.</p>
-          ) : (
-            <div className="space-y-2">
-              {wasteEntries.map((entry: any) => (
-                <div
-                  key={entry.id}
-                  className="flex items-center justify-between text-sm border-b border-stone-800 pb-2"
-                >
-                  <div>
-                    <span className="text-stone-200">
-                      {entry.quantity} {entry.unit}
-                    </span>
-                    <Badge variant={REASON_COLORS[entry.reason] ?? 'default'} className="ml-2">
-                      {REASON_LABELS[entry.reason] ?? entry.reason}
-                    </Badge>
-                    <span className="text-stone-500 ml-2">
-                      {new Date(entry.created_at).toLocaleDateString()}
-                    </span>
-                    {entry.notes && <span className="text-stone-400 ml-2">{entry.notes}</span>}
-                  </div>
-                  {entry.estimated_value_cents > 0 && (
-                    <span className="text-stone-400">
-                      ${(entry.estimated_value_cents / 100).toFixed(2)}
-                    </span>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      <WasteLog startDate={startDate} endDate={endDate} />
     </div>
   )
 }

@@ -5,10 +5,8 @@
 // Table of waste entries with reason badges and summary totals.
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { getWasteLog } from '@/lib/stations/waste-actions'
 
 type Props = {
@@ -19,7 +17,8 @@ type Props = {
 
 const REASON_BADGE_VARIANT: Record<string, 'error' | 'warning' | 'info' | 'default'> = {
   expired: 'error',
-  over_production: 'warning',
+  damaged: 'error',
+  overproduced: 'warning',
   dropped: 'warning',
   contamination: 'error',
   quality: 'info',
@@ -28,11 +27,31 @@ const REASON_BADGE_VARIANT: Record<string, 'error' | 'warning' | 'info' | 'defau
 
 const REASON_LABELS: Record<string, string> = {
   expired: 'Expired',
-  over_production: 'Over Production',
+  damaged: 'Damaged',
+  overproduced: 'Overproduced',
   dropped: 'Dropped',
   contamination: 'Contamination',
   quality: 'Quality Issue',
   other: 'Other',
+}
+
+const REASON_ALIASES: Record<string, string> = {
+  over_production: 'overproduced',
+  overproduction: 'overproduced',
+  quality_issue: 'quality',
+}
+
+function normalizeReason(reason: string | null | undefined) {
+  if (!reason) return 'other'
+  return REASON_ALIASES[reason] ?? reason
+}
+
+function formatUnknownReason(reason: string) {
+  return reason
+    .split('_')
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ')
 }
 
 export function WasteLog({ stationId, startDate, endDate }: Props) {
@@ -45,6 +64,7 @@ export function WasteLog({ stationId, startDate, endDate }: Props) {
   const [to, setTo] = useState(endDate ?? today)
   const [entries, setEntries] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [totalValue, setTotalValue] = useState(0)
 
   useEffect(() => {
@@ -53,12 +73,16 @@ export function WasteLog({ stationId, startDate, endDate }: Props) {
 
   async function loadData() {
     setLoading(true)
+    setError(null)
     try {
       const data = await getWasteLog(from, to, stationId)
       setEntries(data)
       setTotalValue(data.reduce((sum: number, e: any) => sum + (e.estimated_value_cents ?? 0), 0))
     } catch (err) {
       console.error('[WasteLog] Load error:', err)
+      setEntries([])
+      setTotalValue(0)
+      setError(err instanceof Error ? err.message : 'Failed to load waste log')
     } finally {
       setLoading(false)
     }
@@ -90,6 +114,8 @@ export function WasteLog({ stationId, startDate, endDate }: Props) {
       <CardContent className="p-0">
         {loading ? (
           <div className="p-4 text-sm text-stone-500">Loading waste entries...</div>
+        ) : error ? (
+          <div className="p-4 text-sm text-red-400">{error}</div>
         ) : entries.length === 0 ? (
           <div className="p-4 text-sm text-stone-500">No waste logged in this date range.</div>
         ) : (
@@ -108,33 +134,37 @@ export function WasteLog({ stationId, startDate, endDate }: Props) {
                   </tr>
                 </thead>
                 <tbody>
-                  {entries.map((entry: any) => (
-                    <tr key={entry.id} className="border-b border-stone-800">
-                      <td className="px-4 py-2 text-stone-400">
-                        {new Date(entry.created_at).toLocaleDateString()}
-                      </td>
-                      <td className="px-4 py-2 text-stone-200">
-                        {entry.station_components?.name ?? 'Unknown'}
-                      </td>
-                      <td className="px-4 py-2 text-right text-stone-300">
-                        {entry.quantity} {entry.unit}
-                      </td>
-                      <td className="px-4 py-2">
-                        <Badge variant={REASON_BADGE_VARIANT[entry.reason] ?? 'default'}>
-                          {REASON_LABELS[entry.reason] ?? entry.reason}
-                        </Badge>
-                      </td>
-                      <td className="px-4 py-2 text-right text-stone-300">
-                        {entry.estimated_value_cents
-                          ? `$${(entry.estimated_value_cents / 100).toFixed(2)}`
-                          : '-'}
-                      </td>
-                      <td className="px-4 py-2 text-stone-400">{entry.stations?.name ?? '-'}</td>
-                      <td className="px-4 py-2 text-stone-500 max-w-[200px] truncate">
-                        {entry.notes ?? '-'}
-                      </td>
-                    </tr>
-                  ))}
+                  {entries.map((entry: any) => {
+                    const reason = normalizeReason(entry.reason)
+
+                    return (
+                      <tr key={entry.id} className="border-b border-stone-800">
+                        <td className="px-4 py-2 text-stone-400">
+                          {new Date(entry.created_at).toLocaleDateString()}
+                        </td>
+                        <td className="px-4 py-2 text-stone-200">
+                          {entry.station_components?.name ?? 'Unknown'}
+                        </td>
+                        <td className="px-4 py-2 text-right text-stone-300">
+                          {entry.quantity} {entry.unit}
+                        </td>
+                        <td className="px-4 py-2">
+                          <Badge variant={REASON_BADGE_VARIANT[reason] ?? 'default'}>
+                            {REASON_LABELS[reason] ?? formatUnknownReason(reason)}
+                          </Badge>
+                        </td>
+                        <td className="px-4 py-2 text-right text-stone-300">
+                          {entry.estimated_value_cents
+                            ? `$${(entry.estimated_value_cents / 100).toFixed(2)}`
+                            : '-'}
+                        </td>
+                        <td className="px-4 py-2 text-stone-400">{entry.stations?.name ?? '-'}</td>
+                        <td className="px-4 py-2 text-stone-500 max-w-[200px] truncate">
+                          {entry.notes ?? '-'}
+                        </td>
+                      </tr>
+                    )
+                  })}
                 </tbody>
               </table>
             </div>

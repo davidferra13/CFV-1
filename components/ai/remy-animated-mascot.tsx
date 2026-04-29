@@ -138,7 +138,7 @@ function BodyLayer({
   effectiveSize: number
   reducedMotion: boolean
   isSpeaking: boolean
-  onAnimComplete: () => void
+  onAnimComplete?: () => void
   opacity: number
   imageError: boolean
   onImageError: () => void
@@ -319,7 +319,6 @@ export function RemyAnimatedMascot({
           effectiveSize={effectiveSize}
           reducedMotion={reducedMotion}
           isSpeaking={false}
-          onAnimComplete={() => {}}
           opacity={0}
           imageError={imageError}
           onImageError={handleImageError}

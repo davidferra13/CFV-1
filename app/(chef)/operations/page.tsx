@@ -13,6 +13,12 @@ const sections = [
     heading: 'Day-to-Day',
     items: [
       {
+        href: '/ops',
+        label: 'Live Ops Hub',
+        description: 'Today view for service status, prep, tasks, sales, and staffing',
+        icon: 'OPS',
+      },
+      {
         href: '/stations/daily-ops',
         label: 'Daily Ops',
         description: 'Station assignments, prep checklists, and shift overview',
