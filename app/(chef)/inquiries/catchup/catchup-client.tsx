@@ -13,6 +13,29 @@ import {
 
 type Phase = 'input' | 'review' | 'done'
 
+type CatchupCreateResult = {
+  created: number
+  createdInquiries: Array<{ id: string; clientName: string; occasion: string; href: string }>
+  errors: string[]
+}
+
+export function resolveCatchupCreateState(result: CatchupCreateResult): {
+  shouldShowDone: boolean
+  errors: string[]
+} {
+  if (result.created > 0) {
+    return { shouldShowDone: true, errors: result.errors }
+  }
+
+  return {
+    shouldShowDone: false,
+    errors:
+      result.errors.length > 0
+        ? result.errors
+        : ['No inquiries were created. Review the entries and try again.'],
+  }
+}
+
 export function CatchupClient() {
   const [phase, setPhase] = useState<Phase>('input')
   const [rawText, setRawText] = useState('')
@@ -59,8 +82,11 @@ export function CatchupClient() {
         )
         setCreatedCount(result.created)
         setCreatedInquiries(result.createdInquiries)
-        setCreateErrors(result.errors)
-        setPhase('done')
+        const createState = resolveCatchupCreateState(result)
+        setCreateErrors(createState.errors)
+        if (createState.shouldShowDone) {
+          setPhase('done')
+        }
       } catch (err) {
         setCreateErrors([
           err instanceof Error ? err.message : 'Failed to create inquiries. Please try again.',
