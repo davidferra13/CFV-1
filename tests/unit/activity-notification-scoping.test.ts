@@ -87,7 +87,9 @@ class ActivityNotificationQueryBuilder {
   }
 
   then<TResult1 = unknown, TResult2 = never>(
-    onfulfilled?: ((value: { data: unknown[]; error: null }) => TResult1 | PromiseLike<TResult1>) | null,
+    onfulfilled?:
+      | ((value: { data: unknown[]; error: null }) => TResult1 | PromiseLike<TResult1>)
+      | null,
     onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null
   ) {
     return Promise.resolve({ data: [], error: null }).then(onfulfilled, onrejected)
@@ -171,6 +173,7 @@ test('intent notification admin reads stay tenant scoped', async () => {
   }
 
   assert.equal(notifications.length, 1)
+  assert.equal((notifications[0] as { actionUrl?: string }).actionUrl, '/quotes/quote-1')
   assert.equal(hasEq(calls, 'user_roles', 'entity_id', 'tenant-1'), true)
   assert.equal(hasEq(calls, 'notifications', 'tenant_id', 'tenant-1'), true)
   assert.equal(hasEq(calls, 'clients', 'tenant_id', 'tenant-1'), true)

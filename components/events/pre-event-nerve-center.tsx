@@ -153,6 +153,37 @@ function riskBadgeVariant(level: string): 'success' | 'warning' | 'error' | 'def
   }
 }
 
+function getWeatherUnavailableMessage(input: {
+  eventDate: string | Date
+  locationLat: number | null
+  locationLng: number | null
+  weatherError: string | null
+}): string {
+  if (input.weatherError) return input.weatherError
+
+  if (input.locationLat === null || input.locationLng === null) {
+    return 'Add event coordinates to check weather'
+  }
+
+  const target = new Date(dateToDateString(input.eventDate))
+  if (Number.isNaN(target.getTime())) {
+    return 'Weather unavailable for this event date'
+  }
+
+  const today = new Date(dateToDateString(new Date()))
+  const daysUntilService = Math.ceil((target.getTime() - today.getTime()) / 86_400_000)
+
+  if (daysUntilService > 16) {
+    return 'Forecast opens within 16 days of service'
+  }
+
+  if (daysUntilService < -1) {
+    return 'Historical weather unavailable for this service date'
+  }
+
+  return 'Forecast unavailable for this service date'
+}
+
 // ── Component ───────────────────────────────────────────────────────────────
 
 export async function PreEventNerveCenter(props: NerveCenterProps) {
@@ -186,7 +217,7 @@ export async function PreEventNerveCenter(props: NerveCenterProps) {
   let weatherRisk: WeatherRiskResult | null = null
   let weatherError: string | null = null
 
-  if (locationLat && locationLng) {
+  if (locationLat !== null && locationLng !== null) {
     try {
       const weatherResult = await getEventWeather(locationLat, locationLng, eventDate)
       weather = weatherResult.data
@@ -289,12 +320,19 @@ export async function PreEventNerveCenter(props: NerveCenterProps) {
                 <p className="text-xs text-stone-500 mt-1">Actual recorded weather</p>
               )}
             </div>
-          ) : weatherError ? (
-            <p className="text-xs text-stone-500">{weatherError}</p>
-          ) : !locationLat ? (
-            <p className="text-xs text-amber-400">No location set; cannot check weather</p>
           ) : (
-            <p className="text-xs text-stone-500">Forecast not available yet</p>
+            <p
+              className={`text-xs ${
+                locationLat === null || locationLng === null ? 'text-amber-400' : 'text-stone-500'
+              }`}
+            >
+              {getWeatherUnavailableMessage({
+                eventDate,
+                locationLat,
+                locationLng,
+                weatherError,
+              })}
+            </p>
           )}
         </div>
 

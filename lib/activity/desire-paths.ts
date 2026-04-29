@@ -22,6 +22,14 @@ export type DesirePathLoop = {
   visits: number
 }
 
+export type DesirePathRecommendation = {
+  id: string
+  title: string
+  detail: string
+  href: string
+  priority: 'high' | 'medium' | 'low'
+}
+
 export type DesirePathInsights = {
   sessionCount: number
   breadcrumbCount: number
@@ -34,21 +42,44 @@ export type DesirePathInsights = {
   loops: DesirePathLoop[]
   interactionHotspots: DesirePathCount[]
   exitPages: DesirePathCount[]
+  recommendations: DesirePathRecommendation[]
 }
 
 type PageView = BreadcrumbEntry & {
   label: string
 }
 
+type LabelCounts = Map<string, Map<string, number>>
+
 function increment(map: Map<string, number>, key: string, by = 1): void {
   map.set(key, (map.get(key) || 0) + by)
 }
 
-function toCountList(map: Map<string, number>, limit: number): DesirePathCount[] {
+function incrementLabel(labelsByPath: LabelCounts, path: string, label: string): void {
+  const labelCounts = labelsByPath.get(path) || new Map<string, number>()
+  increment(labelCounts, label)
+  labelsByPath.set(path, labelCounts)
+}
+
+function preferredLabel(path: string, labelsByPath: LabelCounts): string {
+  const labelCounts = labelsByPath.get(path)
+  if (!labelCounts || labelCounts.size === 0) return labelForPath(path)
+
+  const [topLabel] = [...labelCounts.entries()].sort(
+    (a, b) => b[1] - a[1] || a[0].localeCompare(b[0])
+  )[0]
+  return topLabel || labelForPath(path)
+}
+
+function toCountList(
+  map: Map<string, number>,
+  labelsByPath: LabelCounts,
+  limit: number
+): DesirePathCount[] {
   return [...map.entries()]
     .map(([path, count]) => ({
       path,
-      label: labelForPath(path),
+      label: preferredLabel(path, labelsByPath),
       count,
     }))
     .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label))
@@ -64,15 +95,19 @@ function parseTransitionKey(key: string): { fromPath: string; toPath: string } {
   return { fromPath: fromPath || '/', toPath: toPath || '/' }
 }
 
-function toTransitionList(map: Map<string, number>, limit: number): DesirePathTransition[] {
+function toTransitionList(
+  map: Map<string, number>,
+  labelsByPath: LabelCounts,
+  limit: number
+): DesirePathTransition[] {
   return [...map.entries()]
     .map(([key, count]) => {
       const { fromPath, toPath } = parseTransitionKey(key)
       return {
         fromPath,
-        fromLabel: labelForPath(fromPath),
+        fromLabel: preferredLabel(fromPath, labelsByPath),
         toPath,
-        toLabel: labelForPath(toPath),
+        toLabel: preferredLabel(toPath, labelsByPath),
         count,
       }
     })
@@ -89,6 +124,68 @@ function getPageViews(session: BreadcrumbSession): PageView[] {
     }))
 }
 
+function buildRecommendations(input: {
+  backtracks: DesirePathTransition[]
+  loops: DesirePathLoop[]
+  interactionHotspots: DesirePathCount[]
+  exitPages: DesirePathCount[]
+}): DesirePathRecommendation[] {
+  const recommendations: DesirePathRecommendation[] = []
+  const topBacktrack = input.backtracks[0]
+  const topLoop = input.loops[0]
+  const topInteraction = input.interactionHotspots[0]
+  const topExit = input.exitPages[0]
+
+  if (topBacktrack) {
+    recommendations.push({
+      id: `backtrack:${topBacktrack.fromPath}:${topBacktrack.toPath}`,
+      title: 'Review this reversal',
+      detail: `${topBacktrack.fromLabel} repeatedly returns to ${topBacktrack.toLabel}. Check whether the first page needs a clearer next action or context from the destination.`,
+      href: topBacktrack.fromPath,
+      priority: 'high',
+    })
+  }
+
+  if (topLoop) {
+    recommendations.push({
+      id: `loop:${topLoop.path}`,
+      title: 'Tighten this work surface',
+      detail: `${topLoop.label} is revisited several times inside the same session. Look for missing summaries, filters, or inline actions that would reduce repeat trips.`,
+      href: topLoop.path,
+      priority: topLoop.sessions > 1 ? 'high' : 'medium',
+    })
+  }
+
+  if (topInteraction) {
+    recommendations.push({
+      id: `interaction:${topInteraction.path}`,
+      title: 'Audit the main action path',
+      detail: `${topInteraction.label} has the most recorded clicks, searches, forms, or tab switches. Confirm the action result and next step are obvious after each interaction.`,
+      href: topInteraction.path,
+      priority: 'medium',
+    })
+  }
+
+  if (topExit) {
+    recommendations.push({
+      id: `exit:${topExit.path}`,
+      title: 'Check the stop point',
+      detail: `${topExit.label} is a common last page in sessions. Confirm it leaves the chef with a clear saved state or next action.`,
+      href: topExit.path,
+      priority: 'low',
+    })
+  }
+
+  const seen = new Set<string>()
+  return recommendations
+    .filter((recommendation) => {
+      if (seen.has(recommendation.id)) return false
+      seen.add(recommendation.id)
+      return true
+    })
+    .slice(0, 4)
+}
+
 export function analyzeDesirePaths(sessions: BreadcrumbSession[]): DesirePathInsights {
   const pageCounts = new Map<string, number>()
   const transitionCounts = new Map<string, number>()
@@ -97,6 +194,7 @@ export function analyzeDesirePaths(sessions: BreadcrumbSession[]): DesirePathIns
   const loopVisits = new Map<string, number>()
   const interactionCounts = new Map<string, number>()
   const exitCounts = new Map<string, number>()
+  const labelsByPath: LabelCounts = new Map()
 
   let breadcrumbCount = 0
   let pageViewCount = 0
@@ -109,9 +207,11 @@ export function analyzeDesirePaths(sessions: BreadcrumbSession[]): DesirePathIns
       if (entry.breadcrumb_type === 'page_view') {
         pageViewCount++
         increment(pageCounts, entry.path)
+        incrementLabel(labelsByPath, entry.path, entry.label || labelForPath(entry.path))
       } else {
         interactionCount++
         increment(interactionCounts, entry.path)
+        incrementLabel(labelsByPath, entry.path, labelForPath(entry.path))
       }
     }
 
@@ -146,7 +246,7 @@ export function analyzeDesirePaths(sessions: BreadcrumbSession[]): DesirePathIns
   const loops = [...loopSessions.entries()]
     .map(([path, sessionCount]) => ({
       path,
-      label: labelForPath(path),
+      label: preferredLabel(path, labelsByPath),
       sessions: sessionCount,
       visits: loopVisits.get(path) || sessionCount,
     }))
@@ -155,17 +255,27 @@ export function analyzeDesirePaths(sessions: BreadcrumbSession[]): DesirePathIns
     )
     .slice(0, 5)
 
+  const backtracks = toTransitionList(backtrackCounts, labelsByPath, 5)
+  const interactionHotspots = toCountList(interactionCounts, labelsByPath, 5)
+  const exitPages = toCountList(exitCounts, labelsByPath, 5)
+
   return {
     sessionCount: sessions.length,
     breadcrumbCount,
     pageViewCount,
     interactionCount,
     hasEnoughData: sessions.length > 0 && pageViewCount >= 3,
-    topPages: toCountList(pageCounts, 5),
-    topTransitions: toTransitionList(transitionCounts, 5),
-    backtracks: toTransitionList(backtrackCounts, 5),
+    topPages: toCountList(pageCounts, labelsByPath, 5),
+    topTransitions: toTransitionList(transitionCounts, labelsByPath, 5),
+    backtracks,
     loops,
-    interactionHotspots: toCountList(interactionCounts, 5),
-    exitPages: toCountList(exitCounts, 5),
+    interactionHotspots,
+    exitPages,
+    recommendations: buildRecommendations({
+      backtracks,
+      loops,
+      interactionHotspots,
+      exitPages,
+    }),
   }
 }

@@ -5,6 +5,7 @@ import { useMemo } from 'react'
 import type {
   DesirePathCount,
   DesirePathLoop,
+  DesirePathRecommendation,
   DesirePathTransition,
 } from '@/lib/activity/desire-paths'
 import { analyzeDesirePaths } from '@/lib/activity/desire-paths'
@@ -38,6 +39,19 @@ export function DesirePathInsights({ sessions, loading }: DesirePathInsightsProp
         <Metric label="Interactions" value={insights.interactionCount} />
         <Metric label="Breadcrumbs" value={insights.breadcrumbCount} />
       </div>
+
+      <section className="border border-brand-900/70 rounded-lg bg-brand-950/30 p-4">
+        <div className="flex items-start justify-between gap-3 mb-3">
+          <div>
+            <h2 className="text-sm font-semibold text-stone-200">Next Checks</h2>
+            <p className="text-xs text-stone-500 mt-0.5">
+              Concrete follow-ups from the observed route patterns.
+            </p>
+          </div>
+          <span className="text-xxs text-brand-500 uppercase tracking-wider">Actionable</span>
+        </div>
+        <RecommendationList recommendations={insights.recommendations} />
+      </section>
 
       <section className="border border-stone-700 rounded-lg bg-stone-900 p-4">
         <div className="flex items-start justify-between gap-3 mb-3">
@@ -93,6 +107,32 @@ export function DesirePathInsights({ sessions, loading }: DesirePathInsightsProp
           <CountList items={insights.exitPages} empty="No stop points yet." />
         </section>
       </div>
+    </div>
+  )
+}
+
+function RecommendationList({ recommendations }: { recommendations: DesirePathRecommendation[] }) {
+  if (recommendations.length === 0) {
+    return <p className="text-xs text-stone-500">No follow-up checks yet.</p>
+  }
+
+  return (
+    <div className="space-y-2">
+      {recommendations.map((recommendation) => (
+        <Link
+          key={recommendation.id}
+          href={recommendation.href}
+          className="block rounded-md border border-stone-800 bg-stone-900 px-3 py-2 hover:bg-stone-800"
+        >
+          <div className="flex items-start justify-between gap-3">
+            <p className="text-xs font-semibold text-stone-200">{recommendation.title}</p>
+            <span className="text-xxs uppercase tracking-wider text-stone-500">
+              {recommendation.priority}
+            </span>
+          </div>
+          <p className="mt-1 text-xs leading-snug text-stone-500">{recommendation.detail}</p>
+        </Link>
+      ))}
     </div>
   )
 }
