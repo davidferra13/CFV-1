@@ -10,11 +10,12 @@
 // date defaults to today. These can be edited from the full Expenses page.
 
 import { useState, useRef, useTransition } from 'react'
-import { Plus, Camera, DollarSign, X, Loader2 } from '@/components/ui/icons'
+import { Plus, Camera, DollarSign, X, Loader2, Sparkles } from '@/components/ui/icons'
 import { useIsDemoMode } from '@/lib/demo-mode'
 import { useOnboardingPeripheralsEnabled } from '@/lib/onboarding/peripheral-visibility'
 import { toast } from 'sonner'
 import { createExpense } from '@/lib/expenses/actions'
+import { createInstantNote } from '@/lib/quick-notes/intelligence-actions'
 import { todayLocalDateString } from '@/lib/utils/format'
 
 export function QuickCapture() {
@@ -22,8 +23,10 @@ export function QuickCapture() {
   const onboardingPeripheralsEnabled = useOnboardingPeripheralsEnabled()
   const [open, setOpen] = useState(false)
   const [showExpenseForm, setShowExpenseForm] = useState(false)
+  const [showNoteForm, setShowNoteForm] = useState(false)
   const [amount, setAmount] = useState('')
   const [description, setDescription] = useState('')
+  const [noteText, setNoteText] = useState('')
   const [isPending, startTransition] = useTransition()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -35,6 +38,11 @@ export function QuickCapture() {
   function handleOpenExpense() {
     setOpen(false)
     setShowExpenseForm(true)
+  }
+
+  function handleOpenNote() {
+    setOpen(false)
+    setShowNoteForm(true)
   }
 
   function handleExpenseSubmit() {
@@ -64,6 +72,26 @@ export function QuickCapture() {
         const msg = err instanceof Error ? err.message : 'Failed to save expense'
         toast.error(msg)
       }
+    })
+  }
+
+  function handleNoteSubmit() {
+    const rawText = noteText
+    if (!rawText.trim()) return toast.error('Enter a note')
+
+    startTransition(async () => {
+      const result = await createInstantNote({ text: rawText })
+      if (!result.success) {
+        toast.error(result.error ?? 'Failed to save note')
+        return
+      }
+      toast.success(
+        result.processingMode === 'inline_fallback'
+          ? 'Note saved and processed.'
+          : 'Note saved for background routing.'
+      )
+      setShowNoteForm(false)
+      setNoteText('')
     })
   }
 
@@ -130,6 +158,18 @@ export function QuickCapture() {
                 <DollarSign className="h-5 w-5" />
               </button>
             </div>
+            <div className="flex items-center gap-2 justify-end">
+              <span className="bg-stone-900 text-stone-300 text-sm font-medium px-3 py-1 rounded-full shadow-md">
+                Instant Note
+              </span>
+              <button
+                onClick={handleOpenNote}
+                className="w-12 h-12 bg-brand-600 text-white rounded-full shadow-md flex items-center justify-center hover:bg-brand-700 active:scale-95 transition-all"
+                aria-label="Capture an instant note"
+              >
+                <Sparkles className="h-5 w-5" />
+              </button>
+            </div>
           </div>
         </>
       )}
@@ -186,6 +226,42 @@ export function QuickCapture() {
               >
                 {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
                 {isPending ? 'Saving...' : 'Save'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showNoteForm && (
+        <div
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowNoteForm(false)
+          }}
+        >
+          <div className="bg-stone-900 w-full max-w-sm rounded-t-2xl sm:rounded-2xl p-6 space-y-4 shadow-xl">
+            <h3 className="text-lg font-bold text-stone-100">Instant Note</h3>
+            <textarea
+              value={noteText}
+              onChange={(e) => setNoteText(e.target.value)}
+              placeholder="Dump the thought here."
+              className="h-32 w-full border border-stone-600 rounded-xl px-4 py-3 text-stone-100 bg-stone-950 focus:ring-2 focus:ring-stone-500 focus:outline-none"
+              autoFocus
+            />
+            <div className="flex gap-3 pt-1">
+              <button
+                onClick={() => setShowNoteForm(false)}
+                className="flex-1 py-3 rounded-xl border border-stone-600 text-stone-300 font-medium hover:bg-stone-800 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleNoteSubmit}
+                disabled={isPending || !noteText.trim()}
+                className="flex-1 py-3 rounded-xl bg-stone-900 text-white font-medium disabled:opacity-50 flex items-center justify-center gap-2 hover:bg-stone-700 transition-colors"
+              >
+                {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                {isPending ? 'Saving...' : 'Capture'}
               </button>
             </div>
           </div>

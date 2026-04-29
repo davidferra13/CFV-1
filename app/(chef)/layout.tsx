@@ -62,6 +62,10 @@ const QuickCapture = dynamic(
   () => import('@/components/mobile/quick-capture').then((m) => m.QuickCapture),
   { ssr: false }
 )
+const InstantNoteDock = dynamic(
+  () => import('@/components/capture/instant-note-dock').then((m) => m.InstantNoteDock),
+  { ssr: false }
+)
 const BreadcrumbTracker = dynamic(
   () => import('@/components/activity/breadcrumb-tracker').then((m) => m.BreadcrumbTracker),
   { ssr: false }
@@ -315,6 +319,7 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
 
                       {/* Mobile quick capture FAB - mobile-only, hidden on desktop */}
                       {shellBudget.showQuickCapture ? <QuickCapture /> : null}
+                      {shellBudget.showQuickCapture ? <InstantNoteDock /> : null}
 
                       {/* Breadcrumb tracker - silent navigation tracking for retrace mode */}
                       <BreadcrumbTracker />

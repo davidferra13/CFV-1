@@ -45,6 +45,7 @@ import {
   handleGuestListUpdated,
   handleStaffNoShow,
 } from '@/lib/ai/reactive/handlers'
+import { handleInstantNoteQueueTask } from '@/lib/quick-notes/intelligence-processor'
 
 // ============================================
 // REGISTRY STORAGE
@@ -126,6 +127,18 @@ registerTask({
     // Simple ping - just confirms the queue + Ollama are working
     return { status: 'healthy', timestamp: new Date().toISOString() }
   },
+})
+
+registerTask({
+  taskType: 'note.interpretation',
+  name: 'Instant Note Interpretation',
+  approvalTier: 'auto',
+  defaultPriority: AI_PRIORITY.ON_DEMAND,
+  modelTier: 'complex',
+  preferredEndpoint: 'pc',
+  maxAttempts: 2,
+  recurrence: null,
+  handler: handleInstantNoteQueueTask,
 })
 
 // ── Placeholder categories for future tasks ───────────────────

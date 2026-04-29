@@ -2,7 +2,10 @@ import { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import {
   getInstantNoteActions,
+  getInstantNoteLearningRules,
   getInstantNoteReviewQueue,
+  getInstantNoteSummary,
+  getInstantNoteTraceLinks,
 } from '@/lib/quick-notes/intelligence-actions'
 import { WhiteboardCapture } from './whiteboard-capture'
 
@@ -15,12 +18,18 @@ export default async function CapturePage() {
 
   let reviewQueue: Awaited<ReturnType<typeof getInstantNoteReviewQueue>> = []
   let trackedActions: Awaited<ReturnType<typeof getInstantNoteActions>> = []
+  let traceLinks: Awaited<ReturnType<typeof getInstantNoteTraceLinks>> = []
+  let learningRules: Awaited<ReturnType<typeof getInstantNoteLearningRules>> = []
+  let summary: Awaited<ReturnType<typeof getInstantNoteSummary>> | null = null
   let loadError: string | null = null
 
   try {
-    ;[reviewQueue, trackedActions] = await Promise.all([
+    ;[reviewQueue, trackedActions, traceLinks, learningRules, summary] = await Promise.all([
       getInstantNoteReviewQueue(),
       getInstantNoteActions(12),
+      getInstantNoteTraceLinks(30),
+      getInstantNoteLearningRules(8),
+      getInstantNoteSummary(),
     ])
   } catch (err) {
     console.error('[CapturePage] note intelligence load failed:', err)
@@ -40,7 +49,13 @@ export default async function CapturePage() {
           {loadError}
         </div>
       ) : null}
-      <WhiteboardCapture initialReviewQueue={reviewQueue} initialTrackedActions={trackedActions} />
+      <WhiteboardCapture
+        initialReviewQueue={reviewQueue}
+        initialTrackedActions={trackedActions}
+        initialTraceLinks={traceLinks}
+        initialLearningRules={learningRules}
+        initialSummary={summary}
+      />
     </div>
   )
 }

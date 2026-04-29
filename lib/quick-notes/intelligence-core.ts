@@ -82,6 +82,19 @@ export const NOTE_ROUTE_LABELS: Record<NoteComponentType, string> = {
   other: 'Review Queue',
 }
 
+export const NOTE_ROUTE_KEYS: Record<NoteComponentType, string> = {
+  recipe_concept: 'recipe_development',
+  technique_variation: 'technique_library',
+  ingredient_discovery: 'ingredient_database',
+  seasonal_sourcing_insight: 'sourcing_seasonality',
+  task: 'tasks',
+  event_idea: 'event_planning',
+  inventory_thought: 'inventory_intelligence',
+  constraint: 'constraint_register',
+  review_prompt: 'review_queue',
+  other: 'review_queue',
+}
+
 export function confidenceBand(score: number): ConfidenceBand {
   if (score >= 80) return 'high'
   if (score >= 50) return 'medium'
@@ -149,6 +162,24 @@ export function normalizeIngredientCategory(value: unknown): string {
     'other',
   ])
   return typeof value === 'string' && allowed.has(value) ? value : 'other'
+}
+
+export function noteDedupeKey(parts: Array<string | null | undefined>): string {
+  return parts
+    .map((part) =>
+      (part ?? '')
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, ' ')
+        .replace(/\s+/g, ' ')
+    )
+    .filter(Boolean)
+    .join('|')
+    .slice(0, 240)
+}
+
+export function classifyCaptureSource(text: string): 'typed' | 'pasted' {
+  return text.length > 280 || text.includes('\n') ? 'pasted' : 'typed'
 }
 
 export function buildNoteInterpretationPrompt(corrections: Array<Record<string, unknown>>): string {

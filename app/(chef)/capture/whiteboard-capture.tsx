@@ -56,9 +56,15 @@ type CaptureMode = 'photo' | 'text'
 export function WhiteboardCapture({
   initialReviewQueue,
   initialTrackedActions,
+  initialTraceLinks,
+  initialLearningRules,
+  initialSummary,
 }: {
   initialReviewQueue: any[]
   initialTrackedActions: any[]
+  initialTraceLinks: any[]
+  initialLearningRules: any[]
+  initialSummary: any
 }) {
   const [mode, setMode] = useState<CaptureMode>('text')
   const [preview, setPreview] = useState<string | null>(null)
@@ -170,6 +176,9 @@ export function WhiteboardCapture({
         <InstantNotePanel
           initialReviewQueue={initialReviewQueue}
           initialTrackedActions={initialTrackedActions}
+          initialTraceLinks={initialTraceLinks}
+          initialLearningRules={initialLearningRules}
+          initialSummary={initialSummary}
         />
       ) : null}
 

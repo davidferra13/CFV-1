@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { enqueueTask } from '@/lib/ai/queue/actions'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 import {
@@ -16,14 +17,21 @@ import {
   normalizeIngredientCategory,
   taskPriorityFromUrgency,
   todayIsoDate,
+  classifyCaptureSource,
   type InterpretedNote,
   type InterpretedNoteAction,
   type InterpretedNoteComponent,
   type NoteComponentType,
 } from './intelligence-core'
+import {
+  attachAiTaskToInterpretation,
+  createQueuedInterpretation,
+  processInstantNoteForChef,
+} from './intelligence-processor'
 
 const CaptureNoteSchema = z.object({
   text: z.string().min(1).max(10000),
+  captureSource: z.enum(['typed', 'pasted', 'voice']).optional(),
 })
 
 const ProcessNoteSchema = z.object({
@@ -539,6 +547,7 @@ export async function createInstantNote(input: z.infer<typeof CaptureNoteSchema>
   const user = await requireChef()
   const validated = CaptureNoteSchema.parse(input)
   const rawText = validated.text
+  const captureSource = validated.captureSource ?? classifyCaptureSource(rawText)
 
   if (!rawText.trim()) {
     return { success: false, error: 'Note cannot be empty' }
@@ -551,8 +560,12 @@ export async function createInstantNote(input: z.infer<typeof CaptureNoteSchema>
       chef_id: user.entityId,
       text: rawText,
       status: 'raw',
+      capture_source: captureSource,
+      processing_status: 'queued',
     })
-    .select('id, text, status, triaged_to, triaged_ref_id, created_at, updated_at')
+    .select(
+      'id, text, status, triaged_to, triaged_ref_id, capture_source, processing_status, created_at, updated_at'
+    )
     .single()
 
   if (error || !data) {
@@ -560,187 +573,99 @@ export async function createInstantNote(input: z.infer<typeof CaptureNoteSchema>
     return { success: false, error: 'Failed to save note' }
   }
 
+  let interpretationId: string | null = null
+  let aiTaskId: string | null = null
+  let processingMode: 'queued' | 'inline_fallback' = 'queued'
+
+  try {
+    interpretationId = await createQueuedInterpretation({
+      chefId: user.entityId,
+      quickNoteId: data.id,
+      rawText,
+      processorMode: 'queued',
+    })
+
+    const queued = await enqueueTask({
+      tenantId: user.tenantId ?? user.entityId,
+      taskType: 'note.interpretation',
+      priority: 800,
+      approvalTier: 'auto',
+      payload: {
+        quickNoteId: data.id,
+        interpretationId,
+        userId: user.id,
+        captureSource,
+        _aiConfidence: 100,
+      },
+    })
+
+    if ('error' in queued) {
+      console.error('[note-intelligence] queue enqueue failed:', queued.error)
+      processingMode = 'inline_fallback'
+      const processed = await processInstantNoteForChef({
+        chefId: user.entityId,
+        userId: user.id,
+        quickNoteId: data.id,
+        interpretationId,
+        processorMode: 'inline_fallback',
+      })
+      revalidateNoteIntelligence()
+      return {
+        success: true,
+        note: data,
+        interpretationId,
+        processingMode,
+        inlineResult: processed,
+      }
+    }
+
+    aiTaskId = queued.id
+    if (!interpretationId) {
+      throw new Error('Queued interpretation missing')
+    }
+    await attachAiTaskToInterpretation({
+      chefId: user.entityId,
+      quickNoteId: data.id,
+      interpretationId,
+      aiTaskId,
+    })
+  } catch (queueErr) {
+    console.error('[note-intelligence] queue setup failed:', queueErr)
+    processingMode = 'inline_fallback'
+    const processed = await processInstantNoteForChef({
+      chefId: user.entityId,
+      userId: user.id,
+      quickNoteId: data.id,
+      interpretationId,
+      processorMode: 'inline_fallback',
+    })
+    revalidateNoteIntelligence()
+    return {
+      success: true,
+      note: data,
+      interpretationId,
+      processingMode,
+      inlineResult: processed,
+    }
+  }
+
   revalidatePath('/capture')
   revalidatePath('/dashboard')
-  return { success: true, note: data }
+  return { success: true, note: data, interpretationId, aiTaskId, processingMode }
 }
 
 export async function processInstantNote(input: z.infer<typeof ProcessNoteSchema>) {
   const user = await requireChef()
   const validated = ProcessNoteSchema.parse(input)
-  const db: Db = createServerClient()
+  const result = await processInstantNoteForChef({
+    chefId: user.entityId,
+    userId: user.id,
+    quickNoteId: validated.quickNoteId,
+    processorMode: 'inline',
+  })
 
-  const { data: note, error: noteError } = await db
-    .from('chef_quick_notes')
-    .select('id, text, status')
-    .eq('id', validated.quickNoteId)
-    .eq('chef_id', user.entityId)
-    .single()
-
-  if (noteError || !note) {
-    return { success: false, error: 'Note not found' }
-  }
-
-  const existing = await getExistingInterpretation(db, user.entityId, note.id)
-  if (existing) {
-    return { success: true, interpretation: existing, alreadyProcessed: true }
-  }
-
-  const interpretationId = await createInterpretationRow(db, user.entityId, note.id, note.text)
-
-  try {
-    const corrections = await loadCorrectionContext(db, user.entityId)
-    const parsed = await parseWithOllama(
-      buildNoteInterpretationPrompt(corrections),
-      note.text,
-      InterpretedNoteSchema,
-      {
-        modelTier: 'complex',
-        maxTokens: 2048,
-        dispatchHint: {
-          taskType: 'note.intelligence',
-          surface: 'capture.instant_note',
-          latencySensitive: true,
-          canAutoExecute: true,
-          canQueueForApproval: true,
-        },
-      }
-    )
-
-    const interpreted = ensureInterpretedNote(note.text, parsed)
-    const needsReview = interpreted.confidenceBand !== 'high'
-    const componentIds: string[] = []
-
-    for (const component of interpreted.components) {
-      componentIds.push(
-        await insertComponentRow(
-          db,
-          user.entityId,
-          interpretationId,
-          note.id,
-          component,
-          needsReview
-        )
-      )
-    }
-
-    await routeComponents(
-      db,
-      user.entityId,
-      user.id,
-      note.text,
-      componentIds,
-      interpreted.components,
-      needsReview
-    )
-    await routeActions(
-      db,
-      user.entityId,
-      interpretationId,
-      note.id,
-      note.text,
-      interpreted,
-      componentIds,
-      needsReview
-    )
-
-    const status = needsReview
-      ? interpreted.confidenceBand === 'medium'
-        ? 'needs_confirmation'
-        : 'review_queue'
-      : 'auto_committed'
-
-    await updateInterpretationRow(db, interpretationId, {
-      confidence_score: interpreted.confidenceScore,
-      confidence_band: interpreted.confidenceBand,
-      status,
-      interpretation: {
-        summary: interpreted.summary,
-        classifications: interpreted.classifications,
-        components: interpreted.components,
-        actions: interpreted.actions,
-      },
-      time_intelligence: interpreted.timeIntelligence,
-      ambiguity_notes: interpreted.ambiguityNotes,
-      error: null,
-    })
-
-    if (!needsReview) {
-      const { error: triageError } = await db
-        .from('chef_quick_notes')
-        .update({
-          status: 'triaged',
-          triaged_to: 'note_intelligence',
-          triaged_ref_id: interpretationId,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', note.id)
-        .eq('chef_id', user.entityId)
-
-      if (triageError) {
-        console.error('[note-intelligence] quick note triage update failed:', triageError)
-      }
-    }
-
-    revalidateNoteIntelligence()
-    return {
-      success: true,
-      interpretationId,
-      confidenceBand: interpreted.confidenceBand,
-      reviewRequired: needsReview,
-      components: interpreted.components.length,
-      actions: interpreted.actions.length,
-    }
-  } catch (err) {
-    const isOffline = err instanceof OllamaOfflineError
-    const reviewAction = buildFallbackAction(note.text)
-    let reviewTaskId: string | null = null
-
-    try {
-      reviewTaskId = await createTaskForAction(db, user.entityId, reviewAction, 'high', note.text)
-      await insertActionRow(
-        db,
-        user.entityId,
-        interpretationId,
-        note.id,
-        null,
-        reviewAction,
-        'created',
-        reviewTaskId
-      )
-    } catch (actionErr) {
-      console.error('[note-intelligence] fallback review action failed:', actionErr)
-    }
-
-    await updateInterpretationRow(db, interpretationId, {
-      confidence_score: 0,
-      confidence_band: 'low',
-      status: 'failed',
-      interpretation: {
-        summary: 'AI interpretation failed. Raw note is preserved for review.',
-        classifications: ['review_prompt'],
-        components: [],
-        actions: [reviewAction],
-      },
-      time_intelligence: {
-        isTimeSensitive: false,
-        windows: [],
-        urgency: 'high',
-      },
-      ambiguity_notes: [isOffline ? 'AI runtime unavailable.' : 'Interpretation failed.'],
-      error: err instanceof Error ? err.message : 'Unknown interpretation error',
-    })
-
-    revalidateNoteIntelligence()
-    return {
-      success: false,
-      interpretationId,
-      reviewTaskId,
-      error: isOffline
-        ? 'AI processing is temporarily unavailable. A review task was created.'
-        : 'Failed to interpret note. A review task was created.',
-    }
-  }
+  revalidateNoteIntelligence()
+  return result
 }
 
 export async function getInstantNoteReviewQueue() {
@@ -750,10 +675,10 @@ export async function getInstantNoteReviewQueue() {
   const { data, error } = await db
     .from('chef_note_interpretations')
     .select(
-      'id, quick_note_id, raw_text, confidence_score, confidence_band, status, interpretation, time_intelligence, ambiguity_notes, error, created_at'
+      'id, quick_note_id, raw_text, confidence_score, confidence_band, status, interpretation, time_intelligence, ambiguity_notes, review_reason, error, created_at'
     )
     .eq('chef_id', user.entityId)
-    .in('status', ['needs_confirmation', 'review_queue', 'failed'])
+    .in('status', ['processing', 'needs_confirmation', 'review_queue', 'failed'])
     .order('created_at', { ascending: false })
     .limit(25)
 
@@ -773,7 +698,7 @@ export async function getInstantNoteActions(limit = 25) {
   const { data, error } = await db
     .from('chef_note_actions')
     .select(
-      'id, title, description, action_type, urgency, status, due_date, routed_to, routed_ref_id, created_at'
+      'id, title, description, action_type, urgency, status, due_date, routed_to, routed_ref_id, calendar_entry_id, dedupe_key, created_at'
     )
     .eq('chef_id', user.entityId)
     .order('created_at', { ascending: false })
@@ -787,26 +712,158 @@ export async function getInstantNoteActions(limit = 25) {
   return data ?? []
 }
 
+export async function getInstantNoteTraceLinks(limit = 40) {
+  const user = await requireChef()
+  const db: Db = createServerClient()
+  const safeLimit = Math.min(Math.max(limit, 1), 100)
+
+  const { data, error } = await db
+    .from('chef_note_trace_links')
+    .select(
+      'id, quick_note_id, interpretation_id, component_id, action_id, link_kind, derived_type, derived_ref_id, route_layer, confidence_score, metadata, created_at'
+    )
+    .eq('chef_id', user.entityId)
+    .order('created_at', { ascending: false })
+    .limit(safeLimit)
+
+  if (error) {
+    console.error('[note-intelligence] trace link load failed:', error)
+    throw new Error('Failed to load note trace links')
+  }
+
+  return data ?? []
+}
+
+export async function getInstantNoteLearningRules(limit = 20) {
+  const user = await requireChef()
+  const db: Db = createServerClient()
+  const safeLimit = Math.min(Math.max(limit, 1), 50)
+
+  const { data, error } = await db
+    .from('chef_note_learning_rules')
+    .select('id, rule_type, pattern, instruction, weight, last_applied_at, created_at')
+    .eq('chef_id', user.entityId)
+    .order('weight', { ascending: false })
+    .order('created_at', { ascending: false })
+    .limit(safeLimit)
+
+  if (error) {
+    console.error('[note-intelligence] learning rules load failed:', error)
+    throw new Error('Failed to load note learning rules')
+  }
+
+  return data ?? []
+}
+
+export async function getInstantNoteSummary() {
+  const user = await requireChef()
+  const db: Db = createServerClient()
+
+  const [interpretations, actions, quickNotes] = await Promise.all([
+    db
+      .from('chef_note_interpretations')
+      .select('status, confidence_band, created_at')
+      .eq('chef_id', user.entityId)
+      .order('created_at', { ascending: false })
+      .limit(100),
+    db
+      .from('chef_note_actions')
+      .select('status, urgency, due_date, created_at')
+      .eq('chef_id', user.entityId)
+      .order('created_at', { ascending: false })
+      .limit(100),
+    db
+      .from('chef_quick_notes')
+      .select('processing_status, created_at')
+      .eq('chef_id', user.entityId)
+      .order('created_at', { ascending: false })
+      .limit(100),
+  ])
+
+  if (interpretations.error || actions.error || quickNotes.error) {
+    console.error('[note-intelligence] summary load failed:', {
+      interpretations: interpretations.error,
+      actions: actions.error,
+      quickNotes: quickNotes.error,
+    })
+    throw new Error('Failed to load note intelligence summary')
+  }
+
+  const interpretationRows = interpretations.data ?? []
+  const actionRows = actions.data ?? []
+  const quickNoteRows = quickNotes.data ?? []
+
+  return {
+    totalNotes: quickNoteRows.length,
+    queuedNotes: quickNoteRows.filter((row: any) =>
+      ['queued', 'processing', 'unprocessed'].includes(row.processing_status)
+    ).length,
+    reviewCount: interpretationRows.filter((row: any) =>
+      ['needs_confirmation', 'review_queue', 'failed'].includes(row.status)
+    ).length,
+    highConfidence: interpretationRows.filter((row: any) => row.confidence_band === 'high').length,
+    mediumConfidence: interpretationRows.filter((row: any) => row.confidence_band === 'medium')
+      .length,
+    lowConfidence: interpretationRows.filter((row: any) => row.confidence_band === 'low').length,
+    openActions: actionRows.filter((row: any) =>
+      ['pending', 'created', 'needs_review', 'failed'].includes(row.status)
+    ).length,
+    urgentActions: actionRows.filter((row: any) => ['urgent', 'high'].includes(row.urgency)).length,
+  }
+}
+
 export async function recordInstantNoteCorrection(input: z.infer<typeof CorrectionSchema>) {
   const user = await requireChef()
   const validated = CorrectionSchema.parse(input)
   const db: Db = createServerClient()
 
-  const { error } = await db.from('chef_note_corrections').insert({
-    chef_id: user.entityId,
-    quick_note_id: validated.quickNoteId,
-    interpretation_id: validated.interpretationId ?? null,
-    component_id: validated.componentId ?? null,
-    correction_type: validated.correctionType,
-    original_value: validated.originalValue,
-    corrected_value: validated.correctedValue,
-    notes: validated.notes ?? null,
-    created_by: user.id,
-  })
+  const { data: correction, error } = await db
+    .from('chef_note_corrections')
+    .insert({
+      chef_id: user.entityId,
+      quick_note_id: validated.quickNoteId,
+      interpretation_id: validated.interpretationId ?? null,
+      component_id: validated.componentId ?? null,
+      correction_type: validated.correctionType,
+      original_value: validated.originalValue,
+      corrected_value: validated.correctedValue,
+      notes: validated.notes ?? null,
+      created_by: user.id,
+    })
+    .select('id')
+    .single()
 
   if (error) {
     console.error('[note-intelligence] correction insert failed:', error)
     return { success: false, error: 'Failed to save correction' }
+  }
+
+  try {
+    const pattern = JSON.stringify(validated.originalValue).slice(0, 500)
+    const instruction =
+      validated.notes?.trim() ||
+      `Chef corrected ${validated.correctionType}. Prefer the corrected value when similar notes appear.`
+    await db.from('chef_note_learning_rules').insert({
+      chef_id: user.entityId,
+      correction_id: correction?.id ?? null,
+      rule_type: validated.correctionType,
+      pattern,
+      instruction,
+      weight: validated.correctionType === 'routing' ? 12 : 10,
+    })
+
+    await db.from('chef_note_trace_links').insert({
+      chef_id: user.entityId,
+      quick_note_id: validated.quickNoteId,
+      interpretation_id: validated.interpretationId ?? null,
+      component_id: validated.componentId ?? null,
+      link_kind: 'correction_to_learning',
+      derived_type: 'chef_note_learning_rules',
+      route_layer: 'Learning Loop',
+      metadata: { correctionType: validated.correctionType },
+    })
+  } catch (learningErr) {
+    console.error('[note-intelligence] learning rule side effect failed:', learningErr)
   }
 
   if (validated.interpretationId) {

@@ -87,7 +87,11 @@ Your layout saves automatically.
 
 ## Capture
 
-Use **Capture** when you need to dump a thought without opening a structured form. The Instant Note box saves the raw note first, then ChefFlow interprets it in the background and turns it into routed system work.
+Use **Capture** when you need to dump a thought without opening a structured form. The Instant Note box saves the raw note first, queues background interpretation, and turns it into routed system work without making you wait.
+
+Instant Note now includes a Review Queue, tracked actions, trace graph, confidence view, and correction learning. Medium-confidence, low-confidence, failed, and still-processing notes stay visible until they are reviewed. Every derived task, calendar block, ingredient, or workflow note remains traceable to the original raw note.
+
+The always-on note dock is available from chef pages on desktop, and mobile quick capture includes an Instant Note option. Browser voice capture is supported when the browser exposes speech recognition; otherwise the voice control fails visibly instead of pretending to work.
 
 ChefFlow can split one note into multiple parts, such as recipe concept, technique experiment, ingredient discovery, seasonal sourcing insight, inventory thought, event idea, task, or review prompt. High-confidence notes create tracked actions automatically. Medium-confidence and low-confidence notes go to the Review Queue with the raw note, interpretation, ambiguity notes, and quick correction buttons.
 
