@@ -49,7 +49,16 @@ function formatDate(dateStr: string): string {
 export default async function VendorInvoicesPage() {
   await requireChef()
 
-  const invoices = await getVendorInvoices().catch(() => [])
+  let invoices: Awaited<ReturnType<typeof getVendorInvoices>>
+  let loadError = false
+
+  try {
+    invoices = await getVendorInvoices()
+  } catch (err) {
+    console.error('[vendor-invoices] failed to load invoices', err)
+    invoices = []
+    loadError = true
+  }
 
   return (
     <div className="space-y-6">
@@ -66,7 +75,14 @@ export default async function VendorInvoicesPage() {
         <UploadVendorInvoiceForm />
       </div>
 
-      {(invoices as any[]).length === 0 ? (
+      {loadError ? (
+        <div className="rounded-lg border border-red-800 bg-red-950/30 p-8 text-center">
+          <p className="text-red-200 text-sm">
+            Vendor invoices could not be loaded. Try again before uploading or matching invoice
+            items.
+          </p>
+        </div>
+      ) : invoices.length === 0 ? (
         <div className="rounded-lg border border-stone-700 bg-stone-800 p-8 text-center">
           <p className="text-stone-500 text-sm">
             No vendor invoices uploaded yet. Upload your first invoice to start matching line items
@@ -75,7 +91,7 @@ export default async function VendorInvoicesPage() {
         </div>
       ) : (
         <div className="space-y-3">
-          {(invoices as any[]).map((invoice: any) => (
+          {invoices.map((invoice) => (
             <Card key={invoice.id} className="p-4">
               <div className="flex items-center justify-between">
                 <div className="min-w-0">
