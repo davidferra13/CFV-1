@@ -178,4 +178,68 @@ describe('client continuity summary', () => {
     assert.ok(summary.counts.some((count) => count.label === 'Past events'))
     assert.ok(summary.counts.every((count) => count.count > 0))
   })
+
+  it('prioritizes real notification changes ahead of open work items', () => {
+    const graph = createBaseWorkGraph({
+      primary: {
+        id: 'event_menu:event-1',
+        kind: 'event_menu',
+        category: 'event',
+        sourceId: 'event-1',
+        sourceType: 'event',
+        urgency: 'high',
+        title: 'Review the updated menu',
+        detail: 'Your chef sent a menu for review.',
+        href: '/my-events/event-1/approve-menu',
+        ctaLabel: 'Review Menu',
+        eventDate: '2026-05-12',
+      },
+      items: [
+        {
+          id: 'event_menu:event-1',
+          kind: 'event_menu',
+          category: 'event',
+          sourceId: 'event-1',
+          sourceType: 'event',
+          urgency: 'high',
+          title: 'Review the updated menu',
+          detail: 'Your chef sent a menu for review.',
+          href: '/my-events/event-1/approve-menu',
+          ctaLabel: 'Review Menu',
+          eventDate: '2026-05-12',
+        },
+      ],
+      summary: {
+        totalItems: 1,
+        menuApprovalCount: 1,
+      } as Partial<ClientWorkGraph['summary']> as ClientWorkGraph['summary'],
+    })
+
+    const summary = buildClientContinuitySummary(graph, {
+      changeDigest: {
+        since: '2026-04-29T12:00:00.000Z',
+        basis: 'last_dashboard_visit',
+        label: '1 update since your last dashboard visit.',
+        unreadCount: 1,
+        items: [
+          {
+            id: 'notification:notif-1',
+            source: 'notification_change',
+            kind: 'notification_change',
+            label: 'Menu ready for review',
+            detail: 'Your chef sent the menu.',
+            href: '/my-events/event-1/approve-menu',
+            category: 'event',
+            action: 'menu_sent_to_client',
+            occurredAt: '2026-04-29T13:00:00.000Z',
+            readAt: null,
+          },
+        ],
+      },
+    })
+
+    assert.equal(summary.changeDigest.unreadCount, 1)
+    assert.equal(summary.importantItems[0]?.source, 'notification_change')
+    assert.equal(summary.importantItems[0]?.label, 'Menu ready for review')
+  })
 })

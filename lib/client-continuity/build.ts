@@ -1,6 +1,7 @@
 import type { ClientWorkGraph, ClientWorkItem } from '@/lib/client-work-graph/types'
 import type {
   BuildClientContinuitySummaryOptions,
+  ClientContinuityChangeDigest,
   ClientContinuityCount,
   ClientContinuityItem,
   ClientContinuityNextStep,
@@ -25,6 +26,13 @@ type SnapshotCount = {
 
 const DEFAULT_IMPORTANT_ITEM_LIMIT = 5
 const DEFAULT_COUNT_LIMIT = 8
+const EMPTY_CHANGE_DIGEST: ClientContinuityChangeDigest = {
+  since: null,
+  basis: 'none',
+  label: 'No previous client dashboard visit is recorded yet.',
+  items: [],
+  unreadCount: 0,
+}
 
 const COUNT_RULES: CountRule[] = [
   { key: 'proposalCount', label: 'Proposal reviews', href: '/my-events', priority: 100 },
@@ -82,6 +90,19 @@ function mapWorkItem(item: ClientWorkItem, index: number): ClientContinuityItem 
     detail: item.detail,
     href: item.href,
     urgency: item.urgency,
+  }
+}
+
+function mapChangeItem(item: ClientContinuityChangeDigest['items'][number]): ClientContinuityItem {
+  return {
+    id: item.id,
+    source: item.source,
+    kind: item.kind,
+    label: item.label,
+    detail: item.detail,
+    href: item.href,
+    urgency: item.readAt ? 'low' : 'medium',
+    occurredAt: item.occurredAt,
   }
 }
 
@@ -256,15 +277,18 @@ export function buildClientContinuitySummary(
   options: BuildClientContinuitySummaryOptions = {}
 ): ClientContinuitySummary {
   const snapshot = options.snapshot ?? null
+  const changeDigest = options.changeDigest ?? EMPTY_CHANGE_DIGEST
   const importantItemLimit = options.importantItemLimit ?? DEFAULT_IMPORTANT_ITEM_LIMIT
   const countLimit = options.countLimit ?? DEFAULT_COUNT_LIMIT
   const primaryNextStep = mapNextStep(workGraph.primary)
   const workItems = workGraph.items.map(mapWorkItem)
+  const changeItems = changeDigest.items.map(mapChangeItem)
   const snapshotItems = buildSnapshotItems(snapshot)
-  const importantItems = uniqueByHrefAndLabel([...workItems, ...snapshotItems]).slice(
-    0,
-    importantItemLimit
-  )
+  const importantItems = uniqueByHrefAndLabel([
+    ...changeItems,
+    ...workItems,
+    ...snapshotItems,
+  ]).slice(0, importantItemLimit)
   const counts = [...buildWorkGraphCounts(workGraph), ...buildSnapshotCounts(snapshot)].slice(
     0,
     countLimit
@@ -278,6 +302,7 @@ export function buildClientContinuitySummary(
     headline: copy.headline,
     detail: copy.detail,
     primaryNextStep,
+    changeDigest,
     importantItems,
     counts,
     workGraphSummary: workGraph.summary,

@@ -5,6 +5,7 @@ import type {
   ClientWorkItemUrgency,
 } from '@/lib/client-work-graph/types'
 import type {
+  ClientContinuityChangeItem as DeterministicChangeItem,
   ClientContinuityItem as DeterministicContinuityItem,
   ClientContinuityNextStep,
   ClientContinuitySummary as DeterministicContinuitySummary,
@@ -23,8 +24,9 @@ export type ClientContinuityAction = {
 
 export type ClientContinuityItem = Pick<
   ClientContinuityNextStep,
-  'id' | 'kind' | 'category' | 'urgency' | 'detail' | 'href' | 'ctaLabel'
+  'id' | 'category' | 'urgency' | 'detail' | 'href' | 'ctaLabel'
 > & {
+  kind: ClientWorkItemKind | 'notification_change'
   title: string
   statusLabel?: string
   action?: ClientContinuityAction | null
@@ -75,7 +77,10 @@ const URGENCY_BADGES: Record<ClientWorkItemUrgency, 'default' | 'info' | 'warnin
   low: 'default',
 }
 
-function normalizeCategory(kind: ClientWorkItemKind): ClientWorkItemCategory {
+function normalizeCategory(
+  kind: ClientWorkItemKind | 'notification_change'
+): ClientWorkItemCategory {
+  if (kind === 'notification_change') return 'notification'
   if (kind.startsWith('event_')) return 'event'
   if (kind === 'quote_review') return 'quote'
   if (kind === 'inquiry_reply') return 'inquiry'
@@ -84,6 +89,20 @@ function normalizeCategory(kind: ClientWorkItemKind): ClientWorkItemCategory {
   if (kind === 'notification_follow_up') return 'notification'
   if (kind === 'stub_planning' || kind === 'stub_seeking_chef') return 'planning'
   return 'profile'
+}
+
+function mapDeterministicChangeItem(item: DeterministicChangeItem): ClientContinuityItem {
+  return {
+    id: item.id,
+    kind: item.kind,
+    category: 'notification',
+    urgency: item.readAt ? 'low' : 'medium',
+    title: item.label,
+    detail: item.detail,
+    href: item.href,
+    ctaLabel: 'Open Update',
+    statusLabel: item.readAt ? 'Read' : 'Unread',
+  }
 }
 
 function mapDeterministicNextStep(item: ClientContinuityNextStep): ClientContinuityItem {
@@ -132,14 +151,17 @@ function normalizeSummary(
   if (!summary || !isDeterministicSummary(summary)) return summary
 
   const primary = summary.primaryNextStep ? mapDeterministicNextStep(summary.primaryNextStep) : null
+  const changedItems = summary.changeDigest.items.map(mapDeterministicChangeItem)
   const mappedItems = summary.importantItems
     .map(mapDeterministicItem)
     .filter((item): item is ClientContinuityItem => Boolean(item))
 
   return {
     primary,
-    contextItems: [],
-    openItems: mappedItems.filter((item) => item.id !== primary?.id),
+    contextItems: changedItems,
+    openItems: mappedItems.filter(
+      (item) => item.id !== primary?.id && item.kind !== 'notification_change'
+    ),
     headline: summary.headline,
     detail: summary.detail,
     caughtUp: summary.caughtUp
@@ -349,7 +371,7 @@ export function ClientContinuitySummary({
               </section>
             ) : null}
 
-            <ContinuityItemList title="Current context" items={contextItems} />
+            <ContinuityItemList title="Changed since your last visit" items={contextItems} />
             <ContinuityItemList title="Still open" items={openItems} />
           </>
         ) : (

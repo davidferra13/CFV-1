@@ -16,6 +16,7 @@ export type ClientContinuitySource =
   | 'work_graph_item'
   | 'work_graph_count'
   | 'shared_snapshot'
+  | 'notification_change'
 
 export type ClientContinuityNextStep = {
   id: string
@@ -33,12 +34,39 @@ export type ClientContinuityNextStep = {
 export type ClientContinuityItem = {
   id: string
   source: ClientContinuitySource
-  kind: ClientWorkItemKind | 'upcoming_events' | 'past_events' | 'open_inquiries'
+  kind:
+    | ClientWorkItemKind
+    | 'upcoming_events'
+    | 'past_events'
+    | 'open_inquiries'
+    | 'notification_change'
   label: string
   detail: string
   href: string
   count?: number
   urgency?: ClientWorkItemUrgency
+  occurredAt?: string | null
+}
+
+export type ClientContinuityChangeItem = {
+  id: string
+  source: Extract<ClientContinuitySource, 'notification_change'>
+  kind: 'notification_change'
+  label: string
+  detail: string
+  href: string
+  category: string
+  action: string
+  occurredAt: string
+  readAt: string | null
+}
+
+export type ClientContinuityChangeDigest = {
+  since: string | null
+  basis: 'last_dashboard_visit' | 'unread_recent' | 'none'
+  label: string
+  items: ClientContinuityChangeItem[]
+  unreadCount: number
 }
 
 export type ClientContinuityCount = {
@@ -55,6 +83,7 @@ export type ClientContinuitySummary = {
   headline: string
   detail: string
   primaryNextStep: ClientContinuityNextStep | null
+  changeDigest: ClientContinuityChangeDigest
   importantItems: ClientContinuityItem[]
   counts: ClientContinuityCount[]
   workGraphSummary: ClientWorkGraph['summary']
@@ -62,6 +91,7 @@ export type ClientContinuitySummary = {
 
 export type BuildClientContinuitySummaryOptions = {
   snapshot?: ClientContinuitySnapshot | null
+  changeDigest?: ClientContinuityChangeDigest | null
   importantItemLimit?: number
   countLimit?: number
 }

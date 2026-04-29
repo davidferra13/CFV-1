@@ -6,11 +6,13 @@ import { createServerClient } from '@/lib/db/server'
 import { getClientWorkGraphSnapshot } from '@/lib/client-work-graph/actions'
 import { sanitizeForPrompt, fenceForPrompt } from '@/lib/ai/remy-input-validation'
 import type { ClientWorkGraph } from '@/lib/client-work-graph/types'
-import { buildClientContinuitySummary, type ClientContinuitySummary } from '@/lib/client-continuity'
 import {
-  summarizeRemyClientContextSourceLabels,
-  type RemyClientContextCategory,
-} from '@/lib/ai/remy-client-context-policy'
+  buildClientContinuitySummary,
+  getClientContinuityChangeDigest,
+  type ClientContinuitySummary,
+} from '@/lib/client-continuity'
+import { type RemyClientContextCategory } from '@/lib/ai/remy-client-context-policy'
+import { auditRemyClientBoundary } from '@/lib/ai/remy-client-boundary-audit'
 
 const REMY_CLIENT_CONTEXT_CATEGORIES = [
   'profile',
@@ -84,7 +86,9 @@ export async function loadRemyClientContext(
       getClientWorkGraphSnapshot({ pastLimit: 5 }),
       db
         .from('clients')
-        .select('full_name, dietary_restrictions, allergies, loyalty_tier, loyalty_points')
+        .select(
+          'auth_user_id, full_name, dietary_restrictions, allergies, loyalty_tier, loyalty_points'
+        )
         .eq('id', clientId)
         .eq('tenant_id', tenantId)
         .single(),
@@ -106,6 +110,12 @@ export async function loadRemyClientContext(
     ['new', 'awaiting_client', 'awaiting_chef'].includes(String(inquiry.status))
   ).length
   const pendingQuotes = (snapshot.quotes ?? []).filter((quote: any) => quote.status === 'sent')
+  const boundaryAudit = auditRemyClientBoundary({
+    requestedCategories: REMY_CLIENT_CONTEXT_CATEGORIES,
+  })
+  if (!boundaryAudit.pass) {
+    throw new Error(`Blocked Remy client context categories: ${boundaryAudit.violationCount}`)
+  }
 
   const lifetimePoints = (earnedRows || []).reduce(
     (sum: number, row: { points?: number | null }) => sum + (row.points || 0),
@@ -129,7 +139,15 @@ export async function loadRemyClientContext(
           : null
   const pointsToNextTier =
     nextTierThreshold !== null ? Math.max(0, nextTierThreshold - lifetimePoints) : 0
-  const continuitySummary = buildClientContinuitySummary(snapshot.workGraph, { snapshot })
+  const changeDigest = await getClientContinuityChangeDigest({
+    tenantId,
+    clientId,
+    authUserId: client?.auth_user_id ?? '',
+  })
+  const continuitySummary = buildClientContinuitySummary(snapshot.workGraph, {
+    snapshot,
+    changeDigest,
+  })
 
   return {
     clientName: client?.full_name ?? null,
@@ -169,7 +187,7 @@ export async function loadRemyClientContext(
     loyaltyLifetimePoints: lifetimePoints,
     nextTierName,
     pointsToNextTier,
-    contextSourceLabels: summarizeRemyClientContextSourceLabels(REMY_CLIENT_CONTEXT_CATEGORIES),
+    contextSourceLabels: boundaryAudit.sourceLabels,
     actionableItemCount: snapshot.workGraph.summary.totalItems,
     continuitySummary,
     workGraph: snapshot.workGraph,
@@ -279,6 +297,16 @@ export function formatClientContext(ctx: RemyClientContext): string {
     parts.push(
       `- Current counts: ${ctx.continuitySummary.counts.map((count) => `${count.label}: ${count.count}`).join(', ')}`
     )
+  }
+  parts.push(
+    `- Changes since away: ${fenceForPrompt('change_digest', sanitizeForPrompt(ctx.continuitySummary.changeDigest.label))}`
+  )
+  if (ctx.continuitySummary.changeDigest.items.length > 0) {
+    for (const item of ctx.continuitySummary.changeDigest.items.slice(0, 5)) {
+      parts.push(
+        `  - ${fenceForPrompt('change_title', sanitizeForPrompt(item.label))} -> ${item.href} (${item.readAt ? 'read' : 'unread'})`
+      )
+    }
   }
 
   parts.push(`\nCLIENT PORTAL PAGES:
