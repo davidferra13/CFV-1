@@ -232,9 +232,13 @@ export function CommandPalette({ userId, tenantId }: { userId: string; tenantId:
     const matched: PaletteItem[] = []
 
     // Filter quick actions
-    const matchedActions = QUICK_ACTIONS.filter((item) => fuzzyMatch(item.label, query)).sort(
-      (a, b) => fuzzyScore(b.label, query) - fuzzyScore(a.label, query)
-    )
+    const matchedActions = QUICK_ACTIONS.filter(
+      (item) => fuzzyMatch(item.label, query) || fuzzyMatch(item.sublabel || '', query)
+    ).sort((a, b) => {
+      const aScore = Math.max(fuzzyScore(a.label, query), fuzzyScore(a.sublabel || '', query))
+      const bScore = Math.max(fuzzyScore(b.label, query), fuzzyScore(b.sublabel || '', query))
+      return bScore - aScore
+    })
     matched.push(...matchedActions)
 
     // Filter nav items
