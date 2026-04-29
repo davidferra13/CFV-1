@@ -17,6 +17,11 @@ function stringValue(value: unknown, fallback = '', maxLength = 300): string {
   return typeof value === 'string' ? value.slice(0, maxLength) : fallback
 }
 
+function optionalStringValue(value: unknown, maxLength = 300): string | undefined {
+  if (typeof value !== 'string' || value.length === 0) return undefined
+  return value.slice(0, maxLength)
+}
+
 function normalizePresenceData(
   data: unknown,
   authContext: {
@@ -29,12 +34,16 @@ function normalizePresenceData(
     data && typeof data === 'object' && !Array.isArray(data)
       ? { ...(data as Record<string, unknown>) }
       : {}
+  const clientId = optionalStringValue(base.clientId, 120)
+  const clientName = optionalStringValue(base.clientName, 160)
 
   return {
     page: stringValue(base.page, '/', 300),
     joinedAt: stringValue(base.joinedAt, new Date().toISOString(), 40),
     userAgent: stringValue(base.userAgent, '', 150),
     referrer: stringValue(base.referrer, '', 500),
+    ...(clientId ? { clientId } : {}),
+    ...(clientName ? { clientName } : {}),
     email: authContext.email,
     role: authContext.role,
     userId: authContext.userId,

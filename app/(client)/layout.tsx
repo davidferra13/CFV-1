@@ -10,6 +10,7 @@ import {
   ClientMainContent,
 } from '@/components/navigation/client-nav'
 import { ActivityTracker } from '@/components/activity/activity-tracker'
+import { ClientPortalPresenceBeacon } from '@/components/activity/client-portal-presence-beacon'
 import { NotificationProvider } from '@/components/notifications/notification-provider'
 import { ToastProvider } from '@/components/notifications/toast-provider'
 import { PageInfoButton } from '@/components/ui/page-info'
@@ -72,6 +73,12 @@ export default async function ClientLayout({ children }: { children: React.React
             traits={{ entity_id: user.entityId, tenant_id: user.tenantId || '' }}
           />
           <PresenceBeacon userId={user.id} email={user.email} />
+          <ClientPortalPresenceBeacon
+            tenantId={user.tenantId}
+            userId={user.id}
+            clientId={user.entityId}
+            email={user.email}
+          />
           <PageInfoButton />
         </div>
       </NotificationProvider>

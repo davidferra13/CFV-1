@@ -5,12 +5,16 @@
 
 import { useRef, useState, useCallback } from 'react'
 import Link from 'next/link'
-import { useSSE } from '@/lib/realtime/sse-client'
+import { useSSE, useSSEPresence } from '@/lib/realtime/sse-client'
 import type {
   ActiveClientWithContext,
   ActivityEvent,
   ActivityEventType,
 } from '@/lib/activity/types'
+import {
+  getClientPresenceSessions,
+  getConnectedClientIds,
+} from '@/lib/activity/live-client-presence'
 import {
   ACTIVE_CLIENT_SIGNAL_WINDOW_MINUTES,
   formatActivitySignalAge,
@@ -187,9 +191,15 @@ export function ClientPresenceMonitor({
   }, [])
 
   useSSE(`activity_events:${tenantId}`, { onMessage: handleMessage })
+  const { presenceState } = useSSEPresence(`activity_events:${tenantId}`)
 
+  const liveSessions = getClientPresenceSessions(presenceState)
+  const connectedClientIds = getConnectedClientIds(liveSessions)
   const activeSignals = clients.filter((c) => isActiveClientSignal(c.last_activity))
   const recentlyActive = clients.filter((c) => !isActiveClientSignal(c.last_activity))
+  const knownClientIds = new Set(clients.map((client) => client.client_id))
+  const connectedKnownClients = clients.filter((c) => connectedClientIds.has(c.client_id))
+  const connectedClientCount = connectedClientIds.size
 
   return (
     <div className="space-y-6">
@@ -197,21 +207,78 @@ export function ClientPresenceMonitor({
       <div className="border border-stone-700 rounded-lg overflow-hidden">
         <div className="flex items-center justify-between px-4 py-3 bg-stone-800 border-b border-stone-700">
           <h2 className="text-sm font-semibold text-stone-300">Active Clients</h2>
-          {activeSignals.length > 0 && (
-            <span className="flex items-center gap-1.5 text-xs text-emerald-600 font-medium">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              {activeSignals.length} active signal{activeSignals.length === 1 ? '' : 's'}
-            </span>
-          )}
+          <div className="flex flex-wrap items-center justify-end gap-3">
+            {connectedClientCount > 0 && (
+              <span className="flex items-center gap-1.5 text-xs text-emerald-600 font-medium">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                {connectedClientCount} connected now
+              </span>
+            )}
+            {activeSignals.length > 0 && (
+              <span className="flex items-center gap-1.5 text-xs text-stone-300 font-medium">
+                <span className="w-2 h-2 rounded-full bg-stone-500" />
+                {activeSignals.length} activity signal{activeSignals.length === 1 ? '' : 's'}
+              </span>
+            )}
+          </div>
         </div>
 
-        {clients.length === 0 ? (
+        {clients.length === 0 && liveSessions.length === 0 ? (
           <div className="px-4 py-8 text-center text-stone-300 text-sm">
             No client activity signals in the {formatActivityWindowLabel(RECENT_WINDOW_MINUTES)}.
             Activity will appear here as clients browse the portal.
           </div>
         ) : (
           <div>
+            {connectedKnownClients.length > 0 && (
+              <div>
+                <div className="px-4 py-2 bg-emerald-950 border-b border-emerald-100">
+                  <p className="text-xs-tight font-semibold text-emerald-700 uppercase tracking-wide">
+                    Connected Now
+                  </p>
+                  <p className="text-xxs text-emerald-700 mt-0.5">
+                    Live client portal sessions from realtime presence.
+                  </p>
+                </div>
+                <div className="divide-y divide-stone-800">
+                  {connectedKnownClients.map((client) => (
+                    <ClientPresenceRow
+                      key={`connected-${client.client_id}`}
+                      client={client}
+                      isActiveSignal
+                      isConnected
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {liveSessions.length > connectedKnownClients.length && (
+              <div>
+                <div className="px-4 py-2 bg-stone-800 border-b border-stone-800">
+                  <p className="text-xs-tight font-semibold text-stone-300 uppercase tracking-wide">
+                    Connected Sessions
+                  </p>
+                </div>
+                <div className="divide-y divide-stone-800">
+                  {liveSessions
+                    .filter((session) => !session.clientId || !knownClientIds.has(session.clientId))
+                    .map((session) => (
+                      <div
+                        key={session.sessionId}
+                        className="flex items-center justify-between gap-3 px-4 py-3 text-sm text-stone-300"
+                      >
+                        <div className="min-w-0">
+                          <p className="font-medium truncate">{session.clientName}</p>
+                          <p className="text-xs text-stone-400 truncate">{session.page}</p>
+                        </div>
+                        <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 shrink-0" />
+                      </div>
+                    ))}
+                </div>
+              </div>
+            )}
+
             {/* Active signals */}
             {activeSignals.length > 0 && (
               <div>
@@ -222,9 +289,11 @@ export function ClientPresenceMonitor({
                   <p className="text-xxs text-emerald-700 mt-0.5">{getActiveSignalExplanation()}</p>
                 </div>
                 <div className="divide-y divide-stone-800">
-                  {activeSignals.map((client) => (
-                    <ClientPresenceRow key={client.client_id} client={client} isActiveSignal />
-                  ))}
+                  {activeSignals
+                    .filter((client) => !connectedClientIds.has(client.client_id))
+                    .map((client) => (
+                      <ClientPresenceRow key={client.client_id} client={client} isActiveSignal />
+                    ))}
                 </div>
               </div>
             )}
@@ -282,9 +351,11 @@ export function ClientPresenceMonitor({
 function ClientPresenceRow({
   client,
   isActiveSignal,
+  isConnected = false,
 }: {
   client: ActiveClientWithContext
   isActiveSignal: boolean
+  isConnected?: boolean
 }) {
   const isHighIntent = HIGH_INTENT.has(client.event_type)
 
@@ -323,6 +394,7 @@ function ClientPresenceRow({
         <p
           className={`text-xs truncate mt-0.5 ${isHighIntent ? 'text-amber-600 font-medium' : 'text-stone-300'}`}
         >
+          {isConnected && <span className="text-emerald-600 font-medium">Connected now - </span>}
           {getLabel(client.event_type)}
           {client.entity_title && (
             <span className="text-stone-300 font-normal"> - {client.entity_title}</span>
