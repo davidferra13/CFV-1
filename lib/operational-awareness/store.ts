@@ -1,58 +1,38 @@
 import { createServerClient } from '@/lib/db/server'
 import {
-  normalizeOperationalTelemetryEvent,
-  type OperationalTelemetryActor,
-  type OperationalTelemetryEventInput,
+  getTelemetryEventCategory,
+  normalizeTelemetryEventInput,
+  type TelemetryEventInput,
 } from './types'
 
-export type OperationalTelemetryIngestResult = {
-  eventId: string
+export type TelemetryEventCreateResult = {
+  event_id: string
   inserted: boolean
 }
 
-export async function recordOperationalTelemetryEvent(
-  actor: OperationalTelemetryActor,
-  input: OperationalTelemetryEventInput
-): Promise<OperationalTelemetryIngestResult> {
-  const normalized = normalizeOperationalTelemetryEvent(input)
-  const tenantId = actor.tenantId ?? normalized.tenantId
-
-  if (!tenantId) {
-    throw new Error('tenantId is required for operational telemetry')
-  }
-
-  if (
-    actor.actorRole !== 'admin' &&
-    normalized.tenantId &&
-    normalized.tenantId !== actor.tenantId
-  ) {
-    throw new Error('Cannot record operational telemetry outside the authenticated tenant')
-  }
-
-  if (actor.actorRole !== 'admin' && normalized.chefId && normalized.chefId !== tenantId) {
-    throw new Error('Cannot aggregate operational telemetry outside the authenticated tenant')
-  }
-
-  const chefId = normalized.chefId ?? tenantId
+export async function createTelemetryEvent(
+  event: TelemetryEventInput
+): Promise<TelemetryEventCreateResult> {
+  const normalized = normalizeTelemetryEventInput(event)
   const db = createServerClient({ admin: true })
   const { data, error } = await db
     .rpc('ingest_operational_telemetry_event', {
-      p_tenant_id: tenantId,
-      p_chef_id: chefId,
-      p_actor_role: actor.actorRole,
-      p_actor_entity_id: actor.actorEntityId,
-      p_actor_auth_user_id: actor.actorAuthUserId,
-      p_event_category: normalized.eventCategory,
-      p_event_name: normalized.eventName,
-      p_event_status: normalized.eventStatus,
-      p_source: normalized.source,
-      p_subject_type: normalized.subjectType,
-      p_subject_id: normalized.subjectId,
-      p_target_role: normalized.targetRole,
-      p_target_entity_id: normalized.targetEntityId,
-      p_occurred_at: normalized.occurredAt,
-      p_idempotency_key: normalized.idempotencyKey,
-      p_attributes: normalized.attributes,
+      p_tenant_id: normalized.tenant_id,
+      p_chef_id: normalized.tenant_id,
+      p_actor_role: normalized.actor_role,
+      p_actor_entity_id: normalized.actor_id,
+      p_actor_auth_user_id: null,
+      p_event_category: getTelemetryEventCategory(normalized.event_type),
+      p_event_name: normalized.event_type,
+      p_event_status: 'observed',
+      p_source: 'operational_awareness',
+      p_subject_type: normalized.context_id ? 'context' : null,
+      p_subject_id: normalized.context_id,
+      p_target_role: normalized.target_role,
+      p_target_entity_id: normalized.target_id,
+      p_occurred_at: normalized.timestamp,
+      p_idempotency_key: normalized.idempotency_key,
+      p_attributes: normalized.metadata,
     })
     .single()
 
@@ -61,11 +41,11 @@ export async function recordOperationalTelemetryEvent(
   }
 
   if (!data?.event_id) {
-    throw new Error('Operational telemetry ingestion did not return an event id')
+    throw new Error('Telemetry event ingestion did not return an event id')
   }
 
   return {
-    eventId: data.event_id,
+    event_id: data.event_id,
     inserted: Boolean(data.inserted),
   }
 }

@@ -1,4 +1,4 @@
-export const operationalTelemetryActorRoles = [
+export const telemetryActorRoles = [
   'admin',
   'chef_owner',
   'chef_staff',
@@ -6,85 +6,70 @@ export const operationalTelemetryActorRoles = [
   'client_delegate',
   'guest',
   'vendor',
-  'system',
 ] as const
 
-export const operationalTelemetryEventCategories = [
-  'auth',
-  'engagement',
-  'client_interaction',
-  'booking',
-  'operations',
-  'finance',
-  'safety',
-  'system',
+export const telemetryEventTypes = [
+  'inquiry_received',
+  'inquiry_responded',
+  'booking_created',
+  'booking_confirmed',
+  'booking_cancelled',
+  'session_active',
+  'session_idle',
+  'menu_submitted',
+  'payment_completed',
 ] as const
 
-export const operationalTelemetryEventStatuses = [
-  'observed',
-  'started',
-  'completed',
-  'failed',
-  'blocked',
-  'cancelled',
-] as const
+export type TelemetryActorRole = (typeof telemetryActorRoles)[number]
+export type TelemetryEventType = (typeof telemetryEventTypes)[number]
 
-export type OperationalTelemetryActorRole = (typeof operationalTelemetryActorRoles)[number]
-export type OperationalTelemetryEventCategory = (typeof operationalTelemetryEventCategories)[number]
-export type OperationalTelemetryEventStatus = (typeof operationalTelemetryEventStatuses)[number]
-
-export type OperationalTelemetryActor = {
-  actorRole: OperationalTelemetryActorRole
-  actorEntityId: string | null
-  actorAuthUserId: string | null
-  tenantId: string | null
-}
-
-export type OperationalTelemetrySubject = {
-  type: string
+export type TelemetryEvent = {
   id: string
+  tenant_id: string
+  actor_id: string
+  actor_role: TelemetryActorRole
+  target_id: string | null
+  target_role: TelemetryActorRole | null
+  event_type: TelemetryEventType
+  context_id: string | null
+  timestamp: string
+  metadata: Record<string, unknown>
 }
 
-export type OperationalTelemetryTarget = {
-  role?: OperationalTelemetryActorRole | null
-  entityId?: string | null
+export type TelemetryEventInput = {
+  tenant_id: string
+  actor_id: string
+  actor_role: TelemetryActorRole
+  target_id?: string | null
+  target_role?: TelemetryActorRole | null
+  event_type: TelemetryEventType
+  context_id?: string | null
+  timestamp?: Date | string | null
+  metadata?: Record<string, unknown> | null
+  idempotency_key?: string | null
 }
 
-export type OperationalTelemetryEventInput = {
-  tenantId?: string | null
-  chefId?: string | null
-  eventCategory: OperationalTelemetryEventCategory
-  eventName: string
-  eventStatus?: OperationalTelemetryEventStatus
-  source: string
-  subject?: OperationalTelemetrySubject | null
-  target?: OperationalTelemetryTarget | null
-  occurredAt?: Date | string | null
-  idempotencyKey?: string | null
-  attributes?: Record<string, unknown> | null
+export type NormalizedTelemetryEventInput = Omit<TelemetryEventInput, 'timestamp' | 'metadata'> & {
+  target_id: string | null
+  target_role: TelemetryActorRole | null
+  context_id: string | null
+  timestamp: string
+  metadata: Record<string, unknown>
+  idempotency_key: string | null
 }
 
-export type NormalizedOperationalTelemetryEvent = {
-  tenantId: string | null
-  chefId: string | null
-  eventCategory: OperationalTelemetryEventCategory
-  eventName: string
-  eventStatus: OperationalTelemetryEventStatus
-  source: string
-  subjectType: string | null
-  subjectId: string | null
-  targetRole: OperationalTelemetryActorRole | null
-  targetEntityId: string | null
-  occurredAt: string | null
-  idempotencyKey: string | null
-  attributes: Record<string, unknown>
-}
+export type TelemetryEventCategory =
+  | 'client_interaction'
+  | 'booking'
+  | 'engagement'
+  | 'operations'
 
-const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-const SAFE_TOKEN_PATTERN = /^[a-z0-9][a-z0-9._:-]{0,119}$/i
-const MAX_ATTRIBUTES_BYTES = 8192
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+const SAFE_IDEMPOTENCY_PATTERN = /^[a-z0-9][a-z0-9._:-]{0,119}$/i
+const MAX_METADATA_BYTES = 8192
 
-const forbiddenAttributeKeys = new Set([
+const forbiddenMetadataKeys = new Set([
   'body',
   'content',
   'message',
@@ -98,54 +83,68 @@ const forbiddenAttributeKeys = new Set([
   'chat_body',
 ])
 
+export function getTelemetryEventCategory(eventType: TelemetryEventType): TelemetryEventCategory {
+  if (eventType === 'inquiry_received' || eventType === 'inquiry_responded') {
+    return 'client_interaction'
+  }
+
+  if (
+    eventType === 'booking_created' ||
+    eventType === 'booking_confirmed' ||
+    eventType === 'booking_cancelled'
+  ) {
+    return 'booking'
+  }
+
+  if (eventType === 'session_active' || eventType === 'session_idle') {
+    return 'engagement'
+  }
+
+  return 'operations'
+}
+
 function isPlainRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
-function assertUuid(value: string | null, fieldName: string): void {
-  if (value !== null && !UUID_PATTERN.test(value)) {
+function normalizeUuid(value: string | null | undefined, fieldName: string): string | null {
+  const normalized = typeof value === 'string' && value.trim().length > 0 ? value.trim() : null
+  if (normalized !== null && !UUID_PATTERN.test(normalized)) {
     throw new Error(`${fieldName} must be a UUID`)
   }
-}
 
-function assertSafeToken(value: string, fieldName: string): void {
-  if (!SAFE_TOKEN_PATTERN.test(value)) {
-    throw new Error(`${fieldName} must use a stable token format`)
-  }
-}
-
-function normalizeOptionalUuid(value: string | null | undefined, fieldName: string): string | null {
-  const normalized = typeof value === 'string' && value.trim().length > 0 ? value.trim() : null
-  assertUuid(normalized, fieldName)
   return normalized
 }
 
-function normalizeOptionalToken(
-  value: string | null | undefined,
-  fieldName: string
-): string | null {
-  const normalized =
-    typeof value === 'string' && value.trim().length > 0 ? value.trim().toLowerCase() : null
-  if (normalized) {
-    assertSafeToken(normalized, fieldName)
+function requireUuid(value: string | null | undefined, fieldName: string): string {
+  const normalized = normalizeUuid(value, fieldName)
+  if (!normalized) {
+    throw new Error(`${fieldName} is required`)
   }
+
   return normalized
 }
 
-function normalizeTimestamp(value: Date | string | null | undefined): string | null {
-  if (!value) {
-    return null
-  }
-
-  const date = value instanceof Date ? value : new Date(value)
+function normalizeTimestamp(value: Date | string | null | undefined): string {
+  const date = value ? (value instanceof Date ? value : new Date(value)) : new Date()
   if (Number.isNaN(date.getTime())) {
-    throw new Error('occurredAt must be a valid timestamp')
+    throw new Error('timestamp must be a valid timestamp')
   }
 
   return date.toISOString()
 }
 
-function sanitizeTelemetryValue(value: unknown, path: string): unknown {
+function normalizeIdempotencyKey(value: string | null | undefined): string | null {
+  const normalized =
+    typeof value === 'string' && value.trim().length > 0 ? value.trim().toLowerCase() : null
+  if (normalized && !SAFE_IDEMPOTENCY_PATTERN.test(normalized)) {
+    throw new Error('idempotency_key must use a stable token format')
+  }
+
+  return normalized
+}
+
+function sanitizeMetadataValue(value: unknown, path: string): unknown {
   if (value === undefined) {
     return undefined
   }
@@ -165,7 +164,7 @@ function sanitizeTelemetryValue(value: unknown, path: string): unknown {
 
   if (Array.isArray(value)) {
     return value
-      .map((entry, index) => sanitizeTelemetryValue(entry, `${path}[${index}]`))
+      .map((entry, index) => sanitizeMetadataValue(entry, `${path}[${index}]`))
       .filter((entry) => entry !== undefined)
   }
 
@@ -176,17 +175,15 @@ function sanitizeTelemetryValue(value: unknown, path: string): unknown {
   const output: Record<string, unknown> = {}
   for (const [key, nestedValue] of Object.entries(value)) {
     const normalizedKey = key.trim()
-    const lowerKey = normalizedKey.toLowerCase()
-
     if (!normalizedKey) {
-      throw new Error(`${path} contains an empty attribute key`)
+      throw new Error(`${path} contains an empty metadata key`)
     }
 
-    if (forbiddenAttributeKeys.has(lowerKey)) {
-      throw new Error('operational telemetry attributes cannot include private message content')
+    if (forbiddenMetadataKeys.has(normalizedKey.toLowerCase())) {
+      throw new Error('telemetry metadata cannot include private message content')
     }
 
-    const sanitizedValue = sanitizeTelemetryValue(nestedValue, `${path}.${normalizedKey}`)
+    const sanitizedValue = sanitizeMetadataValue(nestedValue, `${path}.${normalizedKey}`)
     if (sanitizedValue !== undefined) {
       output[normalizedKey] = sanitizedValue
     }
@@ -195,64 +192,53 @@ function sanitizeTelemetryValue(value: unknown, path: string): unknown {
   return output
 }
 
-export function sanitizeOperationalTelemetryAttributes(
-  attributes: Record<string, unknown> | null | undefined
+export function sanitizeTelemetryMetadata(
+  metadata: Record<string, unknown> | null | undefined
 ): Record<string, unknown> {
-  const sanitized = sanitizeTelemetryValue(attributes ?? {}, 'attributes')
+  const sanitized = sanitizeMetadataValue(metadata ?? {}, 'metadata')
   if (!isPlainRecord(sanitized)) {
-    throw new Error('attributes must be an object')
+    throw new Error('metadata must be an object')
   }
 
   const serialized = JSON.stringify(sanitized)
-  if (Buffer.byteLength(serialized, 'utf8') > MAX_ATTRIBUTES_BYTES) {
-    throw new Error('attributes exceed the operational telemetry size limit')
+  if (Buffer.byteLength(serialized, 'utf8') > MAX_METADATA_BYTES) {
+    throw new Error('metadata exceeds the telemetry size limit')
   }
 
   return sanitized
 }
 
-export function normalizeOperationalTelemetryEvent(
-  input: OperationalTelemetryEventInput
-): NormalizedOperationalTelemetryEvent {
-  if (!operationalTelemetryEventCategories.includes(input.eventCategory)) {
-    throw new Error('eventCategory is not supported')
+export function normalizeTelemetryEventInput(
+  input: TelemetryEventInput
+): NormalizedTelemetryEventInput {
+  if (!telemetryActorRoles.includes(input.actor_role)) {
+    throw new Error('actor_role is not supported')
   }
 
-  const eventStatus = input.eventStatus ?? 'observed'
-  if (!operationalTelemetryEventStatuses.includes(eventStatus)) {
-    throw new Error('eventStatus is not supported')
+  if (!telemetryEventTypes.includes(input.event_type)) {
+    throw new Error('event_type is not supported')
   }
 
-  const eventName = input.eventName.trim().toLowerCase()
-  assertSafeToken(eventName, 'eventName')
-
-  const source = input.source.trim().toLowerCase()
-  assertSafeToken(source, 'source')
-
-  const subjectType = normalizeOptionalToken(input.subject?.type, 'subject.type')
-  const subjectId = normalizeOptionalUuid(input.subject?.id, 'subject.id')
-  if ((subjectType && !subjectId) || (!subjectType && subjectId)) {
-    throw new Error('subject requires both type and id')
+  if (input.target_role && !telemetryActorRoles.includes(input.target_role)) {
+    throw new Error('target_role is not supported')
   }
 
-  const targetRole = input.target?.role ?? null
-  if (targetRole && !operationalTelemetryActorRoles.includes(targetRole)) {
-    throw new Error('target role is not supported')
+  const targetId = normalizeUuid(input.target_id, 'target_id')
+  const targetRole = input.target_role ?? null
+  if ((targetId && !targetRole) || (!targetId && targetRole)) {
+    throw new Error('target_id and target_role must be provided together')
   }
 
   return {
-    tenantId: normalizeOptionalUuid(input.tenantId, 'tenantId'),
-    chefId: normalizeOptionalUuid(input.chefId, 'chefId'),
-    eventCategory: input.eventCategory,
-    eventName,
-    eventStatus,
-    source,
-    subjectType,
-    subjectId,
-    targetRole,
-    targetEntityId: normalizeOptionalUuid(input.target?.entityId, 'target.entityId'),
-    occurredAt: normalizeTimestamp(input.occurredAt),
-    idempotencyKey: normalizeOptionalToken(input.idempotencyKey, 'idempotencyKey'),
-    attributes: sanitizeOperationalTelemetryAttributes(input.attributes),
+    tenant_id: requireUuid(input.tenant_id, 'tenant_id'),
+    actor_id: requireUuid(input.actor_id, 'actor_id'),
+    actor_role: input.actor_role,
+    target_id: targetId,
+    target_role: targetRole,
+    event_type: input.event_type,
+    context_id: normalizeUuid(input.context_id, 'context_id'),
+    timestamp: normalizeTimestamp(input.timestamp),
+    metadata: sanitizeTelemetryMetadata(input.metadata),
+    idempotency_key: normalizeIdempotencyKey(input.idempotency_key),
   }
 }

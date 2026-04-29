@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation'
 import { auth } from '@/lib/auth'
 import { getCurrentAdminUser } from '@/lib/auth/admin'
 import { pgClient } from '@/lib/db'
-import type { OperationalTelemetryActor } from './types'
+import type { TelemetryActorRole } from './types'
 
 const SESSION_EXPIRED_URL = '/auth/signin?message=Your+session+expired.+Please+sign+in+again.'
 
@@ -11,14 +11,19 @@ type UserRoleRow = {
   entity_id: string
 }
 
-export async function requireOperationalTelemetryActor(): Promise<OperationalTelemetryActor> {
+export type AuthenticatedTelemetryActor = {
+  actor_id: string
+  actor_role: TelemetryActorRole
+  tenant_id: string | null
+}
+
+export async function requireOperationalTelemetryActor(): Promise<AuthenticatedTelemetryActor> {
   const admin = await getCurrentAdminUser()
   if (admin) {
     return {
-      actorRole: 'admin',
-      actorEntityId: admin.id,
-      actorAuthUserId: admin.id,
-      tenantId: null,
+      actor_id: admin.id,
+      actor_role: 'admin',
+      tenant_id: null,
     }
   }
 
@@ -56,10 +61,9 @@ export async function requireOperationalTelemetryActor(): Promise<OperationalTel
     }
 
     return {
-      actorRole: 'chef_owner',
-      actorEntityId: role.entity_id,
-      actorAuthUserId: session.user.id,
-      tenantId: role.entity_id,
+      actor_id: role.entity_id,
+      actor_role: 'chef_owner',
+      tenant_id: role.entity_id,
     }
   }
 
@@ -76,10 +80,9 @@ export async function requireOperationalTelemetryActor(): Promise<OperationalTel
     }
 
     return {
-      actorRole: 'client_owner',
-      actorEntityId: role.entity_id,
-      actorAuthUserId: session.user.id,
-      tenantId,
+      actor_id: role.entity_id,
+      actor_role: 'client_owner',
+      tenant_id: tenantId,
     }
   }
 
@@ -99,10 +102,9 @@ export async function requireOperationalTelemetryActor(): Promise<OperationalTel
     }
 
     return {
-      actorRole: 'chef_staff',
-      actorEntityId: role.entity_id,
-      actorAuthUserId: session.user.id,
-      tenantId: staff.chef_id,
+      actor_id: role.entity_id,
+      actor_role: 'chef_staff',
+      tenant_id: staff.chef_id,
     }
   }
 
@@ -122,23 +124,11 @@ export async function requireOperationalTelemetryActor(): Promise<OperationalTel
     }
 
     return {
-      actorRole: 'vendor',
-      actorEntityId: role.entity_id,
-      actorAuthUserId: session.user.id,
-      tenantId: partner.tenant_id,
+      actor_id: role.entity_id,
+      actor_role: 'vendor',
+      tenant_id: partner.tenant_id,
     }
   }
 
   throw new Error(`Unsupported operational telemetry role: ${role.role}`)
-}
-
-export function createSystemOperationalTelemetryActor(
-  tenantId: string | null
-): OperationalTelemetryActor {
-  return {
-    actorRole: 'system',
-    actorEntityId: null,
-    actorAuthUserId: null,
-    tenantId,
-  }
 }
