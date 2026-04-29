@@ -1,17 +1,21 @@
 # Spec: Food Cost Truth Read Model
 
-> **Status:** in-progress
+> **Status:** built
 > **Priority:** P1 (next up)
 > **Depends on:** none
 > **Estimated complexity:** large (9+ files)
 
 ## Timeline
 
-| Event         | Date             | Agent/Session | Commit |
-| ------------- | ---------------- | ------------- | ------ |
-| Created       | 2026-04-29 15:28 | Codex         |        |
-| Status: ready | 2026-04-29 15:28 | Codex         |        |
-| Claimed       | 2026-04-29 16:47 | Codex         |        |
+| Event                        | Date             | Agent/Session | Commit                      |
+| ---------------------------- | ---------------- | ------------- | --------------------------- |
+| Created                      | 2026-04-29 15:28 | Codex         |                             |
+| Status: ready                | 2026-04-29 15:28 | Codex         |                             |
+| Claimed                      | 2026-04-29 16:47 | Codex         |                             |
+| Build completed              | 2026-04-29 17:05 | Codex         |                             |
+| Unit test passed             | 2026-04-29 17:05 | Codex         |                             |
+| Narrow type check passed     | 2026-04-29 17:06 | Codex         |                             |
+| Browser verification blocked | 2026-04-29 17:06 | Codex         | No permitted running server |
 
 ---
 
@@ -59,13 +63,13 @@ Create a Food Cost Truth read model: one server-side boundary for event-level, r
 
 ### Design Tree
 
-| Decision | Resolved Choice | Reason |
-| -------- | --------------- | ------ |
-| DB view first or TypeScript read model first | TypeScript read model first | No migration needed, lower blast radius, easier tests, avoids redefining financial semantics before surfaces agree. |
-| One massive rewrite or first slice | First slice migrates `/inventory/food-cost` and shared event truth | Keeps queue batch small while proving the interface. |
-| Use page-local math or shared calculators | Shared pure calculators plus server read-model actions | Preserves feedback speed and hides query complexity behind a narrow contract. |
-| Return zeros or data state | Return `null` plus `dataState` and `missingReasons` | Satisfies zero-hallucination rule. |
-| Remy access | Read-only only | Remy can explain existing numbers, not generate recipes or mutate money. |
+| Decision                                     | Resolved Choice                                                    | Reason                                                                                                              |
+| -------------------------------------------- | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| DB view first or TypeScript read model first | TypeScript read model first                                        | No migration needed, lower blast radius, easier tests, avoids redefining financial semantics before surfaces agree. |
+| One massive rewrite or first slice           | First slice migrates `/inventory/food-cost` and shared event truth | Keeps queue batch small while proving the interface.                                                                |
+| Use page-local math or shared calculators    | Shared pure calculators plus server read-model actions             | Preserves feedback speed and hides query complexity behind a narrow contract.                                       |
+| Return zeros or data state                   | Return `null` plus `dataState` and `missingReasons`                | Satisfies zero-hallucination rule.                                                                                  |
+| Remy access                                  | Read-only only                                                     | Remy can explain existing numbers, not generate recipes or mutate money.                                            |
 
 ### Ubiquitous Language
 
@@ -139,30 +143,30 @@ Food costing is a core ChefFlow promise. Right now, agents can change one surfac
 
 ## Files to Create
 
-| File | Purpose |
-| ---- | ------- |
-| `lib/finance/food-cost-truth.ts` | Pure calculator functions, source normalization, variance math, percent math, data-state resolution. No DB calls. |
-| `lib/finance/food-cost-truth-types.ts` | Shared types for food-cost truth results, sources, revenue basis, and missing reasons. |
-| `lib/finance/food-cost-truth-actions.ts` | Authenticated server actions and server-side query wrappers for event and range food-cost truth. |
-| `tests/unit/food-cost-truth.test.ts` | Calculator and data-state tests for complete, partial, zero revenue, missing actual, missing projected, and negative variance cases. |
+| File                                     | Purpose                                                                                                                              |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `lib/finance/food-cost-truth.ts`         | Pure calculator functions, source normalization, variance math, percent math, data-state resolution. No DB calls.                    |
+| `lib/finance/food-cost-truth-types.ts`   | Shared types for food-cost truth results, sources, revenue basis, and missing reasons.                                               |
+| `lib/finance/food-cost-truth-actions.ts` | Authenticated server actions and server-side query wrappers for event and range food-cost truth.                                     |
+| `tests/unit/food-cost-truth.test.ts`     | Calculator and data-state tests for complete, partial, zero revenue, missing actual, missing projected, and negative variance cases. |
 
 ---
 
 ## Files to Modify
 
-| File | What to Change |
-| ---- | -------------- |
-| `app/(chef)/inventory/food-cost/page.tsx` | Replace local variance construction with `getRecentEventFoodCostTruth()`. Show unavailable or partial rows honestly instead of filtering everything out. |
-| `lib/events/financial-summary-actions.ts` | Delegate food-cost section construction to the new read model or keep as a compatibility wrapper around it. Preserve current output shape for existing consumers. |
-| `lib/expenses/actions.ts` | Remove duplicated food-category bucketing from `getEventProfitSummary()` or call the shared pure bucket helper. Do not change expense mutation behavior. |
-| `lib/finance/event-pricing-intelligence-actions.ts` | Reuse the shared bucket/source types where practical. Do not rewrite pricing intelligence in the first builder slice unless a compile error requires it. |
-| `components/inventory/food-cost-variance.tsx` | Accept source/confidence/data-state metadata and render partial or unavailable rows without fake zeros. |
-| `app/(chef)/culinary/costing/food-cost/page.tsx` | Later slice: consume range-level food cost truth instead of page-local expense and ledger math. |
-| `app/(chef)/food-cost/page.tsx` | Later slice: consume daily/vendor range truth and stop returning 0% when revenue is missing. |
-| `app/(chef)/ops/page.tsx` | Later slice: consume service-day food-cost truth for top metric and recent-day rows. |
-| `app/(chef)/finance/overview/cash-flow/page.tsx` | Later slice: document or migrate revenue-basis reductions to shared finance read-model helpers. |
-| `app/(chef)/finance/ledger/transaction-log/page.tsx` | Later slice: document or migrate total collected/refunded reductions to shared finance read-model helpers. |
-| `app/(chef)/finance/ledger/adjustments/page.tsx` | Later slice: document or migrate adjustment totals to shared finance read-model helpers. |
+| File                                                 | What to Change                                                                                                                                                    |
+| ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `app/(chef)/inventory/food-cost/page.tsx`            | Replace local variance construction with `getRecentEventFoodCostTruth()`. Show unavailable or partial rows honestly instead of filtering everything out.          |
+| `lib/events/financial-summary-actions.ts`            | Delegate food-cost section construction to the new read model or keep as a compatibility wrapper around it. Preserve current output shape for existing consumers. |
+| `lib/expenses/actions.ts`                            | Remove duplicated food-category bucketing from `getEventProfitSummary()` or call the shared pure bucket helper. Do not change expense mutation behavior.          |
+| `lib/finance/event-pricing-intelligence-actions.ts`  | Reuse the shared bucket/source types where practical. Do not rewrite pricing intelligence in the first builder slice unless a compile error requires it.          |
+| `components/inventory/food-cost-variance.tsx`        | Accept source/confidence/data-state metadata and render partial or unavailable rows without fake zeros.                                                           |
+| `app/(chef)/culinary/costing/food-cost/page.tsx`     | Later slice: consume range-level food cost truth instead of page-local expense and ledger math.                                                                   |
+| `app/(chef)/food-cost/page.tsx`                      | Later slice: consume daily/vendor range truth and stop returning 0% when revenue is missing.                                                                      |
+| `app/(chef)/ops/page.tsx`                            | Later slice: consume service-day food-cost truth for top metric and recent-day rows.                                                                              |
+| `app/(chef)/finance/overview/cash-flow/page.tsx`     | Later slice: document or migrate revenue-basis reductions to shared finance read-model helpers.                                                                   |
+| `app/(chef)/finance/ledger/transaction-log/page.tsx` | Later slice: document or migrate total collected/refunded reductions to shared finance read-model helpers.                                                        |
+| `app/(chef)/finance/ledger/adjustments/page.tsx`     | Later slice: document or migrate adjustment totals to shared finance read-model helpers.                                                                          |
 
 ---
 
@@ -229,11 +233,11 @@ type RangeFoodCostTruth = {
 
 ## Server Actions
 
-| Action | Auth | Input | Output | Side Effects |
-| ------ | ---- | ----- | ------ | ------------ |
-| `getEventFoodCostTruth(eventId: string)` | `requireChef()` | Event id | `EventFoodCostTruth | null` | None |
-| `getRecentEventFoodCostTruth(limit?: number)` | `requireChef()` | Optional limit, default 20, max 50 | `EventFoodCostTruth[]` | None |
-| `getRangeFoodCostTruth(input: { startDate: string; endDate: string; basis: RevenueBasis })` | `requireChef()` | Date range and basis | `RangeFoodCostTruth` | None |
+| Action                                                                                      | Auth            | Input                              | Output                       | Side Effects |
+| ------------------------------------------------------------------------------------------- | --------------- | ---------------------------------- | ---------------------------- | ------------ |
+| `getEventFoodCostTruth(eventId: string)`                                                    | `requireChef()` | Event id                           | `EventFoodCostTruth \| null` | None         |
+| `getRecentEventFoodCostTruth(limit?: number)`                                               | `requireChef()` | Optional limit, default 20, max 50 | `EventFoodCostTruth[]`       | None         |
+| `getRangeFoodCostTruth(input: { startDate: string; endDate: string; basis: RevenueBasis })` | `requireChef()` | Date range and basis               | `RangeFoodCostTruth`         | None         |
 
 Implementation notes:
 
@@ -271,17 +275,17 @@ No new mutations in the first slice. No optimistic updates.
 
 ## Edge Cases and Error Handling
 
-| Scenario | Correct Behavior |
-| -------- | ---------------- |
-| Event belongs to another tenant | Return `null` or throw not found after tenant-scoped query. Never leak existence. |
-| Revenue is zero or missing | Return `foodCostPercent: null` and missing reason. Do not render 0%. |
-| Projected cost missing | Keep actual cost visible, mark state `missing_projected_cost`, no variance percent. |
-| Actual cost missing | Keep projected cost visible, mark state `missing_actual_cost`, no variance percent. |
-| Actual below projected | Negative variance is valid and should display as savings, not an error. |
-| Leftover credits make net food cost negative | Clamp display only if the product requires it; otherwise preserve calculated truth and flag `partial` or `review_needed`. |
-| DB query fails | Throw with clear error. Do not return empty arrays that look like success. |
-| Menu cost view returns 0 for incomplete prices | Mark source as partial if coverage says prices are incomplete. |
-| Multiple menus on one event | Sum menu costs if the data model allows multiple rows, preserving menu ids in source metadata if added later. |
+| Scenario                                       | Correct Behavior                                                                                                          |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Event belongs to another tenant                | Return `null` or throw not found after tenant-scoped query. Never leak existence.                                         |
+| Revenue is zero or missing                     | Return `foodCostPercent: null` and missing reason. Do not render 0%.                                                      |
+| Projected cost missing                         | Keep actual cost visible, mark state `missing_projected_cost`, no variance percent.                                       |
+| Actual cost missing                            | Keep projected cost visible, mark state `missing_actual_cost`, no variance percent.                                       |
+| Actual below projected                         | Negative variance is valid and should display as savings, not an error.                                                   |
+| Leftover credits make net food cost negative   | Clamp display only if the product requires it; otherwise preserve calculated truth and flag `partial` or `review_needed`. |
+| DB query fails                                 | Throw with clear error. Do not return empty arrays that look like success.                                                |
+| Menu cost view returns 0 for incomplete prices | Mark source as partial if coverage says prices are incomplete.                                                            |
+| Multiple menus on one event                    | Sum menu costs if the data model allows multiple rows, preserving menu ids in source metadata if added later.             |
 
 ---
 

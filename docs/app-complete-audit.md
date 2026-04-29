@@ -835,7 +835,7 @@ Founder-owned operator walkthrough requests from `/for-operators/walkthrough` al
 - **`/inventory`** - Hub with par alert panel + 4 navigation tiles.
 - **`/inventory/counts`** - Par-level tracking with add form + count entry form.
 - **`/inventory/waste`** - Waste log form (ingredient, qty, reason, cost) + dashboard with 6-month trend.
-- **`/inventory/food-cost`** - Theoretical vs actual cost variance per event.
+- **`/inventory/food-cost`** - Theoretical vs actual cost variance per event, backed by the Food Cost Truth read model. Shows complete and partial event rows with missing projected cost, missing actual cost, or missing revenue status instead of silently dropping incomplete events.
 - **`/inventory/vendor-invoices`** - Upload + view invoices.
 
 ### 6.9 Culinary Board
