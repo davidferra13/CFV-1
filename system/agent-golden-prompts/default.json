@@ -116,5 +116,14 @@
       "omninet": ["flight record", "missed-skill"],
       "skill-garden": ["flight record", "missed-skill"]
     }
+  },
+  {
+    "name": "skill outcome scoring",
+    "prompt": "Codex should score whether a skill actually worked and update reliability stats.",
+    "expect": ["omninet", "skill-garden"],
+    "evidence": {
+      "omninet": ["Outcome score", "repair queue"],
+      "skill-garden": ["reliability stats", "repair queue"]
+    }
   }
 ]

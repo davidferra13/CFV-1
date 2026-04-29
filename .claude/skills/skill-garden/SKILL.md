@@ -31,7 +31,10 @@ Prefer the deterministic tools when changing or evaluating skills:
 - `node devtools/agent-closeout-gate.mjs --owned path,other-path` blocks closeout when owned work lacks commit, validation, report, or compliance evidence.
 - `node devtools/agent-finish.mjs --record path --owned path,other-path --used skill,skill --validations check,check` finishes a task with closeout, missed-skill detection, flight recording, and dashboard generation.
 - `node devtools/agent-flight-recorder.mjs start|finish ...` records the prompt, selected skills, used skills, touched files, validations, and commit.
+- `node devtools/skill-outcome-scorer.mjs --record path --update-stats --auto-maturity` scores whether skill use actually worked, updates reliability stats, and applies conservative maturity changes.
 - `node devtools/missed-skill-detector.mjs --record path [--write-learning]` compares expected and used skills, then creates repair items for misses.
+- `node devtools/skill-repair-queue.mjs` writes the current queue of skills that need healing.
+- `node devtools/agent-session-digest.mjs` writes a compact digest of recent flight records and what future Codex should do differently.
 - `node devtools/report-skill-failure.mjs --skill skill-name --what "..." --prompt "..."` records a missed or weak skill behavior for repair, and can add a non-duplicate golden prompt with `--add-golden`.
 - `node devtools/session-transcript-auditor.mjs [--file transcript.txt] [--write]` turns missed real-session behavior into learning inbox items.
 - `node devtools/skill-learning-proposals.mjs` proposes patch, new skill, AGENTS.md, persona, findings, or rejection routes for open learning items.
@@ -105,6 +108,7 @@ When a skill performs badly or future Codex behavior would likely miss the user'
 6. If a skill did not technically fail but its trigger is too weak for the user's newly stated expectation, tighten the trigger and add the minimum procedural rule needed.
 7. When `missed-skill-detector` finds a miss, treat the learning item as a concrete repair signal, not a vague suggestion.
 8. Use the needs-healing state in `system/agent-skill-maturity.json` when a skill has a known miss, and promote it back to active or proven only after trigger tests or real flight records prove the repair.
+9. Use `system/agent-skill-stats.json` as evidence, not intuition. Repeated clean outcomes can promote a skill, and misses or failed outcomes should create repair queue work.
 
 ## External Guidance Intake
 
@@ -147,7 +151,8 @@ After editing skills:
 3. Run `node devtools/skill-coverage-map.mjs` or `node devtools/skill-dependency-graph.mjs` when ownership or routing changed.
 4. Run a targeted compliance scan for em dashes in changed skill files.
 5. Write a closeout report with `node devtools/skill-closeout-report.mjs` when the task's main purpose was skill behavior.
-6. Run `node devtools/skill-dashboard.mjs` when coverage, maturity, or routing behavior changed.
-7. Run `node devtools/agent-closeout-gate.mjs --owned ...` before final closeout when practical.
-8. Stage only the files you changed unless the user explicitly asks to ship all dirty work.
-9. Commit and push on a feature branch.
+6. Run `node devtools/skill-dashboard.mjs` when coverage, maturity, routing behavior, or reliability stats changed.
+7. Run `node devtools/skill-repair-queue.mjs` after any outcome scoring that finds misses or failures.
+8. Run `node devtools/agent-closeout-gate.mjs --owned ...` before final closeout when practical.
+9. Stage only the files you changed unless the user explicitly asks to ship all dirty work.
+10. Commit and push on a feature branch.

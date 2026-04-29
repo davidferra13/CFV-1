@@ -26,7 +26,10 @@ Use these tools when the task touches skills or durable agent behavior:
 - Run the combined harness preflight: `node devtools/agent-preflight.mjs --prompt "..."`
 - Finish a recorded task: `node devtools/agent-finish.mjs --record path --owned path,other-path --used skill,skill --validations check,check`
 - Write or update a flight record directly: `node devtools/agent-flight-recorder.mjs start|finish ...`
+- Score a finished task: `node devtools/skill-outcome-scorer.mjs --record path --update-stats --auto-maturity`
 - Detect missed skills: `node devtools/missed-skill-detector.mjs --record path [--write-learning]`
+- Generate repair queue: `node devtools/skill-repair-queue.mjs`
+- Generate session digest: `node devtools/agent-session-digest.mjs`
 - Gate closeout before final: `node devtools/agent-closeout-gate.mjs --owned path,other-path`
 - Audit prior sessions: `node devtools/session-transcript-auditor.mjs [--file transcript.txt] [--write]`
 - Propose learning actions: `node devtools/skill-learning-proposals.mjs`
@@ -93,6 +96,7 @@ Maintain this lightweight state while working:
 - Sidecar skills: any secondary skills that materially reduce risk.
 - Hard stops: any project rule that affects the task.
 - Flight record: the start or finish evidence file when the work changes durable agent behavior.
+- Outcome score: whether routing, skill usage, validation, commit, push, and owned-file cleanup succeeded.
 - Evidence: files, commands, outputs, or user-provided artifacts that ground the work.
 - Skill delta: whether this task revealed a new skill, a skill repair, or no reusable change.
 - Closeout evidence: validator, trigger tests, skill health, or learning inbox entry when relevant.
@@ -107,6 +111,7 @@ Invoke `skill-garden` when any of these appear:
 - The same correction, missed behavior, or workflow appears more than once.
 - A skill fails, is too vague, chooses the wrong tool, or leaves out a recurring ChefFlow rule.
 - A task finishes with a missed-skill detector finding or a flight record showing selected skills differed from expected skills.
+- A task receives a weak outcome score, records a missed skill, or adds an item to the skill repair queue.
 - External operator guidance from Hermes, OpenCloy, ChatGPT, notes, markdowns, or pasted conversations should become project behavior.
 - A workflow requires repeated manual parsing, like persona imports or build queue triage.
 - Current conclusions depend on old audit findings, stale docs, mixed test failures, or operational status artifacts.

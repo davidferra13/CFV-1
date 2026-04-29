@@ -178,3 +178,58 @@ test('skill-maturity-report returns a valid maturity summary', () => {
   assert.equal(result.invalid_count, 0)
   assert.ok(result.counts.active >= 1)
 })
+
+test('skill-outcome-scorer scores a clean flight record without mutating stats', () => {
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'chefflow-outcome-'))
+  const recordFile = path.join(tempRoot, 'record.json')
+  fs.writeFileSync(
+    recordFile,
+    JSON.stringify(
+      {
+        id: 'unit-clean-record',
+        prompt: 'Review these changes.',
+        selected_primary_skill: 'review',
+        selected_sidecar_skills: ['omninet'],
+        used_skills: ['review', 'omninet'],
+        files_touched: ['package.json'],
+        validations_run: ['unit-test'],
+        commit_hash: 'abc123',
+        pushed: true,
+        missed_skills: [],
+      },
+      null,
+      2,
+    ),
+  )
+
+  try {
+    const output = runNode([
+      'devtools/skill-outcome-scorer.mjs',
+      '--record',
+      recordFile,
+      '--owned',
+      'package.json',
+      '--stdout',
+    ])
+    const result = JSON.parse(output) as {
+      outcome: { ok: boolean; score: number; checks: Array<{ id: string; ok: boolean }> }
+    }
+
+    assert.equal(result.outcome.ok, true)
+    assert.equal(result.outcome.score, 100)
+    assert.ok(result.outcome.checks.every((check) => check.ok))
+  } finally {
+    fs.rmSync(tempRoot, { recursive: true, force: true })
+  }
+})
+
+test('skill-repair-queue reads stats and reports no repairs by default', () => {
+  const output = runNode(['devtools/skill-repair-queue.mjs', '--stdout'])
+  const result = JSON.parse(output) as {
+    repair_count: number
+    entries: unknown[]
+  }
+
+  assert.equal(typeof result.repair_count, 'number')
+  assert.ok(Array.isArray(result.entries))
+})

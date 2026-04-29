@@ -9,7 +9,7 @@ function usage() {
   console.log(`Usage:
   node devtools/agent-finish.mjs --record path --owned a,b --used skill,skill --validations check,check [--commit sha]
 
-Runs closeout gate, missed-skill detection, flight record finish, and dashboard generation.`)
+Runs closeout gate, missed-skill detection, flight record finish, outcome scoring, repair queue, digest, and dashboard generation.`)
 }
 
 function runNode(label, args, allowFailure = false) {
@@ -36,6 +36,8 @@ try {
   if (!args.owned || args.owned === true) throw new Error('Missing --owned.')
   const used = splitCsv(args.used)
   const validations = splitCsv(args.validations || args.validation)
+  if (!used.length) throw new Error('Missing --used evidence.')
+  if (!validations.length) throw new Error('Missing --validations evidence.')
   const owned = String(args.owned)
   const closeoutArgs = [
     'devtools/agent-closeout-gate.mjs',
@@ -74,9 +76,25 @@ try {
     validations.join(','),
     ...(args.commit && args.commit !== true ? ['--commit', String(args.commit)] : []),
   ])
+  const outcome = runNode(
+    'outcome-scorer',
+    [
+      'devtools/skill-outcome-scorer.mjs',
+      '--record',
+      String(args.record),
+      '--owned',
+      owned,
+      '--update-stats',
+      '--auto-maturity',
+      ...(args['require-pushed'] || args.pushed ? ['--require-pushed'] : []),
+    ],
+    true,
+  )
+  const repairQueue = runNode('skill-repair-queue', ['devtools/skill-repair-queue.mjs'], true)
+  const digest = runNode('agent-session-digest', ['devtools/agent-session-digest.mjs'], true)
   const dashboard = runNode('skill-dashboard', ['devtools/skill-dashboard.mjs'], true)
   const result = {
-    ok: closeout.ok && missed.ok && flight.ok,
+    ok: closeout.ok && missed.ok && flight.ok && outcome.ok,
     closeout: {
       ok: closeout.ok,
       output: closeout.output ? JSON.parse(closeout.output) : null,
@@ -86,6 +104,12 @@ try {
       output: missed.output ? JSON.parse(missed.output) : null,
     },
     flight_record: JSON.parse(flight.output),
+    outcome: {
+      ok: outcome.ok,
+      output: outcome.output ? JSON.parse(outcome.output) : null,
+    },
+    repair_queue: repairQueue.output,
+    session_digest: digest.output,
     dashboard: dashboard.output,
   }
   console.log(JSON.stringify(result, null, 2))

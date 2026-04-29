@@ -5,6 +5,7 @@ import { execFileSync } from 'node:child_process'
 import {
   ensureDir,
   learningInboxRoot,
+  loadSkillStats,
   nowStamp,
   parseArgs,
   readJson,
@@ -41,6 +42,8 @@ function buildDashboard() {
   const dependencies = runJson(['devtools/skill-dependency-graph.mjs', '--stdout'])
   const maturity = runJson(['devtools/skill-maturity-report.mjs', '--stdout'])
   const health = latestJson('skill-health')
+  const stats = loadSkillStats()
+  const repairQueue = latestJson('skill-repair-queue')
   const weakDomains = coverage.classes
     .filter((row) => row.status !== 'covered')
     .map((row) => ({ id: row.id, status: row.status, flags: row.flags }))
@@ -67,6 +70,26 @@ function buildDashboard() {
       implicit_default_count: maturity.implicit_default_count,
       invalid_count: maturity.invalid_count,
     },
+    reliability: {
+      tracked_skill_count: Object.keys(stats.skills || {}).length,
+      session_count: (stats.sessions || []).length,
+      top_failures: Object.entries(stats.skills || {})
+        .map(([skill, row]) => ({
+          skill,
+          missed_count: row.missed_count || 0,
+          failure_count: row.failure_count || 0,
+          clean_success_count: row.clean_success_count || 0,
+        }))
+        .filter((row) => row.missed_count || row.failure_count)
+        .sort((a, b) => b.failure_count - a.failure_count || b.missed_count - a.missed_count)
+        .slice(0, 5),
+    },
+    repair_queue: repairQueue
+      ? {
+          repair_count: repairQueue.repair_count,
+          high_count: repairQueue.entries?.filter((entry) => entry.priority === 'high').length || 0,
+        }
+      : null,
     health: health
       ? {
           unhealthy_count: health.unhealthy_count,
@@ -108,6 +131,17 @@ function toMarkdown(report) {
     `- Needs healing: ${report.maturity.counts['needs-healing'] || 0}`,
     `- Deprecated: ${report.maturity.counts.deprecated || 0}`,
     `- Implicit defaults: ${report.maturity.implicit_default_count}`,
+    '',
+    '## Reliability',
+    '',
+    `- Tracked skills: ${report.reliability.tracked_skill_count}`,
+    `- Recorded sessions: ${report.reliability.session_count}`,
+    `- Skills with failures: ${report.reliability.top_failures.length}`,
+    '',
+    '## Repair Queue',
+    '',
+    `- Open repairs: ${report.repair_queue?.repair_count ?? 0}`,
+    `- High priority repairs: ${report.repair_queue?.high_count ?? 0}`,
     '',
     '## Health',
     '',
