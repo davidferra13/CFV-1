@@ -4,10 +4,12 @@ import { useMemo, useState, useTransition, type ReactNode } from 'react'
 import { updateMyDefaultKnowledgeSettings } from '@/lib/clients/client-default-knowledge-actions'
 import type {
   ClientDefaultKnowledgePassport,
+  ClientDefaultKnowledgeProvenance,
   ClientDefaultKnowledgeScope,
   ClientDefaultKnowledgeSnapshot,
   UpdateClientDefaultKnowledgeInput,
 } from '@/lib/clients/client-default-knowledge'
+import { buildClientDefaultKnowledgeApplication } from '@/lib/clients/client-default-knowledge'
 import { Alert } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -65,6 +67,10 @@ export function DefaultKnowledgePanel({ initialSnapshot }: Props) {
   const [isPending, startTransition] = useTransition()
 
   const initialFormKey = useMemo(() => JSON.stringify(toFormState(snapshot.passport)), [snapshot])
+  const bookingApplication = useMemo(
+    () => buildClientDefaultKnowledgeApplication(snapshot, 'booking'),
+    [snapshot]
+  )
   const currentFormKey = JSON.stringify(form)
   const isDirty = currentFormKey !== initialFormKey
 
@@ -146,6 +152,38 @@ export function DefaultKnowledgePanel({ initialSnapshot }: Props) {
             <ScopeRow key={scope.key} scope={scope} />
           ))}
         </div>
+
+        <div className="rounded-lg border border-brand-800 bg-brand-950 p-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <h3 className="text-sm font-semibold text-stone-100">
+                {bookingApplication.bannerTitle}
+              </h3>
+              <p className="mt-1 text-sm text-stone-400">
+                New booking and inquiry flows should prefill these facts instead of asking from
+                scratch.
+              </p>
+            </div>
+            <Badge variant="info">{bookingApplication.appliedFields.length} applied</Badge>
+          </div>
+          {bookingApplication.bannerItems.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {bookingApplication.bannerItems.map((item) => (
+                <span
+                  key={item}
+                  className="rounded-md bg-stone-900 px-2.5 py-1 text-xs text-stone-300"
+                >
+                  {item}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <SafetyConfirmationCard snapshot={snapshot} />
+        <HouseholdProfilesCard snapshot={snapshot} />
+        <ReviewQueueCard snapshot={snapshot} />
+        <ProvenanceCard provenance={snapshot.provenance} />
 
         <div className="grid grid-cols-1 gap-4 border-t border-stone-800 pt-5">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -335,6 +373,136 @@ export function DefaultKnowledgePanel({ initialSnapshot }: Props) {
         </div>
       </CardContent>
     </Card>
+  )
+}
+
+function SafetyConfirmationCard({ snapshot }: { snapshot: ClientDefaultKnowledgeSnapshot }) {
+  const { safetyConfirmation } = snapshot
+  return (
+    <div className="rounded-lg border border-stone-700 bg-stone-900 p-4">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h3 className="text-sm font-semibold text-stone-100">Safety Confirmation</h3>
+          <p className="mt-1 text-sm text-stone-400">
+            Food safety facts should be confirmed, not restated from blank fields.
+          </p>
+        </div>
+        <Badge
+          variant={
+            safetyConfirmation.status === 'current'
+              ? 'success'
+              : safetyConfirmation.status === 'missing'
+                ? 'error'
+                : 'warning'
+          }
+        >
+          {safetyConfirmation.status.replace(/_/g, ' ')}
+        </Badge>
+      </div>
+      <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2">
+        {safetyConfirmation.fields.map((field) => (
+          <div key={field.fieldKey} className="rounded-md bg-stone-800 px-3 py-2">
+            <p className="text-xs text-stone-500">{field.label}</p>
+            <p className="mt-0.5 text-sm text-stone-200">{field.value ?? 'Not set'}</p>
+            <p className="mt-1 text-xs text-brand-400">{field.confirmationLabel}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function HouseholdProfilesCard({ snapshot }: { snapshot: ClientDefaultKnowledgeSnapshot }) {
+  return (
+    <div className="rounded-lg border border-stone-700 bg-stone-900 p-4">
+      <h3 className="text-sm font-semibold text-stone-100">Household Profiles</h3>
+      <p className="mt-1 text-sm text-stone-400">
+        Household details stay separated so one person&apos;s facts do not become vague account
+        notes.
+      </p>
+      <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {snapshot.householdProfiles.map((profile) => (
+          <div key={profile.id} className="rounded-md bg-stone-800 px-3 py-2">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm font-medium text-stone-100">{profile.label}</p>
+              <Badge variant="default">{profile.role}</Badge>
+            </div>
+            <div className="mt-2 space-y-1">
+              {profile.facts
+                .filter((fact) => fact.value)
+                .map((fact) => (
+                  <p key={fact.label} className="text-xs text-stone-400">
+                    {fact.label}: <span className="text-stone-200">{fact.value}</span>
+                  </p>
+                ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function ReviewQueueCard({ snapshot }: { snapshot: ClientDefaultKnowledgeSnapshot }) {
+  const visible = snapshot.reviewQueue.slice(0, 6)
+  return (
+    <div className="rounded-lg border border-stone-700 bg-stone-900 p-4">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h3 className="text-sm font-semibold text-stone-100">Review Inbox</h3>
+          <p className="mt-1 text-sm text-stone-400">
+            New learned facts should wait for approve, edit, or reject before becoming defaults.
+          </p>
+        </div>
+        <Badge variant={snapshot.reviewQueue.length > 0 ? 'warning' : 'success'}>
+          {snapshot.reviewQueue.length} review
+        </Badge>
+      </div>
+      <div className="mt-3 space-y-2">
+        {visible.map((item) => (
+          <div
+            key={item.id}
+            className="flex flex-col gap-2 rounded-md bg-stone-800 px-3 py-2 sm:flex-row sm:items-center sm:justify-between"
+          >
+            <div>
+              <p className="text-sm text-stone-100">{item.label}</p>
+              <p className="text-xs text-stone-400">{item.proposedValue}</p>
+            </div>
+            <div className="flex gap-2 text-xs text-stone-400">
+              <span>Approve</span>
+              <span>Edit</span>
+              <span>Reject</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function ProvenanceCard({ provenance }: { provenance: ClientDefaultKnowledgeProvenance[] }) {
+  const visible = provenance.filter((item) => item.value).slice(0, 8)
+  return (
+    <div className="rounded-lg border border-stone-700 bg-stone-900 p-4">
+      <h3 className="text-sm font-semibold text-stone-100">Source and Freshness</h3>
+      <p className="mt-1 text-sm text-stone-400">
+        Every displayed fact keeps its source, freshness, and safety status visible.
+      </p>
+      <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
+        {visible.map((item) => (
+          <div key={item.fieldKey} className="rounded-md bg-stone-800 px-3 py-2">
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-xs text-stone-500">{item.label}</p>
+              <Badge variant={item.safetyCritical ? 'warning' : 'default'}>
+                {item.sourceLabel}
+              </Badge>
+            </div>
+            <p className="mt-1 text-sm text-stone-200">{item.value}</p>
+            <p className="mt-1 text-xs text-stone-500">{item.freshness.replace(/_/g, ' ')}</p>
+          </div>
+        ))}
+      </div>
+    </div>
   )
 }
 

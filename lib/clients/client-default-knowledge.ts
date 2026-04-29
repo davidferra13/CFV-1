@@ -16,6 +16,8 @@ export type ClientDefaultKnowledgeItem = {
   label: string
   value: string | null
   required: boolean
+  fieldKey?: ClientDefaultKnowledgeFieldKey
+  provenance?: ClientDefaultKnowledgeProvenance
 }
 
 export type ClientDefaultKnowledgeScope = {
@@ -56,12 +58,157 @@ export type ClientDefaultKnowledgeSnapshot = {
   passportUpdatedAt: string | null
   passport: ClientDefaultKnowledgePassport
   scopes: ClientDefaultKnowledgeScope[]
+  householdProfiles: ClientHouseholdKnowledgeProfile[]
+  provenance: ClientDefaultKnowledgeProvenance[]
+  reviewQueue: ClientDefaultKnowledgeReviewItem[]
+  safetyConfirmation: ClientSafetyConfirmationState
+  restatementGuards: ClientRestatementGuard[]
   completion: {
     ready: number
     partial: number
     empty: number
     total: number
   }
+}
+
+export type ClientDefaultKnowledgeFieldKey =
+  | 'full_name'
+  | 'preferred_name'
+  | 'email'
+  | 'phone'
+  | 'address'
+  | 'dietary_restrictions'
+  | 'dietary_protocols'
+  | 'allergies'
+  | 'dislikes'
+  | 'spice_tolerance'
+  | 'favorite_cuisines'
+  | 'favorite_dishes'
+  | 'wine_beverage_preferences'
+  | 'parking_instructions'
+  | 'access_instructions'
+  | 'kitchen_size'
+  | 'kitchen_constraints'
+  | 'house_rules'
+  | 'equipment_available'
+  | 'partner_name'
+  | 'children'
+  | 'family_notes'
+  | 'communication_mode'
+  | 'preferred_contact_method'
+  | 'chef_autonomy_level'
+  | 'auto_approve_under_cents'
+  | 'max_interaction_rounds'
+  | 'standing_instructions'
+  | 'default_guest_count'
+  | 'budget_range'
+  | 'service_style'
+  | 'delegate'
+
+export type ClientDefaultKnowledgeProvenance = {
+  fieldKey: ClientDefaultKnowledgeFieldKey
+  label: string
+  source: 'client_profile' | 'client_passport'
+  sourceLabel: string
+  value: string | null
+  lastConfirmedAt: string | null
+  freshness: 'current' | 'review_30d' | 'review_90d' | 'event_scoped'
+  safetyCritical: boolean
+  editableHref: string
+}
+
+export type ClientDefaultKnowledgeAppliedField = {
+  fieldKey: ClientDefaultKnowledgeFieldKey
+  formField:
+    | 'full_name'
+    | 'email'
+    | 'phone'
+    | 'address'
+    | 'guest_count'
+    | 'budget'
+    | 'dietary_notes'
+    | 'service_style'
+    | 'standing_instructions'
+    | 'communication_mode'
+  value: string
+  sourceLabel: string
+  freshness: ClientDefaultKnowledgeProvenance['freshness']
+  safetyCritical: boolean
+}
+
+export type ClientDefaultKnowledgeApplication = {
+  context: 'booking' | 'inquiry' | 'pre_event_checklist' | 'menu_approval' | 'payment_plan' | 'chat'
+  appliedFields: ClientDefaultKnowledgeAppliedField[]
+  blockedRestatements: ClientRestatementGuard[]
+  bannerTitle: string
+  bannerItems: string[]
+}
+
+export type ClientEventKnowledgeOverride = {
+  fieldKey: ClientDefaultKnowledgeFieldKey
+  label: string
+  accountValue: string | null
+  eventValue: string | null
+  effectiveValue: string | null
+  scope: 'account_default' | 'event_override'
+}
+
+export type ClientDefaultKnowledgeReviewItem = {
+  id: string
+  fieldKey: ClientDefaultKnowledgeFieldKey
+  label: string
+  proposedValue: string
+  sourceLabel: string
+  decision: 'pending_client_review'
+  action: 'approve' | 'edit' | 'reject'
+}
+
+export type ClientSafetyConfirmationState = {
+  status: 'current' | 'needs_confirmation' | 'missing'
+  fields: {
+    fieldKey: 'allergies' | 'dietary_restrictions' | 'dietary_protocols'
+    label: string
+    value: string | null
+    confirmationLabel: string
+  }[]
+}
+
+export type ClientHouseholdKnowledgeProfile = {
+  id: string
+  label: string
+  role: 'client' | 'partner' | 'child' | 'household'
+  facts: ClientDefaultKnowledgeItem[]
+}
+
+export type ClientRestatementGuard = {
+  formField: ClientDefaultKnowledgeAppliedField['formField']
+  fieldKey: ClientDefaultKnowledgeFieldKey
+  label: string
+  knownValue: string
+  action: 'prefill' | 'confirm_instead'
+  failureMessage: string
+}
+
+export type ClientChefDeltaAlert = {
+  changedFields: {
+    fieldKey: ClientDefaultKnowledgeFieldKey
+    label: string
+    before: string | null
+    after: string | null
+    safetyCritical: boolean
+  }[]
+  activeEventReviewRequired: boolean
+  menuSafetyReviewRequired: boolean
+  summary: string
+}
+
+export type ClientSaveAsDefaultProposal = {
+  fieldKey: ClientDefaultKnowledgeFieldKey
+  label: string
+  eventValue: string
+  currentDefault: string | null
+  shouldOfferToggle: boolean
+  toggleLabel: string
 }
 
 export const UpdateClientDefaultKnowledgeSchema = z
@@ -208,11 +355,11 @@ export function buildClientDefaultKnowledgeSnapshot(
       source: 'client_profile',
       lockedOn: true,
       items: [
-        item('Full name', profile.full_name, true),
-        item('Preferred name', profile.preferred_name, false),
-        item('Email', profile.email, true),
-        item('Phone', profile.phone, false),
-        item('Primary address', profile.address, false),
+        item('Full name', profile.full_name, true, 'full_name'),
+        item('Preferred name', profile.preferred_name, false, 'preferred_name'),
+        item('Email', profile.email, true, 'email'),
+        item('Phone', profile.phone, false, 'phone'),
+        item('Primary address', profile.address, false, 'address'),
       ],
     }),
     buildScope({
@@ -222,9 +369,19 @@ export function buildClientDefaultKnowledgeSnapshot(
       source: 'client_profile',
       lockedOn: true,
       items: [
-        item('Allergies', formatList(profile.allergies), false),
-        item('Dietary restrictions', formatList(profile.dietary_restrictions), false),
-        item('Dietary protocols', formatList(profile.dietary_protocols), false),
+        item('Allergies', formatList(profile.allergies), false, 'allergies'),
+        item(
+          'Dietary restrictions',
+          formatList(profile.dietary_restrictions),
+          false,
+          'dietary_restrictions'
+        ),
+        item(
+          'Dietary protocols',
+          formatList(profile.dietary_protocols),
+          false,
+          'dietary_protocols'
+        ),
       ],
     }),
     buildScope({
@@ -234,11 +391,21 @@ export function buildClientDefaultKnowledgeSnapshot(
       source: 'client_profile',
       lockedOn: false,
       items: [
-        item('Favorite cuisines', formatList(profile.favorite_cuisines), false),
-        item('Favorite dishes', formatList(profile.favorite_dishes), false),
-        item('Dislikes', formatList(profile.dislikes), false),
-        item('Spice tolerance', profile.spice_tolerance, false),
-        item('Wine and beverages', profile.wine_beverage_preferences, false),
+        item(
+          'Favorite cuisines',
+          formatList(profile.favorite_cuisines),
+          false,
+          'favorite_cuisines'
+        ),
+        item('Favorite dishes', formatList(profile.favorite_dishes), false, 'favorite_dishes'),
+        item('Dislikes', formatList(profile.dislikes), false, 'dislikes'),
+        item('Spice tolerance', profile.spice_tolerance, false, 'spice_tolerance'),
+        item(
+          'Wine and beverages',
+          profile.wine_beverage_preferences,
+          false,
+          'wine_beverage_preferences'
+        ),
       ],
     }),
     buildScope({
@@ -248,12 +415,12 @@ export function buildClientDefaultKnowledgeSnapshot(
       source: 'client_profile',
       lockedOn: false,
       items: [
-        item('Kitchen size', profile.kitchen_size, false),
-        item('Kitchen notes', profile.kitchen_constraints, false),
-        item('Equipment', formatList(profile.equipment_available), false),
-        item('House rules', profile.house_rules, false),
-        item('Parking instructions', profile.parking_instructions, false),
-        item('Access instructions', profile.access_instructions, false),
+        item('Kitchen size', profile.kitchen_size, false, 'kitchen_size'),
+        item('Kitchen notes', profile.kitchen_constraints, false, 'kitchen_constraints'),
+        item('Equipment', formatList(profile.equipment_available), false, 'equipment_available'),
+        item('House rules', profile.house_rules, false, 'house_rules'),
+        item('Parking instructions', profile.parking_instructions, false, 'parking_instructions'),
+        item('Access instructions', profile.access_instructions, false, 'access_instructions'),
       ],
     }),
     buildScope({
@@ -263,9 +430,9 @@ export function buildClientDefaultKnowledgeSnapshot(
       source: 'client_profile',
       lockedOn: false,
       items: [
-        item('Partner name', profile.partner_name, false),
-        item('Children', formatList(profile.children), false),
-        item('Family notes', profile.family_notes, false),
+        item('Partner name', profile.partner_name, false, 'partner_name'),
+        item('Children', formatList(profile.children), false, 'children'),
+        item('Family notes', profile.family_notes, false, 'family_notes'),
       ],
     }),
     buildScope({
@@ -276,11 +443,26 @@ export function buildClientDefaultKnowledgeSnapshot(
       source: 'client_passport',
       lockedOn: false,
       items: [
-        item('Typical guest count', formatNumber(passport.default_guest_count), false),
-        item('Budget range', formatBudgetRange(passport), false),
-        item('Service style', formatServiceStyle(passport.service_style), false),
-        item('Standing instructions', passport.standing_instructions, false),
-        item('Auto approve under', formatCents(passport.auto_approve_under_cents), false),
+        item(
+          'Typical guest count',
+          formatNumber(passport.default_guest_count),
+          false,
+          'default_guest_count'
+        ),
+        item('Budget range', formatBudgetRange(passport), false, 'budget_range'),
+        item('Service style', formatServiceStyle(passport.service_style), false, 'service_style'),
+        item(
+          'Standing instructions',
+          passport.standing_instructions,
+          false,
+          'standing_instructions'
+        ),
+        item(
+          'Auto approve under',
+          formatCents(passport.auto_approve_under_cents),
+          false,
+          'auto_approve_under_cents'
+        ),
       ],
     }),
     buildScope({
@@ -290,16 +472,41 @@ export function buildClientDefaultKnowledgeSnapshot(
       source: 'client_passport',
       lockedOn: false,
       items: [
-        item('Communication mode', formatCommunicationMode(passport.communication_mode), true),
-        item('Preferred contact', formatContactMethod(passport.preferred_contact_method), true),
-        item('Chef autonomy', formatAutonomy(passport.chef_autonomy_level), true),
-        item('Max interaction rounds', formatNumber(passport.max_interaction_rounds), false),
-        item('Delegate', formatDelegate(passport), false),
+        item(
+          'Communication mode',
+          formatCommunicationMode(passport.communication_mode),
+          true,
+          'communication_mode'
+        ),
+        item(
+          'Preferred contact',
+          formatContactMethod(passport.preferred_contact_method),
+          true,
+          'preferred_contact_method'
+        ),
+        item(
+          'Chef autonomy',
+          formatAutonomy(passport.chef_autonomy_level),
+          true,
+          'chef_autonomy_level'
+        ),
+        item(
+          'Max interaction rounds',
+          formatNumber(passport.max_interaction_rounds),
+          false,
+          'max_interaction_rounds'
+        ),
+        item('Delegate', formatDelegate(passport), false, 'delegate'),
       ],
     }),
   ]
+  const provenance = buildProvenance(profile, passport, passportRow?.updated_at ?? null)
+  const scopesWithProvenance = attachProvenance(scopes, provenance)
+  const householdProfiles = buildHouseholdProfiles(profile)
+  const safetyConfirmation = buildSafetyConfirmationState(provenance)
+  const restatementGuards = buildClientRestatementGuards(provenance)
 
-  const completion = scopes.reduce(
+  const completion = scopesWithProvenance.reduce(
     (acc, scope) => {
       acc[scope.status] += 1
       acc.total += 1
@@ -312,8 +519,124 @@ export function buildClientDefaultKnowledgeSnapshot(
     profileUpdatedAt: profile.updated_at ?? null,
     passportUpdatedAt: passportRow?.updated_at ?? null,
     passport,
-    scopes,
+    scopes: scopesWithProvenance,
+    householdProfiles,
+    provenance,
+    reviewQueue: buildDefaultKnowledgeReviewQueue(provenance),
+    safetyConfirmation,
+    restatementGuards,
     completion,
+  }
+}
+
+export function buildClientDefaultKnowledgeApplication(
+  snapshot: ClientDefaultKnowledgeSnapshot,
+  context: ClientDefaultKnowledgeApplication['context']
+): ClientDefaultKnowledgeApplication {
+  const fields = new Map(snapshot.provenance.map((field) => [field.fieldKey, field]))
+  const appliedFields = compactAppliedFields([
+    applied(fields.get('full_name'), 'full_name'),
+    applied(fields.get('email'), 'email'),
+    applied(fields.get('phone'), 'phone'),
+    applied(fields.get('address'), 'address'),
+    applied(fields.get('default_guest_count'), 'guest_count'),
+    applied(fields.get('budget_range'), 'budget'),
+    appliedDietary(fields),
+    applied(fields.get('service_style'), 'service_style'),
+    applied(fields.get('standing_instructions'), 'standing_instructions'),
+    applied(fields.get('communication_mode'), 'communication_mode'),
+  ]).filter((field) => isFieldRelevantForContext(field.formField, context))
+
+  const blockedRestatements = snapshot.restatementGuards.filter((guard) =>
+    appliedFields.some((field) => field.formField === guard.formField)
+  )
+
+  return {
+    context,
+    appliedFields,
+    blockedRestatements,
+    bannerTitle: appliedFields.length > 0 ? 'Using your saved defaults' : 'No saved defaults yet',
+    bannerItems: appliedFields.slice(0, 6).map((field) => `${field.sourceLabel}: ${field.value}`),
+  }
+}
+
+export function buildEventKnowledgeOverrides(
+  snapshot: ClientDefaultKnowledgeSnapshot,
+  eventValues: Partial<Record<ClientDefaultKnowledgeFieldKey, string | number | null>>
+): ClientEventKnowledgeOverride[] {
+  const provenanceByKey = new Map(snapshot.provenance.map((field) => [field.fieldKey, field]))
+
+  return Object.entries(eventValues).map(([key, rawEventValue]) => {
+    const fieldKey = key as ClientDefaultKnowledgeFieldKey
+    const accountValue = provenanceByKey.get(fieldKey)?.value ?? null
+    const eventValue =
+      rawEventValue === null || rawEventValue === undefined || rawEventValue === ''
+        ? null
+        : String(rawEventValue)
+    return {
+      fieldKey,
+      label: provenanceByKey.get(fieldKey)?.label ?? fieldKey.replace(/_/g, ' '),
+      accountValue,
+      eventValue,
+      effectiveValue: eventValue ?? accountValue,
+      scope: eventValue && eventValue !== accountValue ? 'event_override' : 'account_default',
+    }
+  })
+}
+
+export function buildSaveAsDefaultProposals(
+  snapshot: ClientDefaultKnowledgeSnapshot,
+  eventValues: Partial<Record<ClientDefaultKnowledgeFieldKey, string | number | null>>
+): ClientSaveAsDefaultProposal[] {
+  return buildEventKnowledgeOverrides(snapshot, eventValues)
+    .filter((override) => override.eventValue && override.eventValue !== override.accountValue)
+    .map((override) => ({
+      fieldKey: override.fieldKey,
+      label: override.label,
+      eventValue: override.eventValue ?? '',
+      currentDefault: override.accountValue,
+      shouldOfferToggle: true,
+      toggleLabel: `Use this ${override.label.toLowerCase()} for future events`,
+    }))
+}
+
+export function buildChefDefaultKnowledgeDeltaAlert(
+  before: ClientDefaultKnowledgeSnapshot,
+  after: ClientDefaultKnowledgeSnapshot
+): ClientChefDeltaAlert {
+  const beforeByKey = new Map(before.provenance.map((field) => [field.fieldKey, field]))
+  const changedFields = after.provenance
+    .map((field) => {
+      const beforeField = beforeByKey.get(field.fieldKey)
+      return {
+        fieldKey: field.fieldKey,
+        label: field.label,
+        before: beforeField?.value ?? null,
+        after: field.value,
+        safetyCritical: field.safetyCritical,
+      }
+    })
+    .filter((field) => field.before !== field.after)
+
+  const menuSafetyReviewRequired = changedFields.some((field) => field.safetyCritical)
+  const activeEventReviewRequired = changedFields.some((field) =>
+    [
+      'address',
+      'access_instructions',
+      'parking_instructions',
+      'default_guest_count',
+      'service_style',
+    ].includes(field.fieldKey)
+  )
+
+  return {
+    changedFields,
+    activeEventReviewRequired,
+    menuSafetyReviewRequired,
+    summary:
+      changedFields.length === 0
+        ? 'No default knowledge changes.'
+        : `${changedFields.length} default ${changedFields.length === 1 ? 'field' : 'fields'} changed.`,
   }
 }
 
@@ -337,11 +660,17 @@ function buildScope(
   }
 }
 
-function item(label: string, value: string | number | null | undefined, required: boolean) {
+function item(
+  label: string,
+  value: string | number | null | undefined,
+  required: boolean,
+  fieldKey?: ClientDefaultKnowledgeFieldKey
+): ClientDefaultKnowledgeItem {
   return {
     label,
     value: value === null || value === undefined ? null : String(value),
     required,
+    fieldKey,
   }
 }
 
@@ -424,6 +753,467 @@ function formatAutonomy(value: ClientDefaultKnowledgePassport['chef_autonomy_lev
     low: 'Client directs',
   }
   return labels[value]
+}
+
+function buildProvenance(
+  profile: ClientProfileForDefaults,
+  passport: ClientDefaultKnowledgePassport,
+  passportUpdatedAt: string | null
+): ClientDefaultKnowledgeProvenance[] {
+  const profileConfirmedAt = profile.updated_at ?? null
+  const passportConfirmedAt = passportUpdatedAt
+
+  return [
+    provenance('full_name', 'Full name', profile.full_name, 'client_profile', profileConfirmedAt),
+    provenance(
+      'preferred_name',
+      'Preferred name',
+      profile.preferred_name,
+      'client_profile',
+      profileConfirmedAt
+    ),
+    provenance('email', 'Email', profile.email, 'client_profile', profileConfirmedAt),
+    provenance('phone', 'Phone', profile.phone, 'client_profile', profileConfirmedAt),
+    provenance('address', 'Primary address', profile.address, 'client_profile', profileConfirmedAt),
+    provenance(
+      'dietary_restrictions',
+      'Dietary restrictions',
+      formatList(profile.dietary_restrictions),
+      'client_profile',
+      profileConfirmedAt,
+      true,
+      'review_30d'
+    ),
+    provenance(
+      'dietary_protocols',
+      'Dietary protocols',
+      formatList(profile.dietary_protocols),
+      'client_profile',
+      profileConfirmedAt,
+      true,
+      'review_30d'
+    ),
+    provenance(
+      'allergies',
+      'Allergies',
+      formatList(profile.allergies),
+      'client_profile',
+      profileConfirmedAt,
+      true,
+      'review_30d'
+    ),
+    provenance(
+      'dislikes',
+      'Dislikes',
+      formatList(profile.dislikes),
+      'client_profile',
+      profileConfirmedAt
+    ),
+    provenance(
+      'spice_tolerance',
+      'Spice tolerance',
+      profile.spice_tolerance,
+      'client_profile',
+      profileConfirmedAt
+    ),
+    provenance(
+      'favorite_cuisines',
+      'Favorite cuisines',
+      formatList(profile.favorite_cuisines),
+      'client_profile',
+      profileConfirmedAt
+    ),
+    provenance(
+      'favorite_dishes',
+      'Favorite dishes',
+      formatList(profile.favorite_dishes),
+      'client_profile',
+      profileConfirmedAt
+    ),
+    provenance(
+      'wine_beverage_preferences',
+      'Wine and beverages',
+      profile.wine_beverage_preferences,
+      'client_profile',
+      profileConfirmedAt
+    ),
+    provenance(
+      'parking_instructions',
+      'Parking instructions',
+      profile.parking_instructions,
+      'client_profile',
+      profileConfirmedAt,
+      false,
+      'event_scoped'
+    ),
+    provenance(
+      'access_instructions',
+      'Access instructions',
+      profile.access_instructions,
+      'client_profile',
+      profileConfirmedAt,
+      false,
+      'event_scoped'
+    ),
+    provenance(
+      'kitchen_size',
+      'Kitchen size',
+      profile.kitchen_size,
+      'client_profile',
+      profileConfirmedAt,
+      false,
+      'event_scoped'
+    ),
+    provenance(
+      'kitchen_constraints',
+      'Kitchen notes',
+      profile.kitchen_constraints,
+      'client_profile',
+      profileConfirmedAt,
+      true,
+      'event_scoped'
+    ),
+    provenance(
+      'house_rules',
+      'House rules',
+      profile.house_rules,
+      'client_profile',
+      profileConfirmedAt
+    ),
+    provenance(
+      'equipment_available',
+      'Equipment',
+      formatList(profile.equipment_available),
+      'client_profile',
+      profileConfirmedAt
+    ),
+    provenance(
+      'partner_name',
+      'Partner name',
+      profile.partner_name,
+      'client_profile',
+      profileConfirmedAt
+    ),
+    provenance(
+      'children',
+      'Children',
+      formatList(profile.children),
+      'client_profile',
+      profileConfirmedAt
+    ),
+    provenance(
+      'family_notes',
+      'Family notes',
+      profile.family_notes,
+      'client_profile',
+      profileConfirmedAt
+    ),
+    provenance(
+      'communication_mode',
+      'Communication mode',
+      formatCommunicationMode(passport.communication_mode),
+      'client_passport',
+      passportConfirmedAt
+    ),
+    provenance(
+      'preferred_contact_method',
+      'Preferred contact',
+      formatContactMethod(passport.preferred_contact_method),
+      'client_passport',
+      passportConfirmedAt
+    ),
+    provenance(
+      'chef_autonomy_level',
+      'Chef autonomy',
+      formatAutonomy(passport.chef_autonomy_level),
+      'client_passport',
+      passportConfirmedAt
+    ),
+    provenance(
+      'auto_approve_under_cents',
+      'Auto approve under',
+      formatCents(passport.auto_approve_under_cents),
+      'client_passport',
+      passportConfirmedAt
+    ),
+    provenance(
+      'max_interaction_rounds',
+      'Max interaction rounds',
+      formatNumber(passport.max_interaction_rounds),
+      'client_passport',
+      passportConfirmedAt
+    ),
+    provenance(
+      'standing_instructions',
+      'Standing instructions',
+      passport.standing_instructions,
+      'client_passport',
+      passportConfirmedAt
+    ),
+    provenance(
+      'default_guest_count',
+      'Typical guest count',
+      formatNumber(passport.default_guest_count),
+      'client_passport',
+      passportConfirmedAt
+    ),
+    provenance(
+      'budget_range',
+      'Budget range',
+      formatBudgetRange(passport),
+      'client_passport',
+      passportConfirmedAt
+    ),
+    provenance(
+      'service_style',
+      'Service style',
+      formatServiceStyle(passport.service_style),
+      'client_passport',
+      passportConfirmedAt
+    ),
+    provenance(
+      'delegate',
+      'Delegate',
+      formatDelegate(passport),
+      'client_passport',
+      passportConfirmedAt
+    ),
+  ]
+}
+
+function provenance(
+  fieldKey: ClientDefaultKnowledgeFieldKey,
+  label: string,
+  value: string | null | undefined,
+  source: ClientDefaultKnowledgeProvenance['source'],
+  lastConfirmedAt: string | null,
+  safetyCritical = false,
+  freshness: ClientDefaultKnowledgeProvenance['freshness'] = 'review_90d'
+): ClientDefaultKnowledgeProvenance {
+  return {
+    fieldKey,
+    label,
+    source,
+    sourceLabel: source === 'client_profile' ? 'Profile' : 'Default Knowledge',
+    value: normalizeOptionalText(value),
+    lastConfirmedAt,
+    freshness,
+    safetyCritical,
+    editableHref: '/my-profile',
+  }
+}
+
+function attachProvenance(
+  scopes: ClientDefaultKnowledgeScope[],
+  provenanceRows: ClientDefaultKnowledgeProvenance[]
+): ClientDefaultKnowledgeScope[] {
+  const provenanceByKey = new Map(provenanceRows.map((row) => [row.fieldKey, row]))
+  return scopes.map((scope) => ({
+    ...scope,
+    items: scope.items.map((scopeItem) => ({
+      ...scopeItem,
+      provenance: scopeItem.fieldKey ? provenanceByKey.get(scopeItem.fieldKey) : undefined,
+    })),
+  }))
+}
+
+function buildHouseholdProfiles(
+  profile: ClientProfileForDefaults
+): ClientHouseholdKnowledgeProfile[] {
+  const householdProfiles: ClientHouseholdKnowledgeProfile[] = [
+    {
+      id: 'client',
+      label: profile.preferred_name || profile.full_name || 'Client',
+      role: 'client',
+      facts: [
+        item('Allergies', formatList(profile.allergies), false, 'allergies'),
+        item(
+          'Dietary restrictions',
+          formatList(profile.dietary_restrictions),
+          false,
+          'dietary_restrictions'
+        ),
+        item('Dislikes', formatList(profile.dislikes), false, 'dislikes'),
+      ],
+    },
+  ]
+
+  if (profile.partner_name) {
+    householdProfiles.push({
+      id: 'partner',
+      label: profile.partner_name,
+      role: 'partner',
+      facts: [item('Household relationship', 'Partner', false, 'partner_name')],
+    })
+  }
+
+  for (const [index, child] of (profile.children ?? []).entries()) {
+    if (!child.trim()) continue
+    householdProfiles.push({
+      id: `child-${index}`,
+      label: child,
+      role: 'child',
+      facts: [item('Child profile', child, false, 'children')],
+    })
+  }
+
+  if (profile.family_notes) {
+    householdProfiles.push({
+      id: 'household',
+      label: 'Household notes',
+      role: 'household',
+      facts: [item('Family notes', profile.family_notes, false, 'family_notes')],
+    })
+  }
+
+  return householdProfiles
+}
+
+function buildSafetyConfirmationState(
+  provenanceRows: ClientDefaultKnowledgeProvenance[]
+): ClientSafetyConfirmationState {
+  const safetyRows = provenanceRows.filter((row) =>
+    ['allergies', 'dietary_restrictions', 'dietary_protocols'].includes(row.fieldKey)
+  )
+  const fields: ClientSafetyConfirmationState['fields'] = safetyRows.map((row) => ({
+    fieldKey: row.fieldKey as 'allergies' | 'dietary_restrictions' | 'dietary_protocols',
+    label: row.label,
+    value: row.value,
+    confirmationLabel: row.value ? 'Still current' : 'Add or confirm none',
+  }))
+  const populated = fields.filter((field) => field.value).length
+
+  return {
+    status:
+      populated === 0 ? 'missing' : populated === fields.length ? 'current' : 'needs_confirmation',
+    fields,
+  }
+}
+
+function buildDefaultKnowledgeReviewQueue(
+  provenanceRows: ClientDefaultKnowledgeProvenance[]
+): ClientDefaultKnowledgeReviewItem[] {
+  return provenanceRows
+    .filter((row) => row.value && row.freshness !== 'current')
+    .map((row) => ({
+      id: `review-${row.fieldKey}`,
+      fieldKey: row.fieldKey,
+      label: row.label,
+      proposedValue: row.value ?? '',
+      sourceLabel: row.sourceLabel,
+      decision: 'pending_client_review',
+      action: 'approve',
+    }))
+}
+
+function buildClientRestatementGuards(
+  provenanceRows: ClientDefaultKnowledgeProvenance[]
+): ClientRestatementGuard[] {
+  const guards: ClientRestatementGuard[] = []
+  for (const row of provenanceRows) {
+    if (!row.value) continue
+    const formField = toFormField(row.fieldKey)
+    if (!formField) continue
+    guards.push({
+      formField,
+      fieldKey: row.fieldKey,
+      label: row.label,
+      knownValue: row.value,
+      action: row.safetyCritical ? 'confirm_instead' : 'prefill',
+      failureMessage: `${row.label} is already saved. Confirm or edit it instead of asking again.`,
+    })
+  }
+  return guards
+}
+
+function toFormField(
+  fieldKey: ClientDefaultKnowledgeFieldKey
+): ClientDefaultKnowledgeAppliedField['formField'] | null {
+  const map: Partial<
+    Record<ClientDefaultKnowledgeFieldKey, ClientDefaultKnowledgeAppliedField['formField']>
+  > = {
+    full_name: 'full_name',
+    email: 'email',
+    phone: 'phone',
+    address: 'address',
+    default_guest_count: 'guest_count',
+    budget_range: 'budget',
+    service_style: 'service_style',
+    standing_instructions: 'standing_instructions',
+    communication_mode: 'communication_mode',
+    allergies: 'dietary_notes',
+    dietary_restrictions: 'dietary_notes',
+    dietary_protocols: 'dietary_notes',
+  }
+  return map[fieldKey] ?? null
+}
+
+function applied(
+  row: ClientDefaultKnowledgeProvenance | undefined,
+  formField: ClientDefaultKnowledgeAppliedField['formField']
+): ClientDefaultKnowledgeAppliedField | null {
+  if (!row?.value) return null
+  return {
+    fieldKey: row.fieldKey,
+    formField,
+    value: row.value,
+    sourceLabel: row.sourceLabel,
+    freshness: row.freshness,
+    safetyCritical: row.safetyCritical,
+  }
+}
+
+function appliedDietary(
+  fields: Map<ClientDefaultKnowledgeFieldKey, ClientDefaultKnowledgeProvenance>
+): ClientDefaultKnowledgeAppliedField | null {
+  const values = [
+    fields.get('dietary_restrictions')?.value,
+    fields.get('allergies')?.value,
+    fields.get('dietary_protocols')?.value,
+  ].filter(Boolean)
+
+  if (values.length === 0) return null
+
+  return {
+    fieldKey: 'dietary_restrictions',
+    formField: 'dietary_notes',
+    value: values.join('; '),
+    sourceLabel: 'Profile',
+    freshness: 'review_30d',
+    safetyCritical: true,
+  }
+}
+
+function compactAppliedFields(
+  fields: Array<ClientDefaultKnowledgeAppliedField | null>
+): ClientDefaultKnowledgeAppliedField[] {
+  const seen = new Set<string>()
+  const compacted: ClientDefaultKnowledgeAppliedField[] = []
+  for (const field of fields) {
+    if (!field) continue
+    if (seen.has(field.formField)) continue
+    seen.add(field.formField)
+    compacted.push(field)
+  }
+  return compacted
+}
+
+function isFieldRelevantForContext(
+  formField: ClientDefaultKnowledgeAppliedField['formField'],
+  context: ClientDefaultKnowledgeApplication['context']
+): boolean {
+  const contextMap: Record<
+    ClientDefaultKnowledgeApplication['context'],
+    ClientDefaultKnowledgeAppliedField['formField'][]
+  > = {
+    booking: ['full_name', 'email', 'phone', 'address', 'guest_count', 'budget', 'dietary_notes'],
+    inquiry: ['full_name', 'email', 'phone', 'address', 'guest_count', 'budget', 'dietary_notes'],
+    pre_event_checklist: ['address', 'guest_count', 'dietary_notes', 'service_style'],
+    menu_approval: ['dietary_notes', 'service_style', 'standing_instructions'],
+    payment_plan: ['email', 'communication_mode'],
+    chat: ['communication_mode', 'standing_instructions'],
+  }
+  return contextMap[context].includes(formField)
 }
 
 function coercePassport(

@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 import { requireClient } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { PublicInquiryForm } from '@/components/public/public-inquiry-form'
+import { getMyDefaultKnowledgeSettings } from '@/lib/clients/client-default-knowledge-actions'
+import { buildClientDefaultKnowledgeApplication } from '@/lib/clients/client-default-knowledge'
 
 export const metadata: Metadata = {
   title: 'Book Now',
@@ -28,6 +30,7 @@ export default async function BookNowPage({
     .from('clients')
     .select('full_name, email, phone, address, dietary_restrictions, allergies')
     .eq('id', user.entityId)
+    .eq('tenant_id', user.tenantId!)
     .single()
 
   const chefData = chef as Record<string, unknown> | null
@@ -36,6 +39,17 @@ export default async function BookNowPage({
   const chefSlug = (chefData?.public_slug as string) ?? ''
 
   const profile = clientProfile as Record<string, unknown> | null
+  const defaultKnowledge = await getMyDefaultKnowledgeSettings()
+  const bookingDefaults = buildClientDefaultKnowledgeApplication(defaultKnowledge, 'booking')
+  const defaultByFormField = new Map(
+    bookingDefaults.appliedFields.map((field) => [field.formField, field.value])
+  )
+  const dietaryNotes = [
+    formatListValue(profile?.dietary_restrictions),
+    formatListValue(profile?.allergies),
+  ]
+    .filter(Boolean)
+    .join('. ')
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -49,14 +63,22 @@ export default async function BookNowPage({
           email: (profile?.email as string) ?? user.email ?? '',
           phone: (profile?.phone as string) ?? '',
           address: (profile?.address as string) ?? '',
-          dietary_notes: [
-            (profile?.dietary_restrictions as string) ?? '',
-            (profile?.allergies as string) ?? '',
-          ]
-            .filter(Boolean)
-            .join('. '),
+          dietary_notes: dietaryNotes || defaultByFormField.get('dietary_notes') || '',
+          guest_count: defaultByFormField.get('guest_count') ?? '',
+          budget: defaultByFormField.get('budget') ?? '',
+          known_defaults: bookingDefaults.bannerItems,
         }}
       />
     </div>
   )
+}
+
+function formatListValue(value: unknown): string {
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => String(item).trim())
+      .filter(Boolean)
+      .join(', ')
+  }
+  return typeof value === 'string' ? value.trim() : ''
 }

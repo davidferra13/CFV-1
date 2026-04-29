@@ -41,6 +41,9 @@ interface Props {
     phone?: string
     address?: string
     dietary_notes?: string
+    guest_count?: string
+    budget?: string
+    known_defaults?: string[]
   }
 }
 
@@ -170,6 +173,8 @@ function hasPrefillValues(defaultValues: Props['defaultValues']): boolean {
       defaultValues.phone,
       defaultValues.address,
       defaultValues.dietary_notes,
+      defaultValues.guest_count,
+      defaultValues.budget,
     ].some((value) => typeof value === 'string' && value.trim().length > 0)
   )
 }
@@ -221,9 +226,9 @@ export function PublicInquiryForm({
     email: defaultValues?.email ?? '',
     phone: defaultValues?.phone ?? '',
     client_birthday: '',
-    guest_count: '',
+    guest_count: defaultValues?.guest_count ?? '',
     occasion: '',
-    budget: '',
+    budget: defaultValues?.budget ?? '',
     favorite_ingredients_dislikes: '',
     additional_notes: '',
     referral_source: '',
@@ -687,6 +692,21 @@ export function PublicInquiryForm({
               lane={PUBLIC_INTAKE_LANE_KEYS.public_profile_inquiry}
               layout="stack"
             />
+            {defaultValues?.known_defaults && defaultValues.known_defaults.length > 0 && (
+              <div className="rounded-xl border border-brand-800 bg-brand-950 px-4 py-3">
+                <p className="text-sm font-medium text-stone-100">Using your saved defaults</p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {defaultValues.known_defaults.slice(0, 6).map((item) => (
+                    <span
+                      key={item}
+                      className="rounded-md bg-stone-900 px-2.5 py-1 text-xs text-stone-300"
+                    >
+                      {item}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
             <p className="px-1 text-xs leading-relaxed text-stone-500">
               {expectedResponseTime
                 ? `Published response window: ${expectedResponseTime}.`

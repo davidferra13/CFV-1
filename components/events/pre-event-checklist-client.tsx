@@ -252,6 +252,13 @@ export function PreEventChecklistClient({ event, client }: PreEventChecklistClie
       {/* Event Summary */}
       <Card className="mb-4 border-brand-100 bg-brand-950">
         <CardContent className="p-4">
+          <div className="mb-4 rounded-lg border border-brand-800 bg-stone-900 px-3 py-2">
+            <p className="text-sm font-medium text-stone-100">Using your saved defaults</p>
+            <p className="mt-1 text-xs text-stone-400">
+              Review and confirm what ChefFlow already knows. Empty repeat fields are a failure
+              condition for this checklist.
+            </p>
+          </div>
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div>
               <div className="text-stone-500 text-xs mb-0.5">Date</div>
