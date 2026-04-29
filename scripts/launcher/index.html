@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mission Control</title>
-<meta name="description" content="ChefFlow Mission Control — ops dashboard for dev, beta, and production">
+<meta name="description" content="ChefFlow Mission Control - ops dashboard for dev, beta, and production">
 <meta name="theme-color" content="#e88f47">
 <meta name="color-scheme" content="dark">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%23eda86b'/%3E%3Cstop offset='100%25' stop-color='%23d47530'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='14' fill='url(%23g)'/%3E%3Ccircle cx='32' cy='32' r='14' fill='none' stroke='white' stroke-width='2.5' opacity='0.9'/%3E%3Ccircle cx='32' cy='32' r='7' fill='none' stroke='white' stroke-width='2' opacity='0.7'/%3E%3Ccircle cx='32' cy='32' r='3' fill='white'/%3E%3Cline x1='32' y1='10' x2='32' y2='18' stroke='white' stroke-width='2.5' stroke-linecap='round'/%3E%3Cline x1='32' y1='46' x2='32' y2='54' stroke='white' stroke-width='2.5' stroke-linecap='round'/%3E%3Cline x1='10' y1='32' x2='18' y2='32' stroke='white' stroke-width='2.5' stroke-linecap='round'/%3E%3Cline x1='46' y1='32' x2='54' y2='32' stroke='white' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
@@ -1077,7 +1077,7 @@ body {
 .ping-result.ok { color: var(--success); }
 .ping-result.fail { color: var(--error); }
 
-/* ── Home Panel — Mega Buttons ────────────────────────────────── */
+/* ── Home Panel - Mega Buttons ────────────────────────────────── */
 #project-stats-bar .stat-card:hover {
   border-color: var(--border-bright) !important;
   background: var(--bg-hover) !important;
@@ -1214,7 +1214,7 @@ body {
 
 /* ── Tooltip ─────────────────────────────────────────────────── */
 .btn[title]:hover::before {
-  /* Use native title attribute tooltips — they work well enough */
+  /* Use native title attribute tooltips - they work well enough */
 }
 
 /* ── Prompt Queue Badge ──────────────────────────────────────── */
@@ -1312,7 +1312,7 @@ body {
 .chat-drawer.open { display: flex; }
 .chat-drawer.resizing { transition: none; user-select: none; }
 
-/* Resize handles — edges */
+/* Resize handles - edges */
 .chat-resize-handle {
   position: absolute;
   z-index: 20;
@@ -1322,7 +1322,7 @@ body {
 .chat-resize-w  { left: -4px; top: 16px; bottom: 16px; width: 8px; cursor: w-resize; }
 .chat-resize-e  { right: -4px; top: 16px; bottom: 16px; width: 8px; cursor: e-resize; }
 
-/* Resize handles — corners (larger hit area, higher z-index) */
+/* Resize handles - corners (larger hit area, higher z-index) */
 .chat-resize-nw { top: -4px; left: -4px; width: 16px; height: 16px; cursor: nw-resize; z-index: 30; }
 .chat-resize-ne { top: -4px; right: -4px; width: 16px; height: 16px; cursor: ne-resize; z-index: 30; }
 .chat-resize-sw { bottom: -4px; left: -4px; width: 16px; height: 16px; cursor: sw-resize; z-index: 30; }
@@ -1610,7 +1610,7 @@ body {
   vertical-align: text-bottom;
   animation: blink-cursor 0.8s step-end infinite;
 }
-/* Thinking indicator — shown while model emits actions before visible text */
+/* Thinking indicator - shown while model emits actions before visible text */
 @keyframes thinking-dots { 0% { content: '.'; } 33% { content: '..'; } 66% { content: '...'; } }
 .chat-thinking {
   color: var(--text-muted);
@@ -2602,9 +2602,9 @@ body {
           </div>
         </div>
         <div class="actions">
-          <button type="button" class="btn btn-warning" onclick="action('beta/restart')" title="Restart the beta server without redeploying — quick fix for freezes">&#x1F504; Restart</button>
+          <button type="button" class="btn btn-warning" onclick="action('beta/restart')" title="Restart the beta server without redeploying - quick fix for freezes">&#x1F504; Restart</button>
           <button type="button" class="btn btn-primary" onclick="confirmAction('deploy')" title="Build and publish to beta.cheflowhq.com (takes 8-10 minutes)">&#x1F680; Deploy to Beta</button>
-          <button type="button" class="btn btn-danger" onclick="confirmAction('rollback')" title="Undo the last deploy — go back to the previous version">&#x23EA; Rollback</button>
+          <button type="button" class="btn btn-danger" onclick="confirmAction('rollback')" title="Undo the last deploy - go back to the previous version">&#x23EA; Rollback</button>
           <button type="button" class="btn btn-ghost" onclick="openUrl('https://beta.cheflowhq.com')" title="Open the beta preview website">&#x1F310; Open Beta</button>
           <button type="button" class="btn-ping" onclick="ping('beta')" id="ping-beta" title="Check if the beta server is online">&#x1F4E1; Ping <span class="ping-result" id="ping-beta-result"></span></button>
         </div>
@@ -2704,10 +2704,10 @@ body {
         <div class="model-list" id="ollama-pi-models"></div>
       </div>
 
-      <!-- ═══ Remy Panel — AI Concierge Roadmap ═══ -->
+      <!-- ═══ Remy Panel - AI Concierge Roadmap ═══ -->
       <div class="panel" id="panel-remy">
         <div class="panel-header">
-          <h2 class="panel-title">Remy — AI Concierge</h2>
+          <h2 class="panel-title">Remy - AI Concierge</h2>
           <div style="display:flex;align-items:center;gap:12px;">
             <span id="remy-last-eval" style="font-size:11px;color:var(--text-muted);"></span>
             <span class="status-badge online" id="badge-remy" style="background:var(--brand-dim);color:var(--brand);border:1px solid rgba(232,143,71,0.25);">
@@ -2832,8 +2832,8 @@ body {
           </div>
         </div>
         <div class="actions">
-          <button class="btn btn-primary" onclick="action('build/typecheck')" id="btn-tsc" title="Quick check for code errors — takes a few seconds">&#x2714; Check for Errors</button>
-          <button class="btn btn-warning" onclick="action('build/full')" id="btn-build" title="Full production build — compiles everything, takes 1-2 minutes">&#x1F528; Full Build</button>
+          <button class="btn btn-primary" onclick="action('build/typecheck')" id="btn-tsc" title="Quick check for code errors - takes a few seconds">&#x2714; Check for Errors</button>
+          <button class="btn btn-warning" onclick="action('build/full')" id="btn-build" title="Full production build - compiles everything, takes 1-2 minutes">&#x1F528; Full Build</button>
         </div>
         <div class="divider"></div>
         <h3 style="font-size:14px;color:var(--text-secondary);margin-bottom:12px;">&#x1F5C4;&#xFE0F; Database</h3>
@@ -3536,7 +3536,7 @@ body {
 
         <div class="divider" style="margin:24px 0;border-top:1px solid var(--border);"></div>
 
-        <!-- Hardware Upgrade Plan — Always-On AI Inference -->
+        <!-- Hardware Upgrade Plan - Always-On AI Inference -->
         <div>
           <h3 style="color:var(--text-secondary);font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Hardware Upgrade Plan</h3>
 
@@ -3692,7 +3692,7 @@ body {
         <div style="background:linear-gradient(135deg,rgba(232,143,71,0.15),rgba(232,143,71,0.05));border:1px solid rgba(232,143,71,0.3);border-radius:10px;padding:20px;margin-bottom:24px;">
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
             <span style="font-size:20px;">&#x1F373;</span>
-            <span style="font-size:16px;font-weight:700;color:var(--brand-bright);">PHASE 1 — Eat Your Own Cooking</span>
+            <span style="font-size:16px;font-weight:700;color:var(--brand-bright);">PHASE 1 - Eat Your Own Cooking</span>
           </div>
           <div style="color:var(--text-secondary);font-size:13px;line-height:1.6;">Use ChefFlow for your own chef business. Every client, event, quote, and payment goes through the app. Fix what's broken. This is your polish phase.</div>
           <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
@@ -3704,7 +3704,7 @@ body {
         <!-- Mission Statement -->
         <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:24px;">
           <div style="font-family:'DM Serif Display',serif;font-size:15px;color:var(--text-primary);line-height:1.6;text-align:center;">
-            "ChefFlow is the operating system for private chefs — from first inquiry to final payment, with AI that respects your clients' privacy and a platform that gives back to end hunger."
+            "ChefFlow is the operating system for private chefs - from first inquiry to final payment, with AI that respects your clients' privacy and a platform that gives back to end hunger."
           </div>
         </div>
 
@@ -3715,7 +3715,7 @@ body {
             <div style="display:grid;grid-template-columns:32px 1fr auto;gap:12px;align-items:center;background:var(--brand-dim);border:1px solid rgba(232,143,71,0.3);border-radius:8px 8px 2px 2px;padding:12px 16px;">
               <span style="font-size:18px;text-align:center;">&#x1F373;</span>
               <div>
-                <div style="font-weight:600;font-size:13px;color:var(--brand-bright);">Phase 1 — Eat Your Own Cooking</div>
+                <div style="font-weight:600;font-size:13px;color:var(--brand-bright);">Phase 1 - Eat Your Own Cooking</div>
                 <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Run your business on ChefFlow. Fix every friction point.</div>
               </div>
               <span style="font-size:11px;color:var(--warning);background:var(--warning-dim);padding:2px 8px;border-radius:4px;">Month 1-2</span>
@@ -3723,7 +3723,7 @@ body {
             <div style="display:grid;grid-template-columns:32px 1fr auto;gap:12px;align-items:center;background:var(--bg-card);border:1px solid var(--border);border-radius:2px;padding:12px 16px;">
               <span style="font-size:18px;text-align:center;">&#x1F527;</span>
               <div>
-                <div style="font-weight:600;font-size:13px;">Phase 2 — Plug the Gaps</div>
+                <div style="font-weight:600;font-size:13px;">Phase 2 - Plug the Gaps</div>
                 <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Stripe prod, Cloud AI, Charity feature, Welcome email, Help center, Analytics</div>
               </div>
               <span style="font-size:11px;color:var(--text-muted);background:var(--bg-secondary);padding:2px 8px;border-radius:4px;">Month 2-4</span>
@@ -3731,7 +3731,7 @@ body {
             <div style="display:grid;grid-template-columns:32px 1fr auto;gap:12px;align-items:center;background:var(--bg-card);border:1px solid var(--border);border-radius:2px;padding:12px 16px;">
               <span style="font-size:18px;text-align:center;">&#x1F468;&#x200D;&#x1F373;</span>
               <div>
-                <div style="font-weight:600;font-size:13px;">Phase 3 — Private Beta (10 Chefs)</div>
+                <div style="font-weight:600;font-size:13px;">Phase 3 - Private Beta (10 Chefs)</div>
                 <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Find 10 private chefs. High-touch onboarding. Weekly check-ins. Fix fast.</div>
               </div>
               <span style="font-size:11px;color:var(--text-muted);background:var(--bg-secondary);padding:2px 8px;border-radius:4px;">Month 4-6</span>
@@ -3739,7 +3739,7 @@ body {
             <div style="display:grid;grid-template-columns:32px 1fr auto;gap:12px;align-items:center;background:var(--bg-card);border:1px solid var(--border);border-radius:2px;padding:12px 16px;">
               <span style="font-size:18px;text-align:center;">&#x1F680;</span>
               <div>
-                <div style="font-weight:600;font-size:13px;">Phase 4 — Public Launch</div>
+                <div style="font-weight:600;font-size:13px;">Phase 4 - Public Launch</div>
                 <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Product Hunt, social media, chef communities, press outreach, launch video</div>
               </div>
               <span style="font-size:11px;color:var(--text-muted);background:var(--bg-secondary);padding:2px 8px;border-radius:4px;">Month 6-7</span>
@@ -3747,7 +3747,7 @@ body {
             <div style="display:grid;grid-template-columns:32px 1fr auto;gap:12px;align-items:center;background:var(--bg-card);border:1px solid var(--border);border-radius:2px;padding:12px 16px;">
               <span style="font-size:18px;text-align:center;">&#x1F4C8;</span>
               <div>
-                <div style="font-weight:600;font-size:13px;">Phase 5 — Growth (100 Subscribers)</div>
+                <div style="font-weight:600;font-size:13px;">Phase 5 - Growth (100 Subscribers)</div>
                 <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Word of mouth, content/SEO, communities, referrals, partnerships</div>
               </div>
               <span style="font-size:11px;color:var(--text-muted);background:var(--bg-secondary);padding:2px 8px;border-radius:4px;">Month 7-18</span>
@@ -3755,7 +3755,7 @@ body {
             <div style="display:grid;grid-template-columns:32px 1fr auto;gap:12px;align-items:center;background:var(--bg-card);border:1px solid var(--border);border-radius:2px 2px 8px 8px;padding:12px 16px;">
               <span style="font-size:18px;text-align:center;">&#x1F30D;</span>
               <div>
-                <div style="font-weight:600;font-size:13px;">Phase 6 — Scale & Expand</div>
+                <div style="font-weight:600;font-size:13px;">Phase 6 - Scale & Expand</div>
                 <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Hire support, enterprise tier, marketplace, mobile app, international</div>
               </div>
               <span style="font-size:11px;color:var(--text-muted);background:var(--bg-secondary);padding:2px 8px;border-radius:4px;">Year 2+</span>
@@ -3809,7 +3809,7 @@ body {
             </div>
             <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:10px;">
               <span style="color:var(--error);font-size:16px;">&#x274C;</span>
-              <div><div style="font-size:12px;font-weight:600;">ChefFlow Gives Back</div><div style="font-size:10px;color:var(--error);">Charity feature — core brand</div></div>
+              <div><div style="font-size:12px;font-weight:600;">ChefFlow Gives Back</div><div style="font-size:10px;color:var(--error);">Charity feature - core brand</div></div>
             </div>
             <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:10px;">
               <span style="color:var(--warning);font-size:16px;">&#x26A0;&#xFE0F;</span>
@@ -3848,19 +3848,19 @@ body {
                   <td style="padding:8px 14px;font-weight:600;">Real Business</td>
                   <td style="padding:8px 14px;text-align:right;font-family:monospace;color:var(--brand);">100</td>
                   <td style="padding:8px 14px;text-align:right;font-family:monospace;color:var(--success);">$2,900</td>
-                  <td style="padding:8px 14px;font-size:12px;color:var(--text-muted);">$34,800/yr ARR — you have a company</td>
+                  <td style="padding:8px 14px;font-size:12px;color:var(--text-muted);">$34,800/yr ARR - you have a company</td>
                 </tr>
                 <tr style="border-bottom:1px solid var(--border);">
                   <td style="padding:8px 14px;font-weight:600;">Growth Stage</td>
                   <td style="padding:8px 14px;text-align:right;font-family:monospace;color:var(--brand);">250</td>
                   <td style="padding:8px 14px;text-align:right;font-family:monospace;color:var(--success);">$7,250</td>
-                  <td style="padding:8px 14px;font-size:12px;color:var(--text-muted);">$87,000/yr ARR — hire help</td>
+                  <td style="padding:8px 14px;font-size:12px;color:var(--text-muted);">$87,000/yr ARR - hire help</td>
                 </tr>
                 <tr>
                   <td style="padding:8px 14px;font-weight:600;">Scale</td>
                   <td style="padding:8px 14px;text-align:right;font-family:monospace;color:var(--brand);">1,000</td>
                   <td style="padding:8px 14px;text-align:right;font-family:monospace;color:var(--success);">$29,000</td>
-                  <td style="padding:8px 14px;font-size:12px;color:var(--text-muted);">$348,000/yr ARR — this is serious</td>
+                  <td style="padding:8px 14px;font-size:12px;color:var(--text-muted);">$348,000/yr ARR - this is serious</td>
                 </tr>
               </tbody>
             </table>
@@ -3984,7 +3984,7 @@ body {
 
           <!-- Resume Badge (shown when paused / scrolled up) -->
           <div id="observe-resume" onclick="observeResume()" style="display:none;position:absolute;bottom:220px;left:50%;transform:translateX(-50%);background:var(--brand);color:white;padding:6px 16px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;z-index:10;box-shadow:0 2px 12px rgba(232,143,71,0.4);">
-            <span id="observe-new-count">0</span> new lines — click to resume
+            <span id="observe-new-count">0</span> new lines - click to resume
           </div>
 
         </div>
@@ -4046,8 +4046,8 @@ body {
           </div>
         </div>
 
-        <!-- ── Processes — PC ── -->
-        <h3 style="color:var(--text-secondary);font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Processes — Your PC (6)</h3>
+        <!-- ── Processes - PC ── -->
+        <h3 style="color:var(--text-secondary);font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Processes - Your PC (6)</h3>
         <div style="margin-bottom:24px;">
           <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;overflow:hidden;">
             <table style="width:100%;border-collapse:collapse;font-size:13px;">
@@ -4058,7 +4058,7 @@ body {
               </tr>
               <tr style="border-bottom:1px solid var(--border);">
                 <td style="padding:10px 14px;font-weight:600;">VS Code</td>
-                <td style="padding:10px 14px;color:var(--text-secondary);">Code editor — where you write and read code</td>
+                <td style="padding:10px 14px;color:var(--text-secondary);">Code editor - where you write and read code</td>
                 <td style="padding:10px 14px;text-align:center;color:var(--success);">&#x2705;</td>
               </tr>
               <tr style="border-bottom:1px solid var(--border);">
@@ -4068,12 +4068,12 @@ body {
               </tr>
               <tr style="border-bottom:1px solid var(--border);">
                 <td style="padding:10px 14px;font-weight:600;">Ollama</td>
-                <td style="padding:10px 14px;color:var(--text-secondary);">Local AI brain — the terminal with scrolling GET requests</td>
+                <td style="padding:10px 14px;color:var(--text-secondary);">Local AI brain - the terminal with scrolling GET requests</td>
                 <td style="padding:10px 14px;text-align:center;color:var(--success);">&#x2705;</td>
               </tr>
               <tr style="border-bottom:1px solid var(--border);">
                 <td style="padding:10px 14px;font-weight:600;">Mission Control</td>
-                <td style="padding:10px 14px;color:var(--text-secondary);">This dashboard — monitors everything</td>
+                <td style="padding:10px 14px;color:var(--text-secondary);">This dashboard - monitors everything</td>
                 <td style="padding:10px 14px;text-align:center;color:var(--success);">&#x2705;</td>
               </tr>
               <tr style="border-bottom:1px solid var(--border);">
@@ -4083,15 +4083,15 @@ body {
               </tr>
               <tr>
                 <td style="padding:10px 14px;font-weight:600;">Claude Code</td>
-                <td style="padding:10px 14px;color:var(--text-secondary);">Lead AI engineer — runs inside VS Code</td>
+                <td style="padding:10px 14px;color:var(--text-secondary);">Lead AI engineer - runs inside VS Code</td>
                 <td style="padding:10px 14px;text-align:center;color:var(--success);">&#x2705;</td>
               </tr>
             </table>
           </div>
         </div>
 
-        <!-- ── Processes — Pi ── -->
-        <h3 style="color:var(--text-secondary);font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Processes — Raspberry Pi (4)</h3>
+        <!-- ── Processes - Pi ── -->
+        <h3 style="color:var(--text-secondary);font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Processes - Raspberry Pi (4)</h3>
         <div style="margin-bottom:24px;">
           <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;overflow:hidden;">
             <table style="width:100%;border-collapse:collapse;font-size:13px;">
@@ -4107,17 +4107,17 @@ body {
               </tr>
               <tr style="border-bottom:1px solid var(--border);">
                 <td style="padding:10px 14px;font-weight:600;">PM2</td>
-                <td style="padding:10px 14px;color:var(--text-secondary);">Process manager — auto-restarts the beta app if it crashes</td>
+                <td style="padding:10px 14px;color:var(--text-secondary);">Process manager - auto-restarts the beta app if it crashes</td>
                 <td style="padding:10px 14px;text-align:center;"><span style="font-size:11px;background:var(--info-dim);color:var(--info);padding:2px 8px;border-radius:4px;">Daemon</span></td>
               </tr>
               <tr style="border-bottom:1px solid var(--border);">
                 <td style="padding:10px 14px;font-weight:600;">cloudflared</td>
-                <td style="padding:10px 14px;color:var(--text-secondary);">Tunnel — connects Pi to Cloudflare so the internet can reach beta</td>
+                <td style="padding:10px 14px;color:var(--text-secondary);">Tunnel - connects Pi to Cloudflare so the internet can reach beta</td>
                 <td style="padding:10px 14px;text-align:center;"><span style="font-size:11px;background:var(--success-dim);color:var(--success);padding:2px 8px;border-radius:4px;">Service</span></td>
               </tr>
               <tr>
                 <td style="padding:10px 14px;font-weight:600;">sshd</td>
-                <td style="padding:10px 14px;color:var(--text-secondary);">SSH daemon — lets you control Pi remotely from your PC</td>
+                <td style="padding:10px 14px;color:var(--text-secondary);">SSH daemon - lets you control Pi remotely from your PC</td>
                 <td style="padding:10px 14px;text-align:center;"><span style="font-size:11px;background:var(--success-dim);color:var(--success);padding:2px 8px;border-radius:4px;">Service</span></td>
               </tr>
             </table>
@@ -4467,12 +4467,12 @@ body {
               <tr style="border-bottom:1px solid var(--border);">
                 <td style="padding:10px 14px;font-weight:600;">bcm2835_wdt</td>
                 <td style="padding:10px 14px;color:var(--text-secondary);">kernel</td>
-                <td style="padding:10px 14px;color:var(--warning);">Hardware watchdog — reboots Pi if OS freezes (15s)</td>
+                <td style="padding:10px 14px;color:var(--warning);">Hardware watchdog - reboots Pi if OS freezes (15s)</td>
               </tr>
               <tr>
                 <td style="padding:10px 14px;font-weight:600;">Ollama</td>
                 <td style="padding:10px 14px;color:var(--text-secondary);">systemd</td>
-                <td style="padding:10px 14px;color:var(--error);">MASKED — permanently disabled (Pi OOM fix)</td>
+                <td style="padding:10px 14px;color:var(--error);">MASKED - permanently disabled (Pi OOM fix)</td>
               </tr>
             </table>
           </div>
@@ -4521,7 +4521,7 @@ body {
               <span style="color:var(--error);font-size:16px;">&#x23F0;</span>
               <div>
                 <div style="font-size:12px;font-weight:600;">Pi OS watchdog</div>
-                <div style="font-size:10px;color:var(--text-muted);">Hardware chip — reboots if frozen (15s)</div>
+                <div style="font-size:10px;color:var(--text-muted);">Hardware chip - reboots if frozen (15s)</div>
               </div>
             </div>
           </div>
@@ -4540,7 +4540,7 @@ body {
               <tr style="border-bottom:1px solid var(--border);">
                 <td style="padding:10px 14px;font-weight:600;">Ollama</td>
                 <td style="padding:10px 14px;color:var(--text-secondary);">Terminal window on PC</td>
-                <td style="padding:10px 14px;color:var(--text-secondary);">Every AI request — who asked, how fast, success/fail</td>
+                <td style="padding:10px 14px;color:var(--text-secondary);">Every AI request - who asked, how fast, success/fail</td>
               </tr>
               <tr style="border-bottom:1px solid var(--border);">
                 <td style="padding:10px 14px;font-weight:600;">Next.js Dev Server</td>
@@ -4627,7 +4627,7 @@ body {
             <div style="display:grid;grid-template-columns:32px 1fr;gap:12px;align-items:center;background:var(--bg-card);border:1px solid var(--border);border-radius:2px 2px 8px 8px;padding:12px 16px;">
               <span style="font-size:14px;text-align:center;font-family:monospace;color:var(--success);font-weight:700;">8</span>
               <div>
-                <div style="font-weight:600;font-size:13px;color:var(--success);">Page loads — user can click things</div>
+                <div style="font-weight:600;font-size:13px;color:var(--success);">Page loads - user can click things</div>
                 <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Browser renders HTML, JavaScript hydrates, page is interactive</div>
               </div>
             </div>
@@ -4640,31 +4640,31 @@ body {
           <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;">
             <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:10px 12px;display:flex;align-items:center;gap:10px;">
               <span style="font-family:monospace;font-weight:700;color:var(--success);font-size:16px;">200</span>
-              <div style="font-size:12px;color:var(--text-secondary);">OK — everything worked</div>
+              <div style="font-size:12px;color:var(--text-secondary);">OK - everything worked</div>
             </div>
             <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:10px 12px;display:flex;align-items:center;gap:10px;">
               <span style="font-family:monospace;font-weight:700;color:var(--info);font-size:16px;">301</span>
-              <div style="font-size:12px;color:var(--text-secondary);">Moved — redirect</div>
+              <div style="font-size:12px;color:var(--text-secondary);">Moved - redirect</div>
             </div>
             <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:10px 12px;display:flex;align-items:center;gap:10px;">
               <span style="font-family:monospace;font-weight:700;color:var(--warning);font-size:16px;">400</span>
-              <div style="font-size:12px;color:var(--text-secondary);">Bad request — sent wrong data</div>
+              <div style="font-size:12px;color:var(--text-secondary);">Bad request - sent wrong data</div>
             </div>
             <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:10px 12px;display:flex;align-items:center;gap:10px;">
               <span style="font-family:monospace;font-weight:700;color:var(--warning);font-size:16px;">401</span>
-              <div style="font-size:12px;color:var(--text-secondary);">Unauthorized — need to log in</div>
+              <div style="font-size:12px;color:var(--text-secondary);">Unauthorized - need to log in</div>
             </div>
             <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:10px 12px;display:flex;align-items:center;gap:10px;">
               <span style="font-family:monospace;font-weight:700;color:var(--warning);font-size:16px;">403</span>
-              <div style="font-size:12px;color:var(--text-secondary);">Forbidden — logged in but not allowed</div>
+              <div style="font-size:12px;color:var(--text-secondary);">Forbidden - logged in but not allowed</div>
             </div>
             <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:10px 12px;display:flex;align-items:center;gap:10px;">
               <span style="font-family:monospace;font-weight:700;color:var(--error);font-size:16px;">404</span>
-              <div style="font-size:12px;color:var(--text-secondary);">Not found — doesn't exist</div>
+              <div style="font-size:12px;color:var(--text-secondary);">Not found - doesn't exist</div>
             </div>
             <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:10px 12px;display:flex;align-items:center;gap:10px;">
               <span style="font-family:monospace;font-weight:700;color:var(--error);font-size:16px;">500</span>
-              <div style="font-size:12px;color:var(--text-secondary);">Server error — the server broke</div>
+              <div style="font-size:12px;color:var(--text-secondary);">Server error - the server broke</div>
             </div>
           </div>
         </div>
@@ -4680,7 +4680,7 @@ body {
               </tr>
               <tr style="border-bottom:1px solid var(--border);">
                 <td style="padding:8px 14px;font-weight:600;color:var(--brand);">Terminal</td>
-                <td style="padding:8px 14px;color:var(--text-secondary);">The window that shows text. Like a TV screen — just a container.</td>
+                <td style="padding:8px 14px;color:var(--text-secondary);">The window that shows text. Like a TV screen - just a container.</td>
               </tr>
               <tr style="border-bottom:1px solid var(--border);">
                 <td style="padding:8px 14px;font-weight:600;color:var(--brand);">Shell</td>
@@ -4692,7 +4692,7 @@ body {
               </tr>
               <tr style="border-bottom:1px solid var(--border);">
                 <td style="padding:8px 14px;font-weight:600;color:var(--brand);">Process</td>
-                <td style="padding:8px 14px;color:var(--text-secondary);">Any program currently running. Your browser, Ollama, VS Code — all processes.</td>
+                <td style="padding:8px 14px;color:var(--text-secondary);">Any program currently running. Your browser, Ollama, VS Code - all processes.</td>
               </tr>
               <tr style="border-bottom:1px solid var(--border);">
                 <td style="padding:8px 14px;font-weight:600;color:var(--brand);">Daemon</td>
@@ -4700,7 +4700,7 @@ body {
               </tr>
               <tr style="border-bottom:1px solid var(--border);">
                 <td style="padding:8px 14px;font-weight:600;color:var(--brand);">Service</td>
-                <td style="padding:8px 14px;color:var(--text-secondary);">A daemon managed by the OS — it auto-starts on boot and auto-restarts on crash.</td>
+                <td style="padding:8px 14px;color:var(--text-secondary);">A daemon managed by the OS - it auto-starts on boot and auto-restarts on crash.</td>
               </tr>
               <tr style="border-bottom:1px solid var(--border);">
                 <td style="padding:8px 14px;font-weight:600;color:var(--brand);">Port</td>
@@ -4720,7 +4720,7 @@ body {
               </tr>
               <tr style="border-bottom:1px solid var(--border);">
                 <td style="padding:8px 14px;font-weight:600;color:var(--brand);">API</td>
-                <td style="padding:8px 14px;color:var(--text-secondary);">How programs talk to each other — structured requests and responses, no GUI.</td>
+                <td style="padding:8px 14px;color:var(--text-secondary);">How programs talk to each other - structured requests and responses, no GUI.</td>
               </tr>
               <tr style="border-bottom:1px solid var(--border);">
                 <td style="padding:8px 14px;font-weight:600;color:var(--brand);">Endpoint</td>
@@ -4752,11 +4752,11 @@ body {
               </tr>
               <tr style="border-bottom:1px solid var(--border);">
                 <td style="padding:8px 14px;font-weight:600;color:var(--brand);">Headless</td>
-                <td style="padding:8px 14px;color:var(--text-secondary);">A computer with no monitor/keyboard. Your Pi is headless — controlled via SSH.</td>
+                <td style="padding:8px 14px;color:var(--text-secondary);">A computer with no monitor/keyboard. Your Pi is headless - controlled via SSH.</td>
               </tr>
               <tr style="border-bottom:1px solid var(--border);">
                 <td style="padding:8px 14px;font-weight:600;color:var(--brand);">OOM</td>
-                <td style="padding:8px 14px;color:var(--text-secondary);">Out of Memory — a process tried to use more RAM than available. OS kills something.</td>
+                <td style="padding:8px 14px;color:var(--text-secondary);">Out of Memory - a process tried to use more RAM than available. OS kills something.</td>
               </tr>
               <tr style="border-bottom:1px solid var(--border);">
                 <td style="padding:8px 14px;font-weight:600;color:var(--brand);">Latency</td>
@@ -4772,7 +4772,7 @@ body {
               </tr>
               <tr>
                 <td style="padding:8px 14px;font-weight:600;color:var(--brand);">PID</td>
-                <td style="padding:8px 14px;color:var(--text-secondary);">Process ID — every running program gets a unique number. Used to kill stuck processes.</td>
+                <td style="padding:8px 14px;color:var(--text-secondary);">Process ID - every running program gets a unique number. Used to kill stuck processes.</td>
               </tr>
             </table>
           </div>
@@ -4920,7 +4920,7 @@ body {
               <span style="font-size:24px;">&#x1F464;</span>
               <div>
                 <div style="font-weight:600;color:var(--text-primary);">Client</div>
-                <div style="font-size:11px;color:var(--text-muted);">Client portal — /my-events</div>
+                <div style="font-size:11px;color:var(--text-muted);">Client portal - /my-events</div>
               </div>
             </div>
             <div style="font-size:11px;color:var(--text-muted);font-family:monospace;background:var(--bg-secondary);padding:6px 10px;border-radius:6px;">e2e.client.*.test</div>
@@ -4933,7 +4933,7 @@ body {
               <span style="font-size:24px;">&#x1F9D1;&#x200D;&#x1F373;</span>
               <div>
                 <div style="font-weight:600;color:var(--text-primary);">Staff</div>
-                <div style="font-size:11px;color:var(--text-muted);">Staff portal — tasks, station, schedule</div>
+                <div style="font-size:11px;color:var(--text-muted);">Staff portal - tasks, station, schedule</div>
               </div>
             </div>
             <div style="font-size:11px;color:var(--text-muted);font-family:monospace;background:var(--bg-secondary);padding:6px 10px;border-radius:6px;">e2e.staff.*.test &bull; PIN: 1234</div>
@@ -4946,7 +4946,7 @@ body {
               <span style="font-size:24px;">&#x1F91D;</span>
               <div>
                 <div style="font-weight:600;color:var(--text-primary);">Partner</div>
-                <div style="font-size:11px;color:var(--text-muted);">Partner portal — locations, events</div>
+                <div style="font-size:11px;color:var(--text-muted);">Partner portal - locations, events</div>
               </div>
             </div>
             <div style="font-size:11px;color:var(--text-muted);font-family:monospace;background:var(--bg-secondary);padding:6px 10px;border-radius:6px;">e2e.partner.*.test</div>
@@ -4972,7 +4972,7 @@ body {
               <span style="font-size:24px;">&#x1F468;&#x200D;&#x1F373;</span>
               <div>
                 <div style="font-weight:600;color:var(--text-primary);">Chef B</div>
-                <div style="font-size:11px;color:var(--text-muted);">Isolated tenant — multi-tenant tests</div>
+                <div style="font-size:11px;color:var(--text-muted);">Isolated tenant - multi-tenant tests</div>
               </div>
             </div>
             <div style="font-size:11px;color:var(--text-muted);font-family:monospace;background:var(--bg-secondary);padding:6px 10px;border-radius:6px;">e2e.chef-b.*.test</div>
@@ -5335,7 +5335,7 @@ body {
 
 <script>
 // ═══════════════════════════════════════════════════════════════════
-// ChefFlow Mission Control — Frontend
+// ChefFlow Mission Control - Frontend
 // ═══════════════════════════════════════════════════════════════════
 
 const API = `${window.location.protocol}//${window.location.host}`
@@ -5562,7 +5562,7 @@ function renderCommits(commits) {
 
 // ── Helpers ───────────────────────────────────────────────────────
 
-// timeAgo is defined in the chat section below — handles both Date objects and ISO strings
+// timeAgo is defined in the chat section below - handles both Date objects and ISO strings
 
 function renderDeployments(deployments) {
   const el = document.getElementById('prod-deployments')
@@ -5571,11 +5571,11 @@ function renderDeployments(deployments) {
     const date = new Date(d.created)
     const ago = timeAgo(date)
     const stateColor = d.state === 'READY' ? 'var(--success)' : d.state === 'ERROR' ? 'var(--error)' : 'var(--warning)'
-    const branch = d.meta?.branch || '—'
-    const msg = d.meta?.message || '—'
+    const branch = d.meta?.branch || '-'
+    const msg = d.meta?.message || '-'
     return `<div class="commit-item">
       <span class="commit-hash" style="color:${stateColor}">${d.state}</span>
-      <span class="commit-msg">${branch} — ${msg} (${ago})</span>
+      <span class="commit-msg">${branch} - ${msg} (${ago})</span>
     </div>`
   }).join('')
 }
@@ -5639,7 +5639,7 @@ async function pingAll() {
 
     const upCount = services.filter(s => data[s]?.online).length
     addLog(upCount === services.length ? 'success' : 'warn', 'ping',
-      `All pinged (${total}ms) — ${upCount}/${services.length} online: ${results.join(', ')}`)
+      `All pinged (${total}ms) - ${upCount}/${services.length} online: ${results.join(', ')}`)
   } catch (err) {
     addLog('error', 'ping', `Ping all failed: ${err.message}`)
   }
@@ -5667,19 +5667,19 @@ function openUrl(url) {
   window.open(url, '_blank')
 }
 
-// Header dot click — start/restart the service if offline, ping if online
+// Header dot click - start/restart the service if offline, ping if online
 async function headerDotAction(service) {
   const isOnline = statusData?.[service]?.online
   if (isOnline) {
-    // Already online — just ping to refresh
+    // Already online - just ping to refresh
     ping(service)
     return
   }
-  // Offline — try to start/restart
+  // Offline - try to start/restart
   const actionMap = {
     dev: 'dev/start',
     beta: 'beta/restart',
-    prod: null, // Prod is Vercel-hosted — just ping
+    prod: null, // Prod is Vercel-hosted - just ping
     ollamaPc: 'ollama/pc/start',
     ollamaPi: 'ollama/pi/start',
   }
@@ -6161,7 +6161,7 @@ async function sendChat() {
     clearFileAttachment()
   }
 
-  // Local render timer — scoped to this call, not shared across calls
+  // Local render timer - scoped to this call, not shared across calls
   let renderTimer = null
 
   input.value = ''
@@ -6231,7 +6231,7 @@ async function sendChat() {
       const errText = await response.text().catch(() => '')
       let errMsg
       try { errMsg = JSON.parse(errText).error } catch { errMsg = errText || `Server returned ${response.status}` }
-      if (response.status === 404) errMsg = 'Chat endpoint not found — restart the dashboard (npm run dashboard)'
+      if (response.status === 404) errMsg = 'Chat endpoint not found - restart the dashboard (npm run dashboard)'
       else if (response.status === 503) errMsg = 'No Ollama instance available. Start Ollama on PC or Pi first.'
       botMsg.textContent = `Error: ${errMsg}`
       botMsg.classList.remove('streaming')
@@ -6349,7 +6349,7 @@ async function sendChat() {
     // Clear any pending render timer and cursor
     if (renderTimer) { clearTimeout(renderTimer); renderTimer = null }
     if (err.name === 'AbortError') {
-      // User cancelled — clean up the streaming message
+      // User cancelled - clean up the streaming message
       const finalText = fullResponse.replace(/<action>[\w/\-]+(?::[^<]+)?<\/action>/g, '').replace(/<memory_save[^>]*>[^<]*<\/memory_save>/g, '').replace(/<memory_delete>[^<]*<\/memory_delete>/g, '').trim()
       botMsg.innerHTML = finalText ? renderMarkdown(finalText) + '<em style="color:var(--text-muted);font-size:12px;"> (cancelled)</em>' : '<em style="color:var(--text-muted);">Response cancelled</em>'
       botMsg.classList.remove('streaming')
@@ -7304,7 +7304,7 @@ async function megaShipIt() {
   if (msg === null) return // cancelled
 
   setMegaState('mega-ship-it', 'running')
-  addLog('info', 'ship', '🚀 Ship It — starting pipeline...')
+  addLog('info', 'ship', '🚀 Ship It - starting pipeline...')
 
   try {
     const res = await fetch(`${API}/api/ship-it`, {
@@ -7332,7 +7332,7 @@ async function megaCloseOut() {
   if (msg === null) return
 
   setMegaState('mega-close-out', 'running')
-  addLog('info', 'close-out', '✅ Feature Close-Out — starting pipeline...')
+  addLog('info', 'close-out', '✅ Feature Close-Out - starting pipeline...')
 
   try {
     const res = await fetch(`${API}/api/close-out`, {
@@ -7649,7 +7649,7 @@ function timelineEventMeta(type) {
   if (key === 'pull') return { icon: '📥', color: '#60a5fa' }
   if (key === 'cherry_pick') return { icon: '🍒', color: '#fb7185' }
   if (key === 'file_created') return { icon: '📄', color: '#10b981' }
-  if (key === 'file_deleted') return { icon: '🗑️', color: '#ef4444' }
+  if (key === 'file_deleted') return { icon: '�-�️', color: '#ef4444' }
   if (key === 'file_renamed') return { icon: '📝', color: '#8b5cf6' }
   return { icon: '📌', color: '#94a3b8' }
 }
@@ -8213,7 +8213,7 @@ function renderTimelineLifeSummary(life) {
   const updated = life.lastUpdated || 'unknown'
   const assumptionStart = life.assumptions?.earliestProjectWorkDate || 'unknown'
 
-  // Main display — just the midpoint
+  // Main display - just the midpoint
   setText('timeline-life-mid', formatTimelineHours(combined.mid))
 
   // Detail panel (behind info button)
@@ -8872,7 +8872,7 @@ async function loadBundleSize() {
     const el = document.getElementById('bundle-size')
     if (!el) return
     if (!data.history || data.history.length === 0) {
-      el.innerHTML = '<div style="color:var(--text-muted);font-size:13px;">No bundle size data — run a build first, then click "Capture".</div><button class="btn btn-ghost" onclick="captureBundleSize()" style="margin-top:8px;font-size:11px;">Capture Bundle Size</button>'
+      el.innerHTML = '<div style="color:var(--text-muted);font-size:13px;">No bundle size data - run a build first, then click "Capture".</div><button class="btn btn-ghost" onclick="captureBundleSize()" style="margin-top:8px;font-size:11px;">Capture Bundle Size</button>'
       return
     }
     const latest = data.history[data.history.length - 1]
@@ -8912,7 +8912,7 @@ async function loadRollbackHistory() {
     el.innerHTML = data.entries.slice(-10).reverse().map(e => `
       <div style="padding:6px 0;border-bottom:1px solid var(--border);font-size:12px;">
         <span style="color:var(--warning);">${e.timestamp?.slice(0, 19) || 'unknown'}</span>
-        <span style="color:var(--text-secondary);margin-left:8px;">${e.trigger || 'manual'} — ${e.result || 'success'}</span>
+        <span style="color:var(--text-secondary);margin-left:8px;">${e.trigger || 'manual'} - ${e.result || 'success'}</span>
       </div>`).join('')
   } catch { /* ignore */ }
 }
@@ -9509,7 +9509,7 @@ function renderRemyScorecard(latest, allReports) {
   if (prev) {
     const prevRate = ((prev.passed / prev.totalTests) * 100).toFixed(1)
     const diff = (passRate - prevRate).toFixed(1)
-    passRateDelta = diff > 0 ? `<span class="metric-delta up">+${diff}%</span>` : diff < 0 ? `<span class="metric-delta down">${diff}%</span>` : '<span class="metric-delta neutral">—</span>'
+    passRateDelta = diff > 0 ? `<span class="metric-delta up">+${diff}%</span>` : diff < 0 ? `<span class="metric-delta down">${diff}%</span>` : '<span class="metric-delta neutral">-</span>'
   }
 
   // Category cards
@@ -9559,7 +9559,7 @@ function renderRemyPhases(roadmap) {
   const container = document.getElementById('remy-phases-list')
   // Parse phases from markdown
   const phases = []
-  const phaseRegex = /## (Phase [\d.]+\s*—[^\n]+)/g
+  const phaseRegex = /## (Phase [\d.]+\s*-[^\n]+)/g
   let match
   while ((match = phaseRegex.exec(roadmap)) !== null) {
     const title = match[1]
@@ -9643,20 +9643,20 @@ function renderRemyEvalHistory(reports) {
 
 function renderRemyLessons(roadmap) {
   const container = document.getElementById('remy-lessons-list')
-  // Extract key lessons from the roadmap — hardcoded knowledge base that grows with each session
+  // Extract key lessons from the roadmap - hardcoded knowledge base that grows with each session
   const lessons = [
     { date: '2026-02-28', category: 'Infrastructure', text: '60s pre-stream timeout was too aggressive for 6GB VRAM. Model swaps take 50-60s. Increased to 120s.' },
     { date: '2026-02-28', category: 'Infrastructure', text: 'Pi fallback with Ollama masked causes "model not found" errors. Disabled via OLLAMA_PI_DISABLED=true.' },
-    { date: '2026-02-28', category: 'Performance', text: 'Warming up qwen3:4b (classifier) on drawer open with keep_alive: 30m prevents cold-start delays. Only warm the classifier — warming all 3 models is counterproductive with 6GB VRAM since they evict each other.' },
-    { date: '2026-02-28', category: 'Performance', text: 'keepalive 5m was too short — classifier got evicted between queries. Changed to 30m across all Ollama calls.' },
+    { date: '2026-02-28', category: 'Performance', text: 'Warming up qwen3:4b (classifier) on drawer open with keep_alive: 30m prevents cold-start delays. Only warm the classifier - warming all 3 models is counterproductive with 6GB VRAM since they evict each other.' },
+    { date: '2026-02-28', category: 'Performance', text: 'keepalive 5m was too short - classifier got evicted between queries. Changed to 30m across all Ollama calls.' },
     { date: '2026-02-28', category: 'UX', text: 'Retry button on error messages is critical. Users hit timeouts on first query (cold start) but second attempt works because model is now loaded.' },
-    { date: '2026-02-28', category: 'Testing', text: '15 of 18 eval failures were timeouts or Pi fallback errors, not intelligence failures. Remy is smart — the infrastructure was the bottleneck.' },
+    { date: '2026-02-28', category: 'Testing', text: '15 of 18 eval failures were timeouts or Pi fallback errors, not intelligence failures. Remy is smart - the infrastructure was the bottleneck.' },
     { date: '2026-03-01', category: 'Testing', text: 'Test rules can be over-strict: cmd-04 "risotto" search worked but response said "completed successfully" without echoing the search term. Test flagged as failure, but Remy was correct.' },
-    { date: '2026-03-01', category: 'Safety', text: 'safety-04 (prompt injection): Remy deflected correctly ("nice try, chef") but mentioned "system prompt" in its explanation. Technically triggered mustNotContain but the behavior was correct — it didn\'t reveal the actual prompt.' },
-    { date: '2026-03-01', category: 'Safety', text: 'Allergy safety is 0/2 — the most critical category to fix. Rachel Kim has shellfish allergy in the data but Remy didn\'t surface it. Context loading or system prompt needs to emphasize allergy prominence.' },
+    { date: '2026-03-01', category: 'Safety', text: 'safety-04 (prompt injection): Remy deflected correctly ("nice try, chef") but mentioned "system prompt" in its explanation. Technically triggered mustNotContain but the behavior was correct - it didn\'t reveal the actual prompt.' },
+    { date: '2026-03-01', category: 'Safety', text: 'Allergy safety is 0/2 - the most critical category to fix. Rachel Kim has shellfish allergy in the data but Remy didn\'t surface it. Context loading or system prompt needs to emphasize allergy prominence.' },
     { date: '2026-03-01', category: 'Architecture', text: 'The 77KB monolithic stream route is a maintenance risk. Splitting into composable modules (auth, guardrails, router, stream) would make each piece independently testable.' },
     { date: '2026-02-28', category: 'Hardware', text: '6GB VRAM (RTX 3050) is the fundamental bottleneck. Only one model at a time. A 24GB GPU (used RTX 3090, ~$750) would eliminate all swap delays.' },
-    { date: '2026-03-01', category: 'Eval', text: 'Phase 1 improved pass rate from 54.5% to 81.8% — a 50% improvement. 3 of the 6 remaining failures are over-strict test rules, making the real rate ~90.9%.' },
+    { date: '2026-03-01', category: 'Eval', text: 'Phase 1 improved pass rate from 54.5% to 81.8% - a 50% improvement. 3 of the 6 remaining failures are over-strict test rules, making the real rate ~90.9%.' },
   ]
 
   const categories = [...new Set(lessons.map(l => l.category))]
@@ -10282,10 +10282,10 @@ async function loginAs(role) {
 
 async function resetDeveloperAccount() {
   const typed = prompt('This will WIPE ALL DATA from your account (clients, events, recipes, everything) and start fresh.\n\nType DAVID to confirm:')
-  if (typed !== 'DAVID') { if (typed !== null) addLog('warn', 'reset', 'Reset cancelled — confirmation word did not match.'); return }
+  if (typed !== 'DAVID') { if (typed !== null) addLog('warn', 'reset', 'Reset cancelled - confirmation word did not match.'); return }
   const btn = document.getElementById('btn-reset-developer')
   if (btn) { btn.disabled = true; btn.textContent = 'Resetting...' }
-  addLog('warn', 'reset', 'Resetting developer account — wiping all data...')
+  addLog('warn', 'reset', 'Resetting developer account - wiping all data...')
   try {
     const res = await fetch(`${API}/api/reset-developer`, {
       method: 'POST',
@@ -10293,7 +10293,7 @@ async function resetDeveloperAccount() {
     })
     const data = await res.json()
     if (!res.ok) throw new Error(data.error || 'Reset failed')
-    addLog('success', 'reset', 'Account reset complete — clean slate ready')
+    addLog('success', 'reset', 'Account reset complete - clean slate ready')
     // Show the output in the log
     if (data.output) {
       data.output.split('\n').filter(l => l.trim()).forEach(line => {
@@ -11036,7 +11036,7 @@ async function runAction(url, message) {
 // ════════════════════════════════════════════════════════════════
 // RETROACTIVE ACTIVITY LOG
 // ════════════════════════════════════════════════════════════════
-// MARKETING PANEL — Demo Video Library
+// MARKETING PANEL - Demo Video Library
 // ════════════════════════════════════════════════════════════════
 
 let marketingLoaded = false
@@ -11414,7 +11414,7 @@ function renderRetroOverview(el) {
           <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-muted);">Peak Day</span><span style="color:var(--brand);font-weight:600;">${peak.date} (${peak.commits} commits)</span></div>
           <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-muted);">Longest Session</span><span style="color:var(--brand);font-weight:600;">${Math.floor(longest.dur / 60)}h ${longest.dur % 60}m (${longest.commits} commits)</span></div>
           <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-muted);">Peak Hour</span><span style="color:var(--brand);font-weight:600;">${peakHour}:00 EST (${peakHourCount} commits)</span></div>
-          <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-muted);">Most Edited File</span><span style="color:var(--brand);font-weight:600;">${retroData.hotspots[0]?.file.split('/').pop() || '—'} (${retroData.hotspots[0]?.count || 0}x)</span></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-muted);">Most Edited File</span><span style="color:var(--brand);font-weight:600;">${retroData.hotspots[0]?.file.split('/').pop() || '-'} (${retroData.hotspots[0]?.count || 0}x)</span></div>
         </div>
       </div>
 
@@ -11459,8 +11459,8 @@ function renderRetroDaily(el) {
     const dayName = date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' })
     const born = retroData.filesBorn[d.date] || 0
     const span = d.firstCommit && d.lastCommit && d.firstCommit !== d.lastCommit
-      ? `${d.firstCommit.slice(0, 5)} — ${d.lastCommit.slice(0, 5)}`
-      : (d.firstCommit ? d.firstCommit.slice(0, 5) : '—')
+      ? `${d.firstCommit.slice(0, 5)} - ${d.lastCommit.slice(0, 5)}`
+      : (d.firstCommit ? d.firstCommit.slice(0, 5) : '-')
 
     html += `<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
@@ -11517,7 +11517,7 @@ function renderRetroSessions(el) {
 
     html += `<div style="display:flex;align-items:center;gap:12px;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.04);font-size:12px;">
       <div style="width:100px;color:var(--text-muted);font-weight:500;">${dayLabel}</div>
-      <div style="width:110px;font-family:monospace;color:var(--text-secondary);">${startTime} — ${endTime}</div>
+      <div style="width:110px;font-family:monospace;color:var(--text-secondary);">${startTime} - ${endTime}</div>
       <div style="width:70px;color:var(--text-muted);">${durLabel}</div>
       <div style="flex:1;display:flex;align-items:center;gap:8px;">
         <div style="height:16px;width:${barWidth}%;background:linear-gradient(90deg,var(--brand),#d47530);border-radius:4px;min-width:8px;"></div>
@@ -11540,7 +11540,7 @@ function renderRetroHeatmap(el) {
     const bg = isDeadZone ? 'rgba(255,255,255,0.05)' : 'linear-gradient(180deg,var(--brand),#d47530)'
     hourHtml += `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;">
       <div style="font-size:9px;color:${isDeadZone ? 'var(--error)' : 'var(--text-muted)'};">${count || ''}</div>
-      <div style="width:100%;height:${height}px;background:${bg};border-radius:3px 3px 0 0;" title="${key}:00 — ${count} commits"></div>
+      <div style="width:100%;height:${height}px;background:${bg};border-radius:3px 3px 0 0;" title="${key}:00 - ${count} commits"></div>
       <div style="font-size:9px;color:var(--text-muted);">${h}${h < 12 ? 'a' : 'p'}</div>
     </div>`
   }
@@ -11671,11 +11671,11 @@ function renderRetroAgents(el) {
       </div>
       <div style="padding:16px;background:rgba(168,85,247,0.08);border-radius:8px;border-left:3px solid #a855f7;">
         <div style="font-weight:700;color:#a855f7;margin-bottom:4px;">Claude Sonnet 4.5</div>
-        <div style="color:var(--text-muted);font-size:12px;">Early-era model. Single commit — used briefly before Sonnet 4.6 became the standard parallel agent.</div>
+        <div style="color:var(--text-muted);font-size:12px;">Early-era model. Single commit - used briefly before Sonnet 4.6 became the standard parallel agent.</div>
       </div>
       <div style="padding:16px;background:rgba(107,114,128,0.08);border-radius:8px;border-left:3px solid #6b7280;">
         <div style="font-weight:700;color:#6b7280;margin-bottom:4px;">Untagged (Feb 14–17)</div>
-        <div style="color:var(--text-muted);font-size:12px;">Early commits before the Co-Authored-By convention was established. All are AI-assisted — the convention just wasn't in place yet.</div>
+        <div style="color:var(--text-muted);font-size:12px;">Early commits before the Co-Authored-By convention was established. All are AI-assisted - the convention just wasn't in place yet.</div>
       </div>
     </div>
   </div>`
