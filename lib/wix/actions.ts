@@ -11,6 +11,10 @@ import crypto from 'crypto'
 import type { WixConnectionStatus, WixSubmission } from './types'
 import { broadcastTenantMutation } from '@/lib/realtime/broadcast'
 
+function warnWixBroadcastFailure(action: 'insert' | 'update' | 'delete', err: unknown) {
+  console.warn(`[wix/actions] ${action} broadcast failed`, err)
+}
+
 // ─── Get Connection Status ───────────────────────────────────────────────
 
 export async function getWixConnection(): Promise<WixConnectionStatus> {
@@ -78,7 +82,9 @@ export async function setupWixConnection(): Promise<{ webhookUrl: string; webhoo
       action: 'insert',
       reason: 'Wix connection setup',
     })
-  } catch {}
+  } catch (err) {
+    warnWixBroadcastFailure('insert', err)
+  }
   return {
     webhookUrl: `${baseUrl}/api/webhooks/wix?secret=${webhookSecret}`,
     webhookSecret,
@@ -87,7 +93,7 @@ export async function setupWixConnection(): Promise<{ webhookUrl: string; webhoo
 
 // ─── Disconnect Wix ──────────────────────────────────────────────────────
 
-export async function disconnectWix(): Promise<void> {
+export async function disconnectWix(): Promise<{ success: true }> {
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -105,7 +111,11 @@ export async function disconnectWix(): Promise<void> {
       action: 'delete',
       reason: 'Wix disconnected',
     })
-  } catch {}
+  } catch (err) {
+    warnWixBroadcastFailure('delete', err)
+  }
+
+  return { success: true }
 }
 
 // ─── Regenerate Webhook Secret ───────────────────────────────────────────
@@ -137,7 +147,9 @@ export async function regenerateWixSecret(): Promise<{
       action: 'update',
       reason: 'Wix webhook secret regenerated',
     })
-  } catch {}
+  } catch (err) {
+    warnWixBroadcastFailure('update', err)
+  }
   return {
     webhookUrl: `${baseUrl}/api/webhooks/wix?secret=${newSecret}`,
     webhookSecret: newSecret,
@@ -176,7 +188,7 @@ export async function getWixSubmissions(options?: {
 
 // ─── Retry Failed Submission ─────────────────────────────────────────────
 
-export async function retryWixSubmission(submissionId: string): Promise<void> {
+export async function retryWixSubmission(submissionId: string): Promise<{ success: true }> {
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -214,5 +226,9 @@ export async function retryWixSubmission(submissionId: string): Promise<void> {
       action: 'update',
       reason: 'Wix submission retried',
     })
-  } catch {}
+  } catch (err) {
+    warnWixBroadcastFailure('update', err)
+  }
+
+  return { success: true }
 }

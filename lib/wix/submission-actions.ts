@@ -9,7 +9,11 @@ import { processWixSubmission } from '@/lib/wix/process'
 import { revalidatePath } from 'next/cache'
 import { broadcastTenantMutation } from '@/lib/realtime/broadcast'
 
-export type WixSubmissionDetail = {
+function warnWixSubmissionBroadcastFailure(err: unknown) {
+  console.warn('[wix/submission-actions] update broadcast failed', err)
+}
+
+type WixSubmissionDetail = {
   id: string
   tenant_id: string
   wix_submission_id: string | null
@@ -84,7 +88,9 @@ export async function retryWixSubmission(submissionId: string): Promise<{
       action: 'update',
       reason: 'Wix submission reprocessed',
     })
-  } catch {}
+  } catch (err) {
+    warnWixSubmissionBroadcastFailure(err)
+  }
 
   if (result.status === 'completed') {
     return { success: true, inquiryId: result.inquiryId }
