@@ -3,13 +3,28 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ChevronDown, ChevronUp, Clock, X } from '@/components/ui/icons'
+import { Bot, ChevronDown, ChevronUp, Clock, Footprints, RotateCcw, X } from '@/components/ui/icons'
 import { useRecentPages, type RecentPage } from '@/hooks/use-recent-pages'
+import { openRemy, type OpenRemyEventDetail } from '@/lib/ai/remy-launch'
 import {
   CHEF_RECENT_PAGES_COLLAPSED_STORAGE_KEY,
   CHEF_SHELL_RESET_EVENT,
   DEFAULT_CHEF_RECENT_PAGES_COLLAPSED,
 } from '@/lib/chef/shell-state'
+
+export const RECENT_PAGES_RESUME_HREF = '/activity#resume'
+export const RECENT_PAGES_RETRACE_HREF = '/activity?mode=retrace'
+export const RECENT_PAGES_RETURN_PROMPT =
+  'Give me a compact return-to-work briefing from my recent ChefFlow activity and the next actions I should consider.'
+export const RECENT_PAGES_REMY_SOURCE = 'recent-pages-return-actions'
+
+export function getRecentPagesReturnRemyDetail(): OpenRemyEventDetail {
+  return {
+    prompt: RECENT_PAGES_RETURN_PROMPT,
+    source: RECENT_PAGES_REMY_SOURCE,
+    send: true,
+  }
+}
 
 /**
  * Simple relative time formatter - avoids importing date-fns.
@@ -79,6 +94,10 @@ export function RecentPagesSection() {
     })
   }
 
+  const openReturnBriefing = () => {
+    openRemy(getRecentPagesReturnRemyDetail())
+  }
+
   // Don't render until mounted (avoid hydration mismatch with localStorage)
   if (!mounted) return null
 
@@ -120,6 +139,39 @@ export function RecentPagesSection() {
           collapsed ? 'max-h-0 opacity-0' : 'max-h-[420px] opacity-100'
         }`}
       >
+        <div className="grid grid-cols-3 gap-1 px-3 py-1">
+          <button
+            type="button"
+            onClick={() => router.push(RECENT_PAGES_RESUME_HREF)}
+            className="flex h-7 items-center justify-center gap-1 rounded-md border border-stone-800 bg-stone-900/60 px-1.5 text-xxs font-medium text-stone-300 transition-colors hover:border-brand-800 hover:bg-brand-950/60 hover:text-brand-300"
+            title="Resume recent work"
+            aria-label="Resume recent work"
+          >
+            <RotateCcw className="h-3 w-3" />
+            <span>Resume</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => router.push(RECENT_PAGES_RETRACE_HREF)}
+            className="flex h-7 items-center justify-center gap-1 rounded-md border border-stone-800 bg-stone-900/60 px-1.5 text-xxs font-medium text-stone-300 transition-colors hover:border-brand-800 hover:bg-brand-950/60 hover:text-brand-300"
+            title="Retrace activity"
+            aria-label="Retrace activity"
+          >
+            <Footprints className="h-3 w-3" />
+            <span>Retrace</span>
+          </button>
+          <button
+            type="button"
+            onClick={openReturnBriefing}
+            className="flex h-7 items-center justify-center gap-1 rounded-md border border-stone-800 bg-stone-900/60 px-1.5 text-xxs font-medium text-stone-300 transition-colors hover:border-brand-800 hover:bg-brand-950/60 hover:text-brand-300"
+            title="Ask Remy for a return briefing"
+            aria-label="Ask Remy for a return briefing"
+          >
+            <Bot className="h-3 w-3" />
+            <span>Brief</span>
+          </button>
+        </div>
+
         <div className="space-y-0.5">
           {recentPages.slice(0, 5).map((page: RecentPage) => (
             <button
