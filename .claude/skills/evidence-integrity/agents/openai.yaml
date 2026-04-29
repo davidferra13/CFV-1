@@ -1,0 +1,4 @@
+interface:
+  display_name: "Evidence Integrity"
+  short_description: "Verify whether ChefFlow evidence surfaces deserve trust"
+  default_prompt: "Use Evidence Integrity to classify build, test, status, and operational truth before drawing conclusions."

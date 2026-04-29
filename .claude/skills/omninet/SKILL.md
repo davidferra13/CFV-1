@@ -29,6 +29,7 @@ Use the most specific skill that fits. Combine skills only when their responsibi
 | Review code before shipping | `review` |
 | Compliance rules, banned text, invalid exports | `compliance` |
 | Zero hallucination risks, no-op UI, fake data, optimistic updates | `hallucination-scan` |
+| Build health, green claims, stale tests, status truth, conflicting evidence | `evidence-integrity` |
 | Strategic product reasoning or vague request | `first-principles` |
 | Thread or feature completeness check | `audit` |
 | Highest leverage next move | `massive-win` |
@@ -64,6 +65,7 @@ Invoke `skill-garden` when any of these appear:
 - A skill fails, is too vague, chooses the wrong tool, or leaves out a recurring ChefFlow rule.
 - External operator guidance from Hermes, OpenCloy, ChatGPT, notes, markdowns, or pasted conversations should become project behavior.
 - A workflow requires repeated manual parsing, like persona imports or build queue triage.
+- Current conclusions depend on old audit findings, stale docs, mixed test failures, or operational status artifacts.
 
 ## Execution Rules
 

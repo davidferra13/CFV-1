@@ -75,6 +75,23 @@ When the user pastes a large conversation or markdown guidance:
 4. Ignore motivational or duplicate text unless it changes agent behavior.
 5. Report the exact skills created or patched.
 
+## Findings Improvement Pass
+
+When the user asks to improve using new or old findings:
+
+1. Prefer existing first-class finding sources:
+   - `docs/anthropic-unasked-questions-2026-04-18.md`
+   - `docs/anthropic-system-audit-2026-04-18.md`
+   - `docs/anthropic-follow-on-audit-answers-2026-04-18.md`
+   - `docs/autodocket.md`
+   - `system/regression-reports/`
+   - `system/persona-batch-synthesis/`
+2. Extract only reusable agent behavior, not every product feature gap.
+3. Patch `omninet` when the improvement affects skill routing.
+4. Patch a specific skill when the finding belongs to an existing workflow.
+5. Create a new skill only when the finding reveals a reusable workflow with no owner.
+6. Keep the link between the skill and source finding obvious in the skill body, without copying large report sections.
+
 ## Closeout
 
 After editing skills:
