@@ -150,6 +150,7 @@ import { getEventPrepTimeline } from '@/lib/prep-timeline/actions'
 import { Suspense } from 'react'
 import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
 import { PreEventNerveCenter } from '@/components/events/pre-event-nerve-center'
+import { PreServiceChecklistSection } from '@/components/events/pre-service-checklist-section'
 import { EventIntelligencePanel } from '@/components/intelligence/event-intelligence-panel'
 import { getLifecycleProgress } from '@/lib/lifecycle/actions'
 import { getChefArchetype } from '@/lib/archetypes/actions'
@@ -1550,6 +1551,15 @@ export default async function EventDetailPage({
           description="Day-of snapshot from live event truth. Keep the full walkthrough in Ops, but keep this signal visible above the fold."
         />
       ) : null}
+
+      {isEventWithinDays(event.event_date, 1) &&
+        !['cancelled', 'completed'].includes(event.status) && (
+          <WidgetErrorBoundary name="Pre-Service Checklist" compact>
+            <Suspense fallback={null}>
+              <PreServiceChecklistSection eventId={params.id} compact />
+            </Suspense>
+          </WidgetErrorBoundary>
+        )}
 
       {eventReadinessEngine && !['completed', 'cancelled'].includes(event.status) && (
         <EventReadinessEnginePanel eventId={params.id} readiness={eventReadinessEngine} />
