@@ -39,4 +39,18 @@ describe('lifecycle call prefill helpers', () => {
     assert.equal(url.searchParams.get('duration_minutes'), '30')
     assert.equal(url.searchParams.get('notify_client'), 'true')
   })
+
+  it('preserves both inquiry and event links for event-stage calls', () => {
+    const href = buildLifecycleCallHref({
+      callType: 'pre_event_logistics',
+      inquiryId: 'inquiry-1',
+      eventId: 'event-1',
+      title: 'Pre-service logistics',
+      durationMinutes: 15,
+    })
+
+    const url = new URL(href, 'https://cheflowhq.com')
+    assert.equal(url.searchParams.get('inquiry_id'), 'inquiry-1')
+    assert.equal(url.searchParams.get('event_id'), 'event-1')
+  })
 })

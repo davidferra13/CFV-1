@@ -366,6 +366,16 @@ export default async function SettingsPage() {
             summary={['Hard blocks', 'Buffers', 'Capacity']}
           >
             <SchedulingRulesForm initialRules={schedulingRules} />
+            <Link
+              href="/settings/schedule"
+              className="mt-4 block rounded-lg border border-sky-800/70 bg-sky-950/30 p-4 transition-colors hover:bg-sky-950/50"
+            >
+              <p className="font-semibold text-sky-200">Schedule Blocks</p>
+              <p className="mt-1 text-sm text-sky-300">
+                Manage blackout dates, unavailable windows, and recurring blocks that affect
+                booking availability.
+              </p>
+            </Link>
           </SettingsCategory>
 
           {/* ── 4. Booking Page ──────────────────────────────────── */}

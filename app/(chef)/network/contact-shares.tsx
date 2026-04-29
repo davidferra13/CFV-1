@@ -286,7 +286,7 @@ export function ContactShares({ connections, shares: initialShares }: ContactSha
           />
         </div>
         <div className="flex justify-end">
-          <Button size="sm" type="submit" disabled={isPending}>
+          <Button size="sm" type="submit" variant="primary" disabled={isPending}>
             Share Contact
           </Button>
         </div>
@@ -332,8 +332,6 @@ export function ContactShares({ connections, shares: initialShares }: ContactSha
                   key={share.id}
                   share={share}
                   responseNote=""
-                  onResponseNoteChange={() => {}}
-                  onRespond={(_shareId, _action) => {}}
                   isPending={false}
                   readonly
                 />
@@ -356,8 +354,8 @@ function ContactShareItem({
 }: {
   share: NetworkContactShare
   responseNote: string
-  onResponseNoteChange: (value: string) => void
-  onRespond: (shareId: string, action: 'accepted' | 'passed') => void
+  onResponseNoteChange?: (value: string) => void
+  onRespond?: (shareId: string, action: 'accepted' | 'passed') => void
   isPending: boolean
   readonly?: boolean
 }) {
@@ -392,20 +390,25 @@ function ContactShareItem({
         <div className="mt-3 space-y-2">
           <textarea
             value={responseNote}
-            onChange={(event) => onResponseNoteChange(event.target.value)}
+            onChange={(event) => onResponseNoteChange?.(event.target.value)}
             rows={2}
             className="block w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 placeholder:text-stone-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
             placeholder="Optional response note"
             disabled={isPending}
           />
           <div className="flex gap-2">
-            <Button size="sm" onClick={() => onRespond(share.id, 'accepted')} disabled={isPending}>
+            <Button
+              size="sm"
+              variant="primary"
+              onClick={() => onRespond?.(share.id, 'accepted')}
+              disabled={isPending}
+            >
               I Can Take It
             </Button>
             <Button
               size="sm"
               variant="ghost"
-              onClick={() => onRespond(share.id, 'passed')}
+              onClick={() => onRespond?.(share.id, 'passed')}
               disabled={isPending}
             >
               I Can&apos;t Take It

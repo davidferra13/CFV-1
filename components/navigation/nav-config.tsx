@@ -1531,6 +1531,7 @@ const settingsShortcutOptions: PrimaryShortcutOption[] = [
   { href: '/settings/modules', label: 'Modules', icon: Settings, context: 'Settings' },
   { href: '/settings/navigation', label: 'Navigation', icon: Settings, context: 'Settings' },
   { href: '/settings/dashboard', label: 'Dashboard Widgets', icon: Settings, context: 'Settings' },
+  { href: '/settings/schedule', label: 'Schedule Blocks', icon: Calendar, context: 'Settings' },
   { href: '/settings/my-profile', label: 'My Profile', icon: Settings, context: 'Settings' },
   {
     href: '/settings/public-profile',

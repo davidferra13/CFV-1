@@ -1307,7 +1307,7 @@ Each category has a unique lucide-react icon and animated chevron expand/collaps
 | --- | ------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------- |
 | 1   | Business Defaults   | Building2     | Home base, stores, timing, revenue goals, dashboard layout, primary nav customization, store preferences (OpenClaw integration) |
 | 2   | Profile & Branding  | Palette       | My Profile, portal background, availability signal, public profile, favorite chefs, client preview                              |
-| 3   | Availability Rules  | CalendarClock | Hard blocks, event limits, buffer time                                                                                          |
+| 3   | Availability Rules  | CalendarClock | Hard blocks, event limits, buffer time, Schedule Blocks link to `/settings/schedule`                                             |
 | 4   | Booking Page        | CalendarCheck | Shareable link with slug, headline, bio, min notice, pricing model, deposit                                                     |
 | 5   | Event Configuration | Settings2     | Event types & labels, custom fields                                                                                             |
 | 6   | Payments & Billing  | CreditCard    | Stripe payouts, subscription & billing, module toggles, payment methods (Apple Pay/Google Pay)                                  |

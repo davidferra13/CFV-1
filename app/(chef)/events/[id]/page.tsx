@@ -1061,6 +1061,7 @@ export default async function EventDetailPage({
         clientName: eventClientName,
         contactPhone: eventClientPhone,
         contactCompany: eventCallContactCompany,
+        inquiryId: event.inquiry_id,
         eventId: event.id,
         notifyClient: !!event.client_id,
       })
