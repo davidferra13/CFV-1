@@ -5,30 +5,44 @@ import { createServerClient } from '@/lib/db/server'
 import { log } from '@/lib/logger' // events namespace covers calendar operations
 import { revalidatePath } from 'next/cache'
 
-// Statuses that allow rescheduling - confirmed, in-progress,
-// completed, or cancelled are locked and cannot be moved.
-const RESCHEDULABLE_STATUSES = ['draft', 'proposed', 'accepted', 'paid']
+// Keep this aligned with calendar item editability.
+const RESCHEDULABLE_STATUSES = ['draft', 'proposed', 'accepted']
+
+function isValidDateInput(value: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return false
+  }
+
+  const parsed = new Date(`${value}T00:00:00.000Z`)
+  return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value
+}
 
 export async function rescheduleEvent(
   eventId: string,
   newDate: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
+
+  if (!eventId || typeof eventId !== 'string' || eventId.trim().length === 0) {
+    return { success: false, error: 'Event ID is required' }
+  }
+
+  if (!isValidDateInput(newDate)) {
+    return { success: false, error: 'Invalid date format' }
+  }
+
   const db: any = createServerClient()
 
-  // 1. Fetch event and verify ownership
+  // 1. Fetch tenant-scoped event.
   const { data: event, error: fetchError } = await db
     .from('events')
     .select('id, event_date, status, tenant_id')
     .eq('id', eventId)
+    .eq('tenant_id', user.tenantId!)
     .single()
 
   if (fetchError || !event) {
     return { success: false, error: 'Event not found' }
-  }
-
-  if (event.tenant_id !== user.tenantId) {
-    return { success: false, error: 'Unauthorized' }
   }
 
   // 2. Only allow rescheduling for early-stage events
@@ -39,27 +53,23 @@ export async function rescheduleEvent(
     }
   }
 
-  // 3. Validate the new date format (YYYY-MM-DD)
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(newDate)) {
-    return { success: false, error: 'Invalid date format' }
-  }
-
-  // 4. No-op if same date
+  // 3. No-op if same date
   if (event.event_date === newDate) {
     return { success: true }
   }
 
-  // 5. Update event_date
+  // 4. Update event_date within the same tenant scope.
   const { error: updateError } = await db
     .from('events')
     .update({ event_date: newDate })
     .eq('id', eventId)
+    .eq('tenant_id', user.tenantId!)
 
   if (updateError) {
     return { success: false, error: 'Failed to update event date' }
   }
 
-  // 6. Re-sync Google Calendar if a linked entry exists (non-blocking)
+  // 5. Re-sync Google Calendar if a linked entry exists (non-blocking)
   try {
     const { syncEventToGoogleCalendar } = await import('@/lib/scheduling/calendar-sync')
     await syncEventToGoogleCalendar(eventId)
@@ -69,9 +79,12 @@ export async function rescheduleEvent(
     })
   }
 
-  // 7. Revalidate calendar pages
+  // 6. Revalidate affected pages.
   revalidatePath('/calendar')
+  revalidatePath('/events')
   revalidatePath(`/events/${eventId}`)
+  revalidatePath('/my-events')
+  revalidatePath(`/my-events/${eventId}`)
 
   return { success: true }
 }
