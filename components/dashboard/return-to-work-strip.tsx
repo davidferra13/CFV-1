@@ -18,14 +18,14 @@ export function ReturnToWorkStrip({
   unreadNotificationCount,
   unavailableLabels = [],
 }: ReturnToWorkStripProps) {
-  const latestSession = digest?.recentSessions[0] ?? null
-  const lastHref = normalizeInternalHref(latestSession?.lastPath)
+  const lastPath = digest?.lastPath ?? null
+  const lastHref = normalizeInternalHref(lastPath)
   const changedCount = digest?.activityCount ?? 0
   const topResumeItems = resumeItems.slice(0, 3)
   const hasUnavailableData = unavailableLabels.length > 0
   const shouldRender =
     hasUnavailableData ||
-    Boolean(latestSession) ||
+    Boolean(lastPath) ||
     changedCount > 0 ||
     topResumeItems.length > 0 ||
     (unreadNotificationCount ?? 0) > 0
@@ -75,7 +75,7 @@ export function ReturnToWorkStrip({
       <div className="mt-4 grid gap-3 lg:grid-cols-3">
         <ContextTile
           label="Last place"
-          value={latestSession?.lastPath ? readablePath(latestSession.lastPath) : 'No recent path'}
+          value={lastPath ? readablePath(lastPath) : 'No recent path'}
           href={lastHref}
           cta="Open"
         />
