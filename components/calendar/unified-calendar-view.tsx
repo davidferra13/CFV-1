@@ -20,10 +20,14 @@ import { getUSHolidaysInRange, type HolidayEvent } from '@/lib/holidays/us-holid
 import { CalendarFilterPanel } from '@/components/calendar/calendar-filter-panel'
 import { CalendarEntryModal } from '@/components/calendar/calendar-entry-modal'
 import { CalendarLegend } from '@/components/calendar/calendar-legend'
+import { CalendarDayCommandPanel } from '@/components/calendar/calendar-day-command-panel'
 import type { UnifiedCalendarItem } from '@/lib/calendar/types'
 import type { CalendarFilters } from '@/lib/calendar/constants'
 import { DEFAULT_CALENDAR_FILTERS } from '@/lib/calendar/constants'
 import { CALENDAR_BORDER_STYLES } from '@/lib/calendar/colors'
+import { detectCalendarConflicts, getConflictsForMove } from '@/lib/calendar/conflict-engine'
+import { autoSuggestEventBlocks, bulkCreatePrepBlocks } from '@/lib/scheduling/prep-block-actions'
+import type { CreatePrepBlockInput } from '@/lib/scheduling/types'
 import { Button } from '@/components/ui/button'
 
 type ViewType = 'dayGridMonth' | 'timeGridWeek' | 'timeGridDay' | 'agenda'
@@ -137,6 +141,32 @@ export function UnifiedCalendarView({ initialItems, chefId }: Props) {
     )
   }, [filteredItems, selectedDate])
 
+  const selectedDateAllItems = useMemo(() => {
+    if (!selectedDate) return []
+    return items.filter((item) => item.startDate <= selectedDate && item.endDate >= selectedDate)
+  }, [items, selectedDate])
+
+  const calendarConflicts = useMemo(() => detectCalendarConflicts(items), [items])
+
+  const selectedDateConflicts = useMemo(() => {
+    if (!selectedDate) return []
+    return calendarConflicts.filter((conflict) => conflict.date === selectedDate)
+  }, [calendarConflicts, selectedDate])
+
+  const selectedDateWaitlistMatches = useMemo(() => {
+    if (!selectedDate) return []
+    return selectedDateAllItems.filter((item) => item.type === 'waitlist')
+  }, [selectedDateAllItems, selectedDate])
+
+  const refreshCurrentRange = useCallback(async () => {
+    const api = calendarRef.current?.getApi()
+    if (!api) return
+    const start = api.view.activeStart.toISOString().split('T')[0]
+    const end = api.view.activeEnd.toISOString().split('T')[0]
+    const fetched = await getUnifiedCalendar(start, end)
+    setItems(fetched)
+  }, [])
+
   // ── Data fetching on date range change ──────────────────────────────
 
   const handleDatesSet = useCallback(async (arg: DatesSetArg) => {
@@ -203,6 +233,28 @@ export function UnifiedCalendarView({ initialItems, chefId }: Props) {
 
       const eventId = info.event.id
       const newDate = info.event.startStr.split('T')[0]
+      const moveConflicts = getConflictsForMove(items, eventId, newDate)
+      const relatedPrepBlocks = items.filter(
+        (item) => item.type === 'prep_block' && item.url === `/events/${eventId}`
+      )
+
+      if (moveConflicts.length > 0 || relatedPrepBlocks.length > 0) {
+        const conflictLine =
+          moveConflicts.length > 0
+            ? `${moveConflicts.length} conflict${moveConflicts.length === 1 ? '' : 's'}`
+            : null
+        const prepLine =
+          relatedPrepBlocks.length > 0
+            ? `${relatedPrepBlocks.length} prep block${relatedPrepBlocks.length === 1 ? '' : 's'} may need regeneration`
+            : null
+        const confirmed = window.confirm(
+          ['Reschedule this event?', conflictLine, prepLine].filter(Boolean).join('\n')
+        )
+        if (!confirmed) {
+          info.revert()
+          return
+        }
+      }
 
       const previousItems = items
       // Optimistic update
@@ -221,13 +273,50 @@ export function UnifiedCalendarView({ initialItems, chefId }: Props) {
         toast.success(
           `Rescheduled to ${new Date(newDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`
         )
+        if (relatedPrepBlocks.length > 0) {
+          const regenerate = window.confirm(
+            'Regenerate suggested prep blocks for the new event date now?'
+          )
+          if (regenerate) {
+            const suggestions = await autoSuggestEventBlocks(eventId)
+            if (suggestions.error) {
+              toast.error(suggestions.error)
+              return
+            }
+            if (suggestions.suggestions.length === 0) {
+              toast.info('No prep suggestions were available for this event')
+              return
+            }
+            const blocks: CreatePrepBlockInput[] = suggestions.suggestions.map((suggestion) => ({
+              event_id: eventId,
+              block_date: suggestion.suggested_date,
+              start_time: suggestion.suggested_start_time ?? null,
+              block_type: suggestion.block_type,
+              title: suggestion.title,
+              notes: suggestion.notes,
+              store_name: suggestion.store_name,
+              store_address: suggestion.store_address,
+              estimated_duration_minutes: suggestion.estimated_duration_minutes,
+              is_system_generated: true,
+            }))
+            const created = await bulkCreatePrepBlocks(blocks)
+            if (!created.success) {
+              toast.error(created.error ?? 'Failed to regenerate prep blocks')
+              return
+            }
+            await refreshCurrentRange()
+            toast.success(
+              `Created ${created.count ?? 0} prep block${created.count === 1 ? '' : 's'}`
+            )
+          }
+        }
       } catch {
         setItems(previousItems)
         info.revert()
         toast.error('Failed to reschedule')
       }
     },
-    [items]
+    [items, refreshCurrentRange]
   )
 
   // ── Keyboard shortcuts ──────────────────────────────────────────────
@@ -662,78 +751,18 @@ export function UnifiedCalendarView({ initialItems, chefId }: Props) {
       </div>
 
       {/* Selected date detail panel */}
-      {selectedDate && selectedDateItems.length > 0 && (
-        <div className="rounded-xl border border-stone-700 bg-stone-900 p-5 space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-stone-100">
-              {new Date(selectedDate + 'T12:00:00').toLocaleDateString('en-US', {
-                weekday: 'long',
-                month: 'long',
-                day: 'numeric',
-                year: 'numeric',
-              })}
-            </h3>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => {
-                  setNewEntryDefaultDate(selectedDate)
-                  setShowNewEntryModal(true)
-                }}
-              >
-                + Add Entry
-              </Button>
-              <button
-                onClick={() => setSelectedDate(null)}
-                className="text-stone-500 hover:text-stone-300 p-1"
-              >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-          </div>
-          <div className="space-y-2">
-            {selectedDateItems.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-start gap-2.5 px-3 py-2 rounded-lg"
-                style={{
-                  backgroundColor: item.color + '18',
-                  borderLeft: `3px ${item.borderStyle} ${item.color}`,
-                }}
-              >
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-stone-100 truncate">{item.title}</p>
-                  {item.startTime && (
-                    <p className="text-xs text-stone-500">
-                      {item.startTime}
-                      {item.endTime ? ` - ${item.endTime}` : ''}
-                    </p>
-                  )}
-                  {item.status && (
-                    <p className="text-xs text-stone-500 capitalize">{item.status}</p>
-                  )}
-                </div>
-                {item.url && (
-                  <a
-                    href={item.url}
-                    className="text-xs text-brand-600 hover:underline flex-shrink-0"
-                  >
-                    View
-                  </a>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
+      {selectedDate && (
+        <CalendarDayCommandPanel
+          selectedDate={selectedDate}
+          visibleItems={selectedDateItems}
+          waitlistMatches={selectedDateWaitlistMatches}
+          conflicts={selectedDateConflicts}
+          onAddEntry={() => {
+            setNewEntryDefaultDate(selectedDate)
+            setShowNewEntryModal(true)
+          }}
+          onClose={() => setSelectedDate(null)}
+        />
       )}
 
       {/* Legend */}
@@ -746,13 +775,7 @@ export function UnifiedCalendarView({ initialItems, chefId }: Props) {
           onClose={() => setShowNewEntryModal(false)}
           onCreated={() => {
             setShowNewEntryModal(false)
-            // Refetch current range
-            const api = calendarRef.current?.getApi()
-            if (api) {
-              const start = api.view.activeStart.toISOString().split('T')[0]
-              const end = api.view.activeEnd.toISOString().split('T')[0]
-              getUnifiedCalendar(start, end).then(setItems).catch(console.error)
-            }
+            refreshCurrentRange().catch(console.error)
           }}
         />
       )}

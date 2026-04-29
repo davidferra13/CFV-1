@@ -13,6 +13,8 @@ import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
 import { SchedulingInsightsBar } from '@/components/intelligence/scheduling-insights-bar'
 import { CapacitySeasonalBar } from '@/components/intelligence/capacity-seasonal-bar'
 import { captureCalendarContextSnapshot } from '@/lib/context-snapshots/service'
+import { getCalendarHealth } from '@/lib/calendar/conflict-actions'
+import { CalendarHealthStrip } from '@/components/calendar/calendar-health-strip'
 
 export const metadata: Metadata = { title: 'Calendar' }
 
@@ -45,7 +47,10 @@ export default async function CalendarPage() {
   const startDate = toLocalISO(startExt)
   const endDate = toLocalISO(endExt)
 
-  const initialItems = await getUnifiedCalendar(startDate, endDate)
+  const [initialItems, calendarHealth] = await Promise.all([
+    getUnifiedCalendar(startDate, endDate),
+    getCalendarHealth(startDate, endDate),
+  ])
   await captureCalendarContextSnapshot({
     tenantId: user.tenantId!,
     rangeStart: startDate,
@@ -61,6 +66,8 @@ export default async function CalendarPage() {
           Your complete schedule: events, prep, calls, personal commitments, and goals.
         </p>
       </div>
+
+      <CalendarHealthStrip health={calendarHealth} />
 
       {/* Scheduling Intelligence */}
       <WidgetErrorBoundary name="Scheduling Insights" compact>

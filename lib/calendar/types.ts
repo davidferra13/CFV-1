@@ -39,6 +39,7 @@ export type UnifiedCalendarItem = {
   status?: string // event/call status
   subType?: string // prep_block_type, calendar entry_type, etc.
   isMultiDay: boolean // convenience: endDate !== startDate
+  paymentStatus?: string // event payment status when available
 }
 
 export type CalendarFilters = {

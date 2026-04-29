@@ -259,6 +259,7 @@ export async function getUnifiedCalendar(
       allDay: true,
       color: getCalendarColor('availability_block'),
       borderStyle: 'solid',
+      url: `/calendar/protected/${block.id}`,
       isBlocking: true,
       isMultiDay: false,
     })
