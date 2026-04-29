@@ -138,12 +138,15 @@ export async function addChefDictionaryAlias(input: unknown) {
   }
 }
 
-export async function addChefDictionaryAliasForm(formData: FormData) {
-  return addChefDictionaryAlias({
+export async function addChefDictionaryAliasForm(formData: FormData): Promise<void> {
+  const result = await addChefDictionaryAlias({
     termId: String(formData.get('termId') ?? ''),
     alias: String(formData.get('alias') ?? ''),
     aliasKind: String(formData.get('aliasKind') ?? 'synonym'),
   })
+  if (!result.success) {
+    console.error('[addChefDictionaryAliasForm] Error:', result.error)
+  }
 }
 
 export async function hideChefDictionaryAlias(input: unknown) {
@@ -237,12 +240,15 @@ export async function resolveDictionaryReviewItem(input: unknown) {
   }
 }
 
-export async function resolveDictionaryReviewItemForm(formData: FormData) {
-  return resolveDictionaryReviewItem({
+export async function resolveDictionaryReviewItemForm(formData: FormData): Promise<void> {
+  const result = await resolveDictionaryReviewItem({
     reviewId: String(formData.get('reviewId') ?? ''),
     decision: String(formData.get('decision') ?? ''),
     termId: String(formData.get('termId') ?? '') || undefined,
   })
+  if (!result.success) {
+    console.error('[resolveDictionaryReviewItemForm] Error:', result.error)
+  }
 }
 
 export async function getDictionaryReviewQueue() {
