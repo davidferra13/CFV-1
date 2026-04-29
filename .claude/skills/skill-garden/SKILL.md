@@ -1,6 +1,6 @@
 ---
 name: skill-garden
-description: Create, improve, and self-heal ChefFlow project skills from observed developer behavior. Use proactively when the user gives operating guidance such as "always", "never", "Codex should", "make Codex smarter", "self-heal", "create skills", "knows when to", or "use this behavior going forward"; when a repeated workflow, correction, failure, persona import pattern, Hermes/OpenCloy markdown, or external conversation should become reusable Codex behavior; or when an existing skill needs refinement.
+description: Create, improve, and self-heal ChefFlow project skills from observed developer behavior. Use proactively when the user gives operating guidance such as "always", "never", "Codex should", "make Codex smarter", "keep getting better", "self-heal", "create skills", "knows when to", or "use this behavior going forward"; when a repeated workflow, correction, failure, persona import pattern, Hermes/OpenCloy markdown, or external conversation should become reusable Codex behavior; or when an existing skill needs refinement.
 ---
 
 # Skill Garden
@@ -18,6 +18,24 @@ Run this as a sidecar to `omninet` whenever durable behavior appears. The user d
 5. Close: validate the changed skill files, scan for em dashes, then commit and push only the files owned by the skill change.
 
 Do not create skill churn. A good garden pass leaves no change when the behavior is one-off, redundant with `AGENTS.md`, or too vague to encode.
+
+## Keep Getting Better Pass
+
+When the user says "keep getting better", "continue improving", "keep learning", or similar broad improvement guidance, do not answer with motivation. Run a concrete improvement pass:
+
+1. Identify the newest behavior, correction, missed evidence, or workflow gap from the current conversation.
+2. Search existing skills for the smallest owner.
+3. Patch that skill if the behavior is reusable and safe.
+4. Add or update a trigger test when the phrase should route future agents.
+5. Validate the changed skill, scan for hard-stop violations, commit, and push.
+6. If no safe patch exists, record the learning with `node devtools/agent-learning-inbox.mjs add ...` and explain why no code changed.
+
+Default target order:
+
+1. Patch the skill that failed or missed the behavior.
+2. Patch `skill-garden` when the behavior is about learning, self-improvement, or skill routing.
+3. Patch `omninet` only when the routing loop itself must change.
+4. Create a new skill only when no existing skill owns the workflow.
 
 ## Tool Harness
 
@@ -70,6 +88,7 @@ Create or update a skill when at least one is true:
 
 - The user explicitly says this should become Codex behavior.
 - The user uses words like "always", "never", "from now on", "self-healing", or "knows when to".
+- The user says "keep getting better", "continue improving", "keep learning", or asks Codex to keep improving itself.
 - The same failure or correction appears twice.
 - The workflow has multiple steps that future agents would otherwise rediscover.
 - A pasted external conversation contains operating rules, persona pipeline rules, or process guidance that should survive the current chat.

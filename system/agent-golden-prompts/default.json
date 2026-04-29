@@ -18,6 +18,15 @@
     }
   },
   {
+    "name": "keep getting better",
+    "prompt": "Keep getting better.",
+    "expect": ["omninet", "skill-garden"],
+    "evidence": {
+      "omninet": ["skill-garden", "self-healing"],
+      "skill-garden": ["Keep Getting Better Pass", "concrete improvement pass"]
+    }
+  },
+  {
     "name": "skill repair",
     "prompt": "This skill failed and needs to self-heal before future tasks.",
     "expect": ["omninet", "heal-skill", "skill-garden"],
