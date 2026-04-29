@@ -2,9 +2,13 @@ import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { Card, CardContent } from '@/components/ui/card'
 import { ChefDictionaryTermCard } from '@/components/culinary-dictionary/chef-dictionary-term-card'
+import { DictionaryCommandCenter } from '@/components/culinary-dictionary/dictionary-command-center'
 import { DictionaryReviewQueue } from '@/components/culinary-dictionary/dictionary-review-queue'
 import { DictionarySearch } from '@/components/culinary-dictionary/dictionary-search'
+import { DictionarySidePanel } from '@/components/culinary-dictionary/dictionary-side-panel'
+import { LanguageAuditorPanel } from '@/components/culinary-dictionary/language-auditor-panel'
 import {
+  getDictionaryTermBySlug,
   getDictionaryReviewQueue,
   getDictionaryStats,
   searchDictionaryTerms,
@@ -28,12 +32,14 @@ export default async function CulinaryDictionaryPage({ searchParams }: Props) {
   const resolved = await searchParams
   const query = readParam(resolved.q)
   const termTypeParam = readParam(resolved.type)
+  const selectedTermParam = readParam(resolved.term)
   const termType = (termTypeParam || 'all') as DictionaryTermType | 'all'
 
-  const [terms, stats, reviewItems] = await Promise.all([
+  const [terms, stats, reviewItems, selectedTerm] = await Promise.all([
     searchDictionaryTerms({ query, termType, chefId: user.entityId, limit: 60 }),
     getDictionaryStats(user.entityId),
     getDictionaryReviewQueue(user.entityId),
+    selectedTermParam ? getDictionaryTermBySlug(selectedTermParam, false) : Promise.resolve(null),
   ])
 
   const statCards = [
@@ -66,6 +72,10 @@ export default async function CulinaryDictionaryPage({ searchParams }: Props) {
 
       <DictionarySearch query={query} termType={termType} actionPath="/culinary/dictionary" />
 
+      <DictionaryCommandCenter terms={terms} reviewItems={reviewItems} />
+
+      <LanguageAuditorPanel terms={terms} />
+
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
         <section className="space-y-3">
           {terms.length === 0 ? (
@@ -80,7 +90,10 @@ export default async function CulinaryDictionaryPage({ searchParams }: Props) {
           )}
         </section>
 
-        <DictionaryReviewQueue items={reviewItems} />
+        <div className="space-y-6">
+          <DictionarySidePanel selectedTerm={selectedTerm} terms={terms} />
+          <DictionaryReviewQueue items={reviewItems} />
+        </div>
       </div>
     </div>
   )

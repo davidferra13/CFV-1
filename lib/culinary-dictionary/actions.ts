@@ -47,7 +47,27 @@ const CreateTermSchema = z.object({
 const ResolveReviewSchema = z.object({
   reviewId: z.string().min(1),
   decision: z.enum(['approved', 'rejected', 'dismissed']),
+  resolutionAction: z
+    .enum(['approve_new_private_term', 'add_alias_to_existing_term', 'reject', 'dismiss'])
+    .optional(),
   termId: z.string().optional(),
+  canonicalName: z
+    .string()
+    .max(100)
+    .optional()
+    .transform((value) => value?.trim()),
+  termType: z.enum(DICTIONARY_TERM_TYPES).optional(),
+  definition: z
+    .string()
+    .max(500)
+    .optional()
+    .transform((value) => value?.trim()),
+  alias: z
+    .string()
+    .max(80)
+    .optional()
+    .transform((value) => value?.trim()),
+  aliasKind: z.enum(DICTIONARY_ALIAS_KINDS).optional(),
 })
 
 function revalidateDictionarySurfaces() {
@@ -218,15 +238,105 @@ export async function resolveDictionaryReviewItem(input: unknown) {
 
   try {
     const db: any = createServerClient()
+    const { data: reviewItem, error: readError } = await db
+      .from('culinary_dictionary_review_queue' as any)
+      .select('id, source_value, normalized_value, suggested_term_id, status')
+      .eq('id', parsed.data.reviewId)
+      .eq('chef_id', user.entityId)
+      .maybeSingle()
+
+    if (readError) return { success: false, error: 'Failed to load review item' }
+    if (!reviewItem) return { success: false, error: 'Review item not found' }
+    if (reviewItem.status !== 'pending') {
+      return { success: false, error: 'Review item is already resolved' }
+    }
+
+    const sourceValue = String(reviewItem.source_value ?? '').trim()
+    const normalizedValue = String(reviewItem.normalized_value ?? '').trim()
+    if (!sourceValue || !normalizedValue) return { success: false, error: 'Review item is invalid' }
+
+    const resolutionAction =
+      parsed.data.resolutionAction ??
+      (parsed.data.decision === 'approved' && parsed.data.termId
+        ? 'add_alias_to_existing_term'
+        : parsed.data.decision === 'approved'
+          ? 'approve_new_private_term'
+          : parsed.data.decision === 'rejected'
+            ? 'reject'
+            : 'dismiss')
+
+    const status =
+      resolutionAction === 'reject'
+        ? 'rejected'
+        : resolutionAction === 'dismiss'
+          ? 'dismissed'
+          : 'approved'
+
+    if (status !== parsed.data.decision) {
+      return { success: false, error: 'Review decision does not match resolution action' }
+    }
+
+    const fallbackTermId = reviewItem.suggested_term_id
+      ? String(reviewItem.suggested_term_id)
+      : undefined
+    const termId = parsed.data.termId || fallbackTermId
+    const now = new Date().toISOString()
+    let suggestedTermId: string | null | undefined
+    let resolution: Record<string, unknown>
+
+    if (resolutionAction === 'approve_new_private_term') {
+      const canonicalName = parsed.data.canonicalName || sourceValue
+      const canonicalSlug = slugifyCulinaryTerm(canonicalName)
+      const termType = parsed.data.termType ?? 'ingredient'
+      if (!canonicalName || !canonicalSlug) {
+        return { success: false, error: 'Private term name is required' }
+      }
+
+      suggestedTermId = null
+      resolution = {
+        action: resolutionAction,
+        decidedAt: now,
+        canonicalName,
+        canonicalSlug,
+        termType,
+        definition: parsed.data.definition || null,
+        aliases: canonicalName === sourceValue ? [] : [sourceValue],
+      }
+    } else if (resolutionAction === 'add_alias_to_existing_term') {
+      const alias = parsed.data.alias || sourceValue
+      const normalizedAlias = normalizeDictionaryAlias(alias)
+      if (!termId) return { success: false, error: 'Suggested term is required for alias approval' }
+      if (!normalizedAlias) return { success: false, error: 'Alias is invalid' }
+
+      suggestedTermId = termId
+      resolution = {
+        action: resolutionAction,
+        decidedAt: now,
+        termId,
+        alias,
+        normalizedAlias,
+        aliasKind: parsed.data.aliasKind ?? 'synonym',
+      }
+    } else {
+      suggestedTermId = termId
+      resolution = {
+        action: resolutionAction,
+        decidedAt: now,
+        reason: resolutionAction === 'reject' ? 'Rejected by chef' : 'Dismissed by chef',
+      }
+    }
+
     const { data, error } = await db
       .from('culinary_dictionary_review_queue' as any)
       .update({
-        status: parsed.data.decision,
-        suggested_term_id: parsed.data.termId || undefined,
-        resolved_at: new Date().toISOString(),
+        status,
+        suggested_term_id: suggestedTermId,
+        resolution,
+        resolved_at: now,
       })
       .eq('id', parsed.data.reviewId)
       .eq('chef_id', user.entityId)
+      .eq('status', 'pending')
       .select('id')
 
     if (error) return { success: false, error: 'Failed to update review item' }
@@ -244,7 +354,13 @@ export async function resolveDictionaryReviewItemForm(formData: FormData): Promi
   const result = await resolveDictionaryReviewItem({
     reviewId: String(formData.get('reviewId') ?? ''),
     decision: String(formData.get('decision') ?? ''),
+    resolutionAction: String(formData.get('resolutionAction') ?? '') || undefined,
     termId: String(formData.get('termId') ?? '') || undefined,
+    canonicalName: String(formData.get('canonicalName') ?? '') || undefined,
+    termType: String(formData.get('termType') ?? '') || undefined,
+    definition: String(formData.get('definition') ?? '') || undefined,
+    alias: String(formData.get('alias') ?? '') || undefined,
+    aliasKind: String(formData.get('aliasKind') ?? '') || undefined,
   })
   if (!result.success) {
     console.error('[resolveDictionaryReviewItemForm] Error:', result.error)

@@ -291,7 +291,8 @@
 - **Widget ID:** `todo_list`
 - Per todo: toggle checkbox → `toggleTodo(id)`, delete button → `deleteTodo(id)`
 - Add task form: text input + "+" submit button → `createTodo(text)`
-- `/capture`: Instant Note mode saves the raw note to `chef_quick_notes`, runs the note intelligence layer, stores interpretation/component/action lineage, routes high-confidence components to workflow notes, ingredients, and tasks, and sends medium/low-confidence notes to the Review Queue. Photo mode still parses whiteboard images into categorized visible items with raw transcription.
+- `/capture`: Instant Note mode saves the raw note to `chef_quick_notes`, queues `note.interpretation` work in `ai_task_queue`, stores interpretation/component/action lineage, routes high-confidence components to workflow notes, ingredients, tasks, and calendar entries, and sends medium/low-confidence, failed, or still-processing notes to the Review Queue. The page now includes Capture, Review, Trace, and Confidence views plus learning-rule visibility. Photo mode still parses whiteboard images into categorized visible items with raw transcription.
+- Global chef layout: desktop always-on Instant Note dock saves raw notes and queues interpretation from any chef page. Mobile quick capture includes Instant Note alongside receipts and expenses.
 
 #### Activity Section
 
@@ -816,7 +817,7 @@ Founder-owned operator walkthrough requests from `/for-operators/walkthrough` al
 
 ### 6.3a Culinary Dictionary
 
-- **`/culinary/dictionary`** - Chef-facing canonical culinary dictionary. Header explains that dictionary data feeds costing, search, recipes, menus, and public ingredient pages. Stats cards show real counts for terms, public terms, aliases, and pending reviews. Search form filters by query and term type. Results render term cards with public/private state, type, category, definition, aliases, safety flags, and an inline chef alias form. Review queue panel shows pending low-confidence terms and approve/reject/dismiss actions. Reads from `culinary_dictionary_*` tables when migrated and falls back to the deterministic seed list when the tables are not available yet.
+- **`/culinary/dictionary`** - Chef-facing canonical culinary dictionary. Header explains that dictionary data feeds costing, search, recipes, menus, and public ingredient pages. Stats cards show real counts for terms, public terms, aliases, and pending reviews. Search form filters by query and term type. Command Center panels show deterministic impact map, publication gate, alias conflicts, related terms, public/private coverage, safety coverage, and review load. Menu Language Auditor checks pasted menu or staff prep copy for repeated adjectives, vague words, unresolved controlled-vocabulary terms, missing texture/flavor/temperature signals, and staff prep ambiguity without generating copy. Results render term cards with public/private state, type, category, definition, aliases, safety flags, and an inline chef alias form. Selecting a term opens a side panel with used-by surfaces, risk level, publication gate reasons, and related terms. Review Queue Decision Builder lets chefs approve a new private term, map an item as an alias to a suggested term, reject, or dismiss using existing review JSON and chef-scoped updates. Reads from `culinary_dictionary_*` tables when migrated and falls back to the deterministic seed list when the tables are not available yet.
 
 ### 6.3b Price Catalog (chef-facing)
 
