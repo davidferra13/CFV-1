@@ -7,6 +7,10 @@ const pageSource = readFileSync(
   join(process.cwd(), 'app/(admin)/admin/launch-readiness/page.tsx'),
   'utf8'
 )
+const exportRouteSource = readFileSync(
+  join(process.cwd(), 'app/(admin)/admin/launch-readiness/export/route.ts'),
+  'utf8'
+)
 const adminNavSource = readFileSync(
   join(process.cwd(), 'components/navigation/admin-nav-config.ts'),
   'utf8'
@@ -21,6 +25,16 @@ test('launch readiness page is protected by server-side admin auth', () => {
   assert.match(pageSource, /await\s+requireAdmin\(\)/)
   assert.doesNotMatch(pageSource, /requireChef/)
   assert.doesNotMatch(pageSource, /^['"]use client['"]/m)
+})
+
+test('launch readiness export route is admin-only and returns a packet', () => {
+  assert.match(
+    exportRouteSource,
+    /import\s+\{\s*requireAdmin\s*\}\s+from ['"]@\/lib\/auth\/admin['"]/
+  )
+  assert.match(exportRouteSource, /await\s+requireAdmin\(\)/)
+  assert.match(exportRouteSource, /buildLaunchReadinessDecisionPacket/)
+  assert.match(exportRouteSource, /Content-Disposition/)
 })
 
 test('launch readiness is visible only in admin navigation', () => {

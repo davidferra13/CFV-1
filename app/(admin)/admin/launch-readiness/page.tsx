@@ -125,6 +125,12 @@ export default async function AdminLaunchReadinessPage() {
           <p className="text-xs text-stone-500">
             {report.verifiedChecks}/{report.totalChecks} checks
           </p>
+          <Link
+            href="/admin/launch-readiness/export"
+            className="mt-3 inline-flex min-h-[40px] items-center justify-center rounded-lg border border-stone-700 px-3 text-sm font-medium text-stone-200 transition-colors hover:border-brand-700 hover:bg-stone-950 hover:text-brand-200"
+          >
+            Export packet
+          </Link>
         </div>
       </div>
 

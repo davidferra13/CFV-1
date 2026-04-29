@@ -6,7 +6,7 @@ import {
 } from '@/lib/validation/launch-readiness'
 
 function facts(overrides: Partial<LaunchReadinessFacts> = {}): LaunchReadinessFacts {
-  return {
+  const base: LaunchReadinessFacts = {
     generatedAt: '2026-04-29T12:00:00.000Z',
     pilotCandidates: [],
     operatorSurvey: {
@@ -14,6 +14,15 @@ function facts(overrides: Partial<LaunchReadinessFacts> = {}): LaunchReadinessFa
       submittedResponses: 0,
       totalResponses: 0,
       lastResponseAt: null,
+      analysis: {
+        readinessStatus: 'not_ready',
+        readinessScore: 0,
+        qualifiedResponses: 0,
+        wouldPayYes: 0,
+        topObjectionLabel: null,
+        topThemeLabel: null,
+        nextActions: [],
+      },
     },
     productFeedbackSignals: 0,
     acquisition: {
@@ -34,7 +43,31 @@ function facts(overrides: Partial<LaunchReadinessFacts> = {}): LaunchReadinessFa
       latestExecutedAt: null,
       hoursSinceSuccess: null,
     },
+  }
+
+  return {
+    ...base,
     ...overrides,
+    operatorSurvey: {
+      ...base.operatorSurvey,
+      ...overrides.operatorSurvey,
+      analysis: {
+        ...base.operatorSurvey.analysis,
+        ...overrides.operatorSurvey?.analysis,
+      },
+    },
+    acquisition: {
+      ...base.acquisition,
+      ...overrides.acquisition,
+    },
+    buildIntegrity: {
+      ...base.buildIntegrity,
+      ...overrides.buildIntegrity,
+    },
+    backupIntegrity: {
+      ...base.backupIntegrity,
+      ...overrides.backupIntegrity,
+    },
   }
 }
 
@@ -84,6 +117,20 @@ describe('launch readiness report', () => {
           submittedResponses: 2,
           totalResponses: 2,
           lastResponseAt: '2026-04-29T10:00:00.000Z',
+          analysis: {
+            readinessStatus: 'needs_more_signal',
+            readinessScore: 57,
+            qualifiedResponses: 2,
+            wouldPayYes: 1,
+            topObjectionLabel: 'Pricing concern',
+            topThemeLabel: 'Automation value',
+            nextActions: [
+              {
+                label: 'Collect more Wave-1 responses',
+                reason: 'More signal is needed.',
+              },
+            ],
+          },
         },
         buildIntegrity: {
           typecheckGreen: true,
@@ -259,5 +306,73 @@ describe('launch readiness report', () => {
     assert.ok(
       report.nextActions.every((action) => action.label !== 'Acquisition source is attributable')
     )
+  })
+
+  it('adds a separate operator survey signal-quality gate', () => {
+    const report = buildLaunchReadinessReport(
+      facts({
+        operatorSurvey: {
+          activeSurveys: 1,
+          submittedResponses: 20,
+          totalResponses: 20,
+          lastResponseAt: '2026-04-29T10:00:00.000Z',
+          analysis: {
+            readinessStatus: 'ready',
+            readinessScore: 100,
+            qualifiedResponses: 12,
+            wouldPayYes: 7,
+            topObjectionLabel: 'Pricing concern',
+            topThemeLabel: 'Automation value',
+            nextActions: [
+              {
+                label: 'Schedule Wave-1 pilot conversations',
+                reason: 'All readiness thresholds passed.',
+              },
+            ],
+          },
+        },
+      })
+    )
+
+    const signalCheck = report.checks.find((check) => check.key === 'operator_survey_signal')
+
+    assert.equal(signalCheck?.status, 'verified')
+    assert.equal(
+      signalCheck?.evidence,
+      'Survey signal score is 100% with 12 qualified responses and 7 would-pay yes responses'
+    )
+    assert.equal(signalCheck?.evidenceItems[1]?.value, 'Automation value')
+  })
+
+  it('keeps submitted survey responses in review when signal quality is weak', () => {
+    const report = buildLaunchReadinessReport(
+      facts({
+        operatorSurvey: {
+          activeSurveys: 1,
+          submittedResponses: 2,
+          totalResponses: 2,
+          lastResponseAt: '2026-04-29T10:00:00.000Z',
+          analysis: {
+            readinessStatus: 'needs_more_signal',
+            readinessScore: 57,
+            qualifiedResponses: 1,
+            wouldPayYes: 0,
+            topObjectionLabel: 'Time or setup burden',
+            topThemeLabel: null,
+            nextActions: [
+              {
+                label: 'Collect more Wave-1 responses',
+                reason: '2 submitted responses is below the 20 response threshold.',
+              },
+            ],
+          },
+        },
+      })
+    )
+
+    const signalCheck = report.checks.find((check) => check.key === 'operator_survey_signal')
+
+    assert.equal(signalCheck?.status, 'operator_review')
+    assert.equal(signalCheck?.nextStep, '2 submitted responses is below the 20 response threshold.')
   })
 })
