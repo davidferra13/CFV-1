@@ -1,11 +1,23 @@
 ---
 name: skill-garden
-description: Create, improve, and self-heal ChefFlow project skills from observed developer behavior. Use when the user gives operating guidance such as "always", "never", "Codex should", "make Codex smarter", "self-heal", "create skills", or "use this behavior going forward"; when a repeated workflow, correction, failure, persona import pattern, Hermes/OpenCloy markdown, or external conversation should become reusable Codex behavior; or when an existing skill needs refinement.
+description: Create, improve, and self-heal ChefFlow project skills from observed developer behavior. Use proactively when the user gives operating guidance such as "always", "never", "Codex should", "make Codex smarter", "self-heal", "create skills", "knows when to", or "use this behavior going forward"; when a repeated workflow, correction, failure, persona import pattern, Hermes/OpenCloy markdown, or external conversation should become reusable Codex behavior; or when an existing skill needs refinement.
 ---
 
 # Skill Garden
 
 Turn repeated ChefFlow operating behavior into durable project skills. Prefer improving the smallest relevant existing skill over creating a new one.
+
+## Proactive Garden Loop
+
+Run this as a sidecar to `omninet` whenever durable behavior appears. The user does not need to ask for a skill by name.
+
+1. Notice: capture the operating rule, workflow, failure, external guidance, or persona intake pattern.
+2. Route: search existing skills and choose the smallest owner.
+3. Decide: patch existing, create new, heal failed behavior, or record no durable change.
+4. Act: when the guidance is clear and safe, update the skill now instead of promising to remember it.
+5. Close: validate the changed skill files, scan for em dashes, then commit and push only the files owned by the skill change.
+
+Do not create skill churn. A good garden pass leaves no change when the behavior is one-off, redundant with `AGENTS.md`, or too vague to encode.
 
 ## Triage
 
@@ -15,6 +27,7 @@ Turn repeated ChefFlow operating behavior into durable project skills. Prefer im
    - Recurring task workflow.
    - Skill failure or vague trigger.
    - External operator guidance from pasted chat, Hermes, OpenCloy, markdowns, or notes.
+   - User requests for Codex to become more autonomous, self-healing, or better at selecting skills without being asked.
 2. Search `.claude/skills` for an existing skill that already owns the behavior.
 3. Decide:
    - Patch an existing skill when ownership is clear.
@@ -57,13 +70,14 @@ Use this structure unless a better local pattern exists:
 
 ## Self-Healing Loop
 
-When a skill performs badly:
+When a skill performs badly or future Codex behavior would likely miss the user's intent:
 
 1. Capture the failure in one sentence.
 2. Identify whether the problem is trigger scope, missing procedure, stale file path, unsafe instruction, or output format.
 3. Patch only the broken part.
 4. Validate the skill with the local validator.
 5. If the failure came from user correction, encode the corrected behavior as a concrete rule.
+6. If a skill did not technically fail but its trigger is too weak for the user's newly stated expectation, tighten the trigger and add the minimum procedural rule needed.
 
 ## External Guidance Intake
 
@@ -74,6 +88,8 @@ When the user pastes a large conversation or markdown guidance:
 3. Create a new skill only for reusable behavior with no owner.
 4. Ignore motivational or duplicate text unless it changes agent behavior.
 5. Report the exact skills created or patched.
+
+For Hermes, OpenCloy, external ChatGPT, or other local operator markdowns, preserve behavior, not prose. Convert durable rules into triggers, decision steps, guardrails, or closeout checks. Do not copy large source passages into skills.
 
 ## Findings Improvement Pass
 

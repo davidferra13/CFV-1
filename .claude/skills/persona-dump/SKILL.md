@@ -22,11 +22,13 @@ Do not use saturation as a reason to ignore real customer/persona material. Use 
 
 ## Intake Contract
 
-Tell the user they can paste the whole blob in chat. If it may exceed the chat limit, ask them to split it into numbered chunks and say "END OF DUMP" on the final chunk.
+Tell the user they can paste the whole blob in chat. This includes large third-party ChatGPT persona output, mixed persona notes, or rough copied conversations. If it may exceed the chat limit, ask them to split it into numbered chunks and say "END OF DUMP" on the final chunk.
 
 Do not process an incomplete multi-chunk dump until the final marker arrives.
 
 If the corpus is already saturated, include the saturation warning before asking for the dump.
+
+If the user asks "can I paste them all here?", answer yes, then give the chunking contract. Do not require one persona per message.
 
 ## Parse Workflow
 
@@ -39,6 +41,7 @@ If the corpus is already saturated, include the saturation warning before asking
    - Pains, workflow gaps, desired outcomes, and evidence phrases.
 4. If type is ambiguous, infer conservatively from the persona's relationship to ChefFlow.
 5. Reject or flag candidates that are not ChefFlow-relevant instead of forcing them into the pipeline.
+6. If the paste contains both agent operating guidance and persona material, route operating guidance to `skill-garden` and persona material through this skill.
 
 ## File Placement
 
