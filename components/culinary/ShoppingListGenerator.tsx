@@ -16,6 +16,12 @@ function formatCurrency(cents: number) {
   return `$${(cents / 100).toFixed(2)}`
 }
 
+function formatBudgetSource(source: NonNullable<ShoppingListResult['budgetGuardrail']>['source']) {
+  if (source === 'manual') return 'manual budget'
+  if (source === 'formula') return 'target margin'
+  return 'mixed budgets'
+}
+
 // ---------------------------------------------------------------------------
 // ShoppingListRow
 // Per-item row with inline sourcing panel for unassigned/unpriced items.
@@ -116,6 +122,7 @@ export function ShoppingListGenerator({ initialResult, initialEventIds }: Props)
   const [selectedSupplier, setSelectedSupplier] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+  const budgetGuardrail = result.budgetGuardrail
 
   const filteredItems = useMemo(() => {
     return result.items.filter((item) => {
@@ -288,6 +295,11 @@ export function ShoppingListGenerator({ initialResult, initialEventIds }: Props)
 
           <Badge variant="warning">{result.shortageCount} shortages</Badge>
           <Badge variant="info">{formatCurrency(result.totalEstimatedCostCents)} est. spend</Badge>
+          {budgetGuardrail && (
+            <Badge variant={budgetGuardrail.isOverBudget ? 'error' : 'success'}>
+              {formatCurrency(budgetGuardrail.budgetCents)} food budget
+            </Badge>
+          )}
 
           <div className="ml-auto">
             <Button onClick={createDraftPO} disabled={isPending || filteredItems.length === 0}>
@@ -295,6 +307,20 @@ export function ShoppingListGenerator({ initialResult, initialEventIds }: Props)
             </Button>
           </div>
         </div>
+
+        {budgetGuardrail?.isOverBudget && (
+          <div className="rounded-md border border-red-700 bg-red-950/40 px-3 py-2 text-sm text-red-100">
+            <p className="font-medium">Estimated shopping spend exceeds the food-cost budget.</p>
+            <p className="mt-1 text-red-200">
+              Estimated {formatCurrency(budgetGuardrail.estimatedSpendCents)} vs budget{' '}
+              {formatCurrency(budgetGuardrail.budgetCents)}, over by{' '}
+              {formatCurrency(budgetGuardrail.varianceCents)} across{' '}
+              {budgetGuardrail.eventsCompared} event
+              {budgetGuardrail.eventsCompared === 1 ? '' : 's'} (
+              {formatBudgetSource(budgetGuardrail.source)}).
+            </p>
+          </div>
+        )}
 
         {grouped.length === 0 ? (
           <p className="text-sm text-stone-500">No matching items for this range.</p>

@@ -94,8 +94,11 @@ export async function getQuotePriceFreshnessSummary(
 export interface QuotePriceConfidence {
   hasLinkedMenu: boolean
   totalMenus: number
+  totalComponents: number
   menusWithFullCosts: number
   menusWithPartialCosts: number
+  menusWithNoCostableComponents: number
+  menusWithMissingRecipeCosts: number
   coveragePct: number | null
 }
 
@@ -107,6 +110,8 @@ export async function getEventMenuPriceConfidence(
   eventId: string
 ): Promise<QuotePriceConfidence | null> {
   const user = await requireChef()
+  if (!eventId?.trim()) throw new Error('Event id is required')
+
   const db: any = createServerClient()
 
   // Get menus for this event with their cost summary
@@ -121,38 +126,56 @@ export async function getEventMenuPriceConfidence(
     return {
       hasLinkedMenu: false,
       totalMenus: 0,
+      totalComponents: 0,
       menusWithFullCosts: 0,
       menusWithPartialCosts: 0,
+      menusWithNoCostableComponents: 0,
+      menusWithMissingRecipeCosts: 0,
       coveragePct: null,
     }
   }
 
   let full = 0
-  let partial = 0
-  let noData = 0
+  let noComponents = 0
+  let missingRecipeCosts = 0
+  let totalComponents = 0
 
   for (const menu of menus) {
     const summary = Array.isArray(menu.menu_cost_summary)
       ? menu.menu_cost_summary[0]
       : menu.menu_cost_summary
 
-    if (!summary || summary.total_component_count == null || summary.total_component_count === 0) {
-      noData++
+    const rawComponentCount = summary?.total_component_count
+    const componentCount =
+      typeof rawComponentCount === 'number'
+        ? rawComponentCount
+        : typeof rawComponentCount === 'string'
+          ? Number.parseInt(rawComponentCount, 10)
+          : 0
+    const safeComponentCount = Number.isFinite(componentCount) ? componentCount : 0
+    totalComponents += safeComponentCount
+
+    if (!summary || safeComponentCount === 0) {
+      noComponents++
     } else if (summary.has_all_recipe_costs === true) {
       full++
     } else {
-      partial++
+      missingRecipeCosts++
     }
   }
 
   const total = menus.length
+  const partial = noComponents + missingRecipeCosts
   const coveragePct = total > 0 ? Math.round((full / total) * 100) : null
 
   return {
     hasLinkedMenu: true,
     totalMenus: total,
+    totalComponents,
     menusWithFullCosts: full,
     menusWithPartialCosts: partial,
+    menusWithNoCostableComponents: noComponents,
+    menusWithMissingRecipeCosts: missingRecipeCosts,
     coveragePct,
   }
 }

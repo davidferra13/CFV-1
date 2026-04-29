@@ -40,10 +40,78 @@ export type ShoppingListResult = {
   items: ShoppingListItem[]
   totalEstimatedCostCents: number
   shortageCount: number
+  budgetGuardrail: ShoppingListBudgetGuardrail | null
+}
+
+type ShoppingListBudgetGuardrail = {
+  budgetCents: number
+  estimatedSpendCents: number
+  varianceCents: number
+  isOverBudget: boolean
+  source: 'manual' | 'formula' | 'mixed'
+  eventsCompared: number
+  totalQuotedPriceCents: number | null
+  targetMarginPercent: number | null
 }
 
 function round2(value: number) {
   return Math.round(value * 100) / 100
+}
+
+function normalizePercent(value: unknown): number | null {
+  const percent = Number(value)
+  return Number.isFinite(percent) && percent >= 0 && percent <= 100 ? percent : null
+}
+
+function getEventFoodCostBudget(
+  event: any,
+  targetMarginPercent: number | null
+): { budgetCents: number; source: 'manual' | 'formula' } | null {
+  const manualBudgetCents = Number(event.food_cost_budget_cents)
+  if (event.food_cost_budget_cents != null && Number.isFinite(manualBudgetCents)) {
+    return { budgetCents: Math.max(0, Math.round(manualBudgetCents)), source: 'manual' }
+  }
+
+  const quotedPriceCents = Number(event.quoted_price_cents)
+  if (Number.isFinite(quotedPriceCents) && quotedPriceCents > 0 && targetMarginPercent != null) {
+    return {
+      budgetCents: Math.round(quotedPriceCents * (1 - targetMarginPercent / 100)),
+      source: 'formula',
+    }
+  }
+
+  return null
+}
+
+function buildBudgetGuardrail(
+  events: any[],
+  totalEstimatedCostCents: number,
+  targetMarginPercent: number | null
+): ShoppingListBudgetGuardrail | null {
+  if (!events.length) return null
+
+  const eventBudgets = events.map((event) => getEventFoodCostBudget(event, targetMarginPercent))
+  if (eventBudgets.some((budget) => budget == null)) return null
+
+  const budgets = eventBudgets as Array<{ budgetCents: number; source: 'manual' | 'formula' }>
+  const budgetCents = budgets.reduce((sum, budget) => sum + budget.budgetCents, 0)
+  const varianceCents = totalEstimatedCostCents - budgetCents
+  const sources = new Set(budgets.map((budget) => budget.source))
+  const quotedPrices = events
+    .map((event) => Number(event.quoted_price_cents))
+    .filter((price) => Number.isFinite(price) && price > 0)
+
+  return {
+    budgetCents,
+    estimatedSpendCents: totalEstimatedCostCents,
+    varianceCents,
+    isOverBudget: varianceCents > 0,
+    source: sources.size === 1 ? budgets[0].source : 'mixed',
+    eventsCompared: events.length,
+    totalQuotedPriceCents:
+      quotedPrices.length > 0 ? quotedPrices.reduce((sum, price) => sum + price, 0) : null,
+    targetMarginPercent: sources.has('formula') ? targetMarginPercent : null,
+  }
 }
 
 async function getRecipeMultipliersForEvents(
@@ -159,7 +227,9 @@ export async function generateShoppingList(input: {
 
   let eventsQuery = db
     .from('events')
-    .select('id, event_date, guest_count, service_style, client_id')
+    .select(
+      'id, event_date, guest_count, service_style, client_id, quoted_price_cents, food_cost_budget_cents'
+    )
     .eq('tenant_id', user.tenantId!)
     .gte('event_date', parsed.startDate)
     .lte('event_date', parsed.endDate)
@@ -179,7 +249,25 @@ export async function generateShoppingList(input: {
       items: [],
       totalEstimatedCostCents: 0,
       shortageCount: 0,
+      budgetGuardrail: null,
     }
+  }
+
+  let targetMarginPercent: number | null = null
+  const needsDerivedBudget = (events as any[]).some(
+    (event: any) => event.food_cost_budget_cents == null && Number(event.quoted_price_cents) > 0
+  )
+  if (needsDerivedBudget) {
+    const { data: prefs, error: prefsError } = await db
+      .from('chef_preferences')
+      .select('target_margin_percent')
+      .eq('tenant_id', user.tenantId!)
+      .maybeSingle()
+
+    if (prefsError) {
+      throw new Error(`Failed to load chef pricing preferences: ${prefsError.message}`)
+    }
+    targetMarginPercent = normalizePercent(prefs?.target_margin_percent)
   }
 
   const eventIds = events.map((event: any) => event.id)
@@ -198,12 +286,18 @@ export async function generateShoppingList(input: {
   )
 
   if (recipeMultipliers.size === 0) {
+    const totalEstimatedCostCents = 0
     return {
       startDate: parsed.startDate,
       endDate: parsed.endDate,
       items: [],
-      totalEstimatedCostCents: 0,
+      totalEstimatedCostCents,
       shortageCount: 0,
+      budgetGuardrail: buildBudgetGuardrail(
+        events as any[],
+        totalEstimatedCostCents,
+        targetMarginPercent
+      ),
     }
   }
 
@@ -221,12 +315,18 @@ export async function generateShoppingList(input: {
   ) as string[]
 
   if (ingredientIds.length === 0) {
+    const totalEstimatedCostCents = 0
     return {
       startDate: parsed.startDate,
       endDate: parsed.endDate,
       items: [],
-      totalEstimatedCostCents: 0,
+      totalEstimatedCostCents,
       shortageCount: 0,
+      budgetGuardrail: buildBudgetGuardrail(
+        events as any[],
+        totalEstimatedCostCents,
+        targetMarginPercent
+      ),
     }
   }
 
@@ -454,11 +554,18 @@ export async function generateShoppingList(input: {
 
   items.sort((a, b) => b.toBuy - a.toBuy)
 
+  const totalEstimatedCostCents = items.reduce((sum, item) => sum + item.estimatedCostCents, 0)
+
   return {
     startDate: parsed.startDate,
     endDate: parsed.endDate,
-    totalEstimatedCostCents: items.reduce((sum, item) => sum + item.estimatedCostCents, 0),
+    totalEstimatedCostCents,
     shortageCount: items.filter((item) => item.toBuy > 0).length,
+    budgetGuardrail: buildBudgetGuardrail(
+      events as any[],
+      totalEstimatedCostCents,
+      targetMarginPercent
+    ),
     items,
   }
 }
