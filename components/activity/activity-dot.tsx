@@ -5,6 +5,7 @@ import Link from 'next/link'
 import type { ChefActivityEntry } from '@/lib/activity/chef-types'
 import { DOMAIN_CONFIG } from '@/lib/activity/chef-types'
 import { getChefActivityEntityHref } from '@/lib/activity/entity-routes'
+import { openRemy } from '@/lib/ai/remy-launch'
 
 interface ActivityDotProps {
   collapsed?: boolean
@@ -35,6 +36,15 @@ export function ActivityDot({ collapsed }: ActivityDotProps) {
   function handleClick() {
     if (!open) void load()
     setOpen((prev) => !prev)
+  }
+
+  function handleRemyCatchUp() {
+    setOpen(false)
+    openRemy({
+      prompt: 'Catch me up since I was away',
+      source: 'activity-dot',
+      send: true,
+    })
   }
 
   // Close on outside click or Escape
@@ -130,10 +140,33 @@ export function ActivityDot({ collapsed }: ActivityDotProps) {
           </div>
 
           <div className="border-t border-stone-800 px-3 py-2">
+            <div className="grid grid-cols-2 gap-2">
+              <Link
+                href="/activity#resume"
+                onClick={() => setOpen(false)}
+                className="rounded-md border border-stone-700 px-2 py-1.5 text-center text-xs font-medium text-stone-300 hover:bg-stone-800"
+              >
+                Resume
+              </Link>
+              <Link
+                href="/activity?mode=retrace"
+                onClick={() => setOpen(false)}
+                className="rounded-md border border-stone-700 px-2 py-1.5 text-center text-xs font-medium text-stone-300 hover:bg-stone-800"
+              >
+                Retrace
+              </Link>
+            </div>
+            <button
+              type="button"
+              onClick={handleRemyCatchUp}
+              className="mt-2 w-full rounded-md bg-amber-600 px-2 py-1.5 text-center text-xs font-medium text-white hover:bg-amber-500"
+            >
+              Ask Remy to catch me up
+            </button>
             <Link
               href="/activity"
               onClick={() => setOpen(false)}
-              className="block text-center text-xs font-medium text-stone-500 hover:text-stone-300"
+              className="mt-2 block text-center text-xs font-medium text-stone-500 hover:text-stone-300"
             >
               Open full timeline
             </Link>
