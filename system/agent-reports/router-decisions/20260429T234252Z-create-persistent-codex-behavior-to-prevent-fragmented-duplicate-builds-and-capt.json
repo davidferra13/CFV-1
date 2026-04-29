@@ -1,0 +1,14 @@
+{
+  "prompt": "Create persistent Codex behavior to prevent fragmented duplicate builds and capture conversation memory for Obsidian-style continuity",
+  "generated_at": "2026-04-29T23:42:52.150Z",
+  "primary_skill": "builder",
+  "sidecar_skills": ["omninet"],
+  "skill_maturity": {
+    "builder": "active",
+    "omninet": "proven"
+  },
+  "conflict_resolution": null,
+  "hard_stops": [],
+  "risk_level": "low",
+  "required_checks": ["stage, commit, and push only owned files before closeout"]
+}

@@ -38,13 +38,15 @@ If the developer says "Build [specific spec or plain English]," skip the queue a
 
 1. **Read `CLAUDE.md`** cover to cover.
 2. **Read the spec** you're implementing. Read the **Developer Notes** section carefully - understand the WHY, not just the WHAT.
-3. **Look up affected pages in `docs/app-complete-audit.md`**.
-4. **Read every file the spec names.** Not skim. Read. Understand conditional paths, validation, state management.
-5. **Spike report** - before writing implementation code, report:
+3. **Run `context-continuity`** for the feature domain. Find existing related surfaces, canonical attachment points, duplicate risks, recent overlapping commits, and active dirty or claimed files before proposing any new route, component, module, table, or spec file.
+4. **Look up affected pages in `docs/app-complete-audit.md`**.
+5. **Read every file the spec names.** Not skim. Read. Understand conditional paths, validation, state management.
+6. **Spike report** - before writing implementation code, report:
    - "I read these files: [list with line counts]"
    - "The spec is accurate about: [what matches]"
    - "The spec is wrong or incomplete about: [what doesn't match reality]"
    - "Developer intent from the notes: [summary of what the developer actually wants]"
+   - "Continuity decision: [extend / attach / merge-candidate / new] and canonical owner: [path or route]"
    - If the spec is wrong: **STOP. Do not improvise.** Update the spec with corrections, then continue.
 
 ## Build Phase (Continuous Verification)

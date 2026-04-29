@@ -20,8 +20,9 @@ This gate exists because agents hallucinate specs. They skim 3 files, make assum
 
 ## Step 2: Deep Inspection
 
-1. **Scope the inspection** - read every file in the directories this feature touches. Follow import chains 2 levels deep from the entry point. Read the schema for every table this feature queries. Do NOT claim you "inspected the codebase" after reading 3 files.
-2. **Produce a current-state summary** - before writing the spec, output a plain-English summary of what exists today in the areas this feature touches. Include file paths, current behavior, and data flow. **This summary is for the developer to review.** If they spot errors, the spec hasn't been started yet, so nothing is wasted. This is the single highest-ROI human checkpoint.
+1. **Run `context-continuity`** - identify existing related specs, routes, components, server actions, docs, recent commits, active claims, canonical owners, orphaned related work, and duplicate risks before drafting a new spec.
+2. **Scope the inspection** - read every file in the directories this feature touches. Follow import chains 2 levels deep from the entry point. Read the schema for every table this feature queries. Do NOT claim you "inspected the codebase" after reading 3 files.
+3. **Produce a current-state summary** - before writing the spec, output a plain-English summary of what exists today in the areas this feature touches. Include file paths, current behavior, data flow, and the continuity decision: `extend`, `attach`, `merge-candidate`, `new`, or `memory-only`. **This summary is for the developer to review.** If they spot errors, the spec hasn't been started yet, so nothing is wasted. This is the single highest-ROI human checkpoint.
 
 ## Step 3: Capture Developer Notes (CRITICAL)
 
@@ -55,13 +56,14 @@ Answer every item below. **Each answer must cite specific file paths and line nu
 5. **What is underspecified?** What could cause a builder to guess? Eliminate it or flag it.
 6. **What dependencies or prerequisites exist?** Migrations, other specs, config changes.
 7. **What existing logic could this conflict with?** Shared components, shared server actions, shared DB tables.
-8. **What is the end-to-end data flow?** User action -> server action -> DB write -> UI update. No gaps.
-9. **What is the correct implementation order?** Migration first? Schema first? Component first? Be explicit.
-10. **What are the exact success criteria?** These become the builder's verification steps.
-11. **What are the non-negotiable constraints?** Auth, tenant scoping, privacy boundary, financial rules.
-12. **What should NOT be touched?** Explicitly fence off adjacent code.
-13. **Is this the simplest complete version?** If not, cut scope now.
-14. **If implemented exactly as written, what would still be wrong?** Be honest.
+8. **What existing work could this duplicate or fragment?** Cite the scan result and explain why the spec extends, attaches, merges, or creates new surface.
+9. **What is the end-to-end data flow?** User action -> server action -> DB write -> UI update. No gaps.
+10. **What is the correct implementation order?** Migration first? Schema first? Component first? Be explicit.
+11. **What are the exact success criteria?** These become the builder's verification steps.
+12. **What are the non-negotiable constraints?** Auth, tenant scoping, privacy boundary, financial rules.
+13. **What should NOT be touched?** Explicitly fence off adjacent code.
+14. **Is this the simplest complete version?** If not, cut scope now.
+15. **If implemented exactly as written, what would still be wrong?** Be honest.
 
 ## Final Check (Must Answer Explicitly)
 

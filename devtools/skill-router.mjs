@@ -85,6 +85,28 @@ const rules = [
     ],
   },
   {
+    skill: 'context-continuity',
+    terms: [
+      'duplicate build',
+      'duplicating builds',
+      'fragmented',
+      'fragmentation',
+      'same thing',
+      'similar thing',
+      'not attaching',
+      'attach it',
+      'canonical surface',
+      'canonical route',
+      'homepage',
+      'homepages',
+      'obsidian',
+      'conversation memory',
+      'repeating myself',
+      'built before',
+      'what we built before',
+    ],
+  },
+  {
     skill: 'swarm-governor',
     terms: [
       'swarm',
@@ -388,6 +410,28 @@ if (
   !sidecarSkills.includes('heal-skill')
 ) {
   sidecarSkills.push('heal-skill')
+}
+if (
+  skillNames.has('context-continuity') &&
+  primarySkill !== 'context-continuity' &&
+  !sidecarSkills.includes('context-continuity') &&
+  [
+    'build',
+    'implement',
+    'add',
+    'create',
+    'connect',
+    'feature',
+    'write spec',
+    'plan spec',
+    'research',
+    'architecture',
+    'workflow',
+    'ui',
+    'route',
+  ].some((term) => hasTerm(lowerPrompt, term))
+) {
+  sidecarSkills.push('context-continuity')
 }
 
 const hardStops = hardStopRules

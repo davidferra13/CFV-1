@@ -1,0 +1,16 @@
+{
+  "id": "20260429T234252Z-feature-pantry-engine-create-persistent-codex-behavior-to-prevent-fragmented-dup",
+  "status": "active",
+  "agent": "david",
+  "prompt": "Create persistent Codex behavior to prevent fragmented duplicate builds and capture conversation memory for Obsidian-style continuity",
+  "branch": "feature/pantry-engine",
+  "branch_start_commit": "a8bc2c781",
+  "branch_finish": null,
+  "branch_finish_commit": null,
+  "owned_paths": [],
+  "created_at": "2026-04-29T23:42:52.297Z",
+  "updated_at": "2026-04-29T23:42:52.297Z",
+  "finished_at": null,
+  "commit_hash": null,
+  "pushed": null
+}

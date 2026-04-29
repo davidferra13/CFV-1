@@ -1,6 +1,6 @@
 # Agent Skill Dashboard
 
-Generated: 2026-04-29T17:21:46.927Z
+Generated: 2026-04-29T23:47:19.665Z
 
 ## Coverage
 
@@ -12,18 +12,18 @@ Generated: 2026-04-29T17:21:46.927Z
 
 ## Dependencies
 
-- Edges: 53
+- Edges: 67
 - Unknown refs: 0
-- Orphan skills: 13
+- Orphan skills: 14
 
 ## Maturity
 
 - Proven: 2
-- Active: 41
+- Active: 45
 - Draft: 0
 - Needs healing: 0
 - Deprecated: 0
-- Implicit defaults: 37
+- Implicit defaults: 41
 
 ## Reliability
 
@@ -55,9 +55,8 @@ Generated: 2026-04-29T17:21:46.927Z
 
 - Unhealthy skills: 6
 - Overlaps: 0
-- Stale generated reports: 18
+- Stale generated reports: 26
 
 ## Learning
 
 - Open learning items: 0
-
