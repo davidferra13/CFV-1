@@ -7,6 +7,7 @@ import { z } from 'zod'
 import { optimizeLogo } from '@/lib/images/optimize'
 import { getOnboardingCompletionState } from '@/lib/onboarding/completion-state'
 import { broadcastTenantMutation } from '@/lib/realtime/broadcast'
+import type { ChefFullProfile, ChefSocialLinks } from '@/lib/chef/profile-types'
 
 const CHEF_LOGOS_BUCKET = 'chef-logos'
 const MAX_LOGO_SIZE = 5 * 1024 * 1024 // 5MB
@@ -60,14 +61,6 @@ const SocialLinksSchema = z
   })
   .optional()
 
-export type ChefSocialLinks = {
-  instagram?: string
-  tiktok?: string
-  facebook?: string
-  youtube?: string
-  linktree?: string
-}
-
 const UpdateChefFullProfileSchema = z.object({
   business_name: z.string().max(120).optional(),
   display_name: z.string().max(100).nullable().optional(),
@@ -115,22 +108,7 @@ const UpdateChefFullProfileSchema = z.object({
   social_links: SocialLinksSchema,
 })
 
-export type UpdateChefFullProfileInput = z.infer<typeof UpdateChefFullProfileSchema>
-
-export type ChefFullProfile = {
-  business_name: string
-  display_name: string | null
-  bio: string | null
-  phone: string | null
-  tagline: string | null
-  google_review_url: string | null
-  profile_image_url: string | null
-  logo_url: string | null
-  website_url: string | null
-  show_website_on_public_profile: boolean
-  preferred_inquiry_destination: 'website_only' | 'chefflow_only' | 'both'
-  social_links: ChefSocialLinks
-}
+type UpdateChefFullProfileInput = z.infer<typeof UpdateChefFullProfileSchema>
 
 export async function getChefFullProfile(): Promise<ChefFullProfile> {
   const user = await requireChef()

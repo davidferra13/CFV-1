@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { updateChefFullProfile, type ChefSocialLinks } from '@/lib/chef/profile-actions'
+import { updateChefFullProfile } from '@/lib/chef/profile-actions'
+import type { ChefSocialLinks } from '@/lib/chef/profile-types'
 import { uploadChefProfileImage } from '@/lib/network/actions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'

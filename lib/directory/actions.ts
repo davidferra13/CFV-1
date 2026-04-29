@@ -23,7 +23,7 @@ import {
   type PublicChefLocationExperience,
 } from '@/lib/partners/location-experiences'
 import { createServerClient } from '@/lib/db/server'
-import type { ChefSocialLinks } from '@/lib/chef/profile-actions'
+import type { ChefSocialLinks } from '@/lib/chef/profile-types'
 
 export type DirectoryPartnerLocation = {
   id: string

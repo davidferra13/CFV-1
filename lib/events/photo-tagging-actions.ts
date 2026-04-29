@@ -11,12 +11,12 @@ import { z } from 'zod'
 
 // --- Types ---
 
-export type PhotoTagSuggestion = {
+type PhotoTagSuggestion = {
   suggestedTags: string[]
   dishGuess: string | null
 }
 
-export type ConfirmedPhotoTag = {
+type ConfirmedPhotoTag = {
   photoId: string
   tags: string[]
 }
@@ -133,7 +133,7 @@ export async function suggestPhotoTags(photoUrl: string): Promise<PhotoTagSugges
 export async function confirmPhotoTag(
   photoId: string,
   tags: string[]
-): Promise<{ success: boolean }> {
+): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -148,10 +148,8 @@ export async function confirmPhotoTag(
     .single()
 
   if (fetchError || !photo) {
-    // If event_photos table doesn't exist or photo not found,
-    // return success as a no-op placeholder
     console.warn('[confirmPhotoTag] Photo not found or table missing:', fetchError?.message)
-    return { success: true }
+    return { success: false, error: 'Photo not found. Refresh the event and try again.' }
   }
 
   const { error: updateError } = await db

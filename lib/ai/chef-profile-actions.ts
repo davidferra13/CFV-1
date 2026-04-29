@@ -8,7 +8,9 @@ import { revalidatePath, revalidateTag } from 'next/cache'
 import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { CULINARY_QUESTIONS } from '@/lib/ai/chef-profile-constants'
+import { invalidateRemyContextCache } from '@/lib/ai/remy-context'
 import { broadcastTenantMutation } from '@/lib/realtime/broadcast'
+import { getMutationSyncPlan } from '@/lib/sync/mutation-sync-contracts'
 import type { CulinaryQuestionKey, CulinaryProfileAnswer } from '@/lib/ai/chef-profile-constants'
 
 // Row shape from the new table (not yet in generated types)
@@ -19,6 +21,54 @@ interface CulinaryProfileRow {
   answer: string
   created_at: string
   updated_at: string
+}
+
+function materializeTag(tag: string, chefId: string): string {
+  return tag.replaceAll('{chefId}', chefId)
+}
+
+async function syncCulinaryProfileMutation(input: {
+  tenantId: string
+  chefId: string
+  reason: string
+  patch: Record<string, unknown>
+  cacheFailureLabel: string
+  broadcastFailureLabel: string
+}): Promise<void> {
+  const plan = getMutationSyncPlan('chef_culinary_profiles', {
+    reason: input.reason,
+    patch: input.patch,
+  })
+
+  for (const route of plan.paths) {
+    if (route.type) revalidatePath(route.path, route.type)
+    else revalidatePath(route.path)
+  }
+
+  for (const tag of plan.tags) {
+    revalidateTag(materializeTag(tag, input.chefId))
+  }
+
+  if (plan.remyContext) {
+    try {
+      await invalidateRemyContextCache(input.tenantId)
+    } catch (err) {
+      console.error(input.cacheFailureLabel, err)
+    }
+  }
+
+  try {
+    broadcastTenantMutation(input.tenantId, {
+      entity: plan.liveEntities[0] ?? plan.entity,
+      entityId: input.chefId,
+      action: 'mutation',
+      reason: input.reason,
+      source: 'mutation',
+      patch: plan.patch,
+    })
+  } catch (err) {
+    console.error(input.broadcastFailureLabel, err)
+  }
 }
 
 // ============================================
@@ -59,6 +109,7 @@ export async function saveCulinaryProfileAnswer(
   answer: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
+  const tenantId = user.tenantId ?? user.entityId
   const db: any = createServerClient()
 
   // Validate question key
@@ -81,25 +132,15 @@ export async function saveCulinaryProfileAnswer(
     return { success: false, error: (error as any).message }
   }
 
-  revalidatePath('/settings/culinary-profile')
-  revalidatePath('/chef/[slug]', 'page')
-  revalidatePath('/chef/[slug]/inquire', 'page')
-  revalidatePath('/book/[chefSlug]', 'page')
-  revalidateTag('chef-booking-profile')
-  revalidateTag(`chef-layout-${user.entityId}`)
-
-  try {
-    broadcastTenantMutation(user.entityId, {
-      entity: 'chef_culinary_profiles',
-      entityId: user.entityId,
-      action: 'mutation',
-      reason: 'culinary profile updated',
-      source: 'mutation',
-      patch: { questionKey },
-    })
-  } catch (err) {
-    console.error('[non-blocking] Culinary profile broadcast failed', err)
-  }
+  await syncCulinaryProfileMutation({
+    tenantId,
+    chefId: user.entityId,
+    reason: 'culinary profile updated',
+    patch: { questionKey },
+    cacheFailureLabel:
+      '[non-blocking] Culinary profile Remy context cache invalidation failed',
+    broadcastFailureLabel: '[non-blocking] Culinary profile broadcast failed',
+  })
 
   return { success: true }
 }
@@ -111,6 +152,7 @@ export async function saveCulinaryProfileBulk(
   answers: Record<string, string>
 ): Promise<{ success: boolean; saved: number; error?: string }> {
   const user = await requireChef()
+  const tenantId = user.tenantId ?? user.entityId
   const db: any = createServerClient()
 
   const rows = Object.entries(answers)
@@ -135,25 +177,15 @@ export async function saveCulinaryProfileBulk(
     return { success: false, saved: 0, error: (error as any).message }
   }
 
-  revalidatePath('/settings/culinary-profile')
-  revalidatePath('/chef/[slug]', 'page')
-  revalidatePath('/chef/[slug]/inquire', 'page')
-  revalidatePath('/book/[chefSlug]', 'page')
-  revalidateTag('chef-booking-profile')
-  revalidateTag(`chef-layout-${user.entityId}`)
-
-  try {
-    broadcastTenantMutation(user.entityId, {
-      entity: 'chef_culinary_profiles',
-      entityId: user.entityId,
-      action: 'mutation',
-      reason: 'culinary profile bulk updated',
-      source: 'mutation',
-      patch: { saved: rows.length },
-    })
-  } catch (err) {
-    console.error('[non-blocking] Culinary profile bulk broadcast failed', err)
-  }
+  await syncCulinaryProfileMutation({
+    tenantId,
+    chefId: user.entityId,
+    reason: 'culinary profile bulk updated',
+    patch: { saved: rows.length },
+    cacheFailureLabel:
+      '[non-blocking] Culinary profile bulk Remy context cache invalidation failed',
+    broadcastFailureLabel: '[non-blocking] Culinary profile bulk broadcast failed',
+  })
 
   return { success: true, saved: rows.length }
 }

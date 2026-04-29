@@ -143,7 +143,10 @@ export function PhotoTagger({ photos: initialPhotos }: Props) {
 
     startTransition(async () => {
       try {
-        await confirmPhotoTag(photoId, state.confirmedTags)
+        const result = await confirmPhotoTag(photoId, state.confirmedTags)
+        if (!result.success) {
+          throw new Error(result.error ?? 'Failed to save tags')
+        }
         updatePhotoState(photoId, { saving: false })
       } catch (err) {
         updatePhotoState(photoId, {

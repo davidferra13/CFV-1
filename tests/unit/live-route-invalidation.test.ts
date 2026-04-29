@@ -39,6 +39,40 @@ test('refreshes current routes that plausibly depend on the mutated entity', () 
   )
 })
 
+test('refreshes profile, public, and Remy surfaces for chef profile-context mutations', () => {
+  assert.equal(
+    shouldRefreshForLiveRouteMutation('/settings/public-profile', {
+      event: 'live_mutation',
+      data: { entity: 'chef_culinary_profile' },
+    }),
+    true
+  )
+
+  assert.equal(
+    shouldRefreshForLiveRouteMutation('/chef/chef-bob', {
+      event: 'live_mutation',
+      data: { entity: 'remy_profile_context' },
+    }),
+    true
+  )
+
+  assert.equal(
+    shouldRefreshForLiveRouteMutation('/remy', {
+      event: 'live_mutation',
+      data: { entity: 'remy_memories' },
+    }),
+    true
+  )
+
+  assert.equal(
+    shouldRefreshForLiveRouteMutation('/vendors', {
+      event: 'live_mutation',
+      data: { entity: 'remy_profile_context' },
+    }),
+    false
+  )
+})
+
 test('skips known live mutations for unrelated route families', () => {
   assert.equal(
     shouldRefreshForLiveRouteMutation('/clients', {
