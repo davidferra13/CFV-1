@@ -7,11 +7,26 @@ description: Ingest huge pasted persona conversations or persona blurbs into the
 
 Convert a large pasted persona blob into pipeline-ready persona files without requiring the user to paste each persona separately.
 
+## Saturation Check
+
+Before asking for or importing a large persona dump, read `system/persona-batch-synthesis/saturation.json` when it exists.
+
+If `saturation.saturated` is `true`:
+
+1. Tell the user the corpus is saturated and that more generic personas are unlikely to reveal new categories.
+2. Still accept a paste when the user explicitly wants it, but classify each accepted persona as `edge-case`, `real-user`, `missing-domain`, `strategic`, or `user-explicit`.
+3. Reject duplicate generic personas more aggressively.
+4. After import, route to `findings-triage`, `persona-inbox queue`, or `persona-build` instead of more generation.
+
+Do not use saturation as a reason to ignore real customer/persona material. Use it to stop generic persona churn.
+
 ## Intake Contract
 
 Tell the user they can paste the whole blob in chat. If it may exceed the chat limit, ask them to split it into numbered chunks and say "END OF DUMP" on the final chunk.
 
 Do not process an incomplete multi-chunk dump until the final marker arrives.
+
+If the corpus is already saturated, include the saturation warning before asking for the dump.
 
 ## Parse Workflow
 
@@ -77,3 +92,4 @@ After writing files:
 - Never generate recipes or chef creative IP.
 - Keep all imports additive.
 - If the paste contains private or sensitive information, preserve only what is needed for persona analysis.
+- If the corpus is saturated, prioritize novel edge cases and real user evidence over broad celebrity-style personas.

@@ -1,12 +1,25 @@
 ---
 name: persona-inbox
 description: Manage the persona pipeline without a running server. Status, run, synthesize, validate, import, queue, generate, vault, sources. CLI-first, no HTTP needed.
-user-invocable: true
 ---
 
 # Persona Inbox
 
 Manage the persona pipeline without the HTTP server running. CLI-first.
+
+## Saturation Gate
+
+Before `run`, `generate`, or bulk `import`, read `system/persona-batch-synthesis/saturation.json` when it exists.
+
+If `saturation.saturated` is `true`:
+
+1. Report the saturation state: total personas, categories discovered, consecutive zero-new-category count, and latest synthesis date if available.
+2. Do not generate more generic personas by default.
+3. Route the user toward `queue`, `synthesize`, `findings-triage`, `quick-wins`, or `persona-build`.
+4. Continue importing only when the user explicitly wants a named edge case, missing category, real customer, or strategically important persona.
+5. For accepted imports after saturation, label the reason: `edge-case`, `real-user`, `missing-domain`, `strategic`, or `user-explicit`.
+
+The current pipeline can be saturated while still having many build gaps. Saturation means "stop collecting more generic personas"; it does not mean "the product is complete."
 
 ## Subcommands
 
@@ -37,9 +50,10 @@ Priority queue: [top 5 gaps]
 
 Trigger the persona pipeline manually:
 
-1. Run `node devtools/persona-orchestrator.mjs` (or with limit arg)
-2. Stream output
-3. Show results when done
+1. Apply the Saturation Gate.
+2. Run `node devtools/persona-orchestrator.mjs` (or with limit arg) only if the gate allows it or the user explicitly confirms.
+3. Stream output.
+4. Show results when done.
 
 ### synthesize
 
@@ -60,9 +74,10 @@ Run validation on pipeline output:
 
 Import a new persona file:
 
-1. Validate format (needs name, type, description at minimum)
-2. Copy to `Chef Flow Personas/Uncompleted/[Type]/`
-3. Update pipeline state
+1. Apply the Saturation Gate.
+2. Validate format (needs name, type, description at minimum).
+3. Copy to `Chef Flow Personas/Uncompleted/[Type]/`.
+4. Update pipeline state.
 
 ### queue
 
@@ -76,9 +91,10 @@ Show the build queue:
 
 Generate a new persona from a description:
 
-1. User provides type (chef/client/vendor/guest/staff/partner/public) and name
-2. Use Ollama to expand into full persona file
-3. Save to `Chef Flow Personas/Uncompleted/[Type]/[name].txt`
+1. Apply the Saturation Gate.
+2. User provides type (chef/client/vendor/guest/staff/partner/public) and name.
+3. Use Ollama to expand into full persona file only if the gate allows it or the user explicitly confirms.
+4. Save to `Chef Flow Personas/Uncompleted/[Type]/[name].txt`.
 
 ### vault
 
@@ -114,3 +130,4 @@ Show where persona gap data comes from:
 - Pipeline state files are JSON. Read/write carefully.
 - If Ollama is needed (generate subcommand) and offline, say so. Don't fake output.
 - The vault is append-only. Never remove entries, only add or update scores.
+- If the corpus is saturated, prefer building and triage over collecting more generic personas.

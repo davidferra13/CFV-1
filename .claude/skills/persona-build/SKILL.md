@@ -1,12 +1,23 @@
 ---
 name: persona-build
 description: Process persona pipeline findings into built features. Reads batch synthesis, validates every gap against the actual codebase, filters out already-built features, and builds genuinely missing ones in priority order. The critical step the Ollama analyzer cannot do.
-user-invocable: true
 ---
 
 # Persona Build
 
 Process persona pipeline findings into built features. This is the step Ollama cannot do - it requires codebase access, judgment, and real verification.
+
+## Saturation Mode
+
+If `system/persona-batch-synthesis/saturation.json` says `saturation.saturated` is `true`, treat the pipeline as ready for build/triage, not more collection.
+
+In saturation mode:
+
+1. Prioritize category-level synthesis over individual persona anecdotes.
+2. Focus on repeated gaps with high severity and concrete code paths.
+3. Send mixed, stale, blocked, or developer-only findings through `findings-triage`.
+4. Avoid building from `uncategorized` entries until they are normalized into a real domain category or a concrete code surface.
+5. Report if the next useful action is not building, for example spec repair, developer action, or evidence validation.
 
 ## Procedure
 
@@ -27,6 +38,8 @@ From priority queue, pull all gaps sorted by priority. Each gap has:
 - Description of what's missing
 - Which persona(s) surfaced it
 - Severity/priority score
+
+If saturation is true and many gaps are `uncategorized`, run `findings-triage` first so the build queue does not become a pile of vague demands.
 
 ### 3. Validate Every Gap Against Codebase
 
@@ -93,3 +106,4 @@ For each GENUINE gap, in priority order:
 - NEVER build schema changes, auth changes, or billing changes without developer approval.
 - Commit after each meaningful chunk of work, not all at the end.
 - If more than 50% of gaps are false positives, note this - the analyzer may need recalibration.
+- If saturation is true, stop recommending more generic persona generation and move toward triage, specs, quick wins, or verified builds.

@@ -38,6 +38,7 @@ Use the most specific skill that fits. Combine skills only when their responsibi
 | Huge pasted persona material | `persona-dump` |
 | Persona fitness evaluation | `persona-stress-test` |
 | Build missing features from persona findings | `persona-build` |
+| Persona corpus saturated or persona generation has diminishing returns | `persona-inbox`, then `findings-triage` or `persona-build` |
 | Research task or written report | `research` |
 | Health, status, warmup, Pi, pipeline checks | matching operational skill |
 | Skill failed or produced bad guidance | `heal-skill` and `skill-garden` |
