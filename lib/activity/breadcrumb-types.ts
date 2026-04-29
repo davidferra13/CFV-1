@@ -86,6 +86,14 @@ export function labelForPath(path: string): string {
     return 'Recipe Detail'
   }
 
+  if (
+    segments.length >= 2 &&
+    ['clients', 'events', 'inquiries', 'quotes'].includes(segments[0] ?? '')
+  ) {
+    const parentLabel = ROUTE_LABELS[`/${segments[0]}`]
+    if (parentLabel) return `${parentLabel.replace(/s$/, '')} Detail`
+  }
+
   if (segments.length >= 3) {
     const prefix = '/' + segments.slice(0, 2).join('/')
     const parentLabel = ROUTE_LABELS[prefix]
