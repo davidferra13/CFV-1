@@ -6,6 +6,7 @@ import { format } from 'date-fns'
 import Link from 'next/link'
 import { CannabisPortalHeader } from '@/components/cannabis/cannabis-portal-header'
 import { updateChefCannabisGuestProfile } from '@/lib/chef/cannabis-actions'
+import { sendEventRSVPReminders } from '@/lib/sharing/actions'
 
 type DashboardEvent = {
   id: string
@@ -117,6 +118,11 @@ export function CannabisRsvpsDashboardClient({ initialData }: { initialData: Das
   const [sortKey, setSortKey] = useState<SortKey>('updatedAt')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
   const [copied, setCopied] = useState(false)
+  const [isReminderPending, startReminderTransition] = useTransition()
+  const [reminderFeedback, setReminderFeedback] = useState<{
+    type: 'success' | 'error' | 'info'
+    message: string
+  } | null>(null)
 
   const selectedEvent = data.selectedEvent
   const summary = data.summary
@@ -175,6 +181,7 @@ export function CannabisRsvpsDashboardClient({ initialData }: { initialData: Das
   }
 
   const handleEventChange = (eventId: string) => {
+    setReminderFeedback(null)
     const next = new URLSearchParams(searchParams?.toString() ?? '')
     next.set('eventId', eventId)
     router.push(`${pathname}?${next.toString()}`)
@@ -187,6 +194,47 @@ export function CannabisRsvpsDashboardClient({ initialData }: { initialData: Das
     await navigator.clipboard.writeText(text)
     setCopied(true)
     window.setTimeout(() => setCopied(false), 1400)
+  }
+
+  const resendReminder = () => {
+    if (!summary || summary.missingResponses <= 0 || !selectedEvent) return
+
+    setReminderFeedback(null)
+    startReminderTransition(async () => {
+      try {
+        const result = await sendEventRSVPReminders({
+          eventId: selectedEvent.id,
+          cadence: 'deadline',
+        })
+
+        if (result.queuedCount > 0) {
+          setReminderFeedback({
+            type: 'success',
+            message: `${result.queuedCount} reminder${result.queuedCount === 1 ? '' : 's'} queued for ${result.recipientCount} eligible recipient${result.recipientCount === 1 ? '' : 's'}.`,
+          })
+          router.refresh()
+          return
+        }
+
+        if (result.recipientCount === 0) {
+          setReminderFeedback({
+            type: 'info',
+            message: 'No pending guests with email addresses were found.',
+          })
+          return
+        }
+
+        setReminderFeedback({
+          type: 'info',
+          message: `No reminders were queued for ${result.recipientCount} eligible recipient${result.recipientCount === 1 ? '' : 's'}.`,
+        })
+      } catch (err) {
+        setReminderFeedback({
+          type: 'error',
+          message: err instanceof Error ? err.message : 'Failed to queue RSVP reminders',
+        })
+      }
+    })
   }
 
   return (
@@ -299,31 +347,49 @@ export function CannabisRsvpsDashboardClient({ initialData }: { initialData: Das
                 <p className="text-sm" style={{ color: '#d2e3c0' }}>
                   {summary.missingResponses} guests have not responded.
                 </p>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={copyReminder}
-                    className="px-3 py-1.5 rounded-lg text-xs font-semibold"
-                    style={{
-                      background: '#1e3b20',
-                      border: '1px solid rgba(74,124,78,0.25)',
-                      color: copied ? '#9cd9a0' : '#d8ebda',
-                    }}
-                  >
-                    {copied ? 'Reminder Copied' : 'Copy Reminder Link'}
-                  </button>
-                  <button
-                    type="button"
-                    disabled
-                    className="px-3 py-1.5 rounded-lg text-xs font-semibold opacity-70 cursor-not-allowed"
-                    style={{
-                      background: 'rgba(15,20,15,0.55)',
-                      border: '1px solid rgba(74,124,78,0.2)',
-                      color: '#9db9a0',
-                    }}
-                  >
-                    Resend Reminder
-                  </button>
+                <div className="flex flex-col items-stretch gap-2 sm:items-end">
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={copyReminder}
+                      className="px-3 py-1.5 rounded-lg text-xs font-semibold"
+                      style={{
+                        background: '#1e3b20',
+                        border: '1px solid rgba(74,124,78,0.25)',
+                        color: copied ? '#9cd9a0' : '#d8ebda',
+                      }}
+                    >
+                      {copied ? 'Reminder Copied' : 'Copy Reminder Link'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={resendReminder}
+                      disabled={isReminderPending}
+                      className="px-3 py-1.5 rounded-lg text-xs font-semibold disabled:opacity-70 disabled:cursor-not-allowed"
+                      style={{
+                        background: 'rgba(74,124,78,0.22)',
+                        border: '1px solid rgba(74,124,78,0.25)',
+                        color: '#d8ebda',
+                      }}
+                    >
+                      {isReminderPending ? 'Sending...' : 'Resend Reminder'}
+                    </button>
+                  </div>
+                  {reminderFeedback && (
+                    <p
+                      className="max-w-[340px] text-xs"
+                      style={{
+                        color:
+                          reminderFeedback.type === 'error'
+                            ? '#f0b8a8'
+                            : reminderFeedback.type === 'success'
+                              ? '#9cd9a0'
+                              : '#d2e3c0',
+                      }}
+                    >
+                      {reminderFeedback.message}
+                    </p>
+                  )}
                 </div>
               </div>
             )}
