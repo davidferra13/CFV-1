@@ -14,7 +14,7 @@ export default async function HubOverviewPage() {
 
   const [stats, stubs] = await Promise.all([getHubStats(), getStubsSeekingChef()])
 
-  return <HubOverviewClient stats={stats} stubs={stubs} />
+  return <HubOverviewClient stats={stats} stubs={stubs} tenantId={user.tenantId!} />
 }
 
 export const dynamic = 'force-dynamic'

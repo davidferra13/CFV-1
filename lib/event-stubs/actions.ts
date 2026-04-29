@@ -1,5 +1,6 @@
 'use server'
 
+import { revalidatePath } from 'next/cache'
 import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { z } from 'zod'
@@ -157,6 +158,11 @@ const UpdateStubSchema = z.object({
   notes: z.string().max(2000).optional().nullable(),
 })
 
+const AdoptStubSchema = z.object({
+  stubId: z.string().uuid(),
+  tenantId: z.string().uuid(),
+})
+
 /**
  * Update an event stub. Only the creator can update.
  */
@@ -253,16 +259,21 @@ export async function adoptEventStub(input: {
   stubId: string
   tenantId: string
 }): Promise<{ eventId: string }> {
+  const validated = AdoptStubSchema.parse(input)
   const user = await requireChef()
   // Tenant ID must come from session, never from client input
-  if (input.tenantId !== user.tenantId) {
+  if (validated.tenantId !== user.tenantId) {
     throw new Error('Unauthorized')
   }
 
   const db = createServerClient({ admin: true })
 
   // Get stub
-  const { data: stub } = await db.from('event_stubs').select('*').eq('id', input.stubId).single()
+  const { data: stub } = await db
+    .from('event_stubs')
+    .select('*')
+    .eq('id', validated.stubId)
+    .single()
 
   if (!stub) throw new Error('Event stub not found')
   if (stub.status === 'adopted') throw new Error('Stub already adopted')
@@ -271,7 +282,7 @@ export async function adoptEventStub(input: {
   const { data: chef } = await db
     .from('chefs')
     .select('business_name')
-    .eq('id', input.tenantId)
+    .eq('id', validated.tenantId)
     .single()
 
   // Look up or create a client for the stub creator
@@ -288,7 +299,7 @@ export async function adoptEventStub(input: {
     const { data: newClient } = await db
       .from('clients')
       .insert({
-        tenant_id: input.tenantId,
+        tenant_id: validated.tenantId,
         full_name: creatorProfile?.display_name ?? 'Guest',
         email: creatorProfile?.email ?? `hub-guest-${stub.created_by_profile_id}@placeholder.local`,
       })
@@ -302,7 +313,7 @@ export async function adoptEventStub(input: {
   const { data: event, error: eventError } = await db
     .from('events')
     .insert({
-      tenant_id: input.tenantId,
+      tenant_id: validated.tenantId,
       client_id: clientId,
       occasion: stub.occasion ?? stub.title,
       event_date:
@@ -323,35 +334,46 @@ export async function adoptEventStub(input: {
     .single()
 
   if (eventError) throw new Error(`Failed to create event: ${eventError.message}`)
+  if (!event) throw new Error('Failed to create event')
 
   // Update stub with adoption info
-  await db
+  const { error: stubUpdateError } = await db
     .from('event_stubs')
     .update({
       adopted_event_id: event.id,
-      adopted_tenant_id: input.tenantId,
+      adopted_tenant_id: validated.tenantId,
       adopted_at: new Date().toISOString(),
       status: 'adopted',
       updated_at: new Date().toISOString(),
     })
-    .eq('id', input.stubId)
+    .eq('id', validated.stubId)
+
+  if (stubUpdateError) throw new Error(`Failed to adopt stub: ${stubUpdateError.message}`)
 
   // If there's a hub group, link it to the real event and add chef
   if (stub.hub_group_id) {
-    await db
+    const { error: groupUpdateError } = await db
       .from('hub_groups')
       .update({
         event_id: event.id,
-        tenant_id: input.tenantId,
+        tenant_id: validated.tenantId,
         updated_at: new Date().toISOString(),
       })
       .eq('id', stub.hub_group_id)
 
+    if (groupUpdateError) {
+      throw new Error(`Failed to link dinner circle: ${groupUpdateError.message}`)
+    }
+
     // Link event to group events
-    await db.from('hub_group_events').insert({
+    const { error: groupEventError } = await db.from('hub_group_events').insert({
       group_id: stub.hub_group_id,
       event_id: event.id,
     })
+
+    if (groupEventError) {
+      throw new Error(`Failed to link dinner circle event: ${groupEventError.message}`)
+    }
 
     // Post system message
     try {
@@ -362,7 +384,7 @@ export async function adoptEventStub(input: {
         system_event_type: 'chef_joined',
         system_metadata: {
           chef_name: chef?.business_name ?? 'A chef',
-          tenant_id: input.tenantId,
+          tenant_id: validated.tenantId,
         } as Json,
         body: `${chef?.business_name ?? 'A chef'} has joined! Let's plan this dinner.`,
       })
@@ -370,6 +392,10 @@ export async function adoptEventStub(input: {
       // Non-blocking
     }
   }
+
+  revalidatePath('/social/hub-overview')
+  revalidatePath('/events')
+  revalidatePath(`/events/${event.id}`)
 
   return { eventId: event.id }
 }

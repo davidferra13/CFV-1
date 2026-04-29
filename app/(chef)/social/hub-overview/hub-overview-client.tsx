@@ -1,6 +1,12 @@
 'use client'
 
+import { useState } from 'react'
+import { ChefHat } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+
+import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { adoptEventStub } from '@/lib/event-stubs/actions'
 
 interface HubStats {
   totalProfiles: number
@@ -34,9 +40,46 @@ interface EventStubLead {
 interface HubOverviewClientProps {
   stats: HubStats
   stubs: EventStubLead[]
+  tenantId: string
 }
 
-export function HubOverviewClient({ stats, stubs }: HubOverviewClientProps) {
+export function HubOverviewClient({ stats, stubs, tenantId }: HubOverviewClientProps) {
+  const router = useRouter()
+  const [adoptingStubId, setAdoptingStubId] = useState<string | null>(null)
+  const [errorByStubId, setErrorByStubId] = useState<Record<string, string>>({})
+  const [successByStubId, setSuccessByStubId] = useState<Record<string, string>>({})
+
+  async function handleAdoptStub(stubId: string) {
+    setAdoptingStubId(stubId)
+    setErrorByStubId((current) => {
+      const next = { ...current }
+      delete next[stubId]
+      return next
+    })
+    setSuccessByStubId((current) => {
+      const next = { ...current }
+      delete next[stubId]
+      return next
+    })
+
+    try {
+      const result = await adoptEventStub({ stubId, tenantId })
+      setSuccessByStubId((current) => ({
+        ...current,
+        [stubId]: 'Event created. Opening it now.',
+      }))
+      router.refresh()
+      router.push(`/events/${result.eventId}`)
+    } catch (err) {
+      setErrorByStubId((current) => ({
+        ...current,
+        [stubId]: err instanceof Error ? err.message : 'Could not adopt this event stub.',
+      }))
+    } finally {
+      setAdoptingStubId(null)
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -68,8 +111,8 @@ export function HubOverviewClient({ stats, stubs }: HubOverviewClientProps) {
           <div className="space-y-3">
             {stubs.map((stub) => (
               <Card key={stub.id} className="border-stone-800 bg-stone-900/50 p-4">
-                <div className="flex items-start justify-between">
-                  <div>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="min-w-0 flex-1">
                     <h3 className="text-sm font-semibold text-stone-200">{stub.title}</h3>
                     <p className="mt-0.5 text-xs text-stone-500">
                       by {stub.created_by_name} &middot; {stub.group_member_count} member
@@ -79,7 +122,7 @@ export function HubOverviewClient({ stats, stubs }: HubOverviewClientProps) {
                       <p className="mt-1 text-xs text-stone-400 line-clamp-2">{stub.notes}</p>
                     )}
                   </div>
-                  <div className="text-right">
+                  <div className="shrink-0 text-left sm:text-right">
                     {stub.event_date && (
                       <div className="text-xs text-stone-400">
                         {new Date(stub.event_date).toLocaleDateString()}
@@ -100,6 +143,28 @@ export function HubOverviewClient({ stats, stubs }: HubOverviewClientProps) {
                 {stub.location_text && (
                   <p className="mt-2 text-xs text-stone-500">📍 {stub.location_text}</p>
                 )}
+                <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="min-h-[18px]">
+                    {errorByStubId[stub.id] && (
+                      <p className="text-xs text-red-400">{errorByStubId[stub.id]}</p>
+                    )}
+                    {successByStubId[stub.id] && (
+                      <p className="text-xs text-emerald-400">{successByStubId[stub.id]}</p>
+                    )}
+                  </div>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="secondary"
+                    loading={adoptingStubId === stub.id}
+                    disabled={adoptingStubId !== null}
+                    onClick={() => void handleAdoptStub(stub.id)}
+                    className="w-full sm:w-auto"
+                  >
+                    <ChefHat className="h-4 w-4" aria-hidden="true" />
+                    Adopt stub
+                  </Button>
+                </div>
               </Card>
             ))}
           </div>
