@@ -50,6 +50,7 @@ import {
   getCuratedStreamGreeting,
   getCuratedStreamReplyForMessage,
 } from '../stream/route-personality-utils'
+import { resolvePrivateRuntimePolicy } from '@/lib/ai/private-runtime-policy'
 
 export async function POST(req: NextRequest) {
   try {
@@ -65,11 +66,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ blocked: true, blockReason: 'Remy is disabled.' }, { status: 403 })
     }
 
-    // Local AI must be enabled for this endpoint
-    if (!prefs?.local_ai_enabled) {
+    const runtimePolicy = resolvePrivateRuntimePolicy('remy.context', {
+      localAiEnabled: prefs.local_ai_enabled,
+      localAiUrl: prefs.local_ai_url,
+      localAiModel: prefs.local_ai_model,
+      localAiVerifiedAt: prefs.local_ai_verified_at,
+    })
+
+    if (!runtimePolicy.localRequired) {
       return NextResponse.json(
         { blocked: true, blockReason: 'Local AI is not enabled.' },
         { status: 403 }
+      )
+    }
+    if (!runtimePolicy.localAvailable) {
+      return NextResponse.json(
+        { blocked: true, blockReason: runtimePolicy.blockReason },
+        { status: 412 }
       )
     }
 
@@ -251,7 +264,7 @@ export async function POST(req: NextRequest) {
       await Promise.all([
         loadRemyContext(currentPage, earlyScopeHint),
         classifyIntent(message),
-        earlyScopeHint === 'minimal'
+        earlyScopeHint === 'minimal' || !prefs.allow_memory
           ? Promise.resolve([])
           : loadRelevantMemories(message, undefined, undefined),
         earlyScopeHint === 'minimal'
@@ -261,7 +274,7 @@ export async function POST(req: NextRequest) {
         resolveMessageEntities(message).catch(() => []),
         earlyScopeHint === 'minimal' ? Promise.resolve(null) : getRemyArchetype().catch(() => null),
         activeForm === 'remy-survey' ? getSurveyState().catch(() => null) : Promise.resolve(null),
-        history.length === 0 && earlyScopeHint !== 'minimal'
+        prefs.allow_memory && history.length === 0 && earlyScopeHint !== 'minimal'
           ? searchRemyConversationSummaries(message, { limit: 3 }).catch(() => [])
           : Promise.resolve([]),
       ])

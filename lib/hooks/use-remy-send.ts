@@ -27,6 +27,7 @@ import {
   getOtherChannelDigest,
 } from '@/lib/ai/remy-activity-tracker'
 import type { BodyEvent } from '@/lib/ai/remy-body-state'
+import { resolvePrivateRuntimePolicy } from '@/lib/ai/private-runtime-policy'
 import {
   type EntityContext,
   createEntityContext,
@@ -93,7 +94,7 @@ export interface UseRemySendConfig {
   pathname: string | null
   soundEnabled: boolean
   // Local AI config (opt-in)
-  localAi?: { enabled: boolean; url: string; model: string } | null
+  localAi?: { enabled: boolean; url: string; model: string; verifiedAt?: string | null } | null
   // Remy context callbacks
   feedText: (text: string) => void
   lipSyncStop: () => void
@@ -283,6 +284,19 @@ export function useRemySend(config: UseRemySendConfig) {
       quickReplies?: string[]
     }> => {
       if (!localAi?.enabled) return { handled: false }
+
+      const runtimePolicy = resolvePrivateRuntimePolicy('remy.chat', {
+        localAiEnabled: localAi.enabled,
+        localAiUrl: localAi.url,
+        localAiModel: localAi.model,
+        localAiVerifiedAt: localAi.verifiedAt ?? null,
+      })
+      if (!runtimePolicy.localAvailable) {
+        return {
+          handled: true,
+          content: runtimePolicy.blockReason ?? 'Local AI is not available for this request.',
+        }
+      }
 
       try {
         // Step 1: Get context from server (system prompt + intent classification)

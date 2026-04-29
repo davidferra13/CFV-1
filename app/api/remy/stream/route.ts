@@ -83,15 +83,16 @@ import { formatVoiceMemoResponse } from '@/lib/ai/voice-memo-format'
 
 async function getRemyRuntimeState(
   tenantId: string
-): Promise<{ allowed: boolean; message?: string }> {
+): Promise<{ allowed: boolean; message?: string; prefs: Awaited<ReturnType<typeof getAiPreferences>> }> {
   const prefs = await getAiPreferences()
   if (prefs && !prefs.remy_enabled) {
     return {
       allowed: false,
       message: 'Remy is disabled. You can re-enable it in Settings > Privacy & Data.',
+      prefs,
     }
   }
-  return { allowed: true }
+  return { allowed: true, prefs }
 }
 
 export async function POST(req: NextRequest) {
@@ -108,6 +109,7 @@ export async function POST(req: NextRequest) {
     if (!runtimeState.allowed) {
       return sseErrorResponse(runtimeState.message ?? 'Remy is disabled for this account.', 403)
     }
+    const prefs = runtimeState.prefs
     if (!rawBody) {
       return sseErrorResponse('Request body must be valid JSON.', 400)
     }
@@ -606,7 +608,7 @@ export async function POST(req: NextRequest) {
           loadRemyContext(currentPage, earlyScopeHint),
           classifyIntent(message),
           // Skip heavy lookups for minimal scope - they won't be included in the prompt anyway
-          earlyScopeHint === 'minimal'
+          earlyScopeHint === 'minimal' || !prefs.allow_memory
             ? Promise.resolve([])
             : loadRelevantMemories(message, undefined, undefined),
           earlyScopeHint === 'minimal'
@@ -621,7 +623,7 @@ export async function POST(req: NextRequest) {
             ? Promise.resolve(null)
             : getRemyArchetype().catch(() => null),
           activeForm === 'remy-survey' ? getSurveyState().catch(() => null) : Promise.resolve(null),
-          history.length === 0 && earlyScopeHint !== 'minimal'
+          prefs.allow_memory && history.length === 0 && earlyScopeHint !== 'minimal'
             ? searchRemyConversationSummaries(message, { limit: 3 }).catch(() => [])
             : Promise.resolve([]),
           getStreamOnboardingStage(user.tenantId!).catch(() => null),
