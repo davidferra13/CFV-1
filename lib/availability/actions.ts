@@ -39,8 +39,85 @@ const WaitlistEntrySchema = z.object({
   expires_at: z.string().nullable().optional(),
 })
 
-export type BlockDateInput = z.infer<typeof BlockDateSchema>
-export type WaitlistEntryInput = z.infer<typeof WaitlistEntrySchema>
+const UuidSchema = z.string().uuid()
+const DateStringSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date')
+const BlockIdentifierSchema = z
+  .string()
+  .refine(
+    (value) => UuidSchema.safeParse(value).success || DateStringSchema.safeParse(value).success,
+    'Expected a block id or date'
+  )
+
+type BlockDateInput = z.infer<typeof BlockDateSchema>
+type WaitlistEntryInput = z.infer<typeof WaitlistEntrySchema>
+
+function revalidateCalendarPaths() {
+  revalidatePath('/calendar')
+  revalidatePath('/calendar/week')
+  revalidatePath('/calendar/year')
+}
+
+function revalidateWaitlistPaths() {
+  revalidatePath('/waitlist')
+  revalidatePath('/calendar')
+}
+
+async function getCurrentSessionUser() {
+  const { getCurrentUser } = await import('@/lib/auth/get-user')
+  return getCurrentUser()
+}
+
+function isScopedToSession(
+  chefId: string,
+  sessionUser: Awaited<ReturnType<typeof getCurrentSessionUser>>
+) {
+  return Boolean(
+    sessionUser && (chefId === sessionUser.tenantId || chefId === sessionUser.entityId)
+  )
+}
+
+async function getEventScopedToChef(db: any, eventId: string, chefId: string) {
+  const { data, error } = await db
+    .from('events')
+    .select('id, tenant_id, event_date')
+    .eq('id', eventId)
+    .eq('tenant_id', chefId)
+    .maybeSingle()
+
+  if (error) {
+    console.error('[availability] Failed to verify event scope:', error)
+    throw new Error('Failed to verify event scope')
+  }
+
+  return data
+}
+
+async function updateWaitlistEntryStatus(
+  entryId: string,
+  updateData: Record<string, unknown>,
+  errorMessage: string
+) {
+  const user = await requireChef()
+  const validatedEntryId = UuidSchema.parse(entryId)
+  const db: any = createServerClient()
+
+  const { data, error } = await db
+    .from('waitlist_entries')
+    .update(updateData)
+    .eq('id', validatedEntryId)
+    .eq('chef_id', user.tenantId!)
+    .select()
+    .single()
+
+  if (error) {
+    console.error('[waitlist] Failed to update entry status:', error)
+    throw new Error(errorMessage)
+  }
+  if (!data) throw new Error('Waitlist entry not found')
+
+  revalidateWaitlistPaths()
+  return data
+}
 
 // ============================================
 // AVAILABILITY BLOCK ACTIONS
@@ -66,23 +143,41 @@ export async function blockDate(input: BlockDateInput) {
     throw new Error('Failed to block date')
   }
 
-  revalidatePath('/calendar')
+  revalidateCalendarPaths()
   return data
 }
 
-export async function unblockDate(blockId: string) {
+export async function unblockDate(blockIdOrDate: string) {
   const user = await requireChef()
+  const validatedIdentifier = BlockIdentifierSchema.parse(blockIdOrDate)
   const db: any = createServerClient()
 
-  const { error } = await db
+  let query = db
     .from('chef_availability_blocks')
     .delete()
-    .eq('id', blockId)
     .eq('chef_id', user.tenantId!)
     .eq('is_event_auto', false) // cannot manually delete auto-blocks
 
-  if (error) throw new Error('Failed to remove block')
-  revalidatePath('/calendar')
+  if (DateStringSchema.safeParse(validatedIdentifier).success) {
+    query = query.eq('block_date', validatedIdentifier)
+  } else {
+    query = query.eq('id', validatedIdentifier)
+  }
+
+  const { data, error, count } = await query.select('id, block_date')
+
+  if (error) {
+    console.error('[unblockDate] Error:', error)
+    throw new Error('Failed to remove block')
+  }
+
+  const removedBlocks = data ?? []
+  revalidateCalendarPaths()
+  return {
+    success: true,
+    removedCount: typeof count === 'number' ? count : removedBlocks.length,
+    removedBlocks,
+  }
 }
 
 /**
@@ -90,44 +185,96 @@ export async function unblockDate(blockId: string) {
  * Called from the event transition logic.
  */
 export async function autoBlockEventDate(eventId: string, chefId: string, eventDate: string) {
-  // Tenant isolation: verify chefId matches session when called from user context
-  const { getCurrentUser } = await import('@/lib/auth/get-user')
-  const sessionUser = await getCurrentUser()
-  if (sessionUser && chefId !== sessionUser.tenantId && chefId !== sessionUser.entityId) {
+  const validatedEventId = UuidSchema.parse(eventId)
+  const validatedChefId = UuidSchema.parse(chefId)
+  const validatedEventDate = DateStringSchema.parse(eventDate)
+  const sessionUser = await getCurrentSessionUser()
+  if (sessionUser && !isScopedToSession(validatedChefId, sessionUser)) {
     throw new Error('Unauthorized: tenant mismatch')
   }
   const db: any = createServerClient()
 
+  const event = await getEventScopedToChef(db, validatedEventId, validatedChefId)
+  if (!event) throw new Error('Event not found for chef')
+
   // Idempotent: skip if already blocked for this event
-  const { data: existing } = await db
+  const { data: existing, error: existingError } = await db
     .from('chef_availability_blocks')
-    .select('id')
-    .eq('chef_id', chefId)
-    .eq('event_id', eventId)
+    .select('*')
+    .eq('chef_id', validatedChefId)
+    .eq('event_id', validatedEventId)
     .maybeSingle()
 
-  if (existing) return
+  if (existingError) {
+    console.error('[autoBlockEventDate] Existing block check failed:', existingError)
+    throw new Error('Failed to check event block')
+  }
 
-  await db.from('chef_availability_blocks').insert({
-    chef_id: chefId,
-    block_date: eventDate,
-    block_type: 'full_day',
-    is_event_auto: true,
-    event_id: eventId,
-    reason: 'Confirmed event',
-  })
+  if (existing) {
+    revalidateCalendarPaths()
+    return existing
+  }
+
+  const { data, error } = await db
+    .from('chef_availability_blocks')
+    .insert({
+      chef_id: validatedChefId,
+      block_date: validatedEventDate,
+      block_type: 'full_day',
+      is_event_auto: true,
+      event_id: validatedEventId,
+      reason: 'Confirmed event',
+    })
+    .select()
+    .single()
+
+  if (error) {
+    console.error('[autoBlockEventDate] Insert failed:', error)
+    throw new Error('Failed to auto-block event date')
+  }
+  if (!data) throw new Error('Failed to auto-block event date')
+
+  revalidateCalendarPaths()
+  return data
 }
 
 /**
  * Remove auto-block when an event is cancelled.
  */
-export async function removeEventAutoBlock(eventId: string) {
+export async function removeEventAutoBlock(eventId: string, chefId?: string) {
+  const validatedEventId = UuidSchema.parse(eventId)
+  const validatedChefId = chefId ? UuidSchema.parse(chefId) : null
+  const sessionUser = await getCurrentSessionUser()
+  const scopedChefId = validatedChefId ?? sessionUser?.tenantId ?? sessionUser?.entityId
+  if (!scopedChefId) throw new Error('Unauthorized: tenant scope required')
+  if (sessionUser && !isScopedToSession(scopedChefId, sessionUser)) {
+    throw new Error('Unauthorized: tenant mismatch')
+  }
+
   const db: any = createServerClient()
-  await db
+  const event = await getEventScopedToChef(db, validatedEventId, scopedChefId)
+  if (!event) throw new Error('Event not found for chef')
+
+  const { data, error, count } = await db
     .from('chef_availability_blocks')
     .delete()
-    .eq('event_id', eventId)
+    .eq('chef_id', scopedChefId)
+    .eq('event_id', validatedEventId)
     .eq('is_event_auto', true)
+    .select('id, block_date')
+
+  if (error) {
+    console.error('[removeEventAutoBlock] Error:', error)
+    throw new Error('Failed to remove event auto-block')
+  }
+
+  const removedBlocks = data ?? []
+  revalidateCalendarPaths()
+  return {
+    success: true,
+    removedCount: typeof count === 'number' ? count : removedBlocks.length,
+    removedBlocks,
+  }
 }
 
 /**
@@ -480,47 +627,51 @@ export async function addToWaitlist(input: WaitlistEntryInput) {
     throw new Error('Failed to add to waitlist')
   }
 
-  revalidatePath('/waitlist')
+  revalidateWaitlistPaths()
   return data
 }
 
 export async function contactWaitlistEntry(entryId: string) {
-  const user = await requireChef()
-  const db: any = createServerClient()
-
-  await db
-    .from('waitlist_entries')
-    .update({ status: 'contacted', contacted_at: new Date().toISOString() })
-    .eq('id', entryId)
-    .eq('chef_id', user.tenantId!)
-
-  revalidatePath('/waitlist')
+  return updateWaitlistEntryStatus(
+    entryId,
+    { status: 'contacted', contacted_at: new Date().toISOString() },
+    'Failed to update waitlist entry'
+  )
 }
 
 export async function convertWaitlistEntry(entryId: string, eventId: string) {
   const user = await requireChef()
+  const validatedEntryId = UuidSchema.parse(entryId)
+  const validatedEventId = UuidSchema.parse(eventId)
   const db: any = createServerClient()
 
-  await db
-    .from('waitlist_entries')
-    .update({ status: 'converted', converted_event_id: eventId })
-    .eq('id', entryId)
-    .eq('chef_id', user.tenantId!)
+  const event = await getEventScopedToChef(db, validatedEventId, user.tenantId!)
+  if (!event) throw new Error('Event not found for chef')
 
-  revalidatePath('/waitlist')
+  const { data, error } = await db
+    .from('waitlist_entries')
+    .update({ status: 'converted', converted_event_id: validatedEventId })
+    .eq('id', validatedEntryId)
+    .eq('chef_id', user.tenantId!)
+    .select()
+    .single()
+
+  if (error) {
+    console.error('[convertWaitlistEntry] Error:', error)
+    throw new Error('Failed to convert waitlist entry')
+  }
+  if (!data) throw new Error('Waitlist entry not found')
+
+  revalidateWaitlistPaths()
+  return data
 }
 
 export async function expireWaitlistEntry(entryId: string) {
-  const user = await requireChef()
-  const db: any = createServerClient()
-
-  await db
-    .from('waitlist_entries')
-    .update({ status: 'expired' })
-    .eq('id', entryId)
-    .eq('chef_id', user.tenantId!)
-
-  revalidatePath('/waitlist')
+  return updateWaitlistEntryStatus(
+    entryId,
+    { status: 'expired' },
+    'Failed to expire waitlist entry'
+  )
 }
 
 export async function getWaitlistEntries(status?: string) {
