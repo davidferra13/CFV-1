@@ -88,7 +88,7 @@ export default function Home() {
         <div className="homepage-depth-layer homepage-depth-near relative mx-auto w-full max-w-4xl px-4 pb-16 pt-20 sm:px-6 sm:pb-20 sm:pt-28 lg:px-8">
           <div className="homepage-hero-copy text-center">
             <h1 className="homepage-hero-shimmer text-mask-hero mx-auto max-w-3xl text-[2.5rem] font-display tracking-[-0.045em] leading-[1.08] sm:text-5xl lg:text-[3.75rem]">
-              Find a private chef near you
+              Find a chef near you
             </h1>
             <p className="mx-auto mt-6 max-w-xl text-base leading-7 tracking-[-0.01em] text-stone-400 sm:text-lg sm:leading-8">
               Browse vetted chefs by location and service type, compare profiles, and book directly.
