@@ -215,6 +215,18 @@ ${sourceContext}
 === INSTRUCTIONS ===
 Write a focused, specific build plan for this ONE gap. The plan will be handed to a coding agent (Codex) that will execute it. Be explicit about file paths and what to change. Do NOT suggest changes to files you haven't seen.
 
+Hard grounding rules:
+- Only reference existing ChefFlow files shown in RELEVANT SOURCE FILES for Files to Modify.
+- Include a Grounding Evidence section before Files to Modify.
+- Every Grounding Evidence bullet must cite an existing file path from RELEVANT SOURCE FILES.
+- Every Files to Modify path must also appear in Grounding Evidence.
+- If no relevant existing files are shown, say the plan is not buildable from current evidence.
+- Do not invent React Router, Express, generic REST endpoints, controllers, services, or backend API layers.
+- Do not invent persona-specific UI labels, wording, banners, copy, or names.
+- Do not propose recipe generation, recipe creation, recipe updates, or ingredient creation.
+- Do not propose database schema, model, migration, table, column, or type changes unless the developer explicitly approved SQL in the source context.
+- Do not drift into beta surveys, survey invites, validation questionnaires, or feedback forms.
+
 Use EXACTLY this format:
 
 # Build Task: ${gap.title}
@@ -224,6 +236,9 @@ Use EXACTLY this format:
 
 ## What to Build
 {2-3 sentences describing the change}
+
+## Grounding Evidence
+- \`{existing/file/path.tsx}\` -- {specific existing behavior or component observed in the provided source context}
 
 ## Files to Modify
 - \`{exact/file/path.tsx}\` -- {what to change in this file}
@@ -244,6 +259,11 @@ Use EXACTLY this format:
 - Modify files not listed above
 - Add new npm dependencies
 - Change database schema
+- Add or change migrations, models, tables, columns, or generated types
+- Add React Router, Express, generic REST endpoints, controllers, services, or backend API layers
+- Add persona-specific UI wording, labels, banners, names, or copy
+- Generate, create, update, or edit recipes or ingredients
+- Add beta surveys, survey invites, validation questionnaires, or feedback forms
 - Delete existing functionality
 - Use em dashes anywhere`;
 }
@@ -334,34 +354,106 @@ const SCOPE_BLOCKLIST = [
 
 function validateBuildPlan(planText) {
   const issues = [];
+  const withoutDoNot = planText.replace(/\n## DO NOT\b[\s\S]*$/i, "");
+
+  function sectionText(name) {
+    const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const match = new RegExp(`(^|\\n)## ${escaped}\\s*\\n([\\s\\S]*?)(?=\\n## |$)`, "i").exec(planText);
+    return match ? match[2].trim() : "";
+  }
+
+  function refsFrom(text) {
+    return [...text.matchAll(/`([a-zA-Z][\w/.-]+\.(?:ts|tsx|js|jsx|mjs|css|sql))`/g)]
+      .map((match) => match[1])
+      .filter((ref) => !ref.includes("{") && !ref.startsWith("http"));
+  }
 
   // Check 1: Scope guard - reject hallucinated features
   for (const pattern of SCOPE_BLOCKLIST) {
-    if (pattern.test(planText)) {
+    if (pattern.test(withoutDoNot)) {
       issues.push(`out-of-scope: matches ${pattern}`);
     }
   }
 
-  // Check 2: Referenced files must exist
-  const fileRefs = [...planText.matchAll(/`([a-zA-Z][\w/.-]+\.(?:ts|tsx|js|jsx|mjs|css|sql))`/g)];
-  let missingFiles = 0;
-  let checkedFiles = 0;
-  for (const match of fileRefs) {
-    const ref = match[1];
-    // Skip obviously generic paths
-    if (ref.includes('{') || ref.startsWith('http')) continue;
-    checkedFiles++;
-    const full = join(ROOT, ref);
-    if (!existsSync(full)) missingFiles++;
-  }
-  if (checkedFiles > 0 && missingFiles === checkedFiles) {
-    issues.push(`all ${missingFiles} referenced files are missing`);
-  } else if (checkedFiles > 1 && missingFiles > checkedFiles / 2) {
-    issues.push(`${missingFiles}/${checkedFiles} referenced files missing`);
+  const hallucinationPatterns = [
+    /\bReact\s+Router\b/i,
+    /\breact-router(?:-dom)?\b/i,
+    /\bBrowserRouter\b/,
+    /\bcreateBrowserRouter\b/,
+    /\bExpress(?:\.js)?\b/i,
+    /\bREST\s+API\b/i,
+    /\bbackend\s+API\b/i,
+    /\bbackend\s+(?:endpoint|route|layer)\b/i,
+    /\bcreate\s+(?:a\s+)?(?:new\s+)?(?:API|backend)\s+(?:endpoint|route)\b/i,
+    /\bcontrollers?\b/i,
+    /\bpersona-specific\b/i,
+    /\b(?:copy|label|text|wording|microcopy)\b.{0,80}\bpersona\b/i,
+    /\b(?:persona|client|chef)-specific\s+(?:copy|label|text|wording|banner|message)\b/i,
+    /\b(?:AI\s+)?generat(?:e|es|ed|ing|ion)\s+(?:a\s+)?recipes?\b/i,
+    /\b(?:create|creates|created|creating|update|updates|updated|updating|edit|edits|edited|editing)\s+(?:a\s+)?recipes?\b/i,
+    /\b(?:create|creates|created|creating|update|updates|updated|updating|edit|edits|edited|editing)\s+(?:a\s+)?ingredients?\b/i,
+    /\badd\s+(?:a\s+)?ingredients?\b/i,
+    /\bagent\.(?:create_recipe|update_recipe|add_ingredient)\b/i,
+    /\b(?:database\s+)?migration\b/i,
+    /\bdrizzle\s+schema\b/i,
+    /\b(?:schema|model)\s+change\b/i,
+    /\b(?:change|changes|changing)\s+(?:the\s+)?database\s+schema\b/i,
+    /\b(?:create|add|alter|modify|update)\s+(?:a\s+)?(?:new\s+)?(?:table|column|model|schema)\b/i,
+    /\bnew\s+(?:table|column|model|schema)\b/i,
+    /\btypes\/database\.ts\b/i,
+    /\bbeta\s+survey\b/i,
+    /\bsurvey\s+(?:invite|invitation|response|questionnaire|form)\b/i,
+    /\bfeedback\s+form\b/i,
+    /\bvalidation\s+questionnaire\b/i,
+  ];
+  for (const pattern of hallucinationPatterns) {
+    if (pattern.test(withoutDoNot)) {
+      issues.push(`hallucinated scope: matches ${pattern}`);
+    }
   }
 
-  // Check 3: Plan must have required sections
-  const requiredSections = ['## What to Build', '## Files to Modify', '## Acceptance Criteria'];
+  // Check 2: Grounding Evidence is required and all evidence refs must exist
+  const grounding = sectionText("Grounding Evidence");
+  const groundingRefs = refsFrom(grounding);
+  const groundingSet = new Set(groundingRefs);
+  if (!grounding) {
+    issues.push("missing section: ## Grounding Evidence");
+  } else if (groundingRefs.length === 0) {
+    issues.push("Grounding Evidence has no file refs");
+  }
+  for (const ref of groundingRefs) {
+    if (!existsSync(join(ROOT, ref))) {
+      issues.push(`Grounding Evidence ref missing: ${ref}`);
+    }
+  }
+
+  // Check 3: Files to Modify refs must exist and be grounded
+  const filesToModify = sectionText("Files to Modify");
+  const modifyRefs = refsFrom(filesToModify);
+  if (filesToModify && modifyRefs.length === 0) {
+    issues.push("Files to Modify has no file refs");
+  }
+  for (const ref of modifyRefs) {
+    if (!existsSync(join(ROOT, ref))) {
+      issues.push(`Files to Modify ref missing: ${ref}`);
+    }
+    if (!groundingSet.has(ref)) {
+      issues.push(`Files to Modify ref not grounded: ${ref}`);
+    }
+  }
+
+  // Check 4: Referenced existing-file sections should not be mostly invented
+  const fileRefs = refsFrom(withoutDoNot);
+  const checkedRefs = [...new Set(fileRefs)];
+  const missingRefs = checkedRefs.filter((ref) => !existsSync(join(ROOT, ref)));
+  if (checkedRefs.length > 0 && missingRefs.length === checkedRefs.length) {
+    issues.push(`all ${missingRefs.length} referenced files are missing`);
+  } else if (checkedRefs.length > 1 && missingRefs.length > checkedRefs.length / 2) {
+    issues.push(`${missingRefs.length}/${checkedRefs.length} referenced files missing`);
+  }
+
+  // Check 5: Plan must have required sections
+  const requiredSections = ['## What to Build', '## Grounding Evidence', '## Files to Modify', '## Acceptance Criteria'];
   for (const section of requiredSections) {
     if (!planText.includes(section)) {
       issues.push(`missing section: ${section}`);
