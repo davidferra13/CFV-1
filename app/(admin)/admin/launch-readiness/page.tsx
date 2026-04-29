@@ -6,6 +6,7 @@ import {
   type LaunchReadinessCheck,
   type LaunchReadinessStatus,
 } from '@/lib/validation/launch-readiness'
+import { buildLaunchReadinessRiskRegister } from '@/lib/validation/launch-readiness-risk-register'
 import {
   AlertTriangle,
   CheckCircle2,
@@ -102,6 +103,10 @@ export default async function AdminLaunchReadinessPage() {
   const percent = Math.round((report.verifiedChecks / report.totalChecks) * 100)
   const reviewCount = report.checks.filter((check) => check.status === 'operator_review').length
   const needsActionCount = report.checks.filter((check) => check.status === 'needs_action').length
+  const riskRegister = buildLaunchReadinessRiskRegister({
+    checks: report.checks,
+    nextActions: report.nextActions,
+  })
 
   return (
     <div className="space-y-6">
@@ -180,6 +185,37 @@ export default async function AdminLaunchReadinessPage() {
         </section>
 
         <aside className="space-y-6">
+          <section className="rounded-xl border border-stone-800 bg-stone-900/70 p-5">
+            <h2 className="text-base font-semibold text-stone-100">Risk register</h2>
+            <div className="mt-4 space-y-3">
+              {riskRegister.slice(0, 5).map((risk) => (
+                <div
+                  key={risk.checkKey}
+                  className="rounded-lg border border-stone-800 bg-stone-950 p-3"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <p className="text-sm font-medium text-stone-100">{risk.label}</p>
+                    <span className="rounded-full border border-stone-700 px-2 py-0.5 text-[11px] font-semibold uppercase text-stone-400">
+                      {risk.severity}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-xs text-stone-500">
+                    {risk.ownerHint} · {risk.blockerClass}
+                  </p>
+                  <p className="mt-2 text-xs leading-5 text-stone-400">{risk.nextAction}</p>
+                  {risk.href ? (
+                    <Link href={risk.href} className="mt-2 inline-flex text-xs text-brand-400">
+                      Open risk
+                    </Link>
+                  ) : null}
+                </div>
+              ))}
+              {riskRegister.length === 0 ? (
+                <p className="text-sm text-stone-500">No launch-blocking risks.</p>
+              ) : null}
+            </div>
+          </section>
+
           <section className="rounded-xl border border-stone-800 bg-stone-900/70 p-5">
             <h2 className="text-base font-semibold text-stone-100">Next evidence actions</h2>
             <div className="mt-4 space-y-3">

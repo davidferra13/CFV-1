@@ -2,11 +2,16 @@ import { NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/auth/admin'
 import { getLaunchReadinessReport } from '@/lib/validation/launch-readiness'
 import { buildLaunchReadinessDecisionPacket } from '@/lib/validation/launch-readiness-decision-packet'
+import { buildLaunchReadinessRiskRegister } from '@/lib/validation/launch-readiness-risk-register'
 
 export async function GET() {
   await requireAdmin()
   const report = await getLaunchReadinessReport()
   const packet = buildLaunchReadinessDecisionPacket(report)
+  const riskRegister = buildLaunchReadinessRiskRegister({
+    checks: report.checks,
+    nextActions: report.nextActions,
+  })
 
   return NextResponse.json(
     {
@@ -24,6 +29,7 @@ export async function GET() {
       })),
       nextActions: report.nextActions,
       evidenceLog: report.evidenceLog,
+      riskRegister,
     },
     {
       headers: {

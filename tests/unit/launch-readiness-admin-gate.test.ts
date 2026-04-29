@@ -48,9 +48,17 @@ test('launch readiness JSON packet route is admin-only and non-cached', () => {
   )
   assert.match(jsonPacketRouteSource, /await\s+requireAdmin\(\)/)
   assert.match(jsonPacketRouteSource, /buildLaunchReadinessDecisionPacket/)
+  assert.match(jsonPacketRouteSource, /buildLaunchReadinessRiskRegister/)
   assert.match(jsonPacketRouteSource, /NextResponse\.json/)
   assert.match(jsonPacketRouteSource, /Cache-Control['"]:\s*['"]no-store/)
+  assert.match(jsonPacketRouteSource, /riskRegister/)
   assert.match(pageSource, /\/api\/admin\/launch-readiness\/decision-packet/)
+})
+
+test('launch readiness page connects the risk register helper', () => {
+  assert.match(pageSource, /buildLaunchReadinessRiskRegister/)
+  assert.match(pageSource, /Risk register/)
+  assert.match(pageSource, /risk\.severity/)
 })
 
 test('launch readiness is visible only in admin navigation', () => {
