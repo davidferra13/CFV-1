@@ -1,6 +1,6 @@
 ---
 name: pi
-description: Raspberry Pi health check and OpenClaw status. One command to see if Pi is alive and what it did overnight.
+description: Raspberry Pi health check and OpenClaw status. Use when the user asks about Pi health, Pi overnight work, OpenClaw runtime status, or whether the Pi is alive.
 user-invocable: true
 ---
 

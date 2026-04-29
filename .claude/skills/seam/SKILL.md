@@ -1,6 +1,6 @@
 ---
 name: seam
-description: '"Inside-out and backwards" refinement lens inspired by Adam Savage. Examines ChefFlow surfaces as planar forms meeting under rules and conditions. Finds seam failures, reversed assumptions, and order-of-operations violations. Repeatable - run until dry.'
+description: Use as an inside-out and backwards refinement lens inspired by Adam Savage. Examines ChefFlow surfaces as planar forms meeting under rules and conditions. Finds seam failures, reversed assumptions, and order-of-operations violations. Repeatable - run until dry.
 user-invocable: true
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: warmup
-description: Get a chef account warm and on standby - server up, authenticated, routes compiled, browser open. Usage - /warmup [account] where account is chef-bob (default), agent, or developer.
+description: Get a chef account warm and on standby. Use when the user asks for warmup, standby, authenticated chef session readiness, route precompile, or browser-ready account setup. Usage - /warmup [account] where account is chef-bob (default), agent, or developer.
 ---
 
 # Warmup - Get a Chef Account on Standby

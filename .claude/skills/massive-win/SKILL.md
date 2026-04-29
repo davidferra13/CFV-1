@@ -1,6 +1,6 @@
 ---
 name: massive-win
-description: Identify THE single highest-leverage change that would deliver disproportionate value. Not a list - one move that unblocks the most, multiplies the most, or changes the game.
+description: Identify THE single highest-leverage change. Use when the user asks for the biggest opportunity, highest leverage move, massive win, or one priority instead of a list.
 user-invocable: true
 ---
 

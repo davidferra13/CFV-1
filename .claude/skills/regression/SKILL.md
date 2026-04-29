@@ -1,6 +1,6 @@
 ---
 name: regression
-description: Unified regression detection system. Quick check, deep scan, blast radius, auto-recovery, live watcher, dashboard, fragile files, trends, blame, and snapshots. The "am I safe?" command.
+description: Unified regression detection system. Use when the user asks whether changes are safe, requests regression checks, blast radius, auto-recovery, live watcher, dashboard, fragile files, trends, blame, or snapshots.
 user-invocable: true
 ---
 

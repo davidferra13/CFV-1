@@ -19,6 +19,17 @@ Run this as a sidecar to `omninet` whenever durable behavior appears. The user d
 
 Do not create skill churn. A good garden pass leaves no change when the behavior is one-off, redundant with `AGENTS.md`, or too vague to encode.
 
+## Tool Harness
+
+Prefer the deterministic tools when changing or evaluating skills:
+
+- `node devtools/skill-validator.mjs [skill-name ...]` checks frontmatter, trigger language, em dashes, and references.
+- `node devtools/skill-trigger-tests.mjs` checks known prompts against expected skill routing evidence.
+- `node devtools/agent-learning-inbox.mjs add ...` captures useful but unresolved behavior without forcing an immediate skill patch.
+- `node devtools/external-guidance-intake.mjs --source "source-name"` classifies Hermes, OpenCloy, ChatGPT, or markdown guidance into routes.
+- `node devtools/skill-health-report.mjs` writes a broad health snapshot for stale references, open learning items, and overlap risk.
+- `node devtools/skill-closeout-report.mjs ...` records which skill owned the work and whether the skill delta was none, patch, new skill, or heal.
+
 ## Triage
 
 1. Identify the behavior to preserve:
@@ -91,6 +102,8 @@ When the user pastes a large conversation or markdown guidance:
 
 For Hermes, OpenCloy, external ChatGPT, or other local operator markdowns, preserve behavior, not prose. Convert durable rules into triggers, decision steps, guardrails, or closeout checks. Do not copy large source passages into skills.
 
+When the guidance is too large or mixed to classify confidently by hand, pipe it through `devtools/external-guidance-intake.mjs`, then route each output item to `AGENTS.md`, a skill patch, `persona-dump`, or `findings-triage`.
+
 ## Findings Improvement Pass
 
 When the user asks to improve using new or old findings:
@@ -113,7 +126,9 @@ When the user asks to improve using new or old findings:
 
 After editing skills:
 
-1. Run the skill validator on each changed skill.
-2. Run a targeted compliance scan for em dashes in changed skill files.
-3. Stage only the files you changed unless the user explicitly asks to ship all dirty work.
-4. Commit and push on a feature branch.
+1. Run `node devtools/skill-validator.mjs [changed-skill ...]`.
+2. Run `node devtools/skill-trigger-tests.mjs` when trigger behavior changed.
+3. Run a targeted compliance scan for em dashes in changed skill files.
+4. Write a closeout report with `node devtools/skill-closeout-report.mjs` when the task's main purpose was skill behavior.
+5. Stage only the files you changed unless the user explicitly asks to ship all dirty work.
+6. Commit and push on a feature branch.

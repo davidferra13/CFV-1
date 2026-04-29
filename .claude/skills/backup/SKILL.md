@@ -1,6 +1,6 @@
 ---
 name: backup
-description: Back up the ChefFlow database. Runs pg_dump via the backup script.
+description: Back up the ChefFlow database. Use when the user asks for a backup, database dump, restore point, or pre-risk safety copy. Runs pg_dump via the backup script.
 user-invocable: true
 ---
 

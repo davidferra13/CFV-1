@@ -1,6 +1,6 @@
 ---
 name: status
-description: Quick "where am I?" snapshot - branch, uncommitted work, last commit, what was in progress, what's next.
+description: Quick "where am I?" snapshot. Use when the user asks for status, current branch, uncommitted work, last commit, what was in progress, or what is next.
 user-invocable: true
 ---
 

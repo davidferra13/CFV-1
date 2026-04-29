@@ -1,6 +1,6 @@
 ---
 name: compliance
-description: Run compliance scan - em dashes, OpenClaw in UI, ts-nocheck exports. Quick rule violation check.
+description: Run compliance scan. Use when checking em dashes, OpenClaw in UI, ts-nocheck exports, invalid server exports, or quick ChefFlow rule violations.
 user-invocable: true
 ---
 

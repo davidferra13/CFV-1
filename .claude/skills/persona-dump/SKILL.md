@@ -42,6 +42,7 @@ If the user asks "can I paste them all here?", answer yes, then give the chunkin
 4. If type is ambiguous, infer conservatively from the persona's relationship to ChefFlow.
 5. Reject or flag candidates that are not ChefFlow-relevant instead of forcing them into the pipeline.
 6. If the paste contains both agent operating guidance and persona material, route operating guidance to `skill-garden` and persona material through this skill.
+7. For mixed external ChatGPT dumps, use `node devtools/external-guidance-intake.mjs --source "external-chatgpt"` to separate operating guidance from persona material before writing persona files.
 
 ## File Placement
 

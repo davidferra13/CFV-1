@@ -1,6 +1,6 @@
 ---
 name: tdd
-description: Test-Driven Development. Write test first, watch it fail, write minimal code to pass, refactor. No production code without a failing test first.
+description: Test-Driven Development. Use when the user asks for TDD, test-first implementation, regression-first bug fixing, or production code that must start with a failing test.
 user-invocable: true
 ---
 

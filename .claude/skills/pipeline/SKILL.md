@@ -1,6 +1,6 @@
 ---
 name: pipeline
-description: OpenClaw pricing pipeline status. Coverage, freshness, targets vs actuals.
+description: OpenClaw pricing pipeline status. Use when the user asks about pricing pipeline coverage, freshness, targets, actuals, sync health, or ingredient price data progress.
 user-invocable: true
 ---
 

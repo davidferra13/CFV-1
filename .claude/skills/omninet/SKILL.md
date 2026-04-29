@@ -15,6 +15,17 @@ Use this as the first-pass router for ChefFlow work. Codex cannot run a true bac
 4. If a skill produced bad guidance, run `heal-skill` with `skill-garden` so the fix is both local and durable.
 5. At closeout, decide the skill delta: `none`, `patch`, `new-skill`, or `heal`. If it is not `none`, make the skill change before final response and commit it.
 
+## Harness Commands
+
+Use these tools when the task touches skills or durable agent behavior:
+
+- Validate changed skills: `node devtools/skill-validator.mjs [skill-name ...]`
+- Test routing triggers: `node devtools/skill-trigger-tests.mjs`
+- Record unresolved learning: `node devtools/agent-learning-inbox.mjs add --category behavior --title "..."`
+- Classify external guidance: `node devtools/external-guidance-intake.mjs --source "source-name"`
+- Write skill closeout evidence: `node devtools/skill-closeout-report.mjs --goal "..." --primary skill-name --delta none|patch|new-skill|heal`
+- Generate skill health report: `node devtools/skill-health-report.mjs`
+
 ## Start Loop
 
 1. Read the active user request and the latest project rules.
@@ -66,6 +77,7 @@ Maintain this lightweight state while working:
 - Hard stops: any project rule that affects the task.
 - Evidence: files, commands, outputs, or user-provided artifacts that ground the work.
 - Skill delta: whether this task revealed a new skill, a skill repair, or no reusable change.
+- Closeout evidence: validator, trigger tests, skill health, or learning inbox entry when relevant.
 
 Do not narrate all of this unless useful. Use it to choose actions.
 
