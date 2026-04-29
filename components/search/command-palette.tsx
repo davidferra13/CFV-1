@@ -5,6 +5,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import { universalSearch, type SearchResult } from '@/lib/search/universal-search'
 import { useDebounce } from '@/lib/hooks/use-debounce'
 import { getPrimaryShortcutOptions } from '@/components/navigation/nav-config'
+import { openRemy } from '@/lib/ai/remy-launch'
 import {
   readSearchHistory,
   writeRecentSearch,
@@ -92,7 +93,20 @@ const QUICK_ACTIONS: PaletteItem[] = [
     label: 'Open Remy',
     section: 'Quick Actions',
     icon: '✦',
-    action: () => window.dispatchEvent(new CustomEvent('open-remy')),
+    action: () => openRemy(),
+  },
+  {
+    id: 'action:return-catch-up',
+    label: 'Ask Remy to catch me up',
+    sublabel: 'Start the return-to-work briefing',
+    section: 'Quick Actions',
+    icon: '✦',
+    action: () =>
+      openRemy({
+        prompt: 'Catch me up since I was away',
+        source: 'command-palette-return-to-work',
+        send: true,
+      }),
   },
 ]
 
