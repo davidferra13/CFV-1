@@ -1,6 +1,7 @@
 import 'server-only'
 
 import type { PlannedTask } from '@/lib/ai/command-types'
+import { searchClientsByName } from '@/lib/clients/actions'
 import { createServerClient } from '@/lib/db/server'
 import { resolvePricesBatch } from '@/lib/pricing/resolve-price'
 import {
@@ -161,6 +162,10 @@ const REMY_READ_TASK_EXECUTORS: Record<string, ReadTaskExecutor> = {
   'vendors.list': (_task, ctx) => executeVendorsList(ctx.tenantId),
   'analytics.compare_events': (task, ctx) => executeMultiEventComparison(task.inputs, ctx.tenantId),
   'briefing.morning': (_task, ctx) => executeMorningBriefing(ctx.tenantId),
+  'loyalty.status': (task, ctx) => executeLoyaltyStatus(task, ctx),
+  'safety.event_allergens': (task, ctx) => executeEventAllergens(task, ctx),
+  'waitlist.list': (_task, ctx) => executeWaitlistList(ctx),
+  'quote.compare': (task, ctx) => executeQuoteCompare(task, ctx),
   'workflow.cancellation_impact': (task, ctx) =>
     executeCancellationImpact(task.inputs, ctx.tenantId),
   'workflow.post_event': (task) => executePostEventSequence(task.inputs),
@@ -343,6 +348,172 @@ async function executePriceCheck(task: PlannedTask, ctx: ReadTaskContext) {
         piStore: piMatch?.store || null,
       }
     }),
+  }
+}
+
+async function executeLoyaltyStatus(task: PlannedTask, ctx: ReadTaskContext) {
+  const clientName = String(task.inputs.clientName ?? '')
+  const clients = await searchClientsByName(clientName)
+  if (!clients.length) throw new Error(`Could not find a client matching "${clientName}".`)
+
+  const client = clients[0]
+  const db: any = createServerClient()
+
+  const { data: loyaltyTxns } = await db
+    .from('loyalty_transactions')
+    .select('points, type')
+    .eq('tenant_id', ctx.tenantId)
+    .eq('client_id', client.id)
+
+  const lifetimePoints = (loyaltyTxns ?? [])
+    .filter((txn: any) => txn.type === 'earn')
+    .reduce((sum: number, txn: any) => sum + ((txn.points as number) ?? 0), 0)
+  const redeemedPoints = (loyaltyTxns ?? [])
+    .filter((txn: any) => txn.type === 'redeem')
+    .reduce((sum: number, txn: any) => sum + Math.abs((txn.points as number) ?? 0), 0)
+  const pointsBalance = lifetimePoints - redeemedPoints
+  const derivedTier =
+    lifetimePoints >= 500
+      ? 'platinum'
+      : lifetimePoints >= 250
+        ? 'gold'
+        : lifetimePoints >= 100
+          ? 'silver'
+          : 'bronze'
+
+  const { count: eventCount } = await db
+    .from('events')
+    .select('id', { count: 'exact', head: true })
+    .eq('tenant_id', ctx.tenantId)
+    .eq('client_id', client.id)
+    .not('status', 'eq', 'cancelled')
+
+  const tierThresholds: Record<string, number> = {
+    bronze: 100,
+    silver: 250,
+    gold: 500,
+    platinum: Infinity,
+  }
+  const nextTier =
+    derivedTier === 'platinum'
+      ? null
+      : Object.keys(tierThresholds).find(
+          (tier) => tierThresholds[tier] > (tierThresholds[derivedTier] ?? 0)
+        )
+
+  return {
+    clientName: client.full_name ?? clientName,
+    tier: derivedTier,
+    pointsBalance,
+    lifetimePoints,
+    totalEvents: eventCount ?? 0,
+    nextTier,
+    pointsToNextTier: nextTier ? (tierThresholds[nextTier] ?? 0) - pointsBalance : null,
+  }
+}
+
+async function executeEventAllergens(task: PlannedTask, ctx: ReadTaskContext) {
+  const eventName = String(task.inputs.eventName ?? '')
+  const db: any = createServerClient()
+
+  const { data: events } = await db
+    .from('events')
+    .select(
+      'id, occasion, event_date, client_id, client:clients(full_name, dietary_restrictions, allergies)'
+    )
+    .eq('tenant_id', ctx.tenantId)
+    .ilike('occasion', `%${eventName}%`)
+    .limit(1)
+
+  if (!events?.length) throw new Error(`Could not find event matching "${eventName}".`)
+
+  const event = events[0] as Record<string, unknown>
+  const client = event.client as Record<string, unknown> | null
+  const { data: menuData } = await db
+    .from('menus')
+    .select('id, name, dishes(name, description, dietary_tags)')
+    .eq('event_id', event.id as string)
+
+  const allergies = (client?.allergies as string) ?? ''
+  const dietaryRestrictions = (client?.dietary_restrictions as string) ?? ''
+  const menuItems = (menuData ?? []).flatMap((menu: any) =>
+    ((menu?.dishes as Array<Record<string, unknown>>) ?? []).map((dish) => ({
+      dish: dish.name as string,
+      description: (dish.description as string) ?? '',
+      dietaryTags: (dish.dietary_tags as string[]) ?? [],
+    }))
+  )
+
+  return {
+    eventName: (event.occasion as string) ?? eventName,
+    clientName: (client?.full_name as string) ?? 'Unknown',
+    allergies: allergies || 'None recorded',
+    dietaryRestrictions: dietaryRestrictions || 'None recorded',
+    menuItemCount: menuItems.length,
+    menuItems,
+    warning: allergies ? `ALLERGY ALERT: ${allergies}` : null,
+  }
+}
+
+async function executeWaitlistList(ctx: ReadTaskContext) {
+  const db: any = createServerClient()
+  const { data } = await db
+    .from('waitlist_entries')
+    .select('id, client:clients(full_name), requested_date, occasion, status, created_at')
+    .eq('tenant_id', ctx.tenantId)
+    .in('status', ['waiting', 'pending'])
+    .order('requested_date', { ascending: true })
+    .limit(20)
+
+  return {
+    entries: (data ?? []).map((entry: Record<string, unknown>) => ({
+      id: entry.id as string,
+      clientName:
+        ((entry.client as Record<string, unknown> | null)?.full_name as string) ?? 'Unknown',
+      requestedDate: entry.requested_date as string | null,
+      occasion: entry.occasion as string | null,
+      status: entry.status as string,
+      addedOn: entry.created_at as string,
+    })),
+    totalCount: (data ?? []).length,
+  }
+}
+
+async function executeQuoteCompare(task: PlannedTask, ctx: ReadTaskContext) {
+  const eventName = String(task.inputs.eventName ?? '')
+  const db: any = createServerClient()
+
+  const { data: events } = await db
+    .from('events')
+    .select('id, occasion')
+    .eq('tenant_id', ctx.tenantId)
+    .ilike('occasion', `%${eventName}%`)
+    .limit(1)
+
+  if (!events?.length) throw new Error(`Could not find event matching "${eventName}".`)
+
+  const event = events[0] as Record<string, unknown>
+  const { data: quotes } = await db
+    .from('quotes')
+    .select(
+      'id, name, status, total_cents, deposit_cents, pricing_notes, created_at, version_number'
+    )
+    .eq('event_id', event.id)
+    .order('version_number', { ascending: true })
+
+  return {
+    eventName: (event.occasion as string) ?? eventName,
+    quoteCount: (quotes ?? []).length,
+    quotes: (quotes ?? []).map((quote: Record<string, unknown>) => ({
+      id: quote.id as string,
+      name: (quote.name as string) ?? `Version ${quote.version_number ?? '?'}`,
+      version: (quote.version_number as number) ?? null,
+      status: quote.status as string,
+      totalCents: (quote.total_cents as number) ?? 0,
+      depositCents: (quote.deposit_cents as number) ?? 0,
+      pricingNotes: (quote.pricing_notes as string) ?? '',
+      createdAt: quote.created_at as string,
+    })),
   }
 }
 
