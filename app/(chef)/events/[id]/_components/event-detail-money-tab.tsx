@@ -31,6 +31,19 @@ import type { EventPricingIntelligencePayload } from '@/lib/finance/event-pricin
 import { EventDetailGuestCountRequests } from './event-detail-guest-count-requests'
 import type { GuestCountChange } from '@/lib/guests/count-changes'
 import type { EventReadinessAssistantResult } from '@/lib/events/event-readiness-assistant'
+import { EventSaleBridge } from '@/components/commerce/event-sale-bridge'
+
+type EventPosSummary = {
+  saleCount: number
+  totalSalesCents: number
+  totalPaidCents: number
+  paymentCount: number
+  topItems: Array<{
+    name: string
+    quantity: number
+    revenueCents: number
+  }>
+}
 
 type EventDetailMoneyTabProps = {
   activeTab: EventDetailTab
@@ -68,6 +81,14 @@ type EventDetailMoneyTabProps = {
   }>
   guestCountChanges: GuestCountChange[]
   regionalSettings?: { currencyCode: string; locale: string }
+  eventCommerceSale?: {
+    id: string
+    sale_number: string | null
+    status: string
+    total_cents: number
+    created_at: string
+  } | null
+  eventPosSummary?: EventPosSummary | null
 }
 
 export function EventDetailMoneyTab(props: EventDetailMoneyTabProps) {
@@ -98,6 +119,8 @@ export function EventDetailMoneyTab(props: EventDetailMoneyTabProps) {
     ledgerEntries,
     guestCountChanges,
     regionalSettings,
+    eventCommerceSale,
+    eventPosSummary,
   } = props
 
   const currOpts = regionalSettings
@@ -182,6 +205,71 @@ export function EventDetailMoneyTab(props: EventDetailMoneyTabProps) {
       <EventPricingIntelligencePanel data={pricingIntelligence ?? null} />
 
       <EventReadinessAssistantPanel eventId={event.id} readiness={readinessAssistant ?? null} />
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <EventSaleBridge eventId={event.id} existingSale={eventCommerceSale ?? null} />
+        <Card className="p-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <h2 className="text-xl font-semibold">POS Transactions</h2>
+              <p className="mt-1 text-sm text-stone-500">
+                Event-linked sales from the Commerce register and payment terminal.
+              </p>
+            </div>
+            <Link href={`/commerce/sales?eventId=${event.id}`}>
+              <Button variant="secondary" size="sm">
+                Sales
+              </Button>
+            </Link>
+          </div>
+          {!eventPosSummary || eventPosSummary.saleCount === 0 ? (
+            <p className="mt-4 text-sm text-stone-500">
+              No POS sales are linked to this event yet. Create a commerce sale to track register
+              items and terminal payments here.
+            </p>
+          ) : (
+            <div className="mt-4 space-y-4">
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <p className="text-xs text-stone-500">Sales</p>
+                  <p className="text-lg font-semibold text-stone-100">
+                    {eventPosSummary.saleCount}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-stone-500">POS Total</p>
+                  <p className="text-lg font-semibold text-stone-100">
+                    {fmt(eventPosSummary.totalSalesCents)}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-stone-500">Captured</p>
+                  <p className="text-lg font-semibold text-emerald-600">
+                    {fmt(eventPosSummary.totalPaidCents)}
+                  </p>
+                </div>
+              </div>
+              {eventPosSummary.topItems.length > 0 && (
+                <div className="border-t border-stone-800 pt-3">
+                  <p className="text-xs font-medium uppercase tracking-wide text-stone-500">
+                    Top Items
+                  </p>
+                  <div className="mt-2 space-y-2">
+                    {eventPosSummary.topItems.map((item) => (
+                      <div key={item.name} className="flex items-center justify-between text-sm">
+                        <span className="text-stone-300">{item.name}</span>
+                        <span className="text-stone-500">
+                          {item.quantity} sold, {fmt(item.revenueCents)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </Card>
+      </div>
 
       {/* Financial Summary */}
       <Card className="p-6">

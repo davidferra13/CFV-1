@@ -232,3 +232,78 @@ export async function getEventSale(eventId: string) {
   if (error) throw new Error(`Failed to fetch event sale: ${error.message}`)
   return data
 }
+
+export async function getEventPosSummary(eventId: string) {
+  const user = await requireChef()
+  await requirePro('commerce')
+  const db: any = createServerClient()
+  const tenantId = user.tenantId!
+
+  const { data: sales, error: salesError } = await db
+    .from('sales')
+    .select('id, total_cents')
+    .eq('event_id', eventId)
+    .eq('tenant_id', tenantId)
+
+  if (salesError) throw new Error(`Failed to fetch event POS sales: ${salesError.message}`)
+
+  const saleRows = (sales ?? []) as Array<{ id: string; total_cents: number | null }>
+  const saleIds = saleRows.map((sale) => sale.id).filter(Boolean)
+  const totalSalesCents = saleRows.reduce((sum, sale) => sum + (sale.total_cents ?? 0), 0)
+
+  if (saleIds.length === 0) {
+    return {
+      saleCount: 0,
+      totalSalesCents: 0,
+      totalPaidCents: 0,
+      paymentCount: 0,
+      topItems: [],
+    }
+  }
+
+  const [{ data: payments, error: paymentsError }, { data: items, error: itemsError }] =
+    await Promise.all([
+      db
+        .from('commerce_payments')
+        .select('amount_cents, status')
+        .eq('tenant_id', tenantId)
+        .in('sale_id', saleIds),
+      db
+        .from('sale_items')
+        .select('name, quantity, line_total_cents')
+        .eq('tenant_id', tenantId)
+        .in('sale_id', saleIds),
+    ])
+
+  if (paymentsError) {
+    throw new Error(`Failed to fetch event POS payments: ${paymentsError.message}`)
+  }
+  if (itemsError) throw new Error(`Failed to fetch event POS items: ${itemsError.message}`)
+
+  const settledPayments = ((payments ?? []) as any[]).filter((payment) =>
+    ['settled', 'captured', 'paid'].includes(String(payment.status ?? ''))
+  )
+  const itemMap = new Map<string, { quantity: number; revenueCents: number }>()
+
+  for (const item of (items ?? []) as any[]) {
+    const name = String(item.name ?? 'Item')
+    const current = itemMap.get(name) ?? { quantity: 0, revenueCents: 0 }
+    current.quantity += Number(item.quantity ?? 0)
+    current.revenueCents += Number(item.line_total_cents ?? 0)
+    itemMap.set(name, current)
+  }
+
+  return {
+    saleCount: saleRows.length,
+    totalSalesCents,
+    totalPaidCents: settledPayments.reduce(
+      (sum, payment) => sum + Number(payment.amount_cents ?? 0),
+      0
+    ),
+    paymentCount: settledPayments.length,
+    topItems: Array.from(itemMap.entries())
+      .map(([name, data]) => ({ name, ...data }))
+      .sort((a, b) => b.revenueCents - a.revenueCents)
+      .slice(0, 5),
+  }
+}

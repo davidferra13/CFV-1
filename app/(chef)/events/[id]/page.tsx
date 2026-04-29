@@ -140,6 +140,7 @@ import { ContextInspector } from '@/components/inspector/context-inspector'
 import { EventDetailOverviewTab } from './_components/event-detail-overview-tab'
 import { EventDetailChatTab } from './_components/event-detail-chat-tab'
 import { EventDetailMoneyTab } from './_components/event-detail-money-tab'
+import { getEventPosSummary, getEventSale } from '@/lib/commerce/event-bridge-actions'
 import { EventDetailTicketsTab } from './_components/event-detail-tickets-tab'
 import { forecastMenuCost, type CostForecast } from '@/lib/openclaw/cost-forecast-actions'
 import { EventDetailOpsTab } from './_components/event-detail-ops-tab'
@@ -797,6 +798,8 @@ export default async function EventDetailPage({
     inquiryReferralSource,
     eventReadinessEngine,
     eventScheduledCalls,
+    eventCommerceSale,
+    eventPosSummary,
   ] = await Promise.all([
     getEventFinancialSummary(params.id).catch(() => ({
       totalPaid: 0,
@@ -893,6 +896,8 @@ export default async function EventDetailPage({
       : Promise.resolve(null),
     getOrEvaluateEventReadiness(params.id).catch(() => null),
     getEventScheduledCalls(params.id, user.tenantId!).catch(() => []),
+    getEventSale(params.id).catch(() => null),
+    getEventPosSummary(params.id).catch(() => null),
   ])
   const readinessAssistant = await getEventReadinessAssistant(params.id, pricingIntelligence).catch(
     () => null
@@ -1866,6 +1871,8 @@ export default async function EventDetailPage({
         ledgerEntries={ledgerEntries as any[]}
         guestCountChanges={guestCountChanges}
         regionalSettings={regionalSettings}
+        eventCommerceSale={eventCommerceSale as any}
+        eventPosSummary={eventPosSummary}
       />
 
       {/* TAB: PREP - Peak window prep timeline         */}
