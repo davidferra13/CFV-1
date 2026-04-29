@@ -1,0 +1,18 @@
+{
+  "created_at": "2026-04-29T18:24:47.310Z",
+  "goal": "Adopt YouTube visual evidence and Matt Pocock skill library",
+  "primary_skill": "software-fundamentals",
+  "sidecar_skills": [],
+  "skill_delta": "patch",
+  "durable_behavior_seen": null,
+  "skill_gap_seen": null,
+  "validation": {
+    "skill_validator": "node devtools/skill-validator.mjs youtube-watch software-fundamentals: pass",
+    "trigger_tests": "node devtools/skill-trigger-tests.mjs: 15 cases, 0 failures",
+    "compliance": "rg em dash, @ts-nocheck, and OpenClaw over owned files: pass",
+    "other": "Vendored mattpocock/skills at f71bb975bfae2dc0d31c529c7dd4a8479ecc3748 with 22 SKILL.md files; extracted and inspected YouTube frames at 00:05:30, 00:08:45, 00:10:50, 00:12:50, 00:14:05, 00:16:25, 00:17:15"
+  },
+  "commit": null,
+  "pushed": false,
+  "notes": "Upstream MIT skills were downloaded as reference material under system/external-skills. Em dashes were normalized to satisfy ChefFlow hard stops. YouTube Watch now requires visual frame capture for slide, screen, code, chart, UI, and screenshot-heavy videos."
+}

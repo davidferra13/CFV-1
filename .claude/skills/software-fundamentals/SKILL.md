@@ -9,6 +9,8 @@ description: Apply the AI-era software fundamentals operating model from Matt Po
 
 AI does not make code cheap. It makes good software design more valuable because agents compound the quality of the system they work inside. Use this skill to force shared understanding, shared language, feedback loops, testable boundaries, and interface-first design before letting AI generate or modify code.
 
+ChefFlow keeps Matt Pocock's upstream skill library as source material under `system/external-skills/mattpocock-skills/`. When a task maps directly to one of those practices, read the relevant upstream `SKILL.md` before acting, then adapt it to ChefFlow hard stops and local skills.
+
 ## Core Thesis
 
 1. Treat bad code as expensive because it blocks AI leverage and accelerates entropy.
@@ -16,6 +18,20 @@ AI does not make code cheap. It makes good software design more valuable because
 3. Keep the human in the strategic role: own architecture, boundaries, interfaces, tradeoffs, and verification.
 4. Use AI as tactical implementation capacity inside explicit constraints and tight feedback loops.
 5. Invest in the design of the system every day.
+
+## Visual Evidence From The Lecture
+
+The YouTube source must be treated as a visual talk, not just a transcript. A frame pass from the lecture confirmed these slide-level anchors:
+
+- "The Design Concept" from Frederick P. Brooks.
+- Ubiquitous language from Domain-Driven Design.
+- Failure mode: "Doing way too much."
+- Ousterhout's deep module framing: lots of functionality through a simple interface.
+- Shallow module and deep module diagrams, where the deep version groups behavior behind cleaner top-level interfaces.
+- "Deep Modules = Grey Boxes."
+- Kent Beck's instruction to invest in system design every day.
+
+When future lecture-derived guidance is adopted, require screenshots or frame samples for visible slides, diagrams, code, terminals, UI, charts, and screenshots. Transcript-only adoption is incomplete when the video contains visual source material.
 
 ## Mandatory Loop
 
@@ -49,6 +65,19 @@ Run this before coding unless the task is a tiny mechanical edit:
    - Delegate or implement internals only after the interface is clear.
    - For non-critical internals, let AI fill implementation behind a tested boundary.
    - For critical areas such as money, auth, tenant scope, privacy, migrations, and safety, inspect internals directly.
+
+## Upstream Skill Map
+
+Use the downloaded Matt Pocock skills as source material:
+
+- Misalignment or vague plan: read `system/external-skills/mattpocock-skills/skills/productivity/grill-me/SKILL.md`.
+- Code work needing shared language and durable docs: read `system/external-skills/mattpocock-skills/skills/engineering/grill-with-docs/SKILL.md`.
+- Behavior change or bug fix needing a tight loop: read `system/external-skills/mattpocock-skills/skills/engineering/tdd/SKILL.md` and combine it with ChefFlow `tdd`.
+- Hard bug or performance regression: read `system/external-skills/mattpocock-skills/skills/engineering/diagnose/SKILL.md` and combine it with ChefFlow `debug`.
+- Architecture entropy or shallow modules: read `system/external-skills/mattpocock-skills/skills/engineering/improve-codebase-architecture/SKILL.md`.
+- Unfamiliar area where the agent needs system context: read `system/external-skills/mattpocock-skills/skills/engineering/zoom-out/SKILL.md`.
+- PRD or issue slicing work: read `system/external-skills/mattpocock-skills/skills/engineering/to-prd/SKILL.md` or `system/external-skills/mattpocock-skills/skills/engineering/to-issues/SKILL.md`, then apply ChefFlow planner, validation, and migration safety rules.
+- Project language extraction: read `system/external-skills/mattpocock-skills/skills/deprecated/ubiquitous-language/SKILL.md`, but keep ChefFlow naming conventions authoritative.
 
 ## Failure Mode Map
 
