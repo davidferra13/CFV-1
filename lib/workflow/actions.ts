@@ -40,17 +40,32 @@ export async function getDashboardWorkSurface(): Promise<DashboardWorkSurface> {
   // Fetch menus for all events via menus.event_id FK
   const eventIds = events.map((e: any) => e.id)
 
-  const { data: menus } = await db
+  const { data: menus, error: menusError } = await db
     .from('menus')
     .select('id, name, status, event_id')
+    .eq('tenant_id', user.tenantId!)
     .in('event_id', eventIds)
+
+  if (menusError) {
+    console.error('[getDashboardWorkSurface] Menus error:', menusError)
+    throw new Error('Failed to fetch menus')
+  }
 
   // Fetch dish counts per menu in one query
   const menuIds = (menus || []).map((m: any) => m.id)
   const dishCountsByMenu = new Map<string, number>()
 
   if (menuIds.length > 0) {
-    const { data: dishes } = await db.from('dishes').select('menu_id').in('menu_id', menuIds)
+    const { data: dishes, error: dishesError } = await db
+      .from('dishes')
+      .select('menu_id')
+      .eq('tenant_id', user.tenantId!)
+      .in('menu_id', menuIds)
+
+    if (dishesError) {
+      console.error('[getDashboardWorkSurface] Dishes error:', dishesError)
+      throw new Error('Failed to fetch dishes')
+    }
 
     if (dishes) {
       for (const dish of dishes) {
@@ -60,10 +75,16 @@ export async function getDashboardWorkSurface(): Promise<DashboardWorkSurface> {
   }
 
   // Fetch financial summaries for all events in one query
-  const { data: financials } = await db
+  const { data: financials, error: financialsError } = await db
     .from('event_financial_summary')
     .select('*')
+    .eq('tenant_id', user.tenantId!)
     .in('event_id', eventIds)
+
+  if (financialsError) {
+    console.error('[getDashboardWorkSurface] Financial summary error:', financialsError)
+    throw new Error('Failed to fetch financial summaries')
+  }
 
   // Build lookup maps
   const menusByEvent = new Map<string, EventContext['menus']>()
