@@ -13,6 +13,7 @@ import {
 import { formatCurrency } from '@/lib/utils/currency'
 import { ErrorState } from '@/components/ui/error-state'
 import { RetryButton } from '@/components/ui/retry-button'
+import { Button } from '@/components/ui/button'
 
 export const metadata: Metadata = { title: 'Platform Reconciliation - Admin' }
 
@@ -46,11 +47,16 @@ export default async function ReconciliationPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-stone-100">Platform Reconciliation</h1>
-        <p className="text-stone-500 mt-1">
-          Cross-tenant GMV, transfers, platform fees, and deferred amounts
-        </p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-stone-100">Platform Reconciliation</h1>
+          <p className="text-stone-500 mt-1">
+            Cross-tenant GMV, transfers, platform fees, and deferred amounts
+          </p>
+        </div>
+        <Button href="/admin/reconciliation/tickets" variant="secondary" size="sm">
+          Ticket audit
+        </Button>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">

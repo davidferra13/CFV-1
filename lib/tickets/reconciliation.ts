@@ -5,7 +5,7 @@ type ReconciliationTicket = {
   event_id: string | null
   tenant_id: string | null
   total_cents: number | null
-  payment_status: TicketPaymentStatus | string
+  payment_status: TicketPaymentStatus | string | null
   capacity_released_at: string | null
   stripe_payment_intent_id?: string | null
   stripe_checkout_session_id?: string | null
@@ -51,6 +51,7 @@ export type ReconcileTicketFinancialTruthResult = {
 }
 
 const REF_PREFIX = 'stripe_ticket_'
+const REFUND_REF_PREFIX = 'ticket_refund_'
 const REFUND_ENTRY_TYPES = new Set(['refund', 'credit'])
 const POSITIVE_TICKET_ENTRY_TYPES = new Set([
   'payment',
@@ -188,6 +189,14 @@ function findTicketForLedgerEntry(
     if (match) return match
   }
 
+  const referencedTicketId = stripTicketRefundReference(entry.transaction_reference)
+  if (referencedTicketId) {
+    const ticket = ticketsById.get(referencedTicketId)
+    if (ticket && ticket.tenant_id === entry.tenant_id && ticket.event_id === entry.event_id) {
+      return ticket
+    }
+  }
+
   for (const ticketId of extractTicketIds(entry)) {
     const ticket = ticketsById.get(ticketId)
     if (ticket && ticket.tenant_id === entry.tenant_id && ticket.event_id === entry.event_id) {
@@ -257,6 +266,7 @@ function isNegativeRefundLedgerEntry(entry: ReconciliationLedgerEntry): boolean 
 function isTicketLedgerEntry(entry: ReconciliationLedgerEntry): boolean {
   return (
     Boolean(stripTicketReference(entry.transaction_reference)) ||
+    Boolean(stripTicketRefundReference(entry.transaction_reference)) ||
     extractTicketIds(entry).length > 0
   )
 }
@@ -264,6 +274,13 @@ function isTicketLedgerEntry(entry: ReconciliationLedgerEntry): boolean {
 function stripTicketReference(reference: string | null | undefined): string | null {
   if (!isPresentString(reference)) return null
   return reference.startsWith(REF_PREFIX) ? reference.slice(REF_PREFIX.length) : null
+}
+
+function stripTicketRefundReference(reference: string | null | undefined): string | null {
+  if (!isPresentString(reference)) return null
+  return reference.startsWith(REFUND_REF_PREFIX)
+    ? reference.slice(REFUND_REF_PREFIX.length)
+    : null
 }
 
 function extractTicketIds(entry: ReconciliationLedgerEntry): string[] {

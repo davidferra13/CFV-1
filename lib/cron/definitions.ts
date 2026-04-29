@@ -149,6 +149,13 @@ export const CRON_MONITOR_DEFINITIONS: CronMonitorDefinition[] = [
     description: 'Cancel verified stale pending event tickets and release reserved capacity',
   },
   {
+    cronName: 'ticket-reconciliation',
+    routePath: '/api/scheduled/ticket-reconciliation',
+    maxExpectedMinutes: 120,
+    cadence: 'hourly',
+    description: 'Audit event ticket inventory against orders and reservations',
+  },
+  {
     cronName: 'follow-ups',
     routePath: '/api/scheduled/follow-ups',
     maxExpectedMinutes: 720,

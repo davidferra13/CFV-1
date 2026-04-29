@@ -349,6 +349,8 @@ function getCronIssueCount(result: unknown): number {
   count += getNumericIssueCount(payload.failures)
   count += getNumericIssueCount(payload.errorCount)
   count += getNumericIssueCount(payload.errors)
+  count += getNumericIssueCount(payload.issueCount)
+  count += getNumericIssueCount(payload.mismatchCount)
   count += getArrayIssueCount(payload.errors)
 
   return count
