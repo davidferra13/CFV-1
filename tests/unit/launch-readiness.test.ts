@@ -13,6 +13,7 @@ function facts(overrides: Partial<LaunchReadinessFacts> = {}): LaunchReadinessFa
       activeSurveys: 0,
       submittedResponses: 0,
       totalResponses: 0,
+      lastResponseAt: null,
     },
     productFeedbackSignals: 0,
     acquisition: {
@@ -82,6 +83,7 @@ describe('launch readiness report', () => {
           activeSurveys: 1,
           submittedResponses: 2,
           totalResponses: 2,
+          lastResponseAt: '2026-04-29T10:00:00.000Z',
         },
         buildIntegrity: {
           typecheckGreen: true,
