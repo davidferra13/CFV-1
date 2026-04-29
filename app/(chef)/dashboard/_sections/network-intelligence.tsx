@@ -55,7 +55,7 @@ export async function NetworkIntelligenceSection() {
     safe('regionalSettings', getRegionalSettings, null),
   ])
 
-  const failedLoads = [
+  const failedLoadLabels = [
     networkResult,
     chainResult,
     insightsResult,
@@ -63,7 +63,7 @@ export async function NetworkIntelligenceSection() {
     partnersResult,
     integrationsResult,
     regionalResult,
-  ].filter((result) => !result.ok)
+  ].flatMap((result) => (result.ok ? [] : [result.label]))
 
   const network = networkResult.data
   const chain = chainResult.data
@@ -84,7 +84,7 @@ export async function NetworkIntelligenceSection() {
     (integrations?.totals.connected ?? 0) > 0,
   ].some(Boolean)
 
-  if (!activeSignals && failedLoads.length === 0) return null
+  if (!activeSignals && failedLoadLabels.length === 0) return null
 
   const topPartner = partners[0] ?? null
   const topSource = network?.referralSourcePerformance[0] ?? null
@@ -130,11 +130,11 @@ export async function NetworkIntelligenceSection() {
           href="/analytics/referral-sources"
         >
           <div className="space-y-4">
-            {failedLoads.length > 0 && (
+            {failedLoadLabels.length > 0 && (
               <div className="rounded-lg border border-amber-800/40 bg-amber-950/30 px-3 py-2">
                 <p className="text-xs font-medium text-amber-200">Partial network data</p>
                 <p className="mt-1 text-xs text-amber-100/75">
-                  {failedLoads.map((result) => result.label).join(', ')} could not be loaded.
+                  {failedLoadLabels.join(', ')} could not be loaded.
                 </p>
               </div>
             )}
