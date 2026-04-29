@@ -5,12 +5,21 @@ import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
-import { approveProposal, declineProposal } from '@/lib/proposals/client-proposal-actions'
+import {
+  approveProposal,
+  declineProposal,
+  openApprovedProposalNextStep,
+} from '@/lib/proposals/client-proposal-actions'
 import Link from 'next/link'
 import type { PublicProposalData } from '@/lib/proposals/client-proposal-types'
 
+type PublicProposalWithNextStep = PublicProposalData & {
+  approvedNextStepAvailable?: boolean
+  approvedNextStepLabel?: string | null
+}
+
 type ProposalPublicViewProps = {
-  proposal: PublicProposalData
+  proposal: PublicProposalWithNextStep
   shareToken: string
 }
 
@@ -64,10 +73,15 @@ export function ProposalPublicView({ proposal, shareToken }: ProposalPublicViewP
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null)
   const [feedbackType, setFeedbackType] = useState<'success' | 'error'>('success')
   const [nextStepUrl, setNextStepUrl] = useState<string | null>(null)
-  const [nextStepLabel, setNextStepLabel] = useState<string | null>(null)
+  const [nextStepLabel, setNextStepLabel] = useState<string | null>(
+    proposal.approvedNextStepLabel ?? null
+  )
 
   const isTerminal =
     currentStatus === 'approved' || currentStatus === 'declined' || currentStatus === 'expired'
+  const canOpenApprovedNextStep = Boolean(
+    nextStepUrl || (currentStatus === 'approved' && proposal.approvedNextStepAvailable)
+  )
 
   function handleApprove() {
     const previousStatus = currentStatus
@@ -114,6 +128,35 @@ export function ProposalPublicView({ proposal, shareToken }: ProposalPublicViewP
         }
       } catch {
         setCurrentStatus(previousStatus)
+        setFeedbackType('error')
+        setFeedbackMessage('Something went wrong. Please try again.')
+      }
+    })
+  }
+
+  function handleOpenNextStep() {
+    if (nextStepUrl) {
+      window.location.assign(nextStepUrl)
+      return
+    }
+
+    setFeedbackMessage(null)
+
+    startTransition(async () => {
+      try {
+        const result = await openApprovedProposalNextStep(shareToken)
+        if (!result.success || !result.nextStepUrl) {
+          setFeedbackType('error')
+          setFeedbackMessage(result.message)
+          return
+        }
+
+        setFeedbackType('success')
+        setFeedbackMessage(result.message)
+        setNextStepUrl(result.nextStepUrl)
+        setNextStepLabel(result.nextStepLabel ?? null)
+        window.location.assign(result.nextStepUrl)
+      } catch {
         setFeedbackType('error')
         setFeedbackMessage('Something went wrong. Please try again.')
       }
@@ -702,17 +745,19 @@ export function ProposalPublicView({ proposal, shareToken }: ProposalPublicViewP
             </svg>
             <h3 className="text-lg font-semibold text-green-300 mb-1">Proposal Approved</h3>
             <p className="text-sm text-stone-400">
-              {nextStepUrl
+              {canOpenApprovedNextStep
                 ? 'Your date is moving forward. Continue to the secure client portal for the next step.'
                 : 'Your chef has been notified and will follow up with next steps.'}
             </p>
-            {nextStepUrl && (
-              <a
-                href={nextStepUrl}
-                className="mt-5 inline-flex items-center justify-center rounded-lg bg-green-500 px-4 py-2 text-sm font-semibold text-stone-950 transition-colors hover:bg-green-400"
+            {canOpenApprovedNextStep && (
+              <Button
+                variant="primary"
+                onClick={handleOpenNextStep}
+                disabled={isPending}
+                className="mt-5"
               >
-                {nextStepLabel || 'Open client portal'}
-              </a>
+                {isPending ? 'Opening...' : nextStepLabel || 'Open client portal'}
+              </Button>
             )}
           </div>
         )}

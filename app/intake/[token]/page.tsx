@@ -5,6 +5,8 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getShareByToken } from '@/lib/clients/intake-actions'
+import { createAdminClient } from '@/lib/db/admin'
+import { PostActionFooter } from '@/components/public/post-action-footer'
 import { IntakeFormPublic } from './intake-form-public'
 
 interface Props {
@@ -22,6 +24,34 @@ export default async function IntakeFormPage({ params }: Props) {
   if (!shareData) {
     notFound()
   }
+
+  const db: any = createAdminClient()
+  const { data: chef, error: chefError } = await db
+    .from('chefs')
+    .select('business_name, display_name, booking_slug')
+    .eq('id', shareData.tenant_id)
+    .single()
+
+  if (chefError) {
+    throw new Error(`Failed to load intake handoff: ${chefError.message}`)
+  }
+
+  const chefName: string | null = chef?.display_name || chef?.business_name || null
+  const chefSlug: string | null = chef?.booking_slug || null
+  const intakeFooter = (
+    <PostActionFooter
+      chefSlug={chefSlug}
+      chefName={chefName}
+      tone="light"
+      crossLink={
+        chefSlug ? { href: `/chef/${chefSlug}/inquire`, label: 'Request Another Date' } : null
+      }
+      prefill={{
+        name: shareData.client_name || '',
+        email: shareData.client_email || '',
+      }}
+    />
+  )
 
   if (shareData.already_submitted) {
     return (
@@ -48,7 +78,7 @@ export default async function IntakeFormPage({ params }: Props) {
             contact your chef directly.
           </p>
         </div>
-        <p className="mt-6 text-xs text-stone-400">Powered by ChefFlow</p>
+        {intakeFooter}
       </div>
     )
   }
@@ -62,8 +92,8 @@ export default async function IntakeFormPage({ params }: Props) {
         form={form}
         prefillName={shareData.client_name || ''}
         prefillEmail={shareData.client_email || ''}
+        postActionFooter={intakeFooter}
       />
-      <p className="mt-8 text-center text-xs text-stone-400">Powered by ChefFlow</p>
     </div>
   )
 }

@@ -13,6 +13,8 @@ interface PostActionFooterProps {
   crossLink?: { href: string; label: string } | null
   /** Pre-fill data for Book Again link (client name/email carried forward) */
   prefill?: { name?: string; email?: string } | null
+  /** Visual contrast for the surrounding public page */
+  tone?: 'dark' | 'light'
 }
 
 export function PostActionFooter({
@@ -20,8 +22,17 @@ export function PostActionFooter({
   chefName,
   crossLink,
   prefill,
+  tone = 'dark',
 }: PostActionFooterProps) {
   const hasChefLink = chefSlug && chefSlug.length > 0
+  const linkClass =
+    tone === 'light'
+      ? 'inline-flex items-center gap-1.5 rounded-lg border border-stone-300 px-4 py-2 text-sm font-medium text-stone-700 transition-colors hover:border-stone-400 hover:text-stone-950'
+      : 'inline-flex items-center gap-1.5 rounded-lg border border-stone-600 px-4 py-2 text-sm font-medium text-stone-300 transition-colors hover:border-stone-500 hover:text-stone-100'
+  const poweredByClass =
+    tone === 'light'
+      ? 'text-xs text-stone-400 hover:text-stone-500 transition-colors'
+      : 'text-xs text-stone-500 hover:text-stone-400 transition-colors'
 
   // Append prefill params to cross-links targeting inquiry pages
   function buildHref(base: string): string {
@@ -41,7 +52,7 @@ export function PostActionFooter({
           {hasChefLink && (
             <Link
               href={`/chef/${chefSlug}`}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-stone-600 px-4 py-2 text-sm font-medium text-stone-300 transition-colors hover:border-stone-500 hover:text-stone-100"
+              className={linkClass}
             >
               {chefName ? `View ${chefName}'s Profile` : 'View Chef Profile'}
             </Link>
@@ -49,7 +60,7 @@ export function PostActionFooter({
           {crossLink && (
             <Link
               href={buildHref(crossLink.href)}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-stone-600 px-4 py-2 text-sm font-medium text-stone-300 transition-colors hover:border-stone-500 hover:text-stone-100"
+              className={linkClass}
             >
               {crossLink.label}
             </Link>
@@ -63,7 +74,7 @@ export function PostActionFooter({
           href="https://cheflowhq.com"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-xs text-stone-500 hover:text-stone-400 transition-colors"
+          className={poweredByClass}
         >
           Powered by <span className="font-semibold">ChefFlow</span>
         </a>

@@ -794,6 +794,7 @@ export async function logCallOutcome(id: string, input: LogOutcomeInput) {
 
   revalidatePath('/calls')
   revalidatePath(`/calls/${id}`)
+  revalidatePath('/dashboard')
 
   if (data.inquiry_id && validated.next_action) {
     const { error: inquiryUpdateError } = await db

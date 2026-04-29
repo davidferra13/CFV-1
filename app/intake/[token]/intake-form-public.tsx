@@ -16,6 +16,7 @@ interface IntakeFormPublicProps {
   }
   prefillName: string
   prefillEmail: string
+  postActionFooter?: React.ReactNode
 }
 
 export function IntakeFormPublic({
@@ -23,6 +24,7 @@ export function IntakeFormPublic({
   form,
   prefillName,
   prefillEmail,
+  postActionFooter,
 }: IntakeFormPublicProps) {
   const [clientName, setClientName] = useState(prefillName)
   const [clientEmail, setClientEmail] = useState(prefillEmail)
@@ -88,21 +90,29 @@ export function IntakeFormPublic({
 
   if (submitted) {
     return (
-      <div className="rounded-lg border border-stone-200 bg-white p-8 text-center shadow-sm">
-        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
-          <svg
-            className="h-6 w-6 text-green-600"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-          </svg>
+      <div>
+        <div className="rounded-lg border border-stone-200 bg-white p-8 text-center shadow-sm">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
+            <svg
+              className="h-6 w-6 text-green-600"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+          </div>
+          <h2 className="text-xl font-semibold text-stone-900">Thank You!</h2>
+          <p className="mt-2 text-stone-500">
+            Your responses have been submitted successfully. Your chef will review them shortly.
+          </p>
         </div>
-        <h2 className="text-xl font-semibold text-stone-900">Thank You!</h2>
-        <p className="mt-2 text-stone-500">
-          Your responses have been submitted successfully. Your chef will review them shortly.
-        </p>
+        {postActionFooter}
       </div>
     )
   }

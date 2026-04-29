@@ -72,6 +72,8 @@ type PublicProposalData = {
   quotedPriceCents: number | null
   eventDepositAmountCents: number | null
   paymentStatus: string | null
+  approvedNextStepAvailable: boolean
+  approvedNextStepLabel: string | null
   menu: {
     id: string
     name: string
@@ -124,6 +126,10 @@ type ProposalActionResult = {
   nextStepUrl?: string
   nextStepLabel?: string
   eventAdvanced?: boolean
+}
+
+function getApprovedProposalNextStepLabel(eventStatus: string | null | undefined): string {
+  return eventStatus === 'accepted' ? 'Continue to secure payment' : 'Open client portal'
 }
 
 // ─── Schemas ─────────────────────────────────────────────────────
@@ -357,9 +363,10 @@ export async function getPublicProposal(shareToken: string): Promise<PublicPropo
     const { data: e } = await db
       .from('events')
       .select(
-        'event_date, serve_time, occasion, guest_count, service_style, location_address, location_city, location_state, location_zip, location_notes, kitchen_notes, dietary_restrictions, allergies, special_requests, quoted_price_cents, deposit_amount_cents, payment_status'
+        'event_date, serve_time, occasion, guest_count, service_style, location_address, location_city, location_state, location_zip, location_notes, kitchen_notes, dietary_restrictions, allergies, special_requests, quoted_price_cents, deposit_amount_cents, payment_status, status'
       )
       .eq('id', proposal.event_id)
+      .eq('tenant_id', proposal.tenant_id)
       .single()
     event = e
   }
@@ -580,6 +587,81 @@ export async function approveProposal(
   }
 }
 
+export async function openApprovedProposalNextStep(
+  shareToken: string
+): Promise<ProposalActionResult> {
+  try {
+    await checkRateLimit(`proposal-next-step:${shareToken.slice(0, 16)}`, 10, 60 * 60 * 1000)
+  } catch {
+    return { success: false, message: 'Too many attempts. Please try again later.' }
+  }
+
+  const db: any = createAdminClient()
+
+  const { data: proposal, error: fetchError } = await db
+    .from('client_proposals')
+    .select('id, status, expires_at, tenant_id, event_id, client_id')
+    .eq('share_token', shareToken)
+    .single()
+
+  if (fetchError || !proposal) {
+    return { success: false, message: 'Proposal not found' }
+  }
+
+  if (proposal.expires_at && new Date(proposal.expires_at) < new Date()) {
+    return { success: false, message: 'This proposal has expired' }
+  }
+
+  if (proposal.status !== 'approved') {
+    return { success: false, message: 'This proposal has not been approved yet' }
+  }
+
+  if (!proposal.client_id || !proposal.event_id) {
+    return {
+      success: false,
+      message: 'No secure client portal step is attached to this proposal yet.',
+    }
+  }
+
+  const { data: event } = await db
+    .from('events')
+    .select('id, status')
+    .eq('id', proposal.event_id)
+    .eq('tenant_id', proposal.tenant_id)
+    .maybeSingle()
+
+  if (!event) {
+    return {
+      success: false,
+      message: 'No secure client portal step is attached to this proposal yet.',
+    }
+  }
+
+  let portalLink: { url: string }
+  const nextStepLabel = getApprovedProposalNextStepLabel(event.status)
+  try {
+    portalLink = await createClientPortalLinkForClient({
+      clientId: proposal.client_id,
+      tenantId: proposal.tenant_id,
+      path: event.status === 'accepted' ? `/pay/${proposal.event_id}` : '',
+      db,
+    })
+  } catch (err) {
+    console.error('[openApprovedProposalNextStep] Client portal link failed:', err)
+    return {
+      success: false,
+      message: 'Could not open the secure client portal. Please try again.',
+    }
+  }
+
+  return {
+    success: true,
+    message: 'Continue to the next secure step when you are ready.',
+    nextStepUrl: portalLink.url,
+    nextStepLabel,
+  }
+}
+
 export async function declineProposal(
   shareToken: string,
   reason?: string
@@ -718,6 +800,12 @@ function buildPublicData(
     quotedPriceCents: event?.quoted_price_cents ?? null,
     eventDepositAmountCents: eventDeposit,
     paymentStatus: event?.payment_status || null,
+    approvedNextStepAvailable:
+      proposal.status === 'approved' && Boolean(proposal.client_id && proposal.event_id && event),
+    approvedNextStepLabel:
+      proposal.status === 'approved' && proposal.client_id && proposal.event_id && event
+        ? getApprovedProposalNextStepLabel(event.status)
+        : null,
     menu: menuData,
     template,
     payment: {

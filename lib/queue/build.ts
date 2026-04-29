@@ -12,6 +12,7 @@ import { getTaskQueueItems } from './providers/task'
 import { getFinancialQueueItems } from './providers/financial'
 import { getPostEventQueueItems } from './providers/post-event'
 import { getClientQueueItems } from './providers/client'
+import { getCallQueueItems } from './providers/call'
 import { getCulinaryQueueItems } from './providers/culinary'
 import { getContactQueueItems } from './providers/contact'
 import { getNetworkQueueItems } from './providers/network'
@@ -55,6 +56,7 @@ export async function buildPriorityQueue(
     financialItems,
     postEventItems,
     clientItems,
+    callItems,
     culinaryItems,
     contactItems,
     networkItems,
@@ -66,6 +68,7 @@ export async function buildPriorityQueue(
     safeProvider('financial', () => getFinancialQueueItems(db, tenantId)),
     safeProvider('post_event', () => getPostEventQueueItems(db, tenantId)),
     safeProvider('client', () => getClientQueueItems(db, tenantId)),
+    safeProvider('call', () => getCallQueueItems(db, tenantId)),
     safeProvider('culinary', () => getCulinaryQueueItems(db, tenantId)),
     safeProvider('contact', () => getContactQueueItems(db, tenantId)),
     safeProvider('network', () => getNetworkQueueItems(db, tenantId)),
@@ -81,6 +84,7 @@ export async function buildPriorityQueue(
     ...financialItems,
     ...postEventItems,
     ...clientItems,
+    ...callItems,
     ...culinaryItems,
     ...contactItems,
     ...networkItems,
