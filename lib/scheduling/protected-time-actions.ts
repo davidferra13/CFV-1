@@ -4,7 +4,7 @@
 
 'use server'
 
-import { requirePro } from '@/lib/billing/require-pro'
+import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { dateToDateString } from '@/lib/utils/format'
@@ -25,15 +25,16 @@ const CreateProtectedTimeSchema = z.object({
 })
 
 const UpdateProtectedTimeSchema = CreateProtectedTimeSchema.partial()
+const ProtectedTimeIdSchema = z.string().uuid('Invalid protected time block id')
 
-export type CreateProtectedTimeInput = z.infer<typeof CreateProtectedTimeSchema>
-export type UpdateProtectedTimeInput = z.infer<typeof UpdateProtectedTimeSchema>
+type CreateProtectedTimeInput = z.infer<typeof CreateProtectedTimeSchema>
+type UpdateProtectedTimeInput = z.infer<typeof UpdateProtectedTimeSchema>
 
 // ============================================
 // TYPES
 // ============================================
 
-export interface ProtectedTimeBlock {
+interface ProtectedTimeBlock {
   id: string
   chefId: string
   blockDate: string
@@ -46,7 +47,7 @@ export interface ProtectedTimeBlock {
   createdAt: string
 }
 
-export interface ProtectedBlockSummary {
+interface ProtectedBlockSummary {
   id: string
   start_date: string
   end_date: string
@@ -69,14 +70,15 @@ export interface ProtectedBlockSummary {
 export async function createProtectedTime(
   input: CreateProtectedTimeInput
 ): Promise<ProtectedTimeBlock> {
-  const user = await requirePro('advanced-calendar')
+  const user = await requireChef()
   const validated = CreateProtectedTimeSchema.parse(input)
   const db: any = createServerClient()
+  const chefId = user.entityId
 
   const { data, error } = await (db as any)
     .from('chef_availability_blocks')
     .insert({
-      chef_id: user.tenantId!,
+      chef_id: chefId,
       block_date: validated.block_date,
       block_type: validated.block_type,
       start_time: validated.start_time ?? null,
@@ -104,9 +106,11 @@ export async function updateProtectedTime(
   blockId: string,
   input: UpdateProtectedTimeInput
 ): Promise<ProtectedTimeBlock> {
-  const user = await requirePro('advanced-calendar')
+  const user = await requireChef()
+  const validatedBlockId = ProtectedTimeIdSchema.parse(blockId)
   const validated = UpdateProtectedTimeSchema.parse(input)
   const db: any = createServerClient()
+  const chefId = user.entityId
 
   const updateData: Record<string, unknown> = {}
   if (validated.block_date !== undefined) updateData.block_date = validated.block_date
@@ -118,8 +122,8 @@ export async function updateProtectedTime(
   const { data, error } = await (db as any)
     .from('chef_availability_blocks')
     .update(updateData)
-    .eq('id', blockId)
-    .eq('chef_id', user.tenantId!)
+    .eq('id', validatedBlockId)
+    .eq('chef_id', chefId)
     .eq('is_event_auto', false) // only allow editing manual blocks
     .select()
     .single()
@@ -141,23 +145,37 @@ export async function updateProtectedTime(
 /**
  * Delete a protected time block.
  */
-export async function deleteProtectedTime(blockId: string): Promise<void> {
-  const user = await requirePro('advanced-calendar')
-  const db: any = createServerClient()
+export async function deleteProtectedTime(
+  blockId: string
+): Promise<{ success: boolean; error?: string }> {
+  const user = await requireChef()
+  const parsedBlockId = ProtectedTimeIdSchema.safeParse(blockId)
+  if (!parsedBlockId.success) {
+    return { success: false, error: 'Invalid protected time block id.' }
+  }
 
-  const { error } = await (db as any)
+  const db: any = createServerClient()
+  const chefId = user.entityId
+
+  const { data, error } = await (db as any)
     .from('chef_availability_blocks')
     .delete()
-    .eq('id', blockId)
-    .eq('chef_id', user.tenantId!)
+    .eq('id', parsedBlockId.data)
+    .eq('chef_id', chefId)
     .eq('is_event_auto', false) // only allow deleting manual blocks
+    .select('id')
 
   if (error) {
     console.error('[deleteProtectedTime] Error:', error)
-    throw new Error('Failed to delete protected time block')
+    return { success: false, error: 'Failed to remove protected time block.' }
+  }
+
+  if (!data || data.length === 0) {
+    return { success: false, error: 'Protected time block not found.' }
   }
 
   revalidatePath('/calendar')
+  return { success: true }
 }
 
 /**
@@ -167,13 +185,14 @@ export async function getProtectedTime(
   startDate: string,
   endDate: string
 ): Promise<ProtectedTimeBlock[]> {
-  const user = await requirePro('advanced-calendar')
+  const user = await requireChef()
   const db: any = createServerClient()
+  const chefId = user.entityId
 
   const { data, error } = await (db as any)
     .from('chef_availability_blocks')
     .select('*')
-    .eq('chef_id', user.tenantId!)
+    .eq('chef_id', chefId)
     .eq('is_event_auto', false) // only manual blocks = protected time
     .gte('block_date', startDate)
     .lte('block_date', endDate)
@@ -188,6 +207,33 @@ export async function getProtectedTime(
 }
 
 /**
+ * Get one chef-owned protected time block.
+ */
+export async function getProtectedTimeBlock(blockId: string): Promise<ProtectedTimeBlock | null> {
+  const user = await requireChef()
+  const parsedBlockId = ProtectedTimeIdSchema.safeParse(blockId)
+  if (!parsedBlockId.success) return null
+
+  const db: any = createServerClient()
+  const chefId = user.entityId
+
+  const { data, error } = await (db as any)
+    .from('chef_availability_blocks')
+    .select('id, chef_id, block_date, block_type, start_time, end_time, reason, created_at')
+    .eq('id', parsedBlockId.data)
+    .eq('chef_id', chefId)
+    .eq('is_event_auto', false)
+    .maybeSingle()
+
+  if (error) {
+    console.error('[getProtectedTimeBlock] Error:', error)
+    throw new Error('Failed to load protected time block')
+  }
+
+  return data ? mapToProtectedTime(data, false, null) : null
+}
+
+/**
  * Backward-compatible summary list used by Daily Ops and Remy intelligence.
  * The underlying table stores single-date blocks, so start/end are the same day.
  */
@@ -195,13 +241,14 @@ export async function listProtectedBlocks(
   startDate?: string,
   endDate?: string
 ): Promise<ProtectedBlockSummary[]> {
-  const user = await requirePro('advanced-calendar')
+  const user = await requireChef()
   const db: any = createServerClient()
+  const chefId = user.entityId
 
   let query = (db as any)
     .from('chef_availability_blocks')
     .select('id, block_date, block_type, start_time, end_time, reason, created_at')
-    .eq('chef_id', user.tenantId!)
+    .eq('chef_id', chefId)
     .eq('is_event_auto', false)
     .order('block_date')
 
