@@ -129,6 +129,22 @@ export async function openServiceDay(id: string): Promise<{ success: boolean; er
   const db: any = createServerClient()
   const chefId = user.tenantId!
 
+  const { data: current, error: lookupError } = await db
+    .from('service_days')
+    .select('id, status')
+    .eq('id', id)
+    .eq('chef_id', chefId)
+    .single()
+
+  if (lookupError || !current) {
+    console.error('[service-days] open lookup error', lookupError)
+    return { success: false, error: 'Service day not found' }
+  }
+
+  if (current.status === 'closed') {
+    return { success: false, error: 'Closed service days cannot be reopened from this action.' }
+  }
+
   const { error } = await db
     .from('service_days')
     .update({
@@ -165,17 +181,35 @@ export async function closeServiceDay(
   const db: any = createServerClient()
   const chefId = user.tenantId!
 
+  const { data: current, error: lookupError } = await db
+    .from('service_days')
+    .select(
+      'id, status, actual_covers, total_revenue_cents, total_food_cost_cents, total_labor_cost_cents, total_waste_cents, notes'
+    )
+    .eq('id', id)
+    .eq('chef_id', chefId)
+    .single()
+
+  if (lookupError || !current) {
+    console.error('[service-days] close lookup error', lookupError)
+    return { success: false, error: 'Service day not found' }
+  }
+
+  if (current.status !== 'active') {
+    return { success: false, error: 'Open the service day before closing it.' }
+  }
+
   const { error } = await db
     .from('service_days')
     .update({
       status: 'closed',
       closed_at: new Date().toISOString(),
-      actual_covers: input.actual_covers,
-      total_revenue_cents: input.total_revenue_cents,
-      total_food_cost_cents: input.total_food_cost_cents,
-      total_labor_cost_cents: input.total_labor_cost_cents,
-      total_waste_cents: input.total_waste_cents,
-      notes: input.notes,
+      actual_covers: input.actual_covers ?? current.actual_covers,
+      total_revenue_cents: input.total_revenue_cents ?? current.total_revenue_cents,
+      total_food_cost_cents: input.total_food_cost_cents ?? current.total_food_cost_cents,
+      total_labor_cost_cents: input.total_labor_cost_cents ?? current.total_labor_cost_cents,
+      total_waste_cents: input.total_waste_cents ?? current.total_waste_cents,
+      notes: input.notes ?? current.notes,
     })
     .eq('id', id)
     .eq('chef_id', chefId)

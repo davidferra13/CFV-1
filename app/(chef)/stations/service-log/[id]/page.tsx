@@ -6,6 +6,7 @@ import { notFound } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ServiceDayCloseForm } from '@/components/stations/service-day-close-form'
+import { ServiceDayOpenForm } from '@/components/stations/service-day-open-form'
 
 export const metadata: Metadata = { title: 'Service Day Detail' }
 
@@ -46,6 +47,7 @@ export default async function ServiceDayDetailPage({ params }: { params: { id: s
   if (error || !day) notFound()
 
   const isClosed = day.status === 'closed'
+  const isActive = day.status === 'active'
   const dateStr = new Date(day.service_date + 'T00:00:00').toLocaleDateString('en-US', {
     weekday: 'long',
     month: 'long',
@@ -178,8 +180,21 @@ export default async function ServiceDayDetailPage({ params }: { params: { id: s
             </div>
           </CardContent>
         </Card>
-      ) : (
+      ) : isActive ? (
         <ServiceDayCloseForm id={day.id} />
+      ) : (
+        <Card>
+          <CardHeader>
+            <CardTitle as="h2">Open Service Day</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-stone-300">
+              Open this service day before closeout. Prep sheets and sales logging stay available,
+              but final totals can only be closed after service is active.
+            </p>
+            <ServiceDayOpenForm id={day.id} />
+          </CardContent>
+        </Card>
       )}
 
       {/* Notes */}

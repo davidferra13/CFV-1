@@ -82,6 +82,9 @@ export function ServiceDayCloseForm({ id }: { id: string }) {
     <Card>
       <CardContent className="py-6">
         <h2 className="text-lg font-semibold text-stone-100 mb-4">Close Out Day</h2>
+        <p className="mb-4 text-sm text-stone-400">
+          Leave a field blank to keep the value already logged for this service day.
+        </p>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
