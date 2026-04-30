@@ -1,7 +1,11 @@
+import dotenv from 'dotenv'
 import { PLATFORM_JOBS, getDeferredJobs, getRunnableJobs, type PlatformJob } from './platforms'
 import { runBrowserJob, resumeBrowserJob } from './browser-runner'
 import { loadState, recordFromJob, saveState, writeReport, type ClaimRecord } from './state'
 import { readIdentityInputs, storeCredential } from './vault'
+
+dotenv.config({ path: '.env.local' })
+dotenv.config()
 
 type Command = 'plan' | 'run' | 'resume' | 'report'
 

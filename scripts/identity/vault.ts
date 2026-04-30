@@ -30,10 +30,16 @@ type VaultFile = {
 
 function key(): Buffer {
   const secret = process.env.CHEFFLOW_IDENTITY_VAULT_KEY
-  if (!secret || secret.length < 16) {
-    throw new Error('CHEFFLOW_IDENTITY_VAULT_KEY must be set to at least 16 characters')
+  if (!isUsableSecret(secret) || secret.length < 16) {
+    throw new Error(
+      'CHEFFLOW_IDENTITY_VAULT_KEY must be set to a real value at least 16 characters long'
+    )
   }
   return scryptSync(secret, 'chefflow-identity-vault', KEY_LEN)
+}
+
+function isUsableSecret(value: string | undefined): value is string {
+  return Boolean(value && value.trim() && !value.includes('REPLACE_ME'))
 }
 
 function encrypt(plaintext: string): string {
@@ -56,7 +62,7 @@ export function readIdentityInputs(): IdentityInputs | null {
   const email = process.env.CHEFFLOW_IDENTITY_EMAIL?.trim()
   const password = process.env.CHEFFLOW_IDENTITY_PASSWORD?.trim()
   const phone = process.env.CHEFFLOW_IDENTITY_PHONE?.trim()
-  if (!email || !password || !phone) return null
+  if (!email || !isUsableSecret(password) || !phone) return null
   return { email, password, phone }
 }
 
