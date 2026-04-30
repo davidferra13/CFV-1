@@ -20,6 +20,13 @@ import {
   type PricingConfidence,
   type SuggestedPriceSource,
 } from '@/lib/finance/event-pricing-intelligence'
+import {
+  buildNoBlankPriceContract,
+  summarizePriceContracts,
+  type NoBlankPriceContract,
+  type NoBlankPriceSummary,
+} from '@/lib/pricing/no-blank-price-contract'
+import type { ResolutionTier } from '@/lib/pricing/resolve-price'
 
 type ExpenseBuckets = {
   foodCostCents: number
@@ -92,6 +99,9 @@ export type EventPricingIntelligencePayload = {
     ingredientSpikeCount: number
     insufficientHistoryCount: number
   }
+  pricingReliability: NoBlankPriceSummary & {
+    contracts: NoBlankPriceContract[]
+  }
   similarEvents: {
     sampleSize: number
     averagePricePerGuestCents: number | null
@@ -124,6 +134,25 @@ function parseDate(value: unknown): Date | null {
 function average(values: number[]): number | null {
   if (values.length === 0) return null
   return values.reduce((sum, value) => sum + value, 0) / values.length
+}
+
+function daysSince(date: Date | null): number | null {
+  if (!date) return null
+  return Math.max(0, Math.floor((Date.now() - date.getTime()) / 86_400_000))
+}
+
+function tierFromIngredientSource(source: unknown): ResolutionTier | 'national_median' | null {
+  const value = typeof source === 'string' ? source : ''
+  if (['manual', 'receipt', 'grocery_entry', 'po_receipt', 'vendor_invoice'].includes(value)) {
+    return 'chef_receipt'
+  }
+  if (value === 'openclaw_wholesale' || value === 'wholesale') return 'wholesale'
+  if (value === 'regional_average') return 'regional'
+  if (value === 'market_aggregate') return 'market_national'
+  if (value === 'government' || value === 'openclaw_government') return 'government'
+  if (value === 'category_baseline') return 'category_baseline'
+  if (value.startsWith('openclaw_')) return 'regional'
+  return null
 }
 
 function bucketExpenses(expenses: any[]): ExpenseBuckets {
@@ -234,6 +263,8 @@ async function getMenuIngredientSignals(db: any, menuIds: string[], tenantId: st
       ingredientSpikes: [] as IngredientPriceSpikeSignal[],
       ingredientSpikeCount: 0,
       insufficientHistoryCount: 0,
+      pricingContracts: [] as NoBlankPriceContract[],
+      pricingReliability: summarizePriceContracts([]),
     }
   }
 
@@ -254,6 +285,8 @@ async function getMenuIngredientSignals(db: any, menuIds: string[], tenantId: st
       ingredientSpikes: [] as IngredientPriceSpikeSignal[],
       ingredientSpikeCount: 0,
       insufficientHistoryCount: 0,
+      pricingContracts: [] as NoBlankPriceContract[],
+      pricingReliability: summarizePriceContracts([]),
     }
   }
 
@@ -280,13 +313,15 @@ async function getMenuIngredientSignals(db: any, menuIds: string[], tenantId: st
       ingredientSpikes: [] as IngredientPriceSpikeSignal[],
       ingredientSpikeCount: 0,
       insufficientHistoryCount: 0,
+      pricingContracts: [] as NoBlankPriceContract[],
+      pricingReliability: summarizePriceContracts([]),
     }
   }
 
   const { data: recipeIngredients } = await db
     .from('recipe_ingredients')
     .select(
-      'ingredient_id, ingredients(id, name, cost_per_unit_cents, last_price_cents, average_price_cents, price_unit, default_unit, last_price_date, last_price_confidence)'
+      'ingredient_id, ingredients(id, name, category, cost_per_unit_cents, last_price_cents, average_price_cents, price_unit, default_unit, last_price_date, last_price_confidence, last_price_source, last_price_store, preferred_vendor)'
     )
     .in('recipe_id', recipeIds)
     .limit(50_000)
@@ -304,6 +339,7 @@ async function getMenuIngredientSignals(db: any, menuIds: string[], tenantId: st
   let missingPriceCount = 0
   let insufficientHistoryCount = 0
   const ingredientSpikes: IngredientPriceSpikeSignal[] = []
+  const pricingContracts: NoBlankPriceContract[] = []
   const now = Date.now()
   const staleMs = 90 * 24 * 60 * 60 * 1000
 
@@ -348,7 +384,38 @@ async function getMenuIngredientSignals(db: any, menuIds: string[], tenantId: st
     if (confidence != null && confidence < 0.5) {
       lowConfidenceIngredientCount += 1
     }
+
+    pricingContracts.push(
+      buildNoBlankPriceContract({
+        ingredientId: String(ingredient.id),
+        rawName: typeof ingredient.name === 'string' ? ingredient.name : '',
+        normalizedName: typeof ingredient.name === 'string' ? ingredient.name.toLowerCase() : '',
+        recognized: true,
+        priceCents: priceCents > 0 ? priceCents : null,
+        unit:
+          typeof ingredient.price_unit === 'string' && ingredient.price_unit.trim()
+            ? ingredient.price_unit
+            : typeof ingredient.default_unit === 'string' && ingredient.default_unit.trim()
+              ? ingredient.default_unit
+              : null,
+        confidence,
+        freshnessDays: daysSince(date),
+        resolutionTier: tierFromIngredientSource(ingredient.last_price_source),
+        observedAt: date ? date.toISOString() : null,
+        storeName:
+          typeof ingredient.last_price_store === 'string' && ingredient.last_price_store.trim()
+            ? ingredient.last_price_store
+            : typeof ingredient.preferred_vendor === 'string' && ingredient.preferred_vendor.trim()
+              ? ingredient.preferred_vendor
+              : null,
+        productName: typeof ingredient.name === 'string' ? ingredient.name : null,
+        dataPoints: averagePriceCents > 0 ? 2 : priceCents > 0 ? 1 : 0,
+        category: typeof ingredient.category === 'string' ? ingredient.category : null,
+      })
+    )
   }
+
+  const pricingReliability = summarizePriceContracts(pricingContracts)
 
   return {
     stalePriceCount,
@@ -358,6 +425,8 @@ async function getMenuIngredientSignals(db: any, menuIds: string[], tenantId: st
     ingredientSpikes: ingredientSpikes.sort((a, b) => b.spikePercent - a.spikePercent).slice(0, 5),
     ingredientSpikeCount: ingredientSpikes.length,
     insufficientHistoryCount,
+    pricingContracts,
+    pricingReliability,
   }
 }
 
@@ -658,6 +727,10 @@ export async function getEventPricingIntelligence(
     ingredientSpikeCount: ingredientSignals.ingredientSpikeCount,
     topIngredientSpikeName: ingredientSignals.ingredientSpikes[0]?.ingredientName ?? null,
     topIngredientSpikePercent: ingredientSignals.ingredientSpikes[0]?.spikePercent ?? null,
+    pricingReliabilityVerdict: ingredientSignals.pricingReliability.verdict,
+    pricingReliabilityPlanningOnlyCount: ingredientSignals.pricingReliability.planningOnlyCount,
+    pricingReliabilityVerifyFirstCount: ingredientSignals.pricingReliability.verifyFirstCount,
+    pricingReliabilityModeledCount: ingredientSignals.pricingReliability.modeledCount,
   })
   const similarSuggestedCents =
     numberOrZero(similarEvents.averagePricePerGuestCents) > 0 && numberOrZero(event.guest_count) > 0
@@ -742,6 +815,10 @@ export async function getEventPricingIntelligence(
       ingredientSpikes: ingredientSignals.ingredientSpikes,
       ingredientSpikeCount: ingredientSignals.ingredientSpikeCount,
       insufficientHistoryCount: ingredientSignals.insufficientHistoryCount,
+    },
+    pricingReliability: {
+      ...ingredientSignals.pricingReliability,
+      contracts: ingredientSignals.pricingContracts.slice(0, 20),
     },
     similarEvents,
     guidance: {

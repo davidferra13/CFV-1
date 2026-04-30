@@ -37,6 +37,18 @@ function confidenceVariant(confidence: string): 'success' | 'warning' | 'error' 
   return 'error'
 }
 
+function reliabilityVariant(verdict: string): 'success' | 'warning' | 'error' | 'info' {
+  if (verdict === 'safe_to_quote') return 'success'
+  if (verdict === 'verify_first') return 'warning'
+  return 'error'
+}
+
+function reliabilityLabel(verdict: string): string {
+  if (verdict === 'safe_to_quote') return 'Safe to quote'
+  if (verdict === 'verify_first') return 'Verify first'
+  return 'Planning only'
+}
+
 function warningVariant(severity: string): 'default' | 'warning' | 'error' | 'info' {
   if (severity === 'critical') return 'error'
   if (severity === 'warning') return 'warning'
@@ -162,6 +174,9 @@ export function EventPricingIntelligencePanel({ data, compact = false }: Props) 
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
+          <Badge variant={reliabilityVariant(data.pricingReliability.verdict)}>
+            {reliabilityLabel(data.pricingReliability.verdict)}
+          </Badge>
           <Badge variant={confidenceVariant(data.confidence.pricingConfidence)}>
             {data.confidence.pricingConfidence} confidence
           </Badge>
@@ -336,7 +351,37 @@ export function EventPricingIntelligencePanel({ data, compact = false }: Props) 
               {data.confidence.lowConfidenceIngredientCount} low confidence,{' '}
               {data.priceSignals.insufficientHistoryCount} without price history
             </p>
+            <p>
+              Reliability gate: {data.pricingReliability.safeToQuoteCount} safe,{' '}
+              {data.pricingReliability.verifyFirstCount} verify first,{' '}
+              {data.pricingReliability.planningOnlyCount} planning only,{' '}
+              {data.pricingReliability.modeledCount} modeled fallback
+            </p>
+            <p>
+              Average reliability confidence:{' '}
+              {Math.round(data.pricingReliability.averageConfidence * 100)}%
+            </p>
           </div>
+          {data.pricingReliability.contracts.length > 0 ? (
+            <div className="space-y-1">
+              {data.pricingReliability.contracts
+                .filter((contract) => contract.kind === 'priced')
+                .slice(0, 6)
+                .map((contract) => (
+                  <div
+                    key={`${contract.ingredientId ?? contract.normalizedName}-${contract.sourceClass}`}
+                    className="flex flex-col gap-1 border-b border-stone-800/70 py-1 text-xs last:border-0 sm:flex-row sm:items-center sm:justify-between"
+                  >
+                    <span className="font-medium text-stone-300">{contract.normalizedName}</span>
+                    <span className="text-stone-500">
+                      {formatCurrency(contract.priceCents)}/{contract.unit},{' '}
+                      {reliabilityLabel(contract.quoteSafety)},{' '}
+                      {contract.sourceClass.replace(/_/g, ' ')}
+                    </span>
+                  </div>
+                ))}
+            </div>
+          ) : null}
         </div>
       </details>
     </Card>

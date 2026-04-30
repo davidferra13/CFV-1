@@ -1,6 +1,8 @@
 // Event Pricing Intelligence - pure deterministic calculations.
 // No server dependencies, no database calls, no AI.
 
+import type { NoBlankReliabilityVerdict } from '@/lib/pricing/no-blank-price-contract'
+
 export type PricingConfidence = 'high' | 'medium' | 'low'
 
 export type SuggestedPriceSource =
@@ -19,6 +21,7 @@ export type EventPricingWarningType =
   | 'estimated_actual_variance_high'
   | 'menu_needs_repricing'
   | 'ingredient_price_spike'
+  | 'pricing_reliability_gate'
   | 'low_confidence_pricing'
   | 'stale_pricing'
   | 'missing_cost_data'
@@ -66,6 +69,10 @@ export interface WarningInput {
   ingredientSpikeCount?: number
   topIngredientSpikeName?: string | null
   topIngredientSpikePercent?: number | null
+  pricingReliabilityVerdict?: NoBlankReliabilityVerdict | null
+  pricingReliabilityPlanningOnlyCount?: number
+  pricingReliabilityVerifyFirstCount?: number
+  pricingReliabilityModeledCount?: number
 }
 
 function roundOne(value: number): number {
@@ -298,6 +305,43 @@ export function generateEventPricingWarnings(input: WarningInput): EventPricingW
           'Compare receipt line items to recipe quantities and update prices or yields.',
       })
     }
+  }
+
+  if (
+    input.pricingReliabilityVerdict === 'planning_only' ||
+    input.pricingReliabilityVerdict === 'verify_first'
+  ) {
+    const planningOnlyCount = positive(input.pricingReliabilityPlanningOnlyCount)
+    const verifyFirstCount = positive(input.pricingReliabilityVerifyFirstCount)
+    const modeledCount = positive(input.pricingReliabilityModeledCount)
+    const pieces = []
+    if (planningOnlyCount > 0) {
+      pieces.push(
+        `${planningOnlyCount} planning-only ingredient price${planningOnlyCount === 1 ? '' : 's'}`
+      )
+    }
+    if (verifyFirstCount > 0) {
+      pieces.push(
+        `${verifyFirstCount} verify-first ingredient price${verifyFirstCount === 1 ? '' : 's'}`
+      )
+    }
+    if (modeledCount > 0) {
+      pieces.push(`${modeledCount} modeled fallback price${modeledCount === 1 ? '' : 's'}`)
+    }
+
+    warnings.push({
+      type: 'pricing_reliability_gate',
+      severity: input.pricingReliabilityVerdict === 'planning_only' ? 'critical' : 'warning',
+      label: 'Pricing reliability gate',
+      message:
+        pieces.length > 0
+          ? `This event includes ${pieces.join(', ')}.`
+          : 'This event has ingredient prices that need verification before quoting.',
+      recommendation:
+        input.pricingReliabilityVerdict === 'planning_only'
+          ? 'Treat this as planning guidance until stronger market proof is available.'
+          : 'Verify the flagged ingredient prices before sending or confirming the quote.',
+    })
   }
 
   if (

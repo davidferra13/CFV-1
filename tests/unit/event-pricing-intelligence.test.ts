@@ -217,3 +217,34 @@ test('generateEventPricingWarnings flags fallback pricing without nulls', () => 
   assert.equal(warnings.length, 1)
   assert.equal(warnings[0].type, 'missing_cost_data')
 })
+
+test('generateEventPricingWarnings flags pricing reliability gate failures', () => {
+  const warnings = generateEventPricingWarnings({
+    projectedFoodCostCents: 45000,
+    actualFoodCostCents: 0,
+    actualTotalCostCents: 0,
+    quoteOrRevenueCents: 150000,
+    suggestedPriceCents: 150000,
+    targetFoodCostPercent: 35,
+    targetMarginPercent: 60,
+    projectedFoodCostPercent: 30,
+    actualFoodCostPercent: null,
+    actualMarginPercent: null,
+    estimatedVsActualPercent: null,
+    fallbackUsed: false,
+    stalePriceCount: 0,
+    lowConfidenceIngredientCount: 0,
+    pricingReliabilityVerdict: 'planning_only',
+    pricingReliabilityPlanningOnlyCount: 2,
+    pricingReliabilityVerifyFirstCount: 1,
+    pricingReliabilityModeledCount: 2,
+  })
+
+  const reliabilityWarnings = warnings.filter(
+    (warning) => warning.type === 'pricing_reliability_gate'
+  )
+  assert.equal(reliabilityWarnings.length, 1)
+  assert.equal(reliabilityWarnings[0].severity, 'critical')
+  assert.match(reliabilityWarnings[0].message, /2 planning-only ingredient prices/)
+  assert.match(reliabilityWarnings[0].message, /2 modeled fallback prices/)
+})
