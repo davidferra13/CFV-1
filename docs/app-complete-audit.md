@@ -2042,6 +2042,8 @@ The Live panel now includes a read-only private developer cockpit projection bac
 | Intake      | File evidence                  | Shows Sticky Notes and 3977 connection status without starting either.   |
 | Pricing     | Cockpit summary                | Stays blocked unless pricing evidence proves otherwise.                  |
 
+Queue records can now be created with `npm run v1-builder:submit` and promoted with `npm run v1-builder:promote`. Approved V1 records require the explicit `--v1-governor-approved` flag.
+
 ---
 
 ## 25. PUBLIC MARKETPLACE PAGES (added 2026-03-27)

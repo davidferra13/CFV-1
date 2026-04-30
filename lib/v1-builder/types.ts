@@ -97,6 +97,7 @@ export const pricingReadinessSchema = z.object({
 
 export type QueueRecord = z.infer<typeof queueRecordSchema>
 export type QueueClassification = z.infer<typeof queueClassificationSchema>
+export type QueueSource = z.infer<typeof queueSourceSchema>
 export type ClaimRecord = z.infer<typeof claimRecordSchema>
 export type ReceiptRecord = z.infer<typeof receiptRecordSchema>
 export type EscalationRecord = z.infer<typeof escalationRecordSchema>

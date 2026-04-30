@@ -131,11 +131,14 @@ Raw input never writes code. Only approved V1 queue records can become build wor
 | `scripts/v1-builder/claim.mjs`           | CLI to claim the next task or a specific task.                          |
 | `scripts/v1-builder/record-receipt.mjs`  | CLI to record validation, commit, push, and final status.               |
 | `scripts/v1-builder/escalate.mjs`        | CLI to write a Founder Authority escalation.                            |
+| `scripts/v1-builder/submit.mjs`          | CLI to submit governed queue records without hand-written JSON.         |
+| `scripts/v1-builder/promote.mjs`         | CLI to append a promoted record while preserving the original record.   |
 | `tests/unit/v1-builder-store.test.ts`    | Verifies parse errors, append-only behavior, and honest missing states. |
 | `tests/unit/v1-builder-select.test.ts`   | Verifies V1 blocker selection, V2 rejection, and blocked-item handling. |
 | `tests/unit/v1-builder-claims.test.ts`   | Verifies fresh and stale claim behavior.                                |
 | `tests/unit/v1-builder-receipts.test.ts` | Verifies receipt schema and append-only writes.                         |
 | `tests/unit/v1-builder-cockpit.test.ts`  | Verifies cockpit summary never hides errors as empty state.             |
+| `tests/unit/v1-builder-submissions.test.ts` | Verifies submit and promote routing and approval gates.              |
 
 ## Files to Modify
 
@@ -328,8 +331,10 @@ An Actions tab may link to CLI commands as copyable text, but must not execute l
 6. Run `node scripts/v1-builder/claim.mjs --task v1-fixture` and verify a claim file is written under `system/v1-builder/claims/`.
 7. Run `node scripts/v1-builder/record-receipt.mjs --task v1-fixture --status validated --commit test --pushed false` and verify receipt appears under `system/v1-builder/receipts/`.
 8. Run `node scripts/v1-builder/escalate.mjs --task v1-fixture --question "Fixture approval?" --recommended-default "Approve fixture"` and verify it appends to `escalations.jsonl`.
-9. Start or use the already approved launcher only if David has explicitly allowed it. If a launcher is already running, open Mission Control and verify the Live view displays active queue, claim, receipt, escalation, and pricing states.
-10. Do a targeted em dash scan on all changed files.
+9. Run `node scripts/v1-builder/submit.mjs --title "Fixture research" --reason "Needs evidence"` and verify it writes to `research-queue.jsonl`.
+10. Run `node scripts/v1-builder/promote.mjs --from v1-fixture --classification approved_v1_blocker --reason "Approved" --v1-governor-approved` against fixture data and verify it appends to `approved-queue.jsonl`.
+11. Start or use the already approved launcher only if David has explicitly allowed it. If a launcher is already running, open Mission Control and verify the Live view displays active queue, claim, receipt, escalation, and pricing states.
+12. Do a targeted em dash scan on all changed files.
 
 ## Out of Scope
 

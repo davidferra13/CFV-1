@@ -2,6 +2,7 @@ export function parseArgs(argv = process.argv.slice(2)) {
   const args: Record<string, string | boolean> = {}
   for (let index = 0; index < argv.length; index += 1) {
     const item = argv[index]
+    if (item === '--') continue
     if (!item.startsWith('--')) continue
     const key = item.slice(2)
     const next = argv[index + 1]

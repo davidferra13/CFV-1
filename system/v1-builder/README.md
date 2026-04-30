@@ -25,6 +25,28 @@ Only records in `approved-queue.jsonl` with `approved_v1_blocker` or current-lan
 
 Mission Control reads these files. It must show read or parse failures honestly. Missing or malformed files are not empty queues.
 
+## CLI Flow
+
+Use `v1-builder:submit` for new intake instead of hand-writing JSON.
+
+```powershell
+npm run v1-builder:submit -- -- --title "Research pricing gap" --reason "Needs evidence before build."
+```
+
+That defaults to `research-queue.jsonl`. To put work directly into the buildable queue, the record must be explicitly classified and marked as governor-approved:
+
+```powershell
+npm run v1-builder:submit -- -- --title "Fix quote safety" --reason "V1 blocker." --classification approved_v1_blocker --v1-governor-approved
+```
+
+To promote an existing research, blocked, or parked record without deleting history:
+
+```powershell
+npm run v1-builder:promote -- -- --from v1-20260430-example --classification approved_v1_blocker --reason "Evidence confirmed this is V1." --v1-governor-approved
+```
+
+Promotion appends a new record. It does not remove the source record.
+
 ## Operator Rules
 
 - Do not write raw notes directly into the approved queue.
