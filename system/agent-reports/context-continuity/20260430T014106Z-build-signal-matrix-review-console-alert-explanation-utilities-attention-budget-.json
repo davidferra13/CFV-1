@@ -1,0 +1,671 @@
+{
+  "generated_at": "2026-04-30T01:41:05.018Z",
+  "prompt": "Build Signal Matrix Review Console, alert explanation utilities, attention budget, noise simulation dashboard data, suppressed signal audit, notification outcome tracker, command brief sender contracts, signal tuning exports",
+  "terms": [
+    "signal",
+    "matrix",
+    "review",
+    "console",
+    "alert",
+    "explanation",
+    "utilities",
+    "attention",
+    "budget",
+    "noise",
+    "simulation",
+    "dashboard",
+    "data",
+    "suppressed",
+    "audit",
+    "notification",
+    "outcome",
+    "tracker",
+    "command",
+    "brief",
+    "sender",
+    "contracts",
+    "tuning",
+    "exports"
+  ],
+  "scanned_dirs": [
+    "app",
+    "components",
+    "lib",
+    "docs/specs",
+    "docs/changes",
+    "docs/app-complete-audit.md",
+    "project-map",
+    "memory",
+    "system/intake",
+    "system/agent-reports"
+  ],
+  "canonical_surfaces": [
+    {
+      "id": "chef-flow-replay",
+      "label": "Chef Flow Replay",
+      "score": 2,
+      "hits": [
+        "review"
+      ],
+      "canonical_routes": [
+        "/replay"
+      ],
+      "canonical_files": [
+        "app/(chef)/replay/page.tsx",
+        "lib/activity/replay-model.ts"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Extend replay model and components in place."
+      }
+    },
+    {
+      "id": "calendar",
+      "label": "Calendar and Scheduling",
+      "score": 1,
+      "hits": [
+        "command"
+      ],
+      "canonical_routes": [
+        "/calendar"
+      ],
+      "canonical_files": [
+        "app/(chef)/calendar/page.tsx",
+        "components/calendar/unified-calendar-view.tsx"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach to calendar and scheduling modules."
+      }
+    }
+  ],
+  "related_files": [
+    {
+      "file": "docs/app-complete-audit.md",
+      "kind": "other",
+      "score": 66,
+      "hits": [
+        "audit",
+        "signal",
+        "matrix",
+        "review",
+        "alert",
+        "explanation",
+        "budget",
+        "simulation",
+        "dashboard",
+        "data"
+      ]
+    },
+    {
+      "file": "docs/specs/continuous-intelligence-layer.md",
+      "kind": "spec",
+      "score": 60,
+      "hits": [
+        "signal",
+        "review",
+        "alert",
+        "budget",
+        "noise",
+        "simulation",
+        "dashboard",
+        "data",
+        "suppressed",
+        "audit"
+      ]
+    },
+    {
+      "file": "docs/specs/chef-communication-noise-simulation.md",
+      "kind": "spec",
+      "score": 59,
+      "hits": [
+        "noise",
+        "simulation",
+        "signal",
+        "review",
+        "alert",
+        "attention",
+        "dashboard",
+        "data",
+        "suppressed",
+        "notification"
+      ]
+    },
+    {
+      "file": "docs/specs/bob-and-joy-action-catalog.md",
+      "kind": "spec",
+      "score": 54,
+      "hits": [
+        "matrix",
+        "review",
+        "alert",
+        "budget",
+        "simulation",
+        "dashboard",
+        "data",
+        "notification",
+        "outcome",
+        "tracker"
+      ]
+    },
+    {
+      "file": "lib/ai/command-orchestrator.ts",
+      "kind": "module",
+      "score": 54,
+      "hits": [
+        "command",
+        "signal",
+        "review",
+        "console",
+        "alert",
+        "explanation",
+        "attention",
+        "budget",
+        "dashboard",
+        "data"
+      ]
+    },
+    {
+      "file": "system/agent-reports/context-continuity-dashboard/latest.json",
+      "kind": "system",
+      "score": 54,
+      "hits": [
+        "dashboard",
+        "signal",
+        "review",
+        "console",
+        "alert",
+        "simulation",
+        "data",
+        "audit",
+        "notification",
+        "outcome"
+      ]
+    },
+    {
+      "file": "system/agent-reports/context-continuity/20260430T011129Z-build-chefflow-signal-matrix-notification-suppression-engine-noise-simulator-dai.json",
+      "kind": "system",
+      "score": 54,
+      "hits": [
+        "signal",
+        "matrix",
+        "noise",
+        "notification",
+        "simulation",
+        "dashboard",
+        "audit",
+        "command",
+        "brief"
+      ]
+    },
+    {
+      "file": "docs/specs/api-integration-health-audit.md",
+      "kind": "spec",
+      "score": 52,
+      "hits": [
+        "audit",
+        "signal",
+        "review",
+        "console",
+        "alert",
+        "utilities",
+        "budget",
+        "dashboard",
+        "data",
+        "notification"
+      ]
+    },
+    {
+      "file": "app/(chef)/dashboard/_sections/business-section-mobile-content.tsx",
+      "kind": "route",
+      "score": 50,
+      "hits": [
+        "dashboard",
+        "signal",
+        "review",
+        "alert",
+        "attention",
+        "data",
+        "audit",
+        "notification",
+        "tracker",
+        "command"
+      ]
+    },
+    {
+      "file": "docs/specs/openclaw-ideal-runtime-and-national-intelligence.md",
+      "kind": "spec",
+      "score": 49,
+      "hits": [
+        "signal",
+        "review",
+        "console",
+        "alert",
+        "budget",
+        "dashboard",
+        "data",
+        "suppressed",
+        "audit",
+        "outcome"
+      ]
+    },
+    {
+      "file": "lib/scheduling/types.ts",
+      "kind": "module",
+      "score": 49,
+      "hits": [
+        "signal",
+        "review",
+        "alert",
+        "explanation",
+        "budget",
+        "dashboard",
+        "data",
+        "notification",
+        "tracker",
+        "command"
+      ]
+    },
+    {
+      "file": "app/(chef)/dashboard/_sections/business-section-loader.ts",
+      "kind": "route",
+      "score": 48,
+      "hits": [
+        "dashboard",
+        "signal",
+        "review",
+        "alert",
+        "budget",
+        "data",
+        "audit",
+        "notification",
+        "command",
+        "contracts"
+      ]
+    },
+    {
+      "file": "app/(chef)/events/[id]/page.tsx",
+      "kind": "route",
+      "score": 47,
+      "hits": [
+        "signal",
+        "review",
+        "console",
+        "alert",
+        "budget",
+        "simulation",
+        "dashboard",
+        "data",
+        "outcome",
+        "tracker"
+      ]
+    },
+    {
+      "file": "lib/notifications/signal-os.ts",
+      "kind": "module",
+      "score": 47,
+      "hits": [
+        "signal",
+        "notification",
+        "matrix",
+        "review",
+        "alert",
+        "attention",
+        "noise",
+        "data",
+        "audit",
+        "brief"
+      ]
+    },
+    {
+      "file": "app/(chef)/dashboard/page.tsx",
+      "kind": "route",
+      "score": 46,
+      "hits": [
+        "dashboard",
+        "review",
+        "console",
+        "alert",
+        "attention",
+        "data",
+        "notification",
+        "command",
+        "brief"
+      ]
+    },
+    {
+      "file": "components/navigation/nav-config.tsx",
+      "kind": "component",
+      "score": 46,
+      "hits": [
+        "review",
+        "alert",
+        "attention",
+        "budget",
+        "dashboard",
+        "data",
+        "audit",
+        "notification",
+        "command",
+        "brief"
+      ]
+    },
+    {
+      "file": "docs/specs/culinary-radar-intelligence-layer.md",
+      "kind": "spec",
+      "score": 45,
+      "hits": [
+        "signal",
+        "review",
+        "alert",
+        "dashboard",
+        "data",
+        "audit",
+        "notification",
+        "command",
+        "brief",
+        "contracts"
+      ]
+    },
+    {
+      "file": "docs/specs/interaction-engine.md",
+      "kind": "spec",
+      "score": 43,
+      "hits": [
+        "signal",
+        "review",
+        "alert",
+        "dashboard",
+        "data",
+        "audit",
+        "notification",
+        "command",
+        "brief",
+        "exports"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-cohesiveness-synthesis.md",
+      "kind": "spec",
+      "score": 42,
+      "hits": [
+        "signal",
+        "review",
+        "alert",
+        "budget",
+        "dashboard",
+        "data",
+        "audit",
+        "notification",
+        "command",
+        "brief"
+      ]
+    },
+    {
+      "file": "docs/specs/cross-boundary-flow-interrogation.md",
+      "kind": "spec",
+      "score": 41,
+      "hits": [
+        "signal",
+        "review",
+        "console",
+        "alert",
+        "budget",
+        "dashboard",
+        "data",
+        "suppressed",
+        "audit",
+        "notification"
+      ]
+    },
+    {
+      "file": "lib/notifications/noise-simulator.ts",
+      "kind": "module",
+      "score": 41,
+      "hits": [
+        "noise",
+        "notification",
+        "signal",
+        "review",
+        "alert",
+        "attention",
+        "simulation",
+        "suppressed",
+        "brief"
+      ]
+    },
+    {
+      "file": "docs/specs/comprehensive-domain-inventory-phase-1.md",
+      "kind": "spec",
+      "score": 40,
+      "hits": [
+        "signal",
+        "review",
+        "dashboard",
+        "data",
+        "audit",
+        "notification",
+        "command",
+        "brief",
+        "contracts",
+        "exports"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-competitive-surface.md",
+      "kind": "spec",
+      "score": 39,
+      "hits": [
+        "review",
+        "console",
+        "alert",
+        "budget",
+        "noise",
+        "dashboard",
+        "data",
+        "audit",
+        "notification",
+        "outcome"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-full-cohesion-answers.md",
+      "kind": "spec",
+      "score": 39,
+      "hits": [
+        "review",
+        "alert",
+        "utilities",
+        "dashboard",
+        "data",
+        "audit",
+        "notification",
+        "command",
+        "brief",
+        "sender"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-full-cohesion.md",
+      "kind": "spec",
+      "score": 39,
+      "hits": [
+        "review",
+        "alert",
+        "dashboard",
+        "data",
+        "audit",
+        "notification",
+        "command",
+        "brief",
+        "sender",
+        "contracts"
+      ]
+    },
+    {
+      "file": "lib/ai/command-intent-parser.ts",
+      "kind": "module",
+      "score": 39,
+      "hits": [
+        "command",
+        "review",
+        "console",
+        "alert",
+        "explanation",
+        "attention",
+        "dashboard",
+        "data",
+        "notification",
+        "brief"
+      ]
+    },
+    {
+      "file": "lib/ai/command-task-descriptions.ts",
+      "kind": "module",
+      "score": 39,
+      "hits": [
+        "command",
+        "review",
+        "alert",
+        "explanation",
+        "attention",
+        "dashboard",
+        "data",
+        "notification",
+        "brief",
+        "sender"
+      ]
+    },
+    {
+      "file": "lib/db/fk-map.ts",
+      "kind": "module",
+      "score": 39,
+      "hits": [
+        "signal",
+        "review",
+        "alert",
+        "budget",
+        "simulation",
+        "audit",
+        "notification",
+        "tracker",
+        "brief",
+        "sender"
+      ]
+    },
+    {
+      "file": "lib/events/transitions.ts",
+      "kind": "module",
+      "score": 39,
+      "hits": [
+        "review",
+        "console",
+        "alert",
+        "dashboard",
+        "data",
+        "audit",
+        "notification",
+        "outcome",
+        "brief",
+        "sender"
+      ]
+    },
+    {
+      "file": "app/api/remy/stream/route.ts",
+      "kind": "route",
+      "score": 38,
+      "hits": [
+        "signal",
+        "review",
+        "console",
+        "alert",
+        "budget",
+        "data",
+        "command",
+        "brief"
+      ]
+    }
+  ],
+  "recent_commits": [
+    {
+      "line": "c0dbfdf02 chore(agent): add chef communication noise simulation feature/chef-communication-noise-simulation",
+      "score": 4,
+      "hits": [
+        "noise",
+        "simulation"
+      ]
+    },
+    {
+      "line": "23eb503d3 chore(agent): build chef signal operating system feature/chef-signal-operating-system",
+      "score": 2,
+      "hits": [
+        "signal"
+      ]
+    },
+    {
+      "line": "2be1af863 chore(agent): refine question intelligence checks feature/chef-communication-noise-simulation",
+      "score": 2,
+      "hits": [
+        "noise",
+        "simulation"
+      ]
+    },
+    {
+      "line": "b4899caad chore(agent): add client strategy brief feature/catch-up-brand-new-builds",
+      "score": 1,
+      "hits": [
+        "brief"
+      ]
+    },
+    {
+      "line": "3be2a395c chore(agent): expand calendar command workflows feature/catch-up-brand-new-builds",
+      "score": 1,
+      "hits": [
+        "command"
+      ]
+    },
+    {
+      "line": "f4e46b723 chore(agent): expand client default knowledge contracts feature/catch-up-brand-new-builds",
+      "score": 1,
+      "hits": [
+        "contracts"
+      ]
+    },
+    {
+      "line": "a8bc2c781 chore(agent): add calendar conflict command center feature/calendar-build-all",
+      "score": 1,
+      "hits": [
+        "command"
+      ]
+    }
+  ],
+  "dirty_matches": [],
+  "claim_matches": [
+    {
+      "file": "system/agent-claims/20260429T235629Z-feature-voice-ops-complete-build-the-complete-context-continuity-tooling-layer-s.json",
+      "score": 1,
+      "hits": [
+        "dashboard"
+      ],
+      "prompt": "Build the complete context continuity tooling layer: scanner CLI, canonical surface registry, pre-build gate, Obsidian packet exporter, near-duplicate detector, spec template continuity section, feature family map, and dashboard",
+      "owned": [],
+      "status": "active"
+    }
+  ],
+  "duplicate_risks": [
+    {
+      "level": "medium",
+      "reason": "Active or recorded claims overlap this domain.",
+      "claims": [
+        "system/agent-claims/20260429T235629Z-feature-voice-ops-complete-build-the-complete-context-continuity-tooling-layer-s.json"
+      ]
+    }
+  ],
+  "continuity": {
+    "decision": "attach",
+    "stop_required": false,
+    "reason": "Matched canonical surface chef-flow-replay."
+  }
+}

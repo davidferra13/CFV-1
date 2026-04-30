@@ -9,8 +9,10 @@ import {
   getSmsSettings,
 } from '@/lib/notifications/settings-actions'
 import { getNotificationTierMap } from '@/lib/notifications/tier-actions'
+import { createSignalDashboardSnapshot } from '@/lib/notifications/signal-dashboard'
 import { NotificationSettings } from '@/components/notifications/notification-settings'
 import { NotificationTierSettings } from '@/components/settings/notification-tier-settings'
+import { SignalMatrixReview } from '@/components/settings/signal-matrix-review'
 
 export const metadata: Metadata = { title: 'Notification Settings' }
 
@@ -23,14 +25,16 @@ export default async function NotificationSettingsPage() {
     getNotificationExperienceSettings(),
     getNotificationTierMap(),
   ])
+  const signalDashboardSnapshot = createSignalDashboardSnapshot()
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="mx-auto max-w-6xl space-y-6">
       <NotificationSettings
         initialPreferences={preferences}
         initialSmsSettings={smsSettings}
         initialExperienceSettings={experienceSettings}
       />
+      <SignalMatrixReview snapshot={signalDashboardSnapshot} />
       <NotificationTierSettings initialTierMap={tierMap} />
     </div>
   )

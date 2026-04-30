@@ -16,9 +16,19 @@ const {
   evaluateChefSignal,
   simulateNoiseScenario,
 } = require('../../lib/notifications/noise-simulator.ts')
+const { applyAttentionBudget } = require('../../lib/notifications/attention-budget.ts')
 const { createCommandBrief } = require('../../lib/notifications/command-brief.ts')
 const { evaluatePreServiceReadiness } = require('../../lib/notifications/pre-service-readiness.ts')
 const { createOwnerReport } = require('../../lib/notifications/owner-report.ts')
+const {
+  scoreSignalOutcome,
+  summarizeSignalOutcomes,
+} = require('../../lib/notifications/signal-outcomes.ts')
+const {
+  createSuppressionAuditRecords,
+  markSuppressionEscalated,
+} = require('../../lib/notifications/suppression-audit.ts')
+const { createSignalDashboardSnapshot } = require('../../lib/notifications/signal-dashboard.ts')
 
 const actions = Object.keys(NOTIFICATION_CONFIG)
 
@@ -160,4 +170,78 @@ test('policy explanations include delivery and source of truth', () => {
 
   assert.match(explanation, /Default delivery/)
   assert.match(explanation, /Source of truth/)
+})
+
+test('attention budget forces low-value pushes into digest after configured limits', () => {
+  const simulation = simulateNoiseScenario([
+    {
+      id: 'lead-1',
+      action: 'new_guest_lead',
+      title: 'Social lead 1',
+      occurredAt: '2026-05-01T09:00:00-04:00',
+      clientId: 'client_1',
+    },
+    {
+      id: 'lead-2',
+      action: 'new_guest_lead',
+      title: 'Social lead 2',
+      occurredAt: '2026-05-01T09:05:00-04:00',
+      clientId: 'client_2',
+    },
+  ])
+
+  const budget = applyAttentionBudget(simulation.evaluatedSignals, {
+    maxAdminPushesPerDay: 3,
+    maxGrowthPushesPerDay: 1,
+    maxReviewPushesPerDay: 2,
+  })
+
+  assert.equal(budget.forcedDigest, 1)
+})
+
+test('suppression audit records archived and suppressed signals with escalation marker', () => {
+  const simulation = simulateNoiseScenario(createDefaultEventDaySimulation())
+  const records = createSuppressionAuditRecords(simulation.evaluatedSignals, '2026-05-01T12:00:00Z')
+
+  assert.ok(records.length >= 2)
+  assert.ok(records.some((record: { duplicateKey: string | null }) => record.duplicateKey))
+
+  const escalated = markSuppressionEscalated(records, records[0].signalId)
+  assert.equal(escalated[0].laterEscalated, true)
+})
+
+test('signal outcome scoring separates useful alerts from noise', () => {
+  const signal = evaluateChefSignal({
+    id: 'payment',
+    action: 'payment_failed',
+    title: 'Payment failed',
+    occurredAt: '2026-05-01T09:00:00-04:00',
+  })
+
+  const useful = scoreSignalOutcome(signal, {
+    signalId: 'payment',
+    openedAt: '2026-05-01T09:01:00-04:00',
+    clickedAt: '2026-05-01T09:02:00-04:00',
+    actionCompletedAt: '2026-05-01T09:05:00-04:00',
+  })
+  const noisy = scoreSignalOutcome(signal, {
+    signalId: 'payment',
+    dismissedAt: '2026-05-01T09:01:00-04:00',
+    demotedByChef: true,
+  })
+  const summary = summarizeSignalOutcomes([useful, noisy])
+
+  assert.equal(useful.useful, true)
+  assert.equal(noisy.useful, false)
+  assert.equal(summary.total, 2)
+})
+
+test('dashboard snapshot combines matrix, simulation, budget, audit, and daily brief', () => {
+  const snapshot = createSignalDashboardSnapshot('2026-05-01T06:30:00Z')
+
+  assert.equal(snapshot.matrix.length, actions.length)
+  assert.equal(snapshot.simulation.rawSignalCount, 21)
+  assert.ok(snapshot.attentionBudget.results.length > 0)
+  assert.ok(snapshot.suppressionAuditRecords.length > 0)
+  assert.equal(snapshot.dailyBrief.title, 'Daily Command Brief')
 })
