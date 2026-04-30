@@ -7,7 +7,8 @@
 //   1. Per-category channel overrides in notification_preferences (DB)
 //   2. Default tier channels from DEFAULT_TIER_MAP + TIER_CHANNEL_DEFAULTS (code)
 //   3. Special overrides: EMAIL_SUPPRESSED_ACTIONS always disables email
-//   4. SMS gate: requires chef_preferences.sms_opt_in = true AND sms_notify_phone set
+//   4. Signal OS channel policy blocks channels that create noise for this action
+//   5. SMS gate: requires chef_preferences.sms_opt_in = true AND sms_notify_phone set
 
 import { createServerClient } from '@/lib/db/server'
 import type { NotificationAction, NotificationCategory } from './types'
@@ -16,10 +17,10 @@ import {
   TIER_CHANNEL_DEFAULTS,
   EMAIL_SUPPRESSED_ACTIONS,
   CLIENT_FACING_ACTIONS,
-  getDefaultChannels,
   type ChannelSet,
 } from './tier-config'
 import { NOTIFICATION_CONFIG } from './types'
+import { applySignalChannelPolicy } from './signal-os'
 
 export type ResolvedChannels = ChannelSet & {
   /** The tier that was resolved (for logging/debugging) */
@@ -106,7 +107,11 @@ export async function resolveChannels(
       resolved.email = false
     }
 
-    // 3. SMS gate - different paths for chef vs client recipients
+    // 3. Apply ChefFlow signal policy after preferences. Preferences can demote,
+    // but cannot force a noisy channel for actions that should never use it.
+    resolved = applySignalChannelPolicy(action, resolved)
+
+    // 4. SMS gate - different paths for chef vs client recipients
     let smsPhone: string | null = null
     if (resolved.sms) {
       if (CLIENT_FACING_ACTIONS.has(action)) {
@@ -143,6 +148,7 @@ export async function resolveChannels(
   } catch (err) {
     console.error('[resolveChannels] Error loading preferences, falling back to defaults:', err)
     // Graceful fallback: use tier defaults but disable SMS (requires explicit opt-in)
-    return { ...defaults, sms: false, tier, smsPhone: null }
+    const signalDefaults = applySignalChannelPolicy(action, defaults)
+    return { ...signalDefaults, sms: false, tier, smsPhone: null }
   }
 }

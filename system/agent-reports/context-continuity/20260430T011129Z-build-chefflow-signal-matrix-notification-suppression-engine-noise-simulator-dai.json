@@ -1,0 +1,713 @@
+{
+  "generated_at": "2026-04-30T01:10:11.920Z",
+  "prompt": "Build ChefFlow signal matrix, notification suppression engine, noise simulator, daily command brief, pre-service readiness gate, owner reports",
+  "terms": [
+    "chefflow",
+    "signal",
+    "matrix",
+    "notification",
+    "suppression",
+    "engine",
+    "noise",
+    "simulator",
+    "daily",
+    "command",
+    "brief",
+    "pre-service",
+    "readiness",
+    "gate",
+    "owner",
+    "reports"
+  ],
+  "scanned_dirs": [
+    "app",
+    "components",
+    "lib",
+    "docs/specs",
+    "docs/changes",
+    "docs/app-complete-audit.md",
+    "project-map",
+    "memory",
+    "system/intake",
+    "system/agent-reports"
+  ],
+  "canonical_surfaces": [
+    {
+      "id": "inventory",
+      "label": "Inventory and Pantry",
+      "score": 2,
+      "hits": [
+        "engine"
+      ],
+      "canonical_routes": [
+        "/inventory",
+        "/ops/inventory"
+      ],
+      "canonical_files": [
+        "app/(chef)/inventory/page.tsx",
+        "lib/inventory/pantry-engine.ts"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Deepen the inventory domain in place."
+      }
+    },
+    {
+      "id": "agent-skill-system",
+      "label": "Agent Skill System",
+      "score": 1,
+      "hits": [
+        "chefflow"
+      ],
+      "canonical_routes": [],
+      "canonical_files": [
+        "devtools/skill-router.mjs",
+        "devtools/skill-validator.mjs",
+        "devtools/skill-trigger-tests.mjs",
+        "system/agent-golden-prompts/default.json"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Add to the existing skill harness."
+      }
+    },
+    {
+      "id": "remy-ai",
+      "label": "Remy AI",
+      "score": 1,
+      "hits": [
+        "chefflow"
+      ],
+      "canonical_routes": [],
+      "canonical_files": [
+        "components/ai/remy-drawer.tsx",
+        "lib/ai/remy-actions.ts"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach new assistant behavior to Remy or its shared AI modules."
+      }
+    },
+    {
+      "id": "calendar",
+      "label": "Calendar and Scheduling",
+      "score": 1,
+      "hits": [
+        "command"
+      ],
+      "canonical_routes": [
+        "/calendar"
+      ],
+      "canonical_files": [
+        "app/(chef)/calendar/page.tsx",
+        "components/calendar/unified-calendar-view.tsx"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach to calendar and scheduling modules."
+      }
+    },
+    {
+      "id": "client-intake",
+      "label": "Client Intake",
+      "score": 1,
+      "hits": [
+        "chefflow"
+      ],
+      "canonical_routes": [
+        "/book",
+        "/clients/intake"
+      ],
+      "canonical_files": [
+        "app/api/book/route.ts",
+        "lib/inquiries/public-actions.ts",
+        "public/embed/chefflow-widget.js"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach to the existing intake lane contract."
+      }
+    }
+  ],
+  "related_files": [
+    {
+      "file": "docs/specs/chef-communication-noise-simulation.md",
+      "kind": "spec",
+      "score": 54,
+      "hits": [
+        "noise",
+        "chefflow",
+        "signal",
+        "notification",
+        "suppression",
+        "daily",
+        "command",
+        "brief",
+        "pre-service",
+        "readiness"
+      ]
+    },
+    {
+      "file": "docs/specs/continuous-intelligence-layer.md",
+      "kind": "spec",
+      "score": 49,
+      "hits": [
+        "chefflow",
+        "signal",
+        "notification",
+        "engine",
+        "noise",
+        "simulator",
+        "daily",
+        "command",
+        "brief",
+        "readiness"
+      ]
+    },
+    {
+      "file": "system/agent-reports/context-continuity-dashboard/latest.json",
+      "kind": "system",
+      "score": 44,
+      "hits": [
+        "reports",
+        "chefflow",
+        "signal",
+        "notification",
+        "engine",
+        "daily",
+        "command",
+        "brief",
+        "readiness",
+        "gate"
+      ]
+    },
+    {
+      "file": "docs/specs/interaction-engine.md",
+      "kind": "spec",
+      "score": 40,
+      "hits": [
+        "engine",
+        "chefflow",
+        "signal",
+        "notification",
+        "command",
+        "brief",
+        "readiness",
+        "gate",
+        "owner"
+      ]
+    },
+    {
+      "file": "system/agent-reports/feature-family-map/20260430T000218Z-feature-family-map.json",
+      "kind": "system",
+      "score": 40,
+      "hits": [
+        "reports",
+        "chefflow",
+        "signal",
+        "notification",
+        "engine",
+        "daily",
+        "command",
+        "readiness",
+        "gate",
+        "owner"
+      ]
+    },
+    {
+      "file": "lib/scheduling/types.ts",
+      "kind": "module",
+      "score": 39,
+      "hits": [
+        "signal",
+        "notification",
+        "engine",
+        "daily",
+        "command",
+        "brief",
+        "readiness",
+        "gate",
+        "reports"
+      ]
+    },
+    {
+      "file": "docs/specs/culinary-radar-intelligence-layer.md",
+      "kind": "spec",
+      "score": 37,
+      "hits": [
+        "chefflow",
+        "signal",
+        "notification",
+        "engine",
+        "daily",
+        "command",
+        "brief",
+        "readiness",
+        "gate",
+        "owner"
+      ]
+    },
+    {
+      "file": "docs/specs/restaurant-adoption-interrogation.md",
+      "kind": "spec",
+      "score": 36,
+      "hits": [
+        "chefflow",
+        "matrix",
+        "engine",
+        "daily",
+        "readiness",
+        "gate",
+        "owner",
+        "reports"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-full-cohesion-answers.md",
+      "kind": "spec",
+      "score": 36,
+      "hits": [
+        "chefflow",
+        "notification",
+        "suppression",
+        "engine",
+        "daily",
+        "command",
+        "brief",
+        "readiness",
+        "gate",
+        "owner"
+      ]
+    },
+    {
+      "file": "app/(chef)/events/[id]/page.tsx",
+      "kind": "route",
+      "score": 35,
+      "hits": [
+        "chefflow",
+        "signal",
+        "engine",
+        "command",
+        "brief",
+        "pre-service",
+        "readiness",
+        "gate",
+        "owner"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-competitive-surface.md",
+      "kind": "spec",
+      "score": 35,
+      "hits": [
+        "chefflow",
+        "notification",
+        "engine",
+        "noise",
+        "daily",
+        "brief",
+        "readiness",
+        "gate",
+        "reports"
+      ]
+    },
+    {
+      "file": "docs/specs/bob-and-joy-action-catalog.md",
+      "kind": "spec",
+      "score": 34,
+      "hits": [
+        "chefflow",
+        "matrix",
+        "notification",
+        "engine",
+        "daily",
+        "command",
+        "brief",
+        "readiness",
+        "gate",
+        "reports"
+      ]
+    },
+    {
+      "file": "docs/specs/comprehensive-domain-inventory-phase-1.md",
+      "kind": "spec",
+      "score": 34,
+      "hits": [
+        "chefflow",
+        "signal",
+        "notification",
+        "engine",
+        "daily",
+        "command",
+        "brief",
+        "readiness",
+        "owner",
+        "reports"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-cohesiveness-synthesis.md",
+      "kind": "spec",
+      "score": 34,
+      "hits": [
+        "chefflow",
+        "signal",
+        "notification",
+        "engine",
+        "daily",
+        "command",
+        "brief",
+        "pre-service",
+        "readiness",
+        "gate"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-full-cohesion.md",
+      "kind": "spec",
+      "score": 34,
+      "hits": [
+        "chefflow",
+        "notification",
+        "suppression",
+        "engine",
+        "daily",
+        "command",
+        "brief",
+        "readiness",
+        "gate",
+        "owner"
+      ]
+    },
+    {
+      "file": "docs/specs/system-completeness-interrogation.md",
+      "kind": "spec",
+      "score": 33,
+      "hits": [
+        "chefflow",
+        "signal",
+        "notification",
+        "suppression",
+        "noise",
+        "daily",
+        "command",
+        "brief",
+        "gate",
+        "reports"
+      ]
+    },
+    {
+      "file": "docs/specs/internal-codex-readiness-pack.md",
+      "kind": "spec",
+      "score": 32,
+      "hits": [
+        "readiness",
+        "chefflow",
+        "noise",
+        "command",
+        "brief",
+        "gate",
+        "reports"
+      ]
+    },
+    {
+      "file": "docs/specs/p0-chef-cpa-ready-tax-export-and-reconciliation.md",
+      "kind": "spec",
+      "score": 32,
+      "hits": [
+        "chefflow",
+        "signal",
+        "engine",
+        "daily",
+        "readiness",
+        "gate",
+        "owner",
+        "reports"
+      ]
+    },
+    {
+      "file": "components/navigation/nav-config.tsx",
+      "kind": "component",
+      "score": 31,
+      "hits": [
+        "chefflow",
+        "notification",
+        "engine",
+        "daily",
+        "command",
+        "brief",
+        "gate",
+        "reports"
+      ]
+    },
+    {
+      "file": "docs/specs/openclaw-ideal-runtime-and-national-intelligence.md",
+      "kind": "spec",
+      "score": 31,
+      "hits": [
+        "chefflow",
+        "signal",
+        "suppression",
+        "engine",
+        "gate",
+        "owner",
+        "reports"
+      ]
+    },
+    {
+      "file": "docs/specs/p1-analytics-surface-ownership-and-route-truth.md",
+      "kind": "spec",
+      "score": 31,
+      "hits": [
+        "owner",
+        "signal",
+        "engine",
+        "daily",
+        "brief",
+        "gate",
+        "reports"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-openclaw-cohesion-v2.md",
+      "kind": "spec",
+      "score": 31,
+      "hits": [
+        "chefflow",
+        "signal",
+        "notification",
+        "suppression",
+        "engine",
+        "daily",
+        "brief",
+        "gate"
+      ]
+    },
+    {
+      "file": "lib/ai/command-orchestrator.ts",
+      "kind": "module",
+      "score": 31,
+      "hits": [
+        "command",
+        "chefflow",
+        "signal",
+        "engine",
+        "daily",
+        "brief",
+        "readiness",
+        "gate"
+      ]
+    },
+    {
+      "file": "docs/specs/p0-chef-pricing-readiness-gate.md",
+      "kind": "spec",
+      "score": 30,
+      "hits": [
+        "readiness",
+        "gate",
+        "chefflow",
+        "signal",
+        "engine",
+        "daily"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-client-management-phase2.md",
+      "kind": "spec",
+      "score": 29,
+      "hits": [
+        "signal",
+        "notification",
+        "engine",
+        "simulator",
+        "daily",
+        "brief",
+        "pre-service",
+        "readiness",
+        "gate",
+        "reports"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-consumer-discovery-cohesion-v1.md",
+      "kind": "spec",
+      "score": 29,
+      "hits": [
+        "chefflow",
+        "signal",
+        "notification",
+        "engine",
+        "brief",
+        "readiness",
+        "gate",
+        "owner"
+      ]
+    },
+    {
+      "file": "app/(chef)/dashboard/page.tsx",
+      "kind": "route",
+      "score": 28,
+      "hits": [
+        "notification",
+        "daily",
+        "command",
+        "brief",
+        "readiness",
+        "gate"
+      ]
+    },
+    {
+      "file": "docs/specs/navigation-action-bar.md",
+      "kind": "spec",
+      "score": 28,
+      "hits": [
+        "chefflow",
+        "notification",
+        "engine",
+        "noise",
+        "daily",
+        "command",
+        "readiness",
+        "gate"
+      ]
+    },
+    {
+      "file": "docs/specs/openclaw-social-media-orchestration.md",
+      "kind": "spec",
+      "score": 28,
+      "hits": [
+        "chefflow",
+        "signal",
+        "matrix",
+        "engine",
+        "daily",
+        "readiness",
+        "owner",
+        "reports"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-openclaw-cohesion-v2-answers.md",
+      "kind": "spec",
+      "score": 28,
+      "hits": [
+        "chefflow",
+        "signal",
+        "notification",
+        "suppression",
+        "engine",
+        "brief",
+        "gate",
+        "reports"
+      ]
+    }
+  ],
+  "recent_commits": [
+    {
+      "line": "c0dbfdf02 chore(agent): add chef communication noise simulation feature/chef-communication-noise-simulation",
+      "score": 2,
+      "hits": [
+        "noise"
+      ]
+    },
+    {
+      "line": "f038e3d86 chore(agent): build pantry engine feature/pantry-engine",
+      "score": 2,
+      "hits": [
+        "engine"
+      ]
+    },
+    {
+      "line": "2be1af863 chore(agent): refine question intelligence checks feature/chef-communication-noise-simulation",
+      "score": 1,
+      "hits": [
+        "noise"
+      ]
+    },
+    {
+      "line": "b4899caad chore(agent): add client strategy brief feature/catch-up-brand-new-builds",
+      "score": 1,
+      "hits": [
+        "brief"
+      ]
+    },
+    {
+      "line": "3be2a395c chore(agent): expand calendar command workflows feature/catch-up-brand-new-builds",
+      "score": 1,
+      "hits": [
+        "command"
+      ]
+    },
+    {
+      "line": "a8bc2c781 chore(agent): add calendar conflict command center feature/calendar-build-all",
+      "score": 1,
+      "hits": [
+        "command"
+      ]
+    },
+    {
+      "line": "aae9c57d0 chore(agent): build instant note reliability layer feature/pantry-engine",
+      "score": 1,
+      "hits": [
+        "engine"
+      ]
+    },
+    {
+      "line": "5899506ca chore(agent): build instant note execution layer feature/pantry-engine",
+      "score": 1,
+      "hits": [
+        "engine"
+      ]
+    },
+    {
+      "line": "50c75b535 chore(agent): build culinary dictionary refinements feature/pantry-engine",
+      "score": 1,
+      "hits": [
+        "engine"
+      ]
+    }
+  ],
+  "dirty_matches": [],
+  "claim_matches": [
+    {
+      "file": "system/agent-claims/20260429T234252Z-feature-pantry-engine-create-persistent-codex-behavior-to-prevent-fragmented-dup.json",
+      "score": 2,
+      "hits": [
+        "engine"
+      ],
+      "prompt": "Create persistent Codex behavior to prevent fragmented duplicate builds and capture conversation memory for Obsidian-style continuity",
+      "owned": [],
+      "status": "active"
+    },
+    {
+      "file": "system/agent-claims/20260429T235629Z-feature-voice-ops-complete-build-the-complete-context-continuity-tooling-layer-s.json",
+      "score": 1,
+      "hits": [
+        "gate"
+      ],
+      "prompt": "Build the complete context continuity tooling layer: scanner CLI, canonical surface registry, pre-build gate, Obsidian packet exporter, near-duplicate detector, spec template continuity section, feature family map, and dashboard",
+      "owned": [],
+      "status": "active"
+    }
+  ],
+  "duplicate_risks": [
+    {
+      "level": "medium",
+      "reason": "Active or recorded claims overlap this domain.",
+      "claims": [
+        "system/agent-claims/20260429T234252Z-feature-pantry-engine-create-persistent-codex-behavior-to-prevent-fragmented-dup.json",
+        "system/agent-claims/20260429T235629Z-feature-voice-ops-complete-build-the-complete-context-continuity-tooling-layer-s.json"
+      ]
+    }
+  ],
+  "continuity": {
+    "decision": "attach",
+    "stop_required": false,
+    "reason": "Matched canonical surface inventory."
+  }
+}
