@@ -6,6 +6,7 @@ import type {
   SupporterSignalStatus,
 } from '@/lib/supporter-signals/report'
 import {
+  AlertTriangle,
   CheckCircle2,
   ClipboardCheck,
   HeartHandshake,
@@ -28,6 +29,12 @@ const statusLabels: Record<SupporterSignalStatus, string> = {
   approved_quote: 'Approved quote',
   permission_candidate: 'Needs permission',
   private_candidate: 'Private candidate',
+}
+
+const actionStyles = {
+  high: 'border-rose-900 bg-rose-950/30 text-rose-200',
+  medium: 'border-amber-900 bg-amber-950/30 text-amber-200',
+  low: 'border-stone-700 bg-stone-950 text-stone-300',
 }
 
 function formatDate(iso: string | null): string {
@@ -129,6 +136,22 @@ export default async function AdminSupporterSignalsPage() {
             <p className="mt-1 max-w-3xl text-sm leading-6 text-stone-500">
               {report.homepageReadiness.detail}
             </p>
+            <div className="mt-4 grid gap-3 md:grid-cols-2">
+              <div className="rounded-lg border border-emerald-900 bg-emerald-950/20 p-3">
+                <p className="text-xs font-semibold uppercase text-emerald-300">
+                  Safe public claim
+                </p>
+                <p className="mt-1 text-sm text-stone-200">
+                  {report.homepageReadiness.safePublicClaim}
+                </p>
+              </div>
+              <div className="rounded-lg border border-rose-900 bg-rose-950/20 p-3">
+                <p className="text-xs font-semibold uppercase text-rose-300">Blocked claim</p>
+                <p className="mt-1 text-sm text-stone-200">
+                  {report.homepageReadiness.blockedClaim}
+                </p>
+              </div>
+            </div>
           </div>
           <div className="grid min-w-[280px] gap-2 text-xs text-stone-400 sm:grid-cols-2">
             <div className="rounded-lg border border-stone-800 bg-stone-950 p-3">
@@ -186,6 +209,35 @@ export default async function AdminSupporterSignalsPage() {
         </section>
 
         <aside className="space-y-6">
+          <section className="rounded-xl border border-stone-800 bg-stone-900/70 p-5">
+            <div className="flex items-center gap-2 text-stone-200">
+              <AlertTriangle className="h-5 w-5" aria-hidden="true" />
+              <h2 className="text-base font-semibold">Next actions</h2>
+            </div>
+            <div className="mt-4 space-y-3">
+              {report.nextActions.map((action) => (
+                <Link
+                  key={`${action.priority}-${action.label}`}
+                  href={action.href}
+                  className={`block rounded-lg border p-3 transition-colors hover:border-brand-700 ${
+                    actionStyles[action.priority]
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-sm font-medium text-stone-100">{action.label}</p>
+                    <span className="rounded-full border border-current px-2 py-0.5 text-[11px] font-semibold uppercase">
+                      {action.priority}
+                    </span>
+                  </div>
+                  <p className="mt-2 text-xs leading-5 text-stone-400">{action.reason}</p>
+                </Link>
+              ))}
+              {report.nextActions.length === 0 ? (
+                <p className="text-sm text-stone-500">No supporter follow-up actions right now.</p>
+              ) : null}
+            </div>
+          </section>
+
           <section className="rounded-xl border border-stone-800 bg-stone-900/70 p-5">
             <div className="flex items-center gap-2 text-stone-200">
               <ClipboardCheck className="h-5 w-5" aria-hidden="true" />

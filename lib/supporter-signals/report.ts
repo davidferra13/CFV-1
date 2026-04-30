@@ -27,6 +27,13 @@ export type SupporterSignalMetric = {
   href: string
 }
 
+export type SupporterSignalAction = {
+  label: string
+  reason: string
+  href: string
+  priority: 'high' | 'medium' | 'low'
+}
+
 export type SupporterSignalsReport = {
   generatedAt: string
   publicReadySignals: number
@@ -35,10 +42,13 @@ export type SupporterSignalsReport = {
   privateCandidateSignals: number
   metrics: SupporterSignalMetric[]
   candidates: SupporterSignalCandidate[]
+  nextActions: SupporterSignalAction[]
   homepageReadiness: {
     mode: 'empty_honest' | 'quotes_ready' | 'logos_ready' | 'mixed_ready'
     headline: string
     detail: string
+    safePublicClaim: string
+    blockedClaim: string
   }
 }
 
@@ -128,9 +138,77 @@ function sortCandidates(candidates: SupporterSignalCandidate[]): SupporterSignal
   })
 }
 
+function buildNextActions(input: {
+  featuredTestimonials: TestimonialSignalRow[]
+  approvedUnfeaturedTestimonials: TestimonialSignalRow[]
+  publicPartners: PartnerSignalRow[]
+  activeNonPublicPartners: PartnerSignalRow[]
+  activeBetaSignups: BetaSignupSignalRow[]
+  positiveFeedback: FeedbackSignalRow[]
+}): SupporterSignalAction[] {
+  const actions: SupporterSignalAction[] = []
+
+  if (input.featuredTestimonials.length + input.publicPartners.length === 0) {
+    actions.push({
+      label: 'Keep homepage proof copy early-stage',
+      reason: 'No current record is both public-ready and directly usable for a trust section.',
+      href: '/admin/supporter-signals',
+      priority: 'high',
+    })
+  }
+
+  if (input.approvedUnfeaturedTestimonials.length > 0) {
+    actions.push({
+      label: 'Review approved testimonials for featuring',
+      reason: `${input.approvedUnfeaturedTestimonials.length} approved quote${
+        input.approvedUnfeaturedTestimonials.length === 1 ? '' : 's'
+      } can become public proof after editorial review.`,
+      href: '/admin/supporter-signals',
+      priority: 'high',
+    })
+  }
+
+  if (input.activeNonPublicPartners.length > 0) {
+    actions.push({
+      label: 'Ask active partners for public permission',
+      reason: `${input.activeNonPublicPartners.length} active partner${
+        input.activeNonPublicPartners.length === 1 ? '' : 's'
+      } could become ecosystem proof after explicit approval.`,
+      href: '/admin/referral-partners',
+      priority: 'medium',
+    })
+  }
+
+  const onboardedBetaSignups = input.activeBetaSignups.filter((row) => row.status === 'onboarded')
+  if (onboardedBetaSignups.length > 0) {
+    actions.push({
+      label: 'Request beta reference permission',
+      reason: `${onboardedBetaSignups.length} onboarded beta signup${
+        onboardedBetaSignups.length === 1 ? '' : 's'
+      } can be asked for private reference, quote, or public supporter consent.`,
+      href: '/admin/beta',
+      priority: 'medium',
+    })
+  }
+
+  if (input.positiveFeedback.length > 0) {
+    actions.push({
+      label: 'Convert positive feedback into permissioned proof',
+      reason: `${input.positiveFeedback.length} positive feedback signal${
+        input.positiveFeedback.length === 1 ? '' : 's'
+      } need identity and quote permission before public use.`,
+      href: '/admin/feedback',
+      priority: 'low',
+    })
+  }
+
+  return actions
+}
+
 export function buildSupporterSignalsReport(facts: SupporterSignalsFacts): SupporterSignalsReport {
   const approvedTestimonials = facts.testimonials.filter((row) => row.is_approved)
   const featuredTestimonials = approvedTestimonials.filter((row) => row.is_featured)
+  const approvedUnfeaturedTestimonials = approvedTestimonials.filter((row) => !row.is_featured)
   const activePartners = facts.partners.filter((row) => row.status === 'active')
   const publicPartners = activePartners.filter((row) => row.is_showcase_visible)
   const activeNonPublicPartners = activePartners.filter((row) => !row.is_showcase_visible)
@@ -228,7 +306,7 @@ export function buildSupporterSignalsReport(facts: SupporterSignalsFacts): Suppo
     activeNonPublicPartners.length +
     activeBetaSignups.length +
     positiveFeedback.length +
-    approvedTestimonials.filter((row) => !row.is_featured).length
+    approvedUnfeaturedTestimonials.length
   const privateCandidateSignals =
     activePartners.length + activeBetaSignups.length + positiveFeedback.length
 
@@ -268,6 +346,14 @@ export function buildSupporterSignalsReport(facts: SupporterSignalsFacts): Suppo
       },
     ],
     candidates: sortCandidates(candidates),
+    nextActions: buildNextActions({
+      featuredTestimonials,
+      approvedUnfeaturedTestimonials,
+      publicPartners,
+      activeNonPublicPartners,
+      activeBetaSignups,
+      positiveFeedback,
+    }),
     homepageReadiness: {
       mode:
         hasQuotes && hasLogos
@@ -285,6 +371,14 @@ export function buildSupporterSignalsReport(facts: SupporterSignalsFacts): Suppo
         publicReadySignals > 0
           ? 'Use only featured testimonials and showcase-visible partners until a formal supporter consent table exists.'
           : 'Use language like "Built with input from culinary operators" until public supporter permission is recorded.',
+      safePublicClaim:
+        publicReadySignals > 0
+          ? 'ChefFlow is building from permissioned operator and event evidence.'
+          : 'Built with input from culinary operators.',
+      blockedClaim:
+        publicReadySignals > 0
+          ? 'Do not imply every testimonial is a direct ChefFlow endorsement.'
+          : 'Do not claim "trusted by", named supporters, logos, press, or customer counts yet.',
     },
   }
 }

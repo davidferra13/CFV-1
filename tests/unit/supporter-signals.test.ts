@@ -24,6 +24,11 @@ describe('supporter signals report', () => {
     assert.equal(report.approvedProofSignals, 0)
     assert.equal(report.homepageReadiness.mode, 'empty_honest')
     assert.match(report.homepageReadiness.detail, /Built with input/)
+    assert.match(report.homepageReadiness.blockedClaim, /trusted by/)
+    assert.deepEqual(
+      report.nextActions.map((action) => action.label),
+      ['Keep homepage proof copy early-stage']
+    )
   })
 
   it('counts only featured testimonials and showcase partners as public ready', () => {
@@ -76,9 +81,17 @@ describe('supporter signals report', () => {
     assert.equal(report.approvedProofSignals, 3)
     assert.equal(report.permissionCandidateSignals, 2)
     assert.equal(report.homepageReadiness.mode, 'mixed_ready')
+    assert.equal(
+      report.homepageReadiness.safePublicClaim,
+      'ChefFlow is building from permissioned operator and event evidence.'
+    )
     assert.deepEqual(
       report.candidates.slice(0, 2).map((candidate) => candidate.status),
       ['public_ready', 'public_ready']
+    )
+    assert.deepEqual(
+      report.nextActions.map((action) => action.label),
+      ['Review approved testimonials for featuring', 'Ask active partners for public permission']
     )
   })
 
@@ -111,9 +124,36 @@ describe('supporter signals report', () => {
     assert.equal(report.publicReadySignals, 0)
     assert.equal(report.permissionCandidateSignals, 2)
     assert.equal(report.privateCandidateSignals, 2)
+    assert.deepEqual(
+      report.nextActions.map((action) => action.label),
+      ['Keep homepage proof copy early-stage', 'Convert positive feedback into permissioned proof']
+    )
     assert.equal(
       report.candidates.every((candidate) => candidate.status === 'permission_candidate'),
       true
     )
+  })
+
+  it('adds a beta reference action after onboarding', () => {
+    const report = buildSupporterSignalsReport(
+      facts({
+        betaSignups: [
+          {
+            id: 'signup-1',
+            name: 'Chef Mira',
+            business_name: 'Mira Events',
+            status: 'onboarded',
+            cuisine_type: 'Private dining',
+            created_at: '2026-04-29T12:00:00.000Z',
+          },
+        ],
+      })
+    )
+
+    assert.deepEqual(
+      report.nextActions.map((action) => action.label),
+      ['Keep homepage proof copy early-stage', 'Request beta reference permission']
+    )
+    assert.equal(report.candidates[0]?.status, 'private_candidate')
   })
 })
