@@ -226,6 +226,32 @@ const rules = [
     terms: ['stripe', 'webhook', 'checkout', 'payment intent', 'subscription event', 'idempotency'],
   },
   {
+    skill: 'pricing-reliability',
+    terms: [
+      'pricing engine',
+      'data engine',
+      'food costing',
+      'menu costing',
+      'ingredient price',
+      'ingredient prices',
+      'price out a menu',
+      'price a menu',
+      'every price',
+      'local grocery',
+      'local grocery stores',
+      'chef pricing',
+      'openclaw price',
+      'openclaw pricing',
+      'release blocker',
+      'release blockers',
+      'stopping release',
+      'stopping chefflow from releasing',
+      'stopping chef flow from releasing',
+      'what must be proven',
+      'must work perfectly',
+    ],
+  },
+  {
     skill: 'debug',
     terms: ['bug', 'broken', 'fails', 'failure', 'error', 'regression', 'root cause'],
   },
@@ -421,6 +447,11 @@ const conflictPriorityRules = [
     reason: 'billing-monetization owns tier classification and upgrade prompt timing',
   },
   {
+    winner: 'pricing-reliability',
+    beats: ['validation-gate', 'question-optimizer', 'market-research-router', 'evidence-broker', 'research', 'builder', 'planner'],
+    reason: 'pricing-reliability owns ChefFlow release blocker questions about menu costing and price data trust',
+  },
+  {
     winner: 'validation-gate',
     beats: ['persona-build', 'builder', 'planner'],
     reason: 'validation-gate blocks unvalidated product surface expansion',
@@ -509,6 +540,13 @@ if (
   ['question-optimizer', 'market-research-router', 'validation-gate'].includes(primarySkill)
 ) {
   sidecarSkills.push('evidence-broker')
+}
+if (primarySkill === 'pricing-reliability') {
+  for (const skill of ['pipeline', 'evidence-integrity']) {
+    if (skillNames.has(skill) && !sidecarSkills.includes(skill)) {
+      sidecarSkills.push(skill)
+    }
+  }
 }
 if (
   skillNames.has('answer-provenance') &&

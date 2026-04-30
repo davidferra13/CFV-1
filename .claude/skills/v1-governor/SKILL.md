@@ -16,6 +16,7 @@ Every new ChefFlow feature, refinement, persona gap, external-site comparison, u
 Proceed directly only when one of these is true:
 
 - The request fixes a production bug, security issue, financial integrity issue, safety issue, or broken core workflow.
+- The request proves or repairs the pricing data engine, menu costing, ingredient coverage, quote safety, local price coverage, or OpenClaw price propagation. Treat this as a V1 blocker by default because ChefFlow cannot release if chefs cannot price real menus from system-owned data.
 - The request clearly belongs to the current active V1 lane.
 - The user says the exact override phrase: `Override V1 governor: build this anyway.`
 

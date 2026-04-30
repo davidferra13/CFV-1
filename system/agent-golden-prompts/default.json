@@ -109,6 +109,15 @@
     }
   },
   {
+    "name": "pricing release blocker",
+    "prompt": "What is stopping ChefFlow from releasing? What must be proven to work perfectly?",
+    "expect": ["omninet", "pricing-reliability"],
+    "evidence": {
+      "omninet": ["pricing-reliability", "pricing data engine"],
+      "pricing-reliability": ["unique release blocker", "price a real menu"]
+    }
+  },
+  {
     "name": "agent flight recorder",
     "prompt": "Codex should record what skills it selected, what files it touched, and whether it missed a skill.",
     "expect": ["omninet", "skill-garden"],

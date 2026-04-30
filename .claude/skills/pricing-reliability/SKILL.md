@@ -1,11 +1,21 @@
 ---
 name: pricing-reliability
-description: Enforce ChefFlow no-blank, system-owned pricing. Use when work touches ingredient prices, costing, menu or event pricing, quote safety, OpenClaw price resolution, modeled fallbacks, receipt accuracy loops, or any claim that chefs can trust pricing without entering baseline prices.
+description: Enforce ChefFlow no-blank, system-owned pricing. Use when work touches ingredient prices, costing, menu or event pricing, quote safety, OpenClaw price resolution, modeled fallbacks, receipt accuracy loops, release readiness, release blockers, what is stopping ChefFlow from releasing, what must be proven, or any claim that chefs can trust pricing without entering baseline prices.
 ---
 
 # Pricing Reliability
 
 ChefFlow must produce a system-owned price for every recognized ingredient. User input may improve accuracy, but ChefFlow must not depend on user input to create baseline pricing.
+
+## Release-Critical Rule
+
+ChefFlow's unique release blocker is pricing data trust. Dashboards, booking, CRM, pipeline, payments, and other operating surfaces matter, but they are not the differentiator. If a release, launch, "what is stopping us," or "what must work" question is asked, answer from this pricing contract first.
+
+Do not default to surveys, two-week operator trials, public booking tests, or generic validation language when the real question is whether a chef can price a menu. The core release question is:
+
+Can a chef in any supported market price a real menu from recognized ingredients using system-owned data, with honest source, freshness, confidence, fallback, and quote-safety labels, without relying on the chef to provide every baseline number?
+
+If the answer is no, ChefFlow is not release-ready no matter how many other product surfaces work.
 
 ## Core Law
 
@@ -14,6 +24,8 @@ ChefFlow must produce a system-owned price for every recognized ingredient. User
 3. Modeled prices are allowed, but must never be displayed as observed, local, fresh, or buyable.
 4. Money surfaces must distinguish `safe_to_quote`, `verify_first`, and `planning_only`.
 5. Receipts and vendor invoices are accuracy proof and should grade prior estimates when that loop exists.
+6. Local coverage matters. A chef in Hawaii, New England, California, or any other target market must not see a generic national claim when the engine lacks local observed prices or honest modeled fallbacks.
+7. Menu costing is the proving workflow. Ingredient lookup success is not enough unless the ingredient, unit, yield, recipe, dish, menu, quote, event, and payment-facing price path preserves the same pricing truth.
 
 ## Required Contract
 
