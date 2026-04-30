@@ -1,12 +1,11 @@
 #!/usr/bin/env node
 import { chromium } from 'playwright'
-import { existsSync, mkdirSync, readFileSync } from 'fs'
-import { join, resolve } from 'path'
+import { existsSync, readFileSync } from 'fs'
+import { resolve } from 'path'
 
 const ROOT = process.cwd()
 const BASE_URL = process.env.CHEFFLOW_BASE_URL || 'http://localhost:3100'
 const AUTH_STATE = resolve(ROOT, '.auth', 'admin.json')
-const USER_DATA_DIR = resolve(ROOT, '.auth', 'third-monitor-wall-profile')
 
 const bounds = {
   x: Number(process.env.THIRD_MONITOR_X ?? -1920),
@@ -36,42 +35,48 @@ function readAuthState() {
 }
 
 async function openWall() {
-  mkdirSync(USER_DATA_DIR, { recursive: true })
-  const state = readAuthState()
-  const context = await chromium.launchPersistentContext(USER_DATA_DIR, {
+  readAuthState()
+  const launchOptions = {
     headless: false,
-    channel: process.env.PLAYWRIGHT_CHANNEL || 'chrome',
-    viewport: { width: bounds.width, height: bounds.height },
     args: [
       '--new-window',
       `--window-position=${bounds.x},${bounds.y}`,
       `--window-size=${bounds.width},${bounds.height}`,
     ],
-  }).catch(() => chromium.launchPersistentContext(USER_DATA_DIR, {
-    headless: false,
+  }
+
+  const browser = await chromium
+    .launch({
+      ...launchOptions,
+      channel: process.env.PLAYWRIGHT_CHANNEL || 'chrome',
+    })
+    .catch(() => chromium.launch(launchOptions))
+
+  const context = await browser.newContext({
+    baseURL: BASE_URL,
+    storageState: AUTH_STATE,
     viewport: { width: bounds.width, height: bounds.height },
-    args: [
-      '--new-window',
-      `--window-position=${bounds.x},${bounds.y}`,
-      `--window-size=${bounds.width},${bounds.height}`,
-    ],
-  }))
+  })
 
-  await context.addCookies(state.cookies)
+  const existingPages = context.pages()
+  const firstPage = existingPages[0] || (await context.newPage())
 
-  for (const route of routes) {
-    const page = await context.newPage()
+  for (const [index, route] of routes.entries()) {
+    const page = index === 0 ? firstPage : await context.newPage()
     await page.goto(`${BASE_URL}${route}`, {
       waitUntil: 'domcontentloaded',
       timeout: 120_000,
     })
+    if (index === 0) {
+      await page.bringToFront()
+    }
   }
 
   console.log(
     `[third-monitor-wall] open ${routes.length} signed-in tabs at ${bounds.x},${bounds.y} ${bounds.width}x${bounds.height}`
   )
 
-  context.on('close', () => process.exit(0))
+  browser.on('disconnected', () => process.exit(0))
   setInterval(() => {}, 2_147_483_647)
 }
 
