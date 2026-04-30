@@ -2,7 +2,6 @@
 // Creates or updates a persistent Codex-owned ChefFlow account.
 // Usage: npx tsx scripts/setup-codex-account.ts
 
-import { createAdminClient } from '@/lib/db/admin'
 import dotenv from 'dotenv'
 import { mkdirSync, writeFileSync } from 'fs'
 
@@ -12,6 +11,12 @@ const CODEX_EMAIL = process.env.CODEX_EMAIL || 'codex@local.chefflow'
 const CODEX_PASSWORD = process.env.CODEX_PASSWORD || 'CodexChefFlow!2026'
 
 async function main() {
+  const adminModule = (await import('@/lib/db/admin')) as Awaited<
+    typeof import('@/lib/db/admin')
+  > & {
+    default?: Awaited<typeof import('@/lib/db/admin')>
+  }
+  const { createAdminClient } = adminModule.default ?? adminModule
   const admin = createAdminClient()
 
   console.log(`[codex-setup] Setting up Codex account: ${CODEX_EMAIL}`)
