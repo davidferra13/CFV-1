@@ -1,0 +1,17 @@
+{
+  "id": "claim-20260430T221139Z-queue-6f6835a5cc6b9bf2",
+  "taskId": "queue-6f6835a5cc6b9bf2",
+  "title": "Spec: Builder Agent Foundation",
+  "branch": "feature/v1-builder-queue-6f6835a5cc6b9bf2-20260430t221139z-spec-builder-agent-foundation",
+  "classification": "approved_v1_blocker",
+  "canonicalOwner": "docs/specs/p0-builder-agent-foundation.md",
+  "status": "pushed",
+  "claimedAt": "2026-04-30T22:11:39.214Z",
+  "expiresAt": "2026-05-01T01:11:39.214Z",
+  "worktreePath": "C:\\Users\\david\\Documents\\CFv1\\.v1-builder-worktrees\\queue-6f6835a5cc6b9bf2-1777587099215-spec-builder-agent-foundation",
+  "updatedAt": "2026-04-30T22:31:41.408Z",
+  "receiptPath": "C:\\Users\\david\\Documents\\CFv1\\system\\v1-builder\\receipts\\20260430T223141Z-queue-6f6835a5cc6b9bf2.json",
+  "codexExitCode": null,
+  "commit": "962f4fa23",
+  "pushed": true
+}
