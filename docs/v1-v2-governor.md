@@ -125,6 +125,8 @@ Before build:
 
 Mission Control must measure the governor, not commit volume.
 
+The autonomous build pipeline contract lives at `docs/specs/autonomous-v1-builder-contract.md`. That contract is the handoff between this governor, the approved V1 queue, Codex builder execution, validation receipts, and Mission Control monitoring.
+
 It should show:
 
 - active V1 lane
@@ -167,6 +169,8 @@ Required standard:
 ## Parking Lot
 
 Use this section for urgency spikes that are valuable but not V1 blockers. Keep each item short.
+
+For autonomous builder execution, queue records should move into the future file-based queues defined by `docs/specs/autonomous-v1-builder-contract.md`. This parking lot remains the human-readable governor summary.
 
 ### V1 Support Queue
 

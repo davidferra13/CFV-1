@@ -61,6 +61,32 @@
       }
     },
     {
+      "id": "autonomous-v1-builder",
+      "label": "Autonomous V1 Builder Loop",
+      "description": "Internal governed path from ideas to V1 governor classification, approved queue, Codex builder execution, validation receipts, and Mission Control monitoring.",
+      "keywords": [
+        "autonomous builder",
+        "v1 builder",
+        "builder loop",
+        "approved queue",
+        "v1 queue",
+        "builder contract",
+        "mission control receipts",
+        "codex builder",
+        "hermes dispatcher"
+      ],
+      "canonical_routes": [],
+      "canonical_files": [
+        "docs/specs/autonomous-v1-builder-contract.md",
+        "docs/v1-v2-governor.md",
+        "docs/specs/p0-builder-agent-foundation.md"
+      ],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Extend the governed V1 builder contract instead of creating another queue or autonomous agent surface."
+      }
+    },
+    {
       "id": "remy-ai",
       "label": "Remy AI",
       "description": "ChefFlow conversational assistant, memory, privacy, and local/cloud AI routing.",

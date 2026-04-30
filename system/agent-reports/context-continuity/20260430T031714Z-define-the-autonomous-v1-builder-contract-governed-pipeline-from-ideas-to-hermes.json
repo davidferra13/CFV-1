@@ -1,0 +1,484 @@
+{
+  "generated_at": "2026-04-30T03:17:12.598Z",
+  "prompt": "Define the Autonomous V1 Builder Contract: governed pipeline from ideas to Hermes intake, V1 governor, approved queue, Codex builder, validation, commit/push, and Mission Control monitoring",
+  "terms": [
+    "define",
+    "autonomous",
+    "builder",
+    "contract",
+    "governed",
+    "pipeline",
+    "ideas",
+    "hermes",
+    "intake",
+    "governor",
+    "approved",
+    "queue",
+    "validation",
+    "commit/push",
+    "mission",
+    "control",
+    "monitoring"
+  ],
+  "scanned_dirs": [
+    "app",
+    "components",
+    "lib",
+    "docs/specs",
+    "docs/changes",
+    "docs/app-complete-audit.md",
+    "project-map",
+    "memory",
+    "system/intake",
+    "system/agent-reports"
+  ],
+  "canonical_surfaces": [
+    {
+      "id": "client-intake",
+      "label": "Client Intake",
+      "score": 5,
+      "hits": ["intake"],
+      "canonical_routes": ["/book", "/clients/intake"],
+      "canonical_files": [
+        "app/api/book/route.ts",
+        "lib/inquiries/public-actions.ts",
+        "public/embed/chefflow-widget.js"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach to the existing intake lane contract."
+      }
+    },
+    {
+      "id": "agent-skill-system",
+      "label": "Agent Skill System",
+      "score": 1,
+      "hits": ["validation"],
+      "canonical_routes": [],
+      "canonical_files": [
+        "devtools/skill-router.mjs",
+        "devtools/skill-validator.mjs",
+        "devtools/skill-trigger-tests.mjs",
+        "system/agent-golden-prompts/default.json"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Add to the existing skill harness."
+      }
+    }
+  ],
+  "related_files": [
+    {
+      "file": "system/agent-reports/context-continuity/20260430T030830Z-create-build-spec-for-autonomous-v1-builder-loop-intake-v1-governor-classificati.json",
+      "kind": "system",
+      "score": 71,
+      "hits": [
+        "autonomous",
+        "builder",
+        "intake",
+        "governor",
+        "contract",
+        "hermes",
+        "approved",
+        "queue",
+        "validation",
+        "mission"
+      ]
+    },
+    {
+      "file": "docs/specs/universal-intake-pipeline.md",
+      "kind": "spec",
+      "score": 38,
+      "hits": [
+        "pipeline",
+        "intake",
+        "autonomous",
+        "contract",
+        "ideas",
+        "hermes",
+        "queue",
+        "validation",
+        "mission"
+      ]
+    },
+    {
+      "file": "docs/specs/system-surface-role-classification-foundation.md",
+      "kind": "spec",
+      "score": 36,
+      "hits": [
+        "define",
+        "builder",
+        "contract",
+        "governed",
+        "pipeline",
+        "intake",
+        "queue",
+        "validation",
+        "mission",
+        "control"
+      ]
+    },
+    {
+      "file": "docs/specs/openclaw-goal-governor-and-kpi-contract.md",
+      "kind": "spec",
+      "score": 35,
+      "hits": ["contract", "governor", "define", "builder", "queue", "mission", "monitoring"]
+    },
+    {
+      "file": "docs/specs/openclaw-ideal-runtime-and-national-intelligence.md",
+      "kind": "spec",
+      "score": 34,
+      "hits": [
+        "define",
+        "builder",
+        "contract",
+        "governor",
+        "approved",
+        "queue",
+        "mission",
+        "control"
+      ]
+    },
+    {
+      "file": "docs/specs/comprehensive-domain-inventory-phase-1.md",
+      "kind": "spec",
+      "score": 33,
+      "hits": [
+        "builder",
+        "contract",
+        "pipeline",
+        "intake",
+        "queue",
+        "mission",
+        "control",
+        "monitoring"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-seam-cohesion.md",
+      "kind": "spec",
+      "score": 32,
+      "hits": [
+        "define",
+        "builder",
+        "contract",
+        "pipeline",
+        "intake",
+        "queue",
+        "validation",
+        "mission",
+        "control"
+      ]
+    },
+    {
+      "file": "docs/specs/onboarding-overhaul.md",
+      "kind": "spec",
+      "score": 31,
+      "hits": ["define", "builder", "governed", "approved", "validation", "mission", "control"]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-cohesiveness-synthesis.md",
+      "kind": "spec",
+      "score": 31,
+      "hits": [
+        "define",
+        "builder",
+        "contract",
+        "pipeline",
+        "intake",
+        "queue",
+        "validation",
+        "mission",
+        "monitoring"
+      ]
+    },
+    {
+      "file": "docs/specs/food-costing-knowledge-system.md",
+      "kind": "spec",
+      "score": 30,
+      "hits": [
+        "define",
+        "builder",
+        "contract",
+        "pipeline",
+        "validation",
+        "mission",
+        "control",
+        "monitoring"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-client-management.md",
+      "kind": "spec",
+      "score": 30,
+      "hits": [
+        "define",
+        "contract",
+        "pipeline",
+        "intake",
+        "queue",
+        "validation",
+        "mission",
+        "control",
+        "monitoring"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-competitive-surface.md",
+      "kind": "spec",
+      "score": 30,
+      "hits": [
+        "define",
+        "builder",
+        "contract",
+        "pipeline",
+        "intake",
+        "queue",
+        "validation",
+        "mission",
+        "control",
+        "monitoring"
+      ]
+    },
+    {
+      "file": "lib/scheduling/types.ts",
+      "kind": "module",
+      "score": 30,
+      "hits": ["contract", "pipeline", "intake", "queue", "validation", "control"]
+    },
+    {
+      "file": "docs/specs/mission-control-passive-dashboard.md",
+      "kind": "spec",
+      "score": 29,
+      "hits": ["mission", "control", "autonomous", "builder", "queue", "validation"]
+    },
+    {
+      "file": "docs/specs/notes-dishes-menus-client-event-pipeline.md",
+      "kind": "spec",
+      "score": 29,
+      "hits": [
+        "pipeline",
+        "builder",
+        "contract",
+        "ideas",
+        "intake",
+        "approved",
+        "validation",
+        "control"
+      ]
+    },
+    {
+      "file": "docs/specs/openclaw-social-media-orchestration.md",
+      "kind": "spec",
+      "score": 29,
+      "hits": [
+        "define",
+        "builder",
+        "contract",
+        "ideas",
+        "approved",
+        "queue",
+        "validation",
+        "mission",
+        "control"
+      ]
+    },
+    {
+      "file": "docs/specs/p0-system-improvement-control-tower.md",
+      "kind": "spec",
+      "score": 29,
+      "hits": ["control", "define", "builder", "queue", "validation"]
+    },
+    {
+      "file": "lib/db/fk-map.ts",
+      "kind": "module",
+      "score": 29,
+      "hits": ["contract", "ideas", "intake", "queue", "mission", "control"]
+    },
+    {
+      "file": "docs/specs/pipeline-interrogation.md",
+      "kind": "spec",
+      "score": 28,
+      "hits": ["pipeline", "contract", "intake", "approved", "validation", "mission"]
+    },
+    {
+      "file": "app/(chef)/dashboard/_sections/business-section-mobile-content.tsx",
+      "kind": "route",
+      "score": 27,
+      "hits": [
+        "define",
+        "contract",
+        "pipeline",
+        "intake",
+        "approved",
+        "queue",
+        "mission",
+        "control"
+      ]
+    },
+    {
+      "file": "components/navigation/nav-config.tsx",
+      "kind": "component",
+      "score": 27,
+      "hits": ["builder", "contract", "pipeline", "intake", "approved", "queue", "mission"]
+    },
+    {
+      "file": "docs/specs/p0-chef-cpa-ready-tax-export-and-reconciliation.md",
+      "kind": "spec",
+      "score": 27,
+      "hits": ["define", "builder", "contract", "ideas", "validation", "mission", "control"]
+    },
+    {
+      "file": "docs/specs/feature-registry-builder-handoff.md",
+      "kind": "spec",
+      "score": 26,
+      "hits": ["builder", "define", "contract", "queue", "validation", "mission", "control"]
+    },
+    {
+      "file": "docs/specs/openclaw-pc-local-mirror-and-backup-contract.md",
+      "kind": "spec",
+      "score": 26,
+      "hits": ["contract", "define", "builder", "pipeline", "validation", "control"]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-full-cohesion.md",
+      "kind": "spec",
+      "score": 26,
+      "hits": [
+        "define",
+        "builder",
+        "contract",
+        "pipeline",
+        "queue",
+        "validation",
+        "mission",
+        "control"
+      ]
+    },
+    {
+      "file": "project-map/chefflow.md",
+      "kind": "project-map",
+      "score": 26,
+      "hits": [
+        "define",
+        "builder",
+        "contract",
+        "intake",
+        "queue",
+        "validation",
+        "mission",
+        "control"
+      ]
+    },
+    {
+      "file": "docs/specs/menu-system-interrogation.md",
+      "kind": "spec",
+      "score": 25,
+      "hits": [
+        "define",
+        "builder",
+        "pipeline",
+        "intake",
+        "approved",
+        "validation",
+        "mission",
+        "control"
+      ]
+    },
+    {
+      "file": "docs/specs/openclaw-food-price-intelligence.md",
+      "kind": "spec",
+      "score": 25,
+      "hits": ["builder", "pipeline", "approved", "queue", "validation", "mission", "monitoring"]
+    },
+    {
+      "file": "docs/specs/p0-work-continuity-control-plane.md",
+      "kind": "spec",
+      "score": 25,
+      "hits": ["control", "builder", "contract", "pipeline", "ideas", "queue", "validation"]
+    },
+    {
+      "file": "docs/specs/persona-pipeline-v3-upgrades.md",
+      "kind": "spec",
+      "score": 25,
+      "hits": ["pipeline", "define", "autonomous", "ideas", "queue", "validation", "control"]
+    }
+  ],
+  "recent_commits": [
+    {
+      "line": "8e6e69479 chore(agent): build buyable price contract feature/buyable-price-contract",
+      "score": 2,
+      "hits": ["contract"]
+    },
+    {
+      "line": "a933e8ff5 chore(agent): mobile haptic notification controls feature/mobile-haptic-notification-controls",
+      "score": 2,
+      "hits": ["control"]
+    },
+    {
+      "line": "00609c2d2 chore(agent): build live privacy controls feature/live-privacy-controls",
+      "score": 2,
+      "hits": ["control"]
+    },
+    {
+      "line": "7e1a99f74 chore(agent): harden backup recovery pipeline feature/public-chef-hub-mode",
+      "score": 1,
+      "hits": ["pipeline"]
+    },
+    {
+      "line": "424b519bb chore(agent): install v1 governor feature/haptic-explainable-event-audit",
+      "score": 1,
+      "hits": ["governor"]
+    },
+    {
+      "line": "c1a38a0e8 chore(agent): improve backup recovery pipeline feature/haptic-explainable-event-audit",
+      "score": 1,
+      "hits": ["pipeline"]
+    },
+    {
+      "line": "57f18b380 chore(agent): build strategy closed loop feature/buyable-price-contract",
+      "score": 1,
+      "hits": ["contract"]
+    },
+    {
+      "line": "5dff9cb55 chore(agent): build source-platform companion mode feature/buyable-price-contract",
+      "score": 1,
+      "hits": ["contract"]
+    },
+    {
+      "line": "23d154392 chore(agent): refine live privacy controls feature/cheflow-cli-handoff-ops-final",
+      "score": 1,
+      "hits": ["control"]
+    },
+    {
+      "line": "4606d77a5 chore(agent): wire booking ask-once contract feature/catch-up-brand-new-builds",
+      "score": 1,
+      "hits": ["contract"]
+    }
+  ],
+  "dirty_matches": [
+    {
+      "line": "?? system/agent-reports/context-continuity/20260430T030830Z-create-build-spec-for-autonomous-v1-builder-loop-intake-v1-governor-classificati.json",
+      "file": "system/agent-reports/context-continuity/20260430T030830Z-create-build-spec-for-autonomous-v1-builder-loop-intake-v1-governor-classificati.json",
+      "score": 8,
+      "hits": ["autonomous", "builder", "intake", "governor"]
+    }
+  ],
+  "claim_matches": [],
+  "duplicate_risks": [
+    {
+      "level": "medium",
+      "reason": "Dirty files already exist in this domain and may be another agent active work.",
+      "files": [
+        "system/agent-reports/context-continuity/20260430T030830Z-create-build-spec-for-autonomous-v1-builder-loop-intake-v1-governor-classificati.json"
+      ]
+    }
+  ],
+  "continuity": {
+    "decision": "attach",
+    "stop_required": false,
+    "reason": "Matched canonical surface client-intake."
+  }
+}

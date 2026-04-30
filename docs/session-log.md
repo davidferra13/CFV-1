@@ -101,3 +101,14 @@
 - Build state on departure: no build or typecheck run by instruction; lightweight compliance scan passed
 - Verification commands run: four-sample dirty-tree stability monitor; `bash scripts/compliance-scan.sh` via Git Bash; `git status --short`; `git ls-files --others --exclude-standard`
 - Notes: Initial stable tree had 829 dirty entries from parallel agents. Preserved visible dirty work in stash named `parallel-agent-closeout-2026-04-26-829-dirty-entries`, now `stash@{1}` after one later stash was added. Left `obsidian_export/` and `system/intake/` on disk but locally excluded because they include large archive material and auth/session/token-like files. After the clean point, four late agent writes appeared and were preserved in `stash@{0}` named `late-agent-writes-after-closeout-2026-04-26`. Final visible working tree contained only this documentation entry before commit.
+
+## 2026-04-30 00:00 EDT
+
+- Agent: Codex
+- Task: Define the Autonomous V1 Builder Contract for governed idea intake, V1 classification, approved queue, Codex builder execution, validation receipts, and Mission Control monitoring
+- Status: completed
+- Files touched: `docs/specs/autonomous-v1-builder-contract.md`, `docs/v1-v2-governor.md`, `system/canonical-surfaces.json`, `docs/session-log.md`, `system/agent-reports/context-continuity/20260430T031714Z-define-the-autonomous-v1-builder-contract-governed-pipeline-from-ideas-to-hermes.json`
+- Commits: pending at log-write time
+- Build state on departure: unchanged; docs and canonical-surface contract only
+- Verification commands run: `node devtools/context-continuity-scan.mjs --prompt "Autonomous V1 Builder Contract approved queue Codex builder validation receipts Mission Control Hermes dispatcher"`; `node -e "JSON.parse(require('fs').readFileSync('system/canonical-surfaces.json','utf8')); console.log('canonical-surfaces.json valid')"`; targeted em dash scan on touched files; `git diff --check -- docs/v1-v2-governor.md system/canonical-surfaces.json`
+- Notes: No product code, migrations, server actions, builds, server starts, Hermes runs, or swarms were added. The second continuity scan now routes this domain to `autonomous-v1-builder` instead of ordinary client intake.
