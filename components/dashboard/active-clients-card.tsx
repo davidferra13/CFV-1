@@ -8,6 +8,7 @@ import {
   getActiveSignalExplanation,
   isActiveClientSignal,
 } from '@/lib/activity/presence-copy'
+import { getLiveSignalConfidenceCopy } from '@/lib/activity/live-signal-policy'
 
 interface ActiveClientsCardProps {
   clients: ActiveClient[]
@@ -45,7 +46,7 @@ export function ActiveClientsCard({ clients }: ActiveClientsCardProps) {
           No client activity signals in the {formatActivityWindowLabel(RECENT_WINDOW_MINUTES)}
         </p>
         <p className="mt-1 text-xxs text-stone-400">
-          Clients can browse privately, so no signal does not mean no review.
+          {getLiveSignalConfidenceCopy(false)}
         </p>
       </div>
     )
@@ -66,7 +67,7 @@ export function ActiveClientsCard({ clients }: ActiveClientsCardProps) {
       </div>
       <p className="text-xxs text-stone-400 mb-2">{getActiveSignalExplanation()}</p>
       <p className="text-xxs text-stone-400 mb-2">
-        Live signals appear only when clients allow passive visibility.
+        {getLiveSignalConfidenceCopy(activeSignals.length > 0)}
       </p>
       <div className="space-y-2">
         {clients.map((client) => (

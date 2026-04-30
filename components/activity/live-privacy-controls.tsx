@@ -8,6 +8,7 @@ import type { ActivityEventType } from '@/lib/activity/types'
 const STORAGE_KEY = 'chefflow-live-privacy-v1'
 const SESSION_PRIVATE_KEY = 'chefflow-live-privacy-session'
 const SESSION_ONCE_KEY = 'chefflow-live-privacy-once'
+const ONBOARDING_KEY = 'chefflow-live-privacy-onboarded'
 const CHANGE_EVENT = 'chefflow-live-privacy-change'
 
 export type LivePrivacyMode = 'visible' | 'private-session' | 'private-device'
@@ -696,13 +697,74 @@ function LivePrivacyReceipts({ receipts }: { receipts: LivePrivacyReceipt[] }) {
 }
 
 export function LivePrivacyControlPanel() {
-  const { state, isReady, isPrivate, setMode, setSetting } = useLivePrivacy()
+  const { state, isReady, isPrivate, setMode, setSetting, setSurfaceDefault } = useLivePrivacy()
+  const [showOnboarding, setShowOnboarding] = useState(false)
 
   const modeLabel = useMemo(() => {
     if (state.mode === 'private-device') return 'Always private on this device'
     if (state.mode === 'private-session') return 'Private this session'
     return 'Visible'
   }, [state.mode])
+
+  useEffect(() => {
+    if (!isReady) return
+    try {
+      setShowOnboarding(window.localStorage.getItem(ONBOARDING_KEY) !== 'true')
+    } catch {
+      setShowOnboarding(true)
+    }
+  }, [isReady])
+
+  const completeOnboarding = useCallback(
+    (choice: 'share' | 'sensitive' | 'private') => {
+      if (choice === 'share') {
+        setMode('visible')
+      } else if (choice === 'sensitive') {
+        setMode('visible')
+        setSurfaceDefault('proposals', 'private')
+        setSurfaceDefault('invoices', 'private')
+        setSurfaceDefault('payments', 'private')
+        setSurfaceDefault('messages', 'inherit')
+      } else {
+        setMode('private-device')
+      }
+
+      try {
+        window.localStorage.setItem(ONBOARDING_KEY, 'true')
+      } catch {
+        // Onboarding dismissal is local convenience only.
+      }
+      setShowOnboarding(false)
+    },
+    [setMode, setSurfaceDefault]
+  )
+
+  const exportPrivacy = useCallback(() => {
+    const exportPayload = {
+      exportedAt: new Date().toISOString(),
+      mode: state.mode,
+      settings: state.settings,
+      surfaceDefaults: state.surfaceDefaults,
+      receipts: state.receipts,
+    }
+
+    const blob = new Blob([JSON.stringify(exportPayload, null, 2)], {
+      type: 'application/json',
+    })
+    const url = URL.createObjectURL(blob)
+    const anchor = document.createElement('a')
+    anchor.href = url
+    anchor.download = `chefflow-live-privacy-${new Date().toISOString().slice(0, 10)}.json`
+    anchor.click()
+    URL.revokeObjectURL(url)
+
+    recordLivePrivacyReceipt({
+      signal: 'Privacy export',
+      surface: 'documents',
+      outcome: 'functional',
+      detail: 'ChefFlow exported your local live privacy settings and trust receipts.',
+    })
+  }, [state])
 
   if (!isReady) return null
 
@@ -720,6 +782,39 @@ export function LivePrivacyControlPanel() {
         </div>
         <LivePrivacyStatusPill />
       </div>
+
+      {showOnboarding ? (
+        <div className="mt-4 rounded-lg border border-brand-500/30 bg-brand-950/20 p-3">
+          <p className="text-sm font-semibold text-stone-100">Choose your live privacy default</p>
+          <p className="mt-1 text-sm leading-6 text-stone-300">
+            This only controls passive signals. Payments, approvals, forms, RSVPs, and sent messages
+            still work normally.
+          </p>
+          <div className="mt-3 grid gap-2 sm:grid-cols-3">
+            <button
+              type="button"
+              onClick={() => completeOnboarding('share')}
+              className="rounded-lg border border-stone-700 bg-stone-950 px-3 py-2 text-left text-sm text-stone-100 hover:bg-stone-800"
+            >
+              Share for coordination
+            </button>
+            <button
+              type="button"
+              onClick={() => completeOnboarding('sensitive')}
+              className="rounded-lg border border-stone-700 bg-stone-950 px-3 py-2 text-left text-sm text-stone-100 hover:bg-stone-800"
+            >
+              Private on sensitive pages
+            </button>
+            <button
+              type="button"
+              onClick={() => completeOnboarding('private')}
+              className="rounded-lg border border-stone-700 bg-stone-950 px-3 py-2 text-left text-sm text-stone-100 hover:bg-stone-800"
+            >
+              Browse privately by default
+            </button>
+          </div>
+        </div>
+      ) : null}
 
       <div className="mt-4 grid gap-2 sm:grid-cols-3">
         {(['visible', 'private-session', 'private-device'] as LivePrivacyMode[]).map((mode) => (
@@ -825,6 +920,22 @@ export function LivePrivacyControlPanel() {
       </div>
 
       <LivePrivacyReceipts receipts={state.receipts} />
+
+      <div className="mt-4 flex flex-col gap-2 rounded-lg border border-stone-800 bg-stone-950/40 p-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-sm font-medium text-stone-100">Privacy export</p>
+          <p className="text-xs leading-5 text-stone-400">
+            Export local live privacy settings and trust receipts from this device.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={exportPrivacy}
+          className="rounded-lg border border-stone-700 bg-stone-900 px-3 py-2 text-sm font-medium text-stone-100 hover:bg-stone-800"
+        >
+          Export JSON
+        </button>
+      </div>
     </section>
   )
 }

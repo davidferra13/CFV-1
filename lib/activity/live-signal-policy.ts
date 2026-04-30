@@ -89,8 +89,98 @@ export function getPrivacyAwareFollowUpCopy(eventType: ActivityEventType): strin
   return getLiveSignalPolicy(eventType).followUpCopy
 }
 
+export function getLivePrivacySignalLabel(eventType: ActivityEventType): string {
+  switch (eventType) {
+    case 'proposal_viewed':
+      return 'Proposal viewed'
+    case 'quote_viewed':
+      return 'Quote viewed'
+    case 'invoice_viewed':
+      return 'Invoice opened'
+    case 'chat_opened':
+      return 'Messages opened'
+    case 'payment_page_visited':
+      return 'Payment page opened'
+    case 'document_downloaded':
+      return 'Document downloaded'
+    case 'session_heartbeat':
+      return 'Active-now heartbeat'
+    case 'portal_login':
+      return 'Portal opened'
+    case 'chat_message_sent':
+      return 'Message sent'
+    case 'form_submitted':
+      return 'Form submitted'
+    case 'rsvp_submitted':
+      return 'RSVP submitted'
+    default:
+      return eventType.replace(/_/g, ' ')
+  }
+}
+
 export function getLiveSignalConfidenceCopy(hasSignal: boolean): string {
   return hasSignal
     ? 'This is a real client signal shared by their current privacy controls.'
     : 'No live signal is available. The client may not be active, or they may be browsing privately.'
+}
+
+export type LiveSignalDigestInput = {
+  eventType: ActivityEventType
+  clientId?: string | null
+  privateMode?: boolean
+}
+
+export type LiveSignalDigest = {
+  proposalReviews: number
+  paymentPageVisits: number
+  messagesSent: number
+  privateSignals: number
+  highIntentSignals: number
+  totalSignals: number
+}
+
+export function summarizeLiveSignals(events: LiveSignalDigestInput[]): LiveSignalDigest {
+  const digest: LiveSignalDigest = {
+    proposalReviews: 0,
+    paymentPageVisits: 0,
+    messagesSent: 0,
+    privateSignals: 0,
+    highIntentSignals: 0,
+    totalSignals: events.length,
+  }
+
+  for (const event of events) {
+    if (event.privateMode) {
+      digest.privateSignals += 1
+      continue
+    }
+
+    if (event.eventType === 'proposal_viewed' || event.eventType === 'quote_viewed') {
+      digest.proposalReviews += 1
+    }
+
+    if (event.eventType === 'payment_page_visited') {
+      digest.paymentPageVisits += 1
+    }
+
+    if (event.eventType === 'chat_message_sent') {
+      digest.messagesSent += 1
+    }
+
+    if (getLiveSignalPolicy(event.eventType).priority === 'high') {
+      digest.highIntentSignals += 1
+    }
+  }
+
+  return digest
+}
+
+export function shouldPromoteLiveSignal(input: {
+  eventType: ActivityEventType
+  privateMode?: boolean
+  duplicateCountInWindow?: number
+}): boolean {
+  if (input.privateMode) return false
+  if (input.duplicateCountInWindow && input.duplicateCountInWindow > 0) return false
+  return getLiveSignalPolicy(input.eventType).priority === 'high'
 }

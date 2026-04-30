@@ -17,6 +17,7 @@ import {
   getActiveSignalExplanation,
   isActiveClientSignal,
 } from '@/lib/activity/presence-copy'
+import { getLiveSignalConfidenceCopy } from '@/lib/activity/live-signal-policy'
 
 const RECENT_WINDOW_MINUTES = 30
 const RECENT_WINDOW_MS = RECENT_WINDOW_MINUTES * 60 * 1000
@@ -127,7 +128,7 @@ export function LivePresencePanel({ tenantId, initialClients }: LivePresencePane
           No client activity signals in the {formatActivityWindowLabel(RECENT_WINDOW_MINUTES)}
         </p>
         <p className="mt-1 text-xxs text-stone-400">
-          Clients can browse privately, so absence of a signal is not treated as absence of review.
+          {getLiveSignalConfidenceCopy(false)}
         </p>
       </div>
     )
@@ -161,7 +162,7 @@ export function LivePresencePanel({ tenantId, initialClients }: LivePresencePane
 
       <p className="text-xxs text-stone-300 mb-2">{getActiveSignalExplanation()}</p>
       <p className="text-xxs text-stone-400 mb-2">
-        Live signals appear only when clients allow passive visibility.
+        {getLiveSignalConfidenceCopy(activeSignals.length > 0 || connectedClientIds.size > 0)}
       </p>
 
       <div className="space-y-1">
