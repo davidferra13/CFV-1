@@ -9,6 +9,7 @@ import {
   stickyConfig,
   writeJson,
 } from '../../devtools/sticky-notes/config.mjs'
+import { applyStickyNoteLayout, planStickyNoteLayout } from '../../devtools/sticky-notes/layout.mjs'
 import { buildStickyNoteState } from '../../devtools/sticky-notes/state.mjs'
 
 function writeStateInputs() {
@@ -120,5 +121,22 @@ describe('sticky notes color state index', () => {
     assert.equal(plan.updates[0]?.toColorName, 'yellow')
     assert.equal(result.applied, false)
     assert.equal(result.skipped, 3)
+  })
+
+  it('plans visual lanes and keeps completed notes minimized', () => {
+    const files = writeStateInputs()
+    const state = buildStickyNoteState({ ...files, stamp: 'state-layout-test' })
+    const plan = planStickyNoteLayout({ statePayload: state })
+    const result = applyStickyNoteLayout({ plan })
+
+    const active = plan.positions.find((item) => item.noteId === 3)
+    const finished = plan.positions.find((item) => item.noteId === 2)
+
+    assert.equal(plan.updateCount, 3)
+    assert.equal(active?.pipelineState, 'in_progress')
+    assert.equal(active?.minimize, 0)
+    assert.equal(finished?.pipelineState, 'complete')
+    assert.equal(finished?.minimize, 1)
+    assert.equal(result.applied, false)
   })
 })

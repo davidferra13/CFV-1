@@ -6,6 +6,7 @@ import { outputPaths, relativePath, stickyConfig } from './config.mjs'
 import { attachClassifications } from './attach.mjs'
 import { classifyLatest } from './classify.mjs'
 import { applyColorUpdates } from './colors.mjs'
+import { applyStickyNoteLayout } from './layout.mjs'
 import { generateStickyNotesReport } from './report.mjs'
 import { syncStickyNotes } from './read-db.mjs'
 import { buildStickyNoteState } from './state.mjs'
@@ -13,6 +14,7 @@ import { buildStickyNoteState } from './state.mjs'
 function parseArgs(argv = process.argv.slice(2)) {
   return {
     applyColors: argv.includes('--apply-colors'),
+    applyLayout: argv.includes('--layout'),
   }
 }
 
@@ -45,6 +47,7 @@ export function organizeStickyNotes(options = {}) {
     console.log('Phase: state')
     let state = buildStickyNoteState()
     let colors = null
+    let layout = null
     let refreshedSync = null
     if (options.applyColors) {
       console.log('Phase: colors')
@@ -53,10 +56,14 @@ export function organizeStickyNotes(options = {}) {
       refreshedSync = syncStickyNotes()
       state = buildStickyNoteState()
     }
+    if (options.applyLayout) {
+      console.log('Phase: layout')
+      layout = applyStickyNoteLayout({ statePayload: state, apply: true })
+    }
     console.log('Phase: report')
     const report = generateStickyNotesReport()
     const elapsedMs = Date.now() - started
-    return { sync: refreshedSync || sync, classified, attached, state, colors, report, elapsedMs }
+    return { sync: refreshedSync || sync, classified, attached, state, colors, layout, report, elapsedMs }
   } finally {
     release()
   }
@@ -87,6 +94,10 @@ function main() {
   if (result.colors) {
     console.log(`Color updates applied: ${result.colors.appliedCount || 0}`)
     console.log(`Color updates skipped: ${result.colors.skipped || 0}`)
+  }
+  if (result.layout) {
+    console.log(`Layout updates applied: ${result.layout.appliedCount || 0}`)
+    console.log(`Layout backup: ${relativePath(result.layout.backupFile)}`)
   }
   console.log(`Report: ${relativePath(result.report.mdFile)}`)
   console.log(`Elapsed: ${result.elapsedMs}ms`)

@@ -152,9 +152,9 @@ Completed notes are moved out of the active index and into `system/sticky-notes/
 Codex cannot run as a permanent background daemon in a chat session. The build must therefore provide two reliable modes:
 
 1. **Immediate ingestion:** `npm run sticky:organize` reads the current database and produces the full organized output on demand.
-2. **Near-real-time organization:** a Windows Task Scheduler job runs `npm run sticky:organize:colors` every 1 to 5 minutes, or an optional watcher runs locally when explicitly started by the developer.
+2. **Near-real-time organization:** a Windows Task Scheduler job runs `npm run sticky:organize:visual` every 1 to 5 minutes, or an optional watcher runs locally when explicitly started by the developer.
 
-The watcher is not required for correctness. The command path is the source of truth. `sticky:organize` remains read-only against `Notes.db`. `sticky:organize:colors` additionally updates only `NOTES.COLOR` so the desktop matches the lifecycle state.
+The watcher is not required for correctness. The command path is the source of truth. `sticky:organize` remains read-only against `Notes.db`. `sticky:organize:colors` additionally updates only `NOTES.COLOR` so the desktop matches the lifecycle state. `sticky:organize:visual` also updates only note position, size, minimized state, and stacking order after writing a local database backup.
 
 ---
 
@@ -168,6 +168,7 @@ The watcher is not required for correctness. The command path is the source of t
 | `devtools/sticky-notes/classify.mjs`        | Deterministic and optional Ollama-backed classifier.                         |
 | `devtools/sticky-notes/attach.mjs`          | Write classified outputs into action, personal, archive, and review dirs.    |
 | `devtools/sticky-notes/colors.mjs`          | Plan or apply lifecycle color updates to `NOTES.COLOR` only.                 |
+| `devtools/sticky-notes/layout.mjs`          | Plan or apply deterministic visual layout for active and finished notes.     |
 | `devtools/sticky-notes/organize.mjs`        | One-command orchestrator for sync, classify, attach, and report.             |
 | `devtools/sticky-notes/report.mjs`          | Produce human-readable markdown and machine-readable JSON reports.           |
 | `devtools/sticky-notes/state.mjs`           | Produce color lifecycle indexes for unprocessed, active, and finished notes. |
@@ -183,13 +184,13 @@ The actual note records under `system/sticky-notes/` should be gitignored or loc
 
 ## Files to Modify
 
-| File                                   | What to Change                                                                                                                                                                                       |
-| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `package.json`                         | Add `sticky:sync`, `sticky:classify`, `sticky:attach`, `sticky:organize`, `sticky:organize:colors`, `sticky:report`, `sticky:state`, `sticky:colors`, `sticky:colors:apply`, and `sticky:scheduler`. |
-| `system/canonical-surfaces.json`       | Add `sticky-notes-intake-layer` as an internal canonical owner so scans stop routing this work to `client-intake`.                                                                                   |
-| `.gitignore` or `.git/info/exclude`    | Ensure raw note snapshots, personal outputs, and restricted outputs are not committed. Prefer `.gitignore` only for non-sensitive directory patterns.                                                |
-| `.claude/skills/omninet/SKILL.md`      | Add a trigger rule: when the user references Sticky Notes, Simple Sticky Notes, `Notes.db`, or "organize everything", load the Sticky Notes intake workflow after it exists.                         |
-| `.claude/skills/skill-garden/SKILL.md` | Add Sticky Notes as a supported external guidance source after the intake workflow exists.                                                                                                           |
+| File                                   | What to Change                                                                                                                                                                                                                                                         |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `package.json`                         | Add `sticky:sync`, `sticky:classify`, `sticky:attach`, `sticky:organize`, `sticky:organize:colors`, `sticky:organize:visual`, `sticky:report`, `sticky:state`, `sticky:colors`, `sticky:colors:apply`, `sticky:layout`, `sticky:layout:apply`, and `sticky:scheduler`. |
+| `system/canonical-surfaces.json`       | Add `sticky-notes-intake-layer` as an internal canonical owner so scans stop routing this work to `client-intake`.                                                                                                                                                     |
+| `.gitignore` or `.git/info/exclude`    | Ensure raw note snapshots, personal outputs, and restricted outputs are not committed. Prefer `.gitignore` only for non-sensitive directory patterns.                                                                                                                  |
+| `.claude/skills/omninet/SKILL.md`      | Add a trigger rule: when the user references Sticky Notes, Simple Sticky Notes, `Notes.db`, or "organize everything", load the Sticky Notes intake workflow after it exists.                                                                                           |
+| `.claude/skills/skill-garden/SKILL.md` | Add Sticky Notes as a supported external guidance source after the intake workflow exists.                                                                                                                                                                             |
 
 Skill edits must be validated with `node devtools/skill-validator.mjs omninet skill-garden` and a targeted em dash scan before commit.
 
