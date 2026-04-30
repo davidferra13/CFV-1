@@ -1,0 +1,13 @@
+{
+  "id": "claim-20260430T195139Z-queue-a50a0a35bac30470",
+  "taskId": "queue-a50a0a35bac30470",
+  "title": "Spec: Comprehensive Domain Inventory Phase 1",
+  "branch": "feature/v1-builder-queue-a50a0a35bac30470-20260430t195139z-spec-comprehensive-domain-inventory-p",
+  "classification": "approved_v1_blocker",
+  "canonicalOwner": "docs/specs/comprehensive-domain-inventory-phase-1.md",
+  "status": "running",
+  "claimedAt": "2026-04-30T19:51:39.279Z",
+  "expiresAt": "2026-04-30T22:51:39.279Z",
+  "worktreePath": "C:\\Users\\david\\Documents\\CFv1\\.v1-builder-worktrees\\queue-a50a0a35bac30470-1777578699280-spec-comprehensive-domain-inventory-phase-1",
+  "updatedAt": "2026-04-30T19:51:39.280Z"
+}
