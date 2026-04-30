@@ -3,10 +3,12 @@ import { notFound } from 'next/navigation'
 import { format } from 'date-fns'
 import { DirectOutreachPanel } from '@/components/marketing/direct-outreach-panel'
 import { ScheduleMessageDialog } from '@/components/communication/schedule-message-dialog'
+import { ClientStrategyBriefPanel } from '@/components/clients/client-strategy-brief-panel'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { requireChef } from '@/lib/auth/get-user'
 import { getRelationshipRouteCopy } from '@/lib/clients/action-vocabulary'
+import { buildClientStrategyBrief } from '@/lib/clients/client-strategy-brief'
 import { getClientRelationshipSnapshot } from '@/lib/clients/relationship-snapshot'
 import { getClientInteractionSignalShortLabel } from '@/lib/clients/interaction-signal-utils'
 import type { NextBestActionPrimarySignal } from '@/lib/clients/next-best-action'
@@ -35,6 +37,7 @@ export default async function ClientRelationshipPage({ params }: { params: { id:
   if (!snapshot) notFound()
 
   const { client, nextAction, outreachHistory } = snapshot
+  const strategyBrief = buildClientStrategyBrief(snapshot)
   const heading = getRelationshipRouteCopy(nextAction?.actionType)
   const completedEvents = snapshot.completedEvents
   const daysSinceLastEvent =
@@ -107,6 +110,8 @@ export default async function ClientRelationshipPage({ params }: { params: { id:
           </div>
         ) : null}
       </Card>
+
+      <ClientStrategyBriefPanel brief={strategyBrief} />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <MetricCard
