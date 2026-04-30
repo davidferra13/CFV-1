@@ -18,12 +18,14 @@ import { normalizeNoteRows } from './normalize.mjs'
 
 const NOTES_QUERY = `
   SELECT
+    rowid AS ROWID,
     ID,
     STATE,
     CREATED,
     UPDATED,
     DELETED,
     STARRED,
+    COLOR,
     NOTEBOOK,
     TITLE,
     TYPE,

@@ -14,11 +14,13 @@ describe('sticky notes normalization', () => {
     const note = normalizeNoteRow(
       {
         ID: 68,
+        ROWID: 91,
         STATE: 1,
         CREATED: 46141.5609269444,
         UPDATED: 46141.9511426389,
         DELETED: 0,
         STARRED: 1,
+        COLOR: 16777215,
         NOTEBOOK: 'David Ferragamo',
         TITLE: 'New Note (60)',
         DATA_LENGTH: 168,
@@ -28,8 +30,11 @@ describe('sticky notes normalization', () => {
     )
 
     assert.equal(note.source, 'simple-sticky-notes')
+    assert.equal(note.sourceRowId, 91)
     assert.equal(note.noteId, 68)
     assert.equal(note.starred, true)
+    assert.equal(note.sourceColorName, 'white')
+    assert.equal(note.sourceColorValue, 16777215)
     assert.equal(note.hasRichData, true)
     assert.equal(note.textLength, 33)
     assert.match(note.noteRef, /^simple-sticky-notes:68:[a-f0-9]{16}$/)

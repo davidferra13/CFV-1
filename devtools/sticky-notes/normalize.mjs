@@ -1,3 +1,4 @@
+import { stickyColorNameForValue, stickyColorTaxonomy } from './config.mjs'
 import { noteContentFingerprint, rowKeyFor, sha256 } from './hash.mjs'
 
 const OLE_UNIX_EPOCH_DAY = 25569
@@ -16,6 +17,7 @@ export function normalizeNoteRow(row, options = {}) {
   const normalized = {
     source: 'simple-sticky-notes',
     sourcePath: options.sourcePath || null,
+    sourceRowId: Number(row.ROWID ?? row.rowid ?? 0),
     noteId: Number(row.ID),
     notebook: row.NOTEBOOK || '',
     title: row.TITLE || '',
@@ -27,6 +29,8 @@ export function normalizeNoteRow(row, options = {}) {
     deletedAt: oleDateToIso(row.DELETED),
     deletedRaw: Number(row.DELETED ?? 0),
     starred: Number(row.STARRED ?? 0) !== 0,
+    sourceColorValue: Number(row.COLOR ?? stickyColorTaxonomy.unprocessed.value),
+    sourceColorName: stickyColorNameForValue(row.COLOR ?? stickyColorTaxonomy.unprocessed.value),
     createdAt: oleDateToIso(row.CREATED),
     createdRaw: Number(row.CREATED ?? 0),
     updatedAt: oleDateToIso(row.UPDATED),

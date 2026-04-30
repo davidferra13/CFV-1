@@ -5,8 +5,16 @@ import { fileURLToPath } from 'node:url'
 import { outputPaths, relativePath, stickyConfig } from './config.mjs'
 import { attachClassifications } from './attach.mjs'
 import { classifyLatest } from './classify.mjs'
+import { applyColorUpdates } from './colors.mjs'
 import { generateStickyNotesReport } from './report.mjs'
 import { syncStickyNotes } from './read-db.mjs'
+import { buildStickyNoteState } from './state.mjs'
+
+function parseArgs(argv = process.argv.slice(2)) {
+  return {
+    applyColors: argv.includes('--apply-colors'),
+  }
+}
 
 function acquireLock() {
   try {
@@ -24,7 +32,7 @@ function acquireLock() {
   }
 }
 
-export function organizeStickyNotes() {
+export function organizeStickyNotes(options = {}) {
   const release = acquireLock()
   const started = Date.now()
   try {
@@ -34,17 +42,29 @@ export function organizeStickyNotes() {
     const classified = classifyLatest()
     console.log('Phase: attach')
     const attached = attachClassifications()
+    console.log('Phase: state')
+    let state = buildStickyNoteState()
+    let colors = null
+    let refreshedSync = null
+    if (options.applyColors) {
+      console.log('Phase: colors')
+      colors = applyColorUpdates({ statePayload: state, apply: true })
+      console.log('Phase: resync-colors')
+      refreshedSync = syncStickyNotes()
+      state = buildStickyNoteState()
+    }
     console.log('Phase: report')
     const report = generateStickyNotesReport()
     const elapsedMs = Date.now() - started
-    return { sync, classified, attached, report, elapsedMs }
+    return { sync: refreshedSync || sync, classified, attached, state, colors, report, elapsedMs }
   } finally {
     release()
   }
 }
 
 function main() {
-  const result = organizeStickyNotes()
+  const args = parseArgs()
+  const result = organizeStickyNotes(args)
   const counts = result.report.counts
   const personalCount = Object.entries(counts)
     .filter(([key]) => key.startsWith('personal.'))
@@ -61,6 +81,13 @@ function main() {
   console.log(`Personal separated: ${personalCount}`)
   console.log(`Restricted: ${restrictedCount}`)
   console.log(`Attachments: ${result.attached.attachments.length}`)
+  console.log(`Unprocessed: ${result.state.unprocessed.length}`)
+  console.log(`Active: ${result.state.active.length}`)
+  console.log(`Finished: ${result.state.finished.length}`)
+  if (result.colors) {
+    console.log(`Color updates applied: ${result.colors.appliedCount || 0}`)
+    console.log(`Color updates skipped: ${result.colors.skipped || 0}`)
+  }
   console.log(`Report: ${relativePath(result.report.mdFile)}`)
   console.log(`Elapsed: ${result.elapsedMs}ms`)
 }

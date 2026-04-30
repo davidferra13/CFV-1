@@ -24,6 +24,14 @@ export const outputPaths = {
   classificationsLatest: path.join(stickyConfig.outputRoot, 'classified', 'latest.json'),
   attachments: path.join(stickyConfig.outputRoot, 'attached'),
   attachmentsLatest: path.join(stickyConfig.outputRoot, 'attached', 'latest.json'),
+  state: path.join(stickyConfig.outputRoot, 'state'),
+  stateLatest: path.join(stickyConfig.outputRoot, 'state', 'latest.json'),
+  unprocessed: path.join(stickyConfig.outputRoot, 'unprocessed'),
+  unprocessedLatest: path.join(stickyConfig.outputRoot, 'unprocessed', 'latest.json'),
+  active: path.join(stickyConfig.outputRoot, 'active'),
+  activeLatest: path.join(stickyConfig.outputRoot, 'active', 'latest.json'),
+  finished: path.join(stickyConfig.outputRoot, 'finished'),
+  finishedLatest: path.join(stickyConfig.outputRoot, 'finished', 'latest.json'),
   review: path.join(stickyConfig.outputRoot, 'review-cockpit'),
   reviewLatest: path.join(stickyConfig.outputRoot, 'review-cockpit', 'latest.json'),
   promotions: path.join(stickyConfig.outputRoot, 'promotions'),
@@ -47,6 +55,44 @@ export const destinationByClass = {
   'restricted.private': 'restricted/private',
   'restricted.recipeIp': 'restricted/recipe-ip',
   needsReview: 'review',
+}
+
+export const stickyColorTaxonomy = {
+  unprocessed: {
+    color: 'white',
+    value: 16777215,
+    meaning: 'raw unprocessed input',
+  },
+  queued: {
+    color: 'yellow',
+    value: 16776960,
+    meaning: 'classified and waiting for the correct gate',
+  },
+  in_progress: {
+    color: 'blue',
+    value: 16764057,
+    meaning: 'accepted by a downstream workflow and being worked',
+  },
+  blocked: {
+    color: 'red',
+    value: 255,
+    meaning: 'ambiguous, unsafe, missing evidence, or escalated',
+  },
+  complete: {
+    color: 'green',
+    value: 65280,
+    meaning: 'resolved and moved out of the active surface',
+  },
+}
+
+export function stickyColorForState(state) {
+  return stickyColorTaxonomy[state] || stickyColorTaxonomy.blocked
+}
+
+export function stickyColorNameForValue(value) {
+  const numeric = Number(value)
+  const match = Object.values(stickyColorTaxonomy).find((item) => item.value === numeric)
+  return match?.color || `custom:${Number.isFinite(numeric) ? numeric : 'unknown'}`
 }
 
 export const promotionDestinationByClass = {

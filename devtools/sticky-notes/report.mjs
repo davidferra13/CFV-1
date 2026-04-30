@@ -40,6 +40,7 @@ export function generateStickyNotesReport(options = {}) {
   const snapshot = readJson(options.snapshotFile || outputPaths.normalizedLatest, null)
   const classified = readJson(options.classificationFile || outputPaths.classificationsLatest, null)
   const attached = readJson(options.attachmentFile || outputPaths.attachmentsLatest, { attachments: [] })
+  const state = readJson(options.stateFile || outputPaths.stateLatest, { unprocessed: [], active: [], finished: [] })
   if (!snapshot?.records) throw new Error(`No normalized Sticky Notes snapshot found: ${outputPaths.normalizedLatest}`)
   if (!classified?.classifications) {
     throw new Error(`No Sticky Notes classifications found: ${outputPaths.classificationsLatest}`)
@@ -60,6 +61,13 @@ export function generateStickyNotesReport(options = {}) {
     `- Changed: ${snapshot.changes?.changed ?? 0}`,
     `- Unchanged: ${snapshot.changes?.unchanged ?? 0}`,
     `- Attachments written: ${attached.attachments?.length ?? 0}`,
+    `- Unprocessed right now: ${state.unprocessed?.length ?? 0}`,
+    `- Active categorized notes: ${state.active?.length ?? 0}`,
+    `- Finished notes: ${state.finished?.length ?? 0}`,
+    '',
+    '## Color State Counts',
+    '',
+    ...Object.entries(state.counts || {}).map(([stateName, count]) => `- ${stateName}: ${count}`),
     '',
     '## Classification Counts',
     '',
@@ -115,6 +123,8 @@ export function generateStickyNotesReport(options = {}) {
     generatedAt: new Date().toISOString(),
     sourcePath: snapshot.sourcePath,
     counts,
+    stateCounts: state.counts || {},
+    unprocessedCount: state.unprocessed?.length ?? 0,
     changes: snapshot.changes,
     attachments: attached.attachments || [],
   })
