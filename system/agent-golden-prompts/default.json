@@ -18,6 +18,16 @@
     }
   },
   {
+    "name": "autonomous builder bottleneck",
+    "prompt": "I am sick of telling Codex build this over and over. ChefFlow needs a 24/7 autonomous builder queue with Sticky Notes and a live monitor.",
+    "expect": ["omninet", "autonomous-build-loop", "skill-garden"],
+    "evidence": {
+      "omninet": ["autonomous-build-loop", "24/7"],
+      "autonomous-build-loop": ["human bottleneck", "Mission Control"],
+      "skill-garden": ["operating guidance", "durable"]
+    }
+  },
+  {
     "name": "Matt Pocock audit loop",
     "prompt": "Keep running Matt Pocock's audit so code lands in deep modules automatically.",
     "expect": ["omninet", "software-fundamentals", "skill-garden"],

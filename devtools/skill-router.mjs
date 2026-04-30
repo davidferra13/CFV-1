@@ -28,6 +28,28 @@ const lowerPrompt = prompt.toLowerCase()
 
 const rules = [
   {
+    skill: 'autonomous-build-loop',
+    terms: [
+      'autonomous builder',
+      'autonomous build',
+      'build itself',
+      'building itself',
+      '24/7',
+      'builder queue',
+      'build queue',
+      'stop making me prompt',
+      'telling codex build',
+      'prompt every build',
+      'human bottleneck',
+      'codex working for hours',
+      'codex should be building',
+      'sticky notes',
+      'live monitor',
+      'mission control',
+      'getting better without me',
+    ],
+  },
+  {
     skill: 'backup',
     terms: ['backup database', 'pg_dump', 'database backup'],
   },
@@ -482,6 +504,11 @@ const conflictPriorityRules = [
     winner: 'billing-monetization',
     beats: ['builder', 'validation-gate', 'review'],
     reason: 'billing-monetization owns tier classification and upgrade prompt timing',
+  },
+  {
+    winner: 'autonomous-build-loop',
+    beats: ['builder', 'persona-inbox', 'skill-garden', 'swarm-governor', 'question-optimizer'],
+    reason: 'autonomous-build-loop owns the resident queue, monitor, and human-bottleneck operating problem',
   },
   {
     winner: 'pricing-reliability',

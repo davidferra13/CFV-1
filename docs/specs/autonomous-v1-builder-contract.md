@@ -38,6 +38,19 @@ Hermes should not be the unchecked brain of ChefFlow. Hermes may become intake a
 - **Motivation:** The developer needs one durable finish-line system that removes manual orchestration as the bottleneck without increasing code chaos.
 - **Success from the developer's perspective:** A future builder can implement the loop without guessing what it may build, where queue state lives, how branches are named, what validation is mandatory, when to stop, and what Mission Control must display.
 
+### 2026-04-30 Founder Authority Update
+
+David's latest operating direction sharpens this spec:
+
+- The human bottleneck is David manually prompting every build. That is the failure this system must remove.
+- Codex should consume approved queues, specs, Sticky Notes, personas after triage, and durable instructions without asking David to fire every task by hand.
+- David's role should become Founder Authority and orchestrator, not prompt operator.
+- Routine implementation decisions should be made by Codex using repo patterns. Only true Founder Authority decisions should escalate.
+- Escalations should be written into a durable queue or Sticky Notes intake output with a recommended default, not asked as one-off chat interruptions.
+- The live monitor matters. A local Mission Control or launcher screen should show the project getting better through claims, branches, receipts, validations, blockers, and escalations.
+- V1 readiness is pricing-led. If a chef anywhere in America cannot price a menu by zip or radius from system-owned observed or honestly modeled pricing data with high confidence labels, ChefFlow V1 is not ready.
+- OpenClaw may be doing useful work while the website pricing engine still fails the product contract. The product blocker is trusted end-to-end pricing inside ChefFlow.
+
 ---
 
 ## Continuity Preflight
@@ -109,6 +122,28 @@ Every intake item must become one of:
 
 Only `approved_v1_blocker` and current-lane `approved_v1_support` can enter the active build queue.
 
+### 1.1 Escalation Intake
+
+The builder should not stop to ask David routine implementation questions. It should create an escalation record only when the decision requires Founder Authority, credentials, destructive database approval, production deployment approval, a V1 scope change, or a risk-bearing business decision.
+
+Escalation records belong in `system/v1-builder/escalations.jsonl` until the Sticky Notes intake workflow can mirror them into David's preferred review surface.
+
+Each escalation record must include:
+
+```json
+{
+  "id": "esc-20260430-0001",
+  "createdAt": "2026-04-30T00:00:00-04:00",
+  "taskId": "v1-20260430-0001",
+  "question": "Exact decision needed.",
+  "whyCodexCannotDecide": "One sentence tied to hard stop, Founder Authority, money risk, data risk, or credentials.",
+  "recommendedDefault": "What Codex recommends if David approves.",
+  "blocks": "build|validation|push|runtime|none",
+  "status": "open|answered|superseded",
+  "answer": null
+}
+```
+
 ### 2. Queue Location
 
 The canonical future queue should be file-based and internal:
@@ -119,6 +154,7 @@ system/v1-builder/
   parked-v2.jsonl
   research-queue.jsonl
   blocked.jsonl
+  escalations.jsonl
   overrides.jsonl
   receipts/
   claims/
@@ -279,9 +315,13 @@ Mission Control must show:
 - built-but-unverified work
 - latest validation state
 - latest commit and push receipt
+- open Founder Authority escalations with recommended defaults
+- pricing reliability status when V1 readiness or menu costing is in scope
 - next single allowed action
 
 Mission Control is read-only for autonomous work in the first implementation. Any action button that mutates queue or runs a builder belongs behind an explicit later spec and must be gated as internal-only.
+
+The monitor must be useful as a passive room display. A developer should be able to leave it open and see whether ChefFlow is improving, blocked, idle, validating, or waiting for a Founder Authority answer without reading agent chat.
 
 ### 10. Hermes Contract
 
@@ -354,6 +394,7 @@ These files belong to the future implementation, not this docs-only contract pas
 | `system/v1-builder/parked-v2.jsonl`      | Parked non-V1 ideas.                                                 |
 | `system/v1-builder/research-queue.jsonl` | Ideas needing evidence before classification.                        |
 | `system/v1-builder/blocked.jsonl`        | Blocked tasks with reasons and unblock criteria.                     |
+| `system/v1-builder/escalations.jsonl`    | Founder Authority questions with recommended defaults and blockers.  |
 | `system/v1-builder/overrides.jsonl`      | Explicit developer overrides.                                        |
 | `lib/v1-builder/types.ts`                | Shared task, claim, receipt, validation, and status types.           |
 | `lib/v1-builder/queue.ts`                | Queue parser, sorter, and eligibility checks.                        |

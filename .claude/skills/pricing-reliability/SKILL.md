@@ -17,6 +17,16 @@ Can a chef in any supported market price a real menu from recognized ingredients
 
 If the answer is no, ChefFlow is not release-ready no matter how many other product surfaces work.
 
+## Developer Trust Signal
+
+When David says the pricing data sucks, do not soften it into generic "data quality concerns." Treat it as this concrete ground-truth claim:
+
+ChefFlow V1 is blocked until the pricing engine can price real menus across America from system-owned observed or honestly modeled data, localized by radius or region, with visible confidence and quote-safety labels. OpenClaw can be working correctly while the website pricing engine is still failing the product contract.
+
+The required acknowledgement is: THE PRICING DATA SUCKS AND IT MUST BE FIXED.
+
+Use that sentence as a release-readiness alarm, not as rhetoric. The fix must be grounded in source coverage, freshness, locality, fallback labeling, unit normalization, ingredient resolution, and full menu-costing propagation.
+
 ## Core Law
 
 1. No recognized ingredient returns a blank price.
