@@ -1,0 +1,739 @@
+{
+  "generated_at": "2026-04-30T15:39:14.799Z",
+  "prompt": "ChefFlow Command Plane unified app-wide operating state next action blocked risk proof timeline dashboard event client finance menus Remy",
+  "terms": [
+    "chefflow",
+    "command",
+    "plane",
+    "unified",
+    "app-wide",
+    "operating",
+    "state",
+    "next",
+    "action",
+    "blocked",
+    "risk",
+    "proof",
+    "timeline",
+    "dashboard",
+    "event",
+    "client",
+    "finance",
+    "menus",
+    "remy"
+  ],
+  "scanned_dirs": [
+    "app",
+    "components",
+    "lib",
+    "docs/specs",
+    "docs/changes",
+    "docs/app-complete-audit.md",
+    "project-map",
+    "memory",
+    "system/intake",
+    "system/agent-reports"
+  ],
+  "canonical_surfaces": [
+    {
+      "id": "remy-ai",
+      "label": "Remy AI",
+      "score": 7,
+      "hits": ["chefflow", "action", "remy"],
+      "canonical_routes": [],
+      "canonical_files": ["components/ai/remy-drawer.tsx", "lib/ai/remy-actions.ts"],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach new assistant behavior to Remy or its shared AI modules."
+      }
+    },
+    {
+      "id": "client-intake",
+      "label": "Client Intake",
+      "score": 7,
+      "hits": ["chefflow", "action", "client"],
+      "canonical_routes": ["/book", "/clients/intake"],
+      "canonical_files": [
+        "app/api/book/route.ts",
+        "lib/inquiries/public-actions.ts",
+        "public/embed/chefflow-widget.js"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach to the existing intake lane contract."
+      }
+    },
+    {
+      "id": "finance",
+      "label": "Finance and Ledger",
+      "score": 5,
+      "hits": ["event", "finance"],
+      "canonical_routes": ["/finance", "/quotes"],
+      "canonical_files": [
+        "lib/ledger/append.ts",
+        "lib/ledger/compute.ts",
+        "lib/events/transitions.ts"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Financial behavior must attach to ledger and quote owners."
+      }
+    },
+    {
+      "id": "calendar",
+      "label": "Calendar and Scheduling",
+      "score": 2,
+      "hits": ["command", "unified"],
+      "canonical_routes": ["/calendar"],
+      "canonical_files": [
+        "app/(chef)/calendar/page.tsx",
+        "components/calendar/unified-calendar-view.tsx"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach to calendar and scheduling modules."
+      }
+    },
+    {
+      "id": "context-continuity",
+      "label": "Context Continuity",
+      "score": 1,
+      "hits": ["event"],
+      "canonical_routes": [],
+      "canonical_files": [
+        ".claude/skills/context-continuity/SKILL.md",
+        "devtools/context-continuity-scan.mjs",
+        "system/canonical-surfaces.json"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Extend the continuity layer in place."
+      }
+    },
+    {
+      "id": "agent-skill-system",
+      "label": "Agent Skill System",
+      "score": 1,
+      "hits": ["chefflow"],
+      "canonical_routes": [],
+      "canonical_files": [
+        "devtools/skill-router.mjs",
+        "devtools/skill-validator.mjs",
+        "devtools/skill-trigger-tests.mjs",
+        "system/agent-golden-prompts/default.json"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Add to the existing skill harness."
+      }
+    },
+    {
+      "id": "voice-ops",
+      "label": "Voice Operations",
+      "score": 1,
+      "hits": ["action"],
+      "canonical_routes": [],
+      "canonical_files": [
+        "lib/calling/voice-ops-actions.ts",
+        "components/calling/voice-ops-report-panel.tsx"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach to voice operations modules."
+      }
+    },
+    {
+      "id": "chef-flow-replay",
+      "label": "Chef Flow Replay",
+      "score": 1,
+      "hits": ["action"],
+      "canonical_routes": ["/replay"],
+      "canonical_files": ["app/(chef)/replay/page.tsx", "lib/activity/replay-model.ts"],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Extend replay model and components in place."
+      }
+    }
+  ],
+  "related_files": [
+    {
+      "file": "system/agent-reports/context-continuity-dashboard/latest.json",
+      "kind": "system",
+      "score": 77,
+      "hits": [
+        "dashboard",
+        "chefflow",
+        "command",
+        "plane",
+        "unified",
+        "state",
+        "next",
+        "action",
+        "risk",
+        "proof"
+      ]
+    },
+    {
+      "file": "lib/ai/remy-actions.ts",
+      "kind": "module",
+      "score": 64,
+      "hits": [
+        "action",
+        "remy",
+        "chefflow",
+        "command",
+        "state",
+        "next",
+        "blocked",
+        "timeline",
+        "dashboard",
+        "event"
+      ]
+    },
+    {
+      "file": "app/(chef)/events/[id]/page.tsx",
+      "kind": "route",
+      "score": 63,
+      "hits": [
+        "event",
+        "chefflow",
+        "command",
+        "unified",
+        "operating",
+        "state",
+        "next",
+        "action",
+        "risk",
+        "timeline"
+      ]
+    },
+    {
+      "file": "docs/specs/bob-and-joy-action-catalog.md",
+      "kind": "spec",
+      "score": 62,
+      "hits": [
+        "action",
+        "chefflow",
+        "command",
+        "unified",
+        "state",
+        "next",
+        "risk",
+        "timeline",
+        "dashboard",
+        "event"
+      ]
+    },
+    {
+      "file": "docs/specs/interaction-engine.md",
+      "kind": "spec",
+      "score": 61,
+      "hits": [
+        "action",
+        "chefflow",
+        "command",
+        "unified",
+        "state",
+        "next",
+        "risk",
+        "timeline",
+        "dashboard",
+        "event"
+      ]
+    },
+    {
+      "file": "docs/specs/navigation-action-bar.md",
+      "kind": "spec",
+      "score": 61,
+      "hits": [
+        "action",
+        "chefflow",
+        "command",
+        "unified",
+        "state",
+        "next",
+        "timeline",
+        "dashboard",
+        "event",
+        "client"
+      ]
+    },
+    {
+      "file": "app/api/remy/stream/route-prompt-utils.ts",
+      "kind": "route",
+      "score": 60,
+      "hits": [
+        "remy",
+        "chefflow",
+        "command",
+        "operating",
+        "state",
+        "next",
+        "action",
+        "blocked",
+        "risk",
+        "timeline"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-cohesiveness-synthesis.md",
+      "kind": "spec",
+      "score": 60,
+      "hits": [
+        "chefflow",
+        "command",
+        "unified",
+        "state",
+        "next",
+        "action",
+        "blocked",
+        "risk",
+        "timeline",
+        "dashboard"
+      ]
+    },
+    {
+      "file": "docs/specs/continuous-intelligence-layer.md",
+      "kind": "spec",
+      "score": 59,
+      "hits": [
+        "chefflow",
+        "command",
+        "unified",
+        "state",
+        "next",
+        "action",
+        "blocked",
+        "risk",
+        "timeline",
+        "dashboard"
+      ]
+    },
+    {
+      "file": "docs/specs/system-completeness-interrogation.md",
+      "kind": "spec",
+      "score": 59,
+      "hits": [
+        "chefflow",
+        "command",
+        "state",
+        "next",
+        "action",
+        "blocked",
+        "risk",
+        "proof",
+        "dashboard",
+        "event"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-full-cohesion-answers.md",
+      "kind": "spec",
+      "score": 58,
+      "hits": [
+        "chefflow",
+        "command",
+        "unified",
+        "state",
+        "next",
+        "action",
+        "blocked",
+        "risk",
+        "timeline",
+        "dashboard"
+      ]
+    },
+    {
+      "file": "lib/ai/command-orchestrator.ts",
+      "kind": "module",
+      "score": 57,
+      "hits": [
+        "command",
+        "chefflow",
+        "next",
+        "action",
+        "blocked",
+        "timeline",
+        "dashboard",
+        "event",
+        "client",
+        "finance"
+      ]
+    },
+    {
+      "file": "app/(chef)/dashboard/_sections/business-section-loader.ts",
+      "kind": "route",
+      "score": 56,
+      "hits": [
+        "dashboard",
+        "command",
+        "unified",
+        "next",
+        "action",
+        "risk",
+        "event",
+        "client",
+        "finance",
+        "menus"
+      ]
+    },
+    {
+      "file": "app/api/remy/stream/route-instant-answers.ts",
+      "kind": "route",
+      "score": 56,
+      "hits": [
+        "remy",
+        "command",
+        "state",
+        "next",
+        "action",
+        "blocked",
+        "timeline",
+        "dashboard",
+        "event",
+        "client"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-client-management.md",
+      "kind": "spec",
+      "score": 56,
+      "hits": [
+        "client",
+        "chefflow",
+        "unified",
+        "state",
+        "next",
+        "action",
+        "blocked",
+        "risk",
+        "timeline",
+        "dashboard"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-competitive-surface.md",
+      "kind": "spec",
+      "score": 56,
+      "hits": [
+        "chefflow",
+        "operating",
+        "state",
+        "next",
+        "action",
+        "risk",
+        "timeline",
+        "dashboard",
+        "event",
+        "client"
+      ]
+    },
+    {
+      "file": "docs/specs/comprehensive-domain-inventory-phase-1.md",
+      "kind": "spec",
+      "score": 55,
+      "hits": [
+        "chefflow",
+        "command",
+        "unified",
+        "operating",
+        "next",
+        "action",
+        "proof",
+        "timeline",
+        "dashboard",
+        "event"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-seam-cohesion.md",
+      "kind": "spec",
+      "score": 55,
+      "hits": [
+        "command",
+        "state",
+        "next",
+        "action",
+        "risk",
+        "timeline",
+        "dashboard",
+        "event",
+        "client",
+        "finance"
+      ]
+    },
+    {
+      "file": "docs/specs/platform-shell-command-center.md",
+      "kind": "spec",
+      "score": 54,
+      "hits": [
+        "command",
+        "chefflow",
+        "app-wide",
+        "operating",
+        "state",
+        "next",
+        "action",
+        "blocked",
+        "risk",
+        "proof"
+      ]
+    },
+    {
+      "file": "lib/ai/command-intent-parser.ts",
+      "kind": "module",
+      "score": 54,
+      "hits": [
+        "command",
+        "chefflow",
+        "next",
+        "action",
+        "blocked",
+        "risk",
+        "timeline",
+        "dashboard",
+        "event",
+        "client"
+      ]
+    },
+    {
+      "file": "lib/scheduling/types.ts",
+      "kind": "module",
+      "score": 53,
+      "hits": [
+        "command",
+        "operating",
+        "state",
+        "next",
+        "action",
+        "risk",
+        "timeline",
+        "dashboard",
+        "event",
+        "client"
+      ]
+    },
+    {
+      "file": "app/(chef)/dashboard/page.tsx",
+      "kind": "route",
+      "score": 52,
+      "hits": [
+        "dashboard",
+        "command",
+        "state",
+        "next",
+        "action",
+        "blocked",
+        "event",
+        "client",
+        "menus",
+        "remy"
+      ]
+    },
+    {
+      "file": "docs/specs/culinary-radar-intelligence-layer.md",
+      "kind": "spec",
+      "score": 52,
+      "hits": [
+        "chefflow",
+        "command",
+        "plane",
+        "state",
+        "next",
+        "action",
+        "blocked",
+        "risk",
+        "proof",
+        "timeline"
+      ]
+    },
+    {
+      "file": "docs/specs/post-event-trust-loop-consolidation.md",
+      "kind": "spec",
+      "score": 52,
+      "hits": [
+        "event",
+        "chefflow",
+        "unified",
+        "operating",
+        "state",
+        "next",
+        "action",
+        "risk",
+        "proof",
+        "timeline"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-operational-pressure.md",
+      "kind": "spec",
+      "score": 52,
+      "hits": [
+        "command",
+        "operating",
+        "state",
+        "next",
+        "action",
+        "blocked",
+        "risk",
+        "timeline",
+        "dashboard",
+        "event"
+      ]
+    },
+    {
+      "file": "lib/ai/command-task-descriptions.ts",
+      "kind": "module",
+      "score": 52,
+      "hits": [
+        "command",
+        "chefflow",
+        "next",
+        "action",
+        "blocked",
+        "risk",
+        "timeline",
+        "dashboard",
+        "event",
+        "client"
+      ]
+    },
+    {
+      "file": "docs/specs/openclaw-ideal-runtime-and-national-intelligence.md",
+      "kind": "spec",
+      "score": 51,
+      "hits": [
+        "chefflow",
+        "plane",
+        "operating",
+        "state",
+        "next",
+        "action",
+        "blocked",
+        "risk",
+        "timeline",
+        "dashboard"
+      ]
+    },
+    {
+      "file": "app/(chef)/clients/[id]/page.tsx",
+      "kind": "route",
+      "score": 50,
+      "hits": [
+        "client",
+        "chefflow",
+        "command",
+        "unified",
+        "state",
+        "next",
+        "action",
+        "timeline",
+        "event",
+        "menus"
+      ]
+    },
+    {
+      "file": "app/(public)/for-operators/page.tsx",
+      "kind": "route",
+      "score": 50,
+      "hits": [
+        "chefflow",
+        "command",
+        "operating",
+        "state",
+        "next",
+        "action",
+        "proof",
+        "dashboard",
+        "event",
+        "client"
+      ]
+    },
+    {
+      "file": "docs/specs/autonomous-v1-builder-contract.md",
+      "kind": "spec",
+      "score": 50,
+      "hits": [
+        "chefflow",
+        "command",
+        "operating",
+        "state",
+        "next",
+        "action",
+        "blocked",
+        "risk",
+        "proof",
+        "timeline"
+      ]
+    }
+  ],
+  "recent_commits": [
+    {
+      "line": "424b519bb chore(agent): install v1 governor feature/haptic-explainable-event-audit",
+      "score": 1,
+      "hits": ["event"]
+    },
+    {
+      "line": "c1a38a0e8 chore(agent): improve backup recovery pipeline feature/haptic-explainable-event-audit",
+      "score": 1,
+      "hits": ["event"]
+    },
+    {
+      "line": "21f652695 chore(agent): build voice ops evidence closeout feature/haptic-explainable-event-audit",
+      "score": 1,
+      "hits": ["event"]
+    },
+    {
+      "line": "61382e8b2 chore(agent): explain haptic alerts feature/haptic-explainable-event-audit",
+      "score": 1,
+      "hits": ["event"]
+    }
+  ],
+  "dirty_matches": [],
+  "claim_matches": [
+    {
+      "file": "system/agent-claims/20260429T234252Z-feature-pantry-engine-create-persistent-codex-behavior-to-prevent-fragmented-dup.json",
+      "score": 2,
+      "hits": ["event"],
+      "prompt": "Create persistent Codex behavior to prevent fragmented duplicate builds and capture conversation memory for Obsidian-style continuity",
+      "owned": [],
+      "status": "active"
+    },
+    {
+      "file": "system/agent-claims/20260429T235629Z-feature-voice-ops-complete-build-the-complete-context-continuity-tooling-layer-s.json",
+      "score": 1,
+      "hits": ["dashboard"],
+      "prompt": "Build the complete context continuity tooling layer: scanner CLI, canonical surface registry, pre-build gate, Obsidian packet exporter, near-duplicate detector, spec template continuity section, feature family map, and dashboard",
+      "owned": [],
+      "status": "active"
+    }
+  ],
+  "duplicate_risks": [
+    {
+      "level": "medium",
+      "reason": "Multiple canonical surfaces matched the prompt.",
+      "owners": ["remy-ai", "client-intake", "finance"]
+    },
+    {
+      "level": "medium",
+      "reason": "Active or recorded claims overlap this domain.",
+      "claims": [
+        "system/agent-claims/20260429T234252Z-feature-pantry-engine-create-persistent-codex-behavior-to-prevent-fragmented-dup.json",
+        "system/agent-claims/20260429T235629Z-feature-voice-ops-complete-build-the-complete-context-continuity-tooling-layer-s.json"
+      ]
+    }
+  ],
+  "continuity": {
+    "decision": "attach",
+    "stop_required": false,
+    "reason": "Matched canonical surface remy-ai."
+  }
+}

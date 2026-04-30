@@ -87,6 +87,36 @@
       }
     },
     {
+      "id": "chef-command-plane",
+      "label": "ChefFlow Command Plane",
+      "description": "Canonical user-facing operating state contract for next action, blockers, risk, proof, recent changes, and page context across dashboard, event, client, finance, menus, and Remy read-only answers.",
+      "keywords": [
+        "command plane",
+        "operating state",
+        "next action",
+        "blocked",
+        "blockers",
+        "risk",
+        "proof",
+        "timeline",
+        "cohesion",
+        "dashboard command",
+        "what should i do next",
+        "what needs attention"
+      ],
+      "canonical_routes": ["/dashboard"],
+      "canonical_files": [
+        "docs/specs/chefflow-command-plane.md",
+        "lib/interface/action-layer.ts",
+        "lib/events/operating-spine.ts",
+        "components/platform-shell/context-command-panel.tsx"
+      ],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach command-plane behavior to the canonical computed contract instead of creating another dashboard, Remy hub, command palette, or page-local action list."
+      }
+    },
+    {
       "id": "remy-ai",
       "label": "Remy AI",
       "description": "ChefFlow conversational assistant, memory, privacy, and local/cloud AI routing.",
