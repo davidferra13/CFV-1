@@ -3,19 +3,30 @@ import type {
   VoiceCallLike,
   VoiceOpsReport,
   VoicePostCallAction,
+  VoicePostCallActionEvidence,
 } from '@/lib/calling/voice-ops-types'
 
 const ACTIVE_STATUSES = new Set(['queued', 'ringing', 'in_progress'])
 const FAILED_STATUSES = new Set(['failed', 'busy', 'no_answer'])
 
-export function buildVoiceOpsReport(rawCalls: unknown[]): VoiceOpsReport {
+export function buildVoiceOpsReport(
+  rawCalls: unknown[],
+  rawActions: unknown[] = [],
+  rawEvents: unknown[] = []
+): VoiceOpsReport {
   const calls = rawCalls.map(normalizeVoiceCall).filter((call): call is VoiceCallLike => !!call)
   const plans = calls.map(buildPostCallExecutionPlan)
-  const topNextActions = plans
-    .flatMap((plan) => plan.actions)
-    .filter((action) => action.type !== 'link_call_record')
-    .sort(compareActionPriority)
-    .slice(0, 6)
+  const events = rawEvents
+    .map(normalizeVoiceSessionEvent)
+    .filter((event): event is VoiceSessionEventLike => !!event)
+  const persistedActions = rawActions
+    .map((action) => normalizeVoicePostCallAction(action, events))
+    .filter((action): action is VoicePostCallAction => !!action)
+  const actionSource =
+    persistedActions.length > 0
+      ? persistedActions
+      : plans.flatMap((plan) => plan.actions).filter((action) => action.type !== 'link_call_record')
+  const topNextActions = actionSource.sort(compareActionPriority).slice(0, 6)
 
   const totalCalls = calls.length
   const completedCalls = calls.filter(
@@ -59,6 +70,54 @@ export function buildVoiceOpsReport(rawCalls: unknown[]): VoiceOpsReport {
         level: plan.professionalRisk,
         reason: plan.reportLine,
       })),
+  }
+}
+
+export function normalizeVoicePostCallAction(
+  value: unknown,
+  events: VoiceSessionEventLike[] = []
+): VoicePostCallAction | null {
+  if (!value || typeof value !== 'object') return null
+  const record = value as Record<string, unknown>
+  const type = stringValue(record.type) ?? stringValue(record.action_type)
+  const label = stringValue(record.label)
+  const detail = stringValue(record.detail)
+  const urgency = stringValue(record.urgency)
+  const status = stringValue(record.status)
+  if (!type || !label || !detail || !urgency || !status) return null
+
+  const metadata = recordValue(record.metadata) ?? undefined
+  const aiCallId = stringValue(record.aiCallId) ?? stringValue(record.ai_call_id) ?? undefined
+  const supplierCallId =
+    stringValue(record.supplierCallId) ?? stringValue(record.supplier_call_id) ?? undefined
+  const createdAt = stringValue(record.createdAt) ?? stringValue(record.created_at) ?? undefined
+  const completedAt =
+    stringValue(record.completedAt) ?? stringValue(record.completed_at) ?? undefined
+  const targetType = stringValue(record.targetType) ?? stringValue(record.target_type) ?? undefined
+  const targetId = stringValue(record.targetId) ?? stringValue(record.target_id) ?? undefined
+
+  const action: VoicePostCallAction = {
+    id: stringValue(record.id) ?? undefined,
+    type: type as VoicePostCallAction['type'],
+    label,
+    detail,
+    urgency: urgency as VoicePostCallAction['urgency'],
+    status: status as VoicePostCallAction['status'],
+    targetType,
+    targetId,
+    createdAt,
+    completedAt,
+    metadata,
+  }
+  return {
+    ...action,
+    evidence: buildActionEvidence(action, {
+      aiCallId,
+      supplierCallId,
+      targetType,
+      targetId,
+      events,
+    }),
   }
 }
 
@@ -116,4 +175,101 @@ function numberValue(value: unknown): number | null {
 function recordValue(value: unknown): Record<string, unknown> | null {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null
   return value as Record<string, unknown>
+}
+
+interface VoiceSessionEventLike {
+  eventType: string
+  aiCallId?: string
+  supplierCallId?: string
+  payload?: Record<string, unknown>
+  occurredAt?: string
+}
+
+function normalizeVoiceSessionEvent(value: unknown): VoiceSessionEventLike | null {
+  if (!value || typeof value !== 'object') return null
+  const record = value as Record<string, unknown>
+  const eventType = stringValue(record.eventType) ?? stringValue(record.event_type)
+  if (!eventType) return null
+  return {
+    eventType,
+    aiCallId: stringValue(record.aiCallId) ?? stringValue(record.ai_call_id) ?? undefined,
+    supplierCallId:
+      stringValue(record.supplierCallId) ?? stringValue(record.supplier_call_id) ?? undefined,
+    payload: recordValue(record.payload) ?? undefined,
+    occurredAt: stringValue(record.occurredAt) ?? stringValue(record.occurred_at) ?? undefined,
+  }
+}
+
+function buildActionEvidence(
+  action: VoicePostCallAction,
+  context: {
+    aiCallId?: string
+    supplierCallId?: string
+    targetType?: string
+    targetId?: string
+    events: VoiceSessionEventLike[]
+  }
+): VoicePostCallActionEvidence {
+  const metadata = action.metadata ?? {}
+  const relatedEvents = context.events.filter(
+    (event) =>
+      (!!context.aiCallId && event.aiCallId === context.aiCallId) ||
+      (!!context.supplierCallId && event.supplierCallId === context.supplierCallId)
+  )
+  const eventTypes = Array.from(new Set(relatedEvents.map((event) => event.eventType)))
+  const source =
+    stringValue(metadata.voiceOpsSource) ??
+    stringValue(metadata.source) ??
+    'post_call_execution_plan'
+  const scriptQuality = recordValue(metadata.scriptQuality)
+
+  return {
+    source,
+    reason: stringValue(metadata.evidenceReason) ?? action.detail,
+    hapticReason:
+      stringValue(metadata.hapticReason) ??
+      stringValue(metadata.interruptionReason) ??
+      'No haptic decision was recorded for this action.',
+    duplicatePolicy:
+      stringValue(metadata.duplicatePolicy) ??
+      'Actions are de-duplicated by action type and label before insert.',
+    aiCallId: context.aiCallId,
+    supplierCallId: context.supplierCallId,
+    target:
+      context.targetType && context.targetId
+        ? `${context.targetType}: ${context.targetId}`
+        : undefined,
+    createdAt: action.createdAt,
+    completedAt: action.completedAt,
+    closeoutIntent: stringValue(metadata.closeoutIntent) ?? undefined,
+    snoozedUntil: stringValue(metadata.snoozedUntil) ?? undefined,
+    eventTypes,
+    complianceSignals: buildComplianceSignals(eventTypes),
+    scriptQuality: scriptQuality
+      ? {
+          allowedToLaunch: booleanValue(scriptQuality.allowedToLaunch) ?? undefined,
+          level: stringValue(scriptQuality.level) ?? undefined,
+          score: numberValue(scriptQuality.score) ?? undefined,
+          requiredFixes: arrayOfStrings(scriptQuality.requiredFixes),
+        }
+      : undefined,
+  }
+}
+
+function buildComplianceSignals(eventTypes: string[]): string[] {
+  const signals: string[] = []
+  if (eventTypes.includes('identity_disclosed')) signals.push('Identity disclosure ledger event')
+  if (eventTypes.includes('recording_disclosed')) signals.push('Recording disclosure ledger event')
+  if (eventTypes.includes('opt_out_recorded')) signals.push('Opt-out ledger event')
+  if (eventTypes.includes('recording_attached')) signals.push('Recording attachment ledger event')
+  return signals
+}
+
+function booleanValue(value: unknown): boolean | null {
+  return typeof value === 'boolean' ? value : null
+}
+
+function arrayOfStrings(value: unknown): string[] {
+  if (!Array.isArray(value)) return []
+  return value.filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
 }

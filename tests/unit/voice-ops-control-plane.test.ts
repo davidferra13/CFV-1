@@ -10,11 +10,15 @@ import { evaluateVoiceCallConsent } from '@/lib/calling/voice-call-consent'
 import { planVoiceCallCampaign } from '@/lib/calling/voice-call-campaigns'
 import { buildVoiceOpsReport } from '@/lib/calling/voice-ops-report'
 import { buildVoiceSessionLedger } from '@/lib/calling/voice-session-ledger'
+import { evaluateVoiceScriptQuality } from '@/lib/calling/voice-script-quality'
 
 const ROOT = process.cwd()
 const MIGRATION = resolve(ROOT, 'database/migrations/20260430000001_voice_ops_control_plane.sql')
 const CALL_SHEET = resolve(ROOT, 'app/(chef)/culinary/call-sheet/page.tsx')
 const CONTROL_TOWER = resolve(ROOT, 'components/calling/voice-ops-control-tower.tsx')
+const STATUS_ROUTE = resolve(ROOT, 'app/api/calling/status/route.ts')
+const RECORDING_ROUTE = resolve(ROOT, 'app/api/calling/recording/route.ts')
+const VOICEMAIL_ROUTE = resolve(ROOT, 'app/api/calling/voicemail/route.ts')
 
 test('campaign planner reserves multiple allowed business recipients and gates risky contacts', () => {
   const plan = planVoiceCallCampaign({
@@ -217,6 +221,67 @@ test('voice ops report aggregates status, recordings, reviews, and professional 
   assert.ok(report.topNextActions.some((action) => action.type === 'review_dietary_safety'))
 })
 
+test('voice ops report prefers persisted post-call actions when available', () => {
+  const report = buildVoiceOpsReport(
+    [
+      {
+        id: 'ai-1',
+        direction: 'inbound',
+        role: 'inbound_unknown',
+        contact_phone: '+16175550100',
+        status: 'completed',
+      },
+    ],
+    [
+      {
+        id: 'action-1',
+        ai_call_id: 'ai-1',
+        action_type: 'review_pricing',
+        status: 'needs_review',
+        urgency: 'review',
+        label: 'Persisted pricing review',
+        detail: 'Review the quote before replying.',
+        metadata: {
+          voiceOpsSource: 'twilio_status_callback',
+          evidenceReason: 'Pricing scope was discussed.',
+        },
+      },
+    ],
+    [
+      {
+        ai_call_id: 'ai-1',
+        event_type: 'identity_disclosed',
+        payload: { voiceOpsSource: 'twilio_status_callback' },
+      },
+      {
+        ai_call_id: 'ai-1',
+        event_type: 'recording_disclosed',
+        payload: { voiceOpsSource: 'twilio_status_callback' },
+      },
+    ]
+  )
+
+  assert.equal(report.topNextActions[0].id, 'action-1')
+  assert.equal(report.topNextActions[0].evidence?.source, 'twilio_status_callback')
+  assert.deepEqual(report.topNextActions[0].evidence?.eventTypes, [
+    'identity_disclosed',
+    'recording_disclosed',
+  ])
+  assert.equal(report.pricingReviewCount, 0)
+})
+
+test('script quality gate blocks weak scripts and allows required disclosures', () => {
+  const weak = evaluateVoiceScriptQuality('Hi, I need to ask about fish.')
+  assert.equal(weak.allowedToLaunch, false)
+  assert.ok(weak.requiredFixes.length >= 2)
+
+  const strong = evaluateVoiceScriptQuality(
+    'I am an AI assistant calling on behalf of the chef. This call may be recorded and transcribed for the chef. Say stop calling at any time and AI assistant calls to this number stop. I am calling to check availability for haddock.'
+  )
+  assert.equal(strong.allowedToLaunch, true)
+  assert.notEqual(strong.level, 'high')
+})
+
 test('migration is additive and includes required voice ops tables', () => {
   const sql = readFileSync(MIGRATION, 'utf8')
 
@@ -239,4 +304,17 @@ test('Voice Hub renders the control tower on the canonical call sheet surface', 
   assert.match(callSheet, /buildVoiceOpsReport/)
   assert.match(controlTower, /Voice Ops Control Tower/)
   assert.match(controlTower, /Next actions/)
+  assert.match(controlTower, /VoicePostCallActionRow/)
+  assert.match(callSheet, /voice_session_events/)
+})
+
+test('terminal Twilio callbacks record Voice Ops automatically', () => {
+  const statusRoute = readFileSync(STATUS_ROUTE, 'utf8')
+  const recordingRoute = readFileSync(RECORDING_ROUTE, 'utf8')
+  const voicemailRoute = readFileSync(VOICEMAIL_ROUTE, 'utf8')
+
+  assert.match(statusRoute, /recordVoiceOpsForAiCallWithDb/)
+  assert.match(statusRoute, /isTerminal && effectiveAiCallId/)
+  assert.match(recordingRoute, /recordVoiceOpsForAiCallWithDb/)
+  assert.match(voicemailRoute, /recordVoiceOpsForAiCallWithDb/)
 })

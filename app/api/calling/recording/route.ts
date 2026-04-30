@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/db/admin'
 import { validateTwilioWebhook } from '@/lib/calling/twilio-webhook-auth'
+import { recordVoiceOpsForAiCallWithDb } from '@/lib/calling/voice-ops-recorder'
 
 export async function POST(req: NextRequest) {
   const formData = await req.formData()
@@ -68,14 +69,36 @@ export async function POST(req: NextRequest) {
   if (!updated || aiCallId) {
     const aiFilter = aiCallId ? { key: 'id', value: aiCallId } : { key: 'call_sid', value: callSid }
     try {
-      await db
+      const { data: aiCall } = await db
         .from('ai_calls')
         .update({ recording_url: mp3Url, updated_at: now })
         .eq(aiFilter.key, aiFilter.value)
+        .select('id, chef_id')
+        .maybeSingle()
+
+      if (aiCall?.id && aiCall?.chef_id) {
+        await recordRecordingVoiceOps(db, aiCall.chef_id, aiCall.id)
+      }
     } catch (err) {
       console.error('[calling/recording] ai_calls recording_url update failed:', err)
     }
   }
 
   return NextResponse.json({ ok: true })
+}
+
+async function recordRecordingVoiceOps(db: any, chefId: string, aiCallId: string): Promise<void> {
+  try {
+    const result = await recordVoiceOpsForAiCallWithDb({
+      db,
+      chefId,
+      aiCallId,
+      source: 'twilio_recording_callback',
+    })
+    if (!result.success) {
+      console.error('[calling/recording] voice ops recording failed:', result.error)
+    }
+  } catch (err) {
+    console.error('[calling/recording] voice ops recording threw:', err)
+  }
 }

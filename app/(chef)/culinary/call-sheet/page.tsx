@@ -203,28 +203,54 @@ export default async function CallSheetPage({
 
   // Q60: Guard each fetch independently - single failure must not crash entire page.
   // Chef sees degraded Call Sheet (missing tab data) instead of blank server error.
-  const [calls, aiCalls, vendors, nationalCount, routingRules] = await Promise.all([
-    getRecentCalls(100).catch((err: any) => {
-      console.error('[call-sheet] calls fetch failed:', err)
-      return [] as any[]
-    }),
-    getRecentAiCalls(100).catch((err: any) => {
-      console.error('[call-sheet] aiCalls fetch failed:', err)
-      return [] as any[]
-    }),
-    listVendors().catch((err: any) => {
-      console.error('[call-sheet] vendors fetch failed:', err)
-      return [] as any[]
-    }),
-    getNationalVendorCount(chefState).catch((err: any) => {
-      console.error('[call-sheet] nationalCount fetch failed:', err)
-      return 0
-    }),
-    getRoutingRules().catch((err: any) => {
-      console.error('[call-sheet] routingRules fetch failed:', err)
-      return null
-    }),
-  ])
+  const [calls, aiCalls, vendors, nationalCount, routingRules, postCallActions, sessionEvents] =
+    await Promise.all([
+      getRecentCalls(100).catch((err: any) => {
+        console.error('[call-sheet] calls fetch failed:', err)
+        return [] as any[]
+      }),
+      getRecentAiCalls(100).catch((err: any) => {
+        console.error('[call-sheet] aiCalls fetch failed:', err)
+        return [] as any[]
+      }),
+      listVendors().catch((err: any) => {
+        console.error('[call-sheet] vendors fetch failed:', err)
+        return [] as any[]
+      }),
+      getNationalVendorCount(chefState).catch((err: any) => {
+        console.error('[call-sheet] nationalCount fetch failed:', err)
+        return 0
+      }),
+      getRoutingRules().catch((err: any) => {
+        console.error('[call-sheet] routingRules fetch failed:', err)
+        return null
+      }),
+      db
+        .from('voice_post_call_actions')
+        .select(
+          'id, ai_call_id, supplier_call_id, action_type, status, urgency, label, detail, target_type, target_id, metadata, created_at, completed_at'
+        )
+        .eq('chef_id', user.tenantId!)
+        .in('status', ['planned', 'needs_review'])
+        .order('created_at', { ascending: false })
+        .limit(20)
+        .then((result: any) => result.data ?? [])
+        .catch((err: any) => {
+          console.error('[call-sheet] postCallActions fetch failed:', err)
+          return [] as any[]
+        }),
+      db
+        .from('voice_session_events')
+        .select('id, ai_call_id, supplier_call_id, event_type, payload, occurred_at, created_at')
+        .eq('chef_id', user.tenantId!)
+        .order('created_at', { ascending: false })
+        .limit(160)
+        .then((result: any) => result.data ?? [])
+        .catch((err: any) => {
+          console.error('[call-sheet] sessionEvents fetch failed:', err)
+          return [] as any[]
+        }),
+    ])
 
   const savedWithPhone = (vendors as any[]).filter((v) => v.phone)
   const addedVendorIds = new Set(savedWithPhone.map((v: any) => v.id as string))
@@ -232,10 +258,11 @@ export default async function CallSheetPage({
   // vendor_availability ai_calls already appear via supplier_calls  - exclude them
   // to prevent every availability call showing twice in the Call Log.
   const filteredAiCalls = aiCalls.filter((c) => c.role !== 'vendor_availability')
-  const voiceOpsReport = buildVoiceOpsReport([
-    ...(calls as unknown[]),
-    ...(filteredAiCalls as unknown[]),
-  ])
+  const voiceOpsReport = buildVoiceOpsReport(
+    [...(calls as unknown[]), ...(filteredAiCalls as unknown[])],
+    postCallActions as unknown[],
+    sessionEvents as unknown[]
+  )
 
   const inboxItems = aiCalls.filter(
     (c) =>

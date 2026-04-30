@@ -17,6 +17,7 @@ import { createAdminClient } from '@/lib/db/admin'
 import { broadcast } from '@/lib/realtime/broadcast'
 import { sendSms } from '@/lib/sms/send'
 import { validateTwilioWebhook } from '@/lib/calling/twilio-webhook-auth'
+import { recordVoiceOpsForAiCallWithDb } from '@/lib/calling/voice-ops-recorder'
 
 export async function POST(req: NextRequest) {
   const formData = await req.formData()
@@ -34,6 +35,7 @@ export async function POST(req: NextRequest) {
 
   const { searchParams } = new URL(req.url)
   const callId = searchParams.get('callId')
+  const aiCallId = searchParams.get('aiCallId')
 
   const db: any = createAdminClient()
 
@@ -74,7 +76,7 @@ export async function POST(req: NextRequest) {
         .from('supplier_calls')
         .update(update)
         .eq('id', callId)
-        .select('id, chef_id, vendor_id, vendor_name, ingredient_name, result')
+        .select('id, chef_id, vendor_id, vendor_name, ingredient_name, result, ai_call_id')
         .single()
       callRecord = data
     } catch (err) {
@@ -88,7 +90,7 @@ export async function POST(req: NextRequest) {
         .from('supplier_calls')
         .update(update)
         .eq('call_sid', callSid)
-        .select('id, chef_id, vendor_id, vendor_name, ingredient_name, result')
+        .select('id, chef_id, vendor_id, vendor_name, ingredient_name, result, ai_call_id')
         .single()
       callRecord = data
     } catch (err) {
@@ -99,7 +101,6 @@ export async function POST(req: NextRequest) {
 
   if (!callRecord) {
     // Also check ai_calls table for non-supplier-call roles (delivery, venue, etc.)
-    const aiCallId = searchParams.get('aiCallId')
     if (aiCallId) {
       const aiUpdate: Record<string, any> = {
         status: mappedStatus,
@@ -134,14 +135,15 @@ export async function POST(req: NextRequest) {
         } catch (err) {
           console.error('[calling/status] ai_calls broadcast error:', err)
         }
+        await recordTerminalVoiceOps(db, aiCallRecord.chef_id, aiCallId)
       }
     }
     return NextResponse.json({ ok: true })
   }
 
   // Also update ai_calls if linked
-  const aiCallId = searchParams.get('aiCallId')
-  if (aiCallId) {
+  const effectiveAiCallId = aiCallId || callRecord.ai_call_id
+  if (effectiveAiCallId) {
     const aiUpdate: Record<string, any> = {
       status: mappedStatus,
       updated_at: new Date().toISOString(),
@@ -151,7 +153,7 @@ export async function POST(req: NextRequest) {
     await db
       .from('ai_calls')
       .update(aiUpdate)
-      .eq('id', aiCallId)
+      .eq('id', effectiveAiCallId)
       .catch((err: unknown) => {
         console.error('[calling/status] ai_calls status update failed:', err)
       })
@@ -165,7 +167,7 @@ export async function POST(req: NextRequest) {
     try {
       await broadcast(`chef-${callRecord.chef_id}`, 'supplier_call_result', {
         callId: callRecord.id,
-        aiCallId,
+        aiCallId: effectiveAiCallId,
         vendorId: callRecord.vendor_id,
         vendorName: callRecord.vendor_name,
         ingredientName: callRecord.ingredient_name,
@@ -216,5 +218,25 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  if (isTerminal && effectiveAiCallId) {
+    await recordTerminalVoiceOps(db, callRecord.chef_id, effectiveAiCallId)
+  }
+
   return NextResponse.json({ ok: true })
+}
+
+async function recordTerminalVoiceOps(db: any, chefId: string, aiCallId: string): Promise<void> {
+  try {
+    const result = await recordVoiceOpsForAiCallWithDb({
+      db,
+      chefId,
+      aiCallId,
+      source: 'twilio_status_callback',
+    })
+    if (!result.success) {
+      console.error('[calling/status] voice ops recording failed:', result.error)
+    }
+  } catch (err) {
+    console.error('[calling/status] voice ops recording threw:', err)
+  }
 }

@@ -75,14 +75,40 @@ export interface VoiceCallLike {
 }
 
 export interface VoicePostCallAction {
+  id?: string
   type: VoicePostCallActionType
   label: string
   detail: string
   urgency: VoiceActionUrgency
-  status: 'planned' | 'completed' | 'needs_review' | 'skipped'
+  status: 'planned' | 'completed' | 'needs_review' | 'skipped' | 'failed'
   targetType?: string
   targetId?: string
+  createdAt?: string
+  completedAt?: string
   metadata?: Record<string, unknown>
+  evidence?: VoicePostCallActionEvidence
+}
+
+export interface VoicePostCallActionEvidence {
+  source: string
+  reason: string
+  hapticReason: string
+  duplicatePolicy: string
+  aiCallId?: string
+  supplierCallId?: string
+  target?: string
+  createdAt?: string
+  completedAt?: string
+  closeoutIntent?: string
+  snoozedUntil?: string
+  eventTypes: string[]
+  complianceSignals: string[]
+  scriptQuality?: {
+    allowedToLaunch?: boolean
+    level?: string
+    score?: number
+    requiredFixes: string[]
+  }
 }
 
 export interface VoicePostCallPlan {

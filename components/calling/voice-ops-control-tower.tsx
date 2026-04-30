@@ -9,7 +9,8 @@ import {
   Users,
   XCircle,
 } from '@/components/ui/icons'
-import type { VoiceOpsReport, VoicePostCallAction } from '@/lib/calling/voice-ops-types'
+import { VoicePostCallActionRow } from '@/components/calling/voice-post-call-action-row'
+import type { VoiceOpsReport } from '@/lib/calling/voice-ops-types'
 
 export function VoiceOpsControlTower({ report }: { report: VoiceOpsReport }) {
   const stats = [
@@ -118,7 +119,10 @@ export function VoiceOpsControlTower({ report }: { report: VoiceOpsReport }) {
           </div>
           <div className="space-y-2">
             {report.topNextActions.map((action, index) => (
-              <ActionRow key={`${action.type}-${index}`} action={action} />
+              <VoicePostCallActionRow
+                key={`${action.type}-${action.id ?? index}`}
+                action={action}
+              />
             ))}
           </div>
         </div>
@@ -138,25 +142,6 @@ function SignalRow({ label, value, detail }: { label: string; value: number; det
         </p>
         <p className="mt-0.5 text-xs text-stone-500">{detail}</p>
       </div>
-    </div>
-  )
-}
-
-function ActionRow({ action }: { action: VoicePostCallAction }) {
-  const tone =
-    action.urgency === 'urgent'
-      ? 'border-rose-800 bg-rose-950/20 text-rose-200'
-      : action.urgency === 'review'
-        ? 'border-amber-800 bg-amber-950/20 text-amber-200'
-        : 'border-stone-800 bg-stone-900 text-stone-200'
-
-  return (
-    <div className={`rounded-lg border px-3 py-2 ${tone}`}>
-      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-xs font-semibold">{action.label}</p>
-        <span className="text-[10px] uppercase tracking-wide opacity-70">{action.urgency}</span>
-      </div>
-      <p className="mt-1 text-xs leading-relaxed text-stone-400">{action.detail}</p>
     </div>
   )
 }

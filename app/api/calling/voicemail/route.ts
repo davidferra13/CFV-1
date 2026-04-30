@@ -11,6 +11,7 @@ import { createAdminClient } from '@/lib/db/admin'
 import { broadcast } from '@/lib/realtime/broadcast'
 import { validateTwilioWebhook } from '@/lib/calling/twilio-webhook-auth'
 import { analyzeVoiceAffect } from '@/lib/affective/voice-affect'
+import { recordVoiceOpsForAiCallWithDb } from '@/lib/calling/voice-ops-recorder'
 
 export async function POST(req: NextRequest) {
   const formData = await req.formData()
@@ -64,6 +65,20 @@ export async function POST(req: NextRequest) {
   }
 
   if (!aiCall) return NextResponse.json({ ok: true })
+
+  try {
+    const result = await recordVoiceOpsForAiCallWithDb({
+      db,
+      chefId: aiCall.chef_id,
+      aiCallId,
+      source: 'twilio_voicemail_callback',
+    })
+    if (!result.success) {
+      console.error('[voicemail] voice ops recording failed:', result.error)
+    }
+  } catch (err) {
+    console.error('[voicemail] voice ops recording threw:', err)
+  }
 
   // Create a chef_quick_notes entry so this shows up in the chef's task list
   if (transcriptionText) {
