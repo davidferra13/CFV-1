@@ -93,7 +93,7 @@ export default async function PaymentPage({ params }: { params: { id: string } }
             <h1 className="text-3xl font-bold text-stone-100 mb-2">Complete Payment</h1>
             <p className="text-stone-400">Secure payment for {event.occasion || 'your event'}</p>
           </div>
-          <LivePrivacyPageToggle compact />
+          <LivePrivacyPageToggle compact surface="payments" />
         </div>
       </div>
 

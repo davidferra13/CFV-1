@@ -283,7 +283,7 @@ export function ChatView({
                 ? 'Private viewing is on for this chat. Read, online, and typing signals are hidden.'
                 : 'Chat live signals are visible based on your privacy controls.'}
             </p>
-            <LivePrivacyPageToggle compact />
+            <LivePrivacyPageToggle compact surface="messages" />
           </div>
         </div>
       )}

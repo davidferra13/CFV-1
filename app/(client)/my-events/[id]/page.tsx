@@ -261,7 +261,7 @@ export default async function EventDetailPage({
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <MessageChefButton context_type="event" event_id={event.id} label="Message Chef" />
-            <LivePrivacyPageToggle compact />
+            <LivePrivacyPageToggle compact surface="events" />
           </div>
         </div>
       </div>

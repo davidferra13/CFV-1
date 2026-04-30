@@ -5,7 +5,14 @@
 import { useEffect, useRef } from 'react'
 import type { ActivityEventType } from '@/lib/activity/types'
 import { buildActivityTrackPayload } from '@/lib/activity/client-payload'
-import { shouldShareActivitySignal, useLivePrivacy } from './live-privacy-controls'
+import {
+  consumeLivePrivacySurfacePrivateOnce,
+  getLivePrivacySignalLabel,
+  getLivePrivacySurfaceForEvent,
+  recordLivePrivacyReceipt,
+  shouldShareActivitySignal,
+  useLivePrivacy,
+} from './live-privacy-controls'
 
 interface ActivityTrackerProps {
   eventType: ActivityEventType
@@ -26,10 +33,36 @@ export function ActivityTracker({
 
   useEffect(() => {
     if (!isReady) return
-    if (!shouldShareActivitySignal(eventType, state)) return
     if (trackedKeyRef.current === trackKey) return
 
     trackedKeyRef.current = trackKey
+    const surface = getLivePrivacySurfaceForEvent(eventType) ?? 'presence'
+    const oneTimePrivate = consumeLivePrivacySurfacePrivateOnce(
+      surface === 'presence' ? null : surface
+    )
+    const shouldShare = !oneTimePrivate && shouldShareActivitySignal(eventType, state)
+
+    if (eventType !== 'session_heartbeat') {
+      recordLivePrivacyReceipt({
+        signal: getLivePrivacySignalLabel(eventType),
+        surface,
+        outcome:
+          eventType === 'chat_message_sent' ||
+          eventType === 'form_submitted' ||
+          eventType === 'rsvp_submitted'
+            ? 'functional'
+            : shouldShare
+              ? 'shared'
+              : 'private',
+        detail: shouldShare
+          ? 'ChefFlow shared this live signal with your chef.'
+          : oneTimePrivate
+            ? 'ChefFlow kept this one-time passive signal private.'
+            : 'ChefFlow kept this passive signal private.',
+      })
+    }
+
+    if (!shouldShare) return
 
     fetch('/api/activity/track', {
       method: 'POST',

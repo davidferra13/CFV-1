@@ -60,7 +60,7 @@ export default async function ClientQuoteDetailPage({ params }: { params: { id: 
           <Link href="/my-quotes">
             <Button variant="ghost">Back to Quotes</Button>
           </Link>
-          <LivePrivacyPageToggle compact />
+          <LivePrivacyPageToggle compact surface="proposals" />
         </div>
       </div>
 

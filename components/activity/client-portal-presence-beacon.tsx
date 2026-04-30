@@ -2,7 +2,11 @@
 
 import { useCallback, useEffect, useRef } from 'react'
 import { usePathname } from 'next/navigation'
-import { shouldSharePresenceSignal, useLivePrivacy } from './live-privacy-controls'
+import {
+  recordLivePrivacyReceipt,
+  shouldSharePresenceSignal,
+  useLivePrivacy,
+} from './live-privacy-controls'
 
 const HEARTBEAT_INTERVAL_MS = 30_000
 
@@ -67,6 +71,7 @@ export function ClientPortalPresenceBeacon({
   )
   const pathnameRef = useRef(pathname)
   const { state, isReady } = useLivePrivacy()
+  const presenceReceiptRef = useRef<string | null>(null)
 
   useEffect(() => {
     pathnameRef.current = pathname
@@ -75,7 +80,21 @@ export function ClientPortalPresenceBeacon({
   const sendPresence = useCallback(() => {
     if (!tenantId) return
     if (!isReady) return
-    if (!shouldSharePresenceSignal(state)) return
+    const shouldShare = shouldSharePresenceSignal(state)
+
+    if (presenceReceiptRef.current !== String(shouldShare)) {
+      presenceReceiptRef.current = String(shouldShare)
+      recordLivePrivacyReceipt({
+        signal: 'Active-now presence',
+        surface: 'presence',
+        outcome: shouldShare ? 'shared' : 'private',
+        detail: shouldShare
+          ? 'ChefFlow shared your active portal presence.'
+          : 'ChefFlow kept your active portal presence private.',
+      })
+    }
+
+    if (!shouldShare) return
 
     const data: ClientPortalPresencePayload = {
       sessionId: sessionIdRef.current,

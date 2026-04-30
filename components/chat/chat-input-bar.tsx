@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useRef, useCallback, useEffect } from 'react'
-import { Send, Paperclip, X } from '@/components/ui/icons'
+import { Send, Paperclip } from '@/components/ui/icons'
 import { useDebouncedCallback } from '@/lib/hooks/use-debounce'
+import { recordLivePrivacyReceipt } from '@/components/activity/live-privacy-controls'
 
 interface ChatInputBarProps {
   onSendText: (text: string) => Promise<void>
@@ -23,6 +24,7 @@ export function ChatInputBar({
   const [sending, setSending] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const isTypingRef = useRef(false)
+  const typingReceiptRef = useRef<'shared' | 'private' | null>(null)
 
   const stopTyping = useDebouncedCallback(() => {
     isTypingRef.current = false
@@ -33,6 +35,15 @@ export function ChatInputBar({
     if (!typingEnabled && isTypingRef.current) {
       isTypingRef.current = false
       onTyping(false)
+      if (typingReceiptRef.current !== 'private') {
+        typingReceiptRef.current = 'private'
+        recordLivePrivacyReceipt({
+          signal: 'Typing indicator',
+          surface: 'typing',
+          outcome: 'private',
+          detail: 'ChefFlow hid your typing indicator because privacy controls are on.',
+        })
+      }
     }
   }, [onTyping, typingEnabled])
 
@@ -45,10 +56,30 @@ export function ChatInputBar({
   }, [text])
 
   const handleTyping = useCallback(() => {
-    if (!typingEnabled) return
+    if (!typingEnabled) {
+      if (typingReceiptRef.current !== 'private') {
+        typingReceiptRef.current = 'private'
+        recordLivePrivacyReceipt({
+          signal: 'Typing indicator',
+          surface: 'typing',
+          outcome: 'private',
+          detail: 'ChefFlow hid your typing indicator because privacy controls are on.',
+        })
+      }
+      return
+    }
     if (!isTypingRef.current) {
       isTypingRef.current = true
       onTyping(true)
+      if (typingReceiptRef.current !== 'shared') {
+        typingReceiptRef.current = 'shared'
+        recordLivePrivacyReceipt({
+          signal: 'Typing indicator',
+          surface: 'typing',
+          outcome: 'shared',
+          detail: 'ChefFlow shared that you are typing in chat.',
+        })
+      }
     }
     stopTyping()
   }, [onTyping, stopTyping, typingEnabled])

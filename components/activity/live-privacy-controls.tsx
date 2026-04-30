@@ -7,9 +7,28 @@ import type { ActivityEventType } from '@/lib/activity/types'
 
 const STORAGE_KEY = 'chefflow-live-privacy-v1'
 const SESSION_PRIVATE_KEY = 'chefflow-live-privacy-session'
+const SESSION_ONCE_KEY = 'chefflow-live-privacy-once'
 const CHANGE_EVENT = 'chefflow-live-privacy-change'
 
 export type LivePrivacyMode = 'visible' | 'private-session' | 'private-device'
+export type LivePrivacySurface =
+  | 'proposals'
+  | 'invoices'
+  | 'messages'
+  | 'events'
+  | 'menus'
+  | 'documents'
+  | 'payments'
+export type LivePrivacySurfaceMode = 'inherit' | 'visible' | 'private'
+
+export type LivePrivacyReceipt = {
+  id: string
+  at: string
+  signal: string
+  surface: LivePrivacySurface | 'presence' | 'typing'
+  outcome: 'shared' | 'private' | 'functional'
+  detail: string
+}
 
 export type LivePrivacySettings = {
   sharePresence: boolean
@@ -25,6 +44,8 @@ export type LivePrivacySettings = {
 export type LivePrivacyState = {
   mode: LivePrivacyMode
   settings: LivePrivacySettings
+  surfaceDefaults: Record<LivePrivacySurface, LivePrivacySurfaceMode>
+  receipts: LivePrivacyReceipt[]
 }
 
 const DEFAULT_SETTINGS: LivePrivacySettings = {
@@ -38,14 +59,28 @@ const DEFAULT_SETTINGS: LivePrivacySettings = {
   shareDownloads: true,
 }
 
+const DEFAULT_SURFACE_DEFAULTS: Record<LivePrivacySurface, LivePrivacySurfaceMode> = {
+  proposals: 'inherit',
+  invoices: 'inherit',
+  messages: 'inherit',
+  events: 'inherit',
+  menus: 'inherit',
+  documents: 'inherit',
+  payments: 'inherit',
+}
+
 const DEFAULT_STATE: LivePrivacyState = {
   mode: 'visible',
   settings: DEFAULT_SETTINGS,
+  surfaceDefaults: DEFAULT_SURFACE_DEFAULTS,
+  receipts: [],
 }
 
 type StoredLivePrivacyState = {
   mode?: LivePrivacyMode
   settings?: Partial<LivePrivacySettings>
+  surfaceDefaults?: Partial<Record<LivePrivacySurface, LivePrivacySurfaceMode>>
+  receipts?: LivePrivacyReceipt[]
 }
 
 function isLivePrivacyMode(value: unknown): value is LivePrivacyMode {
@@ -61,6 +96,11 @@ function normalizeState(input: StoredLivePrivacyState | null): LivePrivacyState 
       ...DEFAULT_SETTINGS,
       ...(input?.settings ?? {}),
     },
+    surfaceDefaults: {
+      ...DEFAULT_SURFACE_DEFAULTS,
+      ...(input?.surfaceDefaults ?? {}),
+    },
+    receipts: Array.isArray(input?.receipts) ? input.receipts.slice(0, 12) : [],
   }
 }
 
@@ -88,17 +128,61 @@ function writePersistedState(state: LivePrivacyState) {
       window.sessionStorage.setItem(SESSION_PRIVATE_KEY, 'true')
       window.localStorage.setItem(
         STORAGE_KEY,
-        JSON.stringify({ mode: 'visible', settings: state.settings })
+        JSON.stringify({
+          mode: 'visible',
+          settings: state.settings,
+          surfaceDefaults: state.surfaceDefaults,
+          receipts: state.receipts.slice(0, 12),
+        })
       )
       return
     }
 
     window.sessionStorage.removeItem(SESSION_PRIVATE_KEY)
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+    window.localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ ...state, receipts: state.receipts.slice(0, 12) })
+    )
   } catch {
     // Hardened browsers can block storage. The current React state still applies
     // for this tab.
   }
+}
+
+function readOneTimePrivateSurfaces(): LivePrivacySurface[] {
+  try {
+    const raw = window.sessionStorage.getItem(SESSION_ONCE_KEY)
+    const parsed = raw ? (JSON.parse(raw) as unknown) : []
+    if (!Array.isArray(parsed)) return []
+    return parsed.filter(
+      (surface): surface is LivePrivacySurface =>
+        typeof surface === 'string' && surface in DEFAULT_SURFACE_DEFAULTS
+    )
+  } catch {
+    return []
+  }
+}
+
+function writeOneTimePrivateSurfaces(surfaces: LivePrivacySurface[]) {
+  try {
+    window.sessionStorage.setItem(SESSION_ONCE_KEY, JSON.stringify(Array.from(new Set(surfaces))))
+  } catch {
+    // Session-only privacy affordance. Ignore storage failures.
+  }
+}
+
+export function setLivePrivacySurfacePrivateOnce(surface: LivePrivacySurface) {
+  writeOneTimePrivateSurfaces([...readOneTimePrivateSurfaces(), surface])
+  emitPrivacyChange()
+}
+
+export function consumeLivePrivacySurfacePrivateOnce(surface: LivePrivacySurface | null): boolean {
+  if (!surface) return false
+  const surfaces = readOneTimePrivateSurfaces()
+  if (!surfaces.includes(surface)) return false
+  writeOneTimePrivateSurfaces(surfaces.filter((item) => item !== surface))
+  emitPrivacyChange()
+  return true
 }
 
 export function isLivePrivacyPrivate(state: LivePrivacyState): boolean {
@@ -113,11 +197,68 @@ export function shouldShareTypingSignal(state: LivePrivacyState): boolean {
   return !isLivePrivacyPrivate(state) && state.settings.shareTyping
 }
 
+export function getLivePrivacySurfaceForEvent(
+  eventType: ActivityEventType
+): LivePrivacySurface | null {
+  switch (eventType) {
+    case 'proposal_viewed':
+    case 'quote_viewed':
+      return 'proposals'
+    case 'invoice_viewed':
+      return 'invoices'
+    case 'chat_opened':
+    case 'chat_message_sent':
+      return 'messages'
+    case 'payment_page_visited':
+      return 'payments'
+    case 'document_downloaded':
+      return 'documents'
+    case 'event_viewed':
+    case 'events_list_viewed':
+      return 'events'
+    case 'page_viewed':
+    case 'quotes_list_viewed':
+    case 'rewards_viewed':
+    case 'public_profile_viewed':
+      return 'menus'
+    default:
+      return null
+  }
+}
+
+export function isLivePrivacySurfacePrivate(
+  surface: LivePrivacySurface,
+  state: LivePrivacyState
+): boolean {
+  return isLivePrivacyPrivate(state) || state.surfaceDefaults[surface] === 'private'
+}
+
+export function shouldShareSurfaceSignal(
+  surface: LivePrivacySurface,
+  state: LivePrivacyState
+): boolean {
+  if (isLivePrivacyPrivate(state)) return false
+  return state.surfaceDefaults[surface] !== 'private'
+}
+
 export function shouldShareActivitySignal(
   eventType: ActivityEventType,
   state: LivePrivacyState
 ): boolean {
+  if (
+    eventType === 'chat_message_sent' ||
+    eventType === 'form_submitted' ||
+    eventType === 'rsvp_submitted'
+  ) {
+    return true
+  }
+
+  const surface = getLivePrivacySurfaceForEvent(eventType)
+  const surfaceMode = surface ? state.surfaceDefaults[surface] : 'inherit'
+
   if (isLivePrivacyPrivate(state)) return false
+  if (surfaceMode === 'private') return false
+  if (surfaceMode === 'visible') return true
 
   switch (eventType) {
     case 'portal_login':
@@ -141,12 +282,62 @@ export function shouldShareActivitySignal(
     case 'rewards_viewed':
     case 'public_profile_viewed':
       return state.settings.sharePageViews
-    case 'chat_message_sent':
-    case 'form_submitted':
-    case 'rsvp_submitted':
-      return true
     default:
       return true
+  }
+}
+
+export function getLivePrivacySignalLabel(eventType: ActivityEventType): string {
+  switch (eventType) {
+    case 'proposal_viewed':
+      return 'Proposal viewed'
+    case 'quote_viewed':
+      return 'Quote viewed'
+    case 'invoice_viewed':
+      return 'Invoice opened'
+    case 'chat_opened':
+      return 'Messages opened'
+    case 'payment_page_visited':
+      return 'Payment page opened'
+    case 'document_downloaded':
+      return 'Document downloaded'
+    case 'session_heartbeat':
+      return 'Active-now heartbeat'
+    case 'portal_login':
+      return 'Portal opened'
+    case 'chat_message_sent':
+      return 'Message sent'
+    case 'form_submitted':
+      return 'Form submitted'
+    case 'rsvp_submitted':
+      return 'RSVP submitted'
+    default:
+      return eventType.replace(/_/g, ' ')
+  }
+}
+
+function buildReceiptId(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID()
+  }
+  return `${Date.now()}-${Math.random().toString(36).slice(2)}`
+}
+
+export function recordLivePrivacyReceipt(input: Omit<LivePrivacyReceipt, 'id' | 'at'>) {
+  try {
+    const current = readPersistedState()
+    const receipt: LivePrivacyReceipt = {
+      id: buildReceiptId(),
+      at: new Date().toISOString(),
+      ...input,
+    }
+    writePersistedState({
+      ...current,
+      receipts: [receipt, ...current.receipts].slice(0, 12),
+    })
+    emitPrivacyChange()
+  } catch {
+    // Receipts are a client-side transparency affordance only.
   }
 }
 
@@ -196,12 +387,23 @@ export function useLivePrivacy() {
     [updateState]
   )
 
+  const setSurfaceDefault = useCallback(
+    (surface: LivePrivacySurface, value: LivePrivacySurfaceMode) => {
+      updateState((current) => ({
+        ...current,
+        surfaceDefaults: { ...current.surfaceDefaults, [surface]: value },
+      }))
+    },
+    [updateState]
+  )
+
   return {
     state,
     isReady,
     isPrivate: isLivePrivacyPrivate(state),
     setMode,
     setSetting,
+    setSurfaceDefault,
   }
 }
 
@@ -236,38 +438,93 @@ export function LivePrivacyStatusPill({ className = '' }: LivePrivacyStatusPillP
 
 type LivePrivacyPageToggleProps = {
   compact?: boolean
+  surface?: LivePrivacySurface
 }
 
-export function LivePrivacyPageToggle({ compact = false }: LivePrivacyPageToggleProps) {
-  const { state, isReady, isPrivate, setMode } = useLivePrivacy()
+const SURFACE_LABELS: Record<LivePrivacySurface, string> = {
+  proposals: 'proposals',
+  invoices: 'invoices',
+  messages: 'messages',
+  events: 'events',
+  menus: 'menus',
+  documents: 'documents',
+  payments: 'payments',
+}
+
+export function LivePrivacyPageToggle({ compact = false, surface }: LivePrivacyPageToggleProps) {
+  const { state, isReady, isPrivate, setMode, setSurfaceDefault } = useLivePrivacy()
 
   if (!isReady) return null
 
-  const nextMode: LivePrivacyMode = isPrivate ? 'visible' : 'private-session'
+  const surfacePrivate = surface ? isLivePrivacySurfacePrivate(surface, state) : isPrivate
+
+  const toggle = () => {
+    if (surface) {
+      if (isPrivate && state.mode !== 'visible') {
+        setMode('visible')
+        return
+      }
+
+      setSurfaceDefault(
+        surface,
+        state.surfaceDefaults[surface] === 'private' ? 'visible' : 'private'
+      )
+      return
+    }
+
+    setMode(isPrivate ? 'visible' : 'private-session')
+  }
+
+  const setPrivateOnce = () => {
+    if (!surface) return
+    setLivePrivacySurfacePrivateOnce(surface)
+    recordLivePrivacyReceipt({
+      signal: `Next ${SURFACE_LABELS[surface]} open`,
+      surface,
+      outcome: 'private',
+      detail: 'ChefFlow will keep the next passive signal on this surface private.',
+    })
+  }
 
   return (
-    <button
-      type="button"
-      onClick={() => setMode(nextMode)}
-      className={`inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition ${
-        isPrivate
-          ? 'border-amber-400/35 bg-amber-950/40 text-amber-100 hover:bg-amber-900/50'
-          : 'border-stone-600 bg-stone-900 text-stone-200 hover:bg-stone-800'
-      }`}
-      title={isPrivate ? 'Share passive view signals again' : 'Stop passive view signals'}
-    >
-      {isPrivate ? <EyeOff className="h-4 w-4" /> : <Shield className="h-4 w-4" />}
-      {compact
-        ? isPrivate
-          ? 'Private'
-          : 'Visible'
-        : isPrivate
-          ? 'Viewing privately'
-          : 'Browse privately'}
-      {state.mode === 'private-device' && !compact ? (
-        <span className="text-xs text-amber-200/80">device</span>
+    <span className="inline-flex items-center gap-1">
+      <button
+        type="button"
+        onClick={toggle}
+        className={`inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition ${
+          surfacePrivate
+            ? 'border-amber-400/35 bg-amber-950/40 text-amber-100 hover:bg-amber-900/50'
+            : 'border-stone-600 bg-stone-900 text-stone-200 hover:bg-stone-800'
+        }`}
+        title={surfacePrivate ? 'Share passive view signals again' : 'Stop passive view signals'}
+      >
+        {surfacePrivate ? <EyeOff className="h-4 w-4" /> : <Shield className="h-4 w-4" />}
+        {compact
+          ? surfacePrivate
+            ? 'Private'
+            : 'Visible'
+          : surfacePrivate
+            ? surface
+              ? `Private ${SURFACE_LABELS[surface]}`
+              : 'Viewing privately'
+            : surface
+              ? `Private ${SURFACE_LABELS[surface]}`
+              : 'Browse privately'}
+        {state.mode === 'private-device' && !compact ? (
+          <span className="text-xs text-amber-200/80">device</span>
+        ) : null}
+      </button>
+      {surface && !surfacePrivate ? (
+        <button
+          type="button"
+          onClick={setPrivateOnce}
+          className="rounded-lg border border-stone-700 bg-stone-950 px-2 py-2 text-xs font-medium text-stone-300 transition hover:bg-stone-800"
+          title="Keep the next passive signal on this surface private"
+        >
+          Once
+        </button>
       ) : null}
-    </button>
+    </span>
   )
 }
 
@@ -318,6 +575,126 @@ const SETTING_ROWS: Array<{
   },
 ]
 
+const SURFACE_ROWS: Array<{
+  key: LivePrivacySurface
+  label: string
+  example: string
+}> = [
+  {
+    key: 'proposals',
+    label: 'Proposals and quotes',
+    example: 'Open proposals privately by default.',
+  },
+  { key: 'invoices', label: 'Invoices', example: 'Keep invoice views private.' },
+  { key: 'messages', label: 'Messages', example: 'Hide read and typing signals.' },
+  { key: 'events', label: 'Event pages', example: 'Hide event browsing signals.' },
+  { key: 'menus', label: 'Menus and general pages', example: 'Hide normal browsing signals.' },
+  { key: 'documents', label: 'Documents', example: 'Hide document download signals.' },
+  { key: 'payments', label: 'Payment pages', example: 'Hide payment page visits.' },
+]
+
+function LivePrivacyPreview({ state }: { state: LivePrivacyState }) {
+  const examples: Array<{
+    eventType: ActivityEventType
+    shared: boolean
+    visible: string
+    hidden: string
+  }> = [
+    {
+      eventType: 'proposal_viewed',
+      shared: shouldShareActivitySignal('proposal_viewed', state),
+      visible: 'Chef will see: proposal reviewed.',
+      hidden: 'Chef will not see this proposal open.',
+    },
+    {
+      eventType: 'payment_page_visited',
+      shared: shouldShareActivitySignal('payment_page_visited', state),
+      visible: 'Chef will see: payment page opened.',
+      hidden: 'Chef will not see this payment page visit.',
+    },
+    {
+      eventType: 'chat_opened',
+      shared: shouldShareActivitySignal('chat_opened', state),
+      visible: 'Chef will see: messages opened.',
+      hidden: 'Chef will not see this message read signal.',
+    },
+  ]
+
+  return (
+    <div className="mt-4 rounded-lg border border-stone-800 bg-stone-950/40 p-3">
+      <div className="flex items-center gap-2 text-xs font-medium uppercase text-stone-400">
+        <Eye className="h-3.5 w-3.5" />
+        Privacy preview
+      </div>
+      <div className="mt-3 grid gap-2">
+        {examples.map((example) => (
+          <div
+            key={example.eventType}
+            className={`rounded-md border px-3 py-2 text-sm ${
+              example.shared
+                ? 'border-emerald-500/25 bg-emerald-950/25 text-emerald-100'
+                : 'border-amber-400/25 bg-amber-950/25 text-amber-100'
+            }`}
+          >
+            {example.shared ? example.visible : example.hidden}
+          </div>
+        ))}
+        <div
+          className={`rounded-md border px-3 py-2 text-sm ${
+            shouldSharePresenceSignal(state)
+              ? 'border-emerald-500/25 bg-emerald-950/25 text-emerald-100'
+              : 'border-amber-400/25 bg-amber-950/25 text-amber-100'
+          }`}
+        >
+          {shouldSharePresenceSignal(state)
+            ? 'Chef will see: active-now presence.'
+            : 'Chef will not see active-now presence.'}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function LivePrivacyReceipts({ receipts }: { receipts: LivePrivacyReceipt[] }) {
+  return (
+    <div className="mt-4 rounded-lg border border-stone-800 bg-stone-950/40 p-3">
+      <div className="flex items-center gap-2 text-xs font-medium uppercase text-stone-400">
+        <Shield className="h-3.5 w-3.5" />
+        Trust receipt
+      </div>
+      {receipts.length === 0 ? (
+        <p className="mt-2 text-sm text-stone-400">No live privacy decisions recorded yet.</p>
+      ) : (
+        <div className="mt-3 divide-y divide-stone-800">
+          {receipts.slice(0, 6).map((receipt) => (
+            <div key={receipt.id} className="flex items-start justify-between gap-3 py-2 text-sm">
+              <div className="min-w-0">
+                <p className="font-medium text-stone-100">{receipt.signal}</p>
+                <p className="text-xs leading-5 text-stone-400">{receipt.detail}</p>
+              </div>
+              <span
+                className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${
+                  receipt.outcome === 'shared'
+                    ? 'bg-emerald-950 text-emerald-200'
+                    : receipt.outcome === 'functional'
+                      ? 'bg-brand-950 text-brand-200'
+                      : 'bg-amber-950 text-amber-100'
+                }`}
+              >
+                {receipt.outcome === 'shared'
+                  ? 'Shared'
+                  : receipt.outcome === 'functional'
+                    ? 'Action'
+                    : 'Private'}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export function LivePrivacyControlPanel() {
   const { state, isReady, isPrivate, setMode, setSetting } = useLivePrivacy()
 
@@ -365,6 +742,59 @@ export function LivePrivacyControlPanel() {
         ))}
       </div>
 
+      <LivePrivacyPreview state={state} />
+
+      <div className="mt-4 rounded-lg border border-stone-800 bg-stone-950/40 p-3">
+        <div className="flex items-center gap-2 text-xs font-medium uppercase text-stone-400">
+          <Settings className="h-3.5 w-3.5" />
+          Per-surface defaults
+        </div>
+        <div className="mt-3 grid gap-2">
+          {SURFACE_ROWS.map((row) => (
+            <div
+              key={row.key}
+              className="flex flex-col gap-2 rounded-md border border-stone-800 bg-stone-900/60 p-3 sm:flex-row sm:items-center sm:justify-between"
+            >
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-stone-100">{row.label}</p>
+                <p className="text-xs leading-5 text-stone-400">{row.example}</p>
+              </div>
+              <div className="flex rounded-md border border-stone-700 bg-stone-950 p-1">
+                {(['inherit', 'visible', 'private'] as LivePrivacySurfaceMode[]).map((mode) => (
+                  <button
+                    key={mode}
+                    type="button"
+                    onClick={() => setSurfaceDefault(row.key, mode)}
+                    className={`rounded px-2.5 py-1 text-xs font-medium ${
+                      state.surfaceDefaults[row.key] === mode
+                        ? 'bg-brand-500 text-white'
+                        : 'text-stone-300 hover:bg-stone-800'
+                    }`}
+                  >
+                    {mode === 'inherit' ? 'Auto' : mode === 'visible' ? 'Share' : 'Private'}
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLivePrivacySurfacePrivateOnce(row.key)
+                    recordLivePrivacyReceipt({
+                      signal: `Next ${row.label.toLowerCase()} open`,
+                      surface: row.key,
+                      outcome: 'private',
+                      detail: 'ChefFlow will keep the next passive signal on this surface private.',
+                    })
+                  }}
+                  className="rounded px-2.5 py-1 text-xs font-medium text-stone-300 hover:bg-stone-800"
+                >
+                  Once
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
       <div className="mt-4 rounded-lg border border-stone-800 bg-stone-950/40 p-3">
         <div className="flex items-center gap-2 text-xs font-medium uppercase text-stone-400">
           <Settings className="h-3.5 w-3.5" />
@@ -393,6 +823,8 @@ export function LivePrivacyControlPanel() {
           </div>
         )}
       </div>
+
+      <LivePrivacyReceipts receipts={state.receipts} />
     </section>
   )
 }

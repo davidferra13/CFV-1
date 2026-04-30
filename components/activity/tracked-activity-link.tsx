@@ -4,7 +4,14 @@ import Link from 'next/link'
 import { useCallback } from 'react'
 import type { ActivityEventType } from '@/lib/activity/types'
 import { buildActivityTrackPayload } from '@/lib/activity/client-payload'
-import { shouldShareActivitySignal, useLivePrivacy } from './live-privacy-controls'
+import {
+  consumeLivePrivacySurfacePrivateOnce,
+  getLivePrivacySignalLabel,
+  getLivePrivacySurfaceForEvent,
+  recordLivePrivacyReceipt,
+  shouldShareActivitySignal,
+  useLivePrivacy,
+} from './live-privacy-controls'
 
 interface TrackedActivityLinkProps {
   href: string
@@ -33,7 +40,22 @@ export function TrackedActivityLink({
 
   const handleClick = useCallback(() => {
     if (!isReady) return
-    if (!shouldShareActivitySignal(eventType, state)) return
+    const surface = getLivePrivacySurfaceForEvent(eventType)
+    const oneTimePrivate = consumeLivePrivacySurfacePrivateOnce(surface)
+    const shouldShare = !oneTimePrivate && shouldShareActivitySignal(eventType, state)
+
+    recordLivePrivacyReceipt({
+      signal: getLivePrivacySignalLabel(eventType),
+      surface: surface ?? 'presence',
+      outcome: shouldShare ? 'shared' : 'private',
+      detail: shouldShare
+        ? 'ChefFlow shared this live navigation signal.'
+        : oneTimePrivate
+          ? 'ChefFlow kept this one-time navigation signal private.'
+          : 'ChefFlow kept this navigation signal private.',
+    })
+
+    if (!shouldShare) return
 
     fetch('/api/activity/track', {
       method: 'POST',

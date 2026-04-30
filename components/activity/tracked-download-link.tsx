@@ -4,7 +4,13 @@
 
 import { useCallback } from 'react'
 import { buildActivityTrackPayload } from '@/lib/activity/client-payload'
-import { shouldShareActivitySignal, useLivePrivacy } from './live-privacy-controls'
+import {
+  consumeLivePrivacySurfacePrivateOnce,
+  getLivePrivacySignalLabel,
+  recordLivePrivacyReceipt,
+  shouldShareActivitySignal,
+  useLivePrivacy,
+} from './live-privacy-controls'
 
 interface TrackedDownloadLinkProps {
   href: string
@@ -25,7 +31,21 @@ export function TrackedDownloadLink({
 
   const handleClick = useCallback(() => {
     if (!isReady) return
-    if (!shouldShareActivitySignal('document_downloaded', state)) return
+    const oneTimePrivate = consumeLivePrivacySurfacePrivateOnce('documents')
+    const shouldShare = !oneTimePrivate && shouldShareActivitySignal('document_downloaded', state)
+
+    recordLivePrivacyReceipt({
+      signal: getLivePrivacySignalLabel('document_downloaded'),
+      surface: 'documents',
+      outcome: shouldShare ? 'shared' : 'private',
+      detail: shouldShare
+        ? 'ChefFlow shared this document download signal.'
+        : oneTimePrivate
+          ? 'ChefFlow kept this one-time document download private.'
+          : 'ChefFlow kept this document download private.',
+    })
+
+    if (!shouldShare) return
 
     fetch('/api/activity/track', {
       method: 'POST',

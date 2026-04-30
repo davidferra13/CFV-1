@@ -5,25 +5,12 @@
 import { createServerClient } from '@/lib/db/server'
 import { sendNotification } from '@/lib/notifications/send'
 import type { ActivityEventType } from './types'
+import { DEFAULT_ALERTABLE_EVENTS, getLiveSignalPolicy } from './live-signal-policy'
 
 const DEBOUNCE_MINUTES = 30
 
 // Only alert on these high-signal events (not heartbeats or generic page views)
-const ALERTABLE_EVENTS: ActivityEventType[] = [
-  'portal_login',
-  'payment_page_visited',
-  'proposal_viewed',
-  'quote_viewed',
-  'public_profile_viewed',
-]
-
-const EVENT_LABELS: Record<string, string> = {
-  portal_login: 'logged into the portal',
-  payment_page_visited: 'is viewing the payment page',
-  proposal_viewed: 'is reviewing a proposal',
-  quote_viewed: 'is looking at a quote',
-  public_profile_viewed: 'viewed your public profile',
-}
+const ALERTABLE_EVENTS = DEFAULT_ALERTABLE_EVENTS
 
 /**
  * Trigger a visitor alert notification for the chef.
@@ -110,24 +97,21 @@ export async function triggerVisitorAlert(params: {
       clientName = client.full_name || 'A client'
     }
 
-    const label = EVENT_LABELS[params.eventType] || 'is active on your site'
-    const isHighIntent = ['payment_page_visited', 'proposal_viewed', 'quote_viewed'].includes(
-      params.eventType
-    )
+    const policy = getLiveSignalPolicy(params.eventType)
+    const isHighIntent = policy.priority === 'high'
 
     await sendNotification({
       tenantId: params.tenantId,
       recipientId: chef.auth_user_id,
       type: 'client_portal_visit',
-      title: isHighIntent ? `High intent: ${clientName} ${label}` : `${clientName} ${label}`,
-      message: isHighIntent
-        ? `High-intent signal: ${clientName} ${label}. Consider reaching out now.`
-        : `${clientName} ${label}.`,
+      title: policy.alertTitle(clientName),
+      message: policy.alertMessage(clientName),
       link: `/clients/${params.clientId}`,
       clientId: params.clientId,
       metadata: {
         eventType: params.eventType,
         isHighIntent,
+        followUpCopy: policy.followUpCopy,
       },
     })
   } catch (err) {
