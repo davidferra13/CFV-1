@@ -158,4 +158,70 @@ describe('buildClientStrategyBrief', () => {
     assert.doesNotMatch(allText, /create a recipe/)
     assert.doesNotMatch(allText, /suggest a dish/)
   })
+
+  it('adds operational workflow metadata to every recommendation', () => {
+    const brief = buildClientStrategyBrief(makeSnapshot())
+    const recommendations = brief.sections.flatMap((section) => section.recommendations)
+
+    assert.ok(recommendations.length > 0)
+    for (const recommendation of recommendations) {
+      assert.ok(recommendation.workflow.taskText)
+      assert.ok(recommendation.workflow.dueInDays >= 0)
+      assert.ok(
+        ['client', 'follow_up', 'admin', 'prep'].includes(recommendation.workflow.taskCategory)
+      )
+    }
+  })
+
+  it('builds confirmation, event handoff, and post-event learning loops from real gaps', () => {
+    const brief = buildClientStrategyBrief(makeSnapshot())
+
+    assert.ok(brief.confirmationRequest)
+    assert.equal(brief.confirmationRequest?.missingFields.includes('allergies'), true)
+    assert.ok(brief.eventPrepHandoff.some((item) => item.category === 'safety'))
+    assert.ok(brief.postEventLearning.length >= 3)
+  })
+
+  it('surfaces profile versus learned preference conflicts for chef review', () => {
+    const brief = buildClientStrategyBrief(
+      makeSnapshot({
+        signals: {
+          canonical: [],
+          profile: [
+            {
+              id: 'profile:fav:mediterranean',
+              kind: 'favorite_cuisine',
+              label: 'Favorite cuisine',
+              value: 'Mediterranean',
+              source: 'client_record',
+              sourceLabel: 'Profile',
+              freshness: null,
+              confidence: null,
+              occurrences: null,
+              shadowedByProfile: false,
+            },
+          ],
+          learned: [],
+          secondaryLearned: [
+            {
+              id: 'learned:fav:japanese',
+              kind: 'favorite_cuisine',
+              label: 'Favorite cuisine',
+              value: 'Japanese',
+              source: 'learned_pattern',
+              sourceLabel: 'Learned',
+              freshness: null,
+              confidence: 3,
+              occurrences: 2,
+              shadowedByProfile: true,
+            },
+          ],
+        },
+      })
+    )
+
+    assert.equal(brief.preferenceConflicts.length, 1)
+    assert.equal(brief.preferenceConflicts[0].profileValue, 'Mediterranean')
+    assert.equal(brief.preferenceConflicts[0].learnedValue, 'Japanese')
+  })
 })

@@ -11,6 +11,8 @@ interface ScheduleMessageFormProps {
   contextType?: 'inquiry' | 'event' | 'client'
   contextId?: string
   defaultChannel?: 'email' | 'sms' | 'app'
+  defaultSubject?: string
+  defaultBody?: string
   onSuccess?: () => void
   onCancel?: () => void
 }
@@ -21,14 +23,16 @@ export function ScheduleMessageForm({
   contextType,
   contextId,
   defaultChannel = 'email',
+  defaultSubject = '',
+  defaultBody = '',
   onSuccess,
   onCancel,
 }: ScheduleMessageFormProps) {
   const minDateTime = new Date(Date.now() + 5 * 60 * 1000).toISOString().substring(0, 16)
 
   const [channel, setChannel] = useState<'email' | 'sms' | 'app'>(defaultChannel)
-  const [subject, setSubject] = useState('')
-  const [body, setBody] = useState('')
+  const [subject, setSubject] = useState(defaultSubject)
+  const [body, setBody] = useState(defaultBody)
   const [scheduledFor, setScheduledFor] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)

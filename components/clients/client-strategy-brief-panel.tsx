@@ -1,12 +1,18 @@
 import Link from 'next/link'
+import type { ReactNode } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { ClientStrategyActionControls } from '@/components/clients/client-strategy-action-controls'
 import type {
   ClientStrategyBrief,
   ClientStrategyConfidence,
   ClientStrategyPriority,
   ClientStrategyRecommendation,
 } from '@/lib/clients/client-strategy-brief'
+import type {
+  ClientStrategyActionStatusRecord,
+  ClientStrategyOperationalState,
+} from '@/lib/clients/client-strategy-ops'
 
 function priorityVariant(
   priority: ClientStrategyPriority
@@ -24,7 +30,15 @@ function confidenceVariant(
   return 'error'
 }
 
-function RecommendationCard({ recommendation }: { recommendation: ClientStrategyRecommendation }) {
+function RecommendationCard({
+  brief,
+  recommendation,
+  status,
+}: {
+  brief: ClientStrategyBrief
+  recommendation: ClientStrategyRecommendation
+  status?: ClientStrategyActionStatusRecord
+}) {
   return (
     <div className="rounded-lg border border-stone-800 bg-stone-950/35 p-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -84,6 +98,41 @@ function RecommendationCard({ recommendation }: { recommendation: ClientStrategy
           </span>
         ))}
       </div>
+
+      <details className="mt-4 rounded-lg border border-stone-800 bg-stone-950/50 p-3">
+        <summary className="cursor-pointer text-sm font-medium text-stone-200">
+          Evidence and boundaries
+        </summary>
+        <div className="mt-3 grid gap-3 md:grid-cols-2">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-500">
+              Evidence
+            </p>
+            <ul className="mt-2 space-y-1 text-sm text-stone-300">
+              {recommendation.dataUsed.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-500">
+              Guardrails
+            </p>
+            <ul className="mt-2 space-y-1 text-sm text-stone-300">
+              <li>Confidence: {recommendation.confidence}</li>
+              <li>Do not send anything without chef approval.</li>
+              <li>Do not generate recipes or menu ideas from this recommendation.</li>
+            </ul>
+          </div>
+        </div>
+      </details>
+
+      <ClientStrategyActionControls
+        clientId={brief.clientId}
+        clientName={brief.clientName}
+        recommendation={recommendation}
+        initialStatus={status}
+      />
     </div>
   )
 }
@@ -98,8 +147,26 @@ function StatTile({ label, value, detail }: { label: string; value: string; deta
   )
 }
 
-export function ClientStrategyBriefPanel({ brief }: { brief: ClientStrategyBrief }) {
+function SectionBlock({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <div className="rounded-lg border border-stone-800 bg-stone-950/25 p-4">
+      <h3 className="text-sm font-semibold text-stone-100">{title}</h3>
+      <div className="mt-3">{children}</div>
+    </div>
+  )
+}
+
+export function ClientStrategyBriefPanel({
+  brief,
+  operationalState,
+}: {
+  brief: ClientStrategyBrief
+  operationalState?: ClientStrategyOperationalState
+}) {
   const populatedSections = brief.sections.filter((section) => section.recommendations.length > 0)
+  const statuses = new Map(
+    (operationalState?.statuses ?? []).map((status) => [status.recommendationId, status])
+  )
 
   return (
     <Card className="overflow-hidden border-brand-900/60">
@@ -173,11 +240,90 @@ export function ClientStrategyBriefPanel({ brief }: { brief: ClientStrategyBrief
             </div>
             <div className="space-y-3">
               {section.recommendations.map((recommendation) => (
-                <RecommendationCard key={recommendation.id} recommendation={recommendation} />
+                <RecommendationCard
+                  key={recommendation.id}
+                  brief={brief}
+                  recommendation={recommendation}
+                  status={statuses.get(recommendation.id)}
+                />
               ))}
             </div>
           </section>
         ))}
+
+        <div className="grid gap-4 lg:grid-cols-2">
+          <SectionBlock title="Client Confirmation Request">
+            {brief.confirmationRequest ? (
+              <div className="space-y-3">
+                <p className="text-sm text-stone-300">
+                  Missing fields: {brief.confirmationRequest.missingFields.join(', ')}
+                </p>
+                <pre className="max-h-52 overflow-auto whitespace-pre-wrap rounded-md border border-stone-800 bg-stone-950 p-3 text-xs text-stone-300">
+                  {brief.confirmationRequest.body}
+                </pre>
+              </div>
+            ) : (
+              <p className="text-sm text-stone-400">
+                No missing profile fields require a confirmation request right now.
+              </p>
+            )}
+          </SectionBlock>
+
+          <SectionBlock title="Brief Change Markers">
+            {brief.changeHistory.length > 0 ? (
+              <ul className="space-y-2 text-sm text-stone-300">
+                {brief.changeHistory.map((change) => (
+                  <li key={change.id}>
+                    <span className="font-medium text-stone-100">{change.label}</span>:{' '}
+                    {change.detail}
+                    <span className="block text-xs text-stone-500">
+                      {change.source}
+                      {change.occurredAt ? ` | ${change.occurredAt}` : ''}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-stone-400">
+                No recent profile, outreach, feedback, or timeline changes were available.
+              </p>
+            )}
+          </SectionBlock>
+        </div>
+
+        <div className="grid gap-4 lg:grid-cols-2">
+          <SectionBlock title="Preference Conflict Review">
+            {brief.preferenceConflicts.length > 0 ? (
+              <ul className="space-y-2 text-sm text-stone-300">
+                {brief.preferenceConflicts.map((conflict) => (
+                  <li key={conflict.id}>
+                    <span className="font-medium text-stone-100">{conflict.field}</span>: profile
+                    says {conflict.profileValue}, learned pattern says {conflict.learnedValue}.
+                    <span className="block text-xs text-stone-500">{conflict.resolution}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-stone-400">
+                No profile-versus-learned preference conflicts were detected.
+              </p>
+            )}
+          </SectionBlock>
+
+          <SectionBlock title="Event Prep Handoff">
+            <ul className="space-y-2 text-sm text-stone-300">
+              {brief.eventPrepHandoff.map((item) => (
+                <li key={item.id}>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge variant={priorityVariant(item.priority)}>{item.priority}</Badge>
+                    <span className="font-medium text-stone-100">{item.title}</span>
+                  </div>
+                  <p className="mt-1 text-xs text-stone-500">{item.detail}</p>
+                </li>
+              ))}
+            </ul>
+          </SectionBlock>
+        </div>
 
         <div className="grid gap-4 lg:grid-cols-3">
           <div className="rounded-lg border border-stone-800 bg-stone-950/25 p-4">
@@ -246,6 +392,14 @@ export function ClientStrategyBriefPanel({ brief }: { brief: ClientStrategyBrief
             </ul>
           </div>
         </div>
+
+        <SectionBlock title="Post-Event Learning Loop">
+          <ul className="grid gap-2 text-sm text-stone-300 md:grid-cols-2">
+            {brief.postEventLearning.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </SectionBlock>
       </CardContent>
     </Card>
   )

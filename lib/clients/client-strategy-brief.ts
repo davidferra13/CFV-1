@@ -21,6 +21,19 @@ export interface ClientStrategyRecommendation {
   nextStep: string
   sourceLabels: string[]
   href?: string
+  workflow: ClientStrategyRecommendationWorkflow
+}
+
+export interface ClientStrategyRecommendationWorkflow {
+  taskText: string
+  taskCategory: 'client' | 'follow_up' | 'admin' | 'prep'
+  dueInDays: number
+  messageDraft?: ClientStrategyMessageDraft
+}
+
+export interface ClientStrategyMessageDraft {
+  subject: string
+  body: string
 }
 
 export interface ClientStrategySection {
@@ -61,6 +74,34 @@ export interface ClientStrategyBrief {
     staleSignals: string[]
     notes: string[]
   }
+  confirmationRequest: {
+    missingFields: string[]
+    subject: string
+    body: string
+  } | null
+  changeHistory: Array<{
+    id: string
+    label: string
+    detail: string
+    source: string
+    occurredAt: string | null
+  }>
+  preferenceConflicts: Array<{
+    id: string
+    field: string
+    profileValue: string
+    learnedValue: string
+    source: string
+    resolution: string
+  }>
+  eventPrepHandoff: Array<{
+    id: string
+    category: 'safety' | 'venue' | 'service' | 'communication' | 'follow_up'
+    title: string
+    detail: string
+    priority: ClientStrategyPriority
+  }>
+  postEventLearning: string[]
   outcomeLoop: string[]
 }
 
@@ -242,14 +283,224 @@ function priorityFromUrgency(urgency: string): ClientStrategyPriority {
 function pushRecommendation(
   map: Map<ClientStrategySectionId, ClientStrategyRecommendation[]>,
   sectionId: ClientStrategySectionId,
-  recommendation: ClientStrategyRecommendation
+  recommendation: Omit<ClientStrategyRecommendation, 'workflow'> & {
+    workflow?: ClientStrategyRecommendationWorkflow
+  }
 ): void {
+  const recommendationWithWorkflow: ClientStrategyRecommendation = {
+    ...recommendation,
+    workflow: recommendation.workflow ?? buildDefaultWorkflow(sectionId, recommendation),
+  }
   const section = map.get(sectionId)
   if (section) {
-    section.push(recommendation)
+    section.push(recommendationWithWorkflow)
   } else {
-    map.set(sectionId, [recommendation])
+    map.set(sectionId, [recommendationWithWorkflow])
   }
+}
+
+function buildDefaultWorkflow(
+  sectionId: ClientStrategySectionId,
+  recommendation: Pick<ClientStrategyRecommendation, 'id' | 'title' | 'nextStep' | 'priority'>
+): ClientStrategyRecommendationWorkflow {
+  const needsClient =
+    sectionId === 'data_to_collect' ||
+    recommendation.id.includes('confirm') ||
+    recommendation.id.includes('feedback')
+  const messageDraft = needsClient
+    ? {
+        subject: `Quick confirmation for ${recommendation.title.toLowerCase()}`,
+        body: [
+          'Hi,',
+          '',
+          recommendation.nextStep,
+          '',
+          'I will review your answer before updating your ChefFlow profile.',
+          '',
+          `Strategy recommendation: ${recommendation.id}`,
+        ].join('\n'),
+      }
+    : undefined
+
+  return {
+    taskText: recommendation.nextStep,
+    taskCategory:
+      sectionId === 'risk_flags'
+        ? 'admin'
+        : sectionId === 'automation_opportunities' ||
+            sectionId === 'retention_opportunities' ||
+            sectionId === 'revenue_opportunities'
+          ? 'follow_up'
+          : 'client',
+    dueInDays:
+      recommendation.priority === 'critical' ? 0 : recommendation.priority === 'high' ? 1 : 3,
+    messageDraft,
+  }
+}
+
+function buildConfirmationRequest(
+  clientName: string,
+  missingFacts: string[]
+): ClientStrategyBrief['confirmationRequest'] {
+  if (missingFacts.length === 0) return null
+
+  return {
+    missingFields: missingFacts,
+    subject: 'Confirming a few planning details',
+    body: [
+      `Hi ${clientName},`,
+      '',
+      'Before I rely on your saved planning details, can you confirm the current values for:',
+      ...missingFacts.map((fact) => `- ${fact}`),
+      '',
+      'I will review your reply before updating anything in ChefFlow.',
+      '',
+      'Strategy recommendation: complete-client-profile',
+    ].join('\n'),
+  }
+}
+
+function buildChangeHistory(
+  snapshot: ClientRelationshipSnapshot
+): ClientStrategyBrief['changeHistory'] {
+  const changes: ClientStrategyBrief['changeHistory'] = []
+
+  if (snapshot.client.updated_at) {
+    changes.push({
+      id: 'client-profile-updated',
+      label: 'Profile updated',
+      detail: 'Client profile fields are part of this brief.',
+      source: 'Client profile',
+      occurredAt: snapshot.client.updated_at,
+    })
+  }
+
+  const latestHistory = snapshot.history[0]
+  if (latestHistory) {
+    const occurredAt = String(
+      (latestHistory as any).date ?? (latestHistory as any).created_at ?? ''
+    )
+    changes.push({
+      id: `history-${String((latestHistory as any).id ?? 'latest')}`,
+      label: 'Recent relationship activity',
+      detail: String(
+        (latestHistory as any).title ?? (latestHistory as any).description ?? 'Recent activity'
+      ),
+      source: 'Relationship timeline',
+      occurredAt: occurredAt || null,
+    })
+  }
+
+  if (snapshot.outreachHistory.length > 0) {
+    const latestOutreach = snapshot.outreachHistory[0]
+    const occurredAt = String(latestOutreach.created_at ?? latestOutreach.sent_at ?? '')
+    changes.push({
+      id: `outreach-${String(latestOutreach.id ?? 'latest')}`,
+      label: 'Recent outreach exists',
+      detail: 'Outreach history is available for channel and cadence review.',
+      source: 'Outreach history',
+      occurredAt: occurredAt || null,
+    })
+  }
+
+  if (snapshot.repeat?.lastFeedback) {
+    changes.push({
+      id: 'latest-feedback',
+      label: 'Latest feedback available',
+      detail: feedbackSummary(snapshot) ?? 'Latest feedback is available.',
+      source: 'Repeat intelligence',
+      occurredAt: snapshot.repeat.lastFeedback.eventDate,
+    })
+  }
+
+  return changes.slice(0, 5)
+}
+
+function buildPreferenceConflicts(
+  snapshot: ClientRelationshipSnapshot
+): ClientStrategyBrief['preferenceConflicts'] {
+  return snapshot.signals.secondaryLearned
+    .flatMap((learned) => {
+      const profileMatches = snapshot.signals.profile.filter(
+        (profile) =>
+          profile.kind === learned.kind &&
+          profile.value.trim().toLowerCase() !== learned.value.trim().toLowerCase()
+      )
+
+      return profileMatches.map((profile) => ({
+        id: `${learned.id}:${profile.id}`,
+        field: learned.label,
+        profileValue: profile.value,
+        learnedValue: learned.value,
+        source: learned.sourceLabel,
+        resolution:
+          'Keep the profile value authoritative until the chef confirms whether the learned pattern should update it.',
+      }))
+    })
+    .slice(0, 6)
+}
+
+function buildEventPrepHandoff(
+  snapshot: ClientRelationshipSnapshot,
+  hasKnownSafety: boolean
+): ClientStrategyBrief['eventPrepHandoff'] {
+  const items: ClientStrategyBrief['eventPrepHandoff'] = [
+    {
+      id: 'confirm-safety',
+      category: 'safety',
+      title: hasKnownSafety ? 'Review confirmed safety details' : 'Confirm safety details',
+      detail: hasKnownSafety
+        ? 'Review allergies, restrictions, and safety notes before event prep.'
+        : 'No confirmed allergy or dietary record is available.',
+      priority: hasKnownSafety ? 'medium' : 'critical',
+    },
+  ]
+
+  if (snapshot.repeat?.lastVenueNotes) {
+    items.push({
+      id: 'review-venue-notes',
+      category: 'venue',
+      title: 'Carry venue notes into prep',
+      detail: compact([
+        snapshot.repeat.lastVenueNotes.location,
+        snapshot.repeat.lastVenueNotes.kitchen_notes,
+        snapshot.repeat.lastVenueNotes.site_notes,
+      ]).join(' | '),
+      priority: 'high',
+    })
+  }
+
+  if (snapshot.client.preferred_contact_method) {
+    items.push({
+      id: 'use-preferred-contact',
+      category: 'communication',
+      title: 'Use preferred contact method',
+      detail: `Preferred contact method: ${snapshot.client.preferred_contact_method}`,
+      priority: 'medium',
+    })
+  }
+
+  if (snapshot.repeat?.dislikedDishes.length) {
+    items.push({
+      id: 'screen-dislikes',
+      category: 'service',
+      title: 'Screen against known dislikes',
+      detail: `Known dislikes: ${snapshot.repeat.dislikedDishes.join(', ')}`,
+      priority: 'high',
+    })
+  }
+
+  if (snapshot.nextAction) {
+    items.push({
+      id: 'carry-next-action',
+      category: 'follow_up',
+      title: snapshot.nextAction.label,
+      detail: snapshot.nextAction.description,
+      priority: priorityFromUrgency(snapshot.nextAction.urgency),
+    })
+  }
+
+  return items
 }
 
 export function buildClientStrategyBrief(
@@ -679,6 +930,10 @@ export function buildClientStrategyBrief(
     ...SECTION_COPY[id],
     recommendations: recommendations.get(id) ?? [],
   }))
+  const confirmationRequest = buildConfirmationRequest(client.full_name, missingFacts)
+  const changeHistory = buildChangeHistory(snapshot)
+  const preferenceConflicts = buildPreferenceConflicts(snapshot)
+  const eventPrepHandoff = buildEventPrepHandoff(snapshot, hasKnownSafety)
 
   return {
     clientId: client.id,
@@ -752,6 +1007,16 @@ export function buildClientStrategyBrief(
           'Menu improvement should wait for confirmed preference or feedback data.',
       ]),
     },
+    confirmationRequest,
+    changeHistory,
+    preferenceConflicts,
+    eventPrepHandoff,
+    postEventLearning: [
+      'Record what the client loved, disliked, questioned, or corrected.',
+      'Record venue friction, access notes, service timing, and prep constraints.',
+      'Record final spend, accepted add-ons, declined options, and follow-up date.',
+      'Update confirmed profile facts only after chef review.',
+    ],
     outcomeLoop: [
       'After each client touch, record the channel, decision, open question, next owner, and due date.',
       'After each proposal, record which package, add-ons, and pricing options were accepted, declined, or questioned.',

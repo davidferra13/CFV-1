@@ -43,6 +43,12 @@ const hubTiles = [
     icon: '📬',
   },
   {
+    href: '/clients/strategy-readiness',
+    label: 'Strategy Readiness',
+    description: 'Missing safety, contact, and preference facts across clients',
+    icon: 'SR',
+  },
+  {
     href: '/clients/preferences/dietary-restrictions',
     label: 'Dietary Preferences',
     description: 'Allergies, restrictions, dislikes, and favorite dishes',

@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/card'
 import { requireChef } from '@/lib/auth/get-user'
 import { getRelationshipRouteCopy } from '@/lib/clients/action-vocabulary'
 import { buildClientStrategyBrief } from '@/lib/clients/client-strategy-brief'
+import { getClientStrategyOperationalState } from '@/lib/clients/client-strategy-ops'
 import { getClientRelationshipSnapshot } from '@/lib/clients/relationship-snapshot'
 import { getClientInteractionSignalShortLabel } from '@/lib/clients/interaction-signal-utils'
 import type { NextBestActionPrimarySignal } from '@/lib/clients/next-best-action'
@@ -38,6 +39,7 @@ export default async function ClientRelationshipPage({ params }: { params: { id:
 
   const { client, nextAction, outreachHistory } = snapshot
   const strategyBrief = buildClientStrategyBrief(snapshot)
+  const strategyOperationalState = await getClientStrategyOperationalState(client.id)
   const heading = getRelationshipRouteCopy(nextAction?.actionType)
   const completedEvents = snapshot.completedEvents
   const daysSinceLastEvent =
@@ -61,6 +63,12 @@ export default async function ClientRelationshipPage({ params }: { params: { id:
             className="text-sm text-stone-500 hover:text-stone-300"
           >
             Back to client
+          </Link>
+          <Link
+            href="/clients/strategy-readiness"
+            className="ml-3 text-sm text-stone-500 hover:text-stone-300"
+          >
+            Strategy readiness
           </Link>
           <h1 className="mt-2 text-3xl font-bold text-stone-100">{heading.title}</h1>
           <p className="mt-1 text-sm text-stone-400">{client.full_name}</p>
@@ -111,7 +119,7 @@ export default async function ClientRelationshipPage({ params }: { params: { id:
         ) : null}
       </Card>
 
-      <ClientStrategyBriefPanel brief={strategyBrief} />
+      <ClientStrategyBriefPanel brief={strategyBrief} operationalState={strategyOperationalState} />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <MetricCard
