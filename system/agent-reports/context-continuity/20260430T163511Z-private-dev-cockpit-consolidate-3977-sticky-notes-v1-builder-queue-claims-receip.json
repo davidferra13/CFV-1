@@ -1,0 +1,513 @@
+{
+  "generated_at": "2026-04-30T16:35:09.490Z",
+  "prompt": "private dev cockpit consolidate 3977 sticky notes v1 builder queue claims receipts escalations mission control monitor autonomous build loop",
+  "terms": [
+    "private",
+    "dev",
+    "cockpit",
+    "consolidate",
+    "sticky",
+    "notes",
+    "builder",
+    "queue",
+    "claims",
+    "receipts",
+    "escalations",
+    "mission",
+    "control",
+    "monitor",
+    "autonomous",
+    "loop"
+  ],
+  "scanned_dirs": [
+    "app",
+    "components",
+    "lib",
+    "docs/specs",
+    "docs/changes",
+    "docs/app-complete-audit.md",
+    "project-map",
+    "memory",
+    "system/intake",
+    "system/agent-reports"
+  ],
+  "canonical_surfaces": [
+    {
+      "id": "autonomous-v1-builder",
+      "label": "Autonomous V1 Builder Loop",
+      "score": 21,
+      "hits": [
+        "builder",
+        "queue",
+        "receipts",
+        "mission",
+        "control",
+        "monitor",
+        "autonomous",
+        "loop"
+      ],
+      "canonical_routes": [],
+      "canonical_files": [
+        "docs/specs/autonomous-v1-builder-contract.md",
+        "docs/v1-v2-governor.md",
+        "docs/specs/p0-builder-agent-foundation.md"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Extend the governed V1 builder contract instead of creating another queue or autonomous agent surface."
+      }
+    },
+    {
+      "id": "sticky-notes-intake-layer",
+      "label": "Sticky Notes Intake Layer",
+      "score": 12,
+      "hits": ["dev", "sticky", "notes"],
+      "canonical_routes": [],
+      "canonical_files": [
+        "docs/specs/sticky-notes-intake-layer.md",
+        "devtools/sticky-notes/read-db.mjs",
+        "devtools/sticky-notes/organize.mjs"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach Sticky Notes work to the local intake layer instead of client intake, Remy memory, or an ungoverned backlog."
+      }
+    },
+    {
+      "id": "agent-skill-system",
+      "label": "Agent Skill System",
+      "score": 3,
+      "hits": ["dev"],
+      "canonical_routes": [],
+      "canonical_files": [
+        "devtools/skill-router.mjs",
+        "devtools/skill-validator.mjs",
+        "devtools/skill-trigger-tests.mjs",
+        "system/agent-golden-prompts/default.json"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Add to the existing skill harness."
+      }
+    },
+    {
+      "id": "context-continuity",
+      "label": "Context Continuity",
+      "score": 1,
+      "hits": ["dev"],
+      "canonical_routes": [],
+      "canonical_files": [
+        ".claude/skills/context-continuity/SKILL.md",
+        "devtools/context-continuity-scan.mjs",
+        "system/canonical-surfaces.json"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Extend the continuity layer in place."
+      }
+    }
+  ],
+  "related_files": [
+    {
+      "file": "docs/specs/autonomous-v1-builder-contract.md",
+      "kind": "spec",
+      "score": 69,
+      "hits": [
+        "builder",
+        "autonomous",
+        "dev",
+        "sticky",
+        "notes",
+        "queue",
+        "claims",
+        "receipts",
+        "escalations",
+        "mission"
+      ]
+    },
+    {
+      "file": "system/agent-reports/context-continuity/20260430T030830Z-create-build-spec-for-autonomous-v1-builder-loop-intake-v1-governor-classificati.json",
+      "kind": "system",
+      "score": 60,
+      "hits": [
+        "builder",
+        "autonomous",
+        "loop",
+        "dev",
+        "queue",
+        "claims",
+        "receipts",
+        "mission",
+        "control",
+        "monitor"
+      ]
+    },
+    {
+      "file": "system/agent-reports/context-continuity/20260430T031714Z-define-the-autonomous-v1-builder-contract-governed-pipeline-from-ideas-to-hermes.json",
+      "kind": "system",
+      "score": 47,
+      "hits": [
+        "builder",
+        "autonomous",
+        "dev",
+        "notes",
+        "queue",
+        "mission",
+        "control",
+        "monitor",
+        "loop"
+      ]
+    },
+    {
+      "file": "docs/specs/sticky-notes-intake-layer.md",
+      "kind": "spec",
+      "score": 43,
+      "hits": ["sticky", "notes", "private", "dev", "builder", "queue", "autonomous"]
+    },
+    {
+      "file": "system/agent-reports/context-continuity/20260430T155245Z-sticky-notes-intake-layer-simple-sticky-notes-notes-db-codex-organize-everything.json",
+      "kind": "system",
+      "score": 41,
+      "hits": ["sticky", "notes", "dev", "builder", "claims", "control", "autonomous"]
+    },
+    {
+      "file": "docs/specs/openclaw-food-price-intelligence.md",
+      "kind": "spec",
+      "score": 38,
+      "hits": [
+        "private",
+        "dev",
+        "notes",
+        "builder",
+        "queue",
+        "receipts",
+        "mission",
+        "monitor",
+        "loop"
+      ]
+    },
+    {
+      "file": "docs/specs/openclaw-ideal-runtime-and-national-intelligence.md",
+      "kind": "spec",
+      "score": 38,
+      "hits": [
+        "dev",
+        "notes",
+        "builder",
+        "queue",
+        "claims",
+        "mission",
+        "control",
+        "monitor",
+        "loop"
+      ]
+    },
+    {
+      "file": "docs/specs/mission-control-passive-dashboard.md",
+      "kind": "spec",
+      "score": 37,
+      "hits": ["mission", "control", "dev", "notes", "builder", "queue", "monitor", "autonomous"]
+    },
+    {
+      "file": "docs/specs/p0-builder-agent-foundation.md",
+      "kind": "spec",
+      "score": 34,
+      "hits": ["builder", "private", "dev", "notes", "mission", "control", "autonomous", "loop"]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-cohesiveness-synthesis.md",
+      "kind": "spec",
+      "score": 34,
+      "hits": [
+        "private",
+        "dev",
+        "consolidate",
+        "notes",
+        "builder",
+        "queue",
+        "receipts",
+        "mission",
+        "monitor",
+        "loop"
+      ]
+    },
+    {
+      "file": "docs/specs/comprehensive-domain-inventory-phase-1.md",
+      "kind": "spec",
+      "score": 33,
+      "hits": [
+        "private",
+        "dev",
+        "notes",
+        "builder",
+        "queue",
+        "claims",
+        "receipts",
+        "mission",
+        "control",
+        "monitor"
+      ]
+    },
+    {
+      "file": "docs/specs/p1-chef-collab-spaces.md",
+      "kind": "spec",
+      "score": 33,
+      "hits": [
+        "private",
+        "dev",
+        "notes",
+        "builder",
+        "queue",
+        "receipts",
+        "mission",
+        "control",
+        "loop"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-competitive-surface.md",
+      "kind": "spec",
+      "score": 33,
+      "hits": [
+        "private",
+        "dev",
+        "consolidate",
+        "notes",
+        "builder",
+        "queue",
+        "receipts",
+        "mission",
+        "control",
+        "monitor"
+      ]
+    },
+    {
+      "file": "docs/specs/takeachef-privatechefmanager-parity-doc-program.md",
+      "kind": "spec",
+      "score": 33,
+      "hits": ["private", "dev", "notes", "builder", "claims", "mission", "control"]
+    },
+    {
+      "file": "system/agent-reports/skill-closeouts/20260430T162743Z-autonomous-build-loop-preserve-david-s-autonomous-builder-operating-guidance.json",
+      "kind": "system",
+      "score": 33,
+      "hits": ["builder", "autonomous", "loop", "dev", "notes", "queue", "mission", "control"]
+    },
+    {
+      "file": "docs/specs/food-costing-knowledge-system.md",
+      "kind": "spec",
+      "score": 32,
+      "hits": [
+        "private",
+        "dev",
+        "consolidate",
+        "notes",
+        "builder",
+        "mission",
+        "control",
+        "monitor",
+        "loop"
+      ]
+    },
+    {
+      "file": "docs/specs/full-cloud-ai-runtime-and-disclosure.md",
+      "kind": "spec",
+      "score": 31,
+      "hits": ["private", "dev", "notes", "builder", "claims", "control", "monitor"]
+    },
+    {
+      "file": "docs/specs/p1-allergy-and-dietary-trust-alignment.md",
+      "kind": "spec",
+      "score": 30,
+      "hits": ["private", "dev", "notes", "builder", "mission", "control", "monitor", "loop"]
+    },
+    {
+      "file": "docs/specs/post-event-trust-loop-consolidation.md",
+      "kind": "spec",
+      "score": 30,
+      "hits": ["loop", "dev", "consolidate", "notes", "builder", "queue"]
+    },
+    {
+      "file": "docs/specs/feature-registry-builder-handoff.md",
+      "kind": "spec",
+      "score": 29,
+      "hits": ["builder", "dev", "notes", "queue", "claims", "mission", "control"]
+    },
+    {
+      "file": "docs/specs/p0-zero-manual-entry-form-control-plane.md",
+      "kind": "spec",
+      "score": 29,
+      "hits": ["control", "dev", "notes", "builder", "queue", "mission"]
+    },
+    {
+      "file": "docs/specs/public-only-monitored-cloud-ai-gateway.md",
+      "kind": "spec",
+      "score": 29,
+      "hits": ["monitor", "private", "dev", "notes", "builder", "claims", "control"]
+    },
+    {
+      "file": "docs/specs/README.md",
+      "kind": "spec",
+      "score": 29,
+      "hits": ["dev", "sticky", "notes", "builder", "queue", "control", "loop"]
+    },
+    {
+      "file": "docs/specs/p0-system-improvement-control-tower.md",
+      "kind": "spec",
+      "score": 28,
+      "hits": ["control", "dev", "consolidate", "notes", "builder", "queue"]
+    },
+    {
+      "file": "docs/specs/api-integration-health-audit.md",
+      "kind": "spec",
+      "score": 27,
+      "hits": ["private", "dev", "consolidate", "notes", "builder", "receipts", "monitor", "loop"]
+    },
+    {
+      "file": "docs/specs/culinary-radar-intelligence-layer.md",
+      "kind": "spec",
+      "score": 27,
+      "hits": ["dev", "notes", "builder", "claims", "mission", "control", "monitor"]
+    },
+    {
+      "file": "docs/specs/openclaw-social-media-orchestration.md",
+      "kind": "spec",
+      "score": 27,
+      "hits": ["dev", "notes", "builder", "queue", "mission", "control", "loop"]
+    },
+    {
+      "file": "docs/specs/restaurant-ops-surface-and-reliability-pass.md",
+      "kind": "spec",
+      "score": 27,
+      "hits": ["dev", "notes", "builder", "mission", "control", "loop"]
+    },
+    {
+      "file": "lib/db/fk-map.ts",
+      "kind": "module",
+      "score": 27,
+      "hits": ["dev", "notes", "queue", "claims", "mission", "control"]
+    },
+    {
+      "file": "components/navigation/nav-config.tsx",
+      "kind": "component",
+      "score": 26,
+      "hits": ["dev", "notes", "builder", "queue", "claims", "receipts", "mission"]
+    }
+  ],
+  "recent_commits": [
+    {
+      "line": "ff3d4506a chore(agent): build sticky notes intake spec feature/sticky-notes-intake-spec",
+      "score": 4,
+      "hits": ["sticky", "notes"]
+    },
+    {
+      "line": "bc8bdeece chore(agent): preserve autonomous builder operating rule feature/pwa-device-diagnostics",
+      "score": 3,
+      "hits": ["dev", "builder", "autonomous"]
+    },
+    {
+      "line": "ac2d70a63 chore(agent): build geographic pricing proof spec feature-sticky-notes-intake-build",
+      "score": 2,
+      "hits": ["sticky", "notes"]
+    },
+    {
+      "line": "f7b078485 chore(agent): define autonomous v1 builder contract feature/founder-authority-hardening",
+      "score": 2,
+      "hits": ["builder", "autonomous"]
+    },
+    {
+      "line": "774b31363 chore(agent): remove accidental mobile staging feature-pwa-device-diagnostics",
+      "score": 1,
+      "hits": ["dev"]
+    },
+    {
+      "line": "7679796f6 chore(agent): lock menu pricing access doctrine feature-pwa-device-diagnostics",
+      "score": 1,
+      "hits": ["dev"]
+    }
+  ],
+  "dirty_matches": [
+    {
+      "line": "?? devtools/sticky-notes/",
+      "file": "devtools/sticky-notes/",
+      "score": 6,
+      "hits": ["dev", "sticky", "notes"]
+    },
+    {
+      "line": " M docs/specs/sticky-notes-intake-layer.md",
+      "file": "docs/specs/sticky-notes-intake-layer.md",
+      "score": 4,
+      "hits": ["sticky", "notes"]
+    },
+    {
+      "line": "?? system/sticky-notes/",
+      "file": "system/sticky-notes/",
+      "score": 4,
+      "hits": ["sticky", "notes"]
+    },
+    {
+      "line": "?? tests/unit/sticky-notes-attach.test.ts",
+      "file": "tests/unit/sticky-notes-attach.test.ts",
+      "score": 4,
+      "hits": ["sticky", "notes"]
+    },
+    {
+      "line": "?? tests/unit/sticky-notes-classify.test.ts",
+      "file": "tests/unit/sticky-notes-classify.test.ts",
+      "score": 4,
+      "hits": ["sticky", "notes"]
+    },
+    {
+      "line": "?? tests/unit/sticky-notes-normalize.test.ts",
+      "file": "tests/unit/sticky-notes-normalize.test.ts",
+      "score": 4,
+      "hits": ["sticky", "notes"]
+    },
+    {
+      "line": " M components/pwa/device-status-panel.tsx",
+      "file": "components/pwa/device-status-panel.tsx",
+      "score": 2,
+      "hits": ["dev"]
+    },
+    {
+      "line": "A  tests/mobile/helpers/mobile-device-profiles.ts",
+      "file": "tests/mobile/helpers/mobile-device-profiles.ts",
+      "score": 2,
+      "hits": ["dev"]
+    },
+    {
+      "line": "?? system/agent-reports/context-continuity/20260430T162435Z-keep-improving-chefflow-pwa-install-and-device-app-setup.json",
+      "file": "system/agent-reports/context-continuity/20260430T162435Z-keep-improving-chefflow-pwa-install-and-device-app-setup.json",
+      "score": 2,
+      "hits": ["dev"]
+    }
+  ],
+  "claim_matches": [],
+  "duplicate_risks": [
+    {
+      "level": "medium",
+      "reason": "Multiple canonical surfaces matched the prompt.",
+      "owners": ["autonomous-v1-builder", "sticky-notes-intake-layer", "agent-skill-system"]
+    },
+    {
+      "level": "medium",
+      "reason": "Dirty files already exist in this domain and may be another agent active work.",
+      "files": [
+        "devtools/sticky-notes/",
+        "docs/specs/sticky-notes-intake-layer.md",
+        "system/sticky-notes/",
+        "tests/unit/sticky-notes-attach.test.ts",
+        "tests/unit/sticky-notes-classify.test.ts"
+      ]
+    }
+  ],
+  "continuity": {
+    "decision": "attach",
+    "stop_required": false,
+    "reason": "Matched canonical surface autonomous-v1-builder."
+  }
+}
