@@ -4,6 +4,7 @@
 
 import type { Metadata } from 'next'
 import Image from 'next/image'
+import type { ReactNode } from 'react'
 import { notFound } from 'next/navigation'
 import { PublicPageView } from '@/components/analytics/public-page-view'
 import { TrackedLink } from '@/components/analytics/tracked-link'
@@ -47,8 +48,20 @@ import {
 } from '@/lib/public/chef-profile-readiness'
 import { PUBLIC_PRIMARY_CONSUMER_CTA } from '@/lib/public/public-navigation-config'
 import { absoluteUrl } from '@/lib/site/public-site'
+import {
+  CalendarCheck,
+  ExternalLink,
+  Gift,
+  Globe,
+  Mail,
+  ShoppingBag,
+  Store,
+} from '@/components/ui/icons'
 
-type Props = { params: { slug: string } }
+type Props = {
+  params: { slug: string }
+  searchParams?: Record<string, string | string[] | undefined>
+}
 
 function hasMinimumPublicProfileContent(input: {
   displayName: string
@@ -460,7 +473,329 @@ function formatMenuGuestRange(values: Array<number | null | undefined>): string 
   return low === high ? `${low} guests` : `${low}-${high} guests`
 }
 
-export default async function ChefProfilePage({ params }: Props) {
+function getSingleSearchValue(searchParams: Props['searchParams'], key: string): string | null {
+  const value = searchParams?.[key]
+  if (Array.isArray(value)) return value[0] || null
+  return typeof value === 'string' && value.trim() ? value.trim() : null
+}
+
+function normalizePublicHubSource(searchParams: Props['searchParams']): string {
+  const raw =
+    getSingleSearchValue(searchParams, 'source') ||
+    getSingleSearchValue(searchParams, 'utm_source') ||
+    'direct'
+  return (
+    raw
+      .toLowerCase()
+      .replace(/[^a-z0-9_-]/g, '')
+      .slice(0, 32) || 'direct'
+  )
+}
+
+function isPublicHubView(searchParams: Props['searchParams']): boolean {
+  const view = getSingleSearchValue(searchParams, 'view')
+  return view === 'hub' || view === 'links'
+}
+
+function withHubSource(href: string, source: string): string {
+  const separator = href.includes('?') ? '&' : '?'
+  return `${href}${separator}source=${encodeURIComponent(source)}`
+}
+
+function PublicHubAction({
+  href,
+  label,
+  description,
+  icon,
+  analyticsName,
+  analyticsProps,
+  primary = false,
+  external = false,
+}: {
+  href: string
+  label: string
+  description?: string
+  icon: ReactNode
+  analyticsName: string
+  analyticsProps: Record<string, string | number | boolean | null>
+  primary?: boolean
+  external?: boolean
+}) {
+  return (
+    <TrackedLink
+      href={href}
+      analyticsName={analyticsName}
+      analyticsProps={analyticsProps}
+      target={external ? '_blank' : undefined}
+      rel={external ? 'noopener noreferrer' : undefined}
+      className={[
+        'group flex min-h-[64px] w-full items-center justify-between gap-4 rounded-2xl border px-4 py-3 text-left transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-950',
+        primary
+          ? 'border-brand-300 bg-brand-400 text-stone-950 shadow-[0_18px_44px_rgba(232,143,71,0.26)] hover:bg-brand-300 focus-visible:ring-brand-200'
+          : 'border-stone-700 bg-stone-900/88 text-stone-100 hover:border-stone-500 hover:bg-stone-800 focus-visible:ring-stone-300',
+      ].join(' ')}
+    >
+      <span className="flex min-w-0 items-center gap-3">
+        <span
+          className={[
+            'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl',
+            primary ? 'bg-stone-950/10 text-stone-950' : 'bg-stone-800 text-stone-200',
+          ].join(' ')}
+        >
+          {icon}
+        </span>
+        <span className="min-w-0">
+          <span className="block text-sm font-semibold leading-tight">{label}</span>
+          {description && (
+            <span
+              className={[
+                'mt-1 block text-xs leading-relaxed',
+                primary ? 'text-stone-800' : 'text-stone-400',
+              ].join(' ')}
+            >
+              {description}
+            </span>
+          )}
+        </span>
+      </span>
+      <ExternalLink className="h-4 w-4 shrink-0 opacity-60 transition-opacity group-hover:opacity-100" />
+    </TrackedLink>
+  )
+}
+
+function PublicChefHub({
+  chefId,
+  publicSlug,
+  inquirySlug,
+  source,
+  chefName,
+  businessName,
+  tagline,
+  bio,
+  profileImageUrl,
+  locationLabel,
+  cuisineLabels,
+  serviceLabels,
+  buyerStartingPriceLabel,
+  reviewCount,
+  averageRating,
+  portfolioCount,
+  acceptingInquiries,
+  bookingEnabled,
+  bookingSlug,
+  bookingModel,
+  hasWebsiteLink,
+  websiteUrl,
+  socialLinks,
+}: {
+  chefId: string
+  publicSlug: string
+  inquirySlug: string
+  source: string
+  chefName: string
+  businessName: string | null
+  tagline: string | null
+  bio: string | null
+  profileImageUrl: string | null
+  locationLabel: string | null
+  cuisineLabels: string[]
+  serviceLabels: string[]
+  buyerStartingPriceLabel: string | null
+  reviewCount: number
+  averageRating: number
+  portfolioCount: number
+  acceptingInquiries: boolean
+  bookingEnabled: boolean
+  bookingSlug: string | null
+  bookingModel: string | null
+  hasWebsiteLink: boolean
+  websiteUrl: string | null
+  socialLinks: Record<string, string>
+}) {
+  const analyticsProps = { chef_slug: publicSlug, public_hub_source: source }
+  const avatarUrl = profileImageUrl ? getOptimizedAvatar(profileImageUrl, 220) : null
+  const socialEntries = Object.entries(socialLinks).filter((entry): entry is [string, string] =>
+    Boolean(entry[1]?.trim())
+  )
+  const proofItems = [
+    reviewCount > 0
+      ? {
+          label: 'Reviews',
+          value: `${averageRating.toFixed(1)} from ${reviewCount}`,
+        }
+      : null,
+    portfolioCount > 0
+      ? {
+          label: 'Portfolio',
+          value: `${portfolioCount} public ${portfolioCount === 1 ? 'highlight' : 'highlights'}`,
+        }
+      : null,
+    buyerStartingPriceLabel ? { label: 'Starting from', value: buyerStartingPriceLabel } : null,
+    locationLabel ? { label: 'Service area', value: locationLabel } : null,
+  ].filter((item): item is { label: string; value: string } => Boolean(item))
+  const chips = dedupeStrings([...cuisineLabels, ...serviceLabels]).slice(0, 6)
+
+  return (
+    <main className="min-h-screen bg-stone-950 px-4 py-6 text-stone-100 sm:px-6">
+      <PublicPageView
+        pageName="chef_profile_hub"
+        properties={{ chef_slug: publicSlug, public_hub_source: source }}
+      />
+      <div className="mx-auto flex min-h-[calc(100vh-3rem)] w-full max-w-xl flex-col">
+        <section className="flex flex-1 flex-col justify-center">
+          <div className="text-center">
+            {avatarUrl ? (
+              <Image
+                src={avatarUrl}
+                alt={chefName}
+                width={112}
+                height={112}
+                className="mx-auto h-28 w-28 rounded-full border border-stone-700 object-cover"
+                priority
+              />
+            ) : (
+              <div className="mx-auto flex h-28 w-28 items-center justify-center rounded-full border border-stone-700 bg-stone-900 text-3xl font-semibold text-stone-300">
+                {chefName.charAt(0)}
+              </div>
+            )}
+            <p className="mt-5 text-xs font-semibold uppercase tracking-[0.2em] text-brand-300">
+              ChefFlow Public Hub
+            </p>
+            <h1 className="mt-2 text-3xl font-bold tracking-tight text-white">{chefName}</h1>
+            {businessName && businessName !== chefName && (
+              <p className="mt-1 text-sm font-medium text-stone-400">{businessName}</p>
+            )}
+            {tagline && <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed">{tagline}</p>}
+            {!tagline && bio && (
+              <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed">{clampText(bio, 150)}</p>
+            )}
+          </div>
+
+          {chips.length > 0 && (
+            <div className="mt-6 flex flex-wrap justify-center gap-2">
+              {chips.map((chip) => (
+                <span
+                  key={chip}
+                  className="rounded-full border border-stone-700 bg-stone-900 px-3 py-1.5 text-xs font-medium text-stone-300"
+                >
+                  {chip}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {proofItems.length > 0 && (
+            <dl className="mt-6 grid grid-cols-2 gap-2">
+              {proofItems.slice(0, 4).map((item) => (
+                <div
+                  key={item.label}
+                  className="rounded-2xl border border-stone-800 bg-stone-900 p-3"
+                >
+                  <dt className="text-[10px] font-semibold uppercase tracking-[0.16em] text-stone-500">
+                    {item.label}
+                  </dt>
+                  <dd className="mt-1 text-sm font-semibold leading-relaxed text-stone-100">
+                    {item.value}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          )}
+
+          <div className="mt-6 space-y-3">
+            {bookingEnabled && bookingSlug && (
+              <PublicHubAction
+                href={withHubSource(`/book/${bookingSlug}`, source)}
+                label={bookingModel === 'instant_book' ? 'Book instantly' : 'Book now'}
+                description="Start with the chef's public booking flow."
+                icon={<CalendarCheck className="h-5 w-5" />}
+                analyticsName="public_hub_book"
+                analyticsProps={analyticsProps}
+                primary
+              />
+            )}
+            {acceptingInquiries && (
+              <PublicHubAction
+                href={withHubSource(`/chef/${inquirySlug}/inquire`, source)}
+                label="Request a private event"
+                description="Share date, location, guest count, and budget."
+                icon={<Mail className="h-5 w-5" />}
+                analyticsName="public_hub_inquiry"
+                analyticsProps={analyticsProps}
+                primary={!bookingEnabled || !bookingSlug}
+              />
+            )}
+            {!acceptingInquiries && (
+              <div className="rounded-2xl border border-stone-800 bg-stone-900 p-4">
+                <ChefAvailabilityWaitlist chefId={chefId} chefName={chefName} />
+              </div>
+            )}
+            <PublicHubAction
+              href={withHubSource(`/chef/${publicSlug}/gift-cards`, source)}
+              label="Buy a gift card"
+              description="Give a future private chef experience."
+              icon={<Gift className="h-5 w-5" />}
+              analyticsName="public_hub_gift_cards"
+              analyticsProps={analyticsProps}
+            />
+            <PublicHubAction
+              href={withHubSource(`/chef/${publicSlug}/store`, source)}
+              label="Shop the chef's store"
+              description="Browse public products, drops, and orders."
+              icon={<Store className="h-5 w-5" />}
+              analyticsName="public_hub_store"
+              analyticsProps={analyticsProps}
+            />
+            <PublicHubAction
+              href={`/chef/${publicSlug}`}
+              label="View full profile"
+              description="See reviews, portfolio, menus, policies, and proof."
+              icon={<ShoppingBag className="h-5 w-5" />}
+              analyticsName="public_hub_full_profile"
+              analyticsProps={analyticsProps}
+            />
+            {hasWebsiteLink && websiteUrl && (
+              <PublicHubAction
+                href={websiteUrl}
+                label="Visit website"
+                description="Open the chef's external site."
+                icon={<Globe className="h-5 w-5" />}
+                analyticsName="public_hub_website"
+                analyticsProps={analyticsProps}
+                external
+              />
+            )}
+          </div>
+
+          {socialEntries.length > 0 && (
+            <div className="mt-6">
+              <p className="text-center text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
+                Social and External Links
+              </p>
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                {socialEntries.map(([name, href]) => (
+                  <TrackedLink
+                    key={name}
+                    href={href}
+                    analyticsName={`public_hub_social_${name}`}
+                    analyticsProps={analyticsProps}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex min-h-[44px] items-center justify-center rounded-xl border border-stone-800 bg-stone-900 px-3 py-2 text-center text-xs font-semibold capitalize text-stone-200 transition-colors hover:border-stone-600 hover:bg-stone-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-300 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-950"
+                  >
+                    {name}
+                  </TrackedLink>
+                ))}
+              </div>
+            </div>
+          )}
+        </section>
+      </div>
+    </main>
+  )
+}
+
+export default async function ChefProfilePage({ params, searchParams }: Props) {
   const data = await getPublicChefProfile(params.slug)
   if (!data) notFound()
 
@@ -907,6 +1242,37 @@ export default async function ChefProfilePage({ params }: Props) {
     buyerSignals.operations.responseTime != null
       ? `Starting an inquiry does not charge your card or confirm the event. ${chef.display_name} publishes a response window of ${buyerSignals.operations.responseTime}.`
       : 'Starting an inquiry does not charge your card or confirm the event. The chef reviews fit, timing, and scope before sending next steps.'
+  const publicHubSource = normalizePublicHubSource(searchParams)
+
+  if (isPublicHubView(searchParams)) {
+    return (
+      <PublicChefHub
+        chefId={chef.id}
+        publicSlug={publicSlug}
+        inquirySlug={inquirySlug}
+        source={publicHubSource}
+        chefName={chef.display_name}
+        businessName={chef.business_name}
+        tagline={chef.tagline}
+        bio={chef.bio}
+        profileImageUrl={chef.profile_image_url}
+        locationLabel={locationLabel}
+        cuisineLabels={cuisineLabels}
+        serviceLabels={serviceLabels}
+        buyerStartingPriceLabel={buyerStartingPriceLabel}
+        reviewCount={reviewFeed.stats.totalReviews}
+        averageRating={reviewFeed.stats.averageRating}
+        portfolioCount={portfolio.length}
+        acceptingInquiries={discovery.accepting_inquiries}
+        bookingEnabled={chef.booking_enabled}
+        bookingSlug={chef.booking_slug}
+        bookingModel={chef.booking_model}
+        hasWebsiteLink={hasWebsiteLink}
+        websiteUrl={chef.website_url}
+        socialLinks={(chef.social_links ?? {}) as Record<string, string>}
+      />
+    )
+  }
 
   return (
     <div className="min-h-screen" style={pageBackgroundStyle}>
