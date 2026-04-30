@@ -229,6 +229,19 @@ function quoteSafetyFor(input: {
   return 'planning_only'
 }
 
+function defaultUnitConfidenceFor(input: {
+  unit: string
+  sourceClass: NoBlankPriceSourceClass
+  priceCents: number
+}): number {
+  if (!input.unit || input.priceCents <= 0) return 0.5
+  if (input.sourceClass === 'observed_local') return 0.85
+  if (input.sourceClass === 'observed_regional') return 0.75
+  if (input.sourceClass === 'national_median') return 0.7
+  if (input.sourceClass === 'category_baseline') return 0.6
+  return 0.5
+}
+
 function missingProofFor(input: {
   sourceClass: NoBlankPriceSourceClass
   quoteSafety: Exclude<NoBlankQuoteSafety, 'unsupported'>
@@ -315,7 +328,9 @@ export function buildNoBlankPriceContract(
   const storeName = clean(input.storeName)
   const productName = clean(input.productName)
   const dataPoints = positiveInt(input.dataPoints)
-  const unitConfidence = clampConfidence(input.unitConfidence ?? 0.5)
+  const unitConfidence = clampConfidence(
+    input.unitConfidence ?? defaultUnitConfidenceFor({ unit, sourceClass, priceCents })
+  )
   const quoteSafety = quoteSafetyFor({
     sourceClass,
     confidence,
