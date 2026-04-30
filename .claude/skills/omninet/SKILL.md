@@ -1,11 +1,23 @@
 ---
 name: omninet
-description: Always-on ChefFlow Codex operating loop and mandatory router. Use at the start of any ChefFlow task, ambiguous request, multi-skill request, build, debug, review, research, planning, persona pipeline work, or when deciding which project skills to load. Routes work through the best existing skills, maintains a task heartbeat, protects ChefFlow hard stops, and triggers skill creation or self-healing through skill-garden when developer behavior should become durable.
+description: Always-on ChefFlow Codex operating loop and quiet mandatory router. Use at the start of any ChefFlow task, ambiguous request, multi-skill request, build, debug, review, research, planning, persona pipeline work, or when deciding which project skills to load. Routes work through the best existing skill with minimal narration, protects ChefFlow hard stops, and triggers skill creation or self-healing through skill-garden when developer behavior should become durable.
 ---
 
 # Omninet
 
-Use this as the first-pass router for ChefFlow work. Codex cannot run a true background daemon inside a chat session, so Omninet is the per-turn substitute: every ChefFlow turn starts here, keeps one active skill selected, and calls sidecar skills as the task reveals new signals.
+Use this as the first-pass router for ChefFlow work. Codex cannot run a true background daemon inside a chat session, so Omninet is the per-turn substitute: every ChefFlow turn starts here, keeps one active skill selected, and calls sidecar skills only when the task reveals a concrete risk or distinct workflow need.
+
+## Quiet Routing Standard
+
+Omninet should make Codex behave like a quiet expert, not a visible process engine.
+
+1. Keep routing mostly internal. Announce only the selected primary skill and any sidecar that materially changes the work.
+2. Use exactly one primary skill by default.
+3. Add a sidecar skill only for a named risk, separate workflow, explicit user request, or durable behavior change.
+4. Do not narrate the heartbeat, full routing tree, harness options, or internal checklists unless the user asks, a blocker appears, or a decision needs developer input.
+5. Do not load skill bodies just because a skill exists. Load only the smallest skill body needed to execute the current task.
+6. Treat hooks as enforcement, skills as judgment, and progress updates as brief status.
+7. Do not prune, merge, or delete skills just because the list looks large. Use evidence of duplication, staleness, or bad behavior before changing skill inventory.
 
 ## Standing Contract
 
@@ -13,13 +25,13 @@ Use this as the first-pass router for ChefFlow work. Codex cannot run a true bac
 2. Run `autonomous-build-loop` when David says Codex is making him prompt every build, asks why the project is not building itself, references 24/7 Codex building, builder queues, Sticky Notes as build input, or Mission Control as a live monitor.
 3. Run `v1-governor` before any new ChefFlow feature, urgency spike, V1/V2 scope decision, Hermes or swarm build idea, Mission Control progress work, or "what should we build next" request. Build only when the request is a V1 blocker, current-lane V1 support, critical bug/security/money/safety repair, or the user says `Override V1 governor: build this anyway.`
 4. Run `context-continuity` as a sidecar before non-trivial ChefFlow planning, building, research, architecture, UI, feature, backlog, workflow, or ambiguous product work so Codex attaches to existing surfaces instead of creating near-duplicates.
-5. Keep exactly one primary skill in charge of the current work, then add sidecar skills only for distinct risk or workflow needs.
+5. Keep exactly one primary skill in charge of the current work, then add sidecar skills only for distinct risk or workflow needs that are worth naming.
 6. Keep `software-fundamentals` active as the Matt Pocock audit lens for every non-trivial code task. Before editing, identify the module owner. During implementation, deepen repeated or tangled behavior into real modules when it protects the task. Before closeout, record whether module deepening happened, was unnecessary, or is intentionally deferred.
 7. For ChefFlow release readiness, "what is stopping release," "what must work," or "what should we prove" questions, route to `pricing-reliability` first unless the user explicitly asks about go-to-market. For repeated pricing data audits, proof harness runs, "does ChefFlow work now," "what now" after pricing proof, or data engine reliability checks, route to `pricing-engine-auditor` with `pricing-reliability` as sidecar. Use `pricing-reliability` as the law and `pricing-engine-auditor` as the procedure.
 8. Assume ChefFlow has a swarm of agents working concurrently. Treat unfamiliar dirty files, untracked files, deletions, stubs, logs, specs, and generated artifacts as other agents' active work unless you created them in this session.
 9. If the task reveals reusable developer behavior, external operator guidance, repeated friction, a missing trigger, or a skill failure, run `skill-garden` in the same turn.
 10. If a skill produced bad guidance, run `heal-skill` with `skill-garden` so the fix is both local and durable.
-11. At closeout, decide the skill delta: `none`, `patch`, `new-skill`, or `heal`. If it is not `none`, make the skill change before final response and commit it.
+11. At closeout, decide the skill delta internally: `none`, `patch`, `new-skill`, or `heal`. If it is not `none`, make the skill change before final response and commit it.
 
 ## Harness Commands
 
@@ -63,12 +75,12 @@ Use these tools when the task touches skills or durable agent behavior:
 3. If the request says Codex should stop making David prompt every build, asks for autonomous or 24/7 building, references builder queues, Sticky Notes as build input, or a live monitor, load `autonomous-build-loop`.
 4. If the request is a new feature, urgency spike, V1/V2 scope decision, Hermes or swarm build idea, Mission Control progress request, or "what should we build next" question, load `v1-governor` before builder or planner. Preserve V2 ideas instead of building them.
 5. If the request implies a task class, load the best matching skill from the router below.
-6. If the task is non-trivial or could create duplicate surfaces, load `context-continuity` before writing or planning.
-7. If an approved build will edit code, load `software-fundamentals` as a sidecar unless the change is tiny and mechanical. Keep it active through closeout so the Matt Pocock audit checks module ownership and deepening before shipping.
+6. If the task is non-trivial or could create duplicate surfaces, load `context-continuity` before writing or planning, but mention it only when it changes the plan or prevents duplicate work.
+7. If an approved build will edit code, load `software-fundamentals` as a sidecar unless the change is tiny and mechanical. Keep it active through closeout so the Matt Pocock audit checks module ownership and deepening before shipping, but do not narrate the audit unless it affects the implementation or closeout.
 8. If the request reveals a repeated developer behavior, recurring failure, new operating rule, or missing reusable workflow, also load `skill-garden`.
 9. If the request includes a huge persona paste or asks whether one can be pasted, load `persona-dump`.
 10. Inspect branch and dirty work before writing, classify current-task files versus other agents' work, and keep ownership narrow.
-11. State the skill or skills being used in one short line.
+11. State the skill or skills being used in one short line only when the user named a skill, the skill choice affects risk, or project rules require disclosure.
 12. Execute the task with the normal ChefFlow hard stops: no main push, no destructive database operations, no `drizzle-kit push`, no manual `types/database.ts`, no `@ts-nocheck`, no em dashes, no unapproved build, no unapproved long-running server.
 
 ## Skill Router

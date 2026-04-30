@@ -1,0 +1,18 @@
+{
+  "created_at": "2026-04-30T20:02:05.417Z",
+  "goal": "make Omninet quiet by default without pruning useful skills",
+  "primary_skill": "omninet",
+  "sidecar_skills": [],
+  "skill_delta": "patch",
+  "durable_behavior_seen": null,
+  "skill_gap_seen": null,
+  "validation": {
+    "skill_validator": "node devtools/skill-validator.mjs omninet passed",
+    "trigger_tests": "node devtools/skill-trigger-tests.mjs passed",
+    "compliance": "changed skill files have no em dashes",
+    "other": null
+  },
+  "commit": null,
+  "pushed": false,
+  "notes": "Quiet routing now defaults to one primary skill, named sidecars only, minimal narration, and no pruning without evidence."
+}
