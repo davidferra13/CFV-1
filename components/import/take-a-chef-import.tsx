@@ -1,6 +1,6 @@
 'use client'
 
-// Take a Chef AI Import Component
+// Source-platform AI Import Component
 // Paste a TakeaChef booking notification email → AI parses it → review & save
 // Lives inside the Smart Import Hub as a dedicated tab
 
@@ -48,7 +48,7 @@ export function TakeAChefImport({
 
   const handleParse = async () => {
     if (!rawText.trim()) {
-      setError('Paste your Take a Chef booking notification text first.')
+      setError('Paste your source-platform booking notification text first.')
       return
     }
     setError(null)
@@ -104,10 +104,12 @@ export function TakeAChefImport({
           <div className="flex items-start gap-3">
             <span className="text-2xl">✓</span>
             <div>
-              <p className="font-semibold text-green-900 text-lg">Take a Chef Booking Captured</p>
+              <p className="font-semibold text-green-900 text-lg">
+                Source-Platform Booking Captured
+              </p>
               <p className="text-green-700 text-sm mt-1">
                 {result.clientCreated ? 'New client created' : 'Existing client matched'} · Inquiry
-                and draft event created · Tagged as Take a Chef source
+                and draft event created · Tagged as a source-platform booking
               </p>
               {result.commissionExpenseId && (
                 <p className="text-emerald-600 text-sm mt-0.5">
@@ -152,12 +154,12 @@ export function TakeAChefImport({
 
       <div className="space-y-2">
         <label className="text-sm font-medium text-stone-300">
-          Paste your Take a Chef booking notification
+          Paste your source-platform booking notification
         </label>
         <p className="text-xs text-stone-500">
-          Copy the booking confirmation email or message you received from Take a Chef and paste it
-          below. This will extract the client name, date, guest count, location, occasion, and
-          dietary notes.
+          Copy the booking confirmation email or message you received from the source platform and
+          paste it below. This will extract the client name, date, guest count, location, occasion,
+          and dietary notes.
         </p>
         <Textarea
           value={rawText}
@@ -188,7 +190,9 @@ export function TakeAChefImport({
                 className="w-20 px-3 py-1.5 border border-stone-700 rounded-md text-sm text-center focus:outline-none focus:ring-2 focus:ring-brand-500"
                 disabled={phase === 'saving'}
               />
-              <span className="text-sm text-stone-500">% (uses your current TAC default)</span>
+              <span className="text-sm text-stone-500">
+                % (uses your current source-platform default)
+              </span>
             </div>
           </div>
           <label className="flex items-center gap-2 text-sm text-stone-400 cursor-pointer">
@@ -246,8 +250,8 @@ export function TakeAChefImport({
       <div className="rounded-lg border border-brand-100 bg-brand-950 p-4 text-sm text-stone-400">
         <p className="font-medium text-stone-200 mb-1">What gets created</p>
         <ul className="space-y-1 text-xs text-stone-400 list-disc pl-4">
-          <li>Client record tagged as &quot;Take a Chef&quot; acquisition source</li>
-          <li>Inquiry with channel = Take a Chef (tracked in your pipeline)</li>
+          <li>Client record tagged as source-platform origin</li>
+          <li>Inquiry tracked as a source-platform booking</li>
           <li>Draft event pre-filled with all extracted details</li>
           <li>Platform commission logged as a business expense (so it hits your P&amp;L)</li>
         </ul>

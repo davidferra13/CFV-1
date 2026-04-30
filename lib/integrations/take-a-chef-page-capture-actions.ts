@@ -6,7 +6,13 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { createClientFromLead } from '@/lib/clients/actions'
 import { findPlatformInquiryByContext } from '@/lib/gmail/platform-dedup'
+import {
+  createEmailSnapshot,
+  ensurePlatformRecord,
+  upsertPlatformPayout,
+} from '@/lib/gmail/platform-records-writer'
 import { transitionInquiry } from '@/lib/inquiries/actions'
+import { isMarketplaceChannelValue } from '@/lib/marketplace/source-platform-display'
 import {
   TAKE_A_CHEF_PAGE_CAPTURE_TYPES,
   mergeTakeAChefPageCaptureIntoUnknownFields,
@@ -117,8 +123,10 @@ async function maybeCreateClient(params: {
   fullName: string | null
   email: string | null
   phone: string | null
+  sourceChannel: string
 }): Promise<string | null> {
   if (!params.fullName) return null
+  const clientSource = params.sourceChannel === 'take_a_chef' ? 'take_a_chef' : 'other'
 
   if (params.email) {
     try {
@@ -126,7 +134,7 @@ async function maybeCreateClient(params: {
         email: params.email.toLowerCase().trim(),
         full_name: params.fullName.trim(),
         phone: params.phone?.trim() || null,
-        source: 'take_a_chef',
+        source: clientSource,
       })
       return result.id
     } catch (error) {
@@ -140,12 +148,12 @@ async function maybeCreateClient(params: {
     .insert({
       tenant_id: params.tenantId,
       full_name: params.fullName.trim(),
-      email: `tac-capture-${Date.now()}@placeholder.cheflowhq.com`,
+      email: `source-capture-${Date.now()}@placeholder.cheflowhq.com`,
       phone: params.phone?.trim() || null,
       dietary_restrictions: [],
       allergies: [],
       status: 'active',
-      referral_source: 'take_a_chef',
+      referral_source: clientSource,
     })
     .select('id')
     .single()
@@ -165,6 +173,7 @@ async function syncClientContactDetails(params: {
   fullName: string | null
   email: string | null
   phone: string | null
+  sourceChannel: string
 }) {
   if (!params.clientId) return
 
@@ -194,7 +203,7 @@ async function syncClientContactDetails(params: {
     updates.full_name = params.fullName.trim()
   }
   if (!client.referral_source) {
-    updates.referral_source = 'take_a_chef'
+    updates.referral_source = params.sourceChannel === 'take_a_chef' ? 'take_a_chef' : 'other'
   }
 
   if (Object.keys(updates).length === 0) return
@@ -325,6 +334,110 @@ async function syncBookingEventFromCapture(params: {
   return event.id
 }
 
+function getPlatformStatusFromCapture(captureType: TakeAChefPageCaptureType): string {
+  if (captureType === 'booking') return 'booked'
+  if (captureType === 'guest_contact') return 'contact_revealed'
+  if (captureType === 'proposal') return 'proposal_sent'
+  if (captureType === 'message') return 'responded'
+  return 'new'
+}
+
+function getCaptureUrls(captureType: TakeAChefPageCaptureType, pageUrl: string) {
+  return {
+    requestUrl: captureType === 'request' ? pageUrl : null,
+    proposalUrl: captureType === 'proposal' ? pageUrl : null,
+    guestContactUrl: captureType === 'guest_contact' ? pageUrl : null,
+    bookingUrl: captureType === 'booking' ? pageUrl : null,
+    menuUrl: captureType === 'menu' ? pageUrl : null,
+  }
+}
+
+async function writeSourcePlatformCaptureRecord(params: {
+  db: any
+  tenantId: string
+  inquiryId: string
+  clientId: string | null
+  eventId: string | null
+  captureType: TakeAChefPageCaptureType
+  pageUrl: string
+  pageTitle: string | null
+  pageText: string
+  capturedAt: string
+  nextActionRequired: string | null
+  nextActionBy: string | null
+  parsed: ReturnType<typeof parseTakeAChefPageCapture>
+}) {
+  try {
+    const urls = getCaptureUrls(params.captureType, params.pageUrl)
+    const platformRecordId = await ensurePlatformRecord(params.db, {
+      tenantId: params.tenantId,
+      inquiryId: params.inquiryId,
+      clientId: params.clientId,
+      eventId: params.eventId,
+      platform: params.parsed.platformChannel,
+      externalInquiryId: params.parsed.orderId,
+      externalUriToken: params.parsed.ctaUriToken,
+      externalUrl: params.parsed.primaryLink || params.pageUrl,
+      ...urls,
+      statusOnPlatform: getPlatformStatusFromCapture(params.captureType),
+      nextActionRequired: params.nextActionRequired,
+      nextActionBy: params.nextActionBy,
+      lastCaptureType: 'manual_page_capture',
+      payload: {
+        page_title: params.pageTitle,
+        capture_type: params.captureType,
+        lawful_source: 'chef_supplied_manual_capture',
+      },
+    })
+
+    if (!platformRecordId) return
+
+    await createEmailSnapshot(params.db, {
+      tenantId: params.tenantId,
+      platformRecordId,
+      inquiryId: params.inquiryId,
+      eventId: params.eventId,
+      captureType: params.captureType,
+      clientName: params.parsed.clientName,
+      email: params.parsed.email,
+      phone: params.parsed.phone,
+      bookingDate: params.parsed.bookingDate,
+      guestCount: params.parsed.guestCount,
+      location: params.parsed.location,
+      occasion: params.parsed.occasion,
+      amountCents: params.parsed.amountCents,
+      summary: params.parsed.summary,
+      textExcerpt: params.pageText,
+      source: 'manual_capture',
+      snapshotAt: params.capturedAt,
+      metadata: {
+        page_url: params.pageUrl,
+        page_title: params.pageTitle,
+        capture_type: params.captureType,
+        lawful_source: 'chef_supplied_manual_capture',
+      },
+    })
+
+    if (
+      (params.captureType === 'booking' || params.captureType === 'proposal') &&
+      params.parsed.amountCents != null
+    ) {
+      await upsertPlatformPayout(params.db, {
+        tenantId: params.tenantId,
+        platformRecordId,
+        inquiryId: params.inquiryId,
+        eventId: params.eventId,
+        platform: params.parsed.platformChannel,
+        grossBookingCents: params.parsed.amountCents,
+        payoutStatus: 'untracked',
+        source: 'manual_capture',
+      })
+    }
+  } catch (error) {
+    console.warn('[source-platform-capture] Write-through skipped:', error)
+  }
+}
+
 export async function saveTakeAChefPageCapture(
   input: TakeAChefPageCaptureInput
 ): Promise<TakeAChefPageCaptureResult> {
@@ -339,11 +452,15 @@ export async function saveTakeAChefPageCapture(
     pageLinks: validated.pageLinks ?? [],
   })
   const captureType = validated.captureType ?? parsed.suggestedCaptureType
+  const platformChannel = isMarketplaceChannelValue(parsed.platformChannel)
+    ? parsed.platformChannel
+    : 'other'
+  const parsedWithChannel = { ...parsed, platformChannel }
   const capturedAt = new Date().toISOString()
 
   try {
     const existingInquiryId = await findPlatformInquiryByContext(db, tenantId, {
-      channel: 'take_a_chef',
+      channel: platformChannel,
       clientName: parsed.clientName,
       eventDate: parsed.bookingDate,
       orderId: parsed.orderId,
@@ -354,7 +471,7 @@ export async function saveTakeAChefPageCapture(
       const { data: inquiry, error } = await db
         .from('inquiries')
         .select(
-          'id, client_id, status, external_link, external_inquiry_id, confirmed_date, confirmed_guest_count, confirmed_location, confirmed_occasion, source_message, unknown_fields, converted_to_event_id'
+          'id, client_id, status, external_link, external_inquiry_id, confirmed_date, confirmed_guest_count, confirmed_location, confirmed_occasion, confirmed_budget_cents, source_message, unknown_fields, converted_to_event_id'
         )
         .eq('tenant_id', tenantId)
         .eq('id', existingInquiryId)
@@ -372,6 +489,7 @@ export async function saveTakeAChefPageCapture(
           fullName: parsed.clientName,
           email: parsed.email,
           phone: parsed.phone,
+          sourceChannel: platformChannel,
         }))
 
       const nextAction = getCaptureNextAction({
@@ -411,7 +529,7 @@ export async function saveTakeAChefPageCapture(
             pageTitle: validated.pageTitle || null,
             pageLinks: validated.pageLinks,
             notes: validated.notes || null,
-            parsed,
+            parsed: parsedWithChannel,
             capturedAt,
           }),
         })
@@ -429,6 +547,7 @@ export async function saveTakeAChefPageCapture(
         fullName: parsed.clientName,
         email: parsed.email,
         phone: parsed.phone,
+        sourceChannel: platformChannel,
       })
 
       const finalStatus =
@@ -455,9 +574,25 @@ export async function saveTakeAChefPageCapture(
               confirmedLocation: inquiry.confirmed_location ?? null,
               confirmedOccasion: inquiry.confirmed_occasion ?? null,
               pageNotes: validated.notes || null,
-              parsed,
+              parsed: parsedWithChannel,
             })
           : (inquiry.converted_to_event_id ?? null)
+
+      await writeSourcePlatformCaptureRecord({
+        db,
+        tenantId,
+        inquiryId: existingInquiryId,
+        clientId: linkedClientId ?? inquiry.client_id,
+        eventId,
+        captureType,
+        pageUrl: validated.pageUrl,
+        pageTitle: validated.pageTitle || null,
+        pageText: validated.pageText,
+        capturedAt,
+        nextActionRequired: nextAction.nextActionRequired,
+        nextActionBy: nextAction.nextActionBy,
+        parsed: parsedWithChannel,
+      })
 
       if (captureType === 'menu' && finalStatus === 'confirmed' && inquiry.converted_to_event_id) {
         revalidatePath(`/events/${inquiry.converted_to_event_id}`)
@@ -489,6 +624,7 @@ export async function saveTakeAChefPageCapture(
       fullName: parsed.clientName,
       email: parsed.email,
       phone: parsed.phone,
+      sourceChannel: platformChannel,
     })
 
     const status =
@@ -508,8 +644,8 @@ export async function saveTakeAChefPageCapture(
       .insert({
         tenant_id: tenantId,
         client_id: clientId,
-        channel: 'take_a_chef',
-        external_platform: 'take_a_chef',
+        channel: platformChannel,
+        external_platform: platformChannel,
         external_link: parsed.primaryLink || validated.pageUrl,
         external_inquiry_id: parsed.orderId || parsed.ctaUriToken || null,
         first_contact_at: capturedAt,
@@ -525,7 +661,8 @@ export async function saveTakeAChefPageCapture(
         next_action_by: nextAction.nextActionBy,
         unknown_fields: mergeTakeAChefPageCaptureIntoUnknownFields({
           unknownFields: {
-            submission_source: 'take_a_chef_page_capture',
+            submission_source: 'source_platform_page_capture',
+            source_platform_channel: platformChannel,
             client_name: parsed.clientName,
             client_email: parsed.email,
             client_phone: parsed.phone,
@@ -536,7 +673,7 @@ export async function saveTakeAChefPageCapture(
           pageTitle: validated.pageTitle || null,
           pageLinks: validated.pageLinks,
           notes: validated.notes || null,
-          parsed,
+          parsed: parsedWithChannel,
           capturedAt,
         }),
       })
@@ -554,6 +691,7 @@ export async function saveTakeAChefPageCapture(
       fullName: parsed.clientName,
       email: parsed.email,
       phone: parsed.phone,
+      sourceChannel: platformChannel,
     })
 
     const eventId =
@@ -570,9 +708,25 @@ export async function saveTakeAChefPageCapture(
             confirmedLocation: parsed.location,
             confirmedOccasion: parsed.occasion,
             pageNotes: validated.notes || null,
-            parsed,
+            parsed: parsedWithChannel,
           })
         : null
+
+    await writeSourcePlatformCaptureRecord({
+      db,
+      tenantId,
+      inquiryId: inquiry.id,
+      clientId,
+      eventId,
+      captureType,
+      pageUrl: validated.pageUrl,
+      pageTitle: validated.pageTitle || null,
+      pageText: validated.pageText,
+      capturedAt,
+      nextActionRequired: nextAction.nextActionRequired,
+      nextActionBy: nextAction.nextActionBy,
+      parsed: parsedWithChannel,
+    })
 
     revalidatePath('/marketplace')
     revalidatePath('/dashboard')

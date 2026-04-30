@@ -1,7 +1,7 @@
 'use client'
 
 // Platform Response Drafter
-// Generates an AI draft response for marketplace platform leads (TAC, PCM, etc.)
+// Generates an AI draft response for source-platform leads.
 // ChefFlow cannot send on the chef's behalf - the chef copies and pastes on the platform.
 
 import { useState } from 'react'
@@ -10,36 +10,17 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { draftResponseForInquiry } from '@/lib/ai/correspondence'
 import { CheckCircle, Copy, ExternalLink, Sparkles } from '@/components/ui/icons'
 
-const PLATFORM_LABELS: Record<string, string> = {
-  take_a_chef: 'Take a Chef',
-  private_chef_manager: 'Private Chef Manager',
-  yhangry: 'Yhangry',
-  bark: 'Bark',
-  thumbtack: 'Thumbtack',
-  cozymeal: 'Cozymeal',
-  gigsalad: 'GigSalad',
-  theknot: 'The Knot',
-  hireachef: 'Hire a Chef',
-  cuisineist: 'Cuisineist',
-}
-
 interface PlatformResponseDrafterProps {
   inquiryId: string
   channel: string
   externalLink: string | null
 }
 
-export function PlatformResponseDrafter({
-  inquiryId,
-  channel,
-  externalLink,
-}: PlatformResponseDrafterProps) {
+export function PlatformResponseDrafter({ inquiryId, externalLink }: PlatformResponseDrafterProps) {
   const [loading, setLoading] = useState(false)
   const [draft, setDraft] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
   const [error, setError] = useState<string | null>(null)
-
-  const platformLabel = PLATFORM_LABELS[channel] ?? channel
 
   const handleGenerate = async () => {
     setLoading(true)
@@ -69,11 +50,11 @@ export function PlatformResponseDrafter({
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
           <Sparkles className="h-4 w-4 text-brand-400" />
-          Draft a response for {platformLabel}
+          Draft a source-platform response
         </CardTitle>
         <p className="mt-1 text-sm text-stone-400">
-          ChefFlow generates the response. You copy it and paste it directly on {platformLabel}.
-          ChefFlow cannot send on your behalf.
+          ChefFlow generates the response. You copy it and paste it directly on the source platform.
+          ChefFlow cannot send on your behalf or act inside the source account.
         </p>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -112,7 +93,7 @@ export function PlatformResponseDrafter({
                   className="inline-flex items-center gap-1.5 rounded-lg border border-stone-700 bg-stone-900 px-3 py-2 text-sm font-medium text-stone-200 transition-colors hover:border-stone-600 hover:bg-stone-800"
                 >
                   <ExternalLink className="h-4 w-4" />
-                  Open {platformLabel}
+                  Open source
                 </a>
               )}
               <Button
@@ -127,7 +108,7 @@ export function PlatformResponseDrafter({
             </div>
             {copied && (
               <p className="text-xs text-stone-500">
-                Now open {platformLabel} and paste the response into the reply field.
+                Now open the source platform and paste the response into the reply field.
               </p>
             )}
           </>

@@ -128,7 +128,7 @@ const TABS: TabConfig[] = [
   },
   {
     mode: 'take-a-chef',
-    label: 'Take a Chef',
+    label: 'Source Platform',
     placeholder: '',
     isCustomComponent: true,
   },

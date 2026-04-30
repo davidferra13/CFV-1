@@ -1,0 +1,687 @@
+{
+  "generated_at": "2026-04-30T01:01:56.856Z",
+  "prompt": "Build generic Marketplace Companion Mode for external booking platforms without public platform branding, using lawful chef-controlled email forwarding, paste capture, uploads, calendar/source links, payout reconciliation, and event mirror.",
+  "terms": [
+    "generic",
+    "marketplace",
+    "companion",
+    "mode",
+    "external",
+    "booking",
+    "platforms",
+    "without",
+    "public",
+    "platform",
+    "branding",
+    "using",
+    "lawful",
+    "chef-controlled",
+    "email",
+    "forwarding",
+    "paste",
+    "capture",
+    "uploads",
+    "calendar/source",
+    "links",
+    "payout",
+    "reconciliation",
+    "event"
+  ],
+  "scanned_dirs": [
+    "app",
+    "components",
+    "lib",
+    "docs/specs",
+    "docs/changes",
+    "docs/app-complete-audit.md",
+    "project-map",
+    "memory",
+    "system/intake",
+    "system/agent-reports"
+  ],
+  "canonical_surfaces": [
+    {
+      "id": "public-homepage",
+      "label": "Public Homepage",
+      "score": 5,
+      "hits": ["public"],
+      "canonical_routes": ["/"],
+      "canonical_files": ["app/(public)/page.tsx"],
+      "sandbox_routes": ["/sandbox/homepage"],
+      "duplicate_policy": {
+        "allowed_duplicates": 1,
+        "allowed_reason": "One sandbox duplicate for interactive experimentation."
+      }
+    },
+    {
+      "id": "client-intake",
+      "label": "Client Intake",
+      "score": 5,
+      "hits": ["booking", "public"],
+      "canonical_routes": ["/book", "/clients/intake"],
+      "canonical_files": [
+        "app/api/book/route.ts",
+        "lib/inquiries/public-actions.ts",
+        "public/embed/chefflow-widget.js"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach to the existing intake lane contract."
+      }
+    },
+    {
+      "id": "finance",
+      "label": "Finance and Ledger",
+      "score": 4,
+      "hits": ["mode", "payout", "event"],
+      "canonical_routes": ["/finance", "/quotes"],
+      "canonical_files": [
+        "lib/ledger/append.ts",
+        "lib/ledger/compute.ts",
+        "lib/events/transitions.ts"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Financial behavior must attach to ledger and quote owners."
+      }
+    },
+    {
+      "id": "chef-flow-replay",
+      "label": "Chef Flow Replay",
+      "score": 2,
+      "hits": ["mode"],
+      "canonical_routes": ["/replay"],
+      "canonical_files": ["app/(chef)/replay/page.tsx", "lib/activity/replay-model.ts"],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Extend replay model and components in place."
+      }
+    },
+    {
+      "id": "context-continuity",
+      "label": "Context Continuity",
+      "score": 1,
+      "hits": ["event"],
+      "canonical_routes": [],
+      "canonical_files": [
+        ".claude/skills/context-continuity/SKILL.md",
+        "devtools/context-continuity-scan.mjs",
+        "system/canonical-surfaces.json"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Extend the continuity layer in place."
+      }
+    }
+  ],
+  "related_files": [
+    {
+      "file": "docs/specs/platform-intelligence-hub.md",
+      "kind": "spec",
+      "score": 84,
+      "hits": [
+        "platform",
+        "generic",
+        "marketplace",
+        "mode",
+        "external",
+        "booking",
+        "platforms",
+        "without",
+        "public",
+        "using"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-consumer-discovery-cohesion-v1.md",
+      "kind": "spec",
+      "score": 62,
+      "hits": [
+        "generic",
+        "marketplace",
+        "mode",
+        "external",
+        "booking",
+        "without",
+        "public",
+        "platform",
+        "branding",
+        "email"
+      ]
+    },
+    {
+      "file": "app/(chef)/inquiries/[id]/page.tsx",
+      "kind": "route",
+      "score": 61,
+      "hits": [
+        "marketplace",
+        "mode",
+        "external",
+        "booking",
+        "platforms",
+        "without",
+        "public",
+        "platform",
+        "email",
+        "paste"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-competitive-surface.md",
+      "kind": "spec",
+      "score": 60,
+      "hits": [
+        "generic",
+        "marketplace",
+        "mode",
+        "external",
+        "booking",
+        "platforms",
+        "without",
+        "public",
+        "platform",
+        "email"
+      ]
+    },
+    {
+      "file": "docs/specs/featured-chef-public-proof-and-booking.md",
+      "kind": "spec",
+      "score": 58,
+      "hits": [
+        "booking",
+        "public",
+        "marketplace",
+        "mode",
+        "external",
+        "without",
+        "platform",
+        "branding",
+        "using",
+        "chef-controlled"
+      ]
+    },
+    {
+      "file": "docs/specs/bob-and-joy-action-catalog.md",
+      "kind": "spec",
+      "score": 55,
+      "hits": [
+        "marketplace",
+        "mode",
+        "external",
+        "booking",
+        "platforms",
+        "without",
+        "public",
+        "platform",
+        "branding",
+        "email"
+      ]
+    },
+    {
+      "file": "docs/specs/public-surface-interrogation.md",
+      "kind": "spec",
+      "score": 53,
+      "hits": [
+        "public",
+        "marketplace",
+        "mode",
+        "external",
+        "booking",
+        "platforms",
+        "without",
+        "platform",
+        "email",
+        "capture"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-public-surface-cohesion-v1.md",
+      "kind": "spec",
+      "score": 53,
+      "hits": [
+        "public",
+        "generic",
+        "marketplace",
+        "mode",
+        "booking",
+        "without",
+        "platform",
+        "branding",
+        "using",
+        "email"
+      ]
+    },
+    {
+      "file": "docs/specs/api-integration-health-audit.md",
+      "kind": "spec",
+      "score": 52,
+      "hits": [
+        "generic",
+        "mode",
+        "external",
+        "booking",
+        "platforms",
+        "without",
+        "public",
+        "platform",
+        "using",
+        "email"
+      ]
+    },
+    {
+      "file": "docs/specs/continuous-intelligence-layer.md",
+      "kind": "spec",
+      "score": 49,
+      "hits": [
+        "generic",
+        "mode",
+        "external",
+        "booking",
+        "without",
+        "public",
+        "platform",
+        "using",
+        "email",
+        "capture"
+      ]
+    },
+    {
+      "file": "app/(public)/marketplace-chefs/page.tsx",
+      "kind": "route",
+      "score": 48,
+      "hits": [
+        "marketplace",
+        "public",
+        "mode",
+        "booking",
+        "platforms",
+        "without",
+        "platform",
+        "using",
+        "capture",
+        "links"
+      ]
+    },
+    {
+      "file": "docs/specs/onboarding-overhaul.md",
+      "kind": "spec",
+      "score": 48,
+      "hits": [
+        "marketplace",
+        "mode",
+        "booking",
+        "platforms",
+        "without",
+        "public",
+        "platform",
+        "using",
+        "chef-controlled",
+        "email"
+      ]
+    },
+    {
+      "file": "docs/specs/system-completeness-interrogation.md",
+      "kind": "spec",
+      "score": 48,
+      "hits": [
+        "generic",
+        "mode",
+        "external",
+        "booking",
+        "without",
+        "public",
+        "platform",
+        "using",
+        "email",
+        "uploads"
+      ]
+    },
+    {
+      "file": "docs/specs/app-polish-and-completion.md",
+      "kind": "spec",
+      "score": 47,
+      "hits": [
+        "generic",
+        "marketplace",
+        "mode",
+        "booking",
+        "platforms",
+        "without",
+        "public",
+        "platform",
+        "branding",
+        "using"
+      ]
+    },
+    {
+      "file": "docs/specs/comprehensive-domain-inventory-phase-1.md",
+      "kind": "spec",
+      "score": 46,
+      "hits": [
+        "marketplace",
+        "mode",
+        "external",
+        "booking",
+        "without",
+        "public",
+        "platform",
+        "email",
+        "capture",
+        "links"
+      ]
+    },
+    {
+      "file": "docs/specs/p1-google-contacts-import-via-google-people-api.md",
+      "kind": "spec",
+      "score": 46,
+      "hits": [
+        "marketplace",
+        "mode",
+        "external",
+        "booking",
+        "without",
+        "platform",
+        "using",
+        "email",
+        "paste",
+        "capture"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-full-cohesion.md",
+      "kind": "spec",
+      "score": 46,
+      "hits": [
+        "generic",
+        "mode",
+        "booking",
+        "without",
+        "public",
+        "branding",
+        "using",
+        "email",
+        "capture",
+        "links"
+      ]
+    },
+    {
+      "file": "lib/db/fk-map.ts",
+      "kind": "module",
+      "score": 46,
+      "hits": [
+        "external",
+        "booking",
+        "without",
+        "public",
+        "platform",
+        "email",
+        "uploads",
+        "links",
+        "payout",
+        "reconciliation"
+      ]
+    },
+    {
+      "file": "docs/specs/openclaw-ideal-runtime-and-national-intelligence.md",
+      "kind": "spec",
+      "score": 45,
+      "hits": [
+        "generic",
+        "mode",
+        "external",
+        "without",
+        "public",
+        "branding",
+        "using",
+        "email",
+        "capture",
+        "links"
+      ]
+    },
+    {
+      "file": "lib/marketplace/platform-record-readers.ts",
+      "kind": "module",
+      "score": 45,
+      "hits": [
+        "marketplace",
+        "platform",
+        "external",
+        "booking",
+        "platforms",
+        "email",
+        "capture",
+        "payout",
+        "event"
+      ]
+    },
+    {
+      "file": "app/(chef)/marketplace/page.tsx",
+      "kind": "route",
+      "score": 44,
+      "hits": [
+        "marketplace",
+        "external",
+        "booking",
+        "platforms",
+        "platform",
+        "capture",
+        "payout",
+        "event"
+      ]
+    },
+    {
+      "file": "docs/specs/p1-allergy-and-dietary-trust-alignment.md",
+      "kind": "spec",
+      "score": 44,
+      "hits": [
+        "marketplace",
+        "mode",
+        "external",
+        "booking",
+        "without",
+        "public",
+        "platform",
+        "using",
+        "capture",
+        "uploads"
+      ]
+    },
+    {
+      "file": "lib/gmail/platform-records-writer.ts",
+      "kind": "module",
+      "score": 44,
+      "hits": [
+        "platform",
+        "marketplace",
+        "external",
+        "booking",
+        "platforms",
+        "without",
+        "email",
+        "capture",
+        "payout",
+        "event"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-cohesiveness-synthesis.md",
+      "kind": "spec",
+      "score": 43,
+      "hits": [
+        "generic",
+        "mode",
+        "booking",
+        "without",
+        "public",
+        "platform",
+        "using",
+        "email",
+        "capture",
+        "uploads"
+      ]
+    },
+    {
+      "file": "docs/specs/visual-representation-strategy.md",
+      "kind": "spec",
+      "score": 43,
+      "hits": [
+        "generic",
+        "mode",
+        "external",
+        "without",
+        "public",
+        "using",
+        "email",
+        "capture",
+        "uploads",
+        "event"
+      ]
+    },
+    {
+      "file": "lib/integrations/take-a-chef-page-capture-actions.ts",
+      "kind": "module",
+      "score": 43,
+      "hits": [
+        "capture",
+        "marketplace",
+        "external",
+        "booking",
+        "platform",
+        "email",
+        "links",
+        "event"
+      ]
+    },
+    {
+      "file": "app/(chef)/events/[id]/page.tsx",
+      "kind": "route",
+      "score": 42,
+      "hits": [
+        "event",
+        "marketplace",
+        "mode",
+        "booking",
+        "platforms",
+        "public",
+        "platform",
+        "capture",
+        "links"
+      ]
+    },
+    {
+      "file": "docs/specs/chef-shell-clarity-and-guided-settings.md",
+      "kind": "spec",
+      "score": 42,
+      "hits": [
+        "generic",
+        "mode",
+        "external",
+        "platforms",
+        "without",
+        "platform",
+        "using",
+        "capture",
+        "links",
+        "event"
+      ]
+    },
+    {
+      "file": "docs/specs/system-surface-role-classification-foundation.md",
+      "kind": "spec",
+      "score": 42,
+      "hits": [
+        "companion",
+        "mode",
+        "external",
+        "booking",
+        "without",
+        "public",
+        "platform",
+        "using",
+        "email",
+        "capture"
+      ]
+    },
+    {
+      "file": "app/(chef)/settings/page.tsx",
+      "kind": "route",
+      "score": 41,
+      "hits": [
+        "mode",
+        "external",
+        "booking",
+        "public",
+        "branding",
+        "email",
+        "capture",
+        "links",
+        "payout",
+        "event"
+      ]
+    }
+  ],
+  "recent_commits": [
+    {
+      "line": "4606d77a5 chore(agent): wire booking ask-once contract feature/catch-up-brand-new-builds",
+      "score": 1,
+      "hits": ["booking"]
+    }
+  ],
+  "dirty_matches": [
+    {
+      "line": " M app/(client)/my-events/[id]/page.tsx",
+      "file": "app/(client)/my-events/[id]/page.tsx",
+      "score": 2,
+      "hits": ["event"]
+    },
+    {
+      "line": " M app/(client)/my-events/[id]/pay/page.tsx",
+      "file": "app/(client)/my-events/[id]/pay/page.tsx",
+      "score": 2,
+      "hits": ["event"]
+    }
+  ],
+  "claim_matches": [
+    {
+      "file": "system/agent-claims/20260429T234252Z-feature-pantry-engine-create-persistent-codex-behavior-to-prevent-fragmented-dup.json",
+      "score": 3,
+      "hits": ["capture", "event"],
+      "prompt": "Create persistent Codex behavior to prevent fragmented duplicate builds and capture conversation memory for Obsidian-style continuity",
+      "owned": [],
+      "status": "active"
+    }
+  ],
+  "duplicate_risks": [
+    {
+      "level": "high",
+      "reason": "Homepage work is capped to the production homepage and one sandbox duplicate.",
+      "owner": "public-homepage"
+    },
+    {
+      "level": "medium",
+      "reason": "Multiple canonical surfaces matched the prompt.",
+      "owners": ["public-homepage", "client-intake", "finance"]
+    },
+    {
+      "level": "medium",
+      "reason": "Dirty files already exist in this domain and may be another agent active work.",
+      "files": ["app/(client)/my-events/[id]/page.tsx", "app/(client)/my-events/[id]/pay/page.tsx"]
+    },
+    {
+      "level": "medium",
+      "reason": "Active or recorded claims overlap this domain.",
+      "claims": [
+        "system/agent-claims/20260429T234252Z-feature-pantry-engine-create-persistent-codex-behavior-to-prevent-fragmented-dup.json"
+      ]
+    }
+  ],
+  "continuity": {
+    "decision": "merge-candidate",
+    "stop_required": true,
+    "reason": "High duplicate risk requires a canonical owner decision before coding."
+  }
+}

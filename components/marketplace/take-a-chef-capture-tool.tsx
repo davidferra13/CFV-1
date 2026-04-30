@@ -131,13 +131,13 @@ export function TakeAChefCaptureTool() {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Bookmarklet Capture</CardTitle>
+          <CardTitle className="text-base">Chef-Controlled Capture</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <Alert variant="info" title="How this works">
-            Open the request or booking inside any marketplace (Private Chef Manager, Take a Chef,
-            Yhangry, Cozymeal, Bark, etc.), click the bookmarklet, then review the captured page
-            here before saving it onto the matching inquiry in ChefFlow.
+            Open a request, message, proposal, booking, payout, or menu in the source platform, then
+            use a manual paste or the bookmarklet you clicked yourself. ChefFlow only saves what you
+            review and approve.
           </Alert>
           <div className="flex flex-wrap items-center gap-3">
             <a
@@ -150,7 +150,8 @@ export function TakeAChefCaptureTool() {
               {copied ? 'Copied' : 'Copy Bookmarklet Code'}
             </Button>
             <span className="text-sm text-stone-400">
-              Drag the button to your bookmarks bar, or copy the code and save it as a bookmark.
+              Drag the button to your bookmarks bar, or copy the code and save it as a bookmark. Use
+              it only on pages you are permitted to view.
             </span>
           </div>
         </CardContent>
@@ -175,7 +176,7 @@ export function TakeAChefCaptureTool() {
                 value={pageUrl}
                 onChange={(event) => setPageUrl(event.target.value)}
                 className="block w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
-                placeholder="https://www.privatechefmanager.com/..."
+                placeholder="https://source-platform.example/..."
               />
             </div>
           </div>
@@ -187,7 +188,7 @@ export function TakeAChefCaptureTool() {
               value={pageTitle}
               onChange={(event) => setPageTitle(event.target.value)}
               className="block w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
-              placeholder="Private Chef Manager booking page"
+              placeholder="Source-platform booking page"
             />
           </div>
 
@@ -196,7 +197,7 @@ export function TakeAChefCaptureTool() {
             value={pageText}
             onChange={(event) => setPageText(event.target.value)}
             rows={14}
-            helperText="ChefFlow uses this to match the page to the right inquiry and extract useful booking context."
+            helperText="ChefFlow uses this chef-supplied text to match the page to the right inquiry and extract useful booking context."
           />
 
           <Textarea
@@ -209,7 +210,7 @@ export function TakeAChefCaptureTool() {
 
           <div className="flex flex-wrap items-center gap-2">
             {pageLinks.length > 0 && (
-              <Badge variant="default">{pageLinks.length} TAC links captured</Badge>
+              <Badge variant="default">{pageLinks.length} source links captured</Badge>
             )}
             {pageTitle && (
               <Badge variant="info">

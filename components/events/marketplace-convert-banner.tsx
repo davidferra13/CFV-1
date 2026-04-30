@@ -1,8 +1,7 @@
 'use client'
 
-// Marketplace "Convert to Direct" Banner
-// Shows on completed marketplace-sourced events (Take a Chef, Yhangry, Cozymeal, etc.)
-// Gives the chef a pre-written message + direct booking link to send to the client.
+// Marketplace follow-up banner.
+// Gives the chef a pre-written follow-up link while respecting source-platform terms.
 // Dismissable via localStorage.
 
 import { useState, useCallback, useEffect } from 'react'
@@ -16,12 +15,7 @@ type Props = {
 
 const DISMISS_KEY_PREFIX = 'marketplace_convert_dismissed_'
 
-export function MarketplaceConvertBanner({
-  clientName,
-  directBookingUrl,
-  eventId,
-  platformLabel,
-}: Props) {
+export function MarketplaceConvertBanner({ clientName, directBookingUrl, eventId }: Props) {
   const dismissKey = `${DISMISS_KEY_PREFIX}${eventId}`
   const [visible, setVisible] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -44,7 +38,7 @@ export function MarketplaceConvertBanner({
     setVisible(false)
   }, [dismissKey])
 
-  const suggestedMessage = `Hey ${clientName || 'there'}! It was such a pleasure cooking for you. For your next dinner, you can book me directly at ${directBookingUrl}. Same experience, and I can be even more flexible on custom menus. Looking forward to cooking for you again!`
+  const suggestedMessage = `Hey ${clientName || 'there'}! It was such a pleasure cooking for you. I keep preferences, menus, and future planning notes here: ${directBookingUrl}. If you would like to plan another service, this helps me keep the details organized. Please continue using the source platform wherever your booking terms require it. Looking forward to cooking for you again!`
 
   const handleCopy = useCallback(async () => {
     try {
@@ -70,13 +64,13 @@ export function MarketplaceConvertBanner({
 
           <div className="flex-1 min-w-0">
             <p className="font-semibold text-amber-900 text-sm">
-              This dinner came through {platformLabel}
+              This dinner came through a source platform
             </p>
             <p className="text-amber-700 text-xs mt-0.5">
               {clientName
-                ? `Send ${clientName} your direct booking link`
-                : 'Send your client the direct booking link'}{' '}
-              so they can skip the platform fee next time.
+                ? `Send ${clientName} your ChefFlow follow-up link`
+                : 'Send your client the ChefFlow follow-up link'}{' '}
+              while preserving any source-platform booking requirements.
             </p>
 
             <div className="mt-3 bg-stone-900 border border-amber-200 rounded-lg p-3 text-sm text-stone-300 leading-relaxed">

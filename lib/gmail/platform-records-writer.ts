@@ -20,9 +20,14 @@ export interface PlatformRecordInput {
   externalUriToken?: string | null
   externalUrl?: string | null
   requestUrl?: string | null
+  proposalUrl?: string | null
+  guestContactUrl?: string | null
+  bookingUrl?: string | null
+  menuUrl?: string | null
   statusOnPlatform?: string | null
   nextActionRequired?: string | null
   nextActionBy?: string | null
+  lastCaptureType?: string | null
   payload?: Record<string, unknown>
 }
 
@@ -42,6 +47,8 @@ export interface EmailSnapshotInput {
   amountCents?: number | null
   summary?: string | null
   textExcerpt?: string | null
+  source?: string
+  snapshotAt?: string | null
   metadata?: Record<string, unknown>
 }
 
@@ -86,10 +93,14 @@ export async function ensurePlatformRecord(
           external_uri_token: input.externalUriToken || null,
           external_url: input.externalUrl || null,
           request_url: input.requestUrl || null,
+          proposal_url: input.proposalUrl || null,
+          guest_contact_url: input.guestContactUrl || null,
+          booking_url: input.bookingUrl || null,
+          menu_url: input.menuUrl || null,
           status_on_platform: input.statusOnPlatform || 'new',
           next_action_required: input.nextActionRequired || null,
           next_action_by: input.nextActionBy || null,
-          last_capture_type: 'gmail',
+          last_capture_type: input.lastCaptureType || 'gmail',
           link_health: 'unknown',
           payload: (input.payload || {}) as any,
         },
@@ -121,7 +132,8 @@ export async function createEmailSnapshot(db: DbClient, input: EmailSnapshotInpu
       inquiry_id: input.inquiryId,
       event_id: input.eventId || null,
       capture_type: input.captureType,
-      source: 'gmail',
+      source: input.source || 'gmail',
+      snapshot_at: input.snapshotAt || undefined,
       summary: input.summary || null,
       text_excerpt: input.textExcerpt?.slice(0, 2000) || null,
       extracted_client_name: input.clientName || null,

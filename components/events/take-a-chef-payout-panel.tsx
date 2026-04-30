@@ -121,14 +121,14 @@ export function TakeAChefPayoutPanel({ finance }: { finance: TakeAChefFinanceDat
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-semibold">Take a Chef Payout</h2>
+            <h2 className="text-xl font-semibold">Source Platform Payout</h2>
             <Badge variant={PAYOUT_STATUS_VARIANTS[payoutStatus]}>
               {PAYOUT_STATUS_LABELS[payoutStatus]}
             </Badge>
           </div>
           <p className="mt-1 text-sm text-stone-400">
-            Track gross booking value, platform commission, and actual payout for this marketplace
-            event.
+            Track gross booking value, source-platform fee, and actual payout for this marketplace
+            event without changing the source-platform record.
           </p>
         </div>
         {finance.externalLink && (
@@ -203,7 +203,9 @@ export function TakeAChefPayoutPanel({ finance }: { finance: TakeAChefFinanceDat
               : `default ${finance.defaultCommissionPercent}%`}
         </Badge>
         {finance.commissionExpenseCount > 1 && (
-          <Badge variant="warning">{finance.commissionExpenseCount} TAC expense rows linked</Badge>
+          <Badge variant="warning">
+            {finance.commissionExpenseCount} source-fee expense rows linked
+          </Badge>
         )}
       </div>
 
@@ -288,12 +290,13 @@ export function TakeAChefPayoutPanel({ finance }: { finance: TakeAChefFinanceDat
           onChange={(event) => setSyncCommissionExpense(event.target.checked)}
           className="h-4 w-4 rounded border-stone-700 bg-stone-900 text-brand-500"
         />
-        Sync the Take a Chef commission expense from this form
+        Sync the source-platform fee expense from this form
       </label>
 
       {finance.canEdit ? null : (
         <p className="mt-3 text-sm text-amber-500">
-          This event needs a linked Take a Chef inquiry before payout details can be edited here.
+          This event needs a linked source-platform inquiry before payout details can be edited
+          here.
         </p>
       )}
 

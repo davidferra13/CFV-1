@@ -1,27 +1,13 @@
 // Platform Link Banner
-// Shows a prominent "Open in {Platform}" button for platform inquiries.
-// Works for any platform that stores an external_link (Yhangry, future platforms).
-// TakeAChef has its own specialized components (TacAddressLead, TacStatusPrompt)
-// so this component is used for non-TAC platforms.
+// Shows a prominent source link button for platform inquiries.
 'use client'
 
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-
-const PLATFORM_DISPLAY: Record<string, { label: string; badge: string }> = {
-  yhangry: { label: 'Yhangry', badge: 'Yhangry' },
-  take_a_chef: { label: 'TakeAChef', badge: 'TakeAChef' },
-  thumbtack: { label: 'Thumbtack', badge: 'Thumbtack' },
-  theknot: { label: 'The Knot', badge: 'The Knot' },
-  bark: { label: 'Bark', badge: 'Bark' },
-  cozymeal: { label: 'Cozymeal', badge: 'Cozymeal' },
-  gigsalad: { label: 'GigSalad', badge: 'GigSalad' },
-  google_business: { label: 'Google Business', badge: 'Google' },
-  wix_forms: { label: 'Wix', badge: 'Wix' },
-  privatechefmanager: { label: 'PrivateChefManager', badge: 'PCM' },
-  hireachef: { label: 'HireAChef', badge: 'HireAChef' },
-  cuisineistchef: { label: 'CuisineistChef', badge: 'Cuisineist' },
-}
+import {
+  getSafeSourcePlatformBadge,
+  getSafeSourcePlatformLabel,
+} from '@/lib/marketplace/source-platform-display'
 
 interface PlatformLinkBannerProps {
   platform: string
@@ -38,18 +24,18 @@ export function PlatformLinkBanner({
   clientName,
   status,
 }: PlatformLinkBannerProps) {
-  const display = PLATFORM_DISPLAY[platform] || {
-    label: platform,
-    badge: platform,
+  const display = {
+    label: getSafeSourcePlatformLabel(platform),
+    badge: getSafeSourcePlatformBadge(platform),
   }
   const displayName = clientName || 'A client'
 
   const statusMessage =
     status === 'new'
-      ? `${displayName} sent you a request on ${display.label}. Open it on the platform to respond.`
+      ? `${displayName} sent you a request on a source platform. Open the source to respond.`
       : status === 'awaiting_chef'
-        ? `${displayName} is waiting for your response on ${display.label}.`
-        : `View this inquiry on ${display.label} to manage it on the platform.`
+        ? `${displayName} is waiting for your response on the source platform.`
+        : 'View this inquiry on the source platform.'
 
   return (
     <div className="rounded-lg border border-purple-400/40 bg-purple-950/50 p-3 space-y-2">
@@ -67,14 +53,12 @@ export function PlatformLinkBanner({
           rel="noopener noreferrer"
           className="shrink-0"
         >
-          Open in {display.label}
+          Open source
         </Button>
       </div>
 
       {externalInquiryId && (
-        <p className="text-xs text-stone-500">
-          {display.label} reference: {externalInquiryId}
-        </p>
+        <p className="text-xs text-stone-500">Source reference: {externalInquiryId}</p>
       )}
     </div>
   )

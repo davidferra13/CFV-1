@@ -3,6 +3,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { MARKETPLACE_PLATFORMS, getMarketplacePlatform } from './platforms'
+import { getSafeSourcePlatformLabel } from './source-platform-display'
 
 // All marketplace channel values for the DB query
 const ALL_MARKETPLACE_CHANNELS = MARKETPLACE_PLATFORMS.map((p) => p.channel)
@@ -51,7 +52,7 @@ export type MarketplaceCommandCenterData = {
 
 /**
  * Fetches leads and bookings from ALL marketplace platforms.
- * Complements the TAC-specific command center with a cross-platform view.
+ * Complements the legacy command center with a cross-platform view.
  */
 export async function getMarketplaceCommandCenter(): Promise<MarketplaceCommandCenterData> {
   const user = await requireChef()
@@ -88,7 +89,7 @@ export async function getMarketplaceCommandCenter(): Promise<MarketplaceCommandC
         inquiryId: inq.id,
         clientName: client?.full_name ?? 'Unknown',
         channel: inq.channel,
-        platformLabel: platform?.label ?? inq.channel,
+        platformLabel: getSafeSourcePlatformLabel(platform?.channel ?? inq.channel),
         status: inq.status,
         createdAt: inq.created_at,
         ageHours,
@@ -136,7 +137,7 @@ export async function getMarketplaceCommandCenter(): Promise<MarketplaceCommandC
         inquiryId: inquiry?.id ?? null,
         clientName: client?.full_name ?? 'Unknown',
         channel: inquiry?.channel ?? 'unknown',
-        platformLabel: platform?.label ?? inquiry?.channel ?? 'Unknown',
+        platformLabel: getSafeSourcePlatformLabel(platform?.channel ?? inquiry?.channel),
         eventDate: event.event_date,
         status: event.status,
         occasion: event.occasion ?? null,
@@ -155,7 +156,7 @@ export async function getMarketplaceCommandCenter(): Promise<MarketplaceCommandC
   const platformBreakdown = Array.from(channelCounts.entries())
     .map(([channel, count]) => ({
       channel,
-      label: getMarketplacePlatform(channel)?.label ?? channel,
+      label: getSafeSourcePlatformLabel(getMarketplacePlatform(channel)?.channel ?? channel),
       count,
     }))
     .sort((a, b) => b.count - a.count)

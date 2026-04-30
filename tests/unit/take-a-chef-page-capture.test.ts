@@ -26,6 +26,8 @@ Guests: Jessica Zoll`,
   assert.equal(parsed.bookingDate, '2025-09-18')
   assert.equal(parsed.location, 'North Conway, Conway, NH')
   assert.equal(parsed.amountCents, 100000)
+  assert.equal(parsed.platformChannel, 'take_a_chef')
+  assert.equal(parsed.summary, 'Captured source-platform booking page for order #7714634')
   assert.ok(parsed.identityKeys.includes('7714634'))
   assert.ok(parsed.identityKeys.includes('abc123'))
 })
@@ -111,4 +113,22 @@ Dish: scallop crudo`,
   assert.equal(workflow.menu_seen, true)
   assert.equal(workflow.menu_captured_at, '2026-03-05T14:30:00.000Z')
   assert.equal(workflow.last_capture_type, 'menu')
+})
+
+test('infers non-primary source platform channel from chef-supplied page URL', () => {
+  const parsed = parseTakeAChefPageCapture({
+    pageUrl: 'https://www.cozymeal.com/chef/dashboard/request/abc',
+    pageTitle: 'New private chef request',
+    pageText: `New request
+Guest name: Jordan Lee
+Date: May 2, 2026
+Guests: 8 people
+Location: Cambridge, MA
+Total: $900`,
+    pageLinks: [],
+  })
+
+  assert.equal(parsed.platformChannel, 'cozymeal')
+  assert.equal(parsed.guestCount, 8)
+  assert.equal(parsed.amountCents, 90000)
 })

@@ -1,6 +1,7 @@
 import { dedupeIdentityKeys, mergePlatformIdentityKeys } from '@/lib/gmail/platform-identity'
 import { extractTacLinkIdentity } from '@/lib/gmail/take-a-chef-parser'
 import { mergeTakeAChefFinanceMeta } from '@/lib/integrations/take-a-chef-finance'
+import { inferSourcePlatformChannel } from '@/lib/marketplace/source-platform-display'
 import type { Json } from '@/types/database'
 
 export const TAKE_A_CHEF_PAGE_CAPTURE_TYPES = [
@@ -39,6 +40,7 @@ export type TakeAChefPageCaptureParseResult = {
   location: string | null
   occasion: string | null
   amountCents: number | null
+  platformChannel: string
   summary: string
   textExcerpt: string
 }
@@ -254,13 +256,18 @@ export function parseTakeAChefPageCapture(input: {
     pageTitle: cleanTitle,
     pageText: cleanText,
   })
+  const platformChannel = inferSourcePlatformChannel({
+    pageUrl: input.pageUrl,
+    pageText: cleanText,
+    pageLinks: input.pageLinks,
+  })
 
   const summary =
     suggestedCaptureType === 'booking' && orderId
-      ? `Captured Take a Chef booking page for order #${orderId}`
+      ? `Captured source-platform booking page for order #${orderId}`
       : clientName
         ? `Captured ${suggestedCaptureType.replace('_', ' ')} page for ${clientName}`
-        : `Captured ${suggestedCaptureType.replace('_', ' ')} page from Take a Chef`
+        : `Captured ${suggestedCaptureType.replace('_', ' ')} page from a source platform`
 
   return {
     suggestedCaptureType,
@@ -276,6 +283,7 @@ export function parseTakeAChefPageCapture(input: {
     location,
     occasion,
     amountCents,
+    platformChannel,
     summary,
     textExcerpt: cleanText.slice(0, 2000),
   }

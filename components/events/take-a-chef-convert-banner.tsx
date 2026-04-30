@@ -1,8 +1,7 @@
 'use client'
 
-// Take a Chef "Convert to Direct" Banner
-// Shows on completed TakeaChef-sourced events.
-// Gives the chef a pre-written message + direct booking link to send to the client.
+// Source-platform follow-up banner.
+// Gives the chef a pre-written follow-up link while respecting source-platform terms.
 // Dismissable via localStorage - never nags.
 
 import { useState, useCallback, useEffect } from 'react'
@@ -39,7 +38,7 @@ export function TakeAChefConvertBanner({ clientName, directBookingUrl, eventId }
     setVisible(false)
   }, [dismissKey])
 
-  const suggestedMessage = `Hey ${clientName || 'there'}! It was such a pleasure cooking for you. For your next dinner, you can book me directly at ${directBookingUrl} - same experience, and I can be even more flexible on custom menus. Looking forward to cooking for you again!`
+  const suggestedMessage = `Hey ${clientName || 'there'}! It was such a pleasure cooking for you. I keep preferences, menus, and future planning notes here: ${directBookingUrl}. If you would like to plan another service, this helps me keep the details organized. Please continue using the source platform wherever your booking terms require it. Looking forward to cooking for you again!`
 
   const handleCopy = useCallback(async () => {
     try {
@@ -57,22 +56,22 @@ export function TakeAChefConvertBanner({ clientName, directBookingUrl, eventId }
     <div className="rounded-xl border border-amber-200 bg-amber-950 p-5">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3 flex-1 min-w-0">
-          {/* TakeaChef origin indicator */}
+          {/* Source-platform origin indicator */}
           <div className="flex-shrink-0 mt-0.5">
             <div className="w-8 h-8 rounded-full bg-amber-200 flex items-center justify-center text-amber-800 text-sm font-bold">
-              T
+              S
             </div>
           </div>
 
           <div className="flex-1 min-w-0">
             <p className="font-semibold text-amber-900 text-sm">
-              This dinner came through Take a Chef
+              This dinner came through a source platform
             </p>
             <p className="text-amber-700 text-xs mt-0.5">
               {clientName
-                ? `Send ${clientName} your direct booking link`
-                : 'Send your client the direct booking link'}{' '}
-              - they can skip the platform fee next time.
+                ? `Send ${clientName} your ChefFlow follow-up link`
+                : 'Send your client the ChefFlow follow-up link'}{' '}
+              while preserving any source-platform booking requirements.
             </p>
 
             {/* Pre-written message */}

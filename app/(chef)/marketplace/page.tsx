@@ -18,6 +18,7 @@ import { getTakeAChefCommandCenter } from '@/lib/gmail/take-a-chef-command-cente
 import { getMarketplaceCommandCenter } from '@/lib/marketplace/command-center-actions'
 import { getMarketplaceROI } from '@/lib/marketplace/roi-actions'
 import { getMarketplaceScorecard } from '@/lib/marketplace/scorecard-actions'
+import { getSafeSourcePlatformBucket } from '@/lib/marketplace/source-platform-display'
 import { formatCurrency } from '@/lib/utils/currency'
 
 export const metadata: Metadata = {
@@ -96,7 +97,7 @@ export default async function MarketplacePage() {
     allPlatforms.leads.length === 0 &&
     allPlatforms.upcomingBookings.length === 0
 
-  // Non-TAC leads (Yhangry, Cozymeal, Bark, etc.)
+  // Non-primary source leads.
   const otherPlatformLeads = allPlatforms.leads.filter((l) => l.channel !== 'take_a_chef')
   const otherPlatformBookings = allPlatforms.upcomingBookings.filter(
     (b) => b.channel !== 'take_a_chef'
@@ -116,8 +117,9 @@ export default async function MarketplacePage() {
           <div>
             <h1 className="text-3xl font-bold text-stone-100">Marketplace Command Center</h1>
             <p className="mt-1 max-w-3xl text-sm text-stone-400">
-              All your marketplace leads in one place: Take a Chef, Yhangry, Cozymeal, Bark,
-              Thumbtack, and more. Capture, convert, keep the client.
+              One operating layer for chef-supplied source-platform requests, messages, proposals,
+              bookings, menus, and payouts. ChefFlow organizes the work while each source platform
+              remains the authority for its own booking and messaging.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -129,10 +131,10 @@ export default async function MarketplacePage() {
               Dashboard
             </Link>
             <Link
-              href="/inquiries?channel=take_a_chef"
+              href="/inquiries"
               className="inline-flex items-center gap-1.5 rounded-lg border border-stone-700 bg-stone-900 px-3 py-2 text-sm text-stone-200 transition-colors hover:border-stone-600 hover:bg-stone-800"
             >
-              All TAC inquiries
+              All inquiries
             </Link>
             <Link
               href="/settings/integrations"
@@ -144,24 +146,24 @@ export default async function MarketplacePage() {
               href="/marketplace/capture"
               className="inline-flex items-center gap-1.5 rounded-lg bg-brand-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-700"
             >
-              Capture live page
+              Capture source page
             </Link>
           </div>
         </div>
       </div>
 
-      {/* Marketplace ROI - Commission Savings */}
+      {/* Marketplace relationship continuity */}
       {(roi.directRebookingCount > 0 || roi.totalMarketplaceClients > 0) && (
         <Card>
           <CardContent className="py-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div>
-                <p className="text-sm font-medium text-stone-400">Direct Rebooking Savings</p>
+                <p className="text-sm font-medium text-stone-400">Repeat Booking Continuity</p>
                 <p className="mt-1 text-3xl font-bold text-emerald-400">
-                  {formatCurrency(roi.estimatedCommissionSavedCents)}
+                  {formatCurrency(roi.directRebookingRevenueCents)}
                 </p>
                 <p className="mt-0.5 text-xs text-stone-500">
-                  estimated commission saved across {roi.directRebookingCount} direct rebooking
+                  repeat booking revenue tracked across {roi.directRebookingCount} follow-up booking
                   {roi.directRebookingCount !== 1 ? 's' : ''}
                 </p>
               </div>
@@ -172,28 +174,24 @@ export default async function MarketplacePage() {
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-stone-100">{roi.clientsWhoRebooked}</p>
-                  <p className="text-xs text-stone-500">converted to direct</p>
+                  <p className="text-xs text-stone-500">booked again</p>
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-stone-100">
                     {formatCurrency(roi.directRebookingRevenueCents)}
                   </p>
-                  <p className="text-xs text-stone-500">direct rebooking revenue</p>
+                  <p className="text-xs text-stone-500">repeat booking revenue</p>
                 </div>
               </div>
             </div>
             {roi.platformBreakdown.length > 0 && (
               <div className="mt-4 flex flex-wrap gap-3 border-t border-stone-800 pt-3">
-                {roi.platformBreakdown.map((p) => (
+                {roi.platformBreakdown.map((p, index) => (
                   <div key={p.channel} className="text-xs text-stone-400">
-                    <span className="font-medium text-stone-300">{p.label}:</span> {p.firstBookings}{' '}
-                    clients, {p.directRebookings} direct rebookings
-                    {p.estimatedSavedCents > 0 && (
-                      <span className="text-emerald-400">
-                        {' '}
-                        ({formatCurrency(p.estimatedSavedCents)} saved)
-                      </span>
-                    )}
+                    <span className="font-medium text-stone-300">
+                      {getSafeSourcePlatformBucket(index)}:
+                    </span>{' '}
+                    {p.firstBookings} clients, {p.directRebookings} repeat bookings
                   </div>
                 ))}
               </div>
@@ -282,7 +280,7 @@ export default async function MarketplacePage() {
                   <p className="text-sm font-medium text-stone-300">Direct Conversion Rate</p>
                   <p className="text-xs text-stone-500">
                     {scorecard.directConvertedClients} of {scorecard.totalMarketplaceClients}{' '}
-                    marketplace clients rebooked direct (no commission)
+                    source-platform clients booked again
                   </p>
                 </div>
                 <p className="text-2xl font-bold text-emerald-400">
@@ -299,7 +297,7 @@ export default async function MarketplacePage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-stone-800 text-left text-xs uppercase tracking-wide text-stone-500">
-                      <th className="pb-2 pr-4">Platform</th>
+                      <th className="pb-2 pr-4">Source</th>
                       <th className="pb-2 pr-4 text-right">Inquiries</th>
                       <th className="pb-2 pr-4 text-right">Booked</th>
                       <th className="pb-2 pr-4 text-right">Conv %</th>
@@ -308,9 +306,11 @@ export default async function MarketplacePage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {scorecard.platformScores.map((p) => (
+                    {scorecard.platformScores.map((p, index) => (
                       <tr key={p.channel} className="border-b border-stone-800/50">
-                        <td className="py-2 pr-4 font-medium text-stone-200">{p.label}</td>
+                        <td className="py-2 pr-4 font-medium text-stone-200">
+                          {getSafeSourcePlatformBucket(index)}
+                        </td>
                         <td className="py-2 pr-4 text-right text-stone-300">{p.inquiries}</td>
                         <td className="py-2 pr-4 text-right text-stone-300">{p.booked}</td>
                         <td className="py-2 pr-4 text-right text-stone-300">
@@ -341,8 +341,8 @@ export default async function MarketplacePage() {
           <CardContent className="py-12 text-center">
             <p className="text-base font-medium text-stone-200">No marketplace activity yet.</p>
             <p className="mt-2 text-sm text-stone-400">
-              Connect Gmail and let ChefFlow pull in Take a Chef requests, then this page becomes
-              the fastest way to run that channel.
+              Connect email capture or paste source-platform updates, then this page becomes the
+              fastest way to run external bookings alongside ChefFlow.
             </p>
             <div className="mt-5 flex flex-wrap justify-center gap-3">
               <Link
@@ -394,7 +394,7 @@ export default async function MarketplacePage() {
               subtitle="Captured menus that still need to be reflected in ChefFlow"
             />
             <StatCard
-              label="Upcoming TAC Bookings"
+              label="Upcoming Source Bookings"
               value={data.summary.upcomingBookingCount}
               icon={CalendarDays}
               subtitle="Linked events still on the books"
@@ -473,7 +473,7 @@ export default async function MarketplacePage() {
                               rel="noopener noreferrer"
                               className="rounded-lg border border-stone-700 bg-stone-900 px-3 py-2 text-sm font-medium text-stone-200 transition-colors hover:border-stone-600 hover:bg-stone-800"
                             >
-                              Open TAC
+                              Open source
                             </a>
                           )}
                         </div>
@@ -489,14 +489,16 @@ export default async function MarketplacePage() {
                 <div>
                   <CardTitle className="text-base">Upcoming Bookings</CardTitle>
                   <p className="mt-1 text-sm text-stone-400">
-                    Confirm upcoming service dates and expected TAC payout.
+                    Confirm upcoming service dates and expected source-platform payout.
                   </p>
                 </div>
                 <Badge variant="default">{data.upcomingBookings.length} upcoming</Badge>
               </CardHeader>
               <CardContent className="space-y-3">
                 {data.upcomingBookings.length === 0 ? (
-                  <p className="text-sm text-stone-500">No linked upcoming TAC bookings.</p>
+                  <p className="text-sm text-stone-500">
+                    No linked upcoming source-platform bookings.
+                  </p>
                 ) : (
                   data.upcomingBookings.map((booking) => (
                     <div
@@ -553,7 +555,7 @@ export default async function MarketplacePage() {
                             rel="noopener noreferrer"
                             className="text-sm font-medium text-brand-500 hover:text-brand-400"
                           >
-                            Open TAC
+                            Open source
                           </a>
                         )}
                       </div>
@@ -619,7 +621,7 @@ export default async function MarketplacePage() {
                               rel="noopener noreferrer"
                               className="rounded-lg border border-stone-700 bg-stone-900 px-3 py-2 text-sm font-medium text-stone-200 transition-colors hover:border-stone-600 hover:bg-stone-800"
                             >
-                              Open TAC
+                              Open source
                             </a>
                           )}
                         </div>
@@ -697,7 +699,7 @@ export default async function MarketplacePage() {
                               rel="noopener noreferrer"
                               className="rounded-lg border border-stone-700 bg-stone-900 px-3 py-2 text-sm font-medium text-stone-200 transition-colors hover:border-stone-600 hover:bg-stone-800"
                             >
-                              Open TAC
+                              Open source
                             </a>
                           )}
                         </div>
@@ -764,7 +766,7 @@ export default async function MarketplacePage() {
                           rel="noopener noreferrer"
                           className="rounded-lg border border-stone-700 bg-stone-900 px-3 py-2 text-sm font-medium text-stone-200 transition-colors hover:border-stone-600 hover:bg-stone-800"
                         >
-                          Open TAC
+                          Open source
                         </a>
                       )}
                     </div>
@@ -776,12 +778,12 @@ export default async function MarketplacePage() {
         </>
       )}
 
-      {/* Other Marketplace Platforms (Yhangry, Cozymeal, Bark, etc.) */}
+      {/* Other marketplace sources */}
       {(otherPlatformLeads.length > 0 || otherPlatformBookings.length > 0) && (
         <div className="space-y-6">
           <div className="flex items-center gap-3">
             <div className="h-px flex-1 bg-stone-800" />
-            <span className="text-sm font-medium text-stone-400">Other Platforms</span>
+            <span className="text-sm font-medium text-stone-400">Other Source Channels</span>
             <div className="h-px flex-1 bg-stone-800" />
           </div>
 
@@ -791,9 +793,9 @@ export default async function MarketplacePage() {
             <div className="flex flex-wrap gap-2">
               {allPlatforms.summary.platformBreakdown
                 .filter((p) => p.channel !== 'take_a_chef')
-                .map((p) => (
+                .map((p, index) => (
                   <Badge key={p.channel} variant="default">
-                    {p.label}: {p.count} active
+                    {getSafeSourcePlatformBucket(index)}: {p.count} active
                   </Badge>
                 ))}
             </div>
@@ -805,7 +807,7 @@ export default async function MarketplacePage() {
               <CardHeader>
                 <CardTitle className="text-base">Marketplace Leads</CardTitle>
                 <p className="mt-1 text-sm text-stone-400">
-                  Open leads from Yhangry, Cozymeal, Bark, Thumbtack, and other platforms.
+                  Open leads from source platforms that still need review or follow-up.
                 </p>
               </CardHeader>
               <CardContent className="space-y-3">
@@ -820,7 +822,7 @@ export default async function MarketplacePage() {
                           <p className="text-base font-semibold text-stone-100">
                             {lead.clientName}
                           </p>
-                          <Badge variant="info">{lead.platformLabel}</Badge>
+                          <Badge variant="info">Source platform</Badge>
                           <Badge variant={lead.status === 'new' ? 'warning' : 'default'}>
                             {lead.status === 'new' ? 'New' : 'Awaiting chef'}
                           </Badge>
@@ -877,7 +879,7 @@ export default async function MarketplacePage() {
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
                           <p className="font-semibold text-stone-100">{booking.clientName}</p>
-                          <Badge variant="info">{booking.platformLabel}</Badge>
+                          <Badge variant="info">Source platform</Badge>
                         </div>
                         <p className="mt-1 text-sm text-stone-400">
                           {new Date(`${booking.eventDate}T12:00:00`).toLocaleDateString('en-US', {

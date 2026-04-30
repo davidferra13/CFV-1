@@ -14,23 +14,12 @@ import type {
   PlatformRecordSummary,
   PlatformPayoutSummary,
 } from '@/lib/marketplace/platform-record-readers'
+import {
+  getSafeSourcePlatformBadge,
+  getSafeSourcePlatformLabel,
+} from '@/lib/marketplace/source-platform-display'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-
-const PLATFORM_DISPLAY: Record<string, { label: string; badge: string; color: string }> = {
-  take_a_chef: { label: 'Take a Chef', badge: 'TAC', color: 'text-purple-300' },
-  yhangry: { label: 'Yhangry', badge: 'Yhangry', color: 'text-pink-300' },
-  cozymeal: { label: 'Cozymeal', badge: 'Cozymeal', color: 'text-brand-300' },
-  bark: { label: 'Bark', badge: 'Bark', color: 'text-green-300' },
-  thumbtack: { label: 'Thumbtack', badge: 'Thumbtack', color: 'text-yellow-300' },
-  gigsalad: { label: 'GigSalad', badge: 'GigSalad', color: 'text-orange-300' },
-  theknot: { label: 'The Knot', badge: 'The Knot', color: 'text-rose-300' },
-  privatechefmanager: { label: 'PCM', badge: 'PCM', color: 'text-brand-300' },
-  hireachef: { label: 'HireAChef', badge: 'HireAChef', color: 'text-teal-300' },
-  cuisineistchef: { label: 'Cuisineist', badge: 'Cuisineist', color: 'text-brand-300' },
-  google_business: { label: 'Google Business', badge: 'Google', color: 'text-red-300' },
-  wix_forms: { label: 'Wix', badge: 'Wix', color: 'text-brand-300' },
-}
 
 const STATUS_BADGE: Record<
   string,
@@ -79,10 +68,9 @@ export function MarketplaceActionPanel({
   const [isPending, startTransition] = useTransition()
   const [actionError, setActionError] = useState<string | null>(null)
 
-  const display = PLATFORM_DISPLAY[record.platform] || {
-    label: record.platform,
-    badge: record.platform,
-    color: 'text-stone-300',
+  const display = {
+    label: getSafeSourcePlatformLabel(record.platform),
+    badge: getSafeSourcePlatformBadge(record.platform),
   }
 
   const statusInfo = STATUS_BADGE[record.statusOnPlatform || 'new'] || STATUS_BADGE.new
@@ -134,7 +122,7 @@ export function MarketplaceActionPanel({
             onClick={() => window.open(primaryUrl, '_blank', 'noopener,noreferrer')}
             className="shrink-0"
           >
-            Open in {display.label}
+            Open source
           </Button>
         )}
       </div>
@@ -272,8 +260,7 @@ export function MarketplaceActionPanel({
 }
 
 /**
- * Fallback banner for inquiries that don't have a platform_record yet
- * (pre-write-through). Shows the same "Open in {Platform}" button from legacy fields.
+ * Fallback banner for inquiries that do not have a platform_record yet.
  */
 export function MarketplaceFallbackBanner({
   platform,
@@ -288,19 +275,18 @@ export function MarketplaceFallbackBanner({
   clientName: string | null
   status: string
 }) {
-  const display = PLATFORM_DISPLAY[platform] || {
-    label: platform,
-    badge: platform,
-    color: 'text-stone-300',
+  const display = {
+    label: getSafeSourcePlatformLabel(platform),
+    badge: getSafeSourcePlatformBadge(platform),
   }
   const displayName = clientName || 'A client'
 
   const statusMessage =
     status === 'new'
-      ? `${displayName} sent you a request on ${display.label}. Open it on the platform to respond.`
+      ? `${displayName} sent you a request on a source platform. Open the source to respond.`
       : status === 'awaiting_chef'
-        ? `${displayName} is waiting for your response on ${display.label}.`
-        : `View this inquiry on ${display.label}.`
+        ? `${displayName} is waiting for your response on the source platform.`
+        : 'View this inquiry on the source platform.'
 
   return (
     <div className="rounded-lg border border-purple-400/40 bg-purple-950/50 p-3 space-y-2">
@@ -316,14 +302,12 @@ export function MarketplaceFallbackBanner({
           onClick={() => window.open(externalLink, '_blank', 'noopener,noreferrer')}
           className="shrink-0"
         >
-          Open in {display.label}
+          Open source
         </Button>
       </div>
 
       {externalInquiryId && (
-        <p className="text-xs text-stone-500">
-          {display.label} reference: {externalInquiryId}
-        </p>
+        <p className="text-xs text-stone-500">Source reference: {externalInquiryId}</p>
       )}
     </div>
   )
