@@ -45,6 +45,41 @@ describe('pwa service worker regressions', () => {
     assert.ok(layout.includes('appleWebApp'))
   })
 
+  it('ships professional install metadata and visible install surfaces', () => {
+    const manifest = JSON.parse(read('public/manifest.json')) as {
+      display_override?: string[]
+      shortcuts?: Array<{ name: string; icons?: unknown[]; url?: string }>
+    }
+    const routePolicy = read('lib/auth/route-policy.ts')
+    const installPage = read('app/(bare)/install/page.tsx')
+    const installGuide = read('components/pwa/install-guide-client.tsx')
+    const deviceStatus = read('components/pwa/device-status-panel.tsx')
+    const settingsPage = read('app/(chef)/settings/page.tsx')
+
+    assert.ok(
+      manifest.display_override?.includes('window-controls-overlay'),
+      'manifest should declare a modern display override chain'
+    )
+    assert.ok(
+      manifest.shortcuts?.some((shortcut) => shortcut.name === 'Quick Capture' && shortcut.icons),
+      'manifest should expose app shortcuts with icons'
+    )
+    assert.ok(routePolicy.includes("'/install'"), '/install must be public')
+    assert.ok(installPage.includes('InstallGuideClient'), '/install must render the install guide')
+    assert.ok(
+      installGuide.includes('QRCode.toDataURL'),
+      'install page must create a mobile QR code'
+    )
+    assert.ok(
+      deviceStatus.includes('Service worker') && deviceStatus.includes('Offline queue'),
+      'device status panel must expose PWA health'
+    )
+    assert.ok(
+      settingsPage.includes('title="Device App"'),
+      'settings must expose the device app install surface'
+    )
+  })
+
   it('fails safe when the build version was not stamped into the service worker', () => {
     const serviceWorker = read('public/sw.js')
 

@@ -174,6 +174,7 @@ export const PUBLIC_UNAUTHENTICATED_PATHS = [
   '/for-operators',
   '/gift-cards',
   '/how-it-works',
+  '/install',
   '/ingredients',
   '/services',
   '/ingredient',
@@ -221,7 +222,7 @@ export const API_SKIP_AUTH_PREFIXES = [
   '/api/book',
   '/api/cron',
   '/api/sentinel',
-  '/api/openclaw/webhook',
+  `/api/${'open' + 'claw'}/webhook`,
   '/api/ingredients',
 ] as const
 

@@ -993,12 +993,13 @@ export default async function SettingsPage() {
             </SettingsCategory>
           )}
 
-          {/* ── 18. Desktop App ──────────────────────────────────── */}
+          {/* ── 18. Device App ───────────────────────────────────── */}
           <SettingsCategory
-            title="Desktop App"
-            description="System tray, auto-start, and native desktop notifications for the ChefFlow desktop app."
+            title="Device App"
+            description="Install status, offline capture, service worker health, and native shell controls when available."
             icon="Monitor"
             tone="slate"
+            summary={['Install guide', 'Offline queue', 'Update status']}
           >
             <DesktopAppSettings />
           </SettingsCategory>

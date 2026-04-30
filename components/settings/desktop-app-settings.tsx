@@ -2,9 +2,13 @@
 
 // Desktop App Settings
 // Shows auto-start toggle ONLY when running inside the Tauri desktop shell.
-// When running in a normal browser, shows a download prompt instead.
+// When running in a normal browser, shows web app install and device status.
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
+import { DeviceStatusPanel } from '@/components/pwa/device-status-panel'
+import { usePwaInstall } from '@/components/pwa/use-pwa-install'
+import { Monitor, Smartphone } from '@/components/ui/icons'
 
 type AutostartState = 'loading' | 'enabled' | 'disabled' | 'unavailable'
 
@@ -13,6 +17,7 @@ export function DesktopAppSettings() {
   const [updating, setUpdating] = useState(false)
   const [isTauri, setIsTauri] = useState(false)
   const [toggleError, setToggleError] = useState<string | null>(null)
+  const { canPromptInstall, install, installed } = usePwaInstall()
 
   useEffect(() => {
     // Tauri injects __TAURI_INTERNALS__ on the window object
@@ -56,21 +61,59 @@ export function DesktopAppSettings() {
     }
   }
 
-  // In browser: show a non-interactive info card (desktop app is in development)
+  // In browser: show the installable web app status.
   if (!isTauri && autostartState !== 'loading') {
     return (
-      <div className="rounded-lg border border-stone-800 bg-stone-900/50 p-4 opacity-75">
-        <div className="flex items-center gap-2">
-          <p className="font-medium text-stone-400">ChefFlow Desktop App</p>
-          <span className="text-xxs font-medium uppercase tracking-wider text-stone-500 bg-stone-800 px-2 py-0.5 rounded-full">
-            In Development
-          </span>
+      <div className="space-y-4">
+        <div className="rounded-lg border border-stone-800 bg-stone-900/70 p-4">
+          <div className="flex items-start gap-3">
+            <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg border border-brand-400/30 bg-brand-500/10 text-brand-200">
+              <Smartphone className="h-5 w-5" aria-hidden="true" />
+            </span>
+            <div className="min-w-0">
+              <p className="font-medium text-stone-100">Installable ChefFlow app</p>
+              <p className="mt-1 text-sm leading-6 text-stone-400">
+                Add ChefFlow to this device from the browser for standalone launch, app icon access,
+                offline capture, and update-managed sessions.
+              </p>
+            </div>
+          </div>
+          <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+            <button
+              type="button"
+              disabled={!canPromptInstall || installed}
+              onClick={() => void install()}
+              className="inline-flex min-h-[44px] items-center justify-center rounded-lg bg-brand-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-brand-700 disabled:pointer-events-none disabled:opacity-50"
+            >
+              {installed
+                ? 'Installed on this device'
+                : canPromptInstall
+                  ? 'Install ChefFlow'
+                  : 'Open install guide'}
+            </button>
+            <Link
+              href="/install"
+              className="inline-flex min-h-[44px] items-center justify-center rounded-lg border border-stone-700 bg-stone-900 px-4 text-sm font-semibold text-stone-200 transition-colors hover:bg-stone-800"
+            >
+              Install guide
+            </Link>
+          </div>
         </div>
-        <p className="mt-1 text-sm text-stone-500">
-          A native desktop app with system tray, desktop notifications, and auto-start on login is
-          currently in development. This page will update when the desktop app is available for
-          download.
-        </p>
+
+        <DeviceStatusPanel compact />
+
+        <div className="rounded-lg border border-stone-800 bg-stone-900/50 p-4">
+          <div className="flex items-start gap-3">
+            <Monitor className="mt-0.5 h-5 w-5 flex-shrink-0 text-stone-400" aria-hidden="true" />
+            <div>
+              <p className="font-medium text-stone-300">Native desktop shell</p>
+              <p className="mt-1 text-sm leading-6 text-stone-500">
+                The browser-installed app is the primary cross-device install path. The native
+                desktop shell remains reserved for system tray and launch-at-login workflows.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     )
   }

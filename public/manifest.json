@@ -6,20 +6,42 @@
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
   "background_color": "#faf9f7",
   "theme_color": "#e88f47",
   "orientation": "portrait",
   "categories": ["business", "productivity"],
+  "launch_handler": {
+    "client_mode": ["navigate-existing", "auto"]
+  },
   "shortcuts": [
     {
       "name": "New Event",
       "short_name": "New Event",
-      "url": "/events/new"
+      "description": "Start a new event from the app icon.",
+      "url": "/events/new",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
     },
     {
       "name": "Inbox",
       "short_name": "Inbox",
-      "url": "/inbox"
+      "description": "Open your ChefFlow inbox.",
+      "url": "/inbox",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Quick Capture",
+      "short_name": "Capture",
+      "description": "Capture a note, expense, or event detail.",
+      "url": "/capture",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Install Guide",
+      "short_name": "Install",
+      "description": "Open device install and offline status.",
+      "url": "/install",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
     }
   ],
   "screenshots": [

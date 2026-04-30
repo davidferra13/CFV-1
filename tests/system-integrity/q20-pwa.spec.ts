@@ -8,7 +8,7 @@
  *
  * 1. SW EXISTS: public/sw.js is present and non-empty.
  *
- * 2. OFFLINE PAGE: public/offline.html exists — the SW's fallback page.
+ * 2. OFFLINE PAGE: public/offline.html exists, the SW's fallback page.
  *    Without this, offline mode returns a browser error, not a branded message.
  *
  * 3. MANIFEST: public/manifest.json exists, has required fields (name,
@@ -18,13 +18,13 @@
  *    caches core assets during installation.
  *
  * 5. SW FETCH HANDLER: public/sw.js has a fetch event listener with offline
- *    fallback — failed network requests return the offline page, not an error.
+ *    fallback, failed network requests return the offline page, not an error.
  *
  * 6. NEXT CONFIG SERVES SW: next.config.js serves /sw.js with the correct
  *    service-worker header (Service-Worker-Allowed) so it can scope to root.
  *
  * 7. ACTIVATION GATE: ENABLE_PWA_BUILD environment var is the canonical
- *    switch for rebuilding the SW — next.config.js must check it.
+ *    switch for rebuilding the SW, next.config.js must check it.
  *
  * 8. SW SELF-UPDATE: public/sw.js has a version check mechanism that notifies
  *    users when a new build is available.
@@ -60,11 +60,11 @@ test.describe('Q20: PWA / Service Worker', () => {
   test('public/offline.html exists for SW offline fallback', () => {
     expect(
       existsSync(OFFLINE_HTML),
-      'public/offline.html must exist — it is the SW offline fallback page'
+      'public/offline.html must exist, it is the SW offline fallback page'
     ).toBe(true)
 
     const src = readFileSync(OFFLINE_HTML, 'utf-8')
-    // Must have some content — not just an empty file
+    // Must have some content, not just an empty file
     expect(src.length, 'offline.html must have content').toBeGreaterThan(100)
     // Must be HTML
     expect(
@@ -93,6 +93,27 @@ test.describe('Q20: PWA / Service Worker', () => {
       'manifest.json must have at least one icon'
     ).toBe(true)
     expect(manifest.display, 'manifest.json must have a display mode').toBeTruthy()
+  })
+
+  test('public/manifest.json has modern install metadata', () => {
+    const manifest = JSON.parse(readFileSync(MANIFEST, 'utf-8'))
+
+    expect(
+      Array.isArray(manifest.display_override) &&
+        manifest.display_override.includes('window-controls-overlay'),
+      'manifest should declare display_override for modern installed windows'
+    ).toBe(true)
+    expect(
+      Array.isArray(manifest.shortcuts) &&
+        manifest.shortcuts.some((shortcut: any) => shortcut.name === 'Quick Capture'),
+      'manifest should expose Quick Capture as an app shortcut'
+    ).toBe(true)
+    expect(
+      manifest.shortcuts.every(
+        (shortcut: any) => Array.isArray(shortcut.icons) && shortcut.icons.length > 0
+      ),
+      'every manifest shortcut should include an icon'
+    ).toBe(true)
   })
 
   // -------------------------------------------------------------------------
@@ -183,7 +204,7 @@ test.describe('Q20: PWA / Service Worker', () => {
   })
 
   // -------------------------------------------------------------------------
-  // Test 9: PWA does not crash (smoke test) — UI
+  // Test 9: PWA does not crash (smoke test), UI
   // -------------------------------------------------------------------------
   test('app root returns 200 (PWA shell loads)', async ({ page }) => {
     const response = await page.goto('/', {
@@ -194,7 +215,7 @@ test.describe('Q20: PWA / Service Worker', () => {
     // Root should redirect to dashboard or sign-in, not error
     expect(
       response?.status(),
-      `Root route must not return 5xx — got ${response?.status()}`
+      `Root route must not return 5xx, got ${response?.status()}`
     ).toBeLessThan(500)
 
     const bodyText = await page
@@ -219,7 +240,29 @@ test.describe('Q20: PWA / Service Worker', () => {
       .locator('body')
       .innerText()
       .catch(() => '')
-    // Must show something meaningful — not blank
+    // Must show something meaningful, not blank
     expect(bodyText.trim().length, '/offline.html must have visible text').toBeGreaterThan(10)
+    expect(bodyText, '/offline.html must explain offline capability').toContain(
+      'Available while offline'
+    )
+  })
+
+  // -------------------------------------------------------------------------
+  // Test 11: /install serves the install guide
+  // -------------------------------------------------------------------------
+  test('/install returns 200 and has device install guidance', async ({ page }) => {
+    const response = await page.goto('/install', {
+      waitUntil: 'domcontentloaded',
+      timeout: 30_000,
+    })
+
+    expect(response?.status(), '/install must return 200').toBe(200)
+
+    const bodyText = await page
+      .locator('body')
+      .innerText()
+      .catch(() => '')
+    expect(bodyText).toContain('Install ChefFlow on this device')
+    expect(bodyText).toContain('Device status')
   })
 })
