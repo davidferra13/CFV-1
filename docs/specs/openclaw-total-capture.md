@@ -1,6 +1,6 @@
 # Spec: OpenClaw Total Capture - The 2026 American Grocery Price Database
 
-> **Status:** ready
+> **Status:** in-progress
 > **Priority:** P0 (blocking)
 > **Depends on:** none
 > **Estimated complexity:** large (infrastructure + pipeline + new data sources)
@@ -11,7 +11,8 @@
 | --------------------- | ---------------- | ------------------ | ------ |
 | Created               | 2026-04-01 04:30 | Planner (Opus 4.6) |        |
 | Status: ready         | 2026-04-01 04:30 | Planner (Opus 4.6) |        |
-| Claimed (in-progress) |                  |                    |        |
+| Claimed (in-progress) | 2026-04-30 16:50 | Codex V1 Builder   |        |
+| Phase 1 proof blocked | 2026-04-30 16:50 | Codex V1 Builder   |        |
 | Phase 1 complete      |                  |                    |        |
 | Phase 2 complete      |                  |                    |        |
 | Phase 3 complete      |                  |                    |        |
