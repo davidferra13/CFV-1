@@ -1,0 +1,100 @@
+{
+  "version": 1,
+  "description": "Canonical ChefFlow evidence source index for question intelligence. These entries tell agents where to look and what claims each source can support.",
+  "sources": [
+    {
+      "id": "real-user-notes",
+      "label": "Real User Notes",
+      "category": "real-user",
+      "paths": ["docs/product-blueprint.md", "docs/autodocket.md", "docs/session-log.md"],
+      "claim_power": "Can support validated product claims only when the file contains direct feedback, survey results, interview notes, usage data, or support evidence.",
+      "caveat": "Do not assume a docs mention is real user evidence. Verify the artifact type and cite the file."
+    },
+    {
+      "id": "survey-evidence",
+      "label": "Survey Evidence",
+      "category": "launched-survey",
+      "paths": [
+        "docs/specs/survey-wave-1-internal-launch-builder-handoff-2026-04-02.md",
+        "docs/product-blueprint.md",
+        "docs/autodocket.md"
+      ],
+      "claim_power": "Can support validation or launch-readiness claims only if responses were collected and analyzed.",
+      "caveat": "A survey spec or launch plan is not survey evidence."
+    },
+    {
+      "id": "codebase-truth",
+      "label": "Codebase Truth",
+      "category": "codebase",
+      "paths": [
+        "app/",
+        "components/",
+        "lib/",
+        "tests/",
+        "project-map/",
+        "docs/app-complete-audit.md"
+      ],
+      "claim_power": "Can support implementation facts, existence claims, and gaps between UI, docs, and code.",
+      "caveat": "Codebase truth does not prove customer demand."
+    },
+    {
+      "id": "persona-evidence",
+      "label": "Persona Evidence",
+      "category": "persona-simulation",
+      "paths": [
+        "docs/stress-tests/REGISTRY.md",
+        "docs/stress-tests/",
+        "system/persona-batch-synthesis/",
+        "system/persona-build-plans/"
+      ],
+      "claim_power": "Can support hypotheses, gap discovery, and workflow simulations.",
+      "caveat": "Persona simulation is not real market validation."
+    },
+    {
+      "id": "dogfood-evidence",
+      "label": "Dogfood Evidence",
+      "category": "dogfood",
+      "paths": [
+        "docs/simulation-history.md",
+        "docs/simulation-report.md",
+        "system/regression-reports/"
+      ],
+      "claim_power": "Can support workflow friction and current app behavior claims when the walkthrough is recent and grounded.",
+      "caveat": "Dogfood evidence is stronger than persona synthesis but weaker than real user evidence."
+    },
+    {
+      "id": "public-market-research",
+      "label": "Public Market Research",
+      "category": "public-market",
+      "paths": ["docs/research/", "external web sources when current market facts are required"],
+      "claim_power": "Can support market context and competitor or category facts.",
+      "caveat": "Public research does not prove ChefFlow-specific demand."
+    },
+    {
+      "id": "developer-intent",
+      "label": "Developer Intent",
+      "category": "developer-intent",
+      "paths": [
+        "current Codex conversation",
+        "AGENTS.md instructions from the active session",
+        "system/intake/",
+        "system/continuity-memory/"
+      ],
+      "claim_power": "Can justify developer-directed work and durable agent behavior.",
+      "caveat": "Developer intent must be labeled and not presented as external validation."
+    },
+    {
+      "id": "agent-routing-evidence",
+      "label": "Agent Routing Evidence",
+      "category": "agent-behavior",
+      "paths": [
+        ".claude/skills/",
+        "devtools/skill-router.mjs",
+        "system/agent-golden-prompts/default.json",
+        "system/agent-reports/"
+      ],
+      "claim_power": "Can support claims about what Codex is configured to do.",
+      "caveat": "Routing evidence proves configuration, not that every future session will behave perfectly."
+    }
+  ]
+}

@@ -192,5 +192,35 @@
       "answer-provenance": ["CODEBASE VERIFIED", "REAL USER EVIDENCE"],
       "evidence-broker": ["UNKNOWN", "CONFIDENCE"]
     }
+  },
+  {
+    "name": "evidence source index",
+    "prompt": "Find where Codex should look for survey evidence, persona evidence, and codebase truth before answering.",
+    "expect": ["omninet", "research-brief-generator", "evidence-broker"],
+    "evidence": {
+      "omninet": ["evidence-source-index", "research brief"],
+      "research-brief-generator": ["evidence-source-index", "canonical evidence"],
+      "evidence-broker": ["source index", "survey"]
+    }
+  },
+  {
+    "name": "brief report scaffold",
+    "prompt": "Turn this research brief into a report scaffold without inventing findings.",
+    "expect": ["omninet", "research-brief-generator", "answer-provenance"],
+    "evidence": {
+      "omninet": ["research-brief-to-report", "report scaffold"],
+      "research-brief-generator": ["research-brief-to-report", "report scaffold"],
+      "answer-provenance": ["UNKNOWN", "not checked"]
+    }
+  },
+  {
+    "name": "question outcome score",
+    "prompt": "Score whether this answer honored the optimized question, audience lenses, and provenance labels.",
+    "expect": ["omninet", "research-brief-generator", "answer-provenance"],
+    "evidence": {
+      "omninet": ["question-outcome-scorer", "Score a question answer"],
+      "research-brief-generator": ["question-outcome-scorer", "final answer"],
+      "answer-provenance": ["question-outcome-scorer", "score"]
+    }
   }
 ]

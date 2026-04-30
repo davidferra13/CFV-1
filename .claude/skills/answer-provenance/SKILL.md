@@ -7,6 +7,12 @@ description: Label ChefFlow strategic, product, market, research, validation, la
 
 Use this skill at the end of strategic or research answers so the user can see what the answer is standing on.
 
+When practical, score the answer before closeout:
+
+```powershell
+node devtools/question-outcome-scorer.mjs --brief path --answer path
+```
+
 ## Labels
 
 Use these exact labels:

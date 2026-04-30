@@ -19,6 +19,7 @@ if (!prompt) {
 
 const lowerPrompt = prompt.toLowerCase()
 const audiencePanel = readJson('system/research/audience-panel.json', { lenses: [] })
+const sourceIndex = readJson('system/research/evidence-source-index.json', { sources: [] })
 
 function includesAny(terms) {
   return terms.some((term) => lowerPrompt.includes(term))
@@ -134,6 +135,27 @@ function requiredSources(type, audiences) {
   }
   if (type === 'codebase') {
     sources.push('app, components, lib, tests, project-map, and docs relevant to the route')
+  }
+  const sourceCategories = new Set()
+  if (type === 'market') {
+    sourceCategories.add('real-user')
+    sourceCategories.add('persona-simulation')
+    sourceCategories.add('public-market')
+  }
+  if (type === 'validation') {
+    sourceCategories.add('real-user')
+    sourceCategories.add('launched-survey')
+    sourceCategories.add('dogfood')
+  }
+  if (type === 'codebase') sourceCategories.add('codebase')
+  if (type === 'agent-behavior') {
+    sourceCategories.add('developer-intent')
+    sourceCategories.add('agent-behavior')
+  }
+  for (const source of sourceIndex.sources || []) {
+    if (sourceCategories.has(source.category)) {
+      sources.push(`${source.label}: ${(source.paths || []).join(', ')}`)
+    }
   }
   return sources
 }

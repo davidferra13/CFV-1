@@ -27,6 +27,9 @@ Prefer the deterministic tools when changing or evaluating skills:
 - `node devtools/skill-trigger-tests.mjs` checks known prompts against expected skill routing evidence.
 - `node devtools/skill-router.mjs --prompt "..." [--write]` classifies primary skill, sidecar skills, hard stops, risk, and required checks before work starts, and can persist routing evidence.
 - `node devtools/research-brief-generator.mjs --prompt "..." [--write]` creates a question, market research, audience, evidence, source, stop-condition, and provenance brief.
+- `node devtools/evidence-source-index.mjs --query "..."` locates canonical evidence sources and claim limits.
+- `node devtools/research-brief-to-report.mjs --brief path --write` turns a brief into a non-hallucinated report scaffold.
+- `node devtools/question-outcome-scorer.mjs --brief path --answer path` scores whether an answer honored the brief and evidence labels.
 - `node devtools/agent-start.mjs --prompt "..."` starts a task with routing evidence and a flight record.
 - `node devtools/agent-preflight.mjs --prompt "..."` runs router, validator, trigger tests, coverage, dependency graph, and optional closeout checks in one pass.
 - `node devtools/agent-closeout-gate.mjs --owned path,other-path` blocks closeout when owned work lacks commit, validation, report, or compliance evidence.

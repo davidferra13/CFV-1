@@ -17,6 +17,12 @@ node devtools/research-brief-generator.mjs --prompt "question here"
 
 Use `--write` to persist the brief under `system/agent-reports/research-briefs/`.
 
+Related tools:
+
+- `node devtools/evidence-source-index.mjs --query "real user"` lists canonical evidence locations and claim limits.
+- `node devtools/research-brief-to-report.mjs --brief path --write` turns a brief into a research report scaffold without inventing findings.
+- `node devtools/question-outcome-scorer.mjs --brief path --answer path` checks whether a final answer respected provenance, audience, and evidence constraints.
+
 ## Brief Requirements
 
 Every brief must include:
@@ -32,6 +38,7 @@ Every brief must include:
 - Output format.
 - Provenance labels.
 - Claim limit.
+- Evidence source index entries when relevant.
 
 ## Routing Rules
 

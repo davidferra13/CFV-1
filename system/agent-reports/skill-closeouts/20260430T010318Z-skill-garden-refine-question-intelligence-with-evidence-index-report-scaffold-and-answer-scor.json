@@ -1,0 +1,24 @@
+{
+  "created_at": "2026-04-30T01:03:18.253Z",
+  "goal": "refine question intelligence with evidence index report scaffold and answer scoring",
+  "primary_skill": "skill-garden",
+  "sidecar_skills": [
+    "omninet",
+    "question-optimizer",
+    "evidence-broker",
+    "research-brief-generator",
+    "answer-provenance"
+  ],
+  "skill_delta": "patch",
+  "durable_behavior_seen": "Question intelligence should locate canonical evidence sources, scaffold reports from briefs, and score final answers against brief and provenance constraints",
+  "skill_gap_seen": null,
+  "validation": {
+    "skill_validator": "passed: 6 skills, 0 errors, 0 warnings",
+    "trigger_tests": "passed: 24 cases, 0 failures",
+    "compliance": "targeted em dash scan found no matches",
+    "other": "node --check passed for changed devtools scripts; smoke tests passed for source index, brief-to-report, outcome scorer, and router"
+  },
+  "commit": null,
+  "pushed": false,
+  "notes": ""
+}

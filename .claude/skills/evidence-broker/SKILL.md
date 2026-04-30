@@ -19,6 +19,12 @@ Check only sources relevant to the question:
 - Inference: reasoned conclusion from verified evidence.
 - Unknown: missing or unavailable proof.
 
+Use the deterministic source index when the source location is unclear:
+
+```powershell
+node devtools/evidence-source-index.mjs --query "survey"
+```
+
 ## Confidence Rules
 
 - Real user evidence can support validated product claims.

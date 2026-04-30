@@ -32,6 +32,9 @@ Use these tools when the task touches skills or durable agent behavior:
 - Detect missed skills: `node devtools/missed-skill-detector.mjs --record path [--write-learning]`
 - Generate repair queue: `node devtools/skill-repair-queue.mjs`
 - Generate a research brief: `node devtools/research-brief-generator.mjs --prompt "..." [--write]`
+- Query evidence sources: `node devtools/evidence-source-index.mjs --query "..."`
+- Convert a brief to a report scaffold: `node devtools/research-brief-to-report.mjs --brief path --write`
+- Score a question answer: `node devtools/question-outcome-scorer.mjs --brief path --answer path`
 - Promote a proven flight record into replay corpus: `node devtools/agent-replay-corpus.mjs promote --record path --name "case-name"`
 - Run replay regression: `node devtools/agent-replay-runner.mjs --corpus`
 - Bridge 3977 tasks into Codex build packets: `node devtools/codex-build-bridge.mjs next [--write]`

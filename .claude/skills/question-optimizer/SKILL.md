@@ -30,6 +30,7 @@ Use this as the front door for ambiguous ChefFlow questions. The output is a bet
    - Code truth: use `context-continuity`, `research`, `debug`, or `review`.
    - Agent behavior: use `skill-garden`, `heal-skill`, or `research-brief-generator`.
 5. State the optimized route before answering when it materially changes the work.
+6. For important strategic answers, use the question outcome scorer after drafting to catch missing evidence labels or unsupported validation language.
 
 ## Output
 
