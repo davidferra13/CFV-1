@@ -110,8 +110,24 @@ const COMMANDS = {
     mode: 'read-only',
   },
   closeout: {
-    summary: 'Agent closeout readiness: owned-file discipline, compliance hints, validation commands, and commit/push guidance.',
+    summary: 'Agent closeout readiness and guarded owned-file commit/push when explicitly requested.',
+    mode: 'read-only unless --commit or --push is passed',
+  },
+  task: {
+    summary: 'Task entry briefing for Codex agents: status, continuity, claims, owned files, risk, and next action.',
     mode: 'read-only',
+  },
+  risk: {
+    summary: 'Severity-ranked policy, truth, route, AI, money, dependency, migration, and ownership risk report.',
+    mode: 'read-only',
+  },
+  review: {
+    summary: 'ChefFlow code-review scan for owned files using auth, tenancy, cache, UI truth, money, and admin rules.',
+    mode: 'read-only',
+  },
+  claim: {
+    summary: 'Create, release, and inspect Codex agent file claims.',
+    mode: 'writes only system/agent-claims on create/release',
   },
   db: {
     summary: 'Database command center. Read-only checks plus safe script references.',
@@ -454,6 +470,78 @@ function loadClaims(maxAgeHours = 12) {
   }
 }
 
+function claimDirectory() {
+  return path.join(ROOT, 'system', 'agent-claims')
+}
+
+function claimCommand(args = {}) {
+  const subcommand = args._?.[0] || 'status'
+  if (subcommand === 'status' || subcommand === 'list') return loadClaims(Number(args['max-age-hours'] || 12))
+
+  if (subcommand === 'conflicts') {
+    const owned = parseList(args.owned || args.files || args._?.slice(1).join(' '))
+    const claims = loadClaims(Number(args['max-age-hours'] || 12)).active
+    const conflicts = []
+    for (const claim of claims) {
+      for (const ownedPath of owned) {
+        const match = (claim.ownedPaths || []).some(
+          (claimPath) =>
+            ownedPath === claimPath ||
+            ownedPath.startsWith(`${claimPath}/`) ||
+            claimPath.startsWith(`${ownedPath}/`),
+        )
+        if (match) conflicts.push({ claim: claim.id, file: claim.file, task: claim.task, ownedPath })
+      }
+    }
+    return { ok: conflicts.length === 0, owned, conflicts }
+  }
+
+  if (subcommand === 'create') {
+    const owned = parseList(args.owned || args.files || args._?.slice(1).join(' '))
+    const task = String(args.task || args.prompt || 'Codex task')
+    const id = `${nowStamp()}Z-${slugify(runGit(['branch', '--show-current'], 'branch'))}-${slugify(task)}`
+    const file = path.join(claimDirectory(), `${id}.json`)
+    const claim = {
+      id,
+      status: 'active',
+      agent: args.agent || 'codex',
+      prompt: task,
+      branch: runGit(['branch', '--show-current'], '(unknown)'),
+      branch_start_commit: runGit(['rev-parse', '--short', 'HEAD'], ''),
+      branch_finish: null,
+      branch_finish_commit: null,
+      owned_paths: owned,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      finished_at: null,
+      commit_hash: null,
+      pushed: null,
+    }
+    mkdirSync(claimDirectory(), { recursive: true })
+    writeFileSync(file, `${JSON.stringify(claim, null, 2)}\n`)
+    return { ok: true, file: rel(file), claim }
+  }
+
+  if (subcommand === 'release') {
+    const id = args.id || args._?.[1]
+    if (!id) return { ok: false, error: 'claim release requires --id <claim-id>.' }
+    const claims = loadClaims(Number(args['max-age-hours'] || 87600)).active
+    const match = claims.find((claim) => claim.id === id || claim.file.endsWith(`${id}.json`))
+    if (!match) return { ok: false, error: `No active claim found for ${id}.` }
+    const abs = path.join(ROOT, match.file)
+    const claim = readJson(abs, {})
+    claim.status = args.status || 'released'
+    claim.updated_at = new Date().toISOString()
+    claim.finished_at = new Date().toISOString()
+    claim.branch_finish = runGit(['branch', '--show-current'], '(unknown)')
+    claim.branch_finish_commit = runGit(['rev-parse', '--short', 'HEAD'], '')
+    writeFileSync(abs, `${JSON.stringify(claim, null, 2)}\n`)
+    return { ok: true, file: match.file, claim }
+  }
+
+  return { ok: false, error: `Unknown claim subcommand: ${subcommand}`, available: ['status', 'list', 'conflicts', 'create', 'release'] }
+}
+
 function parseList(value) {
   return String(value || '')
     .split(/[,\s]+/)
@@ -463,6 +551,30 @@ function parseList(value) {
 
 function parseFileListArgs(args = {}) {
   return [...new Set([...parseList(args.files), ...parseList(args.owned), ...parseList((args._ || []).join(' '))])]
+}
+
+function nowStamp() {
+  return new Date().toISOString().replace(/\D/g, '').slice(0, 14)
+}
+
+function slugify(value, fallback = 'task') {
+  const slug = String(value || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 80)
+  return slug || fallback
+}
+
+function readTextFile(file) {
+  const normalized = String(file || '').replace(/\\/g, '/')
+  const abs = path.join(ROOT, normalized)
+  if (!existsSync(abs) || !TEXT_EXTENSIONS.has(path.extname(abs))) return ''
+  try {
+    return readFileSync(abs, 'utf8')
+  } catch {
+    return ''
+  }
 }
 
 function changedFilesFromArgs(args = {}) {
@@ -567,17 +679,10 @@ function packageNameFromSpecifier(specifier) {
   return specifier.split('/')[0]
 }
 
-function dependencyTruth() {
-  const pkg = readJson(path.join(ROOT, 'package.json'), {})
-  const lock = readJson(path.join(ROOT, 'package-lock.json'), {})
-  const declared = new Set([
-    ...Object.keys(pkg.dependencies || {}),
-    ...Object.keys(pkg.devDependencies || {}),
-    ...Object.keys(pkg.optionalDependencies || {}),
-  ])
-  const lockPackages = lock.packages || {}
-  const referenced = new Set()
+function dependencyReferences() {
+  const references = new Map()
   const importPattern = /^\s*(?:import|export)\s+(?:[^'"]+\s+from\s+)?['"]([^'"]+)['"]/
+  const dynamicImportPattern = /\bimport\(\s*['"]([^'"]+)['"]\s*\)/
   const requirePattern = /^\s*(?:const|let|var)\s+[^=\n]+=\s*require\(['"]([^'"]+)['"]\)/
 
   for (const file of listFiles(['app', 'components', 'lib', 'scripts', 'devtools', 'tests'], { maxFiles: 8000 })) {
@@ -587,12 +692,35 @@ function dependencyTruth() {
     } catch {
       continue
     }
-    for (const line of lines) {
-      const match = line.match(importPattern) || line.match(requirePattern)
+    for (let i = 0; i < lines.length; i += 1) {
+      const line = lines[i]
+      const match = line.match(importPattern) || line.match(requirePattern) || line.match(dynamicImportPattern)
       const name = packageNameFromSpecifier(match?.[1])
-      if (name) referenced.add(name)
+      if (!name) continue
+      const list = references.get(name) || []
+      list.push({
+        file: rel(file),
+        line: i + 1,
+        specifier: match[1],
+        context: line.trim().slice(0, 180),
+      })
+      references.set(name, list)
     }
   }
+  return references
+}
+
+function dependencyTruth() {
+  const pkg = readJson(path.join(ROOT, 'package.json'), {})
+  const lock = readJson(path.join(ROOT, 'package-lock.json'), {})
+  const declared = new Set([
+    ...Object.keys(pkg.dependencies || {}),
+    ...Object.keys(pkg.devDependencies || {}),
+    ...Object.keys(pkg.optionalDependencies || {}),
+  ])
+  const lockPackages = lock.packages || {}
+  const references = dependencyReferences()
+  const referenced = new Set(references.keys())
 
   const missingDeclarations = [...referenced]
     .filter((name) => !declared.has(name))
@@ -607,6 +735,31 @@ function dependencyTruth() {
     missingDeclarations,
     missingLockEntries,
     packageLockPresent: existsSync(path.join(ROOT, 'package-lock.json')),
+  }
+}
+
+function dependencyTrace() {
+  const truth = dependencyTruth()
+  const references = dependencyReferences()
+  const pkg = readJson(path.join(ROOT, 'package.json'), {})
+  const classify = (items) => {
+    const files = items.map((item) => item.file)
+    if (files.every((file) => file.startsWith('tests/') || file.includes('.test.'))) return 'devDependency'
+    if (files.every((file) => file.startsWith('scripts/') || file.startsWith('devtools/'))) return 'devDependency'
+    return 'dependency'
+  }
+  return {
+    ...truth,
+    traces: truth.missingDeclarations.map((name) => {
+      const items = references.get(name) || []
+      return {
+        name,
+        suggestedSection: classify(items),
+        declaredVersion: pkg.dependencies?.[name] || pkg.devDependencies?.[name] || null,
+        references: items.slice(0, 20),
+        referenceCount: items.length,
+      }
+    }),
   }
 }
 
@@ -668,6 +821,9 @@ function pushReadiness(args = {}) {
   const validation = validationSelector(args)
   const deps = dependencyTruth()
   const blockers = []
+  const warnings = []
+  const scopedFiles = new Set([...parseFileListArgs(args), ...owned.ownedDirty.map((entry) => entry.path)])
+  const dependencyFilesInScope = [...scopedFiles].some((file) => ['package.json', 'package-lock.json'].includes(file))
   if (status.branch === 'main') blockers.push({ id: 'main-branch', reason: 'Current branch is main.' })
   if (!status.upstream) blockers.push({ id: 'missing-upstream', reason: 'Current branch has no upstream.' })
   if (owned.unownedDirty.length) {
@@ -678,20 +834,158 @@ function pushReadiness(args = {}) {
     })
   }
   if (!deps.ok) {
-    blockers.push({
+    const dependencyFinding = {
       id: 'dependency-truth',
       reason: 'Package truth check found missing declarations or lock entries.',
       missingDeclarations: deps.missingDeclarations.slice(0, 20),
       missingLockEntries: deps.missingLockEntries.slice(0, 20),
-    })
+    }
+    if (dependencyFilesInScope) blockers.push(dependencyFinding)
+    else warnings.push(dependencyFinding)
   }
   return {
     ok: blockers.length === 0,
     branch: status.branch,
     upstream: status.upstream,
     blockers,
+    warnings,
     owned,
     validation,
+  }
+}
+
+function severityRank(severity) {
+  return { blocked: 0, high: 1, medium: 2, low: 3, notice: 4, ok: 5 }[severity] ?? 9
+}
+
+function riskReport(args = {}) {
+  const owned = ownedLedger(args)
+  const policy = policyScan(args)
+  const truth = truthScan()
+  const route = routeScan()
+  const aiGate = aiGateScan()
+  const money = moneyScan()
+  const deps = dependencyTruth()
+  const migrations = migrationPlan(args)
+  const findings = []
+  const add = (severity, area, id, reason, detail = {}) => findings.push({ severity, area, id, reason, ...detail })
+
+  if (owned.unownedDirty.length) {
+    add('medium', 'ownership', 'unowned-dirty-work', 'Dirty files exist outside the owned set.', {
+      count: owned.unownedDirty.length,
+    })
+  }
+  for (const finding of policy.restricted.findings || []) {
+    add('blocked', 'policy', finding.id, finding.reason, { source: finding.source, term: finding.term })
+  }
+  for (const finding of policy.guard?.blocked || []) {
+    add('blocked', 'guard', finding.id, finding.reason)
+  }
+  if (truth.checks.emptyCatch.length) add('high', 'truth', 'empty-catch', 'Empty catch blocks can hide failures.', { count: truth.checks.emptyCatch.length })
+  if (truth.checks.noOpHandlers.length) add('high', 'truth', 'no-op-handler', 'No-op UI handlers can present fake functionality.', { count: truth.checks.noOpHandlers.length })
+  if (truth.checks.fakeMoney.length) add('high', 'truth', 'fake-money', 'Hardcoded displayed money risks hallucinated financial state.', { count: truth.checks.fakeMoney.length })
+  if (!route.ok) add('high', 'route', 'route-protection', 'Route or server action protection scan found issues.', { count: route.serverActionFindings.length + route.prospectingPages.filter((page) => !page.hasRequireAdmin).length })
+  if (!aiGate.ok) add('blocked', 'ai', 'ai-policy-drift', 'AI scan found provider drift or recipe-generation risk.', { providerDrift: aiGate.providerDrift.length, recipeRisk: aiGate.recipeGenerationRisk.length })
+  if (!money.ok) add('high', 'money', 'money-invariant-drift', 'Money scan found hardcoded currency or related invariant risk.', { hardcodedCurrency: money.findings.hardcodedCurrency.length })
+  if (!deps.ok) add('medium', 'deps', 'dependency-truth', 'Referenced packages are missing declarations or lock entries.', { missingDeclarations: deps.missingDeclarations, missingLockEntries: deps.missingLockEntries })
+  for (const finding of migrations.proposed?.findings || []) {
+    add(finding.severity === 'blocked' ? 'blocked' : 'notice', 'migration', finding.id, 'Proposed SQL migration scan finding.')
+  }
+
+  findings.sort((a, b) => severityRank(a.severity) - severityRank(b.severity) || a.area.localeCompare(b.area))
+  return {
+    ok: !findings.some((finding) => finding.severity === 'blocked' || finding.severity === 'high'),
+    owned,
+    findings,
+    summary: {
+      blocked: findings.filter((finding) => finding.severity === 'blocked').length,
+      high: findings.filter((finding) => finding.severity === 'high').length,
+      medium: findings.filter((finding) => finding.severity === 'medium').length,
+      low: findings.filter((finding) => finding.severity === 'low').length,
+      notice: findings.filter((finding) => finding.severity === 'notice').length,
+    },
+  }
+}
+
+function scanEmDashes(files) {
+  const findings = []
+  for (const file of files) {
+    const text = readTextFile(file)
+    if (!text.includes('\u2014')) continue
+    const lines = text.split(/\r?\n/)
+    for (let i = 0; i < lines.length; i += 1) {
+      if (lines[i].includes('\u2014')) {
+        findings.push({ file, line: i + 1, text: lines[i].trim().slice(0, 180) })
+      }
+    }
+  }
+  return findings
+}
+
+function safeValidationCommand(command) {
+  if (!command || command.includes('<owned files>')) return false
+  if (/\b(next\s+build|npm\s+run\s+build|npm\s+run\s+dev|npm\s+run\s+start|next\s+dev|next\s+start|deploy|prod)\b/i.test(command)) {
+    return false
+  }
+  return guardCommand(command.split(/\s+/)).ok
+}
+
+function runValidationSuite(args = {}) {
+  const selectorArgs = { ...args, _: (args._ || []).filter((item) => item !== 'run') }
+  const selected = validationSelector(selectorArgs)
+  const files = selected.files
+  const dryRun = Boolean(args['dry-run'])
+  const timeoutMs = Number(args.timeout || 120000)
+  const emDashFindings = scanEmDashes(files)
+  const results = []
+
+  if (emDashFindings.length) {
+    results.push({
+      command: 'em-dash-scan',
+      ok: false,
+      skipped: false,
+      exitCode: 1,
+      findings: emDashFindings,
+    })
+  } else {
+    results.push({ command: 'em-dash-scan', ok: true, skipped: false, exitCode: 0 })
+  }
+
+  for (const command of selected.commands) {
+    if (!safeValidationCommand(command)) {
+      results.push({ command, ok: true, skipped: true, reason: 'Command is unsafe, long-running, or a placeholder.' })
+      continue
+    }
+    if (dryRun) {
+      results.push({ command, ok: true, skipped: true, reason: 'Dry run.' })
+      continue
+    }
+    try {
+      const output = execFileSync(command, {
+        cwd: ROOT,
+        encoding: 'utf8',
+        shell: true,
+        stdio: ['ignore', 'pipe', 'pipe'],
+        timeout: timeoutMs,
+      })
+      results.push({ command, ok: true, skipped: false, exitCode: 0, output: output.slice(-4000) })
+    } catch (error) {
+      results.push({
+        command,
+        ok: false,
+        skipped: false,
+        exitCode: error.status ?? 1,
+        output: String(error.stdout || '').slice(-4000),
+        error: String(error.stderr || error.message || '').slice(-4000),
+      })
+    }
+  }
+
+  return {
+    ok: results.every((result) => result.ok),
+    dryRun,
+    selected,
+    results,
   }
 }
 
@@ -734,6 +1028,39 @@ function closeoutEvidence(args = {}) {
   return evidence
 }
 
+function diffEvidence(args = {}) {
+  const files = changedFilesFromArgs(args)
+  const stats = files.map((file) => {
+    const diff = runGitRaw(['diff', '--numstat', '--', file], '').trim()
+    const cached = runGitRaw(['diff', '--cached', '--numstat', '--', file], '').trim()
+    const row = (cached || diff).split(/\s+/)
+    return {
+      file,
+      added: /^\d+$/.test(row[0]) ? Number(row[0]) : null,
+      deleted: /^\d+$/.test(row[1]) ? Number(row[1]) : null,
+      staged: Boolean(cached),
+      exists: existsSync(path.join(ROOT, file)),
+    }
+  })
+  const evidence = {
+    generatedAt: new Date().toISOString(),
+    branch: runGit(['branch', '--show-current'], '(unknown)'),
+    head: runGit(['log', '-1', '--oneline'], ''),
+    files,
+    stats,
+    validation: validationSelector(args),
+    risk: riskReport(args),
+    policy: policyScan(args),
+  }
+  if (args.write) {
+    mkdirSync(EVIDENCE_ROOT, { recursive: true })
+    const file = path.join(EVIDENCE_ROOT, `${nowStamp()}-cheflow-diff-evidence.json`)
+    writeFileSync(file, `${JSON.stringify(evidence, null, 2)}\n`)
+    evidence.file = rel(file)
+  }
+  return evidence
+}
+
 function nextAction(args = {}) {
   const push = pushReadiness(args)
   const claims = loadClaims()
@@ -766,6 +1093,40 @@ function nextAction(args = {}) {
         ? 'node scripts/cheflow.mjs evidence --write --owned <paths>'
         : push.validation.commands[0] || 'node scripts/cheflow.mjs status',
     push,
+  }
+}
+
+function taskStart(args = {}) {
+  const prompt = String(args.prompt || args.task || args._?.slice(1).join(' ') || '').trim()
+  const owned = ownedLedger(args)
+  const risk = riskReport(args)
+  return {
+    ok: true,
+    prompt: prompt || null,
+    branch: runGit(['branch', '--show-current'], '(unknown)'),
+    status: statusSnapshot(),
+    continuity: {
+      ...continuityDecision(),
+      suggestedCommand: prompt
+        ? `node devtools/context-continuity-scan.mjs --prompt "${prompt.replace(/"/g, '\\"')}" --write`
+        : 'node devtools/context-continuity-scan.mjs --prompt "<task>" --write',
+    },
+    claims: loadClaims(),
+    owned,
+    risk: {
+      ok: risk.ok,
+      summary: risk.summary,
+      topFindings: risk.findings.slice(0, 10),
+    },
+    next: nextAction(args),
+    hardStops: [
+      'Do not work on main.',
+      'Do not run destructive database operations.',
+      'Do not run drizzle-kit push without explicit approval.',
+      'Do not edit types/database.ts.',
+      'Do not build, deploy, start, kill, or restart servers without explicit approval.',
+      'Commit and push only owned files before finishing code work.',
+    ],
   }
 }
 
@@ -807,6 +1168,30 @@ function migrationPlan(args) {
       'Do not use DROP, DELETE, TRUNCATE, or column type changes without explicit approval.',
     ],
     proposed,
+  }
+}
+
+function migrationProposal(args = {}) {
+  const plan = migrationPlan(args)
+  const sqlPath = args.sql ? path.resolve(ROOT, String(args.sql)) : null
+  const sql = sqlPath && existsSync(sqlPath) ? readFileSync(sqlPath, 'utf8') : ''
+  const blocked = plan.proposed?.findings?.some((finding) => finding.severity === 'blocked') || !sql
+  return {
+    ok: !blocked,
+    ...plan,
+    proposed: {
+      ...(plan.proposed || {
+        path: args.sql ? rel(sqlPath) : null,
+        exists: false,
+        findings: [{ id: 'sql-file-required', severity: 'blocked' }],
+      }),
+      nextFilename: sql ? `${plan.nextTimestamp}_${slugify(args.name || path.basename(String(args.sql), '.sql'), 'migration')}.sql` : null,
+      fullSql: sql,
+      approvalRequired: true,
+      writeCommandAfterApproval: sql
+        ? `Copy approved SQL into database/migrations/${plan.nextTimestamp}_${slugify(args.name || path.basename(String(args.sql), '.sql'), 'migration')}.sql`
+        : null,
+    },
   }
 }
 
@@ -905,6 +1290,64 @@ function routeScan() {
   }
 }
 
+function reviewOwnedFiles(args = {}) {
+  const files = changedFilesFromArgs(args)
+  const findings = []
+  const tsNoCheck = `@ts-${'nocheck'}`
+  const tsNoCheckId = `ts-${'nocheck'}`
+  const add = (severity, file, line, id, reason, text = '') =>
+    findings.push({ severity, file, line, id, reason, text: String(text || '').trim().slice(0, 180) })
+
+  for (const file of files) {
+    const text = readTextFile(file)
+    if (!text) continue
+    const lines = text.split(/\r?\n/)
+    const isServer = text.startsWith("'use server'") || text.startsWith('"use server"')
+    const isProspecting = file.includes('/prospecting/')
+
+    if (isServer && !/\brequire(?:Chef|Client|Admin|Auth)\s*\(/.test(text)) {
+      add('blocked', file, 1, 'server-action-auth', 'Server action file lacks requireChef, requireClient, requireAdmin, or requireAuth.')
+    }
+    if (isServer && /^\s*export\s+(?:const|class|type)\b/m.test(text)) {
+      add('blocked', file, 1, 'server-action-export', 'Use server files may only export async functions.')
+    }
+    if (isServer && /\.from\(/.test(text) && !/\.eq\(\s*['"`](?:tenant_id|chef_id)['"`]/.test(text)) {
+      add('high', file, 1, 'tenant-scope-missing', 'Database access in server action has no obvious tenant_id or chef_id scope.')
+    }
+    if (isProspecting && !/\brequireAdmin\s*\(/.test(text) && !/adminOnly\s*:\s*true/.test(text)) {
+      add('blocked', file, 1, 'prospecting-admin-only', 'Prospecting surface must be admin-only.')
+    }
+    if (/revalidatePath|revalidateTag/.test(text) === false && /\b(insert|update|delete|upsert)\s*\(/.test(text)) {
+      add('medium', file, 1, 'mutation-cache-bust', 'Mutation-like code has no obvious revalidatePath or revalidateTag.')
+    }
+
+    lines.forEach((line, index) => {
+      if (/\bon[A-Z][A-Za-z0-9_]*=\{\s*(?:\(\)\s*=>\s*)?\{\s*\}\s*\}/.test(line)) {
+        add('high', file, index + 1, 'no-op-handler', 'No-op handlers must be hidden, disabled, or implemented.', line)
+      }
+      if (/['"`]\$[0-9][0-9,.]*(?:\.[0-9]{2})?['"`]/.test(line)) {
+        add('high', file, index + 1, 'hardcoded-money', 'Displayed money must come from real data, not hardcoded values.', line)
+      }
+      if (line.includes(tsNoCheck)) {
+        add('blocked', file, index + 1, tsNoCheckId, `Project rules forbid ${tsNoCheck}.`, line)
+      }
+      if (/\bOpenClaw\b/.test(line) && /app\/|components\/|public\//.test(file)) {
+        add('blocked', file, index + 1, 'public-openclaw', 'OpenClaw is forbidden in public surfaces.', line)
+      }
+      if (line.includes('\u2014')) {
+        add('blocked', file, index + 1, 'em-dash', 'Em dashes are banned project-wide.', line)
+      }
+    })
+  }
+
+  findings.sort((a, b) => severityRank(a.severity) - severityRank(b.severity) || a.file.localeCompare(b.file))
+  return {
+    ok: !findings.some((finding) => finding.severity === 'blocked' || finding.severity === 'high'),
+    files,
+    findings,
+  }
+}
+
 function aiGateScan() {
   const providerDrift = findText(/\b(openai|anthropic|gemini|claude|gpt-|chatgpt)\b/i, ['app', 'components', 'lib', 'scripts'])
     .filter((finding) => !finding.file.includes('openai-docs') && !finding.file.includes('chatgpt-'))
@@ -927,14 +1370,12 @@ function dbCommand(args) {
 }
 
 function closeout(args) {
-  const owned = String(args.owned || '')
-    .split(',')
-    .map((item) => item.trim())
-    .filter(Boolean)
-  return {
+  const owned = parseList(args.owned || args.files)
+  const readiness = {
     branch: runGit(['branch', '--show-current'], '(unknown)'),
     dirty: statusEntries(),
     owned,
+    push: pushReadiness(args),
     checks: [
       'Stage only files owned by this task.',
       'Run targeted validation that matches the touched surface.',
@@ -950,6 +1391,91 @@ function closeout(args) {
       'npm run typecheck',
     ],
   }
+  if (!args.commit && !args.push) return readiness
+  return executeCloseout(args, readiness)
+}
+
+function executeCloseout(args, readiness) {
+  const branch = readiness.branch
+  const owned = readiness.owned
+  const result = {
+    ...readiness,
+    executed: true,
+    validation: null,
+    staged: [],
+    commit: null,
+    pushResult: null,
+    ok: false,
+  }
+  if (branch === 'main') {
+    result.error = 'Refusing closeout execution on main.'
+    return result
+  }
+  if (!owned.length) {
+    result.error = 'closeout --commit or --push requires --owned <paths>.'
+    return result
+  }
+
+  result.validation = runValidationSuite({ ...args, _: [] })
+  if (!result.validation.ok && !args['skip-validation']) {
+    result.error = 'Validation failed. Refusing to stage, commit, or push.'
+    return result
+  }
+
+  const ownedSet = new Set(owned)
+  const ownedDirty = statusEntries().filter((entry) =>
+    [...ownedSet].some((ownedPath) => entry.path === ownedPath || entry.path.startsWith(`${ownedPath}/`)),
+  )
+  for (const entry of ownedDirty) {
+    execFileSync('git', ['add', '--', entry.path], { cwd: ROOT, stdio: ['ignore', 'ignore', 'pipe'] })
+    result.staged.push(entry.path)
+  }
+
+  if (args.commit) {
+    const staged = runGitRaw(['diff', '--cached', '--name-only']).split(/\r?\n/).filter(Boolean)
+    const stagedOutsideOwned = staged.filter(
+      (file) => ![...ownedSet].some((ownedPath) => file === ownedPath || file.startsWith(`${ownedPath}/`)),
+    )
+    if (stagedOutsideOwned.length) {
+      result.error = 'Staged files outside the owned set are present. Refusing to commit.'
+      result.stagedOutsideOwned = stagedOutsideOwned
+      return result
+    }
+    if (staged.length) {
+      const message =
+        args.message ||
+        `chore(agent): update cheflow cli operator flow ${branch}`
+      execFileSync('git', ['commit', '-m', message], { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'] })
+      result.commit = runGit(['log', '-1', '--oneline'], '')
+    } else {
+      result.commit = 'No staged owned changes to commit.'
+    }
+  }
+
+  if (args.push) {
+    const upstream = runGit(['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}'], '')
+    const pushArgs = upstream ? ['push'] : ['push', '-u', 'origin', branch]
+    try {
+      const output = execFileSync('git', pushArgs, {
+        cwd: ROOT,
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'pipe'],
+      })
+      result.pushResult = { ok: true, output: output.slice(-4000) }
+    } catch (error) {
+      result.pushResult = {
+        ok: false,
+        exitCode: error.status ?? 1,
+        output: String(error.stdout || '').slice(-4000),
+        error: String(error.stderr || error.message || '').slice(-4000),
+      }
+      result.error = 'git push failed.'
+      return result
+    }
+  }
+
+  result.ok = true
+  return result
 }
 
 function commandCenter(name) {
@@ -1017,6 +1543,27 @@ function cockpit() {
   }
 }
 
+function explainBlockers(args = {}) {
+  const push = pushReadiness(args)
+  const deps = dependencyTrace()
+  return {
+    ok: push.ok,
+    command: 'explain blockers',
+    blockers: push.blockers.map((blocker) => ({
+      ...blocker,
+      explanation:
+        blocker.id === 'unowned-dirty-work'
+          ? 'Another agent likely owns these dirty files. Pass --owned with only this task files, or leave them untouched.'
+          : blocker.id === 'dependency-truth'
+            ? 'Some imports are not declared in package.json or package-lock truth is inconsistent. Use deps trace for exact import sites.'
+            : blocker.reason,
+    })),
+    dependencyTraces: deps.traces,
+    owned: push.owned,
+    validation: push.validation,
+  }
+}
+
 function explain(name) {
   const command = COMMANDS[name]
   if (!command) {
@@ -1048,14 +1595,17 @@ Usage:
 
 Commands:`)
   for (const [name, command] of Object.entries(COMMANDS)) {
-    console.log(`  ${name.padEnd(12)} ${command.summary}`)
+    console.log(`  ${name.padEnd(14)} ${command.summary}`)
   }
   console.log(`
 Examples:
+  node scripts/cheflow.mjs task start --prompt "Fix quote totals" --owned lib/quotes
+  node scripts/cheflow.mjs risk --owned scripts/cheflow.mjs,tests/unit/cheflow-cli.test.ts
+  node scripts/cheflow.mjs validate run --dry-run --owned scripts/cheflow.mjs
   node scripts/cheflow.mjs cockpit
   node scripts/cheflow.mjs next --owned scripts/cheflow.mjs,tests/unit/cheflow-cli.test.ts
   node scripts/cheflow.mjs guard -- git push origin main
-  node scripts/cheflow.mjs migrate plan
+  node scripts/cheflow.mjs migrate propose --sql tmp/proposed.sql
   node scripts/cheflow.mjs explain ai-gate
 `)
 }
@@ -1091,6 +1641,13 @@ function main(argv = process.argv.slice(2)) {
     return result.proposed?.findings?.some((finding) => finding.severity === 'blocked') ? 1 : 0
   }
 
+  if (command === 'migrate' && maybeSubcommand === 'propose') {
+    const args = parseArgs(rest)
+    const result = migrationProposal(args)
+    printJsonOrHuman(result, args, (value) => printSummary('ChefFlow migration proposal', value))
+    return result.ok ? 0 : 1
+  }
+
   const args = parseArgs([maybeSubcommand, ...rest].filter(Boolean))
 
   switch (command) {
@@ -1115,7 +1672,7 @@ function main(argv = process.argv.slice(2)) {
       return 0
     }
     case 'explain': {
-      const result = explain(args._[0])
+      const result = args._[0] === 'blockers' ? explainBlockers({ ...args, _: args._.slice(1) }) : explain(args._[0])
       printJsonOrHuman(result, args, printObject)
       return result.ok ? 0 : 1
     }
@@ -1145,9 +1702,12 @@ function main(argv = process.argv.slice(2)) {
       return result.ok ? 0 : 1
     }
     case 'validate': {
-      const result = validationSelector(args)
+      const result =
+        args._[0] === 'run'
+          ? runValidationSuite({ ...args, _: args._.slice(1) })
+          : validationSelector(args)
       printJsonOrHuman(result, args, (value) => printSummary('ChefFlow validation selector', value))
-      return 0
+      return result.ok ? 0 : 1
     }
     case 'policy': {
       const result = policyScan(args)
@@ -1155,7 +1715,7 @@ function main(argv = process.argv.slice(2)) {
       return result.ok ? 0 : 1
     }
     case 'deps': {
-      const result = dependencyTruth()
+      const result = args._[0] === 'trace' ? dependencyTrace() : dependencyTruth()
       printJsonOrHuman(result, args, (value) => printSummary('ChefFlow dependency truth', value))
       return result.ok ? 0 : 1
     }
@@ -1165,9 +1725,29 @@ function main(argv = process.argv.slice(2)) {
       return 0
     }
     case 'evidence': {
-      const result = closeoutEvidence(args)
+      const result = args._[0] === 'diff' ? diffEvidence({ ...args, _: args._.slice(1) }) : closeoutEvidence(args)
       printJsonOrHuman(result, args, (value) => printSummary('ChefFlow closeout evidence', value))
       return 0
+    }
+    case 'task': {
+      const result = taskStart({ ...args, _: args._[0] === 'start' ? args._.slice(1) : args._ })
+      printJsonOrHuman(result, args, (value) => printSummary('ChefFlow task start', value))
+      return 0
+    }
+    case 'risk': {
+      const result = riskReport(args)
+      printJsonOrHuman(result, args, (value) => printSummary('ChefFlow risk report', value))
+      return result.ok ? 0 : 1
+    }
+    case 'review': {
+      const result = reviewOwnedFiles(args)
+      printJsonOrHuman(result, args, (value) => printSummary('ChefFlow review', value))
+      return result.ok ? 0 : 1
+    }
+    case 'claim': {
+      const result = claimCommand(args)
+      printJsonOrHuman(result, args, (value) => printSummary('ChefFlow claim', value))
+      return result.ok === false ? 1 : 0
     }
     case 'truth': {
       const result = truthScan()
@@ -1226,26 +1806,35 @@ if (process.argv[1] && path.resolve(process.argv[1]) === __filename) {
 
 export {
   aiGateScan,
+  claimCommand,
   closeout,
   closeoutEvidence,
   cockpit,
   commandCenter,
   continuityDecision,
+  dependencyTrace,
   dependencyTruth,
+  diffEvidence,
   doctor,
   explain,
+  explainBlockers,
   guardCommand,
   loadClaims,
   main,
   migrationPlan,
+  migrationProposal,
   moneyScan,
   nextAction,
   ownedLedger,
   policyScan,
   pushReadiness,
+  reviewOwnedFiles,
   routeScan,
+  riskReport,
+  runValidationSuite,
   scanSqlText,
   statusSnapshot,
+  taskStart,
   truthScan,
   validationSelector,
 }

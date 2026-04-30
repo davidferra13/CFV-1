@@ -22,6 +22,10 @@ describe('ChefFlow CLI', () => {
     assert.match(output, /push-check/)
     assert.match(output, /ai-gate/)
     assert.match(output, /closeout/)
+    assert.match(output, /task/)
+    assert.match(output, /risk/)
+    assert.match(output, /review/)
+    assert.match(output, /claim/)
   })
 
   it('explains command safety metadata', () => {
@@ -72,9 +76,20 @@ describe('ChefFlow CLI', () => {
       ['next', '--owned', 'scripts/cheflow.mjs,tests/unit/cheflow-cli.test.ts'],
       ['claims'],
       ['closeout'],
+      ['task', 'start', '--prompt', 'Build CLI operator flow', '--owned', 'scripts/cheflow.mjs'],
       ['validate', '--files', 'scripts/cheflow.mjs,tests/unit/cheflow-cli.test.ts'],
+      [
+        'validate',
+        'run',
+        '--dry-run',
+        '--files',
+        'scripts/cheflow.mjs,tests/unit/cheflow-cli.test.ts',
+      ],
       ['continuity'],
       ['evidence', '--owned', 'scripts/cheflow.mjs,tests/unit/cheflow-cli.test.ts'],
+      ['evidence', 'diff', '--owned', 'scripts/cheflow.mjs,tests/unit/cheflow-cli.test.ts'],
+      ['review', '--owned', 'scripts/cheflow.mjs,tests/unit/cheflow-cli.test.ts'],
+      ['claim', 'conflicts', '--owned', 'scripts/cheflow.mjs'],
       ['db'],
       ['ledger'],
       ['event'],
@@ -143,6 +158,57 @@ describe('ChefFlow CLI', () => {
     assert.doesNotThrow(() => JSON.parse(result.stdout))
     const parsed = JSON.parse(result.stdout)
     assert.ok(Array.isArray(parsed.blockers))
+    assert.ok(Array.isArray(parsed.warnings))
+    assert.equal(
+      parsed.blockers.some((blocker: { id: string }) => blocker.id === 'dependency-truth'),
+      false
+    )
     assert.ok(parsed.validation.commands.length > 0)
+  })
+
+  it('prints severity-ranked risk reports even when the repo has existing risks', () => {
+    const result = runCli([
+      'risk',
+      '--owned',
+      'scripts/cheflow.mjs,tests/unit/cheflow-cli.test.ts',
+      '--json',
+    ])
+
+    assert.doesNotThrow(() => JSON.parse(result.stdout))
+    const parsed = JSON.parse(result.stdout)
+    assert.ok(Array.isArray(parsed.findings))
+    assert.ok(parsed.summary)
+  })
+
+  it('traces missing dependency references to import sites', () => {
+    const result = runCli(['deps', 'trace', '--json'])
+
+    assert.doesNotThrow(() => JSON.parse(result.stdout))
+    const parsed = JSON.parse(result.stdout)
+    assert.ok(Array.isArray(parsed.traces))
+  })
+
+  it('explains push blockers with operator guidance', () => {
+    const result = runCli([
+      'explain',
+      'blockers',
+      '--owned',
+      'scripts/cheflow.mjs,tests/unit/cheflow-cli.test.ts',
+      '--json',
+    ])
+
+    assert.doesNotThrow(() => JSON.parse(result.stdout))
+    const parsed = JSON.parse(result.stdout)
+    assert.equal(parsed.command, 'explain blockers')
+    assert.ok(Array.isArray(parsed.blockers))
+  })
+
+  it('prints migration proposals without writing migration files', () => {
+    const result = runCli(['migrate', 'propose', '--json'])
+
+    assert.equal(result.status, 1)
+    const parsed = JSON.parse(result.stdout)
+    assert.equal(parsed.proposed.approvalRequired, true)
+    assert.equal(parsed.proposed.findings[0].id, 'sql-file-required')
   })
 })
