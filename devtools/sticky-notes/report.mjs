@@ -63,6 +63,7 @@ export function generateStickyNotesReport(options = {}) {
     `- Attachments written: ${attached.attachments?.length ?? 0}`,
     `- Unprocessed right now: ${state.unprocessed?.length ?? 0}`,
     `- Active categorized notes: ${state.active?.length ?? 0}`,
+    `- Pinned visible notes: ${state.pinned?.length ?? 0}`,
     `- Finished notes: ${state.finished?.length ?? 0}`,
     '',
     '## Color State Counts',

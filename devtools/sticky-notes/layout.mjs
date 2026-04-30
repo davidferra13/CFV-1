@@ -9,9 +9,19 @@ import { ensureDir, nowStamp, outputPaths, readJson, relativePath, stickyConfig,
 const require = createRequire(import.meta.url)
 
 const LAYOUT = {
+  pinned: {
+    x: -1880,
+    y: 1728,
+    columns: 4,
+    width: 450,
+    height: 84,
+    gapX: 12,
+    gapY: 8,
+    minimized: 0,
+  },
   queued: {
     x: -1880,
-    y: 1740,
+    y: 1840,
     columns: 3,
     width: 190,
     height: 105,
@@ -21,7 +31,7 @@ const LAYOUT = {
   },
   in_progress: {
     x: -1280,
-    y: 1740,
+    y: 1840,
     columns: 4,
     width: 185,
     height: 95,
@@ -30,18 +40,18 @@ const LAYOUT = {
     minimized: 0,
   },
   blocked: {
-    x: -470,
-    y: 1740,
-    columns: 2,
-    width: 210,
-    height: 88,
-    gapX: 10,
-    gapY: 8,
+    x: -600,
+    y: 1840,
+    columns: 3,
+    width: 180,
+    height: 82,
+    gapX: 8,
+    gapY: 6,
     minimized: 0,
   },
   complete: {
     x: -1880,
-    y: 2655,
+    y: 2670,
     columns: 12,
     width: 140,
     height: 36,
@@ -66,9 +76,10 @@ function backupDb(dbPath) {
 }
 
 function positionFor(item, indexByState) {
-  const template = LAYOUT[item.pipelineState] || LAYOUT.blocked
-  const index = indexByState[item.pipelineState] || 0
-  indexByState[item.pipelineState] = index + 1
+  const layoutState = item.pinned && item.pipelineState !== 'complete' ? 'pinned' : item.pipelineState
+  const template = LAYOUT[layoutState] || LAYOUT.blocked
+  const index = indexByState[layoutState] || 0
+  indexByState[layoutState] = index + 1
   const column = index % template.columns
   const row = Math.floor(index / template.columns)
   return {
@@ -76,6 +87,8 @@ function positionFor(item, indexByState) {
     noteRef: item.noteRef,
     noteId: item.noteId,
     pipelineState: item.pipelineState,
+    pinned: Boolean(item.pinned && item.pipelineState !== 'complete'),
+    layoutState,
     left: template.x + column * (template.width + template.gapX),
     top: template.y + row * (template.height + template.gapY),
     width: template.width,
@@ -93,7 +106,10 @@ export function planStickyNoteLayout(options = {}) {
   const positions = [...state.items]
     .sort((a, b) => {
       const order = ['queued', 'in_progress', 'blocked', 'complete']
-      const stateDiff = order.indexOf(a.pipelineState) - order.indexOf(b.pipelineState)
+      const aLayoutState = a.pinned && a.pipelineState !== 'complete' ? 'pinned' : a.pipelineState
+      const bLayoutState = b.pinned && b.pipelineState !== 'complete' ? 'pinned' : b.pipelineState
+      const layoutOrder = ['pinned', ...order]
+      const stateDiff = layoutOrder.indexOf(aLayoutState) - layoutOrder.indexOf(bLayoutState)
       if (stateDiff !== 0) return stateDiff
       return Number(a.noteId || 0) - Number(b.noteId || 0)
     })

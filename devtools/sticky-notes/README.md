@@ -55,6 +55,7 @@ Color is lifecycle state, not category.
 
 - `system/sticky-notes/unprocessed/latest.json`
 - `system/sticky-notes/active/latest.json`
+- `system/sticky-notes/pinned/latest.json`
 - `system/sticky-notes/finished/latest.json`
 
 The unprocessed index is the source of truth for: "What is unprocessed right now?"
@@ -64,3 +65,5 @@ The unprocessed index is the source of truth for: "What is unprocessed right now
 `npm run sticky:layout` previews the visual layout. `npm run sticky:layout:apply` arranges active notes into queued, in-progress, and blocked lanes, then minimizes complete notes into the finished layer.
 
 Complete means visually dismissed only after extraction and verification. The state builder requires a durable attachment or processed action plus non-mutating review metadata before a note can become green, minimized, and moved into the finished layer.
+
+Pinned is a display mode, not a lifecycle state. Starred notes or notes that explicitly ask to be pinned stay in a top strip on the third-monitor board with owner, reason, review cadence, and dismissal condition metadata. Complete pinned notes are still dismissed.

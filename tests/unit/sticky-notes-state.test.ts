@@ -43,7 +43,9 @@ function writeStateInputs() {
         noteRef: 'simple-sticky-notes:3:active',
         sourceRowId: 103,
         noteId: 3,
-        title: 'Accepted work',
+        title: 'PIN: Accepted work',
+        text: 'Keep visible while this is active.',
+        starred: true,
         sourceColorName: 'yellow',
         sourceColorValue: 16776960,
         updatedAt: '2026-04-30T17:32:00.000Z',
@@ -77,6 +79,7 @@ function writeStateInputs() {
         confidence: 0.9,
         status: 'classified',
         reasons: ['durable project or agent behavior markers'],
+        canonicalOwner: 'skill-garden',
         nextAction: 'review_for_skill_patch',
       },
     ],
@@ -134,10 +137,14 @@ describe('sticky notes color state index', () => {
       false
     )
     assert.equal(result.items.find((item) => item.noteId === 3)?.pipelineState, 'in_progress')
+    assert.equal(result.pinned.length, 1)
+    assert.equal(result.pinned[0]?.pinOwner, 'skill-garden')
 
     const latestUnprocessed = readJson(outputPaths.unprocessedLatest)
+    const latestPinned = readJson(outputPaths.pinnedLatest)
     const latestFinished = readJson(outputPaths.finishedLatest)
     assert.equal(latestUnprocessed?.count, 1)
+    assert.equal(latestPinned?.count, 1)
     assert.equal(latestFinished?.count, 1)
     assert.equal(fs.existsSync(result.unprocessedFile), true)
   })
@@ -182,6 +189,8 @@ describe('sticky notes color state index', () => {
 
     assert.equal(plan.updateCount, 3)
     assert.equal(active?.pipelineState, 'in_progress')
+    assert.equal(active?.layoutState, 'pinned')
+    assert.equal(active?.pinned, true)
     assert.equal(active && active.left < 0, true)
     assert.equal(active?.minimize, 0)
     assert.equal(finished?.pipelineState, 'complete')

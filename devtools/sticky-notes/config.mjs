@@ -30,6 +30,8 @@ export const outputPaths = {
   unprocessedLatest: path.join(stickyConfig.outputRoot, 'unprocessed', 'latest.json'),
   active: path.join(stickyConfig.outputRoot, 'active'),
   activeLatest: path.join(stickyConfig.outputRoot, 'active', 'latest.json'),
+  pinned: path.join(stickyConfig.outputRoot, 'pinned'),
+  pinnedLatest: path.join(stickyConfig.outputRoot, 'pinned', 'latest.json'),
   finished: path.join(stickyConfig.outputRoot, 'finished'),
   finishedLatest: path.join(stickyConfig.outputRoot, 'finished', 'latest.json'),
   review: path.join(stickyConfig.outputRoot, 'review-cockpit'),

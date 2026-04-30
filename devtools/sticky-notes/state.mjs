@@ -70,9 +70,41 @@ function compactNote(note) {
     sourceRowId: note.sourceRowId || null,
     noteId: note.noteId,
     title: note.title || '',
+    starred: Boolean(note.starred),
     sourceColorName: note.sourceColorName || 'unknown',
     sourceColorValue: note.sourceColorValue ?? null,
     updatedAt: note.updatedAt || null,
+  }
+}
+
+function pinnedFor(note, classification) {
+  const lower = `${note.title || ''}\n${note.text || ''}`.toLowerCase()
+  const explicitPin =
+    Boolean(note.starred) ||
+    lower.includes('pin:') ||
+    lower.includes('pinned') ||
+    lower.includes('keep visible') ||
+    lower.includes('keep up') ||
+    lower.includes('must stay visible') ||
+    lower.includes('permanent note') ||
+    lower.includes('monitor:')
+
+  if (!explicitPin) {
+    return {
+      pinned: false,
+      pinReason: null,
+      pinOwner: null,
+      pinReviewCadence: null,
+      pinDismissalCondition: null,
+    }
+  }
+
+  return {
+    pinned: true,
+    pinReason: Boolean(note.starred) ? 'source note is starred' : 'note requests persistent visibility',
+    pinOwner: classification?.canonicalOwner || 'sticky-notes-os',
+    pinReviewCadence: 'review_each_sticky_organize_run',
+    pinDismissalCondition: 'unpin_when_no_longer_operationally_visible',
   }
 }
 
@@ -101,6 +133,7 @@ function itemFor(note, classification, attachment, processedAction) {
   const baseState = stateFromClass(classification)
   const requestedState = processedStateFor(processedAction) || baseState
   const extraction = extractionVerificationFor(classification, attachment, processedAction)
+  const pin = pinnedFor(note, classification)
   const pipelineState = requestedState === 'complete' && !extraction.verified ? 'blocked' : requestedState
   const expected = stickyColorForState(pipelineState)
   const sourceColorValue = Number(note.sourceColorValue ?? stickyColorTaxonomy.unprocessed.value)
@@ -113,6 +146,7 @@ function itemFor(note, classification, attachment, processedAction) {
     confidence: classification?.confidence ?? null,
     pipelineState,
     requestedState,
+    ...pin,
     extracted: extraction.extracted,
     verified: extraction.verified,
     extractionAttachment: extraction.attachment,
@@ -191,6 +225,7 @@ export function buildStickyNoteState(options = {}) {
     colorMismatches: items.filter((item) => item.colorMismatch).length,
     unprocessed: items.filter((item) => item.unprocessed),
     active: items.filter((item) => item.active),
+    pinned: items.filter((item) => item.pinned && item.pipelineState !== 'complete'),
     finished: items.filter((item) => item.finished),
     items,
   }
@@ -203,6 +238,7 @@ export function buildStickyNoteState(options = {}) {
   const stateFile = path.join(outputPaths.state, `${stamp}-state.json`)
   const unprocessedFile = path.join(outputPaths.unprocessed, `${stamp}-unprocessed.md`)
   const activeFile = path.join(outputPaths.active, `${stamp}-active.json`)
+  const pinnedFile = path.join(outputPaths.pinned, `${stamp}-pinned.json`)
   const finishedFile = path.join(outputPaths.finished, `${stamp}-finished.json`)
 
   writeJson(stateFile, payload)
@@ -225,6 +261,17 @@ export function buildStickyNoteState(options = {}) {
     items: payload.active,
     jsonFile: relativePath(activeFile),
   })
+  writeJson(pinnedFile, {
+    generatedAt: payload.generatedAt,
+    count: payload.pinned.length,
+    items: payload.pinned,
+  })
+  writeJson(outputPaths.pinnedLatest, {
+    generatedAt: payload.generatedAt,
+    count: payload.pinned.length,
+    items: payload.pinned,
+    jsonFile: relativePath(pinnedFile),
+  })
   writeJson(finishedFile, {
     generatedAt: payload.generatedAt,
     count: payload.finished.length,
@@ -237,7 +284,7 @@ export function buildStickyNoteState(options = {}) {
     jsonFile: relativePath(finishedFile),
   })
 
-  return { ...payload, stateFile, unprocessedFile, activeFile, finishedFile }
+  return { ...payload, stateFile, unprocessedFile, activeFile, pinnedFile, finishedFile }
 }
 
 function main() {
@@ -246,6 +293,7 @@ function main() {
   console.log(`Queued: ${result.counts.queued || 0}`)
   console.log(`In progress: ${result.counts.in_progress || 0}`)
   console.log(`Blocked: ${result.counts.blocked || 0}`)
+  console.log(`Pinned: ${result.pinned.length}`)
   console.log(`Complete: ${result.counts.complete || 0}`)
   console.log(`Color mismatches: ${result.colorMismatches}`)
   console.log(`State index: ${relativePath(result.stateFile)}`)

@@ -121,6 +121,8 @@ Completed notes are moved out of the active index and into `system/sticky-notes/
 
 A note may become `complete` only after extracted information has a durable artifact and verification metadata. Classification alone is not enough. If a note looks complete but lacks an attachment, processed action, confidence, reasons, or non-mutating review boundary, it remains `blocked` with `missing_extraction_verification` until the pipeline can prove it was fully extracted.
 
+Pinned notes are a display mode, not a lifecycle state. Starred notes or notes that explicitly ask to be pinned are indexed in `system/sticky-notes/pinned/latest.json` and placed in a top strip on the third monitor with owner, reason, review cadence, and dismissal condition metadata. Pinned notes still move through queued, in progress, blocked, or complete. Complete pinned notes are dismissed like any other complete note.
+
 ### Classification Taxonomy
 
 | Class                   | Meaning                                                       | Default Destination                                    |
