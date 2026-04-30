@@ -28,6 +28,8 @@ export const outputPaths = {
   reviewLatest: path.join(stickyConfig.outputRoot, 'review-cockpit', 'latest.json'),
   promotions: path.join(stickyConfig.outputRoot, 'promotions'),
   promotionsLatest: path.join(stickyConfig.outputRoot, 'promotions', 'latest.json'),
+  processed: path.join(stickyConfig.outputRoot, 'processed'),
+  processedLatest: path.join(stickyConfig.outputRoot, 'processed', 'latest.json'),
   reports: path.join(stickyConfig.outputRoot, 'reports'),
   lockFile: path.join(stickyConfig.outputRoot, '.organize.lock'),
 }

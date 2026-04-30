@@ -94,6 +94,7 @@
     "sticky:report": "node devtools/sticky-notes/report.mjs",
     "sticky:review": "node devtools/sticky-notes/review.mjs",
     "sticky:promote": "node devtools/sticky-notes/promote.mjs",
+    "sticky:process": "node devtools/sticky-notes/process.mjs",
     "sticky:scheduler": "powershell -ExecutionPolicy Bypass -File devtools/sticky-notes/scheduler-task.ps1",
     "sync": "node scripts/openclaw-pull/sync-all.mjs",
     "sync:audit:local-models": "node scripts/audit-openclaw-local-models.mjs",
