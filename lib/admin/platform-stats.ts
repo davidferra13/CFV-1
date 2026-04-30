@@ -6,7 +6,7 @@
 import { createAdminClient } from '@/lib/db/admin'
 import { requireAdmin } from '@/lib/auth/admin'
 import { evaluateProductionSafetyEnv } from '@/lib/environment/production-safety'
-import { resolveOwnerIdentity } from '@/lib/platform/owner-account'
+import { getFounderAuthorityHealth, resolveOwnerIdentity } from '@/lib/platform/owner-account'
 import { dateToMonthString } from '@/lib/utils/format'
 
 export type PlatformOverviewStats = {
@@ -73,6 +73,13 @@ export type SystemHealthStats = {
   oldestUnreadMessage: string | null
   zombieEventCount: number
   orphanedClientCount: number
+  founderAuthority: {
+    activeOwnerCount: number
+    activeAdminCount: number
+    activeVipCount: number
+    founderPlatformAccessLevel: string | null
+    founderPlatformAccessActive: boolean | null
+  }
   warnings: string[]
 }
 
@@ -506,7 +513,7 @@ export async function getSystemHealthStats(): Promise<SystemHealthStats> {
     .order('created_at', { ascending: true })
     .limit(1)
 
-  const ownerIdentity = await resolveOwnerIdentity(db)
+  const founderAuthority = await getFounderAuthorityHealth(db)
 
   return {
     tableRowCounts: {
@@ -520,7 +527,14 @@ export async function getSystemHealthStats(): Promise<SystemHealthStats> {
     oldestUnreadMessage: oldestMsg?.[0]?.created_at ?? null,
     zombieEventCount: zombieEvents.count ?? 0,
     orphanedClientCount: orphanedClients.count ?? 0,
-    warnings: Array.from(new Set(ownerIdentity.warnings)),
+    founderAuthority: {
+      activeOwnerCount: founderAuthority.activeOwnerCount,
+      activeAdminCount: founderAuthority.activeAdminCount,
+      activeVipCount: founderAuthority.activeVipCount,
+      founderPlatformAccessLevel: founderAuthority.founderPlatformAccessLevel,
+      founderPlatformAccessActive: founderAuthority.founderPlatformAccessActive,
+    },
+    warnings: Array.from(new Set(founderAuthority.warnings)),
   }
 }
 
@@ -718,11 +732,7 @@ export async function getPlatformAuditLog(
     typeof limitOrFilters === 'number' ? { limit: limitOrFilters } : { ...limitOrFilters }
   const limit = Math.max(1, Math.min(500, Math.floor(filters.limit ?? 100)))
 
-  let query = db
-    .from('admin_audit_log')
-    .select('*')
-    .order('ts', { ascending: false })
-    .limit(limit)
+  let query = db.from('admin_audit_log').select('*').order('ts', { ascending: false }).limit(limit)
 
   if (filters.actorEmail?.trim()) {
     query = query.ilike('actor_email', `%${filters.actorEmail.trim()}%`)

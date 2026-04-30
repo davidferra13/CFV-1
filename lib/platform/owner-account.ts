@@ -23,6 +23,16 @@ export type FounderAuthorityAccess = {
   match: 'auth_user_id' | 'founder_email'
 }
 
+export type FounderAuthorityHealth = {
+  activeOwnerCount: number
+  activeAdminCount: number
+  activeVipCount: number
+  founderPlatformAccessLevel: string | null
+  founderPlatformAccessActive: boolean | null
+  configuredFounderAuthUserId: string | null
+  warnings: string[]
+}
+
 export type OwnerIdentity = {
   founderEmail: string
   ownerChefId: string | null
@@ -48,6 +58,33 @@ function uniqueStrings(values: string[]): string[] {
   return Array.from(new Set(values))
 }
 
+function getConfiguredFounderAuthUserId(): string | null {
+  return normalizeId(process.env.FOUNDER_AUTH_USER_ID ?? process.env.PLATFORM_OWNER_AUTH_USER_ID)
+}
+
+function isLocalRuntime(): boolean {
+  const appEnv = normalizeEmail(
+    process.env.NEXT_PUBLIC_APP_ENV ?? process.env.APP_ENV ?? process.env.NODE_ENV ?? ''
+  )
+  const appUrl = normalizeEmail(
+    process.env.NEXTAUTH_URL ??
+      process.env.AUTH_URL ??
+      process.env.NEXT_PUBLIC_APP_URL ??
+      process.env.APP_URL ??
+      ''
+  )
+
+  return (
+    appEnv === '' ||
+    appEnv === 'development' ||
+    appEnv === 'dev' ||
+    appEnv === 'local' ||
+    appEnv === 'test' ||
+    appUrl.includes('localhost') ||
+    appUrl.includes('127.0.0.1')
+  )
+}
+
 export function isFounderEmail(email: string | null | undefined): boolean {
   return normalizeEmail(email ?? '') === FOUNDER_EMAIL
 }
@@ -63,9 +100,7 @@ export function getFounderAuthorityForSessionUser(user: {
     return null
   }
 
-  const configuredAuthUserId = normalizeId(
-    process.env.FOUNDER_AUTH_USER_ID ?? process.env.PLATFORM_OWNER_AUTH_USER_ID
-  )
+  const configuredAuthUserId = getConfiguredFounderAuthUserId()
 
   if (configuredAuthUserId && configuredAuthUserId !== authUserId) {
     return null
@@ -89,9 +124,7 @@ export async function resolveFounderAuthorityForAuthUser(
     return null
   }
 
-  const configuredAuthUserId = normalizeId(
-    process.env.FOUNDER_AUTH_USER_ID ?? process.env.PLATFORM_OWNER_AUTH_USER_ID
-  )
+  const configuredAuthUserId = getConfiguredFounderAuthUserId()
 
   if (configuredAuthUserId) {
     return configuredAuthUserId === normalizedAuthUserId
@@ -141,6 +174,81 @@ export async function resolveFounderAuthorityForAuthUser(
  */
 export function getAdminEmails(): string[] {
   return uniqueStrings([...parseEmailList(process.env.ADMIN_EMAILS), FOUNDER_EMAIL])
+}
+
+export async function getFounderAuthorityHealth(db: any): Promise<FounderAuthorityHealth> {
+  const ownerIdentity = await resolveOwnerIdentity(db)
+  const configuredFounderAuthUserId = getConfiguredFounderAuthUserId()
+  const warnings = [...ownerIdentity.warnings]
+
+  const { data: platformRows, error: platformRowsError } = await db
+    .from('platform_admins')
+    .select('auth_user_id, email, access_level, is_active')
+
+  if (platformRowsError) {
+    warnings.push(`founder_platform_access_lookup_failed:${platformRowsError.message}`)
+  }
+
+  const rows = (platformRows ?? []) as Array<{
+    auth_user_id?: string | null
+    email?: string | null
+    access_level?: string | null
+    is_active?: boolean | null
+  }>
+
+  const activeRows = rows.filter((row) => row.is_active === true)
+  const activeOwnerRows = activeRows.filter((row) => row.access_level === 'owner')
+  const activeAdminRows = activeRows.filter((row) => row.access_level === 'admin')
+  const activeVipRows = activeRows.filter((row) => row.access_level === 'vip')
+  const founderPlatformRow =
+    rows.find((row) => isFounderEmail(row.email)) ??
+    rows.find(
+      (row) => ownerIdentity.ownerAuthUserId && row.auth_user_id === ownerIdentity.ownerAuthUserId
+    ) ??
+    null
+
+  if (activeOwnerRows.length === 0) {
+    warnings.push('founder_authority_no_active_owner')
+  } else if (activeOwnerRows.length > 1) {
+    warnings.push(`founder_authority_multiple_active_owners:${activeOwnerRows.length}`)
+  }
+
+  if (!configuredFounderAuthUserId) {
+    warnings.push('founder_auth_user_id_env_missing')
+  } else if (
+    ownerIdentity.ownerAuthUserId &&
+    configuredFounderAuthUserId !== ownerIdentity.ownerAuthUserId
+  ) {
+    warnings.push('founder_auth_user_id_env_mismatch')
+  }
+
+  if (!founderPlatformRow) {
+    warnings.push('founder_platform_admin_row_missing')
+  } else {
+    if (founderPlatformRow.is_active !== true) {
+      warnings.push('founder_platform_admin_row_inactive')
+    }
+    if (founderPlatformRow.access_level !== 'owner') {
+      warnings.push('founder_platform_admin_row_not_owner')
+    }
+  }
+
+  const agentAdminActive = activeRows.some(
+    (row) => normalizeEmail(row.email ?? '') === 'agent@local.chefflow'
+  )
+  if (agentAdminActive && !isLocalRuntime()) {
+    warnings.push('agent_platform_admin_active_outside_local')
+  }
+
+  return {
+    activeOwnerCount: activeOwnerRows.length,
+    activeAdminCount: activeAdminRows.length,
+    activeVipCount: activeVipRows.length,
+    founderPlatformAccessLevel: founderPlatformRow?.access_level ?? null,
+    founderPlatformAccessActive: founderPlatformRow?.is_active ?? null,
+    configuredFounderAuthUserId,
+    warnings: uniqueStrings(warnings),
+  }
 }
 
 /**

@@ -212,7 +212,33 @@ export default async function AdminSystemPage() {
           </div>
 
           <div className="bg-stone-900 rounded-xl border border-stone-700 p-5">
-            <h2 className="text-sm font-semibold text-stone-300 mb-4">Owner Identity Warnings</h2>
+            <h2 className="text-sm font-semibold text-stone-300 mb-4">Founder Authority</h2>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+              <div className="bg-stone-800 rounded-lg px-4 py-3">
+                <p className="text-xs text-slate-500">Active owners</p>
+                <p className="text-xl font-bold text-stone-100 mt-1">
+                  {health.founderAuthority.activeOwnerCount}
+                </p>
+              </div>
+              <div className="bg-stone-800 rounded-lg px-4 py-3">
+                <p className="text-xs text-slate-500">Active admins</p>
+                <p className="text-xl font-bold text-stone-100 mt-1">
+                  {health.founderAuthority.activeAdminCount}
+                </p>
+              </div>
+              <div className="bg-stone-800 rounded-lg px-4 py-3">
+                <p className="text-xs text-slate-500">Founder row</p>
+                <p className="text-sm font-semibold text-stone-100 mt-2">
+                  {health.founderAuthority.founderPlatformAccessLevel ?? 'missing'}
+                </p>
+              </div>
+              <div className="bg-stone-800 rounded-lg px-4 py-3">
+                <p className="text-xs text-slate-500">Founder active</p>
+                <p className="text-sm font-semibold text-stone-100 mt-2">
+                  {health.founderAuthority.founderPlatformAccessActive === true ? 'yes' : 'no'}
+                </p>
+              </div>
+            </div>
             {health.warnings.length > 0 ? (
               <ul className="space-y-2">
                 {health.warnings.map((warning) => (

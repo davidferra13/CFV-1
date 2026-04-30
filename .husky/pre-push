@@ -2,10 +2,12 @@
 
 # Type check before pushing (catches broken imports, type errors)
 echo "Running type check before push..."
-if [ -x "node_modules/.bin/tsc" ]; then
-  node_modules/.bin/tsc --noEmit --skipLibCheck 2>&1
+if [ -f "scripts/run-release-typecheck.mjs" ]; then
+  node scripts/run-release-typecheck.mjs 2>&1
+elif [ -x "node_modules/.bin/tsc" ]; then
+  node --max-old-space-size="${TSC_MAX_OLD_SPACE_SIZE:-8192}" node_modules/typescript/bin/tsc --noEmit --skipLibCheck 2>&1
 elif [ -f "node_modules/.bin/tsc.cmd" ]; then
-  cmd.exe /c node_modules\\.bin\\tsc.cmd --noEmit --skipLibCheck 2>&1
+  node --max-old-space-size="${TSC_MAX_OLD_SPACE_SIZE:-8192}" node_modules/typescript/bin/tsc --noEmit --skipLibCheck 2>&1
 else
   echo "Local TypeScript compiler not found at node_modules/.bin/tsc."
   echo "Run npm install before pushing, or bypass with: git push --no-verify"

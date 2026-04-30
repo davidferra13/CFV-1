@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import {
   __resetOwnerIdentityCacheForTests,
+  getFounderAuthorityHealth,
   getFounderAuthorityForSessionUser,
   resolveFounderAuthorityForAuthUser,
   resolveOwnerIdentity,
@@ -11,6 +12,12 @@ import {
 type MockConfig = {
   founderChefId: string | null
   ownerAuthUserId: string | null
+  platformAdmins?: Array<{
+    auth_user_id: string
+    email: string
+    access_level: string
+    is_active: boolean
+  }>
 }
 
 function createDbMock(config: MockConfig) {
@@ -23,6 +30,14 @@ function createDbMock(config: MockConfig) {
     from(table: string) {
       const filters: Record<string, string> = {}
       const ilikeFilters: Record<string, string> = {}
+
+      if (table === 'platform_admins') {
+        return {
+          async select() {
+            return { data: config.platformAdmins ?? [], error: null }
+          },
+        }
+      }
 
       return {
         select() {
@@ -75,6 +90,7 @@ function createDbMock(config: MockConfig) {
 const originalOwnerChefEnv = process.env.PLATFORM_OWNER_CHEF_ID
 const originalFounderAuthUserEnv = process.env.FOUNDER_AUTH_USER_ID
 const originalPlatformOwnerAuthUserEnv = process.env.PLATFORM_OWNER_AUTH_USER_ID
+const originalNodeEnv = process.env.NODE_ENV
 
 describe('owner-account resolver', () => {
   beforeEach(() => {
@@ -95,6 +111,8 @@ describe('owner-account resolver', () => {
     } else {
       delete process.env.PLATFORM_OWNER_AUTH_USER_ID
     }
+    if (originalNodeEnv) process.env.NODE_ENV = originalNodeEnv
+    else delete process.env.NODE_ENV
   })
 
   it('resolves founder chef and auth user IDs from canonical founder email', async () => {
@@ -170,5 +188,56 @@ describe('owner-account resolver', () => {
 
     assert.equal(access?.accessLevel, 'owner')
     assert.equal(access?.match, 'founder_email')
+  })
+
+  it('reports clean Founder Authority health when owner env and row agree', async () => {
+    process.env.FOUNDER_AUTH_USER_ID = 'auth-founder-123'
+    const { db } = createDbMock({
+      founderChefId: 'chef-founder-123',
+      ownerAuthUserId: 'auth-founder-123',
+      platformAdmins: [
+        {
+          auth_user_id: 'auth-founder-123',
+          email: 'davidferra13@gmail.com',
+          access_level: 'owner',
+          is_active: true,
+        },
+      ],
+    })
+
+    const health = await getFounderAuthorityHealth(db)
+
+    assert.equal(health.activeOwnerCount, 1)
+    assert.equal(health.founderPlatformAccessLevel, 'owner')
+    assert.deepEqual(health.warnings, [])
+  })
+
+  it('warns when Founder Authority has no active owner and the agent admin is active outside local', async () => {
+    process.env.NODE_ENV = 'production'
+    const { db } = createDbMock({
+      founderChefId: 'chef-founder-123',
+      ownerAuthUserId: 'auth-founder-123',
+      platformAdmins: [
+        {
+          auth_user_id: 'auth-founder-123',
+          email: 'davidferra13@gmail.com',
+          access_level: 'admin',
+          is_active: true,
+        },
+        {
+          auth_user_id: 'auth-agent-123',
+          email: 'agent@local.chefflow',
+          access_level: 'admin',
+          is_active: true,
+        },
+      ],
+    })
+
+    const health = await getFounderAuthorityHealth(db)
+
+    assert.ok(health.warnings.includes('founder_authority_no_active_owner'))
+    assert.ok(health.warnings.includes('founder_auth_user_id_env_missing'))
+    assert.ok(health.warnings.includes('founder_platform_admin_row_not_owner'))
+    assert.ok(health.warnings.includes('agent_platform_admin_active_outside_local'))
   })
 })
