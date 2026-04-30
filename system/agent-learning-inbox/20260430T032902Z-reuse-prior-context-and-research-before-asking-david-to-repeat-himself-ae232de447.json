@@ -1,0 +1,13 @@
+{
+  "id": "20260430T032902Z-reuse-prior-context-and-research-before-asking-david-to-repeat-himself-ae232de447",
+  "status": "open",
+  "category": "behavior",
+  "title": "Reuse prior context and research before asking David to repeat himself",
+  "source": "codex-session",
+  "target_skill": "context-continuity",
+  "created_at": "2026-04-30T03:29:02.616Z",
+  "details": "Codex should avoid making David restate context and avoid rerunning broad research that already exists. Before discussing or building similar things, future agents should search MEMORY.md, system/continuity-memory, system/agent-reports, docs/specs, docs/research, research briefs, canonical surfaces, and recent commits for prior decisions and evidence. After a discussion establishes durable intent, the agent should write a compact memory packet or update the relevant canonical context, then commit and push only owned files. This should be encoded in context-continuity once the active overlapping continuity claim is resolved.",
+  "decision": null,
+  "resolved_at": null,
+  "notes": null
+}
