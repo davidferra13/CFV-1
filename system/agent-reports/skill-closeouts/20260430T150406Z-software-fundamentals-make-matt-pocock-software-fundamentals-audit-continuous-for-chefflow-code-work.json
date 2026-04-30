@@ -1,0 +1,18 @@
+{
+  "created_at": "2026-04-30T15:04:06.524Z",
+  "goal": "Make Matt Pocock software-fundamentals audit continuous for ChefFlow code work",
+  "primary_skill": "software-fundamentals",
+  "sidecar_skills": ["omninet", "skill-garden"],
+  "skill_delta": "patch",
+  "durable_behavior_seen": "User asked for the Matt Pocock audit to run constantly so code work lands in modules automatically.",
+  "skill_gap_seen": null,
+  "validation": {
+    "skill_validator": "node devtools/skill-validator.mjs software-fundamentals omninet close-session ship passed",
+    "trigger_tests": "node devtools/skill-trigger-tests.mjs passed, 26 cases",
+    "compliance": "rg em dash scan on changed files passed",
+    "other": "node --check devtools/skill-router.mjs and devtools/skill-trigger-tests.mjs passed; router prompt selects software-fundamentals with skill-garden sidecar"
+  },
+  "commit": null,
+  "pushed": false,
+  "notes": ""
+}

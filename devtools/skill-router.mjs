@@ -78,10 +78,29 @@ const rules = [
       'create skills',
       'new skill',
       'developer behavior',
+      'always',
       'always remember',
+      'automatically',
+      'constantly',
       'from now on',
+      'keep running',
       'hermes',
       'opencloy',
+    ],
+  },
+  {
+    skill: 'software-fundamentals',
+    terms: [
+      'matt pocock',
+      'software fundamentals',
+      'architecture audit',
+      'codebase audit',
+      'deep module',
+      'deep modules',
+      'module ownership',
+      'module owner',
+      'interface-first',
+      'shared language',
     ],
   },
   {
@@ -355,6 +374,24 @@ const requiredCheckRules = [
     terms: ['skill', 'skills', 'router', 'trigger', 'self-heal', 'self healing'],
   },
   {
+    check: 'run software-fundamentals module audit for owned non-trivial code changes',
+    terms: [
+      'build',
+      'implement',
+      'add',
+      'create',
+      'connect',
+      'feature',
+      'refactor',
+      'code',
+      'coding',
+      'matt pocock',
+      'software fundamentals',
+      'architecture audit',
+      'deep module',
+    ],
+  },
+  {
     check: 'stage, commit, and push only owned files before closeout',
     terms: ['ship', 'commit', 'push', 'closeout', 'done'],
   },
@@ -586,6 +623,29 @@ if (
   ].some((term) => hasTerm(lowerPrompt, term))
 ) {
   sidecarSkills.push('context-continuity')
+}
+if (
+  skillNames.has('software-fundamentals') &&
+  primarySkill !== 'software-fundamentals' &&
+  !sidecarSkills.includes('software-fundamentals') &&
+  [
+    'build',
+    'implement',
+    'add',
+    'create',
+    'connect',
+    'feature',
+    'refactor',
+    'code',
+    'coding',
+    'test',
+    'spec',
+    'architecture',
+    'ui',
+    'route',
+  ].some((term) => hasTerm(lowerPrompt, term))
+) {
+  sidecarSkills.push('software-fundamentals')
 }
 
 const hardStops = hardStopRules

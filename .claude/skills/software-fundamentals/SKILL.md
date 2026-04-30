@@ -1,6 +1,6 @@
 ---
 name: software-fundamentals
-description: Apply the AI-era software fundamentals operating model from Matt Pocock's "Software Fundamentals Matter More Than Ever" lecture. Use before AI-assisted planning, specs-to-code work, coding, refactors, architecture changes, test design, agent delegation, Claude Code/Codex workflows, or any task where the user asks to adopt software fundamentals, grill requirements, create shared language, use TDD feedback loops, design deep modules, or keep humans strategic while AI implements tactically.
+description: Apply the AI-era software fundamentals operating model from Matt Pocock's "Software Fundamentals Matter More Than Ever" lecture. Use before and during AI-assisted planning, specs-to-code work, coding, refactors, architecture changes, test design, agent delegation, Claude Code/Codex workflows, or any task where the user asks to keep running the Matt Pocock audit, adopt software fundamentals, grill requirements, create shared language, use TDD feedback loops, design deep modules, or keep humans strategic while AI implements tactically.
 ---
 
 # Software Fundamentals
@@ -20,7 +20,7 @@ AI does not make code cheap. It makes good software design more valuable because
 
 ## Mandatory Loop
 
-Run this before coding unless the task is a tiny mechanical edit:
+Run this before coding unless the task is a tiny mechanical edit. Keep it active during implementation and closeout, not just as a planning preface:
 
 1. Shared design concept:
    - Restate the thing being built or changed.
@@ -51,6 +51,18 @@ Run this before coding unless the task is a tiny mechanical edit:
    - Delegate or implement internals only after the interface is clear.
    - For non-critical internals, let AI fill implementation behind a tested boundary.
    - For critical areas such as money, auth, tenant scope, privacy, migrations, and safety, inspect internals directly.
+
+## Continuous Architecture Audit
+
+Treat this as the Matt Pocock audit pass for every non-trivial ChefFlow code change:
+
+1. Before editing, name the existing module or domain owner the change should attach to.
+2. During implementation, watch for repeated logic, tangled UI state, fuzzy domain behavior, or hidden invariants leaking across files.
+3. When the audit finds real depth, move the behavior behind an existing module interface or create the smallest new TypeScript module with a clear public contract.
+4. When the audit finds only shallow helper extraction, keep the logic local and do not create module theater.
+5. Before shipping, state whether the changed code is already inside the right module, was deepened during the task, or has an intentionally deferred deepening opportunity.
+
+This audit is a standing lens, not a background daemon. Do not run broad architecture sweeps during unrelated work, and do not make extra refactors unless they directly protect the task's correctness, locality, or test surface.
 
 ## Failure Mode Map
 
@@ -102,6 +114,7 @@ For ChefFlow work, combine this skill with the most specific task skill:
 
 - `builder`: require shared design concept, module boundary, and feedback loop before implementation.
 - `planner`: produce specs that include module/interface impact and validation, not just user-facing behavior.
+- `ship` and `close-session`: before commit, run the continuous architecture audit on owned code changes and record whether module deepening happened or was deferred.
 - `tdd`: use when behavior changes and a meaningful failing test can be written.
 - `debug`: use feedback loops and root cause evidence before changing code.
 - `review`: review for entropy, shallow modules, missing tests, unclear interfaces, and AI-generated drift.

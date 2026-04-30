@@ -9,10 +9,11 @@ Run the full ship chain. No confirmation needed unless file ownership is ambiguo
 
 1. Check `git status --short --branch`.
 2. Identify files owned by the current task.
-3. Stage only current-task files unless the user explicitly asked to ship all dirty files.
-4. Commit with a clear, descriptive commit message summarizing the work done.
-5. Push the current branch to GitHub.
-6. Report what was committed and pushed.
+3. If owned code changed, run the Matt Pocock audit through `software-fundamentals`: confirm the work attaches to the right module owner, deepen repeated or tangled behavior when it protects the task, and record whether module deepening happened, was unnecessary, or is intentionally deferred.
+4. Stage only current-task files unless the user explicitly asked to ship all dirty files.
+5. Commit with a clear, descriptive commit message summarizing the work done.
+6. Push the current branch to GitHub.
+7. Report what was committed and pushed.
 
 Use a HEREDOC for the commit message. Include `Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>` at the end.
 

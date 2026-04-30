@@ -28,6 +28,16 @@ const defaultCases = [
     },
   },
   {
+    name: 'Matt Pocock audit loop',
+    prompt: "Keep running Matt Pocock's audit so code lands in deep modules automatically.",
+    expect: ['omninet', 'software-fundamentals', 'skill-garden'],
+    evidence: {
+      omninet: ['Matt Pocock audit', 'software-fundamentals'],
+      'software-fundamentals': ['Matt Pocock audit', 'deep modules'],
+      'skill-garden': ['operating guidance', 'durable'],
+    },
+  },
+  {
     name: 'skill repair',
     prompt: 'This skill failed and needs to self-heal before future tasks.',
     expect: ['omninet', 'heal-skill', 'skill-garden'],
