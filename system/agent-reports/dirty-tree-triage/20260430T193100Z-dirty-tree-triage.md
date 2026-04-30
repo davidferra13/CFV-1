@@ -11,6 +11,15 @@ The tree is dirty, but the dirty work is separable. There is no evidence that th
 
 Do not run broad cleanup. Do not `git add -A`. Do not delete or revert anything without explicit owner approval.
 
+## Post-Push Note
+
+After this report was first committed, the commit and push hooks restored the pre-existing dirty state and surfaced two additional dirty files:
+
+- `AGENTS.md`
+- `tests/unit/v1-builder-queue.test.mjs`
+
+Those files are included below in bucket 7.
+
 ## Buckets
 
 ### 1. Runtime and generated evidence artifacts
@@ -146,6 +155,26 @@ Disposition:
 - Safe to review as a spec.
 - Do not commit automatically from this branch unless this branch is the intended owner.
 
+### 7. Source-level active workflow changes surfaced after hooks
+
+Files:
+
+- `AGENTS.md`
+- `tests/unit/v1-builder-queue.test.mjs`
+
+Classification: source-level active work.
+
+What changed:
+
+- `AGENTS.md` adds `swarm-governor` to the ChefFlow operating loop and skill list.
+- `tests/unit/v1-builder-queue.test.mjs` adds builder-gate intake tests for ready V1 specs, approved queue write caps, hard-stop findings, and research sink behavior.
+
+Disposition:
+
+- Do not commit from this triage task.
+- These are not generated logs. They look like active workflow and builder-runtime work.
+- They should be owned by the swarm-governor or V1 builder-runtime task owner.
+
 ## Immediate Recommendation
 
 1. Leave all current dirty files untouched.
@@ -163,7 +192,7 @@ VERDICT: trusted for classification, not a full product health verdict.
 EVIDENCE:
 
 - `current-dirty` `git status --short --branch`: lists remaining modified, deleted, and untracked files after the Obsidian memory commit.
-- `current-dirty` `git diff --stat`: shows 10 tracked dirty files with 533 insertions and 409 deletions.
+- `current-dirty` `git diff --stat`: initially showed 10 tracked dirty files with 533 insertions and 409 deletions. After hook restoration it showed 12 tracked dirty files with 629 insertions and 411 deletions.
 - `current-dirty` `git diff public/sw.js tsconfig.next.json`: identifies stale service worker stamp and local `.next` path additions.
 - `current-dirty` `git diff docs/sync-status.json`: identifies current sync failure metadata.
 - `current-dirty` active claim JSON: identifies other-agent pricing proof ownership.
