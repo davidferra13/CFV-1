@@ -207,6 +207,7 @@
     "beta:build": "next build --no-lint && next start -p 3200",
     "ollama": "node scripts/ollama-control.mjs",
     "dashboard": "node --watch-path=scripts/launcher scripts/launcher/server.mjs",
+    "mission-control:third-monitor": "powershell -ExecutionPolicy Bypass -File scripts/open-mission-control-third-monitor.ps1",
     "audit:overnight": "node scripts/overnight-audit.mjs",
     "audit:variant": "node scripts/overnight-audit-variant.mjs",
     "audit:a11y:markup": "node scripts/audit-a11y-markup.mjs",
