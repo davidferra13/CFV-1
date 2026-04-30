@@ -1,0 +1,53 @@
+{
+  "ok": true,
+  "generated_at": "2026-04-30T18:28:55.057Z",
+  "case_count": 1,
+  "suspicious_count": 0,
+  "strengthened_count": 1,
+  "same_count": 0,
+  "cases": [
+    {
+      "id": "skill-outcome-scoring-clean",
+      "name": "skill-outcome-scoring-clean",
+      "source_file": "system/agent-replay-corpus/skill-outcome-scoring-clean.json",
+      "status": "strengthened",
+      "suspicious_count": 0,
+      "strengthening_count": 2,
+      "expected": {
+        "primary_skill": "skill-garden",
+        "sidecar_skills": ["omninet"],
+        "risk_level": "medium",
+        "hard_stops": [],
+        "required_checks": [
+          "run skill validator and trigger tests when skill behavior changes",
+          "run targeted compliance scan for em dashes, OpenClaw public text, and ts-nocheck",
+          "stage, commit, and push only owned files before closeout"
+        ]
+      },
+      "actual": {
+        "primary_skill": "skill-garden",
+        "sidecar_skills": ["omninet", "software-fundamentals"],
+        "risk_level": "medium",
+        "hard_stops": [],
+        "required_checks": [
+          "run skill validator and trigger tests when skill behavior changes",
+          "run software-fundamentals module audit for owned non-trivial code changes",
+          "run targeted compliance scan for em dashes, OpenClaw public text, and ts-nocheck",
+          "stage, commit, and push only owned files before closeout"
+        ]
+      },
+      "diffs": [
+        {
+          "severity": "strengthening",
+          "kind": "sidecar_skill_added",
+          "value": "software-fundamentals"
+        },
+        {
+          "severity": "strengthening",
+          "kind": "required_check_added",
+          "value": "run software-fundamentals module audit for owned non-trivial code changes"
+        }
+      ]
+    }
+  ]
+}

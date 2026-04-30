@@ -51,6 +51,22 @@ David's latest operating direction sharpens this spec:
 - V1 readiness is pricing-led. If a chef anywhere in America cannot price a menu by zip or radius from system-owned observed or honestly modeled pricing data with high confidence labels, ChefFlow V1 is not ready.
 - OpenClaw may be doing useful work while the website pricing engine still fails the product contract. The product blocker is trusted end-to-end pricing inside ChefFlow.
 
+### 2026-04-30 No Lost Ask Update
+
+David's repeated-friction signal is that requests are scattered across chat, specs, Sticky Notes, audits, persona output, and backlog documents without one mandatory final state. The autonomous builder must not depend on David repeating an ask until an agent finally builds it.
+
+Every non-trivial ask must become one durable record with one of these states:
+
+- `built`: implemented, validated, committed, pushed, and receipt recorded.
+- `queued`: approved by the V1 governor and waiting in the active build queue.
+- `blocked`: cannot proceed, with blocker and unblock condition recorded.
+- `parked`: valid but outside the active V1 lane or intentionally deferred.
+- `research_required`: needs evidence before classification.
+- `duplicate_attach`: already covered by an existing spec, queue item, receipt, or canonical owner.
+- `rejected`: unsafe, forbidden, obsolete, or outside ChefFlow's operating rules.
+
+Mission Control must show these counts and the latest unresolved asks. If an ask is not visible there or in the underlying file records, it is not safely captured.
+
 ---
 
 ## Continuity Preflight
@@ -122,7 +138,45 @@ Every intake item must become one of:
 
 Only `approved_v1_blocker` and current-lane `approved_v1_support` can enter the active build queue.
 
-### 1.1 Escalation Intake
+### 1.1 Request Ledger
+
+The autonomous builder needs a request ledger separate from the active build queue. The queue answers "what can be built next." The ledger answers "what happened to the things David asked for."
+
+The request ledger belongs at:
+
+```text
+system/v1-builder/request-ledger.jsonl
+```
+
+Each ledger record must include:
+
+```json
+{
+  "id": "ask-20260430-0001",
+  "createdAt": "2026-04-30T00:00:00-04:00",
+  "source": "developer-chat|sticky-note|spec|audit|persona|system-finding",
+  "sourcePath": null,
+  "title": "Short request title",
+  "rawAskSummary": "One or two sentences preserving David's intent.",
+  "status": "built|queued|blocked|parked|research_required|duplicate_attach|rejected",
+  "statusReason": "Why this is the current state.",
+  "canonicalOwner": "route, file, spec, skill, or queue item",
+  "queueId": null,
+  "receiptPath": null,
+  "blockedBy": null,
+  "updatedAt": "2026-04-30T00:00:00-04:00"
+}
+```
+
+Rules:
+
+1. Do not create a ledger record for every tiny clarification. Use it for non-trivial product, process, skill, operations, or reliability asks.
+2. Do not mark `built` from agent prose. `built` requires commit, push, validation evidence, and a receipt or equivalent closeout record.
+3. Do not mark `queued` until the V1 governor classification and canonical owner are known.
+4. Do not leave an ask in chat as the only record when it cannot be built immediately.
+5. If two asks are the same, mark the newer one `duplicate_attach` and point to the original owner.
+
+### 1.2 Escalation Intake
 
 The builder should not stop to ask David routine implementation questions. It should create an escalation record only when the decision requires Founder Authority, credentials, destructive database approval, production deployment approval, a V1 scope change, or a risk-bearing business decision.
 
@@ -150,6 +204,7 @@ The canonical future queue should be file-based and internal:
 
 ```text
 system/v1-builder/
+  request-ledger.jsonl
   approved-queue.jsonl
   parked-v2.jsonl
   research-queue.jsonl
@@ -166,6 +221,7 @@ Rationale:
 - It avoids customer-facing tables and database migrations.
 - It is easy for Mission Control to read.
 - It keeps receipts append-only and reviewable in git.
+- It separates total ask accountability from the smaller active build queue.
 
 Each queue record must include:
 
@@ -306,6 +362,8 @@ Mission Control must show:
 - active V1 lane
 - current claimed task
 - current branch
+- request ledger counts by state
+- latest unresolved asks from `request-ledger.jsonl`
 - task age and stale-claim warning
 - V1 blocker queue
 - current-lane V1 support queue

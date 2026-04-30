@@ -1,6 +1,6 @@
 ---
 name: autonomous-build-loop
-description: Use when David says Codex should stop making him prompt every build, asks for autonomous or 24/7 building, references builder queues, Sticky Notes as build input, Mission Control as a live monitor, or says ChefFlow will die because the human is still the bottleneck.
+description: Use when David says Codex should stop making him prompt every build, asks why things are not being built, says he is repeating himself, asks for autonomous or 24/7 building, references builder queues, Sticky Notes as build input, Mission Control as a live monitor, or asks how to make sure everything he has asked for is captured, classified, built, blocked, parked, rejected, or proven done.
 ---
 
 # Autonomous Build Loop
@@ -11,6 +11,8 @@ ChefFlow's operating target is to move David from prompt operator to Founder Aut
 
 The bottleneck is not idea supply. ChefFlow already has specs, sticky notes, personas, build queues, audits, and domain rules. The bottleneck is manual orchestration: David has to choose, prompt, monitor, repeat, and answer questions that the system should route itself.
 
+David repeats himself when requests land in chat, notes, specs, audits, and persona output without a required final state. If an ask does not become a queue record, blocker, parked item, duplicate attachment, rejection, or receipt, future agents rediscover it instead of finishing it.
+
 ## Ground Truth
 
 1. Autonomous building is a P0 operating-system requirement, not a nice-to-have.
@@ -19,6 +21,28 @@ The bottleneck is not idea supply. ChefFlow already has specs, sticky notes, per
 4. David should answer only escalation questions that require Founder Authority. Routine implementation choices should use repo patterns and proceed.
 5. Escalations must become durable queue items, not one-off chat questions.
 6. Progress must be visible through Mission Control or another local monitor that reads claims, receipts, branches, blockers, and validation state.
+
+## No Lost Ask Invariant
+
+Every non-trivial request from David must end in exactly one durable state:
+
+- `built`: implemented, validated, committed, pushed, and receipt recorded.
+- `queued`: approved by the V1 governor and waiting in the active build queue.
+- `blocked`: cannot proceed, with the blocker, unblock condition, and recommended default recorded.
+- `parked`: valid but outside the active V1 lane or explicitly deferred.
+- `research_required`: needs evidence before build classification.
+- `duplicate_attach`: already covered by an existing spec, queue item, receipt, or canonical surface.
+- `rejected`: unsafe, forbidden, obsolete, or outside ChefFlow's operating rules.
+
+Do not rely on chat memory as the storage layer. If a request matters and cannot be built immediately, attach it to the governed queue, Sticky Notes intake output, a spec, an escalation record, or the learning inbox before closeout.
+
+When David asks why things are not getting built, do this first:
+
+1. Name the missing invariant plainly: requests are being captured in too many places without one final status ledger.
+2. Inspect the existing governed surfaces before proposing anything new: `docs/specs/autonomous-v1-builder-contract.md`, `docs/specs/sticky-notes-intake-layer.md`, `system/v1-builder/` if present, and Mission Control specs.
+3. Find whether the ask already has a durable state. Search specs, queues, receipts, blocked records, parked records, and Sticky Notes state.
+4. If there is no durable state, create or patch the smallest appropriate skill, spec, queue candidate, or escalation record.
+5. If the ask is buildable and approved, route to `builder`. If not, record why it is not buildable instead of leaving it as advice.
 
 ## Routing
 
@@ -39,7 +63,7 @@ When asked to make the project build itself:
 1. Attach to `docs/specs/autonomous-v1-builder-contract.md`.
 2. Attach to `docs/specs/sticky-notes-intake-layer.md` when Sticky Notes are part of intake.
 3. Inspect current branch and dirty work before writing.
-4. Identify the next missing runtime slice, usually queue files, selector, claim writer, receipt writer, escalation writer, or Mission Control projection.
+4. Identify the next missing runtime slice, usually request ledger, queue files, selector, claim writer, receipt writer, escalation writer, or Mission Control projection.
 5. Build the smallest slice that increases unattended throughput.
 6. Record what still requires explicit permission, such as Task Scheduler setup, long-running server start, production deploy, destructive DB work, or `drizzle-kit push`.
 7. Commit and push only owned files.
@@ -65,6 +89,7 @@ The builder loop is not trusted if it is invisible. Mission Control or the local
 - current task
 - current branch
 - active claim age
+- request ledger counts by state
 - queue depth
 - validation state
 - latest commit and push receipt

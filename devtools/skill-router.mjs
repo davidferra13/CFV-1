@@ -41,6 +41,14 @@ const rules = [
       'telling codex build',
       'prompt every build',
       'human bottleneck',
+      'not being built',
+      "things aren't being built",
+      'things arent being built',
+      'repeating myself',
+      'everything ever asked',
+      'everything i ask',
+      'everything he asked',
+      'make sure everything',
       'codex working for hours',
       'codex should be building',
       'sticky notes',
@@ -532,7 +540,7 @@ const conflictPriorityRules = [
   },
   {
     winner: 'autonomous-build-loop',
-    beats: ['builder', 'persona-inbox', 'skill-garden', 'swarm-governor', 'question-optimizer'],
+    beats: ['builder', 'persona-inbox', 'skill-garden', 'swarm-governor', 'question-optimizer', 'context-continuity'],
     reason: 'autonomous-build-loop owns the resident queue, monitor, and human-bottleneck operating problem',
   },
   {
