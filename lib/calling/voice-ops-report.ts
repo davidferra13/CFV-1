@@ -4,6 +4,7 @@ import type {
   VoiceOpsReport,
   VoicePostCallAction,
   VoicePostCallActionEvidence,
+  VoiceRecoveryIntent,
 } from '@/lib/calling/voice-ops-types'
 
 const ACTIVE_STATUSES = new Set(['queued', 'ringing', 'in_progress'])
@@ -297,6 +298,9 @@ function buildActionEvidence(
     completedAt: action.completedAt,
     closeoutIntent: stringValue(metadata.closeoutIntent) ?? undefined,
     closeoutNote: stringValue(metadata.closeoutNote) ?? undefined,
+    recoveryIntent: recoveryIntentValue(metadata.recoveryIntent),
+    recoveryLabel: stringValue(metadata.recoveryLabel) ?? undefined,
+    recoveryQueuedAt: stringValue(metadata.recoveryQueuedAt) ?? undefined,
     snoozedUntil: stringValue(metadata.snoozedUntil) ?? undefined,
     eventTypes,
     complianceSignals,
@@ -377,6 +381,20 @@ function buildComplianceSignals(eventTypes: string[]): string[] {
 
 function booleanValue(value: unknown): boolean | null {
   return typeof value === 'boolean' ? value : null
+}
+
+function recoveryIntentValue(value: unknown): VoiceRecoveryIntent | undefined {
+  if (typeof value !== 'string') return undefined
+  if (
+    value === 'retry_manual' ||
+    value === 'plan_sms' ||
+    value === 'queue_vendor_task' ||
+    value === 'mark_unreachable' ||
+    value === 'human_callback'
+  ) {
+    return value
+  }
+  return undefined
 }
 
 function arrayOfStrings(value: unknown): string[] {

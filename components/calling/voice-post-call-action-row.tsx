@@ -6,16 +6,25 @@ import { toast } from 'sonner'
 import {
   completeVoicePostCallAction,
   markVoicePostCallActionNeedsReview,
+  recoverVoicePostCallAction,
   skipVoicePostCallAction,
   snoozeVoicePostCallAction,
   unsnoozeVoicePostCallAction,
 } from '@/lib/calling/voice-ops-actions'
-import type { VoicePostCallAction } from '@/lib/calling/voice-ops-types'
+import type { VoicePostCallAction, VoiceRecoveryIntent } from '@/lib/calling/voice-ops-types'
 
-export function VoicePostCallActionRow({ action }: { action: VoicePostCallAction }) {
+export function VoicePostCallActionRow({
+  action,
+  showRecoveryActions = false,
+}: {
+  action: VoicePostCallAction
+  showRecoveryActions?: boolean
+}) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [feedback, setFeedback] = useState<string | null>(null)
+  const [draft, setDraft] = useState<PendingDraft | null>(null)
+  const [note, setNote] = useState('')
   const tone =
     action.urgency === 'urgent'
       ? 'border-rose-800 bg-rose-950/20 text-rose-200'
@@ -27,15 +36,26 @@ export function VoicePostCallActionRow({ action }: { action: VoicePostCallAction
   const isSnoozed = action.evidence?.closeoutIntent === 'snoozed' || !!action.evidence?.snoozedUntil
   const evidence = action.evidence
 
+  function openDraft(nextDraft: PendingDraft) {
+    setDraft(nextDraft)
+    setNote('')
+    setFeedback(null)
+  }
+
+  function runDraft() {
+    if (!draft) return
+    runAction(draft.label, draft.actionFn, draft.intent, note)
+  }
+
   function runAction(
     label: string,
-    actionFn: (actionId: string, note?: string) => Promise<{ success: boolean; error?: string }>,
-    options: { promptForNote?: boolean } = {}
+    actionFn: ActionFn,
+    intent?: VoiceRecoveryIntent,
+    closeoutNote?: string
   ) {
     if (!action.id) return
     startTransition(async () => {
-      const note = options.promptForNote ? window.prompt('Optional closeout note')?.trim() : undefined
-      const result = await actionFn(action.id!, note)
+      const result = await actionFn(action.id!, intent, closeoutNote?.trim())
       if (!result.success) {
         const message = result.error ?? `Failed to ${label.toLowerCase()} action.`
         setFeedback(message)
@@ -44,6 +64,8 @@ export function VoicePostCallActionRow({ action }: { action: VoicePostCallAction
       }
       const message = `Action ${label.toLowerCase()}.`
       setFeedback(message)
+      setDraft(null)
+      setNote('')
       toast.success(message)
       router.refresh()
     })
@@ -69,32 +91,28 @@ export function VoicePostCallActionRow({ action }: { action: VoicePostCallAction
               <ActionButton
                 label="Done"
                 disabled={isPending}
-                onClick={() =>
-                  runAction('completed', completeVoicePostCallAction, { promptForNote: true })
-                }
+                onClick={() => openDraft(closeoutDraft('completed', completeVoicePostCallAction))}
               />
               {action.status !== 'needs_review' && (
                 <ActionButton
                   label="Review"
                   disabled={isPending}
                   onClick={() =>
-                    runAction('marked for review', markVoicePostCallActionNeedsReview, {
-                      promptForNote: true,
-                    })
+                    openDraft(
+                      closeoutDraft('marked for review', markVoicePostCallActionNeedsReview)
+                    )
                   }
                 />
               )}
               <ActionButton
                 label="Snooze"
                 disabled={isPending}
-                onClick={() =>
-                  runAction('snoozed', snoozeVoicePostCallAction, { promptForNote: true })
-                }
+                onClick={() => openDraft(closeoutDraft('snoozed', snoozeVoicePostCallAction))}
               />
               <ActionButton
                 label="Skip"
                 disabled={isPending}
-                onClick={() => runAction('skipped', skipVoicePostCallAction, { promptForNote: true })}
+                onClick={() => openDraft(closeoutDraft('skipped', skipVoicePostCallAction))}
               />
             </>
           )}
@@ -107,6 +125,56 @@ export function VoicePostCallActionRow({ action }: { action: VoicePostCallAction
           )}
         </div>
       </div>
+
+      {showRecoveryActions && canClose && (
+        <div className="mt-3 flex flex-wrap gap-1.5 border-t border-stone-800 pt-2">
+          <RecoveryButton
+            label="Retry"
+            disabled={isPending}
+            onClick={() => openDraft(recoveryDraft('manual retry queued', 'retry_manual'))}
+          />
+          <RecoveryButton
+            label="Plan SMS"
+            disabled={isPending}
+            onClick={() => openDraft(recoveryDraft('SMS follow-up planned', 'plan_sms'))}
+          />
+          <RecoveryButton
+            label="Queue task"
+            disabled={isPending}
+            onClick={() => openDraft(recoveryDraft('vendor task queued', 'queue_vendor_task'))}
+          />
+          <RecoveryButton
+            label="Unreachable"
+            disabled={isPending}
+            onClick={() => openDraft(recoveryDraft('marked unreachable', 'mark_unreachable'))}
+          />
+          <RecoveryButton
+            label="Callback"
+            disabled={isPending}
+            onClick={() => openDraft(recoveryDraft('human callback queued', 'human_callback'))}
+          />
+        </div>
+      )}
+
+      {draft && (
+        <div className="mt-3 rounded border border-stone-800 bg-stone-950/60 p-2">
+          <label className="text-[10px] font-semibold uppercase tracking-wide text-stone-500">
+            Note for {draft.label}
+          </label>
+          <textarea
+            value={note}
+            onChange={(event) => setNote(event.target.value)}
+            rows={2}
+            maxLength={500}
+            className="mt-1 w-full resize-none rounded border border-stone-700 bg-stone-950 px-2 py-1.5 text-xs text-stone-200 outline-none focus:border-stone-500"
+            placeholder="Optional operator note"
+          />
+          <div className="mt-2 flex flex-wrap justify-end gap-1.5">
+            <ActionButton label="Cancel" disabled={isPending} onClick={() => setDraft(null)} />
+            <ActionButton label="Confirm" disabled={isPending} onClick={runDraft} />
+          </div>
+        </div>
+      )}
 
       {feedback && <p className="mt-2 text-[11px] text-stone-300">{feedback}</p>}
 
@@ -129,6 +197,10 @@ export function VoicePostCallActionRow({ action }: { action: VoicePostCallAction
             )}
             {evidence.snoozedUntil && (
               <EvidenceItem label="Snoozed until" value={formatDate(evidence.snoozedUntil)} />
+            )}
+            {evidence.recoveryLabel && <EvidenceItem label="Recovery" value={evidence.recoveryLabel} />}
+            {evidence.recoveryQueuedAt && (
+              <EvidenceItem label="Recovery queued" value={formatDate(evidence.recoveryQueuedAt)} />
             )}
             {evidence.closeoutNote && <EvidenceItem label="Closeout note" value={evidence.closeoutNote} />}
           </dl>
@@ -158,6 +230,36 @@ export function VoicePostCallActionRow({ action }: { action: VoicePostCallAction
   )
 }
 
+type ActionFn = (
+  actionId: string,
+  intentOrNote?: VoiceRecoveryIntent | string,
+  note?: string
+) => Promise<{ success: boolean; error?: string }>
+
+interface PendingDraft {
+  label: string
+  actionFn: ActionFn
+  intent?: VoiceRecoveryIntent
+}
+
+function closeoutDraft(
+  label: string,
+  actionFn: (actionId: string, note?: string) => Promise<{ success: boolean; error?: string }>
+): PendingDraft {
+  return {
+    label,
+    actionFn: (actionId, _intent, note) => actionFn(actionId, note),
+  }
+}
+
+function recoveryDraft(label: string, intent: VoiceRecoveryIntent): PendingDraft {
+  return {
+    label,
+    intent,
+    actionFn: recoverVoicePostCallAction as ActionFn,
+  }
+}
+
 function ProvenanceBadge({ source }: { source: string }) {
   return <StatusBadge label={labelize(source)} />
 }
@@ -185,6 +287,27 @@ function ActionButton({
       disabled={disabled}
       onClick={onClick}
       className="rounded border border-stone-700 px-2 py-1 text-[10px] font-medium uppercase tracking-wide text-stone-300 hover:bg-stone-800 disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      {label}
+    </button>
+  )
+}
+
+function RecoveryButton({
+  label,
+  disabled,
+  onClick,
+}: {
+  label: string
+  disabled: boolean
+  onClick: () => void
+}) {
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={onClick}
+      className="rounded border border-amber-800/70 bg-amber-950/20 px-2 py-1 text-[10px] font-medium uppercase tracking-wide text-amber-200 hover:bg-amber-900/30 disabled:cursor-not-allowed disabled:opacity-50"
     >
       {label}
     </button>

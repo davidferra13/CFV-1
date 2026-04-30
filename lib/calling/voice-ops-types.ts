@@ -5,6 +5,12 @@ export type VoiceProfessionalRiskLevel = 'low' | 'medium' | 'high'
 export type VoiceActionUrgency = 'standard' | 'review' | 'urgent'
 
 export type VoiceCampaignLaunchMode = 'safe_serialized' | 'parallel_limited'
+export type VoiceRecoveryIntent =
+  | 'retry_manual'
+  | 'plan_sms'
+  | 'queue_vendor_task'
+  | 'mark_unreachable'
+  | 'human_callback'
 
 export type VoicePostCallActionType =
   | 'create_quick_note'
@@ -101,6 +107,9 @@ export interface VoicePostCallActionEvidence {
   completedAt?: string
   closeoutIntent?: string
   closeoutNote?: string
+  recoveryIntent?: VoiceRecoveryIntent
+  recoveryLabel?: string
+  recoveryQueuedAt?: string
   snoozedUntil?: string
   eventTypes: string[]
   complianceSignals: string[]

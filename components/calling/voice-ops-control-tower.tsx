@@ -122,6 +122,7 @@ export function VoiceOpsControlTower({ report }: { report: VoiceOpsReport }) {
           title="Failed-call recovery"
           detail="Unresolved busy, failed, no-answer, voicemail, or missing-recording items."
           actions={report.failedRecoveryActions}
+          showRecoveryActions
         />
       )}
 
@@ -148,10 +149,12 @@ function ActionSection({
   title,
   detail,
   actions,
+  showRecoveryActions = false,
 }: {
   title: string
   detail: string
   actions: VoiceOpsReport['topNextActions']
+  showRecoveryActions?: boolean
 }) {
   return (
     <div className="mt-4 border-t border-stone-800 pt-3">
@@ -164,7 +167,11 @@ function ActionSection({
       </div>
       <div className="space-y-2">
         {actions.map((action, index) => (
-          <VoicePostCallActionRow key={`${action.type}-${action.id ?? index}`} action={action} />
+          <VoicePostCallActionRow
+            key={`${action.type}-${action.id ?? index}`}
+            action={action}
+            showRecoveryActions={showRecoveryActions}
+          />
         ))}
       </div>
     </div>

@@ -16,6 +16,7 @@ const ROOT = process.cwd()
 const MIGRATION = resolve(ROOT, 'database/migrations/20260430000001_voice_ops_control_plane.sql')
 const CALL_SHEET = resolve(ROOT, 'app/(chef)/culinary/call-sheet/page.tsx')
 const CONTROL_TOWER = resolve(ROOT, 'components/calling/voice-ops-control-tower.tsx')
+const ACTION_ROW = resolve(ROOT, 'components/calling/voice-post-call-action-row.tsx')
 const STATUS_ROUTE = resolve(ROOT, 'app/api/calling/status/route.ts')
 const RECORDING_ROUTE = resolve(ROOT, 'app/api/calling/recording/route.ts')
 const VOICEMAIL_ROUTE = resolve(ROOT, 'app/api/calling/voicemail/route.ts')
@@ -304,6 +305,9 @@ test('voice ops report separates failed recovery and snoozed actions', () => {
         metadata: {
           closeoutIntent: 'snoozed',
           snoozedUntil: future,
+          recoveryIntent: 'retry_manual',
+          recoveryLabel: 'Manual retry queued',
+          recoveryQueuedAt: future,
         },
       },
     ],
@@ -312,6 +316,7 @@ test('voice ops report separates failed recovery and snoozed actions', () => {
 
   assert.equal(report.failedRecoveryActions[0].id, 'action-failed')
   assert.equal(report.snoozedActions[0].id, 'action-snoozed')
+  assert.equal(report.snoozedActions[0].evidence?.recoveryIntent, 'retry_manual')
   assert.equal(report.topNextActions.some((action) => action.id === 'action-snoozed'), false)
 })
 
@@ -344,6 +349,7 @@ test('migration is additive and includes required voice ops tables', () => {
 test('Voice Hub renders the control tower on the canonical call sheet surface', () => {
   const callSheet = readFileSync(CALL_SHEET, 'utf8')
   const controlTower = readFileSync(CONTROL_TOWER, 'utf8')
+  const actionRow = readFileSync(ACTION_ROW, 'utf8')
 
   assert.match(callSheet, /VoiceOpsControlTower/)
   assert.match(callSheet, /buildVoiceOpsReport/)
@@ -352,6 +358,11 @@ test('Voice Hub renders the control tower on the canonical call sheet surface', 
   assert.match(controlTower, /Failed-call recovery/)
   assert.match(controlTower, /Snoozed/)
   assert.match(controlTower, /VoicePostCallActionRow/)
+  assert.match(controlTower, /showRecoveryActions/)
+  assert.match(actionRow, /Optional operator note/)
+  assert.match(actionRow, /Plan SMS/)
+  assert.match(actionRow, /Queue task/)
+  assert.match(actionRow, /recoverVoicePostCallAction/)
   assert.match(callSheet, /voice_session_events/)
   assert.match(callSheet, /'planned', 'needs_review', 'skipped'/)
 })

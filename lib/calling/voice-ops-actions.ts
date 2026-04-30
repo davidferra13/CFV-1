@@ -17,6 +17,7 @@ import {
 import type {
   VoiceCampaignLaunchMode,
   VoiceCampaignRecipientInput,
+  VoiceRecoveryIntent,
 } from '@/lib/calling/voice-ops-types'
 
 export async function createVoiceCallCampaign(input: {
@@ -299,6 +300,61 @@ export async function unsnoozeVoicePostCallAction(actionId: string): Promise<{
   return closeVoicePostCallAction(db, user.tenantId!, actionId, 'unsnoozed')
 }
 
+export async function recoverVoicePostCallAction(
+  actionId: string,
+  intent: VoiceRecoveryIntent,
+  note?: string
+): Promise<{
+  success: boolean
+  error?: string
+}> {
+  const user = await requireChef()
+
+  if (!actionId?.trim()) return { success: false, error: 'Action id is required.' }
+  if (!isRecoveryIntent(intent)) return { success: false, error: 'Recovery intent is invalid.' }
+
+  const db: any = createServerClient()
+  const { data: action, error: lookupError } = await db
+    .from('voice_post_call_actions')
+    .select('id, metadata, status')
+    .eq('id', actionId)
+    .eq('chef_id', user.tenantId!)
+    .single()
+
+  if (lookupError || !action) {
+    return { success: false, error: lookupError?.message ?? 'Voice action not found.' }
+  }
+
+  const now = new Date().toISOString()
+  const normalizedNote = typeof note === 'string' ? note.trim().slice(0, 500) : ''
+  const metadata: Record<string, unknown> = {
+    ...(isRecord(action.metadata) ? action.metadata : {}),
+    recoveryIntent: intent,
+    recoveryLabel: recoveryLabel(intent),
+    recoveryQueuedAt: now,
+    closeoutIntent: 'recovery_queued',
+    closeoutAt: now,
+    previousStatus: action.status ?? null,
+  }
+  if (normalizedNote) metadata.closeoutNote = normalizedNote
+
+  const nextStatus = intent === 'mark_unreachable' ? 'skipped' : 'needs_review'
+  const { error } = await db
+    .from('voice_post_call_actions')
+    .update({
+      status: nextStatus,
+      completed_at: intent === 'mark_unreachable' ? now : null,
+      metadata,
+    })
+    .eq('id', actionId)
+    .eq('chef_id', user.tenantId!)
+
+  if (error) return { success: false, error: error.message }
+
+  revalidatePath('/culinary/call-sheet')
+  return { success: true }
+}
+
 type VoiceCloseoutIntent = 'completed' | 'needs_review' | 'snoozed' | 'skipped' | 'unsnoozed'
 
 async function closeVoicePostCallAction(
@@ -363,6 +419,24 @@ async function closeVoicePostCallAction(
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return !!value && typeof value === 'object' && !Array.isArray(value)
+}
+
+function isRecoveryIntent(value: string): value is VoiceRecoveryIntent {
+  return (
+    value === 'retry_manual' ||
+    value === 'plan_sms' ||
+    value === 'queue_vendor_task' ||
+    value === 'mark_unreachable' ||
+    value === 'human_callback'
+  )
+}
+
+function recoveryLabel(intent: VoiceRecoveryIntent): string {
+  if (intent === 'retry_manual') return 'Manual retry queued'
+  if (intent === 'plan_sms') return 'SMS follow-up planned'
+  if (intent === 'queue_vendor_task') return 'Vendor task queued'
+  if (intent === 'mark_unreachable') return 'Contact marked unreachable'
+  return 'Human callback queued'
 }
 
 type LaunchResult = 'launched' | 'failed' | 'manual_review'

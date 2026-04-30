@@ -18,6 +18,7 @@ test('voice ops server actions export only async functions', () => {
   assert.match(src, /export async function snoozeVoicePostCallAction/)
   assert.match(src, /export async function skipVoicePostCallAction/)
   assert.match(src, /export async function unsnoozeVoicePostCallAction/)
+  assert.match(src, /export async function recoverVoicePostCallAction/)
   assert.doesNotMatch(src, /export const /)
   assert.doesNotMatch(src, /export type /)
   assert.doesNotMatch(src, /export class /)
@@ -33,6 +34,7 @@ test('voice ops server actions authenticate before database access', () => {
   const snoozeBody = functionBody(src, 'snoozeVoicePostCallAction')
   const skipBody = functionBody(src, 'skipVoicePostCallAction')
   const unsnoozeBody = functionBody(src, 'unsnoozeVoicePostCallAction')
+  const recoverBody = functionBody(src, 'recoverVoicePostCallAction')
 
   assert.ok(createBody.indexOf('await requireChef()') < createBody.indexOf('createServerClient()'))
   assert.ok(recordBody.indexOf('await requireChef()') < recordBody.indexOf('createServerClient()'))
@@ -46,6 +48,7 @@ test('voice ops server actions authenticate before database access', () => {
   assert.ok(
     unsnoozeBody.indexOf('await requireChef()') < unsnoozeBody.indexOf('createServerClient()')
   )
+  assert.ok(recoverBody.indexOf('await requireChef()') < recoverBody.indexOf('createServerClient()'))
 })
 
 test('voice ops server actions tenant-scope reads and writes', () => {
@@ -64,6 +67,9 @@ test('voice ops server actions tenant-scope reads and writes', () => {
   assert.match(src, /closeoutNote/)
   assert.match(src, /snoozedUntil/)
   assert.match(src, /unsnoozed/)
+  assert.match(src, /recoveryIntent/)
+  assert.match(src, /recoveryQueuedAt/)
+  assert.match(src, /isRecoveryIntent/)
   assert.match(src, /recordVoiceOpsForAiCallWithDb/)
   assert.match(recorderSrc, /\.from\('voice_session_events'\)/)
   assert.match(recorderSrc, /\.from\('voice_post_call_actions'\)/)
