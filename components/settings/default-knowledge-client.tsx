@@ -8,8 +8,24 @@ import type { CulinaryProfileAnswer } from '@/lib/ai/chef-profile-constants'
 import type { MemoryCategory, RemyMemory } from '@/lib/ai/remy-memory-types'
 import type { ChefPreferences, MenuEngineFeatureKey } from '@/lib/scheduling/types'
 import { MENU_ENGINE_FEATURE_LABELS } from '@/lib/scheduling/types'
+import {
+  buildDefaultKnowledgeModel,
+  previewKnowledgeScenario,
+  type KnowledgeSource,
+} from '@/lib/chef/default-knowledge-analysis'
 import { Button } from '@/components/ui/button'
-import { Brain, CheckCircle, Clock, Plus, Trash2 } from '@/components/ui/icons'
+import {
+  AlertTriangle,
+  Brain,
+  CheckCircle,
+  Clock,
+  Crosshair,
+  Grid3X3,
+  Plus,
+  Search,
+  Settings2,
+  Trash2,
+} from '@/components/ui/icons'
 
 const memoryCategories: Array<{ value: MemoryCategory; label: string; appliesTo: string }> = [
   {
@@ -56,6 +72,13 @@ const memoryCategories: Array<{ value: MemoryCategory; label: string; appliesTo:
 
 const categoryLabel = new Map(memoryCategories.map((category) => [category.value, category.label]))
 
+const sourceLabels: Record<KnowledgeSource, string> = {
+  chef_preferences: 'Business preferences',
+  chef_culinary_profiles: 'Culinary profile',
+  remy_memories: 'Memory bank',
+  derived: 'Derived check',
+}
+
 function formatMoney(cents: number | null | undefined): string {
   if (cents == null) return 'Not set'
   return (cents / 100).toLocaleString('en-US', {
@@ -87,6 +110,22 @@ function StatusPill({ status }: { status: 'Known' | 'Missing' | 'On' | 'Off' }) 
   return (
     <span className={`inline-flex rounded-full border px-2 py-1 text-[11px] font-medium ${styles}`}>
       {status}
+    </span>
+  )
+}
+
+function MatrixStatusPill({ status }: { status: 'applies' | 'review' | 'not_applied' }) {
+  const label = status === 'applies' ? 'Applies' : status === 'review' ? 'Review' : 'Not used'
+  const styles =
+    status === 'applies'
+      ? 'border-emerald-800 bg-emerald-950/50 text-emerald-200'
+      : status === 'review'
+        ? 'border-amber-800 bg-amber-950/50 text-amber-200'
+        : 'border-stone-800 bg-stone-950 text-stone-500'
+
+  return (
+    <span className={`inline-flex rounded-full border px-2 py-1 text-[11px] font-medium ${styles}`}>
+      {label}
     </span>
   )
 }
@@ -160,8 +199,24 @@ export function DefaultKnowledgeClient({
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [restatementText, setRestatementText] = useState('')
+  const [scenarioText, setScenarioText] = useState(
+    'Plan a tasting for 12 guests next Friday and draft the client follow-up.'
+  )
 
   const answeredCulinary = culinaryProfile.filter((answer) => answer.answer.trim()).length
+  const model = useMemo(
+    () => buildDefaultKnowledgeModel({ preferences, culinaryProfile, memories }),
+    [preferences, culinaryProfile, memories]
+  )
+  const restatementMatches = useMemo(
+    () => previewKnowledgeScenario(restatementText, model).matches,
+    [restatementText, model]
+  )
+  const scenarioPreview = useMemo(
+    () => previewKnowledgeScenario(scenarioText, model),
+    [scenarioText, model]
+  )
   const enabledMenuFeatures = useMemo(
     () => Object.entries(preferences.menu_engine_features).filter(([, enabled]) => enabled).length,
     [preferences.menu_engine_features]
@@ -205,6 +260,18 @@ export function DefaultKnowledgeClient({
     })
   }
 
+  const fillMemoryDraft = (draft: {
+    content: string
+    category: MemoryCategory
+    importance: number
+  }) => {
+    setContent(draft.content)
+    setCategory(draft.category)
+    setImportance(draft.importance)
+    setError(null)
+    setSuccess(null)
+  }
+
   const handleDeleteMemory = (memoryId: string) => {
     setError(null)
     setSuccess(null)
@@ -235,6 +302,43 @@ export function DefaultKnowledgeClient({
             </p>
           </div>
         </div>
+        <div className="mt-5 rounded-lg border border-emerald-900/70 bg-emerald-950/20 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-sm font-semibold text-emerald-100">Coverage score</p>
+              <p className="mt-1 text-sm text-emerald-300">
+                {model.coverageScore}% of the default knowledge map is covered.
+              </p>
+            </div>
+            <div className="text-3xl font-bold text-emerald-100">{model.coverageScore}%</div>
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            {model.coverage.map((domain) => (
+              <div
+                key={domain.id}
+                className="rounded-lg border border-stone-800 bg-stone-950/50 p-3"
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-sm font-medium text-stone-100">{domain.label}</p>
+                  <span className="text-xs text-stone-400">
+                    {domain.known}/{domain.total}
+                  </span>
+                </div>
+                <div className="mt-2 h-2 overflow-hidden rounded-full bg-stone-800">
+                  <div
+                    className="h-full rounded-full bg-emerald-500"
+                    style={{ width: `${domain.score}%` }}
+                  />
+                </div>
+                {domain.missing.length > 0 && (
+                  <p className="mt-2 text-xs text-stone-500">
+                    Missing: {domain.missing.join(', ')}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
         <div className="mt-4 grid gap-3 md:grid-cols-2">
           <KnowledgeRow label="Home base" value={formatKnown(homeBaseSummary)} href="/settings" />
           <KnowledgeRow label="Default stores" value={storesSummary} href="/settings" />
@@ -259,6 +363,90 @@ export function DefaultKnowledgeClient({
             href="/settings/culinary-profile"
             status={answeredCulinary > 0 ? 'Known' : 'Missing'}
           />
+        </div>
+      </section>
+
+      <section className="rounded-lg border border-stone-800 bg-stone-950/40 p-5">
+        <div className="flex items-start gap-3">
+          <Search className="mt-1 h-5 w-5 text-sky-300" />
+          <div>
+            <h2 className="text-lg font-semibold text-stone-100">Restatement Detector</h2>
+            <p className="mt-1 text-sm text-stone-400">
+              Paste something the chef just had to repeat. ChefFlow checks whether it already has a
+              matching default or memory.
+            </p>
+          </div>
+        </div>
+        <div className="mt-4 space-y-3">
+          <textarea
+            value={restatementText}
+            onChange={(event) => setRestatementText(event.target.value)}
+            rows={3}
+            placeholder="Example: remember that I shop the day before and keep client emails concise."
+            className="block w-full resize-none rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 placeholder:text-stone-500 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+          />
+          {restatementText.trim() && restatementMatches.length === 0 && (
+            <div className="rounded-lg border border-amber-900/70 bg-amber-950/20 p-3">
+              <p className="text-sm font-medium text-amber-100">No stored match found.</p>
+              <p className="mt-1 text-sm text-amber-300">
+                This is a default-knowledge gap. Capture it so the chef does not repeat it again.
+              </p>
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                className="mt-3"
+                onClick={() =>
+                  fillMemoryDraft({
+                    content: restatementText.trim(),
+                    category: 'chef_preference',
+                    importance: 8,
+                  })
+                }
+              >
+                <Plus className="h-4 w-4" />
+                Use as Memory Draft
+              </Button>
+            </div>
+          )}
+          {restatementMatches.length > 0 && (
+            <div className="space-y-2">
+              {restatementMatches.map((match) => (
+                <div
+                  key={match.factId}
+                  className="rounded-lg border border-emerald-900/70 bg-emerald-950/20 p-3"
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-medium text-emerald-100">
+                        Already known: {match.label}
+                      </p>
+                      <p className="mt-1 text-sm text-emerald-300">{match.value}</p>
+                      <p className="mt-1 text-xs text-emerald-400">
+                        Source: {sourceLabels[match.source]}. Confidence {match.confidence}%.
+                      </p>
+                    </div>
+                    {match.category && (
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        onClick={() =>
+                          fillMemoryDraft({
+                            content: restatementText.trim(),
+                            category: match.category ?? 'chef_preference',
+                            importance: 8,
+                          })
+                        }
+                      >
+                        Update Draft
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -310,6 +498,87 @@ export function DefaultKnowledgeClient({
 
       <section className="rounded-lg border border-stone-800 bg-stone-950/40 p-5">
         <div className="flex items-start gap-3">
+          <Crosshair className="mt-1 h-5 w-5 text-emerald-300" />
+          <div>
+            <h2 className="text-lg font-semibold text-stone-100">Apply Defaults Preview</h2>
+            <p className="mt-1 text-sm text-stone-400">
+              See which stored facts each surface can use right now.
+            </p>
+          </div>
+        </div>
+        <div className="mt-4 grid gap-3 md:grid-cols-2">
+          {model.applyDefaultsPreview.map((surface) => (
+            <div key={surface.surface} className="rounded-lg border border-stone-800 p-3">
+              <p className="text-sm font-semibold text-stone-100">{surface.label}</p>
+              {surface.facts.length === 0 ? (
+                <p className="mt-2 text-sm text-stone-500">No defaults are currently available.</p>
+              ) : (
+                <ul className="mt-2 space-y-2">
+                  {surface.facts.slice(0, 4).map((fact) => (
+                    <li key={`${surface.surface}-${fact.label}`} className="text-sm text-stone-400">
+                      <span className="text-stone-200">{fact.label}:</span> {fact.value}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="rounded-lg border border-stone-800 bg-stone-950/40 p-5">
+        <div className="flex items-start gap-3">
+          <AlertTriangle className="mt-1 h-5 w-5 text-amber-300" />
+          <div>
+            <h2 className="text-lg font-semibold text-stone-100">Contradiction Resolver</h2>
+            <p className="mt-1 text-sm text-stone-400">
+              Conflicting defaults are flagged before they become inconsistent behavior.
+            </p>
+          </div>
+        </div>
+        {model.conflicts.length === 0 ? (
+          <p className="mt-4 rounded-lg border border-emerald-900/70 bg-emerald-950/20 p-3 text-sm text-emerald-200">
+            No obvious contradictions found in current defaults or memories.
+          </p>
+        ) : (
+          <div className="mt-4 space-y-3">
+            {model.conflicts.map((conflict) => (
+              <div key={conflict.id} className="rounded-lg border border-amber-900/70 p-3">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-semibold text-amber-100">{conflict.label}</p>
+                    <ul className="mt-2 space-y-1">
+                      {conflict.details.map((detail) => (
+                        <li key={detail} className="text-sm text-amber-300">
+                          {detail}
+                        </li>
+                      ))}
+                    </ul>
+                    <p className="mt-2 text-sm text-stone-400">{conflict.resolutionPrompt}</p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    onClick={() =>
+                      fillMemoryDraft({
+                        content: `Resolved default: ${conflict.resolutionPrompt}`,
+                        category: 'business_rule',
+                        importance: conflict.severity === 'important' ? 9 : 7,
+                      })
+                    }
+                  >
+                    Draft Resolution
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section className="rounded-lg border border-stone-800 bg-stone-950/40 p-5">
+        <div className="flex items-start gap-3">
           <Plus className="mt-1 h-5 w-5 text-sky-300" />
           <div>
             <h2 className="text-lg font-semibold text-stone-100">Add a Durable Memory</h2>
@@ -320,6 +589,25 @@ export function DefaultKnowledgeClient({
           </div>
         </div>
         <div className="mt-4 space-y-4">
+          <div className="flex flex-wrap gap-2">
+            {model.quickCapturePrompts.map((prompt) => (
+              <Button
+                key={prompt.id}
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={() =>
+                  fillMemoryDraft({
+                    content: prompt.template,
+                    category: prompt.category,
+                    importance: prompt.importance,
+                  })
+                }
+              >
+                {prompt.label}
+              </Button>
+            ))}
+          </div>
           <div className="grid gap-4 md:grid-cols-[1fr_180px_140px]">
             <label className="block">
               <span className="mb-1.5 block text-sm font-medium text-stone-300">Memory</span>
@@ -369,6 +657,48 @@ export function DefaultKnowledgeClient({
             Save Memory
           </Button>
         </div>
+      </section>
+
+      <section className="rounded-lg border border-stone-800 bg-stone-950/40 p-5">
+        <div className="flex items-start gap-3">
+          <Settings2 className="mt-1 h-5 w-5 text-brand-300" />
+          <div>
+            <h2 className="text-lg font-semibold text-stone-100">Missing Defaults Prompts</h2>
+            <p className="mt-1 text-sm text-stone-400">
+              These are the prompts ChefFlow should ask after repeated manual overrides or missing
+              setup signals.
+            </p>
+          </div>
+        </div>
+        {model.missingDefaultPrompts.length === 0 ? (
+          <p className="mt-4 rounded-lg border border-emerald-900/70 bg-emerald-950/20 p-3 text-sm text-emerald-200">
+            No coverage prompts are needed right now.
+          </p>
+        ) : (
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            {model.missingDefaultPrompts.slice(0, 8).map((prompt) => (
+              <div key={prompt.id} className="rounded-lg border border-stone-800 p-3">
+                <p className="text-sm font-medium text-stone-100">{prompt.prompt}</p>
+                <p className="mt-1 text-xs text-stone-500">{prompt.trigger}</p>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="mt-2"
+                  onClick={() =>
+                    fillMemoryDraft({
+                      content: `${prompt.prompt} `,
+                      category: prompt.category,
+                      importance: 7,
+                    })
+                  }
+                >
+                  Answer as Memory
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
 
       <section className="rounded-lg border border-stone-800 bg-stone-950/40 p-5">
@@ -424,6 +754,100 @@ export function DefaultKnowledgeClient({
                   </div>
                 </div>
               ))}
+          </div>
+        )}
+      </section>
+
+      <section className="rounded-lg border border-stone-800 bg-stone-950/40 p-5">
+        <h2 className="text-lg font-semibold text-stone-100">Memory Source Ledger</h2>
+        <div className="mt-4 grid gap-3 md:grid-cols-4">
+          {model.sourceLedger.map((entry) => (
+            <div key={entry.source} className="rounded-lg border border-stone-800 p-3">
+              <p className="text-sm font-semibold text-stone-100">{entry.label}</p>
+              <p className="mt-2 text-2xl font-bold text-stone-50">{entry.count}</p>
+              <p className="mt-1 text-xs text-stone-500">
+                {entry.editable ? 'Chef editable' : 'System-derived'}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="rounded-lg border border-stone-800 bg-stone-950/40 p-5">
+        <div className="flex items-start gap-3">
+          <Grid3X3 className="mt-1 h-5 w-5 text-sky-300" />
+          <div>
+            <h2 className="text-lg font-semibold text-stone-100">Per-Surface Application Matrix</h2>
+            <p className="mt-1 text-sm text-stone-400">
+              This shows where each category can apply. Review means the category is gated by
+              visibility or feature controls.
+            </p>
+          </div>
+        </div>
+        <div className="mt-4 overflow-x-auto">
+          <table className="min-w-full border-collapse text-sm">
+            <thead>
+              <tr>
+                <th className="border-b border-stone-800 px-3 py-2 text-left font-medium text-stone-300">
+                  Category
+                </th>
+                {model.surfaceMatrix[0]?.cells.map((cell) => (
+                  <th
+                    key={cell.surface}
+                    className="border-b border-stone-800 px-3 py-2 text-left font-medium text-stone-300"
+                  >
+                    {cell.label}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {model.surfaceMatrix.map((row) => (
+                <tr key={row.category}>
+                  <td className="border-b border-stone-900 px-3 py-2 font-medium text-stone-100">
+                    {row.label}
+                  </td>
+                  {row.cells.map((cell) => (
+                    <td key={cell.surface} className="border-b border-stone-900 px-3 py-2">
+                      <MatrixStatusPill status={cell.status} />
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section className="rounded-lg border border-stone-800 bg-stone-950/40 p-5">
+        <h2 className="text-lg font-semibold text-stone-100">Default Knowledge Test Mode</h2>
+        <p className="mt-1 text-sm text-stone-400">
+          Type a pretend request and see which defaults ChefFlow would apply before any action runs.
+        </p>
+        <textarea
+          value={scenarioText}
+          onChange={(event) => setScenarioText(event.target.value)}
+          rows={3}
+          className="mt-4 block w-full resize-none rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 placeholder:text-stone-500 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+        />
+        {scenarioPreview.matches.length === 0 ? (
+          <p className="mt-4 rounded-lg border border-amber-900/70 bg-amber-950/20 p-3 text-sm text-amber-200">
+            No matching defaults found for this request.
+          </p>
+        ) : (
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            {scenarioPreview.appliedSurfaces.map((surface) => (
+              <div key={surface.surface} className="rounded-lg border border-stone-800 p-3">
+                <p className="text-sm font-semibold text-stone-100">{surface.label}</p>
+                <ul className="mt-2 space-y-1">
+                  {surface.facts.map((fact) => (
+                    <li key={`${surface.surface}-${fact.label}`} className="text-sm text-stone-400">
+                      {fact.label}: {fact.value}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
         )}
       </section>

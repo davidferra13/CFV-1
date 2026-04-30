@@ -630,6 +630,7 @@ Access all settings from Sidebar > Settings. Key sections:
 
 - Gmail (send, sync, thread matching)
 - Google Calendar (bidirectional sync)
+- Default Knowledge (stored defaults, memory bank, restatement detection, coverage score, contradiction review, surface application preview)
 - AI privacy center (which data stays private, which uses cloud processing)
 
 ### Appearance

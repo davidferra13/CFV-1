@@ -1344,11 +1344,11 @@ Each category has a unique lucide-react icon and animated chevron expand/collaps
 
 **Group: Connections & AI** - External services, reviews, and intelligence
 
-| #   | Category                          | Icon  | Sub-pages                                                                                                  |
-| --- | --------------------------------- | ----- | ---------------------------------------------------------------------------------------------------------- |
-| 9   | Connected Accounts & Integrations | Plug  | Google (Gmail + Calendar), Wix, embed widget, integrations center, Calendar Sync (iCal), Zapier & Webhooks |
-| 10  | AI & Privacy                      | Brain | AI Trust Center (full privacy walkthrough), culinary profile for Remy, Menu Engine (intelligence toggles)  |
-| 11  | Client Reviews                    | Star  | Google review URL, view all, Yelp reviews sync                                                             |
+| #   | Category                          | Icon  | Sub-pages                                                                                                                                                                                              |
+| --- | --------------------------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 9   | Connected Accounts & Integrations | Plug  | Google (Gmail + Calendar), Wix, embed widget, integrations center, Calendar Sync (iCal), Zapier & Webhooks                                                                                             |
+| 10  | AI & Privacy                      | Brain | Default Knowledge (coverage score, restatement detector, memory bank, contradiction review, surface matrix, test mode), AI Trust Center, culinary profile for Remy, Menu Engine (intelligence toggles) |
+| 11  | Client Reviews                    | Star  | Google review URL, view all, Yelp reviews sync                                                                                                                                                         |
 
 **Group: You & Your Career** - Branding, growth, network, and appearance
 
