@@ -8,18 +8,11 @@ import { useState } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import type { ChannelSourceStats } from '@/lib/analytics/channel-actions'
 import { getSourceColor } from '@/lib/constants/booking-sources'
+import { formatWholeCurrency as formatCurrency } from '@/lib/utils/format'
 
 // ============================================
 // HELPERS
 // ============================================
-
-function formatCurrency(cents: number): string {
-  return (cents / 100).toLocaleString('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 0,
-  })
-}
 
 type SortKey =
   | 'sourceLabel'

@@ -1,29 +1,19 @@
-// Currency formatting utilities
-// Can be used in both server and client components
+import {
+  formatCurrency as formatCurrencyWithOptions,
+  formatWholeCurrency,
+  parseCurrencyToCents,
+  formatCentsToDisplay,
+  type CurrencyOpts,
+} from './format'
+
+export type { CurrencyOpts }
 
 /**
- * Format cents to currency string (for display)
+ * Format cents to currency string (for display).
+ * Keeps the legacy currency-code interface while delegating to the shared formatter module.
  */
-export function formatCurrency(cents: number, currency = 'USD'): string {
-  const dollars = cents / 100
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency,
-  }).format(dollars)
+export function formatCurrency(cents: number, currency: string | CurrencyOpts = 'USD'): string {
+  return formatCurrencyWithOptions(cents, typeof currency === 'string' ? { currency } : currency)
 }
 
-/**
- * Parse currency string to cents
- */
-export function parseCurrencyToCents(value: string): number {
-  const cleaned = value.replace(/[^0-9.]/g, '')
-  const dollars = parseFloat(cleaned)
-  return Math.round(dollars * 100)
-}
-
-/**
- * Format cents to a plain dollar string (for form inputs)
- */
-export function formatCentsToDisplay(cents: number): string {
-  return (cents / 100).toFixed(2)
-}
+export { formatWholeCurrency, parseCurrencyToCents, formatCentsToDisplay }

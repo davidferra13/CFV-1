@@ -13,9 +13,11 @@ type FormatOpts = {
   timezone?: string
 }
 
-type CurrencyOpts = {
+export type CurrencyOpts = {
   locale?: string
   currency?: string
+  minimumFractionDigits?: number
+  maximumFractionDigits?: number
 }
 
 // ─── Date / Time ────────────────────────────────────────────────────
@@ -141,10 +143,20 @@ export function formatRelativeTime(date: string | Date, opts: { locale?: string 
 /** Format cents to currency string: 1500 -> "$15.00" */
 export function formatCurrency(cents: number, opts: CurrencyOpts = {}): string {
   const dollars = cents / 100
-  return new Intl.NumberFormat(opts.locale ?? DEFAULT_LOCALE, {
+  const { locale, currency, ...numberFormatOptions } = opts
+  return new Intl.NumberFormat(locale ?? DEFAULT_LOCALE, {
     style: 'currency',
-    currency: opts.currency ?? DEFAULT_CURRENCY,
+    currency: currency ?? DEFAULT_CURRENCY,
+    ...numberFormatOptions,
   }).format(dollars)
+}
+
+/** Format cents to whole-dollar currency string: 150000 -> "$1,500" */
+export function formatWholeCurrency(cents: number, opts: CurrencyOpts = {}): string {
+  return formatCurrency(cents, {
+    ...opts,
+    maximumFractionDigits: opts.maximumFractionDigits ?? 0,
+  })
 }
 
 /** Parse currency string back to cents: "$15.00" -> 1500 */

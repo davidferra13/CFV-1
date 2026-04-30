@@ -52,6 +52,7 @@ import type {
   MetricDomain,
   MetricRollupCadence,
 } from '@/lib/analytics/metric-registry'
+import { formatWholeCurrency as formatCurrency } from '@/lib/utils/format'
 
 // ─── Types ────────────────────────────────────────────
 
@@ -111,14 +112,6 @@ function validateTabId(value: string | undefined): TabId {
 }
 
 // ─── Helpers ──────────────────────────────────────────
-
-function formatCurrency(cents: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 0,
-  }).format(cents / 100)
-}
 
 function formatMinutes(minutes: number): string {
   if (minutes === 0) return '-'

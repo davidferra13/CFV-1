@@ -18,6 +18,7 @@ import {
   LineChart,
   Line,
 } from 'recharts'
+import { formatWholeCurrency as formatCurrency } from '@/lib/utils/format'
 
 const COLORS = [
   '#8b5cf6',
@@ -31,14 +32,6 @@ const COLORS = [
   '#f97316',
   '#64748b',
 ]
-
-function formatCurrency(cents: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 0,
-  }).format(cents / 100)
-}
 
 // ─── Source Distribution (Horizontal Bar) ─────────────
 

@@ -18,6 +18,7 @@ import {
   Legend,
 } from 'recharts'
 import type { ReferralAnalyticsData } from '@/lib/analytics/referral-analytics'
+import { formatCurrency } from '@/lib/utils/format'
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -35,10 +36,6 @@ const COLORS = [
 ]
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
-
-function formatCurrency(cents: number): string {
-  return (cents / 100).toLocaleString('en-US', { style: 'currency', currency: 'USD' })
-}
 
 function formatCurrencyCompact(cents: number): string {
   if (cents >= 100_000_00) {

@@ -9,19 +9,12 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { getChannelAnalytics } from '@/lib/analytics/channel-actions'
 import type { ChannelAnalyticsData } from '@/lib/analytics/channel-actions'
 import { getSourceColor, getSourceLabel } from '@/lib/constants/booking-sources'
+import { formatWholeCurrency as formatCurrency } from '@/lib/utils/format'
 import { toast } from 'sonner'
 
 // ============================================
 // HELPERS
 // ============================================
-
-function formatCurrency(cents: number): string {
-  return (cents / 100).toLocaleString('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 0,
-  })
-}
 
 type DateRangePreset = 'this_month' | 'last_3_months' | 'last_year' | 'all_time'
 

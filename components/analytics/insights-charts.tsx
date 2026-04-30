@@ -34,6 +34,7 @@ import type {
   AARTrends,
   FinancialIntelligence,
 } from '@/lib/analytics/insights-actions'
+import { formatWholeCurrency as formatCurrency } from '@/lib/utils/format'
 
 // ─── Shared Helpers ──────────────────────────────────
 
@@ -53,14 +54,6 @@ const COLORS = [
   '#84cc16',
   '#f43f5e',
 ]
-
-function formatCurrency(cents: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 0,
-  }).format(cents / 100)
-}
 
 function formatMinutes(minutes: number): string {
   if (minutes === 0) return '-'
