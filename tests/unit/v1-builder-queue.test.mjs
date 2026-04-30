@@ -114,6 +114,22 @@ test('claims block later claims until they expire', () => {
   assert.equal(freshClaims[0].taskId, 'v1-1')
 })
 
+test('claims generate unique retry-safe branch names', () => {
+  const context = tempContext()
+  const task = {
+    id: 'v1-1',
+    title: 'Repair event quote truth',
+    classification: 'approved_v1_blocker',
+    canonicalOwner: 'docs/specs/example.md',
+  }
+
+  const first = createClaim(task, context, new Date('2026-04-30T12:00:00Z'))
+  const second = createClaim(task, context, new Date('2026-04-30T12:01:00Z'))
+
+  assert.notEqual(first.claim.branch, second.claim.branch)
+  assert.match(first.claim.branch, /^feature\/v1-builder-v1-1-20260430t120000z-/)
+})
+
 test('reads jsonl records and records parse errors by line', () => {
   const context = tempContext()
   const path = join(context.builderDir, 'approved-queue.jsonl')

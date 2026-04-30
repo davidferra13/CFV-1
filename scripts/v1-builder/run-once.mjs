@@ -43,7 +43,9 @@ function gitValue(command) {
 
 function gitValueIn(path, args) {
   try {
-    return execFileSync('git', ['-C', path, ...args], { encoding: 'utf8' }).trim()
+    return execFileSync('git', ['-c', 'core.longpaths=true', '-C', path, ...args], {
+      encoding: 'utf8',
+    }).trim()
   } catch {
     return null
   }
@@ -223,7 +225,7 @@ const receiptBase = {
 try {
   updateClaim(claimPath, { status: 'running', worktreePath })
 
-  execFileSync('git', ['worktree', 'add', '-b', claim.branch, worktreePath, 'HEAD'], {
+  execFileSync('git', ['-c', 'core.longpaths=true', 'worktree', 'add', '-b', claim.branch, worktreePath, 'HEAD'], {
     cwd: context.root,
     stdio: 'pipe',
   })

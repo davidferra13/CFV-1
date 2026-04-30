@@ -204,12 +204,13 @@ export function createClaim(task, context = createBuilderContext(), now = new Da
   mkdirSync(context.claimsDir, { recursive: true })
 
   const stamp = now.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z')
+  const branchStamp = slugify(stamp)
   const path = join(context.claimsDir, `${stamp}-${task.id}.json`)
   const claim = {
     id: `claim-${stamp}-${task.id}`,
     taskId: task.id,
     title: task.title,
-    branch: `feature/v1-builder-${slugify(task.id)}-${slugify(task.title ?? task.id)}`.slice(0, 96),
+    branch: `feature/v1-builder-${slugify(task.id)}-${branchStamp}-${slugify(task.title ?? task.id)}`.slice(0, 96),
     classification: task.classification,
     canonicalOwner: task.canonicalOwner,
     status: 'claimed',
