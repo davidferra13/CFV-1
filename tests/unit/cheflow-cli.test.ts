@@ -112,6 +112,26 @@ describe('ChefFlow CLI', () => {
     assert.ok(parsed.commands.includes('node --test --import tsx tests/unit/cheflow-cli.test.ts'))
   })
 
+  it('accepts file lists split into positional shell arguments', () => {
+    const result = runCli([
+      'validate',
+      '--files',
+      'scripts/cheflow.mjs',
+      'tests/unit/cheflow-cli.test.ts',
+      'package.json',
+      '--json',
+    ])
+
+    assert.equal(result.status, 0)
+    const parsed = JSON.parse(result.stdout)
+    assert.deepEqual(parsed.files, [
+      'scripts/cheflow.mjs',
+      'tests/unit/cheflow-cli.test.ts',
+      'package.json',
+    ])
+    assert.ok(parsed.commands.includes('node --check scripts/cheflow.mjs'))
+  })
+
   it('prints push readiness blockers as structured data', () => {
     const result = runCli([
       'push-check',
