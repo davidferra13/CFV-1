@@ -12,11 +12,13 @@ describe('Founder Authority database guard migration', () => {
     assert.match(migration, /prevent_founder_authority_platform_admin_change/)
     assert.match(migration, /davidferra13@gmail\.com/)
     assert.match(migration, /0c254be3-8e70-42a0-84d9-39a01a877ae8/)
-    assert.match(migration, /BEFORE UPDATE OR DELETE ON platform_admins/)
+    assert.match(migration, /BEFORE INSERT OR UPDATE OR DELETE ON platform_admins/)
   })
 
-  it('blocks disabling, deleting, or downgrading Founder Authority', () => {
+  it('blocks malformed inserts, disabling, deleting, or downgrading Founder Authority', () => {
     assert.match(migration, /cannot be deleted/)
+    assert.match(migration, /NEW\.email = founder_email/)
+    assert.match(migration, /NEW\.auth_user_id = founder_auth_user_id/)
     assert.match(migration, /access level cannot be downgraded/)
     assert.match(migration, /cannot be disabled/)
     assert.match(migration, /NEW\.access_level <> 'owner'/)

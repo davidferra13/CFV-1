@@ -9,11 +9,19 @@ DECLARE
   founder_email constant text := 'davidferra13@gmail.com';
   founder_auth_user_id constant uuid := '0c254be3-8e70-42a0-84d9-39a01a877ae8';
 BEGIN
-  IF OLD.email = founder_email OR OLD.auth_user_id = founder_auth_user_id THEN
-    IF TG_OP = 'DELETE' THEN
+  IF TG_OP = 'DELETE' THEN
+    IF OLD.email = founder_email OR OLD.auth_user_id = founder_auth_user_id THEN
       RAISE EXCEPTION 'Founder Authority platform row cannot be deleted';
     END IF;
 
+    RETURN OLD;
+  END IF;
+
+  IF
+    NEW.email = founder_email OR
+    NEW.auth_user_id = founder_auth_user_id OR
+    (TG_OP = 'UPDATE' AND (OLD.email = founder_email OR OLD.auth_user_id = founder_auth_user_id))
+  THEN
     IF NEW.email <> founder_email THEN
       RAISE EXCEPTION 'Founder Authority email cannot be changed';
     END IF;
@@ -31,10 +39,6 @@ BEGIN
     END IF;
   END IF;
 
-  IF TG_OP = 'DELETE' THEN
-    RETURN OLD;
-  END IF;
-
   RETURN NEW;
 END;
 $$;
@@ -47,7 +51,7 @@ BEGIN
     WHERE tgname = 'trg_prevent_founder_authority_platform_admin_change'
   ) THEN
     CREATE TRIGGER trg_prevent_founder_authority_platform_admin_change
-      BEFORE UPDATE OR DELETE ON platform_admins
+      BEFORE INSERT OR UPDATE OR DELETE ON platform_admins
       FOR EACH ROW
       EXECUTE FUNCTION prevent_founder_authority_platform_admin_change();
   END IF;
