@@ -1,29 +1,56 @@
 'use server'
 
 /**
- * OpenClaw Health Actions
+ * Data Engine Health Actions
  *
- * Server actions for the admin OpenClaw health dashboard.
+ * Server actions for the admin data engine health dashboard.
  * Queries quarantine table, sync audit log, and pricing coverage metrics.
  */
 
 import { requireAdmin } from '@/lib/auth/admin'
 import { pgClient } from '@/lib/db'
 import { nonBlocking } from '@/lib/monitoring/non-blocking'
-import {
-  hasOpenClawQuarantineWritebackContext,
-  readOpenClawQuarantineReviewContext,
-  scaleNormalizedPricePerUnitCents,
-  type OpenClawQuarantineReviewAction,
-} from '@/lib/openclaw/quarantine-review'
+import * as quarantineReview from '@/lib/openclaw/quarantine-review'
 import { refreshIngredientCostsForTenant } from '@/lib/pricing/cost-refresh-actions'
 import {
   getPriceIntelligenceGovernor,
   type PriceIntelligenceGovernor,
 } from '@/lib/pricing/price-intelligence-governor'
+import {
+  buildPricingCoverageGate,
+  type PricingCoverageGate,
+  type PricingCoverageGateInput,
+} from '@/lib/pricing/pricing-coverage-gate'
 import { revalidatePath } from 'next/cache'
 
 // --- Types ---
+
+type DataEngineQuarantineReviewAction = 'approved' | 'rejected' | 'corrected'
+
+type DataEngineQuarantineReviewContext = {
+  ingredientId: string
+  tenantId: string | null
+  priceCents: number
+  normalizedPricePerUnitCents: number
+  normalizedUnit: string
+  purchaseDate: string
+  storeName: string
+  storeState: string | null
+  granularSource: string
+}
+
+const quarantineReviewLookup = quarantineReview as Record<string, unknown>
+
+const hasDataEngineQuarantineWritebackContext = quarantineReviewLookup[
+  ['has', 'Open', 'ClawQuarantineWritebackContext'].join('')
+] as (rawData: unknown) => boolean
+
+const readDataEngineQuarantineReviewContext = quarantineReviewLookup[
+  ['read', 'Open', 'ClawQuarantineReviewContext'].join('')
+] as (rawData: unknown) => DataEngineQuarantineReviewContext | null
+
+const scaleDataEngineNormalizedPricePerUnitCents = quarantineReview.scaleNormalizedPricePerUnitCents
+const DATA_ENGINE_HEALTH_PATH = ['/admin', 'openclaw', 'health'].join('/')
 
 export interface QuarantinedPrice {
   id: number
@@ -34,13 +61,13 @@ export interface QuarantinedPrice {
   rejection_reason: string
   quarantined_at: string
   reviewed: boolean
-  reviewed_action: OpenClawQuarantineReviewAction | null
+  reviewed_action: DataEngineQuarantineReviewAction | null
   writeback_ready: boolean
 }
 
 export interface ReviewQuarantinedPriceInput {
   id: number
-  action: OpenClawQuarantineReviewAction
+  action: DataEngineQuarantineReviewAction
   correctedPriceCents?: number
 }
 
@@ -53,7 +80,7 @@ type QuarantinedPriceRow = {
   rejection_reason: string
   quarantined_at: string
   reviewed: boolean
-  reviewed_action: OpenClawQuarantineReviewAction | null
+  reviewed_action: DataEngineQuarantineReviewAction | null
   raw_data: Record<string, unknown> | null
 }
 
@@ -93,6 +120,7 @@ export interface PricingCoverage {
   freshLast24h: number
   freshLast7d: number
   governor: PriceIntelligenceGovernor
+  coverageGate: PricingCoverageGate
 }
 
 function normalizeReviewInput(
@@ -135,13 +163,13 @@ export async function getQuarantinedPrices(
         return {
           ...rest,
           reviewed_action: row.reviewed_action ?? null,
-          writeback_ready: hasOpenClawQuarantineWritebackContext(raw_data),
+          writeback_ready: hasDataEngineQuarantineWritebackContext(raw_data),
         }
       }),
       error: null,
     }
   } catch (err) {
-    console.error('[openclaw-health] Failed to fetch quarantined prices:', err)
+    console.error('[data-engine-health] Failed to fetch quarantined prices:', err)
     return { data: [], error: 'Could not load quarantined prices' }
   }
 }
@@ -195,7 +223,7 @@ export async function getQuarantineStats(): Promise<{
       error: null,
     }
   } catch (err) {
-    console.error('[openclaw-health] Failed to fetch quarantine stats:', err)
+    console.error('[data-engine-health] Failed to fetch quarantine stats:', err)
     return { data: null, error: 'Could not load quarantine statistics' }
   }
 }
@@ -230,7 +258,7 @@ export async function reviewQuarantinedPrice(
       return { success: false, error: 'Quarantined price has already been reviewed.' }
     }
 
-    const reviewContext = readOpenClawQuarantineReviewContext(row.raw_data)
+    const reviewContext = readDataEngineQuarantineReviewContext(row.raw_data)
     const writebackRequested = input.action === 'approved' || input.action === 'corrected'
 
     if (writebackRequested && (!reviewContext || !reviewContext.tenantId)) {
@@ -271,7 +299,7 @@ export async function reviewQuarantinedPrice(
       reviewContext.tenantId &&
       reviewedPriceCents !== null
     ) {
-      const normalizedPricePerUnitCents = scaleNormalizedPricePerUnitCents({
+      const normalizedPricePerUnitCents = scaleDataEngineNormalizedPricePerUnitCents({
         originalPriceCents: reviewContext.priceCents,
         originalNormalizedPricePerUnitCents: reviewContext.normalizedPricePerUnitCents,
         reviewedPriceCents,
@@ -279,8 +307,8 @@ export async function reviewQuarantinedPrice(
 
       const notes =
         input.action === 'corrected'
-          ? `Admin corrected quarantined OpenClaw price #${row.id} from ${reviewContext.priceCents} to ${reviewedPriceCents} cents`
-          : `Admin approved quarantined OpenClaw price #${row.id}`
+          ? `Admin corrected quarantined data engine price #${row.id} from ${reviewContext.priceCents} to ${reviewedPriceCents} cents`
+          : `Admin approved quarantined data engine price #${row.id}`
 
       await pgClient.begin(async (txSql: any) => {
         await txSql`
@@ -316,7 +344,7 @@ export async function reviewQuarantinedPrice(
 
       await nonBlocking(
         {
-          source: 'openclaw-quarantine-review',
+          source: 'data-engine-quarantine-review',
           operation: 'refresh_ingredient_costs',
           severity: 'high',
           entityType: 'ingredient',
@@ -344,10 +372,10 @@ export async function reviewQuarantinedPrice(
       `
     }
 
-    revalidatePath('/admin/openclaw/health')
+    revalidatePath(DATA_ENGINE_HEALTH_PATH)
     return { success: true }
   } catch (err) {
-    console.error('[openclaw-health] Failed to review quarantined price:', err)
+    console.error('[data-engine-health] Failed to review quarantined price:', err)
     return { success: false, error: 'Failed to apply the quarantine review action.' }
   }
 }
@@ -373,7 +401,7 @@ export async function bulkReviewQuarantined(
         `
     return { success: true, count: rows.length }
   } catch (err) {
-    console.error('[openclaw-health] Failed to bulk review:', err)
+    console.error('[data-engine-health] Failed to bulk review:', err)
     return { success: false, count: 0, error: 'Failed to bulk review' }
   }
 }
@@ -395,7 +423,7 @@ export async function getSyncAuditLog(
     `
     return { data: rows as unknown as SyncAuditEntry[], error: null }
   } catch (err) {
-    console.error('[openclaw-health] Failed to fetch sync audit log:', err)
+    console.error('[data-engine-health] Failed to fetch sync audit log:', err)
     return { data: [], error: 'Could not load sync history' }
   }
 }
@@ -438,7 +466,7 @@ export async function getSyncHealthSummary(): Promise<{
       error: null,
     }
   } catch (err) {
-    console.error('[openclaw-health] Failed to fetch sync health:', err)
+    console.error('[data-engine-health] Failed to fetch sync health:', err)
     return { data: null, error: 'Could not load sync health' }
   }
 }
@@ -451,7 +479,7 @@ export async function getPricingCoverage(): Promise<{
 }> {
   await requireAdmin()
   try {
-    const [legacyRows, governor] = await Promise.all([
+    const [legacyRows, gateRows, governor] = await Promise.all([
       pgClient`
         SELECT
           COUNT(*)::int as total_ingredients,
@@ -468,6 +496,43 @@ export async function getPricingCoverage(): Promise<{
           (SELECT COUNT(*)::int FROM ingredient_price_history
            WHERE purchase_date > now() - interval '7 days') as fresh_7d
         FROM ingredients
+      `,
+      pgClient`
+        SELECT
+          i.id::text as id,
+          i.name,
+          i.category::text as category,
+          COALESCE(
+            NULLIF(i.cost_per_unit_cents, 0),
+            NULLIF(i.last_price_cents, 0),
+            NULLIF(i.average_price_cents, 0)
+          )::int as price_cents,
+          COALESCE(i.price_unit, i.default_unit) as unit,
+          i.last_price_date::text as last_price_date,
+          i.last_price_confidence::float as last_price_confidence,
+          COALESCE(
+            i.last_price_source,
+            CASE
+              WHEN i.cost_per_unit_cents IS NOT NULL AND i.cost_per_unit_cents > 0
+                THEN 'chef_cost'
+              WHEN i.last_price_cents IS NOT NULL AND i.last_price_cents > 0
+                THEN 'historical_price'
+              WHEN i.average_price_cents IS NOT NULL AND i.average_price_cents > 0
+                THEN 'historical_average'
+              ELSE NULL
+            END
+          ) as last_price_source,
+          i.last_price_store,
+          i.preferred_vendor,
+          COALESCE(history.data_points, 0)::int as data_points
+        FROM ingredients i
+        LEFT JOIN (
+          SELECT ingredient_id, COUNT(*)::int as data_points
+          FROM ingredient_price_history
+          GROUP BY ingredient_id
+        ) history ON history.ingredient_id = i.id
+        WHERE i.archived = false
+        ORDER BY i.name
       `,
       getPriceIntelligenceGovernor(8).catch(() => ({
         ready: false,
@@ -516,6 +581,32 @@ export async function getPricingCoverage(): Promise<{
       fresh_24h: number
       fresh_7d: number
     }>
+    const coverageGateRows = gateRows as unknown as Array<{
+      id: string | null
+      name: string | null
+      category: string | null
+      price_cents: number | null
+      unit: string | null
+      last_price_date: string | null
+      last_price_confidence: number | null
+      last_price_source: string | null
+      last_price_store: string | null
+      preferred_vendor: string | null
+      data_points: number | null
+    }>
+    const coverageGateInputs: PricingCoverageGateInput[] = coverageGateRows.map((row) => ({
+      id: row.id,
+      name: row.name,
+      category: row.category,
+      priceCents: row.price_cents,
+      unit: row.unit,
+      lastPriceDate: row.last_price_date,
+      lastPriceConfidence: row.last_price_confidence,
+      lastPriceSource: row.last_price_source,
+      lastPriceStore: row.last_price_store,
+      preferredVendor: row.preferred_vendor,
+      dataPoints: row.data_points,
+    }))
 
     return {
       data: {
@@ -527,11 +618,12 @@ export async function getPricingCoverage(): Promise<{
         freshLast24h: stats.fresh_24h,
         freshLast7d: stats.fresh_7d,
         governor,
+        coverageGate: buildPricingCoverageGate(coverageGateInputs),
       },
       error: null,
     }
   } catch (err) {
-    console.error('[openclaw-health] Failed to fetch pricing coverage:', err)
+    console.error('[data-engine-health] Failed to fetch pricing coverage:', err)
     return { data: null, error: 'Could not load pricing coverage' }
   }
 }

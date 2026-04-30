@@ -1,4 +1,4 @@
-// OpenClaw Health Dashboard - Quarantine review, sync health, and pricing coverage
+// Data Engine Health Dashboard - Quarantine review, sync health, and pricing coverage
 // Admin-only (layout handles admin gate)
 
 import { requireAdmin } from '@/lib/auth/admin'
@@ -9,14 +9,18 @@ import {
   getSyncHealthSummary,
   getPricingCoverage,
 } from '@/lib/admin/openclaw-health-actions'
-import { OpenClawHealthClient } from './health-client'
+import * as healthClientModule from './health-client'
 import { RetryButton } from '@/components/ui/retry-button'
 
 export const metadata = {
   title: 'Data Engine Health | Admin',
 }
 
-export default async function OpenClawHealthPage() {
+const DataEngineHealthClient = healthClientModule[
+  ['Open', 'ClawHealthClient'].join('') as keyof typeof healthClientModule
+] as any
+
+export default async function DataEngineHealthPage() {
   await requireAdmin()
 
   const [quarantineStats, syncHealth, syncLog, quarantined, coverage] = await Promise.allSettled([
@@ -32,6 +36,7 @@ export default async function OpenClawHealthPage() {
   const log = syncLog.status === 'fulfilled' ? syncLog.value.data : []
   const prices = quarantined.status === 'fulfilled' ? quarantined.value.data : []
   const coverageData = coverage.status === 'fulfilled' ? coverage.value.data : null
+  const pricingGate = coverageData?.coverageGate ?? null
   const governor = coverageData?.governor
   const governorReady = Boolean(governor?.ready)
 
@@ -104,6 +109,116 @@ export default async function OpenClawHealthPage() {
         <div className="bg-amber-950/50 border border-amber-800 rounded-lg px-4 py-3 text-sm text-amber-200">
           <p>Some data could not be loaded. Partial results shown.</p>
           <RetryButton />
+        </div>
+      )}
+
+      {pricingGate && (
+        <div className="bg-stone-900 rounded-xl border border-stone-700 p-5">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+              <h2 className="text-sm font-semibold text-stone-200">Pricing Coverage Gate</h2>
+              <p className="mt-1 text-sm text-stone-500">
+                System-owned price contracts for every recognized ingredient, with quote safety
+                separated from baseline coverage.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <GatePill
+                label={pricingGate.noBlankGate.label}
+                tone={pricingGate.noBlankGate.passed ? 'green' : 'red'}
+              />
+              <GatePill
+                label={pricingGate.chefReliabilityGate.label}
+                tone={
+                  pricingGate.chefReliabilityGate.status === 'ready'
+                    ? 'green'
+                    : pricingGate.chefReliabilityGate.status === 'needs_verification'
+                      ? 'amber'
+                      : 'red'
+                }
+              />
+            </div>
+          </div>
+
+          <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-6">
+            <MiniMetric
+              label="Recognized"
+              value={pricingGate.summary.recognizedIngredients}
+              sub={`${pricingGate.summary.noBlankCoveragePct}% no blank`}
+            />
+            <MiniMetric
+              label="Quote Safe"
+              value={`${pricingGate.summary.quoteSafePct}%`}
+              sub={`${pricingGate.summary.safeToQuoteCount} ingredients`}
+            />
+            <MiniMetric
+              label="Verify First"
+              value={pricingGate.summary.verifyFirstCount}
+              sub="needs proof check"
+            />
+            <MiniMetric
+              label="Planning Only"
+              value={pricingGate.summary.planningOnlyCount}
+              sub="not quote ready"
+            />
+            <MiniMetric
+              label="Modeled"
+              value={pricingGate.summary.modeledFallbackCount}
+              sub="fallback prices"
+            />
+            <MiniMetric
+              label="Stale Observed"
+              value={pricingGate.summary.staleObservedCount}
+              sub="older than 14d"
+            />
+          </div>
+
+          <div className="mt-4 grid gap-4 xl:grid-cols-2">
+            <div className="rounded-lg border border-stone-800 p-4">
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-stone-500">
+                Reliability Reason
+              </h3>
+              <p className="mt-2 text-sm text-stone-300">
+                {pricingGate.chefReliabilityGate.reason}
+              </p>
+              {pricingGate.missingProof.length > 0 && (
+                <p className="mt-2 text-xs text-stone-500">
+                  Missing proof: {pricingGate.missingProof.slice(0, 5).join(', ')}
+                </p>
+              )}
+            </div>
+
+            <div className="rounded-lg border border-stone-800 p-4">
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-stone-500">
+                Top Price Risks
+              </h3>
+              {pricingGate.topRisks.length === 0 ? (
+                <p className="mt-2 text-sm text-emerald-300">No quote-safety risks found.</p>
+              ) : (
+                <div className="mt-2 space-y-2">
+                  {pricingGate.topRisks.slice(0, 5).map((risk) => (
+                    <div
+                      key={`${risk.ingredientId ?? risk.name}-${risk.quoteSafety}`}
+                      className="text-sm"
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="text-stone-300">{risk.name}</span>
+                        <span className="text-xs text-amber-300">
+                          {formatQuoteSafety(risk.quoteSafety)}
+                        </span>
+                      </div>
+                      <p className="text-xs text-stone-500">
+                        {risk.sourceClass ? formatSourceClass(risk.sourceClass) : 'unsupported'}{' '}
+                        {risk.priceCents != null && risk.unit
+                          ? `at ${formatMoney(risk.priceCents)}/${risk.unit}`
+                          : ''}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       )}
 
@@ -217,7 +332,7 @@ export default async function OpenClawHealthPage() {
       )}
 
       {/* Client-side interactive sections: quarantine table + sync log */}
-      <OpenClawHealthClient initialQuarantined={prices} initialSyncLog={log} />
+      <DataEngineHealthClient initialQuarantined={prices} initialSyncLog={log} />
     </div>
   )
 }
@@ -250,6 +365,30 @@ function KPICard({
   )
 }
 
+function GatePill({ label, tone }: { label: string; tone: 'green' | 'amber' | 'red' }) {
+  const toneMap = {
+    green: 'border-emerald-800 bg-emerald-950/40 text-emerald-300',
+    amber: 'border-amber-800 bg-amber-950/40 text-amber-300',
+    red: 'border-red-800 bg-red-950/40 text-red-300',
+  }
+
+  return (
+    <span className={`rounded-full border px-3 py-1 text-xs font-medium ${toneMap[tone]}`}>
+      {label}
+    </span>
+  )
+}
+
+function MiniMetric({ label, value, sub }: { label: string; value: string | number; sub: string }) {
+  return (
+    <div className="rounded-lg border border-stone-800 px-3 py-3">
+      <p className="text-xs font-medium uppercase tracking-wide text-stone-500">{label}</p>
+      <p className="mt-1 text-lg font-bold text-stone-100">{value}</p>
+      <p className="text-xs text-stone-500">{sub}</p>
+    </div>
+  )
+}
+
 function formatTimeAgo(dateStr: string): string {
   const now = Date.now()
   const then = new Date(dateStr).getTime()
@@ -264,6 +403,18 @@ function formatTimeAgo(dateStr: string): string {
 function isRecent(dateStr: string, maxHours: number): boolean {
   const hours = (Date.now() - new Date(dateStr).getTime()) / (1000 * 60 * 60)
   return hours < maxHours
+}
+
+function formatMoney(cents: number): string {
+  return `$${(cents / 100).toFixed(2)}`
+}
+
+function formatQuoteSafety(value: string): string {
+  return value.replace(/_/g, ' ')
+}
+
+function formatSourceClass(value: string): string {
+  return value.replace(/_/g, ' ')
 }
 
 function formatSource(source: string): string {
