@@ -1,7 +1,7 @@
 // Event Status Badge - Displays event status with appropriate styling
 'use client'
 
-import { Badge } from '@/components/ui/badge'
+import { StateMotionBadge } from '@/components/ui/state-motion'
 
 export type EventStatus =
   | 'draft'
@@ -29,5 +29,9 @@ const STATUS_CONFIG: Record<
 
 export function EventStatusBadge({ status }: { status: EventStatus }) {
   const config = STATUS_CONFIG[status]
-  return <Badge variant={config.variant}>{config.label}</Badge>
+  return (
+    <StateMotionBadge watch={status} variant={config.variant}>
+      {config.label}
+    </StateMotionBadge>
+  )
 }

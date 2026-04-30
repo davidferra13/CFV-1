@@ -5,9 +5,13 @@ import { useTransition } from 'react'
 import { toast } from 'sonner'
 import Link from 'next/link'
 import { CheckCircle2, AlertTriangle, XCircle, RefreshCw } from '@/components/ui/icons'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  MotionProgressFill,
+  StateChangePulse,
+  StateMotionBadge,
+} from '@/components/ui/state-motion'
 import { evaluateEventReadiness } from '@/lib/events/event-readiness-engine'
 import type {
   EventReadinessResult,
@@ -52,27 +56,32 @@ function CheckIcon({ check }: { check: ReadinessCheck }) {
 
 function CheckRow({ check }: { check: ReadinessCheck }) {
   return (
-    <div className="flex items-center gap-3 py-1.5">
-      <CheckIcon check={check} />
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-stone-200">{check.label}</span>
-          {check.blocking && check.status === 'fail' && (
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-rose-400">
-              blocking
-            </span>
-          )}
+    <StateChangePulse
+      watch={`${check.status}:${check.message}:${check.blocking ? 'blocking' : 'open'}`}
+      className="block"
+    >
+      <div className="flex items-center gap-3 py-1.5">
+        <CheckIcon check={check} />
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-stone-200">{check.label}</span>
+            {check.blocking && check.status === 'fail' && (
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-rose-400">
+                blocking
+              </span>
+            )}
+          </div>
+          <p className="text-xs text-stone-500">{check.message}</p>
         </div>
-        <p className="text-xs text-stone-500">{check.message}</p>
+        {check.status !== 'pass' && (
+          <Link href={check.fixRoute}>
+            <Button variant="ghost" size="sm" className="h-7 text-xs">
+              {check.fixLabel}
+            </Button>
+          </Link>
+        )}
       </div>
-      {check.status !== 'pass' && (
-        <Link href={check.fixRoute}>
-          <Button variant="ghost" size="sm" className="h-7 text-xs">
-            {check.fixLabel}
-          </Button>
-        </Link>
-      )}
-    </div>
+    </StateChangePulse>
   )
 }
 
@@ -105,7 +114,9 @@ export function EventReadinessEnginePanel({ eventId, readiness }: EventReadiness
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <CardTitle className="text-base">Event Readiness</CardTitle>
-            <Badge variant={config.badgeVariant}>{config.label}</Badge>
+            <StateMotionBadge watch={readiness.overallStatus} variant={config.badgeVariant}>
+              {config.label}
+            </StateMotionBadge>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-sm font-mono text-stone-400">
@@ -124,15 +135,15 @@ export function EventReadinessEnginePanel({ eventId, readiness }: EventReadiness
         </div>
         {/* Score bar */}
         <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-stone-800">
-          <div
-            className={`h-full rounded-full transition-all duration-500 ${
+          <MotionProgressFill
+            value={readiness.score}
+            className={
               readiness.overallStatus === 'READY'
                 ? 'bg-emerald-500'
                 : readiness.overallStatus === 'AT_RISK'
                   ? 'bg-amber-500'
                   : 'bg-rose-500'
-            }`}
-            style={{ width: `${readiness.score}%` }}
+            }
           />
         </div>
       </CardHeader>
@@ -154,8 +165,12 @@ interface EventReadinessBadgeProps {
 export function EventReadinessBadge({ readiness }: EventReadinessBadgeProps) {
   const config = STATUS_CONFIG[readiness.overallStatus]
   return (
-    <Badge variant={config.badgeVariant} className="text-xs">
+    <StateMotionBadge
+      watch={readiness.overallStatus}
+      variant={config.badgeVariant}
+      className="text-xs"
+    >
       {config.label} ({readiness.score}%)
-    </Badge>
+    </StateMotionBadge>
   )
 }

@@ -86,6 +86,10 @@
 
 ---
 
+## Current Shared UI Notes
+
+- State-change motion layer: `components/ui/state-motion.tsx` provides brief, data-tied feedback for workflow status changes and progress fills. Current integrations include save state badges, event status badges, event readiness badges, event readiness check rows, and determinate progress bars. The global reduced-motion rule in `app/globals.css` applies to these animations.
+
 ## 1. DASHBOARD
 
 **Route:** `/dashboard`

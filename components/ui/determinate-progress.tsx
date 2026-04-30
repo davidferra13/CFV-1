@@ -22,6 +22,7 @@
 import { useEffect } from 'react'
 import { cn } from '@/lib/utils'
 import { useSimulatedProgress } from '@/lib/loading/use-simulated-progress'
+import { MotionProgressFill } from '@/components/ui/state-motion'
 
 interface DeterminateProgressProps {
   /** Real progress value (0-100). When provided, simulation is disabled. */
@@ -134,16 +135,7 @@ export function DeterminateProgress({
 
       {/* Track */}
       <div className={cn('w-full rounded-full overflow-hidden', trackColor, heightClasses[size])}>
-        {/* Fill */}
-        <div
-          className={cn(
-            'h-full rounded-full transition-all ease-out',
-            colorClasses,
-            // Smooth transition normally, instant snap to 100%
-            done ? 'duration-300' : 'duration-150'
-          )}
-          style={{ width: `${progress}%` }}
-        />
+        <MotionProgressFill value={progress} className={cn(colorClasses, done && 'duration-300')} />
       </div>
     </div>
   )
