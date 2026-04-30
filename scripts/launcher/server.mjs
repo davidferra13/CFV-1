@@ -13,7 +13,7 @@
 
 import { createServer } from 'node:http'
 import { exec, execFile, spawn } from 'node:child_process'
-import { readFile, writeFile, appendFile, stat, readdir } from 'node:fs/promises'
+import { readFile, writeFile, appendFile, stat, readdir, unlink } from 'node:fs/promises'
 import { readFileSync, watch } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -664,32 +664,40 @@ async function readV1BuilderApi(kind) {
 }
 
 async function submitV1BuilderTask(body) {
-  const title = String(body.title || '').trim()
-  const reason = String(body.reason || '').trim()
+  const rawText = String(body.rawText || body.paste || '').trim()
+  const titleInput = String(body.title || '').trim()
+  const reasonInput = String(body.reason || '').trim()
+  const sourceText = rawText || reasonInput || titleInput
+  const title = (titleInput || deriveV1BuilderTitle(sourceText)).slice(0, 140).trim()
+  const reason = buildV1BuilderReason(title, reasonInput, rawText)
   const allowed = new Set(['approved_v1_blocker', 'approved_v1_support', 'research_required'])
-  const classification = allowed.has(body.classification) ? body.classification : 'approved_v1_blocker'
+  const classification = allowed.has(body.classification)
+    ? body.classification
+    : rawText
+      ? 'research_required'
+      : 'approved_v1_blocker'
+
+  if (!sourceText) return { ok: false, error: 'Paste text, a title, or a reason is required' }
+  if (!title) return { ok: false, error: 'Task title could not be derived' }
+  if (!reason) return { ok: false, error: 'Task reason could not be derived' }
+
+  const payloadPath = join(PROJECT_ROOT, 'system', 'v1-builder', `.submit-${Date.now()}-${process.pid}.json`)
+  const payload = {
+    title,
+    reason,
+    classification,
+    source: 'developer',
+    pricingRelevant: body.pricingRelevant !== false,
+    v1GovernorApproved: classification === 'approved_v1_blocker' || classification === 'approved_v1_support',
+  }
   const args = [
     join(PROJECT_ROOT, 'scripts', 'v1-builder', 'submit.mjs'),
-    '--title',
-    title,
-    '--reason',
-    reason,
-    '--classification',
-    classification,
-    '--source',
-    'developer',
+    '--payloadPath',
+    payloadPath,
   ]
 
-  if (!title) return { ok: false, error: 'Task title is required' }
-  if (!reason) return { ok: false, error: 'Task reason is required' }
-  if (classification === 'approved_v1_blocker' || classification === 'approved_v1_support') {
-    args.push('--v1-governor-approved')
-  }
-  if (body.pricingRelevant !== false) {
-    args.push('--pricingRelevant')
-  }
-
   try {
+    await writeFile(payloadPath, JSON.stringify(payload, null, 2), 'utf8')
     const { stdout } = await execFileAsync(process.execPath, args, {
       cwd: PROJECT_ROOT,
       windowsHide: true,
@@ -705,7 +713,30 @@ async function submitV1BuilderTask(body) {
       ok: false,
       error: `Failed to submit V1 builder task: ${err.message}`,
     }
+  } finally {
+    await unlink(payloadPath).catch(() => {})
   }
+}
+
+function deriveV1BuilderTitle(text) {
+  const firstLine = String(text || '')
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .find(Boolean)
+
+  const normalized = String(firstLine || 'Pasted intake')
+    .replace(/^#+\s*/, '')
+    .replace(/^\s*[-*]\s*/, '')
+    .trim()
+
+  return normalized || 'Pasted intake'
+}
+
+function buildV1BuilderReason(title, reasonInput, rawText) {
+  if (reasonInput && rawText) return `${reasonInput}\n\nPasted context:\n${rawText}`
+  if (reasonInput) return reasonInput
+  if (rawText) return rawText
+  return title
 }
 
 async function readPersistentLog(lines = 100) {
