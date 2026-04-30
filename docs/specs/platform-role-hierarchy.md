@@ -25,6 +25,7 @@ FREE           Default. Core features only.
 - **Who:** `davidferra13@gmail.com` only. Hardcoded in `lib/platform/owner-account.ts`.
 - **How granted:** `platform_admins` row with `access_level = 'owner'`.
 - **Failsafe:** `Founder Authority` resolves the canonical founder session as owner even if the `platform_admins` row is stale.
+- **Database guard:** `20260430000002_founder_authority_platform_guard.sql` blocks direct SQL from deleting, disabling, demoting, or retargeting the canonical founder `platform_admins` row.
 - **Access:** Everything. Admin panel, dev tools, all features, all modules, focus mode bypass, Remy in admin portal.
 - **UI:** Full admin nav, environment badge, all modules visible regardless of focus mode.
 
