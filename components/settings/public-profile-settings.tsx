@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Alert } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
+import { Check, Copy, ExternalLink } from '@/components/ui/icons'
 import { updateChefPortalTheme, uploadChefPortalBackgroundImage } from '@/lib/profile/actions'
 import { updatePartner } from '@/lib/partners/actions'
 
@@ -30,12 +31,14 @@ const TYPE_LABELS: Record<string, string> = {
 }
 
 export function PublicProfileSettings({
+  publicSlug,
   currentTagline,
   currentPrimaryColor,
   currentBackgroundColor,
   currentBackgroundImageUrl,
   partners,
 }: {
+  publicSlug: string | null
   currentTagline: string | null
   currentPrimaryColor: string | null
   currentBackgroundColor: string | null
@@ -52,6 +55,13 @@ export function PublicProfileSettings({
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+  const [copiedHubLink, setCopiedHubLink] = useState(false)
+  const [publicOrigin, setPublicOrigin] = useState('https://app.cheflowhq.com')
+  const hubUrl = publicSlug ? `${publicOrigin}/chef/${publicSlug}?view=hub&source=bio` : null
+
+  useEffect(() => {
+    setPublicOrigin(window.location.origin)
+  }, [])
 
   useEffect(() => {
     if (!selectedBackgroundFile) {
@@ -103,6 +113,18 @@ export function PublicProfileSettings({
       router.refresh()
     } catch {
       setError('Failed to update showcase visibility')
+    }
+  }
+
+  async function handleCopyHubLink() {
+    if (!hubUrl) return
+
+    try {
+      await navigator.clipboard.writeText(hubUrl)
+      setCopiedHubLink(true)
+      setTimeout(() => setCopiedHubLink(false), 1800)
+    } catch {
+      setError('Failed to copy hub link')
     }
   }
 
@@ -186,6 +208,53 @@ export function PublicProfileSettings({
         <Button onClick={handleSaveProfile} disabled={saving}>
           {saving ? 'Saving...' : 'Save Profile'}
         </Button>
+      </Card>
+
+      <Card className="p-6 space-y-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-stone-100">Link-in-Bio Hub</h2>
+            <p className="mt-1 text-sm text-stone-500">
+              Use this compact public view for social bios, QR codes, partner referrals, and direct
+              client messages.
+            </p>
+          </div>
+          {hubUrl && (
+            <a
+              href={hubUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-sm font-medium text-stone-300 underline underline-offset-4 hover:text-stone-100"
+            >
+              Preview <ExternalLink className="h-4 w-4" />
+            </a>
+          )}
+        </div>
+
+        {hubUrl ? (
+          <div className="space-y-3">
+            <div className="rounded-lg border border-stone-700 bg-stone-950 px-3 py-2 text-sm text-stone-300">
+              {hubUrl}
+            </div>
+            <Button variant="secondary" onClick={handleCopyHubLink}>
+              {copiedHubLink ? (
+                <>
+                  <Check className="mr-2 h-4 w-4" />
+                  Copied
+                </>
+              ) : (
+                <>
+                  <Copy className="mr-2 h-4 w-4" />
+                  Copy Hub Link
+                </>
+              )}
+            </Button>
+          </div>
+        ) : (
+          <p className="rounded-lg border border-stone-700 bg-stone-950 px-3 py-2 text-sm text-stone-400">
+            Set a public profile URL before sharing your link-in-bio hub.
+          </p>
+        )}
       </Card>
 
       {/* Showcase Partners */}
