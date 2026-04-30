@@ -278,8 +278,9 @@ At the start of every ChefFlow task:
 2. Load any skill named by the user.
 3. Load the most specific skill implied by the task.
 4. If the request contains repeated developer behavior, new operating guidance, a skill failure, or external process notes that should survive this chat, also use `skill-garden`.
-5. If the user pastes many personas or third-party persona output, use `persona-dump`, then hand off to `persona-inbox`.
-6. If a skill failed or missed a recurring rule, use `heal-skill` or `skill-garden` to patch it before finishing.
+5. If the task is large, multi-track, research-heavy, build-heavy, or has separable side work, load `swarm-governor` and use bounded parallel agents when they reduce wall-clock time without adding file ownership, validation, or integration risk.
+6. If the user pastes many personas or third-party persona output, use `persona-dump`, then hand off to `persona-inbox`.
+7. If a skill failed or missed a recurring rule, use `heal-skill` or `skill-garden` to patch it before finishing.
 
 Codex cannot run literal background daemon skills. The project substitute is a mandatory routing loop plus trigger descriptions that cause future agents to load the right skills automatically from context.
 
@@ -357,6 +358,7 @@ A skill is a set of local instructions stored in a `SKILL.md` file. Each entry b
 - `skill-garden`: Create, improve, and self-heal ChefFlow project skills from observed developer behavior. Use when the user gives operating guidance such as "always", "never", "Codex should", "make Codex smarter", "self-heal", "create skills", or "use this behavior going forward"; when a repeated workflow, correction, failure, persona import pattern, Hermes/OpenCloy markdown, or external conversation should become reusable Codex behavior; or when an existing skill needs refinement. File: `.claude/skills/skill-garden/SKILL.md`
 - `soak`: Run the full software aging (soak) pipeline - useEffect cleanup audit, fixes, and soak tests. File: `.claude/skills/soak/SKILL.md`
 - `status`: Quick "where am I?" snapshot - branch, uncommitted work, last commit, what was in progress, what's next. File: `.claude/skills/status/SKILL.md`
+- `swarm-governor`: Bounded Codex orchestration for ChefFlow. Use automatically when a task is large, multi-track, research-heavy, build-heavy, or likely to benefit from parallel explorers or workers. File: `.claude/skills/swarm-governor/SKILL.md`
 - `tdd`: Test-Driven Development. Write test first, watch it fail, write minimal code to pass, refactor. No production code without a failing test first. File: `.claude/skills/tdd/SKILL.md`
 - `validation-gate`: Check user-validation evidence before building new ChefFlow features. Use when a task proposes new product surface, backlog expansion, persona-driven features, survey or Wave-1 operator validation, launch readiness, "validation phase", "no new features without feedback", or when old findings show the team is building without real user evidence. File: `.claude/skills/validation-gate/SKILL.md`
 - `verify`: Run the full ChefFlow verification protocol - spec audit, build integrity, production parity, and Playwright pressure testing. File: `.claude/skills/verify/SKILL.md`
