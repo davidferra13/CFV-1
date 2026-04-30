@@ -1,0 +1,387 @@
+{
+  "generated_at": "2026-04-30T16:24:33.075Z",
+  "prompt": "keep improving ChefFlow PWA install and device app setup",
+  "terms": ["keep", "improving", "chefflow", "pwa", "install", "device", "app", "setup"],
+  "scanned_dirs": [
+    "app",
+    "components",
+    "lib",
+    "docs/specs",
+    "docs/changes",
+    "docs/app-complete-audit.md",
+    "project-map",
+    "memory",
+    "system/intake",
+    "system/agent-reports"
+  ],
+  "canonical_surfaces": [
+    {
+      "id": "autonomous-v1-builder",
+      "label": "Autonomous V1 Builder Loop",
+      "score": 2,
+      "hits": ["app"],
+      "canonical_routes": [],
+      "canonical_files": [
+        "docs/specs/autonomous-v1-builder-contract.md",
+        "docs/v1-v2-governor.md",
+        "docs/specs/p0-builder-agent-foundation.md"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Extend the governed V1 builder contract instead of creating another queue or autonomous agent surface."
+      }
+    },
+    {
+      "id": "chef-command-plane",
+      "label": "ChefFlow Command Plane",
+      "score": 2,
+      "hits": ["chefflow"],
+      "canonical_routes": ["/dashboard"],
+      "canonical_files": [
+        "docs/specs/chefflow-command-plane.md",
+        "lib/interface/action-layer.ts",
+        "lib/events/operating-spine.ts",
+        "components/platform-shell/context-command-panel.tsx"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach command-plane behavior to the canonical computed contract instead of creating another dashboard, Remy hub, command palette, or page-local action list."
+      }
+    },
+    {
+      "id": "client-intake",
+      "label": "Client Intake",
+      "score": 2,
+      "hits": ["chefflow", "app"],
+      "canonical_routes": ["/book", "/clients/intake"],
+      "canonical_files": [
+        "app/api/book/route.ts",
+        "lib/inquiries/public-actions.ts",
+        "public/embed/chefflow-widget.js"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach to the existing intake lane contract."
+      }
+    },
+    {
+      "id": "public-homepage",
+      "label": "Public Homepage",
+      "score": 1,
+      "hits": ["app"],
+      "canonical_routes": ["/"],
+      "canonical_files": ["app/(public)/page.tsx"],
+      "sandbox_routes": ["/sandbox/homepage"],
+      "duplicate_policy": {
+        "allowed_duplicates": 1,
+        "allowed_reason": "One sandbox duplicate for interactive experimentation."
+      }
+    },
+    {
+      "id": "agent-skill-system",
+      "label": "Agent Skill System",
+      "score": 1,
+      "hits": ["chefflow"],
+      "canonical_routes": [],
+      "canonical_files": [
+        "devtools/skill-router.mjs",
+        "devtools/skill-validator.mjs",
+        "devtools/skill-trigger-tests.mjs",
+        "system/agent-golden-prompts/default.json"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Add to the existing skill harness."
+      }
+    },
+    {
+      "id": "remy-ai",
+      "label": "Remy AI",
+      "score": 1,
+      "hits": ["chefflow"],
+      "canonical_routes": [],
+      "canonical_files": ["components/ai/remy-drawer.tsx", "lib/ai/remy-actions.ts"],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach new assistant behavior to Remy or its shared AI modules."
+      }
+    },
+    {
+      "id": "inventory",
+      "label": "Inventory and Pantry",
+      "score": 1,
+      "hits": ["app"],
+      "canonical_routes": ["/inventory", "/ops/inventory"],
+      "canonical_files": ["app/(chef)/inventory/page.tsx", "lib/inventory/pantry-engine.ts"],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Deepen the inventory domain in place."
+      }
+    },
+    {
+      "id": "calendar",
+      "label": "Calendar and Scheduling",
+      "score": 1,
+      "hits": ["app"],
+      "canonical_routes": ["/calendar"],
+      "canonical_files": [
+        "app/(chef)/calendar/page.tsx",
+        "components/calendar/unified-calendar-view.tsx"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach to calendar and scheduling modules."
+      }
+    }
+  ],
+  "related_files": [
+    {
+      "file": "components/pwa/install-guide-client.tsx",
+      "kind": "component",
+      "score": 35,
+      "hits": ["pwa", "install", "keep", "chefflow", "device", "app"]
+    },
+    {
+      "file": "components/settings/desktop-app-settings.tsx",
+      "kind": "component",
+      "score": 31,
+      "hits": ["app", "chefflow", "pwa", "install", "device", "setup"]
+    },
+    {
+      "file": "components/pwa/device-status-panel.tsx",
+      "kind": "component",
+      "score": 28,
+      "hits": ["pwa", "device", "chefflow", "install", "app"]
+    },
+    {
+      "file": "components/pwa/use-pwa-install.ts",
+      "kind": "component",
+      "score": 28,
+      "hits": ["pwa", "install", "device", "app"]
+    },
+    {
+      "file": "app/(chef)/settings/page.tsx",
+      "kind": "route",
+      "score": 26,
+      "hits": ["app", "keep", "chefflow", "install", "device", "setup"]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-competitive-surface.md",
+      "kind": "spec",
+      "score": 26,
+      "hits": ["chefflow", "pwa", "install", "device", "app", "setup"]
+    },
+    {
+      "file": "docs/specs/system-completeness-interrogation.md",
+      "kind": "spec",
+      "score": 24,
+      "hits": ["keep", "chefflow", "pwa", "install", "device", "app", "setup"]
+    },
+    {
+      "file": "docs/specs/openclaw-food-price-intelligence.md",
+      "kind": "spec",
+      "score": 22,
+      "hits": ["keep", "chefflow", "install", "app", "setup"]
+    },
+    {
+      "file": "docs/specs/openclaw-playwright-sentinel.md",
+      "kind": "spec",
+      "score": 22,
+      "hits": ["keep", "chefflow", "install", "app", "setup"]
+    },
+    {
+      "file": "system/agent-reports/context-continuity/20260430T035440Z-freeze-the-project-and-audit-the-chefflow-codebase-against-the-installed-matt-po.json",
+      "kind": "system",
+      "score": 22,
+      "hits": ["chefflow", "install", "app"]
+    },
+    {
+      "file": "docs/specs/chefflow-command-plane.md",
+      "kind": "spec",
+      "score": 21,
+      "hits": ["chefflow", "keep", "app", "setup"]
+    },
+    {
+      "file": "docs/specs/cloud-mobile-unified-migration.md",
+      "kind": "spec",
+      "score": 21,
+      "hits": ["chefflow", "pwa", "install", "device", "app"]
+    },
+    {
+      "file": "docs/specs/self-hosted-deployment-standard.md",
+      "kind": "spec",
+      "score": 21,
+      "hits": ["keep", "chefflow", "install", "app", "setup"]
+    },
+    {
+      "file": "project-map/chefflow.md",
+      "kind": "project-map",
+      "score": 21,
+      "hits": ["chefflow", "keep", "pwa", "install", "app"]
+    },
+    {
+      "file": "components/pwa/install-prompt.tsx",
+      "kind": "component",
+      "score": 20,
+      "hits": ["pwa", "install", "chefflow", "device"]
+    },
+    {
+      "file": "docs/app-complete-audit.md",
+      "kind": "other",
+      "score": 20,
+      "hits": ["app", "keep", "chefflow", "install", "setup"]
+    },
+    {
+      "file": "docs/specs/local-ai-integration.md",
+      "kind": "spec",
+      "score": 20,
+      "hits": ["keep", "chefflow", "install", "device", "app", "setup"]
+    },
+    {
+      "file": "docs/specs/openclaw-v2-unified-pricing.md",
+      "kind": "spec",
+      "score": 20,
+      "hits": ["keep", "improving", "chefflow", "install", "app"]
+    },
+    {
+      "file": "lib/marketing/compare-pages.ts",
+      "kind": "module",
+      "score": 20,
+      "hits": ["keep", "chefflow", "app", "setup"]
+    },
+    {
+      "file": "app/(bare)/install/page.tsx",
+      "kind": "route",
+      "score": 19,
+      "hits": ["install", "app", "chefflow", "pwa"]
+    },
+    {
+      "file": "docs/specs/digital-twin-simulation-protocol.md",
+      "kind": "spec",
+      "score": 19,
+      "hits": ["keep", "chefflow", "pwa", "app", "setup"]
+    },
+    {
+      "file": "docs/specs/onboarding-overhaul.md",
+      "kind": "spec",
+      "score": 19,
+      "hits": ["keep", "chefflow", "device", "app", "setup"]
+    },
+    {
+      "file": "docs/specs/p1-operational-reassurance-and-what-happens-next.md",
+      "kind": "spec",
+      "score": 19,
+      "hits": ["app", "keep", "chefflow"]
+    },
+    {
+      "file": "system/agent-reports/context-continuity/20260430T153916Z-chefflow-command-plane-unified-app-wide-operating-state-next-action-blocked-risk.json",
+      "kind": "system",
+      "score": 19,
+      "hits": ["chefflow", "app", "install"]
+    },
+    {
+      "file": "system/agent-reports/context-continuity/20260430T154248Z-chefflow-command-plane-unified-app-wide-operating-state-next-action-blocked-risk.json",
+      "kind": "system",
+      "score": 19,
+      "hits": ["chefflow", "app", "install"]
+    },
+    {
+      "file": "app/(chef)/loyalty/learn/loyalty-guide-content.tsx",
+      "kind": "route",
+      "score": 18,
+      "hits": ["app", "keep", "chefflow"]
+    },
+    {
+      "file": "app/(public)/compare/[slug]/page.tsx",
+      "kind": "route",
+      "score": 18,
+      "hits": ["app", "keep", "chefflow", "setup"]
+    },
+    {
+      "file": "docs/specs/app-polish-and-completion.md",
+      "kind": "spec",
+      "score": 18,
+      "hits": ["app", "chefflow", "pwa", "setup"]
+    },
+    {
+      "file": "docs/specs/openclaw-inventory-evolution.md",
+      "kind": "spec",
+      "score": 18,
+      "hits": ["keep", "chefflow", "install", "app", "setup"]
+    },
+    {
+      "file": "docs/specs/p1-chef-getting-started-surface-consolidation.md",
+      "kind": "spec",
+      "score": 18,
+      "hits": ["keep", "chefflow", "app", "setup"]
+    }
+  ],
+  "recent_commits": [
+    {
+      "line": "ce1c32dc0 chore(agent): build professional pwa install feature/professional-pwa-install",
+      "score": 4,
+      "hits": ["pwa", "install"]
+    },
+    {
+      "line": "de20eb1f0 chore(agent): fix public pwa route compile feature/professional-pwa-install",
+      "score": 3,
+      "hits": ["pwa", "install"]
+    },
+    {
+      "line": "d255d7b00 chore(agent): build chefflow command plane spec feature/professional-pwa-install",
+      "score": 3,
+      "hits": ["chefflow", "pwa", "install"]
+    },
+    {
+      "line": "341a0ab07 chore(agent): keep software fundamentals audit active feature/professional-pwa-install",
+      "score": 3,
+      "hits": ["keep", "pwa", "install"]
+    },
+    {
+      "line": "8fc7330ee chore(agent): capture monetization confidence philosophy feature-professional-pwa-install",
+      "score": 2,
+      "hits": ["pwa", "install"]
+    },
+    {
+      "line": "abfe1a252 chore(agent): update software fundamentals audit evidence feature/professional-pwa-install",
+      "score": 2,
+      "hits": ["pwa", "install"]
+    },
+    {
+      "line": "dcbfec817 chore(agent): add professional readiness gate feature/professional-pwa-install",
+      "score": 2,
+      "hits": ["pwa", "install"]
+    },
+    {
+      "line": "6aceea329 chore(agent): route release readiness to pricing reliability feature/professional-pwa-install",
+      "score": 2,
+      "hits": ["pwa", "install"]
+    },
+    {
+      "line": "424b519bb chore(agent): install v1 governor feature/haptic-explainable-event-audit",
+      "score": 1,
+      "hits": ["install"]
+    }
+  ],
+  "dirty_matches": [],
+  "claim_matches": [],
+  "duplicate_risks": [
+    {
+      "level": "medium",
+      "reason": "Multiple canonical surfaces matched the prompt.",
+      "owners": ["autonomous-v1-builder", "chef-command-plane", "client-intake"]
+    }
+  ],
+  "continuity": {
+    "decision": "extend",
+    "stop_required": false,
+    "reason": "Matched canonical surface autonomous-v1-builder."
+  }
+}

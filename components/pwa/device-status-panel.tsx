@@ -66,6 +66,22 @@ function StatusRow({
   )
 }
 
+async function fetchWithTimeout(path: string, timeoutMs: number) {
+  const controller = new AbortController()
+  const timeoutId = window.setTimeout(() => controller.abort(), timeoutMs)
+  try {
+    return await fetch(path, { cache: 'no-store', signal: controller.signal })
+  } finally {
+    window.clearTimeout(timeoutId)
+  }
+}
+
+function timeoutAfter(timeoutMs: number) {
+  return new Promise<never>((_, reject) => {
+    window.setTimeout(() => reject(new Error('Timed out')), timeoutMs)
+  })
+}
+
 export function DeviceStatusPanel({ compact = false }: { compact?: boolean }) {
   const { browserName, canPromptInstall, install, installed, isStandalone } = usePwaInstall()
   const [status, setStatus] = useState<DeviceStatus>({
@@ -106,18 +122,24 @@ export function DeviceStatusPanel({ compact = false }: { compact?: boolean }) {
       }
     }
 
-    const pendingModule = await import('@/lib/offline/idb-queue').catch(() => null)
+    const pendingModule = await Promise.race([
+      import('@/lib/offline/idb-queue'),
+      timeoutAfter(3_000),
+    ]).catch(() => null)
     if (pendingModule?.isIDBAvailable()) {
-      nextStatus.pendingCount = await pendingModule.getPendingCount().catch(() => null)
+      nextStatus.pendingCount = await Promise.race([
+        pendingModule.getPendingCount(),
+        timeoutAfter(3_000),
+      ]).catch(() => null)
     }
 
     nextStatus.storage = pendingModule?.isIDBAvailable() ? 'available' : 'unavailable'
 
-    nextStatus.manifest = await fetch('/manifest.json', { cache: 'no-store' })
+    nextStatus.manifest = await fetchWithTimeout('/manifest.json', 3_000)
       .then((response) => (response.ok ? 'available' : 'unavailable'))
       .catch(() => 'unavailable')
 
-    const buildVersion = await fetch('/api/build-version', { cache: 'no-store' })
+    const buildVersion = await fetchWithTimeout('/api/build-version', 3_000)
       .then((response) => (response.ok ? response.json() : null))
       .then((data) => (typeof data?.buildId === 'string' ? data.buildId : 'Unknown'))
       .catch(() => 'Unavailable')
@@ -170,7 +192,7 @@ export function DeviceStatusPanel({ compact = false }: { compact?: boolean }) {
   async function copyDiagnostics() {
     setCopyState('idle')
     try {
-      await navigator.clipboard.writeText(diagnostics)
+      await Promise.race([navigator.clipboard.writeText(diagnostics), timeoutAfter(2_000)])
       setCopyState('copied')
     } catch {
       setCopyState('failed')
