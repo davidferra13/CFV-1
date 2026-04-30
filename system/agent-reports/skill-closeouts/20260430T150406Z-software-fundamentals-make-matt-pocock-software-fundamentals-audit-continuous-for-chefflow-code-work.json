@@ -12,7 +12,7 @@
     "compliance": "rg em dash scan on changed files passed",
     "other": "node --check devtools/skill-router.mjs and devtools/skill-trigger-tests.mjs passed; router prompt selects software-fundamentals with skill-garden sidecar"
   },
-  "commit": null,
-  "pushed": false,
+  "commit": "341a0ab07",
+  "pushed": true,
   "notes": ""
 }
