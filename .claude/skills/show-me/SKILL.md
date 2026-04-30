@@ -1,6 +1,6 @@
 ---
 name: show-me
-description: Open and inspect the live ChefFlow website when David says "show me", "show me the site", "show me what is built", "open the website", or asks to see the current app. Use browser or Playwright evidence first, screenshots and visible UI state, without changing code, starting servers, running builds, deploying, or mutating data unless explicitly approved.
+description: Open and inspect the live ChefFlow website when David says "show me", "show me the site", "show me what is built", "open the website", "third monitor", "surveillance monitor", or asks to see the current app. Use browser or Playwright evidence first, screenshots, visible UI state, and monitor placement proof when placement is requested, without changing code, starting servers, running builds, deploying, or mutating data unless explicitly approved.
 ---
 
 # Show Me
@@ -8,6 +8,8 @@ description: Open and inspect the live ChefFlow website when David says "show me
 Treat "show me" as a visual proof request. The first action is always to open the actual ChefFlow website. Do not answer with instructions, summaries, code references, or trigger phrases before opening the website.
 
 Healed 2026-04-30: David clarified that "show me" must always open the website, not merely route to a proof workflow.
+
+Healed 2026-04-30: David clarified that "third monitor" means a visible signed-in browser window placed on the detected non-primary monitor, with window-coordinate proof. Do not treat a launched process, hidden browser, headless screenshot, or unauthenticated redirect as success.
 
 ## Procedure
 
@@ -19,9 +21,12 @@ Healed 2026-04-30: David clarified that "show me" must always open the website, 
    - If browser tools are not already available in the session, use tool discovery for Playwright or browser tools first.
    - If `localhost:3100` is unreachable, try the next configured ChefFlow URL instead of stopping at explanation.
    - Only stop before opening a page when every configured ChefFlow URL fails or a required approval would be crossed.
+   - If the user asks for the third monitor, detect monitor bounds first, place the window on that monitor, then verify the OS window handle reports coordinates inside that monitor.
+   - When a saved local auth state exists, open a signed-in browser from that state before reporting success. If only the sign-in page opens, report that exact blocker.
 3. Capture visible evidence:
    - Screenshot of the first relevant viewport.
    - Current URL, environment, and auth state if visible.
+   - Window title, process id, and OS coordinates when the user requested monitor placement.
    - Browser console or network errors when the page is broken.
    - Important visible UI surfaces, buttons, empty states, and disabled controls.
 4. Report only what the live UI proves:
@@ -36,6 +41,8 @@ Healed 2026-04-30: David clarified that "show me" must always open the website, 
 - Do not run `npm run dev`, `next build`, `next start`, deploy scripts, migrations, or data mutations.
 - Do not answer "how to trigger it" or explain the workflow when David says "show me"; open the website.
 - Do not infer built functionality from source code alone when browser evidence is possible.
+- Do not say a window is open on the third monitor unless OS window bounds prove it.
+- Do not say a route is signed in when the URL or screenshot is a sign-in redirect.
 - Do not hide broken states. A blank page, error overlay, failed auth, or dead button is the thing to show.
 - If a login is needed, use an existing saved browser/session when available. If credentials or test auth setup are needed, ask David.
 

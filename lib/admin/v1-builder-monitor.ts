@@ -441,7 +441,7 @@ async function readSourceMap(errors: string[]): Promise<BuilderSource[]> {
       kind: 'raw-input',
       path: 'system/v1-builder/intake/raw',
       trustLevel: 'raw-input',
-      summary: rawInputs,
+      summary: readyWhenMissing(rawInputs),
       destination: 'system/v1-builder/intake/signals',
       canCreateBuildCandidates: true,
     }),
@@ -451,7 +451,7 @@ async function readSourceMap(errors: string[]): Promise<BuilderSource[]> {
       kind: 'builder-state',
       path: 'system/v1-builder/intake/signals',
       trustLevel: 'signal',
-      summary: signals,
+      summary: readyWhenMissing(signals),
       destination: 'system/v1-builder/request-ledger.jsonl',
       canCreateBuildCandidates: true,
     }),
@@ -536,6 +536,10 @@ async function readSourceMap(errors: string[]): Promise<BuilderSource[]> {
       canCreateBuildCandidates: false,
     }),
   ]
+}
+
+function readyWhenMissing(summary: DirectorySummary): DirectorySummary {
+  return summary.missing ? { count: 0, lastUpdated: null, missing: false } : summary
 }
 
 function sourceRow(input: {

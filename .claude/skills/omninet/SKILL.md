@@ -32,6 +32,7 @@ Omninet should make Codex behave like a quiet expert, not a visible process engi
 9. If the task reveals reusable developer behavior, external operator guidance, repeated friction, a missing trigger, or a skill failure, run `skill-garden` in the same turn.
 10. If a skill produced bad guidance, run `heal-skill` with `skill-garden` so the fix is both local and durable.
 11. At closeout, decide the skill delta internally: `none`, `patch`, `new-skill`, or `heal`. If it is not `none`, make the skill change before final response and commit it.
+12. If David asks for windows, sign-in, Mission Control, surveillance, or third-monitor placement, route to `show-me` with `host-integrity` as the placement sidecar. Success requires a signed-in page when auth is available plus OS window bounds on the requested monitor. A PID alone, hidden process, headless screenshot, or sign-in redirect is not success.
 
 ## Harness Commands
 
@@ -90,6 +91,7 @@ Use the most specific skill that fits. Combine skills only when their responsibi
 | Situation                                                                                                                                                                                 | Primary skill                                                                                       |
 | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
 | David says "show me", "show me the site", "show me what is built", "open the website", or asks to see the current app. This means open the website first, then report visual evidence.    | `show-me`                                                                                           |
+| David asks to sign in, open windows, put Mission Control on the third monitor, use the surveillance monitor, or stop spawning offscreen windows.                                          | `show-me` with `host-integrity` as sidecar                                                          |
 | David says he is the human bottleneck, Codex is making him prompt every build, the project should build itself, or a 24/7 builder queue and monitor should exist                          | `autonomous-build-loop` with `skill-garden` when behavior is durable                                |
 | New ChefFlow feature, urgency spike, V1/V2 scope decision, Hermes or swarm build idea, Mission Control progress work, or "what should we build next" request                              | `v1-governor`, then the task-specific skill only if allowed                                         |
 | Build from a spec or implement a feature                                                                                                                                                  | `builder`                                                                                           |
