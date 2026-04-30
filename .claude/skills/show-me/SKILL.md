@@ -5,7 +5,9 @@ description: Open and inspect the live ChefFlow website when David says "show me
 
 # Show Me
 
-Treat "show me" as a visual proof request. The default action is to open the actual ChefFlow website and show exactly what is currently built, not explain from memory and not begin fixing.
+Treat "show me" as a visual proof request. The first action is always to open the actual ChefFlow website. Do not answer with instructions, summaries, code references, or trigger phrases before opening the website.
+
+Healed 2026-04-30: David clarified that "show me" must always open the website, not merely route to a proof workflow.
 
 ## Procedure
 
@@ -13,7 +15,10 @@ Treat "show me" as a visual proof request. The default action is to open the act
    - Use a URL named by the user first.
    - Otherwise prefer an already reachable ChefFlow environment: `http://localhost:3100`, then `https://beta.cheflowhq.com`, then `https://app.cheflowhq.com`.
    - Check reachability read-only. Do not start, restart, kill, build, deploy, or warm a server unless David explicitly asks.
-2. Open the site in a browser or Playwright session.
+2. Open the site in a browser or Playwright session immediately.
+   - If browser tools are not already available in the session, use tool discovery for Playwright or browser tools first.
+   - If `localhost:3100` is unreachable, try the next configured ChefFlow URL instead of stopping at explanation.
+   - Only stop before opening a page when every configured ChefFlow URL fails or a required approval would be crossed.
 3. Capture visible evidence:
    - Screenshot of the first relevant viewport.
    - Current URL, environment, and auth state if visible.
@@ -29,6 +34,7 @@ Treat "show me" as a visual proof request. The default action is to open the act
 
 - Do not treat "show me" as permission to modify code.
 - Do not run `npm run dev`, `next build`, `next start`, deploy scripts, migrations, or data mutations.
+- Do not answer "how to trigger it" or explain the workflow when David says "show me"; open the website.
 - Do not infer built functionality from source code alone when browser evidence is possible.
 - Do not hide broken states. A blank page, error overlay, failed auth, or dead button is the thing to show.
 - If a login is needed, use an existing saved browser/session when available. If credentials or test auth setup are needed, ask David.

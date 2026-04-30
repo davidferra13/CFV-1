@@ -4,8 +4,8 @@
     "prompt": "Show me what is built on the website.",
     "expect": ["omninet", "show-me"],
     "evidence": {
-      "omninet": ["show-me", "show me what is built"],
-      "show-me": ["visual proof", "actual ChefFlow website"]
+      "omninet": ["show-me", "open the website first"],
+      "show-me": ["first action is always", "actual ChefFlow website"]
     }
   },
   {
