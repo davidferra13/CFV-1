@@ -12,10 +12,16 @@ import { routeNotification } from './channel-router'
 import { DEFAULT_TIER_MAP } from './tier-config'
 import { resolveOwnerAuthUserId } from '@/lib/platform/owner-account'
 import { broadcastInsert } from '@/lib/realtime/broadcast'
+import {
+  buildInterruptionAuditMetadata,
+  type EventDayFocusContext,
+  type InterruptionAuditMetadata,
+} from './interruption-policy'
 
 let founderRecipientCache: { recipientId: string | null; expiresAt: number } | null = null
 const FOUNDER_CACHE_TTL_MS = 60_000
 const NON_MIRRORED_NOTIFICATION_ACTIONS = new Set<NotificationAction>(['account_access_alert'])
+const EVENT_DAY_FOCUS_STATUSES = ['accepted', 'paid', 'confirmed', 'in_progress'] as const
 
 async function getFounderNotificationRecipientId(db: any): Promise<string | null> {
   const now = Date.now()
@@ -82,6 +88,16 @@ export async function createNotification({
       ?.replace(/[\r\n\t]/g, ' ')
       .trim()
       .slice(0, 500) ?? null
+  const hapticAudit = buildInterruptionAuditMetadata({
+    action,
+    category,
+    metadata,
+    eventId: eventId ?? null,
+    inquiryId: inquiryId ?? null,
+    clientId: clientId ?? null,
+    actionUrl: resolvedActionUrl,
+  })
+  const enrichedMetadata = withHapticAudit(metadata, hapticAudit)
 
   // Dedup guard: skip if an identical notification was created in the last 60 seconds.
   // Prevents double-click, retry storms, and concurrent side effects from spamming.
@@ -114,7 +130,7 @@ export async function createNotification({
       event_id: eventId ?? null,
       inquiry_id: inquiryId ?? null,
       client_id: clientId ?? null,
-      metadata: metadata as unknown as Json,
+      metadata: enrichedMetadata as unknown as Json,
     })
     .select('*')
     .single()
@@ -139,7 +155,7 @@ export async function createNotification({
       !NON_MIRRORED_NOTIFICATION_ACTIONS.has(action)
     ) {
       const mirrorMetadata = {
-        ...metadata,
+        ...enrichedMetadata,
         _founder_mirror: true,
         _original_recipient_id: recipientId,
         _original_tenant_id: tenantId,
@@ -184,10 +200,70 @@ export async function createNotification({
     eventId: eventId ?? null,
     inquiryId: inquiryId ?? null,
     clientId: clientId ?? null,
-    metadata,
+    metadata: enrichedMetadata,
   }).catch((err) => {
     console.error('[createNotification] routeNotification fire failed:', err)
   })
+}
+
+function withHapticAudit(
+  metadata: Record<string, unknown>,
+  audit: InterruptionAuditMetadata
+): Record<string, unknown> {
+  return {
+    ...metadata,
+    haptic_audit: audit,
+  }
+}
+
+function localDateString(date = new Date()): string {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+export async function getEventDayFocusStatus(): Promise<EventDayFocusContext> {
+  const user = await requireAuth()
+  if (!user.tenantId) {
+    return {
+      active: false,
+      eventIds: [],
+      eventCount: 0,
+      reason: null,
+    }
+  }
+
+  const db: any = createServerClient()
+  const today = localDateString()
+  const { data, error } = await db
+    .from('events')
+    .select('id')
+    .eq('tenant_id', user.tenantId)
+    .eq('event_date', today)
+    .in('status', EVENT_DAY_FOCUS_STATUSES)
+
+  if (error) {
+    console.error('[getEventDayFocusStatus] Query failed:', error)
+    return {
+      active: false,
+      eventIds: [],
+      eventCount: 0,
+      reason: null,
+    }
+  }
+
+  const eventIds = ((data ?? []) as Array<{ id: string }>).map((event) => event.id)
+
+  return {
+    active: eventIds.length > 0,
+    eventIds,
+    eventCount: eventIds.length,
+    reason:
+      eventIds.length > 0
+        ? `Event-day focus active for ${eventIds.length} event${eventIds.length === 1 ? '' : 's'} today`
+        : null,
+  }
 }
 
 function deriveNotificationActionUrl(input: {

@@ -72,12 +72,14 @@ type DeviceAttentionSettings = {
   hapticsEnabled: boolean
   inAppVibrationEnabled: boolean
   chefMode: ChefMode
+  eventDayFocusEnabled: boolean
 }
 
 const DEFAULT_DEVICE_ATTENTION_SETTINGS: DeviceAttentionSettings = {
   hapticsEnabled: true,
   inAppVibrationEnabled: true,
   chefMode: 'available',
+  eventDayFocusEnabled: true,
 }
 
 function readDeviceAttentionSettings(): DeviceAttentionSettings {
@@ -104,6 +106,10 @@ function readDeviceAttentionSettings(): DeviceAttentionSettings {
         parsed.chefMode === 'available'
           ? parsed.chefMode
           : DEFAULT_DEVICE_ATTENTION_SETTINGS.chefMode,
+      eventDayFocusEnabled:
+        typeof parsed.eventDayFocusEnabled === 'boolean'
+          ? parsed.eventDayFocusEnabled
+          : DEFAULT_DEVICE_ATTENTION_SETTINGS.eventDayFocusEnabled,
     }
   } catch {
     return DEFAULT_DEVICE_ATTENTION_SETTINGS
@@ -243,6 +249,9 @@ export function NotificationSettingsForm({
     DEFAULT_DEVICE_ATTENTION_SETTINGS.inAppVibrationEnabled
   )
   const [chefMode, setChefMode] = useState<ChefMode>(DEFAULT_DEVICE_ATTENTION_SETTINGS.chefMode)
+  const [eventDayFocusEnabled, setEventDayFocusEnabled] = useState(
+    DEFAULT_DEVICE_ATTENTION_SETTINGS.eventDayFocusEnabled
+  )
   const [deviceSettingsLoaded, setDeviceSettingsLoaded] = useState(false)
   const dirtyCategoryList = CHEF_CATEGORIES.filter((cat) => dirtyCategories[cat])
   const hasChannelChanges = dirtyCategoryList.length > 0
@@ -253,6 +262,7 @@ export function NotificationSettingsForm({
     setHapticsEnabled(settings.hapticsEnabled)
     setInAppVibrationEnabled(settings.inAppVibrationEnabled)
     setChefMode(settings.chefMode)
+    setEventDayFocusEnabled(settings.eventDayFocusEnabled)
     setDeviceSettingsLoaded(true)
   }, [])
 
@@ -262,8 +272,9 @@ export function NotificationSettingsForm({
       hapticsEnabled,
       inAppVibrationEnabled,
       chefMode,
+      eventDayFocusEnabled,
     })
-  }, [chefMode, deviceSettingsLoaded, hapticsEnabled, inAppVibrationEnabled])
+  }, [chefMode, deviceSettingsLoaded, eventDayFocusEnabled, hapticsEnabled, inAppVibrationEnabled])
 
   useEffect(() => {
     if (!hasChannelChanges || isSavingChannelChanges) return
@@ -502,6 +513,24 @@ export function NotificationSettingsForm({
               </span>
             </label>
           </div>
+
+          <label className="flex items-start gap-3 rounded-lg border border-stone-800 bg-stone-950/40 p-3">
+            <input
+              type="checkbox"
+              checked={eventDayFocusEnabled}
+              onChange={(e) => setEventDayFocusEnabled(e.target.checked)}
+              className="mt-0.5 rounded border-stone-600 accent-stone-900"
+            />
+            <span className="text-sm text-stone-300">
+              <span className="block font-medium text-stone-100">
+                Event-day focus automatically
+              </span>
+              <span className="mt-1 block text-stone-400">
+                On active event days, non-event leads and routine updates stay badge-only unless
+                money or safety is at risk.
+              </span>
+            </span>
+          </label>
 
           <div>
             <p className="text-sm font-medium text-stone-100">Chef mode</p>

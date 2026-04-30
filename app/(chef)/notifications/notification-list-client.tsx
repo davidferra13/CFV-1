@@ -45,6 +45,7 @@ import {
   getUnreadNotifications,
 } from '@/lib/notifications/check'
 import { useNotifications } from '@/components/notifications/notification-provider'
+import { NotificationInterruptionReason } from '@/components/notifications/notification-interruption-reason'
 import {
   NOTIFICATION_CONFIG,
   CATEGORY_LABELS,
@@ -532,6 +533,7 @@ export function NotificationListClient() {
                               {notification.body}
                             </p>
                           )}
+                          <NotificationInterruptionReason notification={notification} />
                           <div className="flex items-center gap-2 mt-1.5">
                             <span
                               className={`inline-flex items-center text-xxs px-1.5 py-0.5 rounded border ${badgeClass}`}

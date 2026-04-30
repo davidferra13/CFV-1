@@ -51,6 +51,7 @@ import {
 } from '@/components/ui/icons'
 import { getNotifications } from '@/lib/notifications/actions'
 import { useNotifications } from './notification-provider'
+import { NotificationInterruptionReason } from './notification-interruption-reason'
 import { usePushSubscription } from './use-push-subscription'
 import type {
   Notification,
@@ -172,6 +173,7 @@ const NotificationItem = memo(function NotificationItem({
         {notification.body && (
           <p className="text-xs text-stone-500 mt-0.5 line-clamp-1">{notification.body}</p>
         )}
+        <NotificationInterruptionReason notification={notification} compact />
         <p className="text-xxs text-stone-400 mt-1">{getRelativeTime(notification.created_at)}</p>
       </div>
     </button>

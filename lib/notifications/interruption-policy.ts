@@ -14,6 +14,13 @@ export type InterruptionGroup =
 
 export type ChefMode = 'available' | 'prep' | 'service' | 'driving' | 'off_hours'
 
+export type EventDayFocusContext = {
+  active: boolean
+  eventIds: string[]
+  eventCount: number
+  reason: string | null
+}
+
 export type InterruptionDecision = {
   level: InterruptionLevel
   group: InterruptionGroup
@@ -37,6 +44,22 @@ export type InterruptionInput = {
   actionUrl?: string | null
   chefMode?: ChefMode
   fatigueCount?: number
+  eventDayFocus?: EventDayFocusContext | null
+}
+
+export type InterruptionAuditMetadata = {
+  version: 1
+  level: InterruptionLevel
+  group: InterruptionGroup
+  reason: string
+  tag: string
+  pattern: number[]
+  bypassQuietHours: boolean
+  shouldDigest: boolean
+  eventDayFocusActive: boolean
+  eventDayFocusApplied: boolean
+  eventDayFocusReason: string | null
+  evaluatedAt: string
 }
 
 export type HapticSimulationScenario = {
@@ -360,6 +383,35 @@ function applyChefMode(level: InterruptionLevel, group: InterruptionGroup, mode:
   return group === 'event' || group === 'communication' ? levelMin(level, 'soft') : 'badge'
 }
 
+function isActiveEventNotification(input: InterruptionInput): boolean {
+  if (
+    getBooleanMetadata(input.metadata, [
+      'event_day',
+      'active_event_day',
+      'service_day',
+      'event_day_focus_allowed',
+    ])
+  ) {
+    return true
+  }
+
+  const eventIds = input.eventDayFocus?.eventIds ?? []
+  if (input.eventId && eventIds.includes(input.eventId)) return true
+
+  const metadataEventId = getStringMetadata(input.metadata, ['event_id', 'eventId'])
+  return Boolean(metadataEventId && eventIds.includes(metadataEventId))
+}
+
+function shouldEventDayFocusMute(input: InterruptionInput, group: InterruptionGroup): boolean {
+  const focus = input.eventDayFocus
+  if (!focus?.active) return false
+  if (group === 'money' || group === 'safety') return false
+  if (group === 'event' || group === 'communication' || group === 'ops') {
+    return !isActiveEventNotification(input)
+  }
+  return true
+}
+
 function getPushUrgency(level: InterruptionLevel): InterruptionDecision['pushUrgency'] {
   if (level === 'urgent' || level === 'double') return 'high'
   if (level === 'soft') return 'normal'
@@ -371,6 +423,7 @@ export function evaluateNotificationInterruption(input: InterruptionInput): Inte
   const category = input.category ?? NOTIFICATION_CONFIG[input.action]?.category ?? 'system'
   const contextual = applyContext(getBaseDecision(input.action), { ...input, category })
   let level = applyChefMode(contextual.level, contextual.group, input.chefMode ?? 'available')
+  let reason = contextual.reason
 
   if (
     (input.fatigueCount ?? 0) >= 10 &&
@@ -378,6 +431,12 @@ export function evaluateNotificationInterruption(input: InterruptionInput): Inte
     contextual.group !== 'safety'
   ) {
     level = downgrade(level)
+    reason = 'Notification fatigue protection'
+  }
+
+  if (shouldEventDayFocusMute(input, contextual.group)) {
+    level = 'badge'
+    reason = input.eventDayFocus?.reason ?? 'Event-day focus muted non-event interruption'
   }
 
   const shouldDigest = DIGEST_ACTIONS.has(input.action) || level === 'badge' || level === 'silent'
@@ -389,7 +448,7 @@ export function evaluateNotificationInterruption(input: InterruptionInput): Inte
   return {
     level,
     group: contextual.group,
-    reason: contextual.reason,
+    reason,
     pattern: VIBRATION_PATTERNS[level],
     tag: buildThreadTag({ ...input, category }, contextual.group),
     renotify: level === 'urgent',
@@ -397,5 +456,75 @@ export function evaluateNotificationInterruption(input: InterruptionInput): Inte
     shouldDigest,
     cooldownMs: level === 'urgent' ? 120_000 : 15 * 60_000,
     pushUrgency: getPushUrgency(level),
+  }
+}
+
+export function buildInterruptionAuditMetadata(
+  input: InterruptionInput,
+  decision = evaluateNotificationInterruption(input),
+  evaluatedAt = new Date()
+): InterruptionAuditMetadata {
+  const focusApplied = shouldEventDayFocusMute(input, decision.group)
+
+  return {
+    version: 1,
+    level: decision.level,
+    group: decision.group,
+    reason: decision.reason,
+    tag: decision.tag,
+    pattern: decision.pattern,
+    bypassQuietHours: decision.bypassQuietHours,
+    shouldDigest: decision.shouldDigest,
+    eventDayFocusActive: Boolean(input.eventDayFocus?.active),
+    eventDayFocusApplied: focusApplied,
+    eventDayFocusReason: focusApplied ? (input.eventDayFocus?.reason ?? decision.reason) : null,
+    evaluatedAt: evaluatedAt.toISOString(),
+  }
+}
+
+export function readInterruptionAuditMetadata(
+  metadata: Record<string, unknown> | null | undefined
+): InterruptionAuditMetadata | null {
+  const audit = metadata?.haptic_audit
+  if (!audit || typeof audit !== 'object' || Array.isArray(audit)) return null
+  const candidate = audit as Partial<InterruptionAuditMetadata>
+  if (candidate.version !== 1) return null
+  if (
+    candidate.level !== 'silent' &&
+    candidate.level !== 'badge' &&
+    candidate.level !== 'soft' &&
+    candidate.level !== 'double' &&
+    candidate.level !== 'urgent'
+  ) {
+    return null
+  }
+  if (typeof candidate.reason !== 'string' || !candidate.reason.trim()) return null
+
+  return {
+    version: 1,
+    level: candidate.level,
+    group:
+      candidate.group === 'lead' ||
+      candidate.group === 'communication' ||
+      candidate.group === 'money' ||
+      candidate.group === 'event' ||
+      candidate.group === 'safety' ||
+      candidate.group === 'ops' ||
+      candidate.group === 'system' ||
+      candidate.group === 'digest'
+        ? candidate.group
+        : 'digest',
+    reason: candidate.reason,
+    tag: typeof candidate.tag === 'string' ? candidate.tag : '',
+    pattern: Array.isArray(candidate.pattern)
+      ? candidate.pattern.filter((item): item is number => typeof item === 'number')
+      : [],
+    bypassQuietHours: Boolean(candidate.bypassQuietHours),
+    shouldDigest: Boolean(candidate.shouldDigest),
+    eventDayFocusActive: Boolean(candidate.eventDayFocusActive),
+    eventDayFocusApplied: Boolean(candidate.eventDayFocusApplied),
+    eventDayFocusReason:
+      typeof candidate.eventDayFocusReason === 'string' ? candidate.eventDayFocusReason : null,
+    evaluatedAt: typeof candidate.evaluatedAt === 'string' ? candidate.evaluatedAt : '',
   }
 }

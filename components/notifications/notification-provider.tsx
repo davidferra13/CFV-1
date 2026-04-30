@@ -4,20 +4,24 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { subscribeToNotifications } from '@/lib/notifications/realtime'
+import { NotificationInterruptionReason } from '@/components/notifications/notification-interruption-reason'
 import {
   getUnreadCount,
   markAsRead as markAsReadAction,
   markAllAsRead as markAllAsReadAction,
   getNotificationPreferences,
   getNotificationRuntimeSettings,
+  getEventDayFocusStatus,
   type NotificationRuntimeSettings,
 } from '@/lib/notifications/actions'
 import { NOTIFICATION_CONFIG } from '@/lib/notifications/types'
 import { DEFAULT_TIER_MAP } from '@/lib/notifications/tier-config'
 import type { Notification, NotificationAction } from '@/lib/notifications/types'
 import {
+  buildInterruptionAuditMetadata,
   evaluateNotificationInterruption,
   type ChefMode,
+  type EventDayFocusContext,
   type InterruptionDecision,
 } from '@/lib/notifications/interruption-policy'
 
@@ -55,12 +59,14 @@ type DeviceAttentionSettings = {
   hapticsEnabled: boolean
   inAppVibrationEnabled: boolean
   chefMode: ChefMode
+  eventDayFocusEnabled: boolean
 }
 
 const DEFAULT_DEVICE_ATTENTION_SETTINGS: DeviceAttentionSettings = {
   hapticsEnabled: true,
   inAppVibrationEnabled: true,
   chefMode: 'available',
+  eventDayFocusEnabled: true,
 }
 
 function readDeviceAttentionSettings(): DeviceAttentionSettings {
@@ -87,6 +93,10 @@ function readDeviceAttentionSettings(): DeviceAttentionSettings {
         parsed.chefMode === 'available'
           ? parsed.chefMode
           : DEFAULT_DEVICE_ATTENTION_SETTINGS.chefMode,
+      eventDayFocusEnabled:
+        typeof parsed.eventDayFocusEnabled === 'boolean'
+          ? parsed.eventDayFocusEnabled
+          : DEFAULT_DEVICE_ATTENTION_SETTINGS.eventDayFocusEnabled,
     }
   } catch {
     return DEFAULT_DEVICE_ATTENTION_SETTINGS
@@ -203,6 +213,7 @@ function NotificationToast({
         {notification.body && (
           <p className="text-xs text-stone-500 mt-0.5 line-clamp-2">{notification.body}</p>
         )}
+        <NotificationInterruptionReason notification={notification} compact />
       </div>
     </button>
   )
@@ -260,6 +271,12 @@ export function NotificationProvider({
   const hapticCooldownRef = useRef<Map<string, number>>(new Map())
   const listenersRef = useRef<Set<NotificationListener>>(new Set())
   const deviceAttentionRef = useRef<DeviceAttentionSettings>(DEFAULT_DEVICE_ATTENTION_SETTINGS)
+  const eventDayFocusRef = useRef<EventDayFocusContext>({
+    active: false,
+    eventIds: [],
+    eventCount: 0,
+    reason: null,
+  })
 
   const flushDigest = useCallback(() => {
     if (digestBufferRef.current.length === 0) return
@@ -327,6 +344,26 @@ export function NotificationProvider({
   }, [])
 
   useEffect(() => {
+    async function loadEventDayFocus() {
+      try {
+        eventDayFocusRef.current = await getEventDayFocusStatus()
+      } catch {
+        eventDayFocusRef.current = {
+          active: false,
+          eventIds: [],
+          eventCount: 0,
+          reason: null,
+        }
+      }
+    }
+
+    void loadEventDayFocus()
+    const timer = window.setInterval(() => void loadEventDayFocus(), 15 * 60_000)
+
+    return () => window.clearInterval(timer)
+  }, [])
+
+  useEffect(() => {
     async function loadPreferences() {
       try {
         const [prefs, runtime] = await Promise.all([
@@ -387,10 +424,48 @@ export function NotificationProvider({
   useEffect(() => {
     const unsubscribe = subscribeToNotifications(userId, (notification) => {
       setUnreadCount((prev) => prev + 1)
+      const deviceSettings = deviceAttentionRef.current
+      const eventDayFocus = deviceSettings.eventDayFocusEnabled
+        ? eventDayFocusRef.current
+        : { active: false, eventIds: [], eventCount: 0, reason: null }
+      const interruption = evaluateNotificationInterruption({
+        action: notification.action as NotificationAction,
+        category: notification.category,
+        metadata: notification.metadata,
+        eventId: notification.event_id,
+        inquiryId: notification.inquiry_id,
+        clientId: notification.client_id,
+        actionUrl: notification.action_url,
+        chefMode: deviceSettings.chefMode,
+        fatigueCount: readDailyFatigueCount(),
+        eventDayFocus,
+      })
+      const auditedNotification: Notification = {
+        ...notification,
+        metadata: {
+          ...notification.metadata,
+          haptic_audit: buildInterruptionAuditMetadata(
+            {
+              action: notification.action as NotificationAction,
+              category: notification.category,
+              metadata: notification.metadata,
+              eventId: notification.event_id,
+              inquiryId: notification.inquiry_id,
+              clientId: notification.client_id,
+              actionUrl: notification.action_url,
+              chefMode: deviceSettings.chefMode,
+              fatigueCount: readDailyFatigueCount(),
+              eventDayFocus,
+            },
+            interruption
+          ),
+        },
+      }
+
       // Dispatch to page-level listeners (e.g., live-refresh hooks)
       for (const fn of listenersRef.current) {
         try {
-          fn(notification)
+          fn(auditedNotification)
         } catch (err) {
           console.warn('[NotificationProvider] Listener failed:', err)
         }
@@ -406,18 +481,6 @@ export function NotificationProvider({
 
       const severity = getSeverity(notification.action as NotificationAction)
       const settings = runtimeSettingsRef.current
-      const deviceSettings = deviceAttentionRef.current
-      const interruption = evaluateNotificationInterruption({
-        action: notification.action as NotificationAction,
-        category: notification.category,
-        metadata: notification.metadata,
-        eventId: notification.event_id,
-        inquiryId: notification.inquiry_id,
-        clientId: notification.client_id,
-        actionUrl: notification.action_url,
-        chefMode: deviceSettings.chefMode,
-        fatigueCount: readDailyFatigueCount(),
-      })
 
       if (!interruption.bypassQuietHours && severity !== 'high') {
         const inQuietWindow = isWithinQuietWindow(settings)
@@ -434,7 +497,9 @@ export function NotificationProvider({
       }
 
       toast.custom(
-        (t) => <NotificationToast notification={notification} onClose={() => toast.dismiss(t)} />,
+        (t) => (
+          <NotificationToast notification={auditedNotification} onClose={() => toast.dismiss(t)} />
+        ),
         {
           duration: severity === 'high' ? 9000 : 5000,
         }

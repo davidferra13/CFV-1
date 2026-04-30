@@ -27,7 +27,12 @@ import {
 import { sendSms, formatSmsBody } from '@/lib/sms/send'
 import { isSmsAllowed, recordSmsSent } from '@/lib/sms/rate-limit'
 import { routeEmailByAction } from '@/lib/email/route-email'
-import { evaluateNotificationInterruption } from './interruption-policy'
+import {
+  buildInterruptionAuditMetadata,
+  evaluateNotificationInterruption,
+  type EventDayFocusContext,
+  type InterruptionAuditMetadata,
+} from './interruption-policy'
 
 export type RouteInput = {
   notificationId: string
@@ -62,6 +67,7 @@ export async function routeNotification(input: RouteInput): Promise<void> {
     }
 
     const channels = await resolveChannels(tenantId, recipientId, action)
+    const eventDayFocus = await getTenantEventDayFocusContext(tenantId)
     const interruption = evaluateNotificationInterruption({
       action,
       metadata: input.metadata,
@@ -69,7 +75,31 @@ export async function routeNotification(input: RouteInput): Promise<void> {
       inquiryId: input.inquiryId,
       clientId: input.clientId,
       actionUrl,
+      eventDayFocus,
     })
+    const routedChannels = { ...channels }
+    if (interruption.level === 'badge' || interruption.level === 'silent') {
+      routedChannels.email = false
+      routedChannels.push = false
+      routedChannels.sms = false
+    }
+    await recordHapticAudit(
+      notificationId,
+      tenantId,
+      input.metadata,
+      buildInterruptionAuditMetadata(
+        {
+          action,
+          metadata: input.metadata,
+          eventId: input.eventId,
+          inquiryId: input.inquiryId,
+          clientId: input.clientId,
+          actionUrl,
+          eventDayFocus,
+        },
+        interruption
+      )
+    )
 
     // F1: Check quiet hours - suppress non-critical out-of-app delivery during quiet window
     const tier = DEFAULT_TIER_MAP[action]
@@ -116,7 +146,7 @@ export async function routeNotification(input: RouteInput): Promise<void> {
     // Fire all enabled channels in parallel, log each result
     const sends: Promise<void>[] = []
 
-    if (channels.email) {
+    if (routedChannels.email) {
       sends.push(
         deliverEmail(input, notificationId, tenantId).catch((err) => {
           console.error('[routeNotification] email delivery error:', err)
@@ -130,9 +160,9 @@ export async function routeNotification(input: RouteInput): Promise<void> {
       )
     }
 
-    if (channels.push) {
+    if (routedChannels.push) {
       sends.push(
-        deliverPush(input, notificationId, tenantId, recipientId).catch((err) => {
+        deliverPush(input, notificationId, tenantId, recipientId, eventDayFocus).catch((err) => {
           console.error('[routeNotification] push delivery error:', err)
         })
       )
@@ -144,7 +174,7 @@ export async function routeNotification(input: RouteInput): Promise<void> {
       )
     }
 
-    if (channels.sms && channels.smsPhone) {
+    if (routedChannels.sms && channels.smsPhone) {
       sends.push(
         deliverSms(input, notificationId, tenantId, channels.smsPhone).catch((err) => {
           console.error('[routeNotification] sms delivery error:', err)
@@ -181,7 +211,8 @@ async function deliverPush(
   input: RouteInput,
   notificationId: string,
   tenantId: string,
-  authUserId: string
+  authUserId: string,
+  eventDayFocus?: EventDayFocusContext
 ): Promise<void> {
   const subscriptions = await getActiveSubscriptions(authUserId)
 
@@ -197,6 +228,7 @@ async function deliverPush(
     clientId: input.clientId,
     actionUrl: input.actionUrl,
     metadata: input.metadata,
+    eventDayFocus,
   })
 
   const payload = {
@@ -306,5 +338,66 @@ async function logDelivery(
   } catch (err) {
     // Never let logging failures bubble up
     console.error('[logDelivery] Failed to write delivery log:', err)
+  }
+}
+
+function localDateString(date = new Date()): string {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+async function getTenantEventDayFocusContext(tenantId: string): Promise<EventDayFocusContext> {
+  try {
+    const db = createServerClient({ admin: true })
+    const today = localDateString()
+    const { data, error } = await (db as any)
+      .from('events')
+      .select('id')
+      .eq('tenant_id', tenantId)
+      .eq('event_date', today)
+      .in('status', ['accepted', 'paid', 'confirmed', 'in_progress'])
+
+    if (error) {
+      console.error('[getTenantEventDayFocusContext] Query failed:', error)
+      return { active: false, eventIds: [], eventCount: 0, reason: null }
+    }
+
+    const eventIds = ((data ?? []) as Array<{ id: string }>).map((event) => event.id)
+    return {
+      active: eventIds.length > 0,
+      eventIds,
+      eventCount: eventIds.length,
+      reason:
+        eventIds.length > 0
+          ? `Event-day focus active for ${eventIds.length} event${eventIds.length === 1 ? '' : 's'} today`
+          : null,
+    }
+  } catch (err) {
+    console.error('[getTenantEventDayFocusContext] Failed:', err)
+    return { active: false, eventIds: [], eventCount: 0, reason: null }
+  }
+}
+
+async function recordHapticAudit(
+  notificationId: string,
+  tenantId: string,
+  existingMetadata: Record<string, unknown> | undefined,
+  audit: InterruptionAuditMetadata
+): Promise<void> {
+  try {
+    const db = createServerClient({ admin: true })
+    const metadata = {
+      ...(existingMetadata ?? {}),
+      haptic_audit: audit,
+    }
+    await db
+      .from('notifications')
+      .update({ metadata })
+      .eq('id', notificationId)
+      .eq('tenant_id', tenantId)
+  } catch (err) {
+    console.error('[recordHapticAudit] Failed to update notification metadata:', err)
   }
 }
