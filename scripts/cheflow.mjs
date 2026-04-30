@@ -456,13 +456,17 @@ function loadClaims(maxAgeHours = 12) {
 
 function parseList(value) {
   return String(value || '')
-    .split(',')
+    .split(/[,\s]+/)
     .map((item) => item.trim().replace(/\\/g, '/'))
     .filter(Boolean)
 }
 
+function parseFileListArgs(args = {}) {
+  return [...new Set([...parseList(args.files), ...parseList(args.owned), ...parseList((args._ || []).join(' '))])]
+}
+
 function changedFilesFromArgs(args = {}) {
-  const explicit = parseList(args.files || args.owned)
+  const explicit = parseFileListArgs(args)
   if (explicit.length) return explicit
   const stagedOnly = Boolean(args.staged)
   return statusEntries()
@@ -477,7 +481,7 @@ function activeOwnedPaths() {
 }
 
 function ownedLedger(args = {}) {
-  const explicitOwned = parseList(args.owned)
+  const explicitOwned = parseFileListArgs(args)
   const claimedOwned = activeOwnedPaths()
   const owned = [...new Set([...explicitOwned, ...claimedOwned])]
   const dirty = statusEntries()
