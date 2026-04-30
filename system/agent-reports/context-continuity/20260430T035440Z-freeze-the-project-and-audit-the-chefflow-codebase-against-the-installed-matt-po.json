@@ -1,0 +1,313 @@
+{
+  "generated_at": "2026-04-30T03:54:38.908Z",
+  "prompt": "freeze the project and audit the ChefFlow codebase against the installed Matt Pocock skills on repeat",
+  "terms": [
+    "freeze",
+    "project",
+    "audit",
+    "chefflow",
+    "codebase",
+    "against",
+    "installed",
+    "matt",
+    "pocock",
+    "skills",
+    "repeat"
+  ],
+  "scanned_dirs": [
+    "app",
+    "components",
+    "lib",
+    "docs/specs",
+    "docs/changes",
+    "docs/app-complete-audit.md",
+    "project-map",
+    "memory",
+    "system/intake",
+    "system/agent-reports"
+  ],
+  "canonical_surfaces": [
+    {
+      "id": "agent-skill-system",
+      "label": "Agent Skill System",
+      "score": 2,
+      "hits": ["chefflow", "skills"],
+      "canonical_routes": [],
+      "canonical_files": [
+        "devtools/skill-router.mjs",
+        "devtools/skill-validator.mjs",
+        "devtools/skill-trigger-tests.mjs",
+        "system/agent-golden-prompts/default.json"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Add to the existing skill harness."
+      }
+    },
+    {
+      "id": "context-continuity",
+      "label": "Context Continuity",
+      "score": 1,
+      "hits": ["skills"],
+      "canonical_routes": [],
+      "canonical_files": [
+        ".claude/skills/context-continuity/SKILL.md",
+        "devtools/context-continuity-scan.mjs",
+        "system/canonical-surfaces.json"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Extend the continuity layer in place."
+      }
+    },
+    {
+      "id": "remy-ai",
+      "label": "Remy AI",
+      "score": 1,
+      "hits": ["chefflow"],
+      "canonical_routes": [],
+      "canonical_files": ["components/ai/remy-drawer.tsx", "lib/ai/remy-actions.ts"],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach new assistant behavior to Remy or its shared AI modules."
+      }
+    },
+    {
+      "id": "client-intake",
+      "label": "Client Intake",
+      "score": 1,
+      "hits": ["chefflow"],
+      "canonical_routes": ["/book", "/clients/intake"],
+      "canonical_files": [
+        "app/api/book/route.ts",
+        "lib/inquiries/public-actions.ts",
+        "public/embed/chefflow-widget.js"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach to the existing intake lane contract."
+      }
+    }
+  ],
+  "related_files": [
+    {
+      "file": "system/agent-reports/skill-health/20260429T030250Z-skill-health.json",
+      "kind": "system",
+      "score": 30,
+      "hits": ["project", "audit", "chefflow", "codebase", "against", "matt", "skills", "repeat"]
+    },
+    {
+      "file": "system/agent-reports/skill-health/20260429T032017Z-skill-health.json",
+      "kind": "system",
+      "score": 30,
+      "hits": ["project", "audit", "chefflow", "codebase", "against", "matt", "skills", "repeat"]
+    },
+    {
+      "file": "system/agent-reports/skill-health/20260429T154301Z-skill-health.json",
+      "kind": "system",
+      "score": 30,
+      "hits": ["project", "audit", "chefflow", "codebase", "against", "matt", "skills", "repeat"]
+    },
+    {
+      "file": "system/agent-reports/skill-health/20260429T162243Z-skill-health.json",
+      "kind": "system",
+      "score": 30,
+      "hits": ["project", "audit", "chefflow", "codebase", "against", "matt", "skills", "repeat"]
+    },
+    {
+      "file": "system/agent-reports/skill-health/20260429T170016Z-skill-health.json",
+      "kind": "system",
+      "score": 30,
+      "hits": ["project", "audit", "chefflow", "codebase", "against", "matt", "skills", "repeat"]
+    },
+    {
+      "file": "system/agent-reports/skill-health/20260429T172202Z-skill-health.json",
+      "kind": "system",
+      "score": 30,
+      "hits": ["project", "audit", "chefflow", "codebase", "against", "matt", "skills", "repeat"]
+    },
+    {
+      "file": "docs/specs/culinary-radar-intelligence-layer.md",
+      "kind": "spec",
+      "score": 24,
+      "hits": ["project", "audit", "chefflow", "against", "matt", "skills", "repeat"]
+    },
+    {
+      "file": "docs/specs/api-integration-health-audit.md",
+      "kind": "spec",
+      "score": 23,
+      "hits": ["audit", "project", "chefflow", "codebase", "matt", "repeat"]
+    },
+    {
+      "file": "docs/specs/davids-docket-openclaw-cartridge.md",
+      "kind": "spec",
+      "score": 23,
+      "hits": ["project", "audit", "chefflow", "codebase", "against", "matt"]
+    },
+    {
+      "file": "docs/specs/openclaw-ideal-runtime-and-national-intelligence.md",
+      "kind": "spec",
+      "score": 23,
+      "hits": ["audit", "chefflow", "against", "matt", "repeat"]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-consumer-discovery-cohesion-v1.md",
+      "kind": "spec",
+      "score": 23,
+      "hits": ["project", "audit", "chefflow", "codebase", "repeat"]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-public-surface-cohesion-v1.md",
+      "kind": "spec",
+      "score": 23,
+      "hits": ["project", "audit", "chefflow", "codebase", "against", "matt"]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-competitive-surface.md",
+      "kind": "spec",
+      "score": 22,
+      "hits": ["project", "audit", "chefflow", "codebase", "against", "matt", "repeat"]
+    },
+    {
+      "file": "docs/specs/respectful-monetization-foundation.md",
+      "kind": "spec",
+      "score": 21,
+      "hits": ["audit", "chefflow", "codebase", "against", "matt", "repeat"]
+    },
+    {
+      "file": "docs/app-complete-audit.md",
+      "kind": "other",
+      "score": 20,
+      "hits": ["audit", "project", "chefflow", "matt", "repeat"]
+    },
+    {
+      "file": "docs/specs/p0-boundary-first-architecture-sequence.md",
+      "kind": "spec",
+      "score": 20,
+      "hits": ["freeze", "project", "audit", "chefflow", "against", "matt"]
+    },
+    {
+      "file": "docs/specs/system-completeness-interrogation.md",
+      "kind": "spec",
+      "score": 20,
+      "hits": ["audit", "chefflow", "codebase", "against", "matt"]
+    },
+    {
+      "file": "docs/specs/token-efficiency-interrogation.md",
+      "kind": "spec",
+      "score": 20,
+      "hits": ["project", "audit", "against", "matt", "skills", "repeat"]
+    },
+    {
+      "file": "docs/specs/auth-password-security-hardening-2026-04-10.md",
+      "kind": "spec",
+      "score": 19,
+      "hits": ["freeze", "audit", "chefflow", "against", "installed", "matt", "repeat"]
+    },
+    {
+      "file": "docs/specs/codex-saturation-tracking-core.md",
+      "kind": "spec",
+      "score": 19,
+      "hits": ["project", "audit", "against", "matt", "skills", "repeat"]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-openclaw-cohesion-v2-answers.md",
+      "kind": "spec",
+      "score": 19,
+      "hits": ["project", "audit", "chefflow", "against", "matt"]
+    },
+    {
+      "file": "app/api/remy/stream/route-prompt-utils.ts",
+      "kind": "route",
+      "score": 18,
+      "hits": ["project", "chefflow", "matt", "repeat"]
+    },
+    {
+      "file": "docs/specs/commerce-financial-integrity-interrogation.md",
+      "kind": "spec",
+      "score": 18,
+      "hits": ["audit", "chefflow", "codebase", "against", "matt"]
+    },
+    {
+      "file": "docs/specs/openclaw-intelligence-layer.md",
+      "kind": "spec",
+      "score": 18,
+      "hits": ["project", "audit", "chefflow", "against", "matt"]
+    },
+    {
+      "file": "docs/specs/operational-workflow-interrogation.md",
+      "kind": "spec",
+      "score": 18,
+      "hits": ["project", "audit", "chefflow", "against", "matt", "repeat"]
+    },
+    {
+      "file": "docs/specs/p0-builder-agent-foundation.md",
+      "kind": "spec",
+      "score": 18,
+      "hits": ["project", "audit", "chefflow", "codebase", "against", "matt", "repeat"]
+    },
+    {
+      "file": "docs/specs/p1-google-contacts-import-via-google-people-api.md",
+      "kind": "spec",
+      "score": 18,
+      "hits": ["project", "audit", "chefflow", "against", "matt"]
+    },
+    {
+      "file": "docs/specs/restaurant-adoption-interrogation.md",
+      "kind": "spec",
+      "score": 18,
+      "hits": ["project", "audit", "chefflow", "codebase", "against", "matt", "repeat"]
+    },
+    {
+      "file": "system/agent-reports/skill-closeouts/20260429T181516Z-software-fundamentals-adopt-matt-pocock-software-fundamentals-lecture-into-chefflow-agent-behavior.json",
+      "kind": "system",
+      "score": 18,
+      "hits": ["chefflow", "matt", "pocock", "skills"]
+    },
+    {
+      "file": "docs/specs/navigation-action-bar.md",
+      "kind": "spec",
+      "score": 17,
+      "hits": ["project", "audit", "chefflow", "codebase", "against", "matt", "repeat"]
+    }
+  ],
+  "recent_commits": [
+    {
+      "line": "1d5002186 chore(agent): reduce repeated context research feature/backup-recovery-host-sentinel",
+      "score": 1,
+      "hits": ["repeat"]
+    },
+    {
+      "line": "424b519bb chore(agent): install v1 governor feature/haptic-explainable-event-audit",
+      "score": 1,
+      "hits": ["audit"]
+    },
+    {
+      "line": "c1a38a0e8 chore(agent): improve backup recovery pipeline feature/haptic-explainable-event-audit",
+      "score": 1,
+      "hits": ["audit"]
+    },
+    {
+      "line": "21f652695 chore(agent): build voice ops evidence closeout feature/haptic-explainable-event-audit",
+      "score": 1,
+      "hits": ["audit"]
+    },
+    {
+      "line": "61382e8b2 chore(agent): explain haptic alerts feature/haptic-explainable-event-audit",
+      "score": 1,
+      "hits": ["audit"]
+    }
+  ],
+  "dirty_matches": [],
+  "claim_matches": [],
+  "duplicate_risks": [],
+  "continuity": {
+    "decision": "extend",
+    "stop_required": false,
+    "reason": "Matched canonical surface agent-skill-system."
+  }
+}
