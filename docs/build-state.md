@@ -13,10 +13,10 @@ Last known state of the app. Updated after every successful type check and build
 
 ## Current State
 
-| Check                                    | Status | Last Verified | Commit | Agent           |
-| ---------------------------------------- | ------ | ------------- | ------ | --------------- |
-| `npx tsc --noEmit --skipLibCheck`        | green  | 2026-04-27    | dirty  | Claude Opus 4.6 |
-| `npm run build -- --no-lint` (16GB heap) | green  | 2026-04-27    | dirty  | Claude Opus 4.6 |
+| Check                                    | Status | Last Verified | Commit    | Agent           |
+| ---------------------------------------- | ------ | ------------- | --------- | --------------- |
+| `npx tsc --noEmit --skipLibCheck`        | green  | 2026-04-30    | e57cddfec | Codex           |
+| `npm run build -- --no-lint` (16GB heap) | green  | 2026-04-27    | dirty     | Claude Opus 4.6 |
 
 **Canonical build command:** `npm run build -- --no-lint` (uses `scripts/run-next-build.mjs`, 12GB heap default).
 
@@ -39,16 +39,15 @@ Supplemental verification logs from prior sessions have been archived. Each sess
 
 _Newest first. Keep the last 10 entries. Prune older ones._
 
-| Date       | tsc   | build | Agent           | Notes                                                                                                                                        |
-| ---------- | ----- | ----- | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2026-04-27 | green | green | Claude Opus 4.6 | Regression detection system: 19 scripts, 5 layers, pre-commit/pre-push hooks, /regression skill. 241 registry checks passing. Self-test 6/6. |
-| 2026-04-27 | green | green | Claude Opus 4.6 | tsc + build clean on dirty checkout. 16GB heap required. BUILD_ID 0abc27ebf. 11 worktrees cleaned. Compliance: ALL CLEAR.                    |
-| 2026-04-24 | green | green | Codex           | First-time progressive disclosure. Starter dashboard, sparse-data hiding, progressive nav.                                                   |
-| 2026-04-23 | green | -     | Codex           | Chef client ops snapshot reuse. Shared tenant-scoped client work snapshot.                                                                   |
-| 2026-04-22 | green | green | Codex           | Public intake body guards. Honest 400/413 on malformed/oversized JSON.                                                                       |
-| 2026-04-22 | green | green | Codex           | Share visibility contract. tenantId removed from public share payloads.                                                                      |
-| 2026-04-11 | green | -     | Builder         | MemPalace session. 7 features + 12 TS errors fixed.                                                                                          |
-| 2026-04-11 | green | green | Builder         | AI voice system: neural TTS, inbound calls, voicemail, CallHub.                                                                              |
-| 2026-04-08 | green | green | Codex           | Remy continuity + operator-mode + surface fast-path.                                                                                         |
-| 2026-04-07 | green | green | Claude Opus 4.6 | Performance audit. Prod TTFB: 43s to 20ms. 4 DB indexes.                                                                                     |
-| 2026-04-06 | green | green | Claude Opus 4.6 | Full catch-up: 27 commits. Android widgets, ingredient normalization, PWA.                                                                   |
+| Date       | tsc   | build | Agent           | Notes                                                                                                                                         |
+| ---------- | ----- | ----- | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-04-30 | green | -     | Codex           | V1 shared state motion and dashboard list motion. Unit test passed. Pre-push typecheck and quick regression passed 162 checks. Build not run. |
+| 2026-04-27 | green | green | Claude Opus 4.6 | Regression detection system: 19 scripts, 5 layers, pre-commit/pre-push hooks, /regression skill. 241 registry checks passing. Self-test 6/6.  |
+| 2026-04-27 | green | green | Claude Opus 4.6 | tsc + build clean on dirty checkout. 16GB heap required. BUILD_ID 0abc27ebf. 11 worktrees cleaned. Compliance: ALL CLEAR.                     |
+| 2026-04-24 | green | green | Codex           | First-time progressive disclosure. Starter dashboard, sparse-data hiding, progressive nav.                                                    |
+| 2026-04-23 | green | -     | Codex           | Chef client ops snapshot reuse. Shared tenant-scoped client work snapshot.                                                                    |
+| 2026-04-22 | green | green | Codex           | Public intake body guards. Honest 400/413 on malformed/oversized JSON.                                                                        |
+| 2026-04-22 | green | green | Codex           | Share visibility contract. tenantId removed from public share payloads.                                                                       |
+| 2026-04-11 | green | -     | Builder         | MemPalace session. 7 features + 12 TS errors fixed.                                                                                           |
+| 2026-04-11 | green | green | Builder         | AI voice system: neural TTS, inbound calls, voicemail, CallHub.                                                                               |
+| 2026-04-08 | green | green | Codex           | Remy continuity + operator-mode + surface fast-path.                                                                                          |
