@@ -1,16 +1,22 @@
 # Spec: Sticky Notes Intake Layer
 
-> **Status:** ready
+> **Status:** verified
 > **Priority:** P0 (blocking)
 > **Depends on:** `docs/specs/universal-intake-pipeline.md`, `docs/specs/autonomous-v1-builder-contract.md`
 > **Estimated complexity:** large (9+ files)
 
 ## Timeline
 
-| Event         | Date             | Agent/Session | Commit |
-| ------------- | ---------------- | ------------- | ------ |
-| Created       | 2026-04-30 11:55 | Codex         |        |
-| Status: ready | 2026-04-30 11:55 | Codex         |        |
+| Event                    | Date             | Agent/Session | Commit |
+| ------------------------ | ---------------- | ------------- | ------ |
+| Created                  | 2026-04-30 11:55 | Codex         |        |
+| Status: ready            | 2026-04-30 11:55 | Codex         |        |
+| Claimed                  | 2026-04-30 12:24 | Codex         |        |
+| Build completed          | 2026-04-30 12:31 | Codex         |        |
+| Unit tests passed        | 2026-04-30 12:31 | Codex         |        |
+| Sticky commands verified | 2026-04-30 12:32 | Codex         |        |
+| Type check passed        | 2026-04-30 12:33 | Codex         |        |
+| Status: verified         | 2026-04-30 12:33 | Codex         |        |
 
 ---
 

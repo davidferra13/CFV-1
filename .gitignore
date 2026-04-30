@@ -135,16 +135,16 @@ types/gen-stderr.txt
 /test-results/
 /playwright-report/
 
-# Playwright auth state (session tokens — never commit)
+# Playwright auth state (session tokens - never commit)
 # Regenerated automatically on every globalSetup run
 /.auth/
 
-# Tauri — Rust build output (can be gigabytes, fully reproducible)
+# Tauri - Rust build output (can be gigabytes, fully reproducible)
 /src-tauri/target/
 # Tauri generated schemas (build artifacts)
 /src-tauri/gen/
 
-# Multi-agent build lock (local toggle — never commit)
+# Multi-agent build lock (local toggle - never commit)
 .multi-agent-lock
 system/persona-to-codex.lock
 system/.pipeline.lock
@@ -153,8 +153,10 @@ system/persona-inbox-uptime.json
 system/persona-drift-report.json
 system/persona-watcher.log
 system/captures/
+system/sticky-notes/*
+!system/sticky-notes/.gitkeep
 
-# Database backups (never commit — can contain real data)
+# Database backups (never commit - can contain real data)
 backup-*.sql
 backups/
 
@@ -188,7 +190,7 @@ null
 # Overnight audit reports (screenshots + test results, machine-specific)
 /reports/
 
-# Raw email exports (PII — never commit)
+# Raw email exports (PII - never commit)
 /data/email-references/privatechefmanager-yhangry/
 /data/email-references/*.zip
 .next-dev*/

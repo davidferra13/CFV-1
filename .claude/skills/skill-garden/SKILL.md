@@ -50,7 +50,7 @@ Prefer the deterministic tools when changing or evaluating skills:
 - `node devtools/skill-maturity-report.mjs` reports draft, active, proven, needs-healing, and deprecated skill states.
 - `node devtools/skill-dashboard.mjs` writes the consolidated skill dashboard for coverage, maturity, health, dependency, and learning status.
 - `node devtools/agent-learning-inbox.mjs add ...` captures useful but unresolved behavior without forcing an immediate skill patch.
-- `node devtools/external-guidance-intake.mjs --source "source-name"` classifies Hermes, OpenCloy, ChatGPT, or markdown guidance into routes.
+- `node devtools/external-guidance-intake.mjs --source "source-name"` classifies Hermes, OpenCloy, ChatGPT, Sticky Notes extracts, or markdown guidance into routes.
 - `node devtools/skill-health-report.mjs` writes a broad health snapshot for stale references, open learning items, and overlap risk.
 - `node devtools/skill-closeout-report.mjs ...` records which skill owned the work and whether the skill delta was none, patch, new skill, or heal.
 
@@ -61,7 +61,7 @@ Prefer the deterministic tools when changing or evaluating skills:
    - Repeated developer correction.
    - Recurring task workflow.
    - Skill failure or vague trigger.
-   - External operator guidance from pasted chat, Hermes, OpenCloy, markdowns, or notes.
+   - External operator guidance from pasted chat, Hermes, OpenCloy, Simple Sticky Notes, markdowns, or notes.
    - User requests for Codex to become more autonomous, self-healing, or better at selecting skills without being asked.
 2. Search `.claude/skills` for an existing skill that already owns the behavior.
 3. Decide:
