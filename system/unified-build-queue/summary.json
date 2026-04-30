@@ -1,0 +1,76 @@
+{
+  "generatedAt": "2026-04-30T23:37:52.894Z",
+  "readOnly": true,
+  "schemaVersion": 1,
+  "outputs": {
+    "candidates": "system/unified-build-queue/candidates.json",
+    "moduleBatches": "system/unified-build-queue/module-batches.json",
+    "summary": "system/unified-build-queue/summary.json"
+  },
+  "totals": {
+    "candidates": 1104,
+    "moduleBatches": 158,
+    "executionQueueWrites": 0,
+    "approvedBatches": 0,
+    "duplicates": 90,
+    "built": 118,
+    "blocked": 44
+  },
+  "currentQueueTruth": {
+    "buildQueueFiles": 241,
+    "readyTaskFiles": 22,
+    "docsSpecFiles": 499,
+    "docsSpecRecursiveFiles": 675,
+    "stickyNoteCandidates": 69,
+    "v1ApprovedQueueRecords": 14,
+    "v1ApprovedWithoutReceipt": 9,
+    "founderAuthorityRequests": 2
+  },
+  "bySource": {
+    "v1-approved-queue": 14,
+    "founder-authority-request": 2,
+    "v1-blocked": 75,
+    "docs-specs": 675,
+    "system-ready-tasks": 22,
+    "3977-build-queue": 241,
+    "sticky-notes": 69,
+    "system-intake": 6
+  },
+  "byClassification": {
+    "v1_support": 159,
+    "built": 118,
+    "duplicate": 90,
+    "v1_blocker": 308,
+    "v2": 58,
+    "blocked": 44,
+    "research_required": 309,
+    "rejected": 18
+  },
+  "byModule": {
+    "pricing-trust": 37,
+    "unassigned": 328,
+    "sourcing-inventory": 46,
+    "v1-control-plane": 245,
+    "events-ops": 100,
+    "finance-ledger": 22,
+    "ai-boundaries": 136,
+    "auth-security": 64,
+    "chef-workspace": 34,
+    "dietary-safety": 8,
+    "docs-release-proof": 12,
+    "staff-partner": 9,
+    "client-intake": 30,
+    "public-trust": 12,
+    "menus-offers": 21
+  },
+  "batchPolicy": {
+    "minIdealTasks": 3,
+    "maxTasks": 7,
+    "executionRule": "No raw candidate is executable. Only an explicitly approved module batch may be copied into system/v1-builder/approved-queue.jsonl."
+  },
+  "warnings": [
+    "Some module batches have fewer than 3 tasks because their module and classification groups are small.",
+    "Some candidates are unassigned and need module review before approval.",
+    "Sticky Notes candidates are staged as research_required until reviewed."
+  ]
+}

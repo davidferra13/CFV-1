@@ -1,0 +1,4667 @@
+[
+  {
+    "id": "f20f58e06e3844f1",
+    "module": {
+      "id": "ai-boundaries",
+      "label": "AI Boundaries"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "52473ea90f566883",
+      "fab34f40fddf5fbe",
+      "f377a23a72838347",
+      "47ec8cf80dd05c06",
+      "a8be2d078b353097",
+      "a4a7a930ed7e2560",
+      "c6891bce328a2f3b"
+    ],
+    "titles": [
+      "Codex Build Spec: Launch Stabilization - Agent 1 (Auto-Join Consent + Typecheck)",
+      "Codex Build Spec: Launch Stabilization - Agent 2 (Projected Cost Pipeline)",
+      "Remy Fix 01: Public Activation + Mobile + Quick-Start",
+      "Spec: BYOAI Phase 2C - Privacy Narrative BYOAI Variants",
+      "Remy Fix 03: Grounding Rule Position + Unicode Normalization + Accessibility",
+      "System Integrity Interrogation - Round 3",
+      "Auto-Repair: No-op return in lib/aar/feedback-actions.ts"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution."
+  },
+  {
+    "id": "a3fc405b96a0f2b3",
+    "module": {
+      "id": "ai-boundaries",
+      "label": "AI Boundaries"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "a125f4cddf00b375",
+      "37c10634100591fe",
+      "2df73f04ca584f65",
+      "ea537dd1e414d802",
+      "45e9802ef7402932",
+      "eac28531e57b5df3",
+      "a07708aa180e3b48"
+    ],
+    "titles": [
+      "Auto-Repair: No-op return in lib/ai/privacy-actions.ts",
+      "Auto-Repair: No-op return in lib/ai/reminder-actions.ts",
+      "Auto-Repair: No-op return in lib/ai/remy-feedback-actions.ts",
+      "Auto-Repair: No-op return in lib/audience/subscriber-actions.ts",
+      "Auto-Repair: No-op return in lib/beta/actions.ts",
+      "Auto-Repair: No-op return in lib/calendar/reschedule-action.ts",
+      "Auto-Repair: No-op return in lib/clients/account-deletion-actions.ts"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution."
+  },
+  {
+    "id": "3f70c2473f64f019",
+    "module": {
+      "id": "ai-boundaries",
+      "label": "AI Boundaries"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "74384a9f6c50a411",
+      "bee57bd6e6d419e8",
+      "7d0f9df90872a179",
+      "bae4f45ff9a86c97",
+      "daad66d7d358fb97",
+      "14e19daea1289615",
+      "3cb8deba4711d3ba"
+    ],
+    "titles": [
+      "Auto-Repair: No-op return in lib/clients/client-profile-actions.ts",
+      "Auto-Repair: No-op return in lib/clients/onboarding-actions.ts",
+      "Auto-Repair: No-op return in lib/collaboration/actions.ts",
+      "Auto-Repair: No-op return in lib/community/community-actions.ts",
+      "Auto-Repair: No-op return in lib/community/feature-voting-actions.ts",
+      "Auto-Repair: No-op return in lib/contracts/actions.ts",
+      "Auto-Repair: No-op return in lib/credentials/actions.ts"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution."
+  },
+  {
+    "id": "7fbc247996f0605a",
+    "module": {
+      "id": "ai-boundaries",
+      "label": "AI Boundaries"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "69200163c178082a",
+      "1ff50634bd9d49f2",
+      "970b01503ff39045",
+      "5d180b8ae55b4e34",
+      "441cf96f478d7cf6",
+      "fd6d922123467cf0",
+      "90ca38fb2ae69b42"
+    ],
+    "titles": [
+      "Auto-Repair: No-op return in lib/daily-ops/draft-engine.ts",
+      "Auto-Repair: No-op return in lib/directory/waitlist-actions.ts",
+      "Auto-Repair: No-op return in lib/discover/actions.ts",
+      "Auto-Repair: No-op return in lib/discover/outreach.ts",
+      "Auto-Repair: No-op return in lib/email/send-chef-transition.ts",
+      "Auto-Repair: No-op return in lib/email/send-client-relationship-closure.ts",
+      "Auto-Repair: No-op return in lib/feedback/actions.ts"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution."
+  },
+  {
+    "id": "5a0a57b3ab513cfe",
+    "module": {
+      "id": "ai-boundaries",
+      "label": "AI Boundaries"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "8c8ed1f7ab8652a4",
+      "44ae060d06af6c07",
+      "1341fe7a4c777e2e",
+      "7950360b565fa4bf",
+      "8d126d932e9dca58",
+      "5524e70eb884fb7b",
+      "180fcecfcd273255"
+    ],
+    "titles": [
+      "Auto-Repair: No-op return in lib/finance/deposit-actions.ts",
+      "Auto-Repair: No-op return in lib/finance/tip-actions.ts",
+      "Auto-Repair: No-op return in lib/gear/actions.ts",
+      "Auto-Repair: No-op return in lib/guest-messages/actions.ts",
+      "Auto-Repair: No-op return in lib/hub/chef-share-actions.ts",
+      "Auto-Repair: No-op return in lib/hub/delegation-actions.ts",
+      "Auto-Repair: No-op return in lib/hub/friend-actions.ts"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution."
+  },
+  {
+    "id": "f1f51122f387f612",
+    "module": {
+      "id": "ai-boundaries",
+      "label": "AI Boundaries"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "c441a97d078b5c0f",
+      "4ddd6bcf5acbd9f9",
+      "0a448d9de207b42c",
+      "afe55fbe1cf9eb3f",
+      "75fd2d6ecd9235cd",
+      "ec20b7bd8521aea0",
+      "f8b5325c0f0b9b14"
+    ],
+    "titles": [
+      "Auto-Repair: No-op return in lib/hub/group-actions.ts",
+      "Auto-Repair: No-op return in lib/hub/household-actions.ts",
+      "Auto-Repair: No-op return in lib/hub/passport-actions.ts",
+      "Auto-Repair: No-op return in lib/inquiries/import-actions.ts",
+      "Auto-Repair: No-op return in lib/inquiries/platform-cpl.ts",
+      "Auto-Repair: No-op return in lib/integrations/integration-hub.ts",
+      "Auto-Repair: No-op return in lib/kitchen/assessments.ts"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution."
+  },
+  {
+    "id": "c37665a5add3a3c8",
+    "module": {
+      "id": "ai-boundaries",
+      "label": "AI Boundaries"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "8cf21c018d1d94f7",
+      "1a8d694209734f7c",
+      "9546c0458ad30596",
+      "1d8833a39926ba43",
+      "0b242fc619b17e35",
+      "17262458648cee97",
+      "6e1529de2ce1e987"
+    ],
+    "titles": [
+      "Auto-Repair: No-op return in lib/lifecycle/actions.ts",
+      "Auto-Repair: No-op return in lib/marketing/newsletter-actions.ts",
+      "Auto-Repair: No-op return in lib/messages/actions.ts",
+      "Auto-Repair: No-op return in lib/network/collab-actions.ts",
+      "Auto-Repair: No-op return in lib/nutrition/nutrition-actions.ts",
+      "Auto-Repair: No-op return in lib/openclaw/cart-actions.ts",
+      "Auto-Repair: No-op return in lib/profile/actions.ts"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution."
+  },
+  {
+    "id": "f48c75c88972b599",
+    "module": {
+      "id": "ai-boundaries",
+      "label": "AI Boundaries"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "668d39cb94c18783",
+      "eecd26071c6e87f6",
+      "25e3c5497b2a0029",
+      "279e10aea6949767",
+      "2170e8fe02a387fb",
+      "82576b833cd961c5",
+      "e8973cff716f2255"
+    ],
+    "titles": [
+      "Auto-Repair: No-op return in lib/reviews/actions.ts",
+      "Auto-Repair: No-op return in lib/safety/recall-actions.ts",
+      "Auto-Repair: No-op return in lib/scheduling/actions.ts",
+      "Auto-Repair: No-op return in lib/scheduling/calendar-sync.ts",
+      "Auto-Repair: No-op return in lib/scheduling/schedule-block-actions.ts",
+      "Auto-Repair: No-op return in lib/sharing/actions.ts",
+      "Auto-Repair: No-op return in lib/surveys/actions.ts"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution."
+  },
+  {
+    "id": "05993e148096fb92",
+    "module": {
+      "id": "ai-boundaries",
+      "label": "AI Boundaries"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "8d29e6c2f40328e3",
+      "70d3d8327c50ff52",
+      "ca41792e9fa77633",
+      "468efb70d10e8a2c",
+      "573bc059b0ea8fa0",
+      "47e7d37f92b2511e",
+      "bef4589a4240e2d6"
+    ],
+    "titles": [
+      "Auto-Repair: No-op return in lib/taxonomy/actions.ts",
+      "Auto-Repair: No-op return in lib/testimonials/submit-testimonial.ts",
+      "Auto-Repair: No-op return in lib/tickets/purchase-actions.ts",
+      "Spec: BYOAI Phase 2A - Remy Prompt API",
+      "Codex Agent 3: Missing Lifecycle Notifications",
+      "Codex Overnight Batch: 2026-04-24",
+      "Codex Build Spec: Station Shift History Page"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution."
+  },
+  {
+    "id": "33a85f015e38ab5b",
+    "module": {
+      "id": "ai-boundaries",
+      "label": "AI Boundaries"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 2,
+    "sourceCounts": {
+      "docs-specs": 2
+    },
+    "candidateIds": ["febd0e95c1208bb4", "543d5f93c623d164"],
+    "titles": ["Spec: Remy Smart Router", "Scheduled Jobs & Automation Integrity Interrogation"],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution."
+  },
+  {
+    "id": "937d7cd8c4875a57",
+    "module": {
+      "id": "auth-security",
+      "label": "Auth and Security"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "99819297a29c66b8",
+      "4bb9b8fc36a403f9",
+      "7021ffdd310a02bb",
+      "93a66e8a52480cae",
+      "ac8560861e850d12",
+      "3eecf83206ce2d8a",
+      "76b7a0186bc2d9a8"
+    ],
+    "titles": [
+      "Auto-Repair: Missing auth gates in lib/ai/reactive/ (2 files)",
+      "Auto-Repair: Missing auth gates in lib/ai/scheduled/ (2 files)",
+      "Auto-Repair: Missing auth gates in lib/analytics/ (3 files)",
+      "Auto-Repair: Missing auth gates in lib/api/ (1 files)",
+      "Auto-Repair: Missing auth gates in lib/audience/ (1 files)",
+      "Auto-Repair: Missing auth gates in lib/auth/ (2 files)",
+      "Auto-Repair: Missing auth gates in lib/briefing/ (1 files)"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution."
+  },
+  {
+    "id": "e7b889e4892c350b",
+    "module": {
+      "id": "auth-security",
+      "label": "Auth and Security"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "4a6996e9c9225572",
+      "7234d5e24e86b005",
+      "15a49ae61861c75b",
+      "af1978341119a4a8",
+      "8a1386c3ef43d861",
+      "3227a83cd19f5071",
+      "edd1c08ab9b9c9d9"
+    ],
+    "titles": [
+      "Auto-Repair: Missing auth gates in lib/calls/ (1 files)",
+      "Auto-Repair: Missing auth gates in lib/campaigns/ (1 files)",
+      "Auto-Repair: Missing auth gates in lib/cannabis/ (1 files)",
+      "Auto-Repair: Missing auth gates in lib/chat/ (1 files)",
+      "Auto-Repair: Missing auth gates in lib/chef/ (1 files)",
+      "Auto-Repair: Missing auth gates in lib/clients/ (1 files)",
+      "Auto-Repair: Missing auth gates in lib/commerce/ (2 files)"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution."
+  },
+  {
+    "id": "15d5785f4eb9951e",
+    "module": {
+      "id": "auth-security",
+      "label": "Auth and Security"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "47d3ae561812c220",
+      "c1e4efa5b19731aa",
+      "f88074e82574486e",
+      "b9d5e6f2fc5b2d89",
+      "b65b5459480ad264",
+      "09fe8ea6610421cc",
+      "c0b21dca4d7d07bc"
+    ],
+    "titles": [
+      "Auto-Repair: Missing auth gates in lib/community/ (1 files)",
+      "Auto-Repair: Missing auth gates in lib/compliance/ (2 files)",
+      "Auto-Repair: Missing auth gates in lib/contact/ (1 files)",
+      "Auto-Repair: Missing auth gates in lib/cron/ (1 files)",
+      "Auto-Repair: Missing auth gates in lib/currency/ (1 files)",
+      "Auto-Repair: Missing auth gates in lib/dinner-circles/ (1 files)",
+      "Auto-Repair: Missing auth gates in lib/directory/ (2 files)"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution."
+  },
+  {
+    "id": "c14f1e2f5286a57e",
+    "module": {
+      "id": "auth-security",
+      "label": "Auth and Security"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "f24c0aa00c5dd6ea",
+      "aab5067853bb0c62",
+      "2188966a1c1ad0f9",
+      "b38bcda4d56f84f1",
+      "987bf9fa0aa0aa50",
+      "d8c705eead1ec75f",
+      "7bd8fde9771c983a"
+    ],
+    "titles": [
+      "Auto-Repair: Missing auth gates in lib/discover/ (1 files)",
+      "Auto-Repair: Missing auth gates in lib/documents/ (2 files)",
+      "Auto-Repair: Missing auth gates in lib/feedback/ (2 files)",
+      "Auto-Repair: Missing auth gates in lib/geo/ (1 files)",
+      "Auto-Repair: Missing auth gates in lib/holidays/ (1 files)",
+      "Auto-Repair: Missing auth gates in lib/hub/ (27 files)",
+      "Auto-Repair: Missing auth gates in lib/images/ (1 files)"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution."
+  },
+  {
+    "id": "4c73f3377a385f66",
+    "module": {
+      "id": "auth-security",
+      "label": "Auth and Security"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "8908402f4e5dde9e",
+      "58f11d2353dffac2",
+      "9646b4a008d71130",
+      "edaa0c03b4a72ca1",
+      "6b67d0204882af79",
+      "dd1d787505df1ed3",
+      "d43ceb7dccc195b0"
+    ],
+    "titles": [
+      "Auto-Repair: Missing auth gates in lib/incidents/ (1 files)",
+      "Auto-Repair: Missing auth gates in lib/inquiries/ (2 files)",
+      "Auto-Repair: Missing auth gates in lib/loyalty/ (1 files)",
+      "Auto-Repair: Missing auth gates in lib/marketing/ (2 files)",
+      "Auto-Repair: Missing auth gates in lib/monitoring/ (1 files)",
+      "Auto-Repair: Missing auth gates in lib/notifications/ (4 files)",
+      "Auto-Repair: Missing auth gates in lib/onboarding/ (1 files)"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution."
+  },
+  {
+    "id": "7883f324e16485e6",
+    "module": {
+      "id": "auth-security",
+      "label": "Auth and Security"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "4d4b3102b4e84fe1",
+      "854c84b59a82fd02",
+      "19fb7cf3563dce9b",
+      "e883ca8e8659f152",
+      "9894d01977ff4af8",
+      "955acd8a320b71d9",
+      "79e4d0caefad2b6b"
+    ],
+    "titles": [
+      "Auto-Repair: Missing auth gates in lib/openclaw/ (2 files)",
+      "Auto-Repair: Missing auth gates in lib/passive-store/ (1 files)",
+      "Auto-Repair: Missing auth gates in lib/public-consumer/ (1 files)",
+      "Auto-Repair: Missing auth gates in lib/quotes/ (1 files)",
+      "Auto-Repair: Missing auth gates in lib/recurring/ (1 files)",
+      "Auto-Repair: Missing auth gates in lib/reports/ (1 files)",
+      "Auto-Repair: Missing auth gates in lib/reviews/ (1 files)"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution."
+  },
+  {
+    "id": "3d127d97b563c1de",
+    "module": {
+      "id": "auth-security",
+      "label": "Auth and Security"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "0af96d418122a3cc",
+      "81084b96ecb61315",
+      "555a6d97f564e178",
+      "669238f11fea1b3e",
+      "a1898802431eea85",
+      "ec43f087b3c8eafa",
+      "7e0d2b78525b87cd"
+    ],
+    "titles": [
+      "Auto-Repair: Missing auth gates in lib/scheduling/ (2 files)",
+      "Auto-Repair: Missing auth gates in lib/sharing/ (1 files)",
+      "Auto-Repair: Missing auth gates in lib/sms/ (1 files)",
+      "Auto-Repair: Missing auth gates in lib/staff/ (1 files)",
+      "Auto-Repair: Missing auth gates in lib/surveys/ (1 files)",
+      "Auto-Repair: Missing auth gates in lib/testimonials/ (1 files)",
+      "Auto-Repair: Missing auth gates in lib/themes/ (1 files)"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution."
+  },
+  {
+    "id": "ebd60769882d5aa5",
+    "module": {
+      "id": "auth-security",
+      "label": "Auth and Security"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "c1dadbbf9182578a",
+      "108961f5d3d1f2ef",
+      "ed5fc01a94ac5667",
+      "4fe1d13f0a52129d",
+      "77a2b811878aff30",
+      "241ace8371a63781",
+      "2f0df23d9b009d10"
+    ],
+    "titles": [
+      "Auto-Repair: Missing auth gates in lib/tickets/ (1 files)",
+      "Auto-Repair: Missing auth gates in lib/translate/ (1 files)",
+      "Auto-Repair: Missing auth gates in lib/webhooks/ (2 files)",
+      "Auto-Repair: No-op return in lib/admin/flag-actions.ts",
+      "Auto-Repair: No-op return in lib/auth/actions.ts",
+      "Auto-Repair: No-op return in lib/auth/invitations.ts",
+      "Auto-Repair: No-op return in lib/security/turnstile.ts"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution."
+  },
+  {
+    "id": "6d0bf4b9ee01534e",
+    "module": {
+      "id": "chef-workspace",
+      "label": "Chef Workspace"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 5,
+    "sourceCounts": {
+      "docs-specs": 5
+    },
+    "candidateIds": [
+      "2359e2218ea46339",
+      "55b05e945aff90b7",
+      "c55a8726dfdf4530",
+      "3d390a03dae53c70",
+      "c745ef8bacd69eca"
+    ],
+    "titles": [
+      "Spec: Fix Double \"Loading Your Workspace\" Message on Login",
+      "Codex Task: Circle Reminder Cascade (Day-of Notifications)",
+      "Codex Morning Review Script",
+      "System Integrity Question Set: Calendar",
+      "System Integrity Question Set: Chef Dashboard"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution."
+  },
+  {
+    "id": "82c997816bd820c4",
+    "module": {
+      "id": "client-intake",
+      "label": "Client Intake"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 6,
+    "sourceCounts": {
+      "docs-specs": 5,
+      "system-intake": 1
+    },
+    "candidateIds": [
+      "2328b7df3d749b8b",
+      "a4946d384aa055d5",
+      "b15c392003022717",
+      "5bf23f861471905e",
+      "fdf59d5bbfd402fc",
+      "30cc3fc222b0c7d6"
+    ],
+    "titles": [
+      "Auto-Repair: Missing auth gates in lib/booking/ (1 files)",
+      "Codex Task: Event-Date Urgency Scoring for Inquiries",
+      "Consumer Booking Clarity - Build Spec",
+      "Devtools EYES Executable + Supervisor",
+      "ECS Gap: Event Planner Inquiry-to-Event Contact Handoff",
+      "the website already deals with this well but i personally"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution."
+  },
+  {
+    "id": "3bef411710b200e9",
+    "module": {
+      "id": "dietary-safety",
+      "label": "Dietary Safety"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 2,
+    "sourceCounts": {
+      "docs-specs": 2
+    },
+    "candidateIds": ["660353b9665a327f", "4d000e5618188122"],
+    "titles": ["ECS Gap: Household Allergy Severity Levels", "Guest Dietary Rollup Panel"],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution."
+  },
+  {
+    "id": "d6ec9d81bf2da553",
+    "module": {
+      "id": "events-ops",
+      "label": "Event Operations"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 5,
+      "3977-build-queue": 2
+    },
+    "candidateIds": [
+      "37e2e8962bf07e7c",
+      "a71f2af91076250d",
+      "b3be237a5677f348",
+      "4842a862ce582b8c",
+      "c6ac15a3e1ec3b6c",
+      "787afcf36f3436e2",
+      "052e2dfde7ab40de"
+    ],
+    "titles": [
+      "Consumer Hub: Upcoming Events from My Circles",
+      "Codex Spec: Recurring Service -> Circle Bridge",
+      "Codex Spec: Menu Performance Dashboard + Sales Logging",
+      "Codex Build Spec: Nationwide Config Gap Fill",
+      "Codex Spec: Service Day Close-Out",
+      "Develop the \"Master Event Brief\" Template:",
+      "Pre-Event Communication Workflow:"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution."
+  },
+  {
+    "id": "c8336e6412708fb7",
+    "module": {
+      "id": "events-ops",
+      "label": "Event Operations"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "5b819a310b9521c2",
+      "e3b2454134c6bd68",
+      "95743a21b26a533c",
+      "dc79f7a636759fe5",
+      "670470bdf8c1bf0b",
+      "8e6220b1db71f805",
+      "d678df7ec425b53c"
+    ],
+    "titles": [
+      "Auto-Repair: Empty event handler in app/(chef)/network/contact-shares.tsx",
+      "Auto-Repair: Empty event handler in components/ai/command-result-card.tsx",
+      "Auto-Repair: Empty event handler in components/ai/remy-animated-mascot.tsx",
+      "Auto-Repair: Empty event handler in components/vendors/vendor-form-wrapper.tsx",
+      "Auto-Repair: Missing auth gates in lib/events/ (2 files)",
+      "Auto-Repair: Missing auth gates in lib/meal-prep/ (2 files)",
+      "Auto-Repair: Missing auth gates in lib/service-simulation/ (1 files)"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution."
+  },
+  {
+    "id": "06df487ad34d6695",
+    "module": {
+      "id": "events-ops",
+      "label": "Event Operations"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "88d0b32585ab6d4a",
+      "1e7dc50b88c4fc8a",
+      "5890f6c7e50765d8",
+      "96970ccbd508ebcf",
+      "087bf0cace8c9893",
+      "0c4343b54ac988c6",
+      "601fdb4090b24e33"
+    ],
+    "titles": [
+      "Auto-Repair: No-op return in lib/events/actions.ts",
+      "Auto-Repair: No-op return in lib/events/contacts.ts",
+      "Auto-Repair: No-op return in lib/events/debrief-actions.ts",
+      "Auto-Repair: No-op return in lib/events/event-readiness-assistant-actions.ts",
+      "Auto-Repair: No-op return in lib/events/menu-approval-actions.ts",
+      "Auto-Repair: No-op return in lib/events/photo-actions.ts",
+      "Auto-Repair: No-op return in lib/events/photo-tagging-actions.ts"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution."
+  },
+  {
+    "id": "5b543b32f307ea44",
+    "module": {
+      "id": "events-ops",
+      "label": "Event Operations"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "b52941c5be7b9a87",
+      "370feddf043d0212",
+      "e6095bb909b9fe35",
+      "707cd863240972cb",
+      "c39334bf60f45d40",
+      "4f18c7706d403707",
+      "4bbe1c3df9ecbf92"
+    ],
+    "titles": [
+      "Auto-Repair: No-op return in lib/prep/prep-sheet-actions.ts",
+      "Auto-Repair: No-op return in lib/social/event-social-actions.ts",
+      "Auto-Repair: No-op return in lib/staff/staff-event-portal-actions.ts",
+      "Build: Client-Facing Group Split Page",
+      "Build: Referral Context Badge on Event Detail",
+      "Build: Shareable Menu Selection Token",
+      "Build Spec: Ticketed Events Chef Wiring Fix"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution."
+  },
+  {
+    "id": "be1d6b982880dddf",
+    "module": {
+      "id": "events-ops",
+      "label": "Event Operations"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "2ea1cc235d14938e",
+      "b785a867661e337c",
+      "f92cf94227e85a22",
+      "71c64337e9b983b4",
+      "ee452553c014830e",
+      "2813322056819b3d",
+      "7fddad8b356c5fd3"
+    ],
+    "titles": [
+      "Build Spec: Public Event View Component",
+      "Codex Agent 4: Public Event Page Polish",
+      "Codex Build Spec: Events List Urgency & Next-Step Indicators",
+      "Ingredient Showcase Auto-Builder",
+      "Codex Build Spec: P2 Prep Timeline iCal Export",
+      "ECS Gap: Event Planner Communication Integration",
+      "ECS Gap: Staff Self-Service Profile"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution."
+  },
+  {
+    "id": "8e26f304834e82f4",
+    "module": {
+      "id": "events-ops",
+      "label": "Event Operations"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 4,
+    "sourceCounts": {
+      "docs-specs": 4
+    },
+    "candidateIds": [
+      "6d97df03402c18f1",
+      "aeeb3679892b07fe",
+      "e422c622a5bd653d",
+      "5949590f5ebc5406"
+    ],
+    "titles": [
+      "Event Ops Hub - Build Spec",
+      "Event Readiness Assistant Implementation Note",
+      "Purchase Feedback Panel - Build Spec",
+      "Co-Hosting & Ticketed Events: System Integrity Question Set"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution."
+  },
+  {
+    "id": "9d54740835e493cc",
+    "module": {
+      "id": "finance-ledger",
+      "label": "Finance and Ledger"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "3977-build-queue": 5,
+      "docs-specs": 2
+    },
+    "candidateIds": [
+      "2904bf4f5478f3f8",
+      "37ded0d282ba4b88",
+      "7861c8ca98d88acb",
+      "0ad9b84d9b54f47f",
+      "35cfea7a3dae6024",
+      "34fde20ffb06d59c",
+      "f291a8cfd7869717"
+    ],
+    "titles": [
+      "Advanced Inventory Ledger:",
+      "Implement \"Provenance Ledger\":",
+      "Billing/Tracking:",
+      "Financial/Billing",
+      "Financial Ledger View:",
+      "Auto-Repair: Fragile file (CRIT): app/api/webhooks/stripe/route.ts",
+      "Auto-Repair: Missing auth gates in lib/billing/ (1 files)"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution."
+  },
+  {
+    "id": "f82e3af71bee6ec7",
+    "module": {
+      "id": "finance-ledger",
+      "label": "Finance and Ledger"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "4386b22385608c96",
+      "5873217991fbe374",
+      "87834b78c403c76b",
+      "6cea80edffff311e",
+      "da9b58831c7cb512",
+      "ada11b2339cd1d3b",
+      "d234c1684dcbd567"
+    ],
+    "titles": [
+      "Auto-Repair: Missing auth gates in lib/stripe/ (1 files)",
+      "Commerce & Financial Pipeline Integrity Interrogation",
+      "ECS Gap: Partner Payout Visibility",
+      "Event Financial Lifecycle - Interrogation Question Set",
+      "Financial Models Remediation - Build Plan",
+      "P0 Client Portal Payment Intent Hardening",
+      "System Integrity Question Set: Financial Operations & Ledger"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution."
+  },
+  {
+    "id": "6c159753ea6dcd52",
+    "module": {
+      "id": "menus-offers",
+      "label": "Menus and Offers"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "3977-build-queue": 5,
+      "docs-specs": 2
+    },
+    "candidateIds": [
+      "20fada039d2ab027",
+      "3c59f0bfb49a5cff",
+      "b2286739a334cef2",
+      "af01eae9bcbc47d6",
+      "95f2760edd516f13",
+      "5b1a1f627a2e892b",
+      "d6a5b3e96cea44e3"
+    ],
+    "titles": [
+      "Dynamic Menu Builder:",
+      "No deterministic inventory-to-menu execution assistant",
+      "No deterministic inventory-to-menu execution assistant",
+      "No deterministic inventory-to-menu execution assistant",
+      "Recipe/Menu Builder:",
+      "Spec: Menu Approval Workflow",
+      "Auto-Repair: Missing auth gates in lib/menus/ (1 files)"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution."
+  },
+  {
+    "id": "64b914196f51a4e8",
+    "module": {
+      "id": "menus-offers",
+      "label": "Menus and Offers"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "20b8d6ca03015040",
+      "d6b0b1c29b869aec",
+      "9f266fa91397af87",
+      "ca630b626a04a89c",
+      "3f0037fa2fbba044",
+      "a71521b43b9127ca",
+      "9017ac5c923abdcb"
+    ],
+    "titles": [
+      "Auto-Repair: No-op return in lib/menu-performance/actions.ts",
+      "Auto-Repair: No-op return in lib/menus/actions.ts",
+      "Auto-Repair: No-op return in lib/menus/menu-share-actions.ts",
+      "Auto-Repair: No-op return in lib/menus/preference-actions.ts",
+      "Auto-Repair: No-op return in lib/quotes/proposal-builder-actions.ts",
+      "Codex Build Spec: Menu Rotation Guard",
+      "System Integrity Question Set: Recipes, Menus & Ingredients"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution."
+  },
+  {
+    "id": "c0d9566727ccd753",
+    "module": {
+      "id": "pricing-trust",
+      "label": "Pricing Trust"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "3977-build-queue": 3,
+      "docs-specs": 4
+    },
+    "candidateIds": [
+      "5cda1240c51d501e",
+      "0e0e035e4e1489da",
+      "fb34fe1e4ebf939d",
+      "0c54b781d84b0a9c",
+      "f09684028fd23ecd",
+      "ca589a39896f1ea7",
+      "52943a091510a242"
+    ],
+    "titles": [
+      "Introduce \"Dynamic Pricing Tiers\":",
+      "Spec: Costing Transparency UI (Confidence Tooltip + Formula Toggle)",
+      "Dynamic Inventory/Costing",
+      "Dynamic Inventory/Costing",
+      "Auto-Repair: Missing auth gates in lib/grocery/ (1 files)",
+      "Auto-Repair: No-op return in lib/pricing/config-actions.ts",
+      "Fix: Remove Phantom Terms Reference from Quote Acceptance (JBUG-007)"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution."
+  },
+  {
+    "id": "e5088af1b7b64ad9",
+    "module": {
+      "id": "pricing-trust",
+      "label": "Pricing Trust"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "a950be7b455175e6",
+      "686ff672e4a56086",
+      "db7eba215e2c1141",
+      "2a0424e5484d235d",
+      "da7c4df9188613c5",
+      "ee9b40358755d0c7",
+      "290417ea1f0a0545"
+    ],
+    "titles": [
+      "Configuration Engine",
+      "Event Pricing Ingredient Spike Warnings Build Spec",
+      "Event Pricing Intelligence Panel Implementation Note",
+      "Menu Costing System - Interrogation Question Set",
+      "Price Flag Resolution UI - Build Spec",
+      "Pricing Intelligence Vertical Slice",
+      "Recipe Costing Integrity - Build Spec"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution."
+  },
+  {
+    "id": "cf520343d4c553f9",
+    "module": {
+      "id": "pricing-trust",
+      "label": "Pricing Trust"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 3,
+    "sourceCounts": {
+      "docs-specs": 3
+    },
+    "candidateIds": ["6f787236efd4be68", "ca7d5e641823ed10", "590341caddf11c15"],
+    "titles": [
+      "Simulation Orchestrator",
+      "System Integrity Question Set: Financials",
+      "Unit Conversion in Recipe Costing - Design Doc"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution."
+  },
+  {
+    "id": "af2366b0f97bf9b3",
+    "module": {
+      "id": "public-trust",
+      "label": "Public Trust"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 3,
+    "sourceCounts": {
+      "docs-specs": 3
+    },
+    "candidateIds": ["f2a6929e73ec79ba", "3fc38f5e6c8c4a11", "e34cad0ff23e168f"],
+    "titles": [
+      "Build Spec: Dinner Circle Invite Journey Regression",
+      "Fix Root Page 500",
+      "Passive Store Source-Driven Sync"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution."
+  },
+  {
+    "id": "9d1c6534d8e639ac",
+    "module": {
+      "id": "sourcing-inventory",
+      "label": "Sourcing and Inventory"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "3977-build-queue": 7
+    },
+    "candidateIds": [
+      "0a67e034593e7930",
+      "d01dc1df39e32f1a",
+      "fb253749966c61b0",
+      "a1297fdb5e34beca",
+      "cc46c8139e36094e",
+      "4ef12b1714d8d6fa",
+      "54488b992c4c18ba"
+    ],
+    "titles": [
+      "Inventory/Cost Tracking:",
+      "Integrated Inventory/Supply Chain:",
+      "Vendor/Stakeholder Management:",
+      "Prioritize Inventory Module:",
+      "Supplier Portal Integration:",
+      "Vendor Portal Integration:",
+      "Integrate Supplier Portal:"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution."
+  },
+  {
+    "id": "63a05c9c871af69b",
+    "module": {
+      "id": "sourcing-inventory",
+      "label": "Sourcing and Inventory"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 2,
+    "sourceCounts": {
+      "docs-specs": 2
+    },
+    "candidateIds": ["50cda221c2b2fece", "ad36a1d526cfde17"],
+    "titles": [
+      "Adaptive Sourcing Workflow",
+      "Auto-Repair: Missing auth gates in lib/vendors/ (1 files)"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution."
+  },
+  {
+    "id": "2620d4e209560ce2",
+    "module": {
+      "id": "staff-partner",
+      "label": "Staff and Partner Ops"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 1,
+    "sourceCounts": {
+      "docs-specs": 1
+    },
+    "candidateIds": ["518017cb06643991"],
+    "titles": ["Partner Mobile Sign-Out Footer"],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution."
+  },
+  {
+    "id": "ae96c03b8b37e26f",
+    "module": {
+      "id": "unassigned",
+      "label": "Unassigned"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "db9d10b1a10f67c6",
+      "ae58068adf55fccd",
+      "7f62b3ab48d2bb24",
+      "41f0235195bbd8ac",
+      "ef70243434bd40ed",
+      "0723e9a128d1c72e",
+      "03f97faaf8b2e9a0"
+    ],
+    "titles": [
+      "Spec: Mobile App + PWA Activation",
+      "Chef Operations Interrogation Protocol",
+      "International Readiness Layer",
+      "Spec: Onboarding Cohesion Rework",
+      "Spec: OpenCLAW Reference Libraries",
+      "Build: Fix 14 TypeScript Errors",
+      "Co-Hosted Dinner: Build Spec"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution."
+  },
+  {
+    "id": "729a2f2591baf6a6",
+    "module": {
+      "id": "unassigned",
+      "label": "Unassigned"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "d8b733b473c15eb3",
+      "b14c76e1da64ad53",
+      "123b690ae857d9bb",
+      "d0adacfd05e9c304",
+      "b29f69a746259b82",
+      "b43b0749cdf1bf3a",
+      "b7326decf7f1d861"
+    ],
+    "titles": [
+      "Codex Build Spec: P0 Hallucination Fixes",
+      "Codex Build Spec: P1 Allergen Matching Word Boundary Fix",
+      "Codex Build Spec: Hub-to-Chef Preference Sync Bridge",
+      "Communication Ingestion Pipeline",
+      "Dinner Circles Expansion: Build Spec",
+      "Dinner Lifecycle End-to-End Interrogation",
+      "ECS Gap: Chef Portal Empty States"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution."
+  },
+  {
+    "id": "4711f7f76bd4c860",
+    "module": {
+      "id": "unassigned",
+      "label": "Unassigned"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "b8d867840abc09e7",
+      "c8650bfb93d7620e",
+      "0566d03dee34d5ff",
+      "aad903d746e20c21",
+      "640000d26993dc52",
+      "005235b5cde2c52d",
+      "326e8ce891b5d4d7"
+    ],
+    "titles": [
+      "Grazing Table Ops Engine: Build Spec",
+      "Managed Channel Integration Note",
+      "Private Context, Secret Orchestration, and Complimentary Intelligence",
+      "Pulse & Capture Integration Spec",
+      "Rich Text Editor - Extended Surfaces",
+      "Stress-Test Question Set: Platform Role Hierarchy",
+      "System Integrity Question Set: Cannabis Dining Portal"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution."
+  },
+  {
+    "id": "df7f59b47a087b2e",
+    "module": {
+      "id": "unassigned",
+      "label": "Unassigned"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "5729656ee46d6dda",
+      "cd19a90a42ac4333",
+      "581ba9d221ead516",
+      "77acfdf84c77ca54",
+      "a20d30b89571cef3",
+      "d1e1ef413e0b3481",
+      "50d697642d38489f"
+    ],
+    "titles": [
+      "System Integrity Question Set: Client & Hub Portal",
+      "System Integrity Question Set: Client Portal",
+      "System Integrity Question Set: Community Circles",
+      "System Integrity Question Set: Cron & Scheduled Operations",
+      "Cross-System Cohesion: System Integrity Question Set (Phase 2)",
+      "System Integrity Question Set: Data Export (Takeout)",
+      "System Integrity Question Set: Money Flow End-to-End"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution."
+  },
+  {
+    "id": "a3024593b36f0ec8",
+    "module": {
+      "id": "unassigned",
+      "label": "Unassigned"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 5,
+    "sourceCounts": {
+      "docs-specs": 5
+    },
+    "candidateIds": [
+      "c30972d2f8b532d5",
+      "14ea24c7416065b9",
+      "dfc6b5043850367e",
+      "9d176c9280c76295",
+      "9eccfc6715a1620a"
+    ],
+    "titles": [
+      "System Integrity Question Set: Onboarding Cohesion",
+      "System Integrity Question Set: Platform Role Hierarchy",
+      "System Integrity Question Set: Settings & Preferences",
+      "System Integrity Question Set: Settings",
+      "System Interrogation Protocol"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution."
+  },
+  {
+    "id": "39d8b818adc81b19",
+    "module": {
+      "id": "v1-control-plane",
+      "label": "V1 Control Plane"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 1,
+      "3977-build-queue": 6
+    },
+    "candidateIds": [
+      "a08a087e8aa33f97",
+      "91a990dd1d43885e",
+      "7abf0f30f05bb904",
+      "c7d7e0f1a4e6d804",
+      "4039f2696dd47d48",
+      "32f0be65b8c51f39",
+      "420e1641458fc15d"
+    ],
+    "titles": [
+      "Spec: [Feature Name]",
+      "Centralized Project Command:",
+      "Centralized Project Management:",
+      "Centralized Source of Truth:",
+      "Deep Contextual Linking:",
+      "Lack of Ownership:",
+      "Simplify Workflow Visualization:"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution."
+  },
+  {
+    "id": "86aa8765af5d4e45",
+    "module": {
+      "id": "v1-control-plane",
+      "label": "V1 Control Plane"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "3977-build-queue": 7
+    },
+    "candidateIds": [
+      "2c4217e60341b904",
+      "def28611977a1b6f",
+      "741a2bbecf0bde49",
+      "7b2faaafd7f1c946",
+      "68035f67ad9f93a2",
+      "f30ac71c30b9a038",
+      "6de84b89c1edbee3"
+    ],
+    "titles": [
+      "Financial Module Overhaul:",
+      "No documented conflict-safe sync model",
+      "Real-Time Communication:",
+      "No deterministic dose-curve engine",
+      "No hard medical constraint enforcement engine (blocking layer)",
+      "Develop \"Yield & Waste Tracking\":",
+      "Develop a \"Critical Path\" View:"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution."
+  },
+  {
+    "id": "1441f2db3fcd2de6",
+    "module": {
+      "id": "v1-control-plane",
+      "label": "V1 Control Plane"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "3977-build-queue": 7
+    },
+    "candidateIds": [
+      "3a3a022694876133",
+      "3f43e4a221a503b3",
+      "089389d4f7a2d689",
+      "671f645feee68211",
+      "a33817a99f26b984",
+      "d0def0a9833ea8b4",
+      "ba11379c50117d9c"
+    ],
+    "titles": [
+      "Visual/Intuitive Workflow:",
+      "\"Local Feel\":",
+      "Enhance Stakeholder Communication:",
+      "Financial accuracy gap",
+      "Flexibility over Rigidity:",
+      "Implement \"Provenance Tagging\":",
+      "Implement a \"Critic Mode\" View:"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution."
+  },
+  {
+    "id": "3d332bfe47e6f7ff",
+    "module": {
+      "id": "v1-control-plane",
+      "label": "V1 Control Plane"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "3977-build-queue": 7
+    },
+    "candidateIds": [
+      "ea6a808fce857eb8",
+      "653b23be4fdf7e5f",
+      "a468d991067f11ad",
+      "5dc6629d048a8afd",
+      "9cee73399f84495a",
+      "6a077567f32bcc2d",
+      "2d4f94f002538033"
+    ],
+    "titles": [
+      "Implement a \"Scenario Builder\":",
+      "Lack of Visibility:",
+      "Media Rights Management:",
+      "Multi-Modal Input:",
+      "Multi-Unit Dashboard:",
+      "Prioritize \"Invisible Automation\":",
+      "Project/Experience Mapping"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution."
+  },
+  {
+    "id": "111bbc9b9eb25223",
+    "module": {
+      "id": "v1-control-plane",
+      "label": "V1 Control Plane"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "3977-build-queue": 7
+    },
+    "candidateIds": [
+      "35067e3e664e719e",
+      "2a966592ed9fe40f",
+      "faf2f16eea23e0ab",
+      "94f524ba31035456",
+      "4563267ce422a64c",
+      "b8028de0fe16dd45",
+      "9787b903dea314c0"
+    ],
+    "titles": [
+      "Proof/Documentation:",
+      "Real-Time Visibility:",
+      "Storytelling/Reporting:",
+      "Enhance Stakeholder Communication:",
+      "Implement a \"Scenario Builder\":",
+      "Integrate Secure Communication:",
+      "\"Narrative Path Builder\":"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution."
+  },
+  {
+    "id": "77747c5008e1a53b",
+    "module": {
+      "id": "v1-control-plane",
+      "label": "V1 Control Plane"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "3977-build-queue": 7
+    },
+    "candidateIds": [
+      "8fdd40781b7c5647",
+      "9d7c7f774665a611",
+      "39598032f15914ad",
+      "9dc3cad84508156a",
+      "6ec68f553206e784",
+      "f7feccf8e5cfbca8",
+      "a269defc76eba38f"
+    ],
+    "titles": [
+      "Implement a \"Scenario Builder\":",
+      "Enhance Data Tagging:",
+      "Tiered User Dashboards:",
+      "Implement \"Guest Profile Layering\":",
+      "Advanced Negotiation/Contracting:",
+      "Financial Modeling (Risk)",
+      "Centralized Project Dashboard:"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution."
+  },
+  {
+    "id": "764627cb151b9f2d",
+    "module": {
+      "id": "v1-control-plane",
+      "label": "V1 Control Plane"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 2,
+    "sourceCounts": {
+      "docs-specs": 2
+    },
+    "candidateIds": ["b9641aebe452a633", "a636b60d5044f9b5"],
+    "titles": [
+      "Auto-Repair: Missing auth gates in lib/decision-queue/ (1 files)",
+      "Decision Queue - Build Spec"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution."
+  },
+  {
+    "id": "2bbff60dcb999eba",
+    "module": {
+      "id": "ai-boundaries",
+      "label": "AI Boundaries"
+    },
+    "classification": "v1_support",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "bce0a7eeabb684ae",
+      "c8a40e2ad7face25",
+      "cde30d6188e02120",
+      "13f3cde5483f438e",
+      "26a3fd55ae20d4cc",
+      "c16769f1b3bbcde0",
+      "0cb7c9b1eca8b8ed"
+    ],
+    "titles": [
+      "Codex Build Spec: Scraper Error Logging & Hardening",
+      "Remy Fix 02: Markdown Rendering + Streaming Cursor on All Surfaces",
+      "Auto-Repair: Fragile file (CRIT): app/(chef)/dashboard/page.tsx",
+      "Auto-Repair: Missing route: app/(chef)/dashboard/page.tsx",
+      "Fix: Remove Dev Note from Public Circles Page (JBUG-013)",
+      "Codex Build Spec: Shift Knowledge Search Page",
+      "ECS Gap: Partner Change Request Notifications"
+    ],
+    "reason": "Candidate V1 support batch. Queue after blocker batches once approved."
+  },
+  {
+    "id": "607996054fc34088",
+    "module": {
+      "id": "ai-boundaries",
+      "label": "AI Boundaries"
+    },
+    "classification": "v1_support",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 1,
+    "sourceCounts": {
+      "docs-specs": 1
+    },
+    "candidateIds": ["18077b374f88f794"],
+    "titles": ["Spec: Remy Model Discovery"],
+    "reason": "Candidate V1 support batch. Queue after blocker batches once approved."
+  },
+  {
+    "id": "f6663d45822ed545",
+    "module": {
+      "id": "client-intake",
+      "label": "Client Intake"
+    },
+    "classification": "v1_support",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 4,
+    "sourceCounts": {
+      "3977-build-queue": 2,
+      "system-intake": 2
+    },
+    "candidateIds": [
+      "e171a536b6ad9545",
+      "5409ac2e3b9b189b",
+      "52d9b47231405c21",
+      "e0ae6361e68a3113"
+    ],
+    "titles": [
+      "Booking/Inventory:",
+      "Introduce \"Project Mode\" over \"Booking Mode\":",
+      "Seasonal ingredient calendar",
+      "youre a user that hates cannabis but understand its legal"
+    ],
+    "reason": "Candidate V1 support batch. Queue after blocker batches once approved."
+  },
+  {
+    "id": "fdf7df7317908fda",
+    "module": {
+      "id": "events-ops",
+      "label": "Event Operations"
+    },
+    "classification": "v1_support",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "3977-build-queue": 5,
+      "docs-specs": 2
+    },
+    "candidateIds": [
+      "5142a57ae0a81263",
+      "fdeb73cd5fd6f1ec",
+      "dc8f74d3c1b31d14",
+      "072c0b6c7ad9525e",
+      "34469833809355e6",
+      "6ffb98e20e19c600",
+      "06531c8a4aacc4ec"
+    ],
+    "titles": [
+      "Develop \"Prep Mode\" UI:",
+      "Prep Station Workflow Module (The Journey):",
+      "Ephemeral Event Lifecycle Management",
+      "Project Timeline Management:",
+      "Implement \"Event Day Dashboard\":",
+      "Codex Build Spec: Auto-Log Menu History on Event Completion",
+      "ECS Gap: Client Event Detail Error Boundary"
+    ],
+    "reason": "Candidate V1 support batch. Queue after blocker batches once approved."
+  },
+  {
+    "id": "aa15c1824b9c49bc",
+    "module": {
+      "id": "events-ops",
+      "label": "Event Operations"
+    },
+    "classification": "v1_support",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 2,
+    "sourceCounts": {
+      "v1-approved-queue": 1,
+      "docs-specs": 1
+    },
+    "candidateIds": ["1d3fa7c98013db84", "be38b0c883addcb0"],
+    "titles": [
+      "Spec: Event Scheduling Surface Ownership and Route Truth",
+      "Spec: Service Simulation Proof Closeout"
+    ],
+    "reason": "Candidate V1 support batch. Queue after blocker batches once approved."
+  },
+  {
+    "id": "d416021d97c77a3b",
+    "module": {
+      "id": "pricing-trust",
+      "label": "Pricing Trust"
+    },
+    "classification": "v1_support",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 1,
+    "sourceCounts": {
+      "v1-approved-queue": 1
+    },
+    "candidateIds": ["6a34c70137668f91"],
+    "titles": ["Spec: Recipe and Menu Cost CSV Export"],
+    "reason": "Candidate V1 support batch. Queue after blocker batches once approved."
+  },
+  {
+    "id": "9d7ac7dcec022638",
+    "module": {
+      "id": "sourcing-inventory",
+      "label": "Sourcing and Inventory"
+    },
+    "classification": "v1_support",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "3977-build-queue": 7
+    },
+    "candidateIds": [
+      "c434dca5520c7fe3",
+      "8f0aefcd51041909",
+      "c03b8c78f9856fa2",
+      "769cf54e2ae04f07",
+      "259cdfdaac3616c6",
+      "cf79dd0b6bc26b55",
+      "b7d2159ea6458ce9"
+    ],
+    "titles": [
+      "Implement Variable Inventory Tracking:",
+      "Advanced Inventory/Supply Chain:",
+      "Inventory/Sourcing Complexity:",
+      "Supplier Vetting Module:",
+      "Vendor Management Complexity:",
+      "Real-Time Inventory Depletion Alerts:",
+      "Prioritize Inventory Module:"
+    ],
+    "reason": "Candidate V1 support batch. Queue after blocker batches once approved."
+  },
+  {
+    "id": "42f16dadcefc6249",
+    "module": {
+      "id": "sourcing-inventory",
+      "label": "Sourcing and Inventory"
+    },
+    "classification": "v1_support",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "3977-build-queue": 7
+    },
+    "candidateIds": [
+      "f6cf05f6f6d3ab8e",
+      "39bf9bac2840912d",
+      "216ddf5bfdb5bc13",
+      "5ec0043c291de128",
+      "d6b609cb7ee75d11",
+      "3602359845715207",
+      "f55e96da183b14a9"
+    ],
+    "titles": [
+      "Supplier Portal Integration:",
+      "Vendor Communication Hub:",
+      "Vendor Portal Integration:",
+      "Supplier Portal Integration:",
+      "Supplier Vetting Portal:",
+      "Vendor Communication Hub:",
+      "Vendor Portal Integration:"
+    ],
+    "reason": "Candidate V1 support batch. Queue after blocker batches once approved."
+  },
+  {
+    "id": "9287be025a561861",
+    "module": {
+      "id": "sourcing-inventory",
+      "label": "Sourcing and Inventory"
+    },
+    "classification": "v1_support",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 4,
+    "sourceCounts": {
+      "3977-build-queue": 4
+    },
+    "candidateIds": [
+      "a8d6e414bcad33e1",
+      "6d1694f0bfbd1b9a",
+      "f8a8c88c635cc99f",
+      "1f51ee51ceb99c68"
+    ],
+    "titles": [
+      "Sourcing/Logistics Tracking",
+      "Real-Time Inventory Sync:",
+      "Sourcing/Logistics Tracking",
+      "Sourcing/Logistics Tracking"
+    ],
+    "reason": "Candidate V1 support batch. Queue after blocker batches once approved."
+  },
+  {
+    "id": "4b0439b032f2fb3b",
+    "module": {
+      "id": "unassigned",
+      "label": "Unassigned"
+    },
+    "classification": "v1_support",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 6,
+      "v1-approved-queue": 1
+    },
+    "candidateIds": [
+      "d801751ec757f7ad",
+      "59986d501fcad0ed",
+      "660768667acb540b",
+      "fa457881a482f7bf",
+      "450447a896b6d179",
+      "25664a7d0075d3db",
+      "8c7992f6bc03dd8a"
+    ],
+    "titles": [
+      "Codex Build Spec: Client UX Bug Sweep (3 Fixes)",
+      "Codex Build Spec: Circle Triage Engine",
+      "Codex Build Spec: Circles Momentum Strip",
+      "Codex Build Spec: Client List Health Enrichment",
+      "Fix: Add Consent Check Before Auto-Join on Group Pages (JBUG-015)",
+      "Fix: Chat Empty State Shows Wrong Copy to Clients (JBUG-005)",
+      "Spec: Saturation Tracking Core"
+    ],
+    "reason": "Candidate V1 support batch. Queue after blocker batches once approved."
+  },
+  {
+    "id": "7c55627b26563bff",
+    "module": {
+      "id": "unassigned",
+      "label": "Unassigned"
+    },
+    "classification": "v1_support",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "72322da79489ee79",
+      "bc52f70ebebc0e36",
+      "8f371d9bb90c01e2",
+      "fa1cc726db92ebdc",
+      "47b5efff269e7c00",
+      "c0a4bf81f3d11c0f",
+      "6816782ed25ab99a"
+    ],
+    "titles": [
+      "Codex Build Spec: Add Navigation Links for New Station Pages",
+      "Wish UI - Local Web Interface",
+      "ECS Gap: Chef Portal Error Boundaries",
+      "ECS Gap: Client Hub Button Row Overflow",
+      "ECS Gap: Guest Photo Upload Size Validation",
+      "ECS Gap: Guest Portal RSVP \"Maybe\" Status",
+      "ECS Gap: Network Collab Space Real-Time Messaging"
+    ],
+    "reason": "Candidate V1 support batch. Queue after blocker batches once approved."
+  },
+  {
+    "id": "4e408209cd50f586",
+    "module": {
+      "id": "unassigned",
+      "label": "Unassigned"
+    },
+    "classification": "v1_support",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 4,
+    "sourceCounts": {
+      "v1-approved-queue": 3,
+      "docs-specs": 1
+    },
+    "candidateIds": [
+      "44d3aefea03ed921",
+      "0dc949a5cc902356",
+      "b1f8047d14109afe",
+      "5bdca1447cd5c80f"
+    ],
+    "titles": [
+      "Spec: Nearby - Directory Redesign",
+      "Spec: Automated Database Backup System",
+      "Spec: Platform Shell Command Center",
+      "Yield Normalization Engine: Deterministic Verification Harness"
+    ],
+    "reason": "Candidate V1 support batch. Queue after blocker batches once approved."
+  },
+  {
+    "id": "82c2e36e9b0d7d44",
+    "module": {
+      "id": "v1-control-plane",
+      "label": "V1 Control Plane"
+    },
+    "classification": "v1_support",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "3977-build-queue": 7
+    },
+    "candidateIds": [
+      "0b2614bb91a9d746",
+      "64a0ab292a593285",
+      "98446a47d9ff0e8c",
+      "4af3e27747743e45",
+      "4c81c225421d4f72",
+      "bd9220dd5a70f700",
+      "586e1195a91b8db2"
+    ],
+    "titles": [
+      "\"Executive Override\" Workflow:",
+      "Advanced Batch Scheduling:",
+      "Cross-System Integration:",
+      "Curator/Expert Layer:",
+      "Dedicated Guest Portal/App:",
+      "Develop \"Contamination Alert System\":",
+      "Develop \"Contextual Linking\":"
+    ],
+    "reason": "Candidate V1 support batch. Queue after blocker batches once approved."
+  },
+  {
+    "id": "7b358a0ff5d30cf0",
+    "module": {
+      "id": "v1-control-plane",
+      "label": "V1 Control Plane"
+    },
+    "classification": "v1_support",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "3977-build-queue": 7
+    },
+    "candidateIds": [
+      "319aab03613d7cb5",
+      "d521b9e858352a8c",
+      "03fc3d748d7ab578",
+      "337bb5be884129d2",
+      "068df5d04b26e169",
+      "8796898a7e23b2ef",
+      "65b7e8700907786a"
+    ],
+    "titles": [
+      "Develop \"Dynamic Quoting\":",
+      "Flexibility over Standardization:",
+      "Hyper-Flexibility:",
+      "Hyper-Personalization:",
+      "Implement \"Black Box\" Mode:",
+      "Implement \"Storytelling Mode\" View:",
+      "Implement \"The Narrative View\":"
+    ],
+    "reason": "Candidate V1 support batch. Queue after blocker batches once approved."
+  },
+  {
+    "id": "cc45d17966fb210f",
+    "module": {
+      "id": "v1-control-plane",
+      "label": "V1 Control Plane"
+    },
+    "classification": "v1_support",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "3977-build-queue": 7
+    },
+    "candidateIds": [
+      "73bba91c886414c3",
+      "6b64e51c5f2787ca",
+      "7b4ffe9d11017f51",
+      "9f6d608f9c8ba302",
+      "a9d910c0b4410144",
+      "4f6a6d29419a6245",
+      "d5739ec38b70d6ee"
+    ],
+    "titles": [
+      "Implement \"Usage Deduction\":",
+      "Implement \"Yield/Lot Tracking\":",
+      "Implement a \"Creative Narrative Layer\":",
+      "Implement a \"Harvest/Yield Module\":",
+      "Information Overload/Fragmentation:",
+      "Information Overload/Noise:",
+      "Lack of Context:"
+    ],
+    "reason": "Candidate V1 support batch. Queue after blocker batches once approved."
+  },
+  {
+    "id": "94f0792ebf4e81a7",
+    "module": {
+      "id": "v1-control-plane",
+      "label": "V1 Control Plane"
+    },
+    "classification": "v1_support",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "3977-build-queue": 7
+    },
+    "candidateIds": [
+      "b9073ff3fe888bf2",
+      "ad7f9ebb44da77ce",
+      "29919d7843b6d1aa",
+      "ad439e9b3aaca3e1",
+      "90024c4664c7def6",
+      "56b631b90e9d33de",
+      "d3d074139919ae76"
+    ],
+    "titles": [
+      "Lack of Depth:",
+      "Lot/Batch Tracking:",
+      "Mandate Provenance Fields:",
+      "Mandatory Multi-Signature Approval:",
+      "Multi-Modal Storytelling:",
+      "Over-Automation:",
+      "Project Management/Workflow:"
+    ],
+    "reason": "Candidate V1 support batch. Queue after blocker batches once approved."
+  },
+  {
+    "id": "0b68f822af956d0d",
+    "module": {
+      "id": "v1-control-plane",
+      "label": "V1 Control Plane"
+    },
+    "classification": "v1_support",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "3977-build-queue": 7
+    },
+    "candidateIds": [
+      "9ec5b0720e36c4e9",
+      "e97c3782d141ab42",
+      "a796fe7a0e95a040",
+      "22f588b886010bec",
+      "1b0ae8ca0c595f7c",
+      "84434c9a00d2c057",
+      "1d533049a8c6f215"
+    ],
+    "titles": [
+      "Scalability & Complexity Handling:",
+      "Scope Creep Management:",
+      "Single Source of Truth:",
+      "Technique Deep Dives:",
+      "The \"Live Expo Board\":",
+      "Develop \"Conflict Flagging\":",
+      "No real-time dosing administration log"
+    ],
+    "reason": "Candidate V1 support batch. Queue after blocker batches once approved."
+  },
+  {
+    "id": "3b1113e2cf189525",
+    "module": {
+      "id": "v1-control-plane",
+      "label": "V1 Control Plane"
+    },
+    "classification": "v1_support",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "3977-build-queue": 7
+    },
+    "candidateIds": [
+      "49a0e7a0b0f2dc75",
+      "4163b150595e5b32",
+      "2021a47341231d7a",
+      "bf68ba1643063918",
+      "088f657ca040ecbb",
+      "b822383da305e4e5",
+      "68dbb7904ae5f3a0"
+    ],
+    "titles": [
+      "Offline First Architecture:",
+      "Real-Time Coordination:",
+      "Data Comparison View:",
+      "Deep Data Aggregation:",
+      "No dedicated safety command center view",
+      "No explicit outcome-based reaction log as first-class feedback",
+      "Prototype the \"Day-Of Dashboard\":"
+    ],
+    "reason": "Candidate V1 support batch. Queue after blocker batches once approved."
+  },
+  {
+    "id": "941826069c2e957d",
+    "module": {
+      "id": "v1-control-plane",
+      "label": "V1 Control Plane"
+    },
+    "classification": "v1_support",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "3977-build-queue": 7
+    },
+    "candidateIds": [
+      "a0760b19e7ee6460",
+      "144bdb3c48053831",
+      "9a1a0afa1c4f40af",
+      "421faedc8f263686",
+      "42da93067f24758f",
+      "4db3b18c268b7f44",
+      "bad414f6443e4464"
+    ],
+    "titles": [
+      "No explicit outcome-based reaction log as first-class feedback",
+      "No real-time dosing administration log",
+      "Guest cannabis tolerance history is not modeled as a first-class longitudinal safety signal",
+      "No canonical central dosing engine",
+      "No charter or voyage provisioning mode",
+      "Dynamic Resource Allocation:",
+      "No dedicated safety command center view"
+    ],
+    "reason": "Candidate V1 support batch. Queue after blocker batches once approved."
+  },
+  {
+    "id": "f41463b62c50870c",
+    "module": {
+      "id": "v1-control-plane",
+      "label": "V1 Control Plane"
+    },
+    "classification": "v1_support",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "3977-build-queue": 7
+    },
+    "candidateIds": [
+      "9fc9ed52d33624c9",
+      "0bf2ca0758295604",
+      "83dd1cdd6e99b2f9",
+      "6724d2ce0d4dc6c8",
+      "e279d889be74a02c",
+      "f46c4bf75459e310",
+      "ab198c6b06174066"
+    ],
+    "titles": [
+      "No explicit outcome-based reaction log as first-class feedback",
+      "Curation/Vetting:",
+      "Dynamic Resource Allocation:",
+      "Advanced Dependency Mapping:",
+      "Budget Overruns & Visibility:",
+      "Cross-Departmental Synthesis:",
+      "Develop a \"Producer Feed\":"
+    ],
+    "reason": "Candidate V1 support batch. Queue after blocker batches once approved."
+  },
+  {
+    "id": "f7b4a66868e08eaf",
+    "module": {
+      "id": "v1-control-plane",
+      "label": "V1 Control Plane"
+    },
+    "classification": "v1_support",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "3977-build-queue": 7
+    },
+    "candidateIds": [
+      "0d56e180e179fce7",
+      "64c083564239b000",
+      "bc2061a8b5558f60",
+      "c6599e0936cc8824",
+      "ae1c414e6ac0606a",
+      "e29763c7370ff655",
+      "47b2f8fd5ba26e4c"
+    ],
+    "titles": [
+      "Develop a \"Risk Simulation Engine\":",
+      "Implement Mandatory Alerting:",
+      "Point of Sale (POS):",
+      "Proactive Risk Mitigation:",
+      "UX alignment gap",
+      "\"Local Feel\":",
+      "Flexibility over Rigidity:"
+    ],
+    "reason": "Candidate V1 support batch. Queue after blocker batches once approved."
+  },
+  {
+    "id": "f252d98348400b58",
+    "module": {
+      "id": "v1-control-plane",
+      "label": "V1 Control Plane"
+    },
+    "classification": "v1_support",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "3977-build-queue": 7
+    },
+    "candidateIds": [
+      "31b442a497feccfe",
+      "ba11f5a413b2ba09",
+      "f787ffa33e39c729",
+      "c5d0e18842311486",
+      "1852a0752d2ceae6",
+      "075b562aca8de542",
+      "b01c040144897c94"
+    ],
+    "titles": [
+      "Implement \"Provenance Tagging\":",
+      "Implement a \"Critic Mode\" View:",
+      "Lack of Visibility:",
+      "Media Rights Management:",
+      "Multi-Modal Input:",
+      "Multi-Unit Dashboard:",
+      "Prioritize \"Invisible Automation\":"
+    ],
+    "reason": "Candidate V1 support batch. Queue after blocker batches once approved."
+  },
+  {
+    "id": "d788195b5434fc52",
+    "module": {
+      "id": "v1-control-plane",
+      "label": "V1 Control Plane"
+    },
+    "classification": "v1_support",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "3977-build-queue": 7
+    },
+    "candidateIds": [
+      "eb44f53ea40a8414",
+      "8954d7964e0a3b25",
+      "0b493e5549517f8c",
+      "95a7b9906962dcf5",
+      "b9945ea965a929ca",
+      "0ef02d78e71a3365",
+      "6dd87d6d3dd104b0"
+    ],
+    "titles": [
+      "Project/Experience Mapping",
+      "Proof/Documentation:",
+      "Storytelling/Reporting:",
+      "Real-Time Visibility:",
+      "Multi-Unit Dashboard:",
+      "Storytelling/Reporting:",
+      "Proof/Documentation:"
+    ],
+    "reason": "Candidate V1 support batch. Queue after blocker batches once approved."
+  },
+  {
+    "id": "f021a781f8e5c027",
+    "module": {
+      "id": "v1-control-plane",
+      "label": "V1 Control Plane"
+    },
+    "classification": "v1_support",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "3977-build-queue": 7
+    },
+    "candidateIds": [
+      "badbbd6849619798",
+      "6954bd59925bd190",
+      "a6493c752436e35b",
+      "bb99200a4fec6363",
+      "83a09483863d2fc0",
+      "7d785c12bf9af01b",
+      "7121d4d4d46a5926"
+    ],
+    "titles": [
+      "Media/Source Logging:",
+      "Proof/Documentation:",
+      "Multi-Unit Dashboard:",
+      "Audience Curation and Composition",
+      "Bureaucracy/Slowness:",
+      "Curated Narrative Paths:",
+      "Focus on the \"Master Plan\":"
+    ],
+    "reason": "Candidate V1 support batch. Queue after blocker batches once approved."
+  },
+  {
+    "id": "cd471b95af30eae8",
+    "module": {
+      "id": "v1-control-plane",
+      "label": "V1 Control Plane"
+    },
+    "classification": "v1_support",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "3977-build-queue": 7
+    },
+    "candidateIds": [
+      "2fe478ce04d412a6",
+      "1caa10634d0cf49a",
+      "91da19fb534a5d09",
+      "cec9fad6e0da14b8",
+      "3fb2a0e5171e7992",
+      "32f5a3d1505bc2e4",
+      "9bd3895c1f61f79b"
+    ],
+    "titles": [
+      "Implement \"Client Journey Mapping\":",
+      "Implement \"Context Views\":",
+      "Incident Command Workflow:",
+      "Mandatory Comparison Matrix:",
+      "Operational follow through gap",
+      "Over-Complication:",
+      "Over-Integration:"
+    ],
+    "reason": "Candidate V1 support batch. Queue after blocker batches once approved."
+  },
+  {
+    "id": "953386b538517cbb",
+    "module": {
+      "id": "v1-control-plane",
+      "label": "V1 Control Plane"
+    },
+    "classification": "v1_support",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "3977-build-queue": 6,
+      "v1-approved-queue": 1
+    },
+    "candidateIds": [
+      "e48b7e99d57f2a0e",
+      "eb0a20ce479316bc",
+      "9b5dd89f1f24d36d",
+      "f4207d8f42c7df30",
+      "4a4d295ceda9514d",
+      "5bea207a2130cab9",
+      "2d5ad315befd7d7e"
+    ],
+    "titles": [
+      "Prioritize MVP Scope:",
+      "Synthesis/Summarization",
+      "The \"Artisan Flow\" Gap:",
+      "Deep Dive Data API:",
+      "Prioritize the \"Storytelling\" Dashboard:",
+      "Unified Operational Dashboard:",
+      "Spec: Analytics Surface Ownership and Route Truth"
+    ],
+    "reason": "Candidate V1 support batch. Queue after blocker batches once approved."
+  },
+  {
+    "id": "3c5144f5af4fd338",
+    "module": {
+      "id": "v1-control-plane",
+      "label": "V1 Control Plane"
+    },
+    "classification": "v1_support",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 3,
+    "sourceCounts": {
+      "v1-approved-queue": 2,
+      "docs-specs": 1
+    },
+    "candidateIds": ["f1063d830564f7ee", "135e8c7941baae31", "ddbf58fdbb63e38a"],
+    "titles": [
+      "Spec: Build and Release Contract Truth",
+      "Spec: Demo Continuity and Portal Proof",
+      "Receipt Intelligence + Recipe Scaling Engine"
+    ],
+    "reason": "Candidate V1 support batch. Queue after blocker batches once approved."
+  },
+  {
+    "id": "41b7e3ae3538362e",
+    "module": {
+      "id": "ai-boundaries",
+      "label": "AI Boundaries"
+    },
+    "classification": "research_required",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 3,
+      "system-ready-tasks": 4
+    },
+    "candidateIds": [
+      "a20f3c1b3c49cd8e",
+      "fbaecd3c37d84fd5",
+      "ae9eaf40d921accc",
+      "7e39e0007f630594",
+      "74c3875a942d0127",
+      "7d068e84cea5b2d6",
+      "4b9b7ebcc1f703ab"
+    ],
+    "titles": [
+      "System Integrity Interrogation - Round 2",
+      "Build Task: Lack of Ownership:",
+      "Build Task: Workflow coverage gap",
+      "Build Task: Data model gap",
+      "System Integrity Interrogation",
+      "Build Task: UX alignment gap",
+      "Auto-Repair: Fragile file (CRIT): app/(chef)/layout.tsx"
+    ],
+    "reason": "Research batch. Resolve evidence before build approval."
+  },
+  {
+    "id": "cc87b803c3d62f27",
+    "module": {
+      "id": "ai-boundaries",
+      "label": "AI Boundaries"
+    },
+    "classification": "research_required",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "48f9b3ab50fe477e",
+      "94f6a59cbb67a5c8",
+      "eab89fa3cb7c5518",
+      "e1975df22f39a9c2",
+      "b7cff31a341aae94",
+      "66808fa867580c46",
+      "0665d2f3c095017e"
+    ],
+    "titles": [
+      "Auto-Repair: Fragile file (CRIT): app/(public)/chef/[slug]/page.tsx",
+      "Auto-Repair: Fragile file (CRIT): components/navigation/nav-config.tsx",
+      "Auto-Repair: No-op return in lib/ai/remy-survey-actions.ts",
+      "Auto-Repair: No-op return in lib/beta-survey/actions.ts",
+      "Devtools Core Loop Hardening",
+      "Build Spec: Full Pipeline Runner",
+      "Build Spec: Persona Regression Guard"
+    ],
+    "reason": "Research batch. Resolve evidence before build approval."
+  },
+  {
+    "id": "d155b91f49c76ea6",
+    "module": {
+      "id": "ai-boundaries",
+      "label": "AI Boundaries"
+    },
+    "classification": "research_required",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "818bb39455c02b06",
+      "55dd7b6cda42a3da",
+      "9b86c4711608987d",
+      "1f2cf92de97dc7be",
+      "9bb00f3d56fd8a89",
+      "b04c13497f80cf7d",
+      "2f663714b03d5355"
+    ],
+    "titles": [
+      "Build Spec: Score History Seeder",
+      "Build Spec: Smart Selective Rescore",
+      "Build Specs",
+      "Spec: Remy Advisor Pattern",
+      "Spec: Model Puller Script",
+      "Spec: Remy Model Registry",
+      "Remy Runtime Unification And Quality Recovery"
+    ],
+    "reason": "Research batch. Resolve evidence before build approval."
+  },
+  {
+    "id": "723e714cd4014675",
+    "module": {
+      "id": "ai-boundaries",
+      "label": "AI Boundaries"
+    },
+    "classification": "research_required",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 4,
+    "sourceCounts": {
+      "docs-specs": 3,
+      "sticky-notes": 1
+    },
+    "candidateIds": [
+      "096ae97fc92613db",
+      "3f326b435265da94",
+      "0ac60417a6f1a9a8",
+      "e901a327a389f7de"
+    ],
+    "titles": [
+      "Restaurant Adoption Interrogation",
+      "System Integrity Question Set: Email & Notification System",
+      "End-to-End Chain Integrity: Answers & Verdicts",
+      "RESEARCH AGENT"
+    ],
+    "reason": "Research batch. Resolve evidence before build approval."
+  },
+  {
+    "id": "68d4bc59033f14cf",
+    "module": {
+      "id": "auth-security",
+      "label": "Auth and Security"
+    },
+    "classification": "research_required",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 5,
+    "sourceCounts": {
+      "docs-specs": 5
+    },
+    "candidateIds": [
+      "8fffef85e9c55c89",
+      "32548e942ceb5a11",
+      "736f6ceeed182513",
+      "aef9fbd83223e9ad",
+      "0617e0ce146d0d60"
+    ],
+    "titles": [
+      "Auto-Repair: Missing auth gates in lib/ai/ (22 files)",
+      "Build: Client Relationship Closure Server Actions",
+      "ECS Gap: Admin Error State Retry Buttons",
+      "ECS Gap: Admin Reconciliation Error Handling",
+      "System Integrity Question Set: Authentication & Authorization"
+    ],
+    "reason": "Research batch. Resolve evidence before build approval."
+  },
+  {
+    "id": "12d76e6f5fa0dba3",
+    "module": {
+      "id": "chef-workspace",
+      "label": "Chef Workspace"
+    },
+    "classification": "research_required",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 1,
+      "system-ready-tasks": 6
+    },
+    "candidateIds": [
+      "645477018757f0eb",
+      "f328bcd5d399009d",
+      "33d8dbe3e0342ce2",
+      "cbf4baf7719549c7",
+      "aed97237b43e4d15",
+      "fb06f4d4a4f98661",
+      "c6d0085678106034"
+    ],
+    "titles": [
+      "Build Spec: Dashboard Interactivity",
+      "Build Task: Flexibility over Standardization:",
+      "Build Task: Manual review required",
+      "Build Task: Implement a \"Critical Dependency Map\":",
+      "Build Task: Mandatory Multi-Signature Approval:",
+      "Build Task: Workflow coverage gap",
+      "Build Task: Template Library:"
+    ],
+    "reason": "Research batch. Resolve evidence before build approval."
+  },
+  {
+    "id": "b6a8395b9cf4b704",
+    "module": {
+      "id": "chef-workspace",
+      "label": "Chef Workspace"
+    },
+    "classification": "research_required",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "system-ready-tasks": 7
+    },
+    "candidateIds": [
+      "9f6a34e133fa53bb",
+      "1da8af55970ada0c",
+      "c4212f62fd3ff3f5",
+      "89de65e0e18c05f5",
+      "03d638d0fa83b8ae",
+      "caf47b8341bcf30f",
+      "b61c79b93a1d7e4f"
+    ],
+    "titles": [
+      "Build Task: Order Management:",
+      "Build Task: Client Relationship Insights:",
+      "Build Task: Batch/Lot Tracking (Critical):",
+      "Build Task: Project Management/Workflow:",
+      "Build Task: UX alignment gap",
+      "Build Task: Batching Functionality:",
+      "Build Task: UX alignment gap"
+    ],
+    "reason": "Research batch. Resolve evidence before build approval."
+  },
+  {
+    "id": "5c062ec30e5e9541",
+    "module": {
+      "id": "chef-workspace",
+      "label": "Chef Workspace"
+    },
+    "classification": "research_required",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 4,
+    "sourceCounts": {
+      "docs-specs": 4
+    },
+    "candidateIds": [
+      "4947c0b49d197beb",
+      "b1c7ff0eba1bb7b8",
+      "8718e6c2d48f73c4",
+      "6b6631f7246e77f6"
+    ],
+    "titles": [
+      "Codex Task: Handoff Context Enrichment from Dinner Circle",
+      "ECS Gap: Staff In-App Notifications",
+      "OpenClaw Price Expansion Tasks",
+      "Build Spec: Saturation-Driven Persona Targeting"
+    ],
+    "reason": "Research batch. Resolve evidence before build approval."
+  },
+  {
+    "id": "3c46c3eb66c6c6d0",
+    "module": {
+      "id": "client-intake",
+      "label": "Client Intake"
+    },
+    "classification": "research_required",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 6,
+      "3977-build-queue": 1
+    },
+    "candidateIds": [
+      "873552c82d84a41b",
+      "c33e94d7b553a6a8",
+      "8de887fc19c75b33",
+      "b22815e581013772",
+      "7b0c4e9bbd428d10",
+      "1e0b754030f31c3d",
+      "7d324f57a4be7df5"
+    ],
+    "titles": [
+      "Spec: Public Booking Routing and Source Truth",
+      "Receiving & Intake Module (The Source):",
+      "Build: Client Relationship Closure Guards and Tests",
+      "Fix: Pre-fill Re-booking Form from Client Profile (JBUG-019)",
+      "ECS Gap: Embed Layout Tailwind Leak",
+      "ECS Gap: Chef Network Opportunity Board",
+      "System Integrity Question Set: Inquiry Pipeline"
+    ],
+    "reason": "Research batch. Resolve evidence before build approval."
+  },
+  {
+    "id": "6f3f95f5ce6269a9",
+    "module": {
+      "id": "client-intake",
+      "label": "Client Intake"
+    },
+    "classification": "research_required",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 3,
+    "sourceCounts": {
+      "docs-specs": 1,
+      "system-intake": 2
+    },
+    "candidateIds": ["4247a89cacdb6d05", "114a778c909c4f60", "f1e08fdcc79bbec8"],
+    "titles": [
+      "Universal Intake Pipeline - Build Spec",
+      "Take a Chef Tandem Operator Simulation",
+      "the website already deals with this well but i personally"
+    ],
+    "reason": "Research batch. Resolve evidence before build approval."
+  },
+  {
+    "id": "abac3ec17854e22d",
+    "module": {
+      "id": "dietary-safety",
+      "label": "Dietary Safety"
+    },
+    "classification": "research_required",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 4,
+    "sourceCounts": {
+      "docs-specs": 1,
+      "3977-build-queue": 3
+    },
+    "candidateIds": [
+      "e0a6ac4264bb398a",
+      "9caa830c70ad6c7a",
+      "377e823a469d2797",
+      "a4ddfa168066fb2c"
+    ],
+    "titles": [
+      "Spec: Allergy and Dietary Trust Alignment",
+      "Allergy/Preference Risk Matrix:",
+      "Allergy/Preference Risk Matrix:",
+      "Allergy/Preference Risk Matrix:"
+    ],
+    "reason": "Research batch. Resolve evidence before build approval."
+  },
+  {
+    "id": "4b0e008c0ae1881f",
+    "module": {
+      "id": "docs-release-proof",
+      "label": "Docs and Release Proof"
+    },
+    "classification": "research_required",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 4,
+    "sourceCounts": {
+      "docs-specs": 4
+    },
+    "candidateIds": [
+      "da8f3bcf35645141",
+      "4ea89c33fb957322",
+      "6e9f7fee2717aa5c",
+      "feb3e7dce388ab64"
+    ],
+    "titles": [
+      "Client Experience Interrogation: 57-Question Audit",
+      "Dinner Circle Cohesion Interrogation: 82-Question Audit",
+      "Build Spec: Report Quality Auditor",
+      "System Integrity Question Set: Full Cohesion Audit"
+    ],
+    "reason": "Research batch. Resolve evidence before build approval."
+  },
+  {
+    "id": "4ded90ff8b5545d9",
+    "module": {
+      "id": "events-ops",
+      "label": "Event Operations"
+    },
+    "classification": "research_required",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 5,
+      "3977-build-queue": 2
+    },
+    "candidateIds": [
+      "060cf7816b181291",
+      "f1f45b4fa5e7cbc1",
+      "6a54db7514e38ace",
+      "520eddc6f56388fb",
+      "a603952ac25c8d4f",
+      "1be04b923d7b74b3",
+      "3354bfb46e3ca02d"
+    ],
+    "titles": [
+      "Circle Event Broadcast",
+      "Codex Spec: Demand-Based Prep Sheet Generator",
+      "Spec: Prep Timeline Professional Grade Upgrade",
+      "Codex Spec: Prep Day Batch Aggregation View",
+      "P1: Operations External Services Setup",
+      "Implement a \"Post-Event Reconciliation Module\":",
+      "Director-level cross-event risk cockpit is incomplete for this persona"
+    ],
+    "reason": "Research batch. Resolve evidence before build approval."
+  },
+  {
+    "id": "487cba59a18b677a",
+    "module": {
+      "id": "events-ops",
+      "label": "Event Operations"
+    },
+    "classification": "research_required",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "system-ready-tasks": 1,
+      "3977-build-queue": 1,
+      "docs-specs": 5
+    },
+    "candidateIds": [
+      "18b78ac932dd213f",
+      "7ea0943c51089479",
+      "acf013becffd260f",
+      "01d14068f255ce7c",
+      "836a67c266d73d25",
+      "cb2a264be0a5e180",
+      "9443b8859afedb42"
+    ],
+    "titles": [
+      "Build Task: Develop \"Prep Mode\" UI:",
+      "Implement \"Event Blueprint\" Templates:",
+      "Auto-Repair: Fragile file (CRIT): app/(chef)/events/[id]/page.tsx",
+      "Build: Client Relationship Closure UI",
+      "Build Spec: Ticketed Events Wiring Fixes",
+      "Circle Sourcing Board",
+      "Codex Task: Open Slot Broadcast for Dinner Circles"
+    ],
+    "reason": "Research batch. Resolve evidence before build approval."
+  },
+  {
+    "id": "829b7fd8c29a2f70",
+    "module": {
+      "id": "events-ops",
+      "label": "Event Operations"
+    },
+    "classification": "research_required",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 4,
+    "sourceCounts": {
+      "docs-specs": 4
+    },
+    "candidateIds": [
+      "2162138e56272a73",
+      "48dfa956c39fe36c",
+      "79bc3a3cf5562d56",
+      "3125a571a2c49b81"
+    ],
+    "titles": [
+      "Codex Build Spec: Waste Pattern Analysis Page",
+      "ECS Gap: Kiosk Wake Lock and Attract Mode",
+      "System Integrity Question Set: Event Lifecycle",
+      "System Integrity Question Set: Prep Timeline Real-World Chaos Layer"
+    ],
+    "reason": "Research batch. Resolve evidence before build approval."
+  },
+  {
+    "id": "d881c1a12e88da12",
+    "module": {
+      "id": "finance-ledger",
+      "label": "Finance and Ledger"
+    },
+    "classification": "research_required",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 1,
+    "sourceCounts": {
+      "docs-specs": 1
+    },
+    "candidateIds": ["63a3edfc0076b05e"],
+    "titles": ["Chef Flow Decision Ledger v1"],
+    "reason": "Research batch. Resolve evidence before build approval."
+  },
+  {
+    "id": "6335e03b00cb7726",
+    "module": {
+      "id": "menus-offers",
+      "label": "Menus and Offers"
+    },
+    "classification": "research_required",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 5,
+    "sourceCounts": {
+      "3977-build-queue": 4,
+      "docs-specs": 1
+    },
+    "candidateIds": [
+      "c10b3bdec5537f54",
+      "5037e15d608f993c",
+      "55e8aac70b62ae55",
+      "7ca8d2c82bb761be",
+      "9fb2e818f4345967"
+    ],
+    "titles": [
+      "Develop \"Constraint-Based Menu Builder\":",
+      "No market-first menu builder mode",
+      "No safe-only menu generation mode for high-risk clients",
+      "No safe-only menu generation mode for high-risk clients",
+      "Menu System Interrogation"
+    ],
+    "reason": "Research batch. Resolve evidence before build approval."
+  },
+  {
+    "id": "7eded7206c54fdda",
+    "module": {
+      "id": "pricing-trust",
+      "label": "Pricing Trust"
+    },
+    "classification": "research_required",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 1,
+    "sourceCounts": {
+      "docs-specs": 1
+    },
+    "candidateIds": ["e719737f53a8f5a4"],
+    "titles": ["OpenClaw Nationwide Pricing Strategy"],
+    "reason": "Research batch. Resolve evidence before build approval."
+  },
+  {
+    "id": "8f37d8b3ec29b79c",
+    "module": {
+      "id": "public-trust",
+      "label": "Public Trust"
+    },
+    "classification": "research_required",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 4,
+    "sourceCounts": {
+      "docs-specs": 4
+    },
+    "candidateIds": [
+      "42669314959935c3",
+      "f9b043bfa4398241",
+      "04014d675065b3b2",
+      "f7cd994c5570198c"
+    ],
+    "titles": [
+      "Spec: Survey Public Hardening And Results Scale",
+      "Public Surface Interrogation Protocol",
+      "System Integrity Question Set: Public Surface Cohesion v1",
+      "System Integrity Question Set: Public Surface"
+    ],
+    "reason": "Research batch. Resolve evidence before build approval."
+  },
+  {
+    "id": "d41b7d25ea16f16f",
+    "module": {
+      "id": "sourcing-inventory",
+      "label": "Sourcing and Inventory"
+    },
+    "classification": "research_required",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 2,
+      "3977-build-queue": 5
+    },
+    "candidateIds": [
+      "7446c6361367d2fc",
+      "4b077d8c8bee140a",
+      "ba1a80ba3570cdc7",
+      "4c1b22f68e6e320b",
+      "2185953b98d5c048",
+      "bcccd9dd73f40165",
+      "37e59b1a9f37c01c"
+    ],
+    "titles": [
+      "Spec: OpenClaw Scraper Enrichment (Images, Stock, Location Granularity, New Sources)",
+      "Spec: OpenClaw Inventory Evolution (Price Sampler to Full Catalog)",
+      "Implement \"Yield-Based Inventory Module\":",
+      "Implement Advanced Inventory Module:",
+      "Upgrade Inventory to \"Provenance Tracking\":",
+      "Develop \"Sourcing Dependency Mapping\":",
+      "Supplier Relationship Management (SRM):"
+    ],
+    "reason": "Research batch. Resolve evidence before build approval."
+  },
+  {
+    "id": "88802d15beb0e245",
+    "module": {
+      "id": "sourcing-inventory",
+      "label": "Sourcing and Inventory"
+    },
+    "classification": "research_required",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 4,
+    "sourceCounts": {
+      "system-ready-tasks": 2,
+      "3977-build-queue": 1,
+      "docs-specs": 1
+    },
+    "candidateIds": [
+      "47abcd707a32dfb2",
+      "344bc4b5a8bdc3d1",
+      "6e01d4541ab38942",
+      "f848e302ec2512d0"
+    ],
+    "titles": [
+      "Build Task: Advanced Inventory/Supply Chain:",
+      "Build Task: Implement \"Yield-Based Inventory Module\":",
+      "Rigid Inventory Systems:",
+      "OpenClaw v2 - Price Intelligence Engine"
+    ],
+    "reason": "Research batch. Resolve evidence before build approval."
+  },
+  {
+    "id": "b41a891e32c98011",
+    "module": {
+      "id": "staff-partner",
+      "label": "Staff and Partner Ops"
+    },
+    "classification": "research_required",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 2,
+    "sourceCounts": {
+      "docs-specs": 2
+    },
+    "candidateIds": ["e5d3060104402ea6", "5267d9761aaed312"],
+    "titles": [
+      "Crew Circles: Team Coordination via Dinner Circle Infrastructure",
+      "ECS Gap: Partner Form Submission Feedback"
+    ],
+    "reason": "Research batch. Resolve evidence before build approval."
+  },
+  {
+    "id": "41a2986a726abaa0",
+    "module": {
+      "id": "unassigned",
+      "label": "Unassigned"
+    },
+    "classification": "research_required",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "57cbd79a319a6975",
+      "3a7221fda4337c20",
+      "42cfc9f659234e43",
+      "732e38cfcc592953",
+      "1e8d0e17adf70584",
+      "84265f5421963489",
+      "6859e7a9ba5f6332"
+    ],
+    "titles": [
+      "CIL Phase 1: Graph Foundation + Signal Pipeline",
+      "Codex Spec: Collaborator-to-Circle Bridge",
+      "Post-Dinner Circle Onramp",
+      "Spec: Comprehensive QA Validation (Pre-Launch)",
+      "Spec: Founder Confidence Gate",
+      "Spec: P0 Onboarding First-Week Activation Contract",
+      "Spec: Survey Passive Voluntary Deploy Verification"
+    ],
+    "reason": "Research batch. Resolve evidence before build approval."
+  },
+  {
+    "id": "39e6f0cbb05dc599",
+    "module": {
+      "id": "unassigned",
+      "label": "Unassigned"
+    },
+    "classification": "research_required",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "1b11a9d697374ceb",
+      "be4cbf26cb3b1862",
+      "8fceed3075197ca4",
+      "224d2875f255cb52",
+      "0b19d6cb6eef971c",
+      "f042dfbc8a8d5ac6",
+      "4102340529427f7b"
+    ],
+    "titles": [
+      "Spec: Survey Passive Voluntary Surfacing",
+      "Corporate Procurement Layer for Dinner Circles",
+      "Spec: Lead Engine Cartridge + ChefFlow Connector",
+      "Spec: OpenClaw Phase 3 - Full Integration",
+      "Spec: Platform Intelligence Hub",
+      "Client Resilience Interrogation Protocol",
+      "Codex Spec: Weekly Cycle Retrospective View"
+    ],
+    "reason": "Research batch. Resolve evidence before build approval."
+  },
+  {
+    "id": "9436d3088264022a",
+    "module": {
+      "id": "unassigned",
+      "label": "Unassigned"
+    },
+    "classification": "research_required",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "a35b5e69304912bf",
+      "b317ba2f16ab931b",
+      "e8acb03edd588047",
+      "5bdeded4d835b3d6",
+      "eafb82267761cbb5",
+      "b30c8cae839d96ff",
+      "3ea426d9b9c9e4c0"
+    ],
+    "titles": [
+      "Spec: OpenClaw Archive Digester Cartridge",
+      "Spec: OpenClaw Directory Images Cartridge",
+      "Bob & Joy: Complete Action Catalog",
+      "Chef Communication Noise Simulation",
+      "Chef User Journey Interrogation",
+      "Client Survey Launch Console",
+      "Spec: Client Survey Launch Without OpenClaw"
+    ],
+    "reason": "Research batch. Resolve evidence before build approval."
+  },
+  {
+    "id": "8b7990f494172d02",
+    "module": {
+      "id": "unassigned",
+      "label": "Unassigned"
+    },
+    "classification": "research_required",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "dbfe30fd75e0adf6",
+      "7ed224d99fe771b7",
+      "b4b2f98da6f825be",
+      "e2a43d929cd4816e",
+      "d72744665567bf9a",
+      "5b9f2ecfe5491507",
+      "65d04ec4f392195b"
+    ],
+    "titles": [
+      "Codex Build Spec: Circle Quick Actions",
+      "Codex Build Spec: Circles Nav Activation",
+      "Codex Build Spec: Generator Anti-Drift Prompt",
+      "Codex Build Spec: Inbox Server Drift Preview",
+      "Cross-Boundary Flow Interrogation: All-User System Integrity",
+      "Cross-System Question Set: Role Hierarchy",
+      "Digital Twin Simulation Protocol"
+    ],
+    "reason": "Research batch. Resolve evidence before build approval."
+  },
+  {
+    "id": "49113eb1a621269b",
+    "module": {
+      "id": "unassigned",
+      "label": "Unassigned"
+    },
+    "classification": "research_required",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "ea012edd909c6ca3",
+      "59aea2096c6a1b81",
+      "4883224cbefc1051",
+      "22d1895d155449d0",
+      "3050250a07146987",
+      "cb25be716097102b",
+      "fff5a8ed4c393a6d"
+    ],
+    "titles": [
+      "Dinner Circles Elevation Spec",
+      "ECS Gap: Kiosk Order Register Touch Targets",
+      "Food Operator Survey Launch Console",
+      "Spec: Food Operator Survey Launch Without OpenClaw",
+      "Infrastructure Acquisition Manifest",
+      "Interaction Engine Application Gateway Build Spec",
+      "ChefFlow Interaction Engine Spec"
+    ],
+    "reason": "Research batch. Resolve evidence before build approval."
+  },
+  {
+    "id": "308d4d3c770faba5",
+    "module": {
+      "id": "unassigned",
+      "label": "Unassigned"
+    },
+    "classification": "research_required",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "ad87d354cd9521f5",
+      "7a6d0a1b633e3a0d",
+      "5b0854e451ee4203",
+      "e06f1ea148a9e5ba",
+      "086dfa697a95b738",
+      "066fa4392c087a79",
+      "6d076932b06941de"
+    ],
+    "titles": [
+      "Internal Codex Readiness Pack",
+      "Roadmap: Loyalty Program Perfection (The Domino Effect System)",
+      "Noah Kim Pop-Up Operating System Build Spec",
+      "Operational Resilience Interrogation - Question Set 2",
+      "P0 OpenClaw Health Contract And ChefFlow Bridge",
+      "P0 OpenClaw Health Contract Consumer Bridge",
+      "P1 Work Continuity Drift Guard"
+    ],
+    "reason": "Research batch. Resolve evidence before build approval."
+  },
+  {
+    "id": "3bcb039be03e919e",
+    "module": {
+      "id": "unassigned",
+      "label": "Unassigned"
+    },
+    "classification": "research_required",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "9cf438e21318d103",
+      "7bf6154d4a70967e",
+      "4bc0a226913bb928",
+      "3495eb58fd9673bc",
+      "7132691c84b5c2e6",
+      "3a7b57c2909ef08d",
+      "1a06aee460be1cf0"
+    ],
+    "titles": [
+      "Build Spec: Batch Synthesizer + Saturation Tracker",
+      "Build Spec: Gap Deduplication in Synthesis",
+      "Build Spec: Persona Generator + Validator",
+      "Persona Pipeline v3 Upgrades - Build Spec",
+      "Persona Quality Standard",
+      "Pipeline Bugfix: Synthesis Deadlock + Partial Report Handling",
+      "Role-Based Access Control (RBAC) System Specification"
+    ],
+    "reason": "Research batch. Resolve evidence before build approval."
+  },
+  {
+    "id": "c4e4789d52d22243",
+    "module": {
+      "id": "unassigned",
+      "label": "Unassigned"
+    },
+    "classification": "research_required",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "558e0a0f0a3535bc",
+      "1ed15f7fdd8e6836",
+      "be173419a8fdd5e3",
+      "6e19cd233ecedf65",
+      "5a16b9250620e360",
+      "a3ef0dc5b95e6147",
+      "47ff6fcdf417d938"
+    ],
+    "titles": [
+      "Sophie Kaplan: Dinner Circle Control Surface",
+      "Spec: Survey Wave 1 Internal Launch Builder Handoff",
+      "System Integrity Question Set: Analytics",
+      "System Integrity Question Set: Battle-Tested Seams",
+      "System Integrity Question Set: Cannabis Cross-System Cohesion",
+      "System Integrity Question Set: Client Management Phase 2",
+      "System Integrity Question Set: Full Cohesiveness Synthesis"
+    ],
+    "reason": "Research batch. Resolve evidence before build approval."
+  },
+  {
+    "id": "4c4413697375bd2b",
+    "module": {
+      "id": "unassigned",
+      "label": "Unassigned"
+    },
+    "classification": "research_required",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "01afede570af19e3",
+      "b757db4fa834b95b",
+      "3d735c92f3f8148d",
+      "03ddb546f14f0197",
+      "a6633d8ba4e2a061",
+      "9ebde49c73723542",
+      "66b3a359d4e4e982"
+    ],
+    "titles": [
+      "System Integrity Question Set: Competitive Surface & Market Readiness",
+      "System Integrity Question Set: Consumer Discovery & Cross-User Cohesion V1",
+      "System Integrity Question Set: Cross-System Cohesion",
+      "System Integrity Question Set: Export Cohesion (User Experience)",
+      "System Integrity Question Set: Export for External Recipients",
+      "System Integrity Question Set: Extraction Frontier and Cohesion Delta",
+      "System Integrity Question Set: First-Time User Experience"
+    ],
+    "reason": "Research batch. Resolve evidence before build approval."
+  },
+  {
+    "id": "7e0b7ebecd8ad2a7",
+    "module": {
+      "id": "unassigned",
+      "label": "Unassigned"
+    },
+    "classification": "research_required",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "dac6e8361016417b",
+      "85301fee627a6218",
+      "06dd975c9bd44cdc",
+      "4bb806cdfec4e642",
+      "5909129b3ca730de",
+      "af94f74f499c2ff0",
+      "bd7d8f1b6463ccf9"
+    ],
+    "titles": [
+      "Full Cohesion Question Set: Answers & Verdicts",
+      "System Integrity Question Set: Guest Experience",
+      "System Integrity Question Set: Nearby + Dinner Circles Cohesion Frontier",
+      "System Integrity Question Set: OpenClaw-ChefFlow Cohesion V2 Answers",
+      "System Integrity Question Set: OpenClaw-ChefFlow Cohesion V2",
+      "System Integrity Question Set: OpenClaw-ChefFlow Cohesion V3",
+      "System Integrity Question Set: OpenClaw-ChefFlow Cohesion"
+    ],
+    "reason": "Research batch. Resolve evidence before build approval."
+  },
+  {
+    "id": "1176a80dc3114cc3",
+    "module": {
+      "id": "unassigned",
+      "label": "Unassigned"
+    },
+    "classification": "research_required",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 1,
+      "sticky-notes": 6
+    },
+    "candidateIds": [
+      "b63f40651121703e",
+      "5db14a25094262de",
+      "5116867ecd61e703",
+      "6c9c54585c08dc6c",
+      "2d83de455fe93d1e",
+      "81e51a4ca11c3401",
+      "ff33319745d3f372"
+    ],
+    "titles": [
+      "Seam Cohesion Question Set: Cross-System Integrity",
+      "New Note (33)",
+      "New Note (36)",
+      "New Note",
+      "New Note (5)",
+      "New Note (6)",
+      "New Note (7)"
+    ],
+    "reason": "Research batch. Resolve evidence before build approval."
+  },
+  {
+    "id": "21536567c78a6416",
+    "module": {
+      "id": "unassigned",
+      "label": "Unassigned"
+    },
+    "classification": "research_required",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "sticky-notes": 7
+    },
+    "candidateIds": [
+      "285e0015bc8f9726",
+      "be230f16423b84c4",
+      "dae1524a678a011e",
+      "52ddbbfca7299c54",
+      "7170374de32c6923",
+      "006c5ddcb1e9ad6d",
+      "e24401d12cc95303"
+    ],
+    "titles": [
+      "New Note (8)",
+      "New Note (9)",
+      "PLANNER START",
+      "New Note (10)",
+      "PLANNER END",
+      "BUILDER START",
+      "New Note (11)"
+    ],
+    "reason": "Research batch. Resolve evidence before build approval."
+  },
+  {
+    "id": "bcd0551770013c86",
+    "module": {
+      "id": "unassigned",
+      "label": "Unassigned"
+    },
+    "classification": "research_required",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "sticky-notes": 7
+    },
+    "candidateIds": [
+      "b80a903f8ea5b735",
+      "fa6f2e4a947b2678",
+      "3ddc92c585e3af21",
+      "65b2a1e38ddd5d54",
+      "9dd90f25fb4e17fa",
+      "7808dd6f496aaf20",
+      "7d0a165bde566540"
+    ],
+    "titles": [
+      "New Note (3)",
+      "New Note (15)",
+      "New Note (16)",
+      "New Note (17)",
+      "New Note (18)",
+      "New Note (23)",
+      "New Note (26)"
+    ],
+    "reason": "Research batch. Resolve evidence before build approval."
+  },
+  {
+    "id": "8232b63e7d9e7de6",
+    "module": {
+      "id": "unassigned",
+      "label": "Unassigned"
+    },
+    "classification": "research_required",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "sticky-notes": 7
+    },
+    "candidateIds": [
+      "55d4bf36de5a1e31",
+      "151df393eb48f0ba",
+      "abab9e18c4425ced",
+      "1c2a07710765fd19",
+      "376dd6ab026513d1",
+      "cc33aff03e214d8a",
+      "13a0ecf10b232b50"
+    ],
+    "titles": [
+      "New Note (27)",
+      "New Note (28)",
+      "New Note (29)",
+      "New Note (30)",
+      "New Note (32)",
+      "New Note (34)",
+      "Copy of New Note (27)"
+    ],
+    "reason": "Research batch. Resolve evidence before build approval."
+  },
+  {
+    "id": "9989639d50469284",
+    "module": {
+      "id": "unassigned",
+      "label": "Unassigned"
+    },
+    "classification": "research_required",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "sticky-notes": 7
+    },
+    "candidateIds": [
+      "1945caa37c29c7ae",
+      "141bdb7b3e563ab0",
+      "583612de102526d5",
+      "1673e580ac3acda0",
+      "2f1f4373ee2b80f3",
+      "09f468f396b8015e",
+      "8382d5d79186035d"
+    ],
+    "titles": [
+      "New Note (37)",
+      "New Note (41)",
+      "New Note (45)",
+      "New Note (46)",
+      "New Note (48)",
+      "New Note (51)",
+      "New Note (53)"
+    ],
+    "reason": "Research batch. Resolve evidence before build approval."
+  },
+  {
+    "id": "7b850f76a9238a8d",
+    "module": {
+      "id": "unassigned",
+      "label": "Unassigned"
+    },
+    "classification": "research_required",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "sticky-notes": 7
+    },
+    "candidateIds": [
+      "8a03603e5c298438",
+      "1ded6264eebbb7d7",
+      "595243b0ea362ffe",
+      "c0f99e630e82124f",
+      "001d114a3bd94faf",
+      "c35ece0ad6593191",
+      "5d21e7dbc58b8bef"
+    ],
+    "titles": [
+      "New Note (54)",
+      "New Note (55)",
+      "New Note (56)",
+      "New Note (57)",
+      "New Note (64)",
+      "New Note (20)",
+      "New Note (38)"
+    ],
+    "reason": "Research batch. Resolve evidence before build approval."
+  },
+  {
+    "id": "38be437931cfd1b3",
+    "module": {
+      "id": "unassigned",
+      "label": "Unassigned"
+    },
+    "classification": "research_required",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "sticky-notes": 7
+    },
+    "candidateIds": [
+      "fedabeaf862dcded",
+      "f81563b95d3774da",
+      "fe015a56d8af34bc",
+      "237c0b2c12972c6c",
+      "d6fec3f6a8461274",
+      "652460c73831ea0c",
+      "7d43d9747fec9347"
+    ],
+    "titles": [
+      "New Note (50)",
+      "New Note (52)",
+      "New Note (61)",
+      "New Note (14)",
+      "New Note (19)",
+      "New Note (21)",
+      "New Note (24)"
+    ],
+    "reason": "Research batch. Resolve evidence before build approval."
+  },
+  {
+    "id": "fd5c0ef49fc8a20a",
+    "module": {
+      "id": "unassigned",
+      "label": "Unassigned"
+    },
+    "classification": "research_required",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "sticky-notes": 7
+    },
+    "candidateIds": [
+      "302d83d2ba458fb9",
+      "b350bcd925a4b751",
+      "899df27af9679e49",
+      "5c3de3e4f9f74902",
+      "2e851c81e004cb6b",
+      "29314023d794beb3",
+      "e096d2e504d0d82d"
+    ],
+    "titles": [
+      "New Note (25)",
+      "Copy of New Note (25)",
+      "New Note (2)",
+      "New Note (3)",
+      "New Note (4)",
+      "New Note (31)",
+      "New Note (35)"
+    ],
+    "reason": "Research batch. Resolve evidence before build approval."
+  },
+  {
+    "id": "6433898cfb897571",
+    "module": {
+      "id": "unassigned",
+      "label": "Unassigned"
+    },
+    "classification": "research_required",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "sticky-notes": 7
+    },
+    "candidateIds": [
+      "9dfed26d0942eb08",
+      "3393d356959c1a5a",
+      "3ed05edbbac62fb9",
+      "b1263a9a7cc721ab",
+      "25c90699e16dd9c3",
+      "5bf085c72b0be10e",
+      "4875bb9387300899"
+    ],
+    "titles": [
+      "New Note (39)",
+      "New Note (40)",
+      "New Note (42)",
+      "New Note (43)",
+      "New Note (44)",
+      "New Note (49)",
+      "New Note"
+    ],
+    "reason": "Research batch. Resolve evidence before build approval."
+  },
+  {
+    "id": "12b9d6db2dca68d0",
+    "module": {
+      "id": "unassigned",
+      "label": "Unassigned"
+    },
+    "classification": "research_required",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 6,
+    "sourceCounts": {
+      "sticky-notes": 6
+    },
+    "candidateIds": [
+      "d785e680c31b1f8e",
+      "6b5502ffc6b8ea09",
+      "ade9e8150cf7b24b",
+      "ca106517ef1d414d",
+      "a99032c27bfa068a",
+      "5edab52a7fc8e293"
+    ],
+    "titles": [
+      "New Note (58)",
+      "New Note (59)",
+      "New Note (60)",
+      "New Note (62)",
+      "New Note (63)",
+      "New Note (65)"
+    ],
+    "reason": "Research batch. Resolve evidence before build approval."
+  },
+  {
+    "id": "31222391dca0d129",
+    "module": {
+      "id": "v1-control-plane",
+      "label": "V1 Control Plane"
+    },
+    "classification": "research_required",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "d15c9ee712f4bef1",
+      "a06bd43edd186e0a",
+      "aa3a4c149bc4c318",
+      "6058c642c7b42042",
+      "99143f6d42c46400",
+      "97755fd58c98e92d",
+      "aee1e8b49a0cb434"
+    ],
+    "titles": [
+      "Spec: OpenClaw Goal Governor and KPI Contract",
+      "Spec: Boundary-First Architecture Sequence",
+      "Spec: Zero-Manual-Entry Form Control Plane",
+      "Spec: Remy Hybrid Cloud Routing",
+      "Spec: Take a Chef + Private Chef Manager Parity Doc Program",
+      "Spec: Website Build Research-Spec-Code Cross-Reference Upgrade",
+      "Spec: Beta-First Monetization Decision Archive"
+    ],
+    "reason": "Research batch. Resolve evidence before build approval."
+  },
+  {
+    "id": "9b3fed60d9970e29",
+    "module": {
+      "id": "v1-control-plane",
+      "label": "V1 Control Plane"
+    },
+    "classification": "research_required",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "5b01edea985c9bf0",
+      "5d87e980b54d4747",
+      "7275bbf890e07540",
+      "a8f11198e46b012f",
+      "8fc42b464da0077e",
+      "d4a3575eba99283f",
+      "d5dbb7bd0c666015"
+    ],
+    "titles": [
+      "Spec: Consumer-First Discovery and Dinner Planning Expansion",
+      "Spec: Directory Post-Claim Enhancement Flow",
+      "Spec: Mission Control Passive Dashboard Revamp",
+      "Spec: OpenClaw Capture Countdown and Pixel Schedule",
+      "Spec: OpenClaw Ideal Runtime and National Intelligence",
+      "Spec: Buyer Education And Pre-Decision Guidance",
+      "Spec: Operational Reassurance And What Happens Next"
+    ],
+    "reason": "Research batch. Resolve evidence before build approval."
+  },
+  {
+    "id": "0540ae8ca363cde5",
+    "module": {
+      "id": "v1-control-plane",
+      "label": "V1 Control Plane"
+    },
+    "classification": "research_required",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 1,
+      "3977-build-queue": 6
+    },
+    "candidateIds": [
+      "2629beb45d0261ee",
+      "071412dd3eb60ad7",
+      "db96cf90ffbcc3ab",
+      "f77db33a8a0989ac",
+      "eb7d5f0de19b8e63",
+      "76e42c5c3d599295",
+      "e3d51012e22842d3"
+    ],
+    "titles": [
+      "Spec: Search Intent Landing Architecture",
+      "B2B Order Fulfillment Module:",
+      "Clear, Visual Workflow State:",
+      "Develop \"Dynamic Fulfillment Invoicing\":",
+      "Develop Tiered Loyalty Program:",
+      "Implement a \"Critical Dependency Map\":",
+      "No real-time store-level price truth contract"
+    ],
+    "reason": "Research batch. Resolve evidence before build approval."
+  },
+  {
+    "id": "6417edf972821b3a",
+    "module": {
+      "id": "v1-control-plane",
+      "label": "V1 Control Plane"
+    },
+    "classification": "research_required",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "3977-build-queue": 7
+    },
+    "candidateIds": [
+      "ff70c3e5264ab33a",
+      "69e50f7f947fd83e",
+      "25eb4b29b6a5b799",
+      "941ab4884c2c7df6",
+      "0c794ffc8d0c9530",
+      "7adbcc45d48aebb3",
+      "3b073b6a4be68c5d"
+    ],
+    "titles": [
+      "No destination-first store intelligence for travel",
+      "No multi-store route and split-cart optimizer",
+      "Insufficient hidden-risk and cross-contact signaling at ingredient level",
+      "No molecule-level culinary data model",
+      "No regulator-grade traceability export",
+      "Product System (SKUs, Batches, Units)",
+      "No explicit offline-first guarantee for mission-critical workflows"
+    ],
+    "reason": "Research batch. Resolve evidence before build approval."
+  },
+  {
+    "id": "23f14ca860eacb96",
+    "module": {
+      "id": "v1-control-plane",
+      "label": "V1 Control Plane"
+    },
+    "classification": "research_required",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "3977-build-queue": 7
+    },
+    "candidateIds": [
+      "10c9cdb2a0f04bbe",
+      "2ef7a9dc237237dd",
+      "9f045555b80c5993",
+      "7e6fa2dcdad5560e",
+      "5f5055088fb0dda3",
+      "0136e6695eace233",
+      "f687b3e194eb04e1"
+    ],
+    "titles": [
+      "No regulator-grade traceability export",
+      "No cannabis outcome intelligence loop",
+      "No molecule-level culinary data model",
+      "Product System (SKUs, Batches, Units)",
+      "Insufficient hidden-risk and cross-contact signaling at ingredient level",
+      "No rapid guest roster churn flow",
+      "V1 strategy conflicts with multi-chef governance need"
+    ],
+    "reason": "Research batch. Resolve evidence before build approval."
+  },
+  {
+    "id": "bc73c2b652e562c5",
+    "module": {
+      "id": "v1-control-plane",
+      "label": "V1 Control Plane"
+    },
+    "classification": "research_required",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "3977-build-queue": 6,
+      "system-ready-tasks": 1
+    },
+    "candidateIds": [
+      "e5a7ab842e8eb43a",
+      "d2a77371d24310dd",
+      "5325bf803c0199d9",
+      "36121740c6a76bd7",
+      "dfbff83a4e4b54b5",
+      "c65cc947706b43f5",
+      "70f8781394fe2df0"
+    ],
+    "titles": [
+      "Drop Engine for High-Demand Releases",
+      "No regulator-grade traceability export",
+      "Build Task: Transparency & Traceability:",
+      "Add \"Yield Forecasting Notes\":",
+      "Advanced Change Control Workflow:",
+      "Introduce \"Expert Tagging\":",
+      "Batch/Lot Tracking (Critical):"
+    ],
+    "reason": "Research batch. Resolve evidence before build approval."
+  },
+  {
+    "id": "d150c07a8f5cdb8f",
+    "module": {
+      "id": "v1-control-plane",
+      "label": "V1 Control Plane"
+    },
+    "classification": "research_required",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "3977-build-queue": 7
+    },
+    "candidateIds": [
+      "8a4e03c70732468c",
+      "243ba68d02d47dab",
+      "70e653d7ded07cf6",
+      "de03caf3d97b2f93",
+      "4a1ff23226a0e412",
+      "d3e0d053a15e95be",
+      "7be279976e3df0b3"
+    ],
+    "titles": [
+      "Implement a \"Single Source of Truth\" Dashboard:",
+      "Scheduling/Labor:",
+      "The \"Tourist Trap\" Filter:",
+      "Workflow Friction (The biggest gap):",
+      "Batch/Lot Tracking (Critical):",
+      "Implement a \"Single Source of Truth\" Dashboard:",
+      "Scheduling/Labor:"
+    ],
+    "reason": "Research batch. Resolve evidence before build approval."
+  },
+  {
+    "id": "636c9889c39a382a",
+    "module": {
+      "id": "v1-control-plane",
+      "label": "V1 Control Plane"
+    },
+    "classification": "research_required",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "3977-build-queue": 6,
+      "system-ready-tasks": 1
+    },
+    "candidateIds": [
+      "54fd56f7ea2bf311",
+      "27fa74a2bc65fe18",
+      "3a32f0315b73fc9c",
+      "0bfad742e3b57e5f",
+      "722cc781c7e8f5bd",
+      "0f842de17d28105a",
+      "d3fd68ee45fbbbf5"
+    ],
+    "titles": [
+      "The \"Tourist Trap\" Filter:",
+      "Workflow Friction (The biggest gap):",
+      "Implement a \"Single Source of Truth\" Dashboard:",
+      "Location Adaptation and Venue Constraints",
+      "Introduce a \"Concept Board\" Feature:",
+      "Introduce \"Concierge View\" Communication:",
+      "Build Task: Retry candidate"
+    ],
+    "reason": "Research batch. Resolve evidence before build approval."
+  },
+  {
+    "id": "e6826cfffa2ec59d",
+    "module": {
+      "id": "v1-control-plane",
+      "label": "V1 Control Plane"
+    },
+    "classification": "research_required",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 6,
+    "sourceCounts": {
+      "docs-specs": 6
+    },
+    "candidateIds": [
+      "301bd36ad12ffcde",
+      "cc00d7524d131813",
+      "b3647efd04fa6395",
+      "2924e3116cf85309",
+      "9241c31e7494edcb",
+      "397411468dc12012"
+    ],
+    "titles": [
+      "ECS Gap: Staff Offline Resilience",
+      "ChefFlow Feature Registry Builder Handoff",
+      "P0 Work Continuity Control Plane",
+      "Build Spec: Persona Build Receipt System",
+      "Build Spec: Codex Prompt Generator",
+      "Build Spec: Gap Quality Gate"
+    ],
+    "reason": "Research batch. Resolve evidence before build approval."
+  },
+  {
+    "id": "c6f5f95c79ebf2c5",
+    "module": {
+      "id": "ai-boundaries",
+      "label": "AI Boundaries"
+    },
+    "classification": "blocked",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "373ca00a6ac930fe",
+      "013c55edd6ea621f",
+      "5cd78e66ec20248b",
+      "304b28ea6d0fd4df",
+      "3de6acd358d4c5e3",
+      "cfde3e60af327f3b",
+      "4f563869926d92ec"
+    ],
+    "titles": [
+      "Codex Build Spec: Launch Stabilization - Agent 3 (Migration Timestamp Collision)",
+      "System Integrity Interrogation - Round 4",
+      "Build: Client Relationship Closure Data Contract",
+      "Codex Agent 1: Dinner Circle Bug Fixes",
+      "Codex Agent 2: Ticketing-Circle Bridge",
+      "OpenClaw + Hermes Migration Spec",
+      "Rich Text Editor for Dinner Circles"
+    ],
+    "reason": "Blocked batch. Requires Founder Authority or hard-stop resolution."
+  },
+  {
+    "id": "e5a5e2700331ea1f",
+    "module": {
+      "id": "chef-workspace",
+      "label": "Chef Workspace"
+    },
+    "classification": "blocked",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 2,
+    "sourceCounts": {
+      "docs-specs": 2
+    },
+    "candidateIds": ["74122d46638094f7", "3526c4511e936177"],
+    "titles": [
+      "Workspace Density: Adaptive Workspace Configuration",
+      "Codex Task: Hub Table Drizzle Schema Sync"
+    ],
+    "reason": "Blocked batch. Requires Founder Authority or hard-stop resolution."
+  },
+  {
+    "id": "05f052fe11765f4e",
+    "module": {
+      "id": "client-intake",
+      "label": "Client Intake"
+    },
+    "classification": "blocked",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 1,
+    "sourceCounts": {
+      "docs-specs": 1
+    },
+    "candidateIds": ["e477c0f55d40632b"],
+    "titles": ["ECS Gap: Embed Widget Mobile Date Grid"],
+    "reason": "Blocked batch. Requires Founder Authority or hard-stop resolution."
+  },
+  {
+    "id": "547d3854970bd7e7",
+    "module": {
+      "id": "dietary-safety",
+      "label": "Dietary Safety"
+    },
+    "classification": "blocked",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 1,
+    "sourceCounts": {
+      "docs-specs": 1
+    },
+    "candidateIds": ["740fec45a6dda72e"],
+    "titles": ["Codex Task: Guest Preference Profile Enhancement"],
+    "reason": "Blocked batch. Requires Founder Authority or hard-stop resolution."
+  },
+  {
+    "id": "c18c343b79b9f853",
+    "module": {
+      "id": "docs-release-proof",
+      "label": "Docs and Release Proof"
+    },
+    "classification": "blocked",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 3,
+    "sourceCounts": {
+      "docs-specs": 3
+    },
+    "candidateIds": ["9366ef836247dc6d", "215798e6d7527dd3", "57117e6f428874c8"],
+    "titles": [
+      "Codex Spec: Migration Safety Audit",
+      "System Completeness Interrogation: 80-Question All-User Audit",
+      "Token Efficiency Interrogation: 40-Question Developer Cost Audit"
+    ],
+    "reason": "Blocked batch. Requires Founder Authority or hard-stop resolution."
+  },
+  {
+    "id": "92475b41474f4069",
+    "module": {
+      "id": "events-ops",
+      "label": "Event Operations"
+    },
+    "classification": "blocked",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "f4680c2f9157faaf",
+      "1c4446abe03a4e3b",
+      "541917192a573ffc",
+      "3c2e495d753a1a1b",
+      "b24c8a3a1af3ec32",
+      "79e2ad6c4cf527ed",
+      "dd0e8df55b830b1c"
+    ],
+    "titles": [
+      "Build Spec: Ticketed Events Migration Fix",
+      "Circle Prep Assignments (Learning Mode Foundation)",
+      "Ingredient Provenance Data Capture",
+      "Agent Prompt: Event Operations Quality Bar Build",
+      "Live Service Execution Tracker Regression Coverage",
+      "Live Service Execution Tracker",
+      "System Integrity Question Set: Event State Machine & Transitions"
+    ],
+    "reason": "Blocked batch. Requires Founder Authority or hard-stop resolution."
+  },
+  {
+    "id": "2d6524b9b69225bb",
+    "module": {
+      "id": "finance-ledger",
+      "label": "Finance and Ledger"
+    },
+    "classification": "blocked",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 1,
+    "sourceCounts": {
+      "docs-specs": 1
+    },
+    "candidateIds": ["42fb5ece4810bdce"],
+    "titles": ["Build Spec: Private Circle Messaging"],
+    "reason": "Blocked batch. Requires Founder Authority or hard-stop resolution."
+  },
+  {
+    "id": "cb29af2851afbd29",
+    "module": {
+      "id": "pricing-trust",
+      "label": "Pricing Trust"
+    },
+    "classification": "blocked",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 1,
+    "sourceCounts": {
+      "docs-specs": 1
+    },
+    "candidateIds": ["3c7c9f675ca9b915"],
+    "titles": ["Spec: Configurable Overhead % and Labor Rate in Plate Cost"],
+    "reason": "Blocked batch. Requires Founder Authority or hard-stop resolution."
+  },
+  {
+    "id": "0f369c5bd8659c86",
+    "module": {
+      "id": "public-trust",
+      "label": "Public Trust"
+    },
+    "classification": "blocked",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 1,
+    "sourceCounts": {
+      "docs-specs": 1
+    },
+    "candidateIds": ["c8cd5daae41e0b9e"],
+    "titles": ["Build Spec: HOPE/WISH/ARCH/EYES Trust Layer"],
+    "reason": "Blocked batch. Requires Founder Authority or hard-stop resolution."
+  },
+  {
+    "id": "502c2e0cd18b6d88",
+    "module": {
+      "id": "sourcing-inventory",
+      "label": "Sourcing and Inventory"
+    },
+    "classification": "blocked",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 1,
+    "sourceCounts": {
+      "docs-specs": 1
+    },
+    "candidateIds": ["fcc7f8bb4fb34fa2"],
+    "titles": ["Pi Data Synthesis Pipeline - \"The Content Machine\""],
+    "reason": "Blocked batch. Requires Founder Authority or hard-stop resolution."
+  },
+  {
+    "id": "89f16a371e3d5539",
+    "module": {
+      "id": "unassigned",
+      "label": "Unassigned"
+    },
+    "classification": "blocked",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "d883998dca0b8699",
+      "93bbcb9337a2cfa0",
+      "b5ef94ddf2b04819",
+      "8474f4e67bbf5176",
+      "c4143f774134f080",
+      "0d67638987dc0104",
+      "bee52bf5535dc24d"
+    ],
+    "titles": [
+      "Build Spec: Pipeline Reliability + Re-score",
+      "Build Spec: Report Normalization + Categorization Fix",
+      "Codex Spec: Circle One-Pass Approval Flow",
+      "Codex Spec: Client Passport + Delegation Layer",
+      "Spec: David's Docket (OpenClaw Cartridge)",
+      "Spec: Private Dev Cockpit Consolidation",
+      "Orchestration Data Pipeline - Build Spec"
+    ],
+    "reason": "Blocked batch. Requires Founder Authority or hard-stop resolution."
+  },
+  {
+    "id": "bd7d6027945bcc89",
+    "module": {
+      "id": "unassigned",
+      "label": "Unassigned"
+    },
+    "classification": "blocked",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "3851d148b6008088",
+      "34c09674c9e6a52c",
+      "87dce5cd6af9af1c",
+      "e55dd0b5a509045b",
+      "a40aeea5a503f634",
+      "5f9c29b1533c5748",
+      "cb26668d40a620fc"
+    ],
+    "titles": [
+      "Codex Build Spec: Circle Command Briefing",
+      "Circle Command Center - Build Spec",
+      "Codex Build Spec: Client Passport Persistence + Delegate Role",
+      "Codex Build Spec: International Readiness Layer",
+      "International Readiness Phase 2: Format Context Wiring",
+      "Codex Spec: Build Verification Pass",
+      "Codex Spec: Ticketing Wiring Completion"
+    ],
+    "reason": "Blocked batch. Requires Founder Authority or hard-stop resolution."
+  },
+  {
+    "id": "58fcf45b848fac35",
+    "module": {
+      "id": "unassigned",
+      "label": "Unassigned"
+    },
+    "classification": "blocked",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 4,
+    "sourceCounts": {
+      "docs-specs": 4
+    },
+    "candidateIds": [
+      "639ce1782a8cd2ee",
+      "c2346a669e426ec7",
+      "ebe5ee4e68de4ad3",
+      "b68d6479980712a6"
+    ],
+    "titles": [
+      "ECS Gap: Household Schema Unification",
+      "Launch Stabilization Strategy - Senior Engineer Recommendation",
+      "Persona Pipeline v2: Local-First Overhaul",
+      "System Integrity Question Set: Data Layer & Database"
+    ],
+    "reason": "Blocked batch. Requires Founder Authority or hard-stop resolution."
+  },
+  {
+    "id": "5d12c94eed6e5586",
+    "module": {
+      "id": "v1-control-plane",
+      "label": "V1 Control Plane"
+    },
+    "classification": "blocked",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 1,
+    "sourceCounts": {
+      "docs-specs": 1
+    },
+    "candidateIds": ["99799733ec4e2dd3"],
+    "titles": ["Spec: OpenClaw PC Local Mirror And Backup Contract"],
+    "reason": "Blocked batch. Requires Founder Authority or hard-stop resolution."
+  },
+  {
+    "id": "541af66cb61c3822",
+    "module": {
+      "id": "ai-boundaries",
+      "label": "AI Boundaries"
+    },
+    "classification": "v2",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "e665f2d30dda2886",
+      "d8dde6158e9a5ea1",
+      "c6869a5f62b29386",
+      "19b7cfa1786a3143",
+      "19212a6afc8bb0c0",
+      "81f5d9ce13b4bf09",
+      "e63a8cee1255d384"
+    ],
+    "titles": [
+      "Spec: Paid Leverage Roadmap",
+      "Spec: BYOAI Phase 2B - Ollama Adapter for Browser AI Engine",
+      "Auto-Repair: No-op return in lib/marketplace/worksheet-actions.ts",
+      "Canonical `/tasks` Create Regression Harness",
+      "Ollama Delegate MCP Server",
+      "System Integrity Question Set: End-to-End Data Chains",
+      "System Integrity Question Set: Local AI Cohesion"
+    ],
+    "reason": "Parked V2 batch. Preserve, do not execute in V1."
+  },
+  {
+    "id": "d7e96d0b97163b7c",
+    "module": {
+      "id": "ai-boundaries",
+      "label": "AI Boundaries"
+    },
+    "classification": "v2",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 1,
+    "sourceCounts": {
+      "docs-specs": 1
+    },
+    "candidateIds": ["497a1182bc10f4fc"],
+    "titles": ["System Integrity Question Set: Notifications & Email"],
+    "reason": "Parked V2 batch. Preserve, do not execute in V1."
+  },
+  {
+    "id": "85f77c58b33cdf51",
+    "module": {
+      "id": "chef-workspace",
+      "label": "Chef Workspace"
+    },
+    "classification": "v2",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 2,
+    "sourceCounts": {
+      "docs-specs": 2
+    },
+    "candidateIds": ["0f722c086fdab544", "ab9f1b7809aae6a9"],
+    "titles": [
+      "OpenClaw Opus Distillation Burst",
+      "System Integrity Question Set: Calendar & Scheduling"
+    ],
+    "reason": "Parked V2 batch. Preserve, do not execute in V1."
+  },
+  {
+    "id": "119578fc4078bf01",
+    "module": {
+      "id": "client-intake",
+      "label": "Client Intake"
+    },
+    "classification": "v2",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 4,
+    "sourceCounts": {
+      "docs-specs": 3,
+      "system-intake": 1
+    },
+    "candidateIds": [
+      "89807533fab6364b",
+      "7b70d86ab0b2d3f9",
+      "4b386c7f4dcf5878",
+      "6b7e7341738fbcae"
+    ],
+    "titles": [
+      "Inquiry-to-Revenue Pipeline Interrogation Protocol",
+      "System Integrity Question Set: Client Management",
+      "System Integrity Question Set: Inquiry-to-Completion Cohesiveness",
+      "ChefFlow Operating System, Monetization, And Confidence Gate"
+    ],
+    "reason": "Parked V2 batch. Preserve, do not execute in V1."
+  },
+  {
+    "id": "8c44b562b0e6cd85",
+    "module": {
+      "id": "events-ops",
+      "label": "Event Operations"
+    },
+    "classification": "v2",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "b85b960a2f200d22",
+      "2d649c16cce18a9c",
+      "5b1682224284bbbb",
+      "cd2fa3e30b015786",
+      "cfa961bd1245b0ee",
+      "dc1a0d63a17c358a",
+      "0622cccd7f9e8d3e"
+    ],
+    "titles": [
+      "Codex Build Spec: Government Data Source Expansion",
+      "Chef Event Briefing System",
+      "Spec: Chef Gear Check (Pre-Event Personal Readiness)",
+      "Cohesion Checklist: Prep Timeline & Peak Windows",
+      "Event Operations Quality Bar Build Spec",
+      "Event Readiness Assistant Persistent Dismissals Build Spec",
+      "Marisol Meal Prep Recurring Engine Build Spec"
+    ],
+    "reason": "Parked V2 batch. Preserve, do not execute in V1."
+  },
+  {
+    "id": "2df04365bd1dbcfb",
+    "module": {
+      "id": "events-ops",
+      "label": "Event Operations"
+    },
+    "classification": "v2",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 4,
+    "sourceCounts": {
+      "docs-specs": 4
+    },
+    "candidateIds": [
+      "71d578a1d1ade9a2",
+      "120f3604ca79ab03",
+      "95c26e7fcc2e677e",
+      "7d9abf361b1f48de"
+    ],
+    "titles": [
+      "System Integrity Question Set: Prep Push Layer (BH1-BH15)",
+      "System Integrity Question Set: Prep Timeline Integration Layer",
+      "System Integrity Question Set: Recipe Peak Windows & Prep Timeline",
+      "Ticketed Events & Multi-Channel Distribution"
+    ],
+    "reason": "Parked V2 batch. Preserve, do not execute in V1."
+  },
+  {
+    "id": "a1a2a99b82dc3b34",
+    "module": {
+      "id": "finance-ledger",
+      "label": "Finance and Ledger"
+    },
+    "classification": "v2",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 1,
+    "sourceCounts": {
+      "docs-specs": 1
+    },
+    "candidateIds": ["0f9807bab4c1a5e9"],
+    "titles": ["System Integrity Question Set: Financial Cross-Boundary Cohesiveness (Phase 2)"],
+    "reason": "Parked V2 batch. Preserve, do not execute in V1."
+  },
+  {
+    "id": "2da0f62e3140f61a",
+    "module": {
+      "id": "pricing-trust",
+      "label": "Pricing Trust"
+    },
+    "classification": "v2",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 2,
+    "sourceCounts": {
+      "docs-specs": 2
+    },
+    "candidateIds": ["3c466d44564412fb", "d46b7c829016b763"],
+    "titles": [
+      "Spec: Wire Projected Labor/Travel/Overhead into Pricing Intelligence Pipeline",
+      "Codex Task: Quick Price Calculator from Saved Menu"
+    ],
+    "reason": "Parked V2 batch. Preserve, do not execute in V1."
+  },
+  {
+    "id": "b2a3e3d29070a24d",
+    "module": {
+      "id": "public-trust",
+      "label": "Public Trust"
+    },
+    "classification": "v2",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 1,
+    "sourceCounts": {
+      "docs-specs": 1
+    },
+    "candidateIds": ["85f0225c79ac2b42"],
+    "titles": ["ECS Gap: Public Directory Surface Consolidation"],
+    "reason": "Parked V2 batch. Preserve, do not execute in V1."
+  },
+  {
+    "id": "eca6a9545e989a87",
+    "module": {
+      "id": "sourcing-inventory",
+      "label": "Sourcing and Inventory"
+    },
+    "classification": "v2",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 1,
+    "sourceCounts": {
+      "docs-specs": 1
+    },
+    "candidateIds": ["29c981189acd1cda"],
+    "titles": ["ECS Gap: Vendor Map View"],
+    "reason": "Parked V2 batch. Preserve, do not execute in V1."
+  },
+  {
+    "id": "ccaa6e9479f2f499",
+    "module": {
+      "id": "staff-partner",
+      "label": "Staff and Partner Ops"
+    },
+    "classification": "v2",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 4,
+    "sourceCounts": {
+      "docs-specs": 4
+    },
+    "candidateIds": [
+      "f3f8e9b920ebbf2a",
+      "7a11edccb27cbcab",
+      "b3275d11099f4bcb",
+      "e9f5ea38714db794"
+    ],
+    "titles": [
+      "Spec: Dinner Circle Multi-Host Collaboration",
+      "Spec: Dinner Circle Unification & Chef-to-Chef Collaboration",
+      "System Integrity Question Set: Network & Collaboration",
+      "System Integrity Question Set: Staff Operations"
+    ],
+    "reason": "Parked V2 batch. Preserve, do not execute in V1."
+  },
+  {
+    "id": "6cd7a07d859164fe",
+    "module": {
+      "id": "unassigned",
+      "label": "Unassigned"
+    },
+    "classification": "v2",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "57650965315126d6",
+      "80ccbfa86cea5be7",
+      "c1d9f5feebb55461",
+      "04681ee9a3ae44ed",
+      "fbd79b92f64909ed",
+      "d13d91caabf6da60",
+      "4c11214067529bbb"
+    ],
+    "titles": [
+      "Spec: App Polish & Completion",
+      "Spec: OpenClaw Non-Goals and Never-Do Rules",
+      "Spec: Surface Grammar Governance",
+      "Spec: Android Home Screen Widgets",
+      "Spec: Data Export (Takeout)",
+      "Saturation Tracking - Build Spec",
+      "Chef Portal Priority Restructure"
+    ],
+    "reason": "Parked V2 batch. Preserve, do not execute in V1."
+  },
+  {
+    "id": "f666b539927dd763",
+    "module": {
+      "id": "unassigned",
+      "label": "Unassigned"
+    },
+    "classification": "v2",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "3b22e215e368bdbd",
+      "2779890bc35a22ef",
+      "40a040b3dfbd0a2b",
+      "0583e85bfbea29f6",
+      "117ad2af184b9e1f",
+      "b774797d1b3a85c1",
+      "86694a7a1612ca47"
+    ],
+    "titles": [
+      "Codex Build Spec: P1 Cash Flow Expense Projection",
+      "Equipment Intelligence System - Complete Specification",
+      "Ingredient Quantity Lifecycle - System Integrity Question Set",
+      "Interaction Engine Client Gateway Adapter Build Spec",
+      "Operational Workflow Interrogation",
+      "Passive Store Sync-State Bootstrap Hardening",
+      "Platform Role Hierarchy"
+    ],
+    "reason": "Parked V2 batch. Preserve, do not execute in V1."
+  },
+  {
+    "id": "7dbb6e0c1769f029",
+    "module": {
+      "id": "unassigned",
+      "label": "Unassigned"
+    },
+    "classification": "v2",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "121c6bcba5861c3e",
+      "5f43319d259f79e4",
+      "70523ddf3f7e7440",
+      "27d0295fec1c041f",
+      "68ce7b7069b083a1",
+      "c162382edd9040e7",
+      "fbf1835ecb7bf65f"
+    ],
+    "titles": [
+      "Privacy Data Handling Baseline",
+      "System Integrity Question Set: API Routes & Data Safety",
+      "Chef-to-Chef Systems: System Integrity Question Set",
+      "System Integrity Question Set: Cross-Boundary Enforcement",
+      "System Integrity Question Set: Finance",
+      "System Integrity Question Set: Inquiries & Quotes",
+      "System Integrity Question Set: Onboarding-to-Production Readiness"
+    ],
+    "reason": "Parked V2 batch. Preserve, do not execute in V1."
+  },
+  {
+    "id": "bb9516845445d71c",
+    "module": {
+      "id": "unassigned",
+      "label": "Unassigned"
+    },
+    "classification": "v2",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 2,
+    "sourceCounts": {
+      "docs-specs": 2
+    },
+    "candidateIds": ["4c9584696507b2e0", "44f7ffed4490916a"],
+    "titles": [
+      "System Integrity Question Set: Operational Pressure Test",
+      "Cross-System Cohesion: System Integrity Question Set (Phase 3)"
+    ],
+    "reason": "Parked V2 batch. Preserve, do not execute in V1."
+  },
+  {
+    "id": "2527b6b019bfd414",
+    "module": {
+      "id": "v1-control-plane",
+      "label": "V1 Control Plane"
+    },
+    "classification": "v2",
+    "approvalState": "candidate_review_required",
+    "executionEligible": false,
+    "taskCount": 1,
+    "sourceCounts": {
+      "docs-specs": 1
+    },
+    "candidateIds": ["2ec75a8b1c49b870"],
+    "titles": ["Spec: Respectful Monetization Foundation"],
+    "reason": "Parked V2 batch. Preserve, do not execute in V1."
+  }
+]

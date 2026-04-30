@@ -75,6 +75,7 @@
     "v1-builder:watch": "node scripts/v1-builder/watch.mjs --mode dry-run",
     "v1-builder:watch:live": "node scripts/v1-builder/watch.mjs --mode live",
     "v1-builder:test": "node --test \"tests/unit/v1-builder-*.test.mjs\"",
+    "build-queue:unify": "node scripts/unified-build-queue/generate.mjs",
     "personas:inbox": "node devtools/persona-inbox-server.mjs",
     "personas:inbox:public": "powershell -ExecutionPolicy Bypass -File scripts/start-persona-inbox-public.ps1",
     "personas:inbox:public:stop": "powershell -ExecutionPolicy Bypass -File scripts/stop-persona-inbox-public.ps1",
