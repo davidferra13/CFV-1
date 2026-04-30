@@ -57,6 +57,7 @@ import {
   ShoppingBag,
   Store,
 } from '@/components/ui/icons'
+import type { ChefSocialLinks } from '@/lib/chef/profile-types'
 
 type Props = {
   params: { slug: string }
@@ -473,6 +474,78 @@ function formatMenuGuestRange(values: Array<number | null | undefined>): string 
   return low === high ? `${low} guests` : `${low}-${high} guests`
 }
 
+type PublicExternalPresenceLink = {
+  key: string
+  label: string
+  href: string
+  category: 'website' | 'social' | 'video' | 'proof' | 'booking' | 'links'
+}
+
+const SOCIAL_LINK_METADATA: Record<
+  string,
+  { label: string; category: PublicExternalPresenceLink['category']; order: number }
+> = {
+  instagram: { label: 'Instagram', category: 'social', order: 10 },
+  youtube: { label: 'YouTube', category: 'video', order: 20 },
+  linkedin: { label: 'LinkedIn', category: 'social', order: 30 },
+  tiktok: { label: 'TikTok', category: 'social', order: 40 },
+  facebook: { label: 'Facebook', category: 'social', order: 50 },
+  x: { label: 'X', category: 'social', order: 60 },
+  threads: { label: 'Threads', category: 'social', order: 70 },
+  pinterest: { label: 'Pinterest', category: 'social', order: 80 },
+  substack: { label: 'Newsletter', category: 'proof', order: 90 },
+  press: { label: 'Press', category: 'proof', order: 100 },
+  bookingPlatform: { label: 'External booking platform', category: 'booking', order: 110 },
+  linktree: { label: 'Link hub', category: 'links', order: 120 },
+}
+
+function buildExternalPresenceLinks(input: {
+  socialLinks: ChefSocialLinks | null | undefined
+  websiteUrl?: string | null
+  includeWebsite?: boolean
+}): PublicExternalPresenceLink[] {
+  const links: Array<PublicExternalPresenceLink & { order: number }> = []
+
+  if (input.includeWebsite && input.websiteUrl?.trim()) {
+    links.push({
+      key: 'website',
+      label: 'Website',
+      href: input.websiteUrl.trim(),
+      category: 'website',
+      order: 0,
+    })
+  }
+
+  for (const [key, value] of Object.entries(input.socialLinks ?? {})) {
+    if (key === 'custom' || typeof value !== 'string' || !value.trim()) continue
+    const metadata = SOCIAL_LINK_METADATA[key] ?? {
+      label: key.replace(/([A-Z])/g, ' $1').replace(/^./, (char) => char.toUpperCase()),
+      category: 'links' as const,
+      order: 200,
+    }
+    links.push({
+      key,
+      label: metadata.label,
+      href: value.trim(),
+      category: metadata.category,
+      order: metadata.order,
+    })
+  }
+
+  for (const [index, link] of (input.socialLinks?.custom ?? []).entries()) {
+    if (!link.label.trim() || !link.url.trim()) continue
+    links.push({
+      key: `custom-${index}`,
+      label: link.label.trim(),
+      href: link.url.trim(),
+      category: 'links',
+      order: 300 + index,
+    })
+  }
+
+  return links.sort((a, b) => a.order - b.order).map(({ order: _order, ...link }) => link)
+}
+
 function getSingleSearchValue(searchParams: Props['searchParams'], key: string): string | null {
   const value = searchParams?.[key]
   if (Array.isArray(value)) return value[0] || null
@@ -610,13 +683,11 @@ function PublicChefHub({
   bookingModel: string | null
   hasWebsiteLink: boolean
   websiteUrl: string | null
-  socialLinks: Record<string, string>
+  socialLinks: ChefSocialLinks
 }) {
   const analyticsProps = { chef_slug: publicSlug, public_hub_source: source }
   const avatarUrl = profileImageUrl ? getOptimizedAvatar(profileImageUrl, 220) : null
-  const socialEntries = Object.entries(socialLinks).filter((entry): entry is [string, string] =>
-    Boolean(entry[1]?.trim())
-  )
+  const externalPresenceLinks = buildExternalPresenceLinks({ socialLinks })
   const proofItems = [
     reviewCount > 0
       ? {
@@ -782,23 +853,23 @@ function PublicChefHub({
             )}
           </div>
 
-          {socialEntries.length > 0 && (
+          {externalPresenceLinks.length > 0 && (
             <div className="mt-6">
               <p className="text-center text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
-                Social and External Links
+                Chef's Sites, Socials, and Press
               </p>
               <div className="mt-3 grid grid-cols-2 gap-2">
-                {socialEntries.map(([name, href]) => (
+                {externalPresenceLinks.map((link) => (
                   <TrackedLink
-                    key={name}
-                    href={href}
-                    analyticsName={`public_hub_social_${name}`}
-                    analyticsProps={analyticsProps}
+                    key={link.key}
+                    href={link.href}
+                    analyticsName={`public_hub_external_${link.key}`}
+                    analyticsProps={{ ...analyticsProps, external_link_category: link.category }}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex min-h-[44px] items-center justify-center rounded-xl border border-stone-800 bg-stone-900 px-3 py-2 text-center text-xs font-semibold capitalize text-stone-200 transition-colors hover:border-stone-600 hover:bg-stone-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-300 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-950"
                   >
-                    {name}
+                    {link.label}
                   </TrackedLink>
                 ))}
               </div>
@@ -1117,10 +1188,12 @@ export default async function ChefProfilePage({ params, searchParams }: Props) {
   if (showcaseMenus.length === 0) {
     inquiryChecklist.push('Menu direction or favorite ingredients')
   }
-  const publishedLinks = [
-    hasWebsiteLink ? chef.website_url : null,
-    ...(chef.social_links ? Object.values(chef.social_links) : []),
-  ].filter((value): value is string => typeof value === 'string' && value.trim().length > 0)
+  const externalPresenceLinks = buildExternalPresenceLinks({
+    socialLinks: chef.social_links as ChefSocialLinks,
+    websiteUrl: chef.website_url,
+    includeWebsite: hasWebsiteLink,
+  })
+  const publishedLinks = externalPresenceLinks.map((link) => link.href)
   const heroSummaryLine = [
     locationLabel ? `Serves ${locationLabel}` : null,
     guestCountLabel ? `Events for ${guestCountLabel}` : null,
@@ -1314,7 +1387,7 @@ export default async function ChefProfilePage({ params, searchParams }: Props) {
         bookingModel={chef.booking_model}
         hasWebsiteLink={hasWebsiteLink}
         websiteUrl={chef.website_url}
-        socialLinks={(chef.social_links ?? {}) as Record<string, string>}
+        socialLinks={(chef.social_links ?? {}) as ChefSocialLinks}
       />
     )
   }
@@ -1446,93 +1519,24 @@ export default async function ChefProfilePage({ params, searchParams }: Props) {
               </div>
             )}
 
-            {chef.social_links && Object.values(chef.social_links).some(Boolean) && (
-              <div className="mt-7 flex gap-4">
-                {chef.social_links.instagram && (
+            {externalPresenceLinks.length > 0 && (
+              <div className="mt-7 flex flex-wrap gap-2">
+                {externalPresenceLinks.map((link) => (
                   <TrackedLink
-                    href={chef.social_links.instagram}
-                    analyticsName="public_profile_social_instagram"
-                    analyticsProps={{ chef_slug: publicSlug }}
+                    key={link.key}
+                    href={link.href}
+                    analyticsName={`public_profile_external_${link.key}`}
+                    analyticsProps={{
+                      chef_slug: publicSlug,
+                      external_link_category: link.category,
+                    }}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-stone-400 hover:text-white transition-colors"
-                    aria-label="Instagram"
+                    className="inline-flex min-h-[40px] items-center rounded-full border border-stone-700 bg-stone-900/80 px-3 py-2 text-xs font-semibold text-stone-200 transition-colors hover:border-stone-500 hover:bg-stone-800 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-300 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-950"
                   >
-                    <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
-                    </svg>
+                    {link.label}
                   </TrackedLink>
-                )}
-                {chef.social_links.tiktok && (
-                  <TrackedLink
-                    href={chef.social_links.tiktok}
-                    analyticsName="public_profile_social_tiktok"
-                    analyticsProps={{ chef_slug: publicSlug }}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-stone-400 hover:text-white transition-colors"
-                    aria-label="TikTok"
-                  >
-                    <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 00-.79-.05A6.34 6.34 0 003.15 15.2a6.34 6.34 0 0010.86 4.48v-7.15a8.16 8.16 0 005.58 2.2v-3.45a4.85 4.85 0 01-3.77-1.82 4.83 4.83 0 003.77-2.77z" />
-                    </svg>
-                  </TrackedLink>
-                )}
-                {chef.social_links.facebook && (
-                  <TrackedLink
-                    href={chef.social_links.facebook}
-                    analyticsName="public_profile_social_facebook"
-                    analyticsProps={{ chef_slug: publicSlug }}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-stone-400 hover:text-white transition-colors"
-                    aria-label="Facebook"
-                  >
-                    <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-                    </svg>
-                  </TrackedLink>
-                )}
-                {chef.social_links.youtube && (
-                  <TrackedLink
-                    href={chef.social_links.youtube}
-                    analyticsName="public_profile_social_youtube"
-                    analyticsProps={{ chef_slug: publicSlug }}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-stone-400 hover:text-white transition-colors"
-                    aria-label="YouTube"
-                  >
-                    <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
-                    </svg>
-                  </TrackedLink>
-                )}
-                {chef.social_links.linktree && (
-                  <TrackedLink
-                    href={chef.social_links.linktree}
-                    analyticsName="public_profile_social_linktree"
-                    analyticsProps={{ chef_slug: publicSlug }}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-stone-400 hover:text-white transition-colors"
-                    aria-label="Link hub"
-                  >
-                    <svg
-                      className="h-6 w-6"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
-                      />
-                    </svg>
-                  </TrackedLink>
-                )}
+                ))}
               </div>
             )}
           </div>

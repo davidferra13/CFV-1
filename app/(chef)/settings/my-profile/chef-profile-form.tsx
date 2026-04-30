@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { updateChefFullProfile } from '@/lib/chef/profile-actions'
-import type { ChefSocialLinks } from '@/lib/chef/profile-types'
+import type { ChefCustomLink, ChefSocialLinks } from '@/lib/chef/profile-types'
 import { uploadChefProfileImage } from '@/lib/network/actions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -53,7 +53,19 @@ export function ChefProfileForm({ profile, chefId }: { profile: ChefProfile; che
   const [socialTiktok, setSocialTiktok] = useState(profile.social_links?.tiktok || '')
   const [socialFacebook, setSocialFacebook] = useState(profile.social_links?.facebook || '')
   const [socialYoutube, setSocialYoutube] = useState(profile.social_links?.youtube || '')
+  const [socialLinkedin, setSocialLinkedin] = useState(profile.social_links?.linkedin || '')
+  const [socialX, setSocialX] = useState(profile.social_links?.x || '')
+  const [socialPinterest, setSocialPinterest] = useState(profile.social_links?.pinterest || '')
+  const [socialThreads, setSocialThreads] = useState(profile.social_links?.threads || '')
+  const [socialSubstack, setSocialSubstack] = useState(profile.social_links?.substack || '')
+  const [socialPress, setSocialPress] = useState(profile.social_links?.press || '')
+  const [socialBookingPlatform, setSocialBookingPlatform] = useState(
+    profile.social_links?.bookingPlatform || ''
+  )
   const [socialLinktree, setSocialLinktree] = useState(profile.social_links?.linktree || '')
+  const [customLinks, setCustomLinks] = useState<ChefCustomLink[]>(
+    profile.social_links?.custom?.length ? profile.social_links.custom : [{ label: '', url: '' }]
+  )
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null)
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null)
   const [logoUrl] = useState(profile.logo_url || '')
@@ -73,7 +85,17 @@ export function ChefProfileForm({ profile, chefId }: { profile: ChefProfile; che
       socialTiktok: profile.social_links?.tiktok || '',
       socialFacebook: profile.social_links?.facebook || '',
       socialYoutube: profile.social_links?.youtube || '',
+      socialLinkedin: profile.social_links?.linkedin || '',
+      socialX: profile.social_links?.x || '',
+      socialPinterest: profile.social_links?.pinterest || '',
+      socialThreads: profile.social_links?.threads || '',
+      socialSubstack: profile.social_links?.substack || '',
+      socialPress: profile.social_links?.press || '',
+      socialBookingPlatform: profile.social_links?.bookingPlatform || '',
       socialLinktree: profile.social_links?.linktree || '',
+      customLinks: profile.social_links?.custom?.length
+        ? profile.social_links.custom
+        : [{ label: '', url: '' }],
     }),
     [profile]
   )
@@ -93,7 +115,15 @@ export function ChefProfileForm({ profile, chefId }: { profile: ChefProfile; che
       socialTiktok,
       socialFacebook,
       socialYoutube,
+      socialLinkedin,
+      socialX,
+      socialPinterest,
+      socialThreads,
+      socialSubstack,
+      socialPress,
+      socialBookingPlatform,
       socialLinktree,
+      customLinks,
     }),
     [
       businessName,
@@ -109,7 +139,15 @@ export function ChefProfileForm({ profile, chefId }: { profile: ChefProfile; che
       socialTiktok,
       socialFacebook,
       socialYoutube,
+      socialLinkedin,
+      socialX,
+      socialPinterest,
+      socialThreads,
+      socialSubstack,
+      socialPress,
+      socialBookingPlatform,
       socialLinktree,
+      customLinks,
     ]
   )
 
@@ -138,7 +176,15 @@ export function ChefProfileForm({ profile, chefId }: { profile: ChefProfile; che
     setSocialTiktok(d.socialTiktok)
     setSocialFacebook(d.socialFacebook)
     setSocialYoutube(d.socialYoutube)
+    setSocialLinkedin(d.socialLinkedin)
+    setSocialX(d.socialX)
+    setSocialPinterest(d.socialPinterest)
+    setSocialThreads(d.socialThreads)
+    setSocialSubstack(d.socialSubstack)
+    setSocialPress(d.socialPress)
+    setSocialBookingPlatform(d.socialBookingPlatform)
     setSocialLinktree(d.socialLinktree)
+    setCustomLinks(d.customLinks)
   }, [])
 
   useEffect(() => {
@@ -153,13 +199,22 @@ export function ChefProfileForm({ profile, chefId }: { profile: ChefProfile; che
 
   const publicDisplayName = displayName.trim() || businessName.trim() || profile.business_name
   const previewImageUrl = imagePreviewUrl || profileImageUrl
-  const visibleSocialCount = [
-    socialInstagram,
-    socialTiktok,
-    socialFacebook,
-    socialYoutube,
-    socialLinktree,
-  ].filter((value) => value.trim().length > 0).length
+  const visibleSocialCount =
+    [
+      socialInstagram,
+      socialTiktok,
+      socialFacebook,
+      socialYoutube,
+      socialLinkedin,
+      socialX,
+      socialPinterest,
+      socialThreads,
+      socialSubstack,
+      socialPress,
+      socialBookingPlatform,
+      socialLinktree,
+    ].filter((value) => value.trim().length > 0).length +
+    customLinks.filter((link) => link.label.trim() && link.url.trim()).length
   const hasPrimaryAction = Boolean(
     preferredInquiryDestination === 'chefflow_only' ||
     preferredInquiryDestination === 'both' ||
@@ -233,7 +288,20 @@ export function ChefProfileForm({ profile, chefId }: { profile: ChefProfile; che
             tiktok: socialTiktok || undefined,
             facebook: socialFacebook || undefined,
             youtube: socialYoutube || undefined,
+            linkedin: socialLinkedin || undefined,
+            x: socialX || undefined,
+            pinterest: socialPinterest || undefined,
+            threads: socialThreads || undefined,
+            substack: socialSubstack || undefined,
+            press: socialPress || undefined,
+            bookingPlatform: socialBookingPlatform || undefined,
             linktree: socialLinktree || undefined,
+            custom: customLinks
+              .map((link) => ({
+                label: link.label.trim(),
+                url: link.url.trim(),
+              }))
+              .filter((link) => link.label && link.url),
           },
         })
         setSuccess(true)
@@ -242,6 +310,30 @@ export function ChefProfileForm({ profile, chefId }: { profile: ChefProfile; che
       } catch (err: any) {
         setError(err?.message || 'Failed to update profile')
       }
+    })
+  }
+
+  function updateCustomLink(index: number, field: keyof ChefCustomLink, value: string) {
+    setCustomLinks((links) =>
+      links.map((link, linkIndex) =>
+        linkIndex === index
+          ? {
+              ...link,
+              [field]: value,
+            }
+          : link
+      )
+    )
+  }
+
+  function addCustomLink() {
+    setCustomLinks((links) => [...links, { label: '', url: '' }].slice(0, 6))
+  }
+
+  function removeCustomLink(index: number) {
+    setCustomLinks((links) => {
+      const nextLinks = links.filter((_, linkIndex) => linkIndex !== index)
+      return nextLinks.length ? nextLinks : [{ label: '', url: '' }]
     })
   }
 
@@ -308,8 +400,8 @@ export function ChefProfileForm({ profile, chefId }: { profile: ChefProfile; che
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-sm text-stone-400">
-                  Add your social profiles. These appear on your public chef page and directory
-                  listing.
+                  Add every place clients can verify or follow your work. ChefFlow keeps your own
+                  sites and channels visible, then routes high-intent visitors toward booking.
                 </p>
                 <Input
                   label="Instagram"
@@ -340,12 +432,112 @@ export function ChefProfileForm({ profile, chefId }: { profile: ChefProfile; che
                   placeholder="https://youtube.com/@yourchannel"
                 />
                 <Input
+                  label="LinkedIn"
+                  type="url"
+                  value={socialLinkedin}
+                  onChange={(e) => setSocialLinkedin(e.target.value)}
+                  placeholder="https://linkedin.com/in/yourname"
+                />
+                <Input
+                  label="X"
+                  type="url"
+                  value={socialX}
+                  onChange={(e) => setSocialX(e.target.value)}
+                  placeholder="https://x.com/yourname"
+                />
+                <Input
+                  label="Pinterest"
+                  type="url"
+                  value={socialPinterest}
+                  onChange={(e) => setSocialPinterest(e.target.value)}
+                  placeholder="https://pinterest.com/yourname"
+                />
+                <Input
+                  label="Threads"
+                  type="url"
+                  value={socialThreads}
+                  onChange={(e) => setSocialThreads(e.target.value)}
+                  placeholder="https://threads.net/@yourname"
+                />
+                <Input
+                  label="Substack / Newsletter"
+                  type="url"
+                  value={socialSubstack}
+                  onChange={(e) => setSocialSubstack(e.target.value)}
+                  placeholder="https://yourname.substack.com"
+                />
+                <Input
+                  label="Press / Media"
+                  type="url"
+                  value={socialPress}
+                  onChange={(e) => setSocialPress(e.target.value)}
+                  placeholder="https://publication.com/feature"
+                />
+                <Input
+                  label="External Booking Platform"
+                  type="url"
+                  value={socialBookingPlatform}
+                  onChange={(e) => setSocialBookingPlatform(e.target.value)}
+                  placeholder="https://takeachef.com/..."
+                />
+                <Input
                   label="Linktree / Link Hub"
                   type="url"
                   value={socialLinktree}
                   onChange={(e) => setSocialLinktree(e.target.value)}
                   placeholder="https://linktr.ee/yourname"
                 />
+                <div className="space-y-3 rounded-lg border border-stone-700 p-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-medium text-stone-300">Custom Links</p>
+                      <p className="mt-1 text-xs text-stone-500">
+                        Add press kits, podcasts, classes, venues, partner pages, or any other
+                        public link clients should see.
+                      </p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      onClick={addCustomLink}
+                      disabled={customLinks.length >= 6}
+                    >
+                      Add Link
+                    </Button>
+                  </div>
+
+                  {customLinks.map((link, index) => (
+                    <div
+                      key={index}
+                      className="grid gap-3 rounded-lg bg-stone-950 p-3 md:grid-cols-2"
+                    >
+                      <Input
+                        label={`Label ${index + 1}`}
+                        value={link.label}
+                        onChange={(e) => updateCustomLink(index, 'label', e.target.value)}
+                        placeholder="Podcast interview"
+                      />
+                      <Input
+                        label={`URL ${index + 1}`}
+                        type="url"
+                        value={link.url}
+                        onChange={(e) => updateCustomLink(index, 'url', e.target.value)}
+                        placeholder="https://..."
+                      />
+                      <div className="md:col-span-2">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeCustomLink(index)}
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </CardContent>
             </Card>
 

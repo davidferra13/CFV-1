@@ -114,7 +114,27 @@ const SocialLinksSchema = z
     tiktok: z.string().url('TikTok URL must be valid').optional().or(z.literal('')),
     facebook: z.string().url('Facebook URL must be valid').optional().or(z.literal('')),
     youtube: z.string().url('YouTube URL must be valid').optional().or(z.literal('')),
+    linkedin: z.string().url('LinkedIn URL must be valid').optional().or(z.literal('')),
+    x: z.string().url('X URL must be valid').optional().or(z.literal('')),
+    pinterest: z.string().url('Pinterest URL must be valid').optional().or(z.literal('')),
+    threads: z.string().url('Threads URL must be valid').optional().or(z.literal('')),
+    substack: z.string().url('Substack URL must be valid').optional().or(z.literal('')),
+    press: z.string().url('Press URL must be valid').optional().or(z.literal('')),
+    bookingPlatform: z
+      .string()
+      .url('External booking platform URL must be valid')
+      .optional()
+      .or(z.literal('')),
     linktree: z.string().url('Linktree URL must be valid').optional().or(z.literal('')),
+    custom: z
+      .array(
+        z.object({
+          label: z.string().trim().min(1, 'Custom link label is required').max(40),
+          url: z.string().url('Custom link URL must be valid'),
+        })
+      )
+      .max(6)
+      .optional(),
   })
   .optional()
 
@@ -235,11 +255,20 @@ export async function updateChefFullProfile(input: UpdateChefFullProfileInput) {
   const normalizedSocialLinks: ChefSocialLinks = {}
   if (validated.social_links) {
     for (const [key, value] of Object.entries(validated.social_links)) {
+      if (key === 'custom') continue
+      if (typeof value !== 'string') continue
       const trimmed = value?.trim()
       if (trimmed) {
-        normalizedSocialLinks[key as keyof ChefSocialLinks] = trimmed
+        ;(normalizedSocialLinks as Record<string, string>)[key] = trimmed
       }
     }
+    const customLinks = validated.social_links.custom
+      ?.map((link) => ({
+        label: link.label.trim(),
+        url: link.url.trim(),
+      }))
+      .filter((link) => link.label && link.url)
+    if (customLinks?.length) normalizedSocialLinks.custom = customLinks
   }
 
   const payload: Record<string, unknown> = {
