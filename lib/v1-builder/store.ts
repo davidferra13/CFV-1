@@ -23,6 +23,7 @@ export async function ensureBuilderState(root = process.cwd()) {
   const dir = resolveBuilderPath('', root)
   await mkdir(join(dir, 'claims'), { recursive: true })
   await mkdir(join(dir, 'receipts'), { recursive: true })
+  await mkdir(join(dir, 'build-packets'), { recursive: true })
 
   const jsonlFiles = [
     'approved-queue.jsonl',
@@ -40,7 +41,7 @@ export async function ensureBuilderState(root = process.cwd()) {
     }
   }
 
-  for (const file of ['claims/.gitkeep', 'receipts/.gitkeep']) {
+  for (const file of ['claims/.gitkeep', 'receipts/.gitkeep', 'build-packets/.gitkeep']) {
     const path = resolveBuilderPath(file, root)
     if (!(await pathExists(path))) {
       await writeFile(path, '', 'utf-8')

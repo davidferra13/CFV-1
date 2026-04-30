@@ -2,6 +2,7 @@ import { queueRecordSchema, type CockpitSummary, type QueueRecord } from './type
 import { getClaimState } from './claims'
 import { readOpenEscalations } from './escalations'
 import { readReceipts } from './receipts'
+import { readRunnerStatus } from './runner-state'
 import { pathExists, readJsonl, resolveBuilderPath } from './store'
 
 async function readQueueFile(name: string, root: string) {
@@ -46,12 +47,15 @@ export async function buildCockpitSummary(root = process.cwd(), now = new Date()
   const claimState = await getClaimState(root, now)
   const receipts = await readReceipts(root)
   const escalations = await readOpenEscalations(root)
+  const runner = await readRunnerStatus(root, now)
 
   for (const result of [approved, blocked, research, parkedV2, claimState, receipts, escalations]) {
     if (!result.ok) errors.push(...result.errors)
   }
 
   const approvedRecords = approved.records
+  const receiptedTaskIds = new Set(receipts.records.map((receipt) => receipt.taskId))
+  const unreceiptedApproved = approvedRecords.filter((task) => !receiptedTaskIds.has(task.id))
   const activeTask = findTaskForClaim(approvedRecords, claimState.activeClaim?.taskId ?? null)
   const openEscalations = escalations.records
 
@@ -60,9 +64,10 @@ export async function buildCockpitSummary(root = process.cwd(), now = new Date()
     generatedAt: now.toISOString(),
     activeTask,
     activeClaim: claimState.activeClaim,
+    runner,
     queueCounts: {
-      v1Blockers: approvedRecords.filter((task) => task.classification === 'approved_v1_blocker' && task.status === 'queued').length,
-      v1Support: approvedRecords.filter((task) => task.classification === 'approved_v1_support' && task.status === 'queued').length,
+      v1Blockers: unreceiptedApproved.filter((task) => task.classification === 'approved_v1_blocker' && task.status === 'queued').length,
+      v1Support: unreceiptedApproved.filter((task) => task.classification === 'approved_v1_support' && task.status === 'queued').length,
       blocked: blocked.records.length,
       research: research.records.length,
       parkedV2: parkedV2.records.length,

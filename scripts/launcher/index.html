@@ -11883,8 +11883,18 @@ function renderEmptyState(text) {
 function renderV1Builder(summary) {
   const task = summary.activeTask
   const claim = summary.activeClaim
+  const runner = summary.runner
+  let runnerHtml = ''
+  if (runner) {
+    const color = runner.status === 'running' ? 'var(--warning)' : runner.status === 'blocked' || runner.status === 'failed' ? 'var(--error)' : 'var(--success)'
+    runnerHtml += liveRow('Runner', runner.status, color)
+    if (runner.currentTaskId) runnerHtml += liveRow('Runner task', runner.currentTaskId, 'var(--text-primary)')
+    if (runner.lastFinishedAt) runnerHtml += liveRow('Last finish', new Date(runner.lastFinishedAt).toLocaleTimeString('en-US', { hour12: false }))
+    if (runner.lastError) runnerHtml += `<div style="margin-top:8px;color:var(--error);font-size:12px;line-height:1.35;">${escapeHtml(runner.lastError)}</div>`
+  }
+
   if (!task && !claim) {
-    return renderEmptyState('No active V1 builder claim')
+    return `${runnerHtml}${renderEmptyState('No active V1 builder claim')}`
   }
 
   const claimedAt = claim ? new Date(claim.claimedAt) : null
@@ -11892,6 +11902,7 @@ function renderV1Builder(summary) {
   const expiresAt = claim ? new Date(claim.expiresAt) : null
   const fresh = expiresAt ? expiresAt.getTime() > Date.now() : false
   let html = ''
+  html += runnerHtml
   html += liveRow('Task', task?.title || claim?.taskId || 'Unknown task', task ? 'var(--text-primary)' : 'var(--warning)')
   html += liveRow('Branch', claim?.branch || 'No branch claim')
   html += liveRow('Claim age', minutes == null ? 'No claim' : `${minutes} min`)

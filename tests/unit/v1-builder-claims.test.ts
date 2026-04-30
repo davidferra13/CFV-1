@@ -41,3 +41,29 @@ test('stale claims stop automatic reclaim', async () => {
   assert.equal(result.ok, false)
   assert.match(result.skipped[0], /stale claim/)
 })
+
+test('latest append-only claim status releases a prior active claim', async () => {
+  const root = await createBuilderFixture()
+  await writeQueue(root, [queueRecord()])
+  await writeClaim({
+    taskId: 'v1-fixture',
+    claimedAt: '2026-04-30T12:35:00.000Z',
+    branch: 'feature/v1-fixture',
+    agent: 'codex',
+    status: 'claimed',
+    expiresAt: '2026-04-30T14:35:00.000Z',
+  }, root, new Date('2026-04-30T12:35:00.000Z'))
+  await writeClaim({
+    taskId: 'v1-fixture',
+    claimedAt: '2026-04-30T12:45:00.000Z',
+    branch: 'feature/v1-fixture',
+    agent: 'codex',
+    status: 'validated',
+    expiresAt: '2026-04-30T12:45:00.000Z',
+  }, root, new Date('2026-04-30T12:45:00.000Z'))
+
+  const state = await getClaimState(root, new Date('2026-04-30T13:00:00.000Z'))
+
+  assert.equal(state.activeClaim, null)
+  assert.equal(state.staleClaims.length, 0)
+})

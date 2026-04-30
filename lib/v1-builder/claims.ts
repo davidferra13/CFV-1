@@ -17,7 +17,14 @@ export async function readClaims(root = process.cwd()) {
 export async function getClaimState(root = process.cwd(), now = new Date()): Promise<ClaimState> {
   const result = await readClaims(root)
   const claims = result.records
-  const activeClaims = claims.filter((claim) => claim.status === 'claimed')
+  const latestByTask = new Map<string, ClaimRecord>()
+  for (const claim of claims) {
+    const current = latestByTask.get(claim.taskId)
+    if (!current || new Date(claim.claimedAt).getTime() >= new Date(current.claimedAt).getTime()) {
+      latestByTask.set(claim.taskId, claim)
+    }
+  }
+  const activeClaims = [...latestByTask.values()].filter((claim) => claim.status === 'claimed')
   const fresh = activeClaims
     .filter((claim) => new Date(claim.expiresAt).getTime() > now.getTime())
     .sort((a, b) => new Date(b.claimedAt).getTime() - new Date(a.claimedAt).getTime())
@@ -34,7 +41,7 @@ export async function getClaimState(root = process.cwd(), now = new Date()): Pro
 
 export async function writeClaim(claim: ClaimRecord, root = process.cwd(), now = new Date()) {
   const safeTaskId = claim.taskId.replace(/[^a-zA-Z0-9._-]/g, '-')
-  const path = join(resolveBuilderPath('claims', root), `${toFileStamp(now)}-${safeTaskId}.json`)
+  const path = join(resolveBuilderPath('claims', root), `${toFileStamp(now)}-${safeTaskId}-${claim.status}.json`)
   await writeJsonFileOnce(path, claimRecordSchema, claim)
   return path
 }

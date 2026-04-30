@@ -1,5 +1,6 @@
 import { queueRecordSchema, type ClaimRecord, type QueueRecord } from './types'
 import { getClaimState } from './claims'
+import { readReceipts } from './receipts'
 import { readJsonl, resolveBuilderPath } from './store'
 
 export type SelectionResult =
@@ -56,6 +57,11 @@ export async function selectNextTask(options: { root?: string; activeLane?: stri
   if (!queue.ok) {
     return { ok: false, task: null, skipped, activeClaim: null, staleClaims: [], errors: queue.errors }
   }
+  const receipts = await readReceipts(root)
+  if (!receipts.ok) {
+    return { ok: false, task: null, skipped, activeClaim: null, staleClaims: [], errors: receipts.errors }
+  }
+  const completedTaskIds = new Set(receipts.records.map((receipt) => receipt.taskId))
 
   const ordered = [...queue.records].sort((a, b) => {
     if (a.classification !== b.classification) {
@@ -66,6 +72,10 @@ export async function selectNextTask(options: { root?: string; activeLane?: stri
   })
 
   for (const task of ordered) {
+    if (completedTaskIds.has(task.id)) {
+      skipped.push(`${task.id}: receipt already recorded`)
+      continue
+    }
     if (isBuildableTask(task, activeLane)) {
       return { ok: true, task, skipped, activeClaim: null, staleClaims: [] }
     }

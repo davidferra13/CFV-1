@@ -95,13 +95,31 @@ export const pricingReadinessSchema = z.object({
   evidence: z.array(z.string()),
 })
 
+export const runnerStatusSchema = z.object({
+  status: z.enum(['idle', 'running', 'waiting', 'blocked', 'failed']),
+  updatedAt: z.string().datetime({ offset: true }),
+  runnerId: z.string().min(1),
+  pid: z.number().int().positive().nullable(),
+  intervalSeconds: z.number().int().positive().nullable(),
+  currentTaskId: z.string().nullable(),
+  lastTaskId: z.string().nullable(),
+  lastStartedAt: z.string().datetime({ offset: true }).nullable(),
+  lastFinishedAt: z.string().datetime({ offset: true }).nullable(),
+  lastReceiptPath: z.string().nullable(),
+  lastPacketPath: z.string().nullable(),
+  lastError: z.string().nullable(),
+  executorCommand: z.string().nullable(),
+})
+
 export type QueueRecord = z.infer<typeof queueRecordSchema>
 export type QueueClassification = z.infer<typeof queueClassificationSchema>
 export type QueueSource = z.infer<typeof queueSourceSchema>
 export type ClaimRecord = z.infer<typeof claimRecordSchema>
+export type ValidationRecord = z.infer<typeof validationRecordSchema>
 export type ReceiptRecord = z.infer<typeof receiptRecordSchema>
 export type EscalationRecord = z.infer<typeof escalationRecordSchema>
 export type PricingReadiness = z.infer<typeof pricingReadinessSchema>
+export type RunnerStatus = z.infer<typeof runnerStatusSchema>
 
 export type JsonlReadResult<T> =
   | { ok: true; records: T[]; errors: [] }
@@ -126,6 +144,7 @@ export type CockpitSummary = {
   generatedAt: string
   activeTask: QueueRecord | null
   activeClaim: ClaimRecord | null
+  runner: RunnerStatus
   queueCounts: QueueCounts
   latestReceipts: ReceiptRecord[]
   openEscalations: EscalationRecord[]
