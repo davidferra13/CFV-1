@@ -33,6 +33,35 @@ function filenameSlug(name: string): string {
   )
 }
 
+function requireExportId(id: string, label: string) {
+  if (!id || !id.trim()) {
+    throw new Error(`${label} is required`)
+  }
+}
+
+function formatCostPercent(costCents: number | null, totalCents: number): string {
+  if (costCents === null || totalCents <= 0) return ''
+  return `${((costCents / totalCents) * 100).toFixed(1)}%`
+}
+
+function formatCsvQuantity(value: unknown): string {
+  if (value === null || value === undefined || value === '') return ''
+  const numeric = Number(value)
+  return Number.isFinite(numeric) ? formatQuantity(numeric) : String(value)
+}
+
+function resolveExtendedCostCents(
+  computedCostCents: number | null | undefined,
+  quantity: unknown,
+  unitCostCents: number | null
+): number | null {
+  if (computedCostCents !== null && computedCostCents !== undefined) {
+    return Number(computedCostCents)
+  }
+  if (unitCostCents === null) return null
+  return Math.round(Number(quantity || 0) * unitCostCents)
+}
+
 // --- Export 1: Per-Event Financial Statement ---
 
 export async function exportEventCSV(eventId: string) {
@@ -448,17 +477,19 @@ export async function exportAllEventsCSV(year: number) {
 export async function exportRecipeCostCSV(recipeId: string) {
   const user = await requireChef()
   const db: any = createServerClient()
+  requireExportId(recipeId, 'Recipe ID')
 
-  const { data: recipe } = await db
+  const { data: recipe, error: recipeError } = await db
     .from('recipes')
     .select('id, name, servings, yield_description, yield_quantity, yield_unit')
     .eq('id', recipeId)
     .eq('tenant_id', user.tenantId!)
     .single()
 
+  if (recipeError) throw new Error('Failed to fetch recipe for CSV export')
   if (!recipe) throw new Error('Recipe not found')
 
-  const { data: ingredients } = await db
+  const { data: ingredients, error: ingredientsError } = await db
     .from('recipe_ingredients')
     .select(
       `
@@ -466,13 +497,13 @@ export async function exportRecipeCostCSV(recipeId: string) {
       unit,
       computed_cost_cents,
       sort_order,
-      ingredient:ingredients(name, cost_per_unit_cents, last_price_cents, last_price_source, last_price_store, preferred_vendor, price_unit, default_unit)
+      ingredient:ingredients!inner(name, tenant_id, cost_per_unit_cents, last_price_cents, last_price_source, last_price_store, preferred_vendor, price_unit, default_unit)
     `
     )
     .eq('recipe_id', recipeId)
+    .eq('ingredient.tenant_id', user.tenantId!)
     .order('sort_order', { ascending: true })
 
-  const rows: string[] = []
   const servings = recipe.servings || recipe.yield_quantity || 1
   const yieldText =
     recipe.yield_description ||
@@ -483,21 +514,12 @@ export async function exportRecipeCostCSV(recipeId: string) {
       .filter(Boolean)
       .join(' ')
 
-  rows.push(csvRow(['Recipe', recipe.name, '', '', '', '']))
-  rows.push(csvRow(['Servings', String(servings), '', '', '', '']))
-  if (yieldText) {
-    rows.push(csvRow(['Yield', yieldText, '', '', '', '']))
-  }
-  rows.push(csvRow([]))
-  rows.push(csvRow(['Ingredient', 'Quantity', 'Unit', 'Unit Cost', 'Source', 'Extended Cost']))
+  if (ingredientsError) throw new Error('Failed to fetch recipe ingredients for CSV export')
 
-  let totalCents = 0
-  for (const row of ingredients ?? []) {
+  const ingredientRows = (ingredients ?? []).map((row: any) => {
     const ingredient = Array.isArray(row.ingredient) ? row.ingredient[0] : row.ingredient
     const unitCostCents = ingredient?.cost_per_unit_cents ?? ingredient?.last_price_cents ?? null
-    const extCents =
-      row.computed_cost_cents ??
-      (unitCostCents !== null ? Math.round(Number(row.quantity || 0) * unitCostCents) : 0)
+    const extCents = resolveExtendedCostCents(row.computed_cost_cents, row.quantity, unitCostCents)
     const source =
       ingredient?.last_price_source ||
       ingredient?.last_price_store ||
@@ -505,26 +527,81 @@ export async function exportRecipeCostCSV(recipeId: string) {
       'unknown'
     const priceUnit = ingredient?.price_unit || ingredient?.default_unit || ''
 
-    totalCents += extCents
-    rows.push(
-      csvRow([
-        ingredient?.name || '',
-        row.quantity ? formatQuantity(Number(row.quantity)) : '',
-        row.unit || '',
+    return {
+      name: ingredient?.name || '',
+      quantity: formatCsvQuantity(row.quantity),
+      unit: row.unit || '',
+      unitCost:
         unitCostCents !== null
           ? `${formatDollars(unitCostCents)}${priceUnit ? `/${priceUnit}` : ''}`
           : 'N/A',
-        source,
-        formatDollars(extCents),
+      source,
+      extCents,
+    }
+  })
+
+  const totalCents = ingredientRows.reduce(
+    (sum: number, row: { extCents: number | null }) => sum + (row.extCents ?? 0),
+    0
+  )
+  const unpricedCount = ingredientRows.filter((row) => row.extCents === null).length
+  const hasKnownCosts = ingredientRows.some((row) => row.extCents !== null)
+  const totalCostCell =
+    hasKnownCosts || ingredientRows.length === 0 ? formatDollars(totalCents) : 'N/A'
+  const rows: string[] = []
+
+  rows.push(csvRow(['Recipe', recipe.name, '', '', '', '']))
+  rows.push(csvRow(['Servings', String(servings), '', '', '', '']))
+  if (yieldText) {
+    rows.push(csvRow(['Yield', yieldText, '', '', '', '']))
+  }
+  rows.push(csvRow([]))
+  rows.push(
+    csvRow([
+      'Ingredient',
+      'Quantity',
+      'Unit',
+      'Unit Cost',
+      'Source',
+      'Extended Cost',
+      'Food Cost %',
+    ])
+  )
+
+  for (const row of ingredientRows) {
+    rows.push(
+      csvRow([
+        row.name,
+        row.quantity,
+        row.unit || '',
+        row.unitCost,
+        row.source,
+        row.extCents !== null ? formatDollars(row.extCents) : 'N/A',
+        formatCostPercent(row.extCents, totalCents),
       ])
     )
   }
 
   rows.push(csvRow([]))
-  rows.push(csvRow(['Total Ingredient Cost', '', '', '', '', formatDollars(totalCents)]))
+  rows.push(
+    csvRow(['Total Ingredient Cost', '', '', '', '', totalCostCell, totalCents > 0 ? '100.0%' : ''])
+  )
+  if (unpricedCount > 0) {
+    rows.push(csvRow(['Unpriced Ingredients', String(unpricedCount), '', '', '', 'N/A', '']))
+  }
   if (servings > 0) {
     rows.push(
-      csvRow(['Cost Per Serving', '', '', '', '', formatDollars(Math.round(totalCents / servings))])
+      csvRow([
+        'Cost Per Serving',
+        '',
+        '',
+        '',
+        '',
+        hasKnownCosts || ingredientRows.length === 0
+          ? formatDollars(Math.round(totalCents / servings))
+          : 'N/A',
+        '',
+      ])
     )
   }
 
@@ -541,23 +618,27 @@ export async function exportRecipeCostCSV(recipeId: string) {
 export async function exportMenuCostCSV(menuId: string) {
   const user = await requireChef()
   const db: any = createServerClient()
+  requireExportId(menuId, 'Menu ID')
 
-  const { data: menu } = await db
+  const { data: menu, error: menuError } = await db
     .from('menus')
     .select('id, name, target_guest_count, event:events(guest_count, quoted_price_cents)')
     .eq('id', menuId)
     .eq('tenant_id', user.tenantId!)
     .single()
 
+  if (menuError) throw new Error('Failed to fetch menu for CSV export')
   if (!menu) throw new Error('Menu not found')
 
-  const { data: dishes } = await db
+  const { data: dishes, error: dishesError } = await db
     .from('dishes')
     .select('id, name, course_name, course_number, sort_order')
     .eq('menu_id', menuId)
     .eq('tenant_id', user.tenantId!)
     .order('course_number', { ascending: true })
     .order('sort_order', { ascending: true })
+
+  if (dishesError) throw new Error('Failed to fetch menu dishes for CSV export')
 
   const rows: string[] = []
   const event = Array.isArray(menu.event) ? menu.event[0] : menu.event
@@ -578,22 +659,40 @@ export async function exportMenuCostCSV(menuId: string) {
       'Unit Cost',
       'Source',
       'Extended Cost',
+      'Food Cost %',
     ])
   )
 
-  let grandTotalCents = 0
+  type MenuCostIngredientRow = {
+    course: string
+    dish: string
+    component: string
+    ingredient: string
+    quantity: string
+    unit: string
+    unitCost: string
+    source: string
+    extCents: number | null
+  }
+  const ingredientRows: MenuCostIngredientRow[] = []
+  const menuRows: Array<
+    { type: 'ingredient'; row: MenuCostIngredientRow } | { type: 'plain'; cells: string[] }
+  > = []
 
   for (const dish of dishes ?? []) {
-    const { data: components } = await db
+    const { data: components, error: componentsError } = await db
       .from('components')
       .select('id, name, recipe_id, scale_factor, sort_order')
       .eq('dish_id', dish.id)
       .eq('tenant_id', user.tenantId!)
       .order('sort_order', { ascending: true })
 
+    if (componentsError) throw new Error('Failed to fetch menu components for CSV export')
+
     if (!components || components.length === 0) {
-      rows.push(
-        csvRow([
+      menuRows.push({
+        type: 'plain',
+        cells: [
           dish.course_name || '',
           dish.name || dish.course_name || '',
           '(no components)',
@@ -603,15 +702,17 @@ export async function exportMenuCostCSV(menuId: string) {
           '',
           '',
           '',
-        ])
-      )
+          '',
+        ],
+      })
       continue
     }
 
     for (const component of components ?? []) {
       if (!component.recipe_id) {
-        rows.push(
-          csvRow([
+        menuRows.push({
+          type: 'plain',
+          cells: [
             dish.course_name || '',
             dish.name || dish.course_name || '',
             component.name || '',
@@ -621,12 +722,13 @@ export async function exportMenuCostCSV(menuId: string) {
             '',
             '',
             '',
-          ])
-        )
+            '',
+          ],
+        })
         continue
       }
 
-      const { data: recipeIngredients } = await db
+      const { data: recipeIngredients, error: recipeIngredientsError } = await db
         .from('recipe_ingredients')
         .select(
           `
@@ -634,23 +736,30 @@ export async function exportMenuCostCSV(menuId: string) {
           unit,
           computed_cost_cents,
           sort_order,
-          ingredient:ingredients(name, cost_per_unit_cents, last_price_cents, last_price_source, last_price_store, preferred_vendor, price_unit, default_unit)
+          ingredient:ingredients!inner(name, tenant_id, cost_per_unit_cents, last_price_cents, last_price_source, last_price_store, preferred_vendor, price_unit, default_unit)
         `
         )
         .eq('recipe_id', component.recipe_id)
+        .eq('ingredient.tenant_id', user.tenantId!)
         .order('sort_order', { ascending: true })
 
+      if (recipeIngredientsError) {
+        throw new Error('Failed to fetch recipe ingredients for menu CSV export')
+      }
+
       const scale = Number(component.scale_factor || 1)
-      let componentTotalCents = 0
+      const componentStartIndex = ingredientRows.length
 
       for (const row of recipeIngredients ?? []) {
         const ingredient = Array.isArray(row.ingredient) ? row.ingredient[0] : row.ingredient
         const unitCostCents =
           ingredient?.cost_per_unit_cents ?? ingredient?.last_price_cents ?? null
-        const baseCostCents =
-          row.computed_cost_cents ??
-          (unitCostCents !== null ? Math.round(Number(row.quantity || 0) * unitCostCents) : 0)
-        const scaledCostCents = Math.round(baseCostCents * scale)
+        const baseCostCents = resolveExtendedCostCents(
+          row.computed_cost_cents,
+          row.quantity,
+          unitCostCents
+        )
+        const scaledCostCents = baseCostCents !== null ? Math.round(baseCostCents * scale) : null
         const scaledQuantity = row.quantity ? formatQuantity(Number(row.quantity) * scale) : ''
         const source =
           ingredient?.last_price_source ||
@@ -659,26 +768,33 @@ export async function exportMenuCostCSV(menuId: string) {
           'unknown'
         const priceUnit = ingredient?.price_unit || ingredient?.default_unit || ''
 
-        componentTotalCents += scaledCostCents
-        rows.push(
-          csvRow([
-            dish.course_name || '',
-            dish.name || dish.course_name || '',
-            component.name || '',
-            ingredient?.name || '',
-            scaledQuantity,
-            row.unit || '',
+        const ingredientRow = {
+          course: dish.course_name || '',
+          dish: dish.name || dish.course_name || '',
+          component: component.name || '',
+          ingredient: ingredient?.name || '',
+          quantity: scaledQuantity,
+          unit: row.unit || '',
+          unitCost:
             unitCostCents !== null
               ? `${formatDollars(unitCostCents)}${priceUnit ? `/${priceUnit}` : ''}`
               : 'N/A',
-            source,
-            formatDollars(scaledCostCents),
-          ])
-        )
+          source,
+          extCents: scaledCostCents,
+        }
+        ingredientRows.push(ingredientRow)
+        menuRows.push({ type: 'ingredient', row: ingredientRow })
       }
 
-      rows.push(
-        csvRow([
+      const componentTotalCents = ingredientRows
+        .slice(componentStartIndex)
+        .reduce((sum, row) => sum + (row.extCents ?? 0), 0)
+      const componentRows = ingredientRows.slice(componentStartIndex)
+      const componentHasKnownCosts =
+        componentRows.length === 0 || componentRows.some((row) => row.extCents !== null)
+      menuRows.push({
+        type: 'plain',
+        cells: [
           '',
           dish.name || dish.course_name || '',
           `${component.name || 'Component'} subtotal`,
@@ -687,15 +803,62 @@ export async function exportMenuCostCSV(menuId: string) {
           '',
           '',
           '',
-          formatDollars(componentTotalCents),
-        ])
-      )
-      grandTotalCents += componentTotalCents
+          componentHasKnownCosts ? formatDollars(componentTotalCents) : 'N/A',
+          '',
+        ],
+      })
     }
   }
 
+  const grandTotalCents = ingredientRows.reduce((sum, row) => sum + (row.extCents ?? 0), 0)
+  const unpricedCount = ingredientRows.filter((row) => row.extCents === null).length
+  const hasKnownCosts = ingredientRows.some((row) => row.extCents !== null)
+  const totalCostCell =
+    hasKnownCosts || ingredientRows.length === 0 ? formatDollars(grandTotalCents) : 'N/A'
+
+  for (const item of menuRows) {
+    if (item.type === 'plain') {
+      rows.push(csvRow(item.cells))
+      continue
+    }
+
+    const row = item.row
+    rows.push(
+      csvRow([
+        row.course,
+        row.dish,
+        row.component,
+        row.ingredient,
+        row.quantity,
+        row.unit,
+        row.unitCost,
+        row.source,
+        row.extCents !== null ? formatDollars(row.extCents) : 'N/A',
+        formatCostPercent(row.extCents, grandTotalCents),
+      ])
+    )
+  }
+
   rows.push(csvRow([]))
-  rows.push(csvRow(['TOTAL MENU COST', '', '', '', '', '', '', '', formatDollars(grandTotalCents)]))
+  rows.push(
+    csvRow([
+      'TOTAL MENU COST',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      totalCostCell,
+      grandTotalCents > 0 ? '100.0%' : '',
+    ])
+  )
+  if (unpricedCount > 0) {
+    rows.push(
+      csvRow(['UNPRICED INGREDIENTS', String(unpricedCount), '', '', '', '', '', '', 'N/A', ''])
+    )
+  }
   if (guestCount && guestCount > 0) {
     rows.push(
       csvRow([
@@ -707,7 +870,10 @@ export async function exportMenuCostCSV(menuId: string) {
         '',
         '',
         '',
-        formatDollars(Math.round(grandTotalCents / guestCount)),
+        hasKnownCosts || ingredientRows.length === 0
+          ? formatDollars(Math.round(grandTotalCents / guestCount))
+          : 'N/A',
+        '',
       ])
     )
   }
@@ -723,6 +889,7 @@ export async function exportMenuCostCSV(menuId: string) {
         '',
         '',
         `${((grandTotalCents / quotedPriceCents) * 100).toFixed(1)}%`,
+        '',
       ])
     )
   }

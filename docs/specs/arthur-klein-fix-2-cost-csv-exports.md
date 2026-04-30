@@ -1,9 +1,10 @@
 # Spec: Recipe and Menu Cost CSV Export
 
-> **Status:** ready
+> **Status:** verified
 > **Priority:** P1 (high-impact gap from Arthur Klein stress test)
 > **Estimated effort:** 3-5 hours
 > **Risk level:** LOW (read-only exports, no mutations)
+> **Built by:** Codex builder session 2026-04-30
 
 ## What This Does (Plain English)
 
@@ -295,3 +296,9 @@ Similarly, check the `dishes` table for `scale_factor` -- it may be called somet
 - Create new tables or migrations
 - Touch the CSV sanitization logic
 - Change the CsvDownloadButton component
+
+## Timeline
+
+| Date       | Status   | Notes                                                                                                                                                                                                 |
+| ---------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-04-30 | verified | Added scoped recipe and menu cost CSV exports using the real recipe ingredient, ingredient, dish, and component schema. Added food cost percentage columns, missing-price N/A handling, and query errors. |
