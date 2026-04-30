@@ -1,0 +1,18 @@
+{
+  "created_at": "2026-04-30T23:20:09.178Z",
+  "goal": "Preserve ChefFlow V1 proof source ranking and execution filter",
+  "primary_skill": "v1-governor",
+  "sidecar_skills": [],
+  "skill_delta": "patch",
+  "durable_behavior_seen": null,
+  "skill_gap_seen": null,
+  "validation": {
+    "skill_validator": "node devtools/skill-validator.mjs v1-governor findings-triage, passed",
+    "trigger_tests": "node devtools/skill-trigger-tests.mjs, 28 cases passed",
+    "compliance": "Targeted em dash scan on .claude/skills/v1-governor/SKILL.md and .claude/skills/findings-triage/SKILL.md, no matches",
+    "other": "git diff --check on changed skill files, passed"
+  },
+  "commit": null,
+  "pushed": false,
+  "notes": ""
+}

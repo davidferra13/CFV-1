@@ -9,7 +9,28 @@ Use this before building from mixed findings. The goal is to prevent Codex from 
 
 ## Source Order
 
-Prefer these sources when present:
+For V1 proof and execution, use the V1 governor source hierarchy first. This is not discovery. It is triage into cannot-fail proof, governed queue execution, or V2 parking.
+
+Primary truth sources:
+
+1. `docs/product-blueprint.md`
+2. `docs/v1-v2-governor.md`
+3. `docs/specs/v1-control-plane.md`
+4. `docs/project-definition-and-scope.md`
+5. `docs/definition-of-done.md`
+6. `docs/build-state.md` and `docs/session-log.md`
+
+Then prefer these proof and execution sources:
+
+1. Cannot-fail contract specs for pricing, money, intake, allergies, event spine, client truth, public trust, no fake UI, and release proof.
+2. `system/v1-builder/approved-queue.jsonl`, `request-ledger.jsonl`, `blocked.jsonl`, `parked-v2.jsonl`, `claims/*.json`, and `receipts/*.json`.
+3. System integrity question sets, `docs/app-complete-audit.md`, zero-hallucination, server-action, security, and comprehensive QA audits.
+4. Project maps and feature inventories under `project-map/` and `docs/feature-*.md`.
+5. Code truth under `app/`, `components/`, `lib/`, `database/migrations/`, `types/`, `scripts/`, and `public/embed/chefflow-widget.js`.
+6. Validation sources under `tests/`, `test-results/`, screenshots, regression reports, validation ledgers, and Playwright auth evidence.
+7. Persona and market sources only when they reveal a cannot-fail gap after codebase validation.
+
+For older mixed findings work, prefer these sources when present:
 
 1. `docs/autodocket.md`
 2. `system/persona-batch-synthesis/priority-queue.json`
@@ -21,6 +42,14 @@ Prefer these sources when present:
 8. `docs/specs/`
 
 Use `evidence-integrity` when sources disagree or claim green, healthy, verified, failed, stale, or blocked states.
+
+## V1 Filter
+
+Classify a finding as V1 only if it proves or repairs trust, money, safety, pricing, state continuity, completion, or release proof for the independent chef operating loop.
+
+Park as V2 when the finding adds breadth, polish, niche behavior, scale, marketplace expansion, or power-user convenience without blocking V1 proof.
+
+Do not build directly from execution sources until `v1-governor` has classified the work. Do not build directly from persona or market sources unless code truth confirms a cannot-fail gap.
 
 ## Classification
 
@@ -46,23 +75,23 @@ Classify each finding before acting:
 
 After classification, route:
 
-| Class | Next action |
-| --- | --- |
-| `spec-ready` | Use `builder` only after checking dependencies and dirty tree state |
-| `spec-contradiction` | Use `evidence-integrity`, then patch the spec or report uncertainty |
-| `unbuilt-memory` | Use `planner` before build unless it is clearly a quick win |
-| `partial-implementation` | Inspect code, then use `builder` or `debug` |
-| `security-critical` | Stop for explicit approval if auth, tenant trust, secrets, or DB risk is unclear |
-| `financial-critical` | Stop for explicit approval if schema, ledger, billing, or money semantics change |
-| `hallucination-risk` | Use `hallucination-scan` and fix claims or disable surfaces |
-| `developer-action` | Report as blocked; do not fake progress |
-| `validation-gate` | Use `validation-gate`; build only if evidence or explicit override supports it |
-| `host-integrity` | Use `host-integrity`; inspect read-only first and require approval before disruption |
-| `stale-entry` | Update the source of truth only when evidence is current |
-| `persona-demand` | Use `persona-build` validation before coding |
-| `quick-win-candidate` | Use `quick-wins` filters, then build only if verified |
-| `needs-planner` | Write or repair a spec with `planner` |
-| `reject` | Document why it is not actionable |
+| Class                    | Next action                                                                          |
+| ------------------------ | ------------------------------------------------------------------------------------ |
+| `spec-ready`             | Use `builder` only after checking dependencies and dirty tree state                  |
+| `spec-contradiction`     | Use `evidence-integrity`, then patch the spec or report uncertainty                  |
+| `unbuilt-memory`         | Use `planner` before build unless it is clearly a quick win                          |
+| `partial-implementation` | Inspect code, then use `builder` or `debug`                                          |
+| `security-critical`      | Stop for explicit approval if auth, tenant trust, secrets, or DB risk is unclear     |
+| `financial-critical`     | Stop for explicit approval if schema, ledger, billing, or money semantics change     |
+| `hallucination-risk`     | Use `hallucination-scan` and fix claims or disable surfaces                          |
+| `developer-action`       | Report as blocked; do not fake progress                                              |
+| `validation-gate`        | Use `validation-gate`; build only if evidence or explicit override supports it       |
+| `host-integrity`         | Use `host-integrity`; inspect read-only first and require approval before disruption |
+| `stale-entry`            | Update the source of truth only when evidence is current                             |
+| `persona-demand`         | Use `persona-build` validation before coding                                         |
+| `quick-win-candidate`    | Use `quick-wins` filters, then build only if verified                                |
+| `needs-planner`          | Write or repair a spec with `planner`                                                |
+| `reject`                 | Document why it is not actionable                                                    |
 
 ## Safety Filters
 

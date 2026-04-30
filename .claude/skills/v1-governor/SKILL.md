@@ -7,7 +7,14 @@ description: Gate ChefFlow urgency spikes, new feature requests, V1/V2 scope que
 
 Use this skill to stop ChefFlow from converting every good idea into immediate code. The goal is not fewer ideas. The goal is one controlled path from idea to build.
 
-Canonical source: `docs/v1-v2-governor.md`.
+Canonical sources:
+
+1. `docs/product-blueprint.md` for the V1 finish line, pillars, exit criteria, known issues, and out-of-scope list.
+2. `docs/v1-v2-governor.md` for the V1 spine, active lane, and V1/V2 classification rules.
+3. `docs/specs/v1-control-plane.md` for cannot-fail contracts, gates, queue, claims, receipts, and Mission Control truth.
+4. `docs/project-definition-and-scope.md` for canonical product identity and audience.
+5. `docs/definition-of-done.md` for verified, honest, drift-resistant done.
+6. `docs/build-state.md` and `docs/session-log.md` for recent health and work history.
 
 ## Operating Rule
 
@@ -22,6 +29,22 @@ Proceed directly only when one of these is true:
 
 Otherwise preserve the idea and do not build it in the same step.
 
+## V1 Proof Source Order
+
+When finishing V1, this is not broad discovery. It is triage into proof and execution. Pull sources in this order:
+
+1. Blueprint and V1 governor.
+2. Cannot-fail contract sources for pricing, money, intake, allergies, event spine, client truth, public trust, no fake UI, and release proof.
+3. V1 builder queue, request ledger, claims, receipts, blockers, and V2 parking lot under `system/v1-builder/`.
+4. System integrity question sets and proof or audit reports.
+5. App audit, project maps, and feature inventories.
+6. Real code paths under `app/`, `components/`, `lib/`, `database/migrations/`, `types/`, `scripts/`, and `public/embed/chefflow-widget.js`.
+7. Tests, screenshots, validation ledgers, regression reports, and auth evidence.
+8. Persona synthesis and market research only after triage proves a cannot-fail gap.
+9. V2 parking lot for breadth, polish, niche behavior, or scale.
+
+Execution sources such as `system/ready-tasks/`, `system/build-queue/`, `system/codex-queue/`, `system/codex-prompts/`, and `docs/specs/*.md` can feed builder work only after this governor classifies the work as a V1 blocker, active-lane V1 support, critical bug, security repair, money repair, safety repair, or explicit override.
+
 ## V1 Definition
 
 V1 is the independent chef operating loop:
@@ -29,6 +52,8 @@ V1 is the independent chef operating loop:
 `inquiry -> client -> engagement/event -> menu/offer -> quote -> agreement -> payment -> prep -> sourcing -> service -> follow-up -> client memory`
 
 V1 contains only work that protects trust, money, safety, completion, or the chef's ability to run paid culinary work without a shadow system.
+
+The V1 proof filter is strict: if a source helps prove trust, money, safety, pricing, state continuity, completion, or release proof, it feeds V1. If it adds breadth, polish, niche behavior, or scale, it parks in V2.
 
 ## V2 Definition
 
