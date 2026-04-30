@@ -621,12 +621,15 @@ function restrictedPlatformScan(args = {}) {
   const commandText = args._?.length ? args._.join(' ') : ''
   findings.push(...scanTextForRestrictedPlatforms(commandText, 'command'))
 
-  const useStaged = args.staged || (!args.all && !commandText)
-  const files = useStaged
-    ? runGitRaw(['diff', '--cached', '--name-only', '--diff-filter=ACMR'])
-        .split(/\r?\n/)
-        .filter(Boolean)
-    : changedFilesFromArgs(args)
+  const explicitFiles = Boolean(args.files || args.owned)
+  const useStaged = args.staged || (!args.all && !commandText && !explicitFiles)
+  const files = args.all
+    ? listFiles(DEFAULT_SCAN_DIRS).map(rel)
+    : useStaged
+      ? runGitRaw(['diff', '--cached', '--name-only', '--diff-filter=ACMR'])
+          .split(/\r?\n/)
+          .filter(Boolean)
+      : changedFilesFromArgs(args)
 
   for (const file of files) {
     const normalized = file.replace(/\\/g, '/')
