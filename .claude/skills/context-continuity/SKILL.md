@@ -11,11 +11,23 @@ Use this before planning or writing code. The goal is to turn ChefFlow into one 
 
 Before proposing a new file, route, component, table, spec, or workflow:
 
-1. Extract the domain words from the request: feature names, routes, actors, tables, workflows, nouns, and synonyms.
-2. Search current code and docs with `rg` across the smallest relevant set first, usually `app`, `components`, `lib`, `docs/specs`, `docs/changes`, `docs/app-complete-audit.md`, `project-map`, `memory`, `system/intake`, and recent `system/agent-reports`.
-3. Check `git log --oneline -30` for overlapping recent commits.
-4. Check `git status --short` and `system/agent-claims` for dirty or claimed files in the same domain.
-5. If the work touches routes or public surfaces, identify canonical route ownership before creating anything new. For homepages, default to exactly two surfaces: the real homepage and one sandbox duplicate for experimentation.
+1. Prefer the deterministic scanner: `node devtools/context-continuity-scan.mjs --prompt "..." --write`.
+2. Extract the domain words from the request: feature names, routes, actors, tables, workflows, nouns, and synonyms.
+3. Search current code and docs with `rg` across the smallest relevant set first, usually `app`, `components`, `lib`, `docs/specs`, `docs/changes`, `docs/app-complete-audit.md`, `project-map`, `memory`, `system/intake`, and recent `system/agent-reports`.
+4. Check `git log --oneline -30` for overlapping recent commits.
+5. Check `git status --short` and `system/agent-claims` for dirty or claimed files in the same domain.
+6. If the work touches routes or public surfaces, identify canonical route ownership before creating anything new. For homepages, default to exactly two surfaces: the real homepage and one sandbox duplicate for experimentation.
+
+The canonical surface registry lives at `system/canonical-surfaces.json`. Update it when a new long-lived product surface becomes the official owner for a domain.
+
+## Tooling
+
+- Scan a prompt: `node devtools/context-continuity-scan.mjs --prompt "..." --write`
+- Find near duplicates: `node devtools/context-near-duplicates.mjs`
+- Build the feature family map: `node devtools/feature-family-map.mjs`
+- Write a memory packet: `node devtools/obsidian-memory-packet.mjs --title "..." --intent "..."`
+- Generate the continuity dashboard: `node devtools/context-continuity-dashboard.mjs --prompt "..."`
+- Start a task with the pre-build gate: `node devtools/agent-start.mjs --prompt "..."`
 
 ## Decide Attachment
 

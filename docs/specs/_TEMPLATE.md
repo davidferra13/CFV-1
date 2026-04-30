@@ -45,6 +45,26 @@ _Translate the raw signal into clear system-level requirements. What were they a
 
 ---
 
+## Continuity Preflight
+
+_Run `node devtools/context-continuity-scan.mjs --prompt "[feature prompt]" --write` before drafting implementation details. This section proves the spec attaches to the existing system instead of creating a parallel build._
+
+| Question                            | Answer                                                |
+| ----------------------------------- | ----------------------------------------------------- |
+| Continuity decision                 | extend / attach / merge-candidate / new / memory-only |
+| Canonical owner                     | [route, module, spec, or surface id]                  |
+| Existing related routes             | [paths found]                                         |
+| Existing related modules/components | [files found]                                         |
+| Recent overlapping commits          | [commit lines found]                                  |
+| Dirty or claimed overlapping files  | [files or claims found]                               |
+| Duplicate or orphan risk            | [risk and mitigation]                                 |
+| Why this is not a duplicate         | [evidence-backed explanation]                         |
+| What must not be rebuilt            | [explicit fences]                                     |
+
+If the decision is `merge-candidate`, stop and ask the developer which canonical owner should win before writing the rest of the spec.
+
+---
+
 ## What This Does (Plain English)
 
 _One paragraph. What does the user see or experience after this is built? Write it so a builder agent with zero prior context understands the goal._

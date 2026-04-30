@@ -1,0 +1,23 @@
+{
+  "id": "20260429T235629Z-build-the-complete-context-continuity-tooling-layer-scanner-cli-canonical-surfac",
+  "prompt": "Build the complete context continuity tooling layer: scanner CLI, canonical surface registry, pre-build gate, Obsidian packet exporter, near-duplicate detector, spec template continuity section, feature family map, and dashboard",
+  "status": "started",
+  "branch": "feature/voice-ops-complete",
+  "branch_start_commit": "c770bd3ff",
+  "claim_file": "system/agent-claims/20260429T235629Z-feature-voice-ops-complete-build-the-complete-context-continuity-tooling-layer-s.json",
+  "started_at": "2026-04-29T23:56:29.550Z",
+  "finished_at": null,
+  "selected_primary_skill": "context-continuity",
+  "selected_sidecar_skills": ["omninet", "builder"],
+  "router_decision": null,
+  "used_skills": ["context-continuity", "omninet", "builder"],
+  "files_touched": [],
+  "commands_run": [],
+  "validations_run": [],
+  "commit_hash": null,
+  "pushed": null,
+  "missed_skills": [],
+  "skill_garden_triggered": false,
+  "heal_skill_triggered": false,
+  "notes": null
+}

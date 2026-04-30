@@ -1,0 +1,19 @@
+{
+  "prompt": "Build the complete context continuity tooling layer: scanner CLI, canonical surface registry, pre-build gate, Obsidian packet exporter, near-duplicate detector, spec template continuity section, feature family map, and dashboard",
+  "generated_at": "2026-04-29T23:56:29.226Z",
+  "primary_skill": "context-continuity",
+  "sidecar_skills": ["omninet", "builder"],
+  "skill_maturity": {
+    "context-continuity": "active",
+    "omninet": "proven",
+    "builder": "active"
+  },
+  "conflict_resolution": null,
+  "hard_stops": [],
+  "risk_level": "low",
+  "required_checks": [
+    "run targeted compliance scan for em dashes, OpenClaw public text, and ts-nocheck",
+    "run node --check for changed devtools scripts",
+    "stage, commit, and push only owned files before closeout"
+  ]
+}

@@ -1,0 +1,162 @@
+{
+  "generated_at": "2026-04-29T00:00:00.000Z",
+  "policy": {
+    "homepage_limit": "Exactly two homepage surfaces are allowed: production and sandbox.",
+    "default_decision": "Extend or attach to an existing canonical owner before creating a new surface.",
+    "merge_candidate_rule": "If two plausible canonical owners exist, stop and ask before coding."
+  },
+  "surfaces": [
+    {
+      "id": "public-homepage",
+      "label": "Public Homepage",
+      "description": "Production public homepage and one sandbox duplicate for experimentation.",
+      "keywords": ["homepage", "homepages", "landing", "public", "operator", "hero"],
+      "canonical_routes": ["/"],
+      "canonical_files": ["app/(public)/page.tsx"],
+      "sandbox_routes": ["/sandbox/homepage"],
+      "duplicate_policy": {
+        "allowed_duplicates": 1,
+        "allowed_reason": "One sandbox duplicate for interactive experimentation."
+      }
+    },
+    {
+      "id": "context-continuity",
+      "label": "Context Continuity",
+      "description": "Agent duplicate-prevention, canonical attachment, memory packet, and continuity reporting layer.",
+      "keywords": [
+        "continuity",
+        "duplicate",
+        "fragmentation",
+        "canonical",
+        "obsidian",
+        "memory",
+        "attach"
+      ],
+      "canonical_routes": [],
+      "canonical_files": [
+        ".claude/skills/context-continuity/SKILL.md",
+        "devtools/context-continuity-scan.mjs",
+        "system/canonical-surfaces.json"
+      ],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Extend the continuity layer in place."
+      }
+    },
+    {
+      "id": "agent-skill-system",
+      "label": "Agent Skill System",
+      "description": "ChefFlow skill routing, validation, replay, maturity, and closeout evidence.",
+      "keywords": ["skill", "skills", "router", "trigger", "replay", "flight", "closeout"],
+      "canonical_routes": [],
+      "canonical_files": [
+        "devtools/skill-router.mjs",
+        "devtools/skill-validator.mjs",
+        "devtools/skill-trigger-tests.mjs",
+        "system/agent-golden-prompts/default.json"
+      ],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Add to the existing skill harness."
+      }
+    },
+    {
+      "id": "remy-ai",
+      "label": "Remy AI",
+      "description": "ChefFlow conversational assistant, memory, privacy, and local/cloud AI routing.",
+      "keywords": ["remy", "ai", "conversation", "memory", "ollama", "local ai"],
+      "canonical_routes": [],
+      "canonical_files": ["components/ai/remy-drawer.tsx", "lib/ai/remy-actions.ts"],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach new assistant behavior to Remy or its shared AI modules."
+      }
+    },
+    {
+      "id": "inventory",
+      "label": "Inventory and Pantry",
+      "description": "Inventory, pantry engine, receiving, stock counts, and ingredient flow.",
+      "keywords": ["inventory", "pantry", "stock", "receiving", "ingredient", "counts"],
+      "canonical_routes": ["/inventory", "/ops/inventory"],
+      "canonical_files": ["app/(chef)/inventory/page.tsx", "lib/inventory/pantry-engine.ts"],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Deepen the inventory domain in place."
+      }
+    },
+    {
+      "id": "calendar",
+      "label": "Calendar and Scheduling",
+      "description": "Calendar entries, availability, protected time, scheduling, and conflict command center.",
+      "keywords": ["calendar", "scheduling", "availability", "protected time", "conflict"],
+      "canonical_routes": ["/calendar"],
+      "canonical_files": [
+        "app/(chef)/calendar/page.tsx",
+        "components/calendar/unified-calendar-view.tsx"
+      ],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach to calendar and scheduling modules."
+      }
+    },
+    {
+      "id": "voice-ops",
+      "label": "Voice Operations",
+      "description": "Voice calling, call consent, menu call coordination, and post-call execution.",
+      "keywords": ["voice", "calling", "call", "hangup", "consent", "campaign"],
+      "canonical_routes": [],
+      "canonical_files": [
+        "lib/calling/voice-ops-actions.ts",
+        "components/calling/voice-ops-report-panel.tsx"
+      ],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach to voice operations modules."
+      }
+    },
+    {
+      "id": "chef-flow-replay",
+      "label": "Chef Flow Replay",
+      "description": "Replay model, activity digest, action recommendations, and operator review.",
+      "keywords": ["replay", "activity", "digest", "recommendation", "review"],
+      "canonical_routes": ["/replay"],
+      "canonical_files": ["app/(chef)/replay/page.tsx", "lib/activity/replay-model.ts"],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Extend replay model and components in place."
+      }
+    },
+    {
+      "id": "client-intake",
+      "label": "Client Intake",
+      "description": "Public booking, inquiries, embed widget, intake lanes, and client onboarding.",
+      "keywords": ["intake", "booking", "inquiry", "embed", "client", "onboarding"],
+      "canonical_routes": ["/book", "/clients/intake"],
+      "canonical_files": [
+        "app/api/book/route.ts",
+        "lib/inquiries/public-actions.ts",
+        "public/embed/chefflow-widget.js"
+      ],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach to the existing intake lane contract."
+      }
+    },
+    {
+      "id": "finance",
+      "label": "Finance and Ledger",
+      "description": "Ledger-first financial model, quotes, payments, payouts, and cents accounting.",
+      "keywords": ["finance", "ledger", "payment", "quote", "payout", "cents", "stripe"],
+      "canonical_routes": ["/finance", "/quotes"],
+      "canonical_files": [
+        "lib/ledger/append.ts",
+        "lib/ledger/compute.ts",
+        "lib/events/transitions.ts"
+      ],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Financial behavior must attach to ledger and quote owners."
+      }
+    }
+  ]
+}

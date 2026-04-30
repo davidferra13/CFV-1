@@ -1,0 +1,5630 @@
+{
+  "generated_at": "2026-04-30T00:02:21.260Z",
+  "scan": {
+    "generated_at": "2026-04-30T00:02:18.708Z",
+    "prompt": "Build context continuity tooling for duplicate build prevention",
+    "terms": ["context", "continuity", "tooling", "duplicate", "prevention"],
+    "scanned_dirs": [
+      "app",
+      "components",
+      "lib",
+      "docs/specs",
+      "docs/changes",
+      "docs/app-complete-audit.md",
+      "project-map",
+      "memory",
+      "system/intake",
+      "system/agent-reports"
+    ],
+    "canonical_surfaces": [
+      {
+        "id": "context-continuity",
+        "label": "Context Continuity",
+        "score": 12,
+        "hits": ["context", "continuity", "duplicate", "prevention"],
+        "canonical_routes": [],
+        "canonical_files": [
+          ".claude/skills/context-continuity/SKILL.md",
+          "devtools/context-continuity-scan.mjs",
+          "system/canonical-surfaces.json"
+        ],
+        "sandbox_routes": [],
+        "duplicate_policy": {
+          "allowed_duplicates": 0,
+          "allowed_reason": "Extend the continuity layer in place."
+        }
+      },
+      {
+        "id": "public-homepage",
+        "label": "Public Homepage",
+        "score": 1,
+        "hits": ["duplicate"],
+        "canonical_routes": ["/"],
+        "canonical_files": ["app/(public)/page.tsx"],
+        "sandbox_routes": ["/sandbox/homepage"],
+        "duplicate_policy": {
+          "allowed_duplicates": 1,
+          "allowed_reason": "One sandbox duplicate for interactive experimentation."
+        }
+      }
+    ],
+    "related_files": [
+      {
+        "file": "system/agent-reports/context-continuity/20260430T000116Z-build-continuity-scanner-dashboard-for-duplicate-homepage-prevention.json",
+        "kind": "system",
+        "score": 45,
+        "hits": ["context", "continuity", "duplicate", "prevention", "tooling"]
+      },
+      {
+        "file": "system/agent-reports/context-continuity/20260430T000146Z-build-continuity-scanner-dashboard-for-duplicate-homepage-prevention.json",
+        "kind": "system",
+        "score": 45,
+        "hits": ["context", "continuity", "duplicate", "prevention", "tooling"]
+      },
+      {
+        "file": "system/agent-reports/skill-closeouts/20260429T234713Z-context-continuity-prevent-duplicate-fragmented-chefflow-builds-with-a-context-continuity-skill.json",
+        "kind": "system",
+        "score": 30,
+        "hits": ["context", "continuity", "duplicate"]
+      },
+      {
+        "file": "system/agent-reports/flight-records/20260429T235629Z-build-the-complete-context-continuity-tooling-layer-scanner-cli-canonical-surfac.json",
+        "kind": "system",
+        "score": 26,
+        "hits": ["context", "continuity", "tooling", "duplicate"]
+      },
+      {
+        "file": "system/agent-reports/router-decisions/20260429T235629Z-build-the-complete-context-continuity-tooling-layer-scanner-cli-canonical-surfac.json",
+        "kind": "system",
+        "score": 21,
+        "hits": ["context", "continuity", "tooling", "duplicate"]
+      },
+      {
+        "file": "components/client-continuity/client-continuity-summary.tsx",
+        "kind": "component",
+        "score": 18,
+        "hits": ["continuity", "context"]
+      },
+      {
+        "file": "docs/specs/p1-demo-continuity-and-portal-proof.md",
+        "kind": "spec",
+        "score": 18,
+        "hits": ["continuity", "context", "tooling", "duplicate"]
+      },
+      {
+        "file": "lib/marketing/compare-pages.ts",
+        "kind": "module",
+        "score": 18,
+        "hits": ["context", "continuity", "tooling", "duplicate"]
+      },
+      {
+        "file": "docs/changes/2026-04-29-context-continuity-skill.md",
+        "kind": "change-doc",
+        "score": 16,
+        "hits": ["context", "continuity", "duplicate"]
+      },
+      {
+        "file": "app/api/remy/context/route.ts",
+        "kind": "route",
+        "score": 14,
+        "hits": ["context", "continuity"]
+      },
+      {
+        "file": "docs/specs/p1-navigation-and-cta-continuity.md",
+        "kind": "spec",
+        "score": 14,
+        "hits": ["continuity", "context"]
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-extraction-frontier.md",
+        "kind": "spec",
+        "score": 14,
+        "hits": ["context", "continuity", "tooling", "duplicate"]
+      },
+      {
+        "file": "lib/ai/remy-client-context.ts",
+        "kind": "module",
+        "score": 14,
+        "hits": ["context", "continuity"]
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-client-management.md",
+        "kind": "spec",
+        "score": 13,
+        "hits": ["context", "duplicate", "prevention"]
+      },
+      {
+        "file": "lib/context/app-context.tsx",
+        "kind": "module",
+        "score": 13,
+        "hits": ["context"]
+      },
+      {
+        "file": "lib/context/permission-context.tsx",
+        "kind": "module",
+        "score": 13,
+        "hits": ["context"]
+      },
+      {
+        "file": "docs/specs/p1-alternate-entry-points-and-support-visibility.md",
+        "kind": "spec",
+        "score": 12,
+        "hits": ["context", "continuity", "duplicate"]
+      },
+      {
+        "file": "docs/specs/p1-chef-collab-spaces.md",
+        "kind": "spec",
+        "score": 12,
+        "hits": ["context", "continuity", "duplicate"]
+      },
+      {
+        "file": "components/navigation/nav-config.tsx",
+        "kind": "component",
+        "score": 11,
+        "hits": ["context", "continuity", "duplicate"]
+      },
+      {
+        "file": "docs/specs/cohesion-checklist-prep-timeline.md",
+        "kind": "spec",
+        "score": 11,
+        "hits": ["context", "continuity", "duplicate"]
+      },
+      {
+        "file": "docs/specs/notes-dishes-menus-client-event-pipeline.md",
+        "kind": "spec",
+        "score": 11,
+        "hits": ["context", "tooling", "duplicate"]
+      },
+      {
+        "file": "docs/specs/p1-operational-reassurance-and-what-happens-next.md",
+        "kind": "spec",
+        "score": 11,
+        "hits": ["context", "continuity", "duplicate"]
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-consumer-discovery-cohesion-v1.md",
+        "kind": "spec",
+        "score": 11,
+        "hits": ["context", "continuity", "duplicate", "prevention"]
+      },
+      {
+        "file": "docs/specs/website-build-research-spec-code-cross-reference-upgrade.md",
+        "kind": "spec",
+        "score": 11,
+        "hits": ["context", "continuity", "duplicate"]
+      },
+      {
+        "file": "app/(chef)/clients/[id]/page.tsx",
+        "kind": "route",
+        "score": 10,
+        "hits": ["context", "duplicate"]
+      },
+      {
+        "file": "app/api/remy/stream/route.ts",
+        "kind": "route",
+        "score": 10,
+        "hits": ["context", "continuity"]
+      },
+      {
+        "file": "app/api/webhooks/stripe/route.ts",
+        "kind": "route",
+        "score": 10,
+        "hits": ["context", "duplicate"]
+      },
+      {
+        "file": "docs/specs/commerce-financial-integrity-interrogation.md",
+        "kind": "spec",
+        "score": 10,
+        "hits": ["context", "duplicate", "prevention"]
+      },
+      {
+        "file": "docs/specs/continuous-intelligence-layer.md",
+        "kind": "spec",
+        "score": 10,
+        "hits": ["context", "continuity", "tooling", "duplicate", "prevention"]
+      },
+      {
+        "file": "docs/specs/interaction-engine.md",
+        "kind": "spec",
+        "score": 10,
+        "hits": ["context", "duplicate"]
+      }
+    ],
+    "recent_commits": [
+      {
+        "line": "c770bd3ff chore(agent): add context continuity skill feature/voice-ops-complete",
+        "score": 2,
+        "hits": ["context", "continuity"]
+      }
+    ],
+    "dirty_matches": [
+      {
+        "line": "?? system/agent-claims/20260429T235629Z-feature-voice-ops-complete-build-the-complete-context-continuity-tooling-layer-s.json",
+        "file": "system/agent-claims/20260429T235629Z-feature-voice-ops-complete-build-the-complete-context-continuity-tooling-layer-s.json",
+        "score": 6,
+        "hits": ["context", "continuity", "tooling"]
+      },
+      {
+        "line": "?? system/agent-reports/flight-records/20260429T235629Z-build-the-complete-context-continuity-tooling-layer-scanner-cli-canonical-surfac.json",
+        "file": "system/agent-reports/flight-records/20260429T235629Z-build-the-complete-context-continuity-tooling-layer-scanner-cli-canonical-surfac.json",
+        "score": 6,
+        "hits": ["context", "continuity", "tooling"]
+      },
+      {
+        "line": "?? system/agent-reports/router-decisions/20260429T235629Z-build-the-complete-context-continuity-tooling-layer-scanner-cli-canonical-surfac.json",
+        "file": "system/agent-reports/router-decisions/20260429T235629Z-build-the-complete-context-continuity-tooling-layer-scanner-cli-canonical-surfac.json",
+        "score": 6,
+        "hits": ["context", "continuity", "tooling"]
+      },
+      {
+        "line": "M .claude/skills/context-continuity/SKILL.md",
+        "file": "claude/skills/context-continuity/SKILL.md",
+        "score": 4,
+        "hits": ["context", "continuity"]
+      },
+      {
+        "line": "?? devtools/context-continuity-dashboard.mjs",
+        "file": "devtools/context-continuity-dashboard.mjs",
+        "score": 4,
+        "hits": ["context", "continuity"]
+      },
+      {
+        "line": "?? devtools/context-continuity-lib.mjs",
+        "file": "devtools/context-continuity-lib.mjs",
+        "score": 4,
+        "hits": ["context", "continuity"]
+      },
+      {
+        "line": "?? devtools/context-continuity-scan.mjs",
+        "file": "devtools/context-continuity-scan.mjs",
+        "score": 4,
+        "hits": ["context", "continuity"]
+      },
+      {
+        "line": "?? devtools/context-near-duplicates.mjs",
+        "file": "devtools/context-near-duplicates.mjs",
+        "score": 4,
+        "hits": ["context", "duplicate"]
+      },
+      {
+        "line": "?? system/agent-reports/context-continuity/",
+        "file": "system/agent-reports/context-continuity/",
+        "score": 4,
+        "hits": ["context", "continuity"]
+      },
+      {
+        "line": "?? tests/unit/context-continuity-tools.test.mjs",
+        "file": "tests/unit/context-continuity-tools.test.mjs",
+        "score": 4,
+        "hits": ["context", "continuity"]
+      },
+      {
+        "line": "?? system/continuity-memory/",
+        "file": "system/continuity-memory/",
+        "score": 2,
+        "hits": ["continuity"]
+      }
+    ],
+    "claim_matches": [
+      {
+        "file": "system/agent-claims/20260429T235629Z-feature-voice-ops-complete-build-the-complete-context-continuity-tooling-layer-s.json",
+        "score": 8,
+        "hits": ["context", "continuity", "tooling", "duplicate"],
+        "prompt": "Build the complete context continuity tooling layer: scanner CLI, canonical surface registry, pre-build gate, Obsidian packet exporter, near-duplicate detector, spec template continuity section, feature family map, and dashboard",
+        "owned": [],
+        "status": "active"
+      },
+      {
+        "file": "system/agent-claims/20260429T234252Z-feature-pantry-engine-create-persistent-codex-behavior-to-prevent-fragmented-dup.json",
+        "score": 2,
+        "hits": ["continuity", "duplicate"],
+        "prompt": "Create persistent Codex behavior to prevent fragmented duplicate builds and capture conversation memory for Obsidian-style continuity",
+        "owned": [],
+        "status": "active"
+      }
+    ],
+    "duplicate_risks": [
+      {
+        "level": "medium",
+        "reason": "Dirty files already exist in this domain and may be another agent active work.",
+        "files": [
+          "system/agent-claims/20260429T235629Z-feature-voice-ops-complete-build-the-complete-context-continuity-tooling-layer-s.json",
+          "system/agent-reports/flight-records/20260429T235629Z-build-the-complete-context-continuity-tooling-layer-scanner-cli-canonical-surfac.json",
+          "system/agent-reports/router-decisions/20260429T235629Z-build-the-complete-context-continuity-tooling-layer-scanner-cli-canonical-surfac.json",
+          "claude/skills/context-continuity/SKILL.md",
+          "devtools/context-continuity-dashboard.mjs"
+        ]
+      },
+      {
+        "level": "medium",
+        "reason": "Active or recorded claims overlap this domain.",
+        "claims": [
+          "system/agent-claims/20260429T235629Z-feature-voice-ops-complete-build-the-complete-context-continuity-tooling-layer-s.json",
+          "system/agent-claims/20260429T234252Z-feature-pantry-engine-create-persistent-codex-behavior-to-prevent-fragmented-dup.json"
+        ]
+      }
+    ],
+    "continuity": {
+      "decision": "attach",
+      "stop_required": false,
+      "reason": "Matched canonical surface context-continuity."
+    }
+  },
+  "duplicates": {
+    "generated_at": "2026-04-30T00:02:21.188Z",
+    "threshold": 0.42,
+    "scanned_count": 350,
+    "pair_count": 11,
+    "pairs": [
+      {
+        "a": "docs/specs/codex-menu-performance-dashboard.md",
+        "b": "docs/specs/codex-service-day-closeout.md",
+        "score": 0.493,
+        "shared_terms": [
+          "docs",
+          "specs",
+          "spec",
+          "status",
+          "ready",
+          "priority",
+          "blocking",
+          "depends",
+          "migration",
+          "20260425000015",
+          "restaurant",
+          "ops"
+        ]
+      },
+      {
+        "a": "docs/specs/codex-menu-performance-dashboard.md",
+        "b": "docs/specs/codex-prep-sheet-generator.md",
+        "score": 0.486,
+        "shared_terms": [
+          "docs",
+          "specs",
+          "menu",
+          "spec",
+          "status",
+          "ready",
+          "priority",
+          "blocking",
+          "depends",
+          "migration",
+          "20260425000015",
+          "restaurant"
+        ]
+      },
+      {
+        "a": "components/vendors/vendor-map.tsx",
+        "b": "components/vendors/national-vendor-search.tsx",
+        "score": 0.482,
+        "shared_terms": [
+          "components",
+          "vendors",
+          "vendor",
+          "map",
+          "tsx",
+          "client",
+          "view",
+          "national",
+          "dynamic",
+          "import",
+          "false",
+          "react"
+        ]
+      },
+      {
+        "a": "docs/specs/codex-shift-knowledge-search.md",
+        "b": "docs/specs/codex-shift-history-page.md",
+        "score": 0.479,
+        "shared_terms": [
+          "docs",
+          "specs",
+          "shift",
+          "knowledge",
+          "build",
+          "spec",
+          "page",
+          "priority",
+          "risk",
+          "low",
+          "new",
+          "edit"
+        ]
+      },
+      {
+        "a": "components/vendors/invoice-form.tsx",
+        "b": "components/vendors/daily-revenue-form.tsx",
+        "score": 0.47,
+        "shared_terms": [
+          "components",
+          "vendors",
+          "form",
+          "tsx",
+          "client",
+          "import",
+          "usestate",
+          "react",
+          "userouter",
+          "next",
+          "navigation",
+          "button"
+        ]
+      },
+      {
+        "a": "components/vendors/invoice-form.tsx",
+        "b": "components/vendors/invoice-csv-upload.tsx",
+        "score": 0.469,
+        "shared_terms": [
+          "components",
+          "vendors",
+          "invoice",
+          "tsx",
+          "client",
+          "import",
+          "usestate",
+          "react",
+          "userouter",
+          "next",
+          "navigation",
+          "button"
+        ]
+      },
+      {
+        "a": "components/vendors/vendor-catalog-import.tsx",
+        "b": "components/vendors/invoice-csv-upload.tsx",
+        "score": 0.452,
+        "shared_terms": [
+          "components",
+          "vendors",
+          "vendor",
+          "import",
+          "tsx",
+          "client",
+          "useref",
+          "usestate",
+          "react",
+          "userouter",
+          "next",
+          "navigation"
+        ]
+      },
+      {
+        "a": "components/vendors/vendor-price-list.tsx",
+        "b": "components/vendors/invoice-form.tsx",
+        "score": 0.451,
+        "shared_terms": [
+          "components",
+          "vendors",
+          "vendor",
+          "price",
+          "tsx",
+          "client",
+          "import",
+          "usestate",
+          "react",
+          "userouter",
+          "next",
+          "navigation"
+        ]
+      },
+      {
+        "a": "docs/specs/codex-service-day-closeout.md",
+        "b": "docs/specs/codex-prep-sheet-generator.md",
+        "score": 0.444,
+        "shared_terms": [
+          "docs",
+          "specs",
+          "service",
+          "day",
+          "spec",
+          "out",
+          "status",
+          "ready",
+          "priority",
+          "blocking",
+          "depends",
+          "migration"
+        ]
+      },
+      {
+        "a": "docs/specs/build-ticketed-events-wiring.md",
+        "b": "docs/specs/codex-stabilize-ticketing-wiring.md",
+        "score": 0.437,
+        "shared_terms": [
+          "docs",
+          "specs",
+          "ticketed",
+          "events",
+          "wiring",
+          "spec",
+          "edit",
+          "existing",
+          "small",
+          "surgical",
+          "changes",
+          "risk"
+        ]
+      },
+      {
+        "a": "docs/specs/codex-launch-stabilization-agent-1.md",
+        "b": "docs/specs/codex-fix-auto-join-consent.md",
+        "score": 0.428,
+        "shared_terms": [
+          "docs",
+          "specs",
+          "auto",
+          "join",
+          "consent",
+          "jbug",
+          "edit",
+          "verification",
+          "only",
+          "rules",
+          "other",
+          "not"
+        ]
+      }
+    ]
+  },
+  "feature_map": {
+    "generated_at": "2026-04-30T00:02:21.260Z",
+    "node_count": 490,
+    "edge_count": 513,
+    "nodes": [
+      {
+        "id": "public-homepage",
+        "type": "canonical-surface",
+        "label": "Public Homepage",
+        "routes": ["/"],
+        "files": ["app/(public)/page.tsx"]
+      },
+      {
+        "id": "context-continuity",
+        "type": "canonical-surface",
+        "label": "Context Continuity",
+        "routes": [],
+        "files": [
+          ".claude/skills/context-continuity/SKILL.md",
+          "devtools/context-continuity-scan.mjs",
+          "system/canonical-surfaces.json"
+        ]
+      },
+      {
+        "id": "agent-skill-system",
+        "type": "canonical-surface",
+        "label": "Agent Skill System",
+        "routes": [],
+        "files": [
+          "devtools/skill-router.mjs",
+          "devtools/skill-validator.mjs",
+          "devtools/skill-trigger-tests.mjs",
+          "system/agent-golden-prompts/default.json"
+        ]
+      },
+      {
+        "id": "remy-ai",
+        "type": "canonical-surface",
+        "label": "Remy AI",
+        "routes": [],
+        "files": ["components/ai/remy-drawer.tsx", "lib/ai/remy-actions.ts"]
+      },
+      {
+        "id": "inventory",
+        "type": "canonical-surface",
+        "label": "Inventory and Pantry",
+        "routes": ["/inventory", "/ops/inventory"],
+        "files": ["app/(chef)/inventory/page.tsx", "lib/inventory/pantry-engine.ts"]
+      },
+      {
+        "id": "calendar",
+        "type": "canonical-surface",
+        "label": "Calendar and Scheduling",
+        "routes": ["/calendar"],
+        "files": ["app/(chef)/calendar/page.tsx", "components/calendar/unified-calendar-view.tsx"]
+      },
+      {
+        "id": "voice-ops",
+        "type": "canonical-surface",
+        "label": "Voice Operations",
+        "routes": [],
+        "files": [
+          "lib/calling/voice-ops-actions.ts",
+          "components/calling/voice-ops-report-panel.tsx"
+        ]
+      },
+      {
+        "id": "chef-flow-replay",
+        "type": "canonical-surface",
+        "label": "Chef Flow Replay",
+        "routes": ["/replay"],
+        "files": ["app/(chef)/replay/page.tsx", "lib/activity/replay-model.ts"]
+      },
+      {
+        "id": "client-intake",
+        "type": "canonical-surface",
+        "label": "Client Intake",
+        "routes": ["/book", "/clients/intake"],
+        "files": [
+          "app/api/book/route.ts",
+          "lib/inquiries/public-actions.ts",
+          "public/embed/chefflow-widget.js"
+        ]
+      },
+      {
+        "id": "finance",
+        "type": "canonical-surface",
+        "label": "Finance and Ledger",
+        "routes": ["/finance", "/quotes"],
+        "files": ["lib/ledger/append.ts", "lib/ledger/compute.ts", "lib/events/transitions.ts"]
+      },
+      {
+        "id": "docs/changes/2026-04-29-pantry-engine-build.md",
+        "type": "change-doc",
+        "label": "2026-04-29-pantry-engine-build.md"
+      },
+      {
+        "id": "docs/changes/2026-04-29-context-continuity-skill.md",
+        "type": "change-doc",
+        "label": "2026-04-29-context-continuity-skill.md"
+      },
+      {
+        "id": "docs/changes/2026-04-24-public-showcase-menu-photos.md",
+        "type": "change-doc",
+        "label": "2026-04-24-public-showcase-menu-photos.md"
+      },
+      {
+        "id": "docs/changes/2026-04-24-open-booking-followthrough.md",
+        "type": "change-doc",
+        "label": "2026-04-24-open-booking-followthrough.md"
+      },
+      {
+        "id": "docs/changes/2026-04-24-onboarding-first-week-activation-contract.md",
+        "type": "change-doc",
+        "label": "2026-04-24-onboarding-first-week-activation-contract.md"
+      },
+      {
+        "id": "docs/changes/2026-04-24-ingredient-yield-ui.md",
+        "type": "change-doc",
+        "label": "2026-04-24-ingredient-yield-ui.md"
+      },
+      {
+        "id": "docs/changes/2026-04-23-public-intent-hardening.md",
+        "type": "change-doc",
+        "label": "2026-04-23-public-intent-hardening.md"
+      },
+      {
+        "id": "docs/changes/2026-04-23-codex-recovery-inventory.md",
+        "type": "change-doc",
+        "label": "2026-04-23-codex-recovery-inventory.md"
+      },
+      {
+        "id": "docs/changes/2026-04-23-chef-client-ops-snapshot.md",
+        "type": "change-doc",
+        "label": "2026-04-23-chef-client-ops-snapshot.md"
+      },
+      {
+        "id": "docs/changes/2026-04-22-public-intake-body-guards.md",
+        "type": "change-doc",
+        "label": "2026-04-22-public-intake-body-guards.md"
+      },
+      {
+        "id": "docs/changes/2026-04-22-operator-walkthrough-lane.md",
+        "type": "change-doc",
+        "label": "2026-04-22-operator-walkthrough-lane.md"
+      },
+      {
+        "id": "docs/changes/2026-04-22-operator-acquisition-entry-routing.md",
+        "type": "change-doc",
+        "label": "2026-04-22-operator-acquisition-entry-routing.md"
+      },
+      {
+        "id": "docs/changes/2026-04-22-onboarding-entry-truth.md",
+        "type": "change-doc",
+        "label": "2026-04-22-onboarding-entry-truth.md"
+      },
+      {
+        "id": "docs/changes/2026-04-22-ledger-backed-next-best-action.md",
+        "type": "change-doc",
+        "label": "2026-04-22-ledger-backed-next-best-action.md"
+      },
+      {
+        "id": "docs/changes/2026-04-22-homepage-operator-funnel.md",
+        "type": "change-doc",
+        "label": "2026-04-22-homepage-operator-funnel.md"
+      },
+      {
+        "id": "docs/changes/2026-04-18-open-booking-dietary-parity.md",
+        "type": "change-doc",
+        "label": "2026-04-18-open-booking-dietary-parity.md"
+      },
+      {
+        "id": "components/vendors/vendor-document-intake.tsx",
+        "type": "component",
+        "label": "vendor-document-intake.tsx"
+      },
+      {
+        "id": "components/vendors/vendor-catalog-review-queue.tsx",
+        "type": "component",
+        "label": "vendor-catalog-review-queue.tsx"
+      },
+      {
+        "id": "components/booking/booking-form.tsx",
+        "type": "component",
+        "label": "booking-form.tsx"
+      },
+      {
+        "id": "components/booking/booking-calendar.tsx",
+        "type": "component",
+        "label": "booking-calendar.tsx"
+      },
+      {
+        "id": "components/charity/charity-hours-client.tsx",
+        "type": "component",
+        "label": "charity-hours-client.tsx"
+      },
+      {
+        "id": "components/campaigns/draft-review-card.tsx",
+        "type": "component",
+        "label": "draft-review-card.tsx"
+      },
+      {
+        "id": "components/beta/beta-onboarding-checklist.tsx",
+        "type": "component",
+        "label": "beta-onboarding-checklist.tsx"
+      },
+      {
+        "id": "components/clients/client-value-card.tsx",
+        "type": "component",
+        "label": "client-value-card.tsx"
+      },
+      {
+        "id": "components/clients/client-timeline.tsx",
+        "type": "component",
+        "label": "client-timeline.tsx"
+      },
+      {
+        "id": "components/clients/client-tags.tsx",
+        "type": "component",
+        "label": "client-tags.tsx"
+      },
+      {
+        "id": "components/clients/client-status-badge.tsx",
+        "type": "component",
+        "label": "client-status-badge.tsx"
+      },
+      {
+        "id": "components/clients/client-snapshot.tsx",
+        "type": "component",
+        "label": "client-snapshot.tsx"
+      },
+      {
+        "id": "components/clients/client-preferences.tsx",
+        "type": "component",
+        "label": "client-preferences.tsx"
+      },
+      {
+        "id": "components/clients/client-portal-activity-card.tsx",
+        "type": "component",
+        "label": "client-portal-activity-card.tsx"
+      },
+      {
+        "id": "components/clients/client-photo-gallery.tsx",
+        "type": "component",
+        "label": "client-photo-gallery.tsx"
+      },
+      {
+        "id": "components/clients/client-household-panel.tsx",
+        "type": "component",
+        "label": "client-household-panel.tsx"
+      },
+      {
+        "id": "components/clients/client-financial-panel.tsx",
+        "type": "component",
+        "label": "client-financial-panel.tsx"
+      },
+      {
+        "id": "components/clients/client-email-toggle.tsx",
+        "type": "component",
+        "label": "client-email-toggle.tsx"
+      },
+      {
+        "id": "components/clients/client-dates-form.tsx",
+        "type": "component",
+        "label": "client-dates-form.tsx"
+      },
+      {
+        "id": "components/clients/client-country-panel.tsx",
+        "type": "component",
+        "label": "client-country-panel.tsx"
+      },
+      {
+        "id": "components/clients/client-connections.tsx",
+        "type": "component",
+        "label": "client-connections.tsx"
+      },
+      {
+        "id": "components/clients/client-call-memory-panel.tsx",
+        "type": "component",
+        "label": "client-call-memory-panel.tsx"
+      },
+      {
+        "id": "components/clients/client-action-icon.tsx",
+        "type": "component",
+        "label": "client-action-icon.tsx"
+      },
+      {
+        "id": "components/calls/dashboard-call-intelligence-widget.tsx",
+        "type": "component",
+        "label": "dashboard-call-intelligence-widget.tsx"
+      },
+      {
+        "id": "components/calls/call-type-badge.tsx",
+        "type": "component",
+        "label": "call-type-badge.tsx"
+      },
+      {
+        "id": "components/calls/call-status-actions.tsx",
+        "type": "component",
+        "label": "call-status-actions.tsx"
+      },
+      {
+        "id": "components/calls/call-recommendation-card.tsx",
+        "type": "component",
+        "label": "call-recommendation-card.tsx"
+      },
+      {
+        "id": "components/calls/call-prep-panel.tsx",
+        "type": "component",
+        "label": "call-prep-panel.tsx"
+      },
+      {
+        "id": "components/calls/call-outcome-quality-panel.tsx",
+        "type": "component",
+        "label": "call-outcome-quality-panel.tsx"
+      },
+      {
+        "id": "components/calls/call-outcome-form.tsx",
+        "type": "component",
+        "label": "call-outcome-form.tsx"
+      },
+      {
+        "id": "components/calls/call-intelligence-panel.tsx",
+        "type": "component",
+        "label": "call-intelligence-panel.tsx"
+      },
+      {
+        "id": "components/calls/call-form.tsx",
+        "type": "component",
+        "label": "call-form.tsx"
+      },
+      {
+        "id": "components/calls/call-card.tsx",
+        "type": "component",
+        "label": "call-card.tsx"
+      },
+      {
+        "id": "components/activity/tracked-download-link.tsx",
+        "type": "component",
+        "label": "tracked-download-link.tsx"
+      },
+      {
+        "id": "components/activity/tracked-activity-link.tsx",
+        "type": "component",
+        "label": "tracked-activity-link.tsx"
+      },
+      {
+        "id": "components/activity/session-heartbeat.tsx",
+        "type": "component",
+        "label": "session-heartbeat.tsx"
+      },
+      {
+        "id": "components/activity/retrace-timeline.tsx",
+        "type": "component",
+        "label": "retrace-timeline.tsx"
+      },
+      {
+        "id": "components/activity/resume-section.tsx",
+        "type": "component",
+        "label": "resume-section.tsx"
+      },
+      {
+        "id": "components/activity/live-presence-panel.tsx",
+        "type": "component",
+        "label": "live-presence-panel.tsx"
+      },
+      {
+        "id": "components/activity/entity-activity-timeline.tsx",
+        "type": "component",
+        "label": "entity-activity-timeline.tsx"
+      },
+      {
+        "id": "components/activity/engagement-badge.tsx",
+        "type": "component",
+        "label": "engagement-badge.tsx"
+      },
+      {
+        "id": "components/activity/desire-path-insights.tsx",
+        "type": "component",
+        "label": "desire-path-insights.tsx"
+      },
+      {
+        "id": "components/activity/client-presence-monitor.tsx",
+        "type": "component",
+        "label": "client-presence-monitor.tsx"
+      },
+      {
+        "id": "components/activity/client-portal-presence-beacon.tsx",
+        "type": "component",
+        "label": "client-portal-presence-beacon.tsx"
+      },
+      {
+        "id": "components/activity/client-activity-timeline.tsx",
+        "type": "component",
+        "label": "client-activity-timeline.tsx"
+      },
+      {
+        "id": "components/activity/client-activity-feed.tsx",
+        "type": "component",
+        "label": "client-activity-feed.tsx"
+      },
+      {
+        "id": "components/activity/client-activity-disclosure.tsx",
+        "type": "component",
+        "label": "client-activity-disclosure.tsx"
+      },
+      {
+        "id": "components/activity/chef-flow-replay.tsx",
+        "type": "component",
+        "label": "chef-flow-replay.tsx"
+      },
+      {
+        "id": "components/activity/chef-activity-feed.tsx",
+        "type": "component",
+        "label": "chef-activity-feed.tsx"
+      },
+      {
+        "id": "components/activity/breadcrumb-tracker.tsx",
+        "type": "component",
+        "label": "breadcrumb-tracker.tsx"
+      },
+      {
+        "id": "components/activity/activity-tracker.tsx",
+        "type": "component",
+        "label": "activity-tracker.tsx"
+      },
+      {
+        "id": "components/activity/activity-filters.tsx",
+        "type": "component",
+        "label": "activity-filters.tsx"
+      },
+      {
+        "id": "components/activity/activity-dot.tsx",
+        "type": "component",
+        "label": "activity-dot.tsx"
+      },
+      {
+        "id": "components/analytics/quote-acceptance-insights.tsx",
+        "type": "component",
+        "label": "quote-acceptance-insights.tsx"
+      },
+      {
+        "id": "components/analytics/public-page-view.tsx",
+        "type": "component",
+        "label": "public-page-view.tsx"
+      },
+      {
+        "id": "components/analytics/menu-recommendation-hints.tsx",
+        "type": "component",
+        "label": "menu-recommendation-hints.tsx"
+      },
+      {
+        "id": "components/analytics/insights-client.tsx",
+        "type": "component",
+        "label": "insights-client.tsx"
+      },
+      {
+        "id": "components/analytics/client-ltv-chart.tsx",
+        "type": "component",
+        "label": "client-ltv-chart.tsx"
+      },
+      {
+        "id": "components/analytics/booking-score-badge.tsx",
+        "type": "component",
+        "label": "booking-score-badge.tsx"
+      },
+      {
+        "id": "components/analytics/booking-conversion-funnel.tsx",
+        "type": "component",
+        "label": "booking-conversion-funnel.tsx"
+      },
+      {
+        "id": "components/availability/availability-checklist.tsx",
+        "type": "component",
+        "label": "availability-checklist.tsx"
+      },
+      {
+        "id": "components/analytics/analytics-hub-client.tsx",
+        "type": "component",
+        "label": "analytics-hub-client.tsx"
+      },
+      {
+        "id": "components/analytics/analytics-client.tsx",
+        "type": "component",
+        "label": "analytics-client.tsx"
+      },
+      {
+        "id": "components/clients/unified-client-timeline.tsx",
+        "type": "component",
+        "label": "unified-client-timeline.tsx"
+      },
+      {
+        "id": "components/clients/spending-dashboard-client.tsx",
+        "type": "component",
+        "label": "spending-dashboard-client.tsx"
+      },
+      {
+        "id": "components/clients/repeat-client-panel.tsx",
+        "type": "component",
+        "label": "repeat-client-panel.tsx"
+      },
+      {
+        "id": "components/clients/payment-plan-calculator.tsx",
+        "type": "component",
+        "label": "payment-plan-calculator.tsx"
+      },
+      {
+        "id": "components/clients/onboarding-form.tsx",
+        "type": "component",
+        "label": "onboarding-form.tsx"
+      },
+      {
+        "id": "components/clients/kitchen-inventory-panel.tsx",
+        "type": "component",
+        "label": "kitchen-inventory-panel.tsx"
+      },
+      {
+        "id": "components/client-dashboard/widget-shell.tsx",
+        "type": "component",
+        "label": "widget-shell.tsx"
+      },
+      {
+        "id": "components/client-dashboard/widget-grid.tsx",
+        "type": "component",
+        "label": "widget-grid.tsx"
+      },
+      {
+        "id": "components/client-dashboard/loading-skeleton.tsx",
+        "type": "component",
+        "label": "loading-skeleton.tsx"
+      },
+      {
+        "id": "components/client-dashboard/empty-state.tsx",
+        "type": "component",
+        "label": "empty-state.tsx"
+      },
+      {
+        "id": "components/client-dashboard/collapsible-widget.tsx",
+        "type": "component",
+        "label": "collapsible-widget.tsx"
+      },
+      {
+        "id": "components/client-dashboard/collapse-controls.tsx",
+        "type": "component",
+        "label": "collapse-controls.tsx"
+      },
+      {
+        "id": "components/calling/voice-ops-report-panel.tsx",
+        "type": "component",
+        "label": "voice-ops-report-panel.tsx"
+      },
+      {
+        "id": "components/calling/ingredient-resolution-view.tsx",
+        "type": "component",
+        "label": "ingredient-resolution-view.tsx"
+      },
+      {
+        "id": "components/calling/chef-live-alerts.tsx",
+        "type": "component",
+        "label": "chef-live-alerts.tsx"
+      },
+      {
+        "id": "components/billing/trial-banner-client.tsx",
+        "type": "component",
+        "label": "trial-banner-client.tsx"
+      },
+      {
+        "id": "components/calling/call-settings-form.tsx",
+        "type": "component",
+        "label": "call-settings-form.tsx"
+      },
+      {
+        "id": "components/calling/call-log.tsx",
+        "type": "component",
+        "label": "call-log.tsx"
+      },
+      {
+        "id": "components/calling/call-hub.tsx",
+        "type": "component",
+        "label": "call-hub.tsx"
+      },
+      {
+        "id": "components/calling/call-access-request.tsx",
+        "type": "component",
+        "label": "call-access-request.tsx"
+      },
+      {
+        "id": "components/ai-privacy/remy-onboarding-wizard.tsx",
+        "type": "component",
+        "label": "remy-onboarding-wizard.tsx"
+      },
+      {
+        "id": "components/ai-privacy/remy-gate.tsx",
+        "type": "component",
+        "label": "remy-gate.tsx"
+      },
+      {
+        "id": "components/ai-privacy/remy-archetype-selector.tsx",
+        "type": "component",
+        "label": "remy-archetype-selector.tsx"
+      },
+      {
+        "id": "components/client-continuity/index.ts",
+        "type": "component",
+        "label": "index.ts"
+      },
+      {
+        "id": "components/client-continuity/client-continuity-summary.tsx",
+        "type": "component",
+        "label": "client-continuity-summary.tsx"
+      },
+      {
+        "id": "components/beta-survey/public-market-research-entry.tsx",
+        "type": "component",
+        "label": "public-market-research-entry.tsx"
+      },
+      {
+        "id": "lib/work-continuity/types.ts",
+        "type": "module",
+        "label": "types.ts"
+      },
+      {
+        "id": "components/calendar/year-view.tsx",
+        "type": "component",
+        "label": "year-view.tsx"
+      },
+      {
+        "id": "lib/work-continuity/sources.ts",
+        "type": "module",
+        "label": "sources.ts"
+      },
+      {
+        "id": "components/calendar/unified-calendar-view.tsx",
+        "type": "component",
+        "label": "unified-calendar-view.tsx"
+      },
+      {
+        "id": "lib/work-continuity/parse-spec-status.ts",
+        "type": "module",
+        "label": "parse-spec-status.ts"
+      },
+      {
+        "id": "components/calendar/seasonal-palate-sidebar.tsx",
+        "type": "component",
+        "label": "seasonal-palate-sidebar.tsx"
+      },
+      {
+        "id": "lib/work-continuity/parse-session-log.ts",
+        "type": "module",
+        "label": "parse-session-log.ts"
+      },
+      {
+        "id": "lib/work-continuity/build-index.ts",
+        "type": "module",
+        "label": "build-index.ts"
+      },
+      {
+        "id": "components/calendar/protected-time-form.tsx",
+        "type": "component",
+        "label": "protected-time-form.tsx"
+      },
+      {
+        "id": "components/calendar/protected-time-detail.tsx",
+        "type": "component",
+        "label": "protected-time-detail.tsx"
+      },
+      {
+        "id": "components/calendar/droppable-day-cell.tsx",
+        "type": "component",
+        "label": "droppable-day-cell.tsx"
+      },
+      {
+        "id": "components/calendar/draggable-event.tsx",
+        "type": "component",
+        "label": "draggable-event.tsx"
+      },
+      {
+        "id": "components/calendar/client-signal-notification-toggle.tsx",
+        "type": "component",
+        "label": "client-signal-notification-toggle.tsx"
+      },
+      {
+        "id": "components/calendar/calendar-legend.tsx",
+        "type": "component",
+        "label": "calendar-legend.tsx"
+      },
+      {
+        "id": "components/calendar/calendar-health-strip.tsx",
+        "type": "component",
+        "label": "calendar-health-strip.tsx"
+      },
+      {
+        "id": "components/calendar/calendar-filter-panel.tsx",
+        "type": "component",
+        "label": "calendar-filter-panel.tsx"
+      },
+      {
+        "id": "components/calendar/calendar-entry-modal.tsx",
+        "type": "component",
+        "label": "calendar-entry-modal.tsx"
+      },
+      {
+        "id": "components/calendar/calendar-entry-detail.tsx",
+        "type": "component",
+        "label": "calendar-entry-detail.tsx"
+      },
+      {
+        "id": "components/calendar/calendar-entry-actions-panel.tsx",
+        "type": "component",
+        "label": "calendar-entry-actions-panel.tsx"
+      },
+      {
+        "id": "components/calendar/calendar-day-command-panel.tsx",
+        "type": "component",
+        "label": "calendar-day-command-panel.tsx"
+      },
+      {
+        "id": "components/calendar/availability-signal-toggle.tsx",
+        "type": "component",
+        "label": "availability-signal-toggle.tsx"
+      },
+      {
+        "id": "components/calendar/availability-share-settings.tsx",
+        "type": "component",
+        "label": "availability-share-settings.tsx"
+      },
+      {
+        "id": "components/ui/remy-loader.tsx",
+        "type": "component",
+        "label": "remy-loader.tsx"
+      },
+      {
+        "id": "components/ui/cookie-consent.tsx",
+        "type": "component",
+        "label": "cookie-consent.tsx"
+      },
+      {
+        "id": "components/ui/conflict-resolution-dialog.tsx",
+        "type": "component",
+        "label": "conflict-resolution-dialog.tsx"
+      },
+      {
+        "id": "components/ui/conflict-dialog.tsx",
+        "type": "component",
+        "label": "conflict-dialog.tsx"
+      },
+      {
+        "id": "components/ui/activity-timestamp.tsx",
+        "type": "component",
+        "label": "activity-timestamp.tsx"
+      },
+      {
+        "id": "components/client/post-event-banner.tsx",
+        "type": "component",
+        "label": "post-event-banner.tsx"
+      },
+      {
+        "id": "components/client/client-events-refresher.tsx",
+        "type": "component",
+        "label": "client-events-refresher.tsx"
+      },
+      {
+        "id": "components/forms/dietary-intake-fields.tsx",
+        "type": "component",
+        "label": "dietary-intake-fields.tsx"
+      },
+      {
+        "id": "components/testimonials/review-request-manager.tsx",
+        "type": "component",
+        "label": "review-request-manager.tsx"
+      },
+      {
+        "id": "components/admin/remy-abuse-summary.tsx",
+        "type": "component",
+        "label": "remy-abuse-summary.tsx"
+      },
+      {
+        "id": "components/ai/command-center-client.tsx",
+        "type": "component",
+        "label": "command-center-client.tsx"
+      },
+      {
+        "id": "components/ai/client-preference-panel.tsx",
+        "type": "component",
+        "label": "client-preference-panel.tsx"
+      },
+      {
+        "id": "components/ai/remy-capabilities-panel.tsx",
+        "type": "component",
+        "label": "remy-capabilities-panel.tsx"
+      },
+      {
+        "id": "components/ai/remy-avatar.tsx",
+        "type": "component",
+        "label": "remy-avatar.tsx"
+      },
+      {
+        "id": "components/ai/remy-animated-mascot.tsx",
+        "type": "component",
+        "label": "remy-animated-mascot.tsx"
+      },
+      {
+        "id": "components/ai/remy-action-log.tsx",
+        "type": "component",
+        "label": "remy-action-log.tsx"
+      },
+      {
+        "id": "components/ai/remy-context.tsx",
+        "type": "component",
+        "label": "remy-context.tsx"
+      },
+      {
+        "id": "components/ai/remy-client-chat.tsx",
+        "type": "component",
+        "label": "remy-client-chat.tsx"
+      },
+      {
+        "id": "components/ai/remy-conversation-list.tsx",
+        "type": "component",
+        "label": "remy-conversation-list.tsx"
+      },
+      {
+        "id": "components/ai/remy-drawer.tsx",
+        "type": "component",
+        "label": "remy-drawer.tsx"
+      },
+      {
+        "id": "components/ai/remy-history-list.tsx",
+        "type": "component",
+        "label": "remy-history-list.tsx"
+      },
+      {
+        "id": "components/ai/remy-public-widget.tsx",
+        "type": "component",
+        "label": "remy-public-widget.tsx"
+      },
+      {
+        "id": "components/ai/remy-mascot-chat.tsx",
+        "type": "component",
+        "label": "remy-mascot-chat.tsx"
+      },
+      {
+        "id": "components/ai/remy-mascot-button.tsx",
+        "type": "component",
+        "label": "remy-mascot-button.tsx"
+      },
+      {
+        "id": "components/ai/remy-hub-dashboard.tsx",
+        "type": "component",
+        "label": "remy-hub-dashboard.tsx"
+      },
+      {
+        "id": "components/ai/remy-sprite-animator.tsx",
+        "type": "component",
+        "label": "remy-sprite-animator.tsx"
+      },
+      {
+        "id": "components/ai/remy-search-view.tsx",
+        "type": "component",
+        "label": "remy-search-view.tsx"
+      },
+      {
+        "id": "components/ai/remy-talking-avatar.tsx",
+        "type": "component",
+        "label": "remy-talking-avatar.tsx"
+      },
+      {
+        "id": "components/ai/remy-task-card.tsx",
+        "type": "component",
+        "label": "remy-task-card.tsx"
+      },
+      {
+        "id": "components/chat/client-chat-unread-badge.tsx",
+        "type": "component",
+        "label": "client-chat-unread-badge.tsx"
+      },
+      {
+        "id": "components/chat/new-conversation-button.tsx",
+        "type": "component",
+        "label": "new-conversation-button.tsx"
+      },
+      {
+        "id": "components/equipment/equipment-inventory.tsx",
+        "type": "component",
+        "label": "equipment-inventory.tsx"
+      },
+      {
+        "id": "components/ai/review-request-panel.tsx",
+        "type": "component",
+        "label": "review-request-panel.tsx"
+      },
+      {
+        "id": "components/ai/remy-wrapper.tsx",
+        "type": "component",
+        "label": "remy-wrapper.tsx"
+      },
+      {
+        "id": "components/ai/remy-templates-view.tsx",
+        "type": "component",
+        "label": "remy-templates-view.tsx"
+      },
+      {
+        "id": "components/culinary-dictionary/dictionary-review-queue.tsx",
+        "type": "component",
+        "label": "dictionary-review-queue.tsx"
+      },
+      {
+        "id": "components/tasks/template-page-client.tsx",
+        "type": "component",
+        "label": "template-page-client.tsx"
+      },
+      {
+        "id": "components/tasks/task-page-client.tsx",
+        "type": "component",
+        "label": "task-page-client.tsx"
+      },
+      {
+        "id": "components/culinary/ingredient-hazard-badge.tsx",
+        "type": "component",
+        "label": "ingredient-hazard-badge.tsx"
+      },
+      {
+        "id": "components/culinary/add-ingredient-form.tsx",
+        "type": "component",
+        "label": "add-ingredient-form.tsx"
+      },
+      {
+        "id": "components/dashboard/client-birthdays-widget.tsx",
+        "type": "component",
+        "label": "client-birthdays-widget.tsx"
+      },
+      {
+        "id": "components/dashboard/booking-seasonality-widget.tsx",
+        "type": "component",
+        "label": "booking-seasonality-widget.tsx"
+      },
+      {
+        "id": "components/dashboard/activity-feed.tsx",
+        "type": "component",
+        "label": "activity-feed.tsx"
+      },
+      {
+        "id": "components/dashboard/client-lookup-widget.tsx",
+        "type": "component",
+        "label": "client-lookup-widget.tsx"
+      },
+      {
+        "id": "components/embed/embed-inquiry-form.tsx",
+        "type": "component",
+        "label": "embed-inquiry-form.tsx"
+      },
+      {
+        "id": "components/finance/contractor-1099-panel.tsx",
+        "type": "component",
+        "label": "contractor-1099-panel.tsx"
+      },
+      {
+        "id": "components/finance/chargeback-rate-card.tsx",
+        "type": "component",
+        "label": "chargeback-rate-card.tsx"
+      },
+      {
+        "id": "components/finance/catering-bid-summary.tsx",
+        "type": "component",
+        "label": "catering-bid-summary.tsx"
+      },
+      {
+        "id": "components/finance/catering-bid-history.tsx",
+        "type": "component",
+        "label": "catering-bid-history.tsx"
+      },
+      {
+        "id": "components/finance/catering-bid-calculator.tsx",
+        "type": "component",
+        "label": "catering-bid-calculator.tsx"
+      },
+      {
+        "id": "components/finance/cash-flow-chart.tsx",
+        "type": "component",
+        "label": "cash-flow-chart.tsx"
+      },
+      {
+        "id": "components/finance/cash-flow-calendar.tsx",
+        "type": "component",
+        "label": "cash-flow-calendar.tsx"
+      },
+      {
+        "id": "components/finance/break-even-calculator.tsx",
+        "type": "component",
+        "label": "break-even-calculator.tsx"
+      },
+      {
+        "id": "components/finance/bank-feed-panel.tsx",
+        "type": "component",
+        "label": "bank-feed-panel.tsx"
+      },
+      {
+        "id": "components/finance/add-manual-transaction-form.tsx",
+        "type": "component",
+        "label": "add-manual-transaction-form.tsx"
+      },
+      {
+        "id": "components/stripe/payment-form.tsx",
+        "type": "component",
+        "label": "payment-form.tsx"
+      },
+      {
+        "id": "components/daily-ops/remy-summary.tsx",
+        "type": "component",
+        "label": "remy-summary.tsx"
+      },
+      {
+        "id": "components/communication/thread-detail-client.tsx",
+        "type": "component",
+        "label": "thread-detail-client.tsx"
+      },
+      {
+        "id": "components/communication/inbox-calendar-peek.tsx",
+        "type": "component",
+        "label": "inbox-calendar-peek.tsx"
+      },
+      {
+        "id": "components/communication/communication-inbox-client.tsx",
+        "type": "component",
+        "label": "communication-inbox-client.tsx"
+      },
+      {
+        "id": "components/finance/yoy-revenue-chart.tsx",
+        "type": "component",
+        "label": "yoy-revenue-chart.tsx"
+      },
+      {
+        "id": "components/finance/yoy-comparison.tsx",
+        "type": "component",
+        "label": "yoy-comparison.tsx"
+      },
+      {
+        "id": "components/finance/yoy-comparison-dashboard.tsx",
+        "type": "component",
+        "label": "yoy-comparison-dashboard.tsx"
+      },
+      {
+        "id": "components/finance/w9-form-panel.tsx",
+        "type": "component",
+        "label": "w9-form-panel.tsx"
+      },
+      {
+        "id": "components/finance/vendor-payment-aging.tsx",
+        "type": "component",
+        "label": "vendor-payment-aging.tsx"
+      },
+      {
+        "id": "components/finance/tip-log-panel.tsx",
+        "type": "component",
+        "label": "tip-log-panel.tsx"
+      },
+      {
+        "id": "components/finance/tax-prep-dashboard.tsx",
+        "type": "component",
+        "label": "tax-prep-dashboard.tsx"
+      },
+      {
+        "id": "components/finance/tax-package-export.tsx",
+        "type": "component",
+        "label": "tax-package-export.tsx"
+      },
+      {
+        "id": "components/finance/tax-estimate-dashboard.tsx",
+        "type": "component",
+        "label": "tax-estimate-dashboard.tsx"
+      },
+      {
+        "id": "components/finance/seasonal-trends-panel.tsx",
+        "type": "component",
+        "label": "seasonal-trends-panel.tsx"
+      },
+      {
+        "id": "components/finance/sales-tax-panel.tsx",
+        "type": "component",
+        "label": "sales-tax-panel.tsx"
+      },
+      {
+        "id": "components/finance/revenue-forecast.tsx",
+        "type": "component",
+        "label": "revenue-forecast.tsx"
+      },
+      {
+        "id": "components/finance/retirement-health-panel.tsx",
+        "type": "component",
+        "label": "retirement-health-panel.tsx"
+      },
+      {
+        "id": "components/finance/recurring-invoice-form.tsx",
+        "type": "component",
+        "label": "recurring-invoice-form.tsx"
+      },
+      {
+        "id": "components/finance/ProfitAndLossReport.tsx",
+        "type": "component",
+        "label": "ProfitAndLossReport.tsx"
+      },
+      {
+        "id": "components/finance/profit-dashboard.tsx",
+        "type": "component",
+        "label": "profit-dashboard.tsx"
+      },
+      {
+        "id": "components/finance/plate-cost-table.tsx",
+        "type": "component",
+        "label": "plate-cost-table.tsx"
+      },
+      {
+        "id": "components/documents/document-search-client.tsx",
+        "type": "component",
+        "label": "document-search-client.tsx"
+      },
+      {
+        "id": "components/dashboard/payout-summary-widget.tsx",
+        "type": "component",
+        "label": "payout-summary-widget.tsx"
+      },
+      {
+        "id": "components/dashboard/pantry-alerts-widget.tsx",
+        "type": "component",
+        "label": "pantry-alerts-widget.tsx"
+      },
+      {
+        "id": "components/dashboard/onboarding-reminder-banner.tsx",
+        "type": "component",
+        "label": "onboarding-reminder-banner.tsx"
+      },
+      {
+        "id": "components/dashboard/onboarding-checklist-widget.tsx",
+        "type": "component",
+        "label": "onboarding-checklist-widget.tsx"
+      },
+      {
+        "id": "components/dashboard/onboarding-accelerator.tsx",
+        "type": "component",
+        "label": "onboarding-accelerator.tsx"
+      },
+      {
+        "id": "components/dashboard/ollama-status-badge.tsx",
+        "type": "component",
+        "label": "ollama-status-badge.tsx"
+      },
+      {
+        "id": "components/dashboard/remy-alerts-widget.tsx",
+        "type": "component",
+        "label": "remy-alerts-widget.tsx"
+      },
+      {
+        "id": "components/dashboard/quick-availability-widget.tsx",
+        "type": "component",
+        "label": "quick-availability-widget.tsx"
+      },
+      {
+        "id": "components/finance/forecast-chart.tsx",
+        "type": "component",
+        "label": "forecast-chart.tsx"
+      },
+      {
+        "id": "components/finance/home-office-form.tsx",
+        "type": "component",
+        "label": "home-office-form.tsx"
+      },
+      {
+        "id": "components/finance/food-cost-widget.tsx",
+        "type": "component",
+        "label": "food-cost-widget.tsx"
+      },
+      {
+        "id": "components/finance/growth-metrics-card.tsx",
+        "type": "component",
+        "label": "growth-metrics-card.tsx"
+      },
+      {
+        "id": "components/finance/food-cost-panel.tsx",
+        "type": "component",
+        "label": "food-cost-panel.tsx"
+      },
+      {
+        "id": "components/finance/grocery-price-trends.tsx",
+        "type": "component",
+        "label": "grocery-price-trends.tsx"
+      },
+      {
+        "id": "components/finance/expense-summary-chart.tsx",
+        "type": "component",
+        "label": "expense-summary-chart.tsx"
+      },
+      {
+        "id": "components/finance/grocery-price-log.tsx",
+        "type": "component",
+        "label": "grocery-price-log.tsx"
+      },
+      {
+        "id": "components/finance/expense-list.tsx",
+        "type": "component",
+        "label": "expense-list.tsx"
+      },
+      {
+        "id": "components/finance/goal-setter.tsx",
+        "type": "component",
+        "label": "goal-setter.tsx"
+      },
+      {
+        "id": "components/finance/expense-line-items-panel.tsx",
+        "type": "component",
+        "label": "expense-line-items-panel.tsx"
+      },
+      {
+        "id": "components/finance/form-1099-nec-panel.tsx",
+        "type": "component",
+        "label": "form-1099-nec-panel.tsx"
+      },
+      {
+        "id": "components/finance/event-sales-tax-form.tsx",
+        "type": "component",
+        "label": "event-sales-tax-form.tsx"
+      },
+      {
+        "id": "components/finance/deposit-tracker.tsx",
+        "type": "component",
+        "label": "deposit-tracker.tsx"
+      },
+      {
+        "id": "components/finance/event-pricing-intelligence-panel.tsx",
+        "type": "component",
+        "label": "event-pricing-intelligence-panel.tsx"
+      },
+      {
+        "id": "components/finance/deposit-settings-form.tsx",
+        "type": "component",
+        "label": "deposit-settings-form.tsx"
+      },
+      {
+        "id": "components/finance/dispute-tracker.tsx",
+        "type": "component",
+        "label": "dispute-tracker.tsx"
+      },
+      {
+        "id": "components/finance/cost-variance-card.tsx",
+        "type": "component",
+        "label": "cost-variance-card.tsx"
+      },
+      {
+        "id": "components/finance/mileage-log-panel.tsx",
+        "type": "component",
+        "label": "mileage-log-panel.tsx"
+      },
+      {
+        "id": "components/finance/mileage-tracker.tsx",
+        "type": "component",
+        "label": "mileage-tracker.tsx"
+      },
+      {
+        "id": "components/finance/invoice-payment-link-button.tsx",
+        "type": "component",
+        "label": "invoice-payment-link-button.tsx"
+      },
+      {
+        "id": "components/finance/mileage-summary-widget.tsx",
+        "type": "component",
+        "label": "mileage-summary-widget.tsx"
+      },
+      {
+        "id": "components/finance/payment-plan-panel.tsx",
+        "type": "component",
+        "label": "payment-plan-panel.tsx"
+      },
+      {
+        "id": "components/finance/payroll/w2-panel.tsx",
+        "type": "component",
+        "label": "w2-panel.tsx"
+      },
+      {
+        "id": "components/finance/payroll/payroll-entry-form.tsx",
+        "type": "component",
+        "label": "payroll-entry-form.tsx"
+      },
+      {
+        "id": "components/finance/payroll/form-941-panel.tsx",
+        "type": "component",
+        "label": "form-941-panel.tsx"
+      },
+      {
+        "id": "components/finance/payroll/employee-form.tsx",
+        "type": "component",
+        "label": "employee-form.tsx"
+      },
+      {
+        "id": "components/expenses/quick-expense-trigger.tsx",
+        "type": "component",
+        "label": "quick-expense-trigger.tsx"
+      },
+      {
+        "id": "components/commerce/reports-page-client.tsx",
+        "type": "component",
+        "label": "reports-page-client.tsx"
+      },
+      {
+        "id": "components/commerce/reconciliation-actions-client.tsx",
+        "type": "component",
+        "label": "reconciliation-actions-client.tsx"
+      },
+      {
+        "id": "components/commerce/payment-schedule-client.tsx",
+        "type": "component",
+        "label": "payment-schedule-client.tsx"
+      },
+      {
+        "id": "components/events/calendar-add-buttons.tsx",
+        "type": "component",
+        "label": "calendar-add-buttons.tsx"
+      },
+      {
+        "id": "components/events/allergen-conflict-alert.tsx",
+        "type": "component",
+        "label": "allergen-conflict-alert.tsx"
+      },
+      {
+        "id": "components/events/client-event-photo-gallery.tsx",
+        "type": "component",
+        "label": "client-event-photo-gallery.tsx"
+      },
+      {
+        "id": "components/events/client-portal-qr.tsx",
+        "type": "component",
+        "label": "client-portal-qr.tsx"
+      },
+      {
+        "id": "components/events/dietary-conflict-alert.tsx",
+        "type": "component",
+        "label": "dietary-conflict-alert.tsx"
+      },
+      {
+        "id": "components/navigation/public-nav-config.ts",
+        "type": "component",
+        "label": "public-nav-config.ts"
+      },
+      {
+        "id": "components/navigation/public-header.tsx",
+        "type": "component",
+        "label": "public-header.tsx"
+      },
+      {
+        "id": "components/navigation/public-footer.tsx",
+        "type": "component",
+        "label": "public-footer.tsx"
+      },
+      {
+        "id": "components/navigation/client-nav.tsx",
+        "type": "component",
+        "label": "client-nav.tsx"
+      },
+      {
+        "id": "lib/voice/speech-recognition.ts",
+        "type": "module",
+        "label": "speech-recognition.ts"
+      },
+      {
+        "id": "lib/voice/kitchen-commands.ts",
+        "type": "module",
+        "label": "kitchen-commands.ts"
+      },
+      {
+        "id": "components/recipes/recipe-sprint-client.tsx",
+        "type": "component",
+        "label": "recipe-sprint-client.tsx"
+      },
+      {
+        "id": "components/recipes/inventory-match-panel.tsx",
+        "type": "component",
+        "label": "inventory-match-panel.tsx"
+      },
+      {
+        "id": "components/recipes/ingredient-sourcing-toggle.tsx",
+        "type": "component",
+        "label": "ingredient-sourcing-toggle.tsx"
+      },
+      {
+        "id": "components/receipts/receipt-library-client.tsx",
+        "type": "component",
+        "label": "receipt-library-client.tsx"
+      },
+      {
+        "id": "components/events/event-inventory-panel.tsx",
+        "type": "component",
+        "label": "event-inventory-panel.tsx"
+      },
+      {
+        "id": "components/events/event-debrief-client.tsx",
+        "type": "component",
+        "label": "event-debrief-client.tsx"
+      },
+      {
+        "id": "components/events/photo-consent-summary.tsx",
+        "type": "component",
+        "label": "photo-consent-summary.tsx"
+      },
+      {
+        "id": "components/events/payment-success-refresher.tsx",
+        "type": "component",
+        "label": "payment-success-refresher.tsx"
+      },
+      {
+        "id": "components/events/payment-actions-panel.tsx",
+        "type": "component",
+        "label": "payment-actions-panel.tsx"
+      },
+      {
+        "id": "components/events/packing-list-client.tsx",
+        "type": "component",
+        "label": "packing-list-client.tsx"
+      },
+      {
+        "id": "components/events/interactive-doc-client.tsx",
+        "type": "component",
+        "label": "interactive-doc-client.tsx"
+      },
+      {
+        "id": "components/events/grocery-quote-panel.tsx",
+        "type": "component",
+        "label": "grocery-quote-panel.tsx"
+      },
+      {
+        "id": "components/events/gear-check-client.tsx",
+        "type": "component",
+        "label": "gear-check-client.tsx"
+      },
+      {
+        "id": "components/events/post-event-summary-client.tsx",
+        "type": "component",
+        "label": "post-event-summary-client.tsx"
+      },
+      {
+        "id": "components/events/pop-up-closeout-panel.tsx",
+        "type": "component",
+        "label": "pop-up-closeout-panel.tsx"
+      },
+      {
+        "id": "components/events/pre-event-checklist-client.tsx",
+        "type": "component",
+        "label": "pre-event-checklist-client.tsx"
+      },
+      {
+        "id": "components/staff/staff-schedule-calendar.tsx",
+        "type": "component",
+        "label": "staff-schedule-calendar.tsx"
+      },
+      {
+        "id": "components/staff/staff-availability-manager.tsx",
+        "type": "component",
+        "label": "staff-availability-manager.tsx"
+      },
+      {
+        "id": "components/staff/onboarding-checklist.tsx",
+        "type": "component",
+        "label": "onboarding-checklist.tsx"
+      },
+      {
+        "id": "components/staff/availability-grid.tsx",
+        "type": "component",
+        "label": "availability-grid.tsx"
+      },
+      {
+        "id": "docs/specs/universal-intake-pipeline.md",
+        "type": "spec",
+        "label": "universal-intake-pipeline.md"
+      },
+      {
+        "id": "docs/specs/system-integrity-question-set-remy-cohesion.md",
+        "type": "spec",
+        "label": "system-integrity-question-set-remy-cohesion.md"
+      },
+      {
+        "id": "docs/specs/system-integrity-question-set-public-surface.md",
+        "type": "spec",
+        "label": "system-integrity-question-set-public-surface.md"
+      },
+      {
+        "id": "docs/specs/system-integrity-question-set-public-surface-cohesion-v1.md",
+        "type": "spec",
+        "label": "system-integrity-question-set-public-surface-cohesion-v1.md"
+      },
+      {
+        "id": "docs/specs/system-integrity-question-set-onboarding.md",
+        "type": "spec",
+        "label": "system-integrity-question-set-onboarding.md"
+      },
+      {
+        "id": "docs/specs/system-integrity-question-set-onboarding-production-readiness.md",
+        "type": "spec",
+        "label": "system-integrity-question-set-onboarding-production-readiness.md"
+      },
+      {
+        "id": "docs/specs/system-integrity-question-set-inquiry-to-completion.md",
+        "type": "spec",
+        "label": "system-integrity-question-set-inquiry-to-completion.md"
+      },
+      {
+        "id": "docs/specs/system-integrity-question-set-inquiry-pipeline.md",
+        "type": "spec",
+        "label": "system-integrity-question-set-inquiry-pipeline.md"
+      },
+      {
+        "id": "docs/specs/system-integrity-question-set-finance.md",
+        "type": "spec",
+        "label": "system-integrity-question-set-finance.md"
+      },
+      {
+        "id": "docs/specs/system-integrity-question-set-client-portal.md",
+        "type": "spec",
+        "label": "system-integrity-question-set-client-portal.md"
+      },
+      {
+        "id": "docs/specs/system-integrity-question-set-client-management.md",
+        "type": "spec",
+        "label": "system-integrity-question-set-client-management.md"
+      },
+      {
+        "id": "docs/specs/system-integrity-question-set-client-management-phase2.md",
+        "type": "spec",
+        "label": "system-integrity-question-set-client-management-phase2.md"
+      },
+      {
+        "id": "docs/specs/system-integrity-question-set-client-hub-portal.md",
+        "type": "spec",
+        "label": "system-integrity-question-set-client-hub-portal.md"
+      },
+      {
+        "id": "docs/specs/system-integrity-question-set-calendar.md",
+        "type": "spec",
+        "label": "system-integrity-question-set-calendar.md"
+      },
+      {
+        "id": "docs/specs/system-integrity-question-set-calendar-scheduling.md",
+        "type": "spec",
+        "label": "system-integrity-question-set-calendar-scheduling.md"
+      },
+      {
+        "id": "docs/specs/system-integrity-question-set-ai-remy.md",
+        "type": "spec",
+        "label": "system-integrity-question-set-ai-remy.md"
+      },
+      {
+        "id": "docs/specs/service-simulation-proof-closeout.md",
+        "type": "spec",
+        "label": "service-simulation-proof-closeout.md"
+      },
+      {
+        "id": "docs/specs/remy-smart-router.md",
+        "type": "spec",
+        "label": "remy-smart-router.md"
+      },
+      {
+        "id": "docs/specs/remy-runtime-unification-and-quality-recovery.md",
+        "type": "spec",
+        "label": "remy-runtime-unification-and-quality-recovery.md"
+      },
+      {
+        "id": "docs/specs/remy-model-registry.md",
+        "type": "spec",
+        "label": "remy-model-registry.md"
+      },
+      {
+        "id": "docs/specs/remy-model-puller.md",
+        "type": "spec",
+        "label": "remy-model-puller.md"
+      },
+      {
+        "id": "docs/specs/remy-model-discovery.md",
+        "type": "spec",
+        "label": "remy-model-discovery.md"
+      },
+      {
+        "id": "docs/specs/remy-hybrid-cloud-routing.md",
+        "type": "spec",
+        "label": "remy-hybrid-cloud-routing.md"
+      },
+      {
+        "id": "docs/specs/remy-fix-03-safety-and-a11y.md",
+        "type": "spec",
+        "label": "remy-fix-03-safety-and-a11y.md"
+      },
+      {
+        "id": "docs/specs/remy-fix-02-markdown-and-streaming.md",
+        "type": "spec",
+        "label": "remy-fix-02-markdown-and-streaming.md"
+      },
+      {
+        "id": "docs/specs/remy-fix-01-public-activation.md",
+        "type": "spec",
+        "label": "remy-fix-01-public-activation.md"
+      },
+      {
+        "id": "docs/specs/remy-advisor-pattern.md",
+        "type": "spec",
+        "label": "remy-advisor-pattern.md"
+      },
+      {
+        "id": "docs/specs/public-surface-interrogation.md",
+        "type": "spec",
+        "label": "public-surface-interrogation.md"
+      },
+      {
+        "id": "docs/specs/public-only-monitored-cloud-ai-gateway.md",
+        "type": "spec",
+        "label": "public-only-monitored-cloud-ai-gateway.md"
+      },
+      {
+        "id": "docs/specs/public-chef-credentials-showcase.md",
+        "type": "spec",
+        "label": "public-chef-credentials-showcase.md"
+      },
+      {
+        "id": "app/(client)/onboarding/[token]/page.tsx",
+        "type": "route",
+        "label": "page.tsx"
+      },
+      {
+        "id": "docs/specs/p1-work-continuity-drift-guard.md",
+        "type": "spec",
+        "label": "p1-work-continuity-drift-guard.md"
+      },
+      {
+        "id": "app/(client)/onboarding/loading.tsx",
+        "type": "route",
+        "label": "loading.tsx"
+      },
+      {
+        "id": "docs/specs/p1-survey-public-hardening-and-results-scale.md",
+        "type": "spec",
+        "label": "p1-survey-public-hardening-and-results-scale.md"
+      },
+      {
+        "id": "docs/specs/p1-search-intent-landing-architecture.md",
+        "type": "spec",
+        "label": "p1-search-intent-landing-architecture.md"
+      },
+      {
+        "id": "app/(client)/not-found.tsx",
+        "type": "route",
+        "label": "not-found.tsx"
+      },
+      {
+        "id": "docs/specs/p1-navigation-and-cta-continuity.md",
+        "type": "spec",
+        "label": "p1-navigation-and-cta-continuity.md"
+      },
+      {
+        "id": "docs/specs/p1-finance-root-canonicalization.md",
+        "type": "spec",
+        "label": "p1-finance-root-canonicalization.md"
+      },
+      {
+        "id": "docs/specs/p1-event-scheduling-surface-ownership-and-route-truth.md",
+        "type": "spec",
+        "label": "p1-event-scheduling-surface-ownership-and-route-truth.md"
+      },
+      {
+        "id": "docs/specs/p1-demo-continuity-and-portal-proof.md",
+        "type": "spec",
+        "label": "p1-demo-continuity-and-portal-proof.md"
+      },
+      {
+        "id": "docs/specs/p1-canonical-culinary-dictionary.md",
+        "type": "spec",
+        "label": "p1-canonical-culinary-dictionary.md"
+      },
+      {
+        "id": "docs/specs/p0-work-continuity-control-plane.md",
+        "type": "spec",
+        "label": "p0-work-continuity-control-plane.md"
+      },
+      {
+        "id": "app/intake/[token]/page.tsx",
+        "type": "route",
+        "label": "page.tsx"
+      },
+      {
+        "id": "app/intake/[token]/intake-form-public.tsx",
+        "type": "route",
+        "label": "intake-form-public.tsx"
+      },
+      {
+        "id": "docs/specs/p0-public-booking-routing-and-source-truth.md",
+        "type": "spec",
+        "label": "p0-public-booking-routing-and-source-truth.md"
+      },
+      {
+        "id": "docs/specs/p0-onboarding-first-week-activation-contract.md",
+        "type": "spec",
+        "label": "p0-onboarding-first-week-activation-contract.md"
+      },
+      {
+        "id": "docs/specs/p0-client-portal-payment-intent-hardening.md",
+        "type": "spec",
+        "label": "p0-client-portal-payment-intent-hardening.md"
+      },
+      {
+        "id": "docs/specs/openclaw-inventory-evolution.md",
+        "type": "spec",
+        "label": "openclaw-inventory-evolution.md"
+      },
+      {
+        "id": "docs/specs/openclaw-canonical-scope-and-sequence.md",
+        "type": "spec",
+        "label": "openclaw-canonical-scope-and-sequence.md"
+      },
+      {
+        "id": "docs/specs/onboarding-overhaul.md",
+        "type": "spec",
+        "label": "onboarding-overhaul.md"
+      },
+      {
+        "id": "docs/specs/onboarding-dismissal-fix.md",
+        "type": "spec",
+        "label": "onboarding-dismissal-fix.md"
+      },
+      {
+        "id": "docs/specs/onboarding-cohesion-rework.md",
+        "type": "spec",
+        "label": "onboarding-cohesion-rework.md"
+      },
+      {
+        "id": "docs/specs/ollama-delegate-mcp.md",
+        "type": "spec",
+        "label": "ollama-delegate-mcp.md"
+      },
+      {
+        "id": "docs/specs/notes-dishes-menus-client-event-pipeline.md",
+        "type": "spec",
+        "label": "notes-dishes-menus-client-event-pipeline.md"
+      },
+      {
+        "id": "docs/specs/nationwide-ingredient-catalog.md",
+        "type": "spec",
+        "label": "nationwide-ingredient-catalog.md"
+      },
+      {
+        "id": "docs/specs/menu-hero-access.md",
+        "type": "spec",
+        "label": "menu-hero-access.md"
+      },
+      {
+        "id": "components/events/void-payment-panel.tsx",
+        "type": "component",
+        "label": "void-payment-panel.tsx"
+      },
+      {
+        "id": "components/events/travel-plan-client.tsx",
+        "type": "component",
+        "label": "travel-plan-client.tsx"
+      },
+      {
+        "id": "docs/specs/loyalty-trigger-expansion.md",
+        "type": "spec",
+        "label": "loyalty-trigger-expansion.md"
+      },
+      {
+        "id": "docs/specs/loyalty-client-experience.md",
+        "type": "spec",
+        "label": "loyalty-client-experience.md"
+      },
+      {
+        "id": "components/events/take-a-chef-payout-panel.tsx",
+        "type": "component",
+        "label": "take-a-chef-payout-panel.tsx"
+      },
+      {
+        "id": "docs/specs/kill-onboarding-redirect.md",
+        "type": "spec",
+        "label": "kill-onboarding-redirect.md"
+      },
+      {
+        "id": "docs/specs/interaction-engine-client-gateway-adapter.md",
+        "type": "spec",
+        "label": "interaction-engine-client-gateway-adapter.md"
+      },
+      {
+        "id": "docs/specs/inquiry-parse-reliability.md",
+        "type": "spec",
+        "label": "inquiry-parse-reliability.md"
+      },
+      {
+        "id": "docs/specs/ingredient-sourcing-intelligence.md",
+        "type": "spec",
+        "label": "ingredient-sourcing-intelligence.md"
+      },
+      {
+        "id": "docs/specs/ingredient-quantity-lifecycle.md",
+        "type": "spec",
+        "label": "ingredient-quantity-lifecycle.md"
+      },
+      {
+        "id": "docs/specs/ingredient-lifecycle-question-set.md",
+        "type": "spec",
+        "label": "ingredient-lifecycle-question-set.md"
+      },
+      {
+        "id": "components/events/record-payment-modal.tsx",
+        "type": "component",
+        "label": "record-payment-modal.tsx"
+      },
+      {
+        "id": "components/events/receipt-summary-client.tsx",
+        "type": "component",
+        "label": "receipt-summary-client.tsx"
+      },
+      {
+        "id": "docs/specs/food-operator-survey-launch-without-openclaw.md",
+        "type": "spec",
+        "label": "food-operator-survey-launch-without-openclaw.md"
+      },
+      {
+        "id": "docs/specs/food-operator-survey-launch-console.md",
+        "type": "spec",
+        "label": "food-operator-survey-launch-console.md"
+      },
+      {
+        "id": "docs/specs/fix-onboarding-gmail-connect.md",
+        "type": "spec",
+        "label": "fix-onboarding-gmail-connect.md"
+      },
+      {
+        "id": "docs/specs/featured-chef-public-proof-and-booking.md",
+        "type": "spec",
+        "label": "featured-chef-public-proof-and-booking.md"
+      },
+      {
+        "id": "docs/specs/event-pricing-ingredient-spike-warnings-build.md",
+        "type": "spec",
+        "label": "event-pricing-ingredient-spike-warnings-build.md"
+      },
+      {
+        "id": "app/beta-survey/public/[slug]/page.tsx",
+        "type": "route",
+        "label": "page.tsx"
+      },
+      {
+        "id": "app/(mobile)/client/[token]/events/page.tsx",
+        "type": "route",
+        "label": "page.tsx"
+      },
+      {
+        "id": "components/social/social-planner-client.tsx",
+        "type": "component",
+        "label": "social-planner-client.tsx"
+      },
+      {
+        "id": "components/social/social-feed-client.tsx",
+        "type": "component",
+        "label": "social-feed-client.tsx"
+      },
+      {
+        "id": "components/social/social-annual-calendar.tsx",
+        "type": "component",
+        "label": "social-annual-calendar.tsx"
+      },
+      {
+        "id": "components/mise-en-place/mise-en-place-client.tsx",
+        "type": "component",
+        "label": "mise-en-place-client.tsx"
+      },
+      {
+        "id": "app/(client)/my-spending/page.tsx",
+        "type": "route",
+        "label": "page.tsx"
+      },
+      {
+        "id": "app/(client)/my-spending/loading.tsx",
+        "type": "route",
+        "label": "loading.tsx"
+      },
+      {
+        "id": "lib/vendors/payment-aging.ts",
+        "type": "module",
+        "label": "payment-aging.ts"
+      },
+      {
+        "id": "lib/vendors/payment-aging-actions.ts",
+        "type": "module",
+        "label": "payment-aging-actions.ts"
+      },
+      {
+        "id": "lib/vendors/document-intake-parsers.ts",
+        "type": "module",
+        "label": "document-intake-parsers.ts"
+      },
+      {
+        "id": "lib/vendors/document-intake-actions.ts",
+        "type": "module",
+        "label": "document-intake-actions.ts"
+      },
+      {
+        "id": "components/quotes/quote-version-history.tsx",
+        "type": "component",
+        "label": "quote-version-history.tsx"
+      },
+      {
+        "id": "components/quotes/quote-transitions.tsx",
+        "type": "component",
+        "label": "quote-transitions.tsx"
+      },
+      {
+        "id": "components/quotes/quote-status-badge.tsx",
+        "type": "component",
+        "label": "quote-status-badge.tsx"
+      },
+      {
+        "id": "components/quotes/quote-price-freshness-warning.tsx",
+        "type": "component",
+        "label": "quote-price-freshness-warning.tsx"
+      },
+      {
+        "id": "components/quotes/quote-price-confidence-warning.tsx",
+        "type": "component",
+        "label": "quote-price-confidence-warning.tsx"
+      },
+      {
+        "id": "components/quotes/quote-form.tsx",
+        "type": "component",
+        "label": "quote-form.tsx"
+      },
+      {
+        "id": "components/quotes/quote-expiry-countdown.tsx",
+        "type": "component",
+        "label": "quote-expiry-countdown.tsx"
+      },
+      {
+        "id": "components/quotes/payment-structure-summary.tsx",
+        "type": "component",
+        "label": "payment-structure-summary.tsx"
+      },
+      {
+        "id": "components/quotes/client-spending-badge.tsx",
+        "type": "component",
+        "label": "client-spending-badge.tsx"
+      },
+      {
+        "id": "components/quotes/client-spend-hint.tsx",
+        "type": "component",
+        "label": "client-spend-hint.tsx"
+      },
+      {
+        "id": "docs/specs/ecs-gaps/public-dual-directory.md",
+        "type": "spec",
+        "label": "public-dual-directory.md"
+      },
+      {
+        "id": "docs/specs/ecs-gaps/partner-payout-visibility.md",
+        "type": "spec",
+        "label": "partner-payout-visibility.md"
+      },
+      {
+        "id": "docs/specs/ecs-gaps/event-planner-inquiry-handoff.md",
+        "type": "spec",
+        "label": "event-planner-inquiry-handoff.md"
+      },
+      {
+        "id": "docs/specs/ecs-gaps/embed-mobile-date-grid.md",
+        "type": "spec",
+        "label": "embed-mobile-date-grid.md"
+      },
+      {
+        "id": "docs/specs/ecs-gaps/embed-layout-tailwind-leak.md",
+        "type": "spec",
+        "label": "embed-layout-tailwind-leak.md"
+      },
+      {
+        "id": "docs/specs/ecs-gaps/client-hub-overflow.md",
+        "type": "spec",
+        "label": "client-hub-overflow.md"
+      },
+      {
+        "id": "docs/specs/ecs-gaps/client-event-detail-error.md",
+        "type": "spec",
+        "label": "client-event-detail-error.md"
+      },
+      {
+        "id": "docs/specs/directory-operator-outreach.md",
+        "type": "spec",
+        "label": "directory-operator-outreach.md"
+      },
+      {
+        "id": "docs/specs/devtools-codex-review.md",
+        "type": "spec",
+        "label": "devtools-codex-review.md"
+      },
+      {
+        "id": "docs/specs/critical-path-and-dinner-circle-onboarding.md",
+        "type": "spec",
+        "label": "critical-path-and-dinner-circle-onboarding.md"
+      },
+      {
+        "id": "docs/specs/consumer-booking-clarity.md",
+        "type": "spec",
+        "label": "consumer-booking-clarity.md"
+      },
+      {
+        "id": "docs/specs/comprehensive-domain-inventory-phase-1.md",
+        "type": "spec",
+        "label": "comprehensive-domain-inventory-phase-1.md"
+      },
+      {
+        "id": "docs/specs/component-aware-prep-scheduling.md",
+        "type": "spec",
+        "label": "component-aware-prep-scheduling.md"
+      },
+      {
+        "id": "docs/specs/codex-service-day-closeout.md",
+        "type": "spec",
+        "label": "codex-service-day-closeout.md"
+      },
+      {
+        "id": "docs/specs/codex-inquiry-event-urgency.md",
+        "type": "spec",
+        "label": "codex-inquiry-event-urgency.md"
+      },
+      {
+        "id": "docs/specs/codex-ingredient-showcase-action.md",
+        "type": "spec",
+        "label": "codex-ingredient-showcase-action.md"
+      },
+      {
+        "id": "docs/specs/codex-fix-quote-phantom-terms.md",
+        "type": "spec",
+        "label": "codex-fix-quote-phantom-terms.md"
+      },
+      {
+        "id": "docs/specs/codex-fix-auto-join-consent.md",
+        "type": "spec",
+        "label": "codex-fix-auto-join-consent.md"
+      },
+      {
+        "id": "docs/specs/codex-client-ux-bug-sweep.md",
+        "type": "spec",
+        "label": "codex-client-ux-bug-sweep.md"
+      },
+      {
+        "id": "docs/specs/codex-client-passport-persistence.md",
+        "type": "spec",
+        "label": "codex-client-passport-persistence.md"
+      },
+      {
+        "id": "docs/specs/codex-client-passport-and-delegation.md",
+        "type": "spec",
+        "label": "codex-client-passport-and-delegation.md"
+      },
+      {
+        "id": "docs/specs/codex-client-list-health-enrichment.md",
+        "type": "spec",
+        "label": "codex-client-list-health-enrichment.md"
+      },
+      {
+        "id": "docs/specs/codex-circles-agent-4-public-event-page-polish.md",
+        "type": "spec",
+        "label": "codex-circles-agent-4-public-event-page-polish.md"
+      },
+      {
+        "id": "docs/specs/client-survey-launch-without-openclaw.md",
+        "type": "spec",
+        "label": "client-survey-launch-without-openclaw.md"
+      },
+      {
+        "id": "docs/specs/client-survey-launch-console.md",
+        "type": "spec",
+        "label": "client-survey-launch-console.md"
+      },
+      {
+        "id": "docs/specs/client-resilience-interrogation.md",
+        "type": "spec",
+        "label": "client-resilience-interrogation.md"
+      },
+      {
+        "id": "docs/specs/client-experience-interrogation.md",
+        "type": "spec",
+        "label": "client-experience-interrogation.md"
+      },
+      {
+        "id": "docs/specs/chef-flow-decision-ledger-v1.md",
+        "type": "spec",
+        "label": "chef-flow-decision-ledger-v1.md"
+      },
+      {
+        "id": "docs/specs/canonical-tasks-create-regression-harness.md",
+        "type": "spec",
+        "label": "canonical-tasks-create-regression-harness.md"
+      },
+      {
+        "id": "docs/specs/byoai-phase2-ollama-adapter.md",
+        "type": "spec",
+        "label": "byoai-phase2-ollama-adapter.md"
+      },
+      {
+        "id": "docs/specs/build-ticketed-events-public-view.md",
+        "type": "spec",
+        "label": "build-ticketed-events-public-view.md"
+      },
+      {
+        "id": "docs/specs/build-client-relationship-closure-ui.md",
+        "type": "spec",
+        "label": "build-client-relationship-closure-ui.md"
+      },
+      {
+        "id": "docs/specs/build-client-relationship-closure-server-actions.md",
+        "type": "spec",
+        "label": "build-client-relationship-closure-server-actions.md"
+      },
+      {
+        "id": "docs/specs/build-client-relationship-closure-guards-and-tests.md",
+        "type": "spec",
+        "label": "build-client-relationship-closure-guards-and-tests.md"
+      },
+      {
+        "id": "docs/specs/build-client-relationship-closure-data-contract.md",
+        "type": "spec",
+        "label": "build-client-relationship-closure-data-contract.md"
+      },
+      {
+        "id": "docs/specs/build-client-relationship-closure-communications.md",
+        "type": "spec",
+        "label": "build-client-relationship-closure-communications.md"
+      },
+      {
+        "id": "app/(client)/my-rewards/reward-card.tsx",
+        "type": "route",
+        "label": "reward-card.tsx"
+      },
+      {
+        "id": "app/(client)/my-rewards/raffle-section.tsx",
+        "type": "route",
+        "label": "raffle-section.tsx"
+      },
+      {
+        "id": "app/(client)/my-rewards/raffle-leaderboard.tsx",
+        "type": "route",
+        "label": "raffle-leaderboard.tsx"
+      },
+      {
+        "id": "app/(client)/my-rewards/raffle-game-modal.tsx",
+        "type": "route",
+        "label": "raffle-game-modal.tsx"
+      },
+      {
+        "id": "app/(client)/my-rewards/raffle-draw-receipt.tsx",
+        "type": "route",
+        "label": "raffle-draw-receipt.tsx"
+      },
+      {
+        "id": "app/(client)/my-rewards/page.tsx",
+        "type": "route",
+        "label": "page.tsx"
+      },
+      {
+        "id": "app/(client)/my-rewards/loading.tsx",
+        "type": "route",
+        "label": "loading.tsx"
+      },
+      {
+        "id": "app/embed/not-found.tsx",
+        "type": "route",
+        "label": "not-found.tsx"
+      },
+      {
+        "id": "app/embed/layout.tsx",
+        "type": "route",
+        "label": "layout.tsx"
+      },
+      {
+        "id": "lib/validation/public-booking-proof.ts",
+        "type": "module",
+        "label": "public-booking-proof.ts"
+      },
+      {
+        "id": "lib/validation/public-booking-proof-packet.ts",
+        "type": "module",
+        "label": "public-booking-proof-packet.ts"
+      },
+      {
+        "id": "lib/validation/operator-survey-readiness.ts",
+        "type": "module",
+        "label": "operator-survey-readiness.ts"
+      },
+      {
+        "id": "lib/validation/onboarding-test-readiness.ts",
+        "type": "module",
+        "label": "onboarding-test-readiness.ts"
+      },
+      {
+        "id": "lib/validation/launch-readiness-operator-review.ts",
+        "type": "module",
+        "label": "launch-readiness-operator-review.ts"
+      },
+      {
+        "id": "app/(client)/my-rewards/about/page.tsx",
+        "type": "route",
+        "label": "page.tsx"
+      },
+      {
+        "id": "app/(client)/my-rewards/about/loyalty-about-content.tsx",
+        "type": "route",
+        "label": "loyalty-about-content.tsx"
+      },
+      {
+        "id": "components/sharing/client-rsvp-summary.tsx",
+        "type": "component",
+        "label": "client-rsvp-summary.tsx"
+      },
+      {
+        "id": "components/menus/upload-review-panel.tsx",
+        "type": "component",
+        "label": "upload-review-panel.tsx"
+      },
+      {
+        "id": "components/menus/client-menu-history.tsx",
+        "type": "component",
+        "label": "client-menu-history.tsx"
+      },
+      {
+        "id": "app/embed/inquiry/[chefId]/page.tsx",
+        "type": "route",
+        "label": "page.tsx"
+      },
+      {
+        "id": "app/embed/error.tsx",
+        "type": "route",
+        "label": "error.tsx"
+      },
+      {
+        "id": "app/(client)/my-quotes/[id]/quote-response-buttons.tsx",
+        "type": "route",
+        "label": "quote-response-buttons.tsx"
+      },
+      {
+        "id": "app/(client)/my-quotes/[id]/page.tsx",
+        "type": "route",
+        "label": "page.tsx"
+      },
+      {
+        "id": "app/(client)/my-quotes/page.tsx",
+        "type": "route",
+        "label": "page.tsx"
+      },
+      {
+        "id": "app/(client)/my-quotes/loading.tsx",
+        "type": "route",
+        "label": "loading.tsx"
+      },
+      {
+        "id": "components/settings/scheduling-rules-form.tsx",
+        "type": "component",
+        "label": "scheduling-rules-form.tsx"
+      },
+      {
+        "id": "components/settings/public-profile-settings.tsx",
+        "type": "component",
+        "label": "public-profile-settings.tsx"
+      },
+      {
+        "id": "components/settings/payment-methods-settings.tsx",
+        "type": "component",
+        "label": "payment-methods-settings.tsx"
+      },
+      {
+        "id": "components/settings/google-review-url-form.tsx",
+        "type": "component",
+        "label": "google-review-url-form.tsx"
+      },
+      {
+        "id": "components/settings/google-calendar-connect.tsx",
+        "type": "component",
+        "label": "google-calendar-connect.tsx"
+      },
+      {
+        "id": "components/settings/embed-code-panel.tsx",
+        "type": "component",
+        "label": "embed-code-panel.tsx"
+      },
+      {
+        "id": "components/settings/default-knowledge-client.tsx",
+        "type": "component",
+        "label": "default-knowledge-client.tsx"
+      },
+      {
+        "id": "components/settings/client-dashboard-layout-form.tsx",
+        "type": "component",
+        "label": "client-dashboard-layout-form.tsx"
+      },
+      {
+        "id": "components/settings/booking-page-settings.tsx",
+        "type": "component",
+        "label": "booking-page-settings.tsx"
+      },
+      {
+        "id": "app/(client)/my-profile/page.tsx",
+        "type": "route",
+        "label": "page.tsx"
+      },
+      {
+        "id": "app/(client)/my-profile/meal-collaboration-panel.tsx",
+        "type": "route",
+        "label": "meal-collaboration-panel.tsx"
+      },
+      {
+        "id": "app/(client)/my-profile/loading.tsx",
+        "type": "route",
+        "label": "loading.tsx"
+      },
+      {
+        "id": "components/public/workflow-steps.tsx",
+        "type": "component",
+        "label": "workflow-steps.tsx"
+      },
+      {
+        "id": "components/public/review-showcase.tsx",
+        "type": "component",
+        "label": "review-showcase.tsx"
+      },
+      {
+        "id": "components/public/remy-concierge-widget.tsx",
+        "type": "component",
+        "label": "remy-concierge-widget.tsx"
+      },
+      {
+        "id": "components/public/remy-concierge-section.tsx",
+        "type": "component",
+        "label": "remy-concierge-section.tsx"
+      },
+      {
+        "id": "components/public/public-secondary-entry-cluster.tsx",
+        "type": "component",
+        "label": "public-secondary-entry-cluster.tsx"
+      },
+      {
+        "id": "components/public/public-inquiry-form.tsx",
+        "type": "component",
+        "label": "public-inquiry-form.tsx"
+      },
+      {
+        "id": "components/public/post-action-footer.tsx",
+        "type": "component",
+        "label": "post-action-footer.tsx"
+      },
+      {
+        "id": "components/public/partner-showcase.tsx",
+        "type": "component",
+        "label": "partner-showcase.tsx"
+      },
+      {
+        "id": "components/public/meet-remy-section.tsx",
+        "type": "component",
+        "label": "meet-remy-section.tsx"
+      },
+      {
+        "id": "components/public/location-experience-showcase.tsx",
+        "type": "component",
+        "label": "location-experience-showcase.tsx"
+      },
+      {
+        "id": "components/public/intake-lane-expectations.tsx",
+        "type": "component",
+        "label": "intake-lane-expectations.tsx"
+      },
+      {
+        "id": "components/public/how-it-works-section.tsx",
+        "type": "component",
+        "label": "how-it-works-section.tsx"
+      },
+      {
+        "id": "components/public/dietary-trust-strip.tsx",
+        "type": "component",
+        "label": "dietary-trust-strip.tsx"
+      },
+      {
+        "id": "components/public/chef-proof-summary.tsx",
+        "type": "component",
+        "label": "chef-proof-summary.tsx"
+      },
+      {
+        "id": "components/public/chef-menu-spotlight.tsx",
+        "type": "component",
+        "label": "chef-menu-spotlight.tsx"
+      },
+      {
+        "id": "components/public/chef-credentials-panel.tsx",
+        "type": "component",
+        "label": "chef-credentials-panel.tsx"
+      },
+      {
+        "id": "components/public/chef-availability-waitlist.tsx",
+        "type": "component",
+        "label": "chef-availability-waitlist.tsx"
+      },
+      {
+        "id": "components/public/campaign-booking-form.tsx",
+        "type": "component",
+        "label": "campaign-booking-form.tsx"
+      },
+      {
+        "id": "app/(client)/my-profile/delete-account/page.tsx",
+        "type": "route",
+        "label": "page.tsx"
+      },
+      {
+        "id": "app/(client)/my-profile/delete-account/delete-account-form.tsx",
+        "type": "route",
+        "label": "delete-account-form.tsx"
+      },
+      {
+        "id": "app/(client)/my-profile/default-knowledge-panel.tsx",
+        "type": "route",
+        "label": "default-knowledge-panel.tsx"
+      },
+      {
+        "id": "app/(public)/_components/landing-below-fold.tsx",
+        "type": "route",
+        "label": "landing-below-fold.tsx"
+      },
+      {
+        "id": "app/(public)/_components/homepage-search.tsx",
+        "type": "route",
+        "label": "homepage-search.tsx"
+      },
+      {
+        "id": "app/(public)/_components/homepage-motion-controller.tsx",
+        "type": "route",
+        "label": "homepage-motion-controller.tsx"
+      },
+      {
+        "id": "app/(public)/_components/homepage-live-signal.tsx",
+        "type": "route",
+        "label": "homepage-live-signal.tsx"
+      },
+      {
+        "id": "components/marketing/social-content-calendar.tsx",
+        "type": "component",
+        "label": "social-content-calendar.tsx"
+      },
+      {
+        "id": "components/marketing/campaign-performance.tsx",
+        "type": "component",
+        "label": "campaign-performance.tsx"
+      },
+      {
+        "id": "app/api/webhooks/stripe/route.ts",
+        "type": "route",
+        "label": "route.ts"
+      },
+      {
+        "id": "app/(client)/my-profile/data-export/page.tsx",
+        "type": "route",
+        "label": "page.tsx"
+      },
+      {
+        "id": "app/(client)/my-profile/data-export/data-export-client.tsx",
+        "type": "route",
+        "label": "data-export-client.tsx"
+      },
+      {
+        "id": "app/(client)/my-profile/client-profile-form.tsx",
+        "type": "route",
+        "label": "client-profile-form.tsx"
+      },
+      {
+        "id": "docs/specs/auto-repair/noop-return-lib-scheduling-schedule-block-actions.ts.md",
+        "type": "spec",
+        "label": "noop-return-lib-scheduling-schedule-block-actions.ts.md"
+      },
+      {
+        "id": "docs/specs/auto-repair/noop-return-lib-scheduling-calendar-sync.ts.md",
+        "type": "spec",
+        "label": "noop-return-lib-scheduling-calendar-sync.ts.md"
+      },
+      {
+        "id": "docs/specs/auto-repair/noop-return-lib-scheduling-actions.ts.md",
+        "type": "spec",
+        "label": "noop-return-lib-scheduling-actions.ts.md"
+      },
+      {
+        "id": "docs/specs/auto-repair/noop-return-lib-finance-tip-actions.ts.md",
+        "type": "spec",
+        "label": "noop-return-lib-finance-tip-actions.ts.md"
+      },
+      {
+        "id": "docs/specs/auto-repair/noop-return-lib-finance-deposit-actions.ts.md",
+        "type": "spec",
+        "label": "noop-return-lib-finance-deposit-actions.ts.md"
+      }
+    ],
+    "edges": [
+      {
+        "source": "public-homepage",
+        "target": "app/(public)/page.tsx",
+        "type": "owns-file"
+      },
+      {
+        "source": "public-homepage",
+        "target": "/",
+        "type": "owns-route"
+      },
+      {
+        "source": "context-continuity",
+        "target": ".claude/skills/context-continuity/SKILL.md",
+        "type": "owns-file"
+      },
+      {
+        "source": "context-continuity",
+        "target": "devtools/context-continuity-scan.mjs",
+        "type": "owns-file"
+      },
+      {
+        "source": "context-continuity",
+        "target": "system/canonical-surfaces.json",
+        "type": "owns-file"
+      },
+      {
+        "source": "agent-skill-system",
+        "target": "devtools/skill-router.mjs",
+        "type": "owns-file"
+      },
+      {
+        "source": "agent-skill-system",
+        "target": "devtools/skill-validator.mjs",
+        "type": "owns-file"
+      },
+      {
+        "source": "agent-skill-system",
+        "target": "devtools/skill-trigger-tests.mjs",
+        "type": "owns-file"
+      },
+      {
+        "source": "agent-skill-system",
+        "target": "system/agent-golden-prompts/default.json",
+        "type": "owns-file"
+      },
+      {
+        "source": "remy-ai",
+        "target": "components/ai/remy-drawer.tsx",
+        "type": "owns-file"
+      },
+      {
+        "source": "remy-ai",
+        "target": "lib/ai/remy-actions.ts",
+        "type": "owns-file"
+      },
+      {
+        "source": "inventory",
+        "target": "app/(chef)/inventory/page.tsx",
+        "type": "owns-file"
+      },
+      {
+        "source": "inventory",
+        "target": "lib/inventory/pantry-engine.ts",
+        "type": "owns-file"
+      },
+      {
+        "source": "inventory",
+        "target": "/inventory",
+        "type": "owns-route"
+      },
+      {
+        "source": "inventory",
+        "target": "/ops/inventory",
+        "type": "owns-route"
+      },
+      {
+        "source": "calendar",
+        "target": "app/(chef)/calendar/page.tsx",
+        "type": "owns-file"
+      },
+      {
+        "source": "calendar",
+        "target": "components/calendar/unified-calendar-view.tsx",
+        "type": "owns-file"
+      },
+      {
+        "source": "calendar",
+        "target": "/calendar",
+        "type": "owns-route"
+      },
+      {
+        "source": "voice-ops",
+        "target": "lib/calling/voice-ops-actions.ts",
+        "type": "owns-file"
+      },
+      {
+        "source": "voice-ops",
+        "target": "components/calling/voice-ops-report-panel.tsx",
+        "type": "owns-file"
+      },
+      {
+        "source": "chef-flow-replay",
+        "target": "app/(chef)/replay/page.tsx",
+        "type": "owns-file"
+      },
+      {
+        "source": "chef-flow-replay",
+        "target": "lib/activity/replay-model.ts",
+        "type": "owns-file"
+      },
+      {
+        "source": "chef-flow-replay",
+        "target": "/replay",
+        "type": "owns-route"
+      },
+      {
+        "source": "client-intake",
+        "target": "app/api/book/route.ts",
+        "type": "owns-file"
+      },
+      {
+        "source": "client-intake",
+        "target": "lib/inquiries/public-actions.ts",
+        "type": "owns-file"
+      },
+      {
+        "source": "client-intake",
+        "target": "public/embed/chefflow-widget.js",
+        "type": "owns-file"
+      },
+      {
+        "source": "client-intake",
+        "target": "/book",
+        "type": "owns-route"
+      },
+      {
+        "source": "client-intake",
+        "target": "/clients/intake",
+        "type": "owns-route"
+      },
+      {
+        "source": "finance",
+        "target": "lib/ledger/append.ts",
+        "type": "owns-file"
+      },
+      {
+        "source": "finance",
+        "target": "lib/ledger/compute.ts",
+        "type": "owns-file"
+      },
+      {
+        "source": "finance",
+        "target": "lib/events/transitions.ts",
+        "type": "owns-file"
+      },
+      {
+        "source": "finance",
+        "target": "/finance",
+        "type": "owns-route"
+      },
+      {
+        "source": "finance",
+        "target": "/quotes",
+        "type": "owns-route"
+      },
+      {
+        "source": "inventory",
+        "target": "docs/changes/2026-04-29-pantry-engine-build.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "context-continuity",
+        "target": "docs/changes/2026-04-29-context-continuity-skill.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "docs/changes/2026-04-24-public-showcase-menu-photos.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "docs/changes/2026-04-24-open-booking-followthrough.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "docs/changes/2026-04-24-onboarding-first-week-activation-contract.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "inventory",
+        "target": "docs/changes/2026-04-24-ingredient-yield-ui.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "docs/changes/2026-04-23-public-intent-hardening.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "inventory",
+        "target": "docs/changes/2026-04-23-codex-recovery-inventory.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "docs/changes/2026-04-23-chef-client-ops-snapshot.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "docs/changes/2026-04-22-public-intake-body-guards.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "docs/changes/2026-04-22-operator-walkthrough-lane.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "docs/changes/2026-04-22-operator-acquisition-entry-routing.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "docs/changes/2026-04-22-onboarding-entry-truth.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "docs/changes/2026-04-22-ledger-backed-next-best-action.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "docs/changes/2026-04-22-homepage-operator-funnel.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "docs/changes/2026-04-18-open-booking-dietary-parity.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/vendors/vendor-document-intake.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "chef-flow-replay",
+        "target": "components/vendors/vendor-catalog-review-queue.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/booking/booking-form.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "calendar",
+        "target": "components/booking/booking-calendar.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/charity/charity-hours-client.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "chef-flow-replay",
+        "target": "components/campaigns/draft-review-card.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/beta/beta-onboarding-checklist.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/clients/client-value-card.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/clients/client-timeline.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/clients/client-tags.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/clients/client-status-badge.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/clients/client-snapshot.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/clients/client-preferences.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "chef-flow-replay",
+        "target": "components/clients/client-portal-activity-card.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/clients/client-photo-gallery.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/clients/client-household-panel.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/clients/client-financial-panel.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/clients/client-email-toggle.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/clients/client-dates-form.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/clients/client-country-panel.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/clients/client-connections.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "context-continuity",
+        "target": "components/clients/client-call-memory-panel.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/clients/client-action-icon.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "voice-ops",
+        "target": "components/calls/dashboard-call-intelligence-widget.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "voice-ops",
+        "target": "components/calls/call-type-badge.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "voice-ops",
+        "target": "components/calls/call-status-actions.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "voice-ops",
+        "target": "components/calls/call-recommendation-card.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "voice-ops",
+        "target": "components/calls/call-prep-panel.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "voice-ops",
+        "target": "components/calls/call-outcome-quality-panel.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "voice-ops",
+        "target": "components/calls/call-outcome-form.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "voice-ops",
+        "target": "components/calls/call-intelligence-panel.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "voice-ops",
+        "target": "components/calls/call-form.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "voice-ops",
+        "target": "components/calls/call-card.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "chef-flow-replay",
+        "target": "components/activity/tracked-download-link.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "chef-flow-replay",
+        "target": "components/activity/tracked-activity-link.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "chef-flow-replay",
+        "target": "components/activity/session-heartbeat.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "chef-flow-replay",
+        "target": "components/activity/retrace-timeline.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "chef-flow-replay",
+        "target": "components/activity/resume-section.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "chef-flow-replay",
+        "target": "components/activity/live-presence-panel.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "chef-flow-replay",
+        "target": "components/activity/entity-activity-timeline.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "chef-flow-replay",
+        "target": "components/activity/engagement-badge.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "chef-flow-replay",
+        "target": "components/activity/desire-path-insights.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "chef-flow-replay",
+        "target": "components/activity/client-presence-monitor.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "chef-flow-replay",
+        "target": "components/activity/client-portal-presence-beacon.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "chef-flow-replay",
+        "target": "components/activity/client-activity-timeline.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "chef-flow-replay",
+        "target": "components/activity/client-activity-feed.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "chef-flow-replay",
+        "target": "components/activity/client-activity-disclosure.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "agent-skill-system",
+        "target": "components/activity/chef-flow-replay.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "chef-flow-replay",
+        "target": "components/activity/chef-activity-feed.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "chef-flow-replay",
+        "target": "components/activity/breadcrumb-tracker.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "chef-flow-replay",
+        "target": "components/activity/activity-tracker.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "chef-flow-replay",
+        "target": "components/activity/activity-filters.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "chef-flow-replay",
+        "target": "components/activity/activity-dot.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/analytics/quote-acceptance-insights.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "components/analytics/public-page-view.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "chef-flow-replay",
+        "target": "components/analytics/menu-recommendation-hints.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/analytics/insights-client.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/analytics/client-ltv-chart.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/analytics/booking-score-badge.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/analytics/booking-conversion-funnel.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "calendar",
+        "target": "components/availability/availability-checklist.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/analytics/analytics-hub-client.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/analytics/analytics-client.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/clients/unified-client-timeline.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/clients/spending-dashboard-client.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/clients/repeat-client-panel.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/clients/payment-plan-calculator.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/clients/onboarding-form.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "inventory",
+        "target": "components/clients/kitchen-inventory-panel.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/client-dashboard/widget-shell.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/client-dashboard/widget-grid.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/client-dashboard/loading-skeleton.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/client-dashboard/empty-state.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/client-dashboard/collapsible-widget.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/client-dashboard/collapse-controls.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "voice-ops",
+        "target": "components/calling/voice-ops-report-panel.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "inventory",
+        "target": "components/calling/ingredient-resolution-view.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "voice-ops",
+        "target": "components/calling/chef-live-alerts.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/billing/trial-banner-client.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "voice-ops",
+        "target": "components/calling/call-settings-form.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "voice-ops",
+        "target": "components/calling/call-log.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "voice-ops",
+        "target": "components/calling/call-hub.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "voice-ops",
+        "target": "components/calling/call-access-request.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "remy-ai",
+        "target": "components/ai-privacy/remy-onboarding-wizard.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "remy-ai",
+        "target": "components/ai-privacy/remy-gate.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "remy-ai",
+        "target": "components/ai-privacy/remy-archetype-selector.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "context-continuity",
+        "target": "components/client-continuity/index.ts",
+        "type": "keyword-match"
+      },
+      {
+        "source": "context-continuity",
+        "target": "components/client-continuity/client-continuity-summary.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "components/beta-survey/public-market-research-entry.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "context-continuity",
+        "target": "lib/work-continuity/types.ts",
+        "type": "keyword-match"
+      },
+      {
+        "source": "calendar",
+        "target": "components/calendar/year-view.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "context-continuity",
+        "target": "lib/work-continuity/sources.ts",
+        "type": "keyword-match"
+      },
+      {
+        "source": "calendar",
+        "target": "components/calendar/unified-calendar-view.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "context-continuity",
+        "target": "lib/work-continuity/parse-spec-status.ts",
+        "type": "keyword-match"
+      },
+      {
+        "source": "calendar",
+        "target": "components/calendar/seasonal-palate-sidebar.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "context-continuity",
+        "target": "lib/work-continuity/parse-session-log.ts",
+        "type": "keyword-match"
+      },
+      {
+        "source": "context-continuity",
+        "target": "lib/work-continuity/build-index.ts",
+        "type": "keyword-match"
+      },
+      {
+        "source": "calendar",
+        "target": "components/calendar/protected-time-form.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "calendar",
+        "target": "components/calendar/protected-time-detail.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "calendar",
+        "target": "components/calendar/droppable-day-cell.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "calendar",
+        "target": "components/calendar/draggable-event.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "calendar",
+        "target": "components/calendar/client-signal-notification-toggle.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "calendar",
+        "target": "components/calendar/calendar-legend.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "calendar",
+        "target": "components/calendar/calendar-health-strip.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "calendar",
+        "target": "components/calendar/calendar-filter-panel.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "calendar",
+        "target": "components/calendar/calendar-entry-modal.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "calendar",
+        "target": "components/calendar/calendar-entry-detail.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "calendar",
+        "target": "components/calendar/calendar-entry-actions-panel.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "calendar",
+        "target": "components/calendar/calendar-day-command-panel.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "calendar",
+        "target": "components/calendar/availability-signal-toggle.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "calendar",
+        "target": "components/calendar/availability-share-settings.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "remy-ai",
+        "target": "components/ui/remy-loader.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "voice-ops",
+        "target": "components/ui/cookie-consent.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "calendar",
+        "target": "components/ui/conflict-resolution-dialog.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "calendar",
+        "target": "components/ui/conflict-dialog.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "chef-flow-replay",
+        "target": "components/ui/activity-timestamp.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/client/post-event-banner.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/client/client-events-refresher.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/forms/dietary-intake-fields.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "chef-flow-replay",
+        "target": "components/testimonials/review-request-manager.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "remy-ai",
+        "target": "components/admin/remy-abuse-summary.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/ai/command-center-client.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/ai/client-preference-panel.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "remy-ai",
+        "target": "components/ai/remy-capabilities-panel.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "remy-ai",
+        "target": "components/ai/remy-avatar.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "remy-ai",
+        "target": "components/ai/remy-animated-mascot.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "remy-ai",
+        "target": "components/ai/remy-action-log.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "remy-ai",
+        "target": "components/ai/remy-context.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "remy-ai",
+        "target": "components/ai/remy-client-chat.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "remy-ai",
+        "target": "components/ai/remy-conversation-list.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "remy-ai",
+        "target": "components/ai/remy-drawer.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "remy-ai",
+        "target": "components/ai/remy-history-list.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "components/ai/remy-public-widget.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "remy-ai",
+        "target": "components/ai/remy-mascot-chat.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "remy-ai",
+        "target": "components/ai/remy-mascot-button.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "remy-ai",
+        "target": "components/ai/remy-hub-dashboard.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "remy-ai",
+        "target": "components/ai/remy-sprite-animator.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "remy-ai",
+        "target": "components/ai/remy-search-view.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "remy-ai",
+        "target": "components/ai/remy-talking-avatar.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "remy-ai",
+        "target": "components/ai/remy-task-card.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/chat/client-chat-unread-badge.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "remy-ai",
+        "target": "components/chat/new-conversation-button.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "inventory",
+        "target": "components/equipment/equipment-inventory.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "chef-flow-replay",
+        "target": "components/ai/review-request-panel.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "remy-ai",
+        "target": "components/ai/remy-wrapper.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "remy-ai",
+        "target": "components/ai/remy-templates-view.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "chef-flow-replay",
+        "target": "components/culinary-dictionary/dictionary-review-queue.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/tasks/template-page-client.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/tasks/task-page-client.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "inventory",
+        "target": "components/culinary/ingredient-hazard-badge.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "inventory",
+        "target": "components/culinary/add-ingredient-form.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/dashboard/client-birthdays-widget.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/dashboard/booking-seasonality-widget.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "chef-flow-replay",
+        "target": "components/dashboard/activity-feed.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/dashboard/client-lookup-widget.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/embed/embed-inquiry-form.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/finance/contractor-1099-panel.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/finance/chargeback-rate-card.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/finance/catering-bid-summary.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/finance/catering-bid-history.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/finance/catering-bid-calculator.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/finance/cash-flow-chart.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "calendar",
+        "target": "components/finance/cash-flow-calendar.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/finance/break-even-calculator.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/finance/bank-feed-panel.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/finance/add-manual-transaction-form.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/stripe/payment-form.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "remy-ai",
+        "target": "components/daily-ops/remy-summary.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/communication/thread-detail-client.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "calendar",
+        "target": "components/communication/inbox-calendar-peek.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/communication/communication-inbox-client.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/finance/yoy-revenue-chart.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/finance/yoy-comparison.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/finance/yoy-comparison-dashboard.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/finance/w9-form-panel.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/finance/vendor-payment-aging.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/finance/tip-log-panel.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/finance/tax-prep-dashboard.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/finance/tax-package-export.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/finance/tax-estimate-dashboard.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/finance/seasonal-trends-panel.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/finance/sales-tax-panel.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/finance/revenue-forecast.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/finance/retirement-health-panel.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/finance/recurring-invoice-form.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/finance/ProfitAndLossReport.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/finance/profit-dashboard.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/finance/plate-cost-table.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/documents/document-search-client.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/dashboard/payout-summary-widget.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "inventory",
+        "target": "components/dashboard/pantry-alerts-widget.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/dashboard/onboarding-reminder-banner.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/dashboard/onboarding-checklist-widget.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/dashboard/onboarding-accelerator.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "remy-ai",
+        "target": "components/dashboard/ollama-status-badge.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "remy-ai",
+        "target": "components/dashboard/remy-alerts-widget.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "calendar",
+        "target": "components/dashboard/quick-availability-widget.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/finance/forecast-chart.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/finance/home-office-form.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/finance/food-cost-widget.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/finance/growth-metrics-card.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/finance/food-cost-panel.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/finance/grocery-price-trends.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/finance/expense-summary-chart.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/finance/grocery-price-log.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/finance/expense-list.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/finance/goal-setter.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/finance/expense-line-items-panel.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/finance/form-1099-nec-panel.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/finance/event-sales-tax-form.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/finance/deposit-tracker.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/finance/event-pricing-intelligence-panel.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/finance/deposit-settings-form.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/finance/dispute-tracker.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/finance/cost-variance-card.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/finance/mileage-log-panel.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/finance/mileage-tracker.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/finance/invoice-payment-link-button.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/finance/mileage-summary-widget.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/finance/payment-plan-panel.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/finance/payroll/w2-panel.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/finance/payroll/payroll-entry-form.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/finance/payroll/form-941-panel.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/finance/payroll/employee-form.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "agent-skill-system",
+        "target": "components/expenses/quick-expense-trigger.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/commerce/reports-page-client.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/commerce/reconciliation-actions-client.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/commerce/payment-schedule-client.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "calendar",
+        "target": "components/events/calendar-add-buttons.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "calendar",
+        "target": "components/events/allergen-conflict-alert.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/events/client-event-photo-gallery.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/events/client-portal-qr.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "calendar",
+        "target": "components/events/dietary-conflict-alert.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "components/navigation/public-nav-config.ts",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "components/navigation/public-header.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "components/navigation/public-footer.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/navigation/client-nav.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "voice-ops",
+        "target": "lib/voice/speech-recognition.ts",
+        "type": "keyword-match"
+      },
+      {
+        "source": "voice-ops",
+        "target": "lib/voice/kitchen-commands.ts",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/recipes/recipe-sprint-client.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "inventory",
+        "target": "components/recipes/inventory-match-panel.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "inventory",
+        "target": "components/recipes/ingredient-sourcing-toggle.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/receipts/receipt-library-client.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "inventory",
+        "target": "components/events/event-inventory-panel.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/events/event-debrief-client.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "voice-ops",
+        "target": "components/events/photo-consent-summary.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/events/payment-success-refresher.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/events/payment-actions-panel.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/events/packing-list-client.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/events/interactive-doc-client.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/events/grocery-quote-panel.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/events/gear-check-client.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/events/post-event-summary-client.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "agent-skill-system",
+        "target": "components/events/pop-up-closeout-panel.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/events/pre-event-checklist-client.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "calendar",
+        "target": "components/staff/staff-schedule-calendar.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "calendar",
+        "target": "components/staff/staff-availability-manager.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/staff/onboarding-checklist.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "calendar",
+        "target": "components/staff/availability-grid.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "docs/specs/universal-intake-pipeline.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "remy-ai",
+        "target": "docs/specs/system-integrity-question-set-remy-cohesion.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "docs/specs/system-integrity-question-set-public-surface.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "docs/specs/system-integrity-question-set-public-surface-cohesion-v1.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "docs/specs/system-integrity-question-set-onboarding.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "docs/specs/system-integrity-question-set-onboarding-production-readiness.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "docs/specs/system-integrity-question-set-inquiry-to-completion.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "docs/specs/system-integrity-question-set-inquiry-pipeline.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "docs/specs/system-integrity-question-set-finance.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "docs/specs/system-integrity-question-set-client-portal.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "docs/specs/system-integrity-question-set-client-management.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "docs/specs/system-integrity-question-set-client-management-phase2.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "docs/specs/system-integrity-question-set-client-hub-portal.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "calendar",
+        "target": "docs/specs/system-integrity-question-set-calendar.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "calendar",
+        "target": "docs/specs/system-integrity-question-set-calendar-scheduling.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "remy-ai",
+        "target": "docs/specs/system-integrity-question-set-ai-remy.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "agent-skill-system",
+        "target": "docs/specs/service-simulation-proof-closeout.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "agent-skill-system",
+        "target": "docs/specs/remy-smart-router.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "remy-ai",
+        "target": "docs/specs/remy-runtime-unification-and-quality-recovery.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "remy-ai",
+        "target": "docs/specs/remy-model-registry.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "remy-ai",
+        "target": "docs/specs/remy-model-puller.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "remy-ai",
+        "target": "docs/specs/remy-model-discovery.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "remy-ai",
+        "target": "docs/specs/remy-hybrid-cloud-routing.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "remy-ai",
+        "target": "docs/specs/remy-fix-03-safety-and-a11y.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "remy-ai",
+        "target": "docs/specs/remy-fix-02-markdown-and-streaming.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "docs/specs/remy-fix-01-public-activation.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "remy-ai",
+        "target": "docs/specs/remy-advisor-pattern.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "docs/specs/public-surface-interrogation.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "docs/specs/public-only-monitored-cloud-ai-gateway.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "docs/specs/public-chef-credentials-showcase.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "app/(client)/onboarding/[token]/page.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "context-continuity",
+        "target": "docs/specs/p1-work-continuity-drift-guard.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "app/(client)/onboarding/loading.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "docs/specs/p1-survey-public-hardening-and-results-scale.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "docs/specs/p1-search-intent-landing-architecture.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "app/(client)/not-found.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "context-continuity",
+        "target": "docs/specs/p1-navigation-and-cta-continuity.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "docs/specs/p1-finance-root-canonicalization.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "calendar",
+        "target": "docs/specs/p1-event-scheduling-surface-ownership-and-route-truth.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "context-continuity",
+        "target": "docs/specs/p1-demo-continuity-and-portal-proof.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "context-continuity",
+        "target": "docs/specs/p1-canonical-culinary-dictionary.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "context-continuity",
+        "target": "docs/specs/p0-work-continuity-control-plane.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "app/intake/[token]/page.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "app/intake/[token]/intake-form-public.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "docs/specs/p0-public-booking-routing-and-source-truth.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "docs/specs/p0-onboarding-first-week-activation-contract.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "docs/specs/p0-client-portal-payment-intent-hardening.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "inventory",
+        "target": "docs/specs/openclaw-inventory-evolution.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "context-continuity",
+        "target": "docs/specs/openclaw-canonical-scope-and-sequence.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "docs/specs/onboarding-overhaul.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "docs/specs/onboarding-dismissal-fix.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "docs/specs/onboarding-cohesion-rework.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "remy-ai",
+        "target": "docs/specs/ollama-delegate-mcp.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "docs/specs/notes-dishes-menus-client-event-pipeline.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "inventory",
+        "target": "docs/specs/nationwide-ingredient-catalog.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "docs/specs/menu-hero-access.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/events/void-payment-panel.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/events/travel-plan-client.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "agent-skill-system",
+        "target": "docs/specs/loyalty-trigger-expansion.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "docs/specs/loyalty-client-experience.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/events/take-a-chef-payout-panel.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "docs/specs/kill-onboarding-redirect.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "docs/specs/interaction-engine-client-gateway-adapter.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "docs/specs/inquiry-parse-reliability.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "inventory",
+        "target": "docs/specs/ingredient-sourcing-intelligence.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "inventory",
+        "target": "docs/specs/ingredient-quantity-lifecycle.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "inventory",
+        "target": "docs/specs/ingredient-lifecycle-question-set.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/events/record-payment-modal.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/events/receipt-summary-client.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "docs/specs/food-operator-survey-launch-without-openclaw.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "docs/specs/food-operator-survey-launch-console.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "docs/specs/fix-onboarding-gmail-connect.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "docs/specs/featured-chef-public-proof-and-booking.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "inventory",
+        "target": "docs/specs/event-pricing-ingredient-spike-warnings-build.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "app/beta-survey/public/[slug]/page.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "app/(mobile)/client/[token]/events/page.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/social/social-planner-client.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/social/social-feed-client.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "calendar",
+        "target": "components/social/social-annual-calendar.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/mise-en-place/mise-en-place-client.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "app/(client)/my-spending/page.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "app/(client)/my-spending/loading.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "lib/vendors/payment-aging.ts",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "lib/vendors/payment-aging-actions.ts",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "lib/vendors/document-intake-parsers.ts",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "lib/vendors/document-intake-actions.ts",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/quotes/quote-version-history.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/quotes/quote-transitions.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/quotes/quote-status-badge.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/quotes/quote-price-freshness-warning.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/quotes/quote-price-confidence-warning.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/quotes/quote-form.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/quotes/quote-expiry-countdown.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/quotes/payment-structure-summary.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/quotes/client-spending-badge.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/quotes/client-spend-hint.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "docs/specs/ecs-gaps/public-dual-directory.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "docs/specs/ecs-gaps/partner-payout-visibility.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "docs/specs/ecs-gaps/event-planner-inquiry-handoff.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "docs/specs/ecs-gaps/embed-mobile-date-grid.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "docs/specs/ecs-gaps/embed-layout-tailwind-leak.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "docs/specs/ecs-gaps/client-hub-overflow.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "docs/specs/ecs-gaps/client-event-detail-error.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "docs/specs/directory-operator-outreach.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "chef-flow-replay",
+        "target": "docs/specs/devtools-codex-review.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "docs/specs/critical-path-and-dinner-circle-onboarding.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "docs/specs/consumer-booking-clarity.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "inventory",
+        "target": "docs/specs/comprehensive-domain-inventory-phase-1.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "calendar",
+        "target": "docs/specs/component-aware-prep-scheduling.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "agent-skill-system",
+        "target": "docs/specs/codex-service-day-closeout.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "docs/specs/codex-inquiry-event-urgency.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "inventory",
+        "target": "docs/specs/codex-ingredient-showcase-action.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "docs/specs/codex-fix-quote-phantom-terms.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "voice-ops",
+        "target": "docs/specs/codex-fix-auto-join-consent.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "docs/specs/codex-client-ux-bug-sweep.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "docs/specs/codex-client-passport-persistence.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "docs/specs/codex-client-passport-and-delegation.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "docs/specs/codex-client-list-health-enrichment.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "docs/specs/codex-circles-agent-4-public-event-page-polish.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "docs/specs/client-survey-launch-without-openclaw.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "docs/specs/client-survey-launch-console.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "docs/specs/client-resilience-interrogation.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "docs/specs/client-experience-interrogation.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "docs/specs/chef-flow-decision-ledger-v1.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "context-continuity",
+        "target": "docs/specs/canonical-tasks-create-regression-harness.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "remy-ai",
+        "target": "docs/specs/byoai-phase2-ollama-adapter.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "docs/specs/build-ticketed-events-public-view.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "docs/specs/build-client-relationship-closure-ui.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "docs/specs/build-client-relationship-closure-server-actions.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "docs/specs/build-client-relationship-closure-guards-and-tests.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "docs/specs/build-client-relationship-closure-data-contract.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "docs/specs/build-client-relationship-closure-communications.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "app/(client)/my-rewards/reward-card.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "app/(client)/my-rewards/raffle-section.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "app/(client)/my-rewards/raffle-leaderboard.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "app/(client)/my-rewards/raffle-game-modal.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "app/(client)/my-rewards/raffle-draw-receipt.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "app/(client)/my-rewards/page.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "app/(client)/my-rewards/loading.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "app/embed/not-found.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "app/embed/layout.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "lib/validation/public-booking-proof.ts",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "lib/validation/public-booking-proof-packet.ts",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "lib/validation/operator-survey-readiness.ts",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "lib/validation/onboarding-test-readiness.ts",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "lib/validation/launch-readiness-operator-review.ts",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "app/(client)/my-rewards/about/page.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "app/(client)/my-rewards/about/loyalty-about-content.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/sharing/client-rsvp-summary.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "chef-flow-replay",
+        "target": "components/menus/upload-review-panel.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/menus/client-menu-history.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "app/embed/inquiry/[chefId]/page.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "app/embed/error.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "app/(client)/my-quotes/[id]/quote-response-buttons.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "app/(client)/my-quotes/[id]/page.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "app/(client)/my-quotes/page.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "app/(client)/my-quotes/loading.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "calendar",
+        "target": "components/settings/scheduling-rules-form.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "components/settings/public-profile-settings.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "components/settings/payment-methods-settings.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "chef-flow-replay",
+        "target": "components/settings/google-review-url-form.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "calendar",
+        "target": "components/settings/google-calendar-connect.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/settings/embed-code-panel.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/settings/default-knowledge-client.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/settings/client-dashboard-layout-form.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "components/settings/booking-page-settings.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "app/(client)/my-profile/page.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "app/(client)/my-profile/meal-collaboration-panel.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "app/(client)/my-profile/loading.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "components/public/workflow-steps.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "components/public/review-showcase.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "components/public/remy-concierge-widget.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "components/public/remy-concierge-section.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "components/public/public-secondary-entry-cluster.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "components/public/public-inquiry-form.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "components/public/post-action-footer.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "components/public/partner-showcase.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "components/public/meet-remy-section.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "components/public/location-experience-showcase.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "components/public/intake-lane-expectations.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "components/public/how-it-works-section.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "components/public/dietary-trust-strip.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "components/public/chef-proof-summary.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "components/public/chef-menu-spotlight.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "components/public/chef-credentials-panel.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "components/public/chef-availability-waitlist.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "components/public/campaign-booking-form.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "app/(client)/my-profile/delete-account/page.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "app/(client)/my-profile/delete-account/delete-account-form.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "app/(client)/my-profile/default-knowledge-panel.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "app/(public)/_components/landing-below-fold.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "app/(public)/_components/homepage-search.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "app/(public)/_components/homepage-motion-controller.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "public-homepage",
+        "target": "app/(public)/_components/homepage-live-signal.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "calendar",
+        "target": "components/marketing/social-content-calendar.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "voice-ops",
+        "target": "components/marketing/campaign-performance.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "app/api/webhooks/stripe/route.ts",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "app/(client)/my-profile/data-export/page.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "app/(client)/my-profile/data-export/data-export-client.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "client-intake",
+        "target": "app/(client)/my-profile/client-profile-form.tsx",
+        "type": "keyword-match"
+      },
+      {
+        "source": "calendar",
+        "target": "docs/specs/auto-repair/noop-return-lib-scheduling-schedule-block-actions.ts.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "calendar",
+        "target": "docs/specs/auto-repair/noop-return-lib-scheduling-calendar-sync.ts.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "calendar",
+        "target": "docs/specs/auto-repair/noop-return-lib-scheduling-actions.ts.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "docs/specs/auto-repair/noop-return-lib-finance-tip-actions.ts.md",
+        "type": "keyword-match"
+      },
+      {
+        "source": "finance",
+        "target": "docs/specs/auto-repair/noop-return-lib-finance-deposit-actions.ts.md",
+        "type": "keyword-match"
+      }
+    ]
+  }
+}

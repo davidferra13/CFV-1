@@ -1,0 +1,354 @@
+{
+  "generated_at": "2026-04-30T00:01:44.923Z",
+  "prompt": "Build continuity scanner dashboard for duplicate homepage prevention",
+  "terms": ["continuity", "scanner", "dashboard", "duplicate", "homepage", "prevention"],
+  "scanned_dirs": [
+    "app",
+    "components",
+    "lib",
+    "docs/specs",
+    "docs/changes",
+    "docs/app-complete-audit.md",
+    "project-map",
+    "memory",
+    "system/intake",
+    "system/agent-reports"
+  ],
+  "canonical_surfaces": [
+    {
+      "id": "context-continuity",
+      "label": "Context Continuity",
+      "score": 8,
+      "hits": ["continuity", "duplicate", "prevention"],
+      "canonical_routes": [],
+      "canonical_files": [
+        ".claude/skills/context-continuity/SKILL.md",
+        "devtools/context-continuity-scan.mjs",
+        "system/canonical-surfaces.json"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Extend the continuity layer in place."
+      }
+    },
+    {
+      "id": "public-homepage",
+      "label": "Public Homepage",
+      "score": 6,
+      "hits": ["duplicate", "homepage"],
+      "canonical_routes": ["/"],
+      "canonical_files": ["app/(public)/page.tsx"],
+      "sandbox_routes": ["/sandbox/homepage"],
+      "duplicate_policy": {
+        "allowed_duplicates": 1,
+        "allowed_reason": "One sandbox duplicate for interactive experimentation."
+      }
+    }
+  ],
+  "related_files": [
+    {
+      "file": "system/agent-reports/context-continuity/20260430T000116Z-build-continuity-scanner-dashboard-for-duplicate-homepage-prevention.json",
+      "kind": "system",
+      "score": 58,
+      "hits": ["continuity", "scanner", "dashboard", "duplicate", "homepage", "prevention"]
+    },
+    {
+      "file": "system/agent-reports/skill-closeouts/20260429T234713Z-context-continuity-prevent-duplicate-fragmented-chefflow-builds-with-a-context-continuity-skill.json",
+      "kind": "system",
+      "score": 19,
+      "hits": ["continuity", "duplicate", "homepage"]
+    },
+    {
+      "file": "system/agent-reports/flight-records/20260429T235629Z-build-the-complete-context-continuity-tooling-layer-scanner-cli-canonical-surfac.json",
+      "kind": "system",
+      "score": 17,
+      "hits": ["continuity", "scanner", "dashboard", "duplicate"]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-consumer-discovery-cohesion-v1.md",
+      "kind": "spec",
+      "score": 16,
+      "hits": ["continuity", "dashboard", "duplicate", "homepage", "prevention"]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-client-management.md",
+      "kind": "spec",
+      "score": 15,
+      "hits": ["dashboard", "duplicate", "prevention"]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-competitive-surface.md",
+      "kind": "spec",
+      "score": 15,
+      "hits": ["scanner", "dashboard", "duplicate", "homepage", "prevention"]
+    },
+    {
+      "file": "system/agent-reports/router-decisions/20260429T235629Z-build-the-complete-context-continuity-tooling-layer-scanner-cli-canonical-surfac.json",
+      "kind": "system",
+      "score": 15,
+      "hits": ["continuity", "scanner", "dashboard", "duplicate"]
+    },
+    {
+      "file": "app/(chef)/dashboard/page.tsx",
+      "kind": "route",
+      "score": 14,
+      "hits": ["dashboard", "continuity"]
+    },
+    {
+      "file": "docs/specs/p0-work-continuity-control-plane.md",
+      "kind": "spec",
+      "score": 14,
+      "hits": ["continuity", "dashboard"]
+    },
+    {
+      "file": "docs/specs/p1-demo-continuity-and-portal-proof.md",
+      "kind": "spec",
+      "score": 14,
+      "hits": ["continuity", "dashboard", "duplicate"]
+    },
+    {
+      "file": "docs/specs/p1-navigation-and-cta-continuity.md",
+      "kind": "spec",
+      "score": 14,
+      "hits": ["continuity", "homepage"]
+    },
+    {
+      "file": "docs/specs/public-surface-interrogation.md",
+      "kind": "spec",
+      "score": 14,
+      "hits": ["continuity", "dashboard", "duplicate", "homepage", "prevention"]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-public-surface-cohesion-v1.md",
+      "kind": "spec",
+      "score": 14,
+      "hits": ["continuity", "dashboard", "duplicate", "homepage"]
+    },
+    {
+      "file": "lib/client-continuity/changes.ts",
+      "kind": "module",
+      "score": 14,
+      "hits": ["continuity", "dashboard"]
+    },
+    {
+      "file": "lib/client-dashboard/actions.ts",
+      "kind": "module",
+      "score": 14,
+      "hits": ["dashboard", "continuity"]
+    },
+    {
+      "file": "components/client-continuity/client-continuity-summary.tsx",
+      "kind": "component",
+      "score": 13,
+      "hits": ["continuity"]
+    },
+    {
+      "file": "components/dashboard/dashboard-collapse-controls.tsx",
+      "kind": "component",
+      "score": 13,
+      "hits": ["dashboard"]
+    },
+    {
+      "file": "components/dashboard/dashboard-heartbeat.tsx",
+      "kind": "component",
+      "score": 13,
+      "hits": ["dashboard"]
+    },
+    {
+      "file": "components/dashboard/dashboard-quick-settings.tsx",
+      "kind": "component",
+      "score": 13,
+      "hits": ["dashboard"]
+    },
+    {
+      "file": "components/dashboard/dashboard-reset-banner.tsx",
+      "kind": "component",
+      "score": 13,
+      "hits": ["dashboard"]
+    },
+    {
+      "file": "components/dashboard/dashboard-secondary-insights.tsx",
+      "kind": "component",
+      "score": 13,
+      "hits": ["dashboard"]
+    },
+    {
+      "file": "docs/specs/p1-buyer-education-and-pre-decision-guidance.md",
+      "kind": "spec",
+      "score": 13,
+      "hits": ["continuity", "duplicate", "homepage"]
+    },
+    {
+      "file": "components/navigation/nav-config.tsx",
+      "kind": "component",
+      "score": 12,
+      "hits": ["continuity", "scanner", "dashboard", "duplicate"]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-first-time-experience.md",
+      "kind": "spec",
+      "score": 12,
+      "hits": ["dashboard", "duplicate", "homepage"]
+    },
+    {
+      "file": "docs/specs/website-build-research-spec-code-cross-reference-upgrade.md",
+      "kind": "spec",
+      "score": 12,
+      "hits": ["continuity", "duplicate", "homepage"]
+    },
+    {
+      "file": "components/dashboard/mobile-dashboard-expander.tsx",
+      "kind": "component",
+      "score": 11,
+      "hits": ["dashboard"]
+    },
+    {
+      "file": "docs/changes/2026-04-29-context-continuity-skill.md",
+      "kind": "change-doc",
+      "score": 11,
+      "hits": ["continuity", "dashboard", "duplicate", "homepage"]
+    },
+    {
+      "file": "docs/specs/bob-and-joy-action-catalog.md",
+      "kind": "spec",
+      "score": 11,
+      "hits": ["continuity", "dashboard", "duplicate", "homepage"]
+    },
+    {
+      "file": "docs/specs/cross-boundary-flow-interrogation.md",
+      "kind": "spec",
+      "score": 11,
+      "hits": ["dashboard", "duplicate", "prevention"]
+    },
+    {
+      "file": "docs/specs/p1-search-intent-landing-architecture.md",
+      "kind": "spec",
+      "score": 11,
+      "hits": ["continuity", "duplicate", "homepage"]
+    }
+  ],
+  "recent_commits": [
+    {
+      "line": "c770bd3ff chore(agent): add context continuity skill feature/voice-ops-complete",
+      "score": 1,
+      "hits": ["continuity"]
+    },
+    {
+      "line": "1f196133e chore(agent): shorten homepage hero headline feature/platform-shell-command-center-build",
+      "score": 1,
+      "hits": ["homepage"]
+    }
+  ],
+  "dirty_matches": [
+    {
+      "line": "?? devtools/context-continuity-dashboard.mjs",
+      "file": "devtools/context-continuity-dashboard.mjs",
+      "score": 4,
+      "hits": ["continuity", "dashboard"]
+    },
+    {
+      "line": "?? system/agent-reports/flight-records/20260429T235629Z-build-the-complete-context-continuity-tooling-layer-scanner-cli-canonical-surfac.json",
+      "file": "system/agent-reports/flight-records/20260429T235629Z-build-the-complete-context-continuity-tooling-layer-scanner-cli-canonical-surfac.json",
+      "score": 4,
+      "hits": ["continuity", "scanner"]
+    },
+    {
+      "line": "?? system/agent-reports/router-decisions/20260429T235629Z-build-the-complete-context-continuity-tooling-layer-scanner-cli-canonical-surfac.json",
+      "file": "system/agent-reports/router-decisions/20260429T235629Z-build-the-complete-context-continuity-tooling-layer-scanner-cli-canonical-surfac.json",
+      "score": 4,
+      "hits": ["continuity", "scanner"]
+    },
+    {
+      "line": "M .claude/skills/context-continuity/SKILL.md",
+      "file": "claude/skills/context-continuity/SKILL.md",
+      "score": 2,
+      "hits": ["continuity"]
+    },
+    {
+      "line": "?? devtools/context-continuity-lib.mjs",
+      "file": "devtools/context-continuity-lib.mjs",
+      "score": 2,
+      "hits": ["continuity"]
+    },
+    {
+      "line": "?? devtools/context-continuity-scan.mjs",
+      "file": "devtools/context-continuity-scan.mjs",
+      "score": 2,
+      "hits": ["continuity"]
+    },
+    {
+      "line": "?? devtools/context-near-duplicates.mjs",
+      "file": "devtools/context-near-duplicates.mjs",
+      "score": 2,
+      "hits": ["duplicate"]
+    },
+    {
+      "line": "?? system/agent-claims/20260429T235629Z-feature-voice-ops-complete-build-the-complete-context-continuity-tooling-layer-s.json",
+      "file": "system/agent-claims/20260429T235629Z-feature-voice-ops-complete-build-the-complete-context-continuity-tooling-layer-s.json",
+      "score": 2,
+      "hits": ["continuity"]
+    },
+    {
+      "line": "?? system/agent-reports/context-continuity/",
+      "file": "system/agent-reports/context-continuity/",
+      "score": 2,
+      "hits": ["continuity"]
+    },
+    {
+      "line": "?? tests/unit/context-continuity-tools.test.mjs",
+      "file": "tests/unit/context-continuity-tools.test.mjs",
+      "score": 2,
+      "hits": ["continuity"]
+    }
+  ],
+  "claim_matches": [
+    {
+      "file": "system/agent-claims/20260429T235629Z-feature-voice-ops-complete-build-the-complete-context-continuity-tooling-layer-s.json",
+      "score": 6,
+      "hits": ["continuity", "scanner", "dashboard", "duplicate"],
+      "prompt": "Build the complete context continuity tooling layer: scanner CLI, canonical surface registry, pre-build gate, Obsidian packet exporter, near-duplicate detector, spec template continuity section, feature family map, and dashboard",
+      "owned": [],
+      "status": "active"
+    },
+    {
+      "file": "system/agent-claims/20260429T234252Z-feature-pantry-engine-create-persistent-codex-behavior-to-prevent-fragmented-dup.json",
+      "score": 2,
+      "hits": ["continuity", "duplicate"],
+      "prompt": "Create persistent Codex behavior to prevent fragmented duplicate builds and capture conversation memory for Obsidian-style continuity",
+      "owned": [],
+      "status": "active"
+    }
+  ],
+  "duplicate_risks": [
+    {
+      "level": "medium",
+      "reason": "Multiple canonical surfaces matched the prompt.",
+      "owners": ["context-continuity", "public-homepage"]
+    },
+    {
+      "level": "medium",
+      "reason": "Dirty files already exist in this domain and may be another agent active work.",
+      "files": [
+        "devtools/context-continuity-dashboard.mjs",
+        "system/agent-reports/flight-records/20260429T235629Z-build-the-complete-context-continuity-tooling-layer-scanner-cli-canonical-surfac.json",
+        "system/agent-reports/router-decisions/20260429T235629Z-build-the-complete-context-continuity-tooling-layer-scanner-cli-canonical-surfac.json",
+        "claude/skills/context-continuity/SKILL.md",
+        "devtools/context-continuity-lib.mjs"
+      ]
+    },
+    {
+      "level": "medium",
+      "reason": "Active or recorded claims overlap this domain.",
+      "claims": [
+        "system/agent-claims/20260429T235629Z-feature-voice-ops-complete-build-the-complete-context-continuity-tooling-layer-s.json",
+        "system/agent-claims/20260429T234252Z-feature-pantry-engine-create-persistent-codex-behavior-to-prevent-fragmented-dup.json"
+      ]
+    }
+  ],
+  "continuity": {
+    "decision": "attach",
+    "stop_required": false,
+    "reason": "Matched canonical surface context-continuity."
+  }
+}

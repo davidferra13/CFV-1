@@ -1,0 +1,23 @@
+# Context Continuity Tooling Layer
+
+- Date: 2026-04-30
+- Source: Codex session
+- User intent: Build the full tool layer behind the context-continuity skill so Codex can detect related work, canonical owners, duplicate risks, and memory packets before creating more fragmented ChefFlow surfaces.
+- Built:
+  - `devtools/context-continuity-scan.mjs` for prompt-to-continuity scans.
+  - `system/canonical-surfaces.json` for canonical surface ownership.
+  - `devtools/agent-start.mjs` pre-build continuity gate integration.
+  - `devtools/obsidian-memory-packet.mjs` for safe compact memory packet export.
+  - `devtools/context-near-duplicates.mjs` for near-duplicate detection.
+  - `docs/specs/_TEMPLATE.md` continuity preflight section.
+  - `devtools/feature-family-map.mjs` for feature graph output.
+  - `devtools/context-continuity-dashboard.mjs` for JSON and HTML continuity dashboard output.
+- Canonical home: `.claude/skills/context-continuity/SKILL.md` and `devtools/context-continuity-lib.mjs`.
+- Validation:
+  - `node --check` on all new and modified devtools scripts.
+  - `node --test tests/unit/context-continuity-tools.test.mjs`.
+  - `node devtools/context-continuity-scan.mjs --prompt "Build continuity scanner dashboard for duplicate homepage prevention" --write --json`.
+  - `node devtools/context-continuity-dashboard.mjs --prompt "Build context continuity tooling for duplicate build prevention"`.
+  - `node devtools/context-near-duplicates.mjs --max 250 --threshold 0.55`.
+  - `node devtools/feature-family-map.mjs`.
+- Notes: The dashboard is generated as local HTML and JSON under `system/agent-reports/context-continuity-dashboard/`, not as a production app route, so no public or user-facing surface was added.
