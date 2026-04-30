@@ -158,6 +158,13 @@ system/v1-builder/runtime/
 system/sticky-notes/*
 !system/sticky-notes/.gitkeep
 
+# Local quarantined or copied worktrees
+/origin/
+
+# Identity claim local artifacts
+/system/identity-claims/browser-sessions/
+/system/identity-claims/vault.enc.json
+
 # Database backups (never commit - can contain real data)
 backup-*.sql
 backups/

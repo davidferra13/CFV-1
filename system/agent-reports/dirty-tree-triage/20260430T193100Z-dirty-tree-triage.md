@@ -20,6 +20,16 @@ After this report was first committed, the commit and push hooks restored the pr
 
 Those files are included below in bucket 7.
 
+## Cleanup Action
+
+After explicit approval, the high-risk untracked artifacts were moved outside the repo to:
+
+- `C:\Users\david\Documents\CFv1-local-quarantine\20260430T193900Z\origin`
+- `C:\Users\david\Documents\CFv1-local-quarantine\20260430T193900Z\identity-claims-browser-sessions`
+- `C:\Users\david\Documents\CFv1-local-quarantine\20260430T193900Z\identity-claims-vault.enc.json`
+
+Ignore rules were added for `/origin/`, `/system/identity-claims/browser-sessions/`, and `/system/identity-claims/vault.enc.json` so these artifacts do not reappear in `git status` if recreated.
+
 ## Buckets
 
 ### 1. Runtime and generated evidence artifacts
@@ -88,10 +98,10 @@ What changed:
 
 Disposition:
 
-- Do not read browser profile internals.
-- Do not commit browser sessions.
-- Do not commit `vault.enc.json` unless the owner explicitly confirms encrypted vault artifacts belong in git.
-- Strong candidate for ignore or external storage policy, but this triage did not change ignore rules.
+- Browser profile internals were not read.
+- Browser sessions were moved outside the repo after explicit approval.
+- `vault.enc.json` was moved outside the repo after explicit approval.
+- Ignore rules now prevent these local artifacts from reappearing in `git status` if recreated.
 
 ### 4. Full repo copy under `origin/`
 
@@ -109,10 +119,9 @@ Evidence:
 
 Disposition:
 
-- Do not commit.
-- Do not delete without explicit approval.
+- Moved outside the repo after explicit approval.
+- Not deleted.
 - Likely accidental extraction, copied checkout, or failed branch materialization.
-- Highest-value cleanup candidate after owner approval.
 
 ### 5. Active pricing proof agent claim
 
