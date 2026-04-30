@@ -2158,7 +2158,7 @@ body {
     <!-- Content -->
     <div class="content">
       <!-- ─── Live Passive Dashboard ─── -->
-      <div class="panel active" id="panel-live" style="padding:20px 24px;overflow:hidden;">
+      <div class="panel active" id="panel-live" style="padding:20px 24px;overflow-y:auto;">
         <!-- Header Bar -->
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
           <div style="display:flex;align-items:center;gap:16px;">
@@ -2188,7 +2188,7 @@ body {
         <div id="live-pricing" style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.35);border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:13px;color:var(--warning);"></div>
 
         <!-- Main Grid -->
-        <div style="display:grid;grid-template-columns:1.15fr 0.95fr 0.9fr;grid-template-rows:1fr 1fr;gap:12px;flex:1;min-height:0;height:calc(100vh - 314px);">
+        <div style="display:grid;grid-template-columns:1.15fr 0.95fr 0.9fr;grid-template-rows:1fr 1fr;gap:12px;flex:1;min-height:320px;height:clamp(320px, calc(100vh - 600px), 680px);">
           <!-- V1 Builder -->
           <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;overflow:hidden;display:flex;flex-direction:column;">
             <div style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">V1 Builder</div>
@@ -3454,16 +3454,16 @@ body {
           </div>
         </div>
 
-        <!-- Supabase Health -->
+        <!-- Database Health -->
         <div style="margin-bottom:24px;">
           <h3 style="color:var(--text-secondary);font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Database Health</h3>
-          <div id="supabase-health" style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px;display:flex;align-items:center;gap:16px;">
-            <span id="supabase-dot" style="width:12px;height:12px;border-radius:50%;background:var(--warning);flex-shrink:0;"></span>
+          <div id="database-health" style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px;display:flex;align-items:center;gap:16px;">
+            <span id="database-dot" style="width:12px;height:12px;border-radius:50%;background:var(--warning);flex-shrink:0;"></span>
             <div style="flex:1;">
-              <div style="font-weight:600;font-size:14px;">Supabase</div>
-              <div id="supabase-latency" style="font-size:12px;color:var(--text-muted);">Checking...</div>
+              <div style="font-weight:600;font-size:14px;">PostgreSQL</div>
+              <div id="database-latency" style="font-size:12px;color:var(--text-muted);">Checking...</div>
             </div>
-            <div id="supabase-badge" style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px;background:var(--warning-dim);color:var(--warning);">Checking</div>
+            <div id="database-badge" style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px;background:var(--warning-dim);color:var(--warning);">Checking</div>
           </div>
         </div>
 
@@ -5440,6 +5440,13 @@ async function refreshStatus() {
 }
 
 function updateUI(s) {
+  s.dev = s.dev || { online: false }
+  s.beta = s.beta || { online: false }
+  s.prod = s.prod || { online: false }
+  s.ollamaPc = s.ollamaPc || { online: false, models: [] }
+  s.ollamaPi = s.ollamaPi || { online: false, models: [] }
+  s.git = s.git || {}
+
   // Header dots
   setDot('hd-dev', s.dev.online)
   setDot('hd-beta', s.beta.online)
@@ -8670,7 +8677,7 @@ async function loadInfraExtended() {
   // Load all new infra sections in parallel
   Promise.all([
     loadUptime(),
-    loadSupabaseHealth(),
+    loadDatabaseHealth(),
     loadSSLCerts(),
     loadStripeHealth(),
     loadEmailHealth(),
@@ -8705,13 +8712,13 @@ async function loadUptime() {
   } catch { /* ignore */ }
 }
 
-async function loadSupabaseHealth() {
+async function loadDatabaseHealth() {
   try {
-    const res = await fetch(`${API}/api/supabase/health`)
+    const res = await fetch(`${API}/api/db/health`)
     const data = await res.json()
-    const dot = document.getElementById('supabase-dot')
-    const latency = document.getElementById('supabase-latency')
-    const badge = document.getElementById('supabase-badge')
+    const dot = document.getElementById('database-dot')
+    const latency = document.getElementById('database-latency')
+    const badge = document.getElementById('database-badge')
     if (dot) dot.style.background = data.ok ? 'var(--success)' : 'var(--error)'
     if (latency) latency.textContent = data.ok ? `${data.latency}ms latency` : (data.error || 'Error')
     if (badge) {
