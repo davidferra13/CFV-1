@@ -236,7 +236,7 @@ function applyIntakeProfile(candidatePlans, intakeProfile, limit) {
   }
 
   const approved = candidatePlans
-    .filter((item) => item.classification.sink === 'approved-queue.jsonl')
+    .filter((item) => isRunnableApprovedPlan(item))
     .sort(compareIntakePlans)
   const hardStops = candidatePlans
     .filter((item) => isHardStopPlan(item) && item.candidate.source === 'spec')
@@ -276,6 +276,12 @@ function compareIntakePlans(left, right) {
 
 function isHardStopPlan(item) {
   return ['blocked', 'rejected'].includes(item.classification.ledgerStatus)
+}
+
+function isRunnableApprovedPlan(item) {
+  if (item.classification.sink !== 'approved-queue.jsonl') return false
+  if (!item.sinkRecord) return false
+  return item.sinkRecord.dependenciesSatisfied === true
 }
 
 function sourceRank(source) {

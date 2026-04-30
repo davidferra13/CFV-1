@@ -120,6 +120,40 @@ test('live intake caps default approved queue writes to three buildable specs', 
   assert.equal(records(context, 'approved-queue.jsonl').length, 3)
 })
 
+test('default live intake does not approve specs with unsatisfied dependencies', () => {
+  const context = tempContext()
+  writeFileSync(
+    join(context.root, 'docs', 'specs', 'blocked-by-migration.md'),
+    [
+      '# V1 Migration Blocked Spec',
+      '',
+      '**Status:** ready',
+      '**Priority:** P0',
+      '**Depends on:** Migration 20260425000015_restaurant_ops_engine.sql must be applied',
+      '',
+      'Repair the V1 event spine after the required migration exists.',
+    ].join('\n'),
+    'utf8',
+  )
+  writeReadySpec(context, 'ready-now.md', {
+    priority: 'P1',
+    title: 'V1 Ready Now',
+  })
+
+  const summary = normalizeIntake({
+    context,
+    write: true,
+    now: new Date('2026-04-30T12:00:00Z'),
+  })
+
+  assert.equal(summary.byStatus.queued, 1)
+  assert.deepEqual(
+    records(context, 'approved-queue.jsonl').map((record) => record.canonicalOwner),
+    ['docs/specs/ready-now.md'],
+  )
+  assert.equal(summary.deferred.nonBuildable, 1)
+})
+
 test('default live intake does not write research or backlog noise into sinks', () => {
   const context = tempContext()
   writeReadySpec(context, 'v1-ready.md', {
