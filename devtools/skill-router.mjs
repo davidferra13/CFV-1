@@ -267,6 +267,31 @@ const rules = [
     terms: ['stripe', 'webhook', 'checkout', 'payment intent', 'subscription event', 'idempotency'],
   },
   {
+    skill: 'pricing-engine-auditor',
+    terms: [
+      'pricing proof',
+      'proof harness',
+      'geographic proof',
+      'pricing data audit',
+      'audit pricing data',
+      'audit the data engine',
+      'data engine audit',
+      'pricing engine audit',
+      'pricing reliable',
+      'chefflow reliable',
+      'chef flow reliable',
+      'is chefflow reliable',
+      'is chef flow reliable',
+      'does everything work now',
+      'everything work now',
+      'what now after pricing',
+      'what now after pricing proof',
+      'unit normalization',
+      'quote-safe geographies',
+      'safe-to-quote geographies',
+    ],
+  },
+  {
     skill: 'pricing-reliability',
     terms: [
       'pricing engine',
@@ -511,6 +536,11 @@ const conflictPriorityRules = [
     reason: 'autonomous-build-loop owns the resident queue, monitor, and human-bottleneck operating problem',
   },
   {
+    winner: 'pricing-engine-auditor',
+    beats: ['pricing-reliability', 'validation-gate', 'question-optimizer', 'market-research-router', 'evidence-broker', 'research', 'builder', 'planner'],
+    reason: 'pricing-engine-auditor owns repeated ChefFlow pricing proof audits and reliability harness runs',
+  },
+  {
     winner: 'pricing-reliability',
     beats: ['validation-gate', 'question-optimizer', 'market-research-router', 'evidence-broker', 'research', 'builder', 'planner'],
     reason: 'pricing-reliability owns ChefFlow release blocker questions about menu costing and price data trust',
@@ -605,8 +635,10 @@ if (
 ) {
   sidecarSkills.push('evidence-broker')
 }
-if (primarySkill === 'pricing-reliability') {
-  for (const skill of ['pipeline', 'evidence-integrity']) {
+if (primarySkill === 'pricing-reliability' || primarySkill === 'pricing-engine-auditor') {
+  for (const skill of primarySkill === 'pricing-engine-auditor'
+    ? ['pricing-reliability', 'pipeline', 'evidence-integrity']
+    : ['pipeline', 'evidence-integrity']) {
     if (skillNames.has(skill) && !sidecarSkills.includes(skill)) {
       sidecarSkills.push(skill)
     }
