@@ -10,12 +10,13 @@ Use this as the first-pass router for ChefFlow work. Codex cannot run a true bac
 ## Standing Contract
 
 1. Treat Omninet as always active for ChefFlow, even when the user does not name it.
-2. Run `context-continuity` as a sidecar before non-trivial ChefFlow planning, building, research, architecture, UI, feature, backlog, workflow, or ambiguous product work so Codex attaches to existing surfaces instead of creating near-duplicates.
-3. Keep exactly one primary skill in charge of the current work, then add sidecar skills only for distinct risk or workflow needs.
-4. Assume ChefFlow has a swarm of agents working concurrently. Treat unfamiliar dirty files, untracked files, deletions, stubs, logs, specs, and generated artifacts as other agents' active work unless you created them in this session.
-5. If the task reveals reusable developer behavior, external operator guidance, repeated friction, a missing trigger, or a skill failure, run `skill-garden` in the same turn.
-6. If a skill produced bad guidance, run `heal-skill` with `skill-garden` so the fix is both local and durable.
-7. At closeout, decide the skill delta: `none`, `patch`, `new-skill`, or `heal`. If it is not `none`, make the skill change before final response and commit it.
+2. Run `v1-governor` before any new ChefFlow feature, urgency spike, V1/V2 scope decision, Hermes or swarm build idea, Mission Control progress work, or "what should we build next" request. Build only when the request is a V1 blocker, current-lane V1 support, critical bug/security/money/safety repair, or the user says `Override V1 governor: build this anyway.`
+3. Run `context-continuity` as a sidecar before non-trivial ChefFlow planning, building, research, architecture, UI, feature, backlog, workflow, or ambiguous product work so Codex attaches to existing surfaces instead of creating near-duplicates.
+4. Keep exactly one primary skill in charge of the current work, then add sidecar skills only for distinct risk or workflow needs.
+5. Assume ChefFlow has a swarm of agents working concurrently. Treat unfamiliar dirty files, untracked files, deletions, stubs, logs, specs, and generated artifacts as other agents' active work unless you created them in this session.
+6. If the task reveals reusable developer behavior, external operator guidance, repeated friction, a missing trigger, or a skill failure, run `skill-garden` in the same turn.
+7. If a skill produced bad guidance, run `heal-skill` with `skill-garden` so the fix is both local and durable.
+8. At closeout, decide the skill delta: `none`, `patch`, `new-skill`, or `heal`. If it is not `none`, make the skill change before final response and commit it.
 
 ## Harness Commands
 
@@ -56,13 +57,15 @@ Use these tools when the task touches skills or durable agent behavior:
 
 1. Read the active user request and the latest project rules.
 2. Check whether the request names a skill. If yes, load that skill first.
-3. If the request implies a task class, load the best matching skill from the router below.
-4. If the task is non-trivial or could create duplicate surfaces, load `context-continuity` before writing or planning.
-5. If the request reveals a repeated developer behavior, recurring failure, new operating rule, or missing reusable workflow, also load `skill-garden`.
-6. If the request includes a huge persona paste or asks whether one can be pasted, load `persona-dump`.
-7. Inspect branch and dirty work before writing, classify current-task files versus other agents' work, and keep ownership narrow.
-8. State the skill or skills being used in one short line.
-9. Execute the task with the normal ChefFlow hard stops: no main push, no destructive database operations, no `drizzle-kit push`, no manual `types/database.ts`, no `@ts-nocheck`, no em dashes, no unapproved build, no unapproved long-running server.
+3. If the request is a new feature, urgency spike, V1/V2 scope decision, Hermes or swarm build idea, Mission Control progress request, or "what should we build next" question, load `v1-governor` before builder or planner. Preserve V2 ideas instead of building them.
+4. If the request implies a task class, load the best matching skill from the router below.
+5. If the task is non-trivial or could create duplicate surfaces, load `context-continuity` before writing or planning.
+6. If an approved build will edit code, load `software-fundamentals` as a sidecar unless the change is tiny and mechanical.
+7. If the request reveals a repeated developer behavior, recurring failure, new operating rule, or missing reusable workflow, also load `skill-garden`.
+8. If the request includes a huge persona paste or asks whether one can be pasted, load `persona-dump`.
+9. Inspect branch and dirty work before writing, classify current-task files versus other agents' work, and keep ownership narrow.
+10. State the skill or skills being used in one short line.
+11. Execute the task with the normal ChefFlow hard stops: no main push, no destructive database operations, no `drizzle-kit push`, no manual `types/database.ts`, no `@ts-nocheck`, no em dashes, no unapproved build, no unapproved long-running server.
 
 ## Skill Router
 
@@ -70,6 +73,7 @@ Use the most specific skill that fits. Combine skills only when their responsibi
 
 | Situation                                                                                                                                                                                 | Primary skill                                                |
 | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| New ChefFlow feature, urgency spike, V1/V2 scope decision, Hermes or swarm build idea, Mission Control progress work, or "what should we build next" request                              | `v1-governor`, then the task-specific skill only if allowed  |
 | Build from a spec or implement a feature                                                                                                                                                  | `builder`                                                    |
 | Non-trivial ChefFlow build, spec, research, architecture, UI, feature, backlog, workflow, homepage, Obsidian, or ambiguous product request where duplicate or fragmented work is possible | `context-continuity` as sidecar with the task-specific skill |
 | Large, multi-track, research-heavy, or build-heavy task that may benefit from bounded parallel agents                                                                                     | `swarm-governor`, then the task-specific skill               |

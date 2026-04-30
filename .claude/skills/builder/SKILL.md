@@ -15,6 +15,8 @@ This gate exists because agents say "done" when they mean "it compiled." Buildin
 
 Builder agents are queue-aware. They do not wait to be told what to build:
 
+0. **Run `v1-governor` first.** If the request or selected spec is not a V1 blocker, current-lane V1 support, critical bug/security/money/safety repair, or explicitly overridden with `Override V1 governor: build this anyway.`, do not build. Classify it, preserve it, and stop.
+
 1. **Scan** every file in `docs/specs/`. Collect all specs with status `ready`.
 2. **Filter** out any spec whose "Depends on" references a spec that is NOT `verified` or `built`.
 3. **Sort** by priority: P0 first, then P1, P2, P3.
