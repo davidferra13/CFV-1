@@ -3,10 +3,17 @@ import { describe, it } from 'node:test'
 
 import {
   buildChefDefaultKnowledgeDeltaAlert,
+  buildClientDefaultKnowledgeAuditTimeline,
   buildClientDefaultKnowledgeSnapshot,
   buildClientDefaultKnowledgeApplication,
+  buildClientDefaultKnowledgeChangePreview,
+  buildClientDefaultKnowledgeChefImpact,
+  buildClientDefaultKnowledgeCoverageMeter,
+  buildClientDefaultKnowledgeEventOverridePolicy,
+  buildClientDefaultKnowledgeRestatementContract,
   buildEventKnowledgeOverrides,
   buildSaveAsDefaultProposals,
+  CLIENT_DEFAULT_KNOWLEDGE_FIELD_REGISTRY,
   normalizeClientDefaultKnowledgeInput,
   type UpdateClientDefaultKnowledgeInput,
 } from '@/lib/clients/client-default-knowledge'
@@ -213,5 +220,84 @@ describe('client default knowledge', () => {
     assert.equal(delta.menuSafetyReviewRequired, true)
     assert.equal(delta.activeEventReviewRequired, true)
     assert.ok(delta.changedFields.some((field) => field.fieldKey === 'allergies'))
+  })
+
+  it('builds ask-once contracts, coverage, audit, impact, and override policies', () => {
+    const snapshot = buildClientDefaultKnowledgeSnapshot(
+      {
+        updated_at: '2026-04-29T10:00:00.000Z',
+        full_name: 'Jordan Avery',
+        email: 'jordan@example.com',
+        address: '10 Market St',
+        allergies: ['peanut'],
+        dietary_restrictions: ['gluten free'],
+        parking_instructions: 'Use driveway',
+      },
+      {
+        updated_at: '2026-04-29T11:00:00.000Z',
+        communication_mode: 'direct',
+        preferred_contact_method: 'email',
+        chef_autonomy_level: 'high',
+        default_guest_count: 6,
+        budget_range_min_cents: 80000,
+        budget_range_max_cents: 160000,
+        service_style: 'family_style',
+      }
+    )
+
+    const contract = buildClientDefaultKnowledgeRestatementContract(snapshot, 'booking')
+    const coverage = buildClientDefaultKnowledgeCoverageMeter(snapshot)
+    const auditTimeline = buildClientDefaultKnowledgeAuditTimeline(snapshot)
+    const impact = buildClientDefaultKnowledgeChefImpact(snapshot)
+    const overridePolicies = buildClientDefaultKnowledgeEventOverridePolicy(snapshot)
+
+    assert.equal(
+      CLIENT_DEFAULT_KNOWLEDGE_FIELD_REGISTRY.allergies.confirmationMode,
+      'confirm_instead'
+    )
+    assert.ok(
+      contract.rows.some((row) => row.fieldKey === 'allergies' && row.status === 'confirm_instead')
+    )
+    assert.ok(contract.blockedRestatements.some((guard) => guard.formField === 'dietary_notes'))
+    assert.ok(coverage.percent > 0)
+    assert.ok(coverage.safetyMissing > 0)
+    assert.ok(auditTimeline.some((item) => item.fieldKey === 'allergies' && item.safetyCritical))
+    assert.ok(impact.fields.some((field) => field.reason === 'food_safety'))
+    assert.deepEqual(
+      overridePolicies.map((policy) => policy.fieldKey),
+      ['default_guest_count', 'budget_range', 'service_style']
+    )
+  })
+
+  it('previews default changes before save and identifies affected portal flows', () => {
+    const snapshot = buildClientDefaultKnowledgeSnapshot(
+      {
+        full_name: 'Jordan Avery',
+        email: 'jordan@example.com',
+      },
+      {
+        communication_mode: 'direct',
+        preferred_contact_method: 'email',
+        chef_autonomy_level: 'high',
+        default_guest_count: 6,
+        budget_range_min_cents: 80000,
+        budget_range_max_cents: 160000,
+      }
+    )
+
+    const preview = buildClientDefaultKnowledgeChangePreview(snapshot, {
+      ...snapshot.passport,
+      default_guest_count: 10,
+      standing_instructions: 'Package leftovers.',
+      budget_range_min_cents: 90000,
+      budget_range_max_cents: 180000,
+    })
+
+    assert.ok(preview.changedFields.some((field) => field.fieldKey === 'default_guest_count'))
+    assert.ok(preview.changedFields.some((field) => field.fieldKey === 'budget_range'))
+    assert.ok(preview.futureContexts.includes('booking'))
+    assert.ok(preview.futureContexts.includes('menu_approval'))
+    assert.equal(preview.chefAlertCount, 2)
+    assert.equal(preview.safetyReviewRequired, false)
   })
 })

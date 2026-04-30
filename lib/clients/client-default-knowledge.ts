@@ -211,6 +211,279 @@ export type ClientSaveAsDefaultProposal = {
   toggleLabel: string
 }
 
+export type ClientDefaultKnowledgeFieldPolicy = {
+  fieldKey: ClientDefaultKnowledgeFieldKey
+  label: string
+  scopeKey: ClientDefaultKnowledgeScopeKey
+  formField: ClientDefaultKnowledgeAppliedField['formField'] | null
+  contexts: ClientDefaultKnowledgeApplication['context'][]
+  source: 'client_profile' | 'client_passport'
+  askOnce: boolean
+  safetyCritical: boolean
+  confirmationMode: 'prefill' | 'confirm_instead' | 'reference_only'
+  eventOverrideAllowed: boolean
+  saveAsDefaultAllowed: boolean
+  chefAlertWhenChanged: boolean
+}
+
+export type ClientDefaultKnowledgeRestatementContract = {
+  context: ClientDefaultKnowledgeApplication['context']
+  rows: {
+    fieldKey: ClientDefaultKnowledgeFieldKey
+    label: string
+    formField: ClientDefaultKnowledgeAppliedField['formField'] | null
+    value: string | null
+    status: 'prefill' | 'confirm_instead' | 'empty' | 'reference_only'
+    failureMessage: string | null
+  }[]
+  blockedRestatements: ClientRestatementGuard[]
+}
+
+export type ClientDefaultKnowledgeCoverageMeter = {
+  known: number
+  missing: number
+  stale: number
+  total: number
+  percent: number
+  safetyMissing: number
+  scopes: {
+    key: ClientDefaultKnowledgeScopeKey
+    label: string
+    known: number
+    total: number
+    percent: number
+    status: ClientDefaultKnowledgeScope['status']
+  }[]
+}
+
+export type ClientDefaultKnowledgeAuditTimelineItem = {
+  id: string
+  fieldKey: ClientDefaultKnowledgeFieldKey
+  label: string
+  value: string
+  sourceLabel: string
+  effectiveAt: string | null
+  freshness: ClientDefaultKnowledgeProvenance['freshness']
+  safetyCritical: boolean
+  editableHref: string
+}
+
+export type ClientDefaultKnowledgeChangePreview = {
+  changedFields: {
+    fieldKey: ClientDefaultKnowledgeFieldKey
+    label: string
+    before: string | null
+    after: string | null
+    contexts: ClientDefaultKnowledgeApplication['context'][]
+    chefAlertWhenChanged: boolean
+  }[]
+  futureContexts: ClientDefaultKnowledgeApplication['context'][]
+  chefAlertCount: number
+  safetyReviewRequired: boolean
+}
+
+export type ClientDefaultKnowledgeChefImpact = {
+  fields: {
+    fieldKey: ClientDefaultKnowledgeFieldKey
+    label: string
+    value: string
+    reason: 'food_safety' | 'active_event' | 'planning_default'
+    freshness: ClientDefaultKnowledgeProvenance['freshness']
+  }[]
+  safetyCount: number
+  activeEventCount: number
+}
+
+export type ClientDefaultKnowledgeEventOverridePolicy = {
+  fieldKey: ClientDefaultKnowledgeFieldKey
+  label: string
+  accountValue: string | null
+  eventOverrideAllowed: boolean
+  saveAsDefaultAllowed: boolean
+  toggleLabel: string | null
+}
+
+export const CLIENT_DEFAULT_KNOWLEDGE_FIELD_REGISTRY: Record<
+  ClientDefaultKnowledgeFieldKey,
+  ClientDefaultKnowledgeFieldPolicy
+> = {
+  full_name: fieldPolicy('full_name', 'Full name', 'identity', 'full_name', ['booking', 'inquiry']),
+  preferred_name: fieldPolicy('preferred_name', 'Preferred name', 'identity', null, []),
+  email: fieldPolicy('email', 'Email', 'identity', 'email', ['booking', 'inquiry', 'payment_plan']),
+  phone: fieldPolicy('phone', 'Phone', 'identity', 'phone', ['booking', 'inquiry']),
+  address: fieldPolicy('address', 'Primary address', 'identity', 'address', [
+    'booking',
+    'inquiry',
+    'pre_event_checklist',
+  ]),
+  dietary_restrictions: fieldPolicy(
+    'dietary_restrictions',
+    'Dietary restrictions',
+    'food_safety',
+    'dietary_notes',
+    ['booking', 'inquiry', 'pre_event_checklist', 'menu_approval'],
+    { safetyCritical: true, confirmationMode: 'confirm_instead', chefAlertWhenChanged: true }
+  ),
+  dietary_protocols: fieldPolicy(
+    'dietary_protocols',
+    'Dietary protocols',
+    'food_safety',
+    'dietary_notes',
+    ['pre_event_checklist', 'menu_approval'],
+    { safetyCritical: true, confirmationMode: 'confirm_instead', chefAlertWhenChanged: true }
+  ),
+  allergies: fieldPolicy(
+    'allergies',
+    'Allergies',
+    'food_safety',
+    'dietary_notes',
+    ['booking', 'inquiry', 'pre_event_checklist', 'menu_approval'],
+    { safetyCritical: true, confirmationMode: 'confirm_instead', chefAlertWhenChanged: true }
+  ),
+  dislikes: fieldPolicy('dislikes', 'Dislikes', 'taste', null, ['menu_approval']),
+  spice_tolerance: fieldPolicy('spice_tolerance', 'Spice tolerance', 'taste', null, [
+    'menu_approval',
+  ]),
+  favorite_cuisines: fieldPolicy('favorite_cuisines', 'Favorite cuisines', 'taste', null, [
+    'menu_approval',
+  ]),
+  favorite_dishes: fieldPolicy('favorite_dishes', 'Favorite dishes', 'taste', null, [
+    'menu_approval',
+  ]),
+  wine_beverage_preferences: fieldPolicy(
+    'wine_beverage_preferences',
+    'Wine and beverage preferences',
+    'taste',
+    null,
+    ['menu_approval']
+  ),
+  parking_instructions: fieldPolicy(
+    'parking_instructions',
+    'Parking instructions',
+    'home_logistics',
+    null,
+    ['pre_event_checklist'],
+    { chefAlertWhenChanged: true }
+  ),
+  access_instructions: fieldPolicy(
+    'access_instructions',
+    'Access instructions',
+    'home_logistics',
+    null,
+    ['pre_event_checklist'],
+    { chefAlertWhenChanged: true }
+  ),
+  kitchen_size: fieldPolicy('kitchen_size', 'Kitchen size', 'home_logistics', null, [
+    'pre_event_checklist',
+  ]),
+  kitchen_constraints: fieldPolicy(
+    'kitchen_constraints',
+    'Kitchen constraints',
+    'home_logistics',
+    null,
+    ['pre_event_checklist'],
+    { chefAlertWhenChanged: true }
+  ),
+  house_rules: fieldPolicy('house_rules', 'House rules', 'home_logistics', null, [
+    'pre_event_checklist',
+  ]),
+  equipment_available: fieldPolicy(
+    'equipment_available',
+    'Equipment available',
+    'home_logistics',
+    null,
+    ['pre_event_checklist']
+  ),
+  partner_name: fieldPolicy('partner_name', 'Partner name', 'household', null, []),
+  children: fieldPolicy('children', 'Children', 'household', null, ['menu_approval']),
+  family_notes: fieldPolicy('family_notes', 'Family notes', 'household', null, ['menu_approval']),
+  communication_mode: fieldPolicy(
+    'communication_mode',
+    'Communication mode',
+    'communication',
+    'communication_mode',
+    ['chat', 'payment_plan'],
+    { source: 'client_passport' }
+  ),
+  preferred_contact_method: fieldPolicy(
+    'preferred_contact_method',
+    'Preferred contact method',
+    'communication',
+    null,
+    ['chat', 'payment_plan'],
+    { source: 'client_passport' }
+  ),
+  chef_autonomy_level: fieldPolicy(
+    'chef_autonomy_level',
+    'Chef autonomy',
+    'communication',
+    null,
+    ['chat', 'menu_approval'],
+    { source: 'client_passport' }
+  ),
+  auto_approve_under_cents: fieldPolicy(
+    'auto_approve_under_cents',
+    'Auto approval limit',
+    'communication',
+    null,
+    ['payment_plan'],
+    { source: 'client_passport' }
+  ),
+  max_interaction_rounds: fieldPolicy(
+    'max_interaction_rounds',
+    'Max interaction rounds',
+    'communication',
+    null,
+    ['chat'],
+    { source: 'client_passport' }
+  ),
+  standing_instructions: fieldPolicy(
+    'standing_instructions',
+    'Standing instructions',
+    'communication',
+    'standing_instructions',
+    ['chat', 'menu_approval'],
+    { source: 'client_passport', chefAlertWhenChanged: true }
+  ),
+  default_guest_count: fieldPolicy(
+    'default_guest_count',
+    'Typical guest count',
+    'service_defaults',
+    'guest_count',
+    ['booking', 'inquiry', 'pre_event_checklist'],
+    {
+      source: 'client_passport',
+      eventOverrideAllowed: true,
+      saveAsDefaultAllowed: true,
+      chefAlertWhenChanged: true,
+    }
+  ),
+  budget_range: fieldPolicy(
+    'budget_range',
+    'Budget range',
+    'service_defaults',
+    'budget',
+    ['booking', 'inquiry'],
+    { source: 'client_passport', eventOverrideAllowed: true, saveAsDefaultAllowed: true }
+  ),
+  service_style: fieldPolicy(
+    'service_style',
+    'Service style',
+    'service_defaults',
+    'service_style',
+    ['pre_event_checklist', 'menu_approval'],
+    {
+      source: 'client_passport',
+      eventOverrideAllowed: true,
+      saveAsDefaultAllowed: true,
+      chefAlertWhenChanged: true,
+    }
+  ),
+  delegate: fieldPolicy('delegate', 'Delegate', 'communication', null, ['chat'], {
+    source: 'client_passport',
+  }),
+}
+
 export const UpdateClientDefaultKnowledgeSchema = z
   .object({
     communication_mode: z.enum(['direct', 'delegate_only', 'delegate_preferred']),
@@ -638,6 +911,241 @@ export function buildChefDefaultKnowledgeDeltaAlert(
         ? 'No default knowledge changes.'
         : `${changedFields.length} default ${changedFields.length === 1 ? 'field' : 'fields'} changed.`,
   }
+}
+
+export function buildClientDefaultKnowledgeRestatementContract(
+  snapshot: ClientDefaultKnowledgeSnapshot,
+  context: ClientDefaultKnowledgeApplication['context']
+): ClientDefaultKnowledgeRestatementContract {
+  const provenanceByKey = new Map(snapshot.provenance.map((field) => [field.fieldKey, field]))
+  const blockedRestatements = snapshot.restatementGuards.filter((guard) =>
+    CLIENT_DEFAULT_KNOWLEDGE_FIELD_REGISTRY[guard.fieldKey]?.contexts.includes(context)
+  )
+
+  return {
+    context,
+    blockedRestatements,
+    rows: Object.values(CLIENT_DEFAULT_KNOWLEDGE_FIELD_REGISTRY)
+      .filter((policy) => policy.contexts.includes(context))
+      .map((policy) => {
+        const value = provenanceByKey.get(policy.fieldKey)?.value ?? null
+        const status: ClientDefaultKnowledgeRestatementContract['rows'][number]['status'] = value
+          ? policy.confirmationMode
+          : 'empty'
+        return {
+          fieldKey: policy.fieldKey,
+          label: policy.label,
+          formField: policy.formField,
+          value,
+          status,
+          failureMessage:
+            value && policy.askOnce
+              ? `${policy.label} is already saved. Confirm or edit it instead of asking again.`
+              : null,
+        }
+      }),
+  }
+}
+
+export function buildClientDefaultKnowledgeCoverageMeter(
+  snapshot: ClientDefaultKnowledgeSnapshot
+): ClientDefaultKnowledgeCoverageMeter {
+  const scopes = snapshot.scopes.map((scope) => {
+    const known = scope.items.filter((item) => item.value).length
+    const total = scope.items.length
+    return {
+      key: scope.key,
+      label: scope.label,
+      known,
+      total,
+      percent: total > 0 ? Math.round((known / total) * 100) : 0,
+      status: scope.status,
+    }
+  })
+  const known = scopes.reduce((sum, scope) => sum + scope.known, 0)
+  const total = scopes.reduce((sum, scope) => sum + scope.total, 0)
+  const stale = snapshot.provenance.filter((row) => row.value && row.freshness !== 'current').length
+  const safetyMissing = snapshot.safetyConfirmation.fields.filter((field) => !field.value).length
+
+  return {
+    known,
+    missing: Math.max(total - known, 0),
+    stale,
+    total,
+    percent: total > 0 ? Math.round((known / total) * 100) : 0,
+    safetyMissing,
+    scopes,
+  }
+}
+
+export function buildClientDefaultKnowledgeAuditTimeline(
+  snapshot: ClientDefaultKnowledgeSnapshot
+): ClientDefaultKnowledgeAuditTimelineItem[] {
+  return snapshot.provenance
+    .filter((row) => row.value)
+    .map((row) => ({
+      id: `audit-${row.fieldKey}`,
+      fieldKey: row.fieldKey,
+      label: row.label,
+      value: row.value ?? '',
+      sourceLabel: row.sourceLabel,
+      effectiveAt: row.lastConfirmedAt,
+      freshness: row.freshness,
+      safetyCritical: row.safetyCritical,
+      editableHref: row.editableHref,
+    }))
+    .sort((a, b) => {
+      if (!a.effectiveAt && !b.effectiveAt) return a.label.localeCompare(b.label)
+      if (!a.effectiveAt) return 1
+      if (!b.effectiveAt) return -1
+      return b.effectiveAt.localeCompare(a.effectiveAt)
+    })
+}
+
+export function buildClientDefaultKnowledgeChangePreview(
+  snapshot: ClientDefaultKnowledgeSnapshot,
+  nextPassport: ClientDefaultKnowledgePassport
+): ClientDefaultKnowledgeChangePreview {
+  const current = snapshot.passport
+  const changedFields = (
+    [
+      ['communication_mode', current.communication_mode, nextPassport.communication_mode],
+      [
+        'preferred_contact_method',
+        current.preferred_contact_method,
+        nextPassport.preferred_contact_method,
+      ],
+      ['chef_autonomy_level', current.chef_autonomy_level, nextPassport.chef_autonomy_level],
+      [
+        'auto_approve_under_cents',
+        current.auto_approve_under_cents,
+        nextPassport.auto_approve_under_cents,
+      ],
+      [
+        'max_interaction_rounds',
+        current.max_interaction_rounds,
+        nextPassport.max_interaction_rounds,
+      ],
+      ['standing_instructions', current.standing_instructions, nextPassport.standing_instructions],
+      ['default_guest_count', current.default_guest_count, nextPassport.default_guest_count],
+      ['budget_range', formatBudgetRange(current), formatBudgetRange(nextPassport)],
+      ['service_style', current.service_style, nextPassport.service_style],
+      ['delegate', formatDelegate(current), formatDelegate(nextPassport)],
+    ] as Array<[ClientDefaultKnowledgeFieldKey, string | number | null, string | number | null]>
+  )
+    .map(([fieldKey, before, after]) => {
+      const policy = CLIENT_DEFAULT_KNOWLEDGE_FIELD_REGISTRY[fieldKey]
+      return {
+        fieldKey,
+        label: policy.label,
+        before: stringifyChangeValue(before),
+        after: stringifyChangeValue(after),
+        contexts: policy.contexts,
+        chefAlertWhenChanged: policy.chefAlertWhenChanged,
+      }
+    })
+    .filter((field) => field.before !== field.after)
+
+  const futureContexts = Array.from(
+    new Set(changedFields.flatMap((field) => field.contexts))
+  ) as ClientDefaultKnowledgeApplication['context'][]
+
+  return {
+    changedFields,
+    futureContexts,
+    chefAlertCount: changedFields.filter((field) => field.chefAlertWhenChanged).length,
+    safetyReviewRequired: changedFields.some((field) => {
+      return CLIENT_DEFAULT_KNOWLEDGE_FIELD_REGISTRY[field.fieldKey]?.safetyCritical
+    }),
+  }
+}
+
+export function buildClientDefaultKnowledgeChefImpact(
+  snapshot: ClientDefaultKnowledgeSnapshot
+): ClientDefaultKnowledgeChefImpact {
+  const fields = snapshot.provenance
+    .filter((row) => row.value)
+    .map((row) => {
+      const policy = CLIENT_DEFAULT_KNOWLEDGE_FIELD_REGISTRY[row.fieldKey]
+      if (!policy?.chefAlertWhenChanged && !row.safetyCritical) return null
+      return {
+        fieldKey: row.fieldKey,
+        label: row.label,
+        value: row.value ?? '',
+        reason: row.safetyCritical
+          ? 'food_safety'
+          : policy.eventOverrideAllowed
+            ? 'planning_default'
+            : 'active_event',
+        freshness: row.freshness,
+      }
+    })
+    .filter((field): field is ClientDefaultKnowledgeChefImpact['fields'][number] => Boolean(field))
+
+  return {
+    fields,
+    safetyCount: fields.filter((field) => field.reason === 'food_safety').length,
+    activeEventCount: fields.filter((field) => field.reason !== 'food_safety').length,
+  }
+}
+
+export function buildClientDefaultKnowledgeEventOverridePolicy(
+  snapshot: ClientDefaultKnowledgeSnapshot
+): ClientDefaultKnowledgeEventOverridePolicy[] {
+  const provenanceByKey = new Map(snapshot.provenance.map((field) => [field.fieldKey, field]))
+  return Object.values(CLIENT_DEFAULT_KNOWLEDGE_FIELD_REGISTRY)
+    .filter((policy) => policy.eventOverrideAllowed)
+    .map((policy) => ({
+      fieldKey: policy.fieldKey,
+      label: policy.label,
+      accountValue: provenanceByKey.get(policy.fieldKey)?.value ?? null,
+      eventOverrideAllowed: policy.eventOverrideAllowed,
+      saveAsDefaultAllowed: policy.saveAsDefaultAllowed,
+      toggleLabel: policy.saveAsDefaultAllowed
+        ? `Use this ${policy.label.toLowerCase()} for future events`
+        : null,
+    }))
+}
+
+function fieldPolicy(
+  fieldKey: ClientDefaultKnowledgeFieldKey,
+  label: string,
+  scopeKey: ClientDefaultKnowledgeScopeKey,
+  formField: ClientDefaultKnowledgeAppliedField['formField'] | null,
+  contexts: ClientDefaultKnowledgeApplication['context'][],
+  overrides: Partial<
+    Pick<
+      ClientDefaultKnowledgeFieldPolicy,
+      | 'source'
+      | 'askOnce'
+      | 'safetyCritical'
+      | 'confirmationMode'
+      | 'eventOverrideAllowed'
+      | 'saveAsDefaultAllowed'
+      | 'chefAlertWhenChanged'
+    >
+  > = {}
+): ClientDefaultKnowledgeFieldPolicy {
+  return {
+    fieldKey,
+    label,
+    scopeKey,
+    formField,
+    contexts,
+    source: overrides.source ?? 'client_profile',
+    askOnce: overrides.askOnce ?? true,
+    safetyCritical: overrides.safetyCritical ?? false,
+    confirmationMode: overrides.confirmationMode ?? (formField ? 'prefill' : 'reference_only'),
+    eventOverrideAllowed: overrides.eventOverrideAllowed ?? false,
+    saveAsDefaultAllowed: overrides.saveAsDefaultAllowed ?? false,
+    chefAlertWhenChanged: overrides.chefAlertWhenChanged ?? false,
+  }
+}
+
+function stringifyChangeValue(value: string | number | null): string | null {
+  if (value === null || value === '') return null
+  if (typeof value === 'number') return String(value)
+  return value.replace(/_/g, ' ')
 }
 
 function buildScope(

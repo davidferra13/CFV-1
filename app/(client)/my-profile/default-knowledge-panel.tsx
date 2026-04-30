@@ -9,7 +9,15 @@ import type {
   ClientDefaultKnowledgeSnapshot,
   UpdateClientDefaultKnowledgeInput,
 } from '@/lib/clients/client-default-knowledge'
-import { buildClientDefaultKnowledgeApplication } from '@/lib/clients/client-default-knowledge'
+import {
+  buildClientDefaultKnowledgeApplication,
+  buildClientDefaultKnowledgeAuditTimeline,
+  buildClientDefaultKnowledgeChangePreview,
+  buildClientDefaultKnowledgeChefImpact,
+  buildClientDefaultKnowledgeCoverageMeter,
+  buildClientDefaultKnowledgeEventOverridePolicy,
+  buildClientDefaultKnowledgeRestatementContract,
+} from '@/lib/clients/client-default-knowledge'
 import { Alert } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -73,6 +81,24 @@ export function DefaultKnowledgePanel({ initialSnapshot }: Props) {
   )
   const currentFormKey = JSON.stringify(form)
   const isDirty = currentFormKey !== initialFormKey
+  const coverage = useMemo(() => buildClientDefaultKnowledgeCoverageMeter(snapshot), [snapshot])
+  const restatementContract = useMemo(
+    () => buildClientDefaultKnowledgeRestatementContract(snapshot, 'booking'),
+    [snapshot]
+  )
+  const auditTimeline = useMemo(
+    () => buildClientDefaultKnowledgeAuditTimeline(snapshot),
+    [snapshot]
+  )
+  const chefImpact = useMemo(() => buildClientDefaultKnowledgeChefImpact(snapshot), [snapshot])
+  const eventOverridePolicy = useMemo(
+    () => buildClientDefaultKnowledgeEventOverridePolicy(snapshot),
+    [snapshot]
+  )
+  const changePreview = useMemo(
+    () => buildClientDefaultKnowledgeChangePreview(snapshot, toPassportPreview(form)),
+    [form, snapshot]
+  )
 
   function setField<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((current) => ({ ...current, [key]: value }))
@@ -153,6 +179,8 @@ export function DefaultKnowledgePanel({ initialSnapshot }: Props) {
           ))}
         </div>
 
+        <CoverageMeterCard coverage={coverage} />
+
         <div className="rounded-lg border border-brand-800 bg-brand-950 p-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
@@ -180,9 +208,13 @@ export function DefaultKnowledgePanel({ initialSnapshot }: Props) {
           )}
         </div>
 
+        <RestatementContractCard contract={restatementContract} />
+        <EventOverridePolicyCard policies={eventOverridePolicy} />
+        <ChefImpactCard impact={chefImpact} />
         <SafetyConfirmationCard snapshot={snapshot} />
         <HouseholdProfilesCard snapshot={snapshot} />
         <ReviewQueueCard snapshot={snapshot} />
+        <AuditTimelineCard timeline={auditTimeline} />
         <ProvenanceCard provenance={snapshot.provenance} />
 
         <div className="grid grid-cols-1 gap-4 border-t border-stone-800 pt-5">
@@ -361,6 +393,8 @@ export function DefaultKnowledgePanel({ initialSnapshot }: Props) {
           />
         </div>
 
+        <ChangePreviewCard preview={changePreview} />
+
         <div className="flex justify-end">
           <Button
             variant="primary"
@@ -373,6 +407,165 @@ export function DefaultKnowledgePanel({ initialSnapshot }: Props) {
         </div>
       </CardContent>
     </Card>
+  )
+}
+
+function CoverageMeterCard({
+  coverage,
+}: {
+  coverage: ReturnType<typeof buildClientDefaultKnowledgeCoverageMeter>
+}) {
+  return (
+    <div className="rounded-lg border border-stone-700 bg-stone-900 p-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h3 className="text-sm font-semibold text-stone-100">Coverage Meter</h3>
+          <p className="mt-1 text-sm text-stone-400">
+            Shows what ChefFlow can reuse now, what is still missing, and what needs review.
+          </p>
+        </div>
+        <Badge variant={coverage.safetyMissing > 0 ? 'warning' : 'success'}>
+          {coverage.percent}% known
+        </Badge>
+      </div>
+      <div className="mt-4 h-2 overflow-hidden rounded-full bg-stone-800">
+        <div className="h-full bg-brand-500" style={{ width: `${coverage.percent}%` }} />
+      </div>
+      <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
+        <div className="rounded-md bg-stone-800 px-3 py-2">
+          <p className="text-stone-500">Known</p>
+          <p className="mt-1 text-sm font-medium text-stone-100">{coverage.known}</p>
+        </div>
+        <div className="rounded-md bg-stone-800 px-3 py-2">
+          <p className="text-stone-500">Missing</p>
+          <p className="mt-1 text-sm font-medium text-stone-100">{coverage.missing}</p>
+        </div>
+        <div className="rounded-md bg-stone-800 px-3 py-2">
+          <p className="text-stone-500">Needs Review</p>
+          <p className="mt-1 text-sm font-medium text-stone-100">{coverage.stale}</p>
+        </div>
+      </div>
+      <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+        {coverage.scopes.map((scope) => (
+          <div key={scope.key} className="rounded-md bg-stone-800 px-3 py-2">
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-xs text-stone-300">{scope.label}</p>
+              <span className="text-xs text-stone-500">
+                {scope.known}/{scope.total}
+              </span>
+            </div>
+            <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-stone-700">
+              <div className="h-full bg-stone-300" style={{ width: `${scope.percent}%` }} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function RestatementContractCard({
+  contract,
+}: {
+  contract: ReturnType<typeof buildClientDefaultKnowledgeRestatementContract>
+}) {
+  const visible = contract.rows.slice(0, 8)
+  return (
+    <div className="rounded-lg border border-stone-700 bg-stone-900 p-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h3 className="text-sm font-semibold text-stone-100">Ask Once Contract</h3>
+          <p className="mt-1 text-sm text-stone-400">
+            Booking fields with saved values are prefilled or confirmed instead of asked again.
+          </p>
+        </div>
+        <Badge variant="info">{contract.blockedRestatements.length} blocked</Badge>
+      </div>
+      <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+        {visible.map((row) => (
+          <div key={row.fieldKey} className="rounded-md bg-stone-800 px-3 py-2">
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-xs text-stone-500">{row.label}</p>
+              <Badge
+                variant={
+                  row.status === 'confirm_instead'
+                    ? 'warning'
+                    : row.status === 'empty'
+                      ? 'default'
+                      : 'success'
+                }
+              >
+                {row.status.replace(/_/g, ' ')}
+              </Badge>
+            </div>
+            <p className="mt-1 text-sm text-stone-200">{row.value ?? 'Not saved yet'}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function EventOverridePolicyCard({
+  policies,
+}: {
+  policies: ReturnType<typeof buildClientDefaultKnowledgeEventOverridePolicy>
+}) {
+  return (
+    <div className="rounded-lg border border-stone-700 bg-stone-900 p-4">
+      <h3 className="text-sm font-semibold text-stone-100">Event Override Policy</h3>
+      <p className="mt-1 text-sm text-stone-400">
+        Event-specific changes stay scoped unless you choose to save them as new defaults.
+      </p>
+      <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
+        {policies.map((policy) => (
+          <div key={policy.fieldKey} className="rounded-md bg-stone-800 px-3 py-2">
+            <p className="text-xs text-stone-500">{policy.label}</p>
+            <p className="mt-1 text-sm text-stone-200">{policy.accountValue ?? 'No default'}</p>
+            <p className="mt-1 text-xs text-brand-400">
+              {policy.toggleLabel ?? 'Event-only override'}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function ChefImpactCard({
+  impact,
+}: {
+  impact: ReturnType<typeof buildClientDefaultKnowledgeChefImpact>
+}) {
+  const visible = impact.fields.slice(0, 6)
+  return (
+    <div className="rounded-lg border border-stone-700 bg-stone-900 p-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h3 className="text-sm font-semibold text-stone-100">Chef Impact Map</h3>
+          <p className="mt-1 text-sm text-stone-400">
+            These saved facts would notify the chef when changed because they affect menus, active
+            events, or planning defaults.
+          </p>
+        </div>
+        <Badge variant={impact.safetyCount > 0 ? 'warning' : 'info'}>
+          {impact.fields.length} watched
+        </Badge>
+      </div>
+      <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+        {visible.map((field) => (
+          <div key={field.fieldKey} className="rounded-md bg-stone-800 px-3 py-2">
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-xs text-stone-500">{field.label}</p>
+              <Badge variant={field.reason === 'food_safety' ? 'warning' : 'default'}>
+                {field.reason.replace(/_/g, ' ')}
+              </Badge>
+            </div>
+            <p className="mt-1 text-sm text-stone-200">{field.value}</p>
+          </div>
+        ))}
+      </div>
+    </div>
   )
 }
 
@@ -468,10 +661,45 @@ function ReviewQueueCard({ snapshot }: { snapshot: ClientDefaultKnowledgeSnapsho
               <p className="text-sm text-stone-100">{item.label}</p>
               <p className="text-xs text-stone-400">{item.proposedValue}</p>
             </div>
-            <div className="flex gap-2 text-xs text-stone-400">
-              <span>Approve</span>
-              <span>Edit</span>
-              <span>Reject</span>
+            <p className="text-xs text-stone-400">Pending client review</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function AuditTimelineCard({
+  timeline,
+}: {
+  timeline: ReturnType<typeof buildClientDefaultKnowledgeAuditTimeline>
+}) {
+  const visible = timeline.slice(0, 8)
+  return (
+    <div className="rounded-lg border border-stone-700 bg-stone-900 p-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h3 className="text-sm font-semibold text-stone-100">Audit Timeline</h3>
+          <p className="mt-1 text-sm text-stone-400">
+            Saved facts keep their source, freshness, and edit destination visible.
+          </p>
+        </div>
+        <Badge variant="info">{timeline.length} facts</Badge>
+      </div>
+      <div className="mt-3 space-y-2">
+        {visible.map((item) => (
+          <div
+            key={item.id}
+            className="flex flex-col gap-2 rounded-md bg-stone-800 px-3 py-2 sm:flex-row sm:items-start sm:justify-between"
+          >
+            <div>
+              <p className="text-sm text-stone-100">{item.label}</p>
+              <p className="text-xs text-stone-400">{item.value}</p>
+            </div>
+            <div className="flex flex-wrap gap-2 text-xs text-stone-500">
+              <span>{item.sourceLabel}</span>
+              <span>{item.freshness.replace(/_/g, ' ')}</span>
+              {item.safetyCritical && <span>Safety</span>}
             </div>
           </div>
         ))}
@@ -502,6 +730,67 @@ function ProvenanceCard({ provenance }: { provenance: ClientDefaultKnowledgeProv
           </div>
         ))}
       </div>
+    </div>
+  )
+}
+
+function ChangePreviewCard({
+  preview,
+}: {
+  preview: ReturnType<typeof buildClientDefaultKnowledgeChangePreview>
+}) {
+  if (preview.changedFields.length === 0) {
+    return (
+      <div className="rounded-lg border border-stone-700 bg-stone-900 p-4">
+        <h3 className="text-sm font-semibold text-stone-100">Before Saving</h3>
+        <p className="mt-1 text-sm text-stone-400">No default knowledge changes are pending.</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="rounded-lg border border-brand-800 bg-brand-950 p-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h3 className="text-sm font-semibold text-stone-100">Before Saving</h3>
+          <p className="mt-1 text-sm text-stone-400">
+            These changes will affect future portal flows after you save.
+          </p>
+        </div>
+        <Badge variant={preview.chefAlertCount > 0 ? 'warning' : 'info'}>
+          {preview.changedFields.length} changes
+        </Badge>
+      </div>
+      <div className="mt-3 space-y-2">
+        {preview.changedFields.slice(0, 6).map((field) => (
+          <div key={field.fieldKey} className="rounded-md bg-stone-900 px-3 py-2">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <p className="text-sm font-medium text-stone-100">{field.label}</p>
+                <p className="mt-1 text-xs text-stone-400">
+                  {field.before ?? 'Not set'} to {field.after ?? 'Not set'}
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-1">
+                {field.contexts.slice(0, 3).map((context) => (
+                  <span
+                    key={context}
+                    className="rounded bg-stone-800 px-2 py-0.5 text-xs text-stone-400"
+                  >
+                    {context.replace(/_/g, ' ')}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      {preview.chefAlertCount > 0 && (
+        <p className="mt-3 text-xs text-amber-300">
+          {preview.chefAlertCount} change{preview.chefAlertCount === 1 ? '' : 's'} can affect chef
+          planning or active event review.
+        </p>
+      )}
     </div>
   )
 }
@@ -589,6 +878,26 @@ function toFormState(passport: ClientDefaultKnowledgePassport): FormState {
     delegateName: passport.delegate_name ?? '',
     delegateEmail: passport.delegate_email ?? '',
     delegatePhone: passport.delegate_phone ?? '',
+  }
+}
+
+function toPassportPreview(form: FormState): ClientDefaultKnowledgePassport {
+  return {
+    communication_mode: form.communicationMode,
+    preferred_contact_method: form.preferredContactMethod,
+    chef_autonomy_level: form.chefAutonomyLevel,
+    auto_approve_under_cents: form.useAutoApproval ? dollarsToCents(form.autoApproveDollars) : null,
+    max_interaction_rounds: form.maxInteractionRounds
+      ? Number.parseInt(form.maxInteractionRounds, 10)
+      : null,
+    standing_instructions: form.useStandingInstructions ? form.standingInstructions : null,
+    default_guest_count: form.useServiceDefaults ? nullableInteger(form.defaultGuestCount) : null,
+    service_style: form.useServiceDefaults && form.serviceStyle ? form.serviceStyle : null,
+    budget_range_min_cents: form.useBudgetRange ? dollarsToCents(form.budgetMinDollars) : null,
+    budget_range_max_cents: form.useBudgetRange ? dollarsToCents(form.budgetMaxDollars) : null,
+    delegate_name: form.useDelegate ? form.delegateName : null,
+    delegate_email: form.useDelegate ? form.delegateEmail : null,
+    delegate_phone: form.useDelegate ? form.delegatePhone : null,
   }
 }
 
