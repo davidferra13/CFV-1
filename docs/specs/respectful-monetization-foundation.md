@@ -4,6 +4,7 @@
 > **Priority:** P1
 > **Depends on:** none
 > **Estimated complexity:** large (9+ files)
+> **Access doctrine:** `docs/chefflow-access-revenue-doctrine.md`
 
 ## Timeline
 
@@ -151,6 +152,8 @@ This direction best matches the current product copy, the developer's constraint
 This spec is **not approved for build**. It captures the current recommendation and the decision space, but pricing and support structure are still open.
 
 The later beta-first rollout reasoning and OpenClaw clarification are preserved separately in `docs/specs/beta-first-monetization-decision-archive.md`. Read both documents together before any monetization decision is promoted beyond strategy.
+
+The current canonical access rule is preserved in `docs/chefflow-access-revenue-doctrine.md`: ChefFlow will never charge a chef simply to price a menu with honest local pricing data. This spec must be interpreted through that doctrine.
 
 At the moment, the recommendation is:
 

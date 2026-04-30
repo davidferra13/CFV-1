@@ -2,6 +2,7 @@
 
 **Date:** 2026-03-20
 **Branch:** `feature/external-directory`
+**Doctrine update:** 2026-04-30, see `docs/chefflow-access-revenue-doctrine.md`
 
 ## What Changed
 
@@ -58,14 +59,24 @@ ChefFlow moved from a freemium model (Free tier + $29/month Pro tier) to a fully
 
 ## Revenue Model Going Forward
 
-- All features free, no exceptions
+- Core operating infrastructure stays free
+- ChefFlow will never charge a chef simply to price a menu with honest local pricing data
 - Voluntary monthly contribution via existing Stripe subscription flow
 - "Support ChefFlow" page at `/settings/billing`
 - Founding members retain their badge (cosmetic, not functional)
 - No feature differentiation between supporters and non-supporters
+- Future paid offerings may exist only as additive leverage, automation, scale, compliance, commerce, marketplace, partner, or payment revenue
 
 ## Future Considerations
 
-- The Stripe subscription infrastructure can be repurposed if a different monetization model emerges (e.g., marketplace fees, premium integrations)
+- The Stripe subscription infrastructure can be repurposed if a different monetization model emerges (for example marketplace fees or premium integrations)
 - The `requirePro()` and `<UpgradeGate>` infrastructure can be re-activated if needed by restoring the original logic
 - Consider adding supporter badges/recognition in the community feed as a soft incentive
+
+## Current Interpretation
+
+This document is implementation history for the March 2026 move away from Pro gating.
+
+It no longer means "all possible future features are free forever." It means ChefFlow removed hostile feature withholding and made the operating foundation accessible.
+
+For the active access and revenue rule set, use `docs/chefflow-access-revenue-doctrine.md`.

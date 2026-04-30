@@ -1,7 +1,7 @@
 # ChefFlow Canonical Project Definition and Scope
 
 Status: canonical source of truth
-Last updated: 2026-04-02
+Last updated: 2026-04-30
 Purpose: define what ChefFlow is, what it is for, who it serves, and how conflicting summaries should be resolved
 
 ## Why This Document Exists
@@ -156,11 +156,16 @@ Its job is not to redefine ChefFlow away from its core operator-system identity.
 
 ## Monetization and Access Contract
 
-The current canonical product contract is:
+The canonical access and revenue doctrine lives in `docs/chefflow-access-revenue-doctrine.md`.
+
+The current product contract is:
 
 - core platform access is universal
+- ChefFlow will never charge a chef simply to price a menu with honest local pricing data
 - the public and billing language should describe support, not escape from limitation
 - ChefFlow is currently positioned around voluntary support rather than a hard Pro paywall
+- future paid offerings must be additive leverage, automation, scale, compliance, commerce, marketplace, partner, or payment revenue, not arbitrary locks on baseline chef infrastructure
+- marketplace-capable infrastructure is in scope, but ChefFlow remains an operating system first
 
 ### Important implementation note
 
@@ -181,6 +186,7 @@ For now, interpret them this way:
 - `requirePro(...)` and `UpgradeGate` currently survive mainly as compatibility and routing infrastructure unless a newer document explicitly reintroduces real access differentiation
 
 If monetization changes in the future, this document must be updated first before other docs start describing a new model as settled truth.
+For monetization detail, update `docs/chefflow-access-revenue-doctrine.md` first, then reflect the change here.
 
 ## One-Sentence Definition
 
@@ -204,16 +210,19 @@ Everyone working on ChefFlow should be able to answer these the same way:
    No. Discovery is in scope; platform-owned booking take-rate is not the current identity.
 6. Are legacy Pro and gating terms the current canonical monetization story?
    No. They are implementation/history artifacts unless explicitly reintroduced by updated strategy.
+7. Can ChefFlow charge chefs just to price a menu?
+   No. Honest local menu pricing is baseline infrastructure.
 
 ## Documentation Precedence
 
 For project identity and scope questions, use this order:
 
 1. this file
-2. `docs/system-architecture.md`
-3. `docs/chefflow-product-definition.md`
-4. `docs/feature-inventory.md`
-5. research baselines and supporting investigations
+2. `docs/chefflow-access-revenue-doctrine.md` for access and monetization specifics
+3. `docs/system-architecture.md`
+4. `docs/chefflow-product-definition.md`
+5. `docs/feature-inventory.md`
+6. research baselines and supporting investigations
 
 ## Maintenance Rule
 
