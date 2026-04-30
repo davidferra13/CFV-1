@@ -1,0 +1,44 @@
+{
+	email {$ACME_EMAIL}
+	admin off
+}
+
+{$CHEFFLOW_DOMAIN:app.cheflowhq.com} {
+	encode zstd gzip
+
+	log {
+		output file /var/log/caddy/chefflow-access.log {
+			roll_size 50MiB
+			roll_keep 10
+			roll_keep_for 720h
+		}
+		format json
+	}
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+	}
+
+	reverse_proxy 127.0.0.1:3300 {
+		health_uri /api/health/readiness?strict=1
+		health_interval 30s
+		health_timeout 5s
+		fail_duration 30s
+		lb_try_duration 10s
+		flush_interval -1
+
+		header_up Host {host}
+		header_up X-Real-IP {remote_host}
+		header_up X-Forwarded-Proto {scheme}
+		header_up X-Forwarded-Host {host}
+
+		transport http {
+			dial_timeout 10s
+			response_header_timeout 60s
+			read_timeout 0
+			write_timeout 0
+		}
+	}
+}

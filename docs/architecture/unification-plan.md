@@ -8,7 +8,7 @@ After execution:
 
 - **One directory:** `C:\Users\david\Documents\CFv1`
 - **One command:** `npm run dev` (port 3100)
-- **One deployment:** `git push` to GitHub, then direct deploy from CFv1 (no rsync copies)
+- **One production standard:** package a release from CFv1, build it on the dedicated self-hosted production node, then activate it through `/srv/chefflow/current`
 - **One instruction file:** `CLAUDE.md` (simplified)
 - **All features visible** in the UI through unified navigation
 - **No abandoned scaffolds, temp files, or duplicate directories**
@@ -39,7 +39,7 @@ After execution:
 | Multi-env scripts                | **DELETE**                      | deploy-beta.sh, deploy-prod.sh, rollback-\*.sh, start-beta.ps1, start-prod.ps1 |
 | .env.local.beta, .env.local.prod | **DELETE**                      | No separate environments                                                       |
 | Supabase SDK                     | **REMOVE** from package.json    | Only used in 2 non-production files, replace with postgres.js                  |
-| Cloudflare Tunnels               | **KEEP for now**                | Single tunnel for app.cheflowhq.com pointing to :3100                          |
+| Cloudflare Tunnels               | **LEGACY**                      | Do not use workstation tunnel exposure as the public production origin          |
 
 ## Execution Plan
 
@@ -134,16 +134,18 @@ Rewrite CLAUDE.md to reflect reality:
 **New deployment model:**
 
 - Development: `npm run dev` on port 3100 (unchanged)
-- Production: `npm run build && npm start` on port 3100 (or any port)
-- External access: Single Cloudflare Tunnel to port 3100 for app.cheflowhq.com
-- No separate directories, no rsync, no build-swap scripts
+- Production: dedicated self-hosted Linux node
+- App service: `systemd` service bound to `127.0.0.1:3300`
+- External access: Caddy on the production node for `app.cheflowhq.com`
+- Releases: immutable directories under `/srv/chefflow/releases` with `/srv/chefflow/current` as the live pointer
+- Rollback: symlink switch plus service restart, no rebuild during incidents
 
 **New "ship it" sequence:**
 
 1. `git add` + `git commit` + `git push`
-2. `npm run build` (in place)
-3. Restart with `npm start` if serving production build
-4. Done.
+2. Package with `scripts/package-release.ps1`
+3. Deploy with `scripts/deploy-self-hosted.ps1`
+4. Verify readiness and streaming through the production reverse proxy
 
 ### Phase H: Feature Surface Verification (Separate Task)
 

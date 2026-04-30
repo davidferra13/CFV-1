@@ -1,42 +1,43 @@
 [Unit]
-Description=ChefFlow Production App (app.cheflowhq.com)
+Description=ChefFlow Production App
 Documentation=https://github.com/davidferra13/CFV-1
-After=network.target postgresql.service
-Wants=network.target
+After=network-online.target
+Wants=network-online.target
 
 [Service]
 Type=simple
-User=davidferra
-Group=davidferra
-WorkingDirectory=/home/davidferra/apps/chefflow-prod
+User=chefflow
+Group=chefflow
+WorkingDirectory=/srv/chefflow/current
+
 Environment=NODE_ENV=production
-Environment=PORT=3000
-Environment=NODE_OPTIONS=--max-old-space-size=1536
-EnvironmentFile=/home/davidferra/apps/chefflow-prod/.env.local
+Environment=HOST=127.0.0.1
+Environment=PORT=3300
+Environment=NODE_OPTIONS=--max-old-space-size=4096
+EnvironmentFile=/srv/chefflow/shared/chefflow-prod.env
 
-# Start command
-ExecStart=/home/davidferra/.nvm/versions/node/v20.18.0/bin/node node_modules/.bin/next start -p 3000
+ExecStart=/usr/bin/env node node_modules/next/dist/bin/next start -p 3300 -H 127.0.0.1
 
-# Restart policy
 Restart=always
 RestartSec=5
 StartLimitBurst=5
 StartLimitIntervalSec=60
 
-# Memory limits
-MemoryMax=2G
-MemoryHigh=1800M
+MemoryHigh=6G
+MemoryMax=8G
+TimeoutStartSec=120
+TimeoutStopSec=30
+KillSignal=SIGTERM
 
-# Process settings
-StandardOutput=append:/home/davidferra/.pm2/logs/chefflow-prod-out.log
-StandardError=append:/home/davidferra/.pm2/logs/chefflow-prod-error.log
+StandardOutput=journal
+StandardError=journal
 SyslogIdentifier=chefflow-prod
 
-# Security hardening
 NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
 ProtectSystem=strict
-ProtectHome=read-only
-ReadWritePaths=/home/davidferra/apps/chefflow-prod /home/davidferra/.pm2
+ReadWritePaths=/srv/chefflow
 
 [Install]
 WantedBy=multi-user.target

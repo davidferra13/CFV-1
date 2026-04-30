@@ -1,116 +1,70 @@
-# ChefFlow Beta Server Setup And Operations Guide
+# ChefFlow Staging And Beta Operations
 
-## Release Model
+The tunnel-era beta path is legacy. ChefFlow production now targets a dedicated self-hosted production node, and optional staging must follow the same self-hosted deployment standard.
 
-ChefFlow currently has three operating environments:
+## Current Policy
 
 ```text
-Developer workstation -> active coding on localhost:3100
-Beta host -> stable invite-only beta on beta.cheflowhq.com
-Production host -> public launch on app.cheflowhq.com
+Developer workstation -> local development on localhost:3100 only
+Production node -> public app on app.cheflowhq.com
+Optional staging -> self-hosted service only when needed
 ```
 
-Beta is the only external-user distribution channel that should be used right now.
+Do not expose the developer workstation as beta or production. Do not use local tunnels as the public origin for external users.
 
-## Pre-Deploy Gate
+## Default
 
-Before every beta deployment, run the release candidate commit through the beta gate:
+Do not run an always-on staging environment unless there is a concrete testing need that preview-on-demand cannot solve.
+
+Preview-on-demand means a temporary branch deployment on controlled self-hosted infrastructure. It is not a third-party preview service and not a workstation tunnel.
+
+## If Staging Is Required
+
+Use one of these patterns:
+
+| Pattern | Requirements |
+| ------- | ------------ |
+| Same host, second service | Separate loopback port, env file, systemd unit, Caddy site block, and release path |
+| Second host | Same deployment model as production with lower blast radius |
+
+Staging must use its own:
+
+- `NEXT_PUBLIC_SITE_URL`
+- `NEXT_PUBLIC_APP_URL`
+- auth callback URLs
+- Stripe mode and webhook settings
+- `CRON_SECRET`
+- AI gateway configuration
+
+## Release Gate
+
+Before exposing a staging build to anyone outside development:
 
 ```bash
 npm install
 npm run verify:release:web-beta
 ```
 
-Do not deploy if this command fails. The beta gate is intended to block releases when the public health contract fails, the beta build does not compile, or the packaged beta smoke test fails.
+Do not ship if the release gate fails. This check does not replace the production self-hosted deploy validation in `docs/runbooks/self-hosted-ops.md`.
 
-## Deploying To Beta
+## Operations
 
-From the workstation, run:
+For production deploy and rollback, use:
 
-```bash
-bash scripts/deploy-beta.sh
-```
+- `scripts/package-release.ps1`
+- `scripts/deploy-self-hosted.ps1`
+- `scripts/rollback-self-hosted.ps1`
+- `docs/runbooks/self-hosted-bootstrap.md`
+- `docs/runbooks/self-hosted-ops.md`
 
-The deploy script is expected to:
-
-1. Push the current branch.
-2. Pull the release candidate on the beta host.
-3. Copy the beta `.env.local`.
-4. Build the app.
-5. Restart the app process.
-6. Run a health verification step.
-
-## Post-Deploy Verification
-
-Do these checks immediately after deploy:
-
-```bash
-curl -I https://beta.cheflowhq.com/api/health/readiness?strict=1
-curl https://beta.cheflowhq.com/api/health/readiness?strict=1
-```
-
-Then manually verify:
-
-1. Home page loads in beta mode.
-2. Pricing page still routes users to beta access, not self-serve checkout.
-3. Sign-in works for a beta account.
-4. One core chef workflow completes without manual rescue.
-5. In-app feedback submission still works.
-
-## Rolling Back
-
-If a deploy breaks beta:
-
-```bash
-bash scripts/rollback-beta.sh
-```
-
-Rollback is part of the release contract. A beta build is not ready for external users if rollback has not been verified recently.
-
-## Environment Notes
-
-The beta environment should use beta-specific values for:
-
-- `NEXT_PUBLIC_SITE_URL`
-- `NEXT_PUBLIC_APP_URL`
-- PostgreSQL auth redirect URLs
-- Google OAuth callback URLs
-- Stripe mode and webhook settings
-- `CRON_SECRET`
-
-Do not reuse local-development values on the beta host.
-
-## Services On The Beta Host
-
-Expected always-on services:
-
-- ChefFlow app process
-- Cloudflare Tunnel
-- Any required background services such as Ollama, if beta depends on them
-
-Useful status checks:
-
-```bash
-# Check beta app
-curl http://localhost:3200/api/health
-
-# Check Cloudflare Tunnel (PowerShell)
-Get-Service cloudflared
-
-# Check Ollama
-curl http://localhost:11434/api/tags
-```
+For staging, duplicate the same pattern with staging-specific service names and ports. Keep public proxying pointed at a loopback app service on the staging host, never at the developer workstation.
 
 ## Troubleshooting
 
-| Problem                  | Check first                                                                                          |
-| ------------------------ | ---------------------------------------------------------------------------------------------------- |
-| Beta site is down        | App process and Cloudflare Tunnel status                                                             |
-| Health check is degraded | `GET /api/health/readiness?strict=1` body and headers                                                |
-| Auth redirect fails      | Beta public URLs and OAuth callback configuration                                                    |
-| Build fails on host      | Memory pressure, env mismatch, and `npm run verify:release:web-beta` on the release candidate commit |
-| Rollback needed          | Restore the previous build with `bash scripts/rollback-beta.sh`                                      |
-
-## Distribution Guidance
-
-For external users, distribute only the hosted beta URL. Do not hand out source-code setup steps, Tauri installers, or mobile app packages until those channels have a production update and rollback story.
+| Problem | Check first |
+| ------- | ----------- |
+| Staging site is down | Staging systemd service, Caddy site block, and loopback readiness |
+| Health check is degraded | `GET /api/health/readiness?strict=1` body and host logs |
+| Auth redirect fails | Staging public URLs and OAuth callback configuration |
+| Build fails on host | Env mismatch, memory pressure, and release gate output |
+| Rollback needed | Use the staging equivalent of `rollback-release.sh` |

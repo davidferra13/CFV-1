@@ -110,7 +110,11 @@ The sidebar (`nav-config.tsx`, 1,543 lines) defines:
 - **Gemini** (cloud) - generic non-PII tasks only
 - **Stripe** - payment processing (supporter contributions)
 - **Auth.js v5** - authentication
-- **Cloudflare Tunnels** - expose local ports to internet (beta.cheflowhq.com, app.cheflowhq.com)
+- **Cloudflare Tunnels** - legacy local-port exposure that is being replaced as the public production path
+
+### Deployment Direction Update - 2026-04-30
+
+The target production standard is a dedicated self-hosted production node. Local development remains on the workstation at `localhost:3100`, while public production is served from a controlled Linux host through Caddy, `systemd`, immutable release directories, health checks, and symlink rollback. The developer workstation must not be the public production host.
 
 ## 4. Key Problems
 

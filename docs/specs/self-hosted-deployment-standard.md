@@ -1,6 +1,6 @@
 # Spec: Self-Hosted Deployment Standard
 
-> **Status:** ready
+> **Status:** built (ops assets added, live host cutover pending)
 > **Priority:** P0 (blocking)
 > **Depends on:** none
 > **Estimated complexity:** large (9+ files)
@@ -14,6 +14,9 @@ _Every status change, every claim, every verification gets a row. This is the au
 | Created          | 2026-04-02 00:00 | Codex session |        |
 | Status: ready    | 2026-04-02 00:00 | Codex session |        |
 | Research refined | 2026-04-02 00:00 | Codex session |        |
+| Status: in-progress | 2026-04-30 22:54 | Codex V1 builder |        |
+| Implementation added | 2026-04-30 23:08 | Codex V1 builder |        |
+| Static validation | 2026-04-30 23:20 | Codex V1 builder |        |
 
 ---
 
@@ -229,7 +232,6 @@ _List every NEW file with its full path and a one-line description._
 | File                                     | Purpose                                                                 |
 | ---------------------------------------- | ----------------------------------------------------------------------- |
 | `ops/caddy/Caddyfile`                    | Reverse proxy config for production TLS termination and upstream proxy  |
-| `ops/systemd/chefflow-prod.service`      | systemd unit for the production ChefFlow app process                    |
 | `ops/systemd/chefflow-prod.env.example`  | Example environment file layout for the production app service          |
 | `scripts/package-release.ps1`            | Workstation-side script to package an exact release payload             |
 | `scripts/deploy-self-hosted.ps1`         | Workstation-side deployment entrypoint over SSH to the production host  |
@@ -254,6 +256,8 @@ _List every EXISTING file that needs changes. Be specific about what changes._
 | `docs/beta-server-setup.md`             | Rewrite or supersede the tunnel-era beta guidance once the new staging decision is implemented     |
 | `docs/architecture/current-state.md`    | Add a note that tunnel-based local-origin public serving is legacy and being replaced              |
 | `docs/architecture/unification-plan.md` | Align the target deployment model with a dedicated production node rather than workstation serving |
+| `ops/systemd/chefflow-prod.service`     | Replace the legacy Pi/home-directory service with the `/srv/chefflow/current` production unit     |
+| `ops/systemd/README.md`                 | Align systemd setup notes with the dedicated production host standard                             |
 
 ---
 

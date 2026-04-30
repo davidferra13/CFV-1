@@ -66,6 +66,10 @@ Requires: Ollama running locally (`ollama serve`). If Ollama is down, fall back 
 - **Cloud AI:** all AI routes through a single Ollama-compatible endpoint (OLLAMA_BASE_URL, Gemma 4). No second provider. Conversation content is never stored server-side.
 - **Never:** run `drizzle-kit push` without explicit user approval
 
+### SELF-HOSTED PRODUCTION STANDARD
+
+Production public traffic must be served from the dedicated self-hosted production node, not the developer workstation. Local development stays on `localhost:3100`. Production runs from immutable release directories under `/srv/chefflow/releases`, with `/srv/chefflow/current` pointing at the active release, `chefflow-prod` managed by `systemd`, the app bound to `127.0.0.1:3300`, and Caddy terminating public TLS. Use `scripts/package-release.ps1`, `scripts/deploy-self-hosted.ps1`, `scripts/rollback-self-hosted.ps1`, and the runbooks under `docs/runbooks/self-hosted-*.md`. Tunnel-based workstation exposure is legacy and must not be treated as the production origin.
+
 ### PERMANENTLY RESTRICTED EXTERNAL PLATFORMS
 
 Vercel and Supabase are fully restricted from ChefFlow. Do not recommend them, compare against them, plan migrations to them, add dependencies for them, create docs for them, or mention them as acceptable options. If historical files mention either platform, treat those mentions as legacy context only and do not propagate them into new code, docs, UI, architecture, or agent recommendations.

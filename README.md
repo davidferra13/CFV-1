@@ -12,6 +12,8 @@ npm run dev
 # Open http://localhost:3100
 ```
 
+Local development runs only on the developer workstation. Public production is served from a dedicated self-hosted production node through Caddy and `systemd`, using immutable release directories under `/srv/chefflow`. See `docs/runbooks/self-hosted-bootstrap.md` and `docs/runbooks/self-hosted-ops.md`.
+
 ## Stack
 
 - **Framework**: Next.js (App Router)
@@ -20,7 +22,7 @@ npm run dev
 - **Auth**: Auth.js v5 (credentials + Google OAuth)
 - **Payments**: Stripe
 - **Styling**: Tailwind CSS
-- **AI**: Ollama (local, private data) + Gemini (generic tasks)
+- **AI**: Single Ollama-compatible endpoint
 - **Realtime**: Server-Sent Events (SSE)
 
 ## Structure
@@ -42,6 +44,8 @@ public/        Static assets
 - `npm run dev` - Development server (port 3100)
 - `npm run build` - Production build
 - `npm start` - Serve production build
+- `powershell -ExecutionPolicy Bypass -File scripts\package-release.ps1` - Package a self-hosted release
+- `powershell -ExecutionPolicy Bypass -File scripts\deploy-self-hosted.ps1 -HostName <host>` - Deploy to the self-hosted production node
 - `npx tsc --noEmit --skipLibCheck` - Type check
 - `npx next build --no-lint` - Build check
 

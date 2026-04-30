@@ -1,67 +1,76 @@
-# Environment Variables - Production Deployment
+# Environment Variables
 
-Quick reference for setting production environment variables.
-All values should be set in `.env.local` on the production server.
+ChefFlow has separate local development and dedicated self-hosted production configuration. Public production values live on the production node, not in the repository and not on the developer workstation.
 
-## Required (app will not start without these)
+## Local Development
 
-| Variable                             | Source                                   | Format                      |
-| ------------------------------------ | ---------------------------------------- | --------------------------- |
-| `NEXT_PUBLIC_DATABASE_URL`           | database dashboard > Settings > API      | `https://xxxxx.database.co` |
-| `NEXT_PUBLIC_DATABASE_ANON_KEY`      | database dashboard > Settings > API      | `eyJ...`                    |
-| `DATABASE_SERVICE_ROLE_KEY`          | database dashboard > Settings > API      | `eyJ...`                    |
-| `STRIPE_SECRET_KEY`                  | Stripe dashboard > Developers > API keys | `sk_live_...`               |
-| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Stripe dashboard > Developers > API keys | `pk_live_...`               |
-| `STRIPE_WEBHOOK_SECRET`              | Stripe dashboard > Developers > Webhooks | `whsec_...`                 |
-| `RESEND_API_KEY`                     | Resend dashboard > API Keys              | `re_...`                    |
-| `CRON_SECRET`                        | Generate: `openssl rand -hex 32`         | Random hex string           |
-| `NEXT_PUBLIC_SITE_URL`               | Fixed                                    | `https://app.cheflowhq.com` |
-| `NEXT_PUBLIC_APP_URL`                | Fixed                                    | `https://app.cheflowhq.com` |
-| `ADMIN_EMAILS`                       | Fixed                                    | `davidferra13@gmail.com`    |
+Local development runs with `npm run dev` on `localhost:3100`.
 
-## Required for specific features
+Use `.env.local` for developer-only values. Local values may point at local services, including the local Ollama-compatible runtime, but must never be copied directly into production.
 
-| Variable                 | Feature                    | Source                       |
-| ------------------------ | -------------------------- | ---------------------------- |
-| `GOOGLE_CLIENT_ID`       | Gmail sync, Google sign-in | Google Cloud Console         |
-| `GOOGLE_CLIENT_SECRET`   | Gmail sync, Google sign-in | Google Cloud Console         |
-| `PLATFORM_OWNER_CHEF_ID` | Contact form routing       | PostgreSQL: `chefs` table ID |
+Required local classes:
 
-## Optional (graceful degradation if missing)
+| Class | Examples |
+| ----- | -------- |
+| Database | `DATABASE_URL` |
+| Auth | `AUTH_SECRET`, `ADMIN_EMAILS` |
+| App URLs | `NEXT_PUBLIC_SITE_URL=http://localhost:3100`, `NEXT_PUBLIC_APP_URL=http://localhost:3100` |
+| AI gateway | `OLLAMA_BASE_URL=http://localhost:11434`, `OLLAMA_MODEL=gemma4` |
 
-| Variable                   | Feature                          | Behavior if missing                        |
-| -------------------------- | -------------------------------- | ------------------------------------------ |
-| `SENTRY_DSN`               | Error tracking                   | Errors not reported                        |
-| `SENTRY_AUTH_TOKEN`        | Source map upload                | Stack traces unreadable in Sentry          |
-| `NEXT_PUBLIC_POSTHOG_KEY`  | Product analytics                | Analytics disabled                         |
-| `NEXT_PUBLIC_POSTHOG_HOST` | Analytics host                   | Defaults to `https://us.i.posthog.com`     |
-| `GEMINI_API_KEY`           | Non-private AI (technique lists) | Feature shows "AI unavailable"             |
-| `UPSTASH_REDIS_REST_URL`   | Persistent rate limiting         | Falls back to in-memory (resets on deploy) |
-| `UPSTASH_REDIS_REST_TOKEN` | Persistent rate limiting         | Falls back to in-memory                    |
+## Dedicated Self-Hosted Production
 
-## Must NOT be set in production
+Production runs on the dedicated host under `systemd` and Caddy. The app binds to `127.0.0.1:3300`.
 
-| Variable            | Why                                                                       |
-| ------------------- | ------------------------------------------------------------------------- |
-| `DEMO_MODE_ENABLED` | Must be `false` or unset. Production safety check blocks startup.         |
-| `OLLAMA_BASE_URL`   | Ollama is local-only. Production has no GPU. Features degrade gracefully. |
+Install live values at `/srv/chefflow/shared/chefflow-prod.env` with owner `root:chefflow` and mode `0640`. The checked-in example is `ops/systemd/chefflow-prod.env.example`.
 
-## Safety checks
+Required production values:
 
-`lib/environment/production-safety.ts` runs at startup and validates:
+| Variable | Purpose |
+| -------- | ------- |
+| `NODE_ENV=production` | Runtime mode |
+| `HOST=127.0.0.1` | Loopback-only app binding |
+| `PORT=3300` | Production app port behind Caddy |
+| `DATABASE_URL` | PostgreSQL connection string |
+| `AUTH_SECRET` | Auth.js signing secret |
+| `AUTH_TRUST_HOST=true` | Trust reverse-proxy host headers |
+| `NEXT_PUBLIC_SITE_URL=https://app.cheflowhq.com` | Build-time public site URL |
+| `NEXT_PUBLIC_APP_URL=https://app.cheflowhq.com` | Build-time public app URL |
+| `ADMIN_EMAILS` | Founder Authority and admin email list |
+| `PLATFORM_OWNER_CHEF_ID` | Founder-owned chef record for routing |
+| `STRIPE_SECRET_KEY` | Stripe server key |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Stripe browser key |
+| `STRIPE_WEBHOOK_SECRET` | Stripe webhook verification secret |
+| `RESEND_API_KEY` | Email delivery key |
+| `CRON_SECRET` | Scheduled job shared secret |
+| `OLLAMA_BASE_URL` | Controlled Ollama-compatible AI endpoint |
+| `OLLAMA_MODEL` | Production model name |
 
-- All required vars present
-- Stripe keys are `sk_live_`/`pk_live_` (not test keys)
-- Stripe keys are from the same mode (live/live, not live/test)
-- Webhook secret has `whsec_` prefix
-- Site/App URLs are not localhost
-- Demo mode is disabled
-- Sentry auth token present if DSN is set (warning)
+Optional production values:
 
-If any check fails, the app throws and does not start.
+| Variable | Purpose |
+| -------- | ------- |
+| `GOOGLE_CLIENT_ID` | Google sign-in and Gmail sync |
+| `GOOGLE_CLIENT_SECRET` | Google sign-in and Gmail sync |
+| `SENTRY_DSN` | Error reporting |
+| `SENTRY_AUTH_TOKEN` | Source map upload |
+| `NEXT_PUBLIC_POSTHOG_KEY` | Product analytics |
+| `NEXT_PUBLIC_POSTHOG_HOST` | Product analytics host |
 
-## Setup steps
+## Build-Time Versus Runtime
 
-1. Copy `.env.local.example` to `.env.local` on the production server
-2. Fill in each variable from the corresponding dashboard
-3. Restart the production server after updating
+`NEXT_PUBLIC_*` values are build-time inputs. Changing them requires a new release build on the production host.
+
+Server-only secrets are runtime inputs. They must come from host-managed configuration outside the repo. Prefer systemd credentials for sensitive material when the app wrapper supports `$CREDENTIALS_DIRECTORY`; use `/srv/chefflow/shared/chefflow-prod.env` as the transitional compatibility layer.
+
+## Optional Staging
+
+Do not create always-on staging unless there is a real testing need. If staging is required, keep it self-hosted with its own loopback port, env file, systemd unit, and Caddy site block.
+
+Preview-on-demand means a temporary self-hosted branch deployment on controlled infrastructure.
+
+## Must Not Be Set In Production
+
+| Variable | Why |
+| -------- | --- |
+| `DEMO_MODE_ENABLED=true` | Production safety checks must block demo mode |
+| Localhost public URLs | Public callbacks and links must use `https://app.cheflowhq.com` |
