@@ -11,7 +11,6 @@ import {
   slugifyPath,
   type MobileViewport,
 } from './helpers/mobile-audit-rules'
-import { resolveMobileDeviceProfile } from './helpers/mobile-device-profiles'
 
 type AuditState = 'default' | 'menu_open' | 'cookie_banner'
 
@@ -120,7 +119,6 @@ test.describe('Mobile Visual Audit', () => {
 
     const mode = getAuditMode()
     const scope = getAuditScope()
-    const deviceProfile = resolveMobileDeviceProfile(process.env.MOBILE_AUDIT_DEVICE_PROFILE)
     const viewports = chooseViewports(mode)
     const harvestedRoutes = buildMobileAuditRoutes(seedIds)
     const allRoutes = trimRoutesForMode(harvestedRoutes, mode).filter((route) =>
@@ -159,7 +157,6 @@ test.describe('Mobile Visual Audit', () => {
         for (const viewport of viewports) {
           for (const state of routeStates(route.role, route.path)) {
             const context = await browser.newContext({
-              ...deviceProfile.contextOptions,
               storageState: roleConfig.storageState,
               viewport: { width: viewport.width, height: viewport.height },
             })
@@ -281,10 +278,6 @@ test.describe('Mobile Visual Audit', () => {
     const summary = {
       mode,
       scope,
-      deviceProfile: {
-        name: deviceProfile.name,
-        label: deviceProfile.label,
-      },
       generatedAt: new Date().toISOString(),
       totals: {
         routes: allRoutes.length,
