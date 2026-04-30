@@ -1842,6 +1842,18 @@ Pricing page (`/pricing`) feature checklist now includes "Remy AI concierge - dr
 | Status dropdown | Select per row    | Changes status (pending/invited/onboarded/declined). Updates timestamps (invited_at, onboarded_at). Optimistic with rollback. |
 | Notes           | Inline edit       | Click to edit, Enter to save. Admin private notes per signup.                                                                 |
 
+### Admin: Supporter Signals (`/admin/supporter-signals`)
+
+Read-only credibility proof inventory. Pulls from featured and approved guest testimonials, showcase-visible referral partners, active beta signups, and positive user feedback. The page separates public-ready proof from permission candidates so ChefFlow can avoid unsupported "trusted by" claims.
+
+| Element              | Type      | Description                                                                                               |
+| -------------------- | --------- | --------------------------------------------------------------------------------------------------------- |
+| Summary metrics      | Dashboard | Public ready, approved proof, permission candidates, and private candidates                               |
+| Homepage readiness   | Panel     | Recommends either honest early-stage copy or public proof review based on existing consent-backed records |
+| Candidate pipeline   | Table     | Ranked supporter signals with source, status, evidence, public use permission, next step, and date        |
+| Public proof rules   | Panel     | Lists which records can be used publicly and which need explicit approval first                           |
+| Source surface links | Links     | Referral Partners, Early Signups, User Feedback, and Launch Readiness                                     |
+
 ### Admin: Platform Pulse (`/admin/pulse`)
 
 | Element           | Type  | Description                                                                                     |
@@ -1865,14 +1877,15 @@ Pricing page (`/pricing`) feature checklist now includes "Remy AI concierge - dr
 
 ### Admin Sidebar
 
-| Nav item           | Icon        | Route                    |
-| ------------------ | ----------- | ------------------------ |
-| Pulse              | ShieldAlert | `/admin/pulse`           |
-| All Inquiries      | ShieldAlert | `/admin/inquiries`       |
-| Beta Signups       | Rocket      | `/admin/beta`            |
-| Price Catalog      | Tags        | `/admin/price-catalog`   |
-| Analytics          | BarChart3   | `/admin/analytics`       |
-| Data Engine Health | Activity    | `/admin/openclaw/health` |
+| Nav item           | Icon           | Route                      |
+| ------------------ | -------------- | -------------------------- |
+| Pulse              | ShieldAlert    | `/admin/pulse`             |
+| All Inquiries      | ShieldAlert    | `/admin/inquiries`         |
+| Beta Signups       | Rocket         | `/admin/beta`              |
+| Supporter Signals  | HeartHandshake | `/admin/supporter-signals` |
+| Price Catalog      | Tags           | `/admin/price-catalog`     |
+| Analytics          | BarChart3      | `/admin/analytics`         |
+| Data Engine Health | Activity       | `/admin/openclaw/health`   |
 
 ### Admin: Price Catalog (`/admin/price-catalog`)
 
