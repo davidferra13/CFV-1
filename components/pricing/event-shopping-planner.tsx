@@ -104,6 +104,10 @@ export function EventShoppingPlanner() {
                   {plan.dateRange.start} to {plan.dateRange.end}
                 </span>
               </div>
+              <div className="rounded-lg border border-amber-800 bg-amber-950/30 px-3 py-2 text-xs text-amber-300">
+                Store optimization is a route plan until each line has local buyable proof. Verify
+                stale, missing, or estimated lines before shopping.
+              </div>
 
               {/* Events list */}
               <div className="space-y-1">

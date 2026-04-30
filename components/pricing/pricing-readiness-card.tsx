@@ -69,15 +69,7 @@ function SectionHeader({ title, label, status }: { title: string; label: string;
   )
 }
 
-function NextAction({
-  href,
-  label,
-  detail,
-}: {
-  href: string
-  label: string
-  detail: string
-}) {
+function NextAction({ href, label, detail }: { href: string; label: string; detail: string }) {
   return (
     <Link
       href={href}
@@ -93,11 +85,29 @@ function MarketSection({ summary }: { summary: PricingReadinessSummary['market']
   const lastHealthy = summary.lastHealthySyncAt
     ? `${formatExact(summary.lastHealthySyncAt)} (${timeAgo(summary.lastHealthySyncAt)})`
     : 'No healthy sync yet'
+  const claimGateOpen = summary.status === 'nationwide_ready'
 
   return (
     <div className="space-y-3">
       <SectionHeader title="Market Foundation" label={summary.label} status={summary.status} />
       <p className="text-xs text-stone-400">{summary.guidance}</p>
+      <div
+        className={`rounded-lg border px-3 py-2 text-xs ${
+          claimGateOpen
+            ? 'border-emerald-800 bg-emerald-950/30 text-emerald-300'
+            : 'border-amber-800 bg-amber-950/30 text-amber-300'
+        }`}
+      >
+        <p className="font-medium">
+          {claimGateOpen ? 'Nationwide price claim allowed' : 'Nationwide price claim blocked'}
+        </p>
+        {!claimGateOpen && (
+          <p className="mt-0.5 opacity-80">
+            ChefFlow can show best-available prices, but must not imply local buyability everywhere
+            until all readiness thresholds pass.
+          </p>
+        )}
+      </div>
       <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
         <Metric label="Last healthy sync" value={lastHealthy} />
         <Metric label="Green days" value={`${summary.greenDaysLast7}/7`} />

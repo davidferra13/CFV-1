@@ -12,6 +12,7 @@ import { runGroceryPriceQuote, type GroceryQuoteResult } from '@/lib/grocery/pri
 import { bulkUpdateIngredientPrices } from '@/lib/recipes/bulk-price-actions'
 import { formatCurrency } from '@/lib/utils/currency'
 import { GroceryLivePricingSidebar } from '@/components/events/grocery-live-pricing-sidebar'
+import { PriceTrustPill } from '@/components/pricing/price-trust-contract'
 import { format } from 'date-fns'
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -79,6 +80,65 @@ function getItemSourceLabel(item: {
   if (item.spoonacularCents !== null) sources.push('Spoonacular')
   if (item.mealMeCents !== null) sources.push('Local')
   return sources.length > 0 ? sources.join(', ') : 'No data'
+}
+
+function QuoteTrustSummary({ quote }: { quote: GroceryQuoteResult }) {
+  const summary = quote.trustSummary
+  const tone = summary.shoppingSafe
+    ? 'border-emerald-800 bg-emerald-950/30 text-emerald-300'
+    : summary.shoppingSafeCount > 0 || summary.recentLocalCount > 0
+      ? 'border-amber-800 bg-amber-950/30 text-amber-300'
+      : 'border-red-800 bg-red-950/30 text-red-300'
+
+  return (
+    <div className={`mt-3 rounded-lg border px-3 py-2 text-sm ${tone}`}>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <span className="font-medium">{summary.highestTrustLabel}</span>
+        <span className="text-xs">
+          {summary.shoppingSafeCount} shopping-safe, {summary.recentLocalCount} verify-local,{' '}
+          {summary.estimateOnlyCount} estimate-only, {summary.unresolvedCount} unresolved
+        </span>
+      </div>
+      {!summary.shoppingSafe && (
+        <p className="mt-1 text-xs opacity-80">
+          This quote is not fully shopping-safe. Treat unproven lines as costing guidance until
+          store, product, unit, and freshness proof are present.
+        </p>
+      )}
+    </div>
+  )
+}
+
+function PriceResolutionQueue({ quote }: { quote: GroceryQuoteResult }) {
+  const needsWork = quote.items.filter((item) => !item.buyablePrice.safeForShopping)
+  if (needsWork.length === 0) return null
+
+  return (
+    <Card className="p-6">
+      <h3 className="text-sm font-semibold text-stone-300 mb-3">Price Resolution Queue</h3>
+      <div className="space-y-2">
+        {needsWork.slice(0, 8).map((item) => (
+          <div
+            key={`${item.ingredientId}-${item.unit}`}
+            className="flex flex-col gap-2 rounded-lg border border-stone-800 bg-stone-950/40 px-3 py-2 sm:flex-row sm:items-center sm:justify-between"
+          >
+            <div>
+              <p className="text-sm font-medium text-stone-100">{item.ingredientName}</p>
+              <p className="text-xs text-stone-500">
+                {item.buyablePrice.reasons[0] ?? 'Needs local proof before shopping.'}
+              </p>
+            </div>
+            <PriceTrustPill contract={item.buyablePrice} />
+          </div>
+        ))}
+      </div>
+      {needsWork.length > 8 && (
+        <p className="mt-2 text-xs text-stone-500">
+          {needsWork.length - 8} more items need verification.
+        </p>
+      )}
+    </Card>
+  )
 }
 
 function BudgetBar({
@@ -208,6 +268,7 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
               {quote?.createdAt && (
                 <QuoteAgeBanner createdAt={quote.createdAt} isFromCache={quote.isFromCache} />
               )}
+              {quote && <QuoteTrustSummary quote={quote} />}
               {!hasQuote && (
                 <p className="text-sm text-stone-500 mt-1">
                   Uses current local store price data first (free, instant), then USDA Northeast
@@ -310,6 +371,9 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
                       <th className="text-right py-2 pl-4 font-medium text-stone-500 whitespace-nowrap">
                         Sources
                       </th>
+                      <th className="text-right py-2 pl-4 font-medium text-stone-500 whitespace-nowrap">
+                        Trust
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -356,6 +420,9 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
                         <td className="py-2 pl-4 text-right text-xs text-stone-500 whitespace-nowrap">
                           {getItemSourceLabel(item)}
                         </td>
+                        <td className="py-2 pl-4 text-right whitespace-nowrap">
+                          <PriceTrustPill contract={item.buyablePrice} />
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -386,6 +453,7 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
                         {formatCurrency(quote.averageTotalCents)}
                       </td>
                       <td />
+                      <td />
                     </tr>
                   </tfoot>
                 </table>
@@ -412,6 +480,8 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
                 </span>
               </div>
             </Card>
+
+            <PriceResolutionQueue quote={quote} />
 
             {/* Budget check */}
             {(quote.budgetCeilingCents || quote.quotedPriceCents) && (

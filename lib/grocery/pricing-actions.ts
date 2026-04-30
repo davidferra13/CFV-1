@@ -13,6 +13,11 @@ import { createServerClient } from '@/lib/db/server'
 import { buildInstacartCartLink } from './instacart-actions'
 import { lookupUsdaPrice } from './usda-prices'
 import { getNeMultiplier } from './regional-multipliers'
+import {
+  buildBuyablePriceContract,
+  freshnessDaysFromIso,
+  type BuyablePriceContract,
+} from '@/lib/pricing/buyable-price-contract'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -30,6 +35,16 @@ export type IngredientPriceResult = {
   recipeBookCents: number | null
   hasNoApiData: boolean // true = fell back to Recipe Book or null
   isOptional: boolean
+  buyablePrice: BuyablePriceContract
+}
+
+export type GroceryQuoteTrustSummary = {
+  shoppingSafeCount: number
+  recentLocalCount: number
+  estimateOnlyCount: number
+  unresolvedCount: number
+  shoppingSafe: boolean
+  highestTrustLabel: string
 }
 
 export type GroceryQuoteResult = {
@@ -50,6 +65,7 @@ export type GroceryQuoteResult = {
   actualGroceryCostCents: number | null
   accuracyDeltaPct: number | null
   isFromCache: boolean
+  trustSummary: GroceryQuoteTrustSummary
 }
 
 export type ManualGroceryDraftItemInput = {
@@ -437,8 +453,8 @@ function usdaUnitMatches(usdaUnit: string, recipeUnit: string): boolean {
   return USDA_UNIT_FAMILIES.some((fam) => fam.includes(u1) && fam.includes(u2))
 }
 
-// ─── Local OpenClaw Price Lookup ──────────────────────────────────────────────
-// Checks ingredient_price_history for local OpenClaw data before calling external APIs.
+// ─── Local Market Price Lookup ────────────────────────────────────────────────
+// Checks ingredient_price_history for local market data before calling external APIs.
 // Returns all store prices for each ingredient (from recent syncs).
 
 export type StorePrice = {
@@ -454,6 +470,103 @@ export type LocalPriceResult = {
   bestPrice: StorePrice | null
 }
 
+function summarizeQuoteTrust(items: IngredientPriceResult[]): GroceryQuoteTrustSummary {
+  const shoppingSafeCount = items.filter((item) => item.buyablePrice.safeForShopping).length
+  const recentLocalCount = items.filter(
+    (item) => item.buyablePrice.trustLevel === 'recent_local_observed'
+  ).length
+  const unresolvedCount = items.filter(
+    (item) => item.buyablePrice.trustLevel === 'no_trusted_price'
+  ).length
+  const estimateOnlyCount = items.length - shoppingSafeCount - recentLocalCount - unresolvedCount
+
+  return {
+    shoppingSafeCount,
+    recentLocalCount,
+    estimateOnlyCount,
+    unresolvedCount,
+    shoppingSafe: items.length > 0 && shoppingSafeCount === items.length,
+    highestTrustLabel:
+      shoppingSafeCount === items.length && items.length > 0
+        ? 'All items shopping-safe'
+        : shoppingSafeCount > 0 || recentLocalCount > 0
+          ? 'Partial local proof'
+          : estimateOnlyCount > 0
+            ? 'Estimate-only quote'
+            : 'No trusted prices',
+  }
+}
+
+function buildGroceryItemTrust(input: {
+  ingredientName: string
+  quantity: number
+  unit: string
+  averageCents: number | null
+  localBestPrice: StorePrice | null
+  spoonacularCents: number | null
+  krogerCents: number | null
+  usdaCents: number | null
+  mealMeCents: number | null
+  recipeBookCents: number | null
+}): BuyablePriceContract {
+  const sourceLabels: string[] = []
+  if (input.localBestPrice) sourceLabels.push(input.localBestPrice.source)
+  if (input.mealMeCents !== null) sourceLabels.push('MealMe')
+  if (input.krogerCents !== null) sourceLabels.push('Kroger')
+  if (input.spoonacularCents !== null) sourceLabels.push('Spoonacular')
+  if (input.usdaCents !== null) sourceLabels.push('USDA')
+  if (input.recipeBookCents !== null) sourceLabels.push('Recipe Book')
+
+  if (input.localBestPrice) {
+    return buildBuyablePriceContract({
+      priceCents: Math.round(input.localBestPrice.priceCents * input.quantity),
+      confidenceScore: 0.72,
+      resolutionTier: 'zip_local',
+      freshnessDays: freshnessDaysFromIso(input.localBestPrice.date),
+      dataPoints: 1,
+      storeName: input.localBestPrice.store,
+      productName: input.ingredientName,
+      observedAt: input.localBestPrice.date,
+      unit: input.localBestPrice.unit || input.unit,
+      sourceLabels,
+    })
+  }
+
+  if (input.mealMeCents !== null) {
+    return buildBuyablePriceContract({
+      priceCents: input.mealMeCents,
+      confidenceScore: 0.7,
+      resolutionTier: 'zip_local',
+      freshnessDays: 0,
+      dataPoints: 1,
+      storeName: 'Local store API',
+      productName: input.ingredientName,
+      observedAt: new Date().toISOString(),
+      unit: input.unit,
+      sourceLabels,
+    })
+  }
+
+  const hasApiEstimate =
+    input.spoonacularCents !== null || input.krogerCents !== null || input.usdaCents !== null
+
+  return buildBuyablePriceContract({
+    priceCents: input.averageCents,
+    confidenceScore: hasApiEstimate ? 0.35 : input.recipeBookCents !== null ? 0.3 : 0,
+    resolutionTier: hasApiEstimate
+      ? 'national_median'
+      : input.recipeBookCents !== null
+        ? 'historical'
+        : 'none',
+    freshnessDays: hasApiEstimate ? 0 : null,
+    dataPoints: sourceLabels.length,
+    productName: input.ingredientName,
+    observedAt: hasApiEstimate ? new Date().toISOString() : null,
+    unit: input.unit,
+    sourceLabels,
+  })
+}
+
 export async function getLocalPriceComparison(
   ingredientIds: string[]
 ): Promise<Record<string, LocalPriceResult>> {
@@ -462,7 +575,7 @@ export async function getLocalPriceComparison(
 
   if (ingredientIds.length === 0) return {}
 
-  // Query recent OpenClaw prices (last 30 days)
+  // Query recent market prices (last 30 days)
   const _n = new Date()
   const _30d = new Date(_n.getFullYear(), _n.getMonth(), _n.getDate() - 30)
   const thirtyDaysAgo = `${_30d.getFullYear()}-${String(_30d.getMonth() + 1).padStart(2, '0')}-${String(_30d.getDate()).padStart(2, '0')}`
@@ -557,15 +670,15 @@ export async function runGroceryPriceQuote(eventId: string): Promise<GroceryQuot
 
   if (quoteErr || !quote) return null
 
-  // Step 1: Check local OpenClaw data first (free, instant)
+  // Step 1: Check local market data first (free, instant)
   const ingredientIds = ingredients.map((ing) => ing.ingredientId)
   const localPrices = await getLocalPriceComparison(ingredientIds)
 
-  // Step 2: For ingredients WITHOUT OpenClaw coverage, call external APIs
+  // Step 2: For ingredients WITHOUT local market coverage, call external APIs
   const results: IngredientPriceResult[] = await Promise.all(
     ingredients.map(async (ing) => {
       const localData = localPrices[ing.ingredientId]
-      const hasOpenClaw = localData && localData.bestPrice !== null
+      const hasMarketData = localData && localData.bestPrice !== null
 
       // USDA NE lookup - free, no API call, always checked
       const usdaEntry = lookupUsdaPrice(ing.name)
@@ -578,8 +691,8 @@ export async function runGroceryPriceQuote(eventId: string): Promise<GroceryQuot
       let krogerCents: number | null = null
       let mealMeCents: number | null = null
 
-      // Only call external APIs if no OpenClaw data
-      if (!hasOpenClaw) {
+      // Only call external APIs if no local market data exists.
+      if (!hasMarketData) {
         const apiResults = await Promise.all([
           getSpoonacularPrice(ing.name, ing.quantity, ing.unit),
           getKrogerPrice(ing.name),
@@ -588,7 +701,7 @@ export async function runGroceryPriceQuote(eventId: string): Promise<GroceryQuot
         spoonacularCents = apiResults[0]
         krogerCents = apiResults[1]
         mealMeCents = apiResults[2]
-        console.log(`[grocery-quote] API fallback for "${ing.name}" (no OpenClaw coverage)`)
+        console.log(`[grocery-quote] API fallback for "${ing.name}" (no local market coverage)`)
       }
 
       // Apply NE multiplier to national API prices before averaging
@@ -596,9 +709,9 @@ export async function runGroceryPriceQuote(eventId: string): Promise<GroceryQuot
       const adjSpoonacular = spoonacularCents ? Math.round(spoonacularCents * multiplier) : null
       const adjKroger = krogerCents ? Math.round(krogerCents * multiplier) : null
 
-      // Build price array: OpenClaw best price first, then API sources, USDA baseline
+      // Build price array: local market best price first, then API sources, USDA baseline
       const allPrices: number[] = []
-      if (hasOpenClaw && localData.bestPrice) {
+      if (hasMarketData && localData.bestPrice) {
         allPrices.push(Math.round(localData.bestPrice.priceCents * ing.quantity))
       }
       if (adjSpoonacular) allPrices.push(adjSpoonacular)
@@ -615,6 +728,9 @@ export async function runGroceryPriceQuote(eventId: string): Promise<GroceryQuot
         averageCents = Math.round(ing.lastPriceCents * ing.quantity)
       }
 
+      const recipeBookCents =
+        ing.lastPriceCents !== null ? Math.round(ing.lastPriceCents * ing.quantity) : null
+
       return {
         ingredientId: ing.ingredientId,
         ingredientName: ing.name,
@@ -626,10 +742,21 @@ export async function runGroceryPriceQuote(eventId: string): Promise<GroceryQuot
         usdaCents,
         mealMeCents,
         averageCents,
-        recipeBookCents:
-          ing.lastPriceCents !== null ? Math.round(ing.lastPriceCents * ing.quantity) : null,
+        recipeBookCents,
         hasNoApiData,
         isOptional: ing.isOptional,
+        buyablePrice: buildGroceryItemTrust({
+          ingredientName: ing.name,
+          quantity: ing.quantity,
+          unit: ing.unit,
+          averageCents,
+          localBestPrice: hasMarketData ? localData.bestPrice : null,
+          spoonacularCents: adjSpoonacular,
+          krogerCents: adjKroger,
+          usdaCents,
+          mealMeCents,
+          recipeBookCents,
+        }),
       }
     })
   )
@@ -709,6 +836,7 @@ export async function runGroceryPriceQuote(eventId: string): Promise<GroceryQuot
     actualGroceryCostCents: null,
     accuracyDeltaPct: null,
     isFromCache: false,
+    trustSummary: summarizeQuoteTrust(results),
   }
 }
 
@@ -936,6 +1064,18 @@ async function buildResultFromRow(
       item.kroger_price_cents == null &&
       item.mealme_price_cents == null,
     isOptional: false,
+    buyablePrice: buildGroceryItemTrust({
+      ingredientName: item.ingredient_name,
+      quantity: Number(item.quantity) || 1,
+      unit: item.unit ?? 'each',
+      averageCents: item.average_price_cents,
+      localBestPrice: null,
+      spoonacularCents: item.spoonacular_price_cents,
+      krogerCents: item.kroger_price_cents,
+      usdaCents: null,
+      mealMeCents: item.mealme_price_cents ?? null,
+      recipeBookCents: null,
+    }),
   }))
 
   const { budgetCeilingCents, quotedPriceCents } = await getEventBudgetContext(
@@ -963,5 +1103,6 @@ async function buildResultFromRow(
     // PostgreSQL returns DECIMAL columns as strings - parse to number before use in the UI
     accuracyDeltaPct: row.accuracy_delta_pct != null ? Number(row.accuracy_delta_pct) : null,
     isFromCache,
+    trustSummary: summarizeQuoteTrust(items),
   }
 }
