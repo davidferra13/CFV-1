@@ -4,16 +4,16 @@
 // Override via PLAYWRIGHT_BASE_URL / PLAYWRIGHT_WEB_SERVER_COMMAND when isolation is needed.
 //
 // Projects:
-//   smoke              — unauthenticated, no globalSetup dependency (tests/smoke/)
-//   chef               — chef role, uses .auth/chef.json (tests/e2e/01-13)
-//   client             — client role, uses .auth/client.json (tests/e2e/14)
-//   public             — no auth, public-facing pages (tests/e2e/15)
-//   interactions-chef  — Phase 1-4 chef interaction tests (files 01-38 excl admin)
-//   interactions-admin — Admin panel interaction tests (file 37)
-//   interactions-client — Client-role interaction tests
-//   interactions-public — Unauthenticated interaction tests
-//   isolation-tests    — Multi-tenant security tests (SECURITY CRITICAL)
-//   coverage-*         — Full URL coverage by role
+//   smoke              - unauthenticated, no globalSetup dependency (tests/smoke/)
+//   chef               - chef role, uses .auth/chef.json (tests/e2e/01-13)
+//   client             - client role, uses .auth/client.json (tests/e2e/14)
+//   public             - no auth, public-facing pages (tests/e2e/15)
+//   interactions-chef  - Phase 1-4 chef interaction tests (files 01-38 excl admin)
+//   interactions-admin - Admin panel interaction tests (file 37)
+//   interactions-client - Client-role interaction tests
+//   interactions-public - Unauthenticated interaction tests
+//   isolation-tests    - Multi-tenant security tests (SECURITY CRITICAL)
+//   coverage-*         - Full URL coverage by role
 
 import { defineConfig } from '@playwright/test'
 
@@ -35,9 +35,9 @@ export default defineConfig({
   testDir: './tests',
   outputDir: OUTPUT_DIR,
   testMatch: ['**/*.spec.ts'],
-  // Single worker — prevents state leaks between tenant-scoped tests
+  // Single worker - prevents state leaks between tenant-scoped tests
   workers: 1,
-  // Sequential — ensures tests run in deterministic order
+  // Sequential - ensures tests run in deterministic order
   fullyParallel: false,
   // Runs once before all tests: seeds data, logs in, saves auth state
   globalSetup: './tests/helpers/global-setup.ts',
@@ -48,13 +48,13 @@ export default defineConfig({
     trace: 'retain-on-failure',
   },
   projects: [
-    // Smoke tests — no auth required, no dependency on seed data
+    // Smoke tests - no auth required, no dependency on seed data
     // Run these first: npm run test:e2e:smoke
     {
       name: 'smoke',
       testMatch: ['**/smoke/**/*.spec.ts'],
     },
-    // Chef portal tests — authenticated as test chef
+    // Chef portal tests - authenticated as test chef
     {
       name: 'chef',
       testMatch: ['**/e2e/0[1-9]-*.spec.ts', '**/e2e/1[0-3]-*.spec.ts'],
@@ -62,7 +62,7 @@ export default defineConfig({
         storageState: '.auth/chef.json',
       },
     },
-    // Client portal tests — authenticated as test client
+    // Client portal tests - authenticated as test client
     {
       name: 'client',
       testMatch: ['**/e2e/14-*.spec.ts'],
@@ -74,12 +74,12 @@ export default defineConfig({
       name: 'cross-portal',
       testMatch: ['**/e2e/chef_client_golden_path.spec.ts', '**/e2e/client_rls_negative.spec.ts'],
     },
-    // Public pages — no auth
+    // Public pages - no auth
     {
       name: 'public',
       testMatch: ['**/e2e/15-*.spec.ts'],
     },
-    // Whole-site mobile audit — route harvest + visual/layout checks.
+    // Whole-site mobile audit - route harvest + visual/layout checks.
     // Modes:
     //   quick (default): core viewport set + capped routes/role
     //   full: all harvested routes + full viewport matrix
@@ -90,6 +90,14 @@ export default defineConfig({
       name: 'mobile-audit',
       testMatch: ['**/mobile/mobile-visual-audit.spec.ts'],
       timeout: 120_000,
+    },
+    {
+      name: 'mobile-audit-webkit',
+      testMatch: ['**/mobile/mobile-visual-audit.spec.ts'],
+      timeout: 120_000,
+      use: {
+        browserName: 'webkit',
+      },
     },
     // ── Coverage Layer ────────────────────────────────────────────────────────
     // Visits every single URL for every role. Read-only GET requests only.
@@ -102,7 +110,7 @@ export default defineConfig({
         '**/coverage/13-public-seo-guards.spec.ts',
       ],
       timeout: 120_000,
-      // No storageState — unauthenticated
+      // No storageState - unauthenticated
     },
     {
       name: 'coverage-chef',
@@ -147,7 +155,7 @@ export default defineConfig({
       name: 'coverage-auth-boundaries',
       testMatch: ['**/coverage/05-auth-boundaries.spec.ts'],
       timeout: 120_000,
-      // No default storageState — tests manage their own auth per-test
+      // No default storageState - tests manage their own auth per-test
     },
     {
       name: 'coverage-api',
@@ -162,13 +170,13 @@ export default defineConfig({
     {
       name: 'interactions-chef',
       testMatch: [
-        // Phase 1 — core interactions
+        // Phase 1 - core interactions
         '**/interactions/01-create-flows.spec.ts',
         '**/interactions/02-fsm-transitions.spec.ts',
         '**/interactions/03-quote-flows.spec.ts',
         '**/interactions/04-forms-validation.spec.ts',
         '**/interactions/05-settings-flows.spec.ts',
-        // Phase 2 — gap closure (all chef-authenticated flows)
+        // Phase 2 - gap closure (all chef-authenticated flows)
         '**/interactions/06-close-out-wizard.spec.ts',
         '**/interactions/07-dop-and-kds.spec.ts',
         '**/interactions/08-chat-and-activity.spec.ts',
@@ -182,7 +190,7 @@ export default defineConfig({
         '**/interactions/18-data-persistence.spec.ts',
         '**/interactions/19-error-handling.spec.ts',
         '**/interactions/20-navigation-completeness.spec.ts',
-        // Phase 3 — untested feature areas + mutation verification
+        // Phase 3 - untested feature areas + mutation verification
         '**/interactions/21-staff-management.spec.ts',
         '**/interactions/22-menus-deep.spec.ts',
         '**/interactions/23-grocery-quote.spec.ts',
@@ -192,7 +200,7 @@ export default defineConfig({
         '**/interactions/27-marketing-campaigns.spec.ts',
         '**/interactions/28-waitlist-surveys-wix.spec.ts',
         '**/interactions/29-mutation-verification.spec.ts',
-        // Phase 4 — remaining routes: analytics, finance, culinary, clients, leads, social, partners
+        // Phase 4 - remaining routes: analytics, finance, culinary, clients, leads, social, partners
         '**/interactions/31-analytics-deep.spec.ts',
         '**/interactions/32-finance-deep.spec.ts',
         '**/interactions/33-culinary-deep.spec.ts',
@@ -200,25 +208,25 @@ export default defineConfig({
         '**/interactions/35-leads-calls-inbox.spec.ts',
         '**/interactions/36-social-network-community.spec.ts',
         '**/interactions/38-partners-deep.spec.ts',
-        // Phase 5 — missing mutation verification + core flow completions
+        // Phase 5 - missing mutation verification + core flow completions
         '**/interactions/39-mutation-verification-phase4.spec.ts',
         '**/interactions/40-core-flow-completions.spec.ts',
-        // Phase 6 — remaining routes not yet reached by files 01-40
+        // Phase 6 - remaining routes not yet reached by files 01-40
         '**/interactions/41-remaining-routes.spec.ts',
-        // Phase 7 — inquiry filters + POS concurrency integrity
+        // Phase 7 - inquiry filters + POS concurrency integrity
         '**/interactions/42-inquiry-pipeline-filters.spec.ts',
         '**/interactions/42-pos-register-concurrency.spec.ts',
       ],
       use: { storageState: '.auth/chef.json' },
     },
-    // Admin interaction tests — authenticated as test admin
+    // Admin interaction tests - authenticated as test admin
     // Run: npm run test:interactions:admin
     {
       name: 'interactions-admin',
       testMatch: ['**/interactions/37-admin-panel.spec.ts'],
       use: { storageState: '.auth/admin.json' },
     },
-    // Multi-tenant isolation — Chef A session attempts to access Chef B's data
+    // Multi-tenant isolation - Chef A session attempts to access Chef B's data
     // SECURITY CRITICAL: a failure here means a real tenant data leak
     // Run: npm run test:isolation
     {
@@ -242,7 +250,7 @@ export default defineConfig({
     {
       name: 'interactions-public',
       testMatch: ['**/interactions/13-auth-signup-flows.spec.ts'],
-      // No storageState — unauthenticated
+      // No storageState - unauthenticated
     },
     // ── Launch Readiness Audit ──────────────────────────────────────────────────
     // Targeted end-to-end flow tests: every input, every output, every core feature.
@@ -277,7 +285,7 @@ export default defineConfig({
       name: 'launch-public',
       testMatch: ['**/launch/02-public-pages.spec.ts', '**/launch/14-public-inquiry-form.spec.ts'],
       timeout: 120_000,
-      // No storageState — unauthenticated
+      // No storageState - unauthenticated
     },
     {
       name: 'launch-mobile',
@@ -288,7 +296,7 @@ export default defineConfig({
       },
     },
     // ── Journey Tests ─────────────────────────────────────────────────────────────
-    // Remy Journey Suite — 335 scenarios covering everything a chef would do
+    // Remy Journey Suite - 335 scenarios covering everything a chef would do
     // in their first month. Tests UI and features directly (no LLM invocation).
     // Run: npm run test:journey
     {
@@ -306,11 +314,11 @@ export default defineConfig({
       use: { storageState: '.auth/chef.json' },
     },
     // ── Soak Tests ──────────────────────────────────────────────────────────────
-    // Software aging detection — uses separate config: playwright.soak.config.ts
+    // Software aging detection - uses separate config: playwright.soak.config.ts
     // Run: npm run test:soak (full) or npm run test:soak:quick (10 iterations)
     // Soak tests use a production build (next start) instead of dev server.
     // ── Stress Tests ─────────────────────────────────────────────────────────────
-    // AI queue concurrency testing — verifies backpressure under load
+    // AI queue concurrency testing - verifies backpressure under load
     // Run: npm run test:stress:ollama (basic)
     //      npm run test:stress:ollama:high (high load)
     //      npm run test:stress:ollama:sustained (2 hours)
