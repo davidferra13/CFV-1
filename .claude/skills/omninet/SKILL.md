@@ -31,6 +31,7 @@ Use these tools when the task touches skills or durable agent behavior:
 - Score a finished task: `node devtools/skill-outcome-scorer.mjs --record path --update-stats --auto-maturity`
 - Detect missed skills: `node devtools/missed-skill-detector.mjs --record path [--write-learning]`
 - Generate repair queue: `node devtools/skill-repair-queue.mjs`
+- Generate a research brief: `node devtools/research-brief-generator.mjs --prompt "..." [--write]`
 - Promote a proven flight record into replay corpus: `node devtools/agent-replay-corpus.mjs promote --record path --name "case-name"`
 - Run replay regression: `node devtools/agent-replay-runner.mjs --corpus`
 - Bridge 3977 tasks into Codex build packets: `node devtools/codex-build-bridge.mjs next [--write]`
@@ -81,6 +82,10 @@ Use the most specific skill that fits. Combine skills only when their responsibi
 | Build health, green claims, stale tests, status truth, conflicting evidence                                                                                                               | `evidence-integrity`                                         |
 | Windows host, scheduled tasks, ports, watchdogs, tunnels, zombie processes                                                                                                                | `host-integrity`                                             |
 | New feature request during validation phase, survey evidence, launch-readiness proof                                                                                                      | `validation-gate`                                            |
+| Vague product, market, strategy, research, or "does Codex know what to do with this question" request                                                                                     | `question-optimizer`                                         |
+| Market research, demand, audience, buyer, chef, client, guest, vendor, staff, public buyer, or segment selection question                                                                 | `market-research-router`                                     |
+| Strategic or product answer needs evidence labels across real users, codebase truth, persona simulation, public research, developer intent, inference, or unknowns                        | `evidence-broker`, then `answer-provenance`                  |
+| Need a deterministic research packet with optimized question, audience lenses, evidence threshold, sources, stop conditions, and output format                                            | `research-brief-generator`                                   |
 | Strategic product reasoning or vague request                                                                                                                                              | `first-principles`                                           |
 | Thread or feature completeness check                                                                                                                                                      | `audit`                                                      |
 | Highest leverage next move                                                                                                                                                                | `massive-win`                                                |

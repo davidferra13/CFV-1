@@ -1,0 +1,25 @@
+{
+  "created_at": "2026-04-30T00:20:31.533Z",
+  "goal": "build question intelligence skills and routing",
+  "primary_skill": "skill-garden",
+  "sidecar_skills": [
+    "omninet",
+    "question-optimizer",
+    "market-research-router",
+    "evidence-broker",
+    "research-brief-generator",
+    "answer-provenance"
+  ],
+  "skill_delta": "new-skill",
+  "durable_behavior_seen": "Codex should optimize vague ChefFlow questions, route market research by audience, label evidence, and generate research briefs",
+  "skill_gap_seen": null,
+  "validation": {
+    "skill_validator": "passed: 7 skills, 0 errors, 0 warnings",
+    "trigger_tests": "passed: 21 cases, 0 failures",
+    "compliance": "targeted em dash scan found no matches",
+    "other": null
+  },
+  "commit": null,
+  "pushed": false,
+  "notes": ""
+}

@@ -152,5 +152,45 @@
       "omninet": ["context-continuity", "duplicate surfaces"],
       "context-continuity": ["canonical attachment", "duplicate"]
     }
+  },
+  {
+    "name": "question optimizer front door",
+    "prompt": "If I ask a random project question, does Codex know what to do and how to optimize it?",
+    "expect": ["omninet", "question-optimizer", "evidence-broker"],
+    "evidence": {
+      "omninet": ["question-optimizer", "vague product"],
+      "question-optimizer": ["OPTIMIZED QUESTION", "EVIDENCE THRESHOLD"],
+      "evidence-broker": ["EVIDENCE MAP", "CLAIM ALLOWED"]
+    }
+  },
+  {
+    "name": "market research audience routing",
+    "prompt": "Should we build vendor tools, and who is market research calling on: chefs, clients, vendors, staff, or developers?",
+    "expect": ["omninet", "market-research-router", "evidence-broker"],
+    "evidence": {
+      "omninet": ["market-research-router", "audience"],
+      "market-research-router": ["AUDIENCE LENSES", "developer-operator"],
+      "evidence-broker": ["persona simulation", "real user evidence"]
+    }
+  },
+  {
+    "name": "research brief generation",
+    "prompt": "Generate a research brief for whether clients would care about a faster booking flow.",
+    "expect": ["omninet", "research-brief-generator", "answer-provenance"],
+    "evidence": {
+      "omninet": ["research-brief-generator", "research packet"],
+      "research-brief-generator": ["evidence threshold", "audience lenses"],
+      "answer-provenance": ["CODEBASE VERIFIED", "UNKNOWN"]
+    }
+  },
+  {
+    "name": "answer provenance labels",
+    "prompt": "Label where this conclusion came from and separate codebase verified facts from real user evidence and unknowns.",
+    "expect": ["omninet", "answer-provenance", "evidence-broker"],
+    "evidence": {
+      "omninet": ["answer-provenance", "real users"],
+      "answer-provenance": ["CODEBASE VERIFIED", "REAL USER EVIDENCE"],
+      "evidence-broker": ["UNKNOWN", "CONFIDENCE"]
+    }
   }
 ]

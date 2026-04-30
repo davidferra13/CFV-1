@@ -1,0 +1,81 @@
+{
+  "version": 1,
+  "description": "Reusable ChefFlow audience lenses for question optimization, market research routing, and research brief generation. These are analytical lenses, not real people contacted by Codex.",
+  "lenses": [
+    {
+      "id": "chef",
+      "label": "Chef",
+      "use_for": [
+        "chef workflow",
+        "operations",
+        "pricing",
+        "menus",
+        "events",
+        "private chef adoption"
+      ],
+      "examples": [
+        "solo private chef",
+        "meal prep chef",
+        "catering chef",
+        "estate chef",
+        "pop-up chef"
+      ],
+      "claim_limit": "Can support workflow hypotheses unless backed by real chef evidence."
+    },
+    {
+      "id": "client",
+      "label": "Client",
+      "use_for": ["booking", "planning", "payment", "quote acceptance", "repeat business"],
+      "examples": ["home host", "corporate planner", "wedding client", "vacation rental host"],
+      "claim_limit": "Can support buyer journey hypotheses unless backed by real client evidence."
+    },
+    {
+      "id": "guest",
+      "label": "Guest",
+      "use_for": ["dietary intake", "event attendance", "guest hub", "accessibility", "experience"],
+      "examples": ["event guest", "VIP guest", "child guest", "dietary-restricted guest"],
+      "claim_limit": "Can support attendee experience hypotheses unless backed by real guest evidence."
+    },
+    {
+      "id": "vendor",
+      "label": "Vendor",
+      "use_for": ["purchasing", "availability", "supplier coordination", "ingredient sourcing"],
+      "examples": ["farm", "fishmonger", "butcher", "bakery", "rental provider"],
+      "claim_limit": "Can expose supply workflow gaps, not validated vendor demand."
+    },
+    {
+      "id": "staff",
+      "label": "Staff",
+      "use_for": ["prep work", "stations", "tasks", "event execution", "team coordination"],
+      "examples": ["sous chef", "server", "bartender", "event captain", "prep cook"],
+      "claim_limit": "Can support operational fit hypotheses unless backed by staff evidence."
+    },
+    {
+      "id": "partner",
+      "label": "Partner",
+      "use_for": ["co-hosting", "referrals", "venue collaboration", "cross-promotion"],
+      "examples": ["venue owner", "event planner", "farm partner", "photographer"],
+      "claim_limit": "Can support partnership workflow hypotheses unless backed by partner evidence."
+    },
+    {
+      "id": "public",
+      "label": "Public Buyer",
+      "use_for": ["discovery", "public pages", "search behavior", "gift buyers", "press"],
+      "examples": ["local food buyer", "Google searcher", "social follower", "journalist"],
+      "claim_limit": "Usually needs public market research or analytics before strong claims."
+    },
+    {
+      "id": "developer-operator",
+      "label": "Developer Operator",
+      "use_for": [
+        "maintainability",
+        "architecture",
+        "host operations",
+        "internal tooling",
+        "agent behavior"
+      ],
+      "examples": ["David as operator", "Codex agent", "developer maintaining ChefFlow"],
+      "claim_limit": "Valid for technical feasibility and operational risk, not customer demand."
+    }
+  ]
+}

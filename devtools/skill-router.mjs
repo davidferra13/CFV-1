@@ -85,6 +85,80 @@ const rules = [
     ],
   },
   {
+    skill: 'question-optimizer',
+    terms: [
+      'optimize this question',
+      'optimize that question',
+      'random question',
+      'project question',
+      'what should codex do',
+      'does codex know what to do',
+      'should we build',
+      'what should we build',
+      'what should we improve',
+      'what should we research',
+      'best question',
+    ],
+  },
+  {
+    skill: 'market-research-router',
+    terms: [
+      'market research',
+      'customer research',
+      'buyer research',
+      'who should we ask',
+      'who is it calling on',
+      'chefs',
+      'clients',
+      'guests',
+      'vendors',
+      'staff',
+      'public buyers',
+      'demand',
+      'want this',
+      'need this',
+      'vendor tools',
+    ],
+  },
+  {
+    skill: 'evidence-broker',
+    terms: [
+      'evidence map',
+      'what evidence',
+      'real user evidence',
+      'persona simulation',
+      'public market research',
+      'developer intent',
+      'is this validated',
+      'validated fact',
+      'hypothesis',
+    ],
+  },
+  {
+    skill: 'research-brief-generator',
+    terms: [
+      'research brief',
+      'generate a research brief',
+      'research packet',
+      'question brief',
+      'source plan',
+      'evidence threshold',
+      'audience lenses',
+    ],
+  },
+  {
+    skill: 'answer-provenance',
+    terms: [
+      'provenance',
+      'label the answer',
+      'where did this conclusion come from',
+      'codebase verified',
+      'real user evidence',
+      'unknowns',
+      'unsupported claims',
+    ],
+  },
+  {
     skill: 'context-continuity',
     terms: [
       'duplicate build',
@@ -346,6 +420,16 @@ const conflictPriorityRules = [
     reason: 'validation-gate blocks unvalidated product surface expansion',
   },
   {
+    winner: 'market-research-router',
+    beats: ['builder', 'planner', 'persona-stress-test', 'research'],
+    reason: 'market-research-router owns audience selection and evidence source routing for demand questions',
+  },
+  {
+    winner: 'question-optimizer',
+    beats: ['builder', 'planner', 'research'],
+    reason: 'question-optimizer owns vague strategic and product questions before execution',
+  },
+  {
     winner: 'host-integrity',
     beats: ['health', 'debug', 'builder'],
     reason: 'host-integrity owns ports, watchdogs, tunnels, and running process truth',
@@ -390,8 +474,10 @@ const matches = rules
 
 const primaryResolution = resolvePrimary(matches)
 const primarySkill = primaryResolution.primary
+const beatenSkills = new Set(primaryResolution.conflict?.beats || [])
 const sidecarSkills = ['omninet']
 for (const match of matches.slice(1)) {
+  if (beatenSkills.has(match.skill)) continue
   if (!sidecarSkills.includes(match.skill) && match.skill !== primarySkill) {
     sidecarSkills.push(match.skill)
   }
@@ -410,6 +496,30 @@ if (
   !sidecarSkills.includes('heal-skill')
 ) {
   sidecarSkills.push('heal-skill')
+}
+if (
+  skillNames.has('evidence-broker') &&
+  !sidecarSkills.includes('evidence-broker') &&
+  ['question-optimizer', 'market-research-router', 'validation-gate'].includes(primarySkill)
+) {
+  sidecarSkills.push('evidence-broker')
+}
+if (
+  skillNames.has('answer-provenance') &&
+  !sidecarSkills.includes('answer-provenance') &&
+  ['question-optimizer', 'market-research-router', 'evidence-broker', 'research-brief-generator'].includes(primarySkill)
+) {
+  sidecarSkills.push('answer-provenance')
+}
+if (
+  skillNames.has('market-research-router') &&
+  !sidecarSkills.includes('market-research-router') &&
+  ['question-optimizer', 'evidence-broker'].includes(primarySkill) &&
+  ['market research', 'customer', 'buyer', 'vendor', 'chef', 'client', 'guest', 'staff', 'demand'].some((term) =>
+    hasTerm(lowerPrompt, term),
+  )
+) {
+  sidecarSkills.push('market-research-router')
 }
 if (
   skillNames.has('context-continuity') &&
