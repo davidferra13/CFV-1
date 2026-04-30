@@ -144,3 +144,13 @@
 - Commits: `bd943a6c0`, `af809250b`, `2348ad0cf`, `4753e54c6`, `e57cddfec`
 - Build state on departure: `node --test --import tsx tests/unit/state-motion.test.tsx` passed, `npx tsc --noEmit --skipLibCheck` passed, pre-commit quick regression passed 162 checks, pre-push typecheck and quick regression passed 162 checks. Full build not run by project rule.
 - Notes: Motion work stayed additive and attached to existing shared UI and dashboard modules. Unrelated dirty files remained in the checkout and were not staged, committed, reverted, or pushed by this session.
+
+## 2026-04-30 13:25 EDT
+
+- Agent: Codex
+- Task: Add an honest public supporter proof section to the ChefFlow homepage and close the session
+- Status: completed
+- Files touched: `app/(public)/page.tsx`, `lib/supporter-signals/report.ts`, `tests/unit/supporter-signals.test.ts`, `docs/app-complete-audit.md`, `docs/build-state.md`, `docs/session-log.md`
+- Commits: `2604e3388`; closeout documentation commit pending at log-write time
+- Build state on departure: `node --test --import tsx tests/unit/supporter-signals.test.ts` passed 7 tests. `git diff --check` passed for touched product files. Commit hook quick regression passed 162 checks. `npx tsc --noEmit --skipLibCheck` is blocked by unrelated dirty pricing proof files in `lib/pricing/geographic-proof-*`. Full build not run by project rule.
+- Notes: Homepage now renders supporter proof from approved featured testimonials and showcase-visible active partners only. Empty proof renders early-stage copy without names, logos, quotes, or fake counts. Query failure renders an unavailable proof state. Unrelated dirty files remained unstaged and untouched.
