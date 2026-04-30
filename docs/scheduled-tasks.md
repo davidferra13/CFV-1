@@ -20,15 +20,15 @@ Two machines, one scheduler (Windows Task Scheduler on PC), three cost tiers:
 
 ### Overnight Window (2:00 - 5:00 AM)
 
-| Time         | Task                             | Script                                               | Cost | What it does                                                           |
-| ------------ | -------------------------------- | ---------------------------------------------------- | ---- | ---------------------------------------------------------------------- |
-| 2:00 AM      | **ChefFlow-StaleCleanup**        | `scripts/scheduled/daily-stale-cleanup.ps1`          | Free | Cleans test artifacts, old screenshots, probe dirs                     |
-| 3:00 AM      | **ChefFlow-DailyBackup**         | `scripts/scheduled/daily-backup.ps1`                 | Free | PostgreSQL dump via Docker, 7-day rotation                             |
-| 3:30 AM      | **ChefFlow-OffsiteBackup**       | `scripts/scheduled/offsite-backup-sync.ps1`          | Free | Sync latest 3 backups to Cloudflare R2 (graceful skip if unconfigured) |
-| 4:00 AM Sun  | **ChefFlow-WeeklyDBIntegrity**   | `scripts/scheduled/weekly-db-integrity.ps1`          | Free | Full DB audit against business rules                                   |
-| ~monthly Sun | **ChefFlow-MonthlyRestoreTest**  | `scripts/scheduled/monthly-restore-test.ps1`         | Free | Restore backup to temp DB, validate key tables, drop                   |
-| 5:00 AM Mon  | **ChefFlow-WeeklySecretScan**    | `scripts/scheduled/weekly-secret-scan.ps1`           | Free | Scan codebase for exposed credentials                                  |
-| 4:30 AM Sat  | **ChefFlow-IngredientPriceSync** | `scripts/scheduled/weekly-ingredient-price-sync.ps1` | Free | FTS bridge: system_ingredients to openclaw prices for costing          |
+| Time         | Task                             | Script                                               | Cost | What it does                                                                             |
+| ------------ | -------------------------------- | ---------------------------------------------------- | ---- | ---------------------------------------------------------------------------------------- |
+| 2:00 AM      | **ChefFlow-StaleCleanup**        | `scripts/scheduled/daily-stale-cleanup.ps1`          | Free | Cleans test artifacts, old screenshots, probe dirs                                       |
+| 3:00 AM      | **ChefFlow-DailyBackup**         | `scripts/scheduled/daily-backup.ps1`                 | Free | PostgreSQL custom dump via Docker, verification, encryption, heartbeat, tiered retention |
+| 3:30 AM      | **ChefFlow-OffsiteBackup**       | `scripts/scheduled/offsite-backup-sync.ps1`          | Free | Sync encrypted database backups to Cloudflare R2, fail if unconfigured                   |
+| 4:00 AM Sun  | **ChefFlow-WeeklyDBIntegrity**   | `scripts/scheduled/weekly-db-integrity.ps1`          | Free | Full DB audit against business rules                                                     |
+| ~monthly Sun | **ChefFlow-MonthlyRestoreTest**  | `scripts/scheduled/monthly-restore-test.ps1`         | Free | Restore backup to temp DB, validate key tables, drop                                     |
+| 5:00 AM Mon  | **ChefFlow-WeeklySecretScan**    | `scripts/scheduled/weekly-secret-scan.ps1`           | Free | Scan codebase for exposed credentials                                                    |
+| 4:30 AM Sat  | **ChefFlow-IngredientPriceSync** | `scripts/scheduled/weekly-ingredient-price-sync.ps1` | Free | FTS bridge: system_ingredients to openclaw prices for costing                            |
 
 ### Morning Window (6:00 - 7:00 AM)
 
@@ -162,8 +162,9 @@ Based on 5-perspective research (Chef, Consumer, Dev, Entrepreneur, Business/Cor
 - Health check log includes mem% and cpu% for trend analysis
 - Daily sync check uses **Haiku model** with **$2 budget cap** (~95% cost reduction)
 - **Backup script fixed** (was producing 0-byte files since mid-March; now uses Docker pg_dump)
-- **Monthly restore test** scheduled and verified (9 chefs, 18 clients, 21 events restored successfully)
-- **Off-site backup script** ready (`scripts/scheduled/offsite-backup-sync.ps1`), rclone installed, task registered (graceful skip until R2 configured)
+- **Daily scheduled backup now uses the automated path** (`scripts/backup-db-automated.sh`) with custom-format dumps, verification, required encryption for the scheduled task, heartbeat, and tiered retention
+- **Monthly restore test** scheduled and upgraded to support `.dump`, `.dump.gpg`, legacy SQL backups, tenant checks, event FSM checks, and ledger invariants
+- **Off-site backup script** ready (`scripts/scheduled/offsite-backup-sync.ps1`), rclone installed, task registered, and configured to fail visibly if R2 is not configured
 - **Emergency runbook** written (`docs/emergency-runbook.md`, 8 recovery scenarios)
 - **Pre-commit secret scanner** installed (`.git/hooks/pre-commit`, catches API keys/tokens/passwords)
 - **OpenClaw pipeline validation** added (post-sync SQLite vs PostgreSQL record count comparison)

@@ -14,7 +14,7 @@ Register-ScheduledTask -TaskName "ChefFlow-HealthCheck" -Action $action -Trigger
 # 2. Daily Database Backup - 3:00 AM
 $action  = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-ExecutionPolicy Bypass -WindowStyle Hidden -File `"$base\daily-backup.ps1`"" -WorkingDirectory "C:\Users\david\Documents\CFv1"
 $trigger = New-ScheduledTaskTrigger -Daily -At "3:00AM"
-Register-ScheduledTask -TaskName "ChefFlow-DailyBackup" -Action $action -Trigger $trigger -Settings $settings -Description "Daily 3 AM: PostgreSQL backup with 7-day rotation (FREE)" -Force
+Register-ScheduledTask -TaskName "ChefFlow-DailyBackup" -Action $action -Trigger $trigger -Settings $settings -Description "Daily 3 AM: PostgreSQL custom dump with verification, encryption, heartbeat, and tiered retention (FREE)" -Force
 
 # 3. Daily Pipeline Audit - 7:00 AM
 $action  = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-ExecutionPolicy Bypass -WindowStyle Hidden -File `"$base\daily-pipeline-audit.ps1`"" -WorkingDirectory "C:\Users\david\Documents\CFv1"
@@ -46,10 +46,10 @@ $action  = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-Executi
 $trigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Sunday -WeeksInterval 4 -At "4:30AM"
 Register-ScheduledTask -TaskName "ChefFlow-MonthlyRestoreTest" -Action $action -Trigger $trigger -Settings $settings -Description "Monthly: restore backup to temp DB, validate, drop (FREE)" -Force
 
-# 8. Daily Off-Site Backup Sync - 3:30 AM (graceful skip if R2 not configured)
+# 8. Daily Off-Site Backup Sync - 3:30 AM
 $action  = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-ExecutionPolicy Bypass -WindowStyle Hidden -File `"$base\offsite-backup-sync.ps1`"" -WorkingDirectory "C:\Users\david\Documents\CFv1"
 $trigger = New-ScheduledTaskTrigger -Daily -At "3:30AM"
-Register-ScheduledTask -TaskName "ChefFlow-OffsiteBackup" -Action $action -Trigger $trigger -Settings $settings -Description "Daily 3:30 AM: sync latest backup to Cloudflare R2 (FREE, skip if unconfigured)" -Force
+Register-ScheduledTask -TaskName "ChefFlow-OffsiteBackup" -Action $action -Trigger $trigger -Settings $settings -Description "Daily 3:30 AM: sync encrypted database backups to Cloudflare R2 (FREE, fails if unconfigured)" -Force
 
 # 9. Live Ops Guardian - every hour
 $action  = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-ExecutionPolicy Bypass -WindowStyle Hidden -File `"$base\live-ops-guardian.ps1`"" -WorkingDirectory "C:\Users\david\Documents\CFv1"
@@ -70,8 +70,8 @@ Write-Host "============================================"
 Write-Host ""
 Write-Host "FREE tier (deterministic, zero API cost):"
 Write-Host "  ChefFlow-HealthCheck         - every 15 min (prod, dev, DB, Ollama, tunnel, disk, mem, CPU)"
-Write-Host "  ChefFlow-DailyBackup         - daily 3:00 AM (pg_dump, 7-day rotation)"
-Write-Host "  ChefFlow-OffsiteBackup       - daily 3:30 AM (R2 sync, skip if unconfigured)"
+Write-Host "  ChefFlow-DailyBackup         - daily 3:00 AM (verified encrypted pg_dump, tiered retention)"
+Write-Host "  ChefFlow-OffsiteBackup       - daily 3:30 AM (R2 sync, fails if unconfigured)"
 Write-Host "  ChefFlow-LiveOpsGuardian     - hourly (health probes + targeted verification on new changes)"
 Write-Host "  ChefFlow-PlatformObservabilityDigest - daily 7:10 AM"
 Write-Host "  ChefFlow-StaleCleanup        - daily 2:00 AM"

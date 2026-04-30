@@ -46,7 +46,8 @@ if [ -f "$PROJECT_ROOT/.env.local" ]; then
 fi
 
 PASSPHRASE="${BACKUP_PASSPHRASE:-}"
-APP_BASE_URL="${BACKUP_APP_BASE_URL:-http://localhost:3000}"
+REQUIRE_ENCRYPTION="${REQUIRE_BACKUP_ENCRYPTION:-false}"
+APP_BASE_URL="${BACKUP_APP_BASE_URL:-http://localhost:3300}"
 APP_BASE_URL="${APP_BASE_URL%/}"
 
 log_text() {
@@ -237,6 +238,11 @@ apply_retention() {
 }
 
 mkdir -p "$BACKUP_DIR"
+
+if [ "$REQUIRE_ENCRYPTION" = "true" ] && [ -z "$PASSPHRASE" ]; then
+  alert_failure "BACKUP_PASSPHRASE is required when REQUIRE_BACKUP_ENCRYPTION=true"
+  exit 1
+fi
 
 if [ -f "$TEXT_LOG" ]; then
   text_size=$(wc -c < "$TEXT_LOG" 2>/dev/null | tr -d ' ')

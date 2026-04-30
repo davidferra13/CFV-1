@@ -1,5 +1,5 @@
 # ChefFlow Daily Database Backup (FREE - no AI, no API cost)
-# Wraps scripts/backup-db.sh with logging
+# Wraps scripts/backup-db-automated.sh with logging, verification, encryption, and heartbeat
 # Runs daily at 3:00 AM
 
 $projectDir = "C:\Users\david\Documents\CFv1"
@@ -13,7 +13,12 @@ $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
 Add-Content -Path $logFile -Value "[$timestamp] Starting daily backup..."
 
 try {
-    $result = & "C:\Program Files\Git\bin\bash.exe" -c "cd /c/Users/david/Documents/CFv1 && bash scripts/backup-db.sh --quiet" 2>&1
+    if (-not $env:BACKUP_APP_BASE_URL) {
+        $env:BACKUP_APP_BASE_URL = "http://localhost:3300"
+    }
+    $env:REQUIRE_BACKUP_ENCRYPTION = "true"
+
+    $result = & "C:\Program Files\Git\bin\bash.exe" -c "cd /c/Users/david/Documents/CFv1 && bash scripts/backup-db-automated.sh" 2>&1
     $exitCode = $LASTEXITCODE
     $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
     if ($exitCode -eq 0) {
