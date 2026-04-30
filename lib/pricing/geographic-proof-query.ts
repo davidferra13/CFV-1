@@ -12,6 +12,10 @@ import {
   classifyGeographicProofCandidate,
   type GeographicProofCandidate,
 } from '@/lib/pricing/geographic-proof-classifier'
+import {
+  scoreLocalProductMatch,
+  scoreLocalUnitConversion,
+} from '@/lib/pricing/geographic-proof-evidence'
 
 export type GeographicPricingProofRow = {
   runId?: string
@@ -120,11 +124,14 @@ type LocalCandidateRow = {
   entity_product_name: string | null
   entity_product_brand: string | null
   entity_product_size: string | null
+  entity_product_size_value: number | string | null
+  entity_product_size_unit: string | null
   entity_source_name: string | null
   entity_source_type: string | null
   entity_ingredient_id: string | null
   price_cents: number | null
   normalized_price_cents: number | null
+  has_standard_unit_price: boolean | null
   observed_at: string | null
   confidence: number | string | null
 }
@@ -239,6 +246,34 @@ function aliasesFor(item: GeographicPricingBasketItem): string[] {
   )
 }
 
+function toPositiveNumber(value: unknown): number | null {
+  const numberValue = Number(value)
+  return Number.isFinite(numberValue) && numberValue > 0 ? numberValue : null
+}
+
+function isBetterLocalCandidate(
+  candidate: GeographicProofCandidate,
+  existing: GeographicProofCandidate | undefined
+): boolean {
+  if (!existing) return true
+
+  const candidateFreshness = candidate.observedAt ? new Date(candidate.observedAt).getTime() : 0
+  const existingFreshness = existing.observedAt ? new Date(existing.observedAt).getTime() : 0
+  const candidateScore =
+    (candidate.matchConfidence ?? 0) * 3 +
+    (candidate.unitConfidence ?? 0) * 2 +
+    (candidate.confidence ?? 0)
+  const existingScore =
+    (existing.matchConfidence ?? 0) * 3 +
+    (existing.unitConfidence ?? 0) * 2 +
+    (existing.confidence ?? 0)
+
+  return (
+    candidateScore > existingScore ||
+    (candidateScore === existingScore && candidateFreshness > existingFreshness)
+  )
+}
+
 async function tableExists(regclass: string): Promise<boolean> {
   const rows = await pgClient<Array<{ exists: boolean }>>`
     SELECT to_regclass(${regclass}) IS NOT NULL AS exists
@@ -292,7 +327,27 @@ async function loadLocalCandidatesByGeography(
   try {
     rows = await pgClient<LocalCandidateRow[]>`
       WITH matched_products AS (
-        SELECT p.id, p.name, p.brand, p.size
+        SELECT
+          p.id,
+          p.name,
+          p.brand,
+          p.size,
+          p.size_value,
+          p.size_unit,
+          CASE
+            WHEN lower(p.name) = ANY(${aliases.map((alias) => alias.toLowerCase())}::text[]) THEN 1
+            WHEN EXISTS (
+              SELECT 1
+              FROM unnest(${aliases}::text[]) AS alias(value)
+              WHERE lower(p.name) LIKE lower(alias.value) || '%'
+            ) THEN 2
+            WHEN EXISTS (
+              SELECT 1
+              FROM unnest(${aliases}::text[]) AS alias(value)
+              WHERE lower(p.name) LIKE '%' || lower(alias.value) || '%'
+            ) THEN 3
+            ELSE 4
+          END AS match_rank
         FROM openclaw.products p
         WHERE COALESCE(p.is_food, true) = true
           AND (
@@ -316,6 +371,8 @@ async function loadLocalCandidatesByGeography(
           mp.name AS entity_product_name,
           mp.brand AS entity_product_brand,
           mp.size AS entity_product_size,
+          mp.size_value AS entity_product_size_value,
+          mp.size_unit AS entity_product_size_unit,
           c.name AS entity_source_name,
           COALESCE(sp.source, c.scraper_type, c.source_type) AS entity_source_type,
           NULL::text AS entity_ingredient_id,
@@ -325,6 +382,7 @@ async function loadLocalCandidatesByGeography(
             NULLIF(sp.sale_price_cents, 0),
             sp.price_cents
           )::int AS normalized_price_cents,
+          (NULLIF(sp.price_per_standard_unit_cents, 0) IS NOT NULL) AS has_standard_unit_price,
           sp.last_seen_at::text AS observed_at,
           (
             CASE
@@ -344,6 +402,8 @@ async function loadLocalCandidatesByGeography(
                   ELSE 0.52
                 END
               ) DESC,
+              mp.match_rank ASC,
+              CASE WHEN NULLIF(sp.price_per_standard_unit_cents, 0) IS NOT NULL THEN 0 ELSE 1 END,
               sp.last_seen_at DESC
           ) AS state_rank
         FROM matched_products mp
@@ -366,15 +426,18 @@ async function loadLocalCandidatesByGeography(
         entity_product_name,
         entity_product_brand,
         entity_product_size,
+        entity_product_size_value,
+        entity_product_size_unit,
         entity_source_name,
         entity_source_type,
         entity_ingredient_id,
         price_cents,
         normalized_price_cents,
+        has_standard_unit_price,
         observed_at,
         confidence
       FROM ranked_candidates
-      WHERE state_rank = 1
+      WHERE state_rank <= 12
     `
   } catch (error) {
     console.warn(
@@ -387,7 +450,14 @@ async function loadLocalCandidatesByGeography(
   const candidates = new Map<string, GeographicProofCandidate>()
   for (const row of rows) {
     if (!row.entity_store_state) continue
-    candidates.set(row.entity_store_state, {
+    const matchScore = scoreLocalProductMatch(row.entity_product_name, item)
+    const unitScore = scoreLocalUnitConversion({
+      hasStandardUnitPrice: Boolean(row.has_standard_unit_price),
+      targetUnit: item.targetUnit,
+      productSizeValue: toPositiveNumber(row.entity_product_size_value),
+      productSizeUnit: row.entity_product_size_unit,
+    })
+    const candidate: GeographicProofCandidate = {
       kind: 'store_observed',
       priceCents: row.price_cents,
       normalizedPriceCents: row.normalized_price_cents,
@@ -406,12 +476,26 @@ async function loadLocalCandidatesByGeography(
       sourceType: row.entity_source_type,
       observedAt: row.observed_at,
       confidence: toNumber(row.confidence),
-      matchConfidence: row.entity_ingredient_id ? 0.8 : 0.6,
-      unitConfidence: row.normalized_price_cents ? 0.82 : 0.35,
+      matchConfidence: row.entity_ingredient_id
+        ? Math.max(0.8, matchScore.confidence)
+        : matchScore.confidence,
+      unitConfidence: unitScore.confidence,
       dataPoints: 1,
       canonicalIngredientId: row.entity_ingredient_id,
-      evidence: { candidate: 'openclaw_store_products' },
-    })
+      evidence: {
+        candidate: 'openclaw_store_products',
+        hasStandardUnitPrice: row.has_standard_unit_price,
+        productSizeValue: toPositiveNumber(row.entity_product_size_value),
+        productSizeUnit: row.entity_product_size_unit,
+        matchReason: matchScore.reason,
+        matchedAlias: matchScore.matchedAlias,
+        unitReason: unitScore.reason,
+      },
+    }
+
+    if (isBetterLocalCandidate(candidate, candidates.get(row.entity_store_state))) {
+      candidates.set(row.entity_store_state, candidate)
+    }
   }
 
   return candidates
