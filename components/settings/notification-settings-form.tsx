@@ -22,6 +22,12 @@ import {
   type NotificationAction,
   CATEGORY_LABELS,
 } from '@/lib/notifications/types'
+import {
+  CHEF_MODE_LABELS,
+  HAPTIC_SIMULATION_SCENARIOS,
+  evaluateNotificationInterruption,
+  type ChefMode,
+} from '@/lib/notifications/interruption-policy'
 
 // Chef-facing categories only (omit client-facing)
 const CHEF_CATEGORIES: NotificationCategory[] = [
@@ -57,6 +63,57 @@ const CATEGORY_REPRESENTATIVE_ACTION: Record<NotificationCategory, NotificationA
   review: 'review_submitted',
   ops: 'task_assigned',
   system: 'system_alert',
+}
+
+const DEVICE_ATTENTION_STORAGE_KEY = 'cheflow:notification-attention'
+const DEVICE_ATTENTION_CHANGE_EVENT = 'cheflow-notification-attention-change'
+
+type DeviceAttentionSettings = {
+  hapticsEnabled: boolean
+  inAppVibrationEnabled: boolean
+  chefMode: ChefMode
+}
+
+const DEFAULT_DEVICE_ATTENTION_SETTINGS: DeviceAttentionSettings = {
+  hapticsEnabled: true,
+  inAppVibrationEnabled: true,
+  chefMode: 'available',
+}
+
+function readDeviceAttentionSettings(): DeviceAttentionSettings {
+  if (typeof window === 'undefined') return DEFAULT_DEVICE_ATTENTION_SETTINGS
+
+  try {
+    const raw = window.localStorage.getItem(DEVICE_ATTENTION_STORAGE_KEY)
+    if (!raw) return DEFAULT_DEVICE_ATTENTION_SETTINGS
+    const parsed = JSON.parse(raw) as Partial<DeviceAttentionSettings>
+    return {
+      hapticsEnabled:
+        typeof parsed.hapticsEnabled === 'boolean'
+          ? parsed.hapticsEnabled
+          : DEFAULT_DEVICE_ATTENTION_SETTINGS.hapticsEnabled,
+      inAppVibrationEnabled:
+        typeof parsed.inAppVibrationEnabled === 'boolean'
+          ? parsed.inAppVibrationEnabled
+          : DEFAULT_DEVICE_ATTENTION_SETTINGS.inAppVibrationEnabled,
+      chefMode:
+        parsed.chefMode === 'prep' ||
+        parsed.chefMode === 'service' ||
+        parsed.chefMode === 'driving' ||
+        parsed.chefMode === 'off_hours' ||
+        parsed.chefMode === 'available'
+          ? parsed.chefMode
+          : DEFAULT_DEVICE_ATTENTION_SETTINGS.chefMode,
+    }
+  } catch {
+    return DEFAULT_DEVICE_ATTENTION_SETTINGS
+  }
+}
+
+function writeDeviceAttentionSettings(settings: DeviceAttentionSettings) {
+  if (typeof window === 'undefined') return
+  window.localStorage.setItem(DEVICE_ATTENTION_STORAGE_KEY, JSON.stringify(settings))
+  window.dispatchEvent(new Event(DEVICE_ATTENTION_CHANGE_EVENT))
 }
 
 function getTierDefault(category: NotificationCategory): {
@@ -179,9 +236,34 @@ export function NotificationSettingsForm({
   const [savedVisitorAlertsEnabled, setSavedVisitorAlertsEnabled] = useState(
     initialExperienceSettings.visitor_alerts_enabled !== false
   )
+  const [hapticsEnabled, setHapticsEnabled] = useState(
+    DEFAULT_DEVICE_ATTENTION_SETTINGS.hapticsEnabled
+  )
+  const [inAppVibrationEnabled, setInAppVibrationEnabled] = useState(
+    DEFAULT_DEVICE_ATTENTION_SETTINGS.inAppVibrationEnabled
+  )
+  const [chefMode, setChefMode] = useState<ChefMode>(DEFAULT_DEVICE_ATTENTION_SETTINGS.chefMode)
+  const [deviceSettingsLoaded, setDeviceSettingsLoaded] = useState(false)
   const dirtyCategoryList = CHEF_CATEGORIES.filter((cat) => dirtyCategories[cat])
   const hasChannelChanges = dirtyCategoryList.length > 0
   const hasSavedSmsSettings = savedSmsOptIn && Boolean(savedSmsPhone.trim())
+
+  useEffect(() => {
+    const settings = readDeviceAttentionSettings()
+    setHapticsEnabled(settings.hapticsEnabled)
+    setInAppVibrationEnabled(settings.inAppVibrationEnabled)
+    setChefMode(settings.chefMode)
+    setDeviceSettingsLoaded(true)
+  }, [])
+
+  useEffect(() => {
+    if (!deviceSettingsLoaded) return
+    writeDeviceAttentionSettings({
+      hapticsEnabled,
+      inAppVibrationEnabled,
+      chefMode,
+    })
+  }, [chefMode, deviceSettingsLoaded, hapticsEnabled, inAppVibrationEnabled])
 
   useEffect(() => {
     if (!hasChannelChanges || isSavingChannelChanges) return
@@ -327,6 +409,15 @@ export function NotificationSettingsForm({
     })
   }
 
+  const handlePreviewVibration = (pattern: number[]) => {
+    if (!hapticsEnabled || !inAppVibrationEnabled) return
+    if (typeof navigator === 'undefined' || typeof navigator.vibrate !== 'function') {
+      toast.error('This device does not support vibration preview')
+      return
+    }
+    navigator.vibrate(pattern)
+  }
+
   return (
     <div className="space-y-8">
       {/* ─── Browser Push ───────────────────────────────────────────── */}
@@ -369,6 +460,111 @@ export function NotificationSettingsForm({
               {pushLoading ? '…' : pushState === 'subscribed' ? 'Disable push' : 'Enable push'}
             </button>
           )}
+        </div>
+      </section>
+
+      <section className="rounded-xl border border-stone-700 bg-stone-900 p-5">
+        <h2 className="text-base font-semibold text-stone-100">Mobile Attention</h2>
+        <p className="mt-1 text-sm text-stone-500">
+          Device-level controls for vibration, chef mode, and interruption previews.
+        </p>
+
+        <div className="mt-4 space-y-5">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <label className="flex items-start gap-3 rounded-lg border border-stone-800 bg-stone-950/40 p-3">
+              <input
+                type="checkbox"
+                checked={hapticsEnabled}
+                onChange={(e) => setHapticsEnabled(e.target.checked)}
+                className="mt-0.5 rounded border-stone-600 accent-stone-900"
+              />
+              <span className="text-sm text-stone-300">
+                <span className="block font-medium text-stone-100">Allow vibration</span>
+                <span className="mt-1 block text-stone-400">
+                  Push alerts still follow browser and OS notification settings.
+                </span>
+              </span>
+            </label>
+
+            <label className="flex items-start gap-3 rounded-lg border border-stone-800 bg-stone-950/40 p-3">
+              <input
+                type="checkbox"
+                checked={inAppVibrationEnabled}
+                disabled={!hapticsEnabled}
+                onChange={(e) => setInAppVibrationEnabled(e.target.checked)}
+                className="mt-0.5 rounded border-stone-600 accent-stone-900 disabled:opacity-50"
+              />
+              <span className="text-sm text-stone-300">
+                <span className="block font-medium text-stone-100">Vibrate while app is open</span>
+                <span className="mt-1 block text-stone-400">
+                  One vibration per thread until cooldown or severity changes.
+                </span>
+              </span>
+            </label>
+          </div>
+
+          <div>
+            <p className="text-sm font-medium text-stone-100">Chef mode</p>
+            <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-5">
+              {(Object.keys(CHEF_MODE_LABELS) as ChefMode[]).map((mode) => (
+                <button
+                  key={mode}
+                  type="button"
+                  onClick={() => setChefMode(mode)}
+                  className={[
+                    'min-h-[44px] rounded-lg border px-3 py-2 text-sm font-medium transition-colors',
+                    chefMode === mode
+                      ? 'border-brand-500 bg-brand-500/15 text-brand-100'
+                      : 'border-stone-700 bg-stone-950/40 text-stone-300 hover:bg-stone-800',
+                  ].join(' ')}
+                >
+                  {CHEF_MODE_LABELS[mode]}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-stone-800">
+            <div className="border-b border-stone-800 px-3 py-2">
+              <p className="text-sm font-medium text-stone-100">Interruption preview</p>
+            </div>
+            <div className="divide-y divide-stone-800">
+              {HAPTIC_SIMULATION_SCENARIOS.map((scenario) => {
+                const decision = evaluateNotificationInterruption({
+                  action: scenario.action,
+                  metadata: scenario.metadata,
+                  eventId: scenario.eventId,
+                  inquiryId: scenario.inquiryId,
+                  clientId: scenario.clientId,
+                  chefMode,
+                })
+                const canPreview =
+                  hapticsEnabled && inAppVibrationEnabled && decision.pattern.length > 0
+
+                return (
+                  <div
+                    key={scenario.label}
+                    className="grid gap-2 px-3 py-3 sm:grid-cols-[1fr_auto] sm:items-center"
+                  >
+                    <div>
+                      <p className="text-sm font-medium text-stone-100">{scenario.label}</p>
+                      <p className="mt-0.5 text-xs text-stone-400">
+                        {decision.level} - {decision.reason}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      disabled={!canPreview}
+                      onClick={() => handlePreviewVibration(decision.pattern)}
+                      className="min-h-[40px] rounded-md border border-stone-700 px-3 py-2 text-sm font-medium text-stone-300 transition-colors hover:bg-stone-800 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      Preview
+                    </button>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
         </div>
       </section>
 

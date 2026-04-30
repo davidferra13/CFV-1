@@ -181,6 +181,10 @@ export async function createNotification({
     title: sanitizedTitle,
     body: sanitizedBody ?? undefined,
     actionUrl: resolvedActionUrl,
+    eventId: eventId ?? null,
+    inquiryId: inquiryId ?? null,
+    clientId: clientId ?? null,
+    metadata,
   }).catch((err) => {
     console.error('[createNotification] routeNotification fire failed:', err)
   })

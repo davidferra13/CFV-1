@@ -27,6 +27,7 @@ import {
 import { sendSms, formatSmsBody } from '@/lib/sms/send'
 import { isSmsAllowed, recordSmsSent } from '@/lib/sms/rate-limit'
 import { routeEmailByAction } from '@/lib/email/route-email'
+import { evaluateNotificationInterruption } from './interruption-policy'
 
 export type RouteInput = {
   notificationId: string
@@ -36,6 +37,10 @@ export type RouteInput = {
   title: string
   body?: string
   actionUrl?: string
+  eventId?: string | null
+  inquiryId?: string | null
+  clientId?: string | null
+  metadata?: Record<string, unknown>
 }
 
 /**
@@ -57,10 +62,21 @@ export async function routeNotification(input: RouteInput): Promise<void> {
     }
 
     const channels = await resolveChannels(tenantId, recipientId, action)
+    const interruption = evaluateNotificationInterruption({
+      action,
+      metadata: input.metadata,
+      eventId: input.eventId,
+      inquiryId: input.inquiryId,
+      clientId: input.clientId,
+      actionUrl,
+    })
 
     // F1: Check quiet hours - suppress non-critical out-of-app delivery during quiet window
     const tier = DEFAULT_TIER_MAP[action]
-    const isBypass = tier === 'critical' || (BYPASS_ACTIONS as readonly string[]).includes(action)
+    const isBypass =
+      interruption.bypassQuietHours ||
+      tier === 'critical' ||
+      (BYPASS_ACTIONS as readonly string[]).includes(action)
     if (!isBypass) {
       try {
         const db = createServerClient({ admin: true })
@@ -174,11 +190,27 @@ async function deliverPush(
     return
   }
 
+  const interruption = evaluateNotificationInterruption({
+    action: input.action,
+    eventId: input.eventId,
+    inquiryId: input.inquiryId,
+    clientId: input.clientId,
+    actionUrl: input.actionUrl,
+    metadata: input.metadata,
+  })
+
   const payload = {
     title: input.title,
     body: input.body,
     action_url: input.actionUrl,
+    url: input.actionUrl,
     icon: '/icon-192.png',
+    tag: interruption.tag,
+    renotify: interruption.renotify,
+    vibrate: interruption.pattern,
+    interruption_level: interruption.level,
+    interruption_reason: interruption.reason,
+    interruption_group: interruption.group,
   }
 
   // Send to all devices in parallel; handle each result independently

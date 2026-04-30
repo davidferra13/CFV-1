@@ -13,14 +13,25 @@ self.addEventListener('push', function (event) {
   }
 
   const title = data.title || 'New Inbox Message'
+  const vibrate = Array.isArray(data.vibrate)
+    ? data.vibrate.filter(function (item) {
+        return typeof item === 'number' && item > 0 && item <= 500
+      })
+    : []
+
   const options = {
     body: data.body || 'You have a new message in your inbox.',
     icon: '/icons/icon-192x192.png',
     badge: '/icons/icon-72x72.png',
     tag: data.tag || 'inbox-notification',
-    renotify: true,
+    renotify: data.renotify === true,
+    silent: data.interruption_level === 'silent' || data.interruption_level === 'badge',
+    vibrate,
     data: {
-      url: data.url || '/inbox',
+      url: data.url || data.action_url || '/inbox',
+      interruptionLevel: data.interruption_level || 'badge',
+      interruptionReason: data.interruption_reason || '',
+      interruptionGroup: data.interruption_group || '',
     },
   }
 

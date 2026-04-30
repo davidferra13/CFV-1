@@ -15,6 +15,11 @@ import {
 import { NOTIFICATION_CONFIG } from '@/lib/notifications/types'
 import { DEFAULT_TIER_MAP } from '@/lib/notifications/tier-config'
 import type { Notification, NotificationAction } from '@/lib/notifications/types'
+import {
+  evaluateNotificationInterruption,
+  type ChefMode,
+  type InterruptionDecision,
+} from '@/lib/notifications/interruption-policy'
 
 type NotificationListener = (notification: Notification) => void
 
@@ -42,6 +47,67 @@ export function useNotifications() {
 type NotificationSeverity = 'info' | 'medium' | 'high'
 
 type RuntimeSettings = NotificationRuntimeSettings
+
+const DEVICE_ATTENTION_STORAGE_KEY = 'cheflow:notification-attention'
+const DEVICE_ATTENTION_CHANGE_EVENT = 'cheflow-notification-attention-change'
+
+type DeviceAttentionSettings = {
+  hapticsEnabled: boolean
+  inAppVibrationEnabled: boolean
+  chefMode: ChefMode
+}
+
+const DEFAULT_DEVICE_ATTENTION_SETTINGS: DeviceAttentionSettings = {
+  hapticsEnabled: true,
+  inAppVibrationEnabled: true,
+  chefMode: 'available',
+}
+
+function readDeviceAttentionSettings(): DeviceAttentionSettings {
+  if (typeof window === 'undefined') return DEFAULT_DEVICE_ATTENTION_SETTINGS
+
+  try {
+    const raw = window.localStorage.getItem(DEVICE_ATTENTION_STORAGE_KEY)
+    if (!raw) return DEFAULT_DEVICE_ATTENTION_SETTINGS
+    const parsed = JSON.parse(raw) as Partial<DeviceAttentionSettings>
+    return {
+      hapticsEnabled:
+        typeof parsed.hapticsEnabled === 'boolean'
+          ? parsed.hapticsEnabled
+          : DEFAULT_DEVICE_ATTENTION_SETTINGS.hapticsEnabled,
+      inAppVibrationEnabled:
+        typeof parsed.inAppVibrationEnabled === 'boolean'
+          ? parsed.inAppVibrationEnabled
+          : DEFAULT_DEVICE_ATTENTION_SETTINGS.inAppVibrationEnabled,
+      chefMode:
+        parsed.chefMode === 'prep' ||
+        parsed.chefMode === 'service' ||
+        parsed.chefMode === 'driving' ||
+        parsed.chefMode === 'off_hours' ||
+        parsed.chefMode === 'available'
+          ? parsed.chefMode
+          : DEFAULT_DEVICE_ATTENTION_SETTINGS.chefMode,
+    }
+  } catch {
+    return DEFAULT_DEVICE_ATTENTION_SETTINGS
+  }
+}
+
+function readDailyFatigueCount(): number {
+  if (typeof window === 'undefined') return 0
+  const today = new Date().toISOString().slice(0, 10)
+  const key = `cheflow:notification-fatigue:${today}`
+  const parsed = Number.parseInt(window.localStorage.getItem(key) ?? '0', 10)
+  return Number.isFinite(parsed) ? Math.max(0, parsed) : 0
+}
+
+function incrementDailyFatigueCount() {
+  if (typeof window === 'undefined') return
+  const today = new Date().toISOString().slice(0, 10)
+  const key = `cheflow:notification-fatigue:${today}`
+  const next = readDailyFatigueCount() + 1
+  window.localStorage.setItem(key, String(next))
+}
 
 function parseTimeToMinutes(value: string | null): number | null {
   if (!value) return null
@@ -77,6 +143,27 @@ function buildNotificationKey(notification: Notification): string {
     notification.title,
     notification.body ?? '',
   ].join('::')
+}
+
+function shouldVibrateInApp(
+  decision: InterruptionDecision,
+  settings: DeviceAttentionSettings,
+  hapticCooldowns: Map<string, number>
+): boolean {
+  if (!settings.hapticsEnabled || !settings.inAppVibrationEnabled) return false
+  if (decision.pattern.length === 0) return false
+  if (typeof navigator === 'undefined' || typeof navigator.vibrate !== 'function') return false
+
+  const now = Date.now()
+  for (const [key, at] of hapticCooldowns.entries()) {
+    if (now - at > 60 * 60_000) hapticCooldowns.delete(key)
+  }
+
+  const existing = hapticCooldowns.get(decision.tag)
+  if (existing && now - existing < decision.cooldownMs) return false
+
+  hapticCooldowns.set(decision.tag, now)
+  return true
 }
 
 function NotificationToast({
@@ -170,7 +257,9 @@ export function NotificationProvider({
   const digestBufferRef = useRef<Notification[]>([])
   const digestTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const dedupeRef = useRef<Map<string, number>>(new Map())
+  const hapticCooldownRef = useRef<Map<string, number>>(new Map())
   const listenersRef = useRef<Set<NotificationListener>>(new Set())
+  const deviceAttentionRef = useRef<DeviceAttentionSettings>(DEFAULT_DEVICE_ATTENTION_SETTINGS)
 
   const flushDigest = useCallback(() => {
     if (digestBufferRef.current.length === 0) return
@@ -213,6 +302,27 @@ export function NotificationProvider({
       setUnreadCount(count)
     } catch {
       // Keep last known count.
+    }
+  }, [])
+
+  useEffect(() => {
+    deviceAttentionRef.current = readDeviceAttentionSettings()
+
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key === DEVICE_ATTENTION_STORAGE_KEY) {
+        deviceAttentionRef.current = readDeviceAttentionSettings()
+      }
+    }
+    const handleDeviceAttentionChange = () => {
+      deviceAttentionRef.current = readDeviceAttentionSettings()
+    }
+
+    window.addEventListener('storage', handleStorage)
+    window.addEventListener(DEVICE_ATTENTION_CHANGE_EVENT, handleDeviceAttentionChange)
+
+    return () => {
+      window.removeEventListener('storage', handleStorage)
+      window.removeEventListener(DEVICE_ATTENTION_CHANGE_EVENT, handleDeviceAttentionChange)
     }
   }, [])
 
@@ -296,13 +406,31 @@ export function NotificationProvider({
 
       const severity = getSeverity(notification.action as NotificationAction)
       const settings = runtimeSettingsRef.current
+      const deviceSettings = deviceAttentionRef.current
+      const interruption = evaluateNotificationInterruption({
+        action: notification.action as NotificationAction,
+        category: notification.category,
+        metadata: notification.metadata,
+        eventId: notification.event_id,
+        inquiryId: notification.inquiry_id,
+        clientId: notification.client_id,
+        actionUrl: notification.action_url,
+        chefMode: deviceSettings.chefMode,
+        fatigueCount: readDailyFatigueCount(),
+      })
 
-      if (severity !== 'high') {
+      if (!interruption.bypassQuietHours && severity !== 'high') {
         const inQuietWindow = isWithinQuietWindow(settings)
         if (inQuietWindow || settings.digestEnabled) {
           pushToDigest(notification)
           return
         }
+        if (interruption.shouldDigest) return
+      }
+
+      if (shouldVibrateInApp(interruption, deviceSettings, hapticCooldownRef.current)) {
+        navigator.vibrate(interruption.pattern)
+        incrementDailyFatigueCount()
       }
 
       toast.custom(

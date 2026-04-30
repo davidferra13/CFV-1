@@ -11,6 +11,13 @@ export type PushPayload = {
   icon?: string
   badge?: string
   action_url?: string
+  url?: string
+  tag?: string
+  renotify?: boolean
+  vibrate?: number[]
+  interruption_level?: string
+  interruption_reason?: string
+  interruption_group?: string
 }
 
 export type PushSubscriptionRecord = {
@@ -68,7 +75,8 @@ export async function sendPushNotification(
         'Content-Type': 'application/octet-stream',
         'Content-Encoding': 'aes128gcm',
         TTL: '86400', // Message time-to-live: 24 hours
-        Urgency: payload.action_url ? 'high' : 'normal',
+        Urgency:
+          payload.interruption_level === 'urgent' ? 'high' : payload.action_url ? 'normal' : 'low',
       },
       body: encryptedBody,
       signal: AbortSignal.timeout(10000),
