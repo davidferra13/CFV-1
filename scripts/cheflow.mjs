@@ -28,6 +28,7 @@ const ROUTE_SCAN_DIRS = ['app', 'lib']
 const MONEY_SCAN_DIRS = ['app', 'components', 'lib']
 const MAX_FINDINGS = 80
 const EVIDENCE_ROOT = path.join(ROOT, 'system', 'agent-reports', 'closeout-evidence')
+const HANDOFF_ROOT = path.join(ROOT, 'system', 'agent-reports', 'handoffs')
 const RESTRICTED_PLATFORM_TERMS = ['vercel', 'supabase']
 const RESTRICTED_PLATFORM_ALLOWLIST = new Set(['AGENTS.md', 'CLAUDE.md', 'scripts/cheflow.mjs'])
 const NODE_BUILTINS = new Set([...builtinModules, ...builtinModules.map((name) => `node:${name}`)])
@@ -128,6 +129,50 @@ const COMMANDS = {
   claim: {
     summary: 'Create, release, and inspect Codex agent file claims.',
     mode: 'writes only system/agent-claims on create/release',
+  },
+  pr: {
+    summary: 'Generate PR-ready owned-diff, validation, risk, and commit summary.',
+    mode: 'read-only',
+  },
+  handoff: {
+    summary: 'Create a swarm-safe handoff packet for the next Codex agent.',
+    mode: 'read-only unless --write is passed',
+  },
+  stale: {
+    summary: 'Find stale claims, reports, captures, and local branches that may need review.',
+    mode: 'read-only',
+  },
+  scope: {
+    summary: 'Classify files before editing as safe, conflict, generated, database-risk, server-action-risk, or unknown.',
+    mode: 'read-only',
+  },
+  'undo-plan': {
+    summary: 'Generate a non-destructive rollback plan for owned diffs without executing it.',
+    mode: 'read-only',
+  },
+  'test-map': {
+    summary: 'Map changed files to the most relevant targeted validation commands.',
+    mode: 'read-only',
+  },
+  'server-action': {
+    summary: 'Dedicated audit for use-server auth, tenancy, validation, cache, and export rules.',
+    mode: 'read-only',
+  },
+  'ui-truth': {
+    summary: 'Dedicated audit for no-op UI, fake values, optimistic rollback, and disabled-control truth.',
+    mode: 'read-only',
+  },
+  'route-owner': {
+    summary: 'Find likely canonical owner, duplicate risk, and recent commits for a route or domain.',
+    mode: 'read-only',
+  },
+  branch: {
+    summary: 'Branch drift and upstream doctor for Codex closeout safety.',
+    mode: 'read-only',
+  },
+  push: {
+    summary: 'Diagnose failed push output and suggest exact repair commands.',
+    mode: 'read-only',
   },
   db: {
     summary: 'Database command center. Read-only checks plus safe script references.',
@@ -577,6 +622,52 @@ function readTextFile(file) {
   }
 }
 
+function fileAgeHours(filePath) {
+  try {
+    return (Date.now() - statSync(filePath).mtimeMs) / 36e5
+  } catch {
+    return null
+  }
+}
+
+function listExistingFiles(dirs, options = {}) {
+  const maxFiles = options.maxFiles || 300
+  const files = []
+  for (const dir of dirs) {
+    const abs = path.join(ROOT, dir)
+    if (!existsSync(abs)) continue
+    const queue = [abs]
+    while (queue.length && files.length < maxFiles) {
+      const current = queue.shift()
+      let info
+      try {
+        info = statSync(current)
+      } catch {
+        continue
+      }
+      if (info.isDirectory()) {
+        for (const entry of readdirSync(current)) queue.push(path.join(current, entry))
+      } else if (info.isFile()) {
+        files.push(current)
+      }
+    }
+  }
+  return files
+}
+
+function diffNameStatus(files = []) {
+  const args = ['diff', '--name-status']
+  if (files.length) args.push('--', ...files)
+  return runGitRaw(args)
+    .split(/\r?\n/)
+    .filter(Boolean)
+    .map((line) => {
+      const [status, ...parts] = line.split(/\s+/)
+      return { status, path: parts.at(-1)?.replace(/\\/g, '/') || '' }
+    })
+    .filter((item) => item.path)
+}
+
 function changedFilesFromArgs(args = {}) {
   const explicit = parseFileListArgs(args)
   if (explicit.length) return explicit
@@ -661,6 +752,33 @@ function validationSelector(args = {}) {
     commands: [...commands],
     reasons,
     ok: true,
+  }
+}
+
+function testMap(args = {}) {
+  const files = changedFilesFromArgs(args)
+  const groups = {
+    cli: files.filter((file) => file === 'scripts/cheflow.mjs' || file.includes('cheflow-cli')),
+    serverActions: files.filter((file) => readTextFile(file).startsWith("'use server'") || readTextFile(file).startsWith('"use server"')),
+    ui: files.filter((file) => file.startsWith('app/') || file.startsWith('components/')),
+    money: files.filter((file) => file.includes('ledger') || file.includes('finance') || file.includes('stripe')),
+    migrations: files.filter((file) => file.startsWith('database/migrations/') || file.endsWith('.sql')),
+    package: files.filter((file) => file === 'package.json' || file === 'package-lock.json'),
+    docs: files.filter((file) => file.endsWith('.md') || file.startsWith('docs/')),
+  }
+  const commands = new Set(validationSelector(args).commands)
+  if (groups.serverActions.length) commands.add('node scripts/cheflow.mjs server-action audit --owned <paths>')
+  if (groups.ui.length) commands.add('node scripts/cheflow.mjs ui-truth audit --owned <paths>')
+  if (groups.cli.length) commands.add('node scripts/cheflow.mjs review --owned scripts/cheflow.mjs,tests/unit/cheflow-cli.test.ts')
+  return {
+    ok: true,
+    files,
+    groups,
+    commands: [...commands],
+    notes: [
+      'Replace <paths> with the owned file list before running placeholder commands.',
+      'Build and server commands are intentionally omitted unless the developer explicitly approves them.',
+    ],
   }
 }
 
@@ -1061,6 +1179,260 @@ function diffEvidence(args = {}) {
   return evidence
 }
 
+function prBrief(args = {}) {
+  const files = changedFilesFromArgs(args)
+  const diff = diffEvidence(args)
+  const validation = validationSelector(args)
+  const risk = riskReport(args)
+  const commits = runGitRaw(['log', '--oneline', '--max-count=5'])
+    .split(/\r?\n/)
+    .filter(Boolean)
+  return {
+    ok: true,
+    branch: runGit(['branch', '--show-current'], '(unknown)'),
+    head: runGit(['log', '-1', '--oneline'], ''),
+    title: args.title || `ChefFlow CLI operator update`,
+    summary: [
+      `Changed ${files.length} owned file${files.length === 1 ? '' : 's'}.`,
+      `Validation commands selected: ${validation.commands.length}.`,
+      `Risk findings: ${risk.findings.length}.`,
+    ],
+    files: diff.stats,
+    validation,
+    riskSummary: risk.summary,
+    topRisks: risk.findings.slice(0, 8),
+    recentCommits: commits,
+    markdown: [
+      `## Summary`,
+      `- Changed files: ${files.join(', ') || 'none'}`,
+      `- Head: ${runGit(['log', '-1', '--oneline'], '')}`,
+      `- Risk findings: ${risk.findings.length}`,
+      ``,
+      `## Validation`,
+      ...validation.commands.map((command) => `- ${command}`),
+    ].join('\n'),
+  }
+}
+
+function handoffPacket(args = {}) {
+  const owned = ownedLedger(args)
+  const packet = {
+    generatedAt: new Date().toISOString(),
+    branch: runGit(['branch', '--show-current'], '(unknown)'),
+    head: runGit(['log', '-1', '--oneline'], ''),
+    owned,
+    pr: prBrief(args),
+    review: reviewOwnedFiles(args),
+    validation: validationSelector(args),
+    next: nextAction(args),
+    doNotTouch: owned.unownedDirty.map((entry) => entry.path),
+    warnings: pushReadiness(args).warnings,
+  }
+  if (args.write) {
+    mkdirSync(HANDOFF_ROOT, { recursive: true })
+    const file = path.join(HANDOFF_ROOT, `${nowStamp()}-cheflow-handoff.json`)
+    writeFileSync(file, `${JSON.stringify(packet, null, 2)}\n`)
+    packet.file = rel(file)
+  }
+  return packet
+}
+
+function staleScan(args = {}) {
+  const maxAgeHours = Number(args['max-age-hours'] || 24)
+  const claims = loadClaims(maxAgeHours)
+  const reportFiles = listExistingFiles(['system/agent-reports', '.playwright-mcp'], { maxFiles: 1200 })
+    .map((file) => ({ file: rel(file), ageHours: fileAgeHours(file) }))
+    .filter((item) => item.ageHours !== null && item.ageHours > maxAgeHours)
+    .sort((a, b) => b.ageHours - a.ageHours)
+    .slice(0, 80)
+  const branches = runGitRaw(['branch', '--format', '%(refname:short)|%(committerdate:iso8601)|%(upstream:short)'])
+    .split(/\r?\n/)
+    .filter(Boolean)
+    .map((line) => {
+      const [branch, date, upstream] = line.split('|')
+      const ageHours = Number.isFinite(Date.parse(date)) ? (Date.now() - Date.parse(date)) / 36e5 : null
+      return { branch, date, upstream: upstream || null, ageHours }
+    })
+    .filter((item) => item.ageHours !== null && item.ageHours > maxAgeHours * 7)
+    .slice(0, 40)
+  return {
+    ok: true,
+    maxAgeHours,
+    staleClaims: claims.active.filter((claim) => claim.stale),
+    staleReports: reportFiles,
+    staleBranches: branches,
+  }
+}
+
+function scopeClassifier(args = {}) {
+  const files = parseFileListArgs(args)
+  const dirty = statusEntries()
+  const dirtyPaths = new Set(dirty.map((entry) => entry.path))
+  const activeClaims = loadClaims().active
+  return {
+    ok: true,
+    files: files.map((file) => {
+      const text = readTextFile(file)
+      const claim = activeClaims.find((item) =>
+        (item.ownedPaths || []).some((ownedPath) => file === ownedPath || file.startsWith(`${ownedPath}/`)),
+      )
+      let classification = 'safe'
+      const reasons = []
+      if (!existsSync(path.join(ROOT, file))) {
+        classification = 'unknown'
+        reasons.push('File does not exist.')
+      }
+      if (file === 'types/database.ts') {
+        classification = 'generated'
+        reasons.push('Generated database types must not be edited manually.')
+      }
+      if (file.startsWith('database/') || file.endsWith('.sql')) {
+        classification = 'database-risk'
+        reasons.push('Database work has migration safety rules.')
+      }
+      if (text.startsWith("'use server'") || text.startsWith('"use server"')) {
+        classification = 'server-action-risk'
+        reasons.push('Server actions require auth, tenant scope, validation, feedback, and cache busting.')
+      }
+      if (dirtyPaths.has(file) || claim) {
+        classification = 'conflict'
+        reasons.push(dirtyPaths.has(file) ? 'File is already dirty.' : 'File overlaps an active claim.')
+      }
+      return { file, classification, reasons, claim: claim?.id || null }
+    }),
+  }
+}
+
+function undoPlan(args = {}) {
+  const files = changedFilesFromArgs(args)
+  const nameStatus = diffNameStatus(files)
+  return {
+    ok: true,
+    files,
+    changed: nameStatus,
+    plan: [
+      'Review the owned diff before any rollback.',
+      `Save a patch if needed: git diff -- ${files.join(' ') || '<owned files>'} > tmp-owned-rollback.patch`,
+      'Apply a manual reverse patch only after confirming the owned files are the only intended target.',
+      'Do not use reset or checkout against unrelated dirty work.',
+    ],
+    reviewCommands: [
+      `git diff -- ${files.join(' ') || '<owned files>'}`,
+      `git status --short -- ${files.join(' ') || '<owned files>'}`,
+    ],
+  }
+}
+
+function routeOwner(args = {}) {
+  const target = String(args.path || args.route || args._?.[0] || '').replace(/\\/g, '/')
+  const registry = readJson(path.join(ROOT, 'system', 'canonical-surfaces.json'), { surfaces: [] })
+  const surfaces = Array.isArray(registry.surfaces) ? registry.surfaces : []
+  const matches = surfaces
+    .map((surface) => {
+      const haystack = JSON.stringify(surface).toLowerCase()
+      const needle = target.toLowerCase()
+      return { surface, score: needle && haystack.includes(needle) ? 2 : 0 }
+    })
+    .filter((item) => item.score > 0)
+    .slice(0, 10)
+  const pathMatches = target
+    ? listFiles(['app', 'components', 'lib'], { maxFiles: 6000 })
+        .map(rel)
+        .filter((file) => file.includes(target.replace(/^\//, '')) || target.includes(file.replace(/^app/, '').replace(/\/page\.(tsx|ts)$/, '')))
+        .slice(0, 20)
+    : []
+  const recentCommits = target
+    ? runGitRaw(['log', '--oneline', '--max-count=10', '--', target])
+        .split(/\r?\n/)
+        .filter(Boolean)
+    : []
+  return {
+    ok: true,
+    target,
+    canonicalMatches: matches,
+    pathMatches,
+    recentCommits,
+    duplicateRisk: matches.length > 1 || pathMatches.length > 3 ? 'review-required' : 'low',
+  }
+}
+
+function branchDoctor() {
+  const status = statusSnapshot()
+  const upstream = status.upstream
+  const counts = upstream
+    ? runGit(['rev-list', '--left-right', '--count', `${upstream}...HEAD`], '0\t0').split(/\s+/)
+    : ['0', '0']
+  const localBranch = status.branch
+  const upstreamName = upstream ? upstream.split('/').slice(1).join('/') : null
+  const findings = []
+  if (localBranch === 'main') findings.push({ severity: 'blocked', id: 'main-branch', reason: 'Current branch is main.' })
+  if (!upstream) findings.push({ severity: 'medium', id: 'missing-upstream', reason: 'No upstream is configured.' })
+  if (upstreamName && upstreamName !== localBranch) findings.push({ severity: 'medium', id: 'upstream-name-mismatch', reason: `Upstream branch is ${upstreamName}, local branch is ${localBranch}.` })
+  if (Number(counts[1] || 0) > 0) findings.push({ severity: 'notice', id: 'ahead', reason: `Local branch is ahead by ${counts[1]} commit(s).` })
+  if (Number(counts[0] || 0) > 0) findings.push({ severity: 'medium', id: 'behind', reason: `Local branch is behind by ${counts[0]} commit(s).` })
+  if (status.dirty.count) findings.push({ severity: 'notice', id: 'dirty-worktree', reason: `Worktree has ${status.dirty.count} dirty file(s).` })
+  return {
+    ok: !findings.some((finding) => finding.severity === 'blocked'),
+    branch: localBranch,
+    upstream,
+    ahead: Number(counts[1] || 0),
+    behind: Number(counts[0] || 0),
+    findings,
+  }
+}
+
+function pushRepair(args = {}) {
+  const errorText = String(args.error || args._?.join(' ') || '')
+  const branch = runGit(['branch', '--show-current'], '(unknown)')
+  const diagnosis = []
+  if (/upstream branch.*does not match|simple/i.test(errorText)) {
+    diagnosis.push({ id: 'upstream-name-mismatch', command: `git push -u origin HEAD:refs/heads/${branch}` })
+  }
+  if (/Authentication failed|could not read Username|terminal prompts disabled|credential/i.test(errorText)) {
+    diagnosis.push({ id: 'auth', command: 'gh auth status' })
+  }
+  if (/timed out|Failed to connect|Could not resolve host|network/i.test(errorText)) {
+    diagnosis.push({ id: 'network', command: 'git ls-remote --heads origin' })
+  }
+  if (/rejected|non-fast-forward|fetch first/i.test(errorText)) {
+    diagnosis.push({ id: 'remote-rejection', command: 'git fetch origin' })
+  }
+  if (!diagnosis.length) {
+    diagnosis.push({ id: 'inspect', command: `git push -u origin HEAD:refs/heads/${branch}` })
+  }
+  return {
+    ok: true,
+    branch,
+    upstream: runGit(['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}'], ''),
+    diagnosis,
+    branchDoctor: branchDoctor(),
+  }
+}
+
+function agentScore(args = {}) {
+  const owned = ownedLedger(args)
+  const validation = validationSelector(args)
+  const review = reviewOwnedFiles(args)
+  const push = pushReadiness(args)
+  const scoreParts = [
+    { name: 'owned-scope', points: owned.unownedDirty.length ? 0 : 20 },
+    { name: 'validation-selected', points: validation.commands.length ? 20 : 0 },
+    { name: 'review-clean', points: review.ok ? 20 : 0 },
+    { name: 'push-ready', points: push.ok ? 20 : 0 },
+    { name: 'not-main', points: runGit(['branch', '--show-current'], '') === 'main' ? 0 : 20 },
+  ]
+  return {
+    ok: true,
+    score: scoreParts.reduce((sum, part) => sum + part.points, 0),
+    maxScore: 100,
+    scoreParts,
+    owned,
+    validation,
+    reviewFindings: review.findings,
+    push,
+  }
+}
+
 function nextAction(args = {}) {
   const push = pushReadiness(args)
   const claims = loadClaims()
@@ -1348,6 +1720,84 @@ function reviewOwnedFiles(args = {}) {
   }
 }
 
+function serverActionAudit(args = {}) {
+  const files = changedFilesFromArgs(args).filter((file) => {
+    const text = readTextFile(file)
+    return text.startsWith("'use server'") || text.startsWith('"use server"')
+  })
+  const findings = []
+  const add = (severity, file, id, reason) => findings.push({ severity, file, id, reason })
+
+  for (const file of files) {
+    const text = readTextFile(file)
+    const firstOperationalLine = text
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter((line) => line && !line.startsWith('//') && !line.startsWith('import') && !line.startsWith("'use server'") && !line.startsWith('"use server"'))[0]
+    if (!/\brequire(?:Chef|Client|Admin|Auth)\s*\(/.test(text)) {
+      add('blocked', file, 'auth-missing', 'Server action file has no obvious requireChef, requireClient, requireAdmin, or requireAuth call.')
+    }
+    if (firstOperationalLine && !/\brequire(?:Chef|Client|Admin|Auth)\s*\(/.test(firstOperationalLine)) {
+      add('medium', file, 'auth-not-first', 'First operational line is not an obvious auth call.')
+    }
+    if (/\.from\(/.test(text) && !/\.eq\(\s*['"`](?:tenant_id|chef_id)['"`]/.test(text)) {
+      add('high', file, 'tenant-scope-missing', 'Database access has no obvious tenant_id or chef_id equality filter.')
+    }
+    if (/\b(insert|update|delete|upsert)\s*\(/.test(text) && !/revalidate(?:Path|Tag)\s*\(/.test(text)) {
+      add('high', file, 'cache-bust-missing', 'Mutation-like action has no obvious revalidatePath or revalidateTag call.')
+    }
+    if (/^\s*export\s+(?:const|class|type)\b/m.test(text)) {
+      add('blocked', file, 'invalid-export', 'Use-server files may only export async functions.')
+    }
+    if (/\breturn\s*;/.test(text) || /\bPromise<void>\b/.test(text)) {
+      add('medium', file, 'void-return-risk', 'Mutation actions should return feedback instead of void.')
+    }
+  }
+
+  findings.sort((a, b) => severityRank(a.severity) - severityRank(b.severity) || a.file.localeCompare(b.file))
+  return {
+    ok: !findings.some((finding) => finding.severity === 'blocked' || finding.severity === 'high'),
+    files,
+    findings,
+  }
+}
+
+function uiTruthAudit(args = {}) {
+  const files = changedFilesFromArgs(args).filter((file) => file.startsWith('app/') || file.startsWith('components/'))
+  const findings = []
+  const add = (severity, file, line, id, reason, text = '') =>
+    findings.push({ severity, file, line, id, reason, text: String(text || '').trim().slice(0, 180) })
+
+  for (const file of files) {
+    const text = readTextFile(file)
+    const lines = text.split(/\r?\n/)
+    lines.forEach((line, index) => {
+      if (/\bon[A-Z][A-Za-z0-9_]*=\{\s*(?:\(\)\s*=>\s*)?\{\s*\}\s*\}/.test(line)) {
+        add('high', file, index + 1, 'no-op-handler', 'No-op UI handlers present fake functionality.', line)
+      }
+      if (/['"`]\$[0-9][0-9,.]*(?:\.[0-9]{2})?['"`]/.test(line)) {
+        add('high', file, index + 1, 'hardcoded-money', 'Displayed money must come from real data.', line)
+      }
+      if (/\buseOptimistic\b|optimistic/i.test(line) && !/rollback|catch|revert/i.test(text)) {
+        add('medium', file, index + 1, 'optimistic-without-rollback', 'Optimistic UI needs visible rollback handling.', line)
+      }
+      if (/\bdisabled\b/.test(line) && !/title=|aria-describedby|reason|tooltip|explain/i.test(line)) {
+        add('low', file, index + 1, 'disabled-without-reason', 'Disabled controls should expose a reason when user-visible.', line)
+      }
+      if (/\b(?:Coming soon|TODO|placeholder)\b/i.test(line)) {
+        add('medium', file, index + 1, 'placeholder-ui', 'Placeholder UI can mislead users if rendered as real functionality.', line)
+      }
+    })
+  }
+
+  findings.sort((a, b) => severityRank(a.severity) - severityRank(b.severity) || a.file.localeCompare(b.file))
+  return {
+    ok: !findings.some((finding) => finding.severity === 'blocked' || finding.severity === 'high'),
+    files,
+    findings,
+  }
+}
+
 function aiGateScan() {
   const providerDrift = findText(/\b(openai|anthropic|gemini|claude|gpt-|chatgpt)\b/i, ['app', 'components', 'lib', 'scripts'])
     .filter((finding) => !finding.file.includes('openai-docs') && !finding.file.includes('chatgpt-'))
@@ -1600,6 +2050,10 @@ Commands:`)
   console.log(`
 Examples:
   node scripts/cheflow.mjs task start --prompt "Fix quote totals" --owned lib/quotes
+  node scripts/cheflow.mjs handoff --owned scripts/cheflow.mjs,tests/unit/cheflow-cli.test.ts
+  node scripts/cheflow.mjs pr brief --owned scripts/cheflow.mjs
+  node scripts/cheflow.mjs branch doctor
+  node scripts/cheflow.mjs push repair --error "upstream branch does not match"
   node scripts/cheflow.mjs risk --owned scripts/cheflow.mjs,tests/unit/cheflow-cli.test.ts
   node scripts/cheflow.mjs validate run --dry-run --owned scripts/cheflow.mjs
   node scripts/cheflow.mjs cockpit
@@ -1646,6 +2100,34 @@ function main(argv = process.argv.slice(2)) {
     const result = migrationProposal(args)
     printJsonOrHuman(result, args, (value) => printSummary('ChefFlow migration proposal', value))
     return result.ok ? 0 : 1
+  }
+
+  if (command === 'server-action' && maybeSubcommand === 'audit') {
+    const args = parseArgs(rest)
+    const result = serverActionAudit(args)
+    printJsonOrHuman(result, args, (value) => printSummary('ChefFlow server action audit', value))
+    return result.ok ? 0 : 1
+  }
+
+  if (command === 'ui-truth' && maybeSubcommand === 'audit') {
+    const args = parseArgs(rest)
+    const result = uiTruthAudit(args)
+    printJsonOrHuman(result, args, (value) => printSummary('ChefFlow UI truth audit', value))
+    return result.ok ? 0 : 1
+  }
+
+  if (command === 'branch' && maybeSubcommand === 'doctor') {
+    const args = parseArgs(rest)
+    const result = branchDoctor()
+    printJsonOrHuman(result, args, (value) => printSummary('ChefFlow branch doctor', value))
+    return result.ok ? 0 : 1
+  }
+
+  if (command === 'push' && maybeSubcommand === 'repair') {
+    const args = parseArgs(rest)
+    const result = pushRepair(args)
+    printJsonOrHuman(result, args, (value) => printSummary('ChefFlow push repair', value))
+    return 0
   }
 
   const args = parseArgs([maybeSubcommand, ...rest].filter(Boolean))
@@ -1749,6 +2231,61 @@ function main(argv = process.argv.slice(2)) {
       printJsonOrHuman(result, args, (value) => printSummary('ChefFlow claim', value))
       return result.ok === false ? 1 : 0
     }
+    case 'pr': {
+      const result = prBrief({ ...args, _: args._[0] === 'brief' ? args._.slice(1) : args._ })
+      printJsonOrHuman(result, args, (value) => printSummary('ChefFlow PR brief', value))
+      return 0
+    }
+    case 'handoff': {
+      const result = handoffPacket(args)
+      printJsonOrHuman(result, args, (value) => printSummary('ChefFlow handoff', value))
+      return 0
+    }
+    case 'stale': {
+      const result = staleScan(args)
+      printJsonOrHuman(result, args, (value) => printSummary('ChefFlow stale scan', value))
+      return 0
+    }
+    case 'scope': {
+      const result = scopeClassifier(args)
+      printJsonOrHuman(result, args, (value) => printSummary('ChefFlow scope classifier', value))
+      return 0
+    }
+    case 'undo-plan': {
+      const result = undoPlan(args)
+      printJsonOrHuman(result, args, (value) => printSummary('ChefFlow undo plan', value))
+      return 0
+    }
+    case 'test-map': {
+      const result = testMap(args)
+      printJsonOrHuman(result, args, (value) => printSummary('ChefFlow test map', value))
+      return 0
+    }
+    case 'server-action': {
+      const result = serverActionAudit(args)
+      printJsonOrHuman(result, args, (value) => printSummary('ChefFlow server action audit', value))
+      return result.ok ? 0 : 1
+    }
+    case 'ui-truth': {
+      const result = uiTruthAudit(args)
+      printJsonOrHuman(result, args, (value) => printSummary('ChefFlow UI truth audit', value))
+      return result.ok ? 0 : 1
+    }
+    case 'route-owner': {
+      const result = routeOwner(args)
+      printJsonOrHuman(result, args, (value) => printSummary('ChefFlow route owner', value))
+      return 0
+    }
+    case 'branch': {
+      const result = branchDoctor()
+      printJsonOrHuman(result, args, (value) => printSummary('ChefFlow branch doctor', value))
+      return result.ok ? 0 : 1
+    }
+    case 'push': {
+      const result = pushRepair(args)
+      printJsonOrHuman(result, args, (value) => printSummary('ChefFlow push repair', value))
+      return 0
+    }
     case 'truth': {
       const result = truthScan()
       printJsonOrHuman(result, args, (value) => printSummary('ChefFlow truth scan', value))
@@ -1784,7 +2321,16 @@ function main(argv = process.argv.slice(2)) {
     case 'pricing':
     case 'ai':
     case 'persona':
-    case 'agent':
+    case 'agent': {
+      if (args._[0] === 'score') {
+        const result = agentScore({ ...args, _: args._.slice(1) })
+        printJsonOrHuman(result, args, (value) => printSummary('ChefFlow agent score', value))
+        return 0
+      }
+      const result = commandCenter(command)
+      printJsonOrHuman(result, args, (value) => printSummary(`ChefFlow ${command} center`, value))
+      return 0
+    }
     case 'qa':
     case 'ops':
     case 'docs': {
@@ -1806,6 +2352,8 @@ if (process.argv[1] && path.resolve(process.argv[1]) === __filename) {
 
 export {
   aiGateScan,
+  agentScore,
+  branchDoctor,
   claimCommand,
   closeout,
   closeoutEvidence,
@@ -1819,6 +2367,7 @@ export {
   explain,
   explainBlockers,
   guardCommand,
+  handoffPacket,
   loadClaims,
   main,
   migrationPlan,
@@ -1827,14 +2376,23 @@ export {
   nextAction,
   ownedLedger,
   policyScan,
+  prBrief,
   pushReadiness,
+  pushRepair,
   reviewOwnedFiles,
+  routeOwner,
   routeScan,
   riskReport,
   runValidationSuite,
   scanSqlText,
+  scopeClassifier,
+  serverActionAudit,
+  staleScan,
   statusSnapshot,
   taskStart,
+  testMap,
   truthScan,
+  uiTruthAudit,
+  undoPlan,
   validationSelector,
 }

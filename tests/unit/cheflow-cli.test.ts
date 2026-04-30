@@ -26,6 +26,10 @@ describe('ChefFlow CLI', () => {
     assert.match(output, /risk/)
     assert.match(output, /review/)
     assert.match(output, /claim/)
+    assert.match(output, /handoff/)
+    assert.match(output, /scope/)
+    assert.match(output, /test-map/)
+    assert.match(output, /route-owner/)
   })
 
   it('explains command safety metadata', () => {
@@ -90,6 +94,18 @@ describe('ChefFlow CLI', () => {
       ['evidence', 'diff', '--owned', 'scripts/cheflow.mjs,tests/unit/cheflow-cli.test.ts'],
       ['review', '--owned', 'scripts/cheflow.mjs,tests/unit/cheflow-cli.test.ts'],
       ['claim', 'conflicts', '--owned', 'scripts/cheflow.mjs'],
+      ['pr', 'brief', '--owned', 'scripts/cheflow.mjs,tests/unit/cheflow-cli.test.ts'],
+      ['handoff', '--owned', 'scripts/cheflow.mjs,tests/unit/cheflow-cli.test.ts'],
+      ['stale', '--max-age-hours', '999999'],
+      ['scope', '--files', 'scripts/cheflow.mjs,types/database.ts,database/migrations/example.sql'],
+      ['undo-plan', '--owned', 'scripts/cheflow.mjs,tests/unit/cheflow-cli.test.ts'],
+      ['test-map', '--owned', 'scripts/cheflow.mjs,tests/unit/cheflow-cli.test.ts'],
+      ['server-action', 'audit', '--owned', 'scripts/cheflow.mjs,tests/unit/cheflow-cli.test.ts'],
+      ['ui-truth', 'audit', '--owned', 'scripts/cheflow.mjs,tests/unit/cheflow-cli.test.ts'],
+      ['route-owner', 'scripts/cheflow.mjs'],
+      ['branch', 'doctor'],
+      ['push', 'repair', '--error', 'upstream branch does not match'],
+      ['agent', 'score', '--owned', 'scripts/cheflow.mjs,tests/unit/cheflow-cli.test.ts'],
       ['db'],
       ['ledger'],
       ['event'],
@@ -210,5 +226,54 @@ describe('ChefFlow CLI', () => {
     const parsed = JSON.parse(result.stdout)
     assert.equal(parsed.proposed.approvalRequired, true)
     assert.equal(parsed.proposed.findings[0].id, 'sql-file-required')
+  })
+
+  it('classifies risky edit scopes before files are touched', () => {
+    const result = runCli([
+      'scope',
+      '--files',
+      'types/database.ts,database/migrations/example.sql,scripts/cheflow.mjs',
+      '--json',
+    ])
+
+    assert.equal(result.status, 0)
+    const parsed = JSON.parse(result.stdout)
+    const classifications = new Map(
+      parsed.files.map((item: { file: string; classification: string }) => [
+        item.file,
+        item.classification,
+      ])
+    )
+    assert.equal(classifications.get('types/database.ts'), 'generated')
+    assert.equal(classifications.get('database/migrations/example.sql'), 'database-risk')
+  })
+
+  it('diagnoses push upstream mismatch errors', () => {
+    const result = runCli([
+      'push',
+      'repair',
+      '--error',
+      'fatal: The upstream branch of your current branch does not match',
+      '--json',
+    ])
+
+    assert.equal(result.status, 0)
+    const parsed = JSON.parse(result.stdout)
+    assert.equal(parsed.diagnosis[0].id, 'upstream-name-mismatch')
+  })
+
+  it('builds handoff packets with do-not-touch lists', () => {
+    const result = runCli([
+      'handoff',
+      '--owned',
+      'scripts/cheflow.mjs,tests/unit/cheflow-cli.test.ts',
+      '--json',
+    ])
+
+    assert.equal(result.status, 0)
+    const parsed = JSON.parse(result.stdout)
+    assert.ok(Array.isArray(parsed.doNotTouch))
+    assert.ok(parsed.pr)
+    assert.ok(parsed.validation)
   })
 })
