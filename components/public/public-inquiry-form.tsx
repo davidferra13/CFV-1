@@ -24,6 +24,10 @@ import {
 } from '@/lib/partners/location-experiences'
 import { PUBLIC_INTAKE_LANE_KEYS } from '@/lib/public/intake-lane-config'
 import { ExternalLink, MapPin } from '@/components/ui/icons'
+import type {
+  ClientDefaultKnowledgeAppliedField,
+  ClientDefaultKnowledgeRestatementContract,
+} from '@/lib/clients/client-default-knowledge'
 
 interface Props {
   chefSlug: string
@@ -45,6 +49,7 @@ interface Props {
     budget?: string
     known_defaults?: string[]
   }
+  defaultKnowledgeContract?: ClientDefaultKnowledgeRestatementContract
 }
 
 interface FormData {
@@ -84,6 +89,18 @@ interface FormErrors {
 
 interface SuccessState {
   circleGroupToken: string | null
+}
+
+type KnownDefaultFormField = Extract<
+  ClientDefaultKnowledgeAppliedField['formField'],
+  'full_name' | 'email' | 'phone' | 'address' | 'dietary_notes' | 'guest_count' | 'budget'
+>
+
+type KnownDefaultHint = {
+  label: string
+  value: string
+  status: Exclude<ClientDefaultKnowledgeRestatementContract['rows'][number]['status'], 'empty'>
+  failureMessage: string | null
 }
 
 const MONTH_OPTIONS = [
@@ -201,6 +218,53 @@ function getEventDateParts(date?: string | null): Pick<FormData, 'month' | 'day'
   }
 }
 
+function buildKnownDefaultHints(
+  contract?: ClientDefaultKnowledgeRestatementContract
+): Map<KnownDefaultFormField, KnownDefaultHint> {
+  const hints = new Map<KnownDefaultFormField, KnownDefaultHint>()
+  for (const row of contract?.rows ?? []) {
+    const status = row.status
+    if (!row.formField || !row.value || status === 'empty') continue
+    if (!isKnownDefaultFormField(row.formField)) continue
+    if (hints.has(row.formField)) continue
+    hints.set(row.formField, {
+      label: row.label,
+      value: row.value,
+      status,
+      failureMessage: row.failureMessage,
+    })
+  }
+  return hints
+}
+
+function isKnownDefaultFormField(
+  formField: ClientDefaultKnowledgeAppliedField['formField']
+): formField is KnownDefaultFormField {
+  return [
+    'full_name',
+    'email',
+    'phone',
+    'address',
+    'dietary_notes',
+    'guest_count',
+    'budget',
+  ].includes(formField)
+}
+
+function KnownDefaultHintLine({ hint }: { hint?: KnownDefaultHint }) {
+  if (!hint) return null
+
+  return (
+    <div className="-mt-4 rounded-lg border border-brand-900 bg-stone-950 px-3 py-2 text-xs text-stone-400">
+      <p className="font-medium text-stone-200">
+        {hint.status === 'confirm_instead' ? 'Confirm saved default' : 'Prefilled from defaults'}:{' '}
+        {hint.label}
+      </p>
+      <p className="mt-1 text-stone-500">{hint.value}</p>
+    </div>
+  )
+}
+
 export function PublicInquiryForm({
   chefSlug,
   chefName,
@@ -212,9 +276,14 @@ export function PublicInquiryForm({
   circleId,
   defaultEventDate,
   defaultValues,
+  defaultKnowledgeContract,
 }: Props) {
   const hasDefaultValues = hasPrefillValues(defaultValues)
   const initialEventDate = useMemo(() => getEventDateParts(defaultEventDate), [defaultEventDate])
+  const knownDefaultHints = useMemo(
+    () => buildKnownDefaultHints(defaultKnowledgeContract),
+    [defaultKnowledgeContract]
+  )
   const [formData, setFormData] = useState<FormData>({
     full_name: defaultValues?.full_name ?? '',
     address: defaultValues?.address ?? '',
@@ -723,6 +792,7 @@ export function PublicInquiryForm({
             error={errors.full_name}
             placeholder="Full Name"
           />
+          <KnownDefaultHintLine hint={knownDefaultHints.get('full_name')} />
 
           <AddressAutocomplete
             label="Address"
@@ -739,6 +809,7 @@ export function PublicInquiryForm({
             placeholder="Street, City, State, ZIP"
             error={errors.address}
           />
+          <KnownDefaultHintLine hint={knownDefaultHints.get('address')} />
           <label className="-mt-4 flex items-start gap-2 rounded-xl border border-stone-800 bg-stone-950/60 px-3 py-2 text-xs text-stone-400">
             <input
               type="checkbox"
@@ -828,6 +899,7 @@ export function PublicInquiryForm({
             required
             placeholder="Email"
           />
+          <KnownDefaultHintLine hint={knownDefaultHints.get('email')} />
           {returningClient && (
             <p className="text-xs text-emerald-500 -mt-3">
               Welcome back. We recognized your email, but for privacy you will need to re-enter your
@@ -844,6 +916,7 @@ export function PublicInquiryForm({
             error={errors.phone}
             placeholder="Phone"
           />
+          <KnownDefaultHintLine hint={knownDefaultHints.get('phone')} />
 
           <Input
             label="Birthday"
@@ -863,6 +936,7 @@ export function PublicInquiryForm({
             error={errors.guest_count}
             options={GUEST_COUNT_OPTIONS}
           />
+          <KnownDefaultHintLine hint={knownDefaultHints.get('guest_count')} />
 
           <Input
             label="Occasion"
@@ -884,6 +958,7 @@ export function PublicInquiryForm({
             placeholder="e.g. $1,500, flexible, or not sure"
             helperText="Optional. Blank submissions are marked as not sure."
           />
+          <KnownDefaultHintLine hint={knownDefaultHints.get('budget')} />
 
           <Textarea
             label="Any favorite ingredients or strong dislikes?"
@@ -897,6 +972,7 @@ export function PublicInquiryForm({
             <h3 className="text-base font-medium text-stone-200 mb-2">
               Allergies or dietary restrictions
             </h3>
+            <KnownDefaultHintLine hint={knownDefaultHints.get('dietary_notes')} />
             <DietaryIntakeFields value={dietaryIntake} onChange={setDietaryIntake} compact />
           </div>
 

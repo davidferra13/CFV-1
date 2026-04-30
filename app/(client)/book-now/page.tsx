@@ -3,7 +3,10 @@ import { requireClient } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { PublicInquiryForm } from '@/components/public/public-inquiry-form'
 import { getMyDefaultKnowledgeSettings } from '@/lib/clients/client-default-knowledge-actions'
-import { buildClientDefaultKnowledgeApplication } from '@/lib/clients/client-default-knowledge'
+import {
+  buildClientDefaultKnowledgeApplication,
+  buildClientDefaultKnowledgeRestatementContract,
+} from '@/lib/clients/client-default-knowledge'
 
 export const metadata: Metadata = {
   title: 'Book Now',
@@ -41,6 +44,10 @@ export default async function BookNowPage({
   const profile = clientProfile as Record<string, unknown> | null
   const defaultKnowledge = await getMyDefaultKnowledgeSettings()
   const bookingDefaults = buildClientDefaultKnowledgeApplication(defaultKnowledge, 'booking')
+  const bookingRestatementContract = buildClientDefaultKnowledgeRestatementContract(
+    defaultKnowledge,
+    'booking'
+  )
   const defaultByFormField = new Map(
     bookingDefaults.appliedFields.map((field) => [field.formField, field.value])
   )
@@ -68,6 +75,7 @@ export default async function BookNowPage({
           budget: defaultByFormField.get('budget') ?? '',
           known_defaults: bookingDefaults.bannerItems,
         }}
+        defaultKnowledgeContract={bookingRestatementContract}
       />
     </div>
   )
