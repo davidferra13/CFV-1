@@ -66,8 +66,31 @@ function loadDeveloperCreds() {
   }
 }
 
+function loadCodexCreds() {
+  try {
+    return JSON.parse(readFileSync(join(PROJECT_ROOT, '.auth', 'codex.json'), 'utf-8'))
+  } catch {
+    return null
+  }
+}
+
 function getAccount(role) {
   const seed = loadSeedIds()
+
+  if (role === 'codex') {
+    const codex = loadCodexCreds()
+    if (!codex || !codex.email || !codex.password) {
+      console.error('[open-login] Codex credentials not configured.')
+      console.error('[open-login] Run npx tsx scripts/setup-codex-account.ts when account setup is approved.')
+      process.exit(1)
+    }
+    return {
+      email: codex.email,
+      password: codex.password,
+      portal: '/dashboard',
+      label: 'Codex',
+    }
+  }
 
   if (role === 'developer') {
     const dev = loadDeveloperCreds()
@@ -130,7 +153,7 @@ async function main() {
   const role = process.argv[2]
   if (!role) {
     console.error('Usage: node open-login.mjs <role>')
-    console.error('Roles: chef, client, staff, partner, admin, chef-b, developer, guest')
+    console.error('Roles: codex, chef, client, staff, partner, admin, chef-b, developer, guest')
     process.exit(1)
   }
 

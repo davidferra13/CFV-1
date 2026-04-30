@@ -65,6 +65,8 @@
     "agent:claim:cleanup": "node devtools/agent-claim-cleanup.mjs",
     "agent:swarm": "node devtools/agent-swarm-status.mjs",
     "agent:closeout": "node devtools/agent-closeout-summary.mjs",
+    "codex:setup": "tsx scripts/setup-codex-account.ts",
+    "codex:auth": "node scripts/generate-codex-auth.mjs",
     "v1-builder:init": "node scripts/v1-builder/init.mjs",
     "v1-builder:next": "node scripts/v1-builder/next.mjs",
     "v1-builder:claim": "node scripts/v1-builder/claim.mjs",

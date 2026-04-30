@@ -22,7 +22,8 @@ Healed 2026-04-30: David clarified that "third monitor" means a visible signed-i
    - If `localhost:3100` is unreachable, try the next configured ChefFlow URL instead of stopping at explanation.
    - Only stop before opening a page when every configured ChefFlow URL fails or a required approval would be crossed.
    - If the user asks for the third monitor, detect monitor bounds first, place the window on that monitor, then verify the OS window handle reports coordinates inside that monitor.
-   - When a saved local auth state exists, open a signed-in browser from that state before reporting success. If only the sign-in page opens, report that exact blocker.
+   - When a saved local auth state exists, open a signed-in browser from that state before reporting success. Prefer Codex-owned state in this order: `.auth/codex-storage.json`, `.auth/codex.state.json`, then `.auth/codex.json` when it is a Playwright storage state. If no Codex-owned state exists, report that exact blocker instead of silently borrowing chef, admin, developer, or generic agent state.
+   - If Codex credentials exist at `.auth/codex.json` but no storage state exists, mint `.auth/codex-storage.json` through the repo auth helper before visual proof. If the app or `/api/e2e/auth` is not responding, report that as the sign-in blocker.
 3. Capture visible evidence:
    - Screenshot of the first relevant viewport.
    - Current URL, environment, and auth state if visible.
@@ -44,7 +45,7 @@ Healed 2026-04-30: David clarified that "third monitor" means a visible signed-i
 - Do not say a window is open on the third monitor unless OS window bounds prove it.
 - Do not say a route is signed in when the URL or screenshot is a sign-in redirect.
 - Do not hide broken states. A blank page, error overlay, failed auth, or dead button is the thing to show.
-- If a login is needed, use an existing saved browser/session when available. If credentials or test auth setup are needed, ask David.
+- If a login is needed, use the dedicated Codex login only. If `.auth/codex.json` or `.auth/codex-storage.json` is missing or stale, ask David before using another identity.
 
 ## Output
 
