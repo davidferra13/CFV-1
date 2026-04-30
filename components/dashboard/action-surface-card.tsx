@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { ArrowRight } from '@/components/ui/icons'
+import { StateChangePulse, StateMotionListItem } from '@/components/ui/state-motion'
 import type { SurfaceActionTask } from '@/lib/interface/action-layer'
 
 const TONE_STYLES = {
@@ -51,7 +52,9 @@ export function ActionSurfaceCard({
   const toneStyles = TONE_STYLES[task.tone]
 
   return (
-    <section
+    <StateChangePulse
+      as="section"
+      watch={`${sectionLabel}:${task.title}:${task.remainingCount}:${task.tone}`}
       className={`overflow-hidden rounded-[28px] border p-5 shadow-[var(--shadow-card-hover)] sm:p-6 ${toneStyles.panel}`}
     >
       <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
@@ -79,13 +82,14 @@ export function ActionSurfaceCard({
           </div>
           {task.context.length > 0 ? (
             <div className="mt-4 flex flex-wrap gap-2">
-              {task.context.map((item) => (
-                <span
-                  key={item}
-                  className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium ${toneStyles.chip}`}
-                >
-                  {item}
-                </span>
+              {task.context.map((item, index) => (
+                <StateMotionListItem key={item} index={index}>
+                  <span
+                    className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium ${toneStyles.chip}`}
+                  >
+                    {item}
+                  </span>
+                </StateMotionListItem>
               ))}
             </div>
           ) : null}
@@ -99,6 +103,6 @@ export function ActionSurfaceCard({
           <ArrowRight className="h-4 w-4" />
         </Link>
       </div>
-    </section>
+    </StateChangePulse>
   )
 }

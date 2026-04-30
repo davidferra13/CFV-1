@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { Badge, type BadgeProps } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 
@@ -11,7 +11,7 @@ type StateChangePulseProps = {
   children: ReactNode
   className?: string
   activeClassName?: string
-  as?: 'div' | 'span'
+  as?: 'div' | 'span' | 'section' | 'li'
   durationMs?: number
 }
 
@@ -82,5 +82,29 @@ export function MotionProgressFill({ value, className }: MotionProgressFillProps
       style={{ width: `${clamped}%` }}
       data-progress-value={Math.round(clamped)}
     />
+  )
+}
+
+type StateMotionListItemProps = {
+  children: ReactNode
+  index?: number
+  className?: string
+  as?: 'div' | 'li'
+}
+
+export function StateMotionListItem({
+  children,
+  index = 0,
+  className,
+  as = 'div',
+}: StateMotionListItemProps) {
+  const Tag = as
+  const delayMs = Math.min(Math.max(0, index), 8) * 34
+  const style = { animationDelay: `${delayMs}ms` } as CSSProperties
+
+  return (
+    <Tag className={cn('state-motion-list-item', className)} style={style}>
+      {children}
+    </Tag>
   )
 }

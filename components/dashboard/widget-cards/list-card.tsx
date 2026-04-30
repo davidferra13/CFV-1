@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { StateChangePulse, StateMotionListItem } from '@/components/ui/state-motion'
 import { WidgetCardShell, WidgetCardEmpty } from './widget-card-shell'
 
 // ============================================
@@ -91,7 +92,7 @@ export function ListCard({
 
       {/* Item list */}
       <div className="space-y-1">
-        {visible.map((item) => {
+        {visible.map((item, index) => {
           const dotColor = STATUS_COLORS[item.status ?? 'stone']
           const content = (
             <div className="flex items-start gap-2.5 py-1.5 group">
@@ -111,29 +112,32 @@ export function ListCard({
           )
 
           return item.href ? (
-            <Link
-              key={item.id}
-              href={item.href}
-              className="block rounded-lg px-2 -mx-2 hover:bg-white/[0.07] transition-all duration-200 hover:translate-x-0.5"
-            >
-              {content}
-            </Link>
+            <StateMotionListItem key={item.id} index={index}>
+              <Link
+                href={item.href}
+                className="block rounded-lg px-2 -mx-2 hover:bg-white/[0.07] transition-all duration-200 hover:translate-x-0.5"
+              >
+                {content}
+              </Link>
+            </StateMotionListItem>
           ) : (
-            <div key={item.id} className="px-2 -mx-2">
+            <StateMotionListItem key={item.id} index={index} className="px-2 -mx-2">
               {content}
-            </div>
+            </StateMotionListItem>
           )
         })}
       </div>
 
       {/* Overflow indicator */}
       {remaining > 0 && href && (
-        <Link
-          href={href}
-          className="block text-xs text-stone-500 hover:text-stone-300 font-medium mt-2 transition-colors"
-        >
-          +{remaining} more
-        </Link>
+        <StateChangePulse watch={remaining} as="span" className="block">
+          <Link
+            href={href}
+            className="block text-xs text-stone-500 hover:text-stone-300 font-medium mt-2 transition-colors"
+          >
+            +{remaining} more
+          </Link>
+        </StateChangePulse>
       )}
     </WidgetCardShell>
   )

@@ -5,6 +5,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import {
   MotionProgressFill,
   StateChangePulse,
+  StateMotionListItem,
   StateMotionBadge,
 } from '@/components/ui/state-motion'
 ;(globalThis as any).React = React
@@ -43,4 +44,17 @@ test('state change pulse renders as the requested element without active motion 
   assert.match(markup, /^<span/)
   assert.match(markup, /inline-flex/)
   assert.doesNotMatch(markup, /data-state-motion-active/)
+})
+
+test('state motion list item carries a stable stagger index', () => {
+  const markup = renderToStaticMarkup(
+    <StateMotionListItem index={3} as="li" className="row">
+      Decide next
+    </StateMotionListItem>
+  )
+
+  assert.match(markup, /^<li/)
+  assert.match(markup, /state-motion-list-item/)
+  assert.match(markup, /animation-delay:102ms/)
+  assert.match(markup, /Decide next/)
 })

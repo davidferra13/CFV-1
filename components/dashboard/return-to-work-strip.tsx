@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { StateChangePulse, StateMotionListItem } from '@/components/ui/state-motion'
 import type { ContinuityDigest } from '@/lib/activity/continuity-digest'
 import type { ResumeItem } from '@/lib/activity/chef-types'
 import { openRemy } from '@/lib/ai/remy-launch'
@@ -37,7 +38,11 @@ export function ReturnToWorkStrip({
   if (!shouldRender) return null
 
   return (
-    <section className="rounded-xl border border-stone-800 bg-stone-950/70 px-4 py-4">
+    <StateChangePulse
+      as="section"
+      watch={`${changedCount}:${topResumeItems.length}:${unreadNotificationCount ?? 'unknown'}:${hasUnavailableData ? 'partial' : 'ready'}`}
+      className="rounded-xl border border-stone-800 bg-stone-950/70 px-4 py-4"
+    >
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">
@@ -118,25 +123,26 @@ export function ReturnToWorkStrip({
         <div className="mt-4 border-t border-stone-800 pt-3">
           <p className="text-xs font-medium text-stone-500">Next places to resume</p>
           <div className="mt-2 grid gap-2 lg:grid-cols-3">
-            {topResumeItems.map((item) => (
-              <Link
-                key={`${item.type}-${item.id}`}
-                href={item.href}
-                className="rounded-lg border border-stone-800 bg-stone-900/70 px-3 py-2 transition-colors hover:border-stone-700 hover:bg-stone-900"
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <span className="min-w-0 truncate text-sm font-medium text-stone-200">
-                    {item.title}
-                  </span>
-                  <span className="shrink-0 text-xs text-stone-500">{item.status}</span>
-                </div>
-                <p className="mt-1 truncate text-xs text-stone-500">{item.subtitle}</p>
-              </Link>
+            {topResumeItems.map((item, index) => (
+              <StateMotionListItem key={`${item.type}-${item.id}`} index={index}>
+                <Link
+                  href={item.href}
+                  className="block rounded-lg border border-stone-800 bg-stone-900/70 px-3 py-2 transition-colors hover:border-stone-700 hover:bg-stone-900"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="min-w-0 truncate text-sm font-medium text-stone-200">
+                      {item.title}
+                    </span>
+                    <span className="shrink-0 text-xs text-stone-500">{item.status}</span>
+                  </div>
+                  <p className="mt-1 truncate text-xs text-stone-500">{item.subtitle}</p>
+                </Link>
+              </StateMotionListItem>
             ))}
           </div>
         </div>
       )}
-    </section>
+    </StateChangePulse>
   )
 }
 
@@ -181,16 +187,18 @@ function ContextTile({
   cta: string
 }) {
   return (
-    <Link
-      href={href}
-      className="rounded-lg border border-stone-800 bg-stone-900/60 px-3 py-3 transition-colors hover:border-stone-700 hover:bg-stone-900"
-    >
-      <p className="text-xs font-medium uppercase tracking-wide text-stone-500">{label}</p>
-      <div className="mt-1 flex items-center justify-between gap-3">
-        <p className="min-w-0 truncate text-sm font-semibold text-stone-200">{value}</p>
-        <span className="shrink-0 text-xs font-medium text-amber-300">{cta}</span>
-      </div>
-    </Link>
+    <StateChangePulse watch={`${label}:${value}`} className="block">
+      <Link
+        href={href}
+        className="block rounded-lg border border-stone-800 bg-stone-900/60 px-3 py-3 transition-colors hover:border-stone-700 hover:bg-stone-900"
+      >
+        <p className="text-xs font-medium uppercase tracking-wide text-stone-500">{label}</p>
+        <div className="mt-1 flex items-center justify-between gap-3">
+          <p className="min-w-0 truncate text-sm font-semibold text-stone-200">{value}</p>
+          <span className="shrink-0 text-xs font-medium text-amber-300">{cta}</span>
+        </div>
+      </Link>
+    </StateChangePulse>
   )
 }
 

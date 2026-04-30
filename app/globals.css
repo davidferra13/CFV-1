@@ -932,6 +932,17 @@ html {
   }
 }
 
+@keyframes state-motion-list-enter {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 5px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
 .state-motion-change {
   transform-origin: center;
   animation: state-motion-change 720ms var(--ease-spring) both;
@@ -961,6 +972,10 @@ html {
   inset: 0;
   background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.28), transparent);
   animation: state-motion-progress-sheen 1.1s ease-out;
+}
+
+.state-motion-list-item {
+  animation: state-motion-list-enter 260ms var(--ease-spring) both;
 }
 
 /* Sidebar warm gradient - barely visible terracotta tint at top */
