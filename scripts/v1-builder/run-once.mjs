@@ -83,6 +83,14 @@ const context = createBuilderContext()
 ensureBuilderStore(context)
 const shouldNormalizeIntake =
   hasFlag('normalize-intake') || process.env.V1_BUILDER_NORMALIZE_INTAKE === '1'
+const maxApprovedQueueWrites = Number.parseInt(
+  getArg('max-approved', process.env.V1_BUILDER_MAX_APPROVED ?? '3'),
+  10,
+)
+const maxHardStopWrites = Number.parseInt(
+  getArg('max-hard-stops', process.env.V1_BUILDER_MAX_HARD_STOPS ?? '10'),
+  10,
+)
 let intakeSummary = null
 
 const branch = gitValue('git branch --show-current')
@@ -119,7 +127,17 @@ if (freshClaims.length > 0) {
 }
 
 if (shouldNormalizeIntake) {
-  intakeSummary = normalizeIntake({ context, write: true })
+  intakeSummary = normalizeIntake({
+    context,
+    write: true,
+    profile: 'builder-gate',
+    maxApprovedQueueWrites: Number.isFinite(maxApprovedQueueWrites)
+      ? maxApprovedQueueWrites
+      : 3,
+    maxHardStopWrites: Number.isFinite(maxHardStopWrites)
+      ? maxHardStopWrites
+      : 10,
+  })
 }
 
 const { records, errors } = loadApprovedQueue(context)

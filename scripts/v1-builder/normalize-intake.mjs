@@ -138,30 +138,40 @@ export function normalizeIntake({
   write = false,
   now = new Date(),
   limit = null,
+  profile = 'builder-gate',
+  includeNoisySources = false,
+  maxApprovedQueueWrites = null,
+  maxHardStopWrites = null,
 } = {}) {
   ensureBuilderStore(context)
 
   const activeLane = readActiveLane(context)
   const candidates = collectCandidates(context)
   const existing = loadExistingKeys(context)
-  const planned = []
+  const candidatePlans = []
   const duplicateSources = []
+  const intakeProfile = resolveIntakeProfile({
+    profile: includeNoisySources ? 'full' : profile,
+    maxApprovedQueueWrites,
+    maxHardStopWrites,
+  })
 
   for (const candidate of candidates) {
-    if (limit !== null && planned.length >= limit) break
     if (existing.sourcePaths.has(candidate.sourcePath) || existing.ids.has(candidate.id)) {
       duplicateSources.push(candidate.sourcePath)
       continue
     }
 
     const classification = classifyCandidate(candidate, activeLane)
-    planned.push({
+    candidatePlans.push({
       candidate,
       classification,
       ledgerRecord: createLedgerRecord(candidate, classification, now),
       sinkRecord: createSinkRecord(candidate, classification, activeLane, now),
     })
   }
+
+  const { planned, deferred } = applyIntakeProfile(candidatePlans, intakeProfile, limit)
 
   if (write) {
     writePlan(context, planned)
@@ -172,9 +182,13 @@ export function normalizeIntake({
     candidates,
     duplicateSources,
     planned,
+    deferred,
     activeLane,
     write,
     now,
+    profile: intakeProfile.name,
+    maxApprovedQueueWrites: intakeProfile.maxApprovedQueueWrites,
+    maxHardStopWrites: intakeProfile.maxHardStopWrites,
   })
 
   if (write) {
@@ -187,6 +201,107 @@ export function normalizeIntake({
   }
 
   return summary
+}
+
+function resolveIntakeProfile({ profile, maxApprovedQueueWrites, maxHardStopWrites }) {
+  if (profile === 'builder-gate') {
+    return {
+      name: 'builder-gate',
+      maxApprovedQueueWrites: Number.isInteger(maxApprovedQueueWrites)
+        ? maxApprovedQueueWrites
+        : 3,
+      maxHardStopWrites: Number.isInteger(maxHardStopWrites)
+        ? maxHardStopWrites
+        : 10,
+    }
+  }
+
+  return {
+    name: 'full',
+    maxApprovedQueueWrites: null,
+    maxHardStopWrites: null,
+  }
+}
+
+function applyIntakeProfile(candidatePlans, intakeProfile, limit) {
+  if (intakeProfile.name !== 'builder-gate') {
+    return {
+      planned: limit === null ? candidatePlans : candidatePlans.slice(0, limit),
+      deferred: {
+        approvedCap: 0,
+        hardStopCap: 0,
+        nonBuildable: 0,
+      },
+    }
+  }
+
+  const approved = candidatePlans
+    .filter((item) => item.classification.sink === 'approved-queue.jsonl')
+    .sort(compareIntakePlans)
+  const hardStops = candidatePlans
+    .filter((item) => isHardStopPlan(item) && item.candidate.source === 'spec')
+    .sort(compareIntakePlans)
+
+  const approvedLimit = limit === null
+    ? intakeProfile.maxApprovedQueueWrites
+    : Math.min(intakeProfile.maxApprovedQueueWrites, limit)
+  const selectedApproved = approved.slice(0, approvedLimit)
+  const selectedHardStops = hardStops.slice(0, intakeProfile.maxHardStopWrites)
+  const selected = [...selectedApproved, ...selectedHardStops]
+  const selectedKeys = new Set(selected.map((item) => item.candidate.id))
+  const approvedCap = Math.max(approved.length - selectedApproved.length, 0)
+  const hardStopCap = Math.max(hardStops.length - selectedHardStops.length, 0)
+
+  return {
+    planned: selected,
+    deferred: {
+      approvedCap,
+      hardStopCap,
+      nonBuildable: candidatePlans.filter((item) => !selectedKeys.has(item.candidate.id)).length -
+        approvedCap -
+        hardStopCap,
+    },
+  }
+}
+
+function compareIntakePlans(left, right) {
+  return (
+    sourceRank(left.candidate.source) - sourceRank(right.candidate.source) ||
+    classificationRank(left.classification.builderClassification) -
+      classificationRank(right.classification.builderClassification) ||
+    priorityRank(left.candidate.metadata.priority) - priorityRank(right.candidate.metadata.priority) ||
+    left.candidate.sourcePath.localeCompare(right.candidate.sourcePath)
+  )
+}
+
+function isHardStopPlan(item) {
+  return ['blocked', 'rejected'].includes(item.classification.ledgerStatus)
+}
+
+function sourceRank(source) {
+  if (source === 'spec') return 0
+  if (source === 'sticky-note') return 1
+  if (source.startsWith('legacy-')) return 2
+  if (source.startsWith('persona-')) return 3
+  if (source === 'research-finding') return 4
+  return 5
+}
+
+function classificationRank(classification) {
+  if (classification === 'approved_v1_blocker') return 0
+  if (classification === 'approved_v1_support') return 1
+  if (classification === 'blocked') return 2
+  if (classification === 'rejected') return 3
+  return 9
+}
+
+function priorityRank(priority) {
+  const normalized = normalizePriority(priority)
+  if (normalized === 'p0') return 0
+  if (normalized === 'p1') return 1
+  if (normalized === 'p2') return 2
+  if (normalized === 'p3') return 3
+  return 4
 }
 
 function collectCandidates(context) {
@@ -464,7 +579,19 @@ function loadExistingKeys(context) {
   return { ids, sourcePaths }
 }
 
-function summarizePlan({ context, candidates, duplicateSources, planned, activeLane, write, now }) {
+function summarizePlan({
+  context,
+  candidates,
+  duplicateSources,
+  planned,
+  deferred,
+  activeLane,
+  write,
+  now,
+  profile,
+  maxApprovedQueueWrites,
+  maxHardStopWrites,
+}) {
   const byStatus = {}
   const bySink = {}
   const bySource = {}
@@ -478,12 +605,16 @@ function summarizePlan({ context, candidates, duplicateSources, planned, activeL
 
   return {
     status: write ? 'written' : 'dry_run',
+    profile,
     generatedAt: now.toISOString(),
     activeLane,
     builderDir: slash(relative(context.root, context.builderDir)),
     scanned: candidates.length,
     skippedExisting: duplicateSources.length,
     newRecords: planned.length,
+    deferred,
+    maxApprovedQueueWrites,
+    maxHardStopWrites,
     byStatus,
     bySink,
     bySource,
@@ -656,11 +787,27 @@ function hasFlag(name) {
 function runCli() {
   const context = createBuilderContext()
   const limitArg = getArg('limit')
+  const maxApprovedArg = getArg('max-approved')
+  const maxHardStopArg = getArg('max-hard-stops')
   const limit = limitArg === null ? null : Number.parseInt(limitArg, 10)
+  const maxApprovedQueueWrites = maxApprovedArg === null
+    ? null
+    : Number.parseInt(maxApprovedArg, 10)
+  const maxHardStopWrites = maxHardStopArg === null
+    ? null
+    : Number.parseInt(maxHardStopArg, 10)
   const summary = normalizeIntake({
     context,
     write: hasFlag('write'),
     limit: Number.isFinite(limit) ? limit : null,
+    profile: getArg('profile', 'builder-gate'),
+    includeNoisySources: hasFlag('include-noisy-sources'),
+    maxApprovedQueueWrites: Number.isFinite(maxApprovedQueueWrites)
+      ? maxApprovedQueueWrites
+      : null,
+    maxHardStopWrites: Number.isFinite(maxHardStopWrites)
+      ? maxHardStopWrites
+      : null,
   })
 
   console.log(JSON.stringify(summary, null, 2))

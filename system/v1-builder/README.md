@@ -34,6 +34,13 @@ node scripts/v1-builder/run-once.mjs --mode dry-run --normalize-intake
 node scripts/v1-builder/watch.mjs --mode live --normalize-intake
 ```
 
+Runner-triggered normalization uses the `builder-gate` profile. It writes only a small capped set of approved V1 queue records plus visible hard-stop records, while deferring research, persona, legacy, and Sticky Notes noise out of the live execution path. Use the full normalizer only for deliberate backlog accounting:
+
+```text
+node scripts/v1-builder/normalize-intake.mjs --profile full --write
+node scripts/v1-builder/normalize-intake.mjs --profile builder-gate --max-approved 3 --max-hard-stops 10 --write
+```
+
 ## Runner Rule
 
 The first implementation may select, claim, and record work. It must not run unattended code edits unless the task is already in `approved-queue.jsonl`, passes the V1 governor, has a canonical owner, and can be validated with receipts.

@@ -172,6 +172,7 @@ test('normalizes ready P0 V1 specs into the request ledger and approved queue', 
   const summary = normalizeIntake({
     context,
     write: true,
+    profile: 'full',
     now: new Date('2026-04-30T12:00:00Z'),
   })
 
@@ -209,6 +210,7 @@ test('normalizer preserves legacy queue items as research instead of buildable w
   const summary = normalizeIntake({
     context,
     write: true,
+    profile: 'full',
     now: new Date('2026-04-30T12:00:00Z'),
   })
 
@@ -274,4 +276,96 @@ test('normalizer rejects recipe generation asks before any queue write', () => {
   const ledger = readJsonl(join(context.builderDir, 'request-ledger.jsonl')).records
   assert.equal(ledger[0].status, 'rejected')
   assert.equal(readJsonl(join(context.builderDir, 'approved-queue.jsonl')).records.length, 0)
+})
+
+test('builder-gate intake prioritizes ready V1 specs and caps approved queue writes', () => {
+  const context = tempContext()
+  const specDir = join(context.root, 'docs', 'specs')
+
+  for (const [index, title] of ['Payment Trust', 'Quote Safety', 'Event Completion'].entries()) {
+    writeFileSync(
+      join(specDir, `${index + 1}-${title.toLowerCase().replaceAll(' ', '-')}.md`),
+      [
+        `# ${title}`,
+        '',
+        '> **Status:** ready',
+        '> **Priority:** P0',
+        '',
+        'Repair this V1 event spine trust path.',
+      ].join('\n'),
+      'utf8',
+    )
+  }
+
+  const researchDir = join(context.root, 'docs', 'research')
+  mkdirSync(researchDir, { recursive: true })
+  writeFileSync(
+    join(researchDir, 'large-research.md'),
+    [
+      '# Large Research Backlog',
+      '',
+      'A useful but unclassified menu and pricing research artifact.',
+    ].join('\n'),
+    'utf8',
+  )
+
+  const summary = normalizeIntake({
+    context,
+    write: true,
+    profile: 'builder-gate',
+    maxApprovedQueueWrites: 2,
+    now: new Date('2026-04-30T12:00:00Z'),
+  })
+
+  const queue = readJsonl(join(context.builderDir, 'approved-queue.jsonl')).records
+  const research = readJsonl(join(context.builderDir, 'research-queue.jsonl')).records
+
+  assert.equal(summary.profile, 'builder-gate')
+  assert.equal(summary.byStatus.queued, 2)
+  assert.equal(summary.deferred.nonBuildable, 1)
+  assert.equal(summary.deferred.approvedCap, 1)
+  assert.equal(queue.length, 2)
+  assert.equal(research.length, 0)
+  assert.deepEqual(queue.map((record) => record.source), ['spec', 'spec'])
+})
+
+test('builder-gate intake keeps hard-stop findings visible without flooding research sinks', () => {
+  const context = tempContext()
+  const specDir = join(context.root, 'docs', 'specs')
+  writeFileSync(
+    join(specDir, 'destructive-admin.md'),
+    [
+      '# Destructive Admin Cleanup',
+      '',
+      '> **Status:** ready',
+      '> **Priority:** P0',
+      '',
+      'Drop table staging_data to simplify the event spine.',
+    ].join('\n'),
+    'utf8',
+  )
+
+  const researchDir = join(context.root, 'docs', 'research')
+  mkdirSync(researchDir, { recursive: true })
+  writeFileSync(
+    join(researchDir, 'unclassified.md'),
+    '# Unclassified Research\n\nUseful later for event trust.',
+    'utf8',
+  )
+
+  const summary = normalizeIntake({
+    context,
+    write: true,
+    profile: 'builder-gate',
+    now: new Date('2026-04-30T12:00:00Z'),
+  })
+
+  const ledger = readJsonl(join(context.builderDir, 'request-ledger.jsonl')).records
+
+  assert.equal(summary.byStatus.blocked, 1)
+  assert.equal(summary.deferred.nonBuildable, 1)
+  assert.equal(readJsonl(join(context.builderDir, 'blocked.jsonl')).records.length, 1)
+  assert.equal(readJsonl(join(context.builderDir, 'research-queue.jsonl')).records.length, 0)
+  assert.equal(ledger.length, 1)
+  assert.equal(ledger[0].status, 'blocked')
 })

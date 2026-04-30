@@ -49,6 +49,8 @@ function acquireLock(context) {
     mode,
     intervalSeconds,
     normalizeIntake: normalizeIntakeBeforeRun,
+    maxApprovedQueueWrites,
+    maxHardStopWrites,
   }
   writeFileSync(lockPath, `${JSON.stringify(lock, null, 2)}\n`, 'utf8')
 
@@ -76,6 +78,8 @@ function acquireLock(context) {
 function runOnce() {
   const args = ['scripts/v1-builder/run-once.mjs', '--mode', mode]
   if (normalizeIntakeBeforeRun) args.push('--normalize-intake')
+  if (maxApprovedQueueWrites) args.push('--max-approved', maxApprovedQueueWrites)
+  if (maxHardStopWrites) args.push('--max-hard-stops', maxHardStopWrites)
   const child = spawn(process.execPath, args, {
     cwd: context.root,
     stdio: ['ignore', 'pipe', 'pipe'],
@@ -106,6 +110,8 @@ const mode = getArg('mode', positionalMode ?? (hasFlag('live') ? 'live' : 'dry-r
 const intervalSeconds = Number.parseInt(getArg('interval', '300'), 10)
 const normalizeIntakeBeforeRun =
   hasFlag('normalize-intake') || process.env.V1_BUILDER_NORMALIZE_INTAKE === '1'
+const maxApprovedQueueWrites = getArg('max-approved', process.env.V1_BUILDER_MAX_APPROVED ?? null)
+const maxHardStopWrites = getArg('max-hard-stops', process.env.V1_BUILDER_MAX_HARD_STOPS ?? null)
 const context = createBuilderContext()
 ensureBuilderStore(context)
 
@@ -132,6 +138,8 @@ writeRunnerStatus({
   pid: process.pid,
   intervalSeconds,
   normalizeIntake: normalizeIntakeBeforeRun,
+  maxApprovedQueueWrites,
+  maxHardStopWrites,
   lockPath: lockResult.lockPath,
   startedAt: new Date().toISOString(),
 }, context)
