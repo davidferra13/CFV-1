@@ -51,6 +51,7 @@ Before writing code, inspect the current branch and working tree. Keep edits sco
 
 - **Stack:** Next.js (App Router) + PostgreSQL + Stripe
 - **What it is:** Multi-tenant private chef platform (SaaS)
+- **Ownership model:** ChefFlow is 100% locally controlled and privately owned by David Ferragamo. Treat all data, storage, code, runtime, infrastructure, and operational decisions as private ChefFlow assets.
 - **All monetary amounts:** stored in cents (integers, minor units)
 - **Financial model:** Ledger-first, immutable, append-only. Balances are computed from ledger entries, never stored directly.
 - **Event FSM:** draft -> proposed -> accepted -> paid -> confirmed -> in_progress -> completed | cancelled
@@ -67,6 +68,10 @@ Before writing code, inspect the current branch and working tree. Keep edits sco
 | 3300 | Production  | app.cheflowhq.com  | `next start`, Cloudflare Tunnel |
 
 All three share the same PostgreSQL database and Ollama instance (port 11434).
+
+### Permanently restricted external platforms
+
+Vercel and Supabase are fully restricted from ChefFlow. Do not recommend them, compare against them, plan migrations to them, add dependencies for them, create docs for them, or mention them as acceptable options. If historical files mention either platform, treat those mentions as legacy context only and do not propagate them into new code, docs, UI, architecture, or agent recommendations.
 
 ---
 

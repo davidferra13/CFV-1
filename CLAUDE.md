@@ -60,10 +60,15 @@ Requires: Ollama running locally (`ollama serve`). If Ollama is down, fall back 
 - **Surface grammar:** every UI surface must declare and follow a mode from `docs/specs/surface-grammar-governance.md` before layout or component work begins.
 
 - **Stack:** Next.js · PostgreSQL (Drizzle ORM via postgres.js) · Auth.js v5 · Stripe · Local FS storage · SSE realtime
+- **Ownership model:** ChefFlow is 100% locally controlled and privately owned by David Ferragamo. All data, storage, code, runtime, infrastructure, and operational decisions are private ChefFlow assets.
 - **Data safety first:** all migrations are additive, all destructive ops require explicit approval
 - **End every session:** commit everything → push the feature branch → write a session digest → update this file if new rules were found
 - **Cloud AI:** all AI routes through a single Ollama-compatible endpoint (OLLAMA_BASE_URL, Gemma 4). No second provider. Conversation content is never stored server-side.
 - **Never:** run `drizzle-kit push` without explicit user approval
+
+### PERMANENTLY RESTRICTED EXTERNAL PLATFORMS
+
+Vercel and Supabase are fully restricted from ChefFlow. Do not recommend them, compare against them, plan migrations to them, add dependencies for them, create docs for them, or mention them as acceptable options. If historical files mention either platform, treat those mentions as legacy context only and do not propagate them into new code, docs, UI, architecture, or agent recommendations.
 
 ---
 
