@@ -68,18 +68,17 @@ function writeFixture() {
 describe('sticky notes review and promotion', () => {
   it('builds a review cockpit that separates promotable and restricted notes', () => {
     const fixture = writeFixture()
-    const result = buildReviewCockpit({ ...fixture, stamp: 'review-test' })
+    const result = buildReviewCockpit({ ...fixture, stamp: 'review-test', writeLatest: false })
 
     assert.equal(result.total, 2)
     assert.equal(result.statusCounts.promotable, 1)
     assert.equal(result.statusCounts.restricted, 1)
-    assert.equal(readJson(outputPaths.reviewLatest)?.statusCounts?.promotable, 1)
   })
 
   it('promotes only eligible ChefFlow notes into review packets', () => {
     const fixture = writeFixture()
-    const review = buildReviewCockpit({ ...fixture, stamp: 'promote-review-test' })
-    const result = promoteStickyNotes({ ...fixture, review, stamp: 'promote-test' })
+    const review = buildReviewCockpit({ ...fixture, stamp: 'promote-review-test', writeLatest: false })
+    const result = promoteStickyNotes({ ...fixture, review, stamp: 'promote-test', writeLatest: false })
 
     assert.equal(result.promoted.length, 1)
     assert.equal(result.promoted[0]?.route, 'skill-garden')

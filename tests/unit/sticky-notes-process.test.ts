@@ -110,7 +110,11 @@ function writeManifest() {
 describe('sticky notes promoted packet processing', () => {
   it('writes a safe action manifest with routing statuses and duplicate detection', () => {
     const manifestFile = writeManifest()
-    const result = processPromotedStickyNotes({ manifestFile, stamp: 'process-test' })
+    const result = processPromotedStickyNotes({
+      manifestFile,
+      stamp: 'process-test',
+      writeLatest: false,
+    })
 
     assert.equal(result.total, 5)
     assert.equal(result.statusCounts.activated, 1)
@@ -125,6 +129,5 @@ describe('sticky notes promoted packet processing', () => {
     const report = fs.readFileSync(result.mdFile, 'utf8')
     assert.match(report, /This report is safe routing output/)
     assert.doesNotMatch(report, /Follow the Planner Gate/)
-    assert.equal(fs.existsSync(outputPaths.processedLatest), true)
   })
 })

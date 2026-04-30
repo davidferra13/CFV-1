@@ -114,7 +114,9 @@ export function buildReviewCockpit(options = {}) {
   const mdFile = path.join(outputPaths.review, `${stamp}-review.md`)
   writeJson(jsonFile, payload)
   fs.writeFileSync(mdFile, renderMarkdown(payload))
-  writeJson(outputPaths.reviewLatest, { ...payload, jsonFile: relativePath(jsonFile), mdFile: relativePath(mdFile) })
+  if (options.writeLatest !== false) {
+    writeJson(outputPaths.reviewLatest, { ...payload, jsonFile: relativePath(jsonFile), mdFile: relativePath(mdFile) })
+  }
   return { ...payload, jsonFile, mdFile }
 }
 

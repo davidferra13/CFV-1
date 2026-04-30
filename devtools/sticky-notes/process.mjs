@@ -277,11 +277,13 @@ export function processPromotedStickyNotes(options = {}) {
   if (!options.dryRun) {
     writeJson(jsonFile, payload)
     fs.writeFileSync(mdFile, renderMarkdown({ ...payload, jsonFile: relativePath(jsonFile) }))
-    writeJson(outputPaths.processedLatest, {
-      ...payload,
-      jsonFile: relativePath(jsonFile),
-      mdFile: relativePath(mdFile),
-    })
+    if (options.writeLatest !== false) {
+      writeJson(outputPaths.processedLatest, {
+        ...payload,
+        jsonFile: relativePath(jsonFile),
+        mdFile: relativePath(mdFile),
+      })
+    }
   }
   return { ...payload, jsonFile, mdFile }
 }

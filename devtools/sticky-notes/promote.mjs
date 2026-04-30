@@ -109,7 +109,9 @@ export function promoteStickyNotes(options = {}) {
   }
   const outFile = path.join(outputPaths.promotions, `${stamp}-promotions.json`)
   writeJson(outFile, payload)
-  writeJson(outputPaths.promotionsLatest, { ...payload, outFile: relativePath(outFile) })
+  if (options.writeLatest !== false) {
+    writeJson(outputPaths.promotionsLatest, { ...payload, outFile: relativePath(outFile) })
+  }
   return { ...payload, outFile }
 }
 
