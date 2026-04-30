@@ -391,7 +391,7 @@ function DetailRows({
                 hasValue ? 'text-stone-200' : 'text-stone-500',
               ].join(' ')}
             >
-              {row.value || row.emptyText || 'Not published yet.'}
+              {row.value || row.emptyText || 'Ask during inquiry.'}
             </dd>
           </div>
         )
@@ -426,14 +426,14 @@ function formatDepositPolicy(input: {
     return `${input.depositPercent}% deposit to hold the date`
   }
 
-  return 'Deposit policy not published yet.'
+  return 'Ask before payment.'
 }
 
 function formatLastActive(dateValue: string | null): string {
-  if (!dateValue) return 'Not published yet'
+  if (!dateValue) return 'No recent public activity signal'
 
   const parsed = new Date(dateValue)
-  if (Number.isNaN(parsed.getTime())) return 'Not published yet'
+  if (Number.isNaN(parsed.getTime())) return 'No recent public activity signal'
 
   const diffMs = Date.now() - parsed.getTime()
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
@@ -454,7 +454,7 @@ function formatGratuityPolicy(value: 'not_expected' | 'appreciated' | 'included'
   if (value === 'included') return 'Gratuity is included in pricing.'
   if (value === 'appreciated') return 'Gratuity is appreciated, not required.'
   if (value === 'not_expected') return 'Gratuity is not expected.'
-  return 'Gratuity policy not published yet.'
+  return 'Ask before payment.'
 }
 
 function dedupeStrings(values: Array<string | null | undefined>): string[] {
@@ -634,6 +634,14 @@ function PublicChefHub({
     locationLabel ? { label: 'Service area', value: locationLabel } : null,
   ].filter((item): item is { label: string; value: string } => Boolean(item))
   const chips = dedupeStrings([...cuisineLabels, ...serviceLabels]).slice(0, 6)
+  const primaryActionLabel =
+    bookingEnabled && bookingSlug
+      ? bookingModel === 'instant_book'
+        ? 'Book instantly'
+        : 'Book now'
+      : acceptingInquiries
+        ? 'Request event'
+        : 'Join waitlist'
 
   return (
     <main className="min-h-screen bg-stone-950 px-4 py-6 text-stone-100 sm:px-6">
@@ -643,32 +651,39 @@ function PublicChefHub({
       />
       <div className="mx-auto flex min-h-[calc(100vh-3rem)] w-full max-w-xl flex-col">
         <section className="flex flex-1 flex-col justify-center">
-          <div className="text-center">
-            {avatarUrl ? (
-              <Image
-                src={avatarUrl}
-                alt={chefName}
-                width={112}
-                height={112}
-                className="mx-auto h-28 w-28 rounded-full border border-stone-700 object-cover"
-                priority
-              />
-            ) : (
-              <div className="mx-auto flex h-28 w-28 items-center justify-center rounded-full border border-stone-700 bg-stone-900 text-3xl font-semibold text-stone-300">
-                {chefName.charAt(0)}
+          <div className="rounded-[2rem] border border-stone-800 bg-stone-900/80 p-5 shadow-[0_24px_80px_rgba(0,0,0,0.32)]">
+            <div className="flex items-center gap-4">
+              {avatarUrl ? (
+                <Image
+                  src={avatarUrl}
+                  alt={chefName}
+                  width={96}
+                  height={96}
+                  className="h-24 w-24 rounded-3xl border border-stone-700 object-cover"
+                  priority
+                />
+              ) : (
+                <div className="flex h-24 w-24 items-center justify-center rounded-3xl border border-stone-700 bg-stone-950 text-3xl font-semibold text-stone-300">
+                  {chefName.charAt(0)}
+                </div>
+              )}
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-300">
+                  Chef link hub
+                </p>
+                <h1 className="mt-2 text-3xl font-bold tracking-tight text-white">{chefName}</h1>
+                {businessName && businessName !== chefName && (
+                  <p className="mt-1 text-sm font-medium text-stone-400">{businessName}</p>
+                )}
               </div>
-            )}
-            <p className="mt-5 text-xs font-semibold uppercase tracking-[0.2em] text-brand-300">
-              ChefFlow Public Hub
-            </p>
-            <h1 className="mt-2 text-3xl font-bold tracking-tight text-white">{chefName}</h1>
-            {businessName && businessName !== chefName && (
-              <p className="mt-1 text-sm font-medium text-stone-400">{businessName}</p>
-            )}
-            {tagline && <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed">{tagline}</p>}
+            </div>
+            {tagline && <p className="mt-4 text-sm leading-relaxed text-stone-200">{tagline}</p>}
             {!tagline && bio && (
-              <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed">{clampText(bio, 150)}</p>
+              <p className="mt-4 text-sm leading-relaxed text-stone-300">{clampText(bio, 150)}</p>
             )}
+            <p className="mt-4 text-xs font-medium uppercase tracking-[0.18em] text-stone-500">
+              Primary path: {primaryActionLabel}
+            </p>
           </div>
 
           {chips.length > 0 && (
@@ -1042,29 +1057,29 @@ export default async function ChefProfilePage({ params, searchParams }: Props) {
       ? buyerSignals.service.cancellationTerms ||
         'A cancellation policy is published; full terms are shared before payment.'
       : buyerSignals.service.hasCancellationPolicy === false
-        ? 'No public cancellation policy published yet.'
-        : 'Cancellation policy not published yet.'
+        ? 'Ask before payment.'
+        : null
   const reschedulePolicy =
     buyerSignals.service.hasReschedulePolicy === true
       ? buyerSignals.service.rescheduleTerms ||
         'A reschedule policy is published; full terms are shared directly with the chef.'
       : buyerSignals.service.hasReschedulePolicy === false
-        ? 'No public reschedule policy published yet.'
-        : 'Reschedule policy not published yet.'
+        ? 'Ask before payment.'
+        : null
   const responseTimeLabel =
     buyerSignals.operations.responseTime != null
       ? `Usually ${buyerSignals.operations.responseTime}`
-      : 'No public response-time signal yet.'
+      : null
   const travelRadiusLabel =
     buyerSignals.service.travelRadiusMiles != null
       ? `${buyerSignals.service.travelRadiusMiles} miles before added travel fees`
-      : 'Travel radius not published yet.'
+      : null
   const travelFeeLabel =
     buyerSignals.service.travelFeeCents != null
       ? `${formatCurrency(buyerSignals.service.travelFeeCents)} published travel fee`
       : buyerSignals.service.travelRadiusMiles != null
         ? 'Travel fees may apply outside the included radius.'
-        : 'Travel fee policy not published yet.'
+        : null
   const minimumGuestsLabel =
     buyerSignals.service.minimumGuests != null
       ? `${buyerSignals.service.minimumGuests} guest minimum`
@@ -1113,6 +1128,18 @@ export default async function ChefProfilePage({ params, searchParams }: Props) {
   ]
     .filter(Boolean)
     .join(' - ')
+  const heroVisualUrl =
+    optimizedBgUrl ||
+    (typeof discovery.hero_image_url === 'string' ? discovery.hero_image_url : null) ||
+    portfolio.find((photo) => Boolean(photo.signedUrl))?.signedUrl ||
+    showcaseMenus.find((menu) => Boolean(menu.photoUrl))?.photoUrl ||
+    chef.profile_image_url
+  const optimizedHeroVisualUrl = heroVisualUrl
+    ? getOptimizedImageUrl(heroVisualUrl, { width: 1800, quality: 'auto', format: 'auto' })
+    : null
+  const featuredPortfolioPhotos = portfolio.filter((photo) => Boolean(photo.signedUrl)).slice(0, 3)
+  const featuredMenuPhotos = showcaseMenus.filter((menu) => Boolean(menu.photoUrl)).slice(0, 3)
+  const hasVisualProof = featuredPortfolioPhotos.length > 0 || featuredMenuPhotos.length > 0
   const hasPricingSignals = Boolean(
     buyerStartingPriceLabel ||
     dinnerRange ||
@@ -1216,7 +1243,7 @@ export default async function ChefProfilePage({ params, searchParams }: Props) {
           value:
             buyerSignals.operations.responseTime != null
               ? buyerSignals.operations.responseTime
-              : 'Not published publicly',
+              : 'Shared after inquiry',
         },
         {
           label: 'Starting from',
@@ -1224,25 +1251,43 @@ export default async function ChefProfilePage({ params, searchParams }: Props) {
         },
       ]
     : [
-        { label: 'Availability', value: nextAvailableLabel || 'No opening published yet' },
+        { label: 'Availability', value: nextAvailableLabel || 'Join the waitlist for updates' },
         {
           label: 'Response',
           value:
             buyerSignals.operations.responseTime != null
               ? buyerSignals.operations.responseTime
-              : 'Not published publicly',
+              : 'Shared after inquiry',
         },
         { label: 'Lead time', value: leadTimeLabel || 'Shared directly before booking' },
       ]
   const responseExpectationCopy =
     buyerSignals.operations.responseTime != null
       ? `${chef.display_name} publishes a response window of ${buyerSignals.operations.responseTime}.`
-      : 'Response timing is not published on this profile, so sharing complete event details helps the chef evaluate fit faster.'
+      : 'Sharing complete event details helps the chef evaluate fit faster.'
   const inquiryStageCopy =
     buyerSignals.operations.responseTime != null
       ? `Starting an inquiry does not charge your card or confirm the event. ${chef.display_name} publishes a response window of ${buyerSignals.operations.responseTime}.`
       : 'Starting an inquiry does not charge your card or confirm the event. The chef reviews fit, timing, and scope before sending next steps.'
   const publicHubSource = normalizePublicHubSource(searchParams)
+  const mobilePrimaryHref =
+    chef.booking_enabled && chef.booking_slug
+      ? `/book/${chef.booking_slug}`
+      : showWebsitePrimaryCta
+        ? chef.website_url
+        : showDirectInquiryCta
+          ? `/chef/${publicSlug}/inquire`
+          : null
+  const mobilePrimaryLabel =
+    chef.booking_enabled && chef.booking_slug
+      ? chef.booking_model === 'instant_book'
+        ? 'Book instantly'
+        : 'Book now'
+      : showWebsitePrimaryCta
+        ? 'Visit website'
+        : showDirectInquiryCta
+          ? 'Start inquiry'
+          : null
 
   if (isPublicHubView(searchParams)) {
     return (
@@ -1297,10 +1342,23 @@ export default async function ChefProfilePage({ params, searchParams }: Props) {
       />
       <ChefBreadcrumbJsonLd chefName={chef.display_name} profileUrl={profileUrl} />
 
-      <section className="py-16 md:py-24 bg-stone-900/70 backdrop-blur-[1px]">
-        <div className="max-w-5xl mx-auto px-6 text-center">
-          {chef.logo_url && (
-            <div className="flex justify-center mb-6">
+      <section className="relative overflow-hidden bg-stone-950">
+        {optimizedHeroVisualUrl && (
+          <Image
+            src={optimizedHeroVisualUrl}
+            alt={`${chef.display_name} event preview`}
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover"
+          />
+        )}
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(12,10,9,0.96),rgba(12,10,9,0.72),rgba(12,10,9,0.34))]" />
+        <div className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-stone-950 to-transparent" />
+
+        <div className="relative mx-auto grid min-h-[88vh] max-w-7xl items-end gap-10 px-6 pb-14 pt-20 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-center lg:pb-12">
+          <div className="max-w-3xl">
+            {chef.logo_url && (
               <Image
                 src={getOptimizedImageUrl(chef.logo_url, {
                   width: 440,
@@ -1310,362 +1368,445 @@ export default async function ChefProfilePage({ params, searchParams }: Props) {
                 alt={`${chef.display_name} logo`}
                 width={220}
                 height={64}
-                className="max-h-16 max-w-[220px] object-contain"
-              />
-            </div>
-          )}
-
-          {chef.profile_image_url ? (
-            <Image
-              src={getOptimizedAvatar(chef.profile_image_url, 224)}
-              alt={chef.display_name}
-              width={112}
-              height={112}
-              className="w-28 h-28 rounded-full object-cover mx-auto mb-6 ring-4 ring-white shadow-lg"
-            />
-          ) : (
-            <div className="w-28 h-28 rounded-full bg-stone-700 flex items-center justify-center mx-auto mb-6 ring-4 ring-white shadow-lg">
-              <span className="text-3xl font-bold text-stone-500">
-                {chef.display_name.charAt(0).toUpperCase()}
-              </span>
-            </div>
-          )}
-
-          <div className="mb-4 flex flex-wrap justify-center gap-2">
-            <DetailChip label={availabilityLabel} />
-            {chef.booking_enabled && chef.booking_slug && chef.booking_model === 'instant_book' && (
-              <span className="rounded-full border border-emerald-600/50 bg-emerald-950/60 px-3 py-1.5 text-xs font-medium text-emerald-300">
-                Instant booking available
-              </span>
-            )}
-            {discovery.review_count > 0 && discovery.avg_rating != null && (
-              <DetailChip
-                label={`${discovery.avg_rating.toFixed(1)} stars - ${discovery.review_count} reviews`}
+                className="mb-8 max-h-16 max-w-[220px] object-contain"
               />
             )}
-            {buyerStartingPriceLabel && <DetailChip label={`From ${buyerStartingPriceLabel}`} />}
-            {priceRangeLabel && <DetailChip label={priceRangeLabel} />}
-            {nextAvailableLabel && !discovery.accepting_inquiries && (
-              <DetailChip label={`Next opening ${nextAvailableLabel}`} />
+
+            <div className="mb-5 flex flex-wrap gap-2">
+              <DetailChip label={availabilityLabel} />
+              {chef.booking_enabled &&
+                chef.booking_slug &&
+                chef.booking_model === 'instant_book' && (
+                  <span className="rounded-full border border-emerald-600/50 bg-emerald-950/60 px-3 py-1.5 text-xs font-medium text-emerald-300">
+                    Instant booking available
+                  </span>
+                )}
+              {reviewFeed.stats.totalReviews > 0 && reviewFeed.stats.averageRating > 0 && (
+                <DetailChip
+                  label={`${reviewFeed.stats.averageRating.toFixed(1)} stars - ${reviewFeed.stats.totalReviews} reviews`}
+                />
+              )}
+              {buyerStartingPriceLabel && <DetailChip label={`From ${buyerStartingPriceLabel}`} />}
+              {buyerSignals.verification.badges[0] && (
+                <DetailChip label={buyerSignals.verification.badges[0].label} />
+              )}
+            </div>
+
+            <h1 className="max-w-4xl text-5xl font-bold leading-[0.96] tracking-tight text-stone-100 sm:text-6xl lg:text-7xl">
+              {chef.display_name}
+            </h1>
+
+            {chef.archetype && (
+              <p className="mt-4 text-sm font-semibold uppercase tracking-[0.22em] text-brand-300">
+                {(
+                  {
+                    private_chef: 'Private Chef',
+                    caterer: 'Catering',
+                    meal_prep: 'Meal Prep',
+                    bakery: 'Bakery',
+                    restaurant: 'Restaurant',
+                    food_truck: 'Food Truck',
+                  } as Record<string, string>
+                )[chef.archetype] ?? null}
+              </p>
             )}
-            {buyerSignals.verification.badges[0] && (
-              <DetailChip label={buyerSignals.verification.badges[0].label} />
+
+            {chef.tagline && (
+              <p className="mt-5 max-w-2xl text-xl leading-relaxed text-stone-200 sm:text-2xl">
+                {chef.tagline}
+              </p>
+            )}
+
+            {discovery.highlight_text && discovery.highlight_text !== chef.tagline && (
+              <p className="mt-4 max-w-3xl text-sm font-semibold uppercase tracking-[0.18em] text-brand-300">
+                {discovery.highlight_text}
+              </p>
+            )}
+
+            {chef.bio && (
+              <p className="mt-6 max-w-2xl text-base leading-relaxed text-stone-300">
+                {clampText(chef.bio, 360)}
+              </p>
+            )}
+
+            {heroSummaryLine && (
+              <p className="mt-5 max-w-3xl text-sm leading-relaxed text-stone-300">
+                {heroSummaryLine}
+              </p>
+            )}
+
+            {(cuisineLabels.length > 0 || serviceLabels.length > 0) && (
+              <div className="mt-7 flex flex-wrap gap-2">
+                {cuisineLabels.slice(0, 4).map((label) => (
+                  <DetailChip key={`cuisine-${label}`} label={label} />
+                ))}
+                {serviceLabels.slice(0, 4).map((label) => (
+                  <DetailChip key={`service-${label}`} label={label} />
+                ))}
+              </div>
+            )}
+
+            {chef.social_links && Object.values(chef.social_links).some(Boolean) && (
+              <div className="mt-7 flex gap-4">
+                {chef.social_links.instagram && (
+                  <TrackedLink
+                    href={chef.social_links.instagram}
+                    analyticsName="public_profile_social_instagram"
+                    analyticsProps={{ chef_slug: publicSlug }}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-stone-400 hover:text-white transition-colors"
+                    aria-label="Instagram"
+                  >
+                    <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
+                    </svg>
+                  </TrackedLink>
+                )}
+                {chef.social_links.tiktok && (
+                  <TrackedLink
+                    href={chef.social_links.tiktok}
+                    analyticsName="public_profile_social_tiktok"
+                    analyticsProps={{ chef_slug: publicSlug }}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-stone-400 hover:text-white transition-colors"
+                    aria-label="TikTok"
+                  >
+                    <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 00-.79-.05A6.34 6.34 0 003.15 15.2a6.34 6.34 0 0010.86 4.48v-7.15a8.16 8.16 0 005.58 2.2v-3.45a4.85 4.85 0 01-3.77-1.82 4.83 4.83 0 003.77-2.77z" />
+                    </svg>
+                  </TrackedLink>
+                )}
+                {chef.social_links.facebook && (
+                  <TrackedLink
+                    href={chef.social_links.facebook}
+                    analyticsName="public_profile_social_facebook"
+                    analyticsProps={{ chef_slug: publicSlug }}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-stone-400 hover:text-white transition-colors"
+                    aria-label="Facebook"
+                  >
+                    <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                    </svg>
+                  </TrackedLink>
+                )}
+                {chef.social_links.youtube && (
+                  <TrackedLink
+                    href={chef.social_links.youtube}
+                    analyticsName="public_profile_social_youtube"
+                    analyticsProps={{ chef_slug: publicSlug }}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-stone-400 hover:text-white transition-colors"
+                    aria-label="YouTube"
+                  >
+                    <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                    </svg>
+                  </TrackedLink>
+                )}
+                {chef.social_links.linktree && (
+                  <TrackedLink
+                    href={chef.social_links.linktree}
+                    analyticsName="public_profile_social_linktree"
+                    analyticsProps={{ chef_slug: publicSlug }}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-stone-400 hover:text-white transition-colors"
+                    aria-label="Link hub"
+                  >
+                    <svg
+                      className="h-6 w-6"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+                      />
+                    </svg>
+                  </TrackedLink>
+                )}
+              </div>
             )}
           </div>
 
-          <h1 className="text-4xl md:text-5xl font-bold text-stone-100">{chef.display_name}</h1>
-
-          {chef.archetype && (
-            <p className="text-sm font-medium text-brand-400 mt-2 uppercase tracking-widest">
-              {(
-                {
-                  private_chef: 'Private Chef',
-                  caterer: 'Catering',
-                  meal_prep: 'Meal Prep',
-                  bakery: 'Bakery',
-                  restaurant: 'Restaurant',
-                  food_truck: 'Food Truck',
-                } as Record<string, string>
-              )[chef.archetype] ?? null}
-            </p>
-          )}
-
-          {chef.tagline && (
-            <p className="text-lg md:text-xl text-stone-300 mt-3 max-w-2xl mx-auto">
-              {chef.tagline}
-            </p>
-          )}
-
-          {discovery.highlight_text && discovery.highlight_text !== chef.tagline && (
-            <p className="mt-4 max-w-3xl mx-auto text-sm uppercase tracking-[0.18em] text-brand-300">
-              {discovery.highlight_text}
-            </p>
-          )}
-
-          {chef.social_links && Object.values(chef.social_links).some(Boolean) && (
-            <div className="mt-5 flex justify-center gap-4">
-              {chef.social_links.instagram && (
-                <TrackedLink
-                  href={chef.social_links.instagram}
-                  analyticsName="public_profile_social_instagram"
-                  analyticsProps={{ chef_slug: publicSlug }}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-stone-400 hover:text-white transition-colors"
-                  aria-label="Instagram"
-                >
-                  <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
-                  </svg>
-                </TrackedLink>
-              )}
-              {chef.social_links.tiktok && (
-                <TrackedLink
-                  href={chef.social_links.tiktok}
-                  analyticsName="public_profile_social_tiktok"
-                  analyticsProps={{ chef_slug: publicSlug }}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-stone-400 hover:text-white transition-colors"
-                  aria-label="TikTok"
-                >
-                  <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 00-.79-.05A6.34 6.34 0 003.15 15.2a6.34 6.34 0 0010.86 4.48v-7.15a8.16 8.16 0 005.58 2.2v-3.45a4.85 4.85 0 01-3.77-1.82 4.83 4.83 0 003.77-2.77z" />
-                  </svg>
-                </TrackedLink>
-              )}
-              {chef.social_links.facebook && (
-                <TrackedLink
-                  href={chef.social_links.facebook}
-                  analyticsName="public_profile_social_facebook"
-                  analyticsProps={{ chef_slug: publicSlug }}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-stone-400 hover:text-white transition-colors"
-                  aria-label="Facebook"
-                >
-                  <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-                  </svg>
-                </TrackedLink>
-              )}
-              {chef.social_links.youtube && (
-                <TrackedLink
-                  href={chef.social_links.youtube}
-                  analyticsName="public_profile_social_youtube"
-                  analyticsProps={{ chef_slug: publicSlug }}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-stone-400 hover:text-white transition-colors"
-                  aria-label="YouTube"
-                >
-                  <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
-                  </svg>
-                </TrackedLink>
-              )}
-              {chef.social_links.linktree && (
-                <TrackedLink
-                  href={chef.social_links.linktree}
-                  analyticsName="public_profile_social_linktree"
-                  analyticsProps={{ chef_slug: publicSlug }}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-stone-400 hover:text-white transition-colors"
-                  aria-label="Link hub"
-                >
-                  <svg
-                    className="h-6 w-6"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
-                    />
-                  </svg>
-                </TrackedLink>
-              )}
-            </div>
-          )}
-
-          {chef.bio && (
-            <p className="text-stone-300 mt-6 max-w-2xl mx-auto leading-relaxed">{chef.bio}</p>
-          )}
-
-          {heroSummaryLine && (
-            <p className="mt-5 max-w-3xl mx-auto text-sm leading-relaxed text-stone-300">
-              {heroSummaryLine}
-            </p>
-          )}
-
-          {(cuisineLabels.length > 0 || serviceLabels.length > 0) && (
-            <div className="mt-8 flex flex-wrap justify-center gap-2">
-              {cuisineLabels.map((label) => (
-                <DetailChip key={`cuisine-${label}`} label={label} />
-              ))}
-              {serviceLabels.map((label) => (
-                <DetailChip key={`service-${label}`} label={label} />
-              ))}
-            </div>
-          )}
-
-          <div className="mt-10">
-            <div
-              className="mx-auto max-w-4xl rounded-[2rem] border border-stone-200/70 p-5 text-left shadow-[0_24px_70px_rgba(0,0,0,0.28)] backdrop-blur-sm sm:p-7"
-              style={{ backgroundColor: 'rgba(255, 251, 235, 0.96)' }}
-            >
-              <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-                <div className="max-w-2xl">
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
-                    Booking
-                  </p>
-                  <h2 className="mt-3 text-2xl font-bold tracking-[-0.04em] text-stone-950 sm:text-3xl">
-                    {heroBookingTitle}
-                  </h2>
-                  <p
-                    id="hero-booking-description"
-                    className="mt-3 max-w-xl text-sm leading-relaxed text-stone-700 sm:text-base"
-                  >
-                    {heroBookingIntro}
-                  </p>
+          <div
+            className="rounded-[2rem] border border-stone-200/70 p-5 text-left shadow-[0_24px_70px_rgba(0,0,0,0.28)] backdrop-blur-sm sm:p-7"
+            style={{ backgroundColor: 'rgba(255, 251, 235, 0.96)' }}
+          >
+            <div className="flex items-center gap-4">
+              {chef.profile_image_url ? (
+                <Image
+                  src={getOptimizedAvatar(chef.profile_image_url, 160)}
+                  alt={chef.display_name}
+                  width={80}
+                  height={80}
+                  className="h-20 w-20 rounded-2xl object-cover"
+                />
+              ) : (
+                <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-stone-900 text-2xl font-bold text-stone-200">
+                  {chef.display_name.charAt(0).toUpperCase()}
                 </div>
+              )}
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
+                  Booking
+                </p>
+                <h2 className="mt-2 text-2xl font-bold tracking-tight text-stone-950">
+                  {heroBookingTitle}
+                </h2>
+              </div>
+            </div>
+            <p
+              id="hero-booking-description"
+              className="mt-5 text-sm leading-relaxed text-stone-700 sm:text-base"
+            >
+              {heroBookingIntro}
+            </p>
 
-                <div className="w-full max-w-lg space-y-3 lg:max-w-sm">
-                  {chef.booking_enabled && chef.booking_slug && (
-                    <TrackedLink
-                      href={`/book/${chef.booking_slug}`}
-                      analyticsName="public_profile_instant_book"
-                      analyticsProps={{ chef_slug: publicSlug, booking_slug: chef.booking_slug }}
-                      aria-describedby="hero-booking-description"
-                      className="inline-flex min-h-[56px] w-full items-center justify-center gap-2 rounded-2xl px-6 py-4 text-center text-base font-semibold text-white shadow-[0_18px_40px_rgba(0,0,0,0.18)] transition-all duration-150 hover:-translate-y-0.5 hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-950 focus-visible:ring-offset-2"
-                      style={{ backgroundColor: primaryColor }}
-                    >
-                      {chef.booking_model === 'instant_book' ? 'Book instantly' : 'Book now'}
-                    </TrackedLink>
-                  )}
-                  {showWebsitePrimaryCta ? (
-                    <TrackedLink
-                      href={chef.website_url!}
-                      analyticsName="public_profile_website"
-                      analyticsProps={{ chef_slug: publicSlug }}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-describedby="hero-booking-description"
-                      className={`inline-flex min-h-[56px] w-full items-center justify-center rounded-2xl px-6 py-4 text-center text-base font-semibold shadow-[0_18px_40px_rgba(0,0,0,0.18)] transition-all duration-150 hover:-translate-y-0.5 hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-950 focus-visible:ring-offset-2 ${chef.booking_enabled && chef.booking_slug ? 'border border-stone-300 text-stone-900 bg-white/80' : 'text-white'}`}
-                      style={
-                        chef.booking_enabled && chef.booking_slug
-                          ? { borderColor: primaryColor }
-                          : { backgroundColor: primaryColor }
-                      }
-                    >
-                      Visit chef website
-                    </TrackedLink>
-                  ) : showDirectInquiryCta ? (
+            <div className="mt-6 space-y-3">
+              {chef.booking_enabled && chef.booking_slug && (
+                <TrackedLink
+                  href={`/book/${chef.booking_slug}`}
+                  analyticsName="public_profile_instant_book"
+                  analyticsProps={{ chef_slug: publicSlug, booking_slug: chef.booking_slug }}
+                  aria-describedby="hero-booking-description"
+                  className="inline-flex min-h-[56px] w-full items-center justify-center gap-2 rounded-2xl px-6 py-4 text-center text-base font-semibold text-white shadow-[0_18px_40px_rgba(0,0,0,0.18)] transition-all duration-150 hover:-translate-y-0.5 hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-950 focus-visible:ring-offset-2"
+                  style={{ backgroundColor: primaryColor }}
+                >
+                  {chef.booking_model === 'instant_book' ? 'Book instantly' : 'Book now'}
+                </TrackedLink>
+              )}
+              {showWebsitePrimaryCta ? (
+                <TrackedLink
+                  href={chef.website_url!}
+                  analyticsName="public_profile_website"
+                  analyticsProps={{ chef_slug: publicSlug }}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-describedby="hero-booking-description"
+                  className={`inline-flex min-h-[56px] w-full items-center justify-center rounded-2xl px-6 py-4 text-center text-base font-semibold shadow-[0_18px_40px_rgba(0,0,0,0.18)] transition-all duration-150 hover:-translate-y-0.5 hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-950 focus-visible:ring-offset-2 ${chef.booking_enabled && chef.booking_slug ? 'border border-stone-300 text-stone-900 bg-white/80' : 'text-white'}`}
+                  style={
+                    chef.booking_enabled && chef.booking_slug
+                      ? { borderColor: primaryColor }
+                      : { backgroundColor: primaryColor }
+                  }
+                >
+                  Visit chef website
+                </TrackedLink>
+              ) : showDirectInquiryCta ? (
+                <TrackedLink
+                  href={`/chef/${publicSlug}/inquire`}
+                  analyticsName="public_profile_start_inquiry"
+                  analyticsProps={{ chef_slug: publicSlug, inquiry_slug: inquirySlug }}
+                  aria-describedby="hero-booking-description"
+                  className={`inline-flex min-h-[56px] w-full items-center justify-center rounded-2xl px-6 py-4 text-center text-base font-semibold shadow-[0_18px_40px_rgba(0,0,0,0.18)] transition-all duration-150 hover:-translate-y-0.5 hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-950 focus-visible:ring-offset-2 ${chef.booking_enabled && chef.booking_slug ? 'border border-stone-300 text-stone-900 bg-white/80' : 'text-white'}`}
+                  style={
+                    chef.booking_enabled && chef.booking_slug
+                      ? { borderColor: primaryColor }
+                      : { backgroundColor: primaryColor }
+                  }
+                >
+                  Start inquiry
+                </TrackedLink>
+              ) : null}
+
+              <div
+                className={`grid gap-3 ${
+                  hasWebsiteLink && !showWebsitePrimaryCta ? 'sm:grid-cols-3' : 'sm:grid-cols-2'
+                }`}
+              >
+                <TrackedLink
+                  href={`/chef/${publicSlug}/store`}
+                  analyticsName="public_profile_store"
+                  analyticsProps={{ chef_slug: publicSlug }}
+                  className="inline-flex min-h-[52px] w-full items-center justify-center rounded-2xl border px-5 py-3 text-center text-sm font-semibold text-stone-900 transition-colors hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-950 focus-visible:ring-offset-2"
+                  style={{
+                    borderColor: primaryColor,
+                    backgroundColor: 'rgba(255,255,255,0.78)',
+                  }}
+                >
+                  Shop store
+                </TrackedLink>
+
+                <TrackedLink
+                  href={`/chef/${publicSlug}/gift-cards`}
+                  analyticsName="public_profile_gift_cards"
+                  analyticsProps={{ chef_slug: publicSlug }}
+                  className="inline-flex min-h-[52px] w-full items-center justify-center rounded-2xl border px-5 py-3 text-center text-sm font-semibold text-stone-900 transition-colors hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-950 focus-visible:ring-offset-2"
+                  style={{
+                    borderColor: primaryColor,
+                    backgroundColor: 'rgba(255,255,255,0.78)',
+                  }}
+                >
+                  Gift cards
+                </TrackedLink>
+
+                {hasWebsiteLink && !showWebsitePrimaryCta && (
+                  <TrackedLink
+                    href={chef.website_url!}
+                    analyticsName="public_profile_website"
+                    analyticsProps={{ chef_slug: publicSlug }}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex min-h-[52px] w-full items-center justify-center rounded-2xl border px-5 py-3 text-center text-sm font-semibold text-stone-900 transition-colors hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-950 focus-visible:ring-offset-2"
+                    style={{
+                      borderColor: primaryColor,
+                      backgroundColor: 'rgba(255,255,255,0.78)',
+                    }}
+                  >
+                    Visit website
+                  </TrackedLink>
+                )}
+              </div>
+
+              {preferWebsite &&
+                hasWebsiteLink &&
+                !preferChefFlow &&
+                discovery.accepting_inquiries && (
+                  <p className="text-xs leading-relaxed text-stone-600">
+                    Prefer ChefFlow?{' '}
                     <TrackedLink
                       href={`/chef/${publicSlug}/inquire`}
-                      analyticsName="public_profile_start_inquiry"
-                      analyticsProps={{ chef_slug: publicSlug, inquiry_slug: inquirySlug }}
-                      aria-describedby="hero-booking-description"
-                      className={`inline-flex min-h-[56px] w-full items-center justify-center rounded-2xl px-6 py-4 text-center text-base font-semibold shadow-[0_18px_40px_rgba(0,0,0,0.18)] transition-all duration-150 hover:-translate-y-0.5 hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-950 focus-visible:ring-offset-2 ${chef.booking_enabled && chef.booking_slug ? 'border border-stone-300 text-stone-900 bg-white/80' : 'text-white'}`}
-                      style={
-                        chef.booking_enabled && chef.booking_slug
-                          ? { borderColor: primaryColor }
-                          : { backgroundColor: primaryColor }
-                      }
-                    >
-                      Start inquiry
-                    </TrackedLink>
-                  ) : null}
-
-                  <div
-                    className={`grid gap-3 ${
-                      hasWebsiteLink && !showWebsitePrimaryCta ? 'sm:grid-cols-3' : 'sm:grid-cols-2'
-                    }`}
-                  >
-                    <TrackedLink
-                      href={`/chef/${publicSlug}/store`}
-                      analyticsName="public_profile_store"
+                      analyticsName="public_profile_secondary_inquiry"
                       analyticsProps={{ chef_slug: publicSlug }}
-                      className="inline-flex min-h-[52px] w-full items-center justify-center rounded-2xl border px-5 py-3 text-center text-sm font-semibold text-stone-900 transition-colors hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-950 focus-visible:ring-offset-2"
-                      style={{
-                        borderColor: primaryColor,
-                        backgroundColor: 'rgba(255,255,255,0.78)',
-                      }}
+                      className="font-semibold underline decoration-2 underline-offset-2 focus-visible:outline-none"
+                      style={{ color: primaryColor }}
                     >
-                      Shop store
+                      Start the inquiry here
                     </TrackedLink>
+                    .
+                  </p>
+                )}
 
-                    <TrackedLink
-                      href={`/chef/${publicSlug}/gift-cards`}
-                      analyticsName="public_profile_gift_cards"
-                      analyticsProps={{ chef_slug: publicSlug }}
-                      className="inline-flex min-h-[52px] w-full items-center justify-center rounded-2xl border px-5 py-3 text-center text-sm font-semibold text-stone-900 transition-colors hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-950 focus-visible:ring-offset-2"
-                      style={{
-                        borderColor: primaryColor,
-                        backgroundColor: 'rgba(255,255,255,0.78)',
-                      }}
-                    >
-                      Gift cards
-                    </TrackedLink>
-
-                    {hasWebsiteLink && !showWebsitePrimaryCta && (
-                      <TrackedLink
-                        href={chef.website_url!}
-                        analyticsName="public_profile_website"
-                        analyticsProps={{ chef_slug: publicSlug }}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex min-h-[52px] w-full items-center justify-center rounded-2xl border px-5 py-3 text-center text-sm font-semibold text-stone-900 transition-colors hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-950 focus-visible:ring-offset-2"
-                        style={{
-                          borderColor: primaryColor,
-                          backgroundColor: 'rgba(255,255,255,0.78)',
-                        }}
-                      >
-                        Visit website
-                      </TrackedLink>
-                    )}
-                  </div>
-
-                  {preferWebsite &&
-                    hasWebsiteLink &&
-                    !preferChefFlow &&
-                    discovery.accepting_inquiries && (
-                      <p className="text-xs leading-relaxed text-stone-600">
-                        Prefer ChefFlow?{' '}
-                        <TrackedLink
-                          href={`/chef/${publicSlug}/inquire`}
-                          analyticsName="public_profile_secondary_inquiry"
-                          analyticsProps={{ chef_slug: publicSlug }}
-                          className="font-semibold underline decoration-2 underline-offset-2 focus-visible:outline-none"
-                          style={{ color: primaryColor }}
-                        >
-                          Start the inquiry here
-                        </TrackedLink>
-                        .
-                      </p>
-                    )}
-
-                  {!discovery.accepting_inquiries && (
-                    <div className="rounded-2xl border border-stone-300/80 bg-white/70 p-4">
-                      <ChefAvailabilityWaitlist chefId={chef.id} chefName={chef.display_name} />
-                    </div>
-                  )}
-
-                  <TrackedLink
-                    href={PUBLIC_PRIMARY_CONSUMER_CTA.href}
-                    analyticsName="public_profile_browse_to_booking"
-                    analyticsProps={{ chef_slug: publicSlug }}
-                    className="inline-flex w-full items-center justify-center text-sm font-semibold underline decoration-2 underline-offset-4 focus-visible:outline-none"
-                    style={{ color: primaryColor }}
-                  >
-                    Need help choosing? {PUBLIC_PRIMARY_CONSUMER_CTA.label}
-                  </TrackedLink>
+              {!discovery.accepting_inquiries && (
+                <div className="rounded-2xl border border-stone-300/80 bg-white/70 p-4">
+                  <ChefAvailabilityWaitlist chefId={chef.id} chefName={chef.display_name} />
                 </div>
-              </div>
+              )}
 
-              <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                {heroBookingFacts.map((fact) => (
-                  <div
-                    key={fact.label}
-                    className="rounded-2xl border border-stone-300/80 bg-white/65 p-4"
-                  >
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-500">
-                      {fact.label}
-                    </p>
-                    <p className="mt-2 text-sm font-medium leading-relaxed text-stone-900">
-                      {fact.value}
-                    </p>
-                  </div>
-                ))}
-              </div>
+              <TrackedLink
+                href={PUBLIC_PRIMARY_CONSUMER_CTA.href}
+                analyticsName="public_profile_browse_to_booking"
+                analyticsProps={{ chef_slug: publicSlug }}
+                className="inline-flex w-full items-center justify-center text-sm font-semibold underline decoration-2 underline-offset-4 focus-visible:outline-none"
+                style={{ color: primaryColor }}
+              >
+                Need help choosing? {PUBLIC_PRIMARY_CONSUMER_CTA.label}
+              </TrackedLink>
+            </div>
+
+            <div className="mt-5 grid gap-3">
+              {heroBookingFacts.map((fact) => (
+                <div
+                  key={fact.label}
+                  className="rounded-2xl border border-stone-300/80 bg-white/65 p-4"
+                >
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-500">
+                    {fact.label}
+                  </p>
+                  <p className="mt-2 text-sm font-medium leading-relaxed text-stone-900">
+                    {fact.value}
+                  </p>
+                </div>
+              ))}
             </div>
           </div>
         </div>
       </section>
+
+      {hasVisualProof && (
+        <section className="relative z-10 -mt-8 px-6 pb-12">
+          <div className="mx-auto max-w-6xl rounded-[2rem] border border-stone-700 bg-stone-950/90 p-4 shadow-[0_24px_70px_rgba(0,0,0,0.24)] backdrop-blur">
+            <div className="mb-4 flex flex-col gap-2 px-1 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-300">
+                  Visual proof
+                </p>
+                <h2 className="mt-2 text-2xl font-bold text-stone-100">Food, rooms, and moments</h2>
+              </div>
+              <p className="max-w-xl text-sm leading-relaxed text-stone-400">
+                Recent public photos and showcased menus appear before the logistics, so clients can
+                judge style before reading policy details.
+              </p>
+            </div>
+
+            {featuredPortfolioPhotos.length > 0 ? (
+              <div className="grid gap-3 md:grid-cols-3">
+                {featuredPortfolioPhotos.map((photo, index) => (
+                  <div
+                    key={photo.id}
+                    className={`relative overflow-hidden rounded-2xl bg-stone-900 ${index === 0 ? 'md:col-span-2 md:row-span-2' : ''}`}
+                  >
+                    <Image
+                      src={photo.signedUrl}
+                      alt={photo.caption ?? `${chef.display_name} portfolio photo`}
+                      width={index === 0 ? 960 : 520}
+                      height={index === 0 ? 640 : 320}
+                      sizes={
+                        index === 0
+                          ? '(max-width: 768px) 100vw, 66vw'
+                          : '(max-width: 768px) 100vw, 33vw'
+                      }
+                      className="h-full min-h-[220px] w-full object-cover"
+                    />
+                    {(photo.caption || photo.event_occasion) && (
+                      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-4">
+                        {photo.caption && (
+                          <p className="text-sm font-semibold text-white">{photo.caption}</p>
+                        )}
+                        {photo.event_occasion && (
+                          <p className="mt-1 text-xs text-white/70">{photo.event_occasion}</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="grid gap-3 md:grid-cols-3">
+                {featuredMenuPhotos.map((menu) => (
+                  <div
+                    key={menu.id}
+                    className="overflow-hidden rounded-2xl border border-stone-800 bg-stone-900"
+                  >
+                    <div className="relative aspect-[4/3]">
+                      <CloudinaryFetchImage
+                        src={menu.photoUrl!}
+                        alt={`${menu.name} showcase menu`}
+                        fill
+                        sizes="(max-width: 768px) 100vw, 33vw"
+                        aspectRatio={4 / 3}
+                        fit="fill"
+                        gravity="auto"
+                        defaultQuality={90}
+                        maxWidth={900}
+                        quality={90}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                    <div className="p-4">
+                      <p className="text-sm font-semibold text-stone-100">{menu.name}</p>
+                      {menu.description && (
+                        <p className="mt-2 text-xs leading-relaxed text-stone-400">
+                          {clampText(menu.description, 120)}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+      )}
 
       {(reviewFeed.stats.totalReviews > 0 ||
         chef.google_review_url ||
@@ -1890,16 +2031,15 @@ export default async function ChefProfilePage({ params, searchParams }: Props) {
       <section className="py-12 px-6 bg-stone-900/70">
         <div className="max-w-5xl mx-auto">
           <div className="mb-8 text-center">
-            <h2 className="text-3xl font-bold text-stone-100">Booking Snapshot</h2>
+            <h2 className="text-3xl font-bold text-stone-100">Plan With Confidence</h2>
             <p className="mt-3 max-w-2xl mx-auto text-stone-300">
-              Only information this chef has actually published is shown here. Missing details stay
-              omitted rather than being guessed.
+              Clear answers to the questions clients ask before choosing a private chef.
             </p>
           </div>
 
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             <div className="rounded-2xl border border-stone-700 bg-stone-950/80 p-5">
-              <p className="text-sm font-semibold text-stone-100">Pricing guidance</p>
+              <p className="text-sm font-semibold text-stone-100">What does it usually cost?</p>
               {hasPricingSignals ? (
                 <>
                   {buyerStartingPriceLabel && (
@@ -1927,14 +2067,14 @@ export default async function ChefProfilePage({ params, searchParams }: Props) {
                 </>
               ) : (
                 <p className="mt-3 text-sm leading-relaxed text-stone-400">
-                  This chef has not published public pricing guidance yet. Use the inquiry form to
-                  request a quote with your guest count, menu style, and location.
+                  Use the inquiry form to request a quote with your guest count, menu style, and
+                  location.
                 </p>
               )}
             </div>
 
             <div className="rounded-2xl border border-stone-700 bg-stone-950/80 p-5">
-              <p className="text-sm font-semibold text-stone-100">Service fit</p>
+              <p className="text-sm font-semibold text-stone-100">Can this chef handle my event?</p>
               {hasServiceFitSignals ? (
                 <>
                   {buyerSignals.service.customIntroPitch && (
@@ -1954,8 +2094,7 @@ export default async function ChefProfilePage({ params, searchParams }: Props) {
                 </>
               ) : (
                 <p className="mt-3 text-sm leading-relaxed text-stone-400">
-                  Service-area, format, and guest-count guidance have not been published on this
-                  profile yet.
+                  Share the event location, format, and guest count so the chef can confirm fit.
                 </p>
               )}
               {eventTypeChips.length > 0 && (
@@ -1985,7 +2124,7 @@ export default async function ChefProfilePage({ params, searchParams }: Props) {
             </div>
 
             <div className="rounded-2xl border border-stone-700 bg-stone-950/80 p-5">
-              <p className="text-sm font-semibold text-stone-100">Included and staffing</p>
+              <p className="text-sm font-semibold text-stone-100">What is included?</p>
               {hasInclusionSignals ? (
                 <>
                   {includedItems.length > 0 && (
@@ -2052,13 +2191,14 @@ export default async function ChefProfilePage({ params, searchParams }: Props) {
                 </>
               ) : (
                 <p className="mt-3 text-sm leading-relaxed text-stone-400">
-                  This chef has not published a public inclusion or staffing checklist yet.
+                  Ask what is included, what equipment is provided, and whether added staff is
+                  needed.
                 </p>
               )}
             </div>
 
             <div className="rounded-2xl border border-stone-700 bg-stone-950/80 p-5">
-              <p className="text-sm font-semibold text-stone-100">Menu fit and planning</p>
+              <p className="text-sm font-semibold text-stone-100">What can I book?</p>
               {hasMenuFitSignals ? (
                 <>
                   {menuFitChips.length > 0 && (
@@ -2130,13 +2270,14 @@ export default async function ChefProfilePage({ params, searchParams }: Props) {
                 </>
               ) : (
                 <p className="mt-3 text-sm leading-relaxed text-stone-400">
-                  This chef has not published a detailed menu-fit or planning workflow yet.
+                  Ask about menu direction, dietary handling, and planning touchpoints in the
+                  inquiry.
                 </p>
               )}
             </div>
 
             <div className="rounded-2xl border border-stone-700 bg-stone-950/80 p-5">
-              <p className="text-sm font-semibold text-stone-100">Booking expectations</p>
+              <p className="text-sm font-semibold text-stone-100">What happens next?</p>
               {hasBookingExpectationSignals ? (
                 <>
                   <DetailRows
@@ -2167,14 +2308,16 @@ export default async function ChefProfilePage({ params, searchParams }: Props) {
                 </>
               ) : (
                 <p className="mt-3 text-sm leading-relaxed text-stone-400">
-                  Response timing and pre-event workflow details have not been published on this
-                  profile yet.
+                  Share complete event details up front so the chef can respond with the right next
+                  step.
                 </p>
               )}
             </div>
 
             <div className="rounded-2xl border border-stone-700 bg-stone-950/80 p-5">
-              <p className="text-sm font-semibold text-stone-100">Policies and boundaries</p>
+              <p className="text-sm font-semibold text-stone-100">
+                What should I know before paying?
+              </p>
               {hasPolicySignals ? (
                 <>
                   <DetailRows
@@ -2205,7 +2348,8 @@ export default async function ChefProfilePage({ params, searchParams }: Props) {
                 </>
               ) : (
                 <p className="mt-3 text-sm leading-relaxed text-stone-400">
-                  This chef has not published public boundary or policy details yet.
+                  Review deposit, cancellation, travel, grocery, and gratuity terms in writing
+                  before payment.
                 </p>
               )}
             </div>
@@ -2232,7 +2376,7 @@ export default async function ChefProfilePage({ params, searchParams }: Props) {
                       buyerSignals.verification.activeInsuranceCount > 0
                         ? `${buyerSignals.verification.activeInsuranceCount} active record${buyerSignals.verification.activeInsuranceCount === 1 ? '' : 's'} on file`
                         : null,
-                    emptyText: 'No public insurance records on file yet.',
+                    emptyText: 'Ask the chef for current insurance details.',
                   },
                   {
                     label: 'Current certifications',
@@ -2240,7 +2384,7 @@ export default async function ChefProfilePage({ params, searchParams }: Props) {
                       buyerSignals.verification.activeCertificationCount > 0
                         ? `${buyerSignals.verification.activeCertificationCount} active record${buyerSignals.verification.activeCertificationCount === 1 ? '' : 's'} on file`
                         : null,
-                    emptyText: 'No public certification records on file yet.',
+                    emptyText: 'Ask the chef for current certification details.',
                   },
                 ]}
               />
@@ -2388,7 +2532,7 @@ export default async function ChefProfilePage({ params, searchParams }: Props) {
           ) : (
             <div className="rounded-2xl border border-stone-700 bg-stone-950/80 p-6 text-center">
               <p className="text-sm text-stone-300">
-                This chef has not published showcase menus yet.
+                Ask about current menu formats, seasonal dishes, or dietary customization.
               </p>
               <p className="mt-2 text-sm text-stone-400">
                 Ask about current menu formats, seasonal dishes, or dietary customization through
@@ -2653,6 +2797,22 @@ export default async function ChefProfilePage({ params, searchParams }: Props) {
           />
         </div>
       </section>
+
+      {mobilePrimaryHref && mobilePrimaryLabel && (
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-stone-700 bg-stone-950/95 px-4 py-3 shadow-[0_-16px_40px_rgba(0,0,0,0.28)] backdrop-blur md:hidden">
+          <TrackedLink
+            href={mobilePrimaryHref}
+            analyticsName="public_profile_mobile_primary_cta"
+            analyticsProps={{ chef_slug: publicSlug }}
+            target={showWebsitePrimaryCta ? '_blank' : undefined}
+            rel={showWebsitePrimaryCta ? 'noopener noreferrer' : undefined}
+            className="inline-flex min-h-[52px] w-full items-center justify-center rounded-2xl px-5 py-3 text-center text-base font-semibold text-white"
+            style={{ backgroundColor: primaryColor }}
+          >
+            {mobilePrimaryLabel}
+          </TrackedLink>
+        </div>
+      )}
     </div>
   )
 }

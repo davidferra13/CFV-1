@@ -13,7 +13,7 @@ export default async function ChefMyProfilePage() {
   const profile = await getChefFullProfile()
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div className="max-w-6xl mx-auto space-y-6">
       <div>
         <Link
           href="/settings"

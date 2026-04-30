@@ -870,17 +870,17 @@ Founder-owned operator walkthrough requests from `/for-operators/walkthrough` al
 
 ## 7. CALENDAR
 
-> **Full element-by-element detail → [`docs/ui-audit-calendar.md`](ui-audit-calendar.md)** (1368 lines, 7 pages)
+> **Full element-by-element detail -> [`docs/ui-audit-calendar.md`](ui-audit-calendar.md)** (1368 lines, 7 pages)
 
-| Route             | Key Elements                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/calendar`       | Monthly grid with filter toggles (events, drafts, prep blocks, calls, personal, business, intentions, leads). Drag-and-drop rescheduling via @dnd-kit (draft/proposed/accepted events only). Day click → detail panel with items + "Quick Block"/"Remove Block" + "+ Add Entry" modal. 2-column layout with Seasonal Palette sidebar. Entry modal: 3 entry type groups (Personal/Business/Intentions) with fields (title, dates, times, all-day, blocks bookings, revenue section, public signal section) |
-| `/calendar/day`   | 6AM–midnight time grid with 30-min slots. Click slot → pre-filled entry modal. Per-slot item cards with "View" links                                                                                                                                                                                                                                                                                                                                                                                      |
-| `/calendar/week`  | 7-column Mon–Sun grid with prep blocks (complete/delete buttons), event cards (links), "+ add" per day → inline block form (type/title/date/time/duration). Gap alerts with "Auto-schedule" → suggestion modal with bulk create. Calendar entry banners spanning date ranges                                                                                                                                                                                                                              |
-| `/calendar/year`  | 52-week grid grouped by month. Week cells colored by event/gap status, clickable → week view. Stats strip + year navigation                                                                                                                                                                                                                                                                                                                                                                               |
-| `/calendar/share` | Generate share tokens with labels, copy URL, revoke tokens                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| `/schedule`       | FullCalendar-based with 4 views (Month/Week/Day/Agenda), keyboard shortcuts (T/M/W/D/A/N/arrows), mini calendar sidebar, drag-and-drop rescheduling, event detail popovers, seasonal sidebar                                                                                                                                                                                                                                                                                                              |
-| `/waitlist`       | Waiting + contacted entries with "Mark Contacted"/"Expire" buttons. Add form: date, guests, occasion, notes                                                                                                                                                                                                                                                                                                                                                                                               |
+| Route             | Key Elements                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/calendar`       | Monthly grid with filter toggles (events, drafts, prep blocks, calls, personal, business, intentions, leads). Drag-and-drop rescheduling via @dnd-kit (draft/proposed/accepted events only). Day click -> detail panel with items + "Quick Block"/"Remove Block" + "+ Add Entry" modal. 2-column layout with Seasonal Palette sidebar. Entry modal: 3 entry type groups (Personal/Business/Intentions) with fields (title, dates, times, all-day, blocks bookings, revenue section, public signal section) |
+| `/calendar/day`   | 6AM-midnight time grid with 30-min slots. Click slot -> pre-filled entry modal. Per-slot item cards with "View" links                                                                                                                                                                                                                                                                                                                                                                                      |
+| `/calendar/week`  | 7-column Mon-Sun grid with prep blocks (complete/delete buttons), event cards (links), "+ add" per day -> inline block form (type/title/date/time/duration). Gap alerts with "Auto-schedule" -> suggestion modal with bulk create. Calendar entry banners spanning date ranges                                                                                                                                                                                                                             |
+| `/calendar/year`  | 52-week grid grouped by month. Week cells colored by event/gap status, clickable -> week view. Stats strip + year navigation                                                                                                                                                                                                                                                                                                                                                                               |
+| `/calendar/share` | Generate share tokens with labels, copy URL, revoke tokens                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `/schedule`       | FullCalendar-based with 4 views (Month/Week/Day/Agenda), keyboard shortcuts (T/M/W/D/A/N/arrows), mini calendar sidebar, drag-and-drop rescheduling, event detail popovers, seasonal sidebar                                                                                                                                                                                                                                                                                                               |
+| `/waitlist`       | Waiting + contacted entries with "Mark Contacted"/"Expire" buttons. Add form: date, guests, occasion, notes                                                                                                                                                                                                                                                                                                                                                                                                |
 
 ---
 
@@ -1229,12 +1229,16 @@ Completion state stored in localStorage per event. Progress bar. Critical items 
 
 **Route:** `/reviews` - Unified internal + external reviews feed. Log feedback button (with "Show on public profile" toggle), import platform review button (with "Show on public profile" toggle, default on), external review sources panel, configure Google review link. "Public" badge on reviews marked for public display.
 
-**Route:** `/chef/[slug]` - Public chef profile (no auth). Profile header includes:
+**Route:** `/chef/[slug]` - Public chef profile (no auth). Conversion-first public profile includes:
 
-- Chef avatar, display name, tagline, highlight text
-- **Social icons row** (between highlight text and bio): renders conditionally only when `social_links` JSONB has any truthy values. Supported platforms: Instagram, TikTok, Facebook, YouTube, Linktree. Each icon is a TrackedLink (PostHog analytics) opening the social profile in a new tab
-- Bio text, cuisine tags, service types
+- Full-bleed visual hero using the configured portal background, discovery hero, portfolio photo, showcase menu photo, or profile image as available
+- Chef display name, archetype, tagline, highlight text, bio summary, availability/trust/price chips, cuisine tags, service types, and conditional social icons
+- Booking panel with the primary booking, website, or direct inquiry path, plus secondary store, gift card, website, and browse actions
+- Mobile sticky primary CTA for booking, website, or direct inquiry when a primary action is available
+- Visual Proof strip near the top showing public portfolio photos or showcased menu photos before the long logistics content
+- Plan With Confidence grid covering pricing, service fit, inclusions, menu fit, next steps, policies, and readiness
 - Sample Menus section renders public showcase menus only. Menu cards use the first available sorted dish `photo_url` as a card hero image when present, and keep the text-only fallback when no dish photo exists.
+- Compact hub mode at `/chef/[slug]?view=hub` for social bio links, with profile identity, proof chips, primary path label, primary action, gift cards, store, full profile, website, and social links
 
 Now includes **Reviews & Testimonials** section showing:
 
@@ -1323,11 +1327,11 @@ Now includes **Reviews & Testimonials** section showing:
 
 ## 15. SETTINGS
 
-> **Full element-by-element detail → [`docs/ui-audit-settings.md`](ui-audit-settings.md)** (1730 lines, 50 pages)
+> **Full element-by-element detail -> [`docs/ui-audit-settings.md`](ui-audit-settings.md)** (1730 lines, 50 pages)
 
 **Route:** `/settings` - 54 sub-pages organized in 5 visual groups with 20 collapsible categories.
 
-Each category has a unique lucide-react icon and animated chevron expand/collapse. Categories 1–8 ("Your Business" + "Communication") are **primary** - brand-orange left border accent and orange icon. Categories 9–20 are **secondary** - muted stone icon, no accent.
+Each category has a unique lucide-react icon and animated chevron expand/collapse. Categories 1-8 ("Your Business" + "Communication") are **primary** - brand-orange left border accent and orange icon. Categories 9-20 are **secondary** - muted stone icon, no accent.
 
 **Group: Your Business** - Core settings for how you run your practice
 
@@ -1422,15 +1426,17 @@ Intelligence feature configuration for the menu editor's context sidebar. Contro
 | "Enable all" button  | One-click toggle to enable all 11 features at once                                                                                                                                                                                           |
 | "Disable all" button | Opens a confirmation modal (danger variant) warning that disabling all features will turn off allergen validation and other safety checks. Requires explicit confirmation before proceeding                                                  |
 
-### 15.5 My Profile (`/settings/profile`)
+### 15.5 My Profile (`/settings/my-profile`)
 
-Chef profile editor. Three cards in sequence: Chef Profile, Social & External Links, Public Profile Settings.
+Chef profile editor. Focused editing column plus a sticky public preview and readiness rail.
 
 | Element                          | Description                                                                                                                                         |
 | -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Chef Profile card**            | Avatar upload, display name, business name, tagline, highlight text, bio (textarea), cuisine tags, service types                                    |
+| **Chef Profile card**            | Business name, display name, phone, tagline, and bio                                                                                                |
 | **Social & External Links card** | 5 URL inputs for external profiles: Instagram, TikTok, Facebook, YouTube, Linktree/Link Hub. Stored in `social_links` JSONB column on `chefs` table |
-| **Public Profile Settings card** | Public profile slug, SEO preview, discoverability toggle, availability signal                                                                       |
+| **Public Profile Settings card** | Google review URL, official website URL, show-website toggle, preferred inquiry destination, profile photo upload, and logo management link         |
+| **Public Preview card**          | Live mini-preview of public name, photo, tagline, bio, website, Google review, and social link chips                                                |
+| **Profile Readiness card**       | Five-point readiness checklist for identity, story, visual, social proof, and lead path                                                             |
 | "Save Profile" button            | Saves all three cards (Chef Profile + Social & External Links + Public Profile Settings) in a single server action. Toast on success/failure        |
 
 ### 20.1 Delete Account (`/settings/delete-account`)

@@ -577,7 +577,9 @@ For on-site use, ChefFlow provides full-screen tablet forms for RSVP, dietary co
 
 ### Your Public Profile
 
-Share your profile at **app.cheflowhq.com/chef/your-name**. It shows your avatar, bio, cuisine tags, service types, approved testimonials, social links, and public Sample Menus. From a menu detail page, use **Public Profile Sample Menus** to publish a non-archived menu to that section. If the showcased menu has dish photos, the first sorted dish photo appears as the public card image. Without a dish photo, the public card stays text-only. Visitors can click through to your booking page.
+Share your profile at **app.cheflowhq.com/chef/your-name**. It opens with a visual hero, your headline, trust chips, pricing or availability guidance when published, and one clear booking or inquiry path. Portfolio photos or showcased menu photos appear near the top when available, followed by planning guidance, service fit, policies, dietary fit, credentials, reviews, available dates, public events, store links, and gift cards. From a menu detail page, use **Public Profile Sample Menus** to publish a non-archived menu to that section. If the showcased menu has dish photos, the first sorted dish photo appears as the public card image. Without a dish photo, the public card stays text-only.
+
+Use **/chef/your-name?view=hub** when you need a compact link hub for social bios. It shows your profile identity, proof chips, the primary booking or inquiry action, gift cards, store, full profile, website, and social links.
 
 ### Your Booking Page
 

@@ -7,7 +7,7 @@
 
 ## What's Here
 
-- Public chef profile: avatar, display name, tagline, highlight text, social icons (Instagram, TikTok, Facebook, YouTube, Linktree), bio, cuisine tags, service types, public Sample Menus with optional first-dish photo heroes, reviews & testimonials, featured testimonials (gold border), JSON-LD AggregateRating for SEO
+- Public chef profile: visual hero, display name, tagline, highlight text, social icons (Instagram, TikTok, Facebook, YouTube, Linktree), bio summary, cuisine tags, service types, top-of-page visual proof, conversion-focused booking panel, mobile sticky CTA, compact link hub mode, public Sample Menus with optional first-dish photo heroes, reviews & testimonials, featured testimonials (gold border), JSON-LD AggregateRating for SEO
 - Direct chef inquiry page: route-specific inquiry form for one named chef, with truthful expectation copy about direct follow-up instead of matched-chef routing
 - Food operator directory: public discovery page at `/nearby` with search, filters (type, cuisine, state, city, price), pagination
 - Public culinary dictionary: public-safe terms, ingredient aliases, technique vocabulary, safety flags, and dictionary detail pages

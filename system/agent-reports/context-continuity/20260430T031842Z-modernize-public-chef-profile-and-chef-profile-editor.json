@@ -1,0 +1,387 @@
+{
+  "generated_at": "2026-04-30T03:18:40.977Z",
+  "prompt": "Modernize public chef profile and chef profile editor",
+  "terms": ["modernize", "public", "chef", "profile", "editor"],
+  "scanned_dirs": [
+    "app",
+    "components",
+    "lib",
+    "docs/specs",
+    "docs/changes",
+    "docs/app-complete-audit.md",
+    "project-map",
+    "memory",
+    "system/intake",
+    "system/agent-reports"
+  ],
+  "canonical_surfaces": [
+    {
+      "id": "public-homepage",
+      "label": "Public Homepage",
+      "score": 5,
+      "hits": ["public"],
+      "canonical_routes": ["/"],
+      "canonical_files": ["app/(public)/page.tsx"],
+      "sandbox_routes": ["/sandbox/homepage"],
+      "duplicate_policy": {
+        "allowed_duplicates": 1,
+        "allowed_reason": "One sandbox duplicate for interactive experimentation."
+      }
+    },
+    {
+      "id": "client-intake",
+      "label": "Client Intake",
+      "score": 4,
+      "hits": ["public", "chef"],
+      "canonical_routes": ["/book", "/clients/intake"],
+      "canonical_files": [
+        "app/api/book/route.ts",
+        "lib/inquiries/public-actions.ts",
+        "public/embed/chefflow-widget.js"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach to the existing intake lane contract."
+      }
+    },
+    {
+      "id": "chef-flow-replay",
+      "label": "Chef Flow Replay",
+      "score": 3,
+      "hits": ["chef"],
+      "canonical_routes": ["/replay"],
+      "canonical_files": ["app/(chef)/replay/page.tsx", "lib/activity/replay-model.ts"],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Extend replay model and components in place."
+      }
+    },
+    {
+      "id": "agent-skill-system",
+      "label": "Agent Skill System",
+      "score": 1,
+      "hits": ["chef"],
+      "canonical_routes": [],
+      "canonical_files": [
+        "devtools/skill-router.mjs",
+        "devtools/skill-validator.mjs",
+        "devtools/skill-trigger-tests.mjs",
+        "system/agent-golden-prompts/default.json"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Add to the existing skill harness."
+      }
+    },
+    {
+      "id": "remy-ai",
+      "label": "Remy AI",
+      "score": 1,
+      "hits": ["chef"],
+      "canonical_routes": [],
+      "canonical_files": ["components/ai/remy-drawer.tsx", "lib/ai/remy-actions.ts"],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach new assistant behavior to Remy or its shared AI modules."
+      }
+    },
+    {
+      "id": "inventory",
+      "label": "Inventory and Pantry",
+      "score": 1,
+      "hits": ["chef"],
+      "canonical_routes": ["/inventory", "/ops/inventory"],
+      "canonical_files": ["app/(chef)/inventory/page.tsx", "lib/inventory/pantry-engine.ts"],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Deepen the inventory domain in place."
+      }
+    },
+    {
+      "id": "calendar",
+      "label": "Calendar and Scheduling",
+      "score": 1,
+      "hits": ["chef"],
+      "canonical_routes": ["/calendar"],
+      "canonical_files": [
+        "app/(chef)/calendar/page.tsx",
+        "components/calendar/unified-calendar-view.tsx"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach to calendar and scheduling modules."
+      }
+    }
+  ],
+  "related_files": [
+    {
+      "file": "app/(chef)/settings/my-profile/chef-profile-form.tsx",
+      "kind": "route",
+      "score": 31,
+      "hits": ["chef", "profile", "public"]
+    },
+    {
+      "file": "docs/specs/public-chef-credentials-showcase.md",
+      "kind": "spec",
+      "score": 28,
+      "hits": ["public", "chef", "profile", "editor"]
+    },
+    {
+      "file": "app/(chef)/settings/client-preview/public-profile-preview.tsx",
+      "kind": "route",
+      "score": 27,
+      "hits": ["public", "chef", "profile"]
+    },
+    {
+      "file": "app/(chef)/settings/public-profile/page.tsx",
+      "kind": "route",
+      "score": 27,
+      "hits": ["public", "chef", "profile"]
+    },
+    {
+      "file": "app/(public)/hub/me/[profileToken]/profile-view.tsx",
+      "kind": "route",
+      "score": 25,
+      "hits": ["public", "profile", "chef", "editor"]
+    },
+    {
+      "file": "app/(public)/chef/[slug]/gift-cards/page.tsx",
+      "kind": "route",
+      "score": 23,
+      "hits": ["public", "chef", "profile"]
+    },
+    {
+      "file": "app/(public)/chef/[slug]/inquire/page.tsx",
+      "kind": "route",
+      "score": 23,
+      "hits": ["public", "chef", "profile"]
+    },
+    {
+      "file": "app/(public)/chef/[slug]/locations/[locationId]/page.tsx",
+      "kind": "route",
+      "score": 23,
+      "hits": ["public", "chef", "profile"]
+    },
+    {
+      "file": "app/(public)/chef/[slug]/page.tsx",
+      "kind": "route",
+      "score": 23,
+      "hits": ["public", "chef", "profile"]
+    },
+    {
+      "file": "app/(public)/chef/[slug]/partner-signup/page.tsx",
+      "kind": "route",
+      "score": 23,
+      "hits": ["public", "chef", "profile"]
+    },
+    {
+      "file": "app/(public)/chef/[slug]/store/page.tsx",
+      "kind": "route",
+      "score": 23,
+      "hits": ["public", "chef", "profile"]
+    },
+    {
+      "file": "app/(public)/chefs/page.tsx",
+      "kind": "route",
+      "score": 23,
+      "hits": ["public", "chef", "profile"]
+    },
+    {
+      "file": "components/settings/public-profile-settings.tsx",
+      "kind": "component",
+      "score": 23,
+      "hits": ["public", "profile", "chef"]
+    },
+    {
+      "file": "docs/specs/featured-chef-public-proof-and-booking.md",
+      "kind": "spec",
+      "score": 23,
+      "hits": ["public", "chef", "profile"]
+    },
+    {
+      "file": "docs/specs/takeachef-privatechefmanager-parity-doc-program.md",
+      "kind": "spec",
+      "score": 23,
+      "hits": ["chef", "public", "profile"]
+    },
+    {
+      "file": "lib/chef/profile-actions.ts",
+      "kind": "module",
+      "score": 23,
+      "hits": ["chef", "profile", "public"]
+    },
+    {
+      "file": "app/(chef)/network/[chefId]/chef-profile-actions.tsx",
+      "kind": "route",
+      "score": 22,
+      "hits": ["chef", "profile"]
+    },
+    {
+      "file": "app/(chef)/network/[chefId]/page.tsx",
+      "kind": "route",
+      "score": 22,
+      "hits": ["chef", "public", "profile"]
+    },
+    {
+      "file": "app/(chef)/settings/credentials/page.tsx",
+      "kind": "route",
+      "score": 22,
+      "hits": ["chef", "public", "profile", "editor"]
+    },
+    {
+      "file": "app/(chef)/settings/profile/profile-form.tsx",
+      "kind": "route",
+      "score": 22,
+      "hits": ["chef", "profile"]
+    },
+    {
+      "file": "app/(public)/chefs/_components/chef-hero.tsx",
+      "kind": "route",
+      "score": 22,
+      "hits": ["public", "chef"]
+    },
+    {
+      "file": "lib/hub/public-member-profile.ts",
+      "kind": "module",
+      "score": 22,
+      "hits": ["public", "profile", "chef"]
+    },
+    {
+      "file": "lib/public/chef-profile-readiness.ts",
+      "kind": "module",
+      "score": 22,
+      "hits": ["public", "chef", "profile"]
+    },
+    {
+      "file": "app/(chef)/menus/[id]/menu-detail-client.tsx",
+      "kind": "route",
+      "score": 21,
+      "hits": ["chef", "public", "profile", "editor"]
+    },
+    {
+      "file": "components/public/public-inquiry-form.tsx",
+      "kind": "component",
+      "score": 21,
+      "hits": ["public", "chef", "profile"]
+    },
+    {
+      "file": "docs/specs/household-profiles.md",
+      "kind": "spec",
+      "score": 21,
+      "hits": ["profile", "public", "chef", "editor"]
+    },
+    {
+      "file": "docs/specs/rich-text-editor-extended-surfaces.md",
+      "kind": "spec",
+      "score": 21,
+      "hits": ["editor", "public", "chef", "profile"]
+    },
+    {
+      "file": "lib/help/page-info-sections/19-chef-portal-settings.ts",
+      "kind": "module",
+      "score": 21,
+      "hits": ["chef", "public", "profile", "editor"]
+    },
+    {
+      "file": "app/(chef)/community/profile/page.tsx",
+      "kind": "route",
+      "score": 20,
+      "hits": ["chef", "profile", "editor"]
+    },
+    {
+      "file": "app/(chef)/settings/page.tsx",
+      "kind": "route",
+      "score": 20,
+      "hits": ["chef", "public", "profile", "editor"]
+    }
+  ],
+  "recent_commits": [
+    {
+      "line": "0bcd8e901 Merge remote-tracking branch 'origin/feature/public-chef-hub-mode' into feature/public-chef-hub-mode",
+      "score": 4,
+      "hits": ["public", "chef"]
+    },
+    {
+      "line": "ab6d51690 chore(agent): fix public chef hub typecheck feature/public-chef-hub-mode",
+      "score": 4,
+      "hits": ["public", "chef"]
+    },
+    {
+      "line": "b6285d4df chore(agent): fix public chef hub typecheck feature/public-chef-hub-mode",
+      "score": 4,
+      "hits": ["public", "chef"]
+    },
+    {
+      "line": "7e1a99f74 chore(agent): harden backup recovery pipeline feature/public-chef-hub-mode",
+      "score": 2,
+      "hits": ["public", "chef"]
+    },
+    {
+      "line": "80f0c2162 chore(agent): build cheflow cli handoff ops feature/cheflow-cli-handoff-ops-final",
+      "score": 2,
+      "hits": ["chef"]
+    },
+    {
+      "line": "c0dbfdf02 chore(agent): add chef communication noise simulation feature/chef-communication-noise-simulation",
+      "score": 2,
+      "hits": ["chef"]
+    },
+    {
+      "line": "85a45764b chore(agent): build cheflow cli agent builds feature/cheflow-cli-agent-builds-clean",
+      "score": 2,
+      "hits": ["chef"]
+    },
+    {
+      "line": "23d154392 chore(agent): refine live privacy controls feature/cheflow-cli-handoff-ops-final",
+      "score": 1,
+      "hits": ["chef"]
+    },
+    {
+      "line": "09278c20a chore(agent): build client strategy ops feature/cheflow-cli-handoff-ops",
+      "score": 1,
+      "hits": ["chef"]
+    },
+    {
+      "line": "2be1af863 chore(agent): refine question intelligence checks feature/chef-communication-noise-simulation",
+      "score": 1,
+      "hits": ["chef"]
+    }
+  ],
+  "dirty_matches": [
+    {
+      "line": " M public/sw.js",
+      "file": "public/sw.js",
+      "score": 2,
+      "hits": ["public"]
+    }
+  ],
+  "claim_matches": [],
+  "duplicate_risks": [
+    {
+      "level": "high",
+      "reason": "Homepage work is capped to the production homepage and one sandbox duplicate.",
+      "owner": "public-homepage"
+    },
+    {
+      "level": "medium",
+      "reason": "Multiple canonical surfaces matched the prompt.",
+      "owners": ["public-homepage", "client-intake", "chef-flow-replay"]
+    },
+    {
+      "level": "medium",
+      "reason": "Dirty files already exist in this domain and may be another agent active work.",
+      "files": ["public/sw.js"]
+    }
+  ],
+  "continuity": {
+    "decision": "merge-candidate",
+    "stop_required": true,
+    "reason": "High duplicate risk requires a canonical owner decision before coding."
+  }
+}

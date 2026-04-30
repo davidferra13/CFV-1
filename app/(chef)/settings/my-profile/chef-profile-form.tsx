@@ -151,6 +151,52 @@ export function ChefProfileForm({ profile, chefId }: { profile: ChefProfile; che
     return () => URL.revokeObjectURL(objectUrl)
   }, [selectedImageFile])
 
+  const publicDisplayName = displayName.trim() || businessName.trim() || profile.business_name
+  const previewImageUrl = imagePreviewUrl || profileImageUrl
+  const visibleSocialCount = [
+    socialInstagram,
+    socialTiktok,
+    socialFacebook,
+    socialYoutube,
+    socialLinktree,
+  ].filter((value) => value.trim().length > 0).length
+  const hasPrimaryAction = Boolean(
+    preferredInquiryDestination === 'chefflow_only' ||
+    preferredInquiryDestination === 'both' ||
+    (preferredInquiryDestination === 'website_only' &&
+      websiteUrl.trim().length > 0 &&
+      showWebsiteOnPublicProfile)
+  )
+  const readinessItems = [
+    {
+      label: 'Identity',
+      complete: Boolean(publicDisplayName.trim() && tagline.trim()),
+      detail: 'Name and headline are ready for the hero.',
+    },
+    {
+      label: 'Story',
+      complete: bio.trim().length >= 80,
+      detail: 'Bio has enough context for buyers to understand fit.',
+    },
+    {
+      label: 'Visual',
+      complete: Boolean(previewImageUrl),
+      detail: 'Profile photo gives the page a human anchor.',
+    },
+    {
+      label: 'Social proof',
+      complete: Boolean(googleReviewUrl.trim() || visibleSocialCount > 0),
+      detail: 'Reviews or social links give clients a path to verify.',
+    },
+    {
+      label: 'Lead path',
+      complete: hasPrimaryAction,
+      detail: 'A client can clearly choose where to inquire.',
+    },
+  ]
+  const completedReadinessItems = readinessItems.filter((item) => item.complete).length
+  const readinessPercent = Math.round((completedReadinessItems / readinessItems.length) * 100)
+
   function handleSave() {
     setError(null)
     setSuccess(false)
@@ -215,194 +261,309 @@ export function ChefProfileForm({ profile, chefId }: { profile: ChefProfile; che
         {error && <Alert variant="error">{error}</Alert>}
         {success && <Alert variant="success">Profile updated successfully.</Alert>}
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Chef Profile</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Input
-              label="Your Name or Business Name"
-              value={businessName}
-              onChange={(e) => setBusinessName(e.target.value)}
-              helperText="How you'd like to be known - a personal name or brand name both work"
-            />
-            <Input
-              label="Display Name"
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-              helperText="Optional public-facing name. If blank, business name is used."
-            />
-            <Input
-              label="Phone"
-              type="tel"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-            />
-            <Input
-              label="Tagline"
-              value={tagline}
-              onChange={(e) => setTagline(e.target.value)}
-              helperText="Short headline shown on your public chef page."
-            />
-            <Textarea
-              label="Bio"
-              value={bio}
-              onChange={(e) => setBio(e.target.value)}
-              rows={4}
-              helperText={`${bio.length}/1200 characters`}
-            />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Social & External Links</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-sm text-stone-400">
-              Add your social profiles. These appear on your public chef page and directory listing.
-            </p>
-            <Input
-              label="Instagram"
-              type="url"
-              value={socialInstagram}
-              onChange={(e) => setSocialInstagram(e.target.value)}
-              placeholder="https://instagram.com/yourname"
-            />
-            <Input
-              label="TikTok"
-              type="url"
-              value={socialTiktok}
-              onChange={(e) => setSocialTiktok(e.target.value)}
-              placeholder="https://tiktok.com/@yourname"
-            />
-            <Input
-              label="Facebook"
-              type="url"
-              value={socialFacebook}
-              onChange={(e) => setSocialFacebook(e.target.value)}
-              placeholder="https://facebook.com/yourpage"
-            />
-            <Input
-              label="YouTube"
-              type="url"
-              value={socialYoutube}
-              onChange={(e) => setSocialYoutube(e.target.value)}
-              placeholder="https://youtube.com/@yourchannel"
-            />
-            <Input
-              label="Linktree / Link Hub"
-              type="url"
-              value={socialLinktree}
-              onChange={(e) => setSocialLinktree(e.target.value)}
-              placeholder="https://linktr.ee/yourname"
-            />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Public Profile Settings</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Input
-              label="Google Review URL"
-              type="url"
-              value={googleReviewUrl}
-              onChange={(e) => setGoogleReviewUrl(e.target.value)}
-              placeholder="https://g.page/r/..."
-            />
-            <Input
-              label="Official Website URL"
-              type="url"
-              value={websiteUrl}
-              onChange={(e) => setWebsiteUrl(e.target.value)}
-              placeholder="https://your-site.com"
-              helperText="Optional. Your primary marketing website."
-            />
-            <div className="rounded-lg border border-stone-700 p-3">
-              <label className="flex items-center gap-2 text-sm font-medium text-stone-300">
-                <input
-                  type="checkbox"
-                  className="h-4 w-4 rounded border-stone-600 text-brand-600 focus:ring-brand-500"
-                  checked={showWebsiteOnPublicProfile}
-                  onChange={(e) => setShowWebsiteOnPublicProfile(e.target.checked)}
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Chef Profile</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Input
+                  label="Your Name or Business Name"
+                  value={businessName}
+                  onChange={(e) => setBusinessName(e.target.value)}
+                  helperText="How you'd like to be known - a personal name or brand name both work"
                 />
-                Show website on public profile
-              </label>
-              <p className="mt-1 text-xs text-stone-500">
-                When enabled, clients can open your official website from your public chef page.
-              </p>
-            </div>
-            <Select
-              label="Preferred Inquiry Destination"
-              value={preferredInquiryDestination}
-              onChange={(e) => {
-                const value = (e.target.value || 'both') as
-                  | 'website_only'
-                  | 'chefflow_only'
-                  | 'both'
-                setPreferredInquiryDestination(value)
-              }}
-              options={[
-                { value: 'both', label: 'Both (ChefFlow + Website)' },
-                { value: 'chefflow_only', label: 'ChefFlow only' },
-                { value: 'website_only', label: 'Website only' },
-              ]}
-              helperText="Default routing preference for incoming leads."
-            />
-            <div className="w-full">
-              <label className="block text-sm font-medium text-stone-300 mb-1.5">
-                Profile Photo
-              </label>
-              <input
-                type="file"
-                accept="image/jpeg,image/png,image/heic,image/heif,image/webp"
-                onChange={(e) => setSelectedImageFile(e.target.files?.[0] ?? null)}
-                className="block w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 file:mr-3 file:rounded-md file:border-0 file:bg-brand-950 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-brand-400"
-              />
-              <p className="mt-1.5 text-sm text-stone-500">
-                Upload a JPEG, PNG, HEIC, or WebP image (max 10MB).
-              </p>
-              {profileImageUrl && !selectedImageFile && (
-                <button
-                  type="button"
-                  className="mt-2 text-sm text-stone-400 underline hover:text-stone-200"
-                  onClick={() => setProfileImageUrl('')}
-                >
-                  Remove current photo
-                </button>
-              )}
-            </div>
-
-            {(imagePreviewUrl || profileImageUrl) && (
-              <div className="pt-2 border-t border-stone-800">
-                <p className="text-sm text-stone-400 mb-2">Image Preview</p>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={imagePreviewUrl || profileImageUrl}
-                  alt="Profile preview"
-                  className="h-20 w-20 rounded-full object-cover border border-stone-700"
+                <Input
+                  label="Display Name"
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  helperText="Optional public-facing name. If blank, business name is used."
                 />
-              </div>
-            )}
+                <Input
+                  label="Phone"
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                />
+                <Input
+                  label="Tagline"
+                  value={tagline}
+                  onChange={(e) => setTagline(e.target.value)}
+                  helperText="Short headline shown on your public chef page."
+                />
+                <Textarea
+                  label="Bio"
+                  value={bio}
+                  onChange={(e) => setBio(e.target.value)}
+                  rows={4}
+                  helperText={`${bio.length}/1200 characters`}
+                />
+              </CardContent>
+            </Card>
 
-            <div className="w-full pt-2 border-t border-stone-800">
-              <p className="text-sm text-stone-400">
-                Manage your business logo in{' '}
-                <a href="/settings" className="text-brand-400 hover:text-brand-300 underline">
-                  Settings &gt; Profile &amp; Branding
-                </a>
-                .
-              </p>
+            <Card>
+              <CardHeader>
+                <CardTitle>Social & External Links</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-stone-400">
+                  Add your social profiles. These appear on your public chef page and directory
+                  listing.
+                </p>
+                <Input
+                  label="Instagram"
+                  type="url"
+                  value={socialInstagram}
+                  onChange={(e) => setSocialInstagram(e.target.value)}
+                  placeholder="https://instagram.com/yourname"
+                />
+                <Input
+                  label="TikTok"
+                  type="url"
+                  value={socialTiktok}
+                  onChange={(e) => setSocialTiktok(e.target.value)}
+                  placeholder="https://tiktok.com/@yourname"
+                />
+                <Input
+                  label="Facebook"
+                  type="url"
+                  value={socialFacebook}
+                  onChange={(e) => setSocialFacebook(e.target.value)}
+                  placeholder="https://facebook.com/yourpage"
+                />
+                <Input
+                  label="YouTube"
+                  type="url"
+                  value={socialYoutube}
+                  onChange={(e) => setSocialYoutube(e.target.value)}
+                  placeholder="https://youtube.com/@yourchannel"
+                />
+                <Input
+                  label="Linktree / Link Hub"
+                  type="url"
+                  value={socialLinktree}
+                  onChange={(e) => setSocialLinktree(e.target.value)}
+                  placeholder="https://linktr.ee/yourname"
+                />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Public Profile Settings</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Input
+                  label="Google Review URL"
+                  type="url"
+                  value={googleReviewUrl}
+                  onChange={(e) => setGoogleReviewUrl(e.target.value)}
+                  placeholder="https://g.page/r/..."
+                />
+                <Input
+                  label="Official Website URL"
+                  type="url"
+                  value={websiteUrl}
+                  onChange={(e) => setWebsiteUrl(e.target.value)}
+                  placeholder="https://your-site.com"
+                  helperText="Optional. Your primary marketing website."
+                />
+                <div className="rounded-lg border border-stone-700 p-3">
+                  <label className="flex items-center gap-2 text-sm font-medium text-stone-300">
+                    <input
+                      type="checkbox"
+                      className="h-4 w-4 rounded border-stone-600 text-brand-600 focus:ring-brand-500"
+                      checked={showWebsiteOnPublicProfile}
+                      onChange={(e) => setShowWebsiteOnPublicProfile(e.target.checked)}
+                    />
+                    Show website on public profile
+                  </label>
+                  <p className="mt-1 text-xs text-stone-500">
+                    When enabled, clients can open your official website from your public chef page.
+                  </p>
+                </div>
+                <Select
+                  label="Preferred Inquiry Destination"
+                  value={preferredInquiryDestination}
+                  onChange={(e) => {
+                    const value = (e.target.value || 'both') as
+                      | 'website_only'
+                      | 'chefflow_only'
+                      | 'both'
+                    setPreferredInquiryDestination(value)
+                  }}
+                  options={[
+                    { value: 'both', label: 'Both (ChefFlow + Website)' },
+                    { value: 'chefflow_only', label: 'ChefFlow only' },
+                    { value: 'website_only', label: 'Website only' },
+                  ]}
+                  helperText="Default routing preference for incoming leads."
+                />
+                <div className="w-full">
+                  <label className="block text-sm font-medium text-stone-300 mb-1.5">
+                    Profile Photo
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/heic,image/heif,image/webp"
+                    onChange={(e) => setSelectedImageFile(e.target.files?.[0] ?? null)}
+                    className="block w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 file:mr-3 file:rounded-md file:border-0 file:bg-brand-950 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-brand-400"
+                  />
+                  <p className="mt-1.5 text-sm text-stone-500">
+                    Upload a JPEG, PNG, HEIC, or WebP image (max 10MB).
+                  </p>
+                  {profileImageUrl && !selectedImageFile && (
+                    <button
+                      type="button"
+                      className="mt-2 text-sm text-stone-400 underline hover:text-stone-200"
+                      onClick={() => setProfileImageUrl('')}
+                    >
+                      Remove current photo
+                    </button>
+                  )}
+                </div>
+
+                {(imagePreviewUrl || profileImageUrl) && (
+                  <div className="pt-2 border-t border-stone-800">
+                    <p className="text-sm text-stone-400 mb-2">Image Preview</p>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={imagePreviewUrl || profileImageUrl}
+                      alt="Profile preview"
+                      className="h-20 w-20 rounded-full object-cover border border-stone-700"
+                    />
+                  </div>
+                )}
+
+                <div className="w-full pt-2 border-t border-stone-800">
+                  <p className="text-sm text-stone-400">
+                    Manage your business logo in{' '}
+                    <a href="/settings" className="text-brand-400 hover:text-brand-300 underline">
+                      Settings &gt; Profile &amp; Branding
+                    </a>
+                    .
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="flex justify-end">
+              <Button variant="primary" size="lg" onClick={handleSave} loading={isPending}>
+                {isPending ? 'Saving...' : 'Save Profile'}
+              </Button>
             </div>
-          </CardContent>
-        </Card>
+          </div>
 
-        <div className="flex justify-end">
-          <Button variant="primary" size="lg" onClick={handleSave} loading={isPending}>
-            {isPending ? 'Saving...' : 'Save Profile'}
-          </Button>
+          <aside className="space-y-6 lg:sticky lg:top-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Public Preview</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="rounded-2xl border border-stone-700 bg-stone-950 p-4">
+                  <div className="flex items-center gap-3">
+                    {previewImageUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={previewImageUrl}
+                        alt="Profile preview"
+                        className="h-16 w-16 rounded-2xl border border-stone-700 object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-stone-700 bg-stone-900 text-xl font-semibold text-stone-400">
+                        {publicDisplayName.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <div className="min-w-0">
+                      <p className="truncate text-base font-semibold text-stone-100">
+                        {publicDisplayName}
+                      </p>
+                      {tagline.trim() ? (
+                        <p className="mt-1 line-clamp-2 text-sm text-stone-400">{tagline}</p>
+                      ) : (
+                        <p className="mt-1 text-sm text-stone-500">Headline appears here.</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {bio.trim() && (
+                    <p className="mt-4 line-clamp-4 text-sm leading-relaxed text-stone-300">
+                      {bio.trim()}
+                    </p>
+                  )}
+
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {websiteUrl.trim() && showWebsiteOnPublicProfile && (
+                      <span className="rounded-full border border-stone-700 bg-stone-900 px-3 py-1 text-xs text-stone-300">
+                        Website
+                      </span>
+                    )}
+                    {googleReviewUrl.trim() && (
+                      <span className="rounded-full border border-stone-700 bg-stone-900 px-3 py-1 text-xs text-stone-300">
+                        Google reviews
+                      </span>
+                    )}
+                    {visibleSocialCount > 0 && (
+                      <span className="rounded-full border border-stone-700 bg-stone-900 px-3 py-1 text-xs text-stone-300">
+                        {visibleSocialCount} social link{visibleSocialCount === 1 ? '' : 's'}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Profile Readiness</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium text-stone-300">{readinessPercent}% ready</span>
+                    <span className="text-stone-500">
+                      {completedReadinessItems}/{readinessItems.length}
+                    </span>
+                  </div>
+                  <div className="mt-2 h-2 overflow-hidden rounded-full bg-stone-800">
+                    <div
+                      className="h-full rounded-full bg-brand-500 transition-all"
+                      style={{ width: `${readinessPercent}%` }}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  {readinessItems.map((item) => (
+                    <div
+                      key={item.label}
+                      className="rounded-xl border border-stone-800 bg-stone-900/60 p-3"
+                    >
+                      <div className="flex items-start gap-3">
+                        <span
+                          className={[
+                            'mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold',
+                            item.complete
+                              ? 'bg-emerald-950 text-emerald-300'
+                              : 'bg-stone-800 text-stone-500',
+                          ].join(' ')}
+                        >
+                          {item.complete ? 'OK' : ''}
+                        </span>
+                        <div>
+                          <p className="text-sm font-medium text-stone-200">{item.label}</p>
+                          <p className="mt-1 text-xs leading-relaxed text-stone-500">
+                            {item.detail}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </aside>
         </div>
       </div>
     </FormShield>
