@@ -1,0 +1,458 @@
+{
+  "generated_at": "2026-04-30T21:42:13.167Z",
+  "prompt": "Build a perfect spec that improves Remy by applying Codex skills CLI hooks routing permissions audit replay quality gates to Remy",
+  "terms": [
+    "perfect",
+    "spec",
+    "improves",
+    "remy",
+    "applying",
+    "skills",
+    "cli",
+    "hooks",
+    "routing",
+    "permissions",
+    "audit",
+    "replay",
+    "quality",
+    "gates"
+  ],
+  "scanned_dirs": [
+    "app",
+    "components",
+    "lib",
+    "docs/specs",
+    "docs/changes",
+    "docs/app-complete-audit.md",
+    "project-map",
+    "memory",
+    "system/intake",
+    "system/agent-reports"
+  ],
+  "canonical_surfaces": [
+    {
+      "id": "remy-ai",
+      "label": "Remy AI",
+      "score": 6,
+      "hits": ["remy", "routing"],
+      "canonical_routes": [],
+      "canonical_files": ["components/ai/remy-drawer.tsx", "lib/ai/remy-actions.ts"],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach new assistant behavior to Remy or its shared AI modules."
+      }
+    },
+    {
+      "id": "chef-flow-replay",
+      "label": "Chef Flow Replay",
+      "score": 5,
+      "hits": ["replay"],
+      "canonical_routes": ["/replay"],
+      "canonical_files": ["app/(chef)/replay/page.tsx", "lib/activity/replay-model.ts"],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Extend replay model and components in place."
+      }
+    },
+    {
+      "id": "client-intake",
+      "label": "Client Intake",
+      "score": 5,
+      "hits": ["cli"],
+      "canonical_routes": ["/book", "/clients/intake"],
+      "canonical_files": [
+        "app/api/book/route.ts",
+        "lib/inquiries/public-actions.ts",
+        "public/embed/chefflow-widget.js"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach to the existing intake lane contract."
+      }
+    },
+    {
+      "id": "agent-skill-system",
+      "label": "Agent Skill System",
+      "score": 4,
+      "hits": ["skills", "routing", "replay"],
+      "canonical_routes": [],
+      "canonical_files": [
+        "devtools/skill-router.mjs",
+        "devtools/skill-validator.mjs",
+        "devtools/skill-trigger-tests.mjs",
+        "system/agent-golden-prompts/default.json"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Add to the existing skill harness."
+      }
+    },
+    {
+      "id": "chef-command-plane",
+      "label": "ChefFlow Command Plane",
+      "score": 3,
+      "hits": ["spec", "remy", "cli"],
+      "canonical_routes": ["/dashboard"],
+      "canonical_files": [
+        "docs/specs/chefflow-command-plane.md",
+        "lib/interface/action-layer.ts",
+        "lib/events/operating-spine.ts",
+        "components/platform-shell/context-command-panel.tsx"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach command-plane behavior to the canonical computed contract instead of creating another dashboard, Remy hub, command palette, or page-local action list."
+      }
+    },
+    {
+      "id": "autonomous-v1-builder",
+      "label": "Autonomous V1 Builder Loop",
+      "score": 2,
+      "hits": ["spec"],
+      "canonical_routes": [],
+      "canonical_files": [
+        "docs/specs/autonomous-v1-builder-contract.md",
+        "docs/v1-v2-governor.md",
+        "docs/specs/p0-builder-agent-foundation.md"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Extend the governed V1 builder contract instead of creating another queue or autonomous agent surface."
+      }
+    },
+    {
+      "id": "context-continuity",
+      "label": "Context Continuity",
+      "score": 1,
+      "hits": ["skills"],
+      "canonical_routes": [],
+      "canonical_files": [
+        ".claude/skills/context-continuity/SKILL.md",
+        "devtools/context-continuity-scan.mjs",
+        "system/canonical-surfaces.json"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Extend the continuity layer in place."
+      }
+    },
+    {
+      "id": "sticky-notes-intake-layer",
+      "label": "Sticky Notes Intake Layer",
+      "score": 1,
+      "hits": ["spec"],
+      "canonical_routes": [],
+      "canonical_files": [
+        "docs/specs/sticky-notes-intake-layer.md",
+        "devtools/sticky-notes/read-db.mjs",
+        "devtools/sticky-notes/organize.mjs"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach Sticky Notes work to the local intake layer instead of client intake, Remy memory, or an ungoverned backlog."
+      }
+    }
+  ],
+  "related_files": [
+    {
+      "file": "docs/specs/remy-hybrid-cloud-routing.md",
+      "kind": "spec",
+      "score": 42,
+      "hits": ["spec", "remy", "routing", "cli", "hooks", "audit"]
+    },
+    {
+      "file": "docs/specs/api-integration-health-audit.md",
+      "kind": "spec",
+      "score": 38,
+      "hits": ["spec", "audit", "remy", "cli", "hooks", "routing"]
+    },
+    {
+      "file": "docs/specs/continuous-intelligence-layer.md",
+      "kind": "spec",
+      "score": 38,
+      "hits": [
+        "spec",
+        "perfect",
+        "improves",
+        "remy",
+        "cli",
+        "hooks",
+        "permissions",
+        "audit",
+        "replay",
+        "gates"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-local-ai-cohesion.md",
+      "kind": "spec",
+      "score": 37,
+      "hits": ["spec", "remy", "cli", "hooks", "routing", "audit", "quality"]
+    },
+    {
+      "file": "docs/specs/interaction-engine.md",
+      "kind": "spec",
+      "score": 36,
+      "hits": ["spec", "remy", "cli", "hooks", "permissions", "audit", "gates"]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-full-cohesion-answers.md",
+      "kind": "spec",
+      "score": 34,
+      "hits": ["spec", "remy", "cli", "hooks", "permissions", "audit", "replay", "quality", "gates"]
+    },
+    {
+      "file": "docs/specs/rbac-system-specification.md",
+      "kind": "spec",
+      "score": 33,
+      "hits": ["spec", "remy", "cli", "routing", "permissions", "audit", "gates"]
+    },
+    {
+      "file": "docs/specs/system-completeness-interrogation.md",
+      "kind": "spec",
+      "score": 33,
+      "hits": ["spec", "remy", "cli", "hooks", "audit", "replay", "quality", "gates"]
+    },
+    {
+      "file": "app/(chef)/settings/remy/remy-control-client.tsx",
+      "kind": "route",
+      "score": 32,
+      "hits": ["remy", "cli", "audit", "quality"]
+    },
+    {
+      "file": "docs/specs/comprehensive-domain-inventory-phase-1.md",
+      "kind": "spec",
+      "score": 32,
+      "hits": ["spec", "perfect", "remy", "cli", "hooks", "routing", "audit"]
+    },
+    {
+      "file": "docs/specs/operational-resilience-interrogation.md",
+      "kind": "spec",
+      "score": 32,
+      "hits": ["spec", "remy", "cli", "hooks", "audit", "gates"]
+    },
+    {
+      "file": "docs/specs/platform-intelligence-hub.md",
+      "kind": "spec",
+      "score": 31,
+      "hits": ["spec", "perfect", "remy", "cli", "permissions", "audit", "quality", "gates"]
+    },
+    {
+      "file": "docs/specs/remy-runtime-unification-and-quality-recovery.md",
+      "kind": "spec",
+      "score": 31,
+      "hits": ["spec", "remy", "quality", "cli", "hooks"]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-competitive-surface.md",
+      "kind": "spec",
+      "score": 31,
+      "hits": ["spec", "remy", "cli", "hooks", "routing", "audit", "quality", "gates"]
+    },
+    {
+      "file": "lib/events/transitions.ts",
+      "kind": "module",
+      "score": 31,
+      "hits": ["spec", "remy", "cli", "hooks", "permissions", "audit", "gates"]
+    },
+    {
+      "file": "components/navigation/nav-config.tsx",
+      "kind": "component",
+      "score": 30,
+      "hits": ["spec", "remy", "skills", "cli", "hooks", "permissions", "audit", "replay"]
+    },
+    {
+      "file": "docs/specs/culinary-radar-intelligence-layer.md",
+      "kind": "spec",
+      "score": 30,
+      "hits": ["spec", "remy", "skills", "cli", "routing", "audit", "replay", "quality", "gates"]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-full-cohesion.md",
+      "kind": "spec",
+      "score": 30,
+      "hits": ["spec", "remy", "cli", "hooks", "permissions", "audit", "replay", "gates"]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-operational-pressure.md",
+      "kind": "spec",
+      "score": 30,
+      "hits": ["spec", "perfect", "remy", "cli", "audit", "quality", "gates"]
+    },
+    {
+      "file": "docs/specs/pipeline-interrogation.md",
+      "kind": "spec",
+      "score": 29,
+      "hits": ["spec", "remy", "cli", "routing", "audit", "quality", "gates"]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-client-management.md",
+      "kind": "spec",
+      "score": 29,
+      "hits": ["spec", "cli", "remy", "hooks", "audit", "replay", "quality", "gates"]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-cohesiveness-synthesis.md",
+      "kind": "spec",
+      "score": 29,
+      "hits": ["spec", "remy", "cli", "hooks", "audit", "quality", "gates"]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-public-surface-cohesion-v1.md",
+      "kind": "spec",
+      "score": 29,
+      "hits": ["spec", "remy", "cli", "routing", "audit", "quality"]
+    },
+    {
+      "file": "app/api/webhooks/stripe/route.ts",
+      "kind": "route",
+      "score": 28,
+      "hits": ["hooks", "spec", "remy", "cli", "routing", "audit"]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-client-management-phase2.md",
+      "kind": "spec",
+      "score": 28,
+      "hits": ["spec", "cli", "remy", "audit", "gates"]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-role-hierarchy.md",
+      "kind": "spec",
+      "score": 28,
+      "hits": ["spec", "remy", "applying", "cli", "hooks", "routing", "audit", "gates"]
+    },
+    {
+      "file": "lib/clients/actions.ts",
+      "kind": "module",
+      "score": 28,
+      "hits": ["cli", "spec", "remy", "hooks", "audit", "quality", "gates"]
+    },
+    {
+      "file": "docs/specs/dinner-circle-multi-host-collaboration.md",
+      "kind": "spec",
+      "score": 27,
+      "hits": ["spec", "cli", "hooks", "routing", "permissions", "audit"]
+    },
+    {
+      "file": "docs/specs/openclaw-ideal-runtime-and-national-intelligence.md",
+      "kind": "spec",
+      "score": 27,
+      "hits": ["spec", "improves", "cli", "routing", "audit", "replay", "quality"]
+    },
+    {
+      "file": "docs/specs/p1-allergy-and-dietary-trust-alignment.md",
+      "kind": "spec",
+      "score": 27,
+      "hits": ["spec", "remy", "cli", "audit", "quality", "gates"]
+    }
+  ],
+  "recent_commits": [
+    {
+      "line": "999aa8104 chore(agent): encode no lost ask routing feature/pricing-engine-auditor-skill",
+      "score": 2,
+      "hits": ["routing", "audit"]
+    },
+    {
+      "line": "33fbbfce2 chore(agent): add pricing engine auditor skill feature-pricing-engine-auditor-skill",
+      "score": 2,
+      "hits": ["audit"]
+    },
+    {
+      "line": "4bd554f13 chore(agent): quiet omninet routing feature/v1-builder-runtime-scaffold",
+      "score": 1,
+      "hits": ["routing"]
+    }
+  ],
+  "dirty_matches": [
+    {
+      "line": "?? docs/specs/founder-confidence-gate.md",
+      "file": "docs/specs/founder-confidence-gate.md",
+      "score": 2,
+      "hits": ["spec"]
+    }
+  ],
+  "claim_matches": [
+    {
+      "file": "system/agent-claims/20260430T163810Z-feature-private-dev-cockpit-spec-build-geographic-pricing-proof-harness-from-doc.json",
+      "score": 4,
+      "hits": ["spec"],
+      "prompt": "Build Geographic Pricing Proof Harness from docs/specs/geographic-pricing-proof-harness.md",
+      "owned": [],
+      "status": "active"
+    },
+    {
+      "file": "system/agent-claims/20260429T235629Z-feature-voice-ops-complete-build-the-complete-context-continuity-tooling-layer-s.json",
+      "score": 2,
+      "hits": ["spec", "cli"],
+      "prompt": "Build the complete context continuity tooling layer: scanner CLI, canonical surface registry, pre-build gate, Obsidian packet exporter, near-duplicate detector, spec template continuity section, feature family map, and dashboard",
+      "owned": [],
+      "status": "active"
+    },
+    {
+      "file": "system/agent-claims/20260430T165049Z-feature-sticky-notes-promoted-items-processing-build-v1-support-state-change-mot.json",
+      "score": 1,
+      "hits": ["audit"],
+      "prompt": "Build V1 support state-change motion primitives and apply to existing ChefFlow workflow surfaces",
+      "owned": [],
+      "status": "finished"
+    },
+    {
+      "file": "system/agent-claims/20260430T170821Z-feature-sticky-notes-process-command-keep-improving-v1-state-motion-by-adding-li.json",
+      "score": 1,
+      "hits": ["audit"],
+      "prompt": "Keep improving V1 state motion by adding list and action card motion to existing dashboard surfaces",
+      "owned": [],
+      "status": "finished"
+    },
+    {
+      "file": "system/agent-claims/20260430T175158Z-feature-pricing-proof-evidence-scoring-build-pricing-reliability-engine-proof-lo.json",
+      "score": 1,
+      "hits": ["audit"],
+      "prompt": "Build pricing reliability engine proof loop blockers unit normalization coverage menu costing propagation",
+      "owned": [],
+      "status": "active"
+    },
+    {
+      "file": "system/agent-claims/20260430T192043Z-feature-v1-builder-runtime-scaffold-build-chefflow-obsidian-index-notes-and-wire.json",
+      "score": 1,
+      "hits": ["skills"],
+      "prompt": "Build ChefFlow Obsidian index notes and wire future memory packets",
+      "owned": [],
+      "status": "finished"
+    }
+  ],
+  "duplicate_risks": [
+    {
+      "level": "medium",
+      "reason": "Multiple canonical surfaces matched the prompt.",
+      "owners": ["remy-ai", "chef-flow-replay", "client-intake"]
+    },
+    {
+      "level": "medium",
+      "reason": "Dirty files already exist in this domain and may be another agent active work.",
+      "files": ["docs/specs/founder-confidence-gate.md"]
+    },
+    {
+      "level": "medium",
+      "reason": "Active or recorded claims overlap this domain.",
+      "claims": [
+        "system/agent-claims/20260430T163810Z-feature-private-dev-cockpit-spec-build-geographic-pricing-proof-harness-from-doc.json",
+        "system/agent-claims/20260429T235629Z-feature-voice-ops-complete-build-the-complete-context-continuity-tooling-layer-s.json",
+        "system/agent-claims/20260430T165049Z-feature-sticky-notes-promoted-items-processing-build-v1-support-state-change-mot.json"
+      ]
+    }
+  ],
+  "continuity": {
+    "decision": "attach",
+    "stop_required": false,
+    "reason": "Matched canonical surface remy-ai."
+  }
+}
