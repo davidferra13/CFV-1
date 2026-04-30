@@ -48,6 +48,7 @@ function acquireLock(context) {
     startedAt: new Date().toISOString(),
     mode,
     intervalSeconds,
+    normalizeIntake: normalizeIntakeBeforeRun,
   }
   writeFileSync(lockPath, `${JSON.stringify(lock, null, 2)}\n`, 'utf8')
 
@@ -74,6 +75,7 @@ function acquireLock(context) {
 
 function runOnce() {
   const args = ['scripts/v1-builder/run-once.mjs', '--mode', mode]
+  if (normalizeIntakeBeforeRun) args.push('--normalize-intake')
   const child = spawn(process.execPath, args, {
     cwd: context.root,
     stdio: ['ignore', 'pipe', 'pipe'],
@@ -102,6 +104,8 @@ const positionals = positionalArgs()
 const positionalMode = positionals.includes('live') ? 'live' : positionals.includes('dry-run') ? 'dry-run' : null
 const mode = getArg('mode', positionalMode ?? (hasFlag('live') ? 'live' : 'dry-run'))
 const intervalSeconds = Number.parseInt(getArg('interval', '300'), 10)
+const normalizeIntakeBeforeRun =
+  hasFlag('normalize-intake') || process.env.V1_BUILDER_NORMALIZE_INTAKE === '1'
 const context = createBuilderContext()
 ensureBuilderStore(context)
 
@@ -127,6 +131,7 @@ writeRunnerStatus({
   status: 'watching',
   pid: process.pid,
   intervalSeconds,
+  normalizeIntake: normalizeIntakeBeforeRun,
   lockPath: lockResult.lockPath,
   startedAt: new Date().toISOString(),
 }, context)

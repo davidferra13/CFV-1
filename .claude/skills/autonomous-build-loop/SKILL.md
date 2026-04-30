@@ -13,6 +13,8 @@ The bottleneck is not idea supply. ChefFlow already has specs, sticky notes, per
 
 David repeats himself when requests land in chat, notes, specs, audits, and persona output without a required final state. If an ask does not become a queue record, blocker, parked item, duplicate attachment, rejection, or receipt, future agents rediscover it instead of finishing it.
 
+When the live builder is idle but real work exists in specs, Sticky Notes outputs, persona outputs, old Codex queues, ready tasks, or agent findings, treat that as an intake wiring failure, not as a lack of work. The executor should drink from `system/v1-builder/approved-queue.jsonl`, but upstream sources must first be normalized into `system/v1-builder/request-ledger.jsonl` and exactly one final state.
+
 ## Ground Truth
 
 1. Autonomous building is a P0 operating-system requirement, not a nice-to-have.
@@ -42,7 +44,8 @@ When David asks why things are not getting built, do this first:
 2. Inspect the existing governed surfaces before proposing anything new: `docs/specs/autonomous-v1-builder-contract.md`, `docs/specs/sticky-notes-intake-layer.md`, `system/v1-builder/` if present, and Mission Control specs.
 3. Find whether the ask already has a durable state. Search specs, queues, receipts, blocked records, parked records, and Sticky Notes state.
 4. If there is no durable state, create or patch the smallest appropriate skill, spec, queue candidate, or escalation record.
-5. If the ask is buildable and approved, route to `builder`. If not, record why it is not buildable instead of leaving it as advice.
+5. If upstream work exists outside `system/v1-builder/approved-queue.jsonl`, run or build the source intake normalizer before adding another queue family.
+6. If the ask is buildable and approved, route to `builder`. If not, record why it is not buildable instead of leaving it as advice.
 
 ## Routing
 
@@ -64,9 +67,10 @@ When asked to make the project build itself:
 2. Attach to `docs/specs/sticky-notes-intake-layer.md` when Sticky Notes are part of intake.
 3. Inspect current branch and dirty work before writing.
 4. Identify the next missing runtime slice, usually request ledger, queue files, selector, claim writer, receipt writer, escalation writer, or Mission Control projection.
-5. Build the smallest slice that increases unattended throughput.
-6. Record what still requires explicit permission, such as Task Scheduler setup, long-running server start, production deploy, destructive DB work, or `drizzle-kit push`.
-7. Commit and push only owned files.
+5. Prefer source normalization before executor changes when the runner is idle because it only reads an empty approved queue.
+6. Build the smallest slice that increases unattended throughput.
+7. Record what still requires explicit permission, such as Task Scheduler setup, long-running server start, production deploy, destructive DB work, or `drizzle-kit push`.
+8. Commit and push only owned files.
 
 ## Escalation Contract
 

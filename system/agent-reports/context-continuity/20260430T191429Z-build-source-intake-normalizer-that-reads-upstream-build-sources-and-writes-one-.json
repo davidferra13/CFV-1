@@ -1,0 +1,773 @@
+{
+  "generated_at": "2026-04-30T19:14:28.122Z",
+  "prompt": "Build source intake normalizer that reads upstream build sources and writes one durable final state per item into request-ledger then approved queue for live builder",
+  "terms": [
+    "source",
+    "intake",
+    "normalizer",
+    "reads",
+    "upstream",
+    "sources",
+    "writes",
+    "one",
+    "durable",
+    "final",
+    "state",
+    "per",
+    "item",
+    "request-ledger",
+    "then",
+    "approved",
+    "queue",
+    "live",
+    "builder"
+  ],
+  "scanned_dirs": [
+    "app",
+    "components",
+    "lib",
+    "docs/specs",
+    "docs/changes",
+    "docs/app-complete-audit.md",
+    "project-map",
+    "memory",
+    "system/intake",
+    "system/agent-reports"
+  ],
+  "canonical_surfaces": [
+    {
+      "id": "autonomous-v1-builder",
+      "label": "Autonomous V1 Builder Loop",
+      "score": 10,
+      "hits": ["approved", "queue", "builder"],
+      "canonical_routes": [],
+      "canonical_files": [
+        "docs/specs/autonomous-v1-builder-contract.md",
+        "docs/v1-v2-governor.md",
+        "docs/specs/p0-builder-agent-foundation.md"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Extend the governed V1 builder contract instead of creating another queue or autonomous agent surface."
+      }
+    },
+    {
+      "id": "sticky-notes-intake-layer",
+      "label": "Sticky Notes Intake Layer",
+      "score": 8,
+      "hits": ["source", "intake", "per"],
+      "canonical_routes": [],
+      "canonical_files": [
+        "docs/specs/sticky-notes-intake-layer.md",
+        "devtools/sticky-notes/read-db.mjs",
+        "devtools/sticky-notes/organize.mjs"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach Sticky Notes work to the local intake layer instead of client intake, Remy memory, or an ungoverned backlog."
+      }
+    },
+    {
+      "id": "chef-command-plane",
+      "label": "ChefFlow Command Plane",
+      "score": 6,
+      "hits": ["one", "state", "per"],
+      "canonical_routes": ["/dashboard"],
+      "canonical_files": [
+        "docs/specs/chefflow-command-plane.md",
+        "lib/interface/action-layer.ts",
+        "lib/events/operating-spine.ts",
+        "components/platform-shell/context-command-panel.tsx"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach command-plane behavior to the canonical computed contract instead of creating another dashboard, Remy hub, command palette, or page-local action list."
+      }
+    },
+    {
+      "id": "client-intake",
+      "label": "Client Intake",
+      "score": 5,
+      "hits": ["intake"],
+      "canonical_routes": ["/book", "/clients/intake"],
+      "canonical_files": [
+        "app/api/book/route.ts",
+        "lib/inquiries/public-actions.ts",
+        "public/embed/chefflow-widget.js"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach to the existing intake lane contract."
+      }
+    },
+    {
+      "id": "public-homepage",
+      "label": "Public Homepage",
+      "score": 3,
+      "hits": ["one", "per"],
+      "canonical_routes": ["/"],
+      "canonical_files": ["app/(public)/page.tsx"],
+      "sandbox_routes": ["/sandbox/homepage"],
+      "duplicate_policy": {
+        "allowed_duplicates": 1,
+        "allowed_reason": "One sandbox duplicate for interactive experimentation."
+      }
+    },
+    {
+      "id": "voice-ops",
+      "label": "Voice Operations",
+      "score": 2,
+      "hits": ["one", "per"],
+      "canonical_routes": [],
+      "canonical_files": [
+        "lib/calling/voice-ops-actions.ts",
+        "components/calling/voice-ops-report-panel.tsx"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach to voice operations modules."
+      }
+    },
+    {
+      "id": "remy-ai",
+      "label": "Remy AI",
+      "score": 1,
+      "hits": ["one"],
+      "canonical_routes": [],
+      "canonical_files": ["components/ai/remy-drawer.tsx", "lib/ai/remy-actions.ts"],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach new assistant behavior to Remy or its shared AI modules."
+      }
+    },
+    {
+      "id": "calendar",
+      "label": "Calendar and Scheduling",
+      "score": 1,
+      "hits": ["one"],
+      "canonical_routes": ["/calendar"],
+      "canonical_files": [
+        "app/(chef)/calendar/page.tsx",
+        "components/calendar/unified-calendar-view.tsx"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach to calendar and scheduling modules."
+      }
+    }
+  ],
+  "related_files": [
+    {
+      "file": "docs/specs/autonomous-v1-builder-contract.md",
+      "kind": "spec",
+      "score": 79,
+      "hits": [
+        "builder",
+        "source",
+        "intake",
+        "reads",
+        "sources",
+        "writes",
+        "one",
+        "durable",
+        "final",
+        "state"
+      ]
+    },
+    {
+      "file": "docs/specs/sticky-notes-intake-layer.md",
+      "kind": "spec",
+      "score": 69,
+      "hits": [
+        "intake",
+        "source",
+        "reads",
+        "writes",
+        "one",
+        "durable",
+        "final",
+        "state",
+        "per",
+        "item"
+      ]
+    },
+    {
+      "file": "docs/specs/openclaw-ideal-runtime-and-national-intelligence.md",
+      "kind": "spec",
+      "score": 64,
+      "hits": [
+        "source",
+        "reads",
+        "upstream",
+        "sources",
+        "writes",
+        "one",
+        "durable",
+        "final",
+        "state",
+        "per"
+      ]
+    },
+    {
+      "file": "docs/specs/private-dev-cockpit-consolidation.md",
+      "kind": "spec",
+      "score": 61,
+      "hits": [
+        "source",
+        "intake",
+        "reads",
+        "sources",
+        "writes",
+        "one",
+        "final",
+        "state",
+        "per",
+        "item"
+      ]
+    },
+    {
+      "file": "docs/specs/openclaw-pc-local-mirror-and-backup-contract.md",
+      "kind": "spec",
+      "score": 60,
+      "hits": [
+        "source",
+        "reads",
+        "upstream",
+        "sources",
+        "writes",
+        "one",
+        "durable",
+        "final",
+        "state",
+        "per"
+      ]
+    },
+    {
+      "file": "app/(public)/for-operators/page.tsx",
+      "kind": "route",
+      "score": 59,
+      "hits": ["per", "source", "intake", "reads", "one", "final", "state", "item", "then", "live"]
+    },
+    {
+      "file": "docs/specs/continuous-intelligence-layer.md",
+      "kind": "spec",
+      "score": 59,
+      "hits": [
+        "source",
+        "reads",
+        "sources",
+        "writes",
+        "one",
+        "durable",
+        "final",
+        "state",
+        "per",
+        "item"
+      ]
+    },
+    {
+      "file": "docs/specs/notes-dishes-menus-client-event-pipeline.md",
+      "kind": "spec",
+      "score": 59,
+      "hits": [
+        "source",
+        "intake",
+        "reads",
+        "sources",
+        "writes",
+        "one",
+        "final",
+        "state",
+        "per",
+        "then"
+      ]
+    },
+    {
+      "file": "docs/specs/culinary-radar-intelligence-layer.md",
+      "kind": "spec",
+      "score": 57,
+      "hits": [
+        "source",
+        "reads",
+        "sources",
+        "writes",
+        "one",
+        "final",
+        "state",
+        "per",
+        "item",
+        "then"
+      ]
+    },
+    {
+      "file": "docs/specs/website-build-research-spec-code-cross-reference-upgrade.md",
+      "kind": "spec",
+      "score": 57,
+      "hits": [
+        "source",
+        "intake",
+        "reads",
+        "sources",
+        "writes",
+        "one",
+        "durable",
+        "final",
+        "state",
+        "per"
+      ]
+    },
+    {
+      "file": "docs/specs/openclaw-food-price-intelligence.md",
+      "kind": "spec",
+      "score": 55,
+      "hits": [
+        "source",
+        "normalizer",
+        "reads",
+        "sources",
+        "writes",
+        "one",
+        "state",
+        "per",
+        "item",
+        "then"
+      ]
+    },
+    {
+      "file": "docs/specs/openclaw-social-media-orchestration.md",
+      "kind": "spec",
+      "score": 55,
+      "hits": [
+        "source",
+        "upstream",
+        "sources",
+        "one",
+        "durable",
+        "state",
+        "per",
+        "item",
+        "then",
+        "approved"
+      ]
+    },
+    {
+      "file": "docs/specs/chef-pricing-override-infrastructure.md",
+      "kind": "spec",
+      "score": 54,
+      "hits": [
+        "source",
+        "reads",
+        "sources",
+        "writes",
+        "one",
+        "durable",
+        "final",
+        "state",
+        "per",
+        "item"
+      ]
+    },
+    {
+      "file": "docs/specs/p0-chef-cpa-ready-tax-export-and-reconciliation.md",
+      "kind": "spec",
+      "score": 54,
+      "hits": [
+        "source",
+        "reads",
+        "sources",
+        "writes",
+        "one",
+        "final",
+        "state",
+        "per",
+        "item",
+        "then"
+      ]
+    },
+    {
+      "file": "docs/specs/auto-costing-engine.md",
+      "kind": "spec",
+      "score": 53,
+      "hits": [
+        "source",
+        "reads",
+        "sources",
+        "writes",
+        "one",
+        "final",
+        "state",
+        "per",
+        "item",
+        "then"
+      ]
+    },
+    {
+      "file": "docs/specs/p1-chef-collab-spaces.md",
+      "kind": "spec",
+      "score": 53,
+      "hits": [
+        "source",
+        "reads",
+        "writes",
+        "one",
+        "durable",
+        "final",
+        "state",
+        "per",
+        "item",
+        "then"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-cohesiveness-synthesis.md",
+      "kind": "spec",
+      "score": 53,
+      "hits": [
+        "source",
+        "intake",
+        "reads",
+        "sources",
+        "writes",
+        "one",
+        "state",
+        "per",
+        "item",
+        "then"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-operational-pressure.md",
+      "kind": "spec",
+      "score": 53,
+      "hits": ["per", "source", "reads", "writes", "one", "final", "state", "item", "then", "queue"]
+    },
+    {
+      "file": "docs/specs/api-integration-health-audit.md",
+      "kind": "spec",
+      "score": 52,
+      "hits": [
+        "source",
+        "reads",
+        "upstream",
+        "sources",
+        "one",
+        "final",
+        "state",
+        "per",
+        "item",
+        "then"
+      ]
+    },
+    {
+      "file": "docs/specs/catalog-store-selection-and-image-delivery-contract.md",
+      "kind": "spec",
+      "score": 52,
+      "hits": [
+        "live",
+        "source",
+        "upstream",
+        "sources",
+        "writes",
+        "one",
+        "final",
+        "state",
+        "per",
+        "item"
+      ]
+    },
+    {
+      "file": "docs/specs/interaction-engine.md",
+      "kind": "spec",
+      "score": 52,
+      "hits": [
+        "source",
+        "reads",
+        "sources",
+        "writes",
+        "one",
+        "final",
+        "state",
+        "per",
+        "item",
+        "then"
+      ]
+    },
+    {
+      "file": "docs/specs/onboarding-overhaul.md",
+      "kind": "spec",
+      "score": 52,
+      "hits": [
+        "source",
+        "reads",
+        "sources",
+        "writes",
+        "one",
+        "final",
+        "state",
+        "per",
+        "item",
+        "then"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-cannabis-portal.md",
+      "kind": "spec",
+      "score": 51,
+      "hits": [
+        "source",
+        "intake",
+        "reads",
+        "writes",
+        "one",
+        "final",
+        "state",
+        "per",
+        "item",
+        "then"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-seam-cohesion.md",
+      "kind": "spec",
+      "score": 51,
+      "hits": [
+        "source",
+        "intake",
+        "reads",
+        "writes",
+        "one",
+        "final",
+        "state",
+        "per",
+        "item",
+        "then"
+      ]
+    },
+    {
+      "file": "docs/specs/navigation-action-bar.md",
+      "kind": "spec",
+      "score": 50,
+      "hits": ["source", "reads", "sources", "one", "final", "state", "per", "item", "then", "live"]
+    },
+    {
+      "file": "docs/specs/p0-builder-agent-foundation.md",
+      "kind": "spec",
+      "score": 50,
+      "hits": [
+        "builder",
+        "source",
+        "reads",
+        "sources",
+        "writes",
+        "one",
+        "durable",
+        "state",
+        "per",
+        "then"
+      ]
+    },
+    {
+      "file": "docs/specs/p1-allergy-and-dietary-trust-alignment.md",
+      "kind": "spec",
+      "score": 50,
+      "hits": [
+        "source",
+        "intake",
+        "reads",
+        "sources",
+        "writes",
+        "one",
+        "final",
+        "state",
+        "per",
+        "item"
+      ]
+    },
+    {
+      "file": "docs/specs/system-completeness-interrogation.md",
+      "kind": "spec",
+      "score": 50,
+      "hits": [
+        "source",
+        "reads",
+        "sources",
+        "writes",
+        "one",
+        "durable",
+        "final",
+        "state",
+        "per",
+        "item"
+      ]
+    },
+    {
+      "file": "lib/interface/action-layer.ts",
+      "kind": "module",
+      "score": 50,
+      "hits": [
+        "source",
+        "intake",
+        "one",
+        "final",
+        "state",
+        "per",
+        "item",
+        "then",
+        "approved",
+        "queue"
+      ]
+    },
+    {
+      "file": "docs/specs/geographic-pricing-proof-harness.md",
+      "kind": "spec",
+      "score": 49,
+      "hits": [
+        "source",
+        "reads",
+        "writes",
+        "one",
+        "final",
+        "state",
+        "per",
+        "item",
+        "then",
+        "approved"
+      ]
+    }
+  ],
+  "recent_commits": [
+    {
+      "line": "3d245845a chore(agent): record live builder wiring receipt feature/v1-builder-runtime-scaffold",
+      "score": 3,
+      "hits": ["live", "builder"]
+    },
+    {
+      "line": "51e50bdbb chore(agent): wire live v1 builder execution feature/v1-builder-runtime-scaffold",
+      "score": 3,
+      "hits": ["live", "builder"]
+    },
+    {
+      "line": "7230befbf chore(agent): add dry run v1 builder watcher feature/v1-builder-runtime-scaffold",
+      "score": 2,
+      "hits": ["builder"]
+    },
+    {
+      "line": "be070b858 chore(agent): record v1 builder scaffold receipt feature/v1-builder-runtime-scaffold",
+      "score": 2,
+      "hits": ["builder"]
+    },
+    {
+      "line": "3ffc5a8cb chore(agent): scaffold v1 builder runtime feature/v1-builder-runtime-scaffold",
+      "score": 2,
+      "hits": ["builder"]
+    },
+    {
+      "line": "2348ad0cf chore(agent): record state motion closeout feature-sticky-notes-promoted-items-processing",
+      "score": 2,
+      "hits": ["state", "item"]
+    },
+    {
+      "line": "af809250b chore(agent): add state change motion feature-sticky-notes-promoted-items-processing",
+      "score": 2,
+      "hits": ["state", "item"]
+    },
+    {
+      "line": "5d16246c0 chore(agent): process sticky notes promoted items feature/sticky-notes-promoted-items-processing",
+      "score": 2,
+      "hits": ["item"]
+    },
+    {
+      "line": "de7d16925 chore(agent): hide sticky notes scheduler npm shim feature/v1-builder-runtime-scaffold",
+      "score": 1,
+      "hits": ["builder"]
+    },
+    {
+      "line": "8221b8247 chore(agent): add sticky notes color state pipeline feature/pricing-proof-evidence-scoring",
+      "score": 1,
+      "hits": ["state"]
+    }
+  ],
+  "dirty_matches": [
+    {
+      "line": " M logs/live-ops-guardian-alert.txt",
+      "file": "logs/live-ops-guardian-alert.txt",
+      "score": 2,
+      "hits": ["live"]
+    },
+    {
+      "line": " M logs/live-ops-guardian.log.old",
+      "file": "logs/live-ops-guardian.log.old",
+      "score": 2,
+      "hits": ["live"]
+    },
+    {
+      "line": " M system/identity-claims/state.json",
+      "file": "system/identity-claims/state.json",
+      "score": 2,
+      "hits": ["state"]
+    }
+  ],
+  "claim_matches": [
+    {
+      "file": "system/agent-claims/20260430T165049Z-feature-sticky-notes-promoted-items-processing-build-v1-support-state-change-mot.json",
+      "score": 13,
+      "hits": ["one", "state", "item"],
+      "prompt": "Build V1 support state-change motion primitives and apply to existing ChefFlow workflow surfaces",
+      "owned": [],
+      "status": "finished"
+    },
+    {
+      "file": "system/agent-claims/20260430T170821Z-feature-sticky-notes-process-command-keep-improving-v1-state-motion-by-adding-li.json",
+      "score": 10,
+      "hits": ["one", "state", "queue"],
+      "prompt": "Keep improving V1 state motion by adding list and action card motion to existing dashboard surfaces",
+      "owned": [],
+      "status": "finished"
+    },
+    {
+      "file": "system/agent-claims/20260429T234252Z-feature-pantry-engine-create-persistent-codex-behavior-to-prevent-fragmented-dup.json",
+      "score": 2,
+      "hits": ["per"],
+      "prompt": "Create persistent Codex behavior to prevent fragmented duplicate builds and capture conversation memory for Obsidian-style continuity",
+      "owned": [],
+      "status": "active"
+    }
+  ],
+  "duplicate_risks": [
+    {
+      "level": "medium",
+      "reason": "Multiple canonical surfaces matched the prompt.",
+      "owners": ["autonomous-v1-builder", "sticky-notes-intake-layer", "chef-command-plane"]
+    },
+    {
+      "level": "medium",
+      "reason": "Dirty files already exist in this domain and may be another agent active work.",
+      "files": [
+        "logs/live-ops-guardian-alert.txt",
+        "logs/live-ops-guardian.log.old",
+        "system/identity-claims/state.json"
+      ]
+    },
+    {
+      "level": "medium",
+      "reason": "Active or recorded claims overlap this domain.",
+      "claims": [
+        "system/agent-claims/20260430T165049Z-feature-sticky-notes-promoted-items-processing-build-v1-support-state-change-mot.json",
+        "system/agent-claims/20260430T170821Z-feature-sticky-notes-process-command-keep-improving-v1-state-motion-by-adding-li.json",
+        "system/agent-claims/20260429T234252Z-feature-pantry-engine-create-persistent-codex-behavior-to-prevent-fragmented-dup.json"
+      ]
+    }
+  ],
+  "continuity": {
+    "decision": "attach",
+    "stop_required": false,
+    "reason": "Matched canonical surface autonomous-v1-builder."
+  }
+}

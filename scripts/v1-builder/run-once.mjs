@@ -3,6 +3,7 @@ import { execFileSync, execSync, spawnSync } from 'node:child_process'
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
+import { normalizeIntake } from './normalize-intake.mjs'
 import {
   createClaim,
   createBuilderContext,
@@ -67,6 +68,7 @@ function buildStatus(fields) {
     activeLane: fields.activeLane ?? null,
     branch: fields.branch ?? null,
     task: fields.task ?? null,
+    intake: fields.intake ?? null,
     claims: fields.claims ?? [],
     errors: fields.errors ?? [],
     nextAction: fields.nextAction ?? null,
@@ -79,6 +81,9 @@ const positionalMode = positionals.includes('live') ? 'live' : positionals.inclu
 const mode = getArg('mode', positionalMode ?? (hasFlag('live') ? 'live' : 'dry-run'))
 const context = createBuilderContext()
 ensureBuilderStore(context)
+const shouldNormalizeIntake =
+  hasFlag('normalize-intake') || process.env.V1_BUILDER_NORMALIZE_INTAKE === '1'
+let intakeSummary = null
 
 const branch = gitValue('git branch --show-current')
 const activeLane = readActiveLane(context)
@@ -113,6 +118,10 @@ if (freshClaims.length > 0) {
   process.exit(0)
 }
 
+if (shouldNormalizeIntake) {
+  intakeSummary = normalizeIntake({ context, write: true })
+}
+
 const { records, errors } = loadApprovedQueue(context)
 if (errors.length > 0) {
   const status = buildStatus({
@@ -121,6 +130,7 @@ if (errors.length > 0) {
     reason: 'malformed_queue',
     activeLane,
     branch,
+    intake: intakeSummary,
     errors,
     nextAction: 'Fix the malformed queue record before running the builder.',
   })
@@ -137,7 +147,10 @@ if (!task) {
     reason: 'queue_empty',
     activeLane,
     branch,
-    nextAction: 'Add approved V1 tasks to system/v1-builder/approved-queue.jsonl.',
+    intake: intakeSummary,
+    nextAction: shouldNormalizeIntake
+      ? 'No approved V1 tasks were produced by the intake normalizer.'
+      : 'Run node scripts/v1-builder/normalize-intake.mjs --write, or rerun with --normalize-intake.',
   })
   writeRunnerStatus(status, context)
   console.log(JSON.stringify(status, null, 2))
@@ -151,6 +164,7 @@ if (mode !== 'live') {
     activeLane,
     branch,
     task,
+    intake: intakeSummary,
     nextAction: 'Dry-run runner found the next task. Run with --mode live to execute in an isolated worktree.',
   })
 
@@ -167,6 +181,7 @@ if (!commandExists('codex')) {
     activeLane,
     branch,
     task,
+    intake: intakeSummary,
     nextAction: 'Install or expose the Codex CLI before live background execution.',
   })
   writeRunnerStatus(status, context)
@@ -288,6 +303,7 @@ try {
     activeLane,
     branch: claim.branch,
     task,
+    intake: intakeSummary,
     nextAction: receiptResult.receipt.missionControlSummary,
   })
   writeRunnerStatus(status, context)
@@ -314,6 +330,7 @@ try {
     activeLane,
     branch: claim.branch,
     task,
+    intake: intakeSummary,
     errors: [{ message }],
     nextAction: 'Review the claim and receipt before retrying.',
   })

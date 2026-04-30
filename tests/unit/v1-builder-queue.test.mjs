@@ -17,10 +17,12 @@ import {
   writeRunnerStatus,
   writeReceipt,
 } from '../../scripts/v1-builder/core.mjs'
+import { normalizeIntake } from '../../scripts/v1-builder/normalize-intake.mjs'
 
 function tempContext() {
   const root = mkdtempSync(join(tmpdir(), 'v1-builder-'))
   mkdirSync(join(root, 'docs'), { recursive: true })
+  mkdirSync(join(root, 'docs', 'specs'), { recursive: true })
   writeFileSync(
     join(root, 'docs', 'v1-v2-governor.md'),
     '## Current Active Lane\n\n`V1 event spine stabilization`\n',
@@ -148,4 +150,128 @@ test('writes ignored runner status for Mission Control polling', () => {
   const result = JSON.parse(readFileSync(path, 'utf8'))
   assert.equal(result.runner, 'v1-builder')
   assert.equal(result.status, 'idle')
+})
+
+test('normalizes ready P0 V1 specs into the request ledger and approved queue', () => {
+  const context = tempContext()
+  const specDir = join(context.root, 'docs', 'specs')
+  writeFileSync(
+    join(specDir, 'event-payment-trust.md'),
+    [
+      '# Event Payment Trust Repair',
+      '',
+      '> **Status:** ready',
+      '> **Priority:** P0 (blocking)',
+      '> **Depends on:** None',
+      '',
+      'Repair the V1 event payment trust path so paid jobs do not need a spreadsheet.',
+    ].join('\n'),
+    'utf8',
+  )
+
+  const summary = normalizeIntake({
+    context,
+    write: true,
+    now: new Date('2026-04-30T12:00:00Z'),
+  })
+
+  assert.equal(summary.status, 'written')
+  assert.equal(summary.byStatus.queued, 1)
+
+  const ledger = readJsonl(join(context.builderDir, 'request-ledger.jsonl')).records
+  const queue = readJsonl(join(context.builderDir, 'approved-queue.jsonl')).records
+  assert.equal(ledger.length, 1)
+  assert.equal(ledger[0].status, 'queued')
+  assert.equal(queue.length, 1)
+  assert.equal(queue[0].classification, 'approved_v1_blocker')
+  assert.equal(queue[0].status, 'queued')
+  assert.equal(queue[0].canonicalOwner, 'docs/specs/event-payment-trust.md')
+})
+
+test('normalizer preserves legacy queue items as research instead of buildable work', () => {
+  const context = tempContext()
+  const legacyDir = join(context.root, 'system', 'build-queue')
+  mkdirSync(legacyDir, { recursive: true })
+  writeFileSync(
+    join(legacyDir, '001-high-generic-dashboard.md'),
+    [
+      '---',
+      'status: pending',
+      'priority: high',
+      '---',
+      '# Generic Dashboard Expansion',
+      '',
+      'Add a broad dashboard from an old derived queue.',
+    ].join('\n'),
+    'utf8',
+  )
+
+  const summary = normalizeIntake({
+    context,
+    write: true,
+    now: new Date('2026-04-30T12:00:00Z'),
+  })
+
+  assert.equal(summary.byStatus.research_required, 1)
+  assert.equal(readJsonl(join(context.builderDir, 'approved-queue.jsonl')).records.length, 0)
+  assert.equal(readJsonl(join(context.builderDir, 'research-queue.jsonl')).records.length, 1)
+})
+
+test('normalizer is idempotent by source path', () => {
+  const context = tempContext()
+  const specDir = join(context.root, 'docs', 'specs')
+  writeFileSync(
+    join(specDir, 'quote-safety.md'),
+    [
+      '# Quote Safety',
+      '',
+      '> **Status:** ready',
+      '> **Priority:** P0',
+      '',
+      'Repair quote safety for the V1 event spine.',
+    ].join('\n'),
+    'utf8',
+  )
+
+  normalizeIntake({
+    context,
+    write: true,
+    now: new Date('2026-04-30T12:00:00Z'),
+  })
+  const second = normalizeIntake({
+    context,
+    write: true,
+    now: new Date('2026-04-30T12:01:00Z'),
+  })
+
+  assert.equal(second.newRecords, 0)
+  assert.equal(readJsonl(join(context.builderDir, 'request-ledger.jsonl')).records.length, 1)
+  assert.equal(readJsonl(join(context.builderDir, 'approved-queue.jsonl')).records.length, 1)
+})
+
+test('normalizer rejects recipe generation asks before any queue write', () => {
+  const context = tempContext()
+  const specDir = join(context.root, 'docs', 'specs')
+  writeFileSync(
+    join(specDir, 'recipe-generator.md'),
+    [
+      '# Recipe Generator',
+      '',
+      '> **Status:** ready',
+      '> **Priority:** P0',
+      '',
+      'Generate recipes for chefs automatically.',
+    ].join('\n'),
+    'utf8',
+  )
+
+  normalizeIntake({
+    context,
+    write: true,
+    now: new Date('2026-04-30T12:00:00Z'),
+  })
+
+  const ledger = readJsonl(join(context.builderDir, 'request-ledger.jsonl')).records
+  assert.equal(ledger[0].status, 'rejected')
+  assert.equal(readJsonl(join(context.builderDir, 'approved-queue.jsonl')).records.length, 0)
 })

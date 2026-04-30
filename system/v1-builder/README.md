@@ -15,6 +15,24 @@ It exists so ChefFlow asks do not depend on chat memory. Every non-trivial ask s
 - `overrides.jsonl`: explicit developer override records.
 - `claims/`: active or historical task claims.
 - `receipts/`: append-only run receipts.
+- `runtime/intake-normalizer-status.json`: latest source intake normalization summary.
+
+## Intake Normalizer
+
+The live builder only executes `approved-queue.jsonl`. Upstream sources such as specs, Sticky Notes outputs, persona outputs, old Codex queues, and agent findings must first pass through the intake normalizer:
+
+```text
+node scripts/v1-builder/normalize-intake.mjs --write
+```
+
+The normalizer writes one durable ledger state per new source item, then routes it to exactly one sink: approved queue, research queue, blocked, parked, rejected, or ledger-only duplicate attachment.
+
+Use this flag to let a one-shot or watcher run normalize intake before selecting work:
+
+```text
+node scripts/v1-builder/run-once.mjs --mode dry-run --normalize-intake
+node scripts/v1-builder/watch.mjs --mode live --normalize-intake
+```
 
 ## Runner Rule
 
