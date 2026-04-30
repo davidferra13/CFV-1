@@ -13,9 +13,15 @@ type Props = {
   chefId: string
   chefName: string
   currentStatus: 'active' | 'suspended'
+  founderAuthorityProtected?: boolean
 }
 
-export function ChefDangerZone({ chefId, chefName, currentStatus }: Props) {
+export function ChefDangerZone({
+  chefId,
+  chefName,
+  currentStatus,
+  founderAuthorityProtected = false,
+}: Props) {
   const [confirmText, setConfirmText] = useState('')
   const [feedback, setFeedback] = useState<{ ok: boolean; msg: string } | null>(null)
   const [isPending, startTransition] = useTransition()
@@ -67,7 +73,11 @@ export function ChefDangerZone({ chefId, chefName, currentStatus }: Props) {
         <h2 className="text-sm font-semibold text-red-700">Danger Zone</h2>
       </div>
       <div className="p-4 space-y-4">
-        {isSuspended ? (
+        {founderAuthorityProtected ? (
+          <div className="bg-amber-950 border border-amber-800 rounded-lg px-3 py-2.5 text-sm text-amber-200">
+            Founder Authority is protected. This account cannot be suspended from admin tools.
+          </div>
+        ) : isSuspended ? (
           <div className="space-y-3">
             <div className="bg-amber-950 border border-amber-200 rounded-lg px-3 py-2.5 text-sm text-amber-800">
               This account is currently <strong>suspended</strong>. The chef cannot log in.

@@ -41,6 +41,12 @@ export type OwnerIdentity = {
   warnings: string[]
 }
 
+export type FounderAuthorityTarget = {
+  chefId?: string | null
+  authUserId?: string | null
+  email?: string | null
+}
+
 function normalizeEmail(value: string): string {
   return value.trim().toLowerCase()
 }
@@ -249,6 +255,36 @@ export async function getFounderAuthorityHealth(db: any): Promise<FounderAuthori
     configuredFounderAuthUserId,
     warnings: uniqueStrings(warnings),
   }
+}
+
+export async function isFounderAuthorityTarget(
+  db: any,
+  target: FounderAuthorityTarget
+): Promise<boolean> {
+  const normalizedChefId = normalizeId(target.chefId)
+  const normalizedAuthUserId = normalizeId(target.authUserId)
+  const normalizedEmail = normalizeEmail(target.email ?? '')
+
+  if (normalizedEmail && isFounderEmail(normalizedEmail)) {
+    return true
+  }
+
+  const ownerIdentity = await resolveOwnerIdentity(db)
+
+  if (normalizedChefId && ownerIdentity.ownerChefId === normalizedChefId) {
+    return true
+  }
+
+  if (normalizedAuthUserId && ownerIdentity.ownerAuthUserId === normalizedAuthUserId) {
+    return true
+  }
+
+  const configuredFounderAuthUserId = getConfiguredFounderAuthUserId()
+  return Boolean(
+    normalizedAuthUserId &&
+    configuredFounderAuthUserId &&
+    normalizedAuthUserId === configuredFounderAuthUserId
+  )
 }
 
 /**

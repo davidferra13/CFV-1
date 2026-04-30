@@ -5,8 +5,31 @@
 
 import { createAdminClient } from '@/lib/db/admin'
 import { requireAdmin } from '@/lib/auth/admin'
+import { FOUNDER_AUTHORITY_LABEL, isFounderAuthorityTarget } from '@/lib/platform/owner-account'
 import { logAdminAction } from './log-admin-action'
 import { revalidatePath, revalidateTag } from 'next/cache'
+
+const FOUNDER_AUTHORITY_PROTECTED_ERROR =
+  'Founder Authority is protected and cannot be downgraded, disabled, or converted.'
+
+async function logFounderAuthorityBlockedMutation(input: {
+  admin: { email: string; id: string }
+  chefId: string
+  attemptedAction: string
+}) {
+  await logAdminAction({
+    actorEmail: input.admin.email,
+    actorUserId: input.admin.id,
+    actionType: 'role_assigned',
+    targetId: input.chefId,
+    targetType: 'chef',
+    details: {
+      type: 'founder_authority_mutation_blocked',
+      authority: FOUNDER_AUTHORITY_LABEL,
+      attemptedAction: input.attemptedAction,
+    },
+  })
+}
 
 // ─── Account Status ──────────────────────────────────────────────────────────
 
@@ -16,6 +39,15 @@ import { revalidatePath, revalidateTag } from 'next/cache'
 export async function suspendChef(chefId: string): Promise<{ success: boolean; error?: string }> {
   const admin = await requireAdmin()
   const db: any = createAdminClient()
+
+  if (await isFounderAuthorityTarget(db, { chefId })) {
+    await logFounderAuthorityBlockedMutation({
+      admin,
+      chefId,
+      attemptedAction: 'suspend_chef',
+    })
+    return { success: false, error: FOUNDER_AUTHORITY_PROTECTED_ERROR }
+  }
 
   const { error } = await db
     .from('chefs')
@@ -212,6 +244,21 @@ export async function setVIPAccess(
   const { data: chefRow } = await db.from('chefs').select('email').eq('id', chefId).single()
 
   const email = chefRow?.email?.toLowerCase() ?? ''
+
+  if (
+    await isFounderAuthorityTarget(db, {
+      chefId,
+      authUserId: userRole.auth_user_id,
+      email,
+    })
+  ) {
+    await logFounderAuthorityBlockedMutation({
+      admin,
+      chefId,
+      attemptedAction: grant ? 'grant_vip' : 'revoke_vip',
+    })
+    return { success: false, error: FOUNDER_AUTHORITY_PROTECTED_ERROR }
+  }
 
   if (grant) {
     // Check if they already have a platform_admins row

@@ -15,9 +15,16 @@ type Props = {
   chefName: string
   subscriptionStatus: string | null
   accessLevel: string | null
+  founderAuthorityProtected?: boolean
 }
 
-export function ChefAccessPanel({ chefId, chefName, subscriptionStatus, accessLevel }: Props) {
+export function ChefAccessPanel({
+  chefId,
+  chefName,
+  subscriptionStatus,
+  accessLevel,
+  founderAuthorityProtected = false,
+}: Props) {
   const router = useRouter()
   const [feedback, setFeedback] = useState<{ ok: boolean; msg: string } | null>(null)
   const [reason, setReason] = useState('')
@@ -197,7 +204,12 @@ export function ChefAccessPanel({ chefId, chefName, subscriptionStatus, accessLe
           <h3 className="text-xs font-medium text-stone-400 uppercase tracking-wider">
             Platform Access
           </h3>
-          {isOwner || isAdmin ? (
+          {founderAuthorityProtected ? (
+            <p className="text-sm text-amber-300">
+              Founder Authority is protected. This access cannot be downgraded, disabled, or
+              converted.
+            </p>
+          ) : isOwner || isAdmin ? (
             <p className="text-sm text-stone-400">
               {isOwner ? 'Owner' : 'Admin'} access. Cannot be changed to VIP from here.
             </p>

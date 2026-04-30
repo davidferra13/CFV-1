@@ -8,6 +8,7 @@ import { ChefAccessPanel } from '@/components/admin/chef-access-panel'
 import { AdminCreditForm } from '@/components/admin/admin-credit-form'
 import { ChefHealthBadge } from '@/components/admin/chef-health-badge'
 import { computeChefHealthScore, CHEF_TIER_LABELS } from '@/lib/chefs/health-score'
+import { isFounderAuthorityTarget } from '@/lib/platform/owner-account'
 import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, User, CalendarRange, Users, DollarSign, Activity } from '@/components/ui/icons'
@@ -81,6 +82,11 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
       .maybeSingle()
     accessLevel = platformAdmin?.access_level ?? null
   }
+  const isFounderAuthorityProtected = await isFounderAuthorityTarget(db, {
+    chefId: params.chefId,
+    authUserId: userRole?.auth_user_id,
+    email,
+  })
 
   const [eventsSettled, clientsSettled, ledgerSettled] = await Promise.allSettled([
     db
@@ -429,6 +435,7 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
         chefName={chef.business_name ?? 'this chef'}
         subscriptionStatus={subscriptionStatus}
         accessLevel={accessLevel}
+        founderAuthorityProtected={isFounderAuthorityProtected}
       />
 
       {/* Admin Ledger Correction */}
@@ -439,6 +446,7 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
         chefId={params.chefId}
         chefName={chef.business_name ?? 'this chef'}
         currentStatus={accountStatus}
+        founderAuthorityProtected={isFounderAuthorityProtected}
       />
     </div>
   )

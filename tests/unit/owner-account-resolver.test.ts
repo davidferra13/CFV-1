@@ -4,6 +4,7 @@ import {
   __resetOwnerIdentityCacheForTests,
   getFounderAuthorityHealth,
   getFounderAuthorityForSessionUser,
+  isFounderAuthorityTarget,
   resolveFounderAuthorityForAuthUser,
   resolveOwnerIdentity,
   resolveOwnerChefId,
@@ -239,5 +240,33 @@ describe('owner-account resolver', () => {
     assert.ok(health.warnings.includes('founder_auth_user_id_env_missing'))
     assert.ok(health.warnings.includes('founder_platform_admin_row_not_owner'))
     assert.ok(health.warnings.includes('agent_platform_admin_active_outside_local'))
+  })
+
+  it('identifies the founder chef as a protected Founder Authority target', async () => {
+    const { db } = createDbMock({
+      founderChefId: 'chef-founder-123',
+      ownerAuthUserId: 'auth-founder-123',
+    })
+
+    assert.equal(await isFounderAuthorityTarget(db, { chefId: 'chef-founder-123' }), true)
+    assert.equal(await isFounderAuthorityTarget(db, { authUserId: 'auth-founder-123' }), true)
+    assert.equal(await isFounderAuthorityTarget(db, { email: 'DavidFerra13@gmail.com' }), true)
+  })
+
+  it('does not protect unrelated chef targets as Founder Authority', async () => {
+    process.env.FOUNDER_AUTH_USER_ID = 'auth-founder-123'
+    const { db } = createDbMock({
+      founderChefId: 'chef-founder-123',
+      ownerAuthUserId: 'auth-founder-123',
+    })
+
+    assert.equal(
+      await isFounderAuthorityTarget(db, {
+        chefId: 'chef-other',
+        authUserId: 'auth-other',
+        email: 'chef@example.com',
+      }),
+      false
+    )
   })
 })
