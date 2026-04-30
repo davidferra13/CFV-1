@@ -126,11 +126,12 @@ async function run(args: Args): Promise<void> {
   )
   const inputs = readIdentityInputs()
 
-  const records = await runWithLimit(runnable, args.concurrency, args.rateLimitMs, async (job) => {
-    if (job.kind === 'internal') return internalRecord(job)
-    if (!inputs) return missingInputsRecord(job)
-    return runBrowserJob(job, inputs)
-  })
+  const records = !inputs
+    ? runnable.map((job) => missingInputsRecord(job))
+    : await runWithLimit(runnable, args.concurrency, args.rateLimitMs, async (job) => {
+        if (job.kind === 'internal') return internalRecord(job)
+        return runBrowserJob(job, inputs)
+      })
 
   for (const record of records) state.records[record.platformId] = record
   saveState(state)

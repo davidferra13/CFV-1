@@ -1,330 +1,546 @@
 {
   "createdAt": "2026-04-30T17:28:06.101Z",
-  "updatedAt": "2026-04-30T17:28:06.102Z",
+  "updatedAt": "2026-04-30T17:36:47.636Z",
   "records": {
     "instagram": {
       "platformName": "Instagram",
       "platformId": "instagram",
       "classification": "CLAIM_NOW",
       "finalHandle": null,
-      "status": "partial",
+      "status": "awaiting_human_action",
       "verificationStatus": "not_started",
       "credentialsStored": false,
-      "notes": "Primary consumer identity claim. Planned, not executed.",
+      "notes": "The runner cannot create or reserve identities until the required inputs are set.",
       "directUrl": "https://www.instagram.com/accounts/emailsignup/",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "humanAction": {
+        "platform": "Instagram",
+        "selectedUsername": null,
+        "currentStatus": "Missing operator inputs",
+        "exactRequiredAction": "Set CHEFFLOW_IDENTITY_EMAIL, CHEFFLOW_IDENTITY_PASSWORD, CHEFFLOW_IDENTITY_PHONE, and CHEFFLOW_IDENTITY_VAULT_KEY",
+        "directUrl": "https://www.instagram.com/accounts/emailsignup/",
+        "resumeInstruction": "Then run: npx tsx scripts/identity/claim-orchestrator.ts run"
+      },
+      "updatedAt": "2026-04-30T17:36:47.635Z"
     },
     "tiktok": {
       "platformName": "TikTok",
       "platformId": "tiktok",
       "classification": "CLAIM_NOW",
       "finalHandle": null,
-      "status": "partial",
+      "status": "awaiting_human_action",
       "verificationStatus": "not_started",
       "credentialsStored": false,
-      "notes": "Primary short-form video identity claim. Planned, not executed.",
+      "notes": "The runner cannot create or reserve identities until the required inputs are set.",
       "directUrl": "https://www.tiktok.com/signup",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "humanAction": {
+        "platform": "TikTok",
+        "selectedUsername": null,
+        "currentStatus": "Missing operator inputs",
+        "exactRequiredAction": "Set CHEFFLOW_IDENTITY_EMAIL, CHEFFLOW_IDENTITY_PASSWORD, CHEFFLOW_IDENTITY_PHONE, and CHEFFLOW_IDENTITY_VAULT_KEY",
+        "directUrl": "https://www.tiktok.com/signup",
+        "resumeInstruction": "Then run: npx tsx scripts/identity/claim-orchestrator.ts run"
+      },
+      "updatedAt": "2026-04-30T17:36:47.635Z"
     },
     "youtube": {
       "platformName": "YouTube",
       "platformId": "youtube",
       "classification": "CLAIM_NOW",
       "finalHandle": null,
-      "status": "partial",
+      "status": "awaiting_human_action",
       "verificationStatus": "not_started",
       "credentialsStored": false,
-      "notes": "Claim base channel identity after Google account access exists. Planned, not executed.",
+      "notes": "The runner cannot create or reserve identities until the required inputs are set.",
       "directUrl": "https://www.youtube.com/create_channel",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "humanAction": {
+        "platform": "YouTube",
+        "selectedUsername": null,
+        "currentStatus": "Missing operator inputs",
+        "exactRequiredAction": "Set CHEFFLOW_IDENTITY_EMAIL, CHEFFLOW_IDENTITY_PASSWORD, CHEFFLOW_IDENTITY_PHONE, and CHEFFLOW_IDENTITY_VAULT_KEY",
+        "directUrl": "https://www.youtube.com/create_channel",
+        "resumeInstruction": "Then run: npx tsx scripts/identity/claim-orchestrator.ts run"
+      },
+      "updatedAt": "2026-04-30T17:36:47.635Z"
     },
     "x-twitter": {
       "platformName": "X (Twitter)",
       "platformId": "x-twitter",
       "classification": "CLAIM_NOW",
       "finalHandle": null,
-      "status": "partial",
+      "status": "awaiting_human_action",
       "verificationStatus": "not_started",
       "credentialsStored": false,
-      "notes": "Primary public handle claim. Planned, not executed.",
+      "notes": "The runner cannot create or reserve identities until the required inputs are set.",
       "directUrl": "https://x.com/i/flow/signup",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "humanAction": {
+        "platform": "X (Twitter)",
+        "selectedUsername": null,
+        "currentStatus": "Missing operator inputs",
+        "exactRequiredAction": "Set CHEFFLOW_IDENTITY_EMAIL, CHEFFLOW_IDENTITY_PASSWORD, CHEFFLOW_IDENTITY_PHONE, and CHEFFLOW_IDENTITY_VAULT_KEY",
+        "directUrl": "https://x.com/i/flow/signup",
+        "resumeInstruction": "Then run: npx tsx scripts/identity/claim-orchestrator.ts run"
+      },
+      "updatedAt": "2026-04-30T17:36:47.635Z"
     },
     "discord": {
       "platformName": "Discord (server + account)",
       "platformId": "discord",
       "classification": "CLAIM_NOW",
       "finalHandle": null,
-      "status": "partial",
+      "status": "awaiting_human_action",
       "verificationStatus": "not_started",
       "credentialsStored": false,
-      "notes": "Create account first, then human creates server when prompted. Planned, not executed.",
+      "notes": "The runner cannot create or reserve identities until the required inputs are set.",
       "directUrl": "https://discord.com/register",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "humanAction": {
+        "platform": "Discord (server + account)",
+        "selectedUsername": null,
+        "currentStatus": "Missing operator inputs",
+        "exactRequiredAction": "Set CHEFFLOW_IDENTITY_EMAIL, CHEFFLOW_IDENTITY_PASSWORD, CHEFFLOW_IDENTITY_PHONE, and CHEFFLOW_IDENTITY_VAULT_KEY",
+        "directUrl": "https://discord.com/register",
+        "resumeInstruction": "Then run: npx tsx scripts/identity/claim-orchestrator.ts run"
+      },
+      "updatedAt": "2026-04-30T17:36:47.635Z"
     },
     "whatsapp-business": {
       "platformName": "WhatsApp Business",
       "platformId": "whatsapp-business",
       "classification": "CLAIM_NOW",
       "finalHandle": null,
-      "status": "partial",
+      "status": "awaiting_human_action",
       "verificationStatus": "not_started",
       "credentialsStored": false,
-      "notes": "Phone verification is expected and must remain human controlled. Planned, not executed.",
+      "notes": "The runner cannot create or reserve identities until the required inputs are set.",
       "directUrl": "https://business.whatsapp.com/products/business-app",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "humanAction": {
+        "platform": "WhatsApp Business",
+        "selectedUsername": null,
+        "currentStatus": "Missing operator inputs",
+        "exactRequiredAction": "Set CHEFFLOW_IDENTITY_EMAIL, CHEFFLOW_IDENTITY_PASSWORD, CHEFFLOW_IDENTITY_PHONE, and CHEFFLOW_IDENTITY_VAULT_KEY",
+        "directUrl": "https://business.whatsapp.com/products/business-app",
+        "resumeInstruction": "Then run: npx tsx scripts/identity/claim-orchestrator.ts run"
+      },
+      "updatedAt": "2026-04-30T17:36:47.635Z"
     },
     "google": {
       "platformName": "Google (Account + Brand + YouTube base)",
       "platformId": "google",
       "classification": "CLAIM_NOW",
       "finalHandle": null,
-      "status": "partial",
+      "status": "awaiting_human_action",
       "verificationStatus": "not_started",
       "credentialsStored": false,
-      "notes": "Base account used for brand and YouTube setup. Planned, not executed.",
+      "notes": "The runner cannot create or reserve identities until the required inputs are set.",
       "directUrl": "https://accounts.google.com/signup",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "humanAction": {
+        "platform": "Google (Account + Brand + YouTube base)",
+        "selectedUsername": null,
+        "currentStatus": "Missing operator inputs",
+        "exactRequiredAction": "Set CHEFFLOW_IDENTITY_EMAIL, CHEFFLOW_IDENTITY_PASSWORD, CHEFFLOW_IDENTITY_PHONE, and CHEFFLOW_IDENTITY_VAULT_KEY",
+        "directUrl": "https://accounts.google.com/signup",
+        "resumeInstruction": "Then run: npx tsx scripts/identity/claim-orchestrator.ts run"
+      },
+      "updatedAt": "2026-04-30T17:36:47.635Z"
     },
     "cloudflare": {
       "platformName": "Cloudflare",
       "platformId": "cloudflare",
       "classification": "CLAIM_NOW",
       "finalHandle": null,
-      "status": "partial",
+      "status": "awaiting_human_action",
       "verificationStatus": "not_started",
       "credentialsStored": false,
-      "notes": "Infrastructure control account. Planned, not executed.",
+      "notes": "The runner cannot create or reserve identities until the required inputs are set.",
       "directUrl": "https://dash.cloudflare.com/sign-up",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "humanAction": {
+        "platform": "Cloudflare",
+        "selectedUsername": null,
+        "currentStatus": "Missing operator inputs",
+        "exactRequiredAction": "Set CHEFFLOW_IDENTITY_EMAIL, CHEFFLOW_IDENTITY_PASSWORD, CHEFFLOW_IDENTITY_PHONE, and CHEFFLOW_IDENTITY_VAULT_KEY",
+        "directUrl": "https://dash.cloudflare.com/sign-up",
+        "resumeInstruction": "Then run: npx tsx scripts/identity/claim-orchestrator.ts run"
+      },
+      "updatedAt": "2026-04-30T17:36:47.635Z"
     },
     "stripe": {
       "platformName": "Stripe",
       "platformId": "stripe",
       "classification": "CLAIM_NOW",
       "finalHandle": null,
-      "status": "partial",
+      "status": "awaiting_human_action",
       "verificationStatus": "not_started",
       "credentialsStored": false,
-      "notes": "Payments control account. Planned, not executed.",
+      "notes": "The runner cannot create or reserve identities until the required inputs are set.",
       "directUrl": "https://dashboard.stripe.com/register",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "humanAction": {
+        "platform": "Stripe",
+        "selectedUsername": null,
+        "currentStatus": "Missing operator inputs",
+        "exactRequiredAction": "Set CHEFFLOW_IDENTITY_EMAIL, CHEFFLOW_IDENTITY_PASSWORD, CHEFFLOW_IDENTITY_PHONE, and CHEFFLOW_IDENTITY_VAULT_KEY",
+        "directUrl": "https://dashboard.stripe.com/register",
+        "resumeInstruction": "Then run: npx tsx scripts/identity/claim-orchestrator.ts run"
+      },
+      "updatedAt": "2026-04-30T17:36:47.635Z"
     },
     "twilio": {
       "platformName": "Twilio",
       "platformId": "twilio",
       "classification": "CLAIM_NOW",
       "finalHandle": null,
-      "status": "partial",
+      "status": "awaiting_human_action",
       "verificationStatus": "not_started",
       "credentialsStored": false,
-      "notes": "Messaging and phone control account. Planned, not executed.",
+      "notes": "The runner cannot create or reserve identities until the required inputs are set.",
       "directUrl": "https://www.twilio.com/try-twilio",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "humanAction": {
+        "platform": "Twilio",
+        "selectedUsername": null,
+        "currentStatus": "Missing operator inputs",
+        "exactRequiredAction": "Set CHEFFLOW_IDENTITY_EMAIL, CHEFFLOW_IDENTITY_PASSWORD, CHEFFLOW_IDENTITY_PHONE, and CHEFFLOW_IDENTITY_VAULT_KEY",
+        "directUrl": "https://www.twilio.com/try-twilio",
+        "resumeInstruction": "Then run: npx tsx scripts/identity/claim-orchestrator.ts run"
+      },
+      "updatedAt": "2026-04-30T17:36:47.635Z"
     },
     "github-organization": {
       "platformName": "GitHub Organization",
       "platformId": "github-organization",
       "classification": "CLAIM_NOW",
       "finalHandle": null,
-      "status": "partial",
+      "status": "awaiting_human_action",
       "verificationStatus": "not_started",
       "credentialsStored": false,
-      "notes": "Create or reserve the organization handle. Planned, not executed.",
+      "notes": "The runner cannot create or reserve identities until the required inputs are set.",
       "directUrl": "https://github.com/organizations/plan",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "humanAction": {
+        "platform": "GitHub Organization",
+        "selectedUsername": null,
+        "currentStatus": "Missing operator inputs",
+        "exactRequiredAction": "Set CHEFFLOW_IDENTITY_EMAIL, CHEFFLOW_IDENTITY_PASSWORD, CHEFFLOW_IDENTITY_PHONE, and CHEFFLOW_IDENTITY_VAULT_KEY",
+        "directUrl": "https://github.com/organizations/plan",
+        "resumeInstruction": "Then run: npx tsx scripts/identity/claim-orchestrator.ts run"
+      },
+      "updatedAt": "2026-04-30T17:36:47.635Z"
     },
     "threads": {
       "platformName": "Threads",
       "platformId": "threads",
       "classification": "RESERVE_SOON",
       "finalHandle": null,
-      "status": "partial",
+      "status": "awaiting_human_action",
       "verificationStatus": "not_started",
       "credentialsStored": false,
-      "notes": "Reserve via linked Meta identity if lightweight. Planned, not executed.",
+      "notes": "The runner cannot create or reserve identities until the required inputs are set.",
       "directUrl": "https://www.threads.net/",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "humanAction": {
+        "platform": "Threads",
+        "selectedUsername": null,
+        "currentStatus": "Missing operator inputs",
+        "exactRequiredAction": "Set CHEFFLOW_IDENTITY_EMAIL, CHEFFLOW_IDENTITY_PASSWORD, CHEFFLOW_IDENTITY_PHONE, and CHEFFLOW_IDENTITY_VAULT_KEY",
+        "directUrl": "https://www.threads.net/",
+        "resumeInstruction": "Then run: npx tsx scripts/identity/claim-orchestrator.ts run"
+      },
+      "updatedAt": "2026-04-30T17:36:47.635Z"
     },
     "bluesky": {
       "platformName": "Bluesky",
       "platformId": "bluesky",
       "classification": "RESERVE_SOON",
       "finalHandle": null,
-      "status": "partial",
+      "status": "awaiting_human_action",
       "verificationStatus": "not_started",
       "credentialsStored": false,
-      "notes": "Reserve social handle. Planned, not executed.",
+      "notes": "The runner cannot create or reserve identities until the required inputs are set.",
       "directUrl": "https://bsky.app/",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "humanAction": {
+        "platform": "Bluesky",
+        "selectedUsername": null,
+        "currentStatus": "Missing operator inputs",
+        "exactRequiredAction": "Set CHEFFLOW_IDENTITY_EMAIL, CHEFFLOW_IDENTITY_PASSWORD, CHEFFLOW_IDENTITY_PHONE, and CHEFFLOW_IDENTITY_VAULT_KEY",
+        "directUrl": "https://bsky.app/",
+        "resumeInstruction": "Then run: npx tsx scripts/identity/claim-orchestrator.ts run"
+      },
+      "updatedAt": "2026-04-30T17:36:47.635Z"
     },
     "mastodon": {
       "platformName": "Mastodon",
       "platformId": "mastodon",
       "classification": "RESERVE_SOON",
       "finalHandle": null,
-      "status": "partial",
+      "status": "awaiting_human_action",
       "verificationStatus": "not_started",
       "credentialsStored": false,
-      "notes": "Instance choice requires human confirmation. Planned, not executed.",
+      "notes": "The runner cannot create or reserve identities until the required inputs are set.",
       "directUrl": "https://joinmastodon.org/servers",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "humanAction": {
+        "platform": "Mastodon",
+        "selectedUsername": null,
+        "currentStatus": "Missing operator inputs",
+        "exactRequiredAction": "Set CHEFFLOW_IDENTITY_EMAIL, CHEFFLOW_IDENTITY_PASSWORD, CHEFFLOW_IDENTITY_PHONE, and CHEFFLOW_IDENTITY_VAULT_KEY",
+        "directUrl": "https://joinmastodon.org/servers",
+        "resumeInstruction": "Then run: npx tsx scripts/identity/claim-orchestrator.ts run"
+      },
+      "updatedAt": "2026-04-30T17:36:47.635Z"
     },
     "facebook-page": {
       "platformName": "Facebook Page",
       "platformId": "facebook-page",
       "classification": "RESERVE_SOON",
       "finalHandle": null,
-      "status": "partial",
+      "status": "awaiting_human_action",
       "verificationStatus": "not_started",
       "credentialsStored": false,
-      "notes": "Reserve brand page handle. Planned, not executed.",
+      "notes": "The runner cannot create or reserve identities until the required inputs are set.",
       "directUrl": "https://www.facebook.com/pages/create",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "humanAction": {
+        "platform": "Facebook Page",
+        "selectedUsername": null,
+        "currentStatus": "Missing operator inputs",
+        "exactRequiredAction": "Set CHEFFLOW_IDENTITY_EMAIL, CHEFFLOW_IDENTITY_PASSWORD, CHEFFLOW_IDENTITY_PHONE, and CHEFFLOW_IDENTITY_VAULT_KEY",
+        "directUrl": "https://www.facebook.com/pages/create",
+        "resumeInstruction": "Then run: npx tsx scripts/identity/claim-orchestrator.ts run"
+      },
+      "updatedAt": "2026-04-30T17:36:47.635Z"
     },
     "linkedin": {
       "platformName": "LinkedIn",
       "platformId": "linkedin",
       "classification": "RESERVE_SOON",
       "finalHandle": null,
-      "status": "partial",
+      "status": "awaiting_human_action",
       "verificationStatus": "not_started",
       "credentialsStored": false,
-      "notes": "Reserve company page identity. Planned, not executed.",
+      "notes": "The runner cannot create or reserve identities until the required inputs are set.",
       "directUrl": "https://www.linkedin.com/company/setup/new/",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "humanAction": {
+        "platform": "LinkedIn",
+        "selectedUsername": null,
+        "currentStatus": "Missing operator inputs",
+        "exactRequiredAction": "Set CHEFFLOW_IDENTITY_EMAIL, CHEFFLOW_IDENTITY_PASSWORD, CHEFFLOW_IDENTITY_PHONE, and CHEFFLOW_IDENTITY_VAULT_KEY",
+        "directUrl": "https://www.linkedin.com/company/setup/new/",
+        "resumeInstruction": "Then run: npx tsx scripts/identity/claim-orchestrator.ts run"
+      },
+      "updatedAt": "2026-04-30T17:36:47.635Z"
     },
     "reddit": {
       "platformName": "Reddit",
       "platformId": "reddit",
       "classification": "RESERVE_SOON",
       "finalHandle": null,
-      "status": "partial",
+      "status": "awaiting_human_action",
       "verificationStatus": "not_started",
       "credentialsStored": false,
-      "notes": "Reserve presence if account creation is lightweight. Planned, not executed.",
+      "notes": "The runner cannot create or reserve identities until the required inputs are set.",
       "directUrl": "https://www.reddit.com/register/",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "humanAction": {
+        "platform": "Reddit",
+        "selectedUsername": null,
+        "currentStatus": "Missing operator inputs",
+        "exactRequiredAction": "Set CHEFFLOW_IDENTITY_EMAIL, CHEFFLOW_IDENTITY_PASSWORD, CHEFFLOW_IDENTITY_PHONE, and CHEFFLOW_IDENTITY_VAULT_KEY",
+        "directUrl": "https://www.reddit.com/register/",
+        "resumeInstruction": "Then run: npx tsx scripts/identity/claim-orchestrator.ts run"
+      },
+      "updatedAt": "2026-04-30T17:36:47.635Z"
     },
     "pinterest": {
       "platformName": "Pinterest",
       "platformId": "pinterest",
       "classification": "RESERVE_SOON",
       "finalHandle": null,
-      "status": "partial",
+      "status": "awaiting_human_action",
       "verificationStatus": "not_started",
       "credentialsStored": false,
-      "notes": "Reserve brand account. Planned, not executed.",
+      "notes": "The runner cannot create or reserve identities until the required inputs are set.",
       "directUrl": "https://www.pinterest.com/business/create/",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "humanAction": {
+        "platform": "Pinterest",
+        "selectedUsername": null,
+        "currentStatus": "Missing operator inputs",
+        "exactRequiredAction": "Set CHEFFLOW_IDENTITY_EMAIL, CHEFFLOW_IDENTITY_PASSWORD, CHEFFLOW_IDENTITY_PHONE, and CHEFFLOW_IDENTITY_VAULT_KEY",
+        "directUrl": "https://www.pinterest.com/business/create/",
+        "resumeInstruction": "Then run: npx tsx scripts/identity/claim-orchestrator.ts run"
+      },
+      "updatedAt": "2026-04-30T17:36:47.635Z"
     },
     "snapchat": {
       "platformName": "Snapchat",
       "platformId": "snapchat",
       "classification": "RESERVE_SOON",
       "finalHandle": null,
-      "status": "partial",
+      "status": "awaiting_human_action",
       "verificationStatus": "not_started",
       "credentialsStored": false,
-      "notes": "Reserve username only if lightweight. Planned, not executed.",
+      "notes": "The runner cannot create or reserve identities until the required inputs are set.",
       "directUrl": "https://accounts.snapchat.com/accounts/signup",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "humanAction": {
+        "platform": "Snapchat",
+        "selectedUsername": null,
+        "currentStatus": "Missing operator inputs",
+        "exactRequiredAction": "Set CHEFFLOW_IDENTITY_EMAIL, CHEFFLOW_IDENTITY_PASSWORD, CHEFFLOW_IDENTITY_PHONE, and CHEFFLOW_IDENTITY_VAULT_KEY",
+        "directUrl": "https://accounts.snapchat.com/accounts/signup",
+        "resumeInstruction": "Then run: npx tsx scripts/identity/claim-orchestrator.ts run"
+      },
+      "updatedAt": "2026-04-30T17:36:47.635Z"
     },
     "twitch": {
       "platformName": "Twitch",
       "platformId": "twitch",
       "classification": "RESERVE_SOON",
       "finalHandle": null,
-      "status": "partial",
+      "status": "awaiting_human_action",
       "verificationStatus": "not_started",
       "credentialsStored": false,
-      "notes": "Reserve channel handle. Planned, not executed.",
+      "notes": "The runner cannot create or reserve identities until the required inputs are set.",
       "directUrl": "https://www.twitch.tv/signup",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "humanAction": {
+        "platform": "Twitch",
+        "selectedUsername": null,
+        "currentStatus": "Missing operator inputs",
+        "exactRequiredAction": "Set CHEFFLOW_IDENTITY_EMAIL, CHEFFLOW_IDENTITY_PASSWORD, CHEFFLOW_IDENTITY_PHONE, and CHEFFLOW_IDENTITY_VAULT_KEY",
+        "directUrl": "https://www.twitch.tv/signup",
+        "resumeInstruction": "Then run: npx tsx scripts/identity/claim-orchestrator.ts run"
+      },
+      "updatedAt": "2026-04-30T17:36:47.635Z"
     },
     "telegram": {
       "platformName": "Telegram",
       "platformId": "telegram",
       "classification": "RESERVE_SOON",
       "finalHandle": null,
-      "status": "partial",
+      "status": "awaiting_human_action",
       "verificationStatus": "not_started",
       "credentialsStored": false,
-      "notes": "Phone verification expected. Planned, not executed.",
+      "notes": "The runner cannot create or reserve identities until the required inputs are set.",
       "directUrl": "https://web.telegram.org/",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "humanAction": {
+        "platform": "Telegram",
+        "selectedUsername": null,
+        "currentStatus": "Missing operator inputs",
+        "exactRequiredAction": "Set CHEFFLOW_IDENTITY_EMAIL, CHEFFLOW_IDENTITY_PASSWORD, CHEFFLOW_IDENTITY_PHONE, and CHEFFLOW_IDENTITY_VAULT_KEY",
+        "directUrl": "https://web.telegram.org/",
+        "resumeInstruction": "Then run: npx tsx scripts/identity/claim-orchestrator.ts run"
+      },
+      "updatedAt": "2026-04-30T17:36:47.635Z"
     },
     "signal": {
       "platformName": "Signal",
       "platformId": "signal",
       "classification": "RESERVE_SOON",
       "finalHandle": null,
-      "status": "partial",
+      "status": "awaiting_human_action",
       "verificationStatus": "not_started",
       "credentialsStored": false,
-      "notes": "Presence is phone-app based and likely human only. Planned, not executed.",
+      "notes": "The runner cannot create or reserve identities until the required inputs are set.",
       "directUrl": "https://signal.org/download/",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "humanAction": {
+        "platform": "Signal",
+        "selectedUsername": null,
+        "currentStatus": "Missing operator inputs",
+        "exactRequiredAction": "Set CHEFFLOW_IDENTITY_EMAIL, CHEFFLOW_IDENTITY_PASSWORD, CHEFFLOW_IDENTITY_PHONE, and CHEFFLOW_IDENTITY_VAULT_KEY",
+        "directUrl": "https://signal.org/download/",
+        "resumeInstruction": "Then run: npx tsx scripts/identity/claim-orchestrator.ts run"
+      },
+      "updatedAt": "2026-04-30T17:36:47.635Z"
     },
     "product-hunt": {
       "platformName": "Product Hunt",
       "platformId": "product-hunt",
       "classification": "RESERVE_SOON",
       "finalHandle": null,
-      "status": "partial",
+      "status": "awaiting_human_action",
       "verificationStatus": "not_started",
       "credentialsStored": false,
-      "notes": "Reserve founder or brand presence. Planned, not executed.",
+      "notes": "The runner cannot create or reserve identities until the required inputs are set.",
       "directUrl": "https://www.producthunt.com/signup",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "humanAction": {
+        "platform": "Product Hunt",
+        "selectedUsername": null,
+        "currentStatus": "Missing operator inputs",
+        "exactRequiredAction": "Set CHEFFLOW_IDENTITY_EMAIL, CHEFFLOW_IDENTITY_PASSWORD, CHEFFLOW_IDENTITY_PHONE, and CHEFFLOW_IDENTITY_VAULT_KEY",
+        "directUrl": "https://www.producthunt.com/signup",
+        "resumeInstruction": "Then run: npx tsx scripts/identity/claim-orchestrator.ts run"
+      },
+      "updatedAt": "2026-04-30T17:36:47.635Z"
     },
     "indie-hackers": {
       "platformName": "Indie Hackers",
       "platformId": "indie-hackers",
       "classification": "RESERVE_SOON",
       "finalHandle": null,
-      "status": "partial",
+      "status": "awaiting_human_action",
       "verificationStatus": "not_started",
       "credentialsStored": false,
-      "notes": "Reserve startup community presence. Planned, not executed.",
+      "notes": "The runner cannot create or reserve identities until the required inputs are set.",
       "directUrl": "https://www.indiehackers.com/sign-up",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "humanAction": {
+        "platform": "Indie Hackers",
+        "selectedUsername": null,
+        "currentStatus": "Missing operator inputs",
+        "exactRequiredAction": "Set CHEFFLOW_IDENTITY_EMAIL, CHEFFLOW_IDENTITY_PASSWORD, CHEFFLOW_IDENTITY_PHONE, and CHEFFLOW_IDENTITY_VAULT_KEY",
+        "directUrl": "https://www.indiehackers.com/sign-up",
+        "resumeInstruction": "Then run: npx tsx scripts/identity/claim-orchestrator.ts run"
+      },
+      "updatedAt": "2026-04-30T17:36:47.635Z"
     },
     "hacker-news": {
       "platformName": "Hacker News (presence only)",
       "platformId": "hacker-news",
       "classification": "RESERVE_SOON",
       "finalHandle": null,
-      "status": "partial",
+      "status": "awaiting_human_action",
       "verificationStatus": "not_started",
       "credentialsStored": false,
-      "notes": "Presence only, no brand posting system. Planned, not executed.",
+      "notes": "The runner cannot create or reserve identities until the required inputs are set.",
       "directUrl": "https://news.ycombinator.com/login?goto=news",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "humanAction": {
+        "platform": "Hacker News (presence only)",
+        "selectedUsername": null,
+        "currentStatus": "Missing operator inputs",
+        "exactRequiredAction": "Set CHEFFLOW_IDENTITY_EMAIL, CHEFFLOW_IDENTITY_PASSWORD, CHEFFLOW_IDENTITY_PHONE, and CHEFFLOW_IDENTITY_VAULT_KEY",
+        "directUrl": "https://news.ycombinator.com/login?goto=news",
+        "resumeInstruction": "Then run: npx tsx scripts/identity/claim-orchestrator.ts run"
+      },
+      "updatedAt": "2026-04-30T17:36:47.635Z"
     },
     "crunchbase": {
       "platformName": "Crunchbase",
       "platformId": "crunchbase",
       "classification": "RESERVE_SOON",
       "finalHandle": null,
-      "status": "partial",
+      "status": "awaiting_human_action",
       "verificationStatus": "not_started",
       "credentialsStored": false,
-      "notes": "Reserve company profile if lightweight. Planned, not executed.",
+      "notes": "The runner cannot create or reserve identities until the required inputs are set.",
       "directUrl": "https://www.crunchbase.com/register",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "humanAction": {
+        "platform": "Crunchbase",
+        "selectedUsername": null,
+        "currentStatus": "Missing operator inputs",
+        "exactRequiredAction": "Set CHEFFLOW_IDENTITY_EMAIL, CHEFFLOW_IDENTITY_PASSWORD, CHEFFLOW_IDENTITY_PHONE, and CHEFFLOW_IDENTITY_VAULT_KEY",
+        "directUrl": "https://www.crunchbase.com/register",
+        "resumeInstruction": "Then run: npx tsx scripts/identity/claim-orchestrator.ts run"
+      },
+      "updatedAt": "2026-04-30T17:36:47.635Z"
     },
     "wellfound": {
       "platformName": "AngelList / Wellfound",
       "platformId": "wellfound",
       "classification": "RESERVE_SOON",
       "finalHandle": null,
-      "status": "partial",
+      "status": "awaiting_human_action",
       "verificationStatus": "not_started",
       "credentialsStored": false,
-      "notes": "Reserve startup profile if lightweight. Planned, not executed.",
+      "notes": "The runner cannot create or reserve identities until the required inputs are set.",
       "directUrl": "https://wellfound.com/recruit/signup",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "humanAction": {
+        "platform": "AngelList / Wellfound",
+        "selectedUsername": null,
+        "currentStatus": "Missing operator inputs",
+        "exactRequiredAction": "Set CHEFFLOW_IDENTITY_EMAIL, CHEFFLOW_IDENTITY_PASSWORD, CHEFFLOW_IDENTITY_PHONE, and CHEFFLOW_IDENTITY_VAULT_KEY",
+        "directUrl": "https://wellfound.com/recruit/signup",
+        "resumeInstruction": "Then run: npx tsx scripts/identity/claim-orchestrator.ts run"
+      },
+      "updatedAt": "2026-04-30T17:36:47.635Z"
     },
     "medium": {
       "platformName": "Medium",
@@ -336,7 +552,7 @@
       "credentialsStored": false,
       "notes": "Publishing surface, do not create yet.",
       "directUrl": "https://medium.com/m/signin",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.620Z"
     },
     "substack": {
       "platformName": "Substack",
@@ -348,7 +564,7 @@
       "credentialsStored": false,
       "notes": "Publishing surface, do not create yet.",
       "directUrl": "https://substack.com/sign-up",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "beehiiv": {
       "platformName": "Beehiiv",
@@ -360,7 +576,7 @@
       "credentialsStored": false,
       "notes": "Newsletter surface, do not create yet.",
       "directUrl": "https://www.beehiiv.com/signup",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "slack": {
       "platformName": "Slack",
@@ -372,7 +588,7 @@
       "credentialsStored": false,
       "notes": "Workspace only when team workflow requires it.",
       "directUrl": "https://slack.com/get-started",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "notion": {
       "platformName": "Notion",
@@ -384,7 +600,7 @@
       "credentialsStored": false,
       "notes": "Workspace only when needed.",
       "directUrl": "https://www.notion.so/signup",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "linear": {
       "platformName": "Linear",
@@ -396,7 +612,7 @@
       "credentialsStored": false,
       "notes": "Issue tracker only when needed.",
       "directUrl": "https://linear.app/signup",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "sentry": {
       "platformName": "Sentry",
@@ -408,7 +624,7 @@
       "credentialsStored": false,
       "notes": "Error tracking only when wired.",
       "directUrl": "https://sentry.io/signup/",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "posthog": {
       "platformName": "PostHog",
@@ -420,7 +636,7 @@
       "credentialsStored": false,
       "notes": "Analytics only when wired.",
       "directUrl": "https://app.posthog.com/signup",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "plausible": {
       "platformName": "Plausible",
@@ -432,7 +648,7 @@
       "credentialsStored": false,
       "notes": "Analytics only when wired.",
       "directUrl": "https://plausible.io/register",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "uptimerobot": {
       "platformName": "UptimeRobot",
@@ -444,7 +660,7 @@
       "credentialsStored": false,
       "notes": "Monitoring only when selected.",
       "directUrl": "https://uptimerobot.com/signUp",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "better-stack": {
       "platformName": "Better Stack",
@@ -456,7 +672,7 @@
       "credentialsStored": false,
       "notes": "Monitoring only when selected.",
       "directUrl": "https://betterstack.com/users/sign-up",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "paypal-business": {
       "platformName": "PayPal Business",
@@ -468,7 +684,7 @@
       "credentialsStored": false,
       "notes": "Payments alternative, do not create yet.",
       "directUrl": "https://www.paypal.com/business/sign-up",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "square": {
       "platformName": "Square",
@@ -480,7 +696,7 @@
       "credentialsStored": false,
       "notes": "Payments alternative, do not create yet.",
       "directUrl": "https://squareup.com/signup",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "sendgrid": {
       "platformName": "SendGrid",
@@ -492,7 +708,7 @@
       "credentialsStored": false,
       "notes": "Email provider only when selected.",
       "directUrl": "https://signup.sendgrid.com/",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "mailchimp": {
       "platformName": "Mailchimp",
@@ -504,7 +720,7 @@
       "credentialsStored": false,
       "notes": "Marketing email only when selected.",
       "directUrl": "https://login.mailchimp.com/signup/",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "convertkit": {
       "platformName": "ConvertKit",
@@ -516,7 +732,7 @@
       "credentialsStored": false,
       "notes": "Creator email only when selected.",
       "directUrl": "https://app.kit.com/users/signup",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "zapier": {
       "platformName": "Zapier",
@@ -528,7 +744,7 @@
       "credentialsStored": false,
       "notes": "Automation only when needed.",
       "directUrl": "https://zapier.com/app/signup",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "make": {
       "platformName": "Make",
@@ -540,7 +756,7 @@
       "credentialsStored": false,
       "notes": "Automation only when needed.",
       "directUrl": "https://www.make.com/en/register",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "ifttt": {
       "platformName": "IFTTT",
@@ -552,7 +768,7 @@
       "credentialsStored": false,
       "notes": "Automation only when needed.",
       "directUrl": "https://ifttt.com/join",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "typeform": {
       "platformName": "Typeform",
@@ -564,7 +780,7 @@
       "credentialsStored": false,
       "notes": "Forms only when needed.",
       "directUrl": "https://admin.typeform.com/signup",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "tally": {
       "platformName": "Tally",
@@ -576,7 +792,7 @@
       "credentialsStored": false,
       "notes": "Forms only when needed.",
       "directUrl": "https://tally.so/signup",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "calendly": {
       "platformName": "Calendly",
@@ -588,7 +804,7 @@
       "credentialsStored": false,
       "notes": "Scheduling only when selected.",
       "directUrl": "https://calendly.com/signup",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "cal-com": {
       "platformName": "Cal.com",
@@ -600,7 +816,7 @@
       "credentialsStored": false,
       "notes": "Scheduling only when selected.",
       "directUrl": "https://app.cal.com/signup",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "zoom": {
       "platformName": "Zoom",
@@ -612,7 +828,7 @@
       "credentialsStored": false,
       "notes": "Video only when needed.",
       "directUrl": "https://zoom.us/signup",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "loom": {
       "platformName": "Loom",
@@ -624,7 +840,7 @@
       "credentialsStored": false,
       "notes": "Video only when needed.",
       "directUrl": "https://www.loom.com/signup",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "canva": {
       "platformName": "Canva",
@@ -636,7 +852,7 @@
       "credentialsStored": false,
       "notes": "Design only when needed.",
       "directUrl": "https://www.canva.com/signup/",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "figma": {
       "platformName": "Figma",
@@ -648,7 +864,7 @@
       "credentialsStored": false,
       "notes": "Design only when needed.",
       "directUrl": "https://www.figma.com/signup/",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "framer": {
       "platformName": "Framer",
@@ -660,7 +876,7 @@
       "credentialsStored": false,
       "notes": "Site builder only when needed.",
       "directUrl": "https://www.framer.com/signup/",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "webflow": {
       "platformName": "Webflow",
@@ -672,7 +888,7 @@
       "credentialsStored": false,
       "notes": "Site builder only when needed.",
       "directUrl": "https://webflow.com/dashboard/signup",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "wix": {
       "platformName": "Wix",
@@ -684,7 +900,7 @@
       "credentialsStored": false,
       "notes": "Site builder only when needed.",
       "directUrl": "https://users.wix.com/signin/signup",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "shopify": {
       "platformName": "Shopify",
@@ -696,7 +912,7 @@
       "credentialsStored": false,
       "notes": "Commerce only when needed.",
       "directUrl": "https://www.shopify.com/signup",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "etsy": {
       "platformName": "Etsy",
@@ -708,7 +924,7 @@
       "credentialsStored": false,
       "notes": "Marketplace only when needed.",
       "directUrl": "https://www.etsy.com/register",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "gumroad": {
       "platformName": "Gumroad",
@@ -720,7 +936,7 @@
       "credentialsStored": false,
       "notes": "Commerce only when needed.",
       "directUrl": "https://gumroad.com/signup",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "lemon-squeezy": {
       "platformName": "Lemon Squeezy",
@@ -732,7 +948,7 @@
       "credentialsStored": false,
       "notes": "Commerce only when needed.",
       "directUrl": "https://app.lemonsqueezy.com/register",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "patreon": {
       "platformName": "Patreon",
@@ -744,7 +960,7 @@
       "credentialsStored": false,
       "notes": "Membership only when needed.",
       "directUrl": "https://www.patreon.com/create",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "ko-fi": {
       "platformName": "Ko-fi",
@@ -756,7 +972,7 @@
       "credentialsStored": false,
       "notes": "Membership only when needed.",
       "directUrl": "https://ko-fi.com/account/signup",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "yelp-business": {
       "platformName": "Yelp Business",
@@ -768,7 +984,7 @@
       "credentialsStored": false,
       "notes": "Business listing only when ready.",
       "directUrl": "https://biz.yelp.com/signup",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "tripadvisor": {
       "platformName": "Tripadvisor",
@@ -780,7 +996,7 @@
       "credentialsStored": false,
       "notes": "Business listing only when ready.",
       "directUrl": "https://www.tripadvisor.com/Owners",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "trustpilot": {
       "platformName": "Trustpilot",
@@ -792,7 +1008,7 @@
       "credentialsStored": false,
       "notes": "Review platform only when ready.",
       "directUrl": "https://www.trustpilot.com/users/connect",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "g2": {
       "platformName": "G2",
@@ -804,7 +1020,7 @@
       "credentialsStored": false,
       "notes": "B2B review platform only when ready.",
       "directUrl": "https://sell.g2.com/signup",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "capterra": {
       "platformName": "Capterra",
@@ -816,7 +1032,7 @@
       "credentialsStored": false,
       "notes": "B2B review platform only when ready.",
       "directUrl": "https://www.capterra.com/vendors/sign-up",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "glassdoor": {
       "platformName": "Glassdoor",
@@ -828,7 +1044,7 @@
       "credentialsStored": false,
       "notes": "Employer profile only when hiring.",
       "directUrl": "https://www.glassdoor.com/employers/sign-up/",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "indeed-employer": {
       "platformName": "Indeed Employer",
@@ -840,7 +1056,7 @@
       "credentialsStored": false,
       "notes": "Employer profile only when hiring.",
       "directUrl": "https://www.indeed.com/hire",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "ziprecruiter": {
       "platformName": "ZipRecruiter",
@@ -852,7 +1068,7 @@
       "credentialsStored": false,
       "notes": "Employer profile only when hiring.",
       "directUrl": "https://www.ziprecruiter.com/signup",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "handshake": {
       "platformName": "Handshake",
@@ -864,7 +1080,7 @@
       "credentialsStored": false,
       "notes": "Employer profile only when hiring.",
       "directUrl": "https://joinhandshake.com/employers/",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "aws": {
       "platformName": "AWS",
@@ -876,7 +1092,7 @@
       "credentialsStored": false,
       "notes": "Cloud infra only when selected.",
       "directUrl": "https://portal.aws.amazon.com/billing/signup",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "gcp": {
       "platformName": "GCP",
@@ -888,7 +1104,7 @@
       "credentialsStored": false,
       "notes": "Cloud infra only when selected.",
       "directUrl": "https://console.cloud.google.com/freetrial",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "azure": {
       "platformName": "Azure",
@@ -900,7 +1116,7 @@
       "credentialsStored": false,
       "notes": "Cloud infra only when selected.",
       "directUrl": "https://azure.microsoft.com/free/",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "digitalocean": {
       "platformName": "DigitalOcean",
@@ -912,7 +1128,7 @@
       "credentialsStored": false,
       "notes": "Cloud infra only when selected.",
       "directUrl": "https://cloud.digitalocean.com/registrations/new",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "hetzner": {
       "platformName": "Hetzner",
@@ -924,7 +1140,7 @@
       "credentialsStored": false,
       "notes": "Cloud infra only when selected.",
       "directUrl": "https://accounts.hetzner.com/signUp",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "fly-io": {
       "platformName": "Fly.io",
@@ -936,7 +1152,7 @@
       "credentialsStored": false,
       "notes": "Cloud infra only when selected.",
       "directUrl": "https://fly.io/user/personal_access_tokens",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "render": {
       "platformName": "Render",
@@ -948,7 +1164,7 @@
       "credentialsStored": false,
       "notes": "Cloud infra only when selected.",
       "directUrl": "https://dashboard.render.com/register",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "railway": {
       "platformName": "Railway",
@@ -960,7 +1176,7 @@
       "credentialsStored": false,
       "notes": "Cloud infra only when selected.",
       "directUrl": "https://railway.app/login",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "docker-hub": {
       "platformName": "Docker Hub",
@@ -972,7 +1188,7 @@
       "credentialsStored": false,
       "notes": "Registry only when used.",
       "directUrl": "https://hub.docker.com/signup",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "npm": {
       "platformName": "npm",
@@ -984,7 +1200,7 @@
       "credentialsStored": false,
       "notes": "Package registry only when publishing.",
       "directUrl": "https://www.npmjs.com/signup",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "hugging-face": {
       "platformName": "Hugging Face",
@@ -996,7 +1212,7 @@
       "credentialsStored": false,
       "notes": "Model hub only when used.",
       "directUrl": "https://huggingface.co/join",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "openai-platform": {
       "platformName": "OpenAI Platform",
@@ -1008,7 +1224,7 @@
       "credentialsStored": false,
       "notes": "Registry completeness only. Do not create without explicit Founder Authority policy change.",
       "directUrl": "https://platform.openai.com/signup",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "anthropic-console": {
       "platformName": "Anthropic Console",
@@ -1020,7 +1236,7 @@
       "credentialsStored": false,
       "notes": "Registry completeness only. Do not create without explicit Founder Authority policy change.",
       "directUrl": "https://console.anthropic.com/",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "google-ai-studio": {
       "platformName": "Google AI Studio",
@@ -1032,115 +1248,187 @@
       "credentialsStored": false,
       "notes": "Registry completeness only. Do not create without explicit Founder Authority policy change.",
       "directUrl": "https://aistudio.google.com/",
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "updatedAt": "2026-04-30T17:36:47.634Z"
     },
     "chefflow-main-system-account": {
       "platformName": "ChefFlow main system account",
       "platformId": "chefflow-main-system-account",
       "classification": "CHEFFLOW_INTERNAL_REQUIRED",
       "finalHandle": null,
-      "status": "partial",
+      "status": "awaiting_human_action",
       "verificationStatus": "not_started",
       "credentialsStored": false,
-      "notes": "Canonical system identity. Planned, not executed.",
+      "notes": "The runner cannot create or reserve identities until the required inputs are set.",
       "directUrl": null,
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "humanAction": {
+        "platform": "ChefFlow main system account",
+        "selectedUsername": null,
+        "currentStatus": "Missing operator inputs",
+        "exactRequiredAction": "Set CHEFFLOW_IDENTITY_EMAIL, CHEFFLOW_IDENTITY_PASSWORD, CHEFFLOW_IDENTITY_PHONE, and CHEFFLOW_IDENTITY_VAULT_KEY",
+        "directUrl": "local CLI",
+        "resumeInstruction": "Then run: npx tsx scripts/identity/claim-orchestrator.ts run"
+      },
+      "updatedAt": "2026-04-30T17:36:47.635Z"
     },
     "chefflow-admin-account": {
       "platformName": "ChefFlow admin account",
       "platformId": "chefflow-admin-account",
       "classification": "CHEFFLOW_INTERNAL_REQUIRED",
       "finalHandle": null,
-      "status": "partial",
+      "status": "awaiting_human_action",
       "verificationStatus": "not_started",
       "credentialsStored": false,
-      "notes": "Founder Authority admin identity. Planned, not executed.",
+      "notes": "The runner cannot create or reserve identities until the required inputs are set.",
       "directUrl": null,
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "humanAction": {
+        "platform": "ChefFlow admin account",
+        "selectedUsername": null,
+        "currentStatus": "Missing operator inputs",
+        "exactRequiredAction": "Set CHEFFLOW_IDENTITY_EMAIL, CHEFFLOW_IDENTITY_PASSWORD, CHEFFLOW_IDENTITY_PHONE, and CHEFFLOW_IDENTITY_VAULT_KEY",
+        "directUrl": "local CLI",
+        "resumeInstruction": "Then run: npx tsx scripts/identity/claim-orchestrator.ts run"
+      },
+      "updatedAt": "2026-04-30T17:36:47.635Z"
     },
     "chefflow-support-account": {
       "platformName": "ChefFlow support account",
       "platformId": "chefflow-support-account",
       "classification": "CHEFFLOW_INTERNAL_REQUIRED",
       "finalHandle": null,
-      "status": "partial",
+      "status": "awaiting_human_action",
       "verificationStatus": "not_started",
       "credentialsStored": false,
-      "notes": "Support inbox identity. Planned, not executed.",
+      "notes": "The runner cannot create or reserve identities until the required inputs are set.",
       "directUrl": null,
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "humanAction": {
+        "platform": "ChefFlow support account",
+        "selectedUsername": null,
+        "currentStatus": "Missing operator inputs",
+        "exactRequiredAction": "Set CHEFFLOW_IDENTITY_EMAIL, CHEFFLOW_IDENTITY_PASSWORD, CHEFFLOW_IDENTITY_PHONE, and CHEFFLOW_IDENTITY_VAULT_KEY",
+        "directUrl": "local CLI",
+        "resumeInstruction": "Then run: npx tsx scripts/identity/claim-orchestrator.ts run"
+      },
+      "updatedAt": "2026-04-30T17:36:47.635Z"
     },
     "chefflow-bot-service-account": {
       "platformName": "ChefFlow bot/service account",
       "platformId": "chefflow-bot-service-account",
       "classification": "CHEFFLOW_INTERNAL_REQUIRED",
       "finalHandle": null,
-      "status": "partial",
+      "status": "awaiting_human_action",
       "verificationStatus": "not_started",
       "credentialsStored": false,
-      "notes": "Automation service identity. Planned, not executed.",
+      "notes": "The runner cannot create or reserve identities until the required inputs are set.",
       "directUrl": null,
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "humanAction": {
+        "platform": "ChefFlow bot/service account",
+        "selectedUsername": null,
+        "currentStatus": "Missing operator inputs",
+        "exactRequiredAction": "Set CHEFFLOW_IDENTITY_EMAIL, CHEFFLOW_IDENTITY_PASSWORD, CHEFFLOW_IDENTITY_PHONE, and CHEFFLOW_IDENTITY_VAULT_KEY",
+        "directUrl": "local CLI",
+        "resumeInstruction": "Then run: npx tsx scripts/identity/claim-orchestrator.ts run"
+      },
+      "updatedAt": "2026-04-30T17:36:47.635Z"
     },
     "chefflow-monitoring-account": {
       "platformName": "ChefFlow monitoring account",
       "platformId": "chefflow-monitoring-account",
       "classification": "CHEFFLOW_INTERNAL_REQUIRED",
       "finalHandle": null,
-      "status": "partial",
+      "status": "awaiting_human_action",
       "verificationStatus": "not_started",
       "credentialsStored": false,
-      "notes": "Monitoring identity. Planned, not executed.",
+      "notes": "The runner cannot create or reserve identities until the required inputs are set.",
       "directUrl": null,
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "humanAction": {
+        "platform": "ChefFlow monitoring account",
+        "selectedUsername": null,
+        "currentStatus": "Missing operator inputs",
+        "exactRequiredAction": "Set CHEFFLOW_IDENTITY_EMAIL, CHEFFLOW_IDENTITY_PASSWORD, CHEFFLOW_IDENTITY_PHONE, and CHEFFLOW_IDENTITY_VAULT_KEY",
+        "directUrl": "local CLI",
+        "resumeInstruction": "Then run: npx tsx scripts/identity/claim-orchestrator.ts run"
+      },
+      "updatedAt": "2026-04-30T17:36:47.635Z"
     },
     "chefflow-billing-account": {
       "platformName": "ChefFlow billing account",
       "platformId": "chefflow-billing-account",
       "classification": "CHEFFLOW_INTERNAL_REQUIRED",
       "finalHandle": null,
-      "status": "partial",
+      "status": "awaiting_human_action",
       "verificationStatus": "not_started",
       "credentialsStored": false,
-      "notes": "Billing identity. Planned, not executed.",
+      "notes": "The runner cannot create or reserve identities until the required inputs are set.",
       "directUrl": null,
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "humanAction": {
+        "platform": "ChefFlow billing account",
+        "selectedUsername": null,
+        "currentStatus": "Missing operator inputs",
+        "exactRequiredAction": "Set CHEFFLOW_IDENTITY_EMAIL, CHEFFLOW_IDENTITY_PASSWORD, CHEFFLOW_IDENTITY_PHONE, and CHEFFLOW_IDENTITY_VAULT_KEY",
+        "directUrl": "local CLI",
+        "resumeInstruction": "Then run: npx tsx scripts/identity/claim-orchestrator.ts run"
+      },
+      "updatedAt": "2026-04-30T17:36:47.635Z"
     },
     "chefflow-test-chef-account": {
       "platformName": "ChefFlow test chef account",
       "platformId": "chefflow-test-chef-account",
       "classification": "CHEFFLOW_INTERNAL_REQUIRED",
       "finalHandle": null,
-      "status": "partial",
+      "status": "awaiting_human_action",
       "verificationStatus": "not_started",
       "credentialsStored": false,
-      "notes": "Internal test chef identity. Planned, not executed.",
+      "notes": "The runner cannot create or reserve identities until the required inputs are set.",
       "directUrl": null,
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "humanAction": {
+        "platform": "ChefFlow test chef account",
+        "selectedUsername": null,
+        "currentStatus": "Missing operator inputs",
+        "exactRequiredAction": "Set CHEFFLOW_IDENTITY_EMAIL, CHEFFLOW_IDENTITY_PASSWORD, CHEFFLOW_IDENTITY_PHONE, and CHEFFLOW_IDENTITY_VAULT_KEY",
+        "directUrl": "local CLI",
+        "resumeInstruction": "Then run: npx tsx scripts/identity/claim-orchestrator.ts run"
+      },
+      "updatedAt": "2026-04-30T17:36:47.635Z"
     },
     "chefflow-test-client-account": {
       "platformName": "ChefFlow test client account",
       "platformId": "chefflow-test-client-account",
       "classification": "CHEFFLOW_INTERNAL_REQUIRED",
       "finalHandle": null,
-      "status": "partial",
+      "status": "awaiting_human_action",
       "verificationStatus": "not_started",
       "credentialsStored": false,
-      "notes": "Internal test client identity. Planned, not executed.",
+      "notes": "The runner cannot create or reserve identities until the required inputs are set.",
       "directUrl": null,
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "humanAction": {
+        "platform": "ChefFlow test client account",
+        "selectedUsername": null,
+        "currentStatus": "Missing operator inputs",
+        "exactRequiredAction": "Set CHEFFLOW_IDENTITY_EMAIL, CHEFFLOW_IDENTITY_PASSWORD, CHEFFLOW_IDENTITY_PHONE, and CHEFFLOW_IDENTITY_VAULT_KEY",
+        "directUrl": "local CLI",
+        "resumeInstruction": "Then run: npx tsx scripts/identity/claim-orchestrator.ts run"
+      },
+      "updatedAt": "2026-04-30T17:36:47.635Z"
     },
     "chefflow-demo-public-account": {
       "platformName": "ChefFlow demo/public account",
       "platformId": "chefflow-demo-public-account",
       "classification": "CHEFFLOW_INTERNAL_REQUIRED",
       "finalHandle": null,
-      "status": "partial",
+      "status": "awaiting_human_action",
       "verificationStatus": "not_started",
       "credentialsStored": false,
-      "notes": "Demo and public account identity. Planned, not executed.",
+      "notes": "The runner cannot create or reserve identities until the required inputs are set.",
       "directUrl": null,
-      "updatedAt": "2026-04-30T17:28:06.102Z"
+      "humanAction": {
+        "platform": "ChefFlow demo/public account",
+        "selectedUsername": null,
+        "currentStatus": "Missing operator inputs",
+        "exactRequiredAction": "Set CHEFFLOW_IDENTITY_EMAIL, CHEFFLOW_IDENTITY_PASSWORD, CHEFFLOW_IDENTITY_PHONE, and CHEFFLOW_IDENTITY_VAULT_KEY",
+        "directUrl": "local CLI",
+        "resumeInstruction": "Then run: npx tsx scripts/identity/claim-orchestrator.ts run"
+      },
+      "updatedAt": "2026-04-30T17:36:47.635Z"
     }
   }
 }
