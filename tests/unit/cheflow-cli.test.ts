@@ -133,13 +133,14 @@ describe('ChefFlow CLI', () => {
     const result = runCli([
       'validate',
       '--files',
-      'scripts/cheflow.mjs,tests/unit/cheflow-cli.test.ts',
+      'scripts/cheflow.mjs,scripts/cheflow/command-metadata.mjs,tests/unit/cheflow-cli.test.ts',
       '--json',
     ])
 
     assert.equal(result.status, 0)
     const parsed = JSON.parse(result.stdout)
     assert.ok(parsed.commands.includes('node --check scripts/cheflow.mjs'))
+    assert.ok(parsed.commands.includes('node --check scripts/cheflow/command-metadata.mjs'))
     assert.ok(parsed.commands.includes('node --test --import tsx tests/unit/cheflow-cli.test.ts'))
   })
 
@@ -275,5 +276,14 @@ describe('ChefFlow CLI', () => {
     assert.ok(Array.isArray(parsed.doNotTouch))
     assert.ok(parsed.pr)
     assert.ok(parsed.validation)
+  })
+
+  it('fails executable closeout attempts without an owned file set', () => {
+    const result = runCli(['closeout', '--commit', '--json'])
+
+    assert.equal(result.status, 1)
+    const parsed = JSON.parse(result.stdout)
+    assert.equal(parsed.ok, false)
+    assert.match(parsed.error, /requires --owned/)
   })
 })
