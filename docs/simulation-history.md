@@ -633,3 +633,27 @@ Failing: inquiry_parse (0%), client_parse (0%), allergen_risk (0%), corresponden
 ## 2026-04-29 14:44 UTC - 0% pass rate - Run ed0ea64e
 Passing: none
 Failing: inquiry_parse (0%), client_parse (0%), allergen_risk (0%), correspondence (0%), menu_suggestions (0%), quote_draft (0%)
+
+## 2026-04-30 02:19 UTC - 0% pass rate - Run 289931dc
+Passing: none
+Failing: inquiry_parse (0%), client_parse (0%), allergen_risk (0%), correspondence (0%), menu_suggestions (0%), quote_draft (0%)
+
+## 2026-04-30 02:19 UTC - 0% pass rate - Run 37cc8f67
+Passing: none
+Failing: inquiry_parse (0%), client_parse (0%), allergen_risk (0%), correspondence (0%), menu_suggestions (0%), quote_draft (0%)
+
+## 2026-04-30 06:29 UTC - 0% pass rate - Run 3974323e
+Passing: none
+Failing: inquiry_parse (0%), client_parse (0%), allergen_risk (0%), correspondence (0%), menu_suggestions (0%), quote_draft (0%)
+
+## 2026-04-30 06:29 UTC - 0% pass rate - Run 0ece268b
+Passing: none
+Failing: inquiry_parse (0%), client_parse (0%), allergen_risk (0%), correspondence (0%), menu_suggestions (0%), quote_draft (0%)
+
+## 2026-04-30 09:15 UTC - 0% pass rate - Run 98345181
+Passing: none
+Failing: inquiry_parse (0%), client_parse (0%), allergen_risk (0%), correspondence (0%), menu_suggestions (0%), quote_draft (0%)
+
+## 2026-04-30 09:16 UTC - 0% pass rate - Run 5497a724
+Passing: none
+Failing: inquiry_parse (0%), client_parse (0%), allergen_risk (0%), correspondence (0%), menu_suggestions (0%), quote_draft (0%)

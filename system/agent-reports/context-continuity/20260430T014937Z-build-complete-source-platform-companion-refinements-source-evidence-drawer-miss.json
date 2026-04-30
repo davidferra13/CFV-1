@@ -1,0 +1,734 @@
+{
+  "generated_at": "2026-04-30T01:49:35.857Z",
+  "prompt": "Build complete source-platform companion refinements: source evidence drawer, missing data checklist, payout reconciliation queue, forwarding inbox guidance, legal posture card, event mirror, confidence review, parser registry, and copy guard.",
+  "terms": [
+    "complete",
+    "source-platform",
+    "companion",
+    "refinements",
+    "source",
+    "evidence",
+    "drawer",
+    "missing",
+    "data",
+    "checklist",
+    "payout",
+    "reconciliation",
+    "queue",
+    "forwarding",
+    "inbox",
+    "guidance",
+    "legal",
+    "posture",
+    "card",
+    "event",
+    "mirror",
+    "confidence",
+    "review",
+    "parser"
+  ],
+  "scanned_dirs": [
+    "app",
+    "components",
+    "lib",
+    "docs/specs",
+    "docs/changes",
+    "docs/app-complete-audit.md",
+    "project-map",
+    "memory",
+    "system/intake",
+    "system/agent-reports"
+  ],
+  "canonical_surfaces": [
+    {
+      "id": "finance",
+      "label": "Finance and Ledger",
+      "score": 3,
+      "hits": [
+        "payout",
+        "event"
+      ],
+      "canonical_routes": [
+        "/finance",
+        "/quotes"
+      ],
+      "canonical_files": [
+        "lib/ledger/append.ts",
+        "lib/ledger/compute.ts",
+        "lib/events/transitions.ts"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Financial behavior must attach to ledger and quote owners."
+      }
+    },
+    {
+      "id": "chef-flow-replay",
+      "label": "Chef Flow Replay",
+      "score": 2,
+      "hits": [
+        "review"
+      ],
+      "canonical_routes": [
+        "/replay"
+      ],
+      "canonical_files": [
+        "app/(chef)/replay/page.tsx",
+        "lib/activity/replay-model.ts"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Extend replay model and components in place."
+      }
+    },
+    {
+      "id": "context-continuity",
+      "label": "Context Continuity",
+      "score": 1,
+      "hits": [
+        "event"
+      ],
+      "canonical_routes": [],
+      "canonical_files": [
+        ".claude/skills/context-continuity/SKILL.md",
+        "devtools/context-continuity-scan.mjs",
+        "system/canonical-surfaces.json"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Extend the continuity layer in place."
+      }
+    },
+    {
+      "id": "agent-skill-system",
+      "label": "Agent Skill System",
+      "score": 1,
+      "hits": [
+        "evidence"
+      ],
+      "canonical_routes": [],
+      "canonical_files": [
+        "devtools/skill-router.mjs",
+        "devtools/skill-validator.mjs",
+        "devtools/skill-trigger-tests.mjs",
+        "system/agent-golden-prompts/default.json"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Add to the existing skill harness."
+      }
+    },
+    {
+      "id": "remy-ai",
+      "label": "Remy AI",
+      "score": 1,
+      "hits": [
+        "drawer"
+      ],
+      "canonical_routes": [],
+      "canonical_files": [
+        "components/ai/remy-drawer.tsx",
+        "lib/ai/remy-actions.ts"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach new assistant behavior to Remy or its shared AI modules."
+      }
+    }
+  ],
+  "related_files": [
+    {
+      "file": "docs/app-complete-audit.md",
+      "kind": "other",
+      "score": 72,
+      "hits": [
+        "complete",
+        "companion",
+        "source",
+        "evidence",
+        "drawer",
+        "missing",
+        "data",
+        "checklist",
+        "payout",
+        "reconciliation"
+      ]
+    },
+    {
+      "file": "docs/specs/openclaw-ideal-runtime-and-national-intelligence.md",
+      "kind": "spec",
+      "score": 59,
+      "hits": [
+        "complete",
+        "source",
+        "evidence",
+        "drawer",
+        "missing",
+        "data",
+        "checklist",
+        "queue",
+        "legal",
+        "posture"
+      ]
+    },
+    {
+      "file": "docs/specs/continuous-intelligence-layer.md",
+      "kind": "spec",
+      "score": 57,
+      "hits": [
+        "complete",
+        "source",
+        "evidence",
+        "drawer",
+        "missing",
+        "data",
+        "checklist",
+        "reconciliation",
+        "queue",
+        "card"
+      ]
+    },
+    {
+      "file": "docs/specs/bob-and-joy-action-catalog.md",
+      "kind": "spec",
+      "score": 55,
+      "hits": [
+        "complete",
+        "source",
+        "missing",
+        "data",
+        "checklist",
+        "payout",
+        "reconciliation",
+        "queue",
+        "inbox",
+        "card"
+      ]
+    },
+    {
+      "file": "docs/specs/system-completeness-interrogation.md",
+      "kind": "spec",
+      "score": 53,
+      "hits": [
+        "complete",
+        "source",
+        "evidence",
+        "drawer",
+        "missing",
+        "data",
+        "checklist",
+        "reconciliation",
+        "queue",
+        "inbox"
+      ]
+    },
+    {
+      "file": "docs/specs/comprehensive-domain-inventory-phase-1.md",
+      "kind": "spec",
+      "score": 51,
+      "hits": [
+        "complete",
+        "source",
+        "evidence",
+        "data",
+        "reconciliation",
+        "queue",
+        "inbox",
+        "guidance",
+        "legal",
+        "posture"
+      ]
+    },
+    {
+      "file": "lib/interface/action-layer.ts",
+      "kind": "module",
+      "score": 51,
+      "hits": [
+        "complete",
+        "source",
+        "evidence",
+        "missing",
+        "data",
+        "checklist",
+        "queue",
+        "inbox",
+        "card",
+        "event"
+      ]
+    },
+    {
+      "file": "docs/specs/openclaw-food-price-intelligence.md",
+      "kind": "spec",
+      "score": 50,
+      "hits": [
+        "complete",
+        "source",
+        "missing",
+        "data",
+        "queue",
+        "inbox",
+        "legal",
+        "card",
+        "event",
+        "confidence"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-competitive-surface.md",
+      "kind": "spec",
+      "score": 50,
+      "hits": [
+        "complete",
+        "source",
+        "evidence",
+        "missing",
+        "data",
+        "checklist",
+        "reconciliation",
+        "queue",
+        "inbox",
+        "card"
+      ]
+    },
+    {
+      "file": "lib/ai/command-task-descriptions.ts",
+      "kind": "module",
+      "score": 49,
+      "hits": [
+        "complete",
+        "source",
+        "missing",
+        "data",
+        "checklist",
+        "queue",
+        "inbox",
+        "legal",
+        "card",
+        "event"
+      ]
+    },
+    {
+      "file": "components/navigation/nav-config.tsx",
+      "kind": "component",
+      "score": 48,
+      "hits": [
+        "complete",
+        "source",
+        "drawer",
+        "data",
+        "payout",
+        "reconciliation",
+        "queue",
+        "inbox",
+        "card",
+        "event"
+      ]
+    },
+    {
+      "file": "docs/specs/service-lifecycle-intelligence.md",
+      "kind": "spec",
+      "score": 48,
+      "hits": [
+        "complete",
+        "source",
+        "evidence",
+        "missing",
+        "data",
+        "checklist",
+        "reconciliation",
+        "card",
+        "event",
+        "mirror"
+      ]
+    },
+    {
+      "file": "lib/ai/command-intent-parser.ts",
+      "kind": "module",
+      "score": 48,
+      "hits": [
+        "parser",
+        "complete",
+        "source",
+        "missing",
+        "data",
+        "checklist",
+        "queue",
+        "inbox",
+        "card",
+        "event"
+      ]
+    },
+    {
+      "file": "app/(chef)/dashboard/_sections/business-section-mobile-content.tsx",
+      "kind": "route",
+      "score": 47,
+      "hits": [
+        "complete",
+        "source",
+        "missing",
+        "data",
+        "payout",
+        "reconciliation",
+        "queue",
+        "inbox",
+        "card",
+        "event"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-cohesiveness-synthesis.md",
+      "kind": "spec",
+      "score": 47,
+      "hits": [
+        "complete",
+        "source",
+        "missing",
+        "data",
+        "checklist",
+        "queue",
+        "inbox",
+        "card",
+        "event",
+        "review"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-full-cohesion.md",
+      "kind": "spec",
+      "score": 47,
+      "hits": [
+        "complete",
+        "source",
+        "evidence",
+        "drawer",
+        "missing",
+        "data",
+        "checklist",
+        "reconciliation",
+        "queue",
+        "card"
+      ]
+    },
+    {
+      "file": "lib/db/fk-map.ts",
+      "kind": "module",
+      "score": 47,
+      "hits": [
+        "source",
+        "evidence",
+        "drawer",
+        "checklist",
+        "payout",
+        "reconciliation",
+        "queue",
+        "card",
+        "event",
+        "review"
+      ]
+    },
+    {
+      "file": "lib/scheduling/types.ts",
+      "kind": "module",
+      "score": 47,
+      "hits": [
+        "complete",
+        "missing",
+        "data",
+        "checklist",
+        "payout",
+        "reconciliation",
+        "queue",
+        "inbox",
+        "event",
+        "confidence"
+      ]
+    },
+    {
+      "file": "docs/specs/p0-chef-cpa-ready-tax-export-and-reconciliation.md",
+      "kind": "spec",
+      "score": 46,
+      "hits": [
+        "reconciliation",
+        "complete",
+        "source",
+        "evidence",
+        "missing",
+        "data",
+        "payout",
+        "card",
+        "event",
+        "review"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-consumer-discovery-cohesion-v1.md",
+      "kind": "spec",
+      "score": 46,
+      "hits": [
+        "complete",
+        "source",
+        "evidence",
+        "drawer",
+        "missing",
+        "data",
+        "queue",
+        "guidance",
+        "legal",
+        "card"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-full-cohesion-answers.md",
+      "kind": "spec",
+      "score": 46,
+      "hits": [
+        "complete",
+        "source",
+        "drawer",
+        "missing",
+        "data",
+        "checklist",
+        "reconciliation",
+        "queue",
+        "card",
+        "event"
+      ]
+    },
+    {
+      "file": "docs/specs/equipment-intelligence-system.md",
+      "kind": "spec",
+      "score": 45,
+      "hits": [
+        "complete",
+        "source",
+        "missing",
+        "data",
+        "checklist",
+        "reconciliation",
+        "queue",
+        "card",
+        "event",
+        "mirror"
+      ]
+    },
+    {
+      "file": "docs/specs/p1-chef-collab-spaces.md",
+      "kind": "spec",
+      "score": 45,
+      "hits": [
+        "complete",
+        "source",
+        "evidence",
+        "missing",
+        "data",
+        "queue",
+        "inbox",
+        "posture",
+        "card",
+        "event"
+      ]
+    },
+    {
+      "file": "docs/specs/chef-flow-decision-ledger-v1.md",
+      "kind": "spec",
+      "score": 44,
+      "hits": [
+        "complete",
+        "companion",
+        "source",
+        "evidence",
+        "missing",
+        "data",
+        "guidance",
+        "card",
+        "event",
+        "confidence"
+      ]
+    },
+    {
+      "file": "docs/specs/openclaw-goal-governor-and-kpi-contract.md",
+      "kind": "spec",
+      "score": 44,
+      "hits": [
+        "complete",
+        "source",
+        "evidence",
+        "missing",
+        "data",
+        "queue",
+        "card",
+        "event",
+        "confidence",
+        "review"
+      ]
+    },
+    {
+      "file": "docs/specs/openclaw-phase-3-full-integration.md",
+      "kind": "spec",
+      "score": 44,
+      "hits": [
+        "complete",
+        "source",
+        "missing",
+        "data",
+        "checklist",
+        "card",
+        "event",
+        "confidence",
+        "review",
+        "parser"
+      ]
+    },
+    {
+      "file": "lib/events/event-readiness-assistant.ts",
+      "kind": "module",
+      "score": 44,
+      "hits": [
+        "event",
+        "complete",
+        "source",
+        "missing",
+        "data",
+        "checklist",
+        "confidence",
+        "review"
+      ]
+    },
+    {
+      "file": "docs/specs/food-costing-knowledge-system.md",
+      "kind": "spec",
+      "score": 43,
+      "hits": [
+        "complete",
+        "source",
+        "drawer",
+        "missing",
+        "data",
+        "reconciliation",
+        "guidance",
+        "card",
+        "event",
+        "review"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-cannabis-cohesion.md",
+      "kind": "spec",
+      "score": 43,
+      "hits": [
+        "complete",
+        "source",
+        "evidence",
+        "missing",
+        "data",
+        "reconciliation",
+        "guidance",
+        "legal",
+        "posture",
+        "card"
+      ]
+    },
+    {
+      "file": "lib/clients/client-profile-service.ts",
+      "kind": "module",
+      "score": 43,
+      "hits": [
+        "complete",
+        "source",
+        "evidence",
+        "missing",
+        "data",
+        "checklist",
+        "event",
+        "confidence",
+        "review"
+      ]
+    }
+  ],
+  "recent_commits": [
+    {
+      "line": "5dff9cb55 chore(agent): build source-platform companion mode feature/buyable-price-contract",
+      "score": 3,
+      "hits": [
+        "source-platform",
+        "companion",
+        "source"
+      ]
+    },
+    {
+      "line": "c770bd3ff chore(agent): add context continuity skill feature/voice-ops-complete",
+      "score": 1,
+      "hits": [
+        "complete"
+      ]
+    }
+  ],
+  "dirty_matches": [
+    {
+      "line": "M  docs/app-complete-audit.md",
+      "file": "docs/app-complete-audit.md",
+      "score": 2,
+      "hits": [
+        "complete"
+      ]
+    }
+  ],
+  "claim_matches": [
+    {
+      "file": "system/agent-claims/20260429T235629Z-feature-voice-ops-complete-build-the-complete-context-continuity-tooling-layer-s.json",
+      "score": 4,
+      "hits": [
+        "complete"
+      ],
+      "prompt": "Build the complete context continuity tooling layer: scanner CLI, canonical surface registry, pre-build gate, Obsidian packet exporter, near-duplicate detector, spec template continuity section, feature family map, and dashboard",
+      "owned": [],
+      "status": "active"
+    },
+    {
+      "file": "system/agent-claims/20260429T234252Z-feature-pantry-engine-create-persistent-codex-behavior-to-prevent-fragmented-dup.json",
+      "score": 2,
+      "hits": [
+        "event"
+      ],
+      "prompt": "Create persistent Codex behavior to prevent fragmented duplicate builds and capture conversation memory for Obsidian-style continuity",
+      "owned": [],
+      "status": "active"
+    }
+  ],
+  "duplicate_risks": [
+    {
+      "level": "medium",
+      "reason": "Multiple canonical surfaces matched the prompt.",
+      "owners": [
+        "finance",
+        "chef-flow-replay",
+        "context-continuity"
+      ]
+    },
+    {
+      "level": "medium",
+      "reason": "Dirty files already exist in this domain and may be another agent active work.",
+      "files": [
+        "docs/app-complete-audit.md"
+      ]
+    },
+    {
+      "level": "medium",
+      "reason": "Active or recorded claims overlap this domain.",
+      "claims": [
+        "system/agent-claims/20260429T235629Z-feature-voice-ops-complete-build-the-complete-context-continuity-tooling-layer-s.json",
+        "system/agent-claims/20260429T234252Z-feature-pantry-engine-create-persistent-codex-behavior-to-prevent-fragmented-dup.json"
+      ]
+    }
+  ],
+  "continuity": {
+    "decision": "attach",
+    "stop_required": false,
+    "reason": "Matched canonical surface finance."
+  }
+}

@@ -1,0 +1,678 @@
+{
+  "generated_at": "2026-04-30T03:08:29.282Z",
+  "prompt": "Create build spec for Autonomous V1 Builder Loop: intake, V1 governor classification, approved queue, Codex builder execution, validation receipts, Mission Control monitoring, Hermes limited dispatcher role",
+  "terms": [
+    "create",
+    "spec",
+    "autonomous",
+    "builder",
+    "loop",
+    "intake",
+    "governor",
+    "classification",
+    "approved",
+    "queue",
+    "execution",
+    "validation",
+    "receipts",
+    "mission",
+    "control",
+    "monitoring",
+    "hermes",
+    "limited",
+    "dispatcher",
+    "role"
+  ],
+  "scanned_dirs": [
+    "app",
+    "components",
+    "lib",
+    "docs/specs",
+    "docs/changes",
+    "docs/app-complete-audit.md",
+    "project-map",
+    "memory",
+    "system/intake",
+    "system/agent-reports"
+  ],
+  "canonical_surfaces": [
+    {
+      "id": "client-intake",
+      "label": "Client Intake",
+      "score": 5,
+      "hits": [
+        "intake"
+      ],
+      "canonical_routes": [
+        "/book",
+        "/clients/intake"
+      ],
+      "canonical_files": [
+        "app/api/book/route.ts",
+        "lib/inquiries/public-actions.ts",
+        "public/embed/chefflow-widget.js"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach to the existing intake lane contract."
+      }
+    },
+    {
+      "id": "agent-skill-system",
+      "label": "Agent Skill System",
+      "score": 1,
+      "hits": [
+        "validation"
+      ],
+      "canonical_routes": [],
+      "canonical_files": [
+        "devtools/skill-router.mjs",
+        "devtools/skill-validator.mjs",
+        "devtools/skill-trigger-tests.mjs",
+        "system/agent-golden-prompts/default.json"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Add to the existing skill harness."
+      }
+    },
+    {
+      "id": "voice-ops",
+      "label": "Voice Operations",
+      "score": 1,
+      "hits": [
+        "execution"
+      ],
+      "canonical_routes": [],
+      "canonical_files": [
+        "lib/calling/voice-ops-actions.ts",
+        "components/calling/voice-ops-report-panel.tsx"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach to voice operations modules."
+      }
+    }
+  ],
+  "related_files": [
+    {
+      "file": "docs/specs/system-surface-role-classification-foundation.md",
+      "kind": "spec",
+      "score": 61,
+      "hits": [
+        "spec",
+        "classification",
+        "role",
+        "create",
+        "builder",
+        "intake",
+        "queue",
+        "execution",
+        "validation",
+        "mission"
+      ]
+    },
+    {
+      "file": "docs/specs/openclaw-ideal-runtime-and-national-intelligence.md",
+      "kind": "spec",
+      "score": 57,
+      "hits": [
+        "spec",
+        "create",
+        "builder",
+        "loop",
+        "governor",
+        "classification",
+        "approved",
+        "queue",
+        "execution",
+        "mission"
+      ]
+    },
+    {
+      "file": "docs/specs/comprehensive-domain-inventory-phase-1.md",
+      "kind": "spec",
+      "score": 49,
+      "hits": [
+        "spec",
+        "create",
+        "builder",
+        "intake",
+        "classification",
+        "queue",
+        "execution",
+        "receipts",
+        "mission",
+        "control"
+      ]
+    },
+    {
+      "file": "docs/specs/openclaw-social-media-orchestration.md",
+      "kind": "spec",
+      "score": 46,
+      "hits": [
+        "spec",
+        "create",
+        "builder",
+        "loop",
+        "approved",
+        "queue",
+        "execution",
+        "validation",
+        "mission",
+        "control"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-cohesiveness-synthesis.md",
+      "kind": "spec",
+      "score": 46,
+      "hits": [
+        "spec",
+        "create",
+        "builder",
+        "loop",
+        "intake",
+        "queue",
+        "validation",
+        "receipts",
+        "mission",
+        "monitoring"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-competitive-surface.md",
+      "kind": "spec",
+      "score": 46,
+      "hits": [
+        "spec",
+        "create",
+        "builder",
+        "loop",
+        "intake",
+        "classification",
+        "queue",
+        "execution",
+        "validation",
+        "receipts"
+      ]
+    },
+    {
+      "file": "docs/specs/openclaw-food-price-intelligence.md",
+      "kind": "spec",
+      "score": 45,
+      "hits": [
+        "spec",
+        "create",
+        "builder",
+        "loop",
+        "approved",
+        "queue",
+        "validation",
+        "receipts",
+        "mission",
+        "monitoring"
+      ]
+    },
+    {
+      "file": "docs/specs/p0-builder-agent-foundation.md",
+      "kind": "spec",
+      "score": 45,
+      "hits": [
+        "spec",
+        "builder",
+        "create",
+        "autonomous",
+        "loop",
+        "approved",
+        "execution",
+        "mission",
+        "control",
+        "limited"
+      ]
+    },
+    {
+      "file": "docs/specs/p1-chef-collab-spaces.md",
+      "kind": "spec",
+      "score": 45,
+      "hits": [
+        "spec",
+        "create",
+        "builder",
+        "loop",
+        "queue",
+        "execution",
+        "validation",
+        "receipts",
+        "mission",
+        "control"
+      ]
+    },
+    {
+      "file": "docs/specs/restaurant-ops-surface-and-reliability-pass.md",
+      "kind": "spec",
+      "score": 44,
+      "hits": [
+        "spec",
+        "create",
+        "builder",
+        "loop",
+        "execution",
+        "validation",
+        "mission",
+        "control",
+        "limited"
+      ]
+    },
+    {
+      "file": "docs/specs/interaction-engine.md",
+      "kind": "spec",
+      "score": 43,
+      "hits": [
+        "spec",
+        "create",
+        "approved",
+        "queue",
+        "execution",
+        "validation",
+        "receipts",
+        "mission",
+        "control",
+        "monitoring"
+      ]
+    },
+    {
+      "file": "docs/specs/mission-control-passive-dashboard.md",
+      "kind": "spec",
+      "score": 42,
+      "hits": [
+        "spec",
+        "mission",
+        "control",
+        "create",
+        "autonomous",
+        "builder",
+        "queue",
+        "validation"
+      ]
+    },
+    {
+      "file": "docs/specs/p0-system-improvement-control-tower.md",
+      "kind": "spec",
+      "score": 42,
+      "hits": [
+        "spec",
+        "control",
+        "create",
+        "builder",
+        "queue",
+        "execution",
+        "validation",
+        "limited"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-client-management.md",
+      "kind": "spec",
+      "score": 42,
+      "hits": [
+        "spec",
+        "create",
+        "loop",
+        "intake",
+        "queue",
+        "execution",
+        "validation",
+        "mission",
+        "control",
+        "monitoring"
+      ]
+    },
+    {
+      "file": "docs/specs/openclaw-goal-governor-and-kpi-contract.md",
+      "kind": "spec",
+      "score": 41,
+      "hits": [
+        "spec",
+        "governor",
+        "create",
+        "builder",
+        "classification",
+        "queue",
+        "execution",
+        "mission",
+        "monitoring",
+        "role"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-consumer-discovery-cohesion-v1.md",
+      "kind": "spec",
+      "score": 41,
+      "hits": [
+        "spec",
+        "create",
+        "loop",
+        "intake",
+        "classification",
+        "approved",
+        "queue",
+        "validation",
+        "mission",
+        "control"
+      ]
+    },
+    {
+      "file": "docs/specs/onboarding-overhaul.md",
+      "kind": "spec",
+      "score": 40,
+      "hits": [
+        "spec",
+        "create",
+        "builder",
+        "approved",
+        "validation",
+        "mission",
+        "control",
+        "limited"
+      ]
+    },
+    {
+      "file": "docs/specs/p0-public-booking-routing-and-source-truth.md",
+      "kind": "spec",
+      "score": 40,
+      "hits": [
+        "spec",
+        "create",
+        "builder",
+        "loop",
+        "intake",
+        "classification",
+        "execution",
+        "validation",
+        "mission"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-cannabis-portal.md",
+      "kind": "spec",
+      "score": 40,
+      "hits": [
+        "spec",
+        "create",
+        "builder",
+        "intake",
+        "classification",
+        "approved",
+        "queue",
+        "validation",
+        "mission",
+        "control"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-full-cohesion.md",
+      "kind": "spec",
+      "score": 40,
+      "hits": [
+        "spec",
+        "create",
+        "builder",
+        "classification",
+        "queue",
+        "validation",
+        "receipts",
+        "mission",
+        "control",
+        "limited"
+      ]
+    },
+    {
+      "file": "lib/interface/action-layer.ts",
+      "kind": "module",
+      "score": 40,
+      "hits": [
+        "create",
+        "spec",
+        "loop",
+        "intake",
+        "approved",
+        "queue",
+        "execution",
+        "receipts",
+        "control"
+      ]
+    },
+    {
+      "file": "docs/specs/p0-zero-manual-entry-form-control-plane.md",
+      "kind": "spec",
+      "score": 39,
+      "hits": [
+        "spec",
+        "control",
+        "create",
+        "builder",
+        "intake",
+        "queue",
+        "execution",
+        "mission",
+        "role"
+      ]
+    },
+    {
+      "file": "docs/specs/p1-survey-public-hardening-and-results-scale.md",
+      "kind": "spec",
+      "score": 39,
+      "hits": [
+        "spec",
+        "create",
+        "builder",
+        "intake",
+        "queue",
+        "mission",
+        "control",
+        "limited",
+        "role"
+      ]
+    },
+    {
+      "file": "docs/specs/bob-and-joy-action-catalog.md",
+      "kind": "spec",
+      "score": 38,
+      "hits": [
+        "spec",
+        "create",
+        "builder",
+        "loop",
+        "approved",
+        "queue",
+        "execution",
+        "receipts",
+        "mission",
+        "control"
+      ]
+    },
+    {
+      "file": "docs/specs/p0-runtime-surface-boundary-enforcement.md",
+      "kind": "spec",
+      "score": 38,
+      "hits": [
+        "spec",
+        "create",
+        "builder",
+        "classification",
+        "execution",
+        "validation",
+        "control",
+        "role"
+      ]
+    },
+    {
+      "file": "lib/scheduling/types.ts",
+      "kind": "module",
+      "score": 38,
+      "hits": [
+        "create",
+        "spec",
+        "intake",
+        "classification",
+        "queue",
+        "execution",
+        "validation",
+        "receipts",
+        "control"
+      ]
+    },
+    {
+      "file": "docs/specs/continuous-intelligence-layer.md",
+      "kind": "spec",
+      "score": 37,
+      "hits": [
+        "spec",
+        "create",
+        "autonomous",
+        "loop",
+        "queue",
+        "execution",
+        "validation",
+        "mission",
+        "control",
+        "limited"
+      ]
+    },
+    {
+      "file": "docs/specs/p0-chef-cpa-ready-tax-export-and-reconciliation.md",
+      "kind": "spec",
+      "score": 37,
+      "hits": [
+        "spec",
+        "create",
+        "builder",
+        "classification",
+        "execution",
+        "validation",
+        "receipts",
+        "mission",
+        "control"
+      ]
+    },
+    {
+      "file": "docs/specs/platform-intelligence-hub.md",
+      "kind": "spec",
+      "score": 37,
+      "hits": [
+        "spec",
+        "create",
+        "builder",
+        "classification",
+        "queue",
+        "validation",
+        "receipts",
+        "mission",
+        "monitoring"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-full-cohesion-answers.md",
+      "kind": "spec",
+      "score": 37,
+      "hits": [
+        "spec",
+        "create",
+        "classification",
+        "queue",
+        "execution",
+        "validation",
+        "receipts",
+        "mission",
+        "role"
+      ]
+    }
+  ],
+  "recent_commits": [
+    {
+      "line": "a933e8ff5 chore(agent): mobile haptic notification controls feature/mobile-haptic-notification-controls",
+      "score": 2,
+      "hits": [
+        "control"
+      ]
+    },
+    {
+      "line": "00609c2d2 chore(agent): build live privacy controls feature/live-privacy-controls",
+      "score": 2,
+      "hits": [
+        "control"
+      ]
+    },
+    {
+      "line": "424b519bb chore(agent): install v1 governor feature/haptic-explainable-event-audit",
+      "score": 1,
+      "hits": [
+        "governor"
+      ]
+    },
+    {
+      "line": "57f18b380 chore(agent): build strategy closed loop feature/buyable-price-contract",
+      "score": 1,
+      "hits": [
+        "loop"
+      ]
+    },
+    {
+      "line": "23d154392 chore(agent): refine live privacy controls feature/cheflow-cli-handoff-ops-final",
+      "score": 1,
+      "hits": [
+        "control"
+      ]
+    },
+    {
+      "line": "21a444b71 chore(agent): build voice ops control tower feature/catch-up-brand-new-builds",
+      "score": 1,
+      "hits": [
+        "control"
+      ]
+    }
+  ],
+  "dirty_matches": [],
+  "claim_matches": [
+    {
+      "file": "system/agent-claims/20260429T234252Z-feature-pantry-engine-create-persistent-codex-behavior-to-prevent-fragmented-dup.json",
+      "score": 3,
+      "hits": [
+        "create"
+      ],
+      "prompt": "Create persistent Codex behavior to prevent fragmented duplicate builds and capture conversation memory for Obsidian-style continuity",
+      "owned": [],
+      "status": "active"
+    },
+    {
+      "file": "system/agent-claims/20260429T235629Z-feature-voice-ops-complete-build-the-complete-context-continuity-tooling-layer-s.json",
+      "score": 2,
+      "hits": [
+        "create",
+        "spec"
+      ],
+      "prompt": "Build the complete context continuity tooling layer: scanner CLI, canonical surface registry, pre-build gate, Obsidian packet exporter, near-duplicate detector, spec template continuity section, feature family map, and dashboard",
+      "owned": [],
+      "status": "active"
+    }
+  ],
+  "duplicate_risks": [
+    {
+      "level": "medium",
+      "reason": "Active or recorded claims overlap this domain.",
+      "claims": [
+        "system/agent-claims/20260429T234252Z-feature-pantry-engine-create-persistent-codex-behavior-to-prevent-fragmented-dup.json",
+        "system/agent-claims/20260429T235629Z-feature-voice-ops-complete-build-the-complete-context-continuity-tooling-layer-s.json"
+      ]
+    }
+  ],
+  "continuity": {
+    "decision": "attach",
+    "stop_required": false,
+    "reason": "Matched canonical surface client-intake."
+  }
+}
