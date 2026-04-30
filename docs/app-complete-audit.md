@@ -845,6 +845,7 @@ Founder-owned operator walkthrough requests from `/for-operators/walkthrough` al
 ### 6.7 Vendors
 
 - **`/culinary/vendors`** - Vendor directory with add form, star/unstar toggle, delete button.
+- **`/culinary/call-sheet`** - Voice Hub for supplier and business calling. Gated by `supplier_calling`. Tabs cover Call, Call Log, Inbox, My Vendors, and Settings. The Voice Ops Control Tower sits above the tabs and summarizes active sessions, completed and failed calls, answer rate, recording coverage, urgent reviews, opt-outs, professional risk, and the next post-call actions. Voice boundaries remain vendor and business focused; automated outbound client calls stay blocked.
 
 ### 6.8 Inventory
 
@@ -1198,7 +1199,7 @@ Completion state stored in localStorage per event. Progress bar. Critical items 
 
 ## 12. ACTIVITY & QUEUE
 
-**Route:** `/replay` - ChefFlow Replay continuity surface. Server-rendered from existing resume suggestions, chef activity, client portal activity, and breadcrumb sessions for the last 7 days. Shows metric cards, Pick Up Now rows, Today/Yesterday/Earlier This Week replay groups, retrace session summaries, and a Replay Command panel. Partial-load alert appears if a source fails; no fake rows or invented counts are rendered.
+**Route:** `/replay` - Catch Up continuity surface. Server-rendered from existing resume suggestions, chef activity, client portal activity, and breadcrumb sessions for the last 7 days. Shows Morning Catch Up, metric cards, ranked Catch Up Inbox actions, handled and snoozed browser-local action state, client signal scores, readiness impact detection, changed-since-last-time cards, copy-only follow-up composer, digest copy, team handoff copy, browser-local rules, audit history, resume cards, full activity history, and a Catch Up Command panel. Partial-load alert appears if a source fails; no fake rows, invented counts, automatic sends, or server persistence claims are rendered.
 
 **Route:** `/activity` - Activity log with platform-history shell, Summary/Retrace/Desire Paths segmented control, Summary tab selector (My/Client/All), domain filter, time range, activity heat map (7-by-24 grid), feeds with "Load more". Retrace: breadcrumb session timeline. Activity logging on/off toggle. Real-time PostgreSQL subscription. The Activity Command panel summarizes tracking state, current filters, feed counts, breadcrumb sessions, and resume points, with explicit unavailable state when retrace data fails.
 

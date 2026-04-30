@@ -52,7 +52,7 @@ export const ROUTE_LABELS: Record<string, string> = {
   '/dashboard': 'Dashboard',
   '/daily-ops': 'Daily Ops',
   '/activity': 'Activity Log',
-  '/replay': 'ChefFlow Replay',
+  '/replay': 'Catch Up',
   '/inquiries': 'Inquiries',
   '/events': 'Events',
   '/quotes': 'Quotes',

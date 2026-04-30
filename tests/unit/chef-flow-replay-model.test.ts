@@ -79,6 +79,84 @@ test('buildChefFlowReplay creates entity links from real entity ids only', () =>
   assert.ok(hrefs.includes(null))
 })
 
+test('buildChefFlowReplay builds action inbox, client scores, drafts, rules, and audit trail', () => {
+  const replay = buildChefFlowReplay({
+    now,
+    resumeItems: [
+      {
+        id: 'quote-1',
+        type: 'quote',
+        title: 'Taylor proposal',
+        subtitle: 'Wedding dinner',
+        status: 'draft',
+        statusColor: 'purple',
+        href: '/quotes/quote-1',
+        context: {},
+      },
+    ],
+    breadcrumbSessions: [breadcrumbSession('session-1')],
+    chefActivity: [
+      chefEntry('chef-1', 'event', 'Updated guest count', '2026-04-29T14:00:00-04:00', 'event-1'),
+      chefEntry('chef-2', 'event', 'Updated menu status', '2026-04-29T15:00:00-04:00', 'event-1'),
+      chefEntry(
+        'chef-3',
+        'scheduling',
+        'Updated prep block',
+        '2026-04-29T16:00:00-04:00',
+        'event-1'
+      ),
+    ],
+    clientActivity: [
+      clientEvent('client-1', 'payment_page_visited', '2026-04-29T15:00:00-04:00'),
+      clientEvent('client-2', 'proposal_viewed', '2026-04-29T15:30:00-04:00'),
+    ],
+  })
+
+  assert.ok(replay.actionDigest.some((action) => action.category === 'money'))
+  assert.equal(replay.clientSignalScores[0]?.score, 68)
+  assert.equal(replay.followUpDrafts.length > 0, true)
+  assert.ok(replay.rules.some((rule) => rule.id === 'rule-money' && rule.matchCount === 1))
+  assert.equal(replay.auditTrail[0]?.actionLabel, 'Catch Up generated')
+  assert.ok(replay.catchUpDigest.body.includes('Priority actions'))
+  assert.ok(replay.handoff.body.includes('Team handoff'))
+})
+
+test('buildChefFlowReplay detects readiness impacts and repeated entity change cards', () => {
+  const replay = buildChefFlowReplay({
+    now,
+    resumeItems: [
+      {
+        id: 'event-1',
+        type: 'event',
+        title: 'Smith dinner',
+        subtitle: 'May 1',
+        status: 'confirmed',
+        statusColor: 'green',
+        href: '/events/event-1',
+        context: {},
+      },
+    ],
+    breadcrumbSessions: [],
+    clientActivity: [],
+    chefActivity: [
+      chefEntry('chef-1', 'event', 'Updated timeline', '2026-04-29T12:00:00-04:00', 'event-1'),
+      chefEntry('chef-2', 'event', 'Updated guest count', '2026-04-29T13:00:00-04:00', 'event-1'),
+      chefEntry(
+        'chef-3',
+        'operational',
+        'Packing status updated',
+        '2026-04-29T14:00:00-04:00',
+        'event-1'
+      ),
+    ],
+  })
+
+  assert.ok(replay.readinessImpacts.some((impact) => impact.id === 'readiness-active-events'))
+  assert.equal(replay.changeDiffCards.length, 1)
+  assert.equal(replay.changeDiffCards[0]?.beforeLabel, 'Updated timeline')
+  assert.equal(replay.changeDiffCards[0]?.afterLabel, 'Packing status updated')
+})
+
 function chefEntry(
   id: string,
   domain: ChefActivityEntry['domain'],
@@ -115,7 +193,7 @@ function clientEvent(
     event_type: eventType,
     entity_type: 'event',
     entity_id: 'event-1',
-    metadata: {},
+    metadata: { client_name: 'Taylor Client' },
     ip_hash: null,
     user_agent: null,
     created_at: createdAt,

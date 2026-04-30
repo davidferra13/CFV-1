@@ -48,7 +48,7 @@ The sidebar on the left is your primary navigation. It has three layers:
 
 **Core Groups (middle):** Expandable sections for deeper navigation within each workflow area. Pipeline, Events, Clients, Culinary, and Finance expand into their operational pages. Advanced groups appear as your data grows. Use **Show all features** at the bottom of the sidebar to reveal the full menu; the preference is remembered in your browser.
 
-**All Features (bottom):** Everything else - Analytics, Marketing, Social Media, Integrations, Replay, Activity Log, Briefing, and more - is organized at **All Features** (`/features`). Click it to browse everything by workflow category. Nothing is hidden; it just lives here instead of taking up space in the sidebar you see every day.
+**All Features (bottom):** Everything else - Analytics, Marketing, Social Media, Integrations, Catch Up, Activity Log, Briefing, and more - is organized at **All Features** (`/features`). Click it to browse everything by workflow category. Nothing is hidden; it just lives here instead of taking up space in the sidebar you see every day.
 
 You can also use the search bar at the top of the sidebar or press **Cmd+K** to jump directly to any page in the app by name.
 
@@ -534,9 +534,9 @@ Analytics > Intelligence provides AI-powered insights:
 - Client clustering (who's most likely to rebook)
 - Anomaly detection (unusually priced events)
 
-### ChefFlow Replay
+### Catch Up
 
-**All Features > Replay** (`/replay`) shows what changed across the last week and where to resume. It combines existing resume suggestions, chef activity, client portal signals, and retrace sessions into Today, Yesterday, and Earlier This Week sections. Counts and links come from loaded activity sources only.
+**All Features > Catch Up** (`/replay`) shows what changed across the last week and where to resume. It combines existing resume suggestions, chef activity, client portal signals, and retrace sessions into an action-first inbox with collapsible panels. The page includes Morning Catch Up, ranked actions, handled and snoozed browser-local states, client signal scores, readiness impacts, changed-since-last-time cards, copy-only follow-up drafts, digest copy, team handoff copy, browser-local rules, audit history, and full activity history. Counts and links come from loaded activity sources only.
 
 ### Activity Log
 
