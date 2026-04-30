@@ -1,0 +1,728 @@
+{
+  "generated_at": "2026-04-30T16:53:23.299Z",
+  "prompt": "Build private dev cockpit consolidation: system/v1-builder control spine, lib/v1-builder typed queue parsing, CLI tools, Mission Control read-only APIs and Live zones",
+  "terms": [
+    "private",
+    "dev",
+    "cockpit",
+    "consolidation",
+    "system/v1-builder",
+    "control",
+    "spine",
+    "lib/v1-builder",
+    "typed",
+    "queue",
+    "parsing",
+    "cli",
+    "tools",
+    "mission",
+    "read-only",
+    "apis",
+    "live",
+    "zones"
+  ],
+  "scanned_dirs": [
+    "app",
+    "components",
+    "lib",
+    "docs/specs",
+    "docs/changes",
+    "docs/app-complete-audit.md",
+    "project-map",
+    "memory",
+    "system/intake",
+    "system/agent-reports"
+  ],
+  "canonical_surfaces": [
+    {
+      "id": "autonomous-v1-builder",
+      "label": "Autonomous V1 Builder Loop",
+      "score": 7,
+      "hits": [
+        "control",
+        "queue",
+        "mission"
+      ],
+      "canonical_routes": [],
+      "canonical_files": [
+        "docs/specs/autonomous-v1-builder-contract.md",
+        "docs/v1-v2-governor.md",
+        "docs/specs/p0-builder-agent-foundation.md"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Extend the governed V1 builder contract instead of creating another queue or autonomous agent surface."
+      }
+    },
+    {
+      "id": "agent-skill-system",
+      "label": "Agent Skill System",
+      "score": 6,
+      "hits": [
+        "dev",
+        "tools"
+      ],
+      "canonical_routes": [],
+      "canonical_files": [
+        "devtools/skill-router.mjs",
+        "devtools/skill-validator.mjs",
+        "devtools/skill-trigger-tests.mjs",
+        "system/agent-golden-prompts/default.json"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Add to the existing skill harness."
+      }
+    },
+    {
+      "id": "client-intake",
+      "label": "Client Intake",
+      "score": 5,
+      "hits": [
+        "cli"
+      ],
+      "canonical_routes": [
+        "/book",
+        "/clients/intake"
+      ],
+      "canonical_files": [
+        "app/api/book/route.ts",
+        "lib/inquiries/public-actions.ts",
+        "public/embed/chefflow-widget.js"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach to the existing intake lane contract."
+      }
+    },
+    {
+      "id": "sticky-notes-intake-layer",
+      "label": "Sticky Notes Intake Layer",
+      "score": 4,
+      "hits": [
+        "dev",
+        "tools"
+      ],
+      "canonical_routes": [],
+      "canonical_files": [
+        "docs/specs/sticky-notes-intake-layer.md",
+        "devtools/sticky-notes/read-db.mjs",
+        "devtools/sticky-notes/organize.mjs"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach Sticky Notes work to the local intake layer instead of client intake, Remy memory, or an ungoverned backlog."
+      }
+    },
+    {
+      "id": "chef-command-plane",
+      "label": "ChefFlow Command Plane",
+      "score": 3,
+      "hits": [
+        "spine",
+        "cli",
+        "read-only"
+      ],
+      "canonical_routes": [
+        "/dashboard"
+      ],
+      "canonical_files": [
+        "docs/specs/chefflow-command-plane.md",
+        "lib/interface/action-layer.ts",
+        "lib/events/operating-spine.ts",
+        "components/platform-shell/context-command-panel.tsx"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach command-plane behavior to the canonical computed contract instead of creating another dashboard, Remy hub, command palette, or page-local action list."
+      }
+    },
+    {
+      "id": "context-continuity",
+      "label": "Context Continuity",
+      "score": 2,
+      "hits": [
+        "dev",
+        "tools"
+      ],
+      "canonical_routes": [],
+      "canonical_files": [
+        ".claude/skills/context-continuity/SKILL.md",
+        "devtools/context-continuity-scan.mjs",
+        "system/canonical-surfaces.json"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Extend the continuity layer in place."
+      }
+    }
+  ],
+  "related_files": [
+    {
+      "file": "docs/specs/private-dev-cockpit-consolidation.md",
+      "kind": "spec",
+      "score": 86,
+      "hits": [
+        "private",
+        "dev",
+        "cockpit",
+        "consolidation",
+        "system/v1-builder",
+        "control",
+        "spine",
+        "lib/v1-builder",
+        "queue",
+        "parsing"
+      ]
+    },
+    {
+      "file": "docs/specs/autonomous-v1-builder-contract.md",
+      "kind": "spec",
+      "score": 51,
+      "hits": [
+        "dev",
+        "system/v1-builder",
+        "control",
+        "spine",
+        "lib/v1-builder",
+        "queue",
+        "cli",
+        "tools",
+        "mission",
+        "read-only"
+      ]
+    },
+    {
+      "file": "system/agent-reports/context-continuity/20260430T163511Z-private-dev-cockpit-consolidate-3977-sticky-notes-v1-builder-queue-claims-receip.json",
+      "kind": "system",
+      "score": 50,
+      "hits": [
+        "private",
+        "dev",
+        "cockpit",
+        "queue",
+        "consolidation",
+        "control",
+        "cli",
+        "tools",
+        "mission"
+      ]
+    },
+    {
+      "file": "docs/specs/mission-control-passive-dashboard.md",
+      "kind": "spec",
+      "score": 45,
+      "hits": [
+        "control",
+        "mission",
+        "dev",
+        "queue",
+        "parsing",
+        "cli",
+        "read-only",
+        "live",
+        "zones"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-competitive-surface.md",
+      "kind": "spec",
+      "score": 38,
+      "hits": [
+        "private",
+        "dev",
+        "control",
+        "queue",
+        "parsing",
+        "cli",
+        "tools",
+        "mission",
+        "live",
+        "zones"
+      ]
+    },
+    {
+      "file": "docs/specs/openclaw-phase-3-full-integration.md",
+      "kind": "spec",
+      "score": 35,
+      "hits": [
+        "dev",
+        "control",
+        "typed",
+        "parsing",
+        "cli",
+        "tools",
+        "mission",
+        "read-only",
+        "live"
+      ]
+    },
+    {
+      "file": "docs/specs/api-integration-health-audit.md",
+      "kind": "spec",
+      "score": 33,
+      "hits": [
+        "private",
+        "dev",
+        "consolidation",
+        "parsing",
+        "cli",
+        "read-only",
+        "apis",
+        "live"
+      ]
+    },
+    {
+      "file": "docs/specs/continuous-intelligence-layer.md",
+      "kind": "spec",
+      "score": 33,
+      "hits": [
+        "private",
+        "dev",
+        "control",
+        "typed",
+        "queue",
+        "cli",
+        "tools",
+        "mission",
+        "read-only",
+        "live"
+      ]
+    },
+    {
+      "file": "docs/specs/interaction-engine.md",
+      "kind": "spec",
+      "score": 33,
+      "hits": [
+        "private",
+        "control",
+        "typed",
+        "queue",
+        "cli",
+        "mission",
+        "apis",
+        "live"
+      ]
+    },
+    {
+      "file": "docs/specs/sticky-notes-intake-layer.md",
+      "kind": "spec",
+      "score": 33,
+      "hits": [
+        "private",
+        "dev",
+        "system/v1-builder",
+        "queue",
+        "parsing",
+        "cli",
+        "tools",
+        "read-only"
+      ]
+    },
+    {
+      "file": "docs/specs/comprehensive-domain-inventory-phase-1.md",
+      "kind": "spec",
+      "score": 32,
+      "hits": [
+        "private",
+        "dev",
+        "consolidation",
+        "control",
+        "queue",
+        "parsing",
+        "cli",
+        "tools",
+        "mission",
+        "live"
+      ]
+    },
+    {
+      "file": "docs/specs/p0-system-improvement-control-tower.md",
+      "kind": "spec",
+      "score": 32,
+      "hits": [
+        "control",
+        "dev",
+        "consolidation",
+        "queue",
+        "cli",
+        "live",
+        "zones"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-consumer-discovery-cohesion-v1.md",
+      "kind": "spec",
+      "score": 32,
+      "hits": [
+        "private",
+        "dev",
+        "consolidation",
+        "control",
+        "queue",
+        "cli",
+        "tools",
+        "mission",
+        "live"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-full-cohesion.md",
+      "kind": "spec",
+      "score": 32,
+      "hits": [
+        "private",
+        "dev",
+        "consolidation",
+        "control",
+        "queue",
+        "cli",
+        "mission",
+        "read-only",
+        "live"
+      ]
+    },
+    {
+      "file": "lib/db/fk-map.ts",
+      "kind": "module",
+      "score": 32,
+      "hits": [
+        "dev",
+        "control",
+        "queue",
+        "cli",
+        "mission",
+        "live",
+        "zones"
+      ]
+    },
+    {
+      "file": "components/activity/live-privacy-controls.tsx",
+      "kind": "component",
+      "score": 31,
+      "hits": [
+        "control",
+        "live",
+        "private",
+        "dev",
+        "queue",
+        "cli",
+        "mission"
+      ]
+    },
+    {
+      "file": "docs/specs/devtools-wish-ui.md",
+      "kind": "spec",
+      "score": 31,
+      "hits": [
+        "dev",
+        "tools",
+        "queue",
+        "parsing",
+        "cli",
+        "mission"
+      ]
+    },
+    {
+      "file": "docs/specs/openclaw-social-media-orchestration.md",
+      "kind": "spec",
+      "score": 31,
+      "hits": [
+        "dev",
+        "control",
+        "queue",
+        "cli",
+        "tools",
+        "mission",
+        "apis",
+        "live"
+      ]
+    },
+    {
+      "file": "docs/specs/p1-chef-getting-started-surface-consolidation.md",
+      "kind": "spec",
+      "score": 31,
+      "hits": [
+        "consolidation",
+        "dev",
+        "control",
+        "queue",
+        "cli",
+        "mission",
+        "live"
+      ]
+    },
+    {
+      "file": "app/(chef)/settings/page.tsx",
+      "kind": "route",
+      "score": 30,
+      "hits": [
+        "private",
+        "dev",
+        "control",
+        "queue",
+        "cli",
+        "tools",
+        "mission",
+        "live"
+      ]
+    },
+    {
+      "file": "docs/specs/food-costing-knowledge-system.md",
+      "kind": "spec",
+      "score": 30,
+      "hits": [
+        "private",
+        "dev",
+        "control",
+        "typed",
+        "cli",
+        "mission",
+        "read-only",
+        "live"
+      ]
+    },
+    {
+      "file": "docs/specs/openclaw-food-price-intelligence.md",
+      "kind": "spec",
+      "score": 30,
+      "hits": [
+        "private",
+        "dev",
+        "queue",
+        "parsing",
+        "cli",
+        "mission",
+        "apis",
+        "live"
+      ]
+    },
+    {
+      "file": "docs/specs/p1-chef-collab-spaces.md",
+      "kind": "spec",
+      "score": 30,
+      "hits": [
+        "private",
+        "dev",
+        "control",
+        "queue",
+        "cli",
+        "tools",
+        "mission",
+        "live"
+      ]
+    },
+    {
+      "file": "docs/specs/system-completeness-interrogation.md",
+      "kind": "spec",
+      "score": 30,
+      "hits": [
+        "dev",
+        "control",
+        "queue",
+        "parsing",
+        "cli",
+        "tools",
+        "mission",
+        "read-only",
+        "apis",
+        "live"
+      ]
+    },
+    {
+      "file": "app/(chef)/cannabis/events/[id]/control-packet/control-packet-client.tsx",
+      "kind": "route",
+      "score": 29,
+      "hits": [
+        "control",
+        "cli",
+        "dev",
+        "live"
+      ]
+    },
+    {
+      "file": "docs/specs/openclaw-ideal-runtime-and-national-intelligence.md",
+      "kind": "spec",
+      "score": 29,
+      "hits": [
+        "dev",
+        "control",
+        "queue",
+        "parsing",
+        "cli",
+        "mission",
+        "apis",
+        "live"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-cohesiveness-synthesis.md",
+      "kind": "spec",
+      "score": 29,
+      "hits": [
+        "private",
+        "dev",
+        "consolidation",
+        "queue",
+        "parsing",
+        "cli",
+        "tools",
+        "mission",
+        "live"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-operational-pressure.md",
+      "kind": "spec",
+      "score": 29,
+      "hits": [
+        "private",
+        "dev",
+        "consolidation",
+        "control",
+        "queue",
+        "cli",
+        "tools",
+        "mission",
+        "read-only",
+        "live"
+      ]
+    },
+    {
+      "file": "system/agent-reports/context-continuity/20260430T030830Z-create-build-spec-for-autonomous-v1-builder-loop-intake-v1-governor-classificati.json",
+      "kind": "system",
+      "score": 29,
+      "hits": [
+        "dev",
+        "control",
+        "queue",
+        "cli",
+        "tools",
+        "mission",
+        "live"
+      ]
+    },
+    {
+      "file": "system/agent-reports/context-continuity/20260430T031714Z-define-the-autonomous-v1-builder-contract-governed-pipeline-from-ideas-to-hermes.json",
+      "kind": "system",
+      "score": 29,
+      "hits": [
+        "dev",
+        "control",
+        "queue",
+        "cli",
+        "tools",
+        "mission",
+        "live"
+      ]
+    }
+  ],
+  "recent_commits": [
+    {
+      "line": "b294ea52c chore(agent): write private dev cockpit spec feature/private-dev-cockpit-spec",
+      "score": 6,
+      "hits": [
+        "private",
+        "dev",
+        "cockpit"
+      ]
+    },
+    {
+      "line": "c6acdbb40 chore(agent): remove accidental founder confidence spec feature/private-dev-cockpit-spec",
+      "score": 3,
+      "hits": [
+        "private",
+        "dev",
+        "cockpit"
+      ]
+    },
+    {
+      "line": "63724ca1c chore(agent): stabilize mobile install audit feature-private-dev-cockpit-spec",
+      "score": 3,
+      "hits": [
+        "private",
+        "dev",
+        "cockpit"
+      ]
+    },
+    {
+      "line": "3ea0c55a5 chore(agent): add mobile release smoke feature-private-dev-cockpit-spec",
+      "score": 3,
+      "hits": [
+        "private",
+        "dev",
+        "cockpit"
+      ]
+    },
+    {
+      "line": "dae1647cf chore(agent): add mobile testing lab feature-pwa-device-diagnostics",
+      "score": 1,
+      "hits": [
+        "dev"
+      ]
+    },
+    {
+      "line": "774b31363 chore(agent): remove accidental mobile staging feature-pwa-device-diagnostics",
+      "score": 1,
+      "hits": [
+        "dev"
+      ]
+    },
+    {
+      "line": "7679796f6 chore(agent): lock menu pricing access doctrine feature-pwa-device-diagnostics",
+      "score": 1,
+      "hits": [
+        "dev"
+      ]
+    },
+    {
+      "line": "bc8bdeece chore(agent): preserve autonomous builder operating rule feature/pwa-device-diagnostics",
+      "score": 1,
+      "hits": [
+        "dev"
+      ]
+    }
+  ],
+  "dirty_matches": [],
+  "claim_matches": [
+    {
+      "file": "system/agent-claims/20260429T235629Z-feature-voice-ops-complete-build-the-complete-context-continuity-tooling-layer-s.json",
+      "score": 1,
+      "hits": [
+        "cli"
+      ],
+      "prompt": "Build the complete context continuity tooling layer: scanner CLI, canonical surface registry, pre-build gate, Obsidian packet exporter, near-duplicate detector, spec template continuity section, feature family map, and dashboard",
+      "owned": [],
+      "status": "active"
+    }
+  ],
+  "duplicate_risks": [
+    {
+      "level": "medium",
+      "reason": "Multiple canonical surfaces matched the prompt.",
+      "owners": [
+        "autonomous-v1-builder",
+        "agent-skill-system",
+        "client-intake"
+      ]
+    },
+    {
+      "level": "medium",
+      "reason": "Active or recorded claims overlap this domain.",
+      "claims": [
+        "system/agent-claims/20260429T235629Z-feature-voice-ops-complete-build-the-complete-context-continuity-tooling-layer-s.json"
+      ]
+    }
+  ],
+  "continuity": {
+    "decision": "attach",
+    "stop_required": false,
+    "reason": "Matched canonical surface autonomous-v1-builder."
+  }
+}

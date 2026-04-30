@@ -12,7 +12,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import { createServer } from 'node:http'
-import { exec, spawn } from 'node:child_process'
+import { exec, execFile, spawn } from 'node:child_process'
 import { readFile, writeFile, appendFile, stat, readdir } from 'node:fs/promises'
 import { readFileSync, watch } from 'node:fs'
 import { join, dirname } from 'node:path'
@@ -21,6 +21,7 @@ import { promisify } from 'node:util'
 import { buildOperatingSurface } from './operating-surface.mjs'
 
 const execAsync = promisify(exec)
+const execFileAsync = promisify(execFile)
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const PROJECT_ROOT = join(__dirname, '..', '..')
 const PORT = 41937
@@ -637,6 +638,28 @@ async function getRecentCommits() {
     })
   } catch {
     return []
+  }
+}
+
+async function readV1BuilderApi(kind) {
+  try {
+    const { stdout } = await execFileAsync(
+      process.execPath,
+      ['--import', 'tsx', join(PROJECT_ROOT, 'scripts', 'v1-builder', 'read-api.ts'), kind],
+      {
+        cwd: PROJECT_ROOT,
+        windowsHide: true,
+        timeout: 15_000,
+        maxBuffer: 1024 * 1024,
+      },
+    )
+    return JSON.parse(stdout)
+  } catch (err) {
+    return {
+      ok: false,
+      error: `Failed to read V1 builder ${kind}: ${err.message}`,
+      errors: [err.message],
+    }
   }
 }
 
@@ -7527,6 +7550,26 @@ async function handleRequest(req, res) {
 
   if (path === '/api/git/recent-commits' && method === 'GET') {
     return json(res, await getRecentCommits())
+  }
+
+  if (path === '/api/v1-builder/summary' && method === 'GET') {
+    return json(res, await readV1BuilderApi('summary'))
+  }
+
+  if (path === '/api/v1-builder/queue' && method === 'GET') {
+    return json(res, await readV1BuilderApi('queue'))
+  }
+
+  if (path === '/api/v1-builder/claims' && method === 'GET') {
+    return json(res, await readV1BuilderApi('claims'))
+  }
+
+  if (path === '/api/v1-builder/receipts' && method === 'GET') {
+    return json(res, await readV1BuilderApi('receipts'))
+  }
+
+  if (path === '/api/v1-builder/escalations' && method === 'GET') {
+    return json(res, await readV1BuilderApi('escalations'))
   }
 
   if (path === '/api/dev/start' && method === 'POST') {

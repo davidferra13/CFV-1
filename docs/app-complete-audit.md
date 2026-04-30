@@ -2029,6 +2029,19 @@ Quick-launch buttons that open Chrome incognito windows pre-signed-in as each te
 
 Quick Links, API service cards (9 services), Port Map table, Pi Health (live RAM/uptime/services via SSH).
 
+### Live V1 Builder Cockpit
+
+The Live panel now includes a read-only private developer cockpit projection backed by `system/v1-builder/*` and `GET /api/v1-builder/summary`.
+
+| Zone        | Source                         | Behavior                                                                 |
+| ----------- | ------------------------------ | ------------------------------------------------------------------------ |
+| V1 Builder  | Active claim plus queue record | Shows active task, branch, claim age, and freshness.                     |
+| Queue       | Queue JSONL files              | Shows V1 blockers, support, research, blocked, parked V2, and questions. |
+| Receipts    | Receipt JSON files             | Shows latest validation, commit, push, and summary truth.                |
+| Escalations | Escalation JSONL file          | Shows open Founder Authority questions and recommended defaults.         |
+| Intake      | File evidence                  | Shows Sticky Notes and 3977 connection status without starting either.   |
+| Pricing     | Cockpit summary                | Stays blocked unless pricing evidence proves otherwise.                  |
+
 ---
 
 ## 25. PUBLIC MARKETPLACE PAGES (added 2026-03-27)

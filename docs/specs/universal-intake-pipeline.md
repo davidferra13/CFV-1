@@ -383,8 +383,9 @@ The persona pipeline (15 scripts, built Apr 25 in one session) works but is manu
      ```
    - Each file contains: gap description, source (which persona/idea/bug found it), confidence level, affected files (from codebase validation), and suggested approach
    - The `/persona-build` skill reads from this queue instead of directly from synthesis
-   - New API endpoint in 3977: `GET /api/build-queue` returns the current queue
-   - Dashboard shows build queue with status (pending/in-progress/built)
+   - 3977 stages candidates for governance; it does not send raw notes directly to code
+   - Only V1-governor-approved records enter `system/v1-builder/approved-queue.jsonl`
+   - Mission Control reads governed queue state through `/api/v1-builder/summary`
 
 **Test:**
 

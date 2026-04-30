@@ -151,18 +151,20 @@ The entire dashboard fits on one screen. No scrolling. Large text readable from 
 - Auto-scrolls, newest at top
 - Color-coded by source (blue=dev, green=git, purple=AI, gray=system)
 
-**5. Active Now + Next Up (left column, bottom half)**
+**5. V1 Builder + Queue (Live view)**
 
-- "Active Now": what's currently being worked on (from latest session-log.md entry with status=started)
-- "Next Up": prioritized queue from Product Blueprint (the "What's Queued" section)
-- Max 5-7 items visible
+- V1 Builder shows the active task, branch, claim age, and claim freshness from `GET /api/v1-builder/summary`
+- Queue shows V1 blockers, current-lane support, research, blocked records, parked V2, and escalations
+- Empty queue appears only after the queue files read and parse cleanly
 
-**6. System Status + OpenClaw (right column, bottom half)**
+**6. Receipts, Escalations, Intake, Pricing, and System (Live view)**
 
 - Service health dots with labels (reuses existing `/api/status` endpoint)
 - Git status (branch, clean/dirty)
-- OpenClaw section: price count, ingredient count, last sync time, Pi CPU/memory
-- OpenClaw data from: `/api/status` (if Pi endpoints exist) or static display from last known state
+- Receipts show latest validation, commit, and push state from V1 builder receipt files
+- Escalations show open Founder Authority questions with recommended defaults
+- Intake shows Sticky Notes and 3977 connection evidence when available
+- Pricing readiness stays blocked or unknown unless file-backed evidence proves improvement
 
 ### Tab System (Hidden by Default)
 
@@ -236,6 +238,17 @@ Reads the 3 most recent files from `docs/session-digests/` (sorted by filename),
   }
 ]
 ```
+
+### `GET /api/v1-builder/summary`
+
+Reads `system/v1-builder/*` through the local V1 builder module and returns the cockpit summary used by the Live view. Missing or malformed files return `ok: false` with exact file errors.
+
+Related read-only endpoints:
+
+- `GET /api/v1-builder/queue`
+- `GET /api/v1-builder/claims`
+- `GET /api/v1-builder/receipts`
+- `GET /api/v1-builder/escalations`
 
 ### `GET /api/project-map/status`
 

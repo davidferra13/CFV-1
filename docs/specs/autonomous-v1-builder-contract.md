@@ -397,13 +397,21 @@ These files belong to the future implementation, not this docs-only contract pas
 | `system/v1-builder/escalations.jsonl`    | Founder Authority questions with recommended defaults and blockers.  |
 | `system/v1-builder/overrides.jsonl`      | Explicit developer overrides.                                        |
 | `lib/v1-builder/types.ts`                | Shared task, claim, receipt, validation, and status types.           |
-| `lib/v1-builder/queue.ts`                | Queue parser, sorter, and eligibility checks.                        |
+| `lib/v1-builder/store.ts`                | Honest JSONL and append-only JSON helpers.                           |
+| `lib/v1-builder/select-next.ts`          | Queue parser, sorter, and eligibility checks.                        |
+| `lib/v1-builder/claims.ts`               | Active and stale claim detection plus claim writer.                  |
 | `lib/v1-builder/receipts.ts`             | Append-only receipt writer and reader.                               |
+| `lib/v1-builder/escalations.ts`          | Founder Authority escalation reader and writer.                      |
+| `lib/v1-builder/cockpit-summary.ts`      | One Mission Control summary from queue, claims, receipts, and risks. |
 | `scripts/v1-builder/next.mjs`            | Reads queue and prints the next eligible task.                       |
 | `scripts/v1-builder/claim.mjs`           | Claims one task and writes claim file.                               |
 | `scripts/v1-builder/record-receipt.mjs`  | Writes final receipt after validation and push.                      |
-| `tests/unit/v1-builder-queue.test.ts`    | Verifies selection, stopping, and classification behavior.           |
+| `scripts/v1-builder/escalate.mjs`        | Appends a Founder Authority escalation.                              |
+| `scripts/v1-builder/summary.mjs`         | Prints the read-only cockpit summary.                                |
+| `tests/unit/v1-builder-select.test.ts`   | Verifies selection, stopping, and classification behavior.           |
+| `tests/unit/v1-builder-claims.test.ts`   | Verifies fresh and stale claim behavior.                             |
 | `tests/unit/v1-builder-receipts.test.ts` | Verifies receipt schema and append-only behavior.                    |
+| `tests/unit/v1-builder-cockpit.test.ts`  | Verifies summary errors and pricing honesty.                         |
 
 ## Files to Modify
 
@@ -412,8 +420,8 @@ These files belong to the future implementation, not this docs-only contract pas
 | `docs/v1-v2-governor.md`                          | Link the queue contract and replace empty parking-lot placeholders with queue file pointers.    |
 | `docs/specs/p0-builder-agent-foundation.md`       | Add this contract as the next dependent implementation layer.                                   |
 | `docs/specs/mission-control-passive-dashboard.md` | Add V1 builder queue and receipt fields to the passive display contract.                        |
-| `scripts/launcher/server.mjs`                     | Later implementation only: read queue and receipts through internal Mission Control APIs.       |
-| `scripts/launcher/index.html`                     | Later implementation only: display queue, claim, branch, receipt, and validation state.         |
+| `scripts/launcher/server.mjs`                     | Adds read-only internal V1 builder APIs for summary, queue, claims, receipts, and escalations.  |
+| `scripts/launcher/index.html`                     | Displays queue, claim, branch, receipt, escalation, intake, and pricing readiness state.        |
 | `system/canonical-surfaces.json`                  | Add the autonomous V1 builder loop as an internal canonical owner to prevent future misrouting. |
 
 ## Database Changes

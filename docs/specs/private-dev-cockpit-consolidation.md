@@ -1,6 +1,6 @@
 # Spec: Private Dev Cockpit Consolidation
 
-> **Status:** ready
+> **Status:** built (pending browser verification)
 > **Priority:** P0 (blocking)
 > **Depends on:** none
 > **Estimated complexity:** large (9+ files)
@@ -11,6 +11,7 @@
 | ------------- | ---------------- | ------------- | ------ |
 | Created       | 2026-04-30 12:35 | Codex         |        |
 | Status: ready | 2026-04-30 12:35 | Codex         |        |
+| Built         | 2026-04-30 17:20 | Codex         |        |
 
 ---
 

@@ -2165,7 +2165,10 @@ body {
             <span style="font-family:'DM Serif Display',serif;font-size:24px;color:var(--text-primary);">ChefFlow Mission Control</span>
             <div id="live-health-dots" style="display:flex;gap:12px;align-items:center;"></div>
           </div>
-          <div id="live-clock" style="font-size:16px;color:var(--text-muted);font-variant-numeric:tabular-nums;"></div>
+          <div style="display:flex;align-items:center;gap:14px;">
+            <div id="live-branch-state" style="font-size:12px;color:var(--text-muted);font-variant-numeric:tabular-nums;"></div>
+            <div id="live-clock" style="font-size:16px;color:var(--text-muted);font-variant-numeric:tabular-nums;"></div>
+          </div>
         </div>
 
         <!-- V1 Progress Bar -->
@@ -2180,27 +2183,43 @@ body {
           <div id="live-sub-bars" style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;"></div>
         </div>
 
-        <!-- Main Grid: 2x2 -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:12px;flex:1;min-height:0;height:calc(100vh - 260px);">
-          <!-- Recently Completed -->
+        <div id="live-cockpit-error" style="display:none;background:var(--error-dim);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:10px 12px;color:var(--error);font-size:12px;margin-bottom:12px;"></div>
+
+        <div id="live-pricing" style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.35);border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:13px;color:var(--warning);"></div>
+
+        <!-- Main Grid -->
+        <div style="display:grid;grid-template-columns:1.15fr 0.95fr 0.9fr;grid-template-rows:1fr 1fr;gap:12px;flex:1;min-height:0;height:calc(100vh - 314px);">
+          <!-- V1 Builder -->
           <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;overflow:hidden;display:flex;flex-direction:column;">
-            <div style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Recently Completed</div>
-            <div id="live-completed" style="flex:1;overflow-y:auto;font-size:14px;"></div>
+            <div style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">V1 Builder</div>
+            <div id="live-v1-builder" style="flex:1;overflow-y:auto;font-size:14px;"></div>
           </div>
 
-          <!-- Activity Feed -->
-          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;overflow:hidden;display:flex;flex-direction:column;">
-            <div style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Activity Feed</div>
-            <div id="live-feed" style="flex:1;overflow-y:auto;font-size:13px;"></div>
-          </div>
-
-          <!-- Active Now + Next Up -->
+          <!-- Queue -->
           <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;overflow:hidden;display:flex;flex-direction:column;">
             <div style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Queue</div>
             <div id="live-queue" style="flex:1;overflow-y:auto;font-size:14px;"></div>
           </div>
 
-          <!-- System Status -->
+          <!-- Receipts -->
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;overflow:hidden;display:flex;flex-direction:column;">
+            <div style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Receipts</div>
+            <div id="live-receipts" style="flex:1;overflow-y:auto;font-size:13px;"></div>
+          </div>
+
+          <!-- Escalations -->
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;overflow:hidden;display:flex;flex-direction:column;">
+            <div style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Escalations</div>
+            <div id="live-escalations" style="flex:1;overflow-y:auto;font-size:13px;"></div>
+          </div>
+
+          <!-- Intake -->
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;overflow:hidden;display:flex;flex-direction:column;">
+            <div style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Intake</div>
+            <div id="live-intake" style="flex:1;overflow-y:auto;font-size:13px;"></div>
+          </div>
+
+          <!-- Activity and System -->
           <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;overflow:hidden;display:flex;flex-direction:column;">
             <div style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">System Status</div>
             <div id="live-system" style="flex:1;overflow-y:auto;font-size:14px;"></div>
@@ -11710,15 +11729,13 @@ function initLiveDashboard() {
   // Load all data
   loadLiveProgress()
   loadLiveStatus()
-  loadLiveCompleted()
-  loadLiveQueue()
+  loadV1BuilderCockpit()
   connectLiveFeed()
 
   // Auto-refresh intervals
   liveIntervals.push(setInterval(loadLiveProgress, 60000))   // progress: 60s
   liveIntervals.push(setInterval(loadLiveStatus, 30000))     // status: 30s
-  liveIntervals.push(setInterval(loadLiveCompleted, 60000))  // commits: 60s
-  liveIntervals.push(setInterval(loadLiveQueue, 60000))      // queue: 60s
+  liveIntervals.push(setInterval(loadV1BuilderCockpit, 30000))
 }
 
 async function loadLiveProgress() {
@@ -11751,32 +11768,6 @@ async function loadLiveProgress() {
       </div>
     `).join('')
 
-    // Update queue from blueprint data
-    if (data.queue && data.queue.length > 0) {
-      const queueEl = document.getElementById('live-queue')
-      let html = ''
-      for (const item of data.queue.slice(0, 7)) {
-        const color = item.priority === 'P0' ? 'var(--error)' : item.priority === 'P1' ? 'var(--warning)' : 'var(--text-muted)'
-        html += `<div style="padding:6px 0;border-bottom:1px solid var(--border);display:flex;gap:8px;align-items:flex-start;">
-          <span style="font-size:11px;font-weight:700;color:${color};flex-shrink:0;min-width:28px;">${item.priority}</span>
-          <span style="color:var(--text-secondary);line-height:1.4;">${item.item}</span>
-        </div>`
-      }
-
-      // Add known issues below queue
-      if (data.issues && data.issues.length > 0) {
-        html += '<div style="margin-top:12px;font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Known Issues</div>'
-        for (const issue of data.issues) {
-          const sevColor = issue.severity === 'Critical' ? 'var(--error)' : issue.severity === 'Medium' ? 'var(--warning)' : 'var(--text-muted)'
-          html += `<div style="padding:4px 0;font-size:13px;display:flex;gap:8px;">
-            <span style="color:${sevColor};flex-shrink:0;font-size:11px;font-weight:600;">${issue.severity}</span>
-            <span style="color:var(--text-secondary);">${issue.issue}</span>
-          </div>`
-        }
-      }
-
-      queueEl.innerHTML = html
-    }
   } catch (err) {
     document.getElementById('live-overall-pct').textContent = 'ERR'
   }
@@ -11814,6 +11805,11 @@ async function loadLiveStatus() {
       </div>`
     }
     // Git status
+    const branchState = document.getElementById('live-branch-state')
+    if (branchState) {
+      const dirtyText = gitInfo.dirty ? `${gitInfo.dirtyCount || 'dirty'} dirty` : 'clean'
+      branchState.textContent = `${gitInfo.branch || 'unknown'} | ${dirtyText}`
+    }
     html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
       <span style="color:var(--text-primary);font-weight:500;">Git</span>
       <span style="color:var(--text-secondary);font-size:13px;">${gitInfo.branch || 'unknown'}${gitInfo.dirty ? ' (dirty)' : ''}</span>
@@ -11863,8 +11859,132 @@ async function loadLiveCompleted() {
 }
 
 function loadLiveQueue() {
-  // Queue is loaded by loadLiveProgress - this is just a placeholder for the interval
-  // The queue section gets populated from blueprint data
+  return loadV1BuilderCockpit()
+}
+
+function liveRow(label, value, color = 'var(--text-secondary)') {
+  return `<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid var(--border);">
+    <span style="color:var(--text-muted);font-size:12px;">${escapeHtml(label)}</span>
+    <span style="color:${color};font-weight:600;text-align:right;line-height:1.4;">${escapeHtml(value)}</span>
+  </div>`
+}
+
+function renderEmptyState(text) {
+  return `<div style="color:var(--text-muted);font-size:13px;padding:10px 0;">${escapeHtml(text)}</div>`
+}
+
+function renderV1Builder(summary) {
+  const task = summary.activeTask
+  const claim = summary.activeClaim
+  if (!task && !claim) {
+    return renderEmptyState('No active V1 builder claim')
+  }
+
+  const claimedAt = claim ? new Date(claim.claimedAt) : null
+  const minutes = claimedAt ? Math.max(0, Math.round((Date.now() - claimedAt.getTime()) / 60000)) : null
+  const expiresAt = claim ? new Date(claim.expiresAt) : null
+  const fresh = expiresAt ? expiresAt.getTime() > Date.now() : false
+  let html = ''
+  html += liveRow('Task', task?.title || claim?.taskId || 'Unknown task', task ? 'var(--text-primary)' : 'var(--warning)')
+  html += liveRow('Branch', claim?.branch || 'No branch claim')
+  html += liveRow('Claim age', minutes == null ? 'No claim' : `${minutes} min`)
+  html += liveRow('Freshness', claim ? (fresh ? 'fresh' : 'stale review required') : 'none', fresh ? 'var(--success)' : 'var(--warning)')
+  if (task?.reason) html += `<div style="margin-top:10px;color:var(--text-secondary);font-size:13px;line-height:1.45;">${escapeHtml(task.reason)}</div>`
+  return html
+}
+
+function renderV1Queue(summary) {
+  const counts = summary.queueCounts
+  let html = ''
+  html += liveRow('V1 blockers', String(counts.v1Blockers), counts.v1Blockers > 0 ? 'var(--error)' : 'var(--text-secondary)')
+  html += liveRow('Current-lane support', String(counts.v1Support))
+  html += liveRow('Research', String(counts.research), counts.research > 0 ? 'var(--warning)' : 'var(--text-secondary)')
+  html += liveRow('Blocked', String(counts.blocked), counts.blocked > 0 ? 'var(--error)' : 'var(--text-secondary)')
+  html += liveRow('Parked V2', String(counts.parkedV2))
+  html += liveRow('Escalations', String(counts.escalations), counts.escalations > 0 ? 'var(--warning)' : 'var(--text-secondary)')
+  if (counts.v1Blockers === 0 && counts.v1Support === 0) {
+    html += renderEmptyState('No approved V1 tasks')
+  }
+  return html
+}
+
+function renderReceipts(summary) {
+  if (!summary.latestReceipts?.length) return renderEmptyState('No receipts recorded yet')
+  return summary.latestReceipts.slice(0, 6).map((receipt) => {
+    const color = receipt.status === 'validated' ? 'var(--success)' : receipt.status === 'blocked' ? 'var(--warning)' : 'var(--error)'
+    return `<div style="padding:7px 0;border-bottom:1px solid var(--border);">
+      <div style="display:flex;justify-content:space-between;gap:10px;">
+        <span style="color:var(--text-primary);font-weight:600;">${escapeHtml(receipt.taskId)}</span>
+        <span style="color:${color};font-size:12px;font-weight:700;">${escapeHtml(receipt.status)}</span>
+      </div>
+      <div style="color:var(--text-muted);font-size:12px;margin-top:3px;">${escapeHtml(receipt.commit || 'no commit')} | pushed: ${receipt.pushed ? 'yes' : 'no'}</div>
+      <div style="color:var(--text-secondary);font-size:12px;margin-top:3px;line-height:1.35;">${escapeHtml(receipt.missionControlSummary)}</div>
+    </div>`
+  }).join('')
+}
+
+function renderEscalations(summary) {
+  if (!summary.openEscalations?.length) return renderEmptyState('No open Founder Authority questions')
+  return summary.openEscalations.slice(0, 5).map((item) => `
+    <div style="padding:7px 0;border-bottom:1px solid var(--border);">
+      <div style="color:var(--warning);font-weight:700;font-size:12px;">${escapeHtml(item.blocks)} blocked</div>
+      <div style="color:var(--text-primary);font-size:13px;line-height:1.4;margin-top:3px;">${escapeHtml(item.question)}</div>
+      <div style="color:var(--text-muted);font-size:12px;margin-top:4px;">Default: ${escapeHtml(item.recommendedDefault)}</div>
+    </div>
+  `).join('')
+}
+
+function renderIntake(summary) {
+  return [
+    liveRow('Sticky Notes', summary.intake?.stickyNotes || 'Sticky Notes intake not connected yet'),
+    liveRow('3977', summary.intake?.inbox3977 || '3977 offline or not configured'),
+  ].join('')
+}
+
+async function loadV1BuilderCockpit() {
+  const ids = ['live-v1-builder', 'live-queue', 'live-receipts', 'live-escalations', 'live-intake']
+  for (const id of ids) {
+    const el = document.getElementById(id)
+    if (el && !el.innerHTML.trim()) el.innerHTML = renderEmptyState('Loading private dev cockpit...')
+  }
+
+  try {
+    const res = await fetch('/api/v1-builder/summary', { cache: 'no-store' })
+    const summary = await res.json()
+    const errorEl = document.getElementById('live-cockpit-error')
+    if (errorEl) {
+      if (summary.ok === false) {
+        errorEl.style.display = 'block'
+        errorEl.textContent = (summary.errors || ['Failed to read private dev cockpit']).join(' | ')
+      } else {
+        errorEl.style.display = 'none'
+        errorEl.textContent = ''
+      }
+    }
+
+    const pricing = document.getElementById('live-pricing')
+    if (pricing) {
+      const status = summary.pricingReadiness?.status || 'unknown'
+      pricing.innerHTML = `<strong>Pricing readiness: ${escapeHtml(status)}</strong> ${escapeHtml(summary.pricingReadiness?.message || 'Pricing readiness unknown')}`
+    }
+
+    document.getElementById('live-v1-builder').innerHTML = renderV1Builder(summary)
+    document.getElementById('live-queue').innerHTML = renderV1Queue(summary)
+    document.getElementById('live-receipts').innerHTML = renderReceipts(summary)
+    document.getElementById('live-escalations').innerHTML = renderEscalations(summary)
+    document.getElementById('live-intake').innerHTML = renderIntake(summary)
+  } catch (err) {
+    const error = `Failed to load private dev cockpit: ${err.message}`
+    const errorEl = document.getElementById('live-cockpit-error')
+    if (errorEl) {
+      errorEl.style.display = 'block'
+      errorEl.textContent = error
+    }
+    for (const id of ids) {
+      const el = document.getElementById(id)
+      if (el) el.innerHTML = `<div style="color:var(--error);">${escapeHtml(error)}</div>`
+    }
+  }
 }
 
 function connectLiveFeed() {
