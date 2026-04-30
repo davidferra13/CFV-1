@@ -24,8 +24,10 @@ Two machines, one scheduler (Windows Task Scheduler on PC), three cost tiers:
 | ------------ | -------------------------------- | ---------------------------------------------------- | ---- | ---------------------------------------------------------------------------------------- |
 | 2:00 AM      | **ChefFlow-StaleCleanup**        | `scripts/scheduled/daily-stale-cleanup.ps1`          | Free | Cleans test artifacts, old screenshots, probe dirs                                       |
 | 3:00 AM      | **ChefFlow-DailyBackup**         | `scripts/scheduled/daily-backup.ps1`                 | Free | PostgreSQL custom dump via Docker, verification, encryption, heartbeat, tiered retention |
+| 3:20 AM      | **ChefFlow-HostConfigBackup**    | `scripts/scheduled/backup-host-config.ps1`           | Free | Encrypted secrets, scheduler, tunnel, and host config recovery bundle                    |
 | 3:30 AM      | **ChefFlow-OffsiteBackup**       | `scripts/scheduled/offsite-backup-sync.ps1`          | Free | Sync encrypted database backups to Cloudflare R2, fail if unconfigured                   |
 | 4:00 AM Sun  | **ChefFlow-WeeklyDBIntegrity**   | `scripts/scheduled/weekly-db-integrity.ps1`          | Free | Full DB audit against business rules                                                     |
+| 4:15 AM      | **ChefFlow-BackupHealth**        | `scripts/scheduled/check-backup-health.ps1`          | Free | Alert on stale backup, restore, WAL, and offsite evidence                                |
 | ~monthly Sun | **ChefFlow-MonthlyRestoreTest**  | `scripts/scheduled/monthly-restore-test.ps1`         | Free | Restore backup to temp DB, validate key tables, drop                                     |
 | 5:30 AM Sun  | **ChefFlow-WeeklyBaseBackup**    | `scripts/scheduled/weekly-basebackup.ps1`            | Free | Encrypted physical PostgreSQL base backup for point-in-time recovery                     |
 | 5:00 AM Mon  | **ChefFlow-WeeklySecretScan**    | `scripts/scheduled/weekly-secret-scan.ps1`           | Free | Scan codebase for exposed credentials                                                    |
@@ -68,6 +70,8 @@ All scheduled task logs write to `logs/` in the project root:
 | `logs/health-check.log`          | HealthCheck (every 15 min)          |
 | `logs/live-ops-guardian.log`     | LiveOpsGuardian (hourly)            |
 | `logs/daily-backup.log`          | DailyBackup                         |
+| `logs/host-config-backup.log`    | HostConfigBackup                    |
+| `logs/backup-health.log`         | BackupHealth                        |
 | `logs/daily-sync-check.log`      | DailySyncCheck (Claude Haiku)       |
 | `logs/pipeline-audit.log`        | PipelineAudit                       |
 | `logs/db-integrity.log`          | WeeklyDBIntegrity                   |
@@ -167,8 +171,10 @@ Based on 5-perspective research (Chef, Consumer, Dev, Entrepreneur, Business/Cor
 - **Daily scheduled backup now uses the automated path** (`scripts/backup-db-automated.sh`) with custom-format dumps, verification, required encryption for the scheduled task, heartbeat, and tiered retention
 - **Checksum manifests** are written beside generated backups and verified by `scripts/verify-backup.sh` and the monthly restore test
 - **Physical base backup path** added for point-in-time recovery: `docker-compose.yml` now declares WAL archiving for the next controlled PostgreSQL restart, `scripts/backup-db-basebackup.sh` creates encrypted physical base backups, and `scripts/scheduled/weekly-basebackup.ps1` schedules it weekly
+- **Host config backup path** added: `scripts/scheduled/backup-host-config.ps1` creates encrypted recovery bundles for `.env.local`, auth state, Docker config, scheduled-task XML exports, tunnel config, rclone config, and git state
+- **Backup health sentinel** added: `scripts/scheduled/check-backup-health.ps1` alerts when logical backups, offsite sync, host config backups, restore tests, physical base backups, or WAL evidence go stale
 - **Monthly restore test** scheduled and upgraded to support `.dump`, `.dump.gpg`, legacy SQL backups, tenant checks, event FSM checks, and ledger invariants
-- **Off-site backup script** ready (`scripts/scheduled/offsite-backup-sync.ps1`), rclone installed, task registered, configured to fail visibly if R2 is not configured, and now syncs manifests, physical base backups, and WAL archive files when present
+- **Off-site backup script** ready (`scripts/scheduled/offsite-backup-sync.ps1`), rclone installed, task registered, configured to fail visibly if R2 is not configured, and now syncs manifests, physical base backups, host config bundles, and WAL archive files when present
 - **Emergency runbook** written (`docs/emergency-runbook.md`, 8 recovery scenarios)
 - **Pre-commit secret scanner** installed (`.git/hooks/pre-commit`, catches API keys/tokens/passwords)
 - **OpenClaw pipeline validation** added (post-sync SQLite vs PostgreSQL record count comparison)

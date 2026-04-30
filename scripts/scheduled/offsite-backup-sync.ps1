@@ -22,6 +22,7 @@ $projectDir = "C:\Users\david\Documents\CFv1"
 $logFile    = "$projectDir\logs\offsite-backup.log"
 $backupDir  = "$projectDir\backups"
 $baseBackupDir = "$backupDir\basebackups"
+$hostConfigDir = "$backupDir\host-config"
 $walArchiveDir = "$backupDir\wal_archive"
 $r2Bucket   = "r2:chefflow-backups"
 
@@ -116,6 +117,32 @@ if (Test-Path $baseBackupDir) {
             }
         }
     }
+}
+
+if (Test-Path $hostConfigDir) {
+    $hostBackups = Get-ChildItem "$hostConfigDir\chefflow-host-config-*.zip.gpg" -ErrorAction SilentlyContinue |
+        Where-Object { $_.Length -gt 1000 } |
+        Sort-Object LastWriteTime -Descending |
+        Select-Object -First 12
+
+    foreach ($hostBackup in $hostBackups) {
+        $hostResult = rclone copy $hostBackup.FullName "$r2Bucket/host-config/" --no-traverse --s3-no-check-bucket 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            Add-Content -Path $logFile -Value "[$timestamp] WARN syncing host config backup $($hostBackup.Name): $hostResult"
+        } else {
+            Add-Content -Path $logFile -Value "[$timestamp] Synced host config backup: $($hostBackup.Name)"
+        }
+
+        $hostManifestPath = "$($hostBackup.FullName).manifest.json"
+        if (Test-Path $hostManifestPath) {
+            $hostManifestResult = rclone copy $hostManifestPath "$r2Bucket/host-config/" --no-traverse --s3-no-check-bucket 2>&1
+            if ($LASTEXITCODE -ne 0) {
+                Add-Content -Path $logFile -Value "[$timestamp] WARN syncing host config manifest for $($hostBackup.Name): $hostManifestResult"
+            }
+        }
+    }
+} else {
+    Add-Content -Path $logFile -Value "[$timestamp] WARN: Host config backup directory not found."
 }
 
 if (Test-Path $walArchiveDir) {

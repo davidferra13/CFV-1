@@ -112,7 +112,16 @@ bash scripts/restore-backup.sh backups/chefflow-LATEST.dump.gpg --confirm
 
 Point-in-time recovery requires a physical base backup plus WAL archive files. Use
 `backups/basebackups/` and `backups/wal_archive/` only after WAL archiving has been activated by a
-controlled PostgreSQL restart.
+controlled PostgreSQL restart. Exact commands live in `docs/pitr-restore-runbook.md`.
+
+To restore secrets and host configuration, decrypt the latest host config bundle:
+
+```bash
+gpg -o host-config.zip -d backups/host-config/chefflow-host-config-LATEST.zip.gpg
+```
+
+The bundle contains `.env.local`, selected `.auth` files, scheduled task XML exports, Docker config,
+tunnel config when present, rclone config when present, and a git commit manifest.
 
 ---
 
@@ -192,6 +201,7 @@ These files are needed to restore the entire system:
 | `backups/*.manifest.json`     | Backup checksum and metadata         | Cloudflare R2 (automated)         |
 | `backups/basebackups/`        | Encrypted physical base backups      | Cloudflare R2 (automated)         |
 | `backups/wal_archive/`        | WAL files for point-in-time recovery | Cloudflare R2 (automated)         |
+| `backups/host-config/`        | Encrypted host and secrets bundle    | Cloudflare R2 (automated)         |
 | Cloudflare Tunnel token       | Tunnel authentication                | Cloudflare dashboard (online)     |
 | Stripe dashboard access       | Payment processing                   | stripe.com (online)               |
 | Google OAuth credentials      | Auth provider                        | Google Cloud Console (online)     |
