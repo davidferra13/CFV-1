@@ -4,6 +4,7 @@ import {
   ensureBuilderStore,
   loadApprovedQueue,
   loadFreshClaims,
+  loadReceipts,
   readActiveLane,
   selectNextTask,
 } from './core.mjs'
@@ -32,7 +33,7 @@ if (errors.length > 0) {
   process.exit(0)
 }
 
-const task = selectNextTask(records, activeLane)
+const task = selectNextTask(records, activeLane, loadReceipts(context))
 if (!task) {
   console.log(JSON.stringify({
     status: 'idle',

@@ -71,6 +71,7 @@
     "v1-builder:receipt": "node scripts/v1-builder/record-receipt.mjs",
     "v1-builder:run-once": "node scripts/v1-builder/run-once.mjs",
     "v1-builder:watch": "node scripts/v1-builder/watch.mjs --mode dry-run",
+    "v1-builder:watch:live": "node scripts/v1-builder/watch.mjs --mode live",
     "v1-builder:test": "node --test \"tests/unit/v1-builder-*.test.mjs\"",
     "personas:inbox": "node devtools/persona-inbox-server.mjs",
     "personas:inbox:public": "powershell -ExecutionPolicy Bypass -File scripts/start-persona-inbox-public.ps1",

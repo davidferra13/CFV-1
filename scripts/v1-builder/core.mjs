@@ -22,6 +22,7 @@ export function createBuilderContext(root = ROOT) {
     claimsDir: join(builderDir, 'claims'),
     receiptsDir: join(builderDir, 'receipts'),
     runtimeDir: join(builderDir, 'runtime'),
+    worktreesDir: join(root, '.v1-builder-worktrees'),
     governorPath: join(root, 'docs', 'v1-v2-governor.md'),
   }
 }
@@ -31,6 +32,7 @@ export function ensureBuilderStore(context = createBuilderContext()) {
   mkdirSync(context.claimsDir, { recursive: true })
   mkdirSync(context.receiptsDir, { recursive: true })
   mkdirSync(context.runtimeDir, { recursive: true })
+  mkdirSync(context.worktreesDir, { recursive: true })
 
   for (const file of QUEUE_FILES) {
     const path = join(context.builderDir, file)
@@ -121,8 +123,39 @@ export function isFreshClaim(claim, now = new Date()) {
   return now.getTime() - claimedAt < threeHoursMs
 }
 
-export function selectNextTask(records, activeLane) {
-  const eligible = records.filter((record) => isEligibleTask(record, activeLane))
+export function loadReceipts(context = createBuilderContext()) {
+  if (!existsSync(context.receiptsDir)) return []
+
+  const receipts = []
+  for (const file of readdirSync(context.receiptsDir)) {
+    if (!file.endsWith('.json')) continue
+
+    const path = join(context.receiptsDir, file)
+    try {
+      receipts.push({ ...JSON.parse(readFileSync(path, 'utf8')), path })
+    } catch {
+      receipts.push({ taskId: null, status: 'unreadable', path })
+    }
+  }
+
+  return receipts
+}
+
+export function completedTaskIds(receipts) {
+  return new Set(
+    receipts
+      .filter((receipt) => ['validated', 'pushed', 'built'].includes(receipt.status))
+      .filter((receipt) => receipt.taskId)
+      .map((receipt) => receipt.taskId),
+  )
+}
+
+export function selectNextTask(records, activeLane, receipts = []) {
+  const completed = completedTaskIds(receipts)
+  const eligible = records.filter((record) => {
+    if (completed.has(record.id)) return false
+    return isEligibleTask(record, activeLane)
+  })
   eligible.sort(compareTasks)
   return eligible[0] ?? null
 }
@@ -176,7 +209,7 @@ export function createClaim(task, context = createBuilderContext(), now = new Da
     id: `claim-${stamp}-${task.id}`,
     taskId: task.id,
     title: task.title,
-    branch: `feature/v1-builder-${slugify(task.title ?? task.id)}`,
+    branch: `feature/v1-builder-${slugify(task.id)}-${slugify(task.title ?? task.id)}`.slice(0, 96),
     classification: task.classification,
     canonicalOwner: task.canonicalOwner,
     status: 'claimed',
@@ -186,6 +219,17 @@ export function createClaim(task, context = createBuilderContext(), now = new Da
 
   writeFileSync(path, `${JSON.stringify(claim, null, 2)}\n`, 'utf8')
   return { claim, path }
+}
+
+export function updateClaim(path, patch, now = new Date()) {
+  const claim = JSON.parse(readFileSync(path, 'utf8'))
+  const next = {
+    ...claim,
+    ...patch,
+    updatedAt: now.toISOString(),
+  }
+  writeFileSync(path, `${JSON.stringify(next, null, 2)}\n`, 'utf8')
+  return next
 }
 
 export function writeReceipt(receipt, context = createBuilderContext(), now = new Date()) {

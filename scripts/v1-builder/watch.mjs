@@ -15,6 +15,10 @@ function hasFlag(name) {
   return process.argv.includes(`--${name}`)
 }
 
+function positionalArgs() {
+  return process.argv.slice(2).filter((value) => !value.startsWith('--'))
+}
+
 function pidAlive(pid) {
   try {
     process.kill(pid, 0)
@@ -94,7 +98,9 @@ function runOnce() {
   })
 }
 
-const mode = getArg('mode', hasFlag('live') ? 'live' : 'dry-run')
+const positionals = positionalArgs()
+const positionalMode = positionals.includes('live') ? 'live' : positionals.includes('dry-run') ? 'dry-run' : null
+const mode = getArg('mode', positionalMode ?? (hasFlag('live') ? 'live' : 'dry-run'))
 const intervalSeconds = Number.parseInt(getArg('interval', '300'), 10)
 const context = createBuilderContext()
 ensureBuilderStore(context)

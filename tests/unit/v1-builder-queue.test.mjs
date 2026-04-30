@@ -10,6 +10,7 @@ import {
   ensureBuilderStore,
   isEligibleTask,
   loadFreshClaims,
+  loadReceipts,
   readActiveLane,
   readJsonl,
   selectNextTask,
@@ -58,6 +59,27 @@ test('selects V1 blockers before lower priority support', () => {
   ]
 
   assert.equal(selectNextTask(tasks, activeLane).id, 'v1-blocker')
+})
+
+test('does not select tasks with completed receipts', () => {
+  const context = tempContext()
+  writeReceipt({
+    taskId: 'v1-blocker',
+    status: 'pushed',
+  }, context)
+
+  const tasks = [
+    {
+      id: 'v1-blocker',
+      status: 'queued',
+      classification: 'approved_v1_blocker',
+      risk: 'low',
+      createdAt: '2026-04-30T00:00:00Z',
+      canonicalOwner: 'docs/specs/blocker.md',
+    },
+  ]
+
+  assert.equal(selectNextTask(tasks, 'V1 event spine stabilization', loadReceipts(context)), null)
 })
 
 test('rejects support outside the active lane', () => {
