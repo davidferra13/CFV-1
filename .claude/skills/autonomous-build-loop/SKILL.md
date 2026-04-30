@@ -104,6 +104,8 @@ The builder loop is not trusted if it is invisible. Mission Control or the local
 - escalations waiting for David
 - pricing reliability status when V1 readiness is in scope
 
+Treat David's third monitor as the intended surveillance and command display for this loop. The target experience is that Mission Control can stay open there all day and show intake, queues, active files, claims, branches, prompts, validations, receipts, blocked decisions, and V1/V2 routing without David opening agent chat to understand what is happening.
+
 Do not start long-running servers or restart existing ones without explicit permission. If a monitor needs a running process, implement the read-only data source first and report the exact command David can approve later.
 
 ## Closeout
