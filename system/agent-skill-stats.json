@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-30T17:03:56.517Z",
+  "generated_at": "2026-04-30T17:16:34.938Z",
   "skills": {
     "skill-garden": {
       "selected_count": 1,
@@ -16,74 +16,74 @@
       "last_record": "20260429T162207Z-codex-should-score-skill-outcomes-and-update-reliability-stats"
     },
     "omninet": {
+      "selected_count": 4,
+      "used_count": 4,
+      "missed_count": 0,
+      "failure_count": 3,
+      "repair_count": 0,
+      "clean_success_count": 1,
+      "last_selected_at": "2026-04-30T17:16:34.938Z",
+      "last_used_at": "2026-04-30T17:16:34.938Z",
+      "last_missed_at": null,
+      "last_failure_at": "2026-04-30T17:16:34.938Z",
+      "last_success_at": "2026-04-29T16:22:17.568Z",
+      "last_record": "20260430T170821Z-keep-improving-v1-state-motion-by-adding-list-and-action-card-motion-to-existing"
+    },
+    "builder": {
+      "selected_count": 3,
+      "used_count": 4,
+      "missed_count": 0,
+      "failure_count": 3,
+      "repair_count": 0,
+      "clean_success_count": 1,
+      "last_selected_at": "2026-04-30T17:16:34.938Z",
+      "last_used_at": "2026-04-30T17:16:34.938Z",
+      "last_missed_at": null,
+      "last_failure_at": "2026-04-30T17:16:34.938Z",
+      "last_success_at": "2026-04-29T16:22:17.568Z",
+      "last_record": "20260430T170821Z-keep-improving-v1-state-motion-by-adding-list-and-action-card-motion-to-existing"
+    },
+    "context-continuity": {
       "selected_count": 3,
       "used_count": 3,
       "missed_count": 0,
-      "failure_count": 2,
-      "repair_count": 0,
-      "clean_success_count": 1,
-      "last_selected_at": "2026-04-30T17:03:56.517Z",
-      "last_used_at": "2026-04-30T17:03:56.517Z",
-      "last_missed_at": null,
-      "last_failure_at": "2026-04-30T17:03:56.517Z",
-      "last_success_at": "2026-04-29T16:22:17.568Z",
-      "last_record": "20260430T165049Z-build-v1-support-state-change-motion-primitives-and-apply-to-existing-chefflow-w"
-    },
-    "builder": {
-      "selected_count": 2,
-      "used_count": 3,
-      "missed_count": 0,
-      "failure_count": 2,
-      "repair_count": 0,
-      "clean_success_count": 1,
-      "last_selected_at": "2026-04-30T17:03:56.517Z",
-      "last_used_at": "2026-04-30T17:03:56.517Z",
-      "last_missed_at": null,
-      "last_failure_at": "2026-04-30T17:03:56.517Z",
-      "last_success_at": "2026-04-29T16:22:17.568Z",
-      "last_record": "20260430T165049Z-build-v1-support-state-change-motion-primitives-and-apply-to-existing-chefflow-w"
-    },
-    "context-continuity": {
-      "selected_count": 2,
-      "used_count": 2,
-      "missed_count": 0,
-      "failure_count": 2,
+      "failure_count": 3,
       "repair_count": 0,
       "clean_success_count": 0,
-      "last_selected_at": "2026-04-30T17:03:56.517Z",
-      "last_used_at": "2026-04-30T17:03:56.517Z",
+      "last_selected_at": "2026-04-30T17:16:34.938Z",
+      "last_used_at": "2026-04-30T17:16:34.938Z",
       "last_missed_at": null,
-      "last_failure_at": "2026-04-30T17:03:56.517Z",
+      "last_failure_at": "2026-04-30T17:16:34.938Z",
       "last_success_at": null,
-      "last_record": "20260430T165049Z-build-v1-support-state-change-motion-primitives-and-apply-to-existing-chefflow-w"
+      "last_record": "20260430T170821Z-keep-improving-v1-state-motion-by-adding-list-and-action-card-motion-to-existing"
     },
     "software-fundamentals": {
-      "selected_count": 2,
-      "used_count": 2,
+      "selected_count": 3,
+      "used_count": 3,
       "missed_count": 0,
-      "failure_count": 2,
+      "failure_count": 3,
       "repair_count": 0,
       "clean_success_count": 0,
-      "last_selected_at": "2026-04-30T17:03:56.517Z",
-      "last_used_at": "2026-04-30T17:03:56.517Z",
+      "last_selected_at": "2026-04-30T17:16:34.938Z",
+      "last_used_at": "2026-04-30T17:16:34.938Z",
       "last_missed_at": null,
-      "last_failure_at": "2026-04-30T17:03:56.517Z",
+      "last_failure_at": "2026-04-30T17:16:34.938Z",
       "last_success_at": null,
-      "last_record": "20260430T165049Z-build-v1-support-state-change-motion-primitives-and-apply-to-existing-chefflow-w"
+      "last_record": "20260430T170821Z-keep-improving-v1-state-motion-by-adding-list-and-action-card-motion-to-existing"
     },
     "v1-governor": {
       "selected_count": 0,
-      "used_count": 2,
+      "used_count": 3,
       "missed_count": 0,
-      "failure_count": 2,
+      "failure_count": 3,
       "repair_count": 0,
       "clean_success_count": 0,
       "last_selected_at": null,
-      "last_used_at": "2026-04-30T17:03:56.517Z",
+      "last_used_at": "2026-04-30T17:16:34.938Z",
       "last_missed_at": null,
-      "last_failure_at": "2026-04-30T17:03:56.517Z",
+      "last_failure_at": "2026-04-30T17:16:34.938Z",
       "last_success_at": null,
-      "last_record": "20260430T165049Z-build-v1-support-state-change-motion-primitives-and-apply-to-existing-chefflow-w"
+      "last_record": "20260430T170821Z-keep-improving-v1-state-motion-by-adding-list-and-action-card-motion-to-existing"
     }
   },
   "sessions": [
@@ -122,6 +122,20 @@
         "v1-governor"
       ],
       "created_at": "2026-04-30T17:03:56.517Z"
+    },
+    {
+      "record_id": "20260430T170821Z-keep-improving-v1-state-motion-by-adding-list-and-action-card-motion-to-existing",
+      "prompt": "Keep improving V1 state motion by adding list and action card motion to existing dashboard surfaces",
+      "score": 90,
+      "ok": false,
+      "skills": [
+        "builder",
+        "omninet",
+        "context-continuity",
+        "software-fundamentals",
+        "v1-governor"
+      ],
+      "created_at": "2026-04-30T17:16:34.938Z"
     }
   ]
 }

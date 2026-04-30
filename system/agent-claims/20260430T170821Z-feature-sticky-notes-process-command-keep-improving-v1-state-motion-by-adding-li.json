@@ -1,0 +1,25 @@
+{
+  "id": "20260430T170821Z-feature-sticky-notes-process-command-keep-improving-v1-state-motion-by-adding-li",
+  "status": "finished",
+  "agent": "david",
+  "prompt": "Keep improving V1 state motion by adding list and action card motion to existing dashboard surfaces",
+  "branch": "feature/sticky-notes-process-command",
+  "branch_start_commit": "2348ad0cf",
+  "branch_finish": "feature/sticky-notes-process-command",
+  "branch_finish_commit": "4753e54c6",
+  "owned_paths": [
+    "components/ui/state-motion.tsx",
+    "app/globals.css",
+    "components/dashboard/widget-cards/list-card.tsx",
+    "components/dashboard/decision-queue-widget.tsx",
+    "components/dashboard/action-surface-card.tsx",
+    "components/dashboard/return-to-work-strip.tsx",
+    "tests/unit/state-motion.test.tsx",
+    "docs/app-complete-audit.md"
+  ],
+  "created_at": "2026-04-30T17:08:22.082Z",
+  "updated_at": "2026-04-30T17:16:34.756Z",
+  "finished_at": "2026-04-30T17:16:34.757Z",
+  "commit_hash": "4753e54c6",
+  "pushed": false
+}

@@ -1,0 +1,111 @@
+{
+  "generated_at": "2026-04-30T17:16:35.054Z",
+  "repair_count": 5,
+  "entries": [
+    {
+      "skill": "builder",
+      "state": "active",
+      "priority": "medium",
+      "reasons": ["3 failed outcome event(s)"],
+      "stats": {
+        "selected_count": 3,
+        "used_count": 4,
+        "missed_count": 0,
+        "failure_count": 3,
+        "repair_count": 0,
+        "clean_success_count": 1,
+        "last_selected_at": "2026-04-30T17:16:34.938Z",
+        "last_used_at": "2026-04-30T17:16:34.938Z",
+        "last_missed_at": null,
+        "last_failure_at": "2026-04-30T17:16:34.938Z",
+        "last_success_at": "2026-04-29T16:22:17.568Z",
+        "last_record": "20260430T170821Z-keep-improving-v1-state-motion-by-adding-list-and-action-card-motion-to-existing"
+      },
+      "suggested_patch_target": ".claude/skills/builder/SKILL.md"
+    },
+    {
+      "skill": "context-continuity",
+      "state": "active",
+      "priority": "medium",
+      "reasons": ["3 failed outcome event(s)"],
+      "stats": {
+        "selected_count": 3,
+        "used_count": 3,
+        "missed_count": 0,
+        "failure_count": 3,
+        "repair_count": 0,
+        "clean_success_count": 0,
+        "last_selected_at": "2026-04-30T17:16:34.938Z",
+        "last_used_at": "2026-04-30T17:16:34.938Z",
+        "last_missed_at": null,
+        "last_failure_at": "2026-04-30T17:16:34.938Z",
+        "last_success_at": null,
+        "last_record": "20260430T170821Z-keep-improving-v1-state-motion-by-adding-list-and-action-card-motion-to-existing"
+      },
+      "suggested_patch_target": ".claude/skills/context-continuity/SKILL.md"
+    },
+    {
+      "skill": "omninet",
+      "state": "proven",
+      "priority": "medium",
+      "reasons": ["3 failed outcome event(s)"],
+      "stats": {
+        "selected_count": 4,
+        "used_count": 4,
+        "missed_count": 0,
+        "failure_count": 3,
+        "repair_count": 0,
+        "clean_success_count": 1,
+        "last_selected_at": "2026-04-30T17:16:34.938Z",
+        "last_used_at": "2026-04-30T17:16:34.938Z",
+        "last_missed_at": null,
+        "last_failure_at": "2026-04-30T17:16:34.938Z",
+        "last_success_at": "2026-04-29T16:22:17.568Z",
+        "last_record": "20260430T170821Z-keep-improving-v1-state-motion-by-adding-list-and-action-card-motion-to-existing"
+      },
+      "suggested_patch_target": ".claude/skills/omninet/SKILL.md"
+    },
+    {
+      "skill": "software-fundamentals",
+      "state": "active",
+      "priority": "medium",
+      "reasons": ["3 failed outcome event(s)"],
+      "stats": {
+        "selected_count": 3,
+        "used_count": 3,
+        "missed_count": 0,
+        "failure_count": 3,
+        "repair_count": 0,
+        "clean_success_count": 0,
+        "last_selected_at": "2026-04-30T17:16:34.938Z",
+        "last_used_at": "2026-04-30T17:16:34.938Z",
+        "last_missed_at": null,
+        "last_failure_at": "2026-04-30T17:16:34.938Z",
+        "last_success_at": null,
+        "last_record": "20260430T170821Z-keep-improving-v1-state-motion-by-adding-list-and-action-card-motion-to-existing"
+      },
+      "suggested_patch_target": ".claude/skills/software-fundamentals/SKILL.md"
+    },
+    {
+      "skill": "v1-governor",
+      "state": "active",
+      "priority": "medium",
+      "reasons": ["3 failed outcome event(s)"],
+      "stats": {
+        "selected_count": 0,
+        "used_count": 3,
+        "missed_count": 0,
+        "failure_count": 3,
+        "repair_count": 0,
+        "clean_success_count": 0,
+        "last_selected_at": null,
+        "last_used_at": "2026-04-30T17:16:34.938Z",
+        "last_missed_at": null,
+        "last_failure_at": "2026-04-30T17:16:34.938Z",
+        "last_success_at": null,
+        "last_record": "20260430T170821Z-keep-improving-v1-state-motion-by-adding-list-and-action-card-motion-to-existing"
+      },
+      "suggested_patch_target": ".claude/skills/v1-governor/SKILL.md"
+    }
+  ]
+}

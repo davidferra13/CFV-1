@@ -1,0 +1,45 @@
+{
+  "id": "20260430T170821Z-keep-improving-v1-state-motion-by-adding-list-and-action-card-motion-to-existing",
+  "prompt": "Keep improving V1 state motion by adding list and action card motion to existing dashboard surfaces",
+  "status": "finished",
+  "branch": "feature/sticky-notes-process-command",
+  "branch_start_commit": "2348ad0cf",
+  "claim_file": "system/agent-claims/20260430T170821Z-feature-sticky-notes-process-command-keep-improving-v1-state-motion-by-adding-li.json",
+  "started_at": "2026-04-30T17:08:22.146Z",
+  "finished_at": "2026-04-30T17:16:34.758Z",
+  "selected_primary_skill": "builder",
+  "selected_sidecar_skills": ["omninet", "context-continuity", "software-fundamentals"],
+  "router_decision": null,
+  "used_skills": [
+    "builder",
+    "omninet",
+    "context-continuity",
+    "software-fundamentals",
+    "v1-governor"
+  ],
+  "files_touched": [
+    "components/ui/state-motion.tsx",
+    "app/globals.css",
+    "components/dashboard/widget-cards/list-card.tsx",
+    "components/dashboard/decision-queue-widget.tsx",
+    "components/dashboard/action-surface-card.tsx",
+    "components/dashboard/return-to-work-strip.tsx",
+    "tests/unit/state-motion.test.tsx",
+    "docs/app-complete-audit.md"
+  ],
+  "commands_run": [],
+  "validations_run": [
+    "node --test --import tsx tests/unit/state-motion.test.tsx",
+    "npx tsc --noEmit --skipLibCheck",
+    "git diff added-line em dash scan",
+    "pre-commit quick regression"
+  ],
+  "commit_hash": "4753e54c6",
+  "pushed": false,
+  "missed_skills": [],
+  "skill_garden_triggered": false,
+  "heal_skill_triggered": false,
+  "notes": null,
+  "branch_finish": "feature/sticky-notes-process-command",
+  "branch_changed": false
+}

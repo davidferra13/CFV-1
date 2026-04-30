@@ -1,0 +1,19 @@
+{
+  "prompt": "Keep improving V1 state motion by adding list and action card motion to existing dashboard surfaces",
+  "generated_at": "2026-04-30T17:08:19.532Z",
+  "primary_skill": "builder",
+  "sidecar_skills": ["omninet", "context-continuity", "software-fundamentals"],
+  "skill_maturity": {
+    "builder": "active",
+    "omninet": "proven",
+    "context-continuity": "active",
+    "software-fundamentals": "active"
+  },
+  "conflict_resolution": null,
+  "hard_stops": [],
+  "risk_level": "low",
+  "required_checks": [
+    "run software-fundamentals module audit for owned non-trivial code changes",
+    "stage, commit, and push only owned files before closeout"
+  ]
+}

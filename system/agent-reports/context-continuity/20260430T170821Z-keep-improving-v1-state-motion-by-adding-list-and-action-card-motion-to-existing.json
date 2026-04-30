@@ -1,0 +1,579 @@
+{
+  "generated_at": "2026-04-30T17:08:19.647Z",
+  "prompt": "Keep improving V1 state motion by adding list and action card motion to existing dashboard surfaces",
+  "terms": [
+    "keep",
+    "improving",
+    "state",
+    "motion",
+    "adding",
+    "list",
+    "action",
+    "card",
+    "existing",
+    "dashboard",
+    "surfaces"
+  ],
+  "scanned_dirs": [
+    "app",
+    "components",
+    "lib",
+    "docs/specs",
+    "docs/changes",
+    "docs/app-complete-audit.md",
+    "project-map",
+    "memory",
+    "system/intake",
+    "system/agent-reports"
+  ],
+  "canonical_surfaces": [
+    {
+      "id": "chef-command-plane",
+      "label": "ChefFlow Command Plane",
+      "score": 8,
+      "hits": ["state", "action", "dashboard"],
+      "canonical_routes": ["/dashboard"],
+      "canonical_files": [
+        "docs/specs/chefflow-command-plane.md",
+        "lib/interface/action-layer.ts",
+        "lib/events/operating-spine.ts",
+        "components/platform-shell/context-command-panel.tsx"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach command-plane behavior to the canonical computed contract instead of creating another dashboard, Remy hub, command palette, or page-local action list."
+      }
+    },
+    {
+      "id": "context-continuity",
+      "label": "Context Continuity",
+      "score": 1,
+      "hits": ["surfaces"],
+      "canonical_routes": [],
+      "canonical_files": [
+        ".claude/skills/context-continuity/SKILL.md",
+        "devtools/context-continuity-scan.mjs",
+        "system/canonical-surfaces.json"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Extend the continuity layer in place."
+      }
+    },
+    {
+      "id": "remy-ai",
+      "label": "Remy AI",
+      "score": 1,
+      "hits": ["action"],
+      "canonical_routes": [],
+      "canonical_files": ["components/ai/remy-drawer.tsx", "lib/ai/remy-actions.ts"],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach new assistant behavior to Remy or its shared AI modules."
+      }
+    },
+    {
+      "id": "voice-ops",
+      "label": "Voice Operations",
+      "score": 1,
+      "hits": ["action"],
+      "canonical_routes": [],
+      "canonical_files": [
+        "lib/calling/voice-ops-actions.ts",
+        "components/calling/voice-ops-report-panel.tsx"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach to voice operations modules."
+      }
+    },
+    {
+      "id": "chef-flow-replay",
+      "label": "Chef Flow Replay",
+      "score": 1,
+      "hits": ["action"],
+      "canonical_routes": ["/replay"],
+      "canonical_files": ["app/(chef)/replay/page.tsx", "lib/activity/replay-model.ts"],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Extend replay model and components in place."
+      }
+    },
+    {
+      "id": "client-intake",
+      "label": "Client Intake",
+      "score": 1,
+      "hits": ["action"],
+      "canonical_routes": ["/book", "/clients/intake"],
+      "canonical_files": [
+        "app/api/book/route.ts",
+        "lib/inquiries/public-actions.ts",
+        "public/embed/chefflow-widget.js"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach to the existing intake lane contract."
+      }
+    }
+  ],
+  "related_files": [
+    {
+      "file": "system/agent-reports/router-decisions/20260430T170819Z-keep-improving-v1-state-motion-by-adding-list-and-action-card-motion-to-existing.json",
+      "kind": "system",
+      "score": 52,
+      "hits": [
+        "keep",
+        "improving",
+        "state",
+        "motion",
+        "adding",
+        "list",
+        "action",
+        "card",
+        "existing",
+        "dashboard"
+      ]
+    },
+    {
+      "file": "system/agent-reports/context-continuity/20260430T165048Z-build-v1-support-state-change-motion-primitives-and-apply-to-existing-chefflow-w.json",
+      "kind": "system",
+      "score": 45,
+      "hits": [
+        "state",
+        "motion",
+        "existing",
+        "keep",
+        "improving",
+        "list",
+        "action",
+        "dashboard",
+        "surfaces"
+      ]
+    },
+    {
+      "file": "docs/specs/visual-representation-strategy.md",
+      "kind": "spec",
+      "score": 43,
+      "hits": [
+        "keep",
+        "state",
+        "adding",
+        "list",
+        "action",
+        "card",
+        "existing",
+        "dashboard",
+        "surfaces"
+      ]
+    },
+    {
+      "file": "docs/specs/openclaw-capture-countdown-and-pixel-schedule.md",
+      "kind": "spec",
+      "score": 41,
+      "hits": [
+        "keep",
+        "state",
+        "adding",
+        "list",
+        "action",
+        "card",
+        "existing",
+        "dashboard",
+        "surfaces"
+      ]
+    },
+    {
+      "file": "docs/specs/chefflow-command-plane.md",
+      "kind": "spec",
+      "score": 40,
+      "hits": [
+        "keep",
+        "state",
+        "adding",
+        "list",
+        "action",
+        "card",
+        "existing",
+        "dashboard",
+        "surfaces"
+      ]
+    },
+    {
+      "file": "docs/specs/continuous-intelligence-layer.md",
+      "kind": "spec",
+      "score": 40,
+      "hits": [
+        "keep",
+        "state",
+        "adding",
+        "list",
+        "action",
+        "card",
+        "existing",
+        "dashboard",
+        "surfaces"
+      ]
+    },
+    {
+      "file": "docs/specs/culinary-radar-intelligence-layer.md",
+      "kind": "spec",
+      "score": 40,
+      "hits": ["keep", "state", "list", "action", "card", "existing", "dashboard", "surfaces"]
+    },
+    {
+      "file": "docs/specs/openclaw-pc-local-mirror-and-backup-contract.md",
+      "kind": "spec",
+      "score": 40,
+      "hits": ["keep", "state", "list", "action", "card", "existing", "dashboard", "surfaces"]
+    },
+    {
+      "file": "docs/specs/p1-chef-getting-started-surface-consolidation.md",
+      "kind": "spec",
+      "score": 40,
+      "hits": ["keep", "state", "list", "action", "card", "existing", "dashboard", "surfaces"]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-public-surface-cohesion-v1.md",
+      "kind": "spec",
+      "score": 40,
+      "hits": [
+        "keep",
+        "state",
+        "motion",
+        "list",
+        "action",
+        "card",
+        "existing",
+        "dashboard",
+        "surfaces"
+      ]
+    },
+    {
+      "file": "docs/specs/p0-chef-cpa-ready-tax-export-and-reconciliation.md",
+      "kind": "spec",
+      "score": 39,
+      "hits": [
+        "keep",
+        "state",
+        "adding",
+        "list",
+        "action",
+        "card",
+        "existing",
+        "dashboard",
+        "surfaces"
+      ]
+    },
+    {
+      "file": "docs/specs/chef-shell-clarity-and-guided-settings.md",
+      "kind": "spec",
+      "score": 38,
+      "hits": ["keep", "state", "list", "action", "card", "existing", "dashboard", "surfaces"]
+    },
+    {
+      "file": "docs/specs/notes-dishes-menus-client-event-pipeline.md",
+      "kind": "spec",
+      "score": 38,
+      "hits": [
+        "keep",
+        "state",
+        "motion",
+        "adding",
+        "list",
+        "action",
+        "card",
+        "existing",
+        "surfaces"
+      ]
+    },
+    {
+      "file": "docs/specs/openclaw-ideal-runtime-and-national-intelligence.md",
+      "kind": "spec",
+      "score": 37,
+      "hits": [
+        "keep",
+        "improving",
+        "state",
+        "list",
+        "action",
+        "card",
+        "existing",
+        "dashboard",
+        "surfaces"
+      ]
+    },
+    {
+      "file": "docs/specs/openclaw-refresh-status-badge.md",
+      "kind": "spec",
+      "score": 37,
+      "hits": [
+        "keep",
+        "state",
+        "adding",
+        "list",
+        "action",
+        "card",
+        "existing",
+        "dashboard",
+        "surfaces"
+      ]
+    },
+    {
+      "file": "docs/specs/p1-allergy-and-dietary-trust-alignment.md",
+      "kind": "spec",
+      "score": 37,
+      "hits": ["keep", "state", "adding", "list", "action", "card", "existing", "surfaces"]
+    },
+    {
+      "file": "docs/specs/p1-buyer-education-and-pre-decision-guidance.md",
+      "kind": "spec",
+      "score": 36,
+      "hits": ["keep", "state", "adding", "list", "action", "card", "existing", "surfaces"]
+    },
+    {
+      "file": "docs/specs/p1-canonical-culinary-dictionary.md",
+      "kind": "spec",
+      "score": 36,
+      "hits": [
+        "keep",
+        "state",
+        "motion",
+        "adding",
+        "list",
+        "action",
+        "card",
+        "existing",
+        "surfaces"
+      ]
+    },
+    {
+      "file": "docs/specs/p1-finance-root-canonicalization.md",
+      "kind": "spec",
+      "score": 36,
+      "hits": ["keep", "state", "list", "action", "card", "existing", "dashboard", "surfaces"]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-cohesiveness-synthesis.md",
+      "kind": "spec",
+      "score": 36,
+      "hits": ["keep", "state", "list", "action", "card", "existing", "dashboard", "surfaces"]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-consumer-discovery-cohesion-v1.md",
+      "kind": "spec",
+      "score": 36,
+      "hits": [
+        "keep",
+        "state",
+        "adding",
+        "list",
+        "action",
+        "card",
+        "existing",
+        "dashboard",
+        "surfaces"
+      ]
+    },
+    {
+      "file": "docs/specs/system-surface-role-classification-foundation.md",
+      "kind": "spec",
+      "score": 36,
+      "hits": ["keep", "state", "adding", "list", "action", "existing", "dashboard", "surfaces"]
+    },
+    {
+      "file": "system/agent-reports/context-continuity-dashboard/latest.json",
+      "kind": "system",
+      "score": 36,
+      "hits": ["dashboard", "state", "motion", "list", "action", "card", "existing", "surfaces"]
+    },
+    {
+      "file": "docs/specs/chef-pricing-override-infrastructure.md",
+      "kind": "spec",
+      "score": 35,
+      "hits": ["keep", "state", "list", "action", "card", "existing", "surfaces"]
+    },
+    {
+      "file": "docs/specs/consumer-first-discovery-and-dinner-planning-expansion.md",
+      "kind": "spec",
+      "score": 35,
+      "hits": [
+        "keep",
+        "state",
+        "motion",
+        "adding",
+        "list",
+        "action",
+        "card",
+        "existing",
+        "surfaces"
+      ]
+    },
+    {
+      "file": "docs/specs/equipment-intelligence-system.md",
+      "kind": "spec",
+      "score": 35,
+      "hits": [
+        "keep",
+        "state",
+        "motion",
+        "adding",
+        "list",
+        "action",
+        "card",
+        "existing",
+        "dashboard",
+        "surfaces"
+      ]
+    },
+    {
+      "file": "docs/specs/interaction-engine.md",
+      "kind": "spec",
+      "score": 35,
+      "hits": ["action", "keep", "state", "list", "card", "existing", "dashboard"]
+    },
+    {
+      "file": "docs/specs/onboarding-cohesion-rework.md",
+      "kind": "spec",
+      "score": 35,
+      "hits": ["keep", "state", "adding", "list", "action", "card", "existing", "dashboard"]
+    },
+    {
+      "file": "docs/specs/openclaw-phase-3-full-integration.md",
+      "kind": "spec",
+      "score": 35,
+      "hits": ["state", "adding", "list", "action", "card", "existing", "dashboard", "surfaces"]
+    },
+    {
+      "file": "docs/specs/p0-chef-pricing-readiness-gate.md",
+      "kind": "spec",
+      "score": 35,
+      "hits": ["keep", "state", "adding", "list", "action", "card", "existing", "surfaces"]
+    }
+  ],
+  "recent_commits": [
+    {
+      "line": "2348ad0cf chore(agent): record state motion closeout feature-sticky-notes-promoted-items-processing",
+      "score": 2,
+      "hits": ["state", "motion"]
+    },
+    {
+      "line": "af809250b chore(agent): add state change motion feature-sticky-notes-promoted-items-processing",
+      "score": 2,
+      "hits": ["state", "motion"]
+    },
+    {
+      "line": "2988e6a8a chore(agent): add supporter signals admin dashboard feature-sticky-notes-promoted-items-processing",
+      "score": 1,
+      "hits": ["dashboard"]
+    },
+    {
+      "line": "3c738e124 chore(agent): add sticky notes review promotion feature/private-dev-cockpit-spec",
+      "score": 1,
+      "hits": ["motion"]
+    },
+    {
+      "line": "bd943a6c0 chore(agent): preserve motion research guidance fix/private-dev-cockpit-remove-accidental-file",
+      "score": 1,
+      "hits": ["motion"]
+    },
+    {
+      "line": "341a0ab07 chore(agent): keep software fundamentals audit active feature/professional-pwa-install",
+      "score": 1,
+      "hits": ["keep"]
+    }
+  ],
+  "dirty_matches": [
+    {
+      "line": "?? system/agent-reports/router-decisions/20260430T170819Z-keep-improving-v1-state-motion-by-adding-list-and-action-card-motion-to-existing.json",
+      "file": "system/agent-reports/router-decisions/20260430T170819Z-keep-improving-v1-state-motion-by-adding-list-and-action-card-motion-to-existing.json",
+      "score": 20,
+      "hits": [
+        "keep",
+        "improving",
+        "state",
+        "motion",
+        "adding",
+        "list",
+        "action",
+        "card",
+        "existing"
+      ]
+    },
+    {
+      "line": "A  lib/pricing/geographic-proof-actions.ts",
+      "file": "lib/pricing/geographic-proof-actions.ts",
+      "score": 2,
+      "hits": ["action"]
+    },
+    {
+      "line": "M  lib/pricing/pricing-readiness-actions.ts",
+      "file": "lib/pricing/pricing-readiness-actions.ts",
+      "score": 2,
+      "hits": ["action"]
+    },
+    {
+      "line": "A  system/agent-reports/context-continuity/20260430T163810Z-build-geographic-pricing-proof-harness-nationwide-state-territory-basket-quote-s.json",
+      "file": "system/agent-reports/context-continuity/20260430T163810Z-build-geographic-pricing-proof-harness-nationwide-state-territory-basket-quote-s.json",
+      "score": 2,
+      "hits": ["state"]
+    }
+  ],
+  "claim_matches": [
+    {
+      "file": "system/agent-claims/20260430T165049Z-feature-sticky-notes-promoted-items-processing-build-v1-support-state-change-mot.json",
+      "score": 10,
+      "hits": ["state", "motion", "existing", "surfaces"],
+      "prompt": "Build V1 support state-change motion primitives and apply to existing ChefFlow workflow surfaces",
+      "owned": [],
+      "status": "finished"
+    },
+    {
+      "file": "system/agent-claims/20260429T235629Z-feature-voice-ops-complete-build-the-complete-context-continuity-tooling-layer-s.json",
+      "score": 1,
+      "hits": ["dashboard"],
+      "prompt": "Build the complete context continuity tooling layer: scanner CLI, canonical surface registry, pre-build gate, Obsidian packet exporter, near-duplicate detector, spec template continuity section, feature family map, and dashboard",
+      "owned": [],
+      "status": "active"
+    },
+    {
+      "file": "system/agent-claims/20260430T163810Z-feature-private-dev-cockpit-spec-build-geographic-pricing-proof-harness-from-doc.json",
+      "score": 1,
+      "hits": ["action"],
+      "prompt": "Build Geographic Pricing Proof Harness from docs/specs/geographic-pricing-proof-harness.md",
+      "owned": [],
+      "status": "active"
+    }
+  ],
+  "duplicate_risks": [
+    {
+      "level": "medium",
+      "reason": "Dirty files already exist in this domain and may be another agent active work.",
+      "files": [
+        "system/agent-reports/router-decisions/20260430T170819Z-keep-improving-v1-state-motion-by-adding-list-and-action-card-motion-to-existing.json",
+        "lib/pricing/geographic-proof-actions.ts",
+        "lib/pricing/pricing-readiness-actions.ts",
+        "system/agent-reports/context-continuity/20260430T163810Z-build-geographic-pricing-proof-harness-nationwide-state-territory-basket-quote-s.json"
+      ]
+    },
+    {
+      "level": "medium",
+      "reason": "Active or recorded claims overlap this domain.",
+      "claims": [
+        "system/agent-claims/20260430T165049Z-feature-sticky-notes-promoted-items-processing-build-v1-support-state-change-mot.json",
+        "system/agent-claims/20260429T235629Z-feature-voice-ops-complete-build-the-complete-context-continuity-tooling-layer-s.json",
+        "system/agent-claims/20260430T163810Z-feature-private-dev-cockpit-spec-build-geographic-pricing-proof-harness-from-doc.json"
+      ]
+    }
+  ],
+  "continuity": {
+    "decision": "attach",
+    "stop_required": false,
+    "reason": "Matched canonical surface chef-command-plane."
+  }
+}
