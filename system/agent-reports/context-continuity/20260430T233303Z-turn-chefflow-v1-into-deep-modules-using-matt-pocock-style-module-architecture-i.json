@@ -1,0 +1,760 @@
+{
+  "generated_at": "2026-04-30T23:33:01.155Z",
+  "prompt": "Turn ChefFlow V1 into deep modules using Matt Pocock style module architecture: inquiry client event menu quote agreement payment prep sourcing service follow-up client memory cannot-fail contracts pricing money safety release proof",
+  "terms": [
+    "turn",
+    "chefflow",
+    "deep",
+    "modules",
+    "using",
+    "matt",
+    "pocock",
+    "style",
+    "module",
+    "architecture",
+    "inquiry",
+    "client",
+    "event",
+    "menu",
+    "quote",
+    "agreement",
+    "payment",
+    "prep",
+    "sourcing",
+    "service",
+    "follow-up",
+    "memory",
+    "cannot-fail",
+    "contracts"
+  ],
+  "scanned_dirs": [
+    "app",
+    "components",
+    "lib",
+    "docs/specs",
+    "docs/changes",
+    "docs/app-complete-audit.md",
+    "project-map",
+    "memory",
+    "system/intake",
+    "system/agent-reports"
+  ],
+  "canonical_surfaces": [
+    {
+      "id": "client-intake",
+      "label": "Client Intake",
+      "score": 7,
+      "hits": ["chefflow", "inquiry", "client"],
+      "canonical_routes": ["/book", "/clients/intake"],
+      "canonical_files": [
+        "app/api/book/route.ts",
+        "lib/inquiries/public-actions.ts",
+        "public/embed/chefflow-widget.js"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach to the existing intake lane contract."
+      }
+    },
+    {
+      "id": "chef-command-plane",
+      "label": "ChefFlow Command Plane",
+      "score": 6,
+      "hits": ["chefflow", "client", "event", "menu"],
+      "canonical_routes": ["/dashboard"],
+      "canonical_files": [
+        "docs/specs/chefflow-command-plane.md",
+        "lib/interface/action-layer.ts",
+        "lib/events/operating-spine.ts",
+        "components/platform-shell/context-command-panel.tsx"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach command-plane behavior to the canonical computed contract instead of creating another dashboard, Remy hub, command palette, or page-local action list."
+      }
+    },
+    {
+      "id": "finance",
+      "label": "Finance and Ledger",
+      "score": 6,
+      "hits": ["event", "quote", "payment"],
+      "canonical_routes": ["/finance", "/quotes"],
+      "canonical_files": [
+        "lib/ledger/append.ts",
+        "lib/ledger/compute.ts",
+        "lib/events/transitions.ts"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Financial behavior must attach to ledger and quote owners."
+      }
+    },
+    {
+      "id": "context-continuity",
+      "label": "Context Continuity",
+      "score": 3,
+      "hits": ["event", "memory"],
+      "canonical_routes": [],
+      "canonical_files": [
+        ".claude/skills/context-continuity/SKILL.md",
+        "devtools/context-continuity-scan.mjs",
+        "system/canonical-surfaces.json"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Extend the continuity layer in place."
+      }
+    },
+    {
+      "id": "remy-ai",
+      "label": "Remy AI",
+      "score": 3,
+      "hits": ["chefflow", "memory"],
+      "canonical_routes": [],
+      "canonical_files": ["components/ai/remy-drawer.tsx", "lib/ai/remy-actions.ts"],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach new assistant behavior to Remy or its shared AI modules."
+      }
+    },
+    {
+      "id": "agent-skill-system",
+      "label": "Agent Skill System",
+      "score": 1,
+      "hits": ["chefflow"],
+      "canonical_routes": [],
+      "canonical_files": [
+        "devtools/skill-router.mjs",
+        "devtools/skill-validator.mjs",
+        "devtools/skill-trigger-tests.mjs",
+        "system/agent-golden-prompts/default.json"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Add to the existing skill harness."
+      }
+    },
+    {
+      "id": "sticky-notes-intake-layer",
+      "label": "Sticky Notes Intake Layer",
+      "score": 1,
+      "hits": ["turn"],
+      "canonical_routes": [],
+      "canonical_files": [
+        "docs/specs/sticky-notes-intake-layer.md",
+        "devtools/sticky-notes/read-db.mjs",
+        "devtools/sticky-notes/organize.mjs"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach Sticky Notes work to the local intake layer instead of client intake, Remy memory, or an ungoverned backlog."
+      }
+    },
+    {
+      "id": "voice-ops",
+      "label": "Voice Operations",
+      "score": 1,
+      "hits": ["menu"],
+      "canonical_routes": [],
+      "canonical_files": [
+        "lib/calling/voice-ops-actions.ts",
+        "components/calling/voice-ops-report-panel.tsx"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach to voice operations modules."
+      }
+    }
+  ],
+  "related_files": [
+    {
+      "file": "docs/specs/v1-control-plane.md",
+      "kind": "spec",
+      "score": 79,
+      "hits": [
+        "turn",
+        "chefflow",
+        "modules",
+        "using",
+        "matt",
+        "style",
+        "module",
+        "inquiry",
+        "client",
+        "event"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-competitive-surface.md",
+      "kind": "spec",
+      "score": 77,
+      "hits": [
+        "turn",
+        "chefflow",
+        "deep",
+        "modules",
+        "matt",
+        "style",
+        "module",
+        "architecture",
+        "inquiry",
+        "client"
+      ]
+    },
+    {
+      "file": "docs/specs/continuous-intelligence-layer.md",
+      "kind": "spec",
+      "score": 75,
+      "hits": [
+        "turn",
+        "chefflow",
+        "modules",
+        "using",
+        "style",
+        "module",
+        "architecture",
+        "inquiry",
+        "client",
+        "event"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-full-cohesion-answers.md",
+      "kind": "spec",
+      "score": 71,
+      "hits": [
+        "turn",
+        "chefflow",
+        "deep",
+        "modules",
+        "using",
+        "style",
+        "module",
+        "inquiry",
+        "client",
+        "event"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-full-cohesion.md",
+      "kind": "spec",
+      "score": 71,
+      "hits": [
+        "turn",
+        "chefflow",
+        "modules",
+        "using",
+        "matt",
+        "module",
+        "architecture",
+        "inquiry",
+        "client",
+        "event"
+      ]
+    },
+    {
+      "file": "docs/specs/api-integration-health-audit.md",
+      "kind": "spec",
+      "score": 70,
+      "hits": [
+        "turn",
+        "chefflow",
+        "deep",
+        "modules",
+        "using",
+        "matt",
+        "module",
+        "inquiry",
+        "client",
+        "event"
+      ]
+    },
+    {
+      "file": "app/api/remy/stream/route-prompt-utils.ts",
+      "kind": "route",
+      "score": 65,
+      "hits": [
+        "turn",
+        "chefflow",
+        "matt",
+        "style",
+        "inquiry",
+        "client",
+        "event",
+        "menu",
+        "quote",
+        "payment"
+      ]
+    },
+    {
+      "file": "docs/specs/restaurant-adoption-interrogation.md",
+      "kind": "spec",
+      "score": 65,
+      "hits": [
+        "turn",
+        "chefflow",
+        "deep",
+        "modules",
+        "using",
+        "matt",
+        "style",
+        "module",
+        "architecture",
+        "inquiry"
+      ]
+    },
+    {
+      "file": "docs/specs/service-lifecycle-intelligence.md",
+      "kind": "spec",
+      "score": 65,
+      "hits": [
+        "service",
+        "turn",
+        "deep",
+        "matt",
+        "style",
+        "architecture",
+        "inquiry",
+        "client",
+        "event",
+        "menu"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-cohesiveness-synthesis.md",
+      "kind": "spec",
+      "score": 63,
+      "hits": [
+        "turn",
+        "chefflow",
+        "using",
+        "matt",
+        "module",
+        "architecture",
+        "inquiry",
+        "client",
+        "event",
+        "menu"
+      ]
+    },
+    {
+      "file": "docs/specs/food-costing-knowledge-system.md",
+      "kind": "spec",
+      "score": 62,
+      "hits": [
+        "turn",
+        "chefflow",
+        "using",
+        "matt",
+        "style",
+        "module",
+        "architecture",
+        "client",
+        "event",
+        "menu"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set.md",
+      "kind": "spec",
+      "score": 61,
+      "hits": [
+        "turn",
+        "chefflow",
+        "modules",
+        "module",
+        "inquiry",
+        "client",
+        "event",
+        "menu",
+        "quote",
+        "payment"
+      ]
+    },
+    {
+      "file": "lib/scheduling/types.ts",
+      "kind": "module",
+      "score": 60,
+      "hits": [
+        "turn",
+        "style",
+        "inquiry",
+        "client",
+        "event",
+        "menu",
+        "quote",
+        "payment",
+        "prep",
+        "sourcing"
+      ]
+    },
+    {
+      "file": "app/(chef)/events/[id]/page.tsx",
+      "kind": "route",
+      "score": 59,
+      "hits": [
+        "event",
+        "turn",
+        "chefflow",
+        "style",
+        "inquiry",
+        "client",
+        "menu",
+        "quote",
+        "payment",
+        "prep"
+      ]
+    },
+    {
+      "file": "app/(public)/for-operators/page.tsx",
+      "kind": "route",
+      "score": 59,
+      "hits": [
+        "turn",
+        "chefflow",
+        "deep",
+        "modules",
+        "using",
+        "module",
+        "inquiry",
+        "client",
+        "event",
+        "menu"
+      ]
+    },
+    {
+      "file": "components/navigation/nav-config.tsx",
+      "kind": "component",
+      "score": 59,
+      "hits": [
+        "turn",
+        "chefflow",
+        "modules",
+        "module",
+        "inquiry",
+        "client",
+        "event",
+        "menu",
+        "quote",
+        "payment"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-seam-cohesion.md",
+      "kind": "spec",
+      "score": 59,
+      "hits": [
+        "turn",
+        "deep",
+        "modules",
+        "using",
+        "matt",
+        "module",
+        "inquiry",
+        "client",
+        "event",
+        "menu"
+      ]
+    },
+    {
+      "file": "lib/clients/client-strategy-brief.ts",
+      "kind": "module",
+      "score": 59,
+      "hits": [
+        "client",
+        "turn",
+        "chefflow",
+        "deep",
+        "matt",
+        "style",
+        "event",
+        "menu",
+        "quote",
+        "prep"
+      ]
+    },
+    {
+      "file": "docs/specs/p0-chef-cpa-ready-tax-export-and-reconciliation.md",
+      "kind": "spec",
+      "score": 58,
+      "hits": [
+        "turn",
+        "chefflow",
+        "modules",
+        "using",
+        "matt",
+        "style",
+        "module",
+        "architecture",
+        "inquiry",
+        "client"
+      ]
+    },
+    {
+      "file": "docs/specs/system-completeness-interrogation.md",
+      "kind": "spec",
+      "score": 58,
+      "hits": [
+        "turn",
+        "chefflow",
+        "using",
+        "matt",
+        "style",
+        "inquiry",
+        "client",
+        "event",
+        "menu",
+        "quote"
+      ]
+    },
+    {
+      "file": "lib/ai/remy-actions.ts",
+      "kind": "module",
+      "score": 58,
+      "hits": [
+        "turn",
+        "chefflow",
+        "matt",
+        "style",
+        "inquiry",
+        "client",
+        "event",
+        "menu",
+        "quote",
+        "payment"
+      ]
+    },
+    {
+      "file": "lib/menus/menu-intelligence-actions.ts",
+      "kind": "module",
+      "score": 58,
+      "hits": [
+        "menu",
+        "turn",
+        "deep",
+        "using",
+        "style",
+        "inquiry",
+        "client",
+        "event",
+        "quote",
+        "prep"
+      ]
+    },
+    {
+      "file": "docs/specs/bob-and-joy-action-catalog.md",
+      "kind": "spec",
+      "score": 57,
+      "hits": [
+        "turn",
+        "chefflow",
+        "modules",
+        "matt",
+        "style",
+        "module",
+        "inquiry",
+        "client",
+        "event",
+        "menu"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-cannabis-cohesion.md",
+      "kind": "spec",
+      "score": 57,
+      "hits": [
+        "turn",
+        "chefflow",
+        "deep",
+        "modules",
+        "using",
+        "module",
+        "architecture",
+        "inquiry",
+        "client",
+        "event"
+      ]
+    },
+    {
+      "file": "lib/email/notifications.ts",
+      "kind": "module",
+      "score": 57,
+      "hits": [
+        "turn",
+        "chefflow",
+        "matt",
+        "inquiry",
+        "client",
+        "event",
+        "menu",
+        "quote",
+        "payment",
+        "prep"
+      ]
+    },
+    {
+      "file": "lib/events/transitions.ts",
+      "kind": "module",
+      "score": 57,
+      "hits": [
+        "event",
+        "turn",
+        "chefflow",
+        "using",
+        "inquiry",
+        "client",
+        "menu",
+        "quote",
+        "payment",
+        "prep"
+      ]
+    },
+    {
+      "file": "docs/specs/operational-workflow-interrogation.md",
+      "kind": "spec",
+      "score": 56,
+      "hits": [
+        "chefflow",
+        "using",
+        "matt",
+        "style",
+        "architecture",
+        "inquiry",
+        "client",
+        "event",
+        "menu",
+        "quote"
+      ]
+    },
+    {
+      "file": "lib/interface/action-layer.ts",
+      "kind": "module",
+      "score": 56,
+      "hits": [
+        "turn",
+        "chefflow",
+        "inquiry",
+        "client",
+        "event",
+        "menu",
+        "quote",
+        "payment",
+        "prep",
+        "service"
+      ]
+    },
+    {
+      "file": "lib/lifecycle/seed.ts",
+      "kind": "module",
+      "score": 56,
+      "hits": [
+        "turn",
+        "style",
+        "inquiry",
+        "client",
+        "event",
+        "menu",
+        "quote",
+        "agreement",
+        "payment",
+        "prep"
+      ]
+    },
+    {
+      "file": "app/(client)/my-events/[id]/page.tsx",
+      "kind": "route",
+      "score": 55,
+      "hits": [
+        "client",
+        "event",
+        "turn",
+        "style",
+        "menu",
+        "quote",
+        "agreement",
+        "payment",
+        "prep",
+        "service"
+      ]
+    }
+  ],
+  "recent_commits": [
+    {
+      "line": "e2686a13e chore(agent): wire obsidian memory indexes feature/v1-builder-runtime-scaffold",
+      "score": 1,
+      "hits": ["memory"]
+    }
+  ],
+  "dirty_matches": [],
+  "claim_matches": [
+    {
+      "file": "system/agent-claims/20260430T192043Z-feature-v1-builder-runtime-scaffold-build-chefflow-obsidian-index-notes-and-wire.json",
+      "score": 10,
+      "hits": ["chefflow", "memory"],
+      "prompt": "Build ChefFlow Obsidian index notes and wire future memory packets",
+      "owned": [],
+      "status": "finished"
+    },
+    {
+      "file": "system/agent-claims/20260430T165049Z-feature-sticky-notes-promoted-items-processing-build-v1-support-state-change-mot.json",
+      "score": 5,
+      "hits": ["chefflow", "event"],
+      "prompt": "Build V1 support state-change motion primitives and apply to existing ChefFlow workflow surfaces",
+      "owned": [],
+      "status": "finished"
+    },
+    {
+      "file": "system/agent-claims/20260429T234252Z-feature-pantry-engine-create-persistent-codex-behavior-to-prevent-fragmented-dup.json",
+      "score": 4,
+      "hits": ["style", "event", "memory"],
+      "prompt": "Create persistent Codex behavior to prevent fragmented duplicate builds and capture conversation memory for Obsidian-style continuity",
+      "owned": [],
+      "status": "active"
+    },
+    {
+      "file": "system/agent-claims/20260430T170821Z-feature-sticky-notes-process-command-keep-improving-v1-state-motion-by-adding-li.json",
+      "score": 1,
+      "hits": ["turn"],
+      "prompt": "Keep improving V1 state motion by adding list and action card motion to existing dashboard surfaces",
+      "owned": [],
+      "status": "finished"
+    },
+    {
+      "file": "system/agent-claims/20260430T175158Z-feature-pricing-proof-evidence-scoring-build-pricing-reliability-engine-proof-lo.json",
+      "score": 1,
+      "hits": ["menu"],
+      "prompt": "Build pricing reliability engine proof loop blockers unit normalization coverage menu costing propagation",
+      "owned": [],
+      "status": "active"
+    }
+  ],
+  "duplicate_risks": [
+    {
+      "level": "medium",
+      "reason": "Multiple canonical surfaces matched the prompt.",
+      "owners": ["client-intake", "chef-command-plane", "finance"]
+    },
+    {
+      "level": "medium",
+      "reason": "Active or recorded claims overlap this domain.",
+      "claims": [
+        "system/agent-claims/20260430T192043Z-feature-v1-builder-runtime-scaffold-build-chefflow-obsidian-index-notes-and-wire.json",
+        "system/agent-claims/20260430T165049Z-feature-sticky-notes-promoted-items-processing-build-v1-support-state-change-mot.json",
+        "system/agent-claims/20260429T234252Z-feature-pantry-engine-create-persistent-codex-behavior-to-prevent-fragmented-dup.json"
+      ]
+    }
+  ],
+  "continuity": {
+    "decision": "attach",
+    "stop_required": false,
+    "reason": "Matched canonical surface client-intake."
+  }
+}
