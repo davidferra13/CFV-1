@@ -26,6 +26,13 @@ Same as Planner Gate Step 3. If the developer explained WHY they want this resea
 
 Read actual code. Follow import chains. Trace data flows. Check database schemas. Read existing docs. Search for patterns.
 
+For product polish, UI, website, market, or competitive-pattern research, also gather current external examples from successful products. Favor public traffic, adoption, revenue, market position, or official product documentation as evidence. For each example, capture:
+
+- Why the product counts as successful.
+- The observed pattern or interaction.
+- Whether the pattern is helpful, fun, trust-building, or potentially noisy.
+- The transferable lesson for ChefFlow.
+
 **Rules:**
 
 - Every claim cites a file path and line number. No citation = not verified.
@@ -56,6 +63,10 @@ Create `docs/research/[topic-name].md`:
 ## Detailed Findings
 
 [Organized by sub-topic. Every finding cites file:line. Code snippets where they clarify. Tables for comparisons.]
+
+## External Pattern Evidence
+
+[When relevant, examples from successful websites or products. Include success evidence, source link, observed pattern, noise risk, and ChefFlow lesson.]
 
 ## Gaps and Unknowns
 
