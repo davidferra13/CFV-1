@@ -14,6 +14,7 @@
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,css}\" --ignore-path .prettierignore",
     "prepare": "husky",
     "start": "node scripts/run-next-prod.mjs",
+    "cheflow": "node scripts/cheflow.mjs",
     "prod": "node scripts/run-next-prod.mjs --build",
     "start:dev": "next dev -p 3100 -H 0.0.0.0",
     "lint": "next lint",
