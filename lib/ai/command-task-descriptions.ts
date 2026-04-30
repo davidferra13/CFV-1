@@ -196,6 +196,14 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     inputSchema: '{ "limit": "number - optional, defaults to 5" }',
   },
   {
+    type: 'radar.local_markets',
+    tier: 1,
+    name: 'Local Market Radar',
+    description:
+      'Show source-backed local sourcing and farmers market signals from Culinary Radar, including the USDA Farmers Market Directory when available. Read-only, source-attributed, and never fabricated.',
+    inputSchema: '{ "limit": "number - optional, defaults to 5" }',
+  },
+  {
     type: 'radar.explain_item',
     tier: 1,
     name: 'Explain Radar Item',

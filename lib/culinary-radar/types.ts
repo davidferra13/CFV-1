@@ -2,6 +2,7 @@ export type CulinaryRadarSourceKey =
   | 'fda_recalls'
   | 'fsis_recalls'
   | 'cdc_foodborne_outbreaks'
+  | 'usda_farmers_markets'
   | 'wck_opportunities'
   | 'worldchefs_sustainability'
   | 'ift_food_science'

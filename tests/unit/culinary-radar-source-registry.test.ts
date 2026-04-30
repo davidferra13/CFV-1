@@ -8,7 +8,11 @@ const {
   listSourceDefinitions,
   isCulinaryRadarSourceKey,
 } = require('../../lib/culinary-radar/source-registry.ts')
-const { parseCdcRecord, parseIftRecord } = require('../../lib/culinary-radar/adapters/index.ts')
+const {
+  parseCdcRecord,
+  parseFarmersMarketRecord,
+  parseIftRecord,
+} = require('../../lib/culinary-radar/adapters/index.ts')
 
 test('source registry uses database seed keys for every approved source', () => {
   const keys = listSourceDefinitions().map((source: { key: string }) => source.key)
@@ -17,6 +21,7 @@ test('source registry uses database seed keys for every approved source', () => 
     'fda_recalls',
     'fsis_recalls',
     'cdc_foodborne_outbreaks',
+    'usda_farmers_markets',
     'wck_opportunities',
     'worldchefs_sustainability',
     'ift_food_science',
@@ -40,9 +45,19 @@ test('new page-monitor adapters preserve source-backed categories', () => {
     url: 'https://www.ift.org/news-and-publications',
     date: '2026-04-29T00:00:00Z',
   })
+  const farmersMarket = parseFarmersMarketRecord({
+    id: 'usda-farmers-markets',
+    title: 'USDA National Farmers Market Directory',
+    summary: 'Search farmers markets by zip code, payment method, and product availability.',
+    url: 'https://www.ams.usda.gov/local-food-directories/farmersmarkets',
+    date: '2026-04-29T00:00:00Z',
+  })
 
   assert.equal(cdc.sourceKey, 'cdc_foodborne_outbreaks')
   assert.equal(cdc.category, 'safety')
+  assert.equal(farmersMarket.sourceKey, 'usda_farmers_markets')
+  assert.equal(farmersMarket.category, 'local')
+  assert.ok(farmersMarket.tags.includes('local sourcing'))
   assert.equal(ift.sourceKey, 'ift_food_science')
   assert.equal(ift.category, 'craft')
 })

@@ -4,7 +4,11 @@ import { createRequire } from 'node:module'
 
 const require = createRequire(import.meta.url)
 
-const { parseFdaRecord, parseWckRecord } = require('../../lib/culinary-radar/adapters/index.ts')
+const {
+  parseFarmersMarketRecord,
+  parseFdaRecord,
+  parseWckRecord,
+} = require('../../lib/culinary-radar/adapters/index.ts')
 const { normalizeRadarItem } = require('../../lib/culinary-radar/normalize.ts')
 const { matchRadarItemToChefContext } = require('../../lib/culinary-radar/match-chef-context.ts')
 
@@ -72,5 +76,24 @@ test('matchRadarItemToChefContext keeps broad opportunity items non-urgent witho
   assert.deepEqual(match.recommendedActions, [
     'Review opportunity requirements.',
     'Save the deadline as a task if relevant.',
+  ])
+})
+
+test('matchRadarItemToChefContext gives local sourcing next steps for farmers markets', () => {
+  const item = normalizeRadarItem(
+    parseFarmersMarketRecord({
+      id: 'usda-farmers-markets',
+      title: 'USDA National Farmers Market Directory',
+      summary: 'Search farmers markets by zip code, product availability, and payment method.',
+      url: 'https://www.ams.usda.gov/local-food-directories/farmersmarkets',
+      publishedAt: '2026-04-29T12:00:00Z',
+    })
+  )
+
+  const match = matchRadarItemToChefContext(item, [])
+
+  assert.deepEqual(match.recommendedActions, [
+    'Open the official source and search by ZIP code or event city.',
+    'Confirm market hours, accepted payment, and vendor fit before sourcing.',
   ])
 })

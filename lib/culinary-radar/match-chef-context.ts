@@ -91,6 +91,13 @@ function buildRecommendedActions(
     return ['Review opportunity requirements.', 'Save the deadline as a task if relevant.']
   }
 
+  if (item.category === 'local') {
+    return [
+      'Open the official source and search by ZIP code or event city.',
+      'Confirm market hours, accepted payment, and vendor fit before sourcing.',
+    ]
+  }
+
   return ['Read the source and decide whether it belongs in your operating notes.']
 }
 

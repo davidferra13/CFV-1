@@ -193,6 +193,13 @@ const DETERMINISTIC_PATTERNS: DeterministicPattern[] = [
     build: (match, raw) => {
       // Don't match web searches
       if (/^(?:the web|online|google|web for)/i.test(match[1])) return null as any
+      if (
+        /\b(?:farmers?\s+markets?|farmer'?s\s+markets?|local\s+markets?|local\s+sourcing|where\s+to\s+source|source\s+local)\b/i.test(
+          raw
+        )
+      ) {
+        return null as any
+      }
       return {
         rawInput: raw,
         overallConfidence: 0.92,
@@ -288,6 +295,10 @@ const DETERMINISTIC_PATTERNS: DeterministicPattern[] = [
     build: (_match, raw) => {
       const taskType = /\b(?:recalls?|outbreaks?|safety)\b/i.test(raw)
         ? 'radar.safety'
+        : /\b(?:farmers?\s+markets?|farmer'?s\s+markets?|local\s+markets?|local\s+sourcing|where\s+to\s+source|source\s+local)\b/i.test(
+              raw
+            )
+          ? 'radar.local_markets'
         : /\b(?:wck|world central kitchen|opportunit|charity|relief|volunteer|career)\b/i.test(raw)
           ? 'radar.opportunities'
           : 'radar.latest'
@@ -307,6 +318,24 @@ const DETERMINISTIC_PATTERNS: DeterministicPattern[] = [
         ],
       }
     },
+  },
+  {
+    pattern:
+      /\b(?:farmers?\s+markets?|farmer'?s\s+markets?|local\s+markets?|local\s+sourcing|where\s+to\s+source|source\s+local)\b/i,
+    build: (_match, raw) => ({
+      rawInput: raw,
+      overallConfidence: 0.95,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'radar.local_markets',
+          tier: 1,
+          confidence: 0.95,
+          inputs: {},
+          dependsOn: [],
+        },
+      ],
+    }),
   },
   // "Search the web for [query]" / "Google [query]"
   {

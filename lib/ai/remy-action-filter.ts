@@ -43,6 +43,7 @@ const FOCUS_MODE_ACTIONS = new Set([
   'radar.latest',
   'radar.safety',
   'radar.opportunities',
+  'radar.local_markets',
   'radar.explain_item',
   'nav.go',
 

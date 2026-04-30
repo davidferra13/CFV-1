@@ -13,7 +13,7 @@
 - Recipes: full detail with ingredients, yield, nutrition (AI), technique tags, photos, cost breakdown, scaled ingredient lists. Manual entry only (AI never generates recipes)
 - Ingredients: master list, cost history, sustainability, allergen classification (FDA Big 9)
 - Culinary Dictionary: canonical culinary terms, ingredient aliases, safety flags, public-safe definitions, and chef review queue
-- Culinary Radar: source-backed recalls, outbreaks, opportunities, sustainability, craft, and business signals matched to the chef's data. The cron runner ingests approved FDA, FSIS, CDC, WCK, Worldchefs, and IFT signals, records source health, creates chef-scoped matches, feeds Dashboard, Morning Briefing, Daily Ops urgent alerts, and Remy read-only commands, and supports read, dismiss, category preference, and usefulness feedback state.
+- Culinary Radar: source-backed recalls, outbreaks, farmers market and local sourcing signals, opportunities, sustainability, craft, and business signals matched to the chef's data. The cron runner ingests approved FDA, FSIS, CDC, USDA Farmers Market Directory, WCK, Worldchefs, and IFT signals, records source health, creates chef-scoped matches, feeds Dashboard, Morning Briefing, Daily Ops urgent alerts, and Remy read-only commands, and supports read, dismiss, category preference, and usefulness feedback state.
 - Price Catalog: 15K+ items from OpenClaw, 10-tier price resolution chain
 - Components: pre-prep elements with quantities and cost
 - Costing: per-event menu cost breakdown, per-guest, historical trending

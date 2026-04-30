@@ -1246,12 +1246,16 @@ function tryDeterministicCommandPlan(input: string): CommandPlan | null {
   }
 
   if (
-    /\b(?:culinary radar|latest culinary news|food safety alerts?|recalls?|outbreaks?|wck|world central kitchen|chef opportunities)\b/i.test(
+    /\b(?:culinary radar|latest culinary news|food safety alerts?|recalls?|outbreaks?|wck|world central kitchen|chef opportunities|farmers?\s+markets?|farmer'?s\s+markets?|local\s+markets?|local\s+sourcing|where\s+to\s+source|source\s+local)\b/i.test(
       trimmed
     )
   ) {
     const taskType = /\b(?:recalls?|outbreaks?|safety)\b/i.test(trimmed)
       ? 'radar.safety'
+      : /\b(?:farmers?\s+markets?|farmer'?s\s+markets?|local\s+markets?|local\s+sourcing|where\s+to\s+source|source\s+local)\b/i.test(
+            trimmed
+          )
+        ? 'radar.local_markets'
       : /\b(?:wck|world central kitchen|opportunit|charity|relief|volunteer|career)\b/i.test(
             trimmed
           )

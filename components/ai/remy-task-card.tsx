@@ -417,7 +417,8 @@ function TaskDataRenderer({ taskType, data }: { taskType: string; data: unknown 
 
     case 'radar.latest':
     case 'radar.safety':
-    case 'radar.opportunities': {
+    case 'radar.opportunities':
+    case 'radar.local_markets': {
       const d = data as {
         matches: Array<{
           id: string

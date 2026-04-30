@@ -31,6 +31,16 @@ export const CULINARY_RADAR_SOURCES: readonly CulinaryRadarSourceDefinition[] = 
     defaultRelevanceScore: 70,
   },
   {
+    key: 'usda_farmers_markets',
+    label: 'USDA Farmers Market Directory',
+    authority: 'industry',
+    category: 'local',
+    credibilityTier: 'official',
+    homepageUrl: 'https://www.ams.usda.gov/local-food-directories/farmersmarkets',
+    feedUrl: 'https://www.usdalocalfoodportal.com/',
+    defaultRelevanceScore: 50,
+  },
+  {
     key: 'wck_opportunities',
     label: 'World Central Kitchen',
     authority: 'relief',

@@ -1,4 +1,5 @@
 export { parseCdcRecord } from './cdc'
+export { parseFarmersMarketRecord } from './farmers-markets'
 export { parseFdaRecord } from './fda'
 export { parseFsisRecord } from './fsis'
 export { parseIftRecord } from './ift'

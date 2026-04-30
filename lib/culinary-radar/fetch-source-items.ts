@@ -2,6 +2,7 @@ import 'server-only'
 
 import {
   parseCdcRecord,
+  parseFarmersMarketRecord,
   parseFdaRecord,
   parseFsisRecord,
   parseIftRecord,
@@ -35,6 +36,23 @@ const PAGE_SOURCES: Record<
         url: 'https://www.cdc.gov/foodborne-outbreaks/index.html',
         titleFallback: 'CDC current foodborne outbreak investigations',
         summaryFallback: 'CDC publishes current foodborne outbreak investigations and notices.',
+      },
+    ],
+  },
+  usda_farmers_markets: {
+    parser: parseFarmersMarketRecord,
+    urls: [
+      {
+        url: 'https://www.ams.usda.gov/local-food-directories/farmersmarkets',
+        titleFallback: 'USDA National Farmers Market Directory',
+        summaryFallback:
+          'USDA AMS maintains a national directory for farmers markets with locations, operating times, product offerings, payment methods, and more.',
+      },
+      {
+        url: 'https://www.ams.usda.gov/services/local-regional/food-directories-listings',
+        titleFallback: 'USDA Local Food Directory Listings',
+        summaryFallback:
+          'USDA Local Food Directories help locate local food retail and wholesale market outlets by ZIP code, product availability, payment method, and nutrition program participation.',
       },
     ],
   },

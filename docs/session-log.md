@@ -1,5 +1,15 @@
 # Session Log
 
+## 2026-04-30
+
+- Agent: Codex
+- Task: Add USDA farmers market and local sourcing coverage to Culinary Radar
+- Status: completed
+- Files touched: `lib/culinary-radar/*`, `lib/culinary-radar/adapters/farmers-markets.ts`, `lib/ai/command-*`, `lib/ai/remy-*`, `components/ai/remy-task-card.tsx`, focused Radar tests, `docs/app-complete-audit.md`, `docs/build-state.md`, `project-map/chef-os/culinary.md`
+- Commits: pending at log-write time
+- Build state on departure: focused Radar unit tests pass; full `npx tsc --noEmit --skipLibCheck` remains blocked by pre-existing missing calendar/capacitor packages, `next-auth/jwt` `encode`, and existing implicit-any errors outside Radar
+- Notes: Added the official USDA Farmers Market Directory as a trusted local Radar source, routed farmers market and local sourcing Remy commands to `radar.local_markets`, rendered that task through the existing source-backed Radar card, and added local sourcing next steps that point chefs to official ZIP and event-city search rather than claiming unverified portal API search.
+
 ## 2026-04-23 13:51 EST
 
 - Agent: Codex

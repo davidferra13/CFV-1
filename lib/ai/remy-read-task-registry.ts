@@ -291,6 +291,8 @@ const REMY_READ_TASK_EXECUTORS: Record<string, ReadTaskExecutor> = {
     executeRadarLatest({ ...task, inputs: { ...task.inputs, category: 'safety' } }, ctx),
   'radar.opportunities': (task, ctx) =>
     executeRadarLatest({ ...task, inputs: { ...task.inputs, category: 'opportunity' } }, ctx),
+  'radar.local_markets': (task, ctx) =>
+    executeRadarLatest({ ...task, inputs: { ...task.inputs, category: 'local' } }, ctx),
   'radar.explain_item': (task, ctx) => executeRadarExplain(task, ctx),
 }
 
