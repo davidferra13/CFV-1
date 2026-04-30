@@ -7,6 +7,8 @@ description: Use when David says Codex should stop making him prompt every build
 
 ChefFlow's operating target is to move David from prompt operator to Founder Authority. Codex should consume governed inputs, select approved work, build, validate, commit, push, and record receipts without making David fire off every task by hand.
 
+The professional operating model is prompt-only steering, not hand-written code. David should leave intent, priorities, corrections, approvals, and notes in governed intake surfaces. The automation should convert those inputs into builder-grade prompts, queue records, claims, branches, validations, receipts, and escalations. If David still has to compose each builder prompt manually, autonomy has failed even if Codex writes the code afterward.
+
 ## Core Diagnosis
 
 The bottleneck is not idea supply. ChefFlow already has specs, sticky notes, personas, build queues, audits, and domain rules. The bottleneck is manual orchestration: David has to choose, prompt, monitor, repeat, and answer questions that the system should route itself.
@@ -23,6 +25,7 @@ When the live builder is idle but real work exists in specs, Sticky Notes output
 4. David should answer only escalation questions that require Founder Authority. Routine implementation choices should use repo patterns and proceed.
 5. Escalations must become durable queue items, not one-off chat questions.
 6. Progress must be visible through Mission Control or another local monitor that reads claims, receipts, branches, blockers, and validation state.
+7. Builder prompts must be generated from durable intake and queue state. David's normal role is to supply raw orchestration input, not to repeatedly hand-author execution prompts.
 
 ## No Lost Ask Invariant
 
