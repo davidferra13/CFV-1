@@ -2,7 +2,9 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import {
   detectCalendarConflicts,
+  findCalendarOpenSlots,
   getConflictsForMove,
+  scoreCalendarDate,
   summarizeCalendarHealth,
 } from '@/lib/calendar/conflict-engine'
 import type { UnifiedCalendarItem } from '@/lib/calendar/types'
@@ -109,4 +111,52 @@ test('summarizeCalendarHealth counts conflicts, signals, waitlist, unpaid events
   assert.equal(health.waitlistOpportunityCount, 1)
   assert.equal(health.unpaidEventCount, 1)
   assert.equal(health.criticalPrepGapCount, 1)
+})
+
+test('scoreCalendarDate reports open capacity and reasons', () => {
+  const score = scoreCalendarDate(
+    [
+      item({ id: 'event-a', startTime: '18:00', endTime: '21:00' }),
+      item({
+        id: 'prep-a',
+        type: 'prep_block',
+        category: 'prep',
+        title: 'Prep',
+        startTime: '12:00',
+        endTime: '13:00',
+        isBlocking: false,
+      }),
+    ],
+    '2026-05-01'
+  )
+
+  assert.equal(score.status, 'light')
+  assert.equal(score.eventCount, 1)
+  assert.ok(score.openMinutes > 0)
+  assert.ok(score.reasons.some((reason) => reason.includes('event')))
+})
+
+test('findCalendarOpenSlots returns ranked service openings around blocking items', () => {
+  const slots = findCalendarOpenSlots(
+    [
+      item({ id: 'event-a', startTime: '18:00', endTime: '21:00' }),
+      item({
+        id: 'block-a',
+        type: 'availability_block',
+        category: 'blocked',
+        title: 'Protected',
+        allDay: false,
+        startTime: '10:00',
+        endTime: '11:00',
+        isBlocking: true,
+      }),
+    ],
+    '2026-05-01',
+    '2026-05-01',
+    { durationMinutes: 180, maxSlots: 2 }
+  )
+
+  assert.equal(slots.length, 1)
+  assert.equal(slots[0].startTime, '11:00')
+  assert.equal(slots[0].endTime, '14:00')
 })

@@ -202,6 +202,18 @@ function _localDateISO(d: Date): string {
   ].join('-')
 }
 
+function shiftDateByDays(date: string, days: number): string {
+  const current = new Date(`${date}T12:00:00`)
+  current.setDate(current.getDate() + days)
+  return _localDateISO(current)
+}
+
+function daysBetweenDates(fromDate: string, toDate: string): number {
+  const from = new Date(`${fromDate}T12:00:00`)
+  const to = new Date(`${toDate}T12:00:00`)
+  return Math.round((to.getTime() - from.getTime()) / (24 * 60 * 60 * 1000))
+}
+
 /** Calculate Monday of the week at weekOffset from current week. */
 function getWeekBounds(weekOffset: number): { start: string; end: string } {
   const today = new Date()
@@ -423,9 +435,7 @@ export async function getSchedulingGaps(): Promise<SchedulingGap[]> {
 /**
  * Create a single prep block (chef manually adds a block).
  */
-export async function createPrepBlock(
-  input: CreatePrepBlockInput
-): Promise<{
+export async function createPrepBlock(input: CreatePrepBlockInput): Promise<{
   success: boolean
   block?: PrepBlock
   conflicts?: PrepBlockConflict[]
@@ -603,6 +613,78 @@ export async function updatePrepBlock(
   revalidatePath('/calendar/year')
 
   return { success: true }
+}
+
+/**
+ * Move every prep block for an event by the same day offset as an event reschedule.
+ * This preserves the chef's manual timing decisions while keeping prep relative to service day.
+ */
+export async function moveEventPrepBlocks(
+  eventId: string,
+  fromDate: string,
+  toDate: string
+): Promise<{ success: boolean; moved?: number; error?: string }> {
+  const user = await requireChef()
+
+  if (!eventId.trim()) {
+    return { success: false, error: 'Event is required' }
+  }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(fromDate) || !/^\d{4}-\d{2}-\d{2}$/.test(toDate)) {
+    return { success: false, error: 'Invalid move date' }
+  }
+
+  const dayOffset = daysBetweenDates(fromDate, toDate)
+  if (dayOffset === 0) return { success: true, moved: 0 }
+
+  const db: any = createServerClient()
+  const tenantId = user.tenantId!
+
+  const { data: event, error: eventError } = await db
+    .from('events')
+    .select('id')
+    .eq('id', eventId)
+    .eq('tenant_id', tenantId)
+    .maybeSingle()
+
+  if (eventError) {
+    console.error('[moveEventPrepBlocks] Event lookup failed:', eventError)
+    return { success: false, error: 'Failed to verify event ownership' }
+  }
+  if (!event) {
+    return { success: false, error: 'Event not found' }
+  }
+
+  const { data: blocks, error: blocksError } = await (db as any)
+    .from('event_prep_blocks')
+    .select('id, block_date')
+    .eq('event_id', eventId)
+    .eq('chef_id', tenantId)
+
+  if (blocksError) {
+    console.error('[moveEventPrepBlocks] Block lookup failed:', blocksError)
+    return { success: false, error: 'Failed to load prep blocks' }
+  }
+
+  const rows = (blocks ?? []) as { id: string; block_date: string }[]
+  for (const block of rows) {
+    const { error } = await (db as any)
+      .from('event_prep_blocks')
+      .update({ block_date: shiftDateByDays(block.block_date, dayOffset) })
+      .eq('id', block.id)
+      .eq('chef_id', tenantId)
+
+    if (error) {
+      console.error('[moveEventPrepBlocks] Block move failed:', error)
+      return { success: false, error: 'Failed to move every prep block' }
+    }
+  }
+
+  revalidatePath('/calendar')
+  revalidatePath('/calendar/week')
+  revalidatePath('/calendar/year')
+  revalidatePath(`/events/${eventId}`)
+
+  return { success: true, moved: rows.length }
 }
 
 /**

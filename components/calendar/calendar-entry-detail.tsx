@@ -118,6 +118,9 @@ export function CalendarEntryDetail({ entry }: Props) {
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
+          <Button href={`/calendar/entry/${entry.id}/edit`} variant="primary" size="sm">
+            Edit
+          </Button>
           <Button href="/calendar" variant="secondary" size="sm">
             Calendar
           </Button>

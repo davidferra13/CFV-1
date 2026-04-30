@@ -26,6 +26,36 @@ export type CalendarHealthSummary = {
   prepGaps: SchedulingGap[]
 }
 
+export type CalendarAvailabilityStatus = 'open' | 'light' | 'tight' | 'blocked' | 'overbooked'
+
+export type CalendarAvailabilityScore = {
+  date: string
+  score: number
+  status: CalendarAvailabilityStatus
+  eventCount: number
+  blockingCount: number
+  conflictCount: number
+  openMinutes: number
+  reasons: string[]
+}
+
+export type CalendarOpenSlot = {
+  id: string
+  date: string
+  startTime: string
+  endTime: string
+  score: number
+  status: Exclude<CalendarAvailabilityStatus, 'overbooked'>
+  reasons: string[]
+}
+
+export type CalendarOpenSlotOptions = {
+  durationMinutes?: number
+  dayStartMinute?: number
+  dayEndMinute?: number
+  maxSlots?: number
+}
+
 type DateSpan = {
   date: string
   startMinute: number
@@ -50,6 +80,23 @@ function addDays(date: string, days: number) {
     String(current.getMonth() + 1).padStart(2, '0'),
     String(current.getDate()).padStart(2, '0'),
   ].join('-')
+}
+
+function listDates(startDate: string, endDate: string): string[] {
+  const dates: string[] = []
+  let current = startDate
+  while (current <= endDate) {
+    dates.push(current)
+    current = addDays(current, 1)
+  }
+  return dates
+}
+
+function formatMinute(minute: number) {
+  const clamped = Math.max(0, Math.min(minute, 24 * 60))
+  const hour = Math.floor(clamped / 60)
+  const minuteOfHour = clamped % 60
+  return `${String(hour).padStart(2, '0')}:${String(minuteOfHour).padStart(2, '0')}`
 }
 
 function expandItemDates(item: UnifiedCalendarItem): DateSpan[] {
@@ -78,6 +125,67 @@ function expandItemDates(item: UnifiedCalendarItem): DateSpan[] {
 function overlaps(a: DateSpan, b: DateSpan) {
   if (a.date !== b.date) return false
   return a.startMinute < b.endMinute && b.startMinute < a.endMinute
+}
+
+function mergeIntervals(intervals: { startMinute: number; endMinute: number }[]) {
+  const sorted = intervals
+    .filter((interval) => interval.endMinute > interval.startMinute)
+    .sort((a, b) => a.startMinute - b.startMinute)
+  const merged: { startMinute: number; endMinute: number }[] = []
+
+  for (const interval of sorted) {
+    const previous = merged[merged.length - 1]
+    if (!previous || interval.startMinute > previous.endMinute) {
+      merged.push({ ...interval })
+      continue
+    }
+    previous.endMinute = Math.max(previous.endMinute, interval.endMinute)
+  }
+
+  return merged
+}
+
+function blockingIntervalsForDate(
+  items: UnifiedCalendarItem[],
+  date: string,
+  dayStartMinute: number,
+  dayEndMinute: number
+) {
+  return mergeIntervals(
+    items.flatMap((item) => {
+      if (!item.isBlocking && !['event', 'prep_block', 'call'].includes(item.type)) return []
+      return expandItemDates(item)
+        .filter((span) => span.date === date)
+        .map((span) => ({
+          startMinute: Math.max(dayStartMinute, span.startMinute),
+          endMinute: Math.min(dayEndMinute, span.endMinute),
+        }))
+    })
+  )
+}
+
+function openIntervalsForDate(
+  items: UnifiedCalendarItem[],
+  date: string,
+  dayStartMinute: number,
+  dayEndMinute: number
+) {
+  const blocking = blockingIntervalsForDate(items, date, dayStartMinute, dayEndMinute)
+  const open: { startMinute: number; endMinute: number }[] = []
+  let cursor = dayStartMinute
+
+  for (const interval of blocking) {
+    if (interval.startMinute > cursor) {
+      open.push({ startMinute: cursor, endMinute: interval.startMinute })
+    }
+    cursor = Math.max(cursor, interval.endMinute)
+  }
+
+  if (cursor < dayEndMinute) {
+    open.push({ startMinute: cursor, endMinute: dayEndMinute })
+  }
+
+  return open
 }
 
 function isEventHardConflict(a: UnifiedCalendarItem, b: UnifiedCalendarItem) {
@@ -163,6 +271,115 @@ export function getConflictsForMove(
   return detectCalendarConflicts(movedItems).filter((conflict) =>
     conflict.itemIds.includes(eventId)
   )
+}
+
+export function scoreCalendarDate(
+  items: UnifiedCalendarItem[],
+  date: string,
+  conflicts: CalendarConflict[] = detectCalendarConflicts(items),
+  options: Pick<CalendarOpenSlotOptions, 'dayStartMinute' | 'dayEndMinute'> = {}
+): CalendarAvailabilityScore {
+  const dayStartMinute = options.dayStartMinute ?? 10 * 60
+  const dayEndMinute = options.dayEndMinute ?? 21 * 60
+  const dayItems = items.filter((item) => item.startDate <= date && item.endDate >= date)
+  const dayConflicts = conflicts.filter((conflict) => conflict.date === date)
+  const eventCount = dayItems.filter((item) => item.type === 'event').length
+  const blockingCount = dayItems.filter((item) => item.isBlocking).length
+  const openIntervals = openIntervalsForDate(items, date, dayStartMinute, dayEndMinute)
+  const openMinutes = openIntervals.reduce(
+    (sum, interval) => sum + interval.endMinute - interval.startMinute,
+    0
+  )
+  const reasons: string[] = []
+
+  if (eventCount > 0) reasons.push(`${eventCount} event${eventCount === 1 ? '' : 's'} booked`)
+  if (blockingCount > 0) {
+    reasons.push(`${blockingCount} blocking item${blockingCount === 1 ? '' : 's'}`)
+  }
+  if (dayConflicts.length > 0) {
+    reasons.push(`${dayConflicts.length} conflict${dayConflicts.length === 1 ? '' : 's'}`)
+  }
+  if (openMinutes >= 6 * 60) reasons.push('Large booking window available')
+  else if (openMinutes >= 3 * 60) reasons.push('One strong booking window remains')
+  else if (openMinutes > 0) reasons.push('Only short openings remain')
+  else reasons.push('No open booking window remains')
+
+  const hasCriticalConflict = dayConflicts.some((conflict) => conflict.severity === 'critical')
+  let status: CalendarAvailabilityStatus
+  if (hasCriticalConflict) status = 'overbooked'
+  else if (openMinutes === 0) status = 'blocked'
+  else if (openMinutes < 3 * 60 || eventCount >= 2) status = 'tight'
+  else if (openMinutes < 6 * 60 || eventCount === 1 || blockingCount > 0) status = 'light'
+  else status = 'open'
+
+  const rawScore = Math.round((openMinutes / (dayEndMinute - dayStartMinute)) * 100)
+  const penalty = hasCriticalConflict ? 60 : dayConflicts.length * 20 + eventCount * 12
+  const score = Math.max(0, Math.min(100, rawScore - penalty))
+
+  return {
+    date,
+    score,
+    status,
+    eventCount,
+    blockingCount,
+    conflictCount: dayConflicts.length,
+    openMinutes,
+    reasons,
+  }
+}
+
+export function findCalendarOpenSlots(
+  items: UnifiedCalendarItem[],
+  startDate: string,
+  endDate: string,
+  options: CalendarOpenSlotOptions = {}
+): CalendarOpenSlot[] {
+  const durationMinutes = options.durationMinutes ?? 180
+  const dayStartMinute = options.dayStartMinute ?? 10 * 60
+  const dayEndMinute = options.dayEndMinute ?? 21 * 60
+  const maxSlots = options.maxSlots ?? 6
+  const conflicts = detectCalendarConflicts(items)
+
+  return listDates(startDate, endDate)
+    .flatMap((date) => {
+      const dayScore = scoreCalendarDate(items, date, conflicts, { dayStartMinute, dayEndMinute })
+      if (dayScore.status === 'overbooked') return []
+
+      return openIntervalsForDate(items, date, dayStartMinute, dayEndMinute)
+        .filter((interval) => interval.endMinute - interval.startMinute >= durationMinutes)
+        .map((interval) => {
+          const startMinute = interval.startMinute
+          const endMinute = startMinute + durationMinutes
+          const bufferMinutes = interval.endMinute - endMinute
+          const score = Math.max(
+            0,
+            Math.min(100, dayScore.score + Math.min(15, bufferMinutes / 12))
+          )
+          const status: CalendarOpenSlot['status'] =
+            dayScore.status === 'blocked' ? 'tight' : dayScore.status
+          const reasons = [
+            `${durationMinutes} minute booking window`,
+            bufferMinutes >= 60 ? 'Buffer remains after service' : 'Tight exit buffer',
+            ...dayScore.reasons.slice(0, 2),
+          ]
+
+          return {
+            id: `${date}:${formatMinute(startMinute)}:${durationMinutes}`,
+            date,
+            startTime: formatMinute(startMinute),
+            endTime: formatMinute(endMinute),
+            score: Math.round(score),
+            status,
+            reasons,
+          }
+        })
+    })
+    .sort((a, b) => {
+      const scoreDiff = b.score - a.score
+      if (scoreDiff !== 0) return scoreDiff
+      return `${a.date} ${a.startTime}`.localeCompare(`${b.date} ${b.startTime}`)
+    })
+    .slice(0, maxSlots)
 }
 
 export function summarizeCalendarHealth(

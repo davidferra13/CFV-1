@@ -30,6 +30,20 @@ export function CalendarHealthStrip({ health }: Props) {
     health.criticalConflictCount > 0 ||
     health.criticalPrepGapCount > 0 ||
     health.unpaidEventCount > 0
+  const digestItems = [
+    health.criticalConflictCount > 0
+      ? `${health.criticalConflictCount} critical calendar conflict${health.criticalConflictCount === 1 ? '' : 's'}`
+      : null,
+    health.criticalPrepGapCount > 0
+      ? `${health.criticalPrepGapCount} critical prep gap${health.criticalPrepGapCount === 1 ? '' : 's'}`
+      : null,
+    health.waitlistOpportunityCount > 0
+      ? `${health.waitlistOpportunityCount} waitlist match${health.waitlistOpportunityCount === 1 ? '' : 'es'} to convert`
+      : null,
+    health.unpaidEventCount > 0
+      ? `${health.unpaidEventCount} unpaid event${health.unpaidEventCount === 1 ? '' : 's'}`
+      : null,
+  ].filter((item): item is string => Boolean(item))
 
   return (
     <section className="mb-4 rounded-xl border border-stone-800 bg-stone-900 p-4">
@@ -98,6 +112,22 @@ export function CalendarHealthStrip({ health }: Props) {
           ))}
         </div>
       )}
+
+      <div className="mt-4 rounded-lg border border-stone-800 bg-stone-950 p-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">
+              Calendar Digest
+            </p>
+            <p className="mt-1 text-sm text-stone-300">
+              {digestItems.length > 0
+                ? digestItems.join(', ')
+                : 'No critical calendar follow-up in this range.'}
+            </p>
+          </div>
+          <Badge variant={hasRisk ? 'warning' : 'success'}>{hasRisk ? 'Action' : 'Clear'}</Badge>
+        </div>
+      </div>
 
       <div className="mt-4 flex flex-wrap gap-2">
         <Button href="/calendar/week" variant="secondary" size="sm">
