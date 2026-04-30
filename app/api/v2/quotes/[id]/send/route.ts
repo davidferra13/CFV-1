@@ -4,6 +4,7 @@
 
 import { withApiAuth, apiSuccess, apiNotFound, apiError } from '@/lib/api/v2'
 import { executeInteraction } from '@/lib/interactions'
+import { getEventPricingEnforcement } from '@/lib/pricing/event-pricing-enforcement'
 
 export const POST = withApiAuth(
   async (_req, ctx, params) => {
@@ -25,6 +26,28 @@ export const POST = withApiAuth(
         `Quote is "${(quote as any).status}", only draft quotes can be sent`,
         422
       )
+    }
+
+    if ((quote as any).event_id) {
+      let enforcement
+      try {
+        enforcement = await getEventPricingEnforcement(
+          ctx.db,
+          (quote as any).event_id,
+          ctx.tenantId
+        )
+      } catch (err) {
+        console.error('[api/v2/quotes/send] Pricing enforcement check failed:', err)
+        return apiError(
+          'pricing_enforcement_unavailable',
+          'Cannot send quote because ingredient price reliability could not be verified',
+          422
+        )
+      }
+
+      if (!enforcement.decision.canSendQuote) {
+        return apiError('pricing_enforcement_blocked', enforcement.decision.requiredAction, 422)
+      }
     }
 
     const { data: updated, error } = await ctx.db

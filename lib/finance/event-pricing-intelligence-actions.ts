@@ -26,6 +26,10 @@ import {
   type NoBlankPriceContract,
   type NoBlankPriceSummary,
 } from '@/lib/pricing/no-blank-price-contract'
+import {
+  buildPricingEnforcementDecisionFromSummary,
+  type PricingEnforcementDecision,
+} from '@/lib/pricing/pricing-enforcement-gate'
 import type { ResolutionTier } from '@/lib/pricing/resolve-price'
 
 type ExpenseBuckets = {
@@ -102,6 +106,7 @@ export type EventPricingIntelligencePayload = {
   pricingReliability: NoBlankPriceSummary & {
     contracts: NoBlankPriceContract[]
   }
+  pricingEnforcement: PricingEnforcementDecision
   similarEvents: {
     sampleSize: number
     averagePricePerGuestCents: number | null
@@ -732,6 +737,9 @@ export async function getEventPricingIntelligence(
     pricingReliabilityVerifyFirstCount: ingredientSignals.pricingReliability.verifyFirstCount,
     pricingReliabilityModeledCount: ingredientSignals.pricingReliability.modeledCount,
   })
+  const pricingEnforcement = buildPricingEnforcementDecisionFromSummary(
+    ingredientSignals.pricingReliability
+  )
   const similarSuggestedCents =
     numberOrZero(similarEvents.averagePricePerGuestCents) > 0 && numberOrZero(event.guest_count) > 0
       ? numberOrZero(similarEvents.averagePricePerGuestCents) * numberOrZero(event.guest_count)
@@ -820,6 +828,7 @@ export async function getEventPricingIntelligence(
       ...ingredientSignals.pricingReliability,
       contracts: ingredientSignals.pricingContracts.slice(0, 20),
     },
+    pricingEnforcement,
     similarEvents,
     guidance: {
       suggestedRangeLowCents,

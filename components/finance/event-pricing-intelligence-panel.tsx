@@ -49,6 +49,20 @@ function reliabilityLabel(verdict: string): string {
   return 'Planning only'
 }
 
+function enforcementVariant(status: string): 'success' | 'warning' | 'error' | 'info' {
+  if (status === 'ready') return 'success'
+  if (status === 'verify_first') return 'warning'
+  if (status === 'blocked') return 'error'
+  return 'info'
+}
+
+function suggestedPriceLabel(displayMode: string): string {
+  if (displayMode === 'planning_estimate') return 'Planning Estimate'
+  if (displayMode === 'verification_required') return 'Verify Before Quote'
+  if (displayMode === 'manual_quote') return 'Manual Quote'
+  return 'Suggested Price'
+}
+
 function warningVariant(severity: string): 'default' | 'warning' | 'error' | 'info' {
   if (severity === 'critical') return 'error'
   if (severity === 'warning') return 'warning'
@@ -177,6 +191,9 @@ export function EventPricingIntelligencePanel({ data, compact = false }: Props) 
           <Badge variant={reliabilityVariant(data.pricingReliability.verdict)}>
             {reliabilityLabel(data.pricingReliability.verdict)}
           </Badge>
+          <Badge variant={enforcementVariant(data.pricingEnforcement.status)}>
+            {data.pricingEnforcement.label}
+          </Badge>
           <Badge variant={confidenceVariant(data.confidence.pricingConfidence)}>
             {data.confidence.pricingConfidence} confidence
           </Badge>
@@ -200,9 +217,14 @@ export function EventPricingIntelligencePanel({ data, compact = false }: Props) 
       <div className={`mt-4 grid gap-3 ${compact ? 'grid-cols-2' : 'grid-cols-2 lg:grid-cols-4'}`}>
         <Metric label={data.actual.revenueCents > 0 ? 'Revenue' : 'Quoted'} value={priceBasis} />
         <Metric
-          label="Suggested Price"
+          label={suggestedPriceLabel(data.pricingEnforcement.displayMode)}
           value={moneyOrPending(data.projected.suggestedPriceCents)}
-          sub={`${data.projected.targetFoodCostPercent.toFixed(1)}% target food cost`}
+          sub={
+            data.pricingEnforcement.canPresentAsFinalQuote
+              ? `${data.projected.targetFoodCostPercent.toFixed(1)}% target food cost`
+              : data.pricingEnforcement.requiredAction
+          }
+          tone={data.pricingEnforcement.canPresentAsFinalQuote ? 'default' : 'bad'}
         />
         <Metric
           label="Guided Range"
@@ -274,6 +296,27 @@ export function EventPricingIntelligencePanel({ data, compact = false }: Props) 
 
       {data.warnings.length > 0 ? (
         <div className="mt-4 space-y-2">
+          {!data.pricingEnforcement.canPresentAsFinalQuote ? (
+            <div className="rounded-lg border border-red-900/70 bg-red-950/30 px-3 py-2">
+              <div className="flex items-start gap-2">
+                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-red-300" />
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="text-sm font-medium text-red-100">
+                      {data.pricingEnforcement.label}
+                    </p>
+                    <Badge variant={enforcementVariant(data.pricingEnforcement.status)}>
+                      {data.pricingEnforcement.displayMode.replace(/_/g, ' ')}
+                    </Badge>
+                  </div>
+                  <p className="mt-1 text-xs text-red-100/80">{data.pricingEnforcement.message}</p>
+                  <p className="mt-1 text-xs text-red-100/70">
+                    {data.pricingEnforcement.requiredAction}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : null}
           {data.warnings.slice(0, 3).map((warning) => (
             <div
               key={`${warning.type}-${warning.label}`}
@@ -361,7 +404,26 @@ export function EventPricingIntelligencePanel({ data, compact = false }: Props) 
               Average reliability confidence:{' '}
               {Math.round(data.pricingReliability.averageConfidence * 100)}%
             </p>
+            <p>
+              Enforcement: {data.pricingEnforcement.label}.{' '}
+              {data.pricingEnforcement.canSendQuote
+                ? 'Quote send is allowed with this decision.'
+                : 'Final quote send is blocked until repair is complete.'}
+            </p>
           </div>
+          {data.pricingEnforcement.repairQueue.length > 0 ? (
+            <div className="space-y-1">
+              {data.pricingEnforcement.repairQueue.slice(0, 5).map((item) => (
+                <div
+                  key={item.kind}
+                  className="flex flex-col gap-1 border-b border-stone-800/70 py-1 text-xs last:border-0 sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <span className="font-medium text-stone-300">{item.label}</span>
+                  <span className="text-stone-500">{item.reason}</span>
+                </div>
+              ))}
+            </div>
+          ) : null}
           {data.pricingReliability.contracts.length > 0 ? (
             <div className="space-y-1">
               {data.pricingReliability.contracts

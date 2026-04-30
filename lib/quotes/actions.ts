@@ -21,6 +21,7 @@ import { QUOTE_SENT_REPAIR_KIND } from '@/lib/monitoring/failure-repair'
 import { executeInteraction } from '@/lib/interactions'
 import { readPaymentStructure } from '@/lib/payments/payment-structure'
 import { syncPaymentStructureToEventInstallments } from '@/lib/payments/sync-payment-structure'
+import { getEventPricingEnforcement } from '@/lib/pricing/event-pricing-enforcement'
 
 type QuoteStatus = Database['public']['Enums']['quote_status']
 type PricingModel = Database['public']['Enums']['pricing_model']
@@ -527,7 +528,7 @@ export async function transitionQuote(id: string, newStatus: QuoteStatus) {
     let query = db
       .from('quotes')
       .select(
-        'status, total_quoted_cents, price_per_person_cents, guest_count_estimated, pricing_model, deposit_amount_cents, deposit_percentage, deposit_required, valid_until'
+        'status, total_quoted_cents, price_per_person_cents, guest_count_estimated, pricing_model, deposit_amount_cents, deposit_percentage, deposit_required, valid_until, event_id'
       )
       .eq('id', id)
       .eq('tenant_id', user.tenantId!)
@@ -575,6 +576,26 @@ export async function transitionQuote(id: string, newStatus: QuoteStatus) {
     throw new ValidationError(
       'This quote has already expired. Update the expiry date before sending.'
     )
+  }
+
+  if (newStatus === 'sent' && quote.event_id) {
+    let enforcement
+    try {
+      enforcement = await getEventPricingEnforcement(db, quote.event_id, user.tenantId!)
+    } catch (err) {
+      console.error('[transitionQuote] Pricing enforcement check failed:', err)
+      throw new ValidationError(
+        'Cannot send quote because pricing enforcement could not verify ingredient price reliability.'
+      )
+    }
+
+    if (!enforcement.decision.canSendQuote) {
+      throw new ValidationError(enforcement.decision.requiredAction)
+    }
+
+    if (!enforcement.decision.canPresentAsFinalQuote) {
+      warnings.push(enforcement.decision.message)
+    }
   }
 
   const { data: rpcResponse, error: rpcError } = await db.rpc('transition_quote_atomic', {
