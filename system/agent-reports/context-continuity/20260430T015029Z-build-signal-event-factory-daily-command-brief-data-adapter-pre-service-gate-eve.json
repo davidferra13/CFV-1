@@ -1,0 +1,690 @@
+{
+  "generated_at": "2026-04-30T01:50:28.397Z",
+  "prompt": "Build Signal Event Factory, Daily Command Brief Data Adapter, Pre-Service Gate Event Adapter, Why This Alert drawer, signal source of truth guard",
+  "terms": [
+    "signal",
+    "event",
+    "factory",
+    "daily",
+    "command",
+    "brief",
+    "data",
+    "adapter",
+    "pre-service",
+    "gate",
+    "why",
+    "alert",
+    "drawer",
+    "source",
+    "truth",
+    "guard"
+  ],
+  "scanned_dirs": [
+    "app",
+    "components",
+    "lib",
+    "docs/specs",
+    "docs/changes",
+    "docs/app-complete-audit.md",
+    "project-map",
+    "memory",
+    "system/intake",
+    "system/agent-reports"
+  ],
+  "canonical_surfaces": [
+    {
+      "id": "context-continuity",
+      "label": "Context Continuity",
+      "score": 1,
+      "hits": [
+        "event"
+      ],
+      "canonical_routes": [],
+      "canonical_files": [
+        ".claude/skills/context-continuity/SKILL.md",
+        "devtools/context-continuity-scan.mjs",
+        "system/canonical-surfaces.json"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Extend the continuity layer in place."
+      }
+    },
+    {
+      "id": "remy-ai",
+      "label": "Remy AI",
+      "score": 1,
+      "hits": [
+        "drawer"
+      ],
+      "canonical_routes": [],
+      "canonical_files": [
+        "components/ai/remy-drawer.tsx",
+        "lib/ai/remy-actions.ts"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach new assistant behavior to Remy or its shared AI modules."
+      }
+    },
+    {
+      "id": "calendar",
+      "label": "Calendar and Scheduling",
+      "score": 1,
+      "hits": [
+        "command"
+      ],
+      "canonical_routes": [
+        "/calendar"
+      ],
+      "canonical_files": [
+        "app/(chef)/calendar/page.tsx",
+        "components/calendar/unified-calendar-view.tsx"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach to calendar and scheduling modules."
+      }
+    },
+    {
+      "id": "finance",
+      "label": "Finance and Ledger",
+      "score": 1,
+      "hits": [
+        "event"
+      ],
+      "canonical_routes": [
+        "/finance",
+        "/quotes"
+      ],
+      "canonical_files": [
+        "lib/ledger/append.ts",
+        "lib/ledger/compute.ts",
+        "lib/events/transitions.ts"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Financial behavior must attach to ledger and quote owners."
+      }
+    }
+  ],
+  "related_files": [
+    {
+      "file": "docs/specs/culinary-radar-intelligence-layer.md",
+      "kind": "spec",
+      "score": 58,
+      "hits": [
+        "signal",
+        "event",
+        "daily",
+        "command",
+        "brief",
+        "data",
+        "adapter",
+        "gate",
+        "why",
+        "alert"
+      ]
+    },
+    {
+      "file": "docs/specs/continuous-intelligence-layer.md",
+      "kind": "spec",
+      "score": 56,
+      "hits": [
+        "signal",
+        "event",
+        "daily",
+        "command",
+        "brief",
+        "data",
+        "gate",
+        "why",
+        "alert",
+        "drawer"
+      ]
+    },
+    {
+      "file": "docs/specs/chef-communication-noise-simulation.md",
+      "kind": "spec",
+      "score": 51,
+      "hits": [
+        "signal",
+        "event",
+        "daily",
+        "command",
+        "brief",
+        "data",
+        "pre-service",
+        "gate",
+        "alert",
+        "source"
+      ]
+    },
+    {
+      "file": "app/(chef)/events/[id]/page.tsx",
+      "kind": "route",
+      "score": 49,
+      "hits": [
+        "event",
+        "signal",
+        "command",
+        "brief",
+        "data",
+        "pre-service",
+        "gate",
+        "alert",
+        "source",
+        "truth"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-operational-pressure.md",
+      "kind": "spec",
+      "score": 47,
+      "hits": [
+        "signal",
+        "event",
+        "daily",
+        "command",
+        "brief",
+        "data",
+        "gate",
+        "why",
+        "alert",
+        "source"
+      ]
+    },
+    {
+      "file": "lib/notifications/signal-os.ts",
+      "kind": "module",
+      "score": 46,
+      "hits": [
+        "signal",
+        "event",
+        "daily",
+        "brief",
+        "data",
+        "why",
+        "alert",
+        "source",
+        "truth"
+      ]
+    },
+    {
+      "file": "docs/specs/commerce-financial-integrity-interrogation.md",
+      "kind": "spec",
+      "score": 45,
+      "hits": [
+        "event",
+        "daily",
+        "data",
+        "adapter",
+        "why",
+        "alert",
+        "drawer",
+        "source",
+        "truth",
+        "guard"
+      ]
+    },
+    {
+      "file": "lib/ai/command-orchestrator.ts",
+      "kind": "module",
+      "score": 45,
+      "hits": [
+        "command",
+        "signal",
+        "event",
+        "daily",
+        "brief",
+        "data",
+        "gate",
+        "why",
+        "alert",
+        "source"
+      ]
+    },
+    {
+      "file": "docs/specs/api-integration-health-audit.md",
+      "kind": "spec",
+      "score": 44,
+      "hits": [
+        "signal",
+        "event",
+        "daily",
+        "data",
+        "adapter",
+        "gate",
+        "why",
+        "alert",
+        "drawer",
+        "source"
+      ]
+    },
+    {
+      "file": "docs/specs/food-costing-knowledge-system.md",
+      "kind": "spec",
+      "score": 44,
+      "hits": [
+        "signal",
+        "event",
+        "daily",
+        "data",
+        "pre-service",
+        "gate",
+        "why",
+        "alert",
+        "drawer",
+        "source"
+      ]
+    },
+    {
+      "file": "docs/specs/system-completeness-interrogation.md",
+      "kind": "spec",
+      "score": 42,
+      "hits": [
+        "signal",
+        "event",
+        "daily",
+        "command",
+        "brief",
+        "data",
+        "gate",
+        "why",
+        "alert",
+        "drawer"
+      ]
+    },
+    {
+      "file": "docs/specs/interaction-engine.md",
+      "kind": "spec",
+      "score": 41,
+      "hits": [
+        "signal",
+        "event",
+        "command",
+        "brief",
+        "data",
+        "adapter",
+        "gate",
+        "alert",
+        "source",
+        "truth"
+      ]
+    },
+    {
+      "file": "docs/specs/navigation-action-bar.md",
+      "kind": "spec",
+      "score": 41,
+      "hits": [
+        "event",
+        "daily",
+        "command",
+        "data",
+        "gate",
+        "why",
+        "drawer",
+        "source",
+        "truth"
+      ]
+    },
+    {
+      "file": "docs/specs/platform-shell-command-center.md",
+      "kind": "spec",
+      "score": 41,
+      "hits": [
+        "command",
+        "signal",
+        "event",
+        "data",
+        "gate",
+        "why",
+        "alert",
+        "drawer",
+        "source",
+        "guard"
+      ]
+    },
+    {
+      "file": "docs/specs/chef-shell-clarity-and-guided-settings.md",
+      "kind": "spec",
+      "score": 40,
+      "hits": [
+        "signal",
+        "event",
+        "daily",
+        "command",
+        "brief",
+        "data",
+        "gate",
+        "why",
+        "alert",
+        "source"
+      ]
+    },
+    {
+      "file": "docs/specs/openclaw-phase-3-full-integration.md",
+      "kind": "spec",
+      "score": 40,
+      "hits": [
+        "signal",
+        "event",
+        "daily",
+        "command",
+        "brief",
+        "data",
+        "gate",
+        "why",
+        "alert",
+        "source"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-cohesiveness-synthesis.md",
+      "kind": "spec",
+      "score": 40,
+      "hits": [
+        "signal",
+        "event",
+        "daily",
+        "command",
+        "brief",
+        "data",
+        "pre-service",
+        "gate",
+        "why",
+        "alert"
+      ]
+    },
+    {
+      "file": "system/agent-reports/context-continuity/20260430T011129Z-build-chefflow-signal-matrix-notification-suppression-engine-noise-simulator-dai.json",
+      "kind": "system",
+      "score": 40,
+      "hits": [
+        "signal",
+        "event",
+        "daily",
+        "command",
+        "brief",
+        "pre-service",
+        "gate",
+        "drawer",
+        "truth"
+      ]
+    },
+    {
+      "file": "app/api/remy/stream/route-prompt-utils.ts",
+      "kind": "route",
+      "score": 39,
+      "hits": [
+        "signal",
+        "event",
+        "daily",
+        "command",
+        "brief",
+        "data",
+        "gate",
+        "why",
+        "alert",
+        "source"
+      ]
+    },
+    {
+      "file": "docs/specs/openclaw-pc-local-mirror-and-backup-contract.md",
+      "kind": "spec",
+      "score": 39,
+      "hits": [
+        "signal",
+        "event",
+        "daily",
+        "brief",
+        "data",
+        "gate",
+        "why",
+        "alert",
+        "source",
+        "truth"
+      ]
+    },
+    {
+      "file": "docs/specs/p1-analytics-surface-ownership-and-route-truth.md",
+      "kind": "spec",
+      "score": 39,
+      "hits": [
+        "truth",
+        "signal",
+        "event",
+        "daily",
+        "brief",
+        "data",
+        "gate",
+        "why",
+        "alert",
+        "source"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-full-cohesion-answers.md",
+      "kind": "spec",
+      "score": 39,
+      "hits": [
+        "event",
+        "daily",
+        "command",
+        "brief",
+        "data",
+        "gate",
+        "alert",
+        "drawer",
+        "source",
+        "truth"
+      ]
+    },
+    {
+      "file": "app/api/remy/stream/route.ts",
+      "kind": "route",
+      "score": 38,
+      "hits": [
+        "signal",
+        "event",
+        "command",
+        "brief",
+        "data",
+        "gate",
+        "alert",
+        "source",
+        "guard"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-full-cohesion.md",
+      "kind": "spec",
+      "score": 38,
+      "hits": [
+        "event",
+        "daily",
+        "command",
+        "brief",
+        "data",
+        "gate",
+        "why",
+        "alert",
+        "drawer",
+        "source"
+      ]
+    },
+    {
+      "file": "components/events/event-form.tsx",
+      "kind": "component",
+      "score": 37,
+      "hits": [
+        "event",
+        "data",
+        "alert",
+        "source",
+        "truth",
+        "guard"
+      ]
+    },
+    {
+      "file": "docs/specs/bob-and-joy-action-catalog.md",
+      "kind": "spec",
+      "score": 37,
+      "hits": [
+        "event",
+        "daily",
+        "command",
+        "brief",
+        "data",
+        "gate",
+        "alert",
+        "source"
+      ]
+    },
+    {
+      "file": "docs/specs/openclaw-food-price-intelligence.md",
+      "kind": "spec",
+      "score": 37,
+      "hits": [
+        "event",
+        "factory",
+        "daily",
+        "command",
+        "data",
+        "gate",
+        "why",
+        "alert",
+        "source",
+        "truth"
+      ]
+    },
+    {
+      "file": "docs/specs/openclaw-ideal-runtime-and-national-intelligence.md",
+      "kind": "spec",
+      "score": 37,
+      "hits": [
+        "signal",
+        "event",
+        "data",
+        "gate",
+        "why",
+        "alert",
+        "drawer",
+        "source",
+        "truth"
+      ]
+    },
+    {
+      "file": "lib/ai/command-task-descriptions.ts",
+      "kind": "module",
+      "score": 37,
+      "hits": [
+        "command",
+        "event",
+        "daily",
+        "brief",
+        "data",
+        "gate",
+        "why",
+        "alert",
+        "source"
+      ]
+    },
+    {
+      "file": "components/navigation/nav-config.tsx",
+      "kind": "component",
+      "score": 36,
+      "hits": [
+        "event",
+        "daily",
+        "command",
+        "brief",
+        "data",
+        "gate",
+        "alert",
+        "drawer",
+        "source",
+        "truth"
+      ]
+    }
+  ],
+  "recent_commits": [
+    {
+      "line": "81e57f629 chore(agent): add signal os review console feature/chef-signal-operating-system",
+      "score": 2,
+      "hits": [
+        "signal"
+      ]
+    },
+    {
+      "line": "23eb503d3 chore(agent): build chef signal operating system feature/chef-signal-operating-system",
+      "score": 2,
+      "hits": [
+        "signal"
+      ]
+    },
+    {
+      "line": "b4899caad chore(agent): add client strategy brief feature/catch-up-brand-new-builds",
+      "score": 1,
+      "hits": [
+        "brief"
+      ]
+    },
+    {
+      "line": "3be2a395c chore(agent): expand calendar command workflows feature/catch-up-brand-new-builds",
+      "score": 1,
+      "hits": [
+        "command"
+      ]
+    },
+    {
+      "line": "a8bc2c781 chore(agent): add calendar conflict command center feature/calendar-build-all",
+      "score": 1,
+      "hits": [
+        "command"
+      ]
+    }
+  ],
+  "dirty_matches": [],
+  "claim_matches": [
+    {
+      "file": "system/agent-claims/20260429T234252Z-feature-pantry-engine-create-persistent-codex-behavior-to-prevent-fragmented-dup.json",
+      "score": 2,
+      "hits": [
+        "event"
+      ],
+      "prompt": "Create persistent Codex behavior to prevent fragmented duplicate builds and capture conversation memory for Obsidian-style continuity",
+      "owned": [],
+      "status": "active"
+    },
+    {
+      "file": "system/agent-claims/20260429T235629Z-feature-voice-ops-complete-build-the-complete-context-continuity-tooling-layer-s.json",
+      "score": 1,
+      "hits": [
+        "gate"
+      ],
+      "prompt": "Build the complete context continuity tooling layer: scanner CLI, canonical surface registry, pre-build gate, Obsidian packet exporter, near-duplicate detector, spec template continuity section, feature family map, and dashboard",
+      "owned": [],
+      "status": "active"
+    }
+  ],
+  "duplicate_risks": [
+    {
+      "level": "medium",
+      "reason": "Active or recorded claims overlap this domain.",
+      "claims": [
+        "system/agent-claims/20260429T234252Z-feature-pantry-engine-create-persistent-codex-behavior-to-prevent-fragmented-dup.json",
+        "system/agent-claims/20260429T235629Z-feature-voice-ops-complete-build-the-complete-context-continuity-tooling-layer-s.json"
+      ]
+    }
+  ],
+  "continuity": {
+    "decision": "attach",
+    "stop_required": false,
+    "reason": "Matched canonical surface context-continuity."
+  }
+}

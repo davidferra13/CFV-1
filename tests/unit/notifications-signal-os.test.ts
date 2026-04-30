@@ -18,8 +18,23 @@ const {
 } = require('../../lib/notifications/noise-simulator.ts')
 const { applyAttentionBudget } = require('../../lib/notifications/attention-budget.ts')
 const { createCommandBrief } = require('../../lib/notifications/command-brief.ts')
+const {
+  createDailyCommandBriefFromData,
+} = require('../../lib/notifications/command-brief-adapter.ts')
+const {
+  createPreServiceReadinessFromEvent,
+  eventRowToPreServiceSignal,
+} = require('../../lib/notifications/event-readiness-adapter.ts')
 const { evaluatePreServiceReadiness } = require('../../lib/notifications/pre-service-readiness.ts')
 const { createOwnerReport } = require('../../lib/notifications/owner-report.ts')
+const {
+  createSignalFromNotification,
+  guardNotificationSignalSource,
+} = require('../../lib/notifications/signal-event-factory.ts')
+const {
+  createSourceTruthCheck,
+  evaluateSourceTruth,
+} = require('../../lib/notifications/source-truth-guard.ts')
 const {
   scoreSignalOutcome,
   summarizeSignalOutcomes,
@@ -244,4 +259,195 @@ test('dashboard snapshot combines matrix, simulation, budget, audit, and daily b
   assert.ok(snapshot.attentionBudget.results.length > 0)
   assert.ok(snapshot.suppressionAuditRecords.length > 0)
   assert.equal(snapshot.dailyBrief.title, 'Daily Command Brief')
+})
+
+test('signal factory converts notification rows into chef signals with metadata context', () => {
+  const signal = createSignalFromNotification({
+    id: 'notif_1',
+    action: 'payment_failed',
+    title: 'Payment failed',
+    body: 'Client card declined.',
+    event_id: 'event_1',
+    inquiry_id: null,
+    client_id: 'client_1',
+    metadata: {
+      amount_cents: 125000,
+      hours_until_event: 18,
+      duplicate_key: 'event_1:payment',
+      active_event_linked: true,
+    },
+    created_at: '2026-05-01T09:00:00-04:00',
+  })
+
+  assert.equal(signal.id, 'notification:notif_1')
+  assert.equal(signal.moneyAmountCents, 125000)
+  assert.equal(signal.context.hoursUntilEvent, 18)
+  assert.equal(signal.context.duplicateKey, 'event_1:payment')
+})
+
+test('source truth guard blocks claims when required source records are missing', () => {
+  const result = evaluateSourceTruth([
+    createSourceTruthCheck({
+      key: 'event',
+      label: 'Event context',
+      source: 'events.id',
+      value: null,
+    }),
+    createSourceTruthCheck({
+      key: 'notification',
+      label: 'Notification record',
+      source: 'notifications.id',
+      value: 'notif_1',
+    }),
+  ])
+
+  assert.equal(result.trusted, false)
+  assert.ok(result.blockedClaims.some((claim: string) => claim.includes('Event context')))
+})
+
+test('notification source guard requires event context for event sourced alerts', () => {
+  const guard = guardNotificationSignalSource({
+    id: 'notif_1',
+    action: 'event_confirmed',
+    title: 'Event confirmed',
+    body: null,
+    event_id: null,
+    inquiry_id: null,
+    client_id: null,
+    metadata: {},
+    created_at: '2026-05-01T09:00:00-04:00',
+  })
+
+  assert.equal(guard.trusted, false)
+  assert.ok(guard.blockedClaims.some((claim: string) => claim.includes('Event context')))
+})
+
+test('event readiness adapter maps real event rows into pre-service blockers', () => {
+  const readiness = createPreServiceReadinessFromEvent(
+    {
+      id: 'event_1',
+      occasion: 'Anniversary dinner',
+      event_date: '2026-05-02',
+      serve_time: '18:00:00',
+      location_address: '',
+      access_instructions: null,
+      location_notes: 'Street parking only',
+      guest_count: 12,
+      guest_count_confirmed: false,
+      allergies: ['shellfish'],
+      dietary_restrictions: [],
+      non_negotiables_checked: false,
+      payment_status: 'unpaid',
+      grocery_list_ready: false,
+      shopping_completed_at: null,
+      equipment_list_ready: false,
+      packing_list_ready: false,
+      car_packed: false,
+      menu_approval_status: 'sent',
+      menu_approved_at: null,
+    },
+    { staffAssignedCount: 2, staffConfirmedCount: 1 }
+  )
+
+  assert.equal(readiness.ready, false)
+  assert.ok(readiness.blockers.some((blocker: { kind: string }) => blocker.kind === 'address'))
+  assert.ok(readiness.blockers.some((blocker: { kind: string }) => blocker.kind === 'payment'))
+  assert.equal(readiness.shouldPush, true)
+})
+
+test('event readiness adapter emits a service signal for blocked events', () => {
+  const signal = eventRowToPreServiceSignal(
+    {
+      id: 'event_1',
+      occasion: 'Anniversary dinner',
+      event_date: '2026-05-02',
+      serve_time: '18:00:00',
+      location_address: null,
+      access_instructions: null,
+      guest_count: 10,
+      guest_count_confirmed: true,
+      allergies: [],
+      dietary_restrictions: [],
+      non_negotiables_checked: false,
+      payment_status: 'paid',
+      grocery_list_ready: true,
+      equipment_list_ready: true,
+      packing_list_ready: true,
+      menu_approval_status: 'approved',
+    },
+    { now: '2026-05-02T08:00:00-04:00' }
+  )
+
+  assert.ok(signal)
+  assert.equal(signal.action, 'event_reminder_1d')
+  assert.equal(signal.eventId, 'event_1')
+})
+
+test('daily command brief adapter combines notifications, briefing, and readiness data', () => {
+  const readinessInput = {
+    eventId: 'event_1',
+    eventTitle: 'Dinner',
+    startsAt: '2026-05-01T18:00:00-04:00',
+    addressConfirmed: false,
+    accessNotesConfirmed: true,
+    parkingConfirmed: true,
+    finalGuestCountConfirmed: true,
+    allergyReviewComplete: true,
+    menuApproved: true,
+    paymentClear: true,
+    staffConfirmed: true,
+    shoppingComplete: true,
+    equipmentPacked: true,
+  }
+
+  const brief = createDailyCommandBriefFromData(
+    {
+      notifications: [
+        {
+          id: 'notif_1',
+          action: 'client_viewed_quote',
+          title: 'Client viewed quote',
+          body: null,
+          event_id: null,
+          inquiry_id: null,
+          client_id: 'client_1',
+          metadata: {},
+          created_at: '2026-05-01T07:30:00-04:00',
+        },
+      ],
+      morningBriefing: {
+        today: '2026-05-01',
+        alerts: [
+          {
+            type: 'payment_due',
+            title: 'Payment due today',
+            detail: 'Collect balance before service.',
+            severity: 'critical',
+            href: '/events/event_1',
+          },
+        ],
+        todayEvents: [
+          {
+            id: 'event_1',
+            title: 'Dinner',
+            event_date: '2026-05-01',
+            start_time: '18:00:00',
+            dietary_notes: 'gluten-free',
+            staff_count: 0,
+          },
+        ],
+      },
+      preServiceResults: [
+        {
+          input: readinessInput,
+          result: evaluatePreServiceReadiness(readinessInput),
+        },
+      ],
+    },
+    '2026-05-01T06:30:00-04:00'
+  )
+
+  assert.equal(brief.title, 'Daily Command Brief')
+  assert.ok(brief.sections.length > 0)
+  assert.ok(brief.nextAction)
 })

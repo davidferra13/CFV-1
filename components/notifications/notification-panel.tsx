@@ -48,8 +48,10 @@ import {
   Trophy,
   UserMinus,
   Users,
+  Info,
 } from '@/components/ui/icons'
 import { getNotifications } from '@/lib/notifications/actions'
+import { getSignalPolicy } from '@/lib/notifications/signal-os'
 import { useNotifications } from './notification-provider'
 import { usePushSubscription } from './use-push-subscription'
 import type {
@@ -137,44 +139,84 @@ function getRelativeTime(dateStr: string): string {
 const NotificationItem = memo(function NotificationItem({
   notification,
   onNavigate,
+  isExpanded,
+  onToggleExplain,
 }: {
   notification: Notification
   onNavigate: (notification: Notification) => void
+  isExpanded: boolean
+  onToggleExplain: (notificationId: string) => void
 }) {
   const config = NOTIFICATION_CONFIG[notification.action as NotificationAction]
   const iconName = config?.icon || 'Bell'
   const IconComponent = ICON_MAP[iconName] || Bell
   const colorClass = categoryColors[notification.category] || 'text-stone-500'
   const isUnread = !notification.read_at
+  const policy = getSignalPolicy(notification.action as NotificationAction)
+  const channels = [
+    policy.defaultChannels.sms ? 'SMS' : null,
+    policy.defaultChannels.push ? 'push' : null,
+    policy.defaultChannels.email ? 'email' : null,
+  ].filter(Boolean)
 
   return (
-    <button
-      type="button"
-      onClick={() => onNavigate(notification)}
-      className={`flex items-start gap-3 w-full text-left px-4 py-3 transition-colors hover:bg-stone-800 ${
-        isUnread ? 'bg-brand-950/30' : ''
-      }`}
-    >
-      <div className={`mt-0.5 flex-shrink-0 ${colorClass}`}>
-        <IconComponent className="w-4 h-4" />
+    <div className={isUnread ? 'bg-brand-950/30' : ''}>
+      <div className="flex items-start gap-2 px-4 py-3 transition-colors hover:bg-stone-800">
+        <button
+          type="button"
+          onClick={() => onNavigate(notification)}
+          className="flex min-w-0 flex-1 items-start gap-3 text-left"
+        >
+          <div className={`mt-0.5 flex-shrink-0 ${colorClass}`}>
+            <IconComponent className="w-4 h-4" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start gap-2">
+              <p
+                className={`text-sm truncate ${isUnread ? 'font-medium text-stone-100' : 'text-stone-300'}`}
+              >
+                {notification.title}
+              </p>
+              {isUnread && (
+                <span className="w-1.5 h-1.5 rounded-full bg-brand-600 mt-1.5 flex-shrink-0" />
+              )}
+            </div>
+            {notification.body && (
+              <p className="text-xs text-stone-500 mt-0.5 line-clamp-1">{notification.body}</p>
+            )}
+            <p className="text-xxs text-stone-400 mt-1">
+              {getRelativeTime(notification.created_at)}
+            </p>
+          </div>
+        </button>
+        <button
+          type="button"
+          onClick={(event) => {
+            event.stopPropagation()
+            onToggleExplain(notification.id)
+          }}
+          className="mt-0.5 rounded-md p-1 text-stone-500 transition-colors hover:bg-stone-700 hover:text-stone-200"
+          aria-label={`Why this alert: ${notification.title}`}
+        >
+          <Info className="h-4 w-4" />
+        </button>
       </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-start gap-2">
-          <p
-            className={`text-sm truncate ${isUnread ? 'font-medium text-stone-100' : 'text-stone-300'}`}
-          >
-            {notification.title}
+      {isExpanded && (
+        <div className="border-t border-stone-800 bg-stone-950 px-4 py-3">
+          <div className="grid grid-cols-2 gap-2 text-xxs text-stone-400">
+            <span>Attention: {policy.attention}</span>
+            <span>Cadence: {policy.cadence.replace(/_/g, ' ')}</span>
+            <span>Risk: {policy.risk}</span>
+            <span>Source: {policy.source}</span>
+          </div>
+          <p className="mt-2 text-xs leading-relaxed text-stone-300">{policy.why}</p>
+          <p className="mt-1 text-xxs leading-relaxed text-stone-500">
+            Delivery: {channels.length > 0 ? channels.join(', ') : 'in-app only'}. Source of truth:{' '}
+            {policy.sourceOfTruth}.
           </p>
-          {isUnread && (
-            <span className="w-1.5 h-1.5 rounded-full bg-brand-600 mt-1.5 flex-shrink-0" />
-          )}
         </div>
-        {notification.body && (
-          <p className="text-xs text-stone-500 mt-0.5 line-clamp-1">{notification.body}</p>
-        )}
-        <p className="text-xxs text-stone-400 mt-1">{getRelativeTime(notification.created_at)}</p>
-      </div>
-    </button>
+      )}
+    </div>
   )
 })
 
@@ -260,6 +302,7 @@ export function NotificationPanel({ onClose }: { onClose: () => void }) {
   const [loading, setLoading] = useState(true)
   const [categoryFilter, setCategoryFilter] = useState<NotificationCategory | 'all'>('all')
   const [readFilter, setReadFilter] = useState<'all' | 'unread'>('all')
+  const [expandedSignalId, setExpandedSignalId] = useState<string | null>(null)
 
   // Fetch notifications on mount
   useEffect(() => {
@@ -383,6 +426,12 @@ export function NotificationPanel({ onClose }: { onClose: () => void }) {
               key={notification.id}
               notification={notification}
               onNavigate={handleNavigate}
+              isExpanded={expandedSignalId === notification.id}
+              onToggleExplain={(notificationId) =>
+                setExpandedSignalId((current) =>
+                  current === notificationId ? null : notificationId
+                )
+              }
             />
           ))
         )}
