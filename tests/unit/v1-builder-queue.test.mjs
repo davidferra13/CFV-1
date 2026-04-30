@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { test } from 'node:test'
@@ -13,6 +13,7 @@ import {
   readActiveLane,
   readJsonl,
   selectNextTask,
+  writeRunnerStatus,
   writeReceipt,
 } from '../../scripts/v1-builder/core.mjs'
 
@@ -112,4 +113,17 @@ test('writes receipts with mission control summary', () => {
   assert.match(result.path, /v1-1\.json$/)
   assert.equal(result.receipt.status, 'validated')
   assert.equal(result.receipt.missionControlSummary, 'Validated queue selection.')
+})
+
+test('writes ignored runner status for Mission Control polling', () => {
+  const context = tempContext()
+  const path = writeRunnerStatus({
+    runner: 'v1-builder',
+    mode: 'dry-run',
+    status: 'idle',
+  }, context)
+
+  const result = JSON.parse(readFileSync(path, 'utf8'))
+  assert.equal(result.runner, 'v1-builder')
+  assert.equal(result.status, 'idle')
 })

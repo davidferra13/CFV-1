@@ -21,6 +21,7 @@ export function createBuilderContext(root = ROOT) {
     builderDir,
     claimsDir: join(builderDir, 'claims'),
     receiptsDir: join(builderDir, 'receipts'),
+    runtimeDir: join(builderDir, 'runtime'),
     governorPath: join(root, 'docs', 'v1-v2-governor.md'),
   }
 }
@@ -29,6 +30,7 @@ export function ensureBuilderStore(context = createBuilderContext()) {
   mkdirSync(context.builderDir, { recursive: true })
   mkdirSync(context.claimsDir, { recursive: true })
   mkdirSync(context.receiptsDir, { recursive: true })
+  mkdirSync(context.runtimeDir, { recursive: true })
 
   for (const file of QUEUE_FILES) {
     const path = join(context.builderDir, file)
@@ -210,6 +212,14 @@ export function writeReceipt(receipt, context = createBuilderContext(), now = ne
 
   writeFileSync(path, `${JSON.stringify(completeReceipt, null, 2)}\n`, 'utf8')
   return { receipt: completeReceipt, path }
+}
+
+export function writeRunnerStatus(status, context = createBuilderContext()) {
+  mkdirSync(context.runtimeDir, { recursive: true })
+
+  const path = join(context.runtimeDir, 'runner-status.json')
+  writeFileSync(path, `${JSON.stringify(status, null, 2)}\n`, 'utf8')
+  return path
 }
 
 export function slugify(value) {

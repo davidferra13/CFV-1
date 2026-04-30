@@ -153,6 +153,8 @@ system/persona-inbox-uptime.json
 system/persona-drift-report.json
 system/persona-watcher.log
 system/captures/
+system/v1-builder/runtime/
+.v1-builder-worktrees/
 system/sticky-notes/*
 !system/sticky-notes/.gitkeep
 
