@@ -100,15 +100,23 @@ export interface VoicePostCallActionEvidence {
   createdAt?: string
   completedAt?: string
   closeoutIntent?: string
+  closeoutNote?: string
   snoozedUntil?: string
   eventTypes: string[]
   complianceSignals: string[]
+  trustChecklist: VoiceTrustChecklistItem[]
   scriptQuality?: {
     allowedToLaunch?: boolean
     level?: string
     score?: number
     requiredFixes: string[]
   }
+}
+
+export interface VoiceTrustChecklistItem {
+  label: string
+  status: 'passed' | 'missing' | 'unknown'
+  detail: string
 }
 
 export interface VoicePostCallPlan {
@@ -140,6 +148,8 @@ export interface VoiceOpsReport {
   unresolvedDecisionCount: number
   answerRate: number
   topNextActions: VoicePostCallAction[]
+  failedRecoveryActions: VoicePostCallAction[]
+  snoozedActions: VoicePostCallAction[]
   professionalRisks: Array<{
     callId: string
     level: VoiceProfessionalRiskLevel

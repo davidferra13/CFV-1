@@ -263,11 +263,56 @@ test('voice ops report prefers persisted post-call actions when available', () =
 
   assert.equal(report.topNextActions[0].id, 'action-1')
   assert.equal(report.topNextActions[0].evidence?.source, 'twilio_status_callback')
+  assert.ok(report.topNextActions[0].evidence?.trustChecklist.length)
   assert.deepEqual(report.topNextActions[0].evidence?.eventTypes, [
     'identity_disclosed',
     'recording_disclosed',
   ])
   assert.equal(report.pricingReviewCount, 0)
+})
+
+test('voice ops report separates failed recovery and snoozed actions', () => {
+  const future = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+  const report = buildVoiceOpsReport(
+    [
+      {
+        id: 'ai-2',
+        direction: 'outbound',
+        role: 'vendor_availability',
+        contact_phone: '+16175550101',
+        status: 'failed',
+      },
+    ],
+    [
+      {
+        id: 'action-failed',
+        ai_call_id: 'ai-2',
+        action_type: 'create_task',
+        status: 'planned',
+        urgency: 'review',
+        label: 'Call did not connect',
+        detail: 'Review whether to retry manually.',
+      },
+      {
+        id: 'action-snoozed',
+        ai_call_id: 'ai-2',
+        action_type: 'review_pricing',
+        status: 'skipped',
+        urgency: 'review',
+        label: 'Snoozed quote review',
+        detail: 'Review the quote later.',
+        metadata: {
+          closeoutIntent: 'snoozed',
+          snoozedUntil: future,
+        },
+      },
+    ],
+    []
+  )
+
+  assert.equal(report.failedRecoveryActions[0].id, 'action-failed')
+  assert.equal(report.snoozedActions[0].id, 'action-snoozed')
+  assert.equal(report.topNextActions.some((action) => action.id === 'action-snoozed'), false)
 })
 
 test('script quality gate blocks weak scripts and allows required disclosures', () => {
@@ -304,8 +349,11 @@ test('Voice Hub renders the control tower on the canonical call sheet surface', 
   assert.match(callSheet, /buildVoiceOpsReport/)
   assert.match(controlTower, /Voice Ops Control Tower/)
   assert.match(controlTower, /Next actions/)
+  assert.match(controlTower, /Failed-call recovery/)
+  assert.match(controlTower, /Snoozed/)
   assert.match(controlTower, /VoicePostCallActionRow/)
   assert.match(callSheet, /voice_session_events/)
+  assert.match(callSheet, /'planned', 'needs_review', 'skipped'/)
 })
 
 test('terminal Twilio callbacks record Voice Ops automatically', () => {

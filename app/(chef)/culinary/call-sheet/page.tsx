@@ -230,10 +230,10 @@ export default async function CallSheetPage({
         .select(
           'id, ai_call_id, supplier_call_id, action_type, status, urgency, label, detail, target_type, target_id, metadata, created_at, completed_at'
         )
-        .eq('chef_id', user.tenantId!)
-        .in('status', ['planned', 'needs_review'])
-        .order('created_at', { ascending: false })
-        .limit(20)
+      .eq('chef_id', user.tenantId!)
+      .in('status', ['planned', 'needs_review', 'skipped'])
+      .order('created_at', { ascending: false })
+      .limit(40)
         .then((result: any) => result.data ?? [])
         .catch((err: any) => {
           console.error('[call-sheet] postCallActions fetch failed:', err)

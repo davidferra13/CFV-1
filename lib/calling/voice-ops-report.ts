@@ -26,7 +26,16 @@ export function buildVoiceOpsReport(
     persistedActions.length > 0
       ? persistedActions
       : plans.flatMap((plan) => plan.actions).filter((action) => action.type !== 'link_call_record')
-  const topNextActions = actionSource.sort(compareActionPriority).slice(0, 6)
+  const activeActions = actionSource.filter(isActiveAction)
+  const snoozedActions = actionSource
+    .filter(isSnoozedAction)
+    .sort(compareSnoozedActions)
+    .slice(0, 4)
+  const failedRecoveryActions = activeActions.filter(isFailedRecoveryAction).slice(0, 4)
+  const topNextActions = activeActions
+    .filter((action) => !isFailedRecoveryAction(action))
+    .sort(compareActionPriority)
+    .slice(0, 6)
 
   const totalCalls = calls.length
   const completedCalls = calls.filter(
@@ -63,6 +72,8 @@ export function buildVoiceOpsReport(
     ).length,
     answerRate: finishedCalls > 0 ? Math.round((answeredCalls / finishedCalls) * 100) : 0,
     topNextActions,
+    failedRecoveryActions,
+    snoozedActions,
     professionalRisks: plans
       .filter((plan) => plan.professionalRisk !== 'low')
       .map((plan) => ({
@@ -164,6 +175,48 @@ function compareActionPriority(a: VoicePostCallAction, b: VoicePostCallAction): 
   return a.label.localeCompare(b.label)
 }
 
+function isActiveAction(action: VoicePostCallAction): boolean {
+  if (action.status === 'completed') return false
+  if (isSnoozedAction(action)) return isDueSnoozedAction(action)
+  if (action.status === 'skipped') return false
+  return true
+}
+
+function isSnoozedAction(action: VoicePostCallAction): boolean {
+  return action.evidence?.closeoutIntent === 'snoozed' || !!action.evidence?.snoozedUntil
+}
+
+function isDueSnoozedAction(action: VoicePostCallAction): boolean {
+  const snoozedUntil = action.evidence?.snoozedUntil
+  if (!snoozedUntil) return true
+  const date = new Date(snoozedUntil)
+  return Number.isNaN(date.getTime()) || date.getTime() <= Date.now()
+}
+
+function compareSnoozedActions(a: VoicePostCallAction, b: VoicePostCallAction): number {
+  return dateValue(a.evidence?.snoozedUntil) - dateValue(b.evidence?.snoozedUntil)
+}
+
+function dateValue(value: string | undefined): number {
+  if (!value) return Number.MAX_SAFE_INTEGER
+  const date = new Date(value)
+  return Number.isNaN(date.getTime()) ? Number.MAX_SAFE_INTEGER : date.getTime()
+}
+
+function isFailedRecoveryAction(action: VoicePostCallAction): boolean {
+  const text = `${action.type} ${action.label} ${action.detail}`.toLowerCase()
+  return (
+    text.includes('failed') ||
+    text.includes('busy') ||
+    text.includes('no_answer') ||
+    text.includes('no answer') ||
+    text.includes('voicemail') ||
+    text.includes('retry') ||
+    text.includes('did not connect') ||
+    text.includes('recording missing')
+  )
+}
+
 function stringValue(value: unknown): string | null {
   return typeof value === 'string' && value.trim() ? value : null
 }
@@ -222,6 +275,7 @@ function buildActionEvidence(
     stringValue(metadata.source) ??
     'post_call_execution_plan'
   const scriptQuality = recordValue(metadata.scriptQuality)
+  const complianceSignals = buildComplianceSignals(eventTypes)
 
   return {
     source,
@@ -242,9 +296,11 @@ function buildActionEvidence(
     createdAt: action.createdAt,
     completedAt: action.completedAt,
     closeoutIntent: stringValue(metadata.closeoutIntent) ?? undefined,
+    closeoutNote: stringValue(metadata.closeoutNote) ?? undefined,
     snoozedUntil: stringValue(metadata.snoozedUntil) ?? undefined,
     eventTypes,
-    complianceSignals: buildComplianceSignals(eventTypes),
+    complianceSignals,
+    trustChecklist: buildTrustChecklist(eventTypes, action, scriptQuality),
     scriptQuality: scriptQuality
       ? {
           allowedToLaunch: booleanValue(scriptQuality.allowedToLaunch) ?? undefined,
@@ -254,6 +310,60 @@ function buildActionEvidence(
         }
       : undefined,
   }
+}
+
+function buildTrustChecklist(
+  eventTypes: string[],
+  action: VoicePostCallAction,
+  scriptQuality: Record<string, unknown> | null
+): VoicePostCallActionEvidence['trustChecklist'] {
+  const requiredFixes = scriptQuality ? arrayOfStrings(scriptQuality.requiredFixes) : []
+  return [
+    {
+      label: 'AI identity',
+      status:
+        eventTypes.includes('identity_disclosed') || !requiredFixes.includes('AI identity disclosure is missing.')
+          ? 'passed'
+          : 'missing',
+      detail: eventTypes.includes('identity_disclosed')
+        ? 'Identity disclosure was recorded in the voice ledger.'
+        : 'No identity ledger event was attached to this action.',
+    },
+    {
+      label: 'Recording notice',
+      status:
+        eventTypes.includes('recording_disclosed') ||
+        !requiredFixes.includes('Recording or transcription disclosure is missing.')
+          ? 'passed'
+          : 'missing',
+      detail: eventTypes.includes('recording_disclosed')
+        ? 'Recording or transcription disclosure was recorded.'
+        : 'No recording disclosure ledger event was attached.',
+    },
+    {
+      label: 'Opt-out path',
+      status:
+        eventTypes.includes('opt_out_recorded') ||
+        !requiredFixes.includes('Opt-out instruction is missing.')
+          ? 'passed'
+          : 'missing',
+      detail: eventTypes.includes('opt_out_recorded')
+        ? 'Caller opt-out was recorded.'
+        : 'No opt-out ledger event was required or attached.',
+    },
+    {
+      label: 'Recording file',
+      status:
+        action.type === 'attach_recording' && action.status !== 'completed'
+          ? 'missing'
+          : eventTypes.includes('recording_attached')
+            ? 'passed'
+            : 'unknown',
+      detail: eventTypes.includes('recording_attached')
+        ? 'Recording attachment was recorded.'
+        : 'Recording attachment was not proven by the loaded ledger events.',
+    },
+  ]
 }
 
 function buildComplianceSignals(eventTypes: string[]): string[] {

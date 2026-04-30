@@ -8,6 +8,7 @@ import {
   markVoicePostCallActionNeedsReview,
   skipVoicePostCallAction,
   snoozeVoicePostCallAction,
+  unsnoozeVoicePostCallAction,
 } from '@/lib/calling/voice-ops-actions'
 import type { VoicePostCallAction } from '@/lib/calling/voice-ops-types'
 
@@ -23,15 +24,18 @@ export function VoicePostCallActionRow({ action }: { action: VoicePostCallAction
         : 'border-stone-800 bg-stone-900 text-stone-200'
 
   const canClose = !!action.id && action.status !== 'completed' && action.status !== 'skipped'
+  const isSnoozed = action.evidence?.closeoutIntent === 'snoozed' || !!action.evidence?.snoozedUntil
   const evidence = action.evidence
 
   function runAction(
     label: string,
-    actionFn: (actionId: string) => Promise<{ success: boolean; error?: string }>
+    actionFn: (actionId: string, note?: string) => Promise<{ success: boolean; error?: string }>,
+    options: { promptForNote?: boolean } = {}
   ) {
     if (!action.id) return
     startTransition(async () => {
-      const result = await actionFn(action.id!)
+      const note = options.promptForNote ? window.prompt('Optional closeout note')?.trim() : undefined
+      const result = await actionFn(action.id!, note)
       if (!result.success) {
         const message = result.error ?? `Failed to ${label.toLowerCase()} action.`
         setFeedback(message)
@@ -49,7 +53,11 @@ export function VoicePostCallActionRow({ action }: { action: VoicePostCallAction
     <div className={`rounded-lg border px-3 py-2 ${tone}`}>
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="text-xs font-semibold">{action.label}</p>
+          <div className="flex flex-wrap items-center gap-1.5">
+            <p className="text-xs font-semibold">{action.label}</p>
+            {evidence && <ProvenanceBadge source={evidence.source} />}
+            {isSnoozed && <StatusBadge label="Snoozed" />}
+          </div>
           <p className="mt-1 text-xs leading-relaxed text-stone-400">{action.detail}</p>
         </div>
         <div className="flex flex-wrap items-center gap-1.5">
@@ -61,26 +69,41 @@ export function VoicePostCallActionRow({ action }: { action: VoicePostCallAction
               <ActionButton
                 label="Done"
                 disabled={isPending}
-                onClick={() => runAction('completed', completeVoicePostCallAction)}
+                onClick={() =>
+                  runAction('completed', completeVoicePostCallAction, { promptForNote: true })
+                }
               />
               {action.status !== 'needs_review' && (
                 <ActionButton
                   label="Review"
                   disabled={isPending}
-                  onClick={() => runAction('marked for review', markVoicePostCallActionNeedsReview)}
+                  onClick={() =>
+                    runAction('marked for review', markVoicePostCallActionNeedsReview, {
+                      promptForNote: true,
+                    })
+                  }
                 />
               )}
               <ActionButton
                 label="Snooze"
                 disabled={isPending}
-                onClick={() => runAction('snoozed', snoozeVoicePostCallAction)}
+                onClick={() =>
+                  runAction('snoozed', snoozeVoicePostCallAction, { promptForNote: true })
+                }
               />
               <ActionButton
                 label="Skip"
                 disabled={isPending}
-                onClick={() => runAction('skipped', skipVoicePostCallAction)}
+                onClick={() => runAction('skipped', skipVoicePostCallAction, { promptForNote: true })}
               />
             </>
+          )}
+          {action.id && isSnoozed && (
+            <ActionButton
+              label="Unsnooze"
+              disabled={isPending}
+              onClick={() => runAction('unsnoozed', unsnoozeVoicePostCallAction)}
+            />
           )}
         </div>
       </div>
@@ -107,7 +130,11 @@ export function VoicePostCallActionRow({ action }: { action: VoicePostCallAction
             {evidence.snoozedUntil && (
               <EvidenceItem label="Snoozed until" value={formatDate(evidence.snoozedUntil)} />
             )}
+            {evidence.closeoutNote && <EvidenceItem label="Closeout note" value={evidence.closeoutNote} />}
           </dl>
+          {evidence.trustChecklist.length > 0 && (
+            <TrustChecklist items={evidence.trustChecklist} />
+          )}
           {evidence.complianceSignals.length > 0 && (
             <EvidenceList title="Compliance ledger" items={evidence.complianceSignals} />
           )}
@@ -128,6 +155,18 @@ export function VoicePostCallActionRow({ action }: { action: VoicePostCallAction
         </details>
       )}
     </div>
+  )
+}
+
+function ProvenanceBadge({ source }: { source: string }) {
+  return <StatusBadge label={labelize(source)} />
+}
+
+function StatusBadge({ label }: { label: string }) {
+  return (
+    <span className="rounded border border-stone-700 bg-stone-950 px-2 py-0.5 text-[10px] uppercase tracking-wide text-stone-400">
+      {label}
+    </span>
   )
 }
 
@@ -173,6 +212,40 @@ function EvidenceList({ title, items }: { title: string; items: string[] }) {
           >
             {item}
           </span>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function TrustChecklist({
+  items,
+}: {
+  items: NonNullable<VoicePostCallAction['evidence']>['trustChecklist']
+}) {
+  return (
+    <div className="mt-3">
+      <p className="text-[10px] uppercase tracking-wide text-stone-600">Trust checklist</p>
+      <div className="mt-1 grid gap-1 sm:grid-cols-2">
+        {items.map((item) => (
+          <div
+            key={item.label}
+            className="rounded border border-stone-800 bg-stone-900 px-2 py-1 text-[11px] text-stone-300"
+          >
+            <span
+              className={
+                item.status === 'passed'
+                  ? 'text-emerald-300'
+                  : item.status === 'missing'
+                    ? 'text-rose-300'
+                    : 'text-stone-500'
+              }
+            >
+              {item.status}
+            </span>{' '}
+            {item.label}
+            <p className="mt-0.5 text-stone-500">{item.detail}</p>
+          </div>
         ))}
       </div>
     </div>

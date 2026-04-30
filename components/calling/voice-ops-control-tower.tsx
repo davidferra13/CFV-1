@@ -86,6 +86,7 @@ export function VoiceOpsControlTower({ report }: { report: VoiceOpsReport }) {
       {(report.missingRecordingCount > 0 ||
         report.optOutCount > 0 ||
         report.urgentReviewCount > 0 ||
+        report.snoozedActions.length > 0 ||
         report.professionalRisks.length > 0) && (
         <div className="mt-4 grid gap-2 md:grid-cols-2">
           <SignalRow
@@ -104,6 +105,11 @@ export function VoiceOpsControlTower({ report }: { report: VoiceOpsReport }) {
             detail="Dietary, safety, or high-risk follow-up."
           />
           <SignalRow
+            label="Snoozed"
+            value={report.snoozedActions.length}
+            detail="Follow-up hidden until its next review window."
+          />
+          <SignalRow
             label="Professional risk"
             value={report.professionalRisks.length}
             detail="Calls with trust, disclosure, or hang-up risk."
@@ -111,23 +117,57 @@ export function VoiceOpsControlTower({ report }: { report: VoiceOpsReport }) {
         </div>
       )}
 
+      {report.failedRecoveryActions.length > 0 && (
+        <ActionSection
+          title="Failed-call recovery"
+          detail="Unresolved busy, failed, no-answer, voicemail, or missing-recording items."
+          actions={report.failedRecoveryActions}
+        />
+      )}
+
       {report.topNextActions.length > 0 && (
-        <div className="mt-4 border-t border-stone-800 pt-3">
-          <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-stone-500">
-            <ClipboardList className="h-3.5 w-3.5" />
-            Next actions
-          </div>
-          <div className="space-y-2">
-            {report.topNextActions.map((action, index) => (
-              <VoicePostCallActionRow
-                key={`${action.type}-${action.id ?? index}`}
-                action={action}
-              />
-            ))}
-          </div>
-        </div>
+        <ActionSection
+          title="Next actions"
+          detail="Open follow-up work with source and compliance evidence."
+          actions={report.topNextActions}
+        />
+      )}
+
+      {report.snoozedActions.length > 0 && (
+        <ActionSection
+          title="Snoozed"
+          detail="Hidden follow-up with an explicit return window."
+          actions={report.snoozedActions}
+        />
       )}
     </section>
+  )
+}
+
+function ActionSection({
+  title,
+  detail,
+  actions,
+}: {
+  title: string
+  detail: string
+  actions: VoiceOpsReport['topNextActions']
+}) {
+  return (
+    <div className="mt-4 border-t border-stone-800 pt-3">
+      <div className="mb-2 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-stone-500">
+          <ClipboardList className="h-3.5 w-3.5" />
+          {title}
+        </div>
+        <p className="text-xs text-stone-600">{detail}</p>
+      </div>
+      <div className="space-y-2">
+        {actions.map((action, index) => (
+          <VoicePostCallActionRow key={`${action.type}-${action.id ?? index}`} action={action} />
+        ))}
+      </div>
+    </div>
   )
 }
 

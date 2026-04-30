@@ -227,7 +227,10 @@ export async function launchVoiceCallCampaign(campaignId: string): Promise<{
   }
 }
 
-export async function completeVoicePostCallAction(actionId: string): Promise<{
+export async function completeVoicePostCallAction(
+  actionId: string,
+  note?: string
+): Promise<{
   success: boolean
   error?: string
 }> {
@@ -236,10 +239,13 @@ export async function completeVoicePostCallAction(actionId: string): Promise<{
   if (!actionId?.trim()) return { success: false, error: 'Action id is required.' }
 
   const db: any = createServerClient()
-  return closeVoicePostCallAction(db, user.tenantId!, actionId, 'completed')
+  return closeVoicePostCallAction(db, user.tenantId!, actionId, 'completed', note)
 }
 
-export async function markVoicePostCallActionNeedsReview(actionId: string): Promise<{
+export async function markVoicePostCallActionNeedsReview(
+  actionId: string,
+  note?: string
+): Promise<{
   success: boolean
   error?: string
 }> {
@@ -248,10 +254,13 @@ export async function markVoicePostCallActionNeedsReview(actionId: string): Prom
   if (!actionId?.trim()) return { success: false, error: 'Action id is required.' }
 
   const db: any = createServerClient()
-  return closeVoicePostCallAction(db, user.tenantId!, actionId, 'needs_review')
+  return closeVoicePostCallAction(db, user.tenantId!, actionId, 'needs_review', note)
 }
 
-export async function snoozeVoicePostCallAction(actionId: string): Promise<{
+export async function snoozeVoicePostCallAction(
+  actionId: string,
+  note?: string
+): Promise<{
   success: boolean
   error?: string
 }> {
@@ -260,10 +269,13 @@ export async function snoozeVoicePostCallAction(actionId: string): Promise<{
   if (!actionId?.trim()) return { success: false, error: 'Action id is required.' }
 
   const db: any = createServerClient()
-  return closeVoicePostCallAction(db, user.tenantId!, actionId, 'snoozed')
+  return closeVoicePostCallAction(db, user.tenantId!, actionId, 'snoozed', note)
 }
 
-export async function skipVoicePostCallAction(actionId: string): Promise<{
+export async function skipVoicePostCallAction(
+  actionId: string,
+  note?: string
+): Promise<{
   success: boolean
   error?: string
 }> {
@@ -272,16 +284,29 @@ export async function skipVoicePostCallAction(actionId: string): Promise<{
   if (!actionId?.trim()) return { success: false, error: 'Action id is required.' }
 
   const db: any = createServerClient()
-  return closeVoicePostCallAction(db, user.tenantId!, actionId, 'skipped')
+  return closeVoicePostCallAction(db, user.tenantId!, actionId, 'skipped', note)
 }
 
-type VoiceCloseoutIntent = 'completed' | 'needs_review' | 'snoozed' | 'skipped'
+export async function unsnoozeVoicePostCallAction(actionId: string): Promise<{
+  success: boolean
+  error?: string
+}> {
+  const user = await requireChef()
+
+  if (!actionId?.trim()) return { success: false, error: 'Action id is required.' }
+
+  const db: any = createServerClient()
+  return closeVoicePostCallAction(db, user.tenantId!, actionId, 'unsnoozed')
+}
+
+type VoiceCloseoutIntent = 'completed' | 'needs_review' | 'snoozed' | 'skipped' | 'unsnoozed'
 
 async function closeVoicePostCallAction(
   db: any,
   chefId: string,
   actionId: string,
-  intent: VoiceCloseoutIntent
+  intent: VoiceCloseoutIntent,
+  note?: string
 ): Promise<{ success: boolean; error?: string }> {
   const { data: action, error: lookupError } = await db
     .from('voice_post_call_actions')
@@ -296,15 +321,27 @@ async function closeVoicePostCallAction(
 
   const now = new Date()
   const nextStatus =
-    intent === 'completed' ? 'completed' : intent === 'needs_review' ? 'needs_review' : 'skipped'
+    intent === 'completed'
+      ? 'completed'
+      : intent === 'needs_review'
+        ? 'needs_review'
+        : intent === 'unsnoozed'
+          ? 'planned'
+          : 'skipped'
   const metadata: Record<string, unknown> = {
     ...(isRecord(action.metadata) ? action.metadata : {}),
     closeoutIntent: intent,
     closeoutAt: now.toISOString(),
     previousStatus: action.status ?? null,
   }
+  const normalizedNote = typeof note === 'string' ? note.trim().slice(0, 500) : ''
+  if (normalizedNote) metadata.closeoutNote = normalizedNote
   if (intent === 'snoozed') {
     metadata.snoozedUntil = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString()
+  }
+  if (intent === 'unsnoozed') {
+    metadata.previousSnoozedUntil = metadata.snoozedUntil ?? null
+    metadata.snoozedUntil = null
   }
 
   const { error } = await db
