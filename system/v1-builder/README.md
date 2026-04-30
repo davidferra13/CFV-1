@@ -30,6 +30,14 @@ Mission Control reads these files. It must show read or parse failures honestly.
 
 ## CLI Flow
 
+Use Mission Control for the normal browser flow:
+
+```text
+http://localhost:41937 -> Live -> V1 Builder submit form
+```
+
+Fill in `Task title`, `Why it matters`, and choose the lane. `Approved V1 blocker` is the default because it is the queue the resident runner consumes.
+
 Use `v1-builder:submit` for new intake instead of hand-writing JSON.
 
 ```powershell

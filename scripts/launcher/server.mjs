@@ -663,6 +663,51 @@ async function readV1BuilderApi(kind) {
   }
 }
 
+async function submitV1BuilderTask(body) {
+  const title = String(body.title || '').trim()
+  const reason = String(body.reason || '').trim()
+  const allowed = new Set(['approved_v1_blocker', 'approved_v1_support', 'research_required'])
+  const classification = allowed.has(body.classification) ? body.classification : 'approved_v1_blocker'
+  const args = [
+    join(PROJECT_ROOT, 'scripts', 'v1-builder', 'submit.mjs'),
+    '--title',
+    title,
+    '--reason',
+    reason,
+    '--classification',
+    classification,
+    '--source',
+    'developer',
+  ]
+
+  if (!title) return { ok: false, error: 'Task title is required' }
+  if (!reason) return { ok: false, error: 'Task reason is required' }
+  if (classification === 'approved_v1_blocker' || classification === 'approved_v1_support') {
+    args.push('--v1-governor-approved')
+  }
+  if (body.pricingRelevant !== false) {
+    args.push('--pricingRelevant')
+  }
+
+  try {
+    const { stdout } = await execFileAsync(process.execPath, args, {
+      cwd: PROJECT_ROOT,
+      windowsHide: true,
+      timeout: 15_000,
+      maxBuffer: 1024 * 1024,
+    })
+    const result = JSON.parse(stdout)
+    log('v1-builder', `Submitted ${result.record?.id || title}`, 'success')
+    return result
+  } catch (err) {
+    log('v1-builder', `Submit failed: ${err.message}`, 'error')
+    return {
+      ok: false,
+      error: `Failed to submit V1 builder task: ${err.message}`,
+    }
+  }
+}
+
 async function readPersistentLog(lines = 100) {
   try {
     const content = await readFile(CONFIG.logFile, 'utf-8')
@@ -7570,6 +7615,11 @@ async function handleRequest(req, res) {
 
   if (path === '/api/v1-builder/escalations' && method === 'GET') {
     return json(res, await readV1BuilderApi('escalations'))
+  }
+  if (path === '/api/v1-builder/submit' && method === 'POST') {
+    const body = await parseBody(req)
+    const result = await submitV1BuilderTask(body)
+    return json(res, result, result.ok ? 200 : 400)
   }
 
   if (path === '/api/dev/start' && method === 'POST') {

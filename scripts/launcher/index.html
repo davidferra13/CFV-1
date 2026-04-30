@@ -2187,6 +2187,27 @@ body {
 
         <div id="live-pricing" style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.35);border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:13px;color:var(--warning);"></div>
 
+        <form id="live-builder-submit-form" onsubmit="submitV1BuilderTask(event)" style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:12px;display:grid;grid-template-columns:minmax(220px,1fr) minmax(280px,1.4fr) 170px 112px;gap:10px;align-items:end;">
+          <label style="display:flex;flex-direction:column;gap:5px;font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.8px;">
+            Task title
+            <input id="live-builder-submit-title" required maxlength="140" placeholder="Fix pricing confidence" style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:6px;padding:9px 10px;color:var(--text-primary);font-family:inherit;font-size:13px;outline:none;text-transform:none;letter-spacing:0;" />
+          </label>
+          <label style="display:flex;flex-direction:column;gap:5px;font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.8px;">
+            Why it matters
+            <input id="live-builder-submit-reason" required maxlength="260" placeholder="What should the runner build, and why now?" style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:6px;padding:9px 10px;color:var(--text-primary);font-family:inherit;font-size:13px;outline:none;text-transform:none;letter-spacing:0;" />
+          </label>
+          <label style="display:flex;flex-direction:column;gap:5px;font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.8px;">
+            Lane
+            <select id="live-builder-submit-classification" style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:6px;padding:9px 10px;color:var(--text-primary);font-family:inherit;font-size:13px;outline:none;text-transform:none;letter-spacing:0;">
+              <option value="approved_v1_blocker">Approved V1 blocker</option>
+              <option value="approved_v1_support">V1 support</option>
+              <option value="research_required">Research first</option>
+            </select>
+          </label>
+          <button id="live-builder-submit-button" type="submit" class="btn btn-primary" style="height:36px;padding:0 14px;font-size:12px;">Submit</button>
+          <div id="live-builder-submit-status" style="grid-column:1 / -1;display:none;font-size:12px;line-height:1.35;"></div>
+        </form>
+
         <!-- Main Grid -->
         <div style="display:grid;grid-template-columns:1.15fr 0.95fr 0.9fr;grid-template-rows:1fr 1fr;gap:12px;flex:1;min-height:320px;height:clamp(320px, calc(100vh - 600px), 680px);">
           <!-- V1 Builder -->
@@ -11957,6 +11978,58 @@ function renderIntake(summary) {
     liveRow('Sticky Notes', summary.intake?.stickyNotes || 'Sticky Notes intake not connected yet'),
     liveRow('3977', summary.intake?.inbox3977 || '3977 offline or not configured'),
   ].join('')
+}
+
+async function submitV1BuilderTask(event) {
+  event.preventDefault()
+  const titleEl = document.getElementById('live-builder-submit-title')
+  const reasonEl = document.getElementById('live-builder-submit-reason')
+  const classificationEl = document.getElementById('live-builder-submit-classification')
+  const statusEl = document.getElementById('live-builder-submit-status')
+  const button = document.getElementById('live-builder-submit-button')
+  const title = titleEl?.value.trim() || ''
+  const reason = reasonEl?.value.trim() || ''
+  const classification = classificationEl?.value || 'approved_v1_blocker'
+
+  if (!title || !reason) return
+  if (button) {
+    button.disabled = true
+    button.textContent = 'Submitting'
+  }
+  if (statusEl) {
+    statusEl.style.display = 'block'
+    statusEl.style.color = 'var(--text-muted)'
+    statusEl.textContent = 'Submitting task to V1 builder queue...'
+  }
+
+  try {
+    const res = await fetch('/api/v1-builder/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, reason, classification, pricingRelevant: true }),
+    })
+    const data = await res.json()
+    if (!res.ok || data.ok === false) {
+      throw new Error(data.error || 'Submit failed')
+    }
+    if (titleEl) titleEl.value = ''
+    if (reasonEl) reasonEl.value = ''
+    if (statusEl) {
+      statusEl.style.color = 'var(--success)'
+      statusEl.textContent = `Submitted ${data.record?.id || 'task'}`
+    }
+    await loadV1BuilderCockpit()
+  } catch (err) {
+    if (statusEl) {
+      statusEl.style.color = 'var(--error)'
+      statusEl.textContent = err.message
+    }
+  } finally {
+    if (button) {
+      button.disabled = false
+      button.textContent = 'Submit'
+    }
+  }
 }
 
 async function loadV1BuilderCockpit() {
