@@ -1,0 +1,84 @@
+{
+  "ok": false,
+  "score": 80,
+  "max_score": 100,
+  "selected_skills": ["context-continuity", "omninet", "builder", "software-fundamentals"],
+  "used_skills": [
+    "context-continuity",
+    "omninet",
+    "builder",
+    "software-fundamentals",
+    "obsidian-vault",
+    "skill-garden"
+  ],
+  "missed_skills": [],
+  "validations": [
+    "node --check devtools/context-continuity-lib.mjs",
+    "node --check devtools/obsidian-memory-packet.mjs",
+    "node --test tests/unit/context-continuity-tools.test.mjs",
+    "node devtools/skill-validator.mjs context-continuity",
+    "em-dash scan"
+  ],
+  "dirty_owned": [
+    " M .claude/skills/context-continuity/SKILL.md",
+    " M devtools/context-continuity-lib.mjs",
+    " M devtools/obsidian-memory-packet.mjs",
+    " M tests/unit/context-continuity-tools.test.mjs",
+    "?? docs/changes/2026-04-30-obsidian-memory-indexes.md",
+    "?? system/agent-claims/20260430T192043Z-feature-v1-builder-runtime-scaffold-build-chefflow-obsidian-index-notes-and-wire.json",
+    "?? system/agent-reports/context-continuity/20260430T192016Z-build-chefflow-obsidian-vault-index-notes-and-wire-future-memory-packets-to-them.json",
+    "?? system/agent-reports/context-continuity/20260430T192043Z-build-chefflow-obsidian-index-notes-and-wire-future-memory-packets.json",
+    "?? system/agent-reports/router-decisions/20260430T192042Z-build-chefflow-obsidian-index-notes-and-wire-future-memory-packets.json",
+    "?? system/agent-reports/skill-closeouts/20260430T192409Z-context-continuity-build-chefflow-obsidian-memory-indexes-and-wire-future-packets.json",
+    "?? system/continuity-memory/chefflow-obsidian-memory-workflow-9ca58d04d5.md"
+  ],
+  "checks": [
+    {
+      "id": "routed",
+      "ok": true,
+      "points": 15,
+      "detail": "context-continuity"
+    },
+    {
+      "id": "selected_skill_used",
+      "ok": true,
+      "points": 15,
+      "detail": "primary=context-continuity"
+    },
+    {
+      "id": "no_missed_skills",
+      "ok": true,
+      "points": 25,
+      "detail": "none"
+    },
+    {
+      "id": "validations_present",
+      "ok": true,
+      "points": 15,
+      "detail": "node --check devtools/context-continuity-lib.mjs, node --check devtools/obsidian-memory-packet.mjs, node --test tests/unit/context-continuity-tools.test.mjs, node devtools/skill-validator.mjs context-continuity, em-dash scan"
+    },
+    {
+      "id": "commit_present",
+      "ok": true,
+      "points": 10,
+      "detail": "01e1da6b4"
+    },
+    {
+      "id": "pushed",
+      "ok": false,
+      "points": 10,
+      "detail": "false"
+    },
+    {
+      "id": "owned_clean",
+      "ok": false,
+      "points": 10,
+      "detail": " M .claude/skills/context-continuity/SKILL.md;  M devtools/context-continuity-lib.mjs;  M devtools/obsidian-memory-packet.mjs;  M tests/unit/context-continuity-tools.test.mjs; ?? docs/changes/2026-04-30-obsidian-memory-indexes.md; ?? system/agent-claims/20260430T192043Z-feature-v1-builder-runtime-scaffold-build-chefflow-obsidian-index-notes-and-wire.json; ?? system/agent-reports/context-continuity/20260430T192016Z-build-chefflow-obsidian-vault-index-notes-and-wire-future-memory-packets-to-them.json; ?? system/agent-reports/context-continuity/20260430T192043Z-build-chefflow-obsidian-index-notes-and-wire-future-memory-packets.json; ?? system/agent-reports/router-decisions/20260430T192042Z-build-chefflow-obsidian-index-notes-and-wire-future-memory-packets.json; ?? system/agent-reports/skill-closeouts/20260430T192409Z-context-continuity-build-chefflow-obsidian-memory-indexes-and-wire-future-packets.json; ?? system/continuity-memory/chefflow-obsidian-memory-workflow-9ca58d04d5.md"
+    }
+  ],
+  "record_id": "20260430T192043Z-build-chefflow-obsidian-index-notes-and-wire-future-memory-packets",
+  "record_file": "system/agent-reports/flight-records/20260430T192043Z-build-chefflow-obsidian-index-notes-and-wire-future-memory-packets.json",
+  "generated_at": "2026-04-30T19:24:25.330Z",
+  "stats_updated": true,
+  "maturity_updates": []
+}

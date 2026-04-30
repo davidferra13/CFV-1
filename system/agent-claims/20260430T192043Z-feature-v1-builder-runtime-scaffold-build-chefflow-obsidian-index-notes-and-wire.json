@@ -1,0 +1,28 @@
+{
+  "id": "20260430T192043Z-feature-v1-builder-runtime-scaffold-build-chefflow-obsidian-index-notes-and-wire",
+  "status": "finished",
+  "agent": "david",
+  "prompt": "Build ChefFlow Obsidian index notes and wire future memory packets",
+  "branch": "feature/v1-builder-runtime-scaffold",
+  "branch_start_commit": "3d245845a",
+  "branch_finish": "feature/v1-builder-runtime-scaffold",
+  "branch_finish_commit": "01e1da6b4",
+  "owned_paths": [
+    ".claude/skills/context-continuity/SKILL.md",
+    "devtools/context-continuity-lib.mjs",
+    "devtools/obsidian-memory-packet.mjs",
+    "tests/unit/context-continuity-tools.test.mjs",
+    "docs/changes/2026-04-30-obsidian-memory-indexes.md",
+    "system/continuity-memory/chefflow-obsidian-memory-workflow-9ca58d04d5.md",
+    "system/agent-reports/context-continuity/20260430T192016Z-build-chefflow-obsidian-vault-index-notes-and-wire-future-memory-packets-to-them.json",
+    "system/agent-reports/context-continuity/20260430T192043Z-build-chefflow-obsidian-index-notes-and-wire-future-memory-packets.json",
+    "system/agent-reports/router-decisions/20260430T192042Z-build-chefflow-obsidian-index-notes-and-wire-future-memory-packets.json",
+    "system/agent-claims/20260430T192043Z-feature-v1-builder-runtime-scaffold-build-chefflow-obsidian-index-notes-and-wire.json",
+    "system/agent-reports/skill-closeouts/20260430T192409Z-context-continuity-build-chefflow-obsidian-memory-indexes-and-wire-future-packets.json"
+  ],
+  "created_at": "2026-04-30T19:20:43.967Z",
+  "updated_at": "2026-04-30T19:24:25.153Z",
+  "finished_at": "2026-04-30T19:24:25.154Z",
+  "commit_hash": "01e1da6b4",
+  "pushed": false
+}

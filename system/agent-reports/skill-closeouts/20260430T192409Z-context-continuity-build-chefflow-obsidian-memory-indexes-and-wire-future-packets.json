@@ -1,0 +1,18 @@
+{
+  "created_at": "2026-04-30T19:24:09.370Z",
+  "goal": "Build ChefFlow Obsidian memory indexes and wire future packets",
+  "primary_skill": "context-continuity",
+  "sidecar_skills": [],
+  "skill_delta": "patch",
+  "durable_behavior_seen": null,
+  "skill_gap_seen": null,
+  "validation": {
+    "skill_validator": null,
+    "trigger_tests": null,
+    "compliance": null,
+    "other": null
+  },
+  "commit": null,
+  "pushed": false,
+  "notes": ""
+}

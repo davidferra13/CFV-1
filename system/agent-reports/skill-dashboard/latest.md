@@ -1,6 +1,6 @@
 # Agent Skill Dashboard
 
-Generated: 2026-04-30T18:28:55.297Z
+Generated: 2026-04-30T19:24:25.951Z
 
 ## Coverage
 
@@ -27,13 +27,13 @@ Generated: 2026-04-30T18:28:55.297Z
 
 ## Reliability
 
-- Tracked skills: 6
-- Recorded sessions: 4
+- Tracked skills: 7
+- Recorded sessions: 5
 - Skills with failures: 5
 
 ## Repair Queue
 
-- Open repairs: 5
+- Open repairs: 7
 - High priority repairs: 0
 
 ## Replay

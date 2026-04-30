@@ -1,0 +1,209 @@
+{
+  "generated_at": "2026-04-30T19:24:25.532Z",
+  "record_count": 10,
+  "records": [
+    {
+      "file": "system/agent-reports/flight-records/20260429T162207Z-codex-should-score-skill-outcomes-and-update-reliability-stats.json",
+      "id": "20260429T162207Z-codex-should-score-skill-outcomes-and-update-reliability-stats",
+      "prompt": "Codex should score skill outcomes and update reliability stats",
+      "status": "finished",
+      "commit_hash": "bb5f96c9a0e062e2842726f3c9339361d33076cd",
+      "pushed": true,
+      "used_skills": ["skill-garden", "omninet", "builder"],
+      "validations_run": [
+        "node --check harness scripts",
+        "skill-validator omninet skill-garden",
+        "skill-trigger-tests",
+        "agent-harness unit tests",
+        "targeted em dash scan",
+        "git push hook typecheck and regression"
+      ],
+      "missed_skills": []
+    },
+    {
+      "file": "system/agent-reports/flight-records/20260429T165953Z-build-chefflow-codex-replay-regression-harness-and-connect-it-into-skill-self-he.json",
+      "id": "20260429T165953Z-build-chefflow-codex-replay-regression-harness-and-connect-it-into-skill-self-he",
+      "prompt": "Build ChefFlow Codex replay regression harness and connect it into skill self-healing",
+      "status": "finished",
+      "commit_hash": "5dba5055fad413bf71fc9d9dba09d214ad73fc0d",
+      "pushed": true,
+      "used_skills": ["builder", "omninet", "skill-garden", "debug"],
+      "validations_run": [
+        "node --check devtools scripts",
+        "skill-validator omninet skill-garden",
+        "skill-trigger-tests",
+        "agent replay runner",
+        "agent preflight",
+        "agent harness unit tests",
+        "targeted em dash scan",
+        "git push hook typecheck and regression"
+      ],
+      "missed_skills": []
+    },
+    {
+      "file": "system/agent-reports/flight-records/20260429T171612Z-build-the-3977-to-codex-build-bridge-with-safe-claim-dry-run-classification-and-.json",
+      "id": "20260429T171612Z-build-the-3977-to-codex-build-bridge-with-safe-claim-dry-run-classification-and-",
+      "prompt": "Build the 3977 to Codex build bridge with safe claim, dry-run, classification, and result reporting",
+      "status": "started",
+      "commit_hash": null,
+      "pushed": null,
+      "used_skills": ["builder", "omninet"],
+      "validations_run": [],
+      "missed_skills": []
+    },
+    {
+      "file": "system/agent-reports/flight-records/20260429T234252Z-create-persistent-codex-behavior-to-prevent-fragmented-duplicate-builds-and-capt.json",
+      "id": "20260429T234252Z-create-persistent-codex-behavior-to-prevent-fragmented-duplicate-builds-and-capt",
+      "prompt": "Create persistent Codex behavior to prevent fragmented duplicate builds and capture conversation memory for Obsidian-style continuity",
+      "status": "started",
+      "commit_hash": null,
+      "pushed": null,
+      "used_skills": ["builder", "omninet"],
+      "validations_run": [],
+      "missed_skills": []
+    },
+    {
+      "file": "system/agent-reports/flight-records/20260429T235629Z-build-the-complete-context-continuity-tooling-layer-scanner-cli-canonical-surfac.json",
+      "id": "20260429T235629Z-build-the-complete-context-continuity-tooling-layer-scanner-cli-canonical-surfac",
+      "prompt": "Build the complete context continuity tooling layer: scanner CLI, canonical surface registry, pre-build gate, Obsidian packet exporter, near-duplicate detector, spec template continuity section, feature family map, and dashboard",
+      "status": "started",
+      "commit_hash": null,
+      "pushed": null,
+      "used_skills": ["context-continuity", "omninet", "builder"],
+      "validations_run": [],
+      "missed_skills": []
+    },
+    {
+      "file": "system/agent-reports/flight-records/20260430T163810Z-build-geographic-pricing-proof-harness-from-docs-specs-geographic-pricing-proof-.json",
+      "id": "20260430T163810Z-build-geographic-pricing-proof-harness-from-docs-specs-geographic-pricing-proof-",
+      "prompt": "Build Geographic Pricing Proof Harness from docs/specs/geographic-pricing-proof-harness.md",
+      "status": "started",
+      "commit_hash": null,
+      "pushed": null,
+      "used_skills": ["builder", "omninet", "context-continuity", "software-fundamentals"],
+      "validations_run": [],
+      "missed_skills": []
+    },
+    {
+      "file": "system/agent-reports/flight-records/20260430T165049Z-build-v1-support-state-change-motion-primitives-and-apply-to-existing-chefflow-w.json",
+      "id": "20260430T165049Z-build-v1-support-state-change-motion-primitives-and-apply-to-existing-chefflow-w",
+      "prompt": "Build V1 support state-change motion primitives and apply to existing ChefFlow workflow surfaces",
+      "status": "finished",
+      "commit_hash": "af809250b",
+      "pushed": false,
+      "used_skills": [
+        "builder",
+        "omninet",
+        "context-continuity",
+        "software-fundamentals",
+        "v1-governor"
+      ],
+      "validations_run": [
+        "node --test --import tsx tests/unit/state-motion.test.tsx",
+        "npx tsc --noEmit --skipLibCheck",
+        "git diff added-line em dash scan",
+        "pre-commit quick regression"
+      ],
+      "missed_skills": []
+    },
+    {
+      "file": "system/agent-reports/flight-records/20260430T170821Z-keep-improving-v1-state-motion-by-adding-list-and-action-card-motion-to-existing.json",
+      "id": "20260430T170821Z-keep-improving-v1-state-motion-by-adding-list-and-action-card-motion-to-existing",
+      "prompt": "Keep improving V1 state motion by adding list and action card motion to existing dashboard surfaces",
+      "status": "finished",
+      "commit_hash": "4753e54c6",
+      "pushed": false,
+      "used_skills": [
+        "builder",
+        "omninet",
+        "context-continuity",
+        "software-fundamentals",
+        "v1-governor"
+      ],
+      "validations_run": [
+        "node --test --import tsx tests/unit/state-motion.test.tsx",
+        "npx tsc --noEmit --skipLibCheck",
+        "git diff added-line em dash scan",
+        "pre-commit quick regression"
+      ],
+      "missed_skills": []
+    },
+    {
+      "file": "system/agent-reports/flight-records/20260430T175158Z-build-pricing-reliability-engine-proof-loop-blockers-unit-normalization-coverage.json",
+      "id": "20260430T175158Z-build-pricing-reliability-engine-proof-loop-blockers-unit-normalization-coverage",
+      "prompt": "Build pricing reliability engine proof loop blockers unit normalization coverage menu costing propagation",
+      "status": "started",
+      "commit_hash": null,
+      "pushed": null,
+      "used_skills": [
+        "pricing-reliability",
+        "omninet",
+        "pipeline",
+        "evidence-integrity",
+        "context-continuity",
+        "software-fundamentals"
+      ],
+      "validations_run": [],
+      "missed_skills": []
+    },
+    {
+      "file": "system/agent-reports/flight-records/20260430T192043Z-build-chefflow-obsidian-index-notes-and-wire-future-memory-packets.json",
+      "id": "20260430T192043Z-build-chefflow-obsidian-index-notes-and-wire-future-memory-packets",
+      "prompt": "Build ChefFlow Obsidian index notes and wire future memory packets",
+      "status": "finished",
+      "commit_hash": "01e1da6b4",
+      "pushed": false,
+      "used_skills": [
+        "context-continuity",
+        "omninet",
+        "builder",
+        "software-fundamentals",
+        "obsidian-vault",
+        "skill-garden"
+      ],
+      "validations_run": [
+        "node --check devtools/context-continuity-lib.mjs",
+        "node --check devtools/obsidian-memory-packet.mjs",
+        "node --test tests/unit/context-continuity-tools.test.mjs",
+        "node devtools/skill-validator.mjs context-continuity",
+        "em-dash scan"
+      ],
+      "missed_skills": []
+    }
+  ],
+  "skills_used": [
+    "builder",
+    "context-continuity",
+    "debug",
+    "evidence-integrity",
+    "obsidian-vault",
+    "omninet",
+    "pipeline",
+    "pricing-reliability",
+    "skill-garden",
+    "software-fundamentals",
+    "v1-governor"
+  ],
+  "validations_run": [
+    "agent harness unit tests",
+    "agent preflight",
+    "agent replay runner",
+    "agent-harness unit tests",
+    "em-dash scan",
+    "git diff added-line em dash scan",
+    "git push hook typecheck and regression",
+    "node --check devtools scripts",
+    "node --check devtools/context-continuity-lib.mjs",
+    "node --check devtools/obsidian-memory-packet.mjs",
+    "node --check harness scripts",
+    "node --test --import tsx tests/unit/state-motion.test.tsx",
+    "node --test tests/unit/context-continuity-tools.test.mjs",
+    "node devtools/skill-validator.mjs context-continuity",
+    "npx tsc --noEmit --skipLibCheck",
+    "pre-commit quick regression",
+    "skill-trigger-tests",
+    "skill-validator omninet skill-garden",
+    "targeted em dash scan"
+  ],
+  "missed_skills": []
+}

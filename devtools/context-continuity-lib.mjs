@@ -522,10 +522,11 @@ export function writeMemoryPacket({
   dir = continuityMemoryRoot,
 } = {}) {
   const safeTitle = title || 'Context Continuity Packet'
+  const packetDate = new Date().toISOString().slice(0, 10)
   const lines = [
     `# ${safeTitle}`,
     '',
-    `- Date: ${new Date().toISOString().slice(0, 10)}`,
+    `- Date: ${packetDate}`,
     '- Source: Codex session',
     `- User intent: ${userIntent || ''}`,
     `- Existing related surfaces: ${existingRelatedSurfaces.join(', ') || ''}`,
@@ -535,13 +536,159 @@ export function writeMemoryPacket({
     `- Links: ${links.join(', ') || ''}`,
     '',
   ]
-  const root = vault ? path.resolve(vault) : dir
-  const file = path.join(root, `${slugify(safeTitle)}-${shortHash(lines.join('\n'))}.md`)
+  const file = path.join(dir, `${slugify(safeTitle)}-${shortHash(lines.join('\n'))}.md`)
   writeText(file, lines.join('\n'))
+  const resolvedVault = vault ? resolveObsidianVault(vault) : null
+  let vaultFile = null
+  let indexFiles = []
+  if (resolvedVault) {
+    vaultFile = path.join(resolvedVault, `${obsidianNoteName(safeTitle)}.md`)
+    writeText(vaultFile, renderObsidianPacket(lines, safeTitle, existingRelatedSurfaces))
+    indexFiles = ensureObsidianIndexes({
+      vault: resolvedVault,
+      packetTitle: safeTitle,
+      packetDate,
+      userIntent,
+      canonicalHome,
+      existingRelatedSurfaces,
+      links,
+    })
+  }
   return {
     file: relative(file).startsWith('..') ? file : relative(file),
-    vault_used: Boolean(vault),
+    vault_used: Boolean(vaultFile),
+    vault_file: vaultFile,
+    index_files: indexFiles,
   }
+}
+
+export function resolveObsidianVault(vault = null) {
+  if (vault && vault !== true) return path.resolve(String(vault))
+  const candidates = [
+    process.env.OBSIDIAN_VAULT,
+    'D:\\Obsidian Vault\\AI Research',
+    'F:\\OpenClaw-Vault',
+    '/mnt/d/Obsidian Vault/AI Research',
+  ].filter(Boolean)
+  const found = candidates.find((candidate) => fs.existsSync(candidate))
+  return found ? path.resolve(found) : null
+}
+
+function obsidianNoteName(title) {
+  return String(title || 'Context Continuity Packet')
+    .replace(/[<>:"/\\|?*\u0000-\u001F]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 120)
+}
+
+function renderObsidianPacket(lines, title, relatedSurfaces) {
+  const related = [
+    '[[ChefFlow Index]]',
+    '[[Codex Workflow Index]]',
+    '[[ChefFlow Decisions]]',
+    ...relatedSurfaces.map((surface) => `[[${surface}]]`),
+  ]
+  return [
+    ...lines,
+    '## Related',
+    ...[...new Set(related)].map((link) => `- ${link}`),
+    '',
+  ].join('\n')
+}
+
+function ensureObsidianIndexes({
+  vault,
+  packetTitle,
+  packetDate,
+  userIntent,
+  canonicalHome,
+  existingRelatedSurfaces,
+  links,
+}) {
+  const packetLink = `[[${obsidianNoteName(packetTitle)}]]`
+  const indexFiles = [
+    upsertObsidianIndex({
+      vault,
+      name: 'ChefFlow Index',
+      baseLines: [
+        '# ChefFlow Index',
+        '',
+        '- [[ChefFlow Decisions]]',
+        '- [[Codex Workflow Index]]',
+        '',
+        '## Canonical Repo Surfaces',
+        '- `system/canonical-surfaces.json`',
+        '- `.claude/skills/context-continuity/SKILL.md`',
+        '- `devtools/obsidian-memory-packet.mjs`',
+        '',
+        '## Memory Packets',
+      ],
+      line: `- ${packetLink}`,
+    }),
+    upsertObsidianIndex({
+      vault,
+      name: 'Codex Workflow Index',
+      baseLines: [
+        '# Codex Workflow Index',
+        '',
+        '- [[ChefFlow Index]]',
+        '- [[ChefFlow Decisions]]',
+        '',
+        '## Core Workflow',
+        '- `docs/AGENT-WORKFLOW.md`',
+        '- `.claude/skills/omninet/SKILL.md`',
+        '- `.claude/skills/context-continuity/SKILL.md`',
+        '- `.claude/skills/skill-garden/SKILL.md`',
+        '',
+        '## Memory Packets',
+      ],
+      line: `- ${packetLink}`,
+    }),
+    upsertObsidianIndex({
+      vault,
+      name: 'ChefFlow Decisions',
+      baseLines: [
+        '# ChefFlow Decisions',
+        '',
+        '- [[ChefFlow Index]]',
+        '- [[Codex Workflow Index]]',
+        '',
+        '## Decisions',
+      ],
+      line: `- ${packetDate} - ${packetLink}: ${decisionSummary({
+        userIntent,
+        canonicalHome,
+        existingRelatedSurfaces,
+        links,
+      })}`,
+    }),
+  ]
+  return indexFiles
+}
+
+function upsertObsidianIndex({ vault, name, baseLines, line }) {
+  const file = path.join(vault, `${name}.md`)
+  const existing = fs.existsSync(file) ? readText(file) : `${baseLines.join('\n')}\n`
+  const text = appendUniqueLine(existing, line)
+  writeText(file, text)
+  return file
+}
+
+function appendUniqueLine(text, line) {
+  const normalized = text.endsWith('\n') ? text : `${text}\n`
+  if (normalized.split(/\r?\n/).includes(line)) return normalized
+  return `${normalized}${line}\n`
+}
+
+function decisionSummary({ userIntent, canonicalHome, existingRelatedSurfaces, links }) {
+  const parts = [
+    userIntent,
+    canonicalHome ? `home ${canonicalHome}` : '',
+    existingRelatedSurfaces?.length ? `surfaces ${existingRelatedSurfaces.join(', ')}` : '',
+    links?.length ? `links ${links.join(', ')}` : '',
+  ].filter(Boolean)
+  return parts.join('; ') || 'Captured continuity packet'
 }
 
 export function renderContinuityDashboard({ scan, duplicates, featureMap }) {

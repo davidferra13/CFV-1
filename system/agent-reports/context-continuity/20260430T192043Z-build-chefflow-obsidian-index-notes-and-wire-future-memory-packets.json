@@ -1,0 +1,430 @@
+{
+  "generated_at": "2026-04-30T19:20:42.550Z",
+  "prompt": "Build ChefFlow Obsidian index notes and wire future memory packets",
+  "terms": ["chefflow", "obsidian", "index", "notes", "wire", "future", "memory", "packets"],
+  "scanned_dirs": [
+    "app",
+    "components",
+    "lib",
+    "docs/specs",
+    "docs/changes",
+    "docs/app-complete-audit.md",
+    "project-map",
+    "memory",
+    "system/intake",
+    "system/agent-reports"
+  ],
+  "canonical_surfaces": [
+    {
+      "id": "sticky-notes-intake-layer",
+      "label": "Sticky Notes Intake Layer",
+      "score": 5,
+      "hits": ["notes"],
+      "canonical_routes": [],
+      "canonical_files": [
+        "docs/specs/sticky-notes-intake-layer.md",
+        "devtools/sticky-notes/read-db.mjs",
+        "devtools/sticky-notes/organize.mjs"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach Sticky Notes work to the local intake layer instead of client intake, Remy memory, or an ungoverned backlog."
+      }
+    },
+    {
+      "id": "context-continuity",
+      "label": "Context Continuity",
+      "score": 3,
+      "hits": ["obsidian", "memory"],
+      "canonical_routes": [],
+      "canonical_files": [
+        ".claude/skills/context-continuity/SKILL.md",
+        "devtools/context-continuity-scan.mjs",
+        "system/canonical-surfaces.json"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Extend the continuity layer in place."
+      }
+    },
+    {
+      "id": "remy-ai",
+      "label": "Remy AI",
+      "score": 3,
+      "hits": ["chefflow", "memory"],
+      "canonical_routes": [],
+      "canonical_files": ["components/ai/remy-drawer.tsx", "lib/ai/remy-actions.ts"],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach new assistant behavior to Remy or its shared AI modules."
+      }
+    },
+    {
+      "id": "chef-command-plane",
+      "label": "ChefFlow Command Plane",
+      "score": 2,
+      "hits": ["chefflow"],
+      "canonical_routes": ["/dashboard"],
+      "canonical_files": [
+        "docs/specs/chefflow-command-plane.md",
+        "lib/interface/action-layer.ts",
+        "lib/events/operating-spine.ts",
+        "components/platform-shell/context-command-panel.tsx"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach command-plane behavior to the canonical computed contract instead of creating another dashboard, Remy hub, command palette, or page-local action list."
+      }
+    },
+    {
+      "id": "agent-skill-system",
+      "label": "Agent Skill System",
+      "score": 1,
+      "hits": ["chefflow"],
+      "canonical_routes": [],
+      "canonical_files": [
+        "devtools/skill-router.mjs",
+        "devtools/skill-validator.mjs",
+        "devtools/skill-trigger-tests.mjs",
+        "system/agent-golden-prompts/default.json"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Add to the existing skill harness."
+      }
+    },
+    {
+      "id": "client-intake",
+      "label": "Client Intake",
+      "score": 1,
+      "hits": ["chefflow"],
+      "canonical_routes": ["/book", "/clients/intake"],
+      "canonical_files": [
+        "app/api/book/route.ts",
+        "lib/inquiries/public-actions.ts",
+        "public/embed/chefflow-widget.js"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach to the existing intake lane contract."
+      }
+    }
+  ],
+  "related_files": [
+    {
+      "file": "system/agent-reports/context-continuity/20260430T192016Z-build-chefflow-obsidian-vault-index-notes-and-wire-future-memory-packets-to-them.json",
+      "kind": "system",
+      "score": 72,
+      "hits": ["chefflow", "obsidian", "index", "notes", "wire", "future", "memory", "packets"]
+    },
+    {
+      "file": "system/agent-reports/router-decisions/20260430T192042Z-build-chefflow-obsidian-index-notes-and-wire-future-memory-packets.json",
+      "kind": "system",
+      "score": 40,
+      "hits": ["chefflow", "obsidian", "index", "notes", "wire", "future", "memory", "packets"]
+    },
+    {
+      "file": "docs/specs/sticky-notes-intake-layer.md",
+      "kind": "spec",
+      "score": 30,
+      "hits": ["notes", "chefflow", "index", "future", "memory", "packets"]
+    },
+    {
+      "file": "system/agent-reports/context-continuity/20260430T155245Z-sticky-notes-intake-layer-simple-sticky-notes-notes-db-codex-organize-everything.json",
+      "kind": "system",
+      "score": 24,
+      "hits": ["notes", "chefflow", "obsidian", "memory"]
+    },
+    {
+      "file": "docs/specs/autonomous-v1-builder-contract.md",
+      "kind": "spec",
+      "score": 22,
+      "hits": ["chefflow", "index", "notes", "wire", "future", "memory"]
+    },
+    {
+      "file": "docs/specs/chef-flow-decision-ledger-v1.md",
+      "kind": "spec",
+      "score": 22,
+      "hits": ["chefflow", "index", "notes", "future", "memory"]
+    },
+    {
+      "file": "docs/specs/openclaw-ideal-runtime-and-national-intelligence.md",
+      "kind": "spec",
+      "score": 22,
+      "hits": ["chefflow", "index", "notes", "wire", "future", "memory"]
+    },
+    {
+      "file": "docs/specs/p0-work-continuity-control-plane.md",
+      "kind": "spec",
+      "score": 21,
+      "hits": ["chefflow", "obsidian", "index", "notes", "memory"]
+    },
+    {
+      "file": "docs/specs/lead-engine-cartridge.md",
+      "kind": "spec",
+      "score": 20,
+      "hits": ["chefflow", "index", "notes", "future"]
+    },
+    {
+      "file": "docs/specs/openclaw-v2-unified-pricing.md",
+      "kind": "spec",
+      "score": 20,
+      "hits": ["chefflow", "index", "notes", "future", "memory"]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-full-cohesion.md",
+      "kind": "spec",
+      "score": 20,
+      "hits": ["chefflow", "index", "notes", "wire", "memory"]
+    },
+    {
+      "file": "docs/specs/continuous-intelligence-layer.md",
+      "kind": "spec",
+      "score": 19,
+      "hits": ["chefflow", "index", "notes", "future", "memory", "packets"]
+    },
+    {
+      "file": "docs/specs/openclaw-food-price-intelligence.md",
+      "kind": "spec",
+      "score": 19,
+      "hits": ["chefflow", "index", "notes", "future", "memory"]
+    },
+    {
+      "file": "docs/specs/openclaw-inventory-evolution.md",
+      "kind": "spec",
+      "score": 19,
+      "hits": ["chefflow", "index", "notes", "future"]
+    },
+    {
+      "file": "docs/specs/operational-workflow-interrogation.md",
+      "kind": "spec",
+      "score": 19,
+      "hits": ["chefflow", "notes", "wire", "future", "memory"]
+    },
+    {
+      "file": "docs/specs/p0-builder-agent-foundation.md",
+      "kind": "spec",
+      "score": 19,
+      "hits": ["chefflow", "index", "notes", "future", "memory"]
+    },
+    {
+      "file": "docs/specs/p1-chef-collab-spaces.md",
+      "kind": "spec",
+      "score": 19,
+      "hits": ["chefflow", "index", "notes", "future"]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-cohesiveness-synthesis.md",
+      "kind": "spec",
+      "score": 19,
+      "hits": ["chefflow", "index", "notes", "wire", "future", "memory"]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-full-cohesion-answers.md",
+      "kind": "spec",
+      "score": 19,
+      "hits": ["chefflow", "index", "notes", "wire", "memory"]
+    },
+    {
+      "file": "lib/work-continuity/build-index.ts",
+      "kind": "module",
+      "score": 19,
+      "hits": ["index", "chefflow", "obsidian", "memory"]
+    },
+    {
+      "file": "docs/specs/dinner-circle-unification.md",
+      "kind": "spec",
+      "score": 18,
+      "hits": ["chefflow", "index", "notes", "future"]
+    },
+    {
+      "file": "docs/specs/food-directory-import.md",
+      "kind": "spec",
+      "score": 18,
+      "hits": ["chefflow", "index", "notes", "future", "memory"]
+    },
+    {
+      "file": "docs/specs/system-completeness-interrogation.md",
+      "kind": "spec",
+      "score": 18,
+      "hits": ["chefflow", "index", "future", "memory"]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-consumer-discovery-cohesion-v1.md",
+      "kind": "spec",
+      "score": 18,
+      "hits": ["chefflow", "index", "notes", "future", "memory"]
+    },
+    {
+      "file": "docs/specs/cil-phase1-implementation.md",
+      "kind": "spec",
+      "score": 17,
+      "hits": ["chefflow", "index", "wire", "future", "memory"]
+    },
+    {
+      "file": "docs/specs/openclaw-nationwide-pricing-strategy.md",
+      "kind": "spec",
+      "score": 17,
+      "hits": ["chefflow", "index", "future", "memory"]
+    },
+    {
+      "file": "docs/specs/openclaw-total-catalog-intelligence.md",
+      "kind": "spec",
+      "score": 17,
+      "hits": ["chefflow", "index", "notes", "wire", "future", "memory"]
+    },
+    {
+      "file": "docs/specs/p0-chef-cpa-ready-tax-export-and-reconciliation.md",
+      "kind": "spec",
+      "score": 17,
+      "hits": ["chefflow", "index", "notes", "wire", "future"]
+    },
+    {
+      "file": "docs/specs/service-lifecycle-intelligence.md",
+      "kind": "spec",
+      "score": 17,
+      "hits": ["index", "notes", "wire", "future"]
+    },
+    {
+      "file": "docs/specs/soft-close-leverage-and-reactivation.md",
+      "kind": "spec",
+      "score": 17,
+      "hits": ["notes", "wire", "future", "memory"]
+    }
+  ],
+  "recent_commits": [
+    {
+      "line": "98a63fdc3 chore(agent): isolate sticky notes latest outputs feature/sticky-notes-process-command",
+      "score": 2,
+      "hits": ["notes"]
+    },
+    {
+      "line": "03fcecca6 chore(agent): add sticky notes process command feature/sticky-notes-process-command",
+      "score": 2,
+      "hits": ["notes"]
+    },
+    {
+      "line": "5d16246c0 chore(agent): process sticky notes promoted items feature/sticky-notes-promoted-items-processing",
+      "score": 2,
+      "hits": ["notes"]
+    },
+    {
+      "line": "51e50bdbb chore(agent): wire live v1 builder execution feature/v1-builder-runtime-scaffold",
+      "score": 1,
+      "hits": ["wire"]
+    },
+    {
+      "line": "de7d16925 chore(agent): hide sticky notes scheduler npm shim feature/v1-builder-runtime-scaffold",
+      "score": 1,
+      "hits": ["notes"]
+    },
+    {
+      "line": "429a5b101 chore(agent): add sticky notes os pinned workflow feature/pricing-reliability-proof-loop-v2",
+      "score": 1,
+      "hits": ["notes"]
+    },
+    {
+      "line": "ad26ca721 chore(agent): move sticky notes board to third monitor feature/identity-env-inputs",
+      "score": 1,
+      "hits": ["notes"]
+    },
+    {
+      "line": "ccfd24030 chore(agent): add sticky notes visual layout feature/identity-env-inputs",
+      "score": 1,
+      "hits": ["notes"]
+    },
+    {
+      "line": "8221b8247 chore(agent): add sticky notes color state pipeline feature/pricing-proof-evidence-scoring",
+      "score": 1,
+      "hits": ["notes"]
+    },
+    {
+      "line": "f0756ac43 chore(agent): close motion session feature-sticky-notes-process-command",
+      "score": 1,
+      "hits": ["notes"]
+    }
+  ],
+  "dirty_matches": [
+    {
+      "line": "?? system/agent-reports/context-continuity/20260430T192016Z-build-chefflow-obsidian-vault-index-notes-and-wire-future-memory-packets-to-them.json",
+      "file": "system/agent-reports/context-continuity/20260430T192016Z-build-chefflow-obsidian-vault-index-notes-and-wire-future-memory-packets-to-them.json",
+      "score": 16,
+      "hits": ["chefflow", "obsidian", "index", "notes", "wire", "future", "memory", "packets"]
+    },
+    {
+      "line": "?? system/agent-reports/router-decisions/20260430T192042Z-build-chefflow-obsidian-index-notes-and-wire-future-memory-packets.json",
+      "file": "system/agent-reports/router-decisions/20260430T192042Z-build-chefflow-obsidian-index-notes-and-wire-future-memory-packets.json",
+      "score": 16,
+      "hits": ["chefflow", "obsidian", "index", "notes", "wire", "future", "memory", "packets"]
+    }
+  ],
+  "claim_matches": [
+    {
+      "file": "system/agent-claims/20260430T165049Z-feature-sticky-notes-promoted-items-processing-build-v1-support-state-change-mot.json",
+      "score": 4,
+      "hits": ["chefflow", "notes"],
+      "prompt": "Build V1 support state-change motion primitives and apply to existing ChefFlow workflow surfaces",
+      "owned": [],
+      "status": "finished"
+    },
+    {
+      "file": "system/agent-claims/20260430T170821Z-feature-sticky-notes-process-command-keep-improving-v1-state-motion-by-adding-li.json",
+      "score": 3,
+      "hits": ["notes"],
+      "prompt": "Keep improving V1 state motion by adding list and action card motion to existing dashboard surfaces",
+      "owned": [],
+      "status": "finished"
+    },
+    {
+      "file": "system/agent-claims/20260429T234252Z-feature-pantry-engine-create-persistent-codex-behavior-to-prevent-fragmented-dup.json",
+      "score": 2,
+      "hits": ["obsidian", "memory"],
+      "prompt": "Create persistent Codex behavior to prevent fragmented duplicate builds and capture conversation memory for Obsidian-style continuity",
+      "owned": [],
+      "status": "active"
+    },
+    {
+      "file": "system/agent-claims/20260429T235629Z-feature-voice-ops-complete-build-the-complete-context-continuity-tooling-layer-s.json",
+      "score": 1,
+      "hits": ["obsidian"],
+      "prompt": "Build the complete context continuity tooling layer: scanner CLI, canonical surface registry, pre-build gate, Obsidian packet exporter, near-duplicate detector, spec template continuity section, feature family map, and dashboard",
+      "owned": [],
+      "status": "active"
+    }
+  ],
+  "duplicate_risks": [
+    {
+      "level": "medium",
+      "reason": "Multiple canonical surfaces matched the prompt.",
+      "owners": ["sticky-notes-intake-layer", "context-continuity", "remy-ai"]
+    },
+    {
+      "level": "medium",
+      "reason": "Dirty files already exist in this domain and may be another agent active work.",
+      "files": [
+        "system/agent-reports/context-continuity/20260430T192016Z-build-chefflow-obsidian-vault-index-notes-and-wire-future-memory-packets-to-them.json",
+        "system/agent-reports/router-decisions/20260430T192042Z-build-chefflow-obsidian-index-notes-and-wire-future-memory-packets.json"
+      ]
+    },
+    {
+      "level": "medium",
+      "reason": "Active or recorded claims overlap this domain.",
+      "claims": [
+        "system/agent-claims/20260430T165049Z-feature-sticky-notes-promoted-items-processing-build-v1-support-state-change-mot.json",
+        "system/agent-claims/20260430T170821Z-feature-sticky-notes-process-command-keep-improving-v1-state-motion-by-adding-li.json",
+        "system/agent-claims/20260429T234252Z-feature-pantry-engine-create-persistent-codex-behavior-to-prevent-fragmented-dup.json"
+      ]
+    }
+  ],
+  "continuity": {
+    "decision": "attach",
+    "stop_required": false,
+    "reason": "Matched canonical surface sticky-notes-intake-layer."
+  }
+}

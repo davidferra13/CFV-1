@@ -47,4 +47,29 @@ test('memory packet writes a compact markdown file', () => {
     dir: path.join(os.tmpdir(), 'chefflow-context-continuity-test'),
   })
   assert.match(result.file.replaceAll('\\', '/'), /context-continuity-test-packet/)
+  assert.equal(result.vault_used, false)
+  assert.equal(result.vault_file, null)
+  assert.deepEqual(result.index_files, [])
+})
+
+test('memory packet mirrors into Obsidian indexes when a vault is supplied', () => {
+  const root = path.join(os.tmpdir(), 'chefflow-obsidian-memory-test')
+  const dir = path.join(root, 'repo-memory')
+  const vault = path.join(root, 'vault')
+  const result = writeMemoryPacket({
+    title: 'Obsidian Memory Test Packet',
+    userIntent: 'Wire packets into vault notes',
+    canonicalHome: '.claude/skills/context-continuity/SKILL.md',
+    duplicateRisk: 'Low',
+    existingRelatedSurfaces: ['context-continuity', 'agent-skill-system'],
+    links: ['devtools/obsidian-memory-packet.mjs'],
+    dir,
+    vault,
+  })
+
+  assert.match(result.file.replaceAll('\\', '/'), /obsidian-memory-test-packet/)
+  assert.match(result.vault_file.replaceAll('\\', '/'), /Obsidian Memory Test Packet/)
+  assert.ok(result.index_files.some((file) => file.endsWith('ChefFlow Index.md')))
+  assert.ok(result.index_files.some((file) => file.endsWith('Codex Workflow Index.md')))
+  assert.ok(result.index_files.some((file) => file.endsWith('ChefFlow Decisions.md')))
 })

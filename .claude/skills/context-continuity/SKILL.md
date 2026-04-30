@@ -25,7 +25,7 @@ The canonical surface registry lives at `system/canonical-surfaces.json`. Update
 - Scan a prompt: `node devtools/context-continuity-scan.mjs --prompt "..." --write`
 - Find near duplicates: `node devtools/context-near-duplicates.mjs`
 - Build the feature family map: `node devtools/feature-family-map.mjs`
-- Write a memory packet: `node devtools/obsidian-memory-packet.mjs --title "..." --intent "..."`
+- Write a memory packet and update Obsidian indexes: `node devtools/obsidian-memory-packet.mjs --title "..." --intent "..."`
 - Generate the continuity dashboard: `node devtools/context-continuity-dashboard.mjs --prompt "..."`
 - Start a task with the pre-build gate: `node devtools/agent-start.mjs --prompt "..."`
 
@@ -71,6 +71,7 @@ When the user gives durable intent, repeated frustration, architecture direction
 Use the best available sink:
 
 1. If an Obsidian app, MCP tool, or explicit vault path is available in the current session, write or update the relevant Obsidian note.
+   The local packet tool automatically keeps `[[ChefFlow Index]]`, `[[Codex Workflow Index]]`, and `[[ChefFlow Decisions]]` current when it can resolve a vault.
 2. Otherwise, write a repo-local packet only when it is useful and safe, usually under `system/intake/notes/` or the task's existing spec/doc. Do not write raw full transcripts, secrets, auth artifacts, or local-only `obsidian_export/` copies by default.
 3. Link the packet to concrete code, docs, routes, or decisions so future agents can search it.
 

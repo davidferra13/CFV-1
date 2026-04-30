@@ -1,12 +1,12 @@
 # Agent Session Digest
 
-Generated: 2026-04-30T17:16:35.143Z
+Generated: 2026-04-30T19:24:25.532Z
 
 ## Summary
 
-- Flight records: 8
-- Skills used: builder, context-continuity, debug, omninet, skill-garden, software-fundamentals, v1-governor
-- Validations: agent harness unit tests, agent preflight, agent replay runner, agent-harness unit tests, git diff added-line em dash scan, git push hook typecheck and regression, node --check devtools scripts, node --check harness scripts, node --test --import tsx tests/unit/state-motion.test.tsx, npx tsc --noEmit --skipLibCheck, pre-commit quick regression, skill-trigger-tests, skill-validator omninet skill-garden, targeted em dash scan
+- Flight records: 10
+- Skills used: builder, context-continuity, debug, evidence-integrity, obsidian-vault, omninet, pipeline, pricing-reliability, skill-garden, software-fundamentals, v1-governor
+- Validations: agent harness unit tests, agent preflight, agent replay runner, agent-harness unit tests, em-dash scan, git diff added-line em dash scan, git push hook typecheck and regression, node --check devtools scripts, node --check devtools/context-continuity-lib.mjs, node --check devtools/obsidian-memory-packet.mjs, node --check harness scripts, node --test --import tsx tests/unit/state-motion.test.tsx, node --test tests/unit/context-continuity-tools.test.mjs, node devtools/skill-validator.mjs context-continuity, npx tsc --noEmit --skipLibCheck, pre-commit quick regression, skill-trigger-tests, skill-validator omninet skill-garden, targeted em dash scan
 - Missed skills: 0
 
 ## Records
@@ -19,6 +19,8 @@ Generated: 2026-04-30T17:16:35.143Z
 - 20260430T163810Z-build-geographic-pricing-proof-harness-from-docs-specs-geographic-pricing-proof-: started, commit none, prompt "Build Geographic Pricing Proof Harness from docs/specs/geographic-pricing-proof-harness.md"
 - 20260430T165049Z-build-v1-support-state-change-motion-primitives-and-apply-to-existing-chefflow-w: finished, commit af809250b, prompt "Build V1 support state-change motion primitives and apply to existing ChefFlow workflow surfaces"
 - 20260430T170821Z-keep-improving-v1-state-motion-by-adding-list-and-action-card-motion-to-existing: finished, commit 4753e54c6, prompt "Keep improving V1 state motion by adding list and action card motion to existing dashboard surfaces"
+- 20260430T175158Z-build-pricing-reliability-engine-proof-loop-blockers-unit-normalization-coverage: started, commit none, prompt "Build pricing reliability engine proof loop blockers unit normalization coverage menu costing propagation"
+- 20260430T192043Z-build-chefflow-obsidian-index-notes-and-wire-future-memory-packets: finished, commit 01e1da6b4, prompt "Build ChefFlow Obsidian index notes and wire future memory packets"
 
 ## What Future Codex Should Do Differently
 
