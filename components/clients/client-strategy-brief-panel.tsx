@@ -164,9 +164,17 @@ export function ClientStrategyBriefPanel({
   operationalState?: ClientStrategyOperationalState
 }) {
   const populatedSections = brief.sections.filter((section) => section.recommendations.length > 0)
+  const recommendations = brief.sections.flatMap((section) => section.recommendations)
   const statuses = new Map(
     (operationalState?.statuses ?? []).map((status) => [status.recommendationId, status])
   )
+  const newRecommendationIds = recommendations
+    .filter((recommendation) => !statuses.has(recommendation.id))
+    .map((recommendation) => recommendation.id)
+  const recommendationTitles = new Map(
+    recommendations.map((recommendation) => [recommendation.id, recommendation.title])
+  )
+  const diff = operationalState?.diff
 
   return (
     <Card className="overflow-hidden border-brand-900/60">
@@ -230,6 +238,73 @@ export function ClientStrategyBriefPanel({
               </div>
             ) : null}
           </div>
+        </div>
+
+        <div className="grid gap-4 lg:grid-cols-2">
+          <SectionBlock title="Strategy Brief Diff">
+            <div className="grid grid-cols-2 gap-2 text-center md:grid-cols-3">
+              <StatTile
+                label="New"
+                value={String(newRecommendationIds.length)}
+                detail="Not yet acted on"
+              />
+              <StatTile
+                label="Active"
+                value={String(diff?.activeRecommendationIds.length ?? 0)}
+                detail="Reminder or draft exists"
+              />
+              <StatTile
+                label="Reply"
+                value={String(diff?.replyReviewRecommendationIds.length ?? 0)}
+                detail="Needs review"
+              />
+              <StatTile
+                label="Done"
+                value={String(diff?.completedRecommendationIds.length ?? 0)}
+                detail="Outcome recorded"
+              />
+              <StatTile
+                label="Dismissed"
+                value={String(diff?.dismissedRecommendationIds.length ?? 0)}
+                detail="Chef dismissed"
+              />
+              <StatTile
+                label="Wrong"
+                value={String(diff?.wrongRecommendationIds.length ?? 0)}
+                detail="Marked wrong"
+              />
+            </div>
+            <ul className="mt-3 space-y-1 text-sm text-stone-300">
+              {newRecommendationIds.slice(0, 4).map((id) => (
+                <li key={id}>{recommendationTitles.get(id) ?? id}</li>
+              ))}
+              {newRecommendationIds.length === 0 ? (
+                <li className="text-stone-500">No new recommendations without an action trail.</li>
+              ) : null}
+            </ul>
+          </SectionBlock>
+
+          <SectionBlock title="Strategy Workbench Timeline">
+            {operationalState?.timeline.length ? (
+              <ol className="space-y-2 text-sm text-stone-300">
+                {operationalState.timeline.slice(0, 6).map((item) => (
+                  <li key={item.id}>
+                    <span className="font-medium text-stone-100">{item.label}</span>
+                    <span className="block text-xs text-stone-500">
+                      {item.kind.replace(/_/g, ' ')} |{' '}
+                      {recommendationTitles.get(item.recommendationId) ?? item.recommendationId}
+                      {item.occurredAt ? ` | ${item.occurredAt}` : ''}
+                    </span>
+                    <span className="block text-xs text-stone-400">{item.detail}</span>
+                  </li>
+                ))}
+              </ol>
+            ) : (
+              <p className="text-sm text-stone-400">
+                No strategy reminders, messages, replies, or outcomes have been recorded yet.
+              </p>
+            )}
+          </SectionBlock>
         </div>
 
         {populatedSections.map((section) => (

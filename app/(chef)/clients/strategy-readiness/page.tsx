@@ -7,6 +7,23 @@ import type { ClientStrategyPriority } from '@/lib/clients/client-strategy-brief
 
 export const metadata: Metadata = { title: 'Client Strategy Readiness' }
 
+type ReadinessFilter =
+  | 'all'
+  | 'missing_safety'
+  | 'stale_profile'
+  | 'low_readiness'
+  | 'no_preferences'
+  | 'no_contact_method'
+
+const FILTERS: Array<{ key: ReadinessFilter; label: string }> = [
+  { key: 'all', label: 'All' },
+  { key: 'missing_safety', label: 'Missing safety' },
+  { key: 'stale_profile', label: 'Stale profile' },
+  { key: 'low_readiness', label: 'Low readiness' },
+  { key: 'no_preferences', label: 'No preferences' },
+  { key: 'no_contact_method', label: 'No contact method' },
+]
+
 function priorityVariant(
   priority: ClientStrategyPriority
 ): 'default' | 'success' | 'warning' | 'error' | 'info' {
@@ -27,8 +44,14 @@ function SummaryTile({ label, value, detail }: { label: string; value: string; d
   )
 }
 
-export default async function ClientStrategyReadinessPage() {
+export default async function ClientStrategyReadinessPage({
+  searchParams,
+}: {
+  searchParams?: { filter?: string }
+}) {
   const report = await getClientStrategyReadinessReport()
+  const activeFilter = normalizeFilter(searchParams?.filter)
+  const rows = report.rows.filter((row) => matchesFilter(row, activeFilter))
 
   return (
     <div className="space-y-6">
@@ -68,15 +91,34 @@ export default async function ClientStrategyReadinessPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Readiness Queue</CardTitle>
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <CardTitle>Readiness Queue</CardTitle>
+            <div className="flex flex-wrap gap-2">
+              {FILTERS.map((filter) => (
+                <Link
+                  key={filter.key}
+                  href={
+                    filter.key === 'all'
+                      ? '/clients/strategy-readiness'
+                      : `/clients/strategy-readiness?filter=${filter.key}`
+                  }
+                  className={`rounded-full border px-3 py-1 text-xs transition-colors ${
+                    activeFilter === filter.key
+                      ? 'border-brand-700 bg-brand-950/60 text-brand-200'
+                      : 'border-stone-800 text-stone-400 hover:border-stone-700 hover:text-stone-200'
+                  }`}
+                >
+                  {filter.label}
+                </Link>
+              ))}
+            </div>
+          </div>
         </CardHeader>
         <CardContent className="space-y-3">
-          {report.rows.length === 0 ? (
-            <p className="text-sm text-stone-400">
-              No clients were available for readiness review.
-            </p>
+          {rows.length === 0 ? (
+            <p className="text-sm text-stone-400">No clients matched this readiness filter.</p>
           ) : (
-            report.rows.map((row) => (
+            rows.map((row) => (
               <Link
                 key={row.clientId}
                 href={`/clients/${row.clientId}/relationship`}
@@ -120,4 +162,27 @@ export default async function ClientStrategyReadinessPage() {
       </Card>
     </div>
   )
+}
+
+function normalizeFilter(value?: string): ReadinessFilter {
+  return FILTERS.some((filter) => filter.key === value) ? (value as ReadinessFilter) : 'all'
+}
+
+function matchesFilter(
+  row: Awaited<ReturnType<typeof getClientStrategyReadinessReport>>['rows'][number],
+  filter: ReadinessFilter
+): boolean {
+  if (filter === 'all') return true
+  if (filter === 'missing_safety') {
+    return (
+      row.missingFields.includes('allergies') || row.missingFields.includes('dietary restrictions')
+    )
+  }
+  if (filter === 'stale_profile') return row.staleFields.length > 0
+  if (filter === 'low_readiness') return row.score < 65
+  if (filter === 'no_preferences') return row.knownPreferenceCount === 0
+  if (filter === 'no_contact_method') {
+    return row.missingFields.includes('preferred contact method')
+  }
+  return true
 }

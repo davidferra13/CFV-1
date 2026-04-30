@@ -1,21 +1,64 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import type { ClientStrategyPriority } from './client-strategy-brief'
-import { STRATEGY_NOTE_PREFIX } from './client-strategy-note'
+import {
+  STRATEGY_NOTE_PREFIX,
+  STRATEGY_OUTCOME_PREFIX,
+  STRATEGY_REPLY_PREFIX,
+} from './client-strategy-note'
 
-export type ClientStrategyActionStatus = 'new' | 'needs_client' | 'scheduled' | 'done'
+export type ClientStrategyActionStatus =
+  | 'new'
+  | 'needs_client'
+  | 'scheduled'
+  | 'reply_review'
+  | 'done'
+  | 'dismissed'
+  | 'wrong_recommendation'
+
+export type ClientStrategyOutcomeCode =
+  | 'booked'
+  | 'no_response'
+  | 'profile_updated'
+  | 'wrong_recommendation'
+  | 'dismissed'
 
 export type ClientStrategyActionStatusRecord = {
   recommendationId: string
   status: ClientStrategyActionStatus
   taskIds: string[]
   scheduledMessageIds: string[]
+  replyReviewTaskIds: string[]
+  outcomes: Array<{
+    id: string
+    outcome: ClientStrategyOutcomeCode
+  }>
   detail: string
 }
 
 export type ClientStrategyOperationalState = {
   clientId: string
   statuses: ClientStrategyActionStatusRecord[]
+  timeline: ClientStrategyTimelineItem[]
+  diff: ClientStrategyBriefDiff
+}
+
+export type ClientStrategyTimelineItem = {
+  id: string
+  recommendationId: string
+  kind: 'reminder' | 'message' | 'reply_review' | 'outcome'
+  label: string
+  detail: string
+  occurredAt: string | null
+}
+
+export type ClientStrategyBriefDiff = {
+  newRecommendationIds: string[]
+  activeRecommendationIds: string[]
+  completedRecommendationIds: string[]
+  dismissedRecommendationIds: string[]
+  wrongRecommendationIds: string[]
+  replyReviewRecommendationIds: string[]
 }
 
 export type ClientStrategyReadinessRow = {
@@ -39,16 +82,28 @@ export type ClientStrategyReadinessReport = {
   }
 }
 
-type TodoRow = {
+export type ClientStrategyTodoRow = {
   id: string
   completed: boolean
   notes: string | null
+  text: string | null
+  created_at: string | null
+  completed_at: string | null
 }
 
-type ScheduledMessageRow = {
+export type ClientStrategyScheduledMessageRow = {
   id: string
   status: string
   body: string | null
+  scheduled_for: string | null
+  sent_at: string | null
+  created_at: string | null
+}
+
+export type ClientStrategyOperationalProjectionInput = {
+  clientId: string
+  todos: ClientStrategyTodoRow[]
+  scheduledMessages: ClientStrategyScheduledMessageRow[]
 }
 
 type ClientReadinessRecord = {
@@ -74,12 +129,12 @@ export async function getClientStrategyOperationalState(
   const [todoResult, messageResult] = await Promise.all([
     db
       .from('chef_todos')
-      .select('id, completed, notes')
+      .select('id, text, completed, completed_at, created_at, notes')
       .eq('chef_id', user.entityId)
       .eq('client_id', clientId),
     db
       .from('scheduled_messages')
-      .select('id, status, body')
+      .select('id, status, body, scheduled_for, sent_at, created_at')
       .eq('chef_id', user.entityId)
       .eq('context_type', 'client')
       .eq('context_id', clientId),
@@ -93,9 +148,25 @@ export async function getClientStrategyOperationalState(
     console.error('[client-strategy-ops] message status load failed:', messageResult.error)
   }
 
-  return {
+  const todos = (todoResult.data ?? []) as ClientStrategyTodoRow[]
+  const scheduledMessages = (messageResult.data ?? []) as ClientStrategyScheduledMessageRow[]
+  return projectClientStrategyOperationalState({
     clientId,
-    statuses: buildOperationalStatuses(todoResult.data ?? [], messageResult.data ?? []),
+    todos,
+    scheduledMessages,
+  })
+}
+
+export function projectClientStrategyOperationalState(
+  input: ClientStrategyOperationalProjectionInput
+): ClientStrategyOperationalState {
+  const statuses = buildOperationalStatuses(input.todos, input.scheduledMessages)
+
+  return {
+    clientId: input.clientId,
+    statuses,
+    timeline: buildTimeline(input.todos, input.scheduledMessages),
+    diff: buildBriefDiff(statuses),
   }
 }
 
@@ -145,13 +216,13 @@ export async function getClientStrategyReadinessReport(): Promise<ClientStrategy
 }
 
 function buildOperationalStatuses(
-  todos: TodoRow[],
-  scheduledMessages: ScheduledMessageRow[]
+  todos: ClientStrategyTodoRow[],
+  scheduledMessages: ClientStrategyScheduledMessageRow[]
 ): ClientStrategyActionStatusRecord[] {
   const byRecommendation = new Map<string, ClientStrategyActionStatusRecord>()
 
   for (const todo of todos) {
-    const recommendationId = extractRecommendationId(todo.notes)
+    const recommendationId = extractRecommendationId(todo.notes, STRATEGY_NOTE_PREFIX)
     if (!recommendationId) continue
     const record = getOrCreateStatusRecord(byRecommendation, recommendationId)
     record.taskIds.push(todo.id)
@@ -164,12 +235,49 @@ function buildOperationalStatuses(
     }
   }
 
+  for (const todo of todos) {
+    const recommendationId = extractRecommendationId(todo.notes, STRATEGY_REPLY_PREFIX)
+    if (!recommendationId) continue
+    const record = getOrCreateStatusRecord(byRecommendation, recommendationId)
+    record.replyReviewTaskIds.push(todo.id)
+    if (record.status !== 'done' && record.status !== 'dismissed') {
+      record.status = 'reply_review'
+      record.detail = todo.completed
+        ? 'Client reply review has been completed.'
+        : 'Client reply needs chef review before profile updates.'
+    }
+  }
+
+  for (const todo of todos) {
+    const recommendationId = extractRecommendationId(todo.notes, STRATEGY_OUTCOME_PREFIX)
+    if (!recommendationId) continue
+    const outcome = extractOutcome(todo.notes)
+    const record = getOrCreateStatusRecord(byRecommendation, recommendationId)
+    record.outcomes.push({ id: todo.id, outcome })
+
+    if (outcome === 'wrong_recommendation') {
+      record.status = 'wrong_recommendation'
+      record.detail = 'Chef marked this recommendation as wrong.'
+    } else if (outcome === 'dismissed') {
+      record.status = 'dismissed'
+      record.detail = 'Chef dismissed this recommendation.'
+    } else {
+      record.status = 'done'
+      record.detail = `Outcome recorded: ${outcome.replace(/_/g, ' ')}.`
+    }
+  }
+
   for (const message of scheduledMessages) {
-    const recommendationId = extractRecommendationId(message.body)
+    const recommendationId = extractRecommendationId(message.body, STRATEGY_NOTE_PREFIX)
     if (!recommendationId) continue
     const record = getOrCreateStatusRecord(byRecommendation, recommendationId)
     record.scheduledMessageIds.push(message.id)
-    if (record.status !== 'done') {
+    if (
+      record.status !== 'done' &&
+      record.status !== 'dismissed' &&
+      record.status !== 'wrong_recommendation' &&
+      record.status !== 'reply_review'
+    ) {
       record.status = message.status === 'sent' ? 'done' : 'scheduled'
       record.detail =
         message.status === 'sent'
@@ -193,19 +301,130 @@ function getOrCreateStatusRecord(
     status: 'new',
     taskIds: [],
     scheduledMessageIds: [],
+    replyReviewTaskIds: [],
+    outcomes: [],
     detail: 'No linked reminder or scheduled message exists yet.',
   }
   records.set(recommendationId, created)
   return created
 }
 
-function extractRecommendationId(value: string | null): string | null {
+function extractRecommendationId(value: string | null, prefix: string): string | null {
   if (!value) return null
-  const index = value.indexOf(STRATEGY_NOTE_PREFIX)
+  const index = value.indexOf(prefix)
   if (index < 0) return null
-  const rest = value.slice(index + STRATEGY_NOTE_PREFIX.length)
+  const rest = value.slice(index + prefix.length)
   const [id] = rest.split(/\s|\n/)
   return id?.trim() || null
+}
+
+function extractOutcome(value: string | null): ClientStrategyOutcomeCode {
+  const match = value?.match(/^Outcome:\s*([a-z_]+)/m)
+  const outcome = match?.[1] as ClientStrategyOutcomeCode | undefined
+  if (
+    outcome === 'booked' ||
+    outcome === 'no_response' ||
+    outcome === 'profile_updated' ||
+    outcome === 'wrong_recommendation' ||
+    outcome === 'dismissed'
+  ) {
+    return outcome
+  }
+  return 'profile_updated'
+}
+
+function buildTimeline(
+  todos: ClientStrategyTodoRow[],
+  scheduledMessages: ClientStrategyScheduledMessageRow[]
+): ClientStrategyTimelineItem[] {
+  const todoItems = todos.flatMap((todo): ClientStrategyTimelineItem[] => {
+    const outcomeId = extractRecommendationId(todo.notes, STRATEGY_OUTCOME_PREFIX)
+    if (outcomeId) {
+      return [
+        {
+          id: `outcome:${todo.id}`,
+          recommendationId: outcomeId,
+          kind: 'outcome',
+          label: todo.text ?? 'Recommendation outcome recorded',
+          detail: extractOutcome(todo.notes).replace(/_/g, ' '),
+          occurredAt: todo.completed_at ?? todo.created_at,
+        },
+      ]
+    }
+
+    const replyId = extractRecommendationId(todo.notes, STRATEGY_REPLY_PREFIX)
+    if (replyId) {
+      return [
+        {
+          id: `reply:${todo.id}`,
+          recommendationId: replyId,
+          kind: 'reply_review',
+          label: todo.text ?? 'Client reply review',
+          detail: todo.completed ? 'Reply review complete' : 'Reply needs review',
+          occurredAt: todo.completed_at ?? todo.created_at,
+        },
+      ]
+    }
+
+    const recommendationId = extractRecommendationId(todo.notes, STRATEGY_NOTE_PREFIX)
+    if (!recommendationId) return []
+
+    return [
+      {
+        id: `reminder:${todo.id}`,
+        recommendationId,
+        kind: 'reminder',
+        label: todo.text ?? 'Strategy reminder',
+        detail: todo.completed ? 'Reminder completed' : 'Reminder open',
+        occurredAt: todo.completed_at ?? todo.created_at,
+      },
+    ]
+  })
+
+  const messageItems = scheduledMessages.flatMap((message): ClientStrategyTimelineItem[] => {
+    const recommendationId = extractRecommendationId(message.body, STRATEGY_NOTE_PREFIX)
+    if (!recommendationId) return []
+
+    return [
+      {
+        id: `message:${message.id}`,
+        recommendationId,
+        kind: 'message',
+        label: message.status === 'sent' ? 'Message sent' : 'Message scheduled',
+        detail: `Status: ${message.status}`,
+        occurredAt: message.sent_at ?? message.scheduled_for ?? message.created_at,
+      },
+    ]
+  })
+
+  return [...todoItems, ...messageItems].sort((left, right) => {
+    const leftTime = left.occurredAt ? Date.parse(left.occurredAt) : 0
+    const rightTime = right.occurredAt ? Date.parse(right.occurredAt) : 0
+    return rightTime - leftTime
+  })
+}
+
+function buildBriefDiff(statuses: ClientStrategyActionStatusRecord[]): ClientStrategyBriefDiff {
+  return {
+    newRecommendationIds: statuses
+      .filter((status) => status.status === 'new')
+      .map((status) => status.recommendationId),
+    activeRecommendationIds: statuses
+      .filter((status) => status.status === 'scheduled' || status.status === 'needs_client')
+      .map((status) => status.recommendationId),
+    completedRecommendationIds: statuses
+      .filter((status) => status.status === 'done')
+      .map((status) => status.recommendationId),
+    dismissedRecommendationIds: statuses
+      .filter((status) => status.status === 'dismissed')
+      .map((status) => status.recommendationId),
+    wrongRecommendationIds: statuses
+      .filter((status) => status.status === 'wrong_recommendation')
+      .map((status) => status.recommendationId),
+    replyReviewRecommendationIds: statuses
+      .filter((status) => status.status === 'reply_review')
+      .map((status) => status.recommendationId),
+  }
 }
 
 function buildReadinessRow(client: ClientReadinessRecord): ClientStrategyReadinessRow {
