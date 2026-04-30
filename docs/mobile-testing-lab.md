@@ -49,6 +49,32 @@ npm run test:mobile:iphone:public
 
 This skips auth bootstrap and runs only public routes.
 
+## Release Mobile Smoke
+
+Before a release candidate, preview the smoke plan:
+
+```bash
+node scripts/mobile-release-smoke.mjs --dry-run
+```
+
+Run the smoke suite:
+
+```bash
+node scripts/mobile-release-smoke.mjs
+```
+
+Use `--public-only` when the change only touches public pages and auth bootstrapping is not needed:
+
+```bash
+node scripts/mobile-release-smoke.mjs --public-only
+```
+
+The release smoke runs:
+
+- Public iPhone WebKit smoke
+- Authenticated Android Chrome smoke
+- Authenticated iPhone WebKit smoke
+
 ## Real iPhone Without Buying One
 
 Use BrowserStack when ChefFlow needs actual iOS Safari proof.
@@ -84,3 +110,12 @@ Use this fallback order:
 - Passing BrowserStack real iPhone Safari means the tested path works on that device, OS, and browser combination.
 - Any horizontal overflow, 500 response, page error, or non-ignored console error in `latest.json` is a real mobile blocker until investigated.
 - Do not mark mobile release-ready from desktop viewport checks alone.
+
+## Release Checklist
+
+- `reports/mobile-audit/latest.json` has zero failures.
+- The newest run screenshots cover the changed mobile surface.
+- Samsung physical-device smoke passed when Android behavior matters.
+- BrowserStack real iPhone Safari smoke passed for auth, payment, PWA install, safe-area, camera, file upload, or keyboard-heavy flows.
+- Any BrowserStack session link or screenshot is attached to the release notes.
+- Remaining mobile risk is written plainly in the release notes instead of hidden as "green."
