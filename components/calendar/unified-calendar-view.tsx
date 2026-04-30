@@ -25,8 +25,18 @@ import type { UnifiedCalendarItem } from '@/lib/calendar/types'
 import type { CalendarFilters } from '@/lib/calendar/constants'
 import { DEFAULT_CALENDAR_FILTERS } from '@/lib/calendar/constants'
 import { CALENDAR_BORDER_STYLES } from '@/lib/calendar/colors'
-import { detectCalendarConflicts, getConflictsForMove } from '@/lib/calendar/conflict-engine'
-import { autoSuggestEventBlocks, bulkCreatePrepBlocks } from '@/lib/scheduling/prep-block-actions'
+import {
+  detectCalendarConflicts,
+  findCalendarOpenSlots,
+  getConflictsForMove,
+  scoreCalendarDate,
+  type CalendarConflictSeverity,
+} from '@/lib/calendar/conflict-engine'
+import {
+  autoSuggestEventBlocks,
+  bulkCreatePrepBlocks,
+  moveEventPrepBlocks,
+} from '@/lib/scheduling/prep-block-actions'
 import type { CreatePrepBlockInput } from '@/lib/scheduling/types'
 import { Button } from '@/components/ui/button'
 
@@ -59,7 +69,11 @@ type Props = {
 }
 
 // Convert UnifiedCalendarItem to FullCalendar EventInput
-function toFullCalendarEvent(item: UnifiedCalendarItem) {
+function toFullCalendarEvent(
+  item: UnifiedCalendarItem,
+  conflictSeverity?: CalendarConflictSeverity,
+  conflictCount = 0
+) {
   const startStr = item.allDay
     ? item.startDate
     : `${item.startDate}T${item.startTime || '00:00'}:00`
@@ -88,6 +102,8 @@ function toFullCalendarEvent(item: UnifiedCalendarItem) {
     editable: item.type === 'event' && RESCHEDULABLE_STATUSES.has(item.status ?? ''),
     extendedProps: {
       ...item,
+      conflictSeverity,
+      conflictCount,
     },
   }
 }
@@ -128,10 +144,33 @@ export function UnifiedCalendarView({ initialItems, chefId }: Props) {
     })
   }, [items, filters])
 
+  const calendarConflicts = useMemo(() => detectCalendarConflicts(items), [items])
+
+  const conflictMetaByItemId = useMemo(() => {
+    const rank: Record<CalendarConflictSeverity, number> = { critical: 0, warning: 1, info: 2 }
+    const meta = new Map<string, { severity: CalendarConflictSeverity; count: number }>()
+    for (const conflict of calendarConflicts) {
+      for (const itemId of conflict.itemIds) {
+        const current = meta.get(itemId)
+        meta.set(itemId, {
+          severity:
+            !current || rank[conflict.severity] < rank[current.severity]
+              ? conflict.severity
+              : current.severity,
+          count: (current?.count ?? 0) + 1,
+        })
+      }
+    }
+    return meta
+  }, [calendarConflicts])
+
   // Convert to FullCalendar events
   const calendarEvents = useMemo(() => {
-    return filteredItems.map(toFullCalendarEvent)
-  }, [filteredItems])
+    return filteredItems.map((item) => {
+      const conflictMeta = conflictMetaByItemId.get(item.id)
+      return toFullCalendarEvent(item, conflictMeta?.severity, conflictMeta?.count ?? 0)
+    })
+  }, [filteredItems, conflictMetaByItemId])
 
   // Items for a selected date
   const selectedDateItems = useMemo(() => {
@@ -146,8 +185,6 @@ export function UnifiedCalendarView({ initialItems, chefId }: Props) {
     return items.filter((item) => item.startDate <= selectedDate && item.endDate >= selectedDate)
   }, [items, selectedDate])
 
-  const calendarConflicts = useMemo(() => detectCalendarConflicts(items), [items])
-
   const selectedDateConflicts = useMemo(() => {
     if (!selectedDate) return []
     return calendarConflicts.filter((conflict) => conflict.date === selectedDate)
@@ -157,6 +194,19 @@ export function UnifiedCalendarView({ initialItems, chefId }: Props) {
     if (!selectedDate) return []
     return selectedDateAllItems.filter((item) => item.type === 'waitlist')
   }, [selectedDateAllItems, selectedDate])
+
+  const selectedDateAvailability = useMemo(() => {
+    if (!selectedDate) return null
+    return scoreCalendarDate(items, selectedDate, calendarConflicts)
+  }, [items, calendarConflicts, selectedDate])
+
+  const selectedDateOpenSlots = useMemo(() => {
+    if (!selectedDate) return []
+    return findCalendarOpenSlots(items, selectedDate, selectedDate, {
+      durationMinutes: 180,
+      maxSlots: 3,
+    })
+  }, [items, selectedDate])
 
   const refreshCurrentRange = useCallback(async () => {
     const api = calendarRef.current?.getApi()
@@ -233,6 +283,7 @@ export function UnifiedCalendarView({ initialItems, chefId }: Props) {
 
       const eventId = info.event.id
       const newDate = info.event.startStr.split('T')[0]
+      const previousDate = (props.startDate as string) || info.oldEvent.startStr.split('T')[0]
       const moveConflicts = getConflictsForMove(items, eventId, newDate)
       const relatedPrepBlocks = items.filter(
         (item) => item.type === 'prep_block' && item.url === `/events/${eventId}`
@@ -274,9 +325,21 @@ export function UnifiedCalendarView({ initialItems, chefId }: Props) {
           `Rescheduled to ${new Date(newDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`
         )
         if (relatedPrepBlocks.length > 0) {
-          const regenerate = window.confirm(
-            'Regenerate suggested prep blocks for the new event date now?'
+          const moveExisting = window.confirm(
+            'Move existing prep blocks by the same date offset as this event?'
           )
+          if (moveExisting) {
+            const moved = await moveEventPrepBlocks(eventId, previousDate, newDate)
+            if (!moved.success) {
+              toast.error(moved.error ?? 'Failed to move prep blocks')
+              return
+            }
+            await refreshCurrentRange()
+            toast.success(`Moved ${moved.moved ?? 0} prep block${moved.moved === 1 ? '' : 's'}`)
+            return
+          }
+
+          const regenerate = window.confirm('Regenerate suggested prep blocks for the new date?')
           if (regenerate) {
             const suggestions = await autoSuggestEventBlocks(eventId)
             if (suggestions.error) {
@@ -405,6 +468,7 @@ export function UnifiedCalendarView({ initialItems, chefId }: Props) {
 
   const renderEventContent = useCallback((arg: EventContentArg) => {
     const props = arg.event.extendedProps
+    const conflictCount = Number(props.conflictCount ?? 0)
     if (props.dayType === 'holiday') {
       return (
         <div className="flex items-center gap-1 px-1.5 py-0.5 min-w-0 overflow-hidden">
@@ -425,6 +489,9 @@ export function UnifiedCalendarView({ initialItems, chefId }: Props) {
           <div className="min-w-0">
             <span className="font-medium text-stone-100">{arg.event.title}</span>
             {props.status && <span className="text-stone-500 ml-2 text-sm">{props.status}</span>}
+            {conflictCount > 0 && (
+              <span className="ml-2 text-xs font-semibold text-red-300">Conflict</span>
+            )}
           </div>
         </div>
       )
@@ -438,6 +505,11 @@ export function UnifiedCalendarView({ initialItems, chefId }: Props) {
             <span className="text-xxs font-medium flex-shrink-0 opacity-75">{arg.timeText}</span>
           )}
           <span className="text-xs font-medium truncate">{arg.event.title}</span>
+          {conflictCount > 0 && (
+            <span className="rounded bg-red-500/20 px-1 text-xxs font-semibold text-red-200">
+              {conflictCount}
+            </span>
+          )}
         </div>
       )
     }
@@ -448,6 +520,11 @@ export function UnifiedCalendarView({ initialItems, chefId }: Props) {
         <div className="flex items-center gap-1">
           <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
           <span className="text-xs font-semibold truncate">{arg.event.title}</span>
+          {conflictCount > 0 && (
+            <span className="rounded bg-red-500/20 px-1 text-xxs font-semibold text-red-200">
+              {conflictCount}
+            </span>
+          )}
         </div>
         {arg.timeText && <div className="text-xxs opacity-70 mt-0.5">{arg.timeText}</div>}
       </div>
@@ -656,16 +733,20 @@ export function UnifiedCalendarView({ initialItems, chefId }: Props) {
                 }}
                 allDaySlot={true}
                 allDayText="All Day"
-                eventClassNames={(arg) => {
+                eventClassNames={(arg: { event: { extendedProps: Record<string, unknown> } }) => {
                   const props = arg.event.extendedProps
                   const borderStyle = props.borderStyle as string
                   return [
                     'cf-unified-event',
                     borderStyle === 'dashed' ? 'cf-event--dashed' : '',
                     borderStyle === 'dotted' ? 'cf-event--dotted' : '',
+                    props.conflictCount ? 'cf-event--conflict' : '',
                   ].filter(Boolean)
                 }}
-                eventDidMount={(info) => {
+                eventDidMount={(info: {
+                  event: { extendedProps: Record<string, unknown> }
+                  el: HTMLElement
+                }) => {
                   const props = info.event.extendedProps
                   if (props.dayType === 'holiday') {
                     info.el.style.backgroundColor = '#fff1f2'
@@ -688,6 +769,12 @@ export function UnifiedCalendarView({ initialItems, chefId }: Props) {
                   info.el.style.color = color
                   info.el.style.borderRadius = '4px'
                   info.el.style.cursor = props.url ? 'pointer' : 'default'
+
+                  if (props.conflictSeverity === 'critical') {
+                    info.el.style.boxShadow = 'inset 0 0 0 1px rgba(248, 113, 113, 0.7)'
+                  } else if (props.conflictSeverity === 'warning') {
+                    info.el.style.boxShadow = 'inset 0 0 0 1px rgba(251, 191, 36, 0.65)'
+                  }
 
                   if (borderStyle === 'dashed') {
                     info.el.style.opacity = '0.85'
@@ -751,12 +838,14 @@ export function UnifiedCalendarView({ initialItems, chefId }: Props) {
       </div>
 
       {/* Selected date detail panel */}
-      {selectedDate && (
+      {selectedDate && selectedDateAvailability && (
         <CalendarDayCommandPanel
           selectedDate={selectedDate}
           visibleItems={selectedDateItems}
           waitlistMatches={selectedDateWaitlistMatches}
           conflicts={selectedDateConflicts}
+          availability={selectedDateAvailability}
+          openSlots={selectedDateOpenSlots}
           onAddEntry={() => {
             setNewEntryDefaultDate(selectedDate)
             setShowNewEntryModal(true)

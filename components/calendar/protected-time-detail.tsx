@@ -95,6 +95,9 @@ export function ProtectedTimeDetail({ block }: Props) {
           <p className="mt-1 text-sm text-stone-500">{formatDate(block.blockDate)}</p>
         </div>
         <div className="flex flex-wrap gap-2">
+          <Button href={`/calendar/protected/${block.id}/edit`} variant="primary" size="sm">
+            Edit
+          </Button>
           <Button href="/calendar" variant="secondary" size="sm">
             Calendar
           </Button>
