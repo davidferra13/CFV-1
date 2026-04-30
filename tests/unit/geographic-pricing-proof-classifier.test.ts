@@ -108,6 +108,50 @@ describe('geographic pricing proof classifier', () => {
     assert.equal(result.failureReason, 'modeled-only pricing')
   })
 
+  it('reports weak ingredient matching before unit conversion gaps', () => {
+    const result = classifyGeographicProofCandidate(
+      {
+        kind: 'store_observed',
+        priceCents: 928,
+        normalizedPriceCents: 928,
+        normalizedUnit: 'lb',
+        storeId: 'store-weak',
+        storeState: 'CA',
+        storeZip: '90001',
+        productId: 'product-weak',
+        productName: 'Peanut Butter Protein Bar',
+        observedAt: '2026-04-30T12:00:00.000Z',
+        confidence: 0.9,
+        matchConfidence: 0.62,
+        unitConfidence: 0.35,
+      },
+      { geographyCode: 'CA', now, hasLocalStores: true }
+    )
+
+    assert.equal(result.quoteSafety, 'verify_first')
+    assert.equal(result.failureReason, 'weak ingredient matching')
+  })
+
+  it('reports missing ZIP/store coverage for nonlocal observed data when stores exist', () => {
+    const result = classifyGeographicProofCandidate(
+      {
+        kind: 'market_national',
+        priceCents: 500,
+        normalizedPriceCents: 500,
+        normalizedUnit: 'lb',
+        observedAt: '2026-04-30T12:00:00.000Z',
+        confidence: 0.9,
+        matchConfidence: 0.9,
+        unitConfidence: 0.9,
+        dataPoints: 20,
+      },
+      { geographyCode: 'CA', now, hasLocalStores: true }
+    )
+
+    assert.equal(result.quoteSafety, 'verify_first')
+    assert.equal(result.failureReason, 'missing ZIP/store coverage')
+  })
+
   it('rejects zero-dollar prices as not usable', () => {
     const result = classifyGeographicProofCandidate(
       {

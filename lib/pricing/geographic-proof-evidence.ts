@@ -1,4 +1,5 @@
 import type { GeographicPricingBasketItem } from '@/lib/pricing/geography-basket'
+import { normalizeStandardUnit } from '@/lib/pricing/standard-unit-normalization'
 
 export type LocalProductMatchScore = {
   confidence: number
@@ -50,7 +51,7 @@ const PACKAGE_NOISE_BY_INGREDIENT: Record<string, string[]> = {
   potatoes: ['chip', 'chips', 'fries', 'frozen', 'hash', 'instant', 'mashed'],
   butter: ['almond', 'body', 'cookie', 'cookies', 'lotion', 'peanut', 'spread'],
   olive_oil: ['dressing', 'mayo', 'mayonnaise', 'spray'],
-  garlic: ['dip', 'dressing', 'powder', 'salt', 'sauce', 'seasoning'],
+  garlic: ['crouton', 'croutons', 'dip', 'dressing', 'powder', 'salt', 'sauce', 'seasoning'],
   onion: ['dip', 'dressing', 'powder', 'salt', 'sauce', 'seasoning'],
   lemon: ['ade', 'cookie', 'cookies', 'extract', 'juice', 'lemonade', 'pie'],
   parsley: ['dried', 'flakes', 'seasoning'],
@@ -61,19 +62,6 @@ const PACKAGE_NOISE_BY_INGREDIENT: Record<string, string[]> = {
   chocolate: ['bar', 'candy', 'cereal', 'cookie', 'cookies', 'milk', 'syrup'],
   berries: ['cereal', 'granola', 'jam', 'muffin', 'muffins', 'preserve', 'preserves', 'yogurt'],
 }
-
-const MASS_UNITS = new Set(['lb', 'lbs', 'pound', 'pounds', 'oz', 'ounce', 'ounces', 'kg', 'g'])
-const VOLUME_UNITS = new Set([
-  'fl oz',
-  'floz',
-  'fluid ounce',
-  'fluid ounces',
-  'gal',
-  'gallon',
-  'l',
-  'ml',
-])
-const EACH_UNITS = new Set(['ct', 'count', 'each', 'ea', 'unit'])
 
 function normalizeText(value: string | null | undefined): string {
   return (value ?? '')
@@ -173,22 +161,11 @@ export function scoreLocalProductMatch(
   return best
 }
 
-function normalizeUnit(value: string | null | undefined): string {
-  return normalizeText(value).replace(/^fluid ounces?$/, 'fl oz')
-}
-
 function sizeUnitConvertsToTarget(
   sizeUnit: string | null | undefined,
   targetUnit: string
 ): boolean {
-  const normalizedSizeUnit = normalizeUnit(sizeUnit)
-  const normalizedTargetUnit = normalizeUnit(targetUnit)
-
-  if (normalizedTargetUnit === 'lb') return MASS_UNITS.has(normalizedSizeUnit)
-  if (normalizedTargetUnit === 'fl oz') return VOLUME_UNITS.has(normalizedSizeUnit)
-  if (normalizedTargetUnit === 'each') return EACH_UNITS.has(normalizedSizeUnit)
-
-  return normalizedSizeUnit === normalizedTargetUnit
+  return normalizeStandardUnit(sizeUnit) === normalizeStandardUnit(targetUnit)
 }
 
 export function scoreLocalUnitConversion(input: UnitConversionInput): LocalUnitConversionScore {

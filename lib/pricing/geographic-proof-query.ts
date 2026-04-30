@@ -16,6 +16,7 @@ import {
   scoreLocalProductMatch,
   scoreLocalUnitConversion,
 } from '@/lib/pricing/geographic-proof-evidence'
+import { calculateStandardUnitPriceCents } from '@/lib/pricing/standard-unit-normalization'
 
 export type GeographicPricingProofRow = {
   runId?: string
@@ -148,6 +149,14 @@ type MarketCandidateRow = {
   states: string[] | null
   newest_price_at: string | null
   confidence: number | string | null
+}
+
+type CachedBasketCandidates = {
+  systemIngredient: SystemIngredientRow | null
+  localCandidates: Map<string, GeographicProofCandidate>
+  marketCandidateRow: MarketCandidateRow | null
+  publicBaselineCandidate: GeographicProofCandidate | null
+  categoryBaselineCandidate: GeographicProofCandidate | null
 }
 
 type PublicBaselineRow = {
@@ -457,10 +466,19 @@ async function loadLocalCandidatesByGeography(
       productSizeValue: toPositiveNumber(row.entity_product_size_value),
       productSizeUnit: row.entity_product_size_unit,
     })
+    const computedStandardUnitPrice = calculateStandardUnitPriceCents({
+      priceCents: row.price_cents,
+      sizeValue: row.entity_product_size_value,
+      sizeUnit: row.entity_product_size_unit,
+    })
+    const normalizedPriceCents =
+      row.has_standard_unit_price || computedStandardUnitPrice?.unit !== item.targetUnit
+        ? row.normalized_price_cents
+        : computedStandardUnitPrice.priceCents
     const candidate: GeographicProofCandidate = {
       kind: 'store_observed',
       priceCents: row.price_cents,
-      normalizedPriceCents: row.normalized_price_cents,
+      normalizedPriceCents: normalizedPriceCents,
       normalizedUnit: item.targetUnit,
       geographyCode: row.entity_store_state,
       storeId: row.entity_store_id,
@@ -487,6 +505,8 @@ async function loadLocalCandidatesByGeography(
         hasStandardUnitPrice: row.has_standard_unit_price,
         productSizeValue: toPositiveNumber(row.entity_product_size_value),
         productSizeUnit: row.entity_product_size_unit,
+        computedStandardUnitPriceCents: computedStandardUnitPrice?.priceCents ?? null,
+        computedStandardUnit: computedStandardUnitPrice?.unit ?? null,
         matchReason: matchScore.reason,
         matchedAlias: matchScore.matchedAlias,
         unitReason: unitScore.reason,
@@ -501,10 +521,9 @@ async function loadLocalCandidatesByGeography(
   return candidates
 }
 
-async function findMarketCandidate(
-  geography: GeographicPricingGeography,
+async function findMarketCandidateRow(
   systemIngredient: SystemIngredientRow | null
-): Promise<GeographicProofCandidate | null> {
+): Promise<MarketCandidateRow | null> {
   if (!systemIngredient) return null
   const rows = await pgClient<MarketCandidateRow[]>`
     SELECT
@@ -526,7 +545,14 @@ async function findMarketCandidate(
   `
   const row = rows[0]
   if (!row) return null
+  return row
+}
 
+function buildMarketCandidate(
+  geography: GeographicPricingGeography,
+  systemIngredient: SystemIngredientRow,
+  row: MarketCandidateRow
+): GeographicProofCandidate {
   const states = row.states ?? []
   const coversState = states.includes(geography.code)
   const confidence = Math.min(toNumber(row.confidence) + (coversState ? 0.1 : 0), 0.75)
@@ -630,17 +656,22 @@ async function findCategoryBaselineCandidate(
   }
 }
 
-async function pickCandidate(
+function pickCandidate(
   geography: GeographicPricingGeography,
   item: GeographicPricingBasketItem,
-  systemIngredient: SystemIngredientRow | null,
+  cached: CachedBasketCandidates,
   localCandidate: GeographicProofCandidate | null
-): Promise<GeographicProofCandidate | null> {
+): GeographicProofCandidate | null {
+  const marketCandidate =
+    cached.systemIngredient && cached.marketCandidateRow
+      ? buildMarketCandidate(geography, cached.systemIngredient, cached.marketCandidateRow)
+      : null
+
   return (
     localCandidate ??
-    (await findMarketCandidate(geography, systemIngredient)) ??
-    (await findPublicBaselineCandidate(item)) ??
-    (await findCategoryBaselineCandidate(item)) ?? {
+    marketCandidate ??
+    cached.publicBaselineCandidate ??
+    cached.categoryBaselineCandidate ?? {
       kind: 'modeled_fallback',
       priceCents: 399,
       normalizedPriceCents: 399,
@@ -712,16 +743,25 @@ export async function buildGeographicPricingProofRows(
   options: { now?: Date } = {}
 ): Promise<GeographicPricingProofRow[]> {
   const now = options.now ?? new Date()
-  const systemIngredientByKey = new Map<string, SystemIngredientRow | null>()
-  const localCandidatesByKey = new Map<string, Map<string, GeographicProofCandidate>>()
+  const candidatesByKey = new Map<string, CachedBasketCandidates>()
 
   for (const item of GEOGRAPHIC_PRICING_BASKET) {
-    const [systemIngredient, localCandidates] = await Promise.all([
-      findSystemIngredient(item),
-      loadLocalCandidatesByGeography(item),
-    ])
-    systemIngredientByKey.set(item.ingredientKey, systemIngredient)
-    localCandidatesByKey.set(item.ingredientKey, localCandidates)
+    const [systemIngredient, localCandidates, publicBaselineCandidate, categoryBaselineCandidate] =
+      await Promise.all([
+        findSystemIngredient(item),
+        loadLocalCandidatesByGeography(item),
+        findPublicBaselineCandidate(item),
+        findCategoryBaselineCandidate(item),
+      ])
+    const marketCandidateRow = await findMarketCandidateRow(systemIngredient)
+
+    candidatesByKey.set(item.ingredientKey, {
+      systemIngredient,
+      localCandidates,
+      marketCandidateRow,
+      publicBaselineCandidate,
+      categoryBaselineCandidate,
+    })
   }
 
   const localStoreCoverage = await loadLocalStoreCoverage()
@@ -729,14 +769,30 @@ export async function buildGeographicPricingProofRows(
   for (const geography of GEOGRAPHIC_PRICING_GEOGRAPHIES) {
     const localStores = localStoreCoverage.get(geography.code) ?? false
     for (const item of GEOGRAPHIC_PRICING_BASKET) {
-      const systemIngredient = systemIngredientByKey.get(item.ingredientKey) ?? null
-      const localCandidate =
-        localCandidatesByKey.get(item.ingredientKey)?.get(geography.code) ?? null
+      const cached =
+        candidatesByKey.get(item.ingredientKey) ??
+        ({
+          systemIngredient: null,
+          localCandidates: new Map(),
+          marketCandidateRow: null,
+          publicBaselineCandidate: null,
+          categoryBaselineCandidate: null,
+        } satisfies CachedBasketCandidates)
+      const localCandidate = cached.localCandidates.get(geography.code) ?? null
       const candidate =
         geography.kind === 'territory' && !localStores
           ? null
-          : await pickCandidate(geography, item, systemIngredient, localCandidate)
-      rows.push(buildProofRow({ geography, item, candidate, systemIngredient, localStores, now }))
+          : pickCandidate(geography, item, cached, localCandidate)
+      rows.push(
+        buildProofRow({
+          geography,
+          item,
+          candidate,
+          systemIngredient: cached.systemIngredient,
+          localStores,
+          now,
+        })
+      )
     }
   }
 

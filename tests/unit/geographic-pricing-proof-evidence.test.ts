@@ -31,6 +31,16 @@ describe('geographic pricing proof evidence scoring', () => {
     assert.match(score.reason, /package noise/)
   })
 
+  it('caps garlic crouton matches below the safe match threshold', () => {
+    const score = scoreLocalProductMatch(
+      'Fresh Gourmet Croutons, Cheese & Garlic',
+      basketItem('garlic')
+    )
+
+    assert.ok(score.confidence < 0.75)
+    assert.match(score.reason, /package noise/)
+  })
+
   it('trusts observed standard-unit prices enough for quote-safe unit proof', () => {
     const score = scoreLocalUnitConversion({
       hasStandardUnitPrice: true,

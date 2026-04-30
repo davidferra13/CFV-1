@@ -246,16 +246,19 @@ function failureReasonFor(input: {
 }): string | null {
   if (input.quoteSafety === 'safe_to_quote') return null
   if (input.sourceClass === 'unresolved') {
-    return input.hasLocalStores
-      ? 'stores exist, no observed prices'
-      : 'no local stores, no territory baseline'
+    return input.hasLocalStores ? 'no fallback baseline' : 'no local stores'
   }
   if (input.sourceClass === 'modeled_fallback') return 'modeled-only pricing'
-  if (input.missingProof.includes('unit conversion confidence')) return 'weak unit conversion'
-  if (input.missingProof.includes('fresh timestamp')) return 'stale prices'
-  if (input.missingProof.includes('local store proof')) return 'no local stores'
+  if (input.missingProof.includes('local store proof')) {
+    return input.hasLocalStores ? 'missing ZIP/store coverage' : 'no local stores'
+  }
   if (input.missingProof.includes('confirmed ingredient match')) return 'weak ingredient matching'
-  return input.missingProof[0] ?? 'missing pricing proof'
+  if (input.missingProof.includes('positive normalized price')) return 'no fallback baseline'
+  if (input.missingProof.includes('normalized unit')) return 'no unit conversion'
+  if (input.missingProof.includes('unit conversion confidence')) return 'no unit conversion'
+  if (input.missingProof.includes('fresh timestamp')) return 'stale prices'
+  if (input.missingProof.includes('price baseline')) return 'no fallback baseline'
+  return 'data exists but does not reach menu costing'
 }
 
 export function classifyGeographicProofCandidate(
