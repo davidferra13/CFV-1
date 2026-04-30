@@ -36,11 +36,13 @@ import { NationalVendorSearch } from '@/components/vendors/national-vendor-searc
 import { VendorDirectoryClient } from '@/app/(chef)/culinary/vendors/vendor-directory-client'
 import { CallSettingsForm } from '@/components/calling/call-settings-form'
 import { CallAccessRequest } from '@/components/calling/call-access-request'
+import { VoiceOpsControlTower } from '@/components/calling/voice-ops-control-tower'
 import {
   buildVoiceAgentFollowUp,
   isVoiceAgentDecision,
   type VoiceAgentFollowUp,
 } from '@/lib/calling/voice-agent-contract'
+import { buildVoiceOpsReport } from '@/lib/calling/voice-ops-report'
 import { buildLifecycleCallHref } from '@/lib/calls/lifecycle-prefill'
 
 export const metadata: Metadata = { title: 'Voice Hub' }
@@ -230,6 +232,10 @@ export default async function CallSheetPage({
   // vendor_availability ai_calls already appear via supplier_calls  - exclude them
   // to prevent every availability call showing twice in the Call Log.
   const filteredAiCalls = aiCalls.filter((c) => c.role !== 'vendor_availability')
+  const voiceOpsReport = buildVoiceOpsReport([
+    ...(calls as unknown[]),
+    ...(filteredAiCalls as unknown[]),
+  ])
 
   const inboxItems = aiCalls.filter(
     (c) =>
@@ -262,6 +268,8 @@ export default async function CallSheetPage({
           </p>
         </div>
       </div>
+
+      <VoiceOpsControlTower report={voiceOpsReport} />
 
       {/* Tabs */}
       <div className="flex gap-1 border-b border-stone-800 overflow-x-auto">

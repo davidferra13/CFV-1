@@ -1,0 +1,242 @@
+import test from 'node:test'
+import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+
+import { scoreHangupRisk } from '@/lib/calling/hangup-risk'
+import { coordinateMenuCall } from '@/lib/calling/menu-call-coordinator'
+import { buildPostCallExecutionPlan } from '@/lib/calling/post-call-execution'
+import { evaluateVoiceCallConsent } from '@/lib/calling/voice-call-consent'
+import { planVoiceCallCampaign } from '@/lib/calling/voice-call-campaigns'
+import { buildVoiceOpsReport } from '@/lib/calling/voice-ops-report'
+import { buildVoiceSessionLedger } from '@/lib/calling/voice-session-ledger'
+
+const ROOT = process.cwd()
+const MIGRATION = resolve(ROOT, 'database/migrations/20260430000001_voice_ops_control_plane.sql')
+const CALL_SHEET = resolve(ROOT, 'app/(chef)/culinary/call-sheet/page.tsx')
+const CONTROL_TOWER = resolve(ROOT, 'components/calling/voice-ops-control-tower.tsx')
+
+test('campaign planner reserves multiple allowed business recipients and gates risky contacts', () => {
+  const plan = planVoiceCallCampaign({
+    name: 'Friday prep calls',
+    purpose: 'Confirm specialty vendors',
+    launchMode: 'parallel_limited',
+    maxConcurrentLaunches: 4,
+    recipients: [
+      {
+        contactPhone: '(617) 555-0100',
+        contactName: 'Fish vendor',
+        contactType: 'vendor',
+        role: 'vendor_availability',
+        subject: 'haddock',
+        consentState: 'allowed',
+      },
+      {
+        contactPhone: '(617) 555-0101',
+        contactName: 'Venue',
+        contactType: 'venue',
+        role: 'venue_confirmation',
+        subject: 'Saturday dinner',
+        consentState: 'allowed',
+      },
+      {
+        contactPhone: '(617) 555-0102',
+        contactName: 'Client',
+        contactType: 'client',
+        role: 'vendor_availability',
+        consentState: 'allowed',
+      },
+      {
+        contactPhone: '(617) 555-0103',
+        contactName: 'Unknown vendor',
+        contactType: 'vendor',
+        role: 'vendor_delivery',
+        consentState: 'unknown',
+      },
+    ],
+  })
+
+  assert.equal(plan.maxConcurrentLaunches, 4)
+  assert.equal(plan.reservedCount, 2)
+  assert.equal(plan.skippedCount, 1)
+  assert.equal(plan.manualReviewCount, 1)
+  assert.equal(plan.summary.canLaunchAutomatically, false)
+  assert.ok(plan.summary.blockedReasons.some((reason) => reason.includes('client')))
+})
+
+test('consent gate blocks opt-outs, clients, and unknown contacts by default', () => {
+  assert.equal(
+    evaluateVoiceCallConsent({
+      phone: '+16175550100',
+      contactType: 'vendor',
+      record: { contactPhone: '+16175550100', consentState: 'allowed' },
+    }).allowed,
+    true
+  )
+  assert.equal(
+    evaluateVoiceCallConsent({ phone: '+16175550101', contactType: 'client' }).nextStep,
+    'manual_review'
+  )
+  assert.equal(
+    evaluateVoiceCallConsent({
+      phone: '+16175550102',
+      contactType: 'vendor',
+      latestUtterance: 'please stop calling',
+    }).nextStep,
+    'do_not_call'
+  )
+  assert.equal(
+    evaluateVoiceCallConsent({ phone: '+16175550103', contactType: 'vendor' }).allowed,
+    false
+  )
+})
+
+test('menu coordinator records confirmations and refuses creative menu generation', () => {
+  const confirmation = coordinateMenuCall('I approve the tasting menu for Saturday.')
+  assert.equal(confirmation.category, 'menu_confirmation')
+  assert.equal(confirmation.allowedToHandleByVoice, true)
+
+  const allergy = coordinateMenuCall('One guest has a severe shellfish allergy.')
+  assert.equal(allergy.category, 'dietary_review')
+  assert.equal(allergy.urgency, 'urgent')
+
+  const creative = coordinateMenuCall('Can you build us a menu and suggest dishes?')
+  assert.equal(creative.category, 'restricted_creative_request')
+  assert.equal(creative.allowedToHandleByVoice, false)
+  assert.match(creative.response, /cannot create recipes/)
+})
+
+test('hang-up risk flags missing disclosures and caller trust concerns', () => {
+  const risk = scoreHangupRisk({
+    openingScript:
+      'Hello this is a very long opening that keeps going before asking the vendor a simple question about whether the item is available for the chef today.',
+    transcript: 'Who is this and are you a robot?',
+    identityDisclosed: false,
+    recordingDisclosed: false,
+    averageLatencyMs: 2000,
+    recoveryPromptCount: 2,
+  })
+
+  assert.equal(risk.level, 'high')
+  assert.ok(risk.reasons.length >= 4)
+  assert.match(risk.recommendedAdjustment, /disclose AI/)
+})
+
+test('post-call execution plans safe follow-up actions without menu invention', () => {
+  const plan = buildPostCallExecutionPlan({
+    id: 'call-1',
+    role: 'inbound_unknown',
+    direction: 'inbound',
+    contactPhone: '+16175550100',
+    contactName: 'Avery',
+    status: 'completed',
+    fullTranscript: 'Please swap the second course on the menu.',
+    extractedData: {
+      voice_agent_decision: {
+        type: 'handoff_required',
+        category: 'menu',
+        answer: 'I can record menu notes.',
+        followUpPrompt: 'Leave menu details.',
+        escalationReason: 'chef review',
+        allowedToAnswer: true,
+      },
+    },
+  })
+
+  assert.ok(plan.actions.some((action) => action.type === 'review_menu'))
+  assert.ok(plan.actions.some((action) => action.type === 'create_quick_note'))
+  assert.ok(!plan.actions.some((action) => action.type === 'create_inquiry'))
+})
+
+test('session ledger records disclosures, decisions, actions, and terminal status', () => {
+  const events = buildVoiceSessionLedger({
+    id: 'call-2',
+    role: 'inbound_unknown',
+    direction: 'inbound',
+    contactPhone: '+16175550100',
+    status: 'completed',
+    recordingUrl: 'https://example.test/recording.mp3',
+    fullTranscript: 'Please stop calling this number.',
+    extractedData: {
+      voice_agent_decision: {
+        type: 'opt_out',
+        category: 'opt_out',
+        answer: 'Understood.',
+        followUpPrompt: '',
+        escalationReason: null,
+        allowedToAnswer: true,
+      },
+    },
+  })
+
+  assert.deepEqual(
+    events.map((event) => event.sequence),
+    events.map((_, index) => index + 1)
+  )
+  assert.ok(events.some((event) => event.eventType === 'identity_disclosed'))
+  assert.ok(events.some((event) => event.eventType === 'opt_out_recorded'))
+  assert.ok(events.some((event) => event.eventType === 'recording_attached'))
+  assert.equal(events.at(-1)?.eventType, 'call_completed')
+})
+
+test('voice ops report aggregates status, recordings, reviews, and professional risk', () => {
+  const report = buildVoiceOpsReport([
+    {
+      id: 'ai-1',
+      direction: 'inbound',
+      role: 'inbound_unknown',
+      contact_phone: '+16175550100',
+      contact_name: 'Avery',
+      status: 'completed',
+      full_transcript: 'One guest has a nut allergy.',
+      extracted_data: {
+        voice_agent_decision: {
+          type: 'handoff_required',
+          category: 'dietary',
+          answer: 'I can record that.',
+          followUpPrompt: 'Share allergy details.',
+          escalationReason: 'chef review',
+          allowedToAnswer: true,
+        },
+      },
+    },
+    {
+      id: 'ai-2',
+      direction: 'outbound',
+      role: 'vendor_availability',
+      contact_phone: '+16175550101',
+      status: 'ringing',
+      recording_url: 'https://example.test/r.mp3',
+    },
+  ])
+
+  assert.equal(report.totalCalls, 2)
+  assert.equal(report.activeCalls, 1)
+  assert.equal(report.missingRecordingCount, 1)
+  assert.equal(report.urgentReviewCount, 1)
+  assert.ok(report.topNextActions.some((action) => action.type === 'review_dietary_safety'))
+})
+
+test('migration is additive and includes required voice ops tables', () => {
+  const sql = readFileSync(MIGRATION, 'utf8')
+
+  assert.match(sql, /CREATE TABLE IF NOT EXISTS voice_call_campaigns/)
+  assert.match(sql, /CREATE TABLE IF NOT EXISTS voice_call_campaign_recipients/)
+  assert.match(sql, /CREATE TABLE IF NOT EXISTS voice_call_consent/)
+  assert.match(sql, /CREATE TABLE IF NOT EXISTS voice_session_events/)
+  assert.match(sql, /CREATE TABLE IF NOT EXISTS voice_post_call_actions/)
+  assert.doesNotMatch(sql, /\bDROP\s+TABLE\b/i)
+  assert.doesNotMatch(sql, /\bDROP\s+COLUMN\b/i)
+  assert.doesNotMatch(sql, /\bTRUNCATE\b/i)
+  assert.doesNotMatch(sql, /\bDELETE\s+FROM\b/i)
+})
+
+test('Voice Hub renders the control tower on the canonical call sheet surface', () => {
+  const callSheet = readFileSync(CALL_SHEET, 'utf8')
+  const controlTower = readFileSync(CONTROL_TOWER, 'utf8')
+
+  assert.match(callSheet, /VoiceOpsControlTower/)
+  assert.match(callSheet, /buildVoiceOpsReport/)
+  assert.match(controlTower, /Voice Ops Control Tower/)
+  assert.match(controlTower, /Next actions/)
+})

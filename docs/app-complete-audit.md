@@ -846,6 +846,7 @@ Founder-owned operator walkthrough requests from `/for-operators/walkthrough` al
 
 - **`/culinary/vendors`** - Vendor directory with add form, star/unstar toggle, delete button.
 - **`/culinary/call-sheet`** - Voice Hub for supplier and business calling. Gated by `supplier_calling`. Tabs cover Call, Call Log, Inbox, My Vendors, and Settings. The Voice Ops Control Tower sits above the tabs and summarizes active sessions, completed and failed calls, answer rate, recording coverage, urgent reviews, opt-outs, professional risk, and the next post-call actions. Voice boundaries remain vendor and business focused; automated outbound client calls stay blocked.
+- **`/culinary/call-sheet`** - Voice Hub for supplier and business calling. Gated by `supplier_calling`. Tabs cover Call, Call Log, Inbox, My Vendors, and Settings. The Voice Ops Control Tower sits above the tabs and summarizes active sessions, completed and failed calls, answer rate, recording coverage, urgent reviews, opt-outs, professional risk, and the next post-call actions. Voice boundaries remain vendor and business focused; automated outbound client calls stay blocked.
 
 ### 6.8 Inventory
 
