@@ -1,0 +1,522 @@
+{
+  "generated_at": "2026-04-30T00:07:08.970Z",
+  "prompt": "Simulate a highly successful chef who currently only uses Take a Chef and must run ChefFlow completely in tandem with Take a Chef",
+  "terms": [
+    "simulate",
+    "highly",
+    "successful",
+    "chef",
+    "who",
+    "currently",
+    "only",
+    "uses",
+    "take",
+    "must",
+    "run",
+    "chefflow",
+    "completely",
+    "tandem"
+  ],
+  "scanned_dirs": [
+    "app",
+    "components",
+    "lib",
+    "docs/specs",
+    "docs/changes",
+    "docs/app-complete-audit.md",
+    "project-map",
+    "memory",
+    "system/intake",
+    "system/agent-reports"
+  ],
+  "canonical_surfaces": [
+    {
+      "id": "client-intake",
+      "label": "Client Intake",
+      "score": 7,
+      "hits": ["chef", "take", "chefflow"],
+      "canonical_routes": ["/book", "/clients/intake"],
+      "canonical_files": [
+        "app/api/book/route.ts",
+        "lib/inquiries/public-actions.ts",
+        "public/embed/chefflow-widget.js"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach to the existing intake lane contract."
+      }
+    },
+    {
+      "id": "chef-flow-replay",
+      "label": "Chef Flow Replay",
+      "score": 3,
+      "hits": ["chef"],
+      "canonical_routes": ["/replay"],
+      "canonical_files": ["app/(chef)/replay/page.tsx", "lib/activity/replay-model.ts"],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Extend replay model and components in place."
+      }
+    },
+    {
+      "id": "agent-skill-system",
+      "label": "Agent Skill System",
+      "score": 2,
+      "hits": ["chef", "chefflow"],
+      "canonical_routes": [],
+      "canonical_files": [
+        "devtools/skill-router.mjs",
+        "devtools/skill-validator.mjs",
+        "devtools/skill-trigger-tests.mjs",
+        "system/agent-golden-prompts/default.json"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Add to the existing skill harness."
+      }
+    },
+    {
+      "id": "remy-ai",
+      "label": "Remy AI",
+      "score": 2,
+      "hits": ["chef", "chefflow"],
+      "canonical_routes": [],
+      "canonical_files": ["components/ai/remy-drawer.tsx", "lib/ai/remy-actions.ts"],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach new assistant behavior to Remy or its shared AI modules."
+      }
+    },
+    {
+      "id": "inventory",
+      "label": "Inventory and Pantry",
+      "score": 1,
+      "hits": ["chef"],
+      "canonical_routes": ["/inventory", "/ops/inventory"],
+      "canonical_files": ["app/(chef)/inventory/page.tsx", "lib/inventory/pantry-engine.ts"],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Deepen the inventory domain in place."
+      }
+    },
+    {
+      "id": "calendar",
+      "label": "Calendar and Scheduling",
+      "score": 1,
+      "hits": ["chef"],
+      "canonical_routes": ["/calendar"],
+      "canonical_files": [
+        "app/(chef)/calendar/page.tsx",
+        "components/calendar/unified-calendar-view.tsx"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach to calendar and scheduling modules."
+      }
+    }
+  ],
+  "related_files": [
+    {
+      "file": "docs/specs/openclaw-ideal-runtime-and-national-intelligence.md",
+      "kind": "spec",
+      "score": 47,
+      "hits": [
+        "run",
+        "simulate",
+        "successful",
+        "chef",
+        "who",
+        "currently",
+        "only",
+        "uses",
+        "take",
+        "must"
+      ]
+    },
+    {
+      "file": "docs/specs/openclaw-food-price-intelligence.md",
+      "kind": "spec",
+      "score": 43,
+      "hits": [
+        "successful",
+        "chef",
+        "who",
+        "only",
+        "uses",
+        "take",
+        "must",
+        "run",
+        "chefflow",
+        "completely"
+      ]
+    },
+    {
+      "file": "docs/specs/p0-runtime-surface-boundary-enforcement.md",
+      "kind": "spec",
+      "score": 43,
+      "hits": ["run", "chef", "who", "currently", "only", "uses", "take", "must", "chefflow"]
+    },
+    {
+      "file": "docs/specs/takeachef-privatechefmanager-parity-doc-program.md",
+      "kind": "spec",
+      "score": 43,
+      "hits": ["chef", "take", "currently", "only", "uses", "must", "run", "chefflow"]
+    },
+    {
+      "file": "docs/specs/openclaw-intelligence-layer.md",
+      "kind": "spec",
+      "score": 42,
+      "hits": ["chef", "who", "currently", "only", "uses", "must", "run", "chefflow", "completely"]
+    },
+    {
+      "file": "docs/specs/continuous-intelligence-layer.md",
+      "kind": "spec",
+      "score": 41,
+      "hits": ["chef", "who", "only", "uses", "take", "must", "run", "chefflow", "completely"]
+    },
+    {
+      "file": "docs/specs/featured-chef-public-proof-and-booking.md",
+      "kind": "spec",
+      "score": 41,
+      "hits": ["chef", "currently", "only", "uses", "take", "must", "run", "chefflow"]
+    },
+    {
+      "file": "docs/specs/openclaw-total-catalog-intelligence.md",
+      "kind": "spec",
+      "score": 41,
+      "hits": ["chef", "who", "currently", "only", "uses", "take", "must", "run", "chefflow"]
+    },
+    {
+      "file": "docs/specs/p0-chef-cpa-ready-tax-export-and-reconciliation.md",
+      "kind": "spec",
+      "score": 40,
+      "hits": ["chef", "currently", "only", "uses", "take", "must", "run", "chefflow"]
+    },
+    {
+      "file": "docs/specs/system-surface-role-classification-foundation.md",
+      "kind": "spec",
+      "score": 40,
+      "hits": [
+        "chef",
+        "who",
+        "currently",
+        "only",
+        "uses",
+        "take",
+        "must",
+        "run",
+        "chefflow",
+        "completely"
+      ]
+    },
+    {
+      "file": "app/(chef)/cannabis/about/page.tsx",
+      "kind": "route",
+      "score": 39,
+      "hits": [
+        "chef",
+        "successful",
+        "who",
+        "currently",
+        "only",
+        "uses",
+        "take",
+        "must",
+        "run",
+        "chefflow"
+      ]
+    },
+    {
+      "file": "docs/specs/full-cloud-ai-runtime-and-disclosure.md",
+      "kind": "spec",
+      "score": 39,
+      "hits": ["run", "chef", "who", "currently", "only", "uses", "must", "chefflow"]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-public-surface-cohesion-v1.md",
+      "kind": "spec",
+      "score": 39,
+      "hits": [
+        "highly",
+        "chef",
+        "who",
+        "currently",
+        "only",
+        "uses",
+        "take",
+        "must",
+        "run",
+        "chefflow"
+      ]
+    },
+    {
+      "file": "docs/specs/openclaw-internal-only-boundary-and-debranding.md",
+      "kind": "spec",
+      "score": 38,
+      "hits": ["only", "chef", "currently", "uses", "take", "must", "run", "chefflow"]
+    },
+    {
+      "file": "docs/specs/openclaw-phase-3-full-integration.md",
+      "kind": "spec",
+      "score": 38,
+      "hits": [
+        "successful",
+        "chef",
+        "who",
+        "currently",
+        "only",
+        "uses",
+        "take",
+        "must",
+        "run",
+        "chefflow"
+      ]
+    },
+    {
+      "file": "docs/specs/openclaw-price-surfacing.md",
+      "kind": "spec",
+      "score": 38,
+      "hits": ["chef", "who", "currently", "only", "uses", "must", "run", "chefflow"]
+    },
+    {
+      "file": "docs/specs/openclaw-v2-unified-pricing.md",
+      "kind": "spec",
+      "score": 38,
+      "hits": [
+        "chef",
+        "who",
+        "currently",
+        "only",
+        "uses",
+        "take",
+        "must",
+        "run",
+        "chefflow",
+        "completely"
+      ]
+    },
+    {
+      "file": "docs/specs/p1-google-contacts-import-via-google-people-api.md",
+      "kind": "spec",
+      "score": 38,
+      "hits": [
+        "successful",
+        "chef",
+        "who",
+        "currently",
+        "only",
+        "uses",
+        "take",
+        "must",
+        "run",
+        "chefflow"
+      ]
+    },
+    {
+      "file": "docs/specs/auto-costing-engine.md",
+      "kind": "spec",
+      "score": 37,
+      "hits": ["chef", "who", "currently", "only", "uses", "take", "must", "run", "chefflow"]
+    },
+    {
+      "file": "docs/specs/directory-operator-outreach.md",
+      "kind": "spec",
+      "score": 37,
+      "hits": ["successful", "chef", "who", "only", "uses", "take", "must", "run", "chefflow"]
+    },
+    {
+      "file": "docs/specs/navigation-action-bar.md",
+      "kind": "spec",
+      "score": 37,
+      "hits": [
+        "chef",
+        "who",
+        "currently",
+        "only",
+        "uses",
+        "take",
+        "must",
+        "run",
+        "chefflow",
+        "completely"
+      ]
+    },
+    {
+      "file": "docs/specs/openclaw-nationwide-pricing-strategy.md",
+      "kind": "spec",
+      "score": 37,
+      "hits": ["successful", "chef", "who", "currently", "only", "uses", "must", "run", "chefflow"]
+    },
+    {
+      "file": "docs/specs/p1-allergy-and-dietary-trust-alignment.md",
+      "kind": "spec",
+      "score": 37,
+      "hits": ["chef", "who", "currently", "only", "uses", "take", "must", "run", "chefflow"]
+    },
+    {
+      "file": "docs/specs/p1-chef-getting-started-surface-consolidation.md",
+      "kind": "spec",
+      "score": 37,
+      "hits": [
+        "chef",
+        "who",
+        "currently",
+        "only",
+        "uses",
+        "take",
+        "must",
+        "run",
+        "chefflow",
+        "completely"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-cannabis-cohesion.md",
+      "kind": "spec",
+      "score": 37,
+      "hits": ["chef", "who", "currently", "only", "uses", "take", "must", "chefflow", "completely"]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-consumer-discovery-cohesion-v1.md",
+      "kind": "spec",
+      "score": 37,
+      "hits": [
+        "chef",
+        "who",
+        "currently",
+        "only",
+        "uses",
+        "take",
+        "must",
+        "run",
+        "chefflow",
+        "completely"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-local-ai-cohesion.md",
+      "kind": "spec",
+      "score": 37,
+      "hits": ["chef", "who", "currently", "only", "uses", "must", "run", "chefflow", "completely"]
+    },
+    {
+      "file": "docs/specs/visual-representation-strategy.md",
+      "kind": "spec",
+      "score": 37,
+      "hits": ["chef", "who", "only", "uses", "take", "must", "run", "chefflow"]
+    },
+    {
+      "file": "docs/specs/chef-flow-decision-ledger-v1.md",
+      "kind": "spec",
+      "score": 36,
+      "hits": [
+        "chef",
+        "highly",
+        "who",
+        "currently",
+        "only",
+        "uses",
+        "take",
+        "must",
+        "run",
+        "chefflow"
+      ]
+    },
+    {
+      "file": "docs/specs/consumer-first-discovery-and-dinner-planning-expansion.md",
+      "kind": "spec",
+      "score": 36,
+      "hits": ["chef", "who", "currently", "only", "uses", "take", "must", "run", "chefflow"]
+    }
+  ],
+  "recent_commits": [
+    {
+      "line": "b3c7c822d chore(agent): add chef default knowledge controls feature/chef-default-knowledge",
+      "score": 2,
+      "hits": ["chef"]
+    },
+    {
+      "line": "5d37f65e5 chore(agent): build chef flow replay feature/chef-flow-replay",
+      "score": 2,
+      "hits": ["chef"]
+    },
+    {
+      "line": "98402ce34 chore(agent): build context continuity tooling feature/cheflow-cli-operator-layer",
+      "score": 1,
+      "hits": ["chef"]
+    },
+    {
+      "line": "a5e437adc chore(agent): build instant note refinement layer feature/cheflow-cli-operator-layer",
+      "score": 1,
+      "hits": ["chef"]
+    },
+    {
+      "line": "5d2f2eaa7 chore(agent): connect calendar scheduling flows feature/chef-default-knowledge-controls",
+      "score": 1,
+      "hits": ["chef"]
+    },
+    {
+      "line": "f812a17b2 chore(agent): harden voice calling menu workflow feature/chef-flow-replay",
+      "score": 1,
+      "hits": ["chef"]
+    },
+    {
+      "line": "1d6711463 chore(agent): add instant note intelligence feature/chef-default-knowledge-controls",
+      "score": 1,
+      "hits": ["chef"]
+    },
+    {
+      "line": "21c26b4e4 chore(agent): add client default knowledge controls feature/chef-default-knowledge",
+      "score": 1,
+      "hits": ["chef"]
+    },
+    {
+      "line": "c9c5be042 chore(agent): connect culinary dictionary flows feature/chef-flow-replay",
+      "score": 1,
+      "hits": ["chef"]
+    },
+    {
+      "line": "0f1dce2e1 chore(agent): build calendar entry detail route feature/chef-default-knowledge",
+      "score": 1,
+      "hits": ["chef"]
+    }
+  ],
+  "dirty_matches": [
+    {
+      "line": " M scripts/cheflow.mjs",
+      "file": "scripts/cheflow.mjs",
+      "score": 2,
+      "hits": ["chef"]
+    },
+    {
+      "line": "MM tests/unit/cheflow-cli.test.ts",
+      "file": "tests/unit/cheflow-cli.test.ts",
+      "score": 2,
+      "hits": ["chef"]
+    }
+  ],
+  "claim_matches": [],
+  "duplicate_risks": [
+    {
+      "level": "medium",
+      "reason": "Multiple canonical surfaces matched the prompt.",
+      "owners": ["client-intake", "chef-flow-replay", "agent-skill-system"]
+    },
+    {
+      "level": "medium",
+      "reason": "Dirty files already exist in this domain and may be another agent active work.",
+      "files": ["scripts/cheflow.mjs", "tests/unit/cheflow-cli.test.ts"]
+    }
+  ],
+  "continuity": {
+    "decision": "attach",
+    "stop_required": false,
+    "reason": "Matched canonical surface client-intake."
+  }
+}
