@@ -1,0 +1,45 @@
+{
+  "id": "20260430T165049Z-build-v1-support-state-change-motion-primitives-and-apply-to-existing-chefflow-w",
+  "prompt": "Build V1 support state-change motion primitives and apply to existing ChefFlow workflow surfaces",
+  "status": "finished",
+  "branch": "feature/sticky-notes-promoted-items-processing",
+  "branch_start_commit": "3c738e124",
+  "claim_file": "system/agent-claims/20260430T165049Z-feature-sticky-notes-promoted-items-processing-build-v1-support-state-change-mot.json",
+  "started_at": "2026-04-30T16:50:49.916Z",
+  "finished_at": "2026-04-30T17:03:56.330Z",
+  "selected_primary_skill": "builder",
+  "selected_sidecar_skills": ["omninet", "context-continuity", "software-fundamentals"],
+  "router_decision": null,
+  "used_skills": [
+    "builder",
+    "omninet",
+    "context-continuity",
+    "software-fundamentals",
+    "v1-governor"
+  ],
+  "files_touched": [
+    "components/ui/state-motion.tsx",
+    "app/globals.css",
+    "components/ui/save-state-badge.tsx",
+    "components/ui/determinate-progress.tsx",
+    "components/events/event-status-badge.tsx",
+    "components/events/event-readiness-engine-panel.tsx",
+    "tests/unit/state-motion.test.tsx",
+    "docs/app-complete-audit.md"
+  ],
+  "commands_run": [],
+  "validations_run": [
+    "node --test --import tsx tests/unit/state-motion.test.tsx",
+    "npx tsc --noEmit --skipLibCheck",
+    "git diff added-line em dash scan",
+    "pre-commit quick regression"
+  ],
+  "commit_hash": "af809250b",
+  "pushed": false,
+  "missed_skills": [],
+  "skill_garden_triggered": false,
+  "heal_skill_triggered": false,
+  "notes": null,
+  "branch_finish": "feature/sticky-notes-promoted-items-processing",
+  "branch_changed": false
+}

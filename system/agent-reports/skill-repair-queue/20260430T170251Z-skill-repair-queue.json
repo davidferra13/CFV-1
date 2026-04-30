@@ -1,0 +1,111 @@
+{
+  "generated_at": "2026-04-30T17:02:51.239Z",
+  "repair_count": 5,
+  "entries": [
+    {
+      "skill": "builder",
+      "state": "active",
+      "priority": "medium",
+      "reasons": ["1 failed outcome event(s)"],
+      "stats": {
+        "selected_count": 1,
+        "used_count": 2,
+        "missed_count": 0,
+        "failure_count": 1,
+        "repair_count": 0,
+        "clean_success_count": 1,
+        "last_selected_at": "2026-04-30T17:02:51.113Z",
+        "last_used_at": "2026-04-30T17:02:51.113Z",
+        "last_missed_at": null,
+        "last_failure_at": "2026-04-30T17:02:51.113Z",
+        "last_success_at": "2026-04-29T16:22:17.568Z",
+        "last_record": "20260430T165049Z-build-v1-support-state-change-motion-primitives-and-apply-to-existing-chefflow-w"
+      },
+      "suggested_patch_target": ".claude/skills/builder/SKILL.md"
+    },
+    {
+      "skill": "context-continuity",
+      "state": "active",
+      "priority": "medium",
+      "reasons": ["1 failed outcome event(s)"],
+      "stats": {
+        "selected_count": 1,
+        "used_count": 1,
+        "missed_count": 0,
+        "failure_count": 1,
+        "repair_count": 0,
+        "clean_success_count": 0,
+        "last_selected_at": "2026-04-30T17:02:51.113Z",
+        "last_used_at": "2026-04-30T17:02:51.113Z",
+        "last_missed_at": null,
+        "last_failure_at": "2026-04-30T17:02:51.113Z",
+        "last_success_at": null,
+        "last_record": "20260430T165049Z-build-v1-support-state-change-motion-primitives-and-apply-to-existing-chefflow-w"
+      },
+      "suggested_patch_target": ".claude/skills/context-continuity/SKILL.md"
+    },
+    {
+      "skill": "omninet",
+      "state": "proven",
+      "priority": "medium",
+      "reasons": ["1 failed outcome event(s)"],
+      "stats": {
+        "selected_count": 2,
+        "used_count": 2,
+        "missed_count": 0,
+        "failure_count": 1,
+        "repair_count": 0,
+        "clean_success_count": 1,
+        "last_selected_at": "2026-04-30T17:02:51.113Z",
+        "last_used_at": "2026-04-30T17:02:51.113Z",
+        "last_missed_at": null,
+        "last_failure_at": "2026-04-30T17:02:51.113Z",
+        "last_success_at": "2026-04-29T16:22:17.568Z",
+        "last_record": "20260430T165049Z-build-v1-support-state-change-motion-primitives-and-apply-to-existing-chefflow-w"
+      },
+      "suggested_patch_target": ".claude/skills/omninet/SKILL.md"
+    },
+    {
+      "skill": "software-fundamentals",
+      "state": "active",
+      "priority": "medium",
+      "reasons": ["1 failed outcome event(s)"],
+      "stats": {
+        "selected_count": 1,
+        "used_count": 1,
+        "missed_count": 0,
+        "failure_count": 1,
+        "repair_count": 0,
+        "clean_success_count": 0,
+        "last_selected_at": "2026-04-30T17:02:51.113Z",
+        "last_used_at": "2026-04-30T17:02:51.113Z",
+        "last_missed_at": null,
+        "last_failure_at": "2026-04-30T17:02:51.113Z",
+        "last_success_at": null,
+        "last_record": "20260430T165049Z-build-v1-support-state-change-motion-primitives-and-apply-to-existing-chefflow-w"
+      },
+      "suggested_patch_target": ".claude/skills/software-fundamentals/SKILL.md"
+    },
+    {
+      "skill": "v1-governor",
+      "state": "active",
+      "priority": "medium",
+      "reasons": ["1 failed outcome event(s)"],
+      "stats": {
+        "selected_count": 0,
+        "used_count": 1,
+        "missed_count": 0,
+        "failure_count": 1,
+        "repair_count": 0,
+        "clean_success_count": 0,
+        "last_selected_at": null,
+        "last_used_at": "2026-04-30T17:02:51.113Z",
+        "last_missed_at": null,
+        "last_failure_at": "2026-04-30T17:02:51.113Z",
+        "last_success_at": null,
+        "last_record": "20260430T165049Z-build-v1-support-state-change-motion-primitives-and-apply-to-existing-chefflow-w"
+      },
+      "suggested_patch_target": ".claude/skills/v1-governor/SKILL.md"
+    }
+  ]
+}

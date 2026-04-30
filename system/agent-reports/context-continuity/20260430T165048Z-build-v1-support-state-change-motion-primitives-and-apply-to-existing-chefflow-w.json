@@ -1,0 +1,349 @@
+{
+  "generated_at": "2026-04-30T16:50:05.203Z",
+  "prompt": "Build V1 support state-change motion primitives and apply to existing ChefFlow workflow surfaces",
+  "terms": [
+    "support",
+    "state-change",
+    "motion",
+    "primitives",
+    "apply",
+    "existing",
+    "chefflow",
+    "surfaces"
+  ],
+  "scanned_dirs": [
+    "app",
+    "components",
+    "lib",
+    "docs/specs",
+    "docs/changes",
+    "docs/app-complete-audit.md",
+    "project-map",
+    "memory",
+    "system/intake",
+    "system/agent-reports"
+  ],
+  "canonical_surfaces": [
+    {
+      "id": "chef-command-plane",
+      "label": "ChefFlow Command Plane",
+      "score": 2,
+      "hits": ["chefflow"],
+      "canonical_routes": ["/dashboard"],
+      "canonical_files": [
+        "docs/specs/chefflow-command-plane.md",
+        "lib/interface/action-layer.ts",
+        "lib/events/operating-spine.ts",
+        "components/platform-shell/context-command-panel.tsx"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach command-plane behavior to the canonical computed contract instead of creating another dashboard, Remy hub, command palette, or page-local action list."
+      }
+    },
+    {
+      "id": "context-continuity",
+      "label": "Context Continuity",
+      "score": 1,
+      "hits": ["surfaces"],
+      "canonical_routes": [],
+      "canonical_files": [
+        ".claude/skills/context-continuity/SKILL.md",
+        "devtools/context-continuity-scan.mjs",
+        "system/canonical-surfaces.json"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Extend the continuity layer in place."
+      }
+    },
+    {
+      "id": "agent-skill-system",
+      "label": "Agent Skill System",
+      "score": 1,
+      "hits": ["chefflow"],
+      "canonical_routes": [],
+      "canonical_files": [
+        "devtools/skill-router.mjs",
+        "devtools/skill-validator.mjs",
+        "devtools/skill-trigger-tests.mjs",
+        "system/agent-golden-prompts/default.json"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Add to the existing skill harness."
+      }
+    },
+    {
+      "id": "remy-ai",
+      "label": "Remy AI",
+      "score": 1,
+      "hits": ["chefflow"],
+      "canonical_routes": [],
+      "canonical_files": ["components/ai/remy-drawer.tsx", "lib/ai/remy-actions.ts"],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach new assistant behavior to Remy or its shared AI modules."
+      }
+    },
+    {
+      "id": "client-intake",
+      "label": "Client Intake",
+      "score": 1,
+      "hits": ["chefflow"],
+      "canonical_routes": ["/book", "/clients/intake"],
+      "canonical_files": [
+        "app/api/book/route.ts",
+        "lib/inquiries/public-actions.ts",
+        "public/embed/chefflow-widget.js"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach to the existing intake lane contract."
+      }
+    }
+  ],
+  "related_files": [
+    {
+      "file": "system/agent-reports/router-decisions/20260430T165005Z-build-v1-support-state-change-motion-primitives-and-apply-to-existing-chefflow-w.json",
+      "kind": "system",
+      "score": 36,
+      "hits": [
+        "support",
+        "state-change",
+        "motion",
+        "primitives",
+        "apply",
+        "existing",
+        "chefflow",
+        "surfaces"
+      ]
+    },
+    {
+      "file": "docs/specs/p1-alternate-entry-points-and-support-visibility.md",
+      "kind": "spec",
+      "score": 25,
+      "hits": ["support", "motion", "existing", "chefflow", "surfaces"]
+    },
+    {
+      "file": "docs/specs/p0-runtime-surface-boundary-enforcement.md",
+      "kind": "spec",
+      "score": 24,
+      "hits": ["support", "primitives", "apply", "existing", "chefflow", "surfaces"]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-public-surface-cohesion-v1.md",
+      "kind": "spec",
+      "score": 24,
+      "hits": ["support", "motion", "existing", "chefflow", "surfaces"]
+    },
+    {
+      "file": "docs/specs/p1-navigation-and-cta-continuity.md",
+      "kind": "spec",
+      "score": 23,
+      "hits": ["support", "motion", "existing", "chefflow", "surfaces"]
+    },
+    {
+      "file": "docs/specs/chefflow-command-plane.md",
+      "kind": "spec",
+      "score": 22,
+      "hits": ["chefflow", "support", "existing", "surfaces"]
+    },
+    {
+      "file": "docs/specs/p1-operational-reassurance-and-what-happens-next.md",
+      "kind": "spec",
+      "score": 22,
+      "hits": ["support", "apply", "existing", "chefflow", "surfaces"]
+    },
+    {
+      "file": "docs/specs/p0-chef-cpa-ready-tax-export-and-reconciliation.md",
+      "kind": "spec",
+      "score": 21,
+      "hits": ["support", "primitives", "existing", "chefflow", "surfaces"]
+    },
+    {
+      "file": "docs/specs/respectful-monetization-foundation.md",
+      "kind": "spec",
+      "score": 21,
+      "hits": ["support", "motion", "existing", "chefflow", "surfaces"]
+    },
+    {
+      "file": "docs/specs/system-surface-role-classification-foundation.md",
+      "kind": "spec",
+      "score": 21,
+      "hits": ["support", "apply", "existing", "chefflow", "surfaces"]
+    },
+    {
+      "file": "docs/specs/consumer-first-discovery-and-dinner-planning-expansion.md",
+      "kind": "spec",
+      "score": 20,
+      "hits": ["support", "motion", "primitives", "existing", "chefflow", "surfaces"]
+    },
+    {
+      "file": "docs/specs/food-costing-knowledge-system.md",
+      "kind": "spec",
+      "score": 20,
+      "hits": ["support", "apply", "existing", "chefflow", "surfaces"]
+    },
+    {
+      "file": "docs/specs/geographic-pricing-proof-harness.md",
+      "kind": "spec",
+      "score": 20,
+      "hits": ["support", "apply", "existing", "chefflow", "surfaces"]
+    },
+    {
+      "file": "docs/specs/openclaw-ideal-runtime-and-national-intelligence.md",
+      "kind": "spec",
+      "score": 20,
+      "hits": ["support", "existing", "chefflow", "surfaces"]
+    },
+    {
+      "file": "docs/specs/openclaw-nationwide-pricing-strategy.md",
+      "kind": "spec",
+      "score": 20,
+      "hits": ["support", "motion", "apply", "existing", "chefflow", "surfaces"]
+    },
+    {
+      "file": "docs/specs/p1-buyer-education-and-pre-decision-guidance.md",
+      "kind": "spec",
+      "score": 20,
+      "hits": ["support", "existing", "chefflow", "surfaces"]
+    },
+    {
+      "file": "docs/specs/post-event-trust-loop-consolidation.md",
+      "kind": "spec",
+      "score": 20,
+      "hits": ["support", "motion", "existing", "chefflow", "surfaces"]
+    },
+    {
+      "file": "docs/specs/takeachef-privatechefmanager-parity-doc-program.md",
+      "kind": "spec",
+      "score": 20,
+      "hits": ["support", "existing", "chefflow", "surfaces"]
+    },
+    {
+      "file": "docs/specs/universal-interface-philosophy.md",
+      "kind": "spec",
+      "score": 20,
+      "hits": ["support", "motion", "apply", "existing", "chefflow", "surfaces"]
+    },
+    {
+      "file": "docs/specs/continuous-intelligence-layer.md",
+      "kind": "spec",
+      "score": 19,
+      "hits": ["support", "primitives", "apply", "existing", "chefflow", "surfaces"]
+    },
+    {
+      "file": "docs/specs/full-cloud-ai-runtime-and-disclosure.md",
+      "kind": "spec",
+      "score": 19,
+      "hits": ["support", "apply", "existing", "chefflow", "surfaces"]
+    },
+    {
+      "file": "docs/specs/notes-dishes-menus-client-event-pipeline.md",
+      "kind": "spec",
+      "score": 19,
+      "hits": ["support", "motion", "apply", "existing", "surfaces"]
+    },
+    {
+      "file": "docs/specs/p1-allergy-and-dietary-trust-alignment.md",
+      "kind": "spec",
+      "score": 19,
+      "hits": ["support", "primitives", "existing", "chefflow", "surfaces"]
+    },
+    {
+      "file": "docs/specs/private-dev-cockpit-consolidation.md",
+      "kind": "spec",
+      "score": 19,
+      "hits": ["support", "existing", "chefflow", "surfaces"]
+    },
+    {
+      "file": "docs/specs/public-only-monitored-cloud-ai-gateway.md",
+      "kind": "spec",
+      "score": 19,
+      "hits": ["support", "existing", "chefflow", "surfaces"]
+    },
+    {
+      "file": "docs/specs/commerce-financial-integrity-interrogation.md",
+      "kind": "spec",
+      "score": 18,
+      "hits": ["motion", "apply", "existing", "chefflow", "surfaces"]
+    },
+    {
+      "file": "docs/specs/p1-chef-collab-spaces.md",
+      "kind": "spec",
+      "score": 18,
+      "hits": ["support", "apply", "existing", "chefflow", "surfaces"]
+    },
+    {
+      "file": "docs/specs/p1-google-contacts-import-via-google-people-api.md",
+      "kind": "spec",
+      "score": 18,
+      "hits": ["support", "existing", "chefflow", "surfaces"]
+    },
+    {
+      "file": "docs/specs/sticky-notes-intake-layer.md",
+      "kind": "spec",
+      "score": 18,
+      "hits": ["support", "motion", "existing", "chefflow", "surfaces"]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-cohesiveness-synthesis.md",
+      "kind": "spec",
+      "score": 18,
+      "hits": ["support", "apply", "existing", "chefflow", "surfaces"]
+    }
+  ],
+  "recent_commits": [
+    {
+      "line": "3c738e124 chore(agent): add sticky notes review promotion feature/private-dev-cockpit-spec",
+      "score": 1,
+      "hits": ["motion"]
+    },
+    {
+      "line": "bd943a6c0 chore(agent): preserve motion research guidance fix/private-dev-cockpit-remove-accidental-file",
+      "score": 1,
+      "hits": ["motion"]
+    },
+    {
+      "line": "d255d7b00 chore(agent): build chefflow command plane spec feature/professional-pwa-install",
+      "score": 1,
+      "hits": ["chefflow"]
+    }
+  ],
+  "dirty_matches": [
+    {
+      "line": "?? system/agent-reports/router-decisions/20260430T165005Z-build-v1-support-state-change-motion-primitives-and-apply-to-existing-chefflow-w.json",
+      "file": "system/agent-reports/router-decisions/20260430T165005Z-build-v1-support-state-change-motion-primitives-and-apply-to-existing-chefflow-w.json",
+      "score": 14,
+      "hits": ["support", "state-change", "motion", "primitives", "apply", "existing", "chefflow"]
+    },
+    {
+      "line": "?? system/agent-reports/context-continuity/20260430T162435Z-keep-improving-chefflow-pwa-install-and-device-app-setup.json",
+      "file": "system/agent-reports/context-continuity/20260430T162435Z-keep-improving-chefflow-pwa-install-and-device-app-setup.json",
+      "score": 2,
+      "hits": ["chefflow"]
+    }
+  ],
+  "claim_matches": [],
+  "duplicate_risks": [
+    {
+      "level": "medium",
+      "reason": "Dirty files already exist in this domain and may be another agent active work.",
+      "files": [
+        "system/agent-reports/router-decisions/20260430T165005Z-build-v1-support-state-change-motion-primitives-and-apply-to-existing-chefflow-w.json",
+        "system/agent-reports/context-continuity/20260430T162435Z-keep-improving-chefflow-pwa-install-and-device-app-setup.json"
+      ]
+    }
+  ],
+  "continuity": {
+    "decision": "attach",
+    "stop_required": false,
+    "reason": "Matched canonical surface chef-command-plane."
+  }
+}

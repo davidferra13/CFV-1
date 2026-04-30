@@ -1,0 +1,143 @@
+{
+  "generated_at": "2026-04-30T17:02:51.745Z",
+  "coverage": {
+    "class_count": 13,
+    "covered_count": 13,
+    "weak_count": 0,
+    "gap_count": 0,
+    "weak_domains": [],
+    "highest_risk_missing_owner": null
+  },
+  "dependencies": {
+    "edge_count": 120,
+    "unknown_ref_count": 0,
+    "orphan_count": 13,
+    "orphan_skills": [
+      {
+        "name": "backup",
+        "file": ".claude/skills/backup/SKILL.md"
+      },
+      {
+        "name": "document",
+        "file": ".claude/skills/document/SKILL.md"
+      },
+      {
+        "name": "feature-closeout",
+        "file": ".claude/skills/feature-closeout/SKILL.md"
+      },
+      {
+        "name": "health",
+        "file": ".claude/skills/health/SKILL.md"
+      },
+      {
+        "name": "morning",
+        "file": ".claude/skills/morning/SKILL.md"
+      },
+      {
+        "name": "pi",
+        "file": ".claude/skills/pi/SKILL.md"
+      },
+      {
+        "name": "pre-flight",
+        "file": ".claude/skills/pre-flight/SKILL.md"
+      },
+      {
+        "name": "regression",
+        "file": ".claude/skills/regression/SKILL.md"
+      },
+      {
+        "name": "seam",
+        "file": ".claude/skills/seam/SKILL.md"
+      },
+      {
+        "name": "soak",
+        "file": ".claude/skills/soak/SKILL.md"
+      },
+      {
+        "name": "status",
+        "file": ".claude/skills/status/SKILL.md"
+      },
+      {
+        "name": "verify",
+        "file": ".claude/skills/verify/SKILL.md"
+      },
+      {
+        "name": "youtube-watch",
+        "file": ".claude/skills/youtube-watch/SKILL.md"
+      }
+    ]
+  },
+  "maturity": {
+    "skill_count": 56,
+    "counts": {
+      "draft": 0,
+      "active": 54,
+      "proven": 2,
+      "needs-healing": 0,
+      "deprecated": 0
+    },
+    "implicit_default_count": 50,
+    "invalid_count": 0
+  },
+  "reliability": {
+    "tracked_skill_count": 6,
+    "session_count": 2,
+    "top_failures": [
+      {
+        "skill": "omninet",
+        "missed_count": 0,
+        "failure_count": 1,
+        "clean_success_count": 1
+      },
+      {
+        "skill": "builder",
+        "missed_count": 0,
+        "failure_count": 1,
+        "clean_success_count": 1
+      },
+      {
+        "skill": "context-continuity",
+        "missed_count": 0,
+        "failure_count": 1,
+        "clean_success_count": 0
+      },
+      {
+        "skill": "software-fundamentals",
+        "missed_count": 0,
+        "failure_count": 1,
+        "clean_success_count": 0
+      },
+      {
+        "skill": "v1-governor",
+        "missed_count": 0,
+        "failure_count": 1,
+        "clean_success_count": 0
+      }
+    ]
+  },
+  "repair_queue": {
+    "repair_count": 5,
+    "high_count": 0
+  },
+  "replay": {
+    "ok": true,
+    "case_count": 1,
+    "suspicious_count": 0,
+    "strengthened_count": 0
+  },
+  "bridge": {
+    "ok": true,
+    "dry_run": true,
+    "claimed": false,
+    "classification": "duplicate",
+    "task_file": "system/ready-tasks/014-high-workflow-coverage-gap.md"
+  },
+  "health": {
+    "unhealthy_count": 6,
+    "overlap_count": 0,
+    "stale_generated_report_count": 26
+  },
+  "learning": {
+    "open_count": 1
+  }
+}

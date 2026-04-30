@@ -1,0 +1,78 @@
+{
+  "ok": false,
+  "score": 90,
+  "max_score": 100,
+  "selected_skills": ["builder", "omninet", "context-continuity", "software-fundamentals"],
+  "used_skills": [
+    "builder",
+    "omninet",
+    "context-continuity",
+    "software-fundamentals",
+    "v1-governor"
+  ],
+  "missed_skills": [],
+  "validations": [
+    "node --test --import tsx tests/unit/state-motion.test.tsx",
+    "npx tsc --noEmit --skipLibCheck",
+    "git diff added-line em dash scan"
+  ],
+  "dirty_owned": [
+    " M app/globals.css",
+    " M components/events/event-readiness-engine-panel.tsx",
+    " M components/events/event-status-badge.tsx",
+    " M components/ui/determinate-progress.tsx",
+    " M components/ui/save-state-badge.tsx",
+    " M docs/app-complete-audit.md",
+    "?? components/ui/state-motion.tsx",
+    "?? tests/unit/state-motion.test.tsx"
+  ],
+  "checks": [
+    {
+      "id": "routed",
+      "ok": true,
+      "points": 15,
+      "detail": "builder"
+    },
+    {
+      "id": "selected_skill_used",
+      "ok": true,
+      "points": 15,
+      "detail": "primary=builder"
+    },
+    {
+      "id": "no_missed_skills",
+      "ok": true,
+      "points": 25,
+      "detail": "none"
+    },
+    {
+      "id": "validations_present",
+      "ok": true,
+      "points": 15,
+      "detail": "node --test --import tsx tests/unit/state-motion.test.tsx, npx tsc --noEmit --skipLibCheck, git diff added-line em dash scan"
+    },
+    {
+      "id": "commit_present",
+      "ok": true,
+      "points": 10,
+      "detail": "2988e6a8a"
+    },
+    {
+      "id": "pushed",
+      "ok": true,
+      "points": 10,
+      "detail": "true"
+    },
+    {
+      "id": "owned_clean",
+      "ok": false,
+      "points": 10,
+      "detail": " M app/globals.css;  M components/events/event-readiness-engine-panel.tsx;  M components/events/event-status-badge.tsx;  M components/ui/determinate-progress.tsx;  M components/ui/save-state-badge.tsx;  M docs/app-complete-audit.md; ?? components/ui/state-motion.tsx; ?? tests/unit/state-motion.test.tsx"
+    }
+  ],
+  "record_id": "20260430T165049Z-build-v1-support-state-change-motion-primitives-and-apply-to-existing-chefflow-w",
+  "record_file": "system/agent-reports/flight-records/20260430T165049Z-build-v1-support-state-change-motion-primitives-and-apply-to-existing-chefflow-w.json",
+  "generated_at": "2026-04-30T17:02:51.111Z",
+  "stats_updated": true,
+  "maturity_updates": []
+}
