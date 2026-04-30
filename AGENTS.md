@@ -52,6 +52,8 @@ Before writing code, inspect the current branch and working tree. Keep edits sco
 - **Stack:** Next.js (App Router) + PostgreSQL + Stripe
 - **What it is:** Multi-tenant private chef platform (SaaS)
 - **Ownership model:** ChefFlow is 100% locally controlled and privately owned by David Ferragamo. Treat all data, storage, code, runtime, infrastructure, and operational decisions as private ChefFlow assets.
+- **Founder Authority:** David Ferragamo is the sole founder, owner, developer, and final platform authority. Use the professional term "Founder Authority" for this concept. Do not use informal omnipotence language in code, UI, docs, branches, commits, or public/internal product language.
+- **Founder access invariant:** David's canonical founder identity must retain owner-level access even if `platform_admins` is stale or misconfigured. Standard admins, VIP users, staff, clients, and agents are subordinate roles and must never override or dilute Founder Authority.
 - **All monetary amounts:** stored in cents (integers, minor units)
 - **Financial model:** Ledger-first, immutable, append-only. Balances are computed from ledger entries, never stored directly.
 - **Event FSM:** draft -> proposed -> accepted -> paid -> confirmed -> in_progress -> completed | cancelled

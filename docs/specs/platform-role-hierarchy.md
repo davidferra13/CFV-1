@@ -8,7 +8,7 @@
 ## The Hierarchy (highest to lowest)
 
 ```
-OWNER          David only. Hardcoded founder email. God mode.
+OWNER          David only. Founder Authority.
 ADMIN          Platform administration. Trusted partner(s). Admin panel access.
 VIP            All features unlocked. No admin panel. Close friends, inner circle.
 PRO (paid)     Paying subscriber. All paid features.
@@ -24,6 +24,7 @@ FREE           Default. Core features only.
 
 - **Who:** `davidferra13@gmail.com` only. Hardcoded in `lib/platform/owner-account.ts`.
 - **How granted:** `platform_admins` row with `access_level = 'owner'`.
+- **Failsafe:** `Founder Authority` resolves the canonical founder session as owner even if the `platform_admins` row is stale.
 - **Access:** Everything. Admin panel, dev tools, all features, all modules, focus mode bypass, Remy in admin portal.
 - **UI:** Full admin nav, environment badge, all modules visible regardless of focus mode.
 

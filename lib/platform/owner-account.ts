@@ -1,8 +1,27 @@
 // Platform owner account. Resolved from env vars with hardcoded fallbacks.
-export const FOUNDER_EMAIL = (process.env.FOUNDER_EMAIL || 'davidferra13@gmail.com').trim().toLowerCase()
-export const DEFAULT_ADMIN_NOTIFICATION_EMAIL = (process.env.ADMIN_NOTIFICATION_EMAIL || 'info@cheflowhq.com').trim().toLowerCase()
-export const DEFAULT_DEVELOPER_NOTIFICATION_EMAIL = (process.env.DEVELOPER_NOTIFICATION_EMAIL || 'DFPrivateChef@gmail.com').trim().toLowerCase()
+export const FOUNDER_EMAIL = (process.env.FOUNDER_EMAIL || 'davidferra13@gmail.com')
+  .trim()
+  .toLowerCase()
+export const DEFAULT_ADMIN_NOTIFICATION_EMAIL = (
+  process.env.ADMIN_NOTIFICATION_EMAIL || 'info@cheflowhq.com'
+)
+  .trim()
+  .toLowerCase()
+export const DEFAULT_DEVELOPER_NOTIFICATION_EMAIL = (
+  process.env.DEVELOPER_NOTIFICATION_EMAIL || 'DFPrivateChef@gmail.com'
+)
+  .trim()
+  .toLowerCase()
+export const FOUNDER_AUTHORITY_LABEL = 'Founder Authority'
 const OWNER_CACHE_TTL_MS = 60_000
+
+export type FounderAuthorityAccess = {
+  authUserId: string
+  email: string
+  accessLevel: 'owner'
+  authority: typeof FOUNDER_AUTHORITY_LABEL
+  match: 'auth_user_id' | 'founder_email'
+}
 
 export type OwnerIdentity = {
   founderEmail: string
@@ -16,7 +35,7 @@ function normalizeEmail(value: string): string {
   return value.trim().toLowerCase()
 }
 
-function normalizeId(value: string | undefined): string | null {
+function normalizeId(value: string | null | undefined): string | null {
   const normalized = (value ?? '').trim()
   return normalized.length > 0 ? normalized : null
 }
@@ -27,6 +46,93 @@ function parseEmailList(value: string | undefined): string[] {
 
 function uniqueStrings(values: string[]): string[] {
   return Array.from(new Set(values))
+}
+
+export function isFounderEmail(email: string | null | undefined): boolean {
+  return normalizeEmail(email ?? '') === FOUNDER_EMAIL
+}
+
+export function getFounderAuthorityForSessionUser(user: {
+  id?: string | null
+  email?: string | null
+}): FounderAuthorityAccess | null {
+  const authUserId = normalizeId(user.id)
+  const email = normalizeEmail(user.email ?? '')
+
+  if (!authUserId || email !== FOUNDER_EMAIL) {
+    return null
+  }
+
+  const configuredAuthUserId = normalizeId(
+    process.env.FOUNDER_AUTH_USER_ID ?? process.env.PLATFORM_OWNER_AUTH_USER_ID
+  )
+
+  if (configuredAuthUserId && configuredAuthUserId !== authUserId) {
+    return null
+  }
+
+  return {
+    authUserId,
+    email,
+    accessLevel: 'owner',
+    authority: FOUNDER_AUTHORITY_LABEL,
+    match: configuredAuthUserId ? 'auth_user_id' : 'founder_email',
+  }
+}
+
+export async function resolveFounderAuthorityForAuthUser(
+  db: any,
+  authUserId: string | null | undefined
+): Promise<FounderAuthorityAccess | null> {
+  const normalizedAuthUserId = normalizeId(authUserId)
+  if (!normalizedAuthUserId) {
+    return null
+  }
+
+  const configuredAuthUserId = normalizeId(
+    process.env.FOUNDER_AUTH_USER_ID ?? process.env.PLATFORM_OWNER_AUTH_USER_ID
+  )
+
+  if (configuredAuthUserId) {
+    return configuredAuthUserId === normalizedAuthUserId
+      ? {
+          authUserId: normalizedAuthUserId,
+          email: FOUNDER_EMAIL,
+          accessLevel: 'owner',
+          authority: FOUNDER_AUTHORITY_LABEL,
+          match: 'auth_user_id',
+        }
+      : null
+  }
+
+  const { data: ownerRole, error: roleError } = await db
+    .from('user_roles')
+    .select('entity_id')
+    .eq('auth_user_id', normalizedAuthUserId)
+    .eq('role', 'chef')
+    .maybeSingle()
+
+  if (roleError || !ownerRole?.entity_id) {
+    return null
+  }
+
+  const { data: chef, error: chefError } = await db
+    .from('chefs')
+    .select('email')
+    .eq('id', ownerRole.entity_id)
+    .maybeSingle()
+
+  if (chefError || !isFounderEmail(chef?.email)) {
+    return null
+  }
+
+  return {
+    authUserId: normalizedAuthUserId,
+    email: FOUNDER_EMAIL,
+    accessLevel: 'owner',
+    authority: FOUNDER_AUTHORITY_LABEL,
+    match: 'founder_email',
+  }
 }
 
 /**

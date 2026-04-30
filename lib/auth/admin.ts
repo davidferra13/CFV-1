@@ -6,10 +6,11 @@ import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import {
   getPersistedAdminAccessForAuthUser,
-  hasAdminAccess,
   hasPrivilegedAccess,
   type AdminAccessLevel,
+  type PersistedAdminAccess,
 } from '@/lib/auth/admin-access'
+import { getFounderAuthorityForSessionUser } from '@/lib/platform/owner-account'
 
 export type AdminUser = {
   id: string
@@ -29,7 +30,30 @@ export async function getCurrentAdminUser(): Promise<AdminUser | null> {
     return null
   }
 
-  const access = await getPersistedAdminAccessForAuthUser(session.user.id)
+  const founderAuthority = getFounderAuthorityForSessionUser(session.user)
+  let access: PersistedAdminAccess | null = null
+
+  try {
+    access = await getPersistedAdminAccessForAuthUser(session.user.id)
+  } catch (error) {
+    if (founderAuthority) {
+      return {
+        id: founderAuthority.authUserId,
+        email: founderAuthority.email,
+        accessLevel: founderAuthority.accessLevel,
+      }
+    }
+    throw error
+  }
+
+  if (founderAuthority && access?.accessLevel !== 'owner') {
+    return {
+      id: founderAuthority.authUserId,
+      email: founderAuthority.email,
+      accessLevel: founderAuthority.accessLevel,
+    }
+  }
+
   if (!access) {
     return null
   }
@@ -80,6 +104,7 @@ export async function isVIPOrAbove(): Promise<boolean> {
   try {
     const session = await auth()
     if (!session?.user?.id) return false
+    if (getFounderAuthorityForSessionUser(session.user)) return true
     return hasPrivilegedAccess(session.user.id)
   } catch {
     return false

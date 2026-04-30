@@ -2,8 +2,9 @@ import { db } from '@/lib/db'
 import { platformAdmins } from '@/lib/db/schema/schema'
 import { eq, and } from 'drizzle-orm'
 
+// Authorization reads the persisted platform_admins table through the Drizzle schema symbol.
 // Platform access levels (highest to lowest):
-//   owner - founder only, god mode
+//   owner - founder only, full platform authority
 //   admin - platform administration, admin panel access
 //   vip   - all features unlocked, no admin panel (inner circle)
 export type AdminAccessLevel = 'owner' | 'admin' | 'vip'

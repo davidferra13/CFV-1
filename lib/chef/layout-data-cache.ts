@@ -19,6 +19,7 @@ import {
   hasPersistedAdminAccessForAuthUser,
   hasPrivilegedAccess,
 } from '@/lib/auth/admin-access'
+import { resolveFounderAuthorityForAuthUser } from '@/lib/platform/owner-account'
 import { ARCHETYPE_IDS } from '@/lib/archetypes/presets'
 import type { ArchetypeId } from '@/lib/archetypes/presets'
 
@@ -125,6 +126,8 @@ export function getCachedDeletionStatus(chefId: string): Promise<CachedDeletionS
 export function getCachedIsAdmin(authUserId: string): Promise<boolean> {
   return unstable_cache(
     async (): Promise<boolean> => {
+      const db: any = createAdminClient()
+      if (await resolveFounderAuthorityForAuthUser(db, authUserId)) return true
       return hasAdminAccess(authUserId)
     },
     [`is-admin-${authUserId}`],
@@ -139,6 +142,8 @@ export function getCachedIsAdmin(authUserId: string): Promise<boolean> {
 export function getCachedIsPrivileged(authUserId: string): Promise<boolean> {
   return unstable_cache(
     async (): Promise<boolean> => {
+      const db: any = createAdminClient()
+      if (await resolveFounderAuthorityForAuthUser(db, authUserId)) return true
       return hasPrivilegedAccess(authUserId)
     },
     [`is-privileged-${authUserId}`],
