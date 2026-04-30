@@ -61,6 +61,12 @@ function commandExists(command) {
   }
 }
 
+function tailText(value, maxLength = 4000) {
+  const text = String(value ?? '').trim()
+  if (text.length <= maxLength) return text
+  return text.slice(text.length - maxLength)
+}
+
 function buildStatus(fields) {
   return {
     runner: 'v1-builder',
@@ -255,13 +261,13 @@ try {
   const codex = spawnSync(
     'codex',
     [
+      '--ask-for-approval',
+      'never',
       'exec',
       '--cd',
       worktreePath,
       '--sandbox',
       'danger-full-access',
-      '--ask-for-approval',
-      'never',
       '-',
     ],
     {
@@ -287,6 +293,8 @@ try {
       branchName &&
       remoteContains?.split(/\r?\n/).some((line) => line.trim() === `origin/${branchName}`),
   )
+  const codexStdout = tailText(codex.stdout)
+  const codexStderr = tailText(codex.stderr)
 
   const receiptResult = writeReceipt({
     ...receiptBase,
@@ -296,12 +304,14 @@ try {
       {
         command: 'codex exec',
         exitCode: codex.status,
+        stdoutTail: codexStdout,
+        stderrTail: codexStderr,
       },
     ],
     blockedReason:
       codex.status === 0 && pushed
         ? null
-        : `codex_exit=${codex.status}; dirty=${dirty ? 'yes' : 'no'}; pushed=${pushed ? 'yes' : 'no'}`,
+        : `codex_exit=${codex.status}; dirty=${dirty ? 'yes' : 'no'}; pushed=${pushed ? 'yes' : 'no'}; stderr=${tailText(codexStderr, 500)}`,
     commit: head,
     pushed,
     missionControlSummary:
