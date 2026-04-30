@@ -42,7 +42,10 @@ export function InstantNoteDock() {
     if (!rawText.trim()) return
 
     startTransition(async () => {
-      const result = await createInstantNote({ text: rawText })
+      const result = await createInstantNote({
+        text: rawText,
+        commandSource: 'instant_note_dock',
+      })
       if (!result.success) {
         toast.error(result.error ?? 'Failed to save note')
         return

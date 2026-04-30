@@ -58,12 +58,24 @@ export function WhiteboardCapture({
   initialTrackedActions,
   initialTraceLinks,
   initialLearningRules,
+  initialThreads,
+  initialDigestItems,
+  initialWatchdogEvents,
+  initialContextBindings,
+  initialRouteAdapters,
+  initialSeasonalityWindows,
   initialSummary,
 }: {
   initialReviewQueue: any[]
   initialTrackedActions: any[]
   initialTraceLinks: any[]
   initialLearningRules: any[]
+  initialThreads: any[]
+  initialDigestItems: any[]
+  initialWatchdogEvents: any[]
+  initialContextBindings: any[]
+  initialRouteAdapters: any[]
+  initialSeasonalityWindows: any[]
   initialSummary: any
 }) {
   const [mode, setMode] = useState<CaptureMode>('text')
@@ -178,6 +190,12 @@ export function WhiteboardCapture({
           initialTrackedActions={initialTrackedActions}
           initialTraceLinks={initialTraceLinks}
           initialLearningRules={initialLearningRules}
+          initialThreads={initialThreads}
+          initialDigestItems={initialDigestItems}
+          initialWatchdogEvents={initialWatchdogEvents}
+          initialContextBindings={initialContextBindings}
+          initialRouteAdapters={initialRouteAdapters}
+          initialSeasonalityWindows={initialSeasonalityWindows}
           initialSummary={initialSummary}
         />
       ) : null}

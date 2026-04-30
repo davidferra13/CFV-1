@@ -2,10 +2,16 @@ import { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import {
   getInstantNoteActions,
+  getInstantNoteContextBindings,
+  getInstantNoteDigestItems,
   getInstantNoteLearningRules,
   getInstantNoteReviewQueue,
+  getInstantNoteRouteAdapters,
+  getInstantNoteSeasonalityWindows,
   getInstantNoteSummary,
   getInstantNoteTraceLinks,
+  getInstantNoteThreads,
+  getInstantNoteWatchdogEvents,
 } from '@/lib/quick-notes/intelligence-actions'
 import { WhiteboardCapture } from './whiteboard-capture'
 
@@ -20,15 +26,39 @@ export default async function CapturePage() {
   let trackedActions: Awaited<ReturnType<typeof getInstantNoteActions>> = []
   let traceLinks: Awaited<ReturnType<typeof getInstantNoteTraceLinks>> = []
   let learningRules: Awaited<ReturnType<typeof getInstantNoteLearningRules>> = []
+  let threads: Awaited<ReturnType<typeof getInstantNoteThreads>> = []
+  let digestItems: Awaited<ReturnType<typeof getInstantNoteDigestItems>> = []
+  let watchdogEvents: Awaited<ReturnType<typeof getInstantNoteWatchdogEvents>> = []
+  let contextBindings: Awaited<ReturnType<typeof getInstantNoteContextBindings>> = []
+  let routeAdapters: Awaited<ReturnType<typeof getInstantNoteRouteAdapters>> = []
+  let seasonalityWindows: Awaited<ReturnType<typeof getInstantNoteSeasonalityWindows>> = []
   let summary: Awaited<ReturnType<typeof getInstantNoteSummary>> | null = null
   let loadError: string | null = null
 
   try {
-    ;[reviewQueue, trackedActions, traceLinks, learningRules, summary] = await Promise.all([
+    ;[
+      reviewQueue,
+      trackedActions,
+      traceLinks,
+      learningRules,
+      threads,
+      digestItems,
+      watchdogEvents,
+      contextBindings,
+      routeAdapters,
+      seasonalityWindows,
+      summary,
+    ] = await Promise.all([
       getInstantNoteReviewQueue(),
       getInstantNoteActions(12),
       getInstantNoteTraceLinks(30),
       getInstantNoteLearningRules(8),
+      getInstantNoteThreads(12),
+      getInstantNoteDigestItems(12),
+      getInstantNoteWatchdogEvents(12),
+      getInstantNoteContextBindings(20),
+      getInstantNoteRouteAdapters(20),
+      getInstantNoteSeasonalityWindows(12),
       getInstantNoteSummary(),
     ])
   } catch (err) {
@@ -54,6 +84,12 @@ export default async function CapturePage() {
         initialTrackedActions={trackedActions}
         initialTraceLinks={traceLinks}
         initialLearningRules={learningRules}
+        initialThreads={threads}
+        initialDigestItems={digestItems}
+        initialWatchdogEvents={watchdogEvents}
+        initialContextBindings={contextBindings}
+        initialRouteAdapters={routeAdapters}
+        initialSeasonalityWindows={seasonalityWindows}
         initialSummary={summary}
       />
     </div>

@@ -12,16 +12,24 @@ import {
   Clock,
   GitBranch,
   Inbox,
+  Layers,
+  Link,
   ListChecks,
   Mic,
   RefreshCw,
   Send,
+  ShieldAlert,
   Sparkles,
 } from '@/components/ui/icons'
 import {
   createInstantNote,
+  markInstantNotesReviewed,
   markInstantNoteReviewed,
   recordInstantNoteCorrection,
+  retireInstantNoteLearningRule,
+  runInstantNoteWatchdog,
+  updateInstantNoteContextBinding,
+  updateInstantNoteLearningRule,
 } from '@/lib/quick-notes/intelligence-actions'
 
 type ReviewQueueItem = {
@@ -62,6 +70,7 @@ type TraceLink = {
   derived_ref_id: string | null
   route_layer: string | null
   confidence_score: number | null
+  metadata?: Record<string, unknown> | null
   created_at: string
 }
 
@@ -71,6 +80,78 @@ type LearningRule = {
   pattern: string
   instruction: string
   weight: number
+  status?: string
+  created_at: string
+}
+
+type NoteThread = {
+  id: string
+  thread_key: string
+  title: string
+  summary: string | null
+  status: string
+  latest_quick_note_id: string | null
+  note_count: number
+  first_captured_at: string
+  last_captured_at: string
+}
+
+type DigestItem = {
+  id: string
+  quick_note_id: string | null
+  interpretation_id: string | null
+  item_kind: string
+  title: string
+  detail: string | null
+  urgency: 'low' | 'normal' | 'high' | 'urgent'
+  status: string
+  created_at: string
+}
+
+type WatchdogEvent = {
+  id: string
+  quick_note_id: string | null
+  interpretation_id: string | null
+  watchdog_type: string
+  title: string
+  detail: string | null
+  severity: 'low' | 'medium' | 'high' | 'critical'
+  status: string
+  due_at: string | null
+  created_at: string
+}
+
+type ContextBinding = {
+  id: string
+  binding_type: string
+  target_table: string | null
+  target_id: string | null
+  label: string
+  confidence_score: number
+  status: 'suggested' | 'confirmed' | 'rejected'
+  created_at: string
+}
+
+type RouteAdapter = {
+  id: string
+  adapter_key: string
+  target_layer: string
+  target_table: string | null
+  target_id: string | null
+  status: string
+  error: string | null
+  created_at: string
+}
+
+type SeasonalityWindow = {
+  id: string
+  ingredient_name: string | null
+  window_label: string
+  start_date: string | null
+  end_date: string | null
+  urgency: 'low' | 'normal' | 'high' | 'urgent'
+  urgency_reason: string | null
+  status: string
   created_at: string
 }
 
@@ -130,25 +211,45 @@ function urgencyVariant(urgency: string): 'success' | 'warning' | 'error' | 'def
   return 'default'
 }
 
+function confidenceBandFromScore(score: number): 'high' | 'medium' | 'low' {
+  if (score >= 80) return 'high'
+  if (score >= 50) return 'medium'
+  return 'low'
+}
+
 export function InstantNotePanel({
   initialReviewQueue,
   initialTrackedActions,
   initialTraceLinks,
   initialLearningRules,
+  initialThreads,
+  initialDigestItems,
+  initialWatchdogEvents,
+  initialContextBindings,
+  initialRouteAdapters,
+  initialSeasonalityWindows,
   initialSummary,
 }: {
   initialReviewQueue: ReviewQueueItem[]
   initialTrackedActions: TrackedAction[]
   initialTraceLinks: TraceLink[]
   initialLearningRules: LearningRule[]
+  initialThreads: NoteThread[]
+  initialDigestItems: DigestItem[]
+  initialWatchdogEvents: WatchdogEvent[]
+  initialContextBindings: ContextBinding[]
+  initialRouteAdapters: RouteAdapter[]
+  initialSeasonalityWindows: SeasonalityWindow[]
   initialSummary: NoteSummary | null
 }) {
   const [input, setInput] = useState('')
   const [captureState, setCaptureState] = useState<CaptureState>({ status: 'idle' })
   const [reviewQueue, setReviewQueue] = useState(initialReviewQueue)
-  const [activeView, setActiveView] = useState<'capture' | 'review' | 'trace' | 'confidence'>(
-    'capture'
-  )
+  const [activeView, setActiveView] = useState<
+    'capture' | 'review' | 'digest' | 'trace' | 'context' | 'watchdog' | 'confidence'
+  >('capture')
+  const [selectedTrace, setSelectedTrace] = useState<TraceLink | null>(null)
+  const [contextBindings, setContextBindings] = useState(initialContextBindings)
   const [listening, setListening] = useState(false)
   const [isPending, startTransition] = useTransition()
   const router = useRouter()
@@ -160,7 +261,10 @@ export function InstantNotePanel({
 
     setInput('')
     startTransition(async () => {
-      const saved = await createInstantNote({ text: rawText })
+      const saved = await createInstantNote({
+        text: rawText,
+        commandSource: 'capture_page',
+      })
       if (!saved.success || !saved.note) {
         setCaptureState({ status: 'error', message: saved.error ?? 'Failed to save note' })
         toast.error(saved.error ?? 'Failed to save note')
@@ -238,6 +342,84 @@ export function InstantNotePanel({
     })
   }
 
+  function markVisibleReviewed() {
+    const visibleIds = reviewQueue.slice(0, 10).map((item) => item.id)
+    if (visibleIds.length === 0) return
+    const previous = reviewQueue
+    setReviewQueue(reviewQueue.filter((queued) => !visibleIds.includes(queued.id)))
+
+    startTransition(async () => {
+      const result = await markInstantNotesReviewed({ interpretationIds: visibleIds })
+      if (!result.success) {
+        setReviewQueue(previous)
+        toast.error(result.error ?? 'Failed to mark notes reviewed')
+        return
+      }
+      toast.success(`Marked ${result.count ?? visibleIds.length} note(s) reviewed`)
+      router.refresh()
+    })
+  }
+
+  function updateBinding(binding: ContextBinding, status: 'confirmed' | 'rejected') {
+    const previous = contextBindings
+    setContextBindings((current) =>
+      current.map((item) => (item.id === binding.id ? { ...item, status } : item))
+    )
+
+    startTransition(async () => {
+      const result = await updateInstantNoteContextBinding({ bindingId: binding.id, status })
+      if (!result.success) {
+        setContextBindings(previous)
+        toast.error(result.error ?? 'Failed to update binding')
+        return
+      }
+      toast.success(status === 'confirmed' ? 'Binding confirmed' : 'Binding rejected')
+      router.refresh()
+    })
+  }
+
+  function bumpRule(rule: LearningRule) {
+    startTransition(async () => {
+      const result = await updateInstantNoteLearningRule({
+        ruleId: rule.id,
+        weight: Math.min(rule.weight + 2, 100),
+      })
+      if (!result.success) {
+        toast.error(result.error ?? 'Failed to update rule')
+        return
+      }
+      toast.success('Learning rule weight increased')
+      router.refresh()
+    })
+  }
+
+  function retireRule(rule: LearningRule) {
+    startTransition(async () => {
+      const result = await retireInstantNoteLearningRule({
+        ruleId: rule.id,
+        retiredReason: 'Retired from confidence console',
+      })
+      if (!result.success) {
+        toast.error(result.error ?? 'Failed to retire rule')
+        return
+      }
+      toast.success('Learning rule retired')
+      router.refresh()
+    })
+  }
+
+  function scanWatchdog() {
+    startTransition(async () => {
+      const result = await runInstantNoteWatchdog()
+      if (!result.success) {
+        toast.error(result.error ?? 'Watchdog scan failed')
+        return
+      }
+      toast.success(`Watchdog created ${result.created ?? 0} issue(s)`)
+      router.refresh()
+    })
+  }
+
   function saveCorrection(
     item: ReviewQueueItem,
     correctionType: 'classification' | 'routing',
@@ -277,7 +459,10 @@ export function InstantNotePanel({
         {[
           ['capture', 'Capture'],
           ['review', `Review ${reviewQueue.length}`],
+          ['digest', 'Digest'],
           ['trace', 'Trace'],
+          ['context', 'Context'],
+          ['watchdog', `Watchdog ${initialWatchdogEvents.length}`],
           ['confidence', 'Confidence'],
         ].map(([view, label]) => (
           <Button
@@ -359,13 +544,24 @@ export function InstantNotePanel({
         <div className="grid gap-4 lg:grid-cols-2">
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-base">
-                <Inbox className="h-5 w-5 text-amber-400" />
-                Review Queue
-                <Badge variant={reviewQueue.length > 0 ? 'warning' : 'success'}>
-                  {reviewQueue.length}
-                </Badge>
-              </CardTitle>
+              <div className="flex items-center justify-between gap-3">
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Inbox className="h-5 w-5 text-amber-400" />
+                  Review Queue
+                  <Badge variant={reviewQueue.length > 0 ? 'warning' : 'success'}>
+                    {reviewQueue.length}
+                  </Badge>
+                </CardTitle>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={markVisibleReviewed}
+                  disabled={reviewQueue.length === 0 || isPending}
+                >
+                  <CheckCircle2 className="h-4 w-4" />
+                  Batch
+                </Button>
+              </div>
             </CardHeader>
             <CardContent className="space-y-3">
               {reviewQueue.length === 0 ? (
@@ -505,6 +701,125 @@ export function InstantNotePanel({
         </div>
       ) : null}
 
+      {activeView === 'digest' ? (
+        <div className="grid gap-4 lg:grid-cols-2">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Inbox className="h-5 w-5 text-brand-400" />
+                Note Digest
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {initialDigestItems.length === 0 ? (
+                <p className="text-sm text-stone-500 dark:text-stone-400">
+                  Captured, routed, urgent, and failed note events will collect here.
+                </p>
+              ) : (
+                initialDigestItems.map((item) => (
+                  <div
+                    key={item.id}
+                    className="rounded-lg border border-stone-200 bg-stone-50 p-3 dark:border-stone-700 dark:bg-stone-800/50"
+                  >
+                    <div className="mb-2 flex flex-wrap items-center gap-2">
+                      <Badge variant="info">{item.item_kind.replace(/_/g, ' ')}</Badge>
+                      <Badge variant={urgencyVariant(item.urgency)}>{item.urgency}</Badge>
+                      <Badge variant="default">{item.status}</Badge>
+                    </div>
+                    <p className="text-sm font-medium text-stone-900 dark:text-stone-100">
+                      {item.title}
+                    </p>
+                    {item.detail ? (
+                      <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">
+                        {item.detail}
+                      </p>
+                    ) : null}
+                  </div>
+                ))
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Layers className="h-5 w-5 text-emerald-400" />
+                Thought Threads
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {initialThreads.length === 0 ? (
+                <p className="text-sm text-stone-500 dark:text-stone-400">
+                  Repeated or related notes will merge into threads here.
+                </p>
+              ) : (
+                initialThreads.map((thread) => (
+                  <div
+                    key={thread.id}
+                    className="rounded-lg border border-stone-200 bg-stone-50 p-3 dark:border-stone-700 dark:bg-stone-800/50"
+                  >
+                    <div className="mb-2 flex flex-wrap items-center gap-2">
+                      <Badge variant="default">{thread.note_count} note(s)</Badge>
+                      <Badge variant={thread.status === 'active' ? 'success' : 'warning'}>
+                        {thread.status}
+                      </Badge>
+                    </div>
+                    <p className="text-sm font-medium text-stone-900 dark:text-stone-100">
+                      {thread.title}
+                    </p>
+                    {thread.summary ? (
+                      <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">
+                        {thread.summary}
+                      </p>
+                    ) : null}
+                  </div>
+                ))
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="lg:col-span-2">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <CalendarDays className="h-5 w-5 text-amber-400" />
+                Seasonality Resolver
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-3 sm:grid-cols-2">
+              {initialSeasonalityWindows.length === 0 ? (
+                <p className="text-sm text-stone-500 dark:text-stone-400">
+                  Time-sensitive harvest and sourcing windows will appear here.
+                </p>
+              ) : (
+                initialSeasonalityWindows.map((window) => (
+                  <div
+                    key={window.id}
+                    className="rounded-lg border border-stone-200 bg-stone-50 p-3 dark:border-stone-700 dark:bg-stone-800/50"
+                  >
+                    <div className="mb-2 flex flex-wrap items-center gap-2">
+                      <Badge variant={urgencyVariant(window.urgency)}>{window.urgency}</Badge>
+                      <Badge variant="default">{window.status}</Badge>
+                    </div>
+                    <p className="text-sm font-medium text-stone-900 dark:text-stone-100">
+                      {window.window_label}
+                    </p>
+                    <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">
+                      {[window.start_date, window.end_date].filter(Boolean).join(' to ') ||
+                        'Seasonal window inferred from note'}
+                    </p>
+                    {window.urgency_reason ? (
+                      <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
+                        {window.urgency_reason}
+                      </p>
+                    ) : null}
+                  </div>
+                ))
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      ) : null}
+
       {activeView === 'trace' ? (
         <Card>
           <CardHeader className="pb-3">
@@ -521,9 +836,11 @@ export function InstantNotePanel({
               </p>
             ) : (
               initialTraceLinks.slice(0, 12).map((link) => (
-                <div
+                <button
+                  type="button"
                   key={link.id}
-                  className="flex flex-col gap-2 rounded-lg border border-stone-200 bg-stone-50 p-3 text-sm dark:border-stone-700 dark:bg-stone-800/50"
+                  className="flex w-full flex-col gap-2 rounded-lg border border-stone-200 bg-stone-50 p-3 text-left text-sm dark:border-stone-700 dark:bg-stone-800/50"
+                  onClick={() => setSelectedTrace(link)}
                 >
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge variant="info">{link.link_kind.replace(/_/g, ' ')}</Badge>
@@ -537,6 +854,205 @@ export function InstantNotePanel({
                   <p className="text-xs text-stone-500 dark:text-stone-400">
                     {link.route_layer ?? 'Trace'} - {new Date(link.created_at).toLocaleString()}
                   </p>
+                </button>
+              ))
+            )}
+            {selectedTrace ? (
+              <div className="rounded-lg border border-brand-200 bg-brand-50 p-4 dark:border-brand-800 dark:bg-brand-950/40">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2 text-sm font-medium text-stone-900 dark:text-stone-100">
+                    <GitBranch className="h-4 w-4 text-brand-400" />
+                    Trace Detail
+                  </div>
+                  <Button variant="ghost" size="sm" onClick={() => setSelectedTrace(null)}>
+                    Close
+                  </Button>
+                </div>
+                <div className="grid gap-2 text-xs text-stone-600 dark:text-stone-300 sm:grid-cols-2">
+                  <TraceField label="Raw Note" value={selectedTrace.quick_note_id} />
+                  <TraceField label="Kind" value={selectedTrace.link_kind} />
+                  <TraceField label="Derived Type" value={selectedTrace.derived_type} />
+                  <TraceField
+                    label="Derived Ref"
+                    value={selectedTrace.derived_ref_id ?? 'Pending'}
+                  />
+                  <TraceField label="Route Layer" value={selectedTrace.route_layer ?? 'Unknown'} />
+                  <TraceField
+                    label="Confidence"
+                    value={
+                      selectedTrace.confidence_score != null
+                        ? `${selectedTrace.confidence_score}%`
+                        : 'Not scored'
+                    }
+                  />
+                </div>
+              </div>
+            ) : null}
+          </CardContent>
+        </Card>
+      ) : null}
+
+      {activeView === 'context' ? (
+        <div className="grid gap-4 lg:grid-cols-2">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Link className="h-5 w-5 text-brand-400" />
+                Context Bindings
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {contextBindings.length === 0 ? (
+                <p className="text-sm text-stone-500 dark:text-stone-400">
+                  Event, ingredient, inventory, and thread context will appear here.
+                </p>
+              ) : (
+                contextBindings.slice(0, 10).map((binding) => (
+                  <div
+                    key={binding.id}
+                    className="rounded-lg border border-stone-200 bg-stone-50 p-3 dark:border-stone-700 dark:bg-stone-800/50"
+                  >
+                    <div className="mb-2 flex flex-wrap items-center gap-2">
+                      <Badge variant="info">{binding.binding_type}</Badge>
+                      <Badge
+                        variant={confidenceVariant(
+                          confidenceBandFromScore(binding.confidence_score)
+                        )}
+                      >
+                        {binding.confidence_score}%
+                      </Badge>
+                      <Badge
+                        variant={
+                          binding.status === 'confirmed'
+                            ? 'success'
+                            : binding.status === 'rejected'
+                              ? 'error'
+                              : 'warning'
+                        }
+                      >
+                        {binding.status}
+                      </Badge>
+                    </div>
+                    <p className="text-sm font-medium text-stone-900 dark:text-stone-100">
+                      {binding.label}
+                    </p>
+                    <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">
+                      {binding.target_table ?? 'Unbound target'}
+                    </p>
+                    {binding.status === 'suggested' ? (
+                      <div className="mt-3 flex gap-2">
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => updateBinding(binding, 'confirmed')}
+                        >
+                          Confirm
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => updateBinding(binding, 'rejected')}
+                        >
+                          Reject
+                        </Button>
+                      </div>
+                    ) : null}
+                  </div>
+                ))
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Layers className="h-5 w-5 text-emerald-400" />
+                Route Adapters
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {initialRouteAdapters.length === 0 ? (
+                <p className="text-sm text-stone-500 dark:text-stone-400">
+                  Component adapters will show route targets and failures here.
+                </p>
+              ) : (
+                initialRouteAdapters.slice(0, 12).map((adapter) => (
+                  <div
+                    key={adapter.id}
+                    className="rounded-lg border border-stone-200 bg-stone-50 p-3 dark:border-stone-700 dark:bg-stone-800/50"
+                  >
+                    <div className="mb-2 flex flex-wrap items-center gap-2">
+                      <Badge variant="info">{adapter.adapter_key.replace(/_/g, ' ')}</Badge>
+                      <Badge variant={adapter.status === 'failed' ? 'error' : 'default'}>
+                        {adapter.status}
+                      </Badge>
+                    </div>
+                    <p className="text-sm font-medium text-stone-900 dark:text-stone-100">
+                      {adapter.target_layer}
+                    </p>
+                    <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">
+                      {adapter.target_table ?? 'No table assigned'}
+                    </p>
+                    {adapter.error ? (
+                      <p className="mt-1 text-xs text-red-600 dark:text-red-400">{adapter.error}</p>
+                    ) : null}
+                  </div>
+                ))
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      ) : null}
+
+      {activeView === 'watchdog' ? (
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between gap-3">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <ShieldAlert className="h-5 w-5 text-red-400" />
+                Execution Watchdog
+              </CardTitle>
+              <Button variant="secondary" size="sm" onClick={scanWatchdog} loading={isPending}>
+                Scan
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {initialWatchdogEvents.length === 0 ? (
+              <p className="text-sm text-stone-500 dark:text-stone-400">
+                No open execution gaps are currently tracked.
+              </p>
+            ) : (
+              initialWatchdogEvents.map((event) => (
+                <div
+                  key={event.id}
+                  className="rounded-lg border border-stone-200 bg-stone-50 p-3 dark:border-stone-700 dark:bg-stone-800/50"
+                >
+                  <div className="mb-2 flex flex-wrap items-center gap-2">
+                    <Badge
+                      variant={
+                        event.severity === 'critical' || event.severity === 'high'
+                          ? 'error'
+                          : 'warning'
+                      }
+                    >
+                      {event.severity}
+                    </Badge>
+                    <Badge variant="default">{event.watchdog_type.replace(/_/g, ' ')}</Badge>
+                  </div>
+                  <p className="text-sm font-medium text-stone-900 dark:text-stone-100">
+                    {event.title}
+                  </p>
+                  {event.detail ? (
+                    <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">
+                      {event.detail}
+                    </p>
+                  ) : null}
+                  {event.due_at ? (
+                    <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+                      Due {new Date(event.due_at).toLocaleString()}
+                    </p>
+                  ) : null}
                 </div>
               ))
             )}
@@ -588,6 +1104,14 @@ export function InstantNotePanel({
                       <Badge variant="default">Weight {rule.weight}</Badge>
                     </div>
                     <p className="text-sm text-stone-900 dark:text-stone-100">{rule.instruction}</p>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <Button variant="secondary" size="sm" onClick={() => bumpRule(rule)}>
+                        Increase Weight
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => retireRule(rule)}>
+                        Retire
+                      </Button>
+                    </div>
                   </div>
                 ))
               )}
@@ -625,6 +1149,15 @@ function ConfidenceRow({ label, value }: { label: string; value: number }) {
       <Badge variant={label === 'High' ? 'success' : label === 'Medium' ? 'warning' : 'error'}>
         {value}
       </Badge>
+    </div>
+  )
+}
+
+function TraceField({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-md border border-brand-100 bg-white p-2 dark:border-brand-900 dark:bg-stone-900">
+      <div className="text-[11px] uppercase text-stone-400">{label}</div>
+      <div className="mt-1 break-all text-xs text-stone-800 dark:text-stone-100">{value}</div>
     </div>
   )
 }

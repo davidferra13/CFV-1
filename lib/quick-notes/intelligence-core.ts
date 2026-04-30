@@ -182,6 +182,22 @@ export function classifyCaptureSource(text: string): 'typed' | 'pasted' {
   return text.length > 280 || text.includes('\n') ? 'pasted' : 'typed'
 }
 
+export function buildNoteThreadKey(text: string): string {
+  const normalized = noteDedupeKey([text])
+  const words = normalized.split(' ').filter((word) => word.length > 2)
+  return words.slice(0, 8).join('-').slice(0, 96) || 'untitled-note'
+}
+
+export function buildNoteThreadTitle(text: string): string {
+  const firstLine = text
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .find(Boolean)
+
+  if (!firstLine) return 'Captured note'
+  return firstLine.length > 80 ? `${firstLine.slice(0, 77)}...` : firstLine
+}
+
 export function buildNoteInterpretationPrompt(corrections: Array<Record<string, unknown>>): string {
   const correctionContext =
     corrections.length > 0

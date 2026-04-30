@@ -32,10 +32,27 @@ import {
 const CaptureNoteSchema = z.object({
   text: z.string().min(1).max(10000),
   captureSource: z.enum(['typed', 'pasted', 'voice']).optional(),
+  commandSource: z.string().max(80).optional(),
 })
 
 const ProcessNoteSchema = z.object({
   quickNoteId: z.string().uuid(),
+})
+
+const RuleEditSchema = z.object({
+  ruleId: z.string().uuid(),
+  instruction: z.string().min(1).max(1000).optional(),
+  weight: z.number().int().min(1).max(100).optional(),
+  retiredReason: z.string().max(500).optional(),
+})
+
+const BindingStatusSchema = z.object({
+  bindingId: z.string().uuid(),
+  status: z.enum(['confirmed', 'rejected']),
+})
+
+const BatchReviewSchema = z.object({
+  interpretationIds: z.array(z.string().uuid()).min(1).max(50),
 })
 
 const CorrectionSchema = z.object({
@@ -561,6 +578,7 @@ export async function createInstantNote(input: z.infer<typeof CaptureNoteSchema>
       text: rawText,
       status: 'raw',
       capture_source: captureSource,
+      command_source: validated.commandSource ?? null,
       processing_status: 'queued',
     })
     .select(
@@ -741,8 +759,9 @@ export async function getInstantNoteLearningRules(limit = 20) {
 
   const { data, error } = await db
     .from('chef_note_learning_rules')
-    .select('id, rule_type, pattern, instruction, weight, last_applied_at, created_at')
+    .select('id, rule_type, pattern, instruction, weight, status, last_applied_at, created_at')
     .eq('chef_id', user.entityId)
+    .eq('status', 'active')
     .order('weight', { ascending: false })
     .order('created_at', { ascending: false })
     .limit(safeLimit)
@@ -750,6 +769,139 @@ export async function getInstantNoteLearningRules(limit = 20) {
   if (error) {
     console.error('[note-intelligence] learning rules load failed:', error)
     throw new Error('Failed to load note learning rules')
+  }
+
+  return data ?? []
+}
+
+export async function getInstantNoteThreads(limit = 20) {
+  const user = await requireChef()
+  const db: Db = createServerClient()
+  const safeLimit = Math.min(Math.max(limit, 1), 50)
+
+  const { data, error } = await db
+    .from('chef_note_threads')
+    .select(
+      'id, thread_key, title, summary, status, latest_quick_note_id, note_count, first_captured_at, last_captured_at, metadata, created_at'
+    )
+    .eq('chef_id', user.entityId)
+    .order('last_captured_at', { ascending: false })
+    .limit(safeLimit)
+
+  if (error) {
+    console.error('[note-intelligence] thread load failed:', error)
+    throw new Error('Failed to load note threads')
+  }
+
+  return data ?? []
+}
+
+export async function getInstantNoteDigestItems(limit = 20) {
+  const user = await requireChef()
+  const db: Db = createServerClient()
+  const safeLimit = Math.min(Math.max(limit, 1), 50)
+
+  const { data, error } = await db
+    .from('chef_note_digest_items')
+    .select(
+      'id, quick_note_id, interpretation_id, digest_date, item_kind, title, detail, urgency, status, metadata, created_at'
+    )
+    .eq('chef_id', user.entityId)
+    .order('created_at', { ascending: false })
+    .limit(safeLimit)
+
+  if (error) {
+    console.error('[note-intelligence] digest load failed:', error)
+    throw new Error('Failed to load note digest')
+  }
+
+  return data ?? []
+}
+
+export async function getInstantNoteWatchdogEvents(limit = 20) {
+  const user = await requireChef()
+  const db: Db = createServerClient()
+  const safeLimit = Math.min(Math.max(limit, 1), 50)
+
+  const { data, error } = await db
+    .from('chef_note_watchdog_events')
+    .select(
+      'id, quick_note_id, interpretation_id, action_id, watchdog_type, title, detail, severity, status, due_at, metadata, created_at'
+    )
+    .eq('chef_id', user.entityId)
+    .eq('status', 'open')
+    .order('created_at', { ascending: false })
+    .limit(safeLimit)
+
+  if (error) {
+    console.error('[note-intelligence] watchdog load failed:', error)
+    throw new Error('Failed to load note watchdog events')
+  }
+
+  return data ?? []
+}
+
+export async function getInstantNoteContextBindings(limit = 30) {
+  const user = await requireChef()
+  const db: Db = createServerClient()
+  const safeLimit = Math.min(Math.max(limit, 1), 75)
+
+  const { data, error } = await db
+    .from('chef_note_context_bindings')
+    .select(
+      'id, quick_note_id, interpretation_id, component_id, binding_type, target_table, target_id, label, confidence_score, status, metadata, created_at'
+    )
+    .eq('chef_id', user.entityId)
+    .order('created_at', { ascending: false })
+    .limit(safeLimit)
+
+  if (error) {
+    console.error('[note-intelligence] context binding load failed:', error)
+    throw new Error('Failed to load note context bindings')
+  }
+
+  return data ?? []
+}
+
+export async function getInstantNoteRouteAdapters(limit = 30) {
+  const user = await requireChef()
+  const db: Db = createServerClient()
+  const safeLimit = Math.min(Math.max(limit, 1), 75)
+
+  const { data, error } = await db
+    .from('chef_note_route_adapters')
+    .select(
+      'id, quick_note_id, interpretation_id, component_id, adapter_key, target_layer, target_table, target_id, status, adapter_payload, error, created_at'
+    )
+    .eq('chef_id', user.entityId)
+    .order('created_at', { ascending: false })
+    .limit(safeLimit)
+
+  if (error) {
+    console.error('[note-intelligence] route adapter load failed:', error)
+    throw new Error('Failed to load note route adapters')
+  }
+
+  return data ?? []
+}
+
+export async function getInstantNoteSeasonalityWindows(limit = 20) {
+  const user = await requireChef()
+  const db: Db = createServerClient()
+  const safeLimit = Math.min(Math.max(limit, 1), 50)
+
+  const { data, error } = await db
+    .from('chef_note_seasonality_windows')
+    .select(
+      'id, quick_note_id, interpretation_id, component_id, ingredient_name, window_label, start_date, end_date, urgency, urgency_reason, source, status, metadata, created_at'
+    )
+    .eq('chef_id', user.entityId)
+    .order('created_at', { ascending: false })
+    .limit(safeLimit)
+
+  if (error) {
+    console.error('[note-intelligence] seasonality window load failed:', error)
+    throw new Error('Failed to load note seasonality windows')
   }
 
   return data ?? []
@@ -876,6 +1028,239 @@ export async function recordInstantNoteCorrection(input: z.infer<typeof Correcti
 
   revalidateNoteIntelligence()
   return { success: true }
+}
+
+export async function updateInstantNoteLearningRule(input: z.infer<typeof RuleEditSchema>) {
+  const user = await requireChef()
+  const validated = RuleEditSchema.parse(input)
+
+  if (!validated.instruction && validated.weight === undefined) {
+    return { success: false, error: 'Nothing to update' }
+  }
+
+  const db: Db = createServerClient()
+  const { error } = await db
+    .from('chef_note_learning_rules')
+    .update({
+      ...(validated.instruction ? { instruction: validated.instruction } : {}),
+      ...(validated.weight !== undefined ? { weight: validated.weight } : {}),
+    })
+    .eq('id', validated.ruleId)
+    .eq('chef_id', user.entityId)
+
+  if (error) {
+    console.error('[note-intelligence] learning rule update failed:', error)
+    return { success: false, error: 'Failed to update learning rule' }
+  }
+
+  revalidateNoteIntelligence()
+  return { success: true }
+}
+
+export async function retireInstantNoteLearningRule(input: z.infer<typeof RuleEditSchema>) {
+  const user = await requireChef()
+  const validated = RuleEditSchema.parse(input)
+  const db: Db = createServerClient()
+
+  const { error } = await db
+    .from('chef_note_learning_rules')
+    .update({
+      status: 'retired',
+      retired_at: new Date().toISOString(),
+      retired_reason: validated.retiredReason ?? 'Retired from confidence console',
+    })
+    .eq('id', validated.ruleId)
+    .eq('chef_id', user.entityId)
+
+  if (error) {
+    console.error('[note-intelligence] learning rule retire failed:', error)
+    return { success: false, error: 'Failed to retire learning rule' }
+  }
+
+  revalidateNoteIntelligence()
+  return { success: true }
+}
+
+export async function updateInstantNoteContextBinding(input: z.infer<typeof BindingStatusSchema>) {
+  const user = await requireChef()
+  const validated = BindingStatusSchema.parse(input)
+  const db: Db = createServerClient()
+
+  const { error } = await db
+    .from('chef_note_context_bindings')
+    .update({
+      status: validated.status,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', validated.bindingId)
+    .eq('chef_id', user.entityId)
+
+  if (error) {
+    console.error('[note-intelligence] context binding update failed:', error)
+    return { success: false, error: 'Failed to update context binding' }
+  }
+
+  revalidateNoteIntelligence()
+  return { success: true }
+}
+
+export async function markInstantNotesReviewed(input: z.infer<typeof BatchReviewSchema>) {
+  const user = await requireChef()
+  const validated = BatchReviewSchema.parse(input)
+  const db: Db = createServerClient()
+
+  const { data: interpretations, error: lookupError } = await db
+    .from('chef_note_interpretations')
+    .select('id, quick_note_id')
+    .eq('chef_id', user.entityId)
+    .in('id', validated.interpretationIds)
+
+  if (lookupError) {
+    console.error('[note-intelligence] batch review lookup failed:', lookupError)
+    return { success: false, error: 'Failed to load notes for batch review' }
+  }
+
+  const foundIds = (interpretations ?? []).map((row: any) => row.id)
+  if (foundIds.length === 0) {
+    return { success: false, error: 'No matching notes found' }
+  }
+
+  const { error } = await db
+    .from('chef_note_interpretations')
+    .update({ status: 'corrected', updated_at: new Date().toISOString() })
+    .eq('chef_id', user.entityId)
+    .in('id', foundIds)
+
+  if (error) {
+    console.error('[note-intelligence] batch review update failed:', error)
+    return { success: false, error: 'Failed to mark notes reviewed' }
+  }
+
+  const quickNoteIds = (interpretations ?? []).map((row: any) => row.quick_note_id).filter(Boolean)
+
+  if (quickNoteIds.length > 0) {
+    await db
+      .from('chef_quick_notes')
+      .update({
+        status: 'triaged',
+        triaged_to: 'note_intelligence_review',
+        updated_at: new Date().toISOString(),
+      })
+      .eq('chef_id', user.entityId)
+      .in('id', quickNoteIds)
+  }
+
+  revalidateNoteIntelligence()
+  return { success: true, count: foundIds.length }
+}
+
+export async function runInstantNoteWatchdog() {
+  const user = await requireChef()
+  const db: Db = createServerClient()
+  const now = new Date()
+  const staleProcessingCutoff = new Date(now)
+  staleProcessingCutoff.setMinutes(staleProcessingCutoff.getMinutes() - 15)
+  const staleReviewCutoff = new Date(now)
+  staleReviewCutoff.setDate(staleReviewCutoff.getDate() - 3)
+
+  const [processing, reviews, actionless] = await Promise.all([
+    db
+      .from('chef_quick_notes')
+      .select('id, text, created_at')
+      .eq('chef_id', user.entityId)
+      .in('processing_status', ['queued', 'processing'])
+      .lt('created_at', staleProcessingCutoff.toISOString())
+      .limit(25),
+    db
+      .from('chef_note_interpretations')
+      .select('id, quick_note_id, review_reason, created_at')
+      .eq('chef_id', user.entityId)
+      .in('status', ['needs_confirmation', 'review_queue', 'failed'])
+      .lt('created_at', staleReviewCutoff.toISOString())
+      .limit(25),
+    db
+      .from('chef_note_interpretations')
+      .select('id, quick_note_id, created_at')
+      .eq('chef_id', user.entityId)
+      .in('status', ['auto_committed', 'needs_confirmation', 'review_queue'])
+      .limit(50),
+  ])
+
+  if (processing.error || reviews.error || actionless.error) {
+    console.error('[note-intelligence] watchdog scan failed:', {
+      processing: processing.error,
+      reviews: reviews.error,
+      actionless: actionless.error,
+    })
+    return { success: false, error: 'Failed to run watchdog scan' }
+  }
+
+  let created = 0
+  for (const note of processing.data ?? []) {
+    const { error } = await db.from('chef_note_watchdog_events').insert({
+      chef_id: user.entityId,
+      quick_note_id: note.id,
+      watchdog_type: 'stale_processing',
+      title: 'Instant note is still processing',
+      detail: typeof note.text === 'string' ? note.text.slice(0, 500) : null,
+      severity: 'high',
+      due_at: now.toISOString(),
+    })
+    if (!error) created++
+  }
+
+  for (const review of reviews.data ?? []) {
+    const { error } = await db.from('chef_note_watchdog_events').insert({
+      chef_id: user.entityId,
+      quick_note_id: review.quick_note_id,
+      interpretation_id: review.id,
+      watchdog_type: 'stale_review',
+      title: 'Instant note review is overdue',
+      detail: review.review_reason ?? null,
+      severity: 'medium',
+      due_at: now.toISOString(),
+    })
+    if (!error) created++
+  }
+
+  const interpretationIds = (actionless.data ?? []).map((row: any) => row.id)
+  if (interpretationIds.length > 0) {
+    const { data: actions } = await db
+      .from('chef_note_actions')
+      .select('interpretation_id')
+      .eq('chef_id', user.entityId)
+      .in('interpretation_id', interpretationIds)
+
+    const withActions = new Set((actions ?? []).map((row: any) => row.interpretation_id))
+    for (const interpretation of actionless.data ?? []) {
+      if (withActions.has(interpretation.id)) continue
+      const { error } = await db.from('chef_note_watchdog_events').insert({
+        chef_id: user.entityId,
+        quick_note_id: interpretation.quick_note_id,
+        interpretation_id: interpretation.id,
+        watchdog_type: 'missing_action',
+        title: 'Instant note has no action',
+        detail: 'Every note must produce a task, scheduled event, or review prompt.',
+        severity: 'critical',
+        due_at: now.toISOString(),
+      })
+      if (!error) created++
+    }
+  }
+
+  if (created > 0) {
+    await db.from('chef_note_digest_items').insert({
+      chef_id: user.entityId,
+      item_kind: 'watchdog',
+      title: 'Instant note watchdog found follow-up gaps',
+      detail: `${created} note issue(s) need attention.`,
+      urgency: 'high',
+      metadata: { created },
+    })
+  }
+
+  revalidateNoteIntelligence()
+  return { success: true, created }
 }
 
 export async function markInstantNoteReviewed(interpretationId: string) {

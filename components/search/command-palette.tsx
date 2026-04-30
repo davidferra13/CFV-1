@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
+import { toast } from 'sonner'
 import { universalSearch, type SearchResult } from '@/lib/search/universal-search'
 import { useDebounce } from '@/lib/hooks/use-debounce'
 import { getPrimaryShortcutOptions } from '@/components/navigation/nav-config'
@@ -10,6 +11,7 @@ import {
   writeRecentSearch,
   type SearchHistoryEntry,
 } from '@/lib/search/search-recents'
+import { createInstantNote } from '@/lib/quick-notes/intelligence-actions'
 
 // ── Types ──────────────────────────────────────────────────────────
 
@@ -125,6 +127,12 @@ function fuzzyScore(text: string, query: string): number {
   return 40
 }
 
+function extractCaptureText(query: string): string | null {
+  const trimmed = query.trim()
+  const match = trimmed.match(/^(note|capture|remember|idea|task)\s+(.+)/i)
+  return match?.[2]?.trim() || null
+}
+
 // ── Component ─────────────────────────────────────────────────────
 
 export function CommandPalette({ userId, tenantId }: { userId: string; tenantId: string }) {
@@ -216,6 +224,31 @@ export function CommandPalette({ userId, tenantId }: { userId: string; tenantId:
     }
 
     const matched: PaletteItem[] = []
+    const captureText = extractCaptureText(query)
+    if (captureText) {
+      matched.push({
+        id: 'action:capture-note-from-palette',
+        label: 'Capture Instant Note',
+        sublabel: captureText,
+        section: 'Quick Actions',
+        icon: '+',
+        action: () => {
+          void createInstantNote({
+            text: captureText,
+            commandSource: 'command_palette',
+          })
+            .then((result) => {
+              if (!result.success) {
+                toast.error(result.error ?? 'Failed to save note')
+                return
+              }
+              toast.success('Instant note captured for background routing.')
+              router.refresh()
+            })
+            .catch(() => toast.error('Failed to save note'))
+        },
+      })
+    }
 
     // Filter quick actions
     const matchedActions = QUICK_ACTIONS.filter((item) => fuzzyMatch(item.label, query)).sort(
@@ -248,7 +281,7 @@ export function CommandPalette({ userId, tenantId }: { userId: string; tenantId:
     }
 
     return matched
-  }, [query, dataResults, recents])
+  }, [query, dataResults, recents, router])
 
   // Group items by section
   const grouped = useMemo(() => {

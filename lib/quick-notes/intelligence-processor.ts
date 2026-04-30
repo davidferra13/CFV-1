@@ -5,6 +5,8 @@ import {
   InterpretedNoteSchema,
   NOTE_ROUTE_KEYS,
   NOTE_ROUTE_LABELS,
+  buildNoteThreadKey,
+  buildNoteThreadTitle,
   buildNoteInterpretationPrompt,
   confidenceBand,
   normalizeDueDate,
@@ -139,6 +141,340 @@ async function recordTraceLink(
 
   if (error) {
     console.error('[note-intelligence] trace link insert failed:', error)
+  }
+}
+
+async function recordDigestItem(
+  db: Db,
+  input: {
+    chefId: string
+    quickNoteId?: string | null
+    interpretationId?: string | null
+    itemKind: 'captured' | 'routed' | 'review_needed' | 'urgent_window' | 'failed' | 'watchdog'
+    title: string
+    detail?: string | null
+    urgency?: 'low' | 'normal' | 'high' | 'urgent'
+    metadata?: Record<string, unknown>
+  }
+) {
+  const { error } = await db.from('chef_note_digest_items').insert({
+    chef_id: input.chefId,
+    quick_note_id: input.quickNoteId ?? null,
+    interpretation_id: input.interpretationId ?? null,
+    item_kind: input.itemKind,
+    title: input.title,
+    detail: input.detail ?? null,
+    urgency: input.urgency ?? 'normal',
+    metadata: input.metadata ?? {},
+  })
+
+  if (error) {
+    console.error('[note-intelligence] digest item insert failed:', error)
+  }
+}
+
+async function upsertNoteThread(
+  db: Db,
+  input: {
+    chefId: string
+    quickNoteId: string
+    rawText: string
+    interpretationId?: string | null
+    summary?: string | null
+  }
+) {
+  const threadKey = buildNoteThreadKey(input.rawText)
+  const title = buildNoteThreadTitle(input.rawText)
+  const now = new Date().toISOString()
+
+  const { data: existing, error: lookupError } = await db
+    .from('chef_note_threads')
+    .select('id, note_count, latest_quick_note_id')
+    .eq('chef_id', input.chefId)
+    .eq('thread_key', threadKey)
+    .maybeSingle()
+
+  if (lookupError) {
+    console.error('[note-intelligence] thread lookup failed:', lookupError)
+  }
+
+  let threadId: string | null = existing?.id ?? null
+  if (threadId) {
+    const { error } = await db
+      .from('chef_note_threads')
+      .update({
+        title,
+        summary: input.summary ?? null,
+        latest_quick_note_id: input.quickNoteId,
+        note_count:
+          existing?.latest_quick_note_id === input.quickNoteId
+            ? Math.max(Number(existing?.note_count ?? 1), 1)
+            : Math.max(Number(existing?.note_count ?? 0) + 1, 1),
+        last_captured_at: now,
+        updated_at: now,
+      })
+      .eq('id', threadId)
+      .eq('chef_id', input.chefId)
+
+    if (error) {
+      console.error('[note-intelligence] thread update failed:', error)
+    }
+  } else {
+    const { data, error } = await db
+      .from('chef_note_threads')
+      .insert({
+        chef_id: input.chefId,
+        thread_key: threadKey,
+        title,
+        summary: input.summary ?? null,
+        latest_quick_note_id: input.quickNoteId,
+        metadata: { interpretationId: input.interpretationId ?? null },
+      })
+      .select('id')
+      .single()
+
+    if (error || !data) {
+      console.error('[note-intelligence] thread insert failed:', error)
+      return null
+    }
+    threadId = data.id as string
+  }
+
+  if (threadId) {
+    const { error } = await db
+      .from('chef_quick_notes')
+      .update({ thread_id: threadId, updated_at: now })
+      .eq('id', input.quickNoteId)
+      .eq('chef_id', input.chefId)
+
+    if (error) {
+      console.error('[note-intelligence] quick note thread attach failed:', error)
+    }
+
+    const { data: existingBinding } = await db
+      .from('chef_note_context_bindings')
+      .select('id')
+      .eq('chef_id', input.chefId)
+      .eq('quick_note_id', input.quickNoteId)
+      .eq('binding_type', 'thread')
+      .eq('target_id', threadId)
+      .maybeSingle()
+
+    if (!existingBinding?.id) {
+      const { error: bindingError } = await db.from('chef_note_context_bindings').insert({
+        chef_id: input.chefId,
+        quick_note_id: input.quickNoteId,
+        interpretation_id: input.interpretationId ?? null,
+        binding_type: 'thread',
+        target_table: 'chef_note_threads',
+        target_id: threadId,
+        label: title,
+        confidence_score: 90,
+        status: 'confirmed',
+        metadata: { threadKey },
+      })
+
+      if (bindingError) {
+        console.error('[note-intelligence] thread binding insert failed:', bindingError)
+      }
+    }
+  }
+
+  return threadId
+}
+
+async function recordRouteAdapter(
+  db: Db,
+  input: {
+    chefId: string
+    quickNoteId: string
+    interpretationId: string
+    componentId: string
+    adapterKey: string
+    targetLayer: string
+    targetTable?: string | null
+    targetId?: string | null
+    status: 'planned' | 'routed' | 'needs_review' | 'failed'
+    payload?: Record<string, unknown>
+    error?: string | null
+  }
+) {
+  const { error } = await db.from('chef_note_route_adapters').insert({
+    chef_id: input.chefId,
+    quick_note_id: input.quickNoteId,
+    interpretation_id: input.interpretationId,
+    component_id: input.componentId,
+    adapter_key: input.adapterKey,
+    target_layer: input.targetLayer,
+    target_table: input.targetTable ?? null,
+    target_id: input.targetId ?? null,
+    status: input.status,
+    adapter_payload: input.payload ?? {},
+    error: input.error ?? null,
+  })
+
+  if (error) {
+    console.error('[note-intelligence] route adapter insert failed:', error)
+  }
+}
+
+async function recordContextBindingsForComponent(
+  db: Db,
+  input: {
+    chefId: string
+    quickNoteId: string
+    interpretationId: string
+    componentId: string
+    component: InterpretedNoteComponent
+  }
+) {
+  const bindings: Array<{
+    binding_type: string
+    target_table?: string | null
+    label: string
+    confidence_score: number
+    metadata?: Record<string, unknown>
+  }> = []
+
+  if (input.component.componentType === 'event_idea') {
+    bindings.push({
+      binding_type: 'event',
+      target_table: 'events',
+      label: input.component.title,
+      confidence_score: input.component.confidenceScore,
+      metadata: { source: 'event_idea' },
+    })
+  }
+
+  if (input.component.componentType === 'ingredient_discovery') {
+    bindings.push({
+      binding_type: 'ingredient',
+      target_table: 'ingredients',
+      label: input.component.title,
+      confidence_score: input.component.confidenceScore,
+      metadata: { source: 'ingredient_discovery' },
+    })
+  }
+
+  if (input.component.componentType === 'inventory_thought') {
+    bindings.push({
+      binding_type: 'inventory',
+      target_table: 'pantry_items',
+      label: input.component.title,
+      confidence_score: input.component.confidenceScore,
+      metadata: { source: 'inventory_thought' },
+    })
+  }
+
+  for (const binding of bindings) {
+    const { error } = await db.from('chef_note_context_bindings').insert({
+      chef_id: input.chefId,
+      quick_note_id: input.quickNoteId,
+      interpretation_id: input.interpretationId,
+      component_id: input.componentId,
+      binding_type: binding.binding_type,
+      target_table: binding.target_table ?? null,
+      label: binding.label,
+      confidence_score: binding.confidence_score,
+      metadata: binding.metadata ?? {},
+    })
+
+    if (error) {
+      console.error('[note-intelligence] context binding insert failed:', error)
+    }
+  }
+}
+
+async function recordSeasonalityWindows(
+  db: Db,
+  input: {
+    chefId: string
+    quickNoteId: string
+    interpretationId: string
+    interpreted: InterpretedNote
+    componentIds: string[]
+  }
+) {
+  const seasonalComponentIds = input.interpreted.components
+    .map((component, index) =>
+      component.componentType === 'seasonal_sourcing_insight' ||
+      component.componentType === 'ingredient_discovery'
+        ? input.componentIds[index]
+        : null
+    )
+    .filter(Boolean) as string[]
+
+  for (const window of input.interpreted.timeIntelligence.windows) {
+    const windowLabel = window.label ?? window.seasonality ?? 'Seasonality window'
+    const urgency = input.interpreted.timeIntelligence.urgency
+    const { error } = await db.from('chef_note_seasonality_windows').insert({
+      chef_id: input.chefId,
+      quick_note_id: input.quickNoteId,
+      interpretation_id: input.interpretationId,
+      component_id: seasonalComponentIds[0] ?? null,
+      ingredient_name: window.seasonality ?? null,
+      window_label: windowLabel,
+      start_date: window.startDate,
+      end_date: window.endDate,
+      urgency,
+      urgency_reason: window.urgencyReason,
+      metadata: { sourceWindow: window },
+    })
+
+    if (error) {
+      console.error('[note-intelligence] seasonality window insert failed:', error)
+      continue
+    }
+
+    if (urgency === 'high' || urgency === 'urgent') {
+      await recordDigestItem(db, {
+        chefId: input.chefId,
+        quickNoteId: input.quickNoteId,
+        interpretationId: input.interpretationId,
+        itemKind: 'urgent_window',
+        title: windowLabel,
+        detail: window.urgencyReason,
+        urgency,
+      })
+    }
+  }
+}
+
+async function recordWatchdogEvent(
+  db: Db,
+  input: {
+    chefId: string
+    quickNoteId: string
+    interpretationId?: string | null
+    actionId?: string | null
+    watchdogType:
+      | 'missing_action'
+      | 'stale_review'
+      | 'stale_processing'
+      | 'failed_route'
+      | 'stale_followup'
+    title: string
+    detail?: string | null
+    severity?: 'low' | 'medium' | 'high' | 'critical'
+    dueAt?: string | null
+    metadata?: Record<string, unknown>
+  }
+) {
+  const { error } = await db.from('chef_note_watchdog_events').insert({
+    chef_id: input.chefId,
+    quick_note_id: input.quickNoteId,
+    interpretation_id: input.interpretationId ?? null,
+    action_id: input.actionId ?? null,
+    watchdog_type: input.watchdogType,
+    title: input.title,
+    detail: input.detail ?? null,
+    severity: input.severity ?? 'medium',
+    due_at: input.dueAt ?? null,
+    metadata: input.metadata ?? {},
+  })
+
+  if (error) {
+    console.error('[note-intelligence] watchdog insert failed:', error)
   }
 }
 
@@ -339,6 +675,29 @@ async function insertComponentRow(
     routeLayer,
     confidenceScore: component.confidenceScore,
     metadata: { componentType: component.componentType, routeKey },
+  })
+
+  await recordRouteAdapter(db, {
+    chefId,
+    quickNoteId,
+    interpretationId,
+    componentId: data.id,
+    adapterKey: routeKey,
+    targetLayer: routeLayer,
+    status: needsReview ? 'needs_review' : 'planned',
+    payload: {
+      componentType: component.componentType,
+      title: component.title,
+      confidenceScore: component.confidenceScore,
+    },
+  })
+
+  await recordContextBindingsForComponent(db, {
+    chefId,
+    quickNoteId,
+    interpretationId,
+    componentId: data.id,
+    component,
   })
 
   return data.id as string
@@ -666,6 +1025,17 @@ async function routeComponents(
       if (component.componentType === 'ingredient_discovery') {
         const ingredientId = await routeIngredientComponent(db, chefId, userId, component)
         await markComponentRoute(db, chefId, componentId, 'ingredients', ingredientId, 'routed')
+        await recordRouteAdapter(db, {
+          chefId,
+          quickNoteId,
+          interpretationId,
+          componentId,
+          adapterKey: NOTE_ROUTE_KEYS[component.componentType],
+          targetLayer: component.routeLayer,
+          targetTable: 'ingredients',
+          targetId: ingredientId,
+          status: 'routed',
+        })
         await recordTraceLink(db, {
           chefId,
           quickNoteId,
@@ -683,6 +1053,17 @@ async function routeComponents(
       ) {
         const noteId = await createWorkflowNoteForComponent(db, chefId, userId, rawText, component)
         await markComponentRoute(db, chefId, componentId, 'workflow_notes', noteId, 'routed')
+        await recordRouteAdapter(db, {
+          chefId,
+          quickNoteId,
+          interpretationId,
+          componentId,
+          adapterKey: NOTE_ROUTE_KEYS[component.componentType],
+          targetLayer: component.routeLayer,
+          targetTable: 'workflow_notes',
+          targetId: noteId,
+          status: 'routed',
+        })
         await recordTraceLink(db, {
           chefId,
           quickNoteId,
@@ -696,11 +1077,40 @@ async function routeComponents(
         })
       } else {
         await markComponentRoute(db, chefId, componentId, 'tasks', null, 'routed')
+        await recordRouteAdapter(db, {
+          chefId,
+          quickNoteId,
+          interpretationId,
+          componentId,
+          adapterKey: NOTE_ROUTE_KEYS[component.componentType],
+          targetLayer: component.routeLayer,
+          targetTable: 'tasks',
+          status: 'routed',
+        })
       }
     } catch (err) {
       routeFailures++
       const errorMessage = err instanceof Error ? err.message : 'Component route failed'
       console.error('[note-intelligence] component routing failed:', err)
+      await recordRouteAdapter(db, {
+        chefId,
+        quickNoteId,
+        interpretationId,
+        componentId,
+        adapterKey: NOTE_ROUTE_KEYS[component.componentType],
+        targetLayer: component.routeLayer,
+        status: 'failed',
+        error: errorMessage,
+      })
+      await recordWatchdogEvent(db, {
+        chefId,
+        quickNoteId,
+        interpretationId,
+        watchdogType: 'failed_route',
+        title: `Route failed: ${component.title}`,
+        detail: errorMessage,
+        severity: 'high',
+      })
       await markComponentRoute(
         db,
         chefId,
@@ -884,7 +1294,10 @@ async function routeActions(
       derivedRefId: taskId,
       routeLayer: 'Review Queue',
     })
+    createdCount++
   }
+
+  return createdCount
 }
 
 async function getExistingCompletedInterpretation(db: Db, chefId: string, quickNoteId: string) {
@@ -972,6 +1385,20 @@ export async function processInstantNoteForChef(input: {
     input.interpretationId
   )
 
+  await upsertNoteThread(db, {
+    chefId: input.chefId,
+    quickNoteId: note.id,
+    rawText: note.text,
+    interpretationId,
+  })
+  await recordDigestItem(db, {
+    chefId: input.chefId,
+    quickNoteId: note.id,
+    interpretationId,
+    itemKind: 'captured',
+    title: buildNoteThreadTitle(note.text),
+    detail: note.text.slice(0, 500),
+  })
   await updateQuickNoteProcessing(db, input.chefId, note.id, 'processing')
   await updateInterpretationRow(db, input.chefId, interpretationId, {
     ai_task_id: input.aiTaskId ?? null,
@@ -1025,7 +1452,7 @@ export async function processInstantNoteForChef(input: {
       interpreted.components,
       needsReview
     )
-    await routeActions(
+    const createdActions = await routeActions(
       db,
       input.chefId,
       interpretationId,
@@ -1035,6 +1462,13 @@ export async function processInstantNoteForChef(input: {
       componentIds,
       needsReview || routeFailures > 0
     )
+    await recordSeasonalityWindows(db, {
+      chefId: input.chefId,
+      quickNoteId: note.id,
+      interpretationId,
+      interpreted,
+      componentIds,
+    })
 
     const status =
       needsReview || routeFailures > 0
@@ -1075,6 +1509,46 @@ export async function processInstantNoteForChef(input: {
         triagedRefId: interpretationId,
       }
     )
+
+    await upsertNoteThread(db, {
+      chefId: input.chefId,
+      quickNoteId: note.id,
+      rawText: note.text,
+      interpretationId,
+      summary: interpreted.summary,
+    })
+
+    await recordDigestItem(db, {
+      chefId: input.chefId,
+      quickNoteId: note.id,
+      interpretationId,
+      itemKind: needsReview || routeFailures > 0 ? 'review_needed' : 'routed',
+      title: interpreted.summary || buildNoteThreadTitle(note.text),
+      detail:
+        routeFailures > 0
+          ? `${routeFailures} route(s) failed.`
+          : `${interpreted.components.length} component(s), ${createdActions} action(s).`,
+      urgency:
+        interpreted.timeIntelligence.urgency === 'urgent' ||
+        interpreted.timeIntelligence.urgency === 'high'
+          ? interpreted.timeIntelligence.urgency
+          : needsReview
+            ? 'high'
+            : 'normal',
+      metadata: { status, routeFailures, createdActions },
+    })
+
+    if (createdActions === 0) {
+      await recordWatchdogEvent(db, {
+        chefId: input.chefId,
+        quickNoteId: note.id,
+        interpretationId,
+        watchdogType: 'missing_action',
+        title: 'Captured note has no routed action',
+        detail: 'The note was interpreted, but no actionable output was created.',
+        severity: 'critical',
+      })
+    }
 
     return {
       success: true,
@@ -1140,6 +1614,27 @@ export async function processInstantNoteForChef(input: {
     await updateQuickNoteProcessing(db, input.chefId, note.id, 'failed', {
       triagedTo: 'note_intelligence_review',
       triagedRefId: interpretationId,
+    })
+    await recordDigestItem(db, {
+      chefId: input.chefId,
+      quickNoteId: note.id,
+      interpretationId,
+      itemKind: 'failed',
+      title: 'Instant note interpretation failed',
+      detail: isOffline ? 'AI runtime unavailable.' : 'Interpretation failed.',
+      urgency: 'urgent',
+      metadata: { error: err instanceof Error ? err.message : 'Unknown interpretation error' },
+    })
+    await recordWatchdogEvent(db, {
+      chefId: input.chefId,
+      quickNoteId: note.id,
+      interpretationId,
+      actionId: null,
+      watchdogType: 'stale_review',
+      title: 'Captured note needs review',
+      detail: isOffline ? 'AI runtime unavailable.' : 'Interpretation failed.',
+      severity: 'critical',
+      dueAt: new Date().toISOString(),
     })
 
     return {
