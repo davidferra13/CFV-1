@@ -1,0 +1,1354 @@
+[
+  {
+    "id": "c0d9566727ccd753",
+    "module": {
+      "id": "pricing-trust",
+      "label": "Pricing Trust"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "approved",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "3977-build-queue": 3,
+      "docs-specs": 4
+    },
+    "candidateIds": [
+      "5cda1240c51d501e",
+      "0e0e035e4e1489da",
+      "fb34fe1e4ebf939d",
+      "0c54b781d84b0a9c",
+      "f09684028fd23ecd",
+      "ca589a39896f1ea7",
+      "52943a091510a242"
+    ],
+    "titles": [
+      "Introduce \"Dynamic Pricing Tiers\":",
+      "Spec: Costing Transparency UI (Confidence Tooltip + Formula Toggle)",
+      "Dynamic Inventory/Costing",
+      "Dynamic Inventory/Costing",
+      "Auto-Repair: Missing auth gates in lib/grocery/ (1 files)",
+      "Auto-Repair: No-op return in lib/pricing/config-actions.ts",
+      "Fix: Remove Phantom Terms Reference from Quote Acceptance (JBUG-007)"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution.",
+    "approvedAt": "2026-04-30T23:46:33.912Z",
+    "approvedBy": "Founder Authority",
+    "approvalSource": "Founder Authority chat approval 2026-04-30",
+    "liveQueueWriteRequired": true,
+    "liveQueueWriteBlockedReason": "This batch is approved, but it has not been appended to system/v1-builder/approved-queue.jsonl by this script.",
+    "candidateSummaries": [
+      {
+        "id": "5cda1240c51d501e",
+        "source": "3977-build-queue",
+        "sourcePath": "system/build-queue/086-high-introduce-dynamic-pricing-tiers.md",
+        "title": "Introduce \"Dynamic Pricing Tiers\":",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "pricing-trust",
+          "label": "Pricing Trust"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "0e0e035e4e1489da",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/arthur-klein-fix-3-costing-transparency-ui.md",
+        "title": "Spec: Costing Transparency UI (Confidence Tooltip + Formula Toggle)",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "pricing-trust",
+          "label": "Pricing Trust"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "fb34fe1e4ebf939d",
+        "source": "3977-build-queue",
+        "sourcePath": "system/build-queue/093-medium-dynamic-inventory-costing.md",
+        "title": "Dynamic Inventory/Costing",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "pricing-trust",
+          "label": "Pricing Trust"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "0c54b781d84b0a9c",
+        "source": "3977-build-queue",
+        "sourcePath": "system/build-queue/223-medium-dynamic-inventory-costing.md",
+        "title": "Dynamic Inventory/Costing",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "pricing-trust",
+          "label": "Pricing Trust"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "f09684028fd23ecd",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/auto-repair/missing-auth-gate-lib-grocery.md",
+        "title": "Auto-Repair: Missing auth gates in lib/grocery/ (1 files)",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "pricing-trust",
+          "label": "Pricing Trust"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "ca589a39896f1ea7",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/auto-repair/noop-return-lib-pricing-config-actions.ts.md",
+        "title": "Auto-Repair: No-op return in lib/pricing/config-actions.ts",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "pricing-trust",
+          "label": "Pricing Trust"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "52943a091510a242",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/codex-fix-quote-phantom-terms.md",
+        "title": "Fix: Remove Phantom Terms Reference from Quote Acceptance (JBUG-007)",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "pricing-trust",
+          "label": "Pricing Trust"
+        },
+        "duplicateOf": null
+      }
+    ]
+  },
+  {
+    "id": "e5088af1b7b64ad9",
+    "module": {
+      "id": "pricing-trust",
+      "label": "Pricing Trust"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "approved",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "a950be7b455175e6",
+      "686ff672e4a56086",
+      "db7eba215e2c1141",
+      "2a0424e5484d235d",
+      "da7c4df9188613c5",
+      "ee9b40358755d0c7",
+      "290417ea1f0a0545"
+    ],
+    "titles": [
+      "Configuration Engine",
+      "Event Pricing Ingredient Spike Warnings Build Spec",
+      "Event Pricing Intelligence Panel Implementation Note",
+      "Menu Costing System - Interrogation Question Set",
+      "Price Flag Resolution UI - Build Spec",
+      "Pricing Intelligence Vertical Slice",
+      "Recipe Costing Integrity - Build Spec"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution.",
+    "approvedAt": "2026-04-30T23:46:33.912Z",
+    "approvedBy": "Founder Authority",
+    "approvalSource": "Founder Authority chat approval 2026-04-30",
+    "liveQueueWriteRequired": true,
+    "liveQueueWriteBlockedReason": "This batch is approved, but it has not been appended to system/v1-builder/approved-queue.jsonl by this script.",
+    "candidateSummaries": [
+      {
+        "id": "a950be7b455175e6",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/configuration-engine.md",
+        "title": "Configuration Engine",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "pricing-trust",
+          "label": "Pricing Trust"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "686ff672e4a56086",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/event-pricing-ingredient-spike-warnings-build.md",
+        "title": "Event Pricing Ingredient Spike Warnings Build Spec",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "pricing-trust",
+          "label": "Pricing Trust"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "db7eba215e2c1141",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/event-pricing-intelligence-panel.md",
+        "title": "Event Pricing Intelligence Panel Implementation Note",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "pricing-trust",
+          "label": "Pricing Trust"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "2a0424e5484d235d",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/menu-costing-interrogation.md",
+        "title": "Menu Costing System - Interrogation Question Set",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "pricing-trust",
+          "label": "Pricing Trust"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "da7c4df9188613c5",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/price-flag-resolution-ui.md",
+        "title": "Price Flag Resolution UI - Build Spec",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "pricing-trust",
+          "label": "Pricing Trust"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "ee9b40358755d0c7",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/pricing-vertical-slice.md",
+        "title": "Pricing Intelligence Vertical Slice",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "pricing-trust",
+          "label": "Pricing Trust"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "290417ea1f0a0545",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/recipe-costing-integrity.md",
+        "title": "Recipe Costing Integrity - Build Spec",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "pricing-trust",
+          "label": "Pricing Trust"
+        },
+        "duplicateOf": null
+      }
+    ]
+  },
+  {
+    "id": "cf520343d4c553f9",
+    "module": {
+      "id": "pricing-trust",
+      "label": "Pricing Trust"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "approved",
+    "executionEligible": false,
+    "taskCount": 3,
+    "sourceCounts": {
+      "docs-specs": 3
+    },
+    "candidateIds": [
+      "6f787236efd4be68",
+      "ca7d5e641823ed10",
+      "590341caddf11c15"
+    ],
+    "titles": [
+      "Simulation Orchestrator",
+      "System Integrity Question Set: Financials",
+      "Unit Conversion in Recipe Costing - Design Doc"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution.",
+    "approvedAt": "2026-04-30T23:46:33.912Z",
+    "approvedBy": "Founder Authority",
+    "approvalSource": "Founder Authority chat approval 2026-04-30",
+    "liveQueueWriteRequired": true,
+    "liveQueueWriteBlockedReason": "This batch is approved, but it has not been appended to system/v1-builder/approved-queue.jsonl by this script.",
+    "candidateSummaries": [
+      {
+        "id": "6f787236efd4be68",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/simulation-orchestrator.md",
+        "title": "Simulation Orchestrator",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "pricing-trust",
+          "label": "Pricing Trust"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "ca7d5e641823ed10",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/system-integrity-question-set-financials.md",
+        "title": "System Integrity Question Set: Financials",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "pricing-trust",
+          "label": "Pricing Trust"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "590341caddf11c15",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/unit-conversion-costing-design.md",
+        "title": "Unit Conversion in Recipe Costing - Design Doc",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "pricing-trust",
+          "label": "Pricing Trust"
+        },
+        "duplicateOf": null
+      }
+    ]
+  },
+  {
+    "id": "9d54740835e493cc",
+    "module": {
+      "id": "finance-ledger",
+      "label": "Finance and Ledger"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "approved",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "3977-build-queue": 5,
+      "docs-specs": 2
+    },
+    "candidateIds": [
+      "2904bf4f5478f3f8",
+      "37ded0d282ba4b88",
+      "7861c8ca98d88acb",
+      "0ad9b84d9b54f47f",
+      "35cfea7a3dae6024",
+      "34fde20ffb06d59c",
+      "f291a8cfd7869717"
+    ],
+    "titles": [
+      "Advanced Inventory Ledger:",
+      "Implement \"Provenance Ledger\":",
+      "Billing/Tracking:",
+      "Financial/Billing",
+      "Financial Ledger View:",
+      "Auto-Repair: Fragile file (CRIT): app/api/webhooks/stripe/route.ts",
+      "Auto-Repair: Missing auth gates in lib/billing/ (1 files)"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution.",
+    "approvedAt": "2026-04-30T23:46:33.912Z",
+    "approvedBy": "Founder Authority",
+    "approvalSource": "Founder Authority chat approval 2026-04-30",
+    "liveQueueWriteRequired": true,
+    "liveQueueWriteBlockedReason": "This batch is approved, but it has not been appended to system/v1-builder/approved-queue.jsonl by this script.",
+    "candidateSummaries": [
+      {
+        "id": "2904bf4f5478f3f8",
+        "source": "3977-build-queue",
+        "sourcePath": "system/build-queue/003-high-advanced-inventory-ledger.md",
+        "title": "Advanced Inventory Ledger:",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "finance-ledger",
+          "label": "Finance and Ledger"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "37ded0d282ba4b88",
+        "source": "3977-build-queue",
+        "sourcePath": "system/build-queue/023-high-implement-provenance-ledger.md",
+        "title": "Implement \"Provenance Ledger\":",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "finance-ledger",
+          "label": "Finance and Ledger"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "7861c8ca98d88acb",
+        "source": "3977-build-queue",
+        "sourcePath": "system/build-queue/092-medium-billing-tracking.md",
+        "title": "Billing/Tracking:",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "finance-ledger",
+          "label": "Finance and Ledger"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "0ad9b84d9b54f47f",
+        "source": "3977-build-queue",
+        "sourcePath": "system/build-queue/096-medium-financial-billing.md",
+        "title": "Financial/Billing",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "finance-ledger",
+          "label": "Finance and Ledger"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "35cfea7a3dae6024",
+        "source": "3977-build-queue",
+        "sourcePath": "system/build-queue/118-low-financial-ledger-view.md",
+        "title": "Financial Ledger View:",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "finance-ledger",
+          "label": "Finance and Ledger"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "34fde20ffb06d59c",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/auto-repair/fragile-crit-app-api-webhooks-stripe-route.ts.md",
+        "title": "Auto-Repair: Fragile file (CRIT): app/api/webhooks/stripe/route.ts",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "finance-ledger",
+          "label": "Finance and Ledger"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "f291a8cfd7869717",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/auto-repair/missing-auth-gate-lib-billing.md",
+        "title": "Auto-Repair: Missing auth gates in lib/billing/ (1 files)",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "finance-ledger",
+          "label": "Finance and Ledger"
+        },
+        "duplicateOf": null
+      }
+    ]
+  },
+  {
+    "id": "f82e3af71bee6ec7",
+    "module": {
+      "id": "finance-ledger",
+      "label": "Finance and Ledger"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "approved",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "4386b22385608c96",
+      "5873217991fbe374",
+      "87834b78c403c76b",
+      "6cea80edffff311e",
+      "da9b58831c7cb512",
+      "ada11b2339cd1d3b",
+      "d234c1684dcbd567"
+    ],
+    "titles": [
+      "Auto-Repair: Missing auth gates in lib/stripe/ (1 files)",
+      "Commerce & Financial Pipeline Integrity Interrogation",
+      "ECS Gap: Partner Payout Visibility",
+      "Event Financial Lifecycle - Interrogation Question Set",
+      "Financial Models Remediation - Build Plan",
+      "P0 Client Portal Payment Intent Hardening",
+      "System Integrity Question Set: Financial Operations & Ledger"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution.",
+    "approvedAt": "2026-04-30T23:46:33.912Z",
+    "approvedBy": "Founder Authority",
+    "approvalSource": "Founder Authority chat approval 2026-04-30",
+    "liveQueueWriteRequired": true,
+    "liveQueueWriteBlockedReason": "This batch is approved, but it has not been appended to system/v1-builder/approved-queue.jsonl by this script.",
+    "candidateSummaries": [
+      {
+        "id": "4386b22385608c96",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/auto-repair/missing-auth-gate-lib-stripe.md",
+        "title": "Auto-Repair: Missing auth gates in lib/stripe/ (1 files)",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "finance-ledger",
+          "label": "Finance and Ledger"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "5873217991fbe374",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/commerce-financial-integrity-interrogation.md",
+        "title": "Commerce & Financial Pipeline Integrity Interrogation",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "finance-ledger",
+          "label": "Finance and Ledger"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "87834b78c403c76b",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/ecs-gaps/partner-payout-visibility.md",
+        "title": "ECS Gap: Partner Payout Visibility",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "finance-ledger",
+          "label": "Finance and Ledger"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "6cea80edffff311e",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/event-financial-interrogation.md",
+        "title": "Event Financial Lifecycle - Interrogation Question Set",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "finance-ledger",
+          "label": "Finance and Ledger"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "da9b58831c7cb512",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/financial-models-remediation.md",
+        "title": "Financial Models Remediation - Build Plan",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "finance-ledger",
+          "label": "Finance and Ledger"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "ada11b2339cd1d3b",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/p0-client-portal-payment-intent-hardening.md",
+        "title": "P0 Client Portal Payment Intent Hardening",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "finance-ledger",
+          "label": "Finance and Ledger"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "d234c1684dcbd567",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/system-integrity-question-set-financial-ops.md",
+        "title": "System Integrity Question Set: Financial Operations & Ledger",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "finance-ledger",
+          "label": "Finance and Ledger"
+        },
+        "duplicateOf": null
+      }
+    ]
+  },
+  {
+    "id": "82c997816bd820c4",
+    "module": {
+      "id": "client-intake",
+      "label": "Client Intake"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "approved",
+    "executionEligible": false,
+    "taskCount": 6,
+    "sourceCounts": {
+      "docs-specs": 5,
+      "system-intake": 1
+    },
+    "candidateIds": [
+      "2328b7df3d749b8b",
+      "a4946d384aa055d5",
+      "b15c392003022717",
+      "5bf23f861471905e",
+      "fdf59d5bbfd402fc",
+      "30cc3fc222b0c7d6"
+    ],
+    "titles": [
+      "Auto-Repair: Missing auth gates in lib/booking/ (1 files)",
+      "Codex Task: Event-Date Urgency Scoring for Inquiries",
+      "Consumer Booking Clarity - Build Spec",
+      "Devtools EYES Executable + Supervisor",
+      "ECS Gap: Event Planner Inquiry-to-Event Contact Handoff",
+      "the website already deals with this well but i personally"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution.",
+    "approvedAt": "2026-04-30T23:46:33.912Z",
+    "approvedBy": "Founder Authority",
+    "approvalSource": "Founder Authority chat approval 2026-04-30",
+    "liveQueueWriteRequired": true,
+    "liveQueueWriteBlockedReason": "This batch is approved, but it has not been appended to system/v1-builder/approved-queue.jsonl by this script.",
+    "candidateSummaries": [
+      {
+        "id": "2328b7df3d749b8b",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/auto-repair/missing-auth-gate-lib-booking.md",
+        "title": "Auto-Repair: Missing auth gates in lib/booking/ (1 files)",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "client-intake",
+          "label": "Client Intake"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "a4946d384aa055d5",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/codex-inquiry-event-urgency.md",
+        "title": "Codex Task: Event-Date Urgency Scoring for Inquiries",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "client-intake",
+          "label": "Client Intake"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "b15c392003022717",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/consumer-booking-clarity.md",
+        "title": "Consumer Booking Clarity - Build Spec",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "client-intake",
+          "label": "Client Intake"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "5bf23f861471905e",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/devtools-eyes-and-supervisor.md",
+        "title": "Devtools EYES Executable + Supervisor",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "client-intake",
+          "label": "Client Intake"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "fdf59d5bbfd402fc",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/ecs-gaps/event-planner-inquiry-handoff.md",
+        "title": "ECS Gap: Event Planner Inquiry-to-Event Contact Handoff",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "client-intake",
+          "label": "Client Intake"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "30cc3fc222b0c7d6",
+        "source": "system-intake",
+        "sourcePath": "system/intake/features/the-website-already-deals-with-this-well-but-i-personally.md",
+        "title": "the website already deals with this well but i personally",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "client-intake",
+          "label": "Client Intake"
+        },
+        "duplicateOf": null
+      }
+    ]
+  },
+  {
+    "id": "3bef411710b200e9",
+    "module": {
+      "id": "dietary-safety",
+      "label": "Dietary Safety"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "approved",
+    "executionEligible": false,
+    "taskCount": 2,
+    "sourceCounts": {
+      "docs-specs": 2
+    },
+    "candidateIds": [
+      "660353b9665a327f",
+      "4d000e5618188122"
+    ],
+    "titles": [
+      "ECS Gap: Household Allergy Severity Levels",
+      "Guest Dietary Rollup Panel"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution.",
+    "approvedAt": "2026-04-30T23:46:33.912Z",
+    "approvedBy": "Founder Authority",
+    "approvalSource": "Founder Authority chat approval 2026-04-30",
+    "liveQueueWriteRequired": true,
+    "liveQueueWriteBlockedReason": "This batch is approved, but it has not been appended to system/v1-builder/approved-queue.jsonl by this script.",
+    "candidateSummaries": [
+      {
+        "id": "660353b9665a327f",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/ecs-gaps/household-severity-levels.md",
+        "title": "ECS Gap: Household Allergy Severity Levels",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "dietary-safety",
+          "label": "Dietary Safety"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "4d000e5618188122",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/guest-dietary-rollup.md",
+        "title": "Guest Dietary Rollup Panel",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "dietary-safety",
+          "label": "Dietary Safety"
+        },
+        "duplicateOf": null
+      }
+    ]
+  },
+  {
+    "id": "06df487ad34d6695",
+    "module": {
+      "id": "events-ops",
+      "label": "Event Operations"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "approved",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "88d0b32585ab6d4a",
+      "1e7dc50b88c4fc8a",
+      "5890f6c7e50765d8",
+      "96970ccbd508ebcf",
+      "087bf0cace8c9893",
+      "0c4343b54ac988c6",
+      "601fdb4090b24e33"
+    ],
+    "titles": [
+      "Auto-Repair: No-op return in lib/events/actions.ts",
+      "Auto-Repair: No-op return in lib/events/contacts.ts",
+      "Auto-Repair: No-op return in lib/events/debrief-actions.ts",
+      "Auto-Repair: No-op return in lib/events/event-readiness-assistant-actions.ts",
+      "Auto-Repair: No-op return in lib/events/menu-approval-actions.ts",
+      "Auto-Repair: No-op return in lib/events/photo-actions.ts",
+      "Auto-Repair: No-op return in lib/events/photo-tagging-actions.ts"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution.",
+    "approvedAt": "2026-04-30T23:46:33.912Z",
+    "approvedBy": "Founder Authority",
+    "approvalSource": "Founder Authority chat approval 2026-04-30",
+    "liveQueueWriteRequired": true,
+    "liveQueueWriteBlockedReason": "This batch is approved, but it has not been appended to system/v1-builder/approved-queue.jsonl by this script.",
+    "candidateSummaries": [
+      {
+        "id": "88d0b32585ab6d4a",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/auto-repair/noop-return-lib-events-actions.ts.md",
+        "title": "Auto-Repair: No-op return in lib/events/actions.ts",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "events-ops",
+          "label": "Event Operations"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "1e7dc50b88c4fc8a",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/auto-repair/noop-return-lib-events-contacts.ts.md",
+        "title": "Auto-Repair: No-op return in lib/events/contacts.ts",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "events-ops",
+          "label": "Event Operations"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "5890f6c7e50765d8",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/auto-repair/noop-return-lib-events-debrief-actions.ts.md",
+        "title": "Auto-Repair: No-op return in lib/events/debrief-actions.ts",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "events-ops",
+          "label": "Event Operations"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "96970ccbd508ebcf",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/auto-repair/noop-return-lib-events-event-readiness-assistant-actions.ts.md",
+        "title": "Auto-Repair: No-op return in lib/events/event-readiness-assistant-actions.ts",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "events-ops",
+          "label": "Event Operations"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "087bf0cace8c9893",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/auto-repair/noop-return-lib-events-menu-approval-actions.ts.md",
+        "title": "Auto-Repair: No-op return in lib/events/menu-approval-actions.ts",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "events-ops",
+          "label": "Event Operations"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "0c4343b54ac988c6",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/auto-repair/noop-return-lib-events-photo-actions.ts.md",
+        "title": "Auto-Repair: No-op return in lib/events/photo-actions.ts",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "events-ops",
+          "label": "Event Operations"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "601fdb4090b24e33",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/auto-repair/noop-return-lib-events-photo-tagging-actions.ts.md",
+        "title": "Auto-Repair: No-op return in lib/events/photo-tagging-actions.ts",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "events-ops",
+          "label": "Event Operations"
+        },
+        "duplicateOf": null
+      }
+    ]
+  },
+  {
+    "id": "5b543b32f307ea44",
+    "module": {
+      "id": "events-ops",
+      "label": "Event Operations"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "approved",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "b52941c5be7b9a87",
+      "370feddf043d0212",
+      "e6095bb909b9fe35",
+      "707cd863240972cb",
+      "c39334bf60f45d40",
+      "4f18c7706d403707",
+      "4bbe1c3df9ecbf92"
+    ],
+    "titles": [
+      "Auto-Repair: No-op return in lib/prep/prep-sheet-actions.ts",
+      "Auto-Repair: No-op return in lib/social/event-social-actions.ts",
+      "Auto-Repair: No-op return in lib/staff/staff-event-portal-actions.ts",
+      "Build: Client-Facing Group Split Page",
+      "Build: Referral Context Badge on Event Detail",
+      "Build: Shareable Menu Selection Token",
+      "Build Spec: Ticketed Events Chef Wiring Fix"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution.",
+    "approvedAt": "2026-04-30T23:46:33.912Z",
+    "approvedBy": "Founder Authority",
+    "approvalSource": "Founder Authority chat approval 2026-04-30",
+    "liveQueueWriteRequired": true,
+    "liveQueueWriteBlockedReason": "This batch is approved, but it has not been appended to system/v1-builder/approved-queue.jsonl by this script.",
+    "candidateSummaries": [
+      {
+        "id": "b52941c5be7b9a87",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/auto-repair/noop-return-lib-prep-prep-sheet-actions.ts.md",
+        "title": "Auto-Repair: No-op return in lib/prep/prep-sheet-actions.ts",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "events-ops",
+          "label": "Event Operations"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "370feddf043d0212",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/auto-repair/noop-return-lib-social-event-social-actions.ts.md",
+        "title": "Auto-Repair: No-op return in lib/social/event-social-actions.ts",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "events-ops",
+          "label": "Event Operations"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "e6095bb909b9fe35",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/auto-repair/noop-return-lib-staff-staff-event-portal-actions.ts.md",
+        "title": "Auto-Repair: No-op return in lib/staff/staff-event-portal-actions.ts",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "events-ops",
+          "label": "Event Operations"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "707cd863240972cb",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/build-group-split-page.md",
+        "title": "Build: Client-Facing Group Split Page",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "events-ops",
+          "label": "Event Operations"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "c39334bf60f45d40",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/build-referral-context-badge.md",
+        "title": "Build: Referral Context Badge on Event Detail",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "events-ops",
+          "label": "Event Operations"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "4f18c7706d403707",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/build-shareable-menu-selection.md",
+        "title": "Build: Shareable Menu Selection Token",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "events-ops",
+          "label": "Event Operations"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "4bbe1c3df9ecbf92",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/build-ticketed-events-chef-wiring-fix.md",
+        "title": "Build Spec: Ticketed Events Chef Wiring Fix",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "events-ops",
+          "label": "Event Operations"
+        },
+        "duplicateOf": null
+      }
+    ]
+  },
+  {
+    "id": "be1d6b982880dddf",
+    "module": {
+      "id": "events-ops",
+      "label": "Event Operations"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "approved",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "2ea1cc235d14938e",
+      "b785a867661e337c",
+      "f92cf94227e85a22",
+      "71c64337e9b983b4",
+      "ee452553c014830e",
+      "2813322056819b3d",
+      "7fddad8b356c5fd3"
+    ],
+    "titles": [
+      "Build Spec: Public Event View Component",
+      "Codex Agent 4: Public Event Page Polish",
+      "Codex Build Spec: Events List Urgency & Next-Step Indicators",
+      "Ingredient Showcase Auto-Builder",
+      "Codex Build Spec: P2 Prep Timeline iCal Export",
+      "ECS Gap: Event Planner Communication Integration",
+      "ECS Gap: Staff Self-Service Profile"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution.",
+    "approvedAt": "2026-04-30T23:46:33.912Z",
+    "approvedBy": "Founder Authority",
+    "approvalSource": "Founder Authority chat approval 2026-04-30",
+    "liveQueueWriteRequired": true,
+    "liveQueueWriteBlockedReason": "This batch is approved, but it has not been appended to system/v1-builder/approved-queue.jsonl by this script.",
+    "candidateSummaries": [
+      {
+        "id": "2ea1cc235d14938e",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/build-ticketed-events-public-view.md",
+        "title": "Build Spec: Public Event View Component",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "events-ops",
+          "label": "Event Operations"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "b785a867661e337c",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/codex-circles-agent-4-public-event-page-polish.md",
+        "title": "Codex Agent 4: Public Event Page Polish",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "events-ops",
+          "label": "Event Operations"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "f92cf94227e85a22",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/codex-events-list-urgency-indicators.md",
+        "title": "Codex Build Spec: Events List Urgency & Next-Step Indicators",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "events-ops",
+          "label": "Event Operations"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "71c64337e9b983b4",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/codex-ingredient-showcase-action.md",
+        "title": "Ingredient Showcase Auto-Builder",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "events-ops",
+          "label": "Event Operations"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "ee452553c014830e",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/codex-p2-prep-timeline-ical.md",
+        "title": "Codex Build Spec: P2 Prep Timeline iCal Export",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "events-ops",
+          "label": "Event Operations"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "2813322056819b3d",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/ecs-gaps/event-planner-communication.md",
+        "title": "ECS Gap: Event Planner Communication Integration",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "events-ops",
+          "label": "Event Operations"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "7fddad8b356c5fd3",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/ecs-gaps/staff-self-service-profile.md",
+        "title": "ECS Gap: Staff Self-Service Profile",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "events-ops",
+          "label": "Event Operations"
+        },
+        "duplicateOf": null
+      }
+    ]
+  },
+  {
+    "id": "c8336e6412708fb7",
+    "module": {
+      "id": "events-ops",
+      "label": "Event Operations"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "approved",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 7
+    },
+    "candidateIds": [
+      "5b819a310b9521c2",
+      "e3b2454134c6bd68",
+      "95743a21b26a533c",
+      "dc79f7a636759fe5",
+      "670470bdf8c1bf0b",
+      "8e6220b1db71f805",
+      "d678df7ec425b53c"
+    ],
+    "titles": [
+      "Auto-Repair: Empty event handler in app/(chef)/network/contact-shares.tsx",
+      "Auto-Repair: Empty event handler in components/ai/command-result-card.tsx",
+      "Auto-Repair: Empty event handler in components/ai/remy-animated-mascot.tsx",
+      "Auto-Repair: Empty event handler in components/vendors/vendor-form-wrapper.tsx",
+      "Auto-Repair: Missing auth gates in lib/events/ (2 files)",
+      "Auto-Repair: Missing auth gates in lib/meal-prep/ (2 files)",
+      "Auto-Repair: Missing auth gates in lib/service-simulation/ (1 files)"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution.",
+    "approvedAt": "2026-04-30T23:46:33.912Z",
+    "approvedBy": "Founder Authority",
+    "approvalSource": "Founder Authority chat approval 2026-04-30",
+    "liveQueueWriteRequired": true,
+    "liveQueueWriteBlockedReason": "This batch is approved, but it has not been appended to system/v1-builder/approved-queue.jsonl by this script.",
+    "candidateSummaries": [
+      {
+        "id": "5b819a310b9521c2",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/auto-repair/empty-handler-app-chef-network-contact-shares.tsx.md",
+        "title": "Auto-Repair: Empty event handler in app/(chef)/network/contact-shares.tsx",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "events-ops",
+          "label": "Event Operations"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "e3b2454134c6bd68",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/auto-repair/empty-handler-components-ai-command-result-card.tsx.md",
+        "title": "Auto-Repair: Empty event handler in components/ai/command-result-card.tsx",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "events-ops",
+          "label": "Event Operations"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "95743a21b26a533c",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/auto-repair/empty-handler-components-ai-remy-animated-mascot.tsx.md",
+        "title": "Auto-Repair: Empty event handler in components/ai/remy-animated-mascot.tsx",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "events-ops",
+          "label": "Event Operations"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "dc79f7a636759fe5",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/auto-repair/empty-handler-components-vendors-vendor-form-wrapper.tsx.md",
+        "title": "Auto-Repair: Empty event handler in components/vendors/vendor-form-wrapper.tsx",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "events-ops",
+          "label": "Event Operations"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "670470bdf8c1bf0b",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/auto-repair/missing-auth-gate-lib-events.md",
+        "title": "Auto-Repair: Missing auth gates in lib/events/ (2 files)",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "events-ops",
+          "label": "Event Operations"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "8e6220b1db71f805",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/auto-repair/missing-auth-gate-lib-meal-prep.md",
+        "title": "Auto-Repair: Missing auth gates in lib/meal-prep/ (2 files)",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "events-ops",
+          "label": "Event Operations"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "d678df7ec425b53c",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/auto-repair/missing-auth-gate-lib-service-simulation.md",
+        "title": "Auto-Repair: Missing auth gates in lib/service-simulation/ (1 files)",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "events-ops",
+          "label": "Event Operations"
+        },
+        "duplicateOf": null
+      }
+    ]
+  },
+  {
+    "id": "d6ec9d81bf2da553",
+    "module": {
+      "id": "events-ops",
+      "label": "Event Operations"
+    },
+    "classification": "v1_blocker",
+    "approvalState": "approved",
+    "executionEligible": false,
+    "taskCount": 7,
+    "sourceCounts": {
+      "docs-specs": 5,
+      "3977-build-queue": 2
+    },
+    "candidateIds": [
+      "37e2e8962bf07e7c",
+      "a71f2af91076250d",
+      "b3be237a5677f348",
+      "4842a862ce582b8c",
+      "c6ac15a3e1ec3b6c",
+      "787afcf36f3436e2",
+      "052e2dfde7ab40de"
+    ],
+    "titles": [
+      "Consumer Hub: Upcoming Events from My Circles",
+      "Codex Spec: Recurring Service -> Circle Bridge",
+      "Codex Spec: Menu Performance Dashboard + Sales Logging",
+      "Codex Build Spec: Nationwide Config Gap Fill",
+      "Codex Spec: Service Day Close-Out",
+      "Develop the \"Master Event Brief\" Template:",
+      "Pre-Event Communication Workflow:"
+    ],
+    "reason": "Candidate V1 blocker batch. It still needs explicit batch approval before execution.",
+    "approvedAt": "2026-04-30T23:46:33.912Z",
+    "approvedBy": "Founder Authority",
+    "approvalSource": "Founder Authority chat approval 2026-04-30",
+    "liveQueueWriteRequired": true,
+    "liveQueueWriteBlockedReason": "This batch is approved, but it has not been appended to system/v1-builder/approved-queue.jsonl by this script.",
+    "candidateSummaries": [
+      {
+        "id": "37e2e8962bf07e7c",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/codex-consumer-upcoming-events.md",
+        "title": "Consumer Hub: Upcoming Events from My Circles",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "events-ops",
+          "label": "Event Operations"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "a71f2af91076250d",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/codex-marisol-1-circle-bridge.md",
+        "title": "Codex Spec: Recurring Service -> Circle Bridge",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "events-ops",
+          "label": "Event Operations"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "b3be237a5677f348",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/codex-menu-performance-dashboard.md",
+        "title": "Codex Spec: Menu Performance Dashboard + Sales Logging",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "events-ops",
+          "label": "Event Operations"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "4842a862ce582b8c",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/codex-price-intel-spec-2-nationwide-config-gapfill.md",
+        "title": "Codex Build Spec: Nationwide Config Gap Fill",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "events-ops",
+          "label": "Event Operations"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "c6ac15a3e1ec3b6c",
+        "source": "docs-specs",
+        "sourcePath": "docs/specs/codex-service-day-closeout.md",
+        "title": "Codex Spec: Service Day Close-Out",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "events-ops",
+          "label": "Event Operations"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "787afcf36f3436e2",
+        "source": "3977-build-queue",
+        "sourcePath": "system/build-queue/017-high-develop-the-master-event-brief-template.md",
+        "title": "Develop the \"Master Event Brief\" Template:",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "events-ops",
+          "label": "Event Operations"
+        },
+        "duplicateOf": null
+      },
+      {
+        "id": "052e2dfde7ab40de",
+        "source": "3977-build-queue",
+        "sourcePath": "system/build-queue/134-medium-pre-event-communication-workflow.md",
+        "title": "Pre-Event Communication Workflow:",
+        "classification": "v1_blocker",
+        "module": {
+          "id": "events-ops",
+          "label": "Event Operations"
+        },
+        "duplicateOf": null
+      }
+    ]
+  }
+]

@@ -1,0 +1,39 @@
+{
+  "generatedAt": "2026-04-30T23:46:33.912Z",
+  "approvalSource": "Founder Authority chat approval 2026-04-30",
+  "readOnlyAgainstLiveQueue": true,
+  "schemaVersion": 1,
+  "selection": {
+    "classification": "v1_blocker",
+    "modules": [
+      "pricing-trust",
+      "finance-ledger",
+      "client-intake",
+      "dietary-safety",
+      "events-ops",
+      "auth-security",
+      "v1-control-plane",
+      "docs-release-proof",
+      "chef-workspace",
+      "sourcing-inventory",
+      "menus-offers",
+      "public-trust",
+      "ai-boundaries"
+    ],
+    "limit": 12
+  },
+  "totals": {
+    "candidates": 1104,
+    "moduleBatches": 158,
+    "eligibleBatches": 44,
+    "approvedBatches": 12,
+    "queuePreviewRecords": 12,
+    "liveQueueWrites": 0
+  },
+  "outputs": {
+    "approvedBatches": "system/unified-build-queue/approved-batches.json",
+    "queuePreview": "system/unified-build-queue/approved-queue-preview.jsonl",
+    "summary": "system/unified-build-queue/promotion-summary.json"
+  },
+  "nextStep": "Append approved-queue-preview.jsonl to system/v1-builder/approved-queue.jsonl only when that live queue file is not owned by another active agent."
+}
