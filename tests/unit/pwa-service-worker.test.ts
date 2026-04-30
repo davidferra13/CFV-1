@@ -75,6 +75,14 @@ describe('pwa service worker regressions', () => {
       'device status panel must expose PWA health'
     )
     assert.ok(
+      deviceStatus.includes('Copy diagnostics') && deviceStatus.includes('Refresh status'),
+      'device status panel must expose copyable diagnostics and manual status refresh'
+    )
+    assert.ok(
+      deviceStatus.includes('/manifest.json') && deviceStatus.includes('Manifest'),
+      'device status panel must verify manifest availability'
+    )
+    assert.ok(
       settingsPage.includes('title="Device App"'),
       'settings must expose the device app install surface'
     )

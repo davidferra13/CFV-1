@@ -125,10 +125,15 @@ function ensureGlobalInstallListeners() {
 }
 
 export function usePwaInstall() {
-  const [state, setState] = useState<InstallState>(() => getState())
+  const [hydrated, setHydrated] = useState(false)
+  const [state, setState] = useState<InstallState>(() => ({
+    promptEvent: null,
+    installed: false,
+  }))
   const [dismissed, setDismissed] = useState(false)
 
   useEffect(() => {
+    setHydrated(true)
     installed = getStandaloneDisplay()
     setDismissed(readDismissed())
     setState(getState())
@@ -186,17 +191,17 @@ export function usePwaInstall() {
 
   return useMemo(
     () => ({
-      browserName: getBrowserName(),
+      browserName: hydrated ? getBrowserName() : 'Browser',
       canPromptInstall: Boolean(state.promptEvent),
       dismissed,
       dismiss,
       install,
-      installed: state.installed,
-      isAndroid: isAndroidDevice(),
-      isIos: isIosDevice(),
-      isStandalone: getStandaloneDisplay(),
+      installed: hydrated ? state.installed : false,
+      isAndroid: hydrated ? isAndroidDevice() : false,
+      isIos: hydrated ? isIosDevice() : false,
+      isStandalone: hydrated ? getStandaloneDisplay() : false,
       resetDismissal,
     }),
-    [dismiss, dismissed, install, resetDismissal, state.installed, state.promptEvent]
+    [dismiss, dismissed, hydrated, install, resetDismissal, state.installed, state.promptEvent]
   )
 }

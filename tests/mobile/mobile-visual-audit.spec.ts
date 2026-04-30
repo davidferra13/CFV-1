@@ -14,6 +14,7 @@ import {
 import { resolveMobileDeviceProfile } from './helpers/mobile-device-profiles'
 
 type AuditState = 'default' | 'menu_open' | 'cookie_banner'
+type AuditScope = 'public' | 'all' | 'install'
 
 type AuditFailure = {
   role: MobileAuditRole
@@ -40,6 +41,27 @@ const QUICK_MAX_ROUTES_PER_ROLE = 35
 const DEFAULT_WAIT_MS = 500
 const MIN_OVERFLOW_FAIL_PX_PUBLIC = 4
 const MIN_OVERFLOW_FAIL_PX_APP = 40
+const INSTALL_AUDIT_ROUTES = [
+  { role: 'public' as const, path: '/', template: '/', sourceFile: 'install-scope' },
+  {
+    role: 'public' as const,
+    path: '/install',
+    template: '/install',
+    sourceFile: 'install-scope',
+  },
+  {
+    role: 'public' as const,
+    path: '/offline.html',
+    template: '/offline.html',
+    sourceFile: 'install-scope',
+  },
+  {
+    role: 'public' as const,
+    path: '/auth/signin',
+    template: '/auth/signin',
+    sourceFile: 'install-scope',
+  },
+]
 
 function timestampTag() {
   return new Date().toISOString().replace(/[:.]/g, '-')
@@ -50,9 +72,24 @@ function getAuditMode(): 'quick' | 'full' {
   return value === 'full' ? 'full' : 'quick'
 }
 
-function getAuditScope(): 'public' | 'all' {
+function getAuditScope(): AuditScope {
   const value = String(process.env.MOBILE_AUDIT_SCOPE || 'all').toLowerCase()
+  if (value === 'install') return 'install'
   return value === 'public' ? 'public' : 'all'
+}
+
+function getMaxRoutesPerRole() {
+  const raw = process.env.MOBILE_AUDIT_MAX_ROUTES_PER_ROLE
+  if (!raw) return QUICK_MAX_ROUTES_PER_ROLE
+  const parsed = Number(raw)
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : QUICK_MAX_ROUTES_PER_ROLE
+}
+
+function shouldCaptureScreenshot(failedBefore: number, failedAfter: number) {
+  const mode = String(process.env.MOBILE_AUDIT_SCREENSHOTS || 'all').toLowerCase()
+  if (mode === 'off' || mode === 'none') return false
+  if (mode === 'failures' || mode === 'failure') return failedAfter > failedBefore
+  return true
 }
 
 function chooseViewports(mode: 'quick' | 'full'): MobileViewport[] {
@@ -68,8 +105,8 @@ function routeStates(role: MobileAuditRole, path: string): AuditState[] {
   return states
 }
 
-function shouldRunRole(role: MobileAuditRole, scope: 'public' | 'all'): boolean {
-  if (scope === 'public') return role === 'public'
+function shouldRunRole(role: MobileAuditRole, scope: AuditScope): boolean {
+  if (scope === 'public' || scope === 'install') return role === 'public'
   return true
 }
 
@@ -78,13 +115,60 @@ function trimRoutesForMode(
   mode: 'quick' | 'full'
 ) {
   if (mode === 'full') return routes
+  const maxRoutesPerRole = getMaxRoutesPerRole()
   const byRole = new Map<MobileAuditRole, number>()
   return routes.filter((route) => {
     const count = byRole.get(route.role) ?? 0
-    if (count >= QUICK_MAX_ROUTES_PER_ROLE) return false
+    if (count >= maxRoutesPerRole) return false
     byRole.set(route.role, count + 1)
     return true
   })
+}
+
+function buildSummary(input: {
+  mode: 'quick' | 'full'
+  scope: AuditScope
+  deviceProfile: { name: string; label: string }
+  allRoutes: ReturnType<typeof buildMobileAuditRoutes>
+  executed: Array<{
+    role: MobileAuditRole
+    path: string
+    viewport: string
+    state: AuditState
+    screenshot: string | null
+    overflowX: number
+  }>
+  failures: AuditFailure[]
+  complete: boolean
+}) {
+  return {
+    mode: input.mode,
+    scope: input.scope,
+    deviceProfile: input.deviceProfile,
+    generatedAt: new Date().toISOString(),
+    complete: input.complete,
+    totals: {
+      routes: input.allRoutes.length,
+      executions: input.executed.length,
+      failures: input.failures.length,
+    },
+    failures: input.failures,
+  }
+}
+
+function writeSummaryFiles(
+  runDir: string,
+  summary: ReturnType<typeof buildSummary>,
+  { latest }: { latest: boolean }
+) {
+  const summaryPath = join(runDir, 'summary.json')
+  writeFileSync(summaryPath, JSON.stringify(summary, null, 2), 'utf-8')
+  if (latest) {
+    writeFileSync(
+      resolve('reports', 'mobile-audit', 'latest.json'),
+      JSON.stringify(summary, null, 2)
+    )
+  }
 }
 
 async function openMobileMenuIfPresent(page: Page) {
@@ -122,7 +206,8 @@ test.describe('Mobile Visual Audit', () => {
     const scope = getAuditScope()
     const deviceProfile = resolveMobileDeviceProfile(process.env.MOBILE_AUDIT_DEVICE_PROFILE)
     const viewports = chooseViewports(mode)
-    const harvestedRoutes = buildMobileAuditRoutes(seedIds)
+    const harvestedRoutes =
+      scope === 'install' ? INSTALL_AUDIT_ROUTES : buildMobileAuditRoutes(seedIds)
     const allRoutes = trimRoutesForMode(harvestedRoutes, mode).filter((route) =>
       shouldRunRole(route.role, scope)
     )
@@ -137,9 +222,30 @@ test.describe('Mobile Visual Audit', () => {
       path: string
       viewport: string
       state: AuditState
-      screenshot: string
+      screenshot: string | null
       overflowX: number
     }> = []
+
+    const persistProgress = (complete = false) => {
+      writeSummaryFiles(
+        runDir,
+        buildSummary({
+          mode,
+          scope,
+          deviceProfile: {
+            name: deviceProfile.name,
+            label: deviceProfile.label,
+          },
+          allRoutes,
+          executed,
+          failures,
+          complete,
+        }),
+        { latest: true }
+      )
+    }
+
+    persistProgress(false)
 
     for (const roleConfig of ROLE_STORAGE) {
       if (!shouldRunRole(roleConfig.role, scope)) continue
@@ -152,6 +258,7 @@ test.describe('Mobile Visual Audit', () => {
           reason: 'missing_storage_state',
           details: `${roleConfig.storageState} not found`,
         })
+        persistProgress(false)
         continue
       }
 
@@ -180,6 +287,7 @@ test.describe('Mobile Visual Audit', () => {
             })
 
             try {
+              const failureCountBefore = failures.length
               const response = await page.goto(route.path, {
                 waitUntil: 'domcontentloaded',
                 timeout: 90_000,
@@ -252,13 +360,16 @@ test.describe('Mobile Visual Audit', () => {
               const roleDir = join(runDir, route.role, viewport.name)
               mkdirSync(roleDir, { recursive: true })
               const screenshotFile = join(roleDir, `${slugifyPath(route.path)}--${state}.png`)
-              await page.screenshot({ path: screenshotFile, fullPage: true })
+              const captureScreenshot = shouldCaptureScreenshot(failureCountBefore, failures.length)
+              if (captureScreenshot) {
+                await page.screenshot({ path: screenshotFile, fullPage: true })
+              }
               executed.push({
                 role: route.role,
                 path: route.path,
                 viewport: viewport.name,
                 state,
-                screenshot: screenshotFile,
+                screenshot: captureScreenshot ? screenshotFile : null,
                 overflowX: probe.overflowX,
               })
             } catch (error) {
@@ -272,38 +383,18 @@ test.describe('Mobile Visual Audit', () => {
               })
             } finally {
               await context.close()
+              persistProgress(false)
             }
           }
         }
       }
     }
 
-    const summary = {
-      mode,
-      scope,
-      deviceProfile: {
-        name: deviceProfile.name,
-        label: deviceProfile.label,
-      },
-      generatedAt: new Date().toISOString(),
-      totals: {
-        routes: allRoutes.length,
-        executions: executed.length,
-        failures: failures.length,
-      },
-      failures,
-    }
-
-    const summaryPath = join(runDir, 'summary.json')
-    writeFileSync(summaryPath, JSON.stringify(summary, null, 2), 'utf-8')
-    writeFileSync(
-      resolve('reports', 'mobile-audit', 'latest.json'),
-      JSON.stringify(summary, null, 2)
-    )
+    persistProgress(true)
 
     expect(
       failures,
-      `Mobile audit failed. See ${summaryPath} for details. First failure: ${failures[0]?.reason ?? 'n/a'}`
+      `Mobile audit failed. See ${join(runDir, 'summary.json')} for details. First failure: ${failures[0]?.reason ?? 'n/a'}`
     ).toHaveLength(0)
   })
 })

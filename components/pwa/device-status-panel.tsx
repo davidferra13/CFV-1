@@ -1,12 +1,14 @@
 'use client'
 
 import type { ReactNode } from 'react'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import {
   Bell,
   CheckCircle2,
   CloudUpload,
+  Copy,
   RefreshCw,
+  ShieldCheck,
   Smartphone,
   Wifi,
   WifiOff,
@@ -19,6 +21,9 @@ type DeviceStatus = {
   notifications: 'unsupported' | NotificationPermission
   pendingCount: number | null
   appVersion: string
+  manifest: 'checking' | 'available' | 'unavailable'
+  storage: 'checking' | 'available' | 'unavailable'
+  lastChecked: string
 }
 
 function statusLabel(status: DeviceStatus['serviceWorker']) {
@@ -62,63 +67,81 @@ function StatusRow({
 }
 
 export function DeviceStatusPanel({ compact = false }: { compact?: boolean }) {
-  const { canPromptInstall, install, installed, isStandalone } = usePwaInstall()
+  const { browserName, canPromptInstall, install, installed, isStandalone } = usePwaInstall()
   const [status, setStatus] = useState<DeviceStatus>({
     online: true,
     serviceWorker: 'unsupported',
     notifications: 'unsupported',
     pendingCount: null,
     appVersion: 'Checking',
+    manifest: 'checking',
+    storage: 'checking',
+    lastChecked: 'Checking',
   })
+  const [refreshing, setRefreshing] = useState(false)
+  const [copyState, setCopyState] = useState<'idle' | 'copied' | 'failed'>('idle')
 
-  useEffect(() => {
-    let cancelled = false
+  const refreshDeviceStatus = useCallback(async () => {
+    setRefreshing(true)
+    const nextStatus: DeviceStatus = {
+      online: navigator.onLine,
+      serviceWorker: 'serviceWorker' in navigator ? 'inactive' : 'unsupported',
+      notifications: 'Notification' in window ? Notification.permission : 'unsupported',
+      pendingCount: null,
+      appVersion: 'Unknown',
+      manifest: 'checking',
+      storage: 'checking',
+      lastChecked: new Date().toLocaleTimeString([], {
+        hour: 'numeric',
+        minute: '2-digit',
+      }),
+    }
 
-    async function refresh() {
-      const nextStatus: DeviceStatus = {
-        online: navigator.onLine,
-        serviceWorker: 'serviceWorker' in navigator ? 'inactive' : 'unsupported',
-        notifications: 'Notification' in window ? Notification.permission : 'unsupported',
-        pendingCount: null,
-        appVersion: 'Unknown',
-      }
-
-      if ('serviceWorker' in navigator) {
-        const registration = await navigator.serviceWorker.getRegistration().catch(() => null)
-        if (registration?.active || navigator.serviceWorker.controller) {
-          nextStatus.serviceWorker = 'active'
-        } else if (registration?.installing || registration?.waiting) {
-          nextStatus.serviceWorker = 'installing'
-        }
-      }
-
-      const pendingModule = await import('@/lib/offline/idb-queue').catch(() => null)
-      if (pendingModule?.isIDBAvailable()) {
-        nextStatus.pendingCount = await pendingModule.getPendingCount().catch(() => null)
-      }
-
-      const buildVersion = await fetch('/api/build-version', { cache: 'no-store' })
-        .then((response) => (response.ok ? response.json() : null))
-        .then((data) => (typeof data?.buildId === 'string' ? data.buildId : 'Unknown'))
-        .catch(() => 'Unavailable')
-
-      nextStatus.appVersion = buildVersion
-
-      if (!cancelled) {
-        setStatus(nextStatus)
+    if ('serviceWorker' in navigator) {
+      const registration = await navigator.serviceWorker.getRegistration().catch(() => null)
+      if (registration?.active || navigator.serviceWorker.controller) {
+        nextStatus.serviceWorker = 'active'
+      } else if (registration?.installing || registration?.waiting) {
+        nextStatus.serviceWorker = 'installing'
       }
     }
 
-    void refresh()
+    const pendingModule = await import('@/lib/offline/idb-queue').catch(() => null)
+    if (pendingModule?.isIDBAvailable()) {
+      nextStatus.pendingCount = await pendingModule.getPendingCount().catch(() => null)
+    }
+
+    nextStatus.storage = pendingModule?.isIDBAvailable() ? 'available' : 'unavailable'
+
+    nextStatus.manifest = await fetch('/manifest.json', { cache: 'no-store' })
+      .then((response) => (response.ok ? 'available' : 'unavailable'))
+      .catch(() => 'unavailable')
+
+    const buildVersion = await fetch('/api/build-version', { cache: 'no-store' })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data) => (typeof data?.buildId === 'string' ? data.buildId : 'Unknown'))
+      .catch(() => 'Unavailable')
+
+    nextStatus.appVersion = buildVersion
+
+    setStatus(nextStatus)
+    setRefreshing(false)
+  }, [])
+
+  useEffect(() => {
+    const refresh = () => {
+      void refreshDeviceStatus()
+    }
+
+    refresh()
     window.addEventListener('online', refresh)
     window.addEventListener('offline', refresh)
 
     return () => {
-      cancelled = true
       window.removeEventListener('online', refresh)
       window.removeEventListener('offline', refresh)
     }
-  }, [])
+  }, [refreshDeviceStatus])
 
   const installState =
     installed || isStandalone ? 'Installed' : canPromptInstall ? 'Ready' : 'Manual'
@@ -129,6 +152,30 @@ export function DeviceStatusPanel({ compact = false }: { compact?: boolean }) {
       : status.serviceWorker === 'installing'
         ? 'amber'
         : 'red'
+  const diagnostics = [
+    'ChefFlow device diagnostics',
+    `Browser: ${browserName}`,
+    `Display mode: ${installed || isStandalone ? 'standalone' : 'browser'}`,
+    `Install prompt: ${canPromptInstall ? 'ready' : 'manual'}`,
+    `Connection: ${status.online ? 'online' : 'offline'}`,
+    `Service worker: ${statusLabel(status.serviceWorker)}`,
+    `Manifest: ${status.manifest}`,
+    `Offline storage: ${status.storage}`,
+    `Offline queue: ${status.pendingCount == null ? 'unavailable' : `${status.pendingCount} pending`}`,
+    `Notifications: ${status.notifications}`,
+    `App version: ${status.appVersion}`,
+    `Last checked: ${status.lastChecked}`,
+  ].join('\n')
+
+  async function copyDiagnostics() {
+    setCopyState('idle')
+    try {
+      await navigator.clipboard.writeText(diagnostics)
+      setCopyState('copied')
+    } catch {
+      setCopyState('failed')
+    }
+  }
 
   return (
     <div className={compact ? 'space-y-4' : 'space-y-5'}>
@@ -175,6 +222,55 @@ export function DeviceStatusPanel({ compact = false }: { compact?: boolean }) {
           value={status.appVersion}
           tone="stone"
         />
+        <StatusRow
+          icon={<ShieldCheck className="h-4 w-4" aria-hidden="true" />}
+          label="Manifest"
+          value={status.manifest === 'available' ? 'Available' : status.manifest}
+          tone={status.manifest === 'available' ? 'green' : 'red'}
+        />
+      </div>
+
+      <div className="rounded-lg border border-stone-800 bg-stone-900/60 p-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-semibold text-stone-100">Device diagnostics</p>
+            <p className="mt-1 text-xs leading-5 text-stone-400">
+              Last checked {status.lastChecked}. Copy this report when troubleshooting install,
+              offline, or update behavior.
+            </p>
+            {copyState !== 'idle' && (
+              <p
+                className={`mt-2 text-xs ${
+                  copyState === 'copied' ? 'text-green-300' : 'text-red-300'
+                }`}
+                role="status"
+              >
+                {copyState === 'copied'
+                  ? 'Diagnostics copied.'
+                  : 'Copy failed. Use the visible status rows instead.'}
+              </p>
+            )}
+          </div>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <button
+              type="button"
+              disabled={refreshing}
+              onClick={() => void refreshDeviceStatus()}
+              className="inline-flex min-h-[40px] items-center justify-center gap-2 rounded-lg border border-stone-700 bg-stone-950 px-3 text-sm font-semibold text-stone-200 transition-colors hover:bg-stone-800"
+            >
+              <RefreshCw className="h-4 w-4" aria-hidden="true" />
+              {refreshing ? 'Checking' : 'Refresh status'}
+            </button>
+            <button
+              type="button"
+              onClick={() => void copyDiagnostics()}
+              className="inline-flex min-h-[40px] items-center justify-center gap-2 rounded-lg bg-stone-100 px-3 text-sm font-semibold text-stone-950 transition-colors hover:bg-white"
+            >
+              <Copy className="h-4 w-4" aria-hidden="true" />
+              Copy diagnostics
+            </button>
+          </div>
+        </div>
       </div>
 
       {!installed && canPromptInstall && (

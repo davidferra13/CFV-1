@@ -264,5 +264,7 @@ test.describe('Q20: PWA / Service Worker', () => {
       .catch(() => '')
     expect(bodyText).toContain('Install ChefFlow on this device')
     expect(bodyText).toContain('Device status')
+    expect(bodyText).toContain('Device diagnostics')
+    expect(bodyText).toContain('Copy diagnostics')
   })
 })
