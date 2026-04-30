@@ -30,6 +30,7 @@ const EXCLUDED_ROUTE_PATTERNS: RegExp[] = [
 
 function isLikelyRoute(template: string): boolean {
   if (!template.startsWith('/')) return false
+  if (template === '/demo' && process.env.DEMO_MODE_ENABLED !== 'true') return false
   if (template.includes(' ')) return false
   if (template.includes('|')) return false
   if (template.includes('\\/')) return false

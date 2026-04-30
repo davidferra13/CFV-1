@@ -302,6 +302,15 @@ test.describe('Mobile Visual Audit', () => {
                   reason: 'http_5xx',
                   details: `status=${status}`,
                 })
+              } else if (status >= 400) {
+                failures.push({
+                  role: route.role,
+                  path: route.path,
+                  viewport: viewport.name,
+                  state,
+                  reason: 'http_4xx',
+                  details: `status=${status}`,
+                })
               }
 
               await page.waitForTimeout(DEFAULT_WAIT_MS)

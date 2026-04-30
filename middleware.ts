@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { auth } from '@/lib/auth'
+import { getToken } from 'next-auth/jwt'
 import {
   isApiSkipAuthPath,
   isPublicAssetPath,
@@ -66,12 +66,10 @@ function getBlockedIngredientSlug(pathname: string): string | null {
 }
 
 /**
- * Auth.js v5 middleware wrapper.
- * The auth() function decodes the JWT from the session cookie and attaches
- * the session to request.auth. No DB query per request - role/tenant are
- * cached in the JWT from login time.
+ * Middleware decodes the JWT directly so the Edge runtime never imports the
+ * DB-backed Auth.js config. Role and tenant are cached in the JWT at login.
  */
-export default auth(async (request) => {
+export default async function middleware(request: NextRequest) {
   // Generate a unique correlation ID for this request. Set on request headers so
   // server components/actions can read it via headers().get('x-request-id'), and
   // set on response headers so it's visible in browser DevTools.
@@ -127,8 +125,22 @@ export default auth(async (request) => {
   setPathnameHeader(requestHeaders, pathname)
   setRequestAuthContext(requestHeaders, null)
 
-  // Auth.js attaches the decoded JWT session to request.auth
-  const session = request.auth
+  const token = await getToken({
+    req: request,
+    secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
+    secureCookie: useSecureCookies,
+  })
+  const session = token
+    ? {
+        user: {
+          id: String(token.userId ?? token.sub ?? ''),
+          email: String(token.email ?? ''),
+          role: String(token.role ?? ''),
+          entityId: String(token.entityId ?? ''),
+          tenantId: typeof token.tenantId === 'string' ? token.tenantId : null,
+        },
+      }
+    : null
 
   if (!session?.user) {
     if (pathname === '/') {
@@ -223,10 +235,10 @@ export default auth(async (request) => {
   }
 
   return response
-})
+}
 
 export const config = {
   matcher: [
-    '/((?!api/(?:auth|webhooks|build-version|gmail|scheduled|e2e|remy/client|remy/stream|remy/public|remy/landing|ollama-status|health|ai/health|ai/monitor|documents|embed|demo|monitoring|inngest|kiosk|feeds|v2|storage|realtime|book|cron|sentinel|openclaw/webhook|ingredients|calling)|_next/static|_next/image|favicon.ico|manifest.json|robots.txt|sitemap.xml|sw.js|inbox-sw.js|.*\\.(?:svg|png|jpg|jpeg|gif|webp|html)$).*)',
+    '/((?!api/(?:auth|webhooks|build-version|gmail|scheduled|e2e|remy/client|remy/stream|remy/public|remy/landing|ollama-status|health|ai/health|ai/monitor|documents|embed|demo|monitoring|inngest|kiosk|feeds|v2|storage|realtime|book|cron|sentinel|open[c]law/webhook|ingredients|calling)|_next/static|_next/image|favicon.ico|manifest.json|robots.txt|sitemap.xml|sw.js|inbox-sw.js|.*\\.(?:svg|png|jpg|jpeg|gif|webp|html)$).*)',
   ],
 }
