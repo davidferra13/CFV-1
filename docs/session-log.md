@@ -72,6 +72,16 @@
 - Build state on departure: `node scripts/generate-work-continuity-index.mjs`, `node --test --import tsx tests/unit/work-continuity-index.test.ts`, and `npm run typecheck` exit `0`
 - Notes: Generated 20 indexed work items. Status counts: `ready_spec=1`, `built_unverified=11`, `verified=2`, `blocked=3`, `stale=0`, `research_backed_unspecced=2`, `needs_triage=1`. Current Start Here recommendation: Ticketed events critical blockers -> run the ticketed-events repair handoff before treating ticketing as shipped. All 14 configured source files were present; missing source files: 0; parse-skipped evidence: 0.
 
+## 2026-04-30 18:28 EDT
+
+- Agent: Codex
+- Task: Build the P0 Builder Agent Foundation
+- Status: completed
+- Files touched: `lib/builder-agent/types.ts`, `lib/builder-agent/memory-index.ts`, `lib/builder-agent/execution-journal.ts`, `lib/builder-agent/loop-guard.ts`, `lib/builder-agent/frustration-signals.ts`, `lib/builder-agent/release-hygiene.ts`, `scripts/builder-agent/run.mjs`, `scripts/builder-agent/maintenance.mjs`, `memory/builder-agent/README.md`, `memory/builder-agent/index/manifest.json`, `memory/builder-agent/journal/.gitkeep`, `tests/unit/builder-agent-memory.test.ts`, `tests/unit/builder-agent-loop-guard.test.ts`, `tests/unit/builder-agent-hygiene.test.ts`, `package.json`, `CLAUDE.md`, `docs/specs/README.md`, `docs/specs/p0-builder-agent-foundation.md`, `docs/build-state.md`, `docs/session-log.md`
+- Commits: pending at log-write time
+- Build state on departure: `npm run typecheck:app`, focused builder-agent unit tests, builder-agent dry-run, and builder-agent maintenance passed. Full build not run by task rule.
+- Notes: Added internal file-based memory indexing, append-only run journals, loop and frustration guards, release hygiene scanning, and CLI entrypoints. No database changes, public routes, server actions, or customer-facing UI were added.
+
 ## 2026-04-24 17:22 EDT
 
 - Agent: Codex

@@ -15,7 +15,7 @@ Last known state of the app. Updated after every successful type check and build
 
 | Check                                    | Status | Last Verified | Commit    | Agent           |
 | ---------------------------------------- | ------ | ------------- | --------- | --------------- |
-| `npx tsc --noEmit --skipLibCheck`        | green  | 2026-04-30    | e57cddfec | Codex           |
+| `npx tsc --noEmit --skipLibCheck`        | green  | 2026-04-30    | pending   | Codex           |
 | `npm run build -- --no-lint` (16GB heap) | green  | 2026-04-27    | dirty     | Claude Opus 4.6 |
 
 **Canonical build command:** `npm run build -- --no-lint` (uses `scripts/run-next-build.mjs`, 12GB heap default).
@@ -41,6 +41,7 @@ _Newest first. Keep the last 10 entries. Prune older ones._
 
 | Date       | tsc   | build | Agent           | Notes                                                                                                                                         |
 | ---------- | ----- | ----- | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-04-30 | green | -     | Codex           | Builder-agent foundation. Focused unit tests, dry-run, and maintenance passed. Build not run by task rule.                                    |
 | 2026-04-30 | green | -     | Codex           | V1 shared state motion and dashboard list motion. Unit test passed. Pre-push typecheck and quick regression passed 162 checks. Build not run. |
 | 2026-04-27 | green | green | Claude Opus 4.6 | Regression detection system: 19 scripts, 5 layers, pre-commit/pre-push hooks, /regression skill. 241 registry checks passing. Self-test 6/6.  |
 | 2026-04-27 | green | green | Claude Opus 4.6 | tsc + build clean on dirty checkout. 16GB heap required. BUILD_ID 0abc27ebf. 11 worktrees cleaned. Compliance: ALL CLEAR.                     |

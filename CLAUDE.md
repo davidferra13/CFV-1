@@ -56,6 +56,7 @@ Requires: Ollama running locally (`ollama serve`). If Ollama is down, fall back 
 - **Product Blueprint:** `docs/product-blueprint.md` is THE finish line. V1 scope, progress bar, exit criteria. Read it. Update it when you complete features.
 - **Project Map:** `project-map/` is the browsable product mirror. 20 files in 4 folders (chef-os, consumer-os, public, infrastructure). Update the relevant file when you build or change features.
 - **Definition of done:** a feature is only done when it is verified in the real UI, honest about failure, and protected against drift. See `docs/definition-of-done.md`
+- **Builder-agent runtime:** internal file-based agent memory and run journals live under `memory/builder-agent/`. Use `npm run builder-agent -- --task "<task>" --dry-run` for guarded dry runs and `npm run builder-agent:maintenance` for non-destructive maintenance checks.
 - **Interface philosophy:** all UI work must comply with `docs/specs/universal-interface-philosophy.md`. Mandatory read for all builder agents before any UI implementation.
 - **Surface grammar:** every UI surface must declare and follow a mode from `docs/specs/surface-grammar-governance.md` before layout or component work begins.
 

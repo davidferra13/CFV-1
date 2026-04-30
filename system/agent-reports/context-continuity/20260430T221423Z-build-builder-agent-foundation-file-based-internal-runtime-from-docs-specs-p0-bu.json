@@ -1,0 +1,496 @@
+{
+  "generated_at": "2026-04-30T22:12:31.888Z",
+  "prompt": "Build Builder Agent Foundation file-based internal runtime from docs/specs/p0-builder-agent-foundation.md",
+  "terms": [
+    "builder",
+    "foundation",
+    "file-based",
+    "internal",
+    "runtime",
+    "docs/specs/p0-builder-agent-foundation"
+  ],
+  "scanned_dirs": [
+    "app",
+    "components",
+    "lib",
+    "docs/specs",
+    "docs/changes",
+    "docs/app-complete-audit.md",
+    "project-map",
+    "memory",
+    "system/intake",
+    "system/agent-reports"
+  ],
+  "canonical_surfaces": [
+    {
+      "id": "autonomous-v1-builder",
+      "label": "Autonomous V1 Builder Loop",
+      "score": 8,
+      "hits": [
+        "builder",
+        "foundation",
+        "internal",
+        "docs/specs/p0-builder-agent-foundation"
+      ],
+      "canonical_routes": [],
+      "canonical_files": [
+        "docs/specs/autonomous-v1-builder-contract.md",
+        "docs/v1-v2-governor.md",
+        "docs/specs/p0-builder-agent-foundation.md"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Extend the governed V1 builder contract instead of creating another queue or autonomous agent surface."
+      }
+    },
+    {
+      "id": "sticky-notes-intake-layer",
+      "label": "Sticky Notes Intake Layer",
+      "score": 1,
+      "hits": [
+        "internal"
+      ],
+      "canonical_routes": [],
+      "canonical_files": [
+        "docs/specs/sticky-notes-intake-layer.md",
+        "devtools/sticky-notes/read-db.mjs",
+        "devtools/sticky-notes/organize.mjs"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach Sticky Notes work to the local intake layer instead of client intake, Remy memory, or an ungoverned backlog."
+      }
+    }
+  ],
+  "related_files": [
+    {
+      "file": "docs/specs/p0-builder-agent-foundation.md",
+      "kind": "spec",
+      "score": 36,
+      "hits": [
+        "builder",
+        "foundation",
+        "docs/specs/p0-builder-agent-foundation",
+        "file-based",
+        "internal",
+        "runtime"
+      ]
+    },
+    {
+      "file": "docs/specs/autonomous-v1-builder-contract.md",
+      "kind": "spec",
+      "score": 34,
+      "hits": [
+        "builder",
+        "foundation",
+        "file-based",
+        "internal",
+        "runtime",
+        "docs/specs/p0-builder-agent-foundation"
+      ]
+    },
+    {
+      "file": "docs/specs/private-dev-cockpit-consolidation.md",
+      "kind": "spec",
+      "score": 26,
+      "hits": [
+        "builder",
+        "foundation",
+        "file-based",
+        "internal",
+        "runtime",
+        "docs/specs/p0-builder-agent-foundation"
+      ]
+    },
+    {
+      "file": "docs/specs/survey-wave-1-internal-launch-builder-handoff-2026-04-02.md",
+      "kind": "spec",
+      "score": 25,
+      "hits": [
+        "builder",
+        "internal",
+        "foundation",
+        "runtime"
+      ]
+    },
+    {
+      "file": "docs/specs/system-surface-role-classification-foundation.md",
+      "kind": "spec",
+      "score": 24,
+      "hits": [
+        "foundation",
+        "builder",
+        "internal",
+        "runtime"
+      ]
+    },
+    {
+      "file": "docs/specs/p0-runtime-surface-boundary-enforcement.md",
+      "kind": "spec",
+      "score": 21,
+      "hits": [
+        "runtime",
+        "builder",
+        "foundation",
+        "internal"
+      ]
+    },
+    {
+      "file": "docs/specs/openclaw-canonical-scope-and-sequence.md",
+      "kind": "spec",
+      "score": 19,
+      "hits": [
+        "builder",
+        "foundation",
+        "internal",
+        "runtime"
+      ]
+    },
+    {
+      "file": "docs/specs/openclaw-ideal-runtime-and-national-intelligence.md",
+      "kind": "spec",
+      "score": 19,
+      "hits": [
+        "runtime",
+        "builder",
+        "internal"
+      ]
+    },
+    {
+      "file": "docs/specs/openclaw-internal-only-boundary-and-debranding.md",
+      "kind": "spec",
+      "score": 19,
+      "hits": [
+        "internal",
+        "builder",
+        "runtime"
+      ]
+    },
+    {
+      "file": "docs/specs/full-cloud-ai-runtime-and-disclosure.md",
+      "kind": "spec",
+      "score": 17,
+      "hits": [
+        "runtime",
+        "builder",
+        "internal"
+      ]
+    },
+    {
+      "file": "docs/specs/openclaw-pc-local-mirror-and-backup-contract.md",
+      "kind": "spec",
+      "score": 16,
+      "hits": [
+        "builder",
+        "foundation",
+        "internal",
+        "runtime"
+      ]
+    },
+    {
+      "file": "docs/specs/consumer-first-discovery-and-dinner-planning-expansion.md",
+      "kind": "spec",
+      "score": 15,
+      "hits": [
+        "builder",
+        "foundation",
+        "internal",
+        "runtime"
+      ]
+    },
+    {
+      "file": "docs/specs/feature-registry-builder-handoff.md",
+      "kind": "spec",
+      "score": 15,
+      "hits": [
+        "builder",
+        "internal",
+        "runtime"
+      ]
+    },
+    {
+      "file": "docs/specs/openclaw-non-goals-and-never-do-rules.md",
+      "kind": "spec",
+      "score": 15,
+      "hits": [
+        "builder",
+        "internal",
+        "runtime"
+      ]
+    },
+    {
+      "file": "docs/specs/p0-system-improvement-control-tower.md",
+      "kind": "spec",
+      "score": 15,
+      "hits": [
+        "builder",
+        "foundation",
+        "runtime"
+      ]
+    },
+    {
+      "file": "docs/specs/p1-search-intent-landing-architecture.md",
+      "kind": "spec",
+      "score": 15,
+      "hits": [
+        "builder",
+        "foundation",
+        "internal"
+      ]
+    },
+    {
+      "file": "docs/specs/respectful-monetization-foundation.md",
+      "kind": "spec",
+      "score": 15,
+      "hits": [
+        "foundation",
+        "builder",
+        "internal"
+      ]
+    },
+    {
+      "file": "docs/specs/website-build-research-spec-code-cross-reference-upgrade.md",
+      "kind": "spec",
+      "score": 15,
+      "hits": [
+        "builder",
+        "foundation",
+        "runtime"
+      ]
+    },
+    {
+      "file": "system/agent-reports/context-continuity/20260430T163511Z-private-dev-cockpit-consolidate-3977-sticky-notes-v1-builder-queue-claims-receip.json",
+      "kind": "system",
+      "score": 15,
+      "hits": [
+        "builder",
+        "foundation",
+        "runtime",
+        "docs/specs/p0-builder-agent-foundation"
+      ]
+    },
+    {
+      "file": "docs/specs/comprehensive-domain-inventory-phase-1.md",
+      "kind": "spec",
+      "score": 14,
+      "hits": [
+        "builder",
+        "foundation",
+        "internal",
+        "runtime"
+      ]
+    },
+    {
+      "file": "lib/admin/v1-builder-monitor.ts",
+      "kind": "module",
+      "score": 14,
+      "hits": [
+        "builder",
+        "runtime"
+      ]
+    },
+    {
+      "file": "system/agent-reports/context-continuity/20260430T030830Z-create-build-spec-for-autonomous-v1-builder-loop-intake-v1-governor-classificati.json",
+      "kind": "system",
+      "score": 14,
+      "hits": [
+        "builder",
+        "foundation",
+        "runtime",
+        "docs/specs/p0-builder-agent-foundation"
+      ]
+    },
+    {
+      "file": "system/agent-reports/context-continuity/20260430T191429Z-build-source-intake-normalizer-that-reads-upstream-build-sources-and-writes-one-.json",
+      "kind": "system",
+      "score": 14,
+      "hits": [
+        "builder",
+        "foundation",
+        "runtime",
+        "docs/specs/p0-builder-agent-foundation"
+      ]
+    },
+    {
+      "file": "app/(admin)/admin/v1-builder/v1-builder-monitor-client.tsx",
+      "kind": "route",
+      "score": 13,
+      "hits": [
+        "builder"
+      ]
+    },
+    {
+      "file": "docs/specs/chef-shell-clarity-and-guided-settings.md",
+      "kind": "spec",
+      "score": 13,
+      "hits": [
+        "builder",
+        "foundation",
+        "internal",
+        "runtime"
+      ]
+    },
+    {
+      "file": "docs/specs/p0-chef-cpa-ready-tax-export-and-reconciliation.md",
+      "kind": "spec",
+      "score": 13,
+      "hits": [
+        "builder",
+        "foundation",
+        "runtime"
+      ]
+    },
+    {
+      "file": "docs/specs/README.md",
+      "kind": "spec",
+      "score": 13,
+      "hits": [
+        "builder",
+        "foundation",
+        "runtime"
+      ]
+    },
+    {
+      "file": "docs/specs/remy-capability-operating-layer.md",
+      "kind": "spec",
+      "score": 13,
+      "hits": [
+        "builder",
+        "foundation",
+        "internal",
+        "runtime"
+      ]
+    },
+    {
+      "file": "components/automations/rule-builder.tsx",
+      "kind": "component",
+      "score": 12,
+      "hits": [
+        "builder",
+        "internal"
+      ]
+    },
+    {
+      "file": "docs/specs/openclaw-goal-governor-and-kpi-contract.md",
+      "kind": "spec",
+      "score": 12,
+      "hits": [
+        "builder",
+        "internal",
+        "runtime"
+      ]
+    }
+  ],
+  "recent_commits": [
+    {
+      "line": "3ffc5a8cb chore(agent): scaffold v1 builder runtime feature/v1-builder-runtime-scaffold",
+      "score": 4,
+      "hits": [
+        "builder",
+        "runtime"
+      ]
+    },
+    {
+      "line": "a0145d2a7 chore(agent): record gated builder live claim feature/v1-builder-runtime-scaffold",
+      "score": 3,
+      "hits": [
+        "builder",
+        "runtime"
+      ]
+    },
+    {
+      "line": "68ed8193d chore(agent): harden v1 builder worktree retries feature/v1-builder-runtime-scaffold",
+      "score": 3,
+      "hits": [
+        "builder",
+        "runtime"
+      ]
+    },
+    {
+      "line": "0a7bc496e chore(agent): filter dependency-blocked builder intake feature/v1-builder-runtime-scaffold",
+      "score": 3,
+      "hits": [
+        "builder",
+        "runtime"
+      ]
+    },
+    {
+      "line": "69435dd93 chore(agent): add v1 builder intake gate feature/v1-builder-runtime-scaffold",
+      "score": 3,
+      "hits": [
+        "builder",
+        "runtime"
+      ]
+    },
+    {
+      "line": "e8c4fc269 chore(agent): add v1 builder intake gate tests feature/v1-builder-runtime-scaffold",
+      "score": 3,
+      "hits": [
+        "builder",
+        "runtime"
+      ]
+    },
+    {
+      "line": "01e1da6b4 chore(agent): add v1 builder intake normalizer feature/v1-builder-runtime-scaffold",
+      "score": 3,
+      "hits": [
+        "builder",
+        "runtime"
+      ]
+    },
+    {
+      "line": "3d245845a chore(agent): record live builder wiring receipt feature/v1-builder-runtime-scaffold",
+      "score": 3,
+      "hits": [
+        "builder",
+        "runtime"
+      ]
+    },
+    {
+      "line": "51e50bdbb chore(agent): wire live v1 builder execution feature/v1-builder-runtime-scaffold",
+      "score": 3,
+      "hits": [
+        "builder",
+        "runtime"
+      ]
+    },
+    {
+      "line": "7230befbf chore(agent): add dry run v1 builder watcher feature/v1-builder-runtime-scaffold",
+      "score": 3,
+      "hits": [
+        "builder",
+        "runtime"
+      ]
+    }
+  ],
+  "dirty_matches": [],
+  "claim_matches": [
+    {
+      "file": "system/agent-claims/20260430T192043Z-feature-v1-builder-runtime-scaffold-build-chefflow-obsidian-index-notes-and-wire.json",
+      "score": 8,
+      "hits": [
+        "builder",
+        "runtime"
+      ],
+      "prompt": "Build ChefFlow Obsidian index notes and wire future memory packets",
+      "owned": [],
+      "status": "finished"
+    }
+  ],
+  "duplicate_risks": [
+    {
+      "level": "medium",
+      "reason": "Active or recorded claims overlap this domain.",
+      "claims": [
+        "system/agent-claims/20260430T192043Z-feature-v1-builder-runtime-scaffold-build-chefflow-obsidian-index-notes-and-wire.json"
+      ]
+    }
+  ],
+  "continuity": {
+    "decision": "attach",
+    "stop_required": false,
+    "reason": "Matched canonical surface autonomous-v1-builder."
+  }
+}

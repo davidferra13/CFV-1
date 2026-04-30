@@ -1,6 +1,6 @@
 # Spec: Builder Agent Foundation
 
-> **Status:** ready
+> **Status:** verified
 > **Priority:** P0 (blocking)
 > **Depends on:** none
 > **Estimated complexity:** large (9+ files)
@@ -13,6 +13,8 @@ _Every status change, every claim, every verification gets a row. This is the au
 | ------------- | ---------------- | ------------- | ------ |
 | Created       | 2026-04-02 17:10 | Codex         |        |
 | Status: ready | 2026-04-02 17:10 | Codex         |        |
+| Status: in-progress | 2026-04-30 18:11 | Codex | pending |
+| Status: verified | 2026-04-30 18:28 | Codex | pending |
 
 ---
 

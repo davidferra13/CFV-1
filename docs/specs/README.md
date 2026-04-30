@@ -14,6 +14,12 @@ Prompt source of truth:
 - `docs/specs/README.md` holds the canonical launcher prompts for planner, builder, and research agents.
 - `prompts/` holds reusable prompt assets, drafts, and queue items. It is not the launcher prompt source of truth.
 
+Internal builder-agent runtime:
+
+- `npm run builder-agent -- --task "<task>" --dry-run` builds the canonical memory index and appends a dry-run journal under `memory/builder-agent/`.
+- `npm run builder-agent:maintenance` runs non-destructive drift, stale-spec, and release-hygiene checks.
+- The runtime is internal infrastructure only. It does not add public routes, server actions, database tables, or customer-facing UI.
+
 ## Spec Lifecycle
 
 | Status        | Meaning                                               |
