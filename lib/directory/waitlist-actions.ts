@@ -18,7 +18,6 @@ import {
 } from '@/lib/discover/nearby-saved-search'
 import { sendEmail } from '@/lib/email/send'
 import { checkRateLimit } from '@/lib/rateLimit'
-import { z } from 'zod'
 
 const DIRECTORY_WAITLIST_ENTRY_SOURCES: Set<string> = new Set([
   DEFAULT_DIRECTORY_WAITLIST_SOURCE,
@@ -32,23 +31,6 @@ const DIRECTORY_WAITLIST_BUSINESS_TYPES: Set<string> = new Set(
 const DIRECTORY_WAITLIST_CUISINES: Set<string> = new Set(
   CUISINE_CATEGORIES.map((cuisine) => cuisine.value)
 )
-
-const NearbySavedSearchSchema = z.object({
-  email: z.string().trim().email('Please enter a valid email address.').max(320),
-  city: z.string().trim().max(120).optional().or(z.literal('')),
-  state: z.string().trim().max(50).optional().or(z.literal('')),
-  businessType: z.string().trim().max(80).optional().or(z.literal('')),
-  cuisine: z.string().trim().max(80).optional().or(z.literal('')),
-  searchQuery: z.string().trim().max(120).optional().or(z.literal('')),
-  locationQuery: z.string().trim().max(160).optional().or(z.literal('')),
-  locationLabel: z.string().trim().max(160).optional().or(z.literal('')),
-  radiusMiles: z.number().int().min(1).max(250).optional().nullable(),
-  userLat: z.number().min(-90).max(90).optional().nullable(),
-  userLon: z.number().min(-180).max(180).optional().nullable(),
-  currentMatchCount: z.number().int().min(0).max(100000).optional(),
-  website: z.string().max(0, 'Bot detected').optional().or(z.literal('')),
-  source: z.string().trim().max(60).optional(),
-})
 
 function cleanText(value?: string | null) {
   return typeof value === 'string' ? value.trim() : ''
@@ -264,6 +246,23 @@ export async function saveNearbySavedSearchAlert(input: {
   error?: string
   summaryLabel?: string
 }> {
+  const { z } = await import('zod')
+  const NearbySavedSearchSchema = z.object({
+    email: z.string().trim().email('Please enter a valid email address.').max(320),
+    city: z.string().trim().max(120).optional().or(z.literal('')),
+    state: z.string().trim().max(50).optional().or(z.literal('')),
+    businessType: z.string().trim().max(80).optional().or(z.literal('')),
+    cuisine: z.string().trim().max(80).optional().or(z.literal('')),
+    searchQuery: z.string().trim().max(120).optional().or(z.literal('')),
+    locationQuery: z.string().trim().max(160).optional().or(z.literal('')),
+    locationLabel: z.string().trim().max(160).optional().or(z.literal('')),
+    radiusMiles: z.number().int().min(1).max(250).optional().nullable(),
+    userLat: z.number().min(-90).max(90).optional().nullable(),
+    userLon: z.number().min(-180).max(180).optional().nullable(),
+    currentMatchCount: z.number().int().min(0).max(100000).optional(),
+    website: z.string().max(0, 'Bot detected').optional().or(z.literal('')),
+    source: z.string().trim().max(60).optional(),
+  })
   const parsed = NearbySavedSearchSchema.safeParse(input)
 
   if (!parsed.success) {
