@@ -1,0 +1,292 @@
+{
+  "generated_at": "2026-04-30T16:38:09.069Z",
+  "prompt": "Build Geographic Pricing Proof Harness from docs/specs/geographic-pricing-proof-harness.md",
+  "terms": [
+    "geographic",
+    "pricing",
+    "proof",
+    "harness",
+    "docs/specs/geographic-pricing-proof-harness"
+  ],
+  "scanned_dirs": [
+    "app",
+    "components",
+    "lib",
+    "docs/specs",
+    "docs/changes",
+    "docs/app-complete-audit.md",
+    "project-map",
+    "memory",
+    "system/intake",
+    "system/agent-reports"
+  ],
+  "canonical_surfaces": [
+    {
+      "id": "chef-command-plane",
+      "label": "ChefFlow Command Plane",
+      "score": 2,
+      "hits": ["proof"],
+      "canonical_routes": ["/dashboard"],
+      "canonical_files": [
+        "docs/specs/chefflow-command-plane.md",
+        "lib/interface/action-layer.ts",
+        "lib/events/operating-spine.ts",
+        "components/platform-shell/context-command-panel.tsx"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach command-plane behavior to the canonical computed contract instead of creating another dashboard, Remy hub, command palette, or page-local action list."
+      }
+    }
+  ],
+  "related_files": [
+    {
+      "file": "docs/specs/geographic-pricing-proof-harness.md",
+      "kind": "spec",
+      "score": 41,
+      "hits": [
+        "geographic",
+        "pricing",
+        "proof",
+        "harness",
+        "docs/specs/geographic-pricing-proof-harness"
+      ]
+    },
+    {
+      "file": "system/agent-reports/router-decisions/20260430T163808Z-build-geographic-pricing-proof-harness-from-docs-specs-geographic-pricing-proof-.json",
+      "kind": "system",
+      "score": 37,
+      "hits": [
+        "geographic",
+        "pricing",
+        "proof",
+        "harness",
+        "docs/specs/geographic-pricing-proof-harness"
+      ]
+    },
+    {
+      "file": "system/agent-reports/context-continuity/20260430T162511Z-geographic-pricing-proof-harness-nationwide-state-territory-basket-quote-safety-.json",
+      "kind": "system",
+      "score": 33,
+      "hits": ["geographic", "pricing", "proof", "harness"]
+    },
+    {
+      "file": "lib/pricing/pricing-coverage-gate.ts",
+      "kind": "module",
+      "score": 18,
+      "hits": ["pricing", "proof"]
+    },
+    {
+      "file": "lib/pricing/pricing-enforcement-gate.ts",
+      "kind": "module",
+      "score": 18,
+      "hits": ["pricing", "proof"]
+    },
+    {
+      "file": "components/hub/circle-chef-proof.tsx",
+      "kind": "component",
+      "score": 14,
+      "hits": ["proof", "pricing"]
+    },
+    {
+      "file": "lib/hub/circle-chef-proof.ts",
+      "kind": "module",
+      "score": 14,
+      "hits": ["proof", "pricing"]
+    },
+    {
+      "file": "components/pricing/pricing-readiness-card.tsx",
+      "kind": "component",
+      "score": 13,
+      "hits": ["pricing"]
+    },
+    {
+      "file": "lib/pricing/event-pricing-enforcement.ts",
+      "kind": "module",
+      "score": 13,
+      "hits": ["pricing"]
+    },
+    {
+      "file": "lib/pricing/pricing-decision.ts",
+      "kind": "module",
+      "score": 13,
+      "hits": ["pricing"]
+    },
+    {
+      "file": "lib/pricing/pricing-readiness-actions.ts",
+      "kind": "module",
+      "score": 13,
+      "hits": ["pricing"]
+    },
+    {
+      "file": "components/pricing/price-trust-contract.tsx",
+      "kind": "component",
+      "score": 11,
+      "hits": ["pricing", "proof"]
+    },
+    {
+      "file": "lib/pricing/universal-price-lookup.ts",
+      "kind": "module",
+      "score": 11,
+      "hits": ["pricing", "geographic"]
+    },
+    {
+      "file": "app/(public)/customers/[slug]/page.tsx",
+      "kind": "route",
+      "score": 10,
+      "hits": ["pricing", "proof"]
+    },
+    {
+      "file": "app/(public)/customers/page.tsx",
+      "kind": "route",
+      "score": 10,
+      "hits": ["pricing", "proof"]
+    },
+    {
+      "file": "app/(public)/for-operators/page.tsx",
+      "kind": "route",
+      "score": 10,
+      "hits": ["pricing", "proof"]
+    },
+    {
+      "file": "components/intelligence/intelligence-hub.tsx",
+      "kind": "component",
+      "score": 10,
+      "hits": ["geographic", "pricing"]
+    },
+    {
+      "file": "docs/specs/comprehensive-domain-inventory-phase-1.md",
+      "kind": "spec",
+      "score": 10,
+      "hits": ["pricing", "proof"]
+    },
+    {
+      "file": "docs/specs/openclaw-data-completeness-engine.md",
+      "kind": "spec",
+      "score": 10,
+      "hits": ["geographic", "pricing"]
+    },
+    {
+      "file": "docs/specs/openclaw-nationwide-pricing-strategy.md",
+      "kind": "spec",
+      "score": 10,
+      "hits": ["pricing", "geographic"]
+    },
+    {
+      "file": "docs/specs/openclaw-total-capture.md",
+      "kind": "spec",
+      "score": 10,
+      "hits": ["geographic", "pricing", "proof"]
+    },
+    {
+      "file": "docs/specs/p0-chef-pricing-readiness-gate.md",
+      "kind": "spec",
+      "score": 10,
+      "hits": ["pricing", "proof"]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-openclaw-cohesion.md",
+      "kind": "spec",
+      "score": 10,
+      "hits": ["geographic", "pricing"]
+    },
+    {
+      "file": "lib/finance/event-pricing-intelligence.ts",
+      "kind": "module",
+      "score": 10,
+      "hits": ["pricing", "proof"]
+    },
+    {
+      "file": "lib/pilot/feedback-evidence.ts",
+      "kind": "module",
+      "score": 10,
+      "hits": ["pricing", "proof"]
+    },
+    {
+      "file": "lib/pricing/buyable-price-contract.ts",
+      "kind": "module",
+      "score": 10,
+      "hits": ["pricing", "proof"]
+    },
+    {
+      "file": "lib/pricing/no-blank-price-contract.ts",
+      "kind": "module",
+      "score": 10,
+      "hits": ["pricing", "proof"]
+    },
+    {
+      "file": "app/(admin)/admin/openclaw/health/page.tsx",
+      "kind": "route",
+      "score": 9,
+      "hits": ["pricing", "proof"]
+    },
+    {
+      "file": "app/(chef)/consulting/pricing-calculator.tsx",
+      "kind": "route",
+      "score": 9,
+      "hits": ["pricing"]
+    },
+    {
+      "file": "app/(chef)/settings/pricing/page.tsx",
+      "kind": "route",
+      "score": 9,
+      "hits": ["pricing"]
+    }
+  ],
+  "recent_commits": [
+    {
+      "line": "ac2d70a63 chore(agent): build geographic pricing proof spec feature-sticky-notes-intake-build",
+      "score": 3,
+      "hits": ["geographic", "pricing", "proof"]
+    },
+    {
+      "line": "01e4ae59a chore(agent): add pricing enforcement gate v1 feature/pricing-enforcement-gate-v1",
+      "score": 2,
+      "hits": ["pricing"]
+    },
+    {
+      "line": "d26142863 chore(agent): add pricing coverage gate v1 feature/pricing-coverage-gate-v1",
+      "score": 2,
+      "hits": ["pricing"]
+    },
+    {
+      "line": "5e58cfd65 chore(agent): add no blank pricing contract feature/no-blank-pricing-contract",
+      "score": 2,
+      "hits": ["pricing"]
+    },
+    {
+      "line": "7679796f6 chore(agent): lock menu pricing access doctrine feature-pwa-device-diagnostics",
+      "score": 1,
+      "hits": ["pricing"]
+    },
+    {
+      "line": "6aceea329 chore(agent): route release readiness to pricing reliability feature/professional-pwa-install",
+      "score": 1,
+      "hits": ["pricing"]
+    }
+  ],
+  "dirty_matches": [
+    {
+      "line": "?? system/agent-reports/router-decisions/20260430T163808Z-build-geographic-pricing-proof-harness-from-docs-specs-geographic-pricing-proof-.json",
+      "file": "system/agent-reports/router-decisions/20260430T163808Z-build-geographic-pricing-proof-harness-from-docs-specs-geographic-pricing-proof-.json",
+      "score": 14,
+      "hits": ["geographic", "pricing", "proof", "harness"]
+    }
+  ],
+  "claim_matches": [],
+  "duplicate_risks": [
+    {
+      "level": "medium",
+      "reason": "Dirty files already exist in this domain and may be another agent active work.",
+      "files": [
+        "system/agent-reports/router-decisions/20260430T163808Z-build-geographic-pricing-proof-harness-from-docs-specs-geographic-pricing-proof-.json"
+      ]
+    }
+  ],
+  "continuity": {
+    "decision": "attach",
+    "stop_required": false,
+    "reason": "Matched canonical surface chef-command-plane."
+  }
+}

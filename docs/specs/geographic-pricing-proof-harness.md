@@ -1,24 +1,24 @@
 # Spec: Geographic Pricing Proof Harness
 
-> **Status:** ready
+> **Status:** built
 > **Priority:** P0 (blocking)
 > **Depends on:** none
 > **Estimated complexity:** large (9+ files)
 
 ## Timeline
 
-| Event                 | Date                 | Agent/Session         | Commit  |
-| --------------------- | -------------------- | --------------------- | ------- |
-| Created               | 2026-04-30 12:25 EDT | Codex planner session | pending |
-| Status: ready         | 2026-04-30 12:25 EDT | Codex planner session | pending |
-| Claimed (in-progress) |                      |                       |         |
-| Spike completed       |                      |                       |         |
-| Pre-flight passed     |                      |                       |         |
-| Build completed       |                      |                       |         |
-| Type check passed     |                      |                       |         |
-| Build check passed    |                      |                       |         |
-| Playwright verified   |                      |                       |         |
-| Status: verified      |                      |                       |         |
+| Event                 | Date                 | Agent/Session                       | Commit  |
+| --------------------- | -------------------- | ----------------------------------- | ------- |
+| Created               | 2026-04-30 12:25 EDT | Codex planner session               | pending |
+| Status: ready         | 2026-04-30 12:25 EDT | Codex planner session               | pending |
+| Claimed (in-progress) | 2026-04-30 12:38 EDT | Codex builder session               | pending |
+| Spike completed       | 2026-04-30 12:43 EDT | Codex builder session               | pending |
+| Pre-flight passed     | 2026-04-30 12:44 EDT | Codex builder session               | pending |
+| Build completed       | 2026-04-30 13:05 EDT | Codex builder session               | pending |
+| Type check passed     | 2026-04-30 13:08 EDT | Codex builder session               | pending |
+| Build check passed    | Not run              | Requires explicit build approval    |         |
+| Playwright verified   | Not run              | No server start or restart approved |         |
+| Status: built         | 2026-04-30 13:08 EDT | Codex builder session               | pending |
 
 ---
 
@@ -66,6 +66,8 @@ The ingestion bridge still creates virtual stores for `current_prices` as `city 
 The canonical price intelligence contract already exposes store state, store ZIP, product identity, canonical ingredient identity, observed timestamp, price type, observation method, and normalized price cents. Evidence: `database/migrations/20260422000003_price_intelligence_contract_and_governor.sql:73-121`. Its store frontier view already rolls observations up per store and exposes store state and ZIP. Evidence: `database/migrations/20260422000003_price_intelligence_contract_and_governor.sql:518-598`.
 
 There is a migration that intended to add `store_state` to `ingredient_price_history`, rebuild `regional_price_averages`, and group by state. Evidence: `database/migrations/20260418000007_price_history_store_state.sql:1-41`. The live DB audit found that the expected live column was absent, so the builder must verify schema truth before assuming this migration applied.
+
+Builder implementation note, 2026-04-30: The proof harness code, additive migration, admin summary, dry-run CLI, batch market aggregate fallback, and focused tests are built. Dry-run verification produced 896 rows, 56 geographies, and 16 basket items, with 80 territory rows blocked as not usable. Write-mode proof was not run because the additive migration has not been applied, and project rules prohibit applying migrations without explicit approval and a database backup.
 
 ---
 

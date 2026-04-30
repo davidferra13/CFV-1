@@ -1,0 +1,339 @@
+{
+  "generated_at": "2026-04-30T16:38:08.847Z",
+  "prompt": "Build Geographic Pricing Proof Harness nationwide state territory basket quote safety pricing reliability",
+  "terms": [
+    "geographic",
+    "pricing",
+    "proof",
+    "harness",
+    "nationwide",
+    "state",
+    "territory",
+    "basket",
+    "quote",
+    "safety",
+    "reliability"
+  ],
+  "scanned_dirs": [
+    "app",
+    "components",
+    "lib",
+    "docs/specs",
+    "docs/changes",
+    "docs/app-complete-audit.md",
+    "project-map",
+    "memory",
+    "system/intake",
+    "system/agent-reports"
+  ],
+  "canonical_surfaces": [
+    {
+      "id": "chef-command-plane",
+      "label": "ChefFlow Command Plane",
+      "score": 4,
+      "hits": ["proof", "state"],
+      "canonical_routes": ["/dashboard"],
+      "canonical_files": [
+        "docs/specs/chefflow-command-plane.md",
+        "lib/interface/action-layer.ts",
+        "lib/events/operating-spine.ts",
+        "components/platform-shell/context-command-panel.tsx"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach command-plane behavior to the canonical computed contract instead of creating another dashboard, Remy hub, command palette, or page-local action list."
+      }
+    },
+    {
+      "id": "finance",
+      "label": "Finance and Ledger",
+      "score": 3,
+      "hits": ["quote"],
+      "canonical_routes": ["/finance", "/quotes"],
+      "canonical_files": [
+        "lib/ledger/append.ts",
+        "lib/ledger/compute.ts",
+        "lib/events/transitions.ts"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Financial behavior must attach to ledger and quote owners."
+      }
+    }
+  ],
+  "related_files": [
+    {
+      "file": "system/agent-reports/context-continuity/20260430T162511Z-geographic-pricing-proof-harness-nationwide-state-territory-basket-quote-safety-.json",
+      "kind": "system",
+      "score": 90,
+      "hits": [
+        "geographic",
+        "pricing",
+        "proof",
+        "harness",
+        "nationwide",
+        "state",
+        "territory",
+        "basket",
+        "quote",
+        "safety"
+      ]
+    },
+    {
+      "file": "docs/specs/geographic-pricing-proof-harness.md",
+      "kind": "spec",
+      "score": 71,
+      "hits": [
+        "geographic",
+        "pricing",
+        "proof",
+        "harness",
+        "nationwide",
+        "state",
+        "territory",
+        "basket",
+        "quote",
+        "safety"
+      ]
+    },
+    {
+      "file": "docs/specs/openclaw-nationwide-pricing-strategy.md",
+      "kind": "spec",
+      "score": 34,
+      "hits": [
+        "pricing",
+        "nationwide",
+        "geographic",
+        "state",
+        "basket",
+        "quote",
+        "safety",
+        "reliability"
+      ]
+    },
+    {
+      "file": "lib/pricing/pricing-coverage-gate.ts",
+      "kind": "module",
+      "score": 34,
+      "hits": ["pricing", "proof", "state", "quote", "safety", "reliability"]
+    },
+    {
+      "file": "app/(admin)/admin/openclaw/health/page.tsx",
+      "kind": "route",
+      "score": 26,
+      "hits": ["pricing", "proof", "state", "quote", "safety", "reliability"]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-openclaw-cohesion.md",
+      "kind": "spec",
+      "score": 25,
+      "hits": ["geographic", "pricing", "nationwide", "state", "quote", "safety", "reliability"]
+    },
+    {
+      "file": "lib/pricing/pricing-enforcement-gate.ts",
+      "kind": "module",
+      "score": 25,
+      "hits": ["pricing", "proof", "quote", "reliability"]
+    },
+    {
+      "file": "lib/pricing/no-blank-price-contract.ts",
+      "kind": "module",
+      "score": 24,
+      "hits": ["pricing", "proof", "state", "quote", "safety", "reliability"]
+    },
+    {
+      "file": "app/client/[token]/quotes/[quoteId]/portal-quote-response-buttons.tsx",
+      "kind": "route",
+      "score": 23,
+      "hits": ["quote", "pricing", "state"]
+    },
+    {
+      "file": "components/quotes/pricing-insights-sidebar.tsx",
+      "kind": "component",
+      "score": 23,
+      "hits": ["pricing", "quote", "state"]
+    },
+    {
+      "file": "components/quotes/quote-form.tsx",
+      "kind": "component",
+      "score": 23,
+      "hits": ["quote", "pricing", "state"]
+    },
+    {
+      "file": "lib/pricing/pricing-readiness-actions.ts",
+      "kind": "module",
+      "score": 23,
+      "hits": ["pricing", "nationwide", "state"]
+    },
+    {
+      "file": "docs/specs/openclaw-total-capture.md",
+      "kind": "spec",
+      "score": 22,
+      "hits": ["geographic", "pricing", "proof", "nationwide", "state", "basket"]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-operational-pressure.md",
+      "kind": "spec",
+      "score": 22,
+      "hits": ["pricing", "state", "quote", "safety", "reliability"]
+    },
+    {
+      "file": "lib/pricing/universal-price-lookup.ts",
+      "kind": "module",
+      "score": 22,
+      "hits": ["pricing", "geographic", "nationwide", "safety", "reliability"]
+    },
+    {
+      "file": "components/events/grocery-quote-panel.tsx",
+      "kind": "component",
+      "score": 21,
+      "hits": ["quote", "pricing", "proof", "state", "basket"]
+    },
+    {
+      "file": "docs/specs/comprehensive-domain-inventory-phase-1.md",
+      "kind": "spec",
+      "score": 21,
+      "hits": ["pricing", "proof", "quote", "safety", "reliability"]
+    },
+    {
+      "file": "docs/specs/openclaw-total-catalog-intelligence.md",
+      "kind": "spec",
+      "score": 21,
+      "hits": ["pricing", "state", "territory", "basket", "quote"]
+    },
+    {
+      "file": "lib/interface/action-layer.ts",
+      "kind": "module",
+      "score": 21,
+      "hits": ["pricing", "proof", "state", "quote", "safety"]
+    },
+    {
+      "file": "app/(public)/for-operators/page.tsx",
+      "kind": "route",
+      "score": 20,
+      "hits": ["pricing", "proof", "state", "quote"]
+    },
+    {
+      "file": "app/api/documents/quote-client/[quoteId]/route.ts",
+      "kind": "route",
+      "score": 20,
+      "hits": ["quote", "pricing", "state"]
+    },
+    {
+      "file": "components/finance/event-pricing-intelligence-panel.tsx",
+      "kind": "component",
+      "score": 20,
+      "hits": ["pricing", "quote", "safety", "reliability"]
+    },
+    {
+      "file": "components/intelligence/intelligence-hub.tsx",
+      "kind": "component",
+      "score": 20,
+      "hits": ["geographic", "pricing", "state", "quote"]
+    },
+    {
+      "file": "components/pricing/pricing-readiness-card.tsx",
+      "kind": "component",
+      "score": 20,
+      "hits": ["pricing", "nationwide", "state", "quote"]
+    },
+    {
+      "file": "components/quotes/quote-transitions.tsx",
+      "kind": "component",
+      "score": 20,
+      "hits": ["quote", "pricing", "state"]
+    },
+    {
+      "file": "docs/specs/continuous-intelligence-layer.md",
+      "kind": "spec",
+      "score": 20,
+      "hits": ["pricing", "state", "quote", "safety"]
+    },
+    {
+      "file": "docs/specs/openclaw-intelligence-layer.md",
+      "kind": "spec",
+      "score": 20,
+      "hits": ["geographic", "pricing", "state", "basket", "quote"]
+    },
+    {
+      "file": "docs/specs/openclaw-inventory-evolution.md",
+      "kind": "spec",
+      "score": 20,
+      "hits": ["geographic", "pricing", "state", "basket", "quote"]
+    },
+    {
+      "file": "docs/specs/p0-chef-golden-path-reliability.md",
+      "kind": "spec",
+      "score": 20,
+      "hits": ["reliability", "pricing", "proof", "state"]
+    },
+    {
+      "file": "docs/specs/p0-chef-pricing-readiness-gate.md",
+      "kind": "spec",
+      "score": 20,
+      "hits": ["pricing", "proof", "nationwide", "state"]
+    }
+  ],
+  "recent_commits": [
+    {
+      "line": "ac2d70a63 chore(agent): build geographic pricing proof spec feature-sticky-notes-intake-build",
+      "score": 3,
+      "hits": ["geographic", "pricing", "proof"]
+    },
+    {
+      "line": "6aceea329 chore(agent): route release readiness to pricing reliability feature/professional-pwa-install",
+      "score": 2,
+      "hits": ["pricing", "reliability"]
+    },
+    {
+      "line": "01e4ae59a chore(agent): add pricing enforcement gate v1 feature/pricing-enforcement-gate-v1",
+      "score": 2,
+      "hits": ["pricing"]
+    },
+    {
+      "line": "d26142863 chore(agent): add pricing coverage gate v1 feature/pricing-coverage-gate-v1",
+      "score": 2,
+      "hits": ["pricing"]
+    },
+    {
+      "line": "5e58cfd65 chore(agent): add no blank pricing contract feature/no-blank-pricing-contract",
+      "score": 2,
+      "hits": ["pricing"]
+    },
+    {
+      "line": "7679796f6 chore(agent): lock menu pricing access doctrine feature-pwa-device-diagnostics",
+      "score": 1,
+      "hits": ["pricing"]
+    }
+  ],
+  "dirty_matches": [
+    {
+      "line": "?? system/agent-reports/router-decisions/20260430T163808Z-build-geographic-pricing-proof-harness-from-docs-specs-geographic-pricing-proof-.json",
+      "file": "system/agent-reports/router-decisions/20260430T163808Z-build-geographic-pricing-proof-harness-from-docs-specs-geographic-pricing-proof-.json",
+      "score": 14,
+      "hits": ["geographic", "pricing", "proof", "harness"]
+    }
+  ],
+  "claim_matches": [],
+  "duplicate_risks": [
+    {
+      "level": "medium",
+      "reason": "Multiple canonical surfaces matched the prompt.",
+      "owners": ["chef-command-plane", "finance"]
+    },
+    {
+      "level": "medium",
+      "reason": "Dirty files already exist in this domain and may be another agent active work.",
+      "files": [
+        "system/agent-reports/router-decisions/20260430T163808Z-build-geographic-pricing-proof-harness-from-docs-specs-geographic-pricing-proof-.json"
+      ]
+    }
+  ],
+  "continuity": {
+    "decision": "attach",
+    "stop_required": false,
+    "reason": "Matched canonical surface chef-command-plane."
+  }
+}

@@ -3,6 +3,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { pgClient } from '@/lib/db'
 import { getOpenClawRuntimeHealth } from '@/lib/openclaw/health-contract'
+import { getLatestGeographicPricingProof } from '@/lib/pricing/geographic-proof-query'
 
 export type ChefPricingReadinessStatus = 'unknown' | 'not_ready' | 'usable_with_caveats' | 'ready'
 export type MarketPricingReadinessStatus =
@@ -134,20 +135,9 @@ function buildMarketSection(input: {
     label = 'No live market data yet'
     guidance =
       'The local market mirror does not have enough store-price data yet to support live readiness.'
-  } else if (
-    input.greenDaysLast7 === 7 &&
-    input.statesCovered === 50 &&
-    input.storeZipCount >= 5000 &&
-    input.foodProducts >= 600000 &&
-    (input.freshPricePct ?? 0) >= 50
-  ) {
-    status = 'nationwide_ready'
-    label = 'Nationwide ready'
-    guidance =
-      'National market thresholds are met and the pricing foundation can be presented as nationwide-ready.'
   } else if (input.greenDaysLast7 < 7) {
     guidance =
-      'Regional coverage is live, but the last 7 days are not yet fully green. Treat nationwide readiness as still in progress.'
+      'Regional coverage is live, but the last 7 days are not yet fully green. Nationwide readiness requires a complete geographic pricing proof run.'
   }
 
   if (!input.zipCentroidsLoaded) {
@@ -159,6 +149,50 @@ function buildMarketSection(input: {
     status,
     label,
     guidance,
+  }
+}
+
+function applyGeographicProofToMarketSection(
+  market: PricingReadinessSummary['market'],
+  proof: Awaited<ReturnType<typeof getLatestGeographicPricingProof>>
+): PricingReadinessSummary['market'] {
+  if (!proof.run) {
+    return {
+      ...market,
+      status: market.status === 'no_live_data' ? 'no_live_data' : 'regional_in_progress',
+      label: market.status === 'no_live_data' ? market.label : 'Proof missing',
+      guidance:
+        market.status === 'no_live_data'
+          ? market.guidance
+          : 'Raw product, ZIP, and state counts are not enough for nationwide pricing. Run the geographic pricing proof harness before claiming nationwide readiness.',
+    }
+  }
+
+  const complete = proof.run.actualResultRows === proof.run.expectedResultRows
+  const blockingGeographies = proof.geographySummaries.filter(
+    (row) => row.planningOnlyCount > 0 || row.notUsableCount > 0
+  ).length
+  const verifyFirstGeographies = proof.geographySummaries.filter(
+    (row) => row.verifyFirstCount > 0
+  ).length
+
+  if (complete && blockingGeographies === 0 && verifyFirstGeographies === 0) {
+    return {
+      ...market,
+      status: 'nationwide_ready',
+      label: 'Nationwide proof ready',
+      guidance:
+        'The latest geographic pricing proof run completed without blocked or verify-first geographies.',
+    }
+  }
+
+  return {
+    ...market,
+    status: 'regional_in_progress',
+    label: complete ? 'Proof requires review' : 'Proof incomplete',
+    guidance: complete
+      ? `${blockingGeographies} geographies are blocked and ${verifyFirstGeographies} require verification. Do not claim nationwide quote safety.`
+      : `The latest geographic pricing proof run has ${proof.run.actualResultRows}/${proof.run.expectedResultRows} rows. Do not claim nationwide readiness.`,
   }
 }
 
@@ -256,6 +290,9 @@ export async function getPricingReadinessSummary(): Promise<PricingReadinessSumm
       freshPricePct: health.mirror.freshPricePct,
       zipCentroidsLoaded: health.mirror.zipCentroidsLoaded,
     })
+
+    const geographicProof = await getLatestGeographicPricingProof()
+    market = applyGeographicProofToMarketSection(market, geographicProof)
   } catch {
     market = marketFallback
   }

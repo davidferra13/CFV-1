@@ -950,15 +950,20 @@ async function main() {
       }
 
       try {
-        // Upsert a virtual store for this source_id
+        // Upsert a virtual source bucket for this source_id. Keep it out of
+        // real state coverage so regional current_prices cannot masquerade as
+        // Massachusetts local store proof.
         const rows = await sql`
           INSERT INTO openclaw.stores (
             chain_id, external_store_id, name, city, state, zip
           ) VALUES (
             ${chainId}, ${source_id},
-            ${source_id}, 'Regional', 'MA', '00000'
+            ${source_id}, 'National', 'NA', '00000'
           )
           ON CONFLICT (chain_id, external_store_id) DO UPDATE SET
+            city = 'National',
+            state = 'NA',
+            zip = '00000',
             updated_at = now()
           RETURNING id
         `

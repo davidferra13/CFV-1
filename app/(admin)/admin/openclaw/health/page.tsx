@@ -9,8 +9,10 @@ import {
   getSyncHealthSummary,
   getPricingCoverage,
 } from '@/lib/admin/openclaw-health-actions'
+import { getGeographicPricingProofLatest } from '@/lib/pricing/geographic-proof-actions'
 import * as healthClientModule from './health-client'
 import { RetryButton } from '@/components/ui/retry-button'
+import { GeographicProofRunForm } from './geographic-proof-run-form'
 
 export const metadata = {
   title: 'Data Engine Health | Admin',
@@ -23,19 +25,25 @@ const DataEngineHealthClient = healthClientModule[
 export default async function DataEngineHealthPage() {
   await requireAdmin()
 
-  const [quarantineStats, syncHealth, syncLog, quarantined, coverage] = await Promise.allSettled([
-    getQuarantineStats(),
-    getSyncHealthSummary(),
-    getSyncAuditLog(30),
-    getQuarantinedPrices(100),
-    getPricingCoverage(),
-  ])
+  const [quarantineStats, syncHealth, syncLog, quarantined, coverage, geographicProof] =
+    await Promise.allSettled([
+      getQuarantineStats(),
+      getSyncHealthSummary(),
+      getSyncAuditLog(30),
+      getQuarantinedPrices(100),
+      getPricingCoverage(),
+      getGeographicPricingProofLatest(),
+    ])
 
   const stats = quarantineStats.status === 'fulfilled' ? quarantineStats.value.data : null
   const health = syncHealth.status === 'fulfilled' ? syncHealth.value.data : null
   const log = syncLog.status === 'fulfilled' ? syncLog.value.data : []
   const prices = quarantined.status === 'fulfilled' ? quarantined.value.data : []
   const coverageData = coverage.status === 'fulfilled' ? coverage.value.data : null
+  const proofData =
+    geographicProof.status === 'fulfilled' && !geographicProof.value.error
+      ? geographicProof.value.data
+      : null
   const pricingGate = coverageData?.coverageGate ?? null
   const governor = coverageData?.governor
   const governorReady = Boolean(governor?.ready)
@@ -75,7 +83,8 @@ export default async function DataEngineHealthPage() {
     (syncHealth.status === 'fulfilled' && syncHealth.value.error) ||
     (syncLog.status === 'fulfilled' && syncLog.value.error) ||
     (quarantined.status === 'fulfilled' && quarantined.value.error) ||
-    (coverage.status === 'fulfilled' && coverage.value.error)
+    (coverage.status === 'fulfilled' && coverage.value.error) ||
+    (geographicProof.status === 'fulfilled' && geographicProof.value.error)
 
   return (
     <div className="space-y-6">
@@ -111,6 +120,77 @@ export default async function DataEngineHealthPage() {
           <RetryButton />
         </div>
       )}
+
+      <div className="bg-stone-900 rounded-xl border border-stone-700 p-5">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <h2 className="text-sm font-semibold text-stone-200">Geographic Pricing Proof</h2>
+            <p className="mt-1 text-sm text-stone-500">
+              One proof row per geography and basket ingredient. This separates observed local
+              prices from regional, national, baseline, modeled, and unresolved data.
+            </p>
+          </div>
+          <GeographicProofRunForm />
+        </div>
+
+        {!proofData?.run ? (
+          <p className="mt-4 text-sm text-amber-300">No geographic pricing proof run exists yet.</p>
+        ) : (
+          <>
+            <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-6">
+              <MiniMetric
+                label="Rows"
+                value={`${proofData.run.actualResultRows}/${proofData.run.expectedResultRows}`}
+                sub={proofData.run.status}
+              />
+              <MiniMetric label="Safe" value={proofData.run.safeToQuoteCount} sub="quote ready" />
+              <MiniMetric label="Verify" value={proofData.run.verifyFirstCount} sub="needs check" />
+              <MiniMetric
+                label="Planning"
+                value={proofData.run.planningOnlyCount}
+                sub="not final"
+              />
+              <MiniMetric label="Not Usable" value={proofData.run.notUsableCount} sub="blocked" />
+              <MiniMetric
+                label="Geographies"
+                value={proofData.geographySummaries.length}
+                sub="states and territories"
+              />
+            </div>
+
+            <div className="mt-4 overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-stone-500">
+                    <th className="pb-2 font-medium">Geography</th>
+                    <th className="pb-2 font-medium text-right">Safe</th>
+                    <th className="pb-2 font-medium text-right">Verify</th>
+                    <th className="pb-2 font-medium text-right">Planning</th>
+                    <th className="pb-2 font-medium text-right">Blocked</th>
+                    <th className="pb-2 font-medium">Top Blocker</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {proofData.geographySummaries.map((row) => (
+                    <tr key={row.geographyCode} className="border-t border-stone-800">
+                      <td className="py-2 text-stone-300">
+                        {row.geographyName} ({row.geographyCode})
+                      </td>
+                      <td className="py-2 text-right text-emerald-400">{row.safeToQuoteCount}</td>
+                      <td className="py-2 text-right text-amber-300">{row.verifyFirstCount}</td>
+                      <td className="py-2 text-right text-orange-300">{row.planningOnlyCount}</td>
+                      <td className="py-2 text-right text-red-300">{row.notUsableCount}</td>
+                      <td className="py-2 text-stone-500">
+                        {row.topFailureReasons[0] ?? formatQuoteSafety(row.worstQuoteSafety)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
+      </div>
 
       {pricingGate && (
         <div className="bg-stone-900 rounded-xl border border-stone-700 p-5">

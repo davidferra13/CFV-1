@@ -20,6 +20,9 @@ export type NoBlankPriceContract =
       highCents: number
       sourceClass: NoBlankPriceSourceClass
       confidence: number
+      geographyCode?: string | null
+      unitConfidence?: number | null
+      sourceClassEvidence?: string | null
       quoteSafety: Exclude<NoBlankQuoteSafety, 'unsupported'>
       observedAt: string | null
       explanation: string
@@ -72,6 +75,9 @@ export type BuildNoBlankPriceContractInput = {
   productName?: string | null
   dataPoints?: number | null
   category?: string | null
+  geographyCode?: string | null
+  unitConfidence?: number | null
+  sourceClassEvidence?: string | null
 }
 
 const DEFAULT_MODELED_UNIT = 'lb'
@@ -184,14 +190,16 @@ function quoteSafetyFor(input: {
   storeName: string
   productName: string
   dataPoints: number
+  unitConfidence: number
 }): Exclude<NoBlankQuoteSafety, 'unsupported'> {
-  const fresh = input.freshnessDays != null && input.freshnessDays <= 3
+  const fresh = input.freshnessDays != null && input.freshnessDays <= 7
   const recent = input.freshnessDays != null && input.freshnessDays <= 14
 
   if (
     input.sourceClass === 'observed_local' &&
     fresh &&
     input.confidence >= 0.75 &&
+    input.unitConfidence >= 0.8 &&
     input.storeName &&
     input.productName
   ) {
@@ -228,6 +236,7 @@ function missingProofFor(input: {
   storeName: string
   productName: string
   dataPoints: number
+  unitConfidence: number
 }): string[] {
   const missing = new Set<string>()
 
@@ -245,6 +254,7 @@ function missingProofFor(input: {
   }
   if (input.freshnessDays == null || input.freshnessDays > 14) missing.add('fresh timestamp')
   if (input.dataPoints < 2 && input.sourceClass !== 'modeled') missing.add('multiple observations')
+  if (input.unitConfidence < 0.8) missing.add('unit conversion confidence')
   if (input.quoteSafety === 'safe_to_quote') return []
 
   return Array.from(missing)
@@ -305,6 +315,7 @@ export function buildNoBlankPriceContract(
   const storeName = clean(input.storeName)
   const productName = clean(input.productName)
   const dataPoints = positiveInt(input.dataPoints)
+  const unitConfidence = clampConfidence(input.unitConfidence ?? 0.5)
   const quoteSafety = quoteSafetyFor({
     sourceClass,
     confidence,
@@ -312,6 +323,7 @@ export function buildNoBlankPriceContract(
     storeName,
     productName,
     dataPoints,
+    unitConfidence,
   })
   const range = rangeFor(priceCents, sourceClass, input.lowCents, input.highCents)
 
@@ -325,6 +337,9 @@ export function buildNoBlankPriceContract(
     highCents: range.highCents,
     sourceClass,
     confidence,
+    geographyCode: input.geographyCode ?? null,
+    unitConfidence,
+    sourceClassEvidence: input.sourceClassEvidence ?? null,
     quoteSafety,
     observedAt: input.observedAt ?? null,
     explanation: explanationFor({ sourceClass, quoteSafety, normalizedName }),
@@ -335,6 +350,7 @@ export function buildNoBlankPriceContract(
       storeName,
       productName,
       dataPoints,
+      unitConfidence,
     }),
   }
 }

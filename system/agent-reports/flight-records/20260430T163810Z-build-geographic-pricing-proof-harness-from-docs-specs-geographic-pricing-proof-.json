@@ -1,0 +1,23 @@
+{
+  "id": "20260430T163810Z-build-geographic-pricing-proof-harness-from-docs-specs-geographic-pricing-proof-",
+  "prompt": "Build Geographic Pricing Proof Harness from docs/specs/geographic-pricing-proof-harness.md",
+  "status": "started",
+  "branch": "feature/private-dev-cockpit-spec",
+  "branch_start_commit": "22d54f4d2",
+  "claim_file": "system/agent-claims/20260430T163810Z-feature-private-dev-cockpit-spec-build-geographic-pricing-proof-harness-from-doc.json",
+  "started_at": "2026-04-30T16:38:10.670Z",
+  "finished_at": null,
+  "selected_primary_skill": "builder",
+  "selected_sidecar_skills": ["omninet", "context-continuity", "software-fundamentals"],
+  "router_decision": null,
+  "used_skills": ["builder", "omninet", "context-continuity", "software-fundamentals"],
+  "files_touched": [],
+  "commands_run": [],
+  "validations_run": [],
+  "commit_hash": null,
+  "pushed": null,
+  "missed_skills": [],
+  "skill_garden_triggered": false,
+  "heal_skill_triggered": false,
+  "notes": null
+}

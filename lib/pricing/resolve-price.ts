@@ -12,7 +12,7 @@
  *   3. DIRECT SCRAPE      - Real store website price (openclaw_scrape)
  *   4. FLYER              - Weekly circular (openclaw_flyer)
  *   5. INSTACART          - Markup-adjusted proxy (openclaw_instacart)
- *   6. REGIONAL AVERAGE   - Cross-store average from all OpenClaw sources (2+ stores)
+ *   6. REGIONAL AVERAGE   - Cross-store average from all data engine sources (2+ stores)
  *  6.5 MARKET AGGREGATE   - System-level market price via ingredient alias bridge
  *   7. GOVERNMENT         - BLS/USDA NE regional average (openclaw_government)
  *   8. HISTORICAL         - Chef's own average from past purchases
@@ -128,6 +128,18 @@ interface AvgRow {
   avg_cents: number | null
   unit: string | null
   latest_date: string | null
+}
+
+interface MarketAggregateBatchRow {
+  ingredient_id: string
+  avg_price_cents: number
+  median_price_cents: number | null
+  price_unit: string
+  store_count: number
+  state_count: number
+  confidence: number
+  newest_date: string | null
+  covered_states: string[] | null
 }
 
 // --- Freshness ---
@@ -641,8 +653,9 @@ export async function resolvePrice(
  * Strategy:
  *   1. One query for all receipt history rows
  *   2. One query for all grocery API quote rows
- *   3. One query for all OpenClaw history rows
- *   4. Resolve tier priority in memory
+ *   3. One query for all data engine history rows
+ *   4. One query for system market aggregate rows
+ *   5. Resolve tier priority in memory
  */
 export async function resolvePricesBatch(
   ingredientIds: string[],
@@ -690,8 +703,8 @@ export async function resolvePricesBatch(
     ORDER BY qi.ingredient_id, q.created_at DESC
   `)) as unknown as QuoteRow[]
 
-  // Query 3: All OpenClaw history rows for these ingredients
-  const openclawRows = (await db.execute(sql`
+  // Query 3: All data engine history rows for these ingredients
+  const dataEngineRows = (await db.execute(sql`
     SELECT ingredient_id, price_per_unit_cents, unit, store_name, purchase_date, source
     FROM ingredient_price_history
     WHERE ingredient_id = ANY(${ingredientIds})
@@ -715,17 +728,43 @@ export async function resolvePricesBatch(
     }
   }
 
-  const openclawByIngredient = new Map<string, BatchRow[]>()
-  for (const row of openclawRows) {
-    if (!openclawByIngredient.has(row.ingredient_id))
-      openclawByIngredient.set(row.ingredient_id, [])
-    openclawByIngredient.get(row.ingredient_id)!.push(row)
+  const dataEngineByIngredient = new Map<string, BatchRow[]>()
+  for (const row of dataEngineRows) {
+    if (!dataEngineByIngredient.has(row.ingredient_id))
+      dataEngineByIngredient.set(row.ingredient_id, [])
+    dataEngineByIngredient.get(row.ingredient_id)!.push(row)
   }
 
   // Query 4: Regional averages for all ingredients (batch)
   const regionalAverages = await getRegionalAveragesBatch(ingredientIds, preferredState)
 
-  // Query 5: Get categories for all ingredients (needed for category baseline fallback)
+  // Query 5: Market aggregate rows for all ingredients through the alias bridge.
+  const marketAggregateRows = (await db.execute(sql`
+    SELECT DISTINCT ON (ia.ingredient_id)
+      ia.ingredient_id,
+      sip.avg_price_cents,
+      sip.median_price_cents,
+      sip.price_unit,
+      sip.store_count,
+      sip.state_count,
+      sip.confidence,
+      sip.newest_price_at::text AS newest_date,
+      sip.states AS covered_states
+    FROM ingredient_aliases ia
+    JOIN openclaw.system_ingredient_prices sip ON sip.system_ingredient_id = ia.system_ingredient_id
+    WHERE ia.ingredient_id = ANY(${ingredientIds})
+      AND ia.tenant_id = ${tenantId}
+      AND ia.system_ingredient_id IS NOT NULL
+      AND ia.match_method != 'dismissed'
+      AND COALESCE(sip.median_price_cents, sip.avg_price_cents) > 0
+    ORDER BY ia.ingredient_id, sip.confidence DESC, sip.newest_price_at DESC NULLS LAST
+  `)) as unknown as MarketAggregateBatchRow[]
+  const marketAggregateByIngredient = new Map<string, MarketAggregateBatchRow>()
+  for (const row of marketAggregateRows) {
+    marketAggregateByIngredient.set(row.ingredient_id, row)
+  }
+
+  // Query 6: Get categories for all ingredients (needed for category baseline fallback)
   const categoryRows = (await db.execute(sql`
     SELECT id, category FROM ingredients WHERE id = ANY(${ingredientIds})
   `)) as unknown as Array<{ id: string; category: string | null }>
@@ -734,7 +773,7 @@ export async function resolvePricesBatch(
     categoryById.set(row.id, row.category)
   }
 
-  // Query 6: Category baselines for all unique categories
+  // Query 7: Category baselines for all unique categories
   const uniqueCategories = [...new Set([...categoryById.values()].filter(Boolean))] as string[]
   const categoryBaselines = await getCategoryBaselinesBatch(uniqueCategories)
 
@@ -746,7 +785,7 @@ export async function resolvePricesBatch(
   for (const id of ingredientIds) {
     const receipts = receiptByIngredient.get(id) || []
     const quote = quoteByIngredient.get(id)
-    const openclaw = openclawByIngredient.get(id) || []
+    const dataEngine = dataEngineByIngredient.get(id) || []
 
     // Tier 1: Recent receipt (within 90 days)
     const recentReceipt = receipts.find(
@@ -810,7 +849,7 @@ export async function resolvePricesBatch(
     }
 
     // Tier 2.5: Wholesale (within 30 days)
-    const wholesaleRow = findBestRow(openclaw, 'openclaw_wholesale', 30)
+    const wholesaleRow = findBestRow(dataEngine, 'openclaw_wholesale', 30)
     if (wholesaleRow && wholesaleRow.price_per_unit_cents !== null) {
       result.set(
         id,
@@ -831,7 +870,7 @@ export async function resolvePricesBatch(
     }
 
     // Tier 3: Direct scrape (within 14 days)
-    const scrapeRow = findBestRow(openclaw, 'openclaw_scrape', 14)
+    const scrapeRow = findBestRow(dataEngine, 'openclaw_scrape', 14)
     if (scrapeRow && scrapeRow.price_per_unit_cents !== null) {
       result.set(
         id,
@@ -856,7 +895,7 @@ export async function resolvePricesBatch(
     }
 
     // Tier 4: Flyer (within 14 days)
-    const flyerRow = findBestRow(openclaw, 'openclaw_flyer', 14)
+    const flyerRow = findBestRow(dataEngine, 'openclaw_flyer', 14)
     if (flyerRow && flyerRow.price_per_unit_cents !== null) {
       result.set(
         id,
@@ -881,7 +920,7 @@ export async function resolvePricesBatch(
     }
 
     // Tier 5: Instacart (within 30 days)
-    const instacartRow = findBestRow(openclaw, 'openclaw_instacart', 30)
+    const instacartRow = findBestRow(dataEngine, 'openclaw_instacart', 30)
     if (instacartRow && instacartRow.price_per_unit_cents !== null) {
       result.set(
         id,
@@ -929,8 +968,37 @@ export async function resolvePricesBatch(
       }
     }
 
+    // Tier 6.5: Market aggregate, state-aware when the aggregate includes the requested state
+    const marketAggregate = marketAggregateByIngredient.get(id)
+    if (marketAggregate) {
+      const priceCents = marketAggregate.median_price_cents ?? marketAggregate.avg_price_cents
+      if (priceCents > 0) {
+        const statesArr = marketAggregate.covered_states || []
+        const coversRequestedState = preferredState && statesArr.includes(preferredState)
+        const baseConf = Math.min(parseFloat(String(marketAggregate.confidence)) || 0.55, 0.65)
+        const adjustedConf = coversRequestedState ? Math.min(baseConf + 0.1, 0.75) : baseConf
+
+        result.set(
+          id,
+          withDecay({
+            cents: priceCents,
+            unit: marketAggregate.price_unit || 'each',
+            source: 'market_aggregate',
+            sourceTier: 'system_ingredient_market',
+            resolutionTier: coversRequestedState ? 'market_state' : 'market_national',
+            store: `Market Average (${marketAggregate.store_count} stores, ${marketAggregate.state_count} state${marketAggregate.state_count !== 1 ? 's' : ''})`,
+            confidence: adjustedConf,
+            freshness: computeFreshness(marketAggregate.newest_date),
+            confirmedAt: marketAggregate.newest_date,
+            reason: null,
+          })
+        )
+        continue
+      }
+    }
+
     // Tier 7: Government (no age limit)
-    const govRow = findBestRow(openclaw, 'openclaw_government', null)
+    const govRow = findBestRow(dataEngine, 'openclaw_government', null)
     if (govRow && govRow.price_per_unit_cents !== null) {
       result.set(
         id,
