@@ -6,7 +6,6 @@ import {
   getConversation,
   getConversationMessages,
   getConversationParticipants,
-  markConversationRead,
 } from '@/lib/chat/actions'
 import { ChatView } from '@/components/chat/chat-view'
 import { ActivityTracker } from '@/components/activity/activity-tracker'
@@ -26,9 +25,6 @@ export default async function ClientChatViewPage({ params }: { params: Promise<{
     getConversationMessages({ conversation_id: conversationId, limit: 50 }),
     getConversationParticipants(conversationId),
   ])
-
-  // Mark as read on page load
-  await markConversationRead(conversationId)
 
   // Get client's display name
   const clientParticipant = participants.find((p) => p.auth_user_id === user.id)

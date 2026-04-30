@@ -4,6 +4,7 @@
 
 import { useCallback } from 'react'
 import { buildActivityTrackPayload } from '@/lib/activity/client-payload'
+import { shouldShareActivitySignal, useLivePrivacy } from './live-privacy-controls'
 
 interface TrackedDownloadLinkProps {
   href: string
@@ -20,7 +21,12 @@ export function TrackedDownloadLink({
   children,
   className,
 }: TrackedDownloadLinkProps) {
+  const { state, isReady } = useLivePrivacy()
+
   const handleClick = useCallback(() => {
+    if (!isReady) return
+    if (!shouldShareActivitySignal('document_downloaded', state)) return
+
     fetch('/api/activity/track', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -35,7 +41,7 @@ export function TrackedDownloadLink({
     }).catch(() => {
       // Silently ignore tracking failures
     })
-  }, [documentType, entityId])
+  }, [documentType, entityId, isReady, state])
 
   return (
     <a

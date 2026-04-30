@@ -128,10 +128,12 @@ export function createTypingIndicator(
 export function subscribeToPresence(
   conversationId: string,
   userId: string,
-  onPresenceChange: (onlineUserIds: string[]) => void
+  onPresenceChange: (onlineUserIds: string[]) => void,
+  options: { sendCurrentPresence?: boolean } = {}
 ): () => void {
   const sessionId = `${userId}:${Date.now()}`
   let heartbeatInterval: ReturnType<typeof setInterval> | null = null
+  const sendCurrentPresence = options.sendCurrentPresence ?? true
 
   // POST presence heartbeat
   function sendPresence() {
@@ -175,8 +177,10 @@ export function subscribeToPresence(
 
   // Start heartbeat on open
   es.onopen = () => {
-    sendPresence()
-    heartbeatInterval = setInterval(sendPresence, 30000) // Every 30s
+    if (sendCurrentPresence) {
+      sendPresence()
+      heartbeatInterval = setInterval(sendPresence, 30000) // Every 30s
+    }
   }
 
   return () => {

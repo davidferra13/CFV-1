@@ -45,7 +45,8 @@ export function ClientActivityDisclosure() {
           <p className="mt-1 leading-6 text-amber-50/85">
             ChefFlow shares activity signals from this client portal, such as viewing quotes,
             events, messages, or payment pages, so your chef can coordinate service. Private browser
-            activity outside ChefFlow is never shown.
+            activity outside ChefFlow is never shown. You can pause passive view, online, read, and
+            typing signals from Live privacy controls.
           </p>
         </div>
         <button

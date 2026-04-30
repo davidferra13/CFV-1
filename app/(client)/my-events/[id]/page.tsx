@@ -33,6 +33,7 @@ import { getEventPhotosForClient } from '@/lib/events/photo-actions'
 import { ClientEventPhotoGallery } from '@/components/events/client-event-photo-gallery'
 import { ActivityTracker } from '@/components/activity/activity-tracker'
 import { SessionHeartbeat } from '@/components/activity/session-heartbeat'
+import { LivePrivacyPageToggle } from '@/components/activity/live-privacy-controls'
 import { TrackedDownloadLink } from '@/components/activity/tracked-download-link'
 import { CancellationPolicyDisplay } from '@/components/events/cancellation-policy-display'
 import { EventJourneyStepper } from '@/components/events/event-journey-stepper'
@@ -258,7 +259,10 @@ export default async function EventDetailPage({
             </h1>
             {getStatusBadge(event.status)}
           </div>
-          <MessageChefButton context_type="event" event_id={event.id} label="Message Chef" />
+          <div className="flex flex-wrap items-center gap-2">
+            <MessageChefButton context_type="event" event_id={event.id} label="Message Chef" />
+            <LivePrivacyPageToggle compact />
+          </div>
         </div>
       </div>
 

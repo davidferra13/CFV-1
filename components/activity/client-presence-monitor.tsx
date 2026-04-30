@@ -287,6 +287,9 @@ export function ClientPresenceMonitor({
                     Active Signals (last {ACTIVE_CLIENT_SIGNAL_WINDOW_MINUTES} min)
                   </p>
                   <p className="text-xxs text-emerald-700 mt-0.5">{getActiveSignalExplanation()}</p>
+                  <p className="text-xxs text-emerald-700 mt-0.5">
+                    Passive visibility depends on each client&apos;s live privacy controls.
+                  </p>
                 </div>
                 <div className="divide-y divide-stone-800">
                   {activeSignals

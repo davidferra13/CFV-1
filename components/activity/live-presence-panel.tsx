@@ -126,6 +126,9 @@ export function LivePresencePanel({ tenantId, initialClients }: LivePresencePane
         <p className="text-xs text-stone-300">
           No client activity signals in the {formatActivityWindowLabel(RECENT_WINDOW_MINUTES)}
         </p>
+        <p className="mt-1 text-xxs text-stone-400">
+          Clients can browse privately, so absence of a signal is not treated as absence of review.
+        </p>
       </div>
     )
   }
@@ -157,6 +160,9 @@ export function LivePresencePanel({ tenantId, initialClients }: LivePresencePane
       </div>
 
       <p className="text-xxs text-stone-300 mb-2">{getActiveSignalExplanation()}</p>
+      <p className="text-xxs text-stone-400 mb-2">
+        Live signals appear only when clients allow passive visibility.
+      </p>
 
       <div className="space-y-1">
         {clients.length === 0 && liveSessions.length > 0 && (

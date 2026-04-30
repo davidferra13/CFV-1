@@ -16,6 +16,13 @@ import {
   subscribeToPresence,
 } from '@/lib/chat/realtime'
 import {
+  LivePrivacyPageToggle,
+  shouldShareActivitySignal,
+  shouldSharePresenceSignal,
+  shouldShareTypingSignal,
+  useLivePrivacy,
+} from '@/components/activity/live-privacy-controls'
+import {
   sendChatMessage,
   sendFileMessage,
   getConversationMessages,
@@ -67,6 +74,11 @@ export function ChatView({
   // Typing and presence
   const [typingUsers, setTypingUsers] = useState<Map<string, string>>(new Map())
   const [onlineUserIds, setOnlineUserIds] = useState<string[]>([])
+  const {
+    state: livePrivacyState,
+    isReady: livePrivacyReady,
+    isPrivate: livePrivacyPrivate,
+  } = useLivePrivacy()
 
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -98,6 +110,14 @@ export function ChatView({
     lastMessage.message_type !== 'system'
 
   const backHref = currentUserRole === 'chef' ? '/chat' : '/my-chat'
+  const shareOwnPresence =
+    currentUserRole !== 'client' ||
+    (livePrivacyReady && shouldSharePresenceSignal(livePrivacyState))
+  const shareOwnTyping =
+    currentUserRole !== 'client' || (livePrivacyReady && shouldShareTypingSignal(livePrivacyState))
+  const shareMessageReads =
+    currentUserRole !== 'client' ||
+    (livePrivacyReady && shouldShareActivitySignal('chat_opened', livePrivacyState))
 
   // Scroll to bottom on new messages (only if already at bottom)
   const scrollToBottom = useCallback(() => {
@@ -129,7 +149,7 @@ export function ChatView({
       })
 
       // Mark as read if the message is from someone else
-      if (newMessage.sender_id !== currentUserId) {
+      if (newMessage.sender_id !== currentUserId && shareMessageReads) {
         markConversationRead(conversationId)
       }
 
@@ -138,7 +158,12 @@ export function ChatView({
     })
 
     return unsubscribe
-  }, [conversationId, currentUserId, scrollToBottom])
+  }, [conversationId, currentUserId, scrollToBottom, shareMessageReads])
+
+  useEffect(() => {
+    if (!shareMessageReads) return
+    void markConversationRead(conversationId)
+  }, [conversationId, shareMessageReads])
 
   // Typing indicators
   useEffect(() => {
@@ -169,10 +194,12 @@ export function ChatView({
 
   // Presence
   useEffect(() => {
-    const unsubscribe = subscribeToPresence(conversationId, currentUserId, setOnlineUserIds)
+    const unsubscribe = subscribeToPresence(conversationId, currentUserId, setOnlineUserIds, {
+      sendCurrentPresence: shareOwnPresence,
+    })
 
     return unsubscribe
-  }, [conversationId, currentUserId])
+  }, [conversationId, currentUserId, shareOwnPresence])
 
   // Load older messages (infinite scroll up)
   const loadMore = useCallback(async () => {
@@ -248,6 +275,19 @@ export function ChatView({
         <ChatSearch conversationId={conversationId} onClose={() => setShowSearch(false)} />
       )}
 
+      {currentUserRole === 'client' && (
+        <div className="border-b border-stone-700 bg-stone-900/80 px-4 py-2">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-xs text-stone-300">
+              {livePrivacyPrivate
+                ? 'Private viewing is on for this chat. Read, online, and typing signals are hidden.'
+                : 'Chat live signals are visible based on your privacy controls.'}
+            </p>
+            <LivePrivacyPageToggle compact />
+          </div>
+        </div>
+      )}
+
       {/* Messages area */}
       <div
         ref={messagesContainerRef}
@@ -319,6 +359,7 @@ export function ChatView({
           onSendText={handleSendText}
           onAttach={() => setShowFileUpload(true)}
           onTyping={(isTyping) => sendTypingRef.current(isTyping)}
+          typingEnabled={shareOwnTyping}
         />
       )}
     </div>

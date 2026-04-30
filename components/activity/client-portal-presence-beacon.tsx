@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef } from 'react'
 import { usePathname } from 'next/navigation'
+import { shouldSharePresenceSignal, useLivePrivacy } from './live-privacy-controls'
 
 const HEARTBEAT_INTERVAL_MS = 30_000
 
@@ -65,6 +66,7 @@ export function ClientPortalPresenceBeacon({
     getOrCreateSessionValue('cf-client-portal-presence-joined', () => new Date().toISOString())
   )
   const pathnameRef = useRef(pathname)
+  const { state, isReady } = useLivePrivacy()
 
   useEffect(() => {
     pathnameRef.current = pathname
@@ -72,6 +74,8 @@ export function ClientPortalPresenceBeacon({
 
   const sendPresence = useCallback(() => {
     if (!tenantId) return
+    if (!isReady) return
+    if (!shouldSharePresenceSignal(state)) return
 
     const data: ClientPortalPresencePayload = {
       sessionId: sessionIdRef.current,
@@ -97,7 +101,7 @@ export function ClientPortalPresenceBeacon({
     }).catch(() => {
       // Presence is a non-blocking signal.
     })
-  }, [clientId, clientName, email, tenantId, userId])
+  }, [clientId, clientName, email, isReady, state, tenantId, userId])
 
   useEffect(() => {
     sendPresence()

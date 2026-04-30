@@ -12,6 +12,7 @@ import {
 import { ActivityTracker } from '@/components/activity/activity-tracker'
 import { ClientActivityDisclosure } from '@/components/activity/client-activity-disclosure'
 import { ClientPortalPresenceBeacon } from '@/components/activity/client-portal-presence-beacon'
+import { LivePrivacyControlPanel } from '@/components/activity/live-privacy-controls'
 import { NotificationProvider } from '@/components/notifications/notification-provider'
 import { ToastProvider } from '@/components/notifications/toast-provider'
 import { PageInfoButton } from '@/components/ui/page-info'
@@ -66,6 +67,7 @@ export default async function ClientLayout({ children }: { children: React.React
               channel="client_portal"
             />
             <ClientActivityDisclosure />
+            <LivePrivacyControlPanel />
             <ClientTourWrapper>{children}</ClientTourWrapper>
           </ClientMainContent>
           <AnalyticsIdentify

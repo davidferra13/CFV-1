@@ -9,6 +9,7 @@ interface ChatInputBarProps {
   onAttach: () => void // Opens file/image upload UI
   onTyping: (isTyping: boolean) => void
   disabled?: boolean
+  typingEnabled?: boolean
 }
 
 export function ChatInputBar({
@@ -16,6 +17,7 @@ export function ChatInputBar({
   onAttach,
   onTyping,
   disabled = false,
+  typingEnabled = true,
 }: ChatInputBarProps) {
   const [text, setText] = useState('')
   const [sending, setSending] = useState(false)
@@ -27,6 +29,13 @@ export function ChatInputBar({
     onTyping(false)
   }, 2000)
 
+  useEffect(() => {
+    if (!typingEnabled && isTypingRef.current) {
+      isTypingRef.current = false
+      onTyping(false)
+    }
+  }, [onTyping, typingEnabled])
+
   // Auto-resize textarea
   useEffect(() => {
     const textarea = textareaRef.current
@@ -36,12 +45,13 @@ export function ChatInputBar({
   }, [text])
 
   const handleTyping = useCallback(() => {
+    if (!typingEnabled) return
     if (!isTypingRef.current) {
       isTypingRef.current = true
       onTyping(true)
     }
     stopTyping()
-  }, [onTyping, stopTyping])
+  }, [onTyping, stopTyping, typingEnabled])
 
   const handleSend = async () => {
     const trimmed = text.trim()
@@ -113,7 +123,9 @@ export function ChatInputBar({
         </button>
       </div>
       <p className="text-xxs text-stone-400 mt-1 ml-11">
-        Press Enter to send, Shift+Enter for new line
+        {typingEnabled
+          ? 'Press Enter to send, Shift+Enter for new line'
+          : 'Private viewing is on. Typing indicators are hidden.'}
       </p>
     </div>
   )

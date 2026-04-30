@@ -5,6 +5,7 @@
 
 import { useEffect, useRef } from 'react'
 import { buildActivityTrackPayload } from '@/lib/activity/client-payload'
+import { shouldShareActivitySignal, useLivePrivacy } from './live-privacy-controls'
 
 interface SessionHeartbeatProps {
   entityType?: string
@@ -19,8 +20,12 @@ export function SessionHeartbeat({
   intervalMs = 60_000,
 }: SessionHeartbeatProps) {
   const startTime = useRef(Date.now())
+  const { state, isReady } = useLivePrivacy()
 
   useEffect(() => {
+    if (!isReady) return
+    if (!shouldShareActivitySignal('session_heartbeat', state)) return
+
     const interval = setInterval(() => {
       const secondsOnPage = Math.floor((Date.now() - startTime.current) / 1000)
       fetch('/api/activity/track', {
@@ -40,7 +45,7 @@ export function SessionHeartbeat({
     }, intervalMs)
 
     return () => clearInterval(interval)
-  }, [entityType, entityId, intervalMs])
+  }, [entityType, entityId, intervalMs, isReady, state])
 
   return null
 }

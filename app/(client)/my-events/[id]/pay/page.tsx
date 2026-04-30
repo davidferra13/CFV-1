@@ -12,6 +12,7 @@ import { Alert } from '@/components/ui/alert'
 import { PaymentPageClient } from './payment-page-client'
 import { ActivityTracker } from '@/components/activity/activity-tracker'
 import { SessionHeartbeat } from '@/components/activity/session-heartbeat'
+import { LivePrivacyPageToggle } from '@/components/activity/live-privacy-controls'
 import { CancellationPolicyDisplay } from '@/components/events/cancellation-policy-display'
 
 export default async function PaymentPage({ params }: { params: { id: string } }) {
@@ -87,8 +88,13 @@ export default async function PaymentPage({ params }: { params: { id: string } }
 
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-stone-100 mb-2">Complete Payment</h1>
-        <p className="text-stone-400">Secure payment for {event.occasion || 'your event'}</p>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-stone-100 mb-2">Complete Payment</h1>
+            <p className="text-stone-400">Secure payment for {event.occasion || 'your event'}</p>
+          </div>
+          <LivePrivacyPageToggle compact />
+        </div>
       </div>
 
       {/* Payment Summary */}

@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useCallback } from 'react'
 import type { ActivityEventType } from '@/lib/activity/types'
 import { buildActivityTrackPayload } from '@/lib/activity/client-payload'
+import { shouldShareActivitySignal, useLivePrivacy } from './live-privacy-controls'
 
 interface TrackedActivityLinkProps {
   href: string
@@ -28,7 +29,12 @@ export function TrackedActivityLink({
   entityId,
   metadata,
 }: TrackedActivityLinkProps) {
+  const { state, isReady } = useLivePrivacy()
+
   const handleClick = useCallback(() => {
+    if (!isReady) return
+    if (!shouldShareActivitySignal(eventType, state)) return
+
     fetch('/api/activity/track', {
       method: 'POST',
       keepalive: true,
@@ -44,7 +50,7 @@ export function TrackedActivityLink({
     }).catch(() => {
       // Silently ignore tracking failures.
     })
-  }, [entityId, entityType, eventType, metadata])
+  }, [entityId, entityType, eventType, isReady, metadata, state])
 
   return (
     <Link href={href} onClick={handleClick} className={className} target={target} rel={rel}>

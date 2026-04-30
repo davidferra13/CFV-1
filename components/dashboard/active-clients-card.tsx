@@ -44,6 +44,9 @@ export function ActiveClientsCard({ clients }: ActiveClientsCardProps) {
         <p className="text-xs text-stone-400">
           No client activity signals in the {formatActivityWindowLabel(RECENT_WINDOW_MINUTES)}
         </p>
+        <p className="mt-1 text-xxs text-stone-400">
+          Clients can browse privately, so no signal does not mean no review.
+        </p>
       </div>
     )
   }
@@ -62,6 +65,9 @@ export function ActiveClientsCard({ clients }: ActiveClientsCardProps) {
         </span>
       </div>
       <p className="text-xxs text-stone-400 mb-2">{getActiveSignalExplanation()}</p>
+      <p className="text-xxs text-stone-400 mb-2">
+        Live signals appear only when clients allow passive visibility.
+      </p>
       <div className="space-y-2">
         {clients.map((client) => (
           <Link

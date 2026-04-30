@@ -14,6 +14,7 @@ import { QuoteExpiryCountdown } from '@/components/quotes/quote-expiry-countdown
 import { MessageChefButton } from '@/components/chat/message-chef-button'
 import { ActivityTracker } from '@/components/activity/activity-tracker'
 import { SessionHeartbeat } from '@/components/activity/session-heartbeat'
+import { LivePrivacyPageToggle } from '@/components/activity/live-privacy-controls'
 import { PaymentStructureSummary } from '@/components/quotes/payment-structure-summary'
 import { readPaymentStructure } from '@/lib/payments/payment-structure'
 
@@ -59,6 +60,7 @@ export default async function ClientQuoteDetailPage({ params }: { params: { id: 
           <Link href="/my-quotes">
             <Button variant="ghost">Back to Quotes</Button>
           </Link>
+          <LivePrivacyPageToggle compact />
         </div>
       </div>
 
