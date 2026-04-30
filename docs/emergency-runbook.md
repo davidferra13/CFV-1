@@ -21,8 +21,9 @@ npm install
 docker compose up -d
 # Wait 10 seconds for container to be healthy
 
-# 4. Restore from backup (use the latest .sql file)
-docker exec -i chefflow_postgres psql -U postgres postgres < backups/backup-LATEST.sql
+# 4. Restore from backup
+bash scripts/verify-backup.sh backups/chefflow-LATEST.dump.gpg
+bash scripts/restore-backup.sh backups/chefflow-LATEST.dump.gpg --confirm
 
 # 5. Copy environment config
 # Restore .env.local from your secure backup location
@@ -93,16 +94,25 @@ docker exec chefflow_postgres pg_isready -U postgres
 ## 4. Database Needs Restore
 
 ```bash
-# List available backups (sorted by date, largest = most likely valid)
-ls -lhS backups/backup-*.sql
+# List available generated backups
+ls -lh backups/chefflow-*.dump*
 
-# Restore (DESTRUCTIVE: replaces all current data)
-docker exec -i chefflow_postgres psql -U postgres postgres < backups/backup-FILENAME.sql
+# Verify checksum and dump readability first
+bash scripts/verify-backup.sh backups/chefflow-FILENAME.dump.gpg
+
+# Restore (DESTRUCTIVE: replaces database objects contained in the backup)
+bash scripts/restore-backup.sh backups/chefflow-FILENAME.dump.gpg --confirm
 
 # If off-site backup needed (requires rclone configured)
-rclone copy r2:chefflow-backups/backup-LATEST.sql ./backups/
-docker exec -i chefflow_postgres psql -U postgres postgres < backups/backup-LATEST.sql
+rclone copy r2:chefflow-backups/chefflow-LATEST.dump.gpg ./backups/
+rclone copy r2:chefflow-backups/chefflow-LATEST.dump.gpg.manifest.json ./backups/
+bash scripts/verify-backup.sh backups/chefflow-LATEST.dump.gpg
+bash scripts/restore-backup.sh backups/chefflow-LATEST.dump.gpg --confirm
 ```
+
+Point-in-time recovery requires a physical base backup plus WAL archive files. Use
+`backups/basebackups/` and `backups/wal_archive/` only after WAL archiving has been activated by a
+controlled PostgreSQL restart.
 
 ---
 
@@ -173,16 +183,19 @@ Start-ScheduledTask -TaskName "ChefFlow-DailyBackup"
 
 These files are needed to restore the entire system:
 
-| File                        | Contains                             | Where to store securely           |
-| --------------------------- | ------------------------------------ | --------------------------------- |
-| `.env.local`                | All API keys, secrets, DB connection | Password manager or encrypted USB |
-| `.auth/agent.json`          | Agent test account credentials       | Password manager                  |
-| `.auth/developer.json`      | Developer account credentials        | Password manager                  |
-| `backups/backup-LATEST.sql` | Full database dump                   | Cloudflare R2 (automated)         |
-| Cloudflare Tunnel token     | Tunnel authentication                | Cloudflare dashboard (online)     |
-| Stripe dashboard access     | Payment processing                   | stripe.com (online)               |
-| Google OAuth credentials    | Auth provider                        | Google Cloud Console (online)     |
-| Domain registrar access     | cheflowhq.com DNS                    | Registrar dashboard (online)      |
+| File                          | Contains                             | Where to store securely           |
+| ----------------------------- | ------------------------------------ | --------------------------------- |
+| `.env.local`                  | All API keys, secrets, DB connection | Password manager or encrypted USB |
+| `.auth/agent.json`            | Agent test account credentials       | Password manager                  |
+| `.auth/developer.json`        | Developer account credentials        | Password manager                  |
+| `backups/chefflow-*.dump.gpg` | Encrypted logical database dump      | Cloudflare R2 (automated)         |
+| `backups/*.manifest.json`     | Backup checksum and metadata         | Cloudflare R2 (automated)         |
+| `backups/basebackups/`        | Encrypted physical base backups      | Cloudflare R2 (automated)         |
+| `backups/wal_archive/`        | WAL files for point-in-time recovery | Cloudflare R2 (automated)         |
+| Cloudflare Tunnel token       | Tunnel authentication                | Cloudflare dashboard (online)     |
+| Stripe dashboard access       | Payment processing                   | stripe.com (online)               |
+| Google OAuth credentials      | Auth provider                        | Google Cloud Console (online)     |
+| Domain registrar access       | cheflowhq.com DNS                    | Registrar dashboard (online)      |
 
 ---
 

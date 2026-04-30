@@ -696,7 +696,7 @@ function LivePrivacyReceipts({ receipts }: { receipts: LivePrivacyReceipt[] }) {
 }
 
 export function LivePrivacyControlPanel() {
-  const { state, isReady, isPrivate, setMode, setSetting } = useLivePrivacy()
+  const { state, isReady, isPrivate, setMode, setSetting, setSurfaceDefault } = useLivePrivacy()
 
   const modeLabel = useMemo(() => {
     if (state.mode === 'private-device') return 'Always private on this device'

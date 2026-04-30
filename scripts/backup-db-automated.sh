@@ -154,6 +154,61 @@ NODE
   fi
 }
 
+write_manifest() {
+  local backup_path="$1"
+  local encrypted="$2"
+  local raw_size="$3"
+  local table_count="$4"
+  local manifest_path="${backup_path}.manifest.json"
+  local final_size
+  local git_commit
+  local created_at
+
+  final_size=$(wc -c < "$backup_path" | tr -d ' ')
+  git_commit=$(git -C "$PROJECT_ROOT" rev-parse --short HEAD 2>/dev/null || echo "unknown")
+  created_at="$(date -Iseconds 2>/dev/null || date '+%Y-%m-%dT%H:%M:%S')"
+
+  if ! BACKUP_MANIFEST_PATH="$manifest_path" \
+  BACKUP_FILE_PATH="$backup_path" \
+  BACKUP_FILE_NAME="$(basename "$backup_path")" \
+  BACKUP_CREATED_AT="$created_at" \
+  BACKUP_SIZE_BYTES="$final_size" \
+  BACKUP_RAW_SIZE_BYTES="$raw_size" \
+  BACKUP_ENCRYPTED="$encrypted" \
+  BACKUP_TABLE_COUNT="$table_count" \
+  BACKUP_GIT_COMMIT="$git_commit" \
+    node <<'NODE'
+const crypto = require('crypto')
+const fs = require('fs')
+
+const filePath = process.env.BACKUP_FILE_PATH
+const manifestPath = process.env.BACKUP_MANIFEST_PATH
+const hash = crypto.createHash('sha256')
+hash.update(fs.readFileSync(filePath))
+
+const manifest = {
+  version: 1,
+  createdAt: process.env.BACKUP_CREATED_AT,
+  fileName: process.env.BACKUP_FILE_NAME,
+  sizeBytes: Number(process.env.BACKUP_SIZE_BYTES || '0'),
+  sha256: hash.digest('hex'),
+  encrypted: process.env.BACKUP_ENCRYPTED === 'true',
+  rawDumpSizeBytes: Number(process.env.BACKUP_RAW_SIZE_BYTES || '0'),
+  tableCount: Number(process.env.BACKUP_TABLE_COUNT || '0'),
+  gitCommit: process.env.BACKUP_GIT_COMMIT || 'unknown',
+  format: 'postgres-custom-dump',
+}
+
+fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`)
+NODE
+  then
+    alert_failure "Backup manifest generation failed"
+    return 1
+  fi
+
+  log_text "Manifest written: $(basename "$manifest_path")"
+}
+
 alert_failure() {
   local message="$1"
   log_text "ALERT: $message"
@@ -325,6 +380,8 @@ apply_retention
 
 REMAINING=$(ls -1 "$BACKUP_DIR"/chefflow-*.dump* 2>/dev/null | wc -l | tr -d ' ')
 log_text "Generated backups on disk: ${REMAINING}"
+
+write_manifest "$FINAL_PATH" "$IS_ENCRYPTED" "$DUMP_SIZE" "${TABLE_COUNT:-0}"
 
 curl -s -X POST "$APP_BASE_URL/api/cron/backup-heartbeat" \
   -H "Content-Type: application/json" \

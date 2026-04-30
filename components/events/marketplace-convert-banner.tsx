@@ -15,7 +15,12 @@ type Props = {
 
 const DISMISS_KEY_PREFIX = 'marketplace_convert_dismissed_'
 
-export function MarketplaceConvertBanner({ clientName, directBookingUrl, eventId }: Props) {
+export function MarketplaceConvertBanner({
+  clientName,
+  directBookingUrl,
+  eventId,
+  platformLabel,
+}: Props) {
   const dismissKey = `${DISMISS_KEY_PREFIX}${eventId}`
   const [visible, setVisible] = useState(false)
   const [copied, setCopied] = useState(false)

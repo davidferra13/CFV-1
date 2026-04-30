@@ -27,6 +27,49 @@ is_custom_dump() {
   [ "$(head -c 5 "$1" 2>/dev/null || true)" = "PGDMP" ]
 }
 
+verify_manifest() {
+  local target="$1"
+  local manifest="$target.manifest.json"
+
+  if [ ! -f "$manifest" ]; then
+    if [[ "$(basename "$target")" == chefflow-* ]]; then
+      echo "  WARNING: No checksum manifest found for $(basename "$target")"
+    fi
+    return 0
+  fi
+
+  if ! BACKUP_VERIFY_TARGET="$target" BACKUP_VERIFY_MANIFEST="$manifest" node <<'NODE'
+const crypto = require('crypto')
+const fs = require('fs')
+const path = require('path')
+
+const target = process.env.BACKUP_VERIFY_TARGET
+const manifestPath = process.env.BACKUP_VERIFY_MANIFEST
+const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'))
+const file = fs.readFileSync(target)
+const actualSize = file.length
+const actualSha = crypto.createHash('sha256').update(file).digest('hex')
+const expectedName = manifest.fileName
+const actualName = path.basename(target)
+
+const failures = []
+if (expectedName && expectedName !== actualName) failures.push(`fileName ${expectedName} != ${actualName}`)
+if (Number(manifest.sizeBytes) !== actualSize) failures.push(`size ${manifest.sizeBytes} != ${actualSize}`)
+if (manifest.sha256 !== actualSha) failures.push('sha256 mismatch')
+
+if (failures.length > 0) {
+  console.error(`INVALID manifest: ${failures.join('; ')}`)
+  process.exit(1)
+}
+
+console.log(`  Manifest: OK (${actualSha})`)
+NODE
+  then
+    echo "INVALID: Checksum manifest failed for $(basename "$target")"
+    exit 1
+  fi
+}
+
 if [ -n "${1:-}" ] && [ -f "$1" ]; then
   TARGET="$1"
 else
@@ -41,6 +84,7 @@ fi
 echo "Verifying: $(basename "$TARGET")"
 echo "  Path: $TARGET"
 echo "  Size: $(wc -c < "$TARGET" | tr -d ' ') bytes"
+verify_manifest "$TARGET"
 
 TEMP_FILE=""
 VERIFY_FILE="$TARGET"

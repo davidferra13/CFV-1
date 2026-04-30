@@ -13,8 +13,19 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: CHEF.jdgyuegf9924092.FLOW
       POSTGRES_DB: postgres
+    command:
+      - postgres
+      - -c
+      - wal_level=replica
+      - -c
+      - archive_mode=on
+      - -c
+      - archive_timeout=300
+      - -c
+      - archive_command=mkdir -p /var/lib/postgresql/wal_archive && (test ! -f /var/lib/postgresql/wal_archive/%f && cp %p /var/lib/postgresql/wal_archive/%f || test -f /var/lib/postgresql/wal_archive/%f)
     volumes:
       - chefflow_pgdata:/var/lib/postgresql/data
+      - ./backups/wal_archive:/var/lib/postgresql/wal_archive
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s

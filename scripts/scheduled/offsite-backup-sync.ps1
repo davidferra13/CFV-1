@@ -21,6 +21,8 @@
 $projectDir = "C:\Users\david\Documents\CFv1"
 $logFile    = "$projectDir\logs\offsite-backup.log"
 $backupDir  = "$projectDir\backups"
+$baseBackupDir = "$backupDir\basebackups"
+$walArchiveDir = "$backupDir\wal_archive"
 $r2Bucket   = "r2:chefflow-backups"
 
 if (-not (Test-Path "$projectDir\logs")) {
@@ -74,21 +76,75 @@ foreach ($backup in ($latestBackups | Select-Object -First 30)) {
         } else {
             $synced++
             Add-Content -Path $logFile -Value "[$timestamp] Synced: $($backup.Name) ($([math]::Round($backup.Length / 1MB, 1)) MB)"
+
+            $manifestPath = "$($backup.FullName).manifest.json"
+            if (Test-Path $manifestPath) {
+                $manifestResult = rclone copy $manifestPath "$r2Bucket/" --no-traverse --s3-no-check-bucket 2>&1
+                if ($LASTEXITCODE -ne 0) {
+                    Add-Content -Path $logFile -Value "[$timestamp] WARN syncing manifest for $($backup.Name): $manifestResult"
+                } else {
+                    Add-Content -Path $logFile -Value "[$timestamp] Synced manifest: $($backup.Name).manifest.json"
+                }
+            } else {
+                Add-Content -Path $logFile -Value "[$timestamp] WARN: Missing manifest for $($backup.Name)"
+            }
         }
     } catch {
         Add-Content -Path $logFile -Value "[$timestamp] FAIL syncing $($backup.Name): $($_.Exception.Message)"
     }
 }
 
+if (Test-Path $baseBackupDir) {
+    $baseBackups = Get-ChildItem "$baseBackupDir\chefflow-basebackup-*.tar.gz.gpg" -ErrorAction SilentlyContinue |
+        Where-Object { $_.Length -gt 1000 } |
+        Sort-Object LastWriteTime -Descending |
+        Select-Object -First 8
+
+    foreach ($baseBackup in $baseBackups) {
+        $baseResult = rclone copy $baseBackup.FullName "$r2Bucket/basebackups/" --no-traverse --s3-no-check-bucket 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            Add-Content -Path $logFile -Value "[$timestamp] WARN syncing physical base backup $($baseBackup.Name): $baseResult"
+        } else {
+            Add-Content -Path $logFile -Value "[$timestamp] Synced physical base backup: $($baseBackup.Name)"
+        }
+
+        $baseManifestPath = "$($baseBackup.FullName).manifest.json"
+        if (Test-Path $baseManifestPath) {
+            $baseManifestResult = rclone copy $baseManifestPath "$r2Bucket/basebackups/" --no-traverse --s3-no-check-bucket 2>&1
+            if ($LASTEXITCODE -ne 0) {
+                Add-Content -Path $logFile -Value "[$timestamp] WARN syncing physical base backup manifest for $($baseBackup.Name): $baseManifestResult"
+            }
+        }
+    }
+}
+
+if (Test-Path $walArchiveDir) {
+    $walResult = rclone copy $walArchiveDir "$r2Bucket/wal_archive/" --ignore-existing --s3-no-check-bucket 2>&1
+    if ($LASTEXITCODE -ne 0) {
+        Add-Content -Path $logFile -Value "[$timestamp] WARN syncing WAL archive: $walResult"
+    } else {
+        Add-Content -Path $logFile -Value "[$timestamp] Synced WAL archive files."
+    }
+} else {
+    Add-Content -Path $logFile -Value "[$timestamp] WARN: WAL archive directory not found. PITR is not active until PostgreSQL is restarted with WAL archiving enabled."
+}
+
 # Clean up old files on R2. Keep 54 restore points, enough for roughly
 # 30 daily, 12 weekly, and 12 monthly checkpoints when filenames sort by date.
 try {
-    $r2Files = rclone lsf "$r2Bucket/" --files-only 2>&1 | Sort-Object -Descending
-    if ($r2Files.Count -gt 54) {
-        $toDelete = $r2Files | Select-Object -Skip 54
+    $r2Files = rclone lsf "$r2Bucket/" --files-only 2>&1
+    $r2Backups = $r2Files | Where-Object { $_ -notlike "*.manifest.json" } | Sort-Object -Descending
+    if ($r2Backups.Count -gt 54) {
+        $toDelete = $r2Backups | Select-Object -Skip 54
         foreach ($old in $toDelete) {
             rclone deletefile "$r2Bucket/$old" 2>&1 | Out-Null
             Add-Content -Path $logFile -Value "[$timestamp] R2 cleanup: removed $old"
+
+            $oldManifest = "$old.manifest.json"
+            if ($r2Files -contains $oldManifest) {
+                rclone deletefile "$r2Bucket/$oldManifest" 2>&1 | Out-Null
+                Add-Content -Path $logFile -Value "[$timestamp] R2 cleanup: removed $oldManifest"
+            }
         }
     }
 } catch {

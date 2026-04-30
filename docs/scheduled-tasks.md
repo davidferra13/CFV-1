@@ -27,6 +27,7 @@ Two machines, one scheduler (Windows Task Scheduler on PC), three cost tiers:
 | 3:30 AM      | **ChefFlow-OffsiteBackup**       | `scripts/scheduled/offsite-backup-sync.ps1`          | Free | Sync encrypted database backups to Cloudflare R2, fail if unconfigured                   |
 | 4:00 AM Sun  | **ChefFlow-WeeklyDBIntegrity**   | `scripts/scheduled/weekly-db-integrity.ps1`          | Free | Full DB audit against business rules                                                     |
 | ~monthly Sun | **ChefFlow-MonthlyRestoreTest**  | `scripts/scheduled/monthly-restore-test.ps1`         | Free | Restore backup to temp DB, validate key tables, drop                                     |
+| 5:30 AM Sun  | **ChefFlow-WeeklyBaseBackup**    | `scripts/scheduled/weekly-basebackup.ps1`            | Free | Encrypted physical PostgreSQL base backup for point-in-time recovery                     |
 | 5:00 AM Mon  | **ChefFlow-WeeklySecretScan**    | `scripts/scheduled/weekly-secret-scan.ps1`           | Free | Scan codebase for exposed credentials                                                    |
 | 4:30 AM Sat  | **ChefFlow-IngredientPriceSync** | `scripts/scheduled/weekly-ingredient-price-sync.ps1` | Free | FTS bridge: system_ingredients to openclaw prices for costing                            |
 
@@ -70,6 +71,7 @@ All scheduled task logs write to `logs/` in the project root:
 | `logs/daily-sync-check.log`      | DailySyncCheck (Claude Haiku)       |
 | `logs/pipeline-audit.log`        | PipelineAudit                       |
 | `logs/db-integrity.log`          | WeeklyDBIntegrity                   |
+| `logs/weekly-basebackup.log`     | WeeklyBaseBackup                    |
 | `logs/secret-scan.log`           | WeeklySecretScan                    |
 | `logs/cleanup.log`               | StaleCleanup                        |
 | `logs/offsite-backup.log`        | OffsiteBackup                       |
@@ -163,8 +165,10 @@ Based on 5-perspective research (Chef, Consumer, Dev, Entrepreneur, Business/Cor
 - Daily sync check uses **Haiku model** with **$2 budget cap** (~95% cost reduction)
 - **Backup script fixed** (was producing 0-byte files since mid-March; now uses Docker pg_dump)
 - **Daily scheduled backup now uses the automated path** (`scripts/backup-db-automated.sh`) with custom-format dumps, verification, required encryption for the scheduled task, heartbeat, and tiered retention
+- **Checksum manifests** are written beside generated backups and verified by `scripts/verify-backup.sh` and the monthly restore test
+- **Physical base backup path** added for point-in-time recovery: `docker-compose.yml` now declares WAL archiving for the next controlled PostgreSQL restart, `scripts/backup-db-basebackup.sh` creates encrypted physical base backups, and `scripts/scheduled/weekly-basebackup.ps1` schedules it weekly
 - **Monthly restore test** scheduled and upgraded to support `.dump`, `.dump.gpg`, legacy SQL backups, tenant checks, event FSM checks, and ledger invariants
-- **Off-site backup script** ready (`scripts/scheduled/offsite-backup-sync.ps1`), rclone installed, task registered, and configured to fail visibly if R2 is not configured
+- **Off-site backup script** ready (`scripts/scheduled/offsite-backup-sync.ps1`), rclone installed, task registered, configured to fail visibly if R2 is not configured, and now syncs manifests, physical base backups, and WAL archive files when present
 - **Emergency runbook** written (`docs/emergency-runbook.md`, 8 recovery scenarios)
 - **Pre-commit secret scanner** installed (`.git/hooks/pre-commit`, catches API keys/tokens/passwords)
 - **OpenClaw pipeline validation** added (post-sync SQLite vs PostgreSQL record count comparison)

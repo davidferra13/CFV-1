@@ -60,6 +60,35 @@ function Test-CustomDump {
     }
 }
 
+function Test-BackupManifest {
+    param([System.IO.FileInfo]$Backup)
+
+    $manifestPath = "$($Backup.FullName).manifest.json"
+    if (-not (Test-Path $manifestPath)) {
+        if ($Backup.Name -like "chefflow-*") {
+            Add-Content -Path $logFile -Value "[$timestamp] WARN: No checksum manifest found for $($Backup.Name)"
+        }
+        return
+    }
+
+    $manifest = Get-Content -Raw $manifestPath | ConvertFrom-Json
+    $actualHash = (Get-FileHash -Algorithm SHA256 -Path $Backup.FullName).Hash.ToLowerInvariant()
+    if ($manifest.fileName -and $manifest.fileName -ne $Backup.Name) {
+        Add-Content -Path $logFile -Value "[$timestamp] FAIL: Manifest fileName mismatch for $($Backup.Name)"
+        exit 1
+    }
+    if ([int64]$manifest.sizeBytes -ne $Backup.Length) {
+        Add-Content -Path $logFile -Value "[$timestamp] FAIL: Manifest size mismatch for $($Backup.Name)"
+        exit 1
+    }
+    if ($manifest.sha256 -ne $actualHash) {
+        Add-Content -Path $logFile -Value "[$timestamp] FAIL: Manifest checksum mismatch for $($Backup.Name)"
+        exit 1
+    }
+
+    Add-Content -Path $logFile -Value "[$timestamp] Manifest verified for $($Backup.Name)"
+}
+
 # Find the latest non-empty backup. Prefer encrypted automated backups.
 $latestBackup = $null
 foreach ($pattern in @("chefflow-*.dump.gpg", "chefflow-*.dump", "backup-*.sql.gpg", "backup-*.sql")) {
@@ -83,6 +112,8 @@ Add-Content -Path $logFile -Value "[$timestamp] Testing backup: $($latestBackup.
 $restoreFile = $latestBackup.FullName
 
 try {
+    Test-BackupManifest -Backup $latestBackup
+
     if ($latestBackup.Name -like "*.gpg") {
         $passphrase = Get-EnvFileValue -Name "BACKUP_PASSPHRASE"
         if (-not $passphrase) {

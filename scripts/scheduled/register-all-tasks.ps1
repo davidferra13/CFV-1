@@ -31,6 +31,11 @@ $action  = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-Executi
 $trigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Sunday -At "4:00AM"
 Register-ScheduledTask -TaskName "ChefFlow-WeeklyDBIntegrity" -Action $action -Trigger $trigger -Settings $settings -Description "Sunday 4 AM: full DB integrity audit against business rules (FREE)" -Force
 
+# 5b. Weekly Physical Base Backup - Sunday 5:30 AM
+$action  = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-ExecutionPolicy Bypass -WindowStyle Hidden -File `"$base\weekly-basebackup.ps1`"" -WorkingDirectory "C:\Users\david\Documents\CFv1"
+$trigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Sunday -At "5:30AM"
+Register-ScheduledTask -TaskName "ChefFlow-WeeklyBaseBackup" -Action $action -Trigger $trigger -Settings $settings -Description "Sunday 5:30 AM: encrypted physical PostgreSQL base backup for PITR (FREE)" -Force
+
 # 6. Weekly Secret Scan - Monday 5:00 AM
 $action  = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-ExecutionPolicy Bypass -WindowStyle Hidden -File `"$base\weekly-secret-scan.ps1`"" -WorkingDirectory "C:\Users\david\Documents\CFv1"
 $trigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Monday -At "5:00AM"
@@ -77,6 +82,7 @@ Write-Host "  ChefFlow-PlatformObservabilityDigest - daily 7:10 AM"
 Write-Host "  ChefFlow-StaleCleanup        - daily 2:00 AM"
 Write-Host "  ChefFlow-PipelineAudit       - daily 7:00 AM"
 Write-Host "  ChefFlow-WeeklyDBIntegrity   - Sunday 4:00 AM"
+Write-Host "  ChefFlow-WeeklyBaseBackup    - Sunday 5:30 AM"
 Write-Host "  ChefFlow-WeeklySecretScan    - Monday 5:00 AM"
 Write-Host "  ChefFlow-IngredientPriceSync - Saturday 4:30 AM"
 Write-Host "  ChefFlow-MonthlyRestoreTest  - every 4th Sunday 4:30 AM"
