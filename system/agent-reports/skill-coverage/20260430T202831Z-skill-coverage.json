@@ -1,0 +1,627 @@
+{
+  "generated_at": "2026-04-30T20:28:31.266Z",
+  "skill_count": 59,
+  "class_count": 13,
+  "covered_count": 13,
+  "weak_count": 0,
+  "gap_count": 0,
+  "classes": [
+    {
+      "id": "migrations",
+      "label": "Migrations",
+      "description": "Additive database migration planning, timestamp selection, SQL review, and safety checks.",
+      "expected_owners": ["builder", "planner", "compliance"],
+      "missing_expected_owners": [],
+      "status": "covered",
+      "flags": [],
+      "owners": [
+        {
+          "name": "quick-wins",
+          "file": ".claude/skills/quick-wins/SKILL.md",
+          "score": 9,
+          "ownership": "inferred"
+        },
+        {
+          "name": "ledger-safety",
+          "file": ".claude/skills/ledger-safety/SKILL.md",
+          "score": 8,
+          "ownership": "inferred"
+        },
+        {
+          "name": "swarm-governor",
+          "file": ".claude/skills/swarm-governor/SKILL.md",
+          "score": 8,
+          "ownership": "inferred"
+        },
+        {
+          "name": "planner",
+          "file": ".claude/skills/planner/SKILL.md",
+          "score": 5,
+          "ownership": "expected"
+        },
+        {
+          "name": "builder",
+          "file": ".claude/skills/builder/SKILL.md",
+          "score": 2,
+          "ownership": "expected"
+        },
+        {
+          "name": "compliance",
+          "file": ".claude/skills/compliance/SKILL.md",
+          "score": 0,
+          "ownership": "expected"
+        }
+      ]
+    },
+    {
+      "id": "server-actions",
+      "label": "Server Actions",
+      "description": "Server action auth, tenant scoping, validation, mutation feedback, and cache busting.",
+      "expected_owners": ["builder", "compliance", "hallucination-scan"],
+      "missing_expected_owners": [],
+      "status": "covered",
+      "flags": [],
+      "owners": [
+        {
+          "name": "review",
+          "file": ".claude/skills/review/SKILL.md",
+          "score": 22,
+          "ownership": "inferred"
+        },
+        {
+          "name": "ledger-safety",
+          "file": ".claude/skills/ledger-safety/SKILL.md",
+          "score": 15,
+          "ownership": "inferred"
+        },
+        {
+          "name": "freeze-audit",
+          "file": ".claude/skills/freeze-audit/SKILL.md",
+          "score": 13,
+          "ownership": "inferred"
+        },
+        {
+          "name": "hallucination-scan",
+          "file": ".claude/skills/hallucination-scan/SKILL.md",
+          "score": 11,
+          "ownership": "expected"
+        },
+        {
+          "name": "compliance",
+          "file": ".claude/skills/compliance/SKILL.md",
+          "score": 1,
+          "ownership": "expected"
+        },
+        {
+          "name": "builder",
+          "file": ".claude/skills/builder/SKILL.md",
+          "score": 0,
+          "ownership": "expected"
+        }
+      ]
+    },
+    {
+      "id": "ledger",
+      "label": "Ledger",
+      "description": "Ledger-first financial behavior, append-only entries, cents, and computed balances.",
+      "expected_owners": ["ledger-safety", "builder", "review", "hallucination-scan"],
+      "missing_expected_owners": [],
+      "status": "covered",
+      "flags": [],
+      "owners": [
+        {
+          "name": "ledger-safety",
+          "file": ".claude/skills/ledger-safety/SKILL.md",
+          "score": 26,
+          "ownership": "expected"
+        },
+        {
+          "name": "findings-triage",
+          "file": ".claude/skills/findings-triage/SKILL.md",
+          "score": 12,
+          "ownership": "inferred"
+        },
+        {
+          "name": "stripe-webhook-integrity",
+          "file": ".claude/skills/stripe-webhook-integrity/SKILL.md",
+          "score": 11,
+          "ownership": "inferred"
+        },
+        {
+          "name": "billing-monetization",
+          "file": ".claude/skills/billing-monetization/SKILL.md",
+          "score": 9,
+          "ownership": "inferred"
+        },
+        {
+          "name": "builder",
+          "file": ".claude/skills/builder/SKILL.md",
+          "score": 5,
+          "ownership": "expected"
+        },
+        {
+          "name": "review",
+          "file": ".claude/skills/review/SKILL.md",
+          "score": 1,
+          "ownership": "expected"
+        },
+        {
+          "name": "hallucination-scan",
+          "file": ".claude/skills/hallucination-scan/SKILL.md",
+          "score": 0,
+          "ownership": "expected"
+        }
+      ]
+    },
+    {
+      "id": "ai-ollama",
+      "label": "AI/Ollama",
+      "description": "Single-provider Ollama gateway behavior, structured JSON, runtime failure, and recipe restrictions.",
+      "expected_owners": ["builder", "debug", "compliance"],
+      "missing_expected_owners": [],
+      "status": "covered",
+      "flags": [],
+      "owners": [
+        {
+          "name": "verify",
+          "file": ".claude/skills/verify/SKILL.md",
+          "score": 10,
+          "ownership": "inferred"
+        },
+        {
+          "name": "freeze-audit",
+          "file": ".claude/skills/freeze-audit/SKILL.md",
+          "score": 9,
+          "ownership": "inferred"
+        },
+        {
+          "name": "host-integrity",
+          "file": ".claude/skills/host-integrity/SKILL.md",
+          "score": 9,
+          "ownership": "inferred"
+        },
+        {
+          "name": "debug",
+          "file": ".claude/skills/debug/SKILL.md",
+          "score": 3,
+          "ownership": "expected"
+        },
+        {
+          "name": "builder",
+          "file": ".claude/skills/builder/SKILL.md",
+          "score": 2,
+          "ownership": "expected"
+        },
+        {
+          "name": "compliance",
+          "file": ".claude/skills/compliance/SKILL.md",
+          "score": 0,
+          "ownership": "expected"
+        }
+      ]
+    },
+    {
+      "id": "public-ui",
+      "label": "Public UI",
+      "description": "Visible app surfaces, component variants, public copy, no fake affordances, and no banned terms.",
+      "expected_owners": ["builder", "compliance", "hallucination-scan"],
+      "missing_expected_owners": [],
+      "status": "covered",
+      "flags": [],
+      "owners": [
+        {
+          "name": "billing-monetization",
+          "file": ".claude/skills/billing-monetization/SKILL.md",
+          "score": 13,
+          "ownership": "inferred"
+        },
+        {
+          "name": "pricing-reliability",
+          "file": ".claude/skills/pricing-reliability/SKILL.md",
+          "score": 13,
+          "ownership": "inferred"
+        },
+        {
+          "name": "evidence-broker",
+          "file": ".claude/skills/evidence-broker/SKILL.md",
+          "score": 12,
+          "ownership": "inferred"
+        },
+        {
+          "name": "hallucination-scan",
+          "file": ".claude/skills/hallucination-scan/SKILL.md",
+          "score": 8,
+          "ownership": "expected"
+        },
+        {
+          "name": "builder",
+          "file": ".claude/skills/builder/SKILL.md",
+          "score": 3,
+          "ownership": "expected"
+        },
+        {
+          "name": "compliance",
+          "file": ".claude/skills/compliance/SKILL.md",
+          "score": 2,
+          "ownership": "expected"
+        }
+      ]
+    },
+    {
+      "id": "host-process",
+      "label": "Host/Process",
+      "description": "Windows host truth, ports, scheduled tasks, tunnels, watchdogs, and running process safety.",
+      "expected_owners": ["host-integrity", "health", "warmup"],
+      "missing_expected_owners": [],
+      "status": "covered",
+      "flags": [],
+      "owners": [
+        {
+          "name": "host-integrity",
+          "file": ".claude/skills/host-integrity/SKILL.md",
+          "score": 28,
+          "ownership": "expected"
+        },
+        {
+          "name": "evidence-integrity",
+          "file": ".claude/skills/evidence-integrity/SKILL.md",
+          "score": 21,
+          "ownership": "inferred"
+        },
+        {
+          "name": "findings-triage",
+          "file": ".claude/skills/findings-triage/SKILL.md",
+          "score": 18,
+          "ownership": "inferred"
+        },
+        {
+          "name": "warmup",
+          "file": ".claude/skills/warmup/SKILL.md",
+          "score": 12,
+          "ownership": "expected"
+        },
+        {
+          "name": "persona-inbox",
+          "file": ".claude/skills/persona-inbox/SKILL.md",
+          "score": 11,
+          "ownership": "inferred"
+        },
+        {
+          "name": "health",
+          "file": ".claude/skills/health/SKILL.md",
+          "score": 10,
+          "ownership": "expected"
+        }
+      ]
+    },
+    {
+      "id": "persona-pipeline",
+      "label": "Persona Pipeline",
+      "description": "Persona import, inbox, stress tests, synthesis, saturation handling, and build routing.",
+      "expected_owners": ["persona-dump", "persona-inbox", "persona-stress-test", "persona-build"],
+      "missing_expected_owners": [],
+      "status": "covered",
+      "flags": [],
+      "owners": [
+        {
+          "name": "persona-dump",
+          "file": ".claude/skills/persona-dump/SKILL.md",
+          "score": 24,
+          "ownership": "expected"
+        },
+        {
+          "name": "persona-inbox",
+          "file": ".claude/skills/persona-inbox/SKILL.md",
+          "score": 18,
+          "ownership": "expected"
+        },
+        {
+          "name": "market-research-router",
+          "file": ".claude/skills/market-research-router/SKILL.md",
+          "score": 14,
+          "ownership": "inferred"
+        },
+        {
+          "name": "persona-build",
+          "file": ".claude/skills/persona-build/SKILL.md",
+          "score": 14,
+          "ownership": "expected"
+        },
+        {
+          "name": "answer-provenance",
+          "file": ".claude/skills/answer-provenance/SKILL.md",
+          "score": 11,
+          "ownership": "inferred"
+        },
+        {
+          "name": "evidence-broker",
+          "file": ".claude/skills/evidence-broker/SKILL.md",
+          "score": 11,
+          "ownership": "inferred"
+        },
+        {
+          "name": "persona-stress-test",
+          "file": ".claude/skills/persona-stress-test/SKILL.md",
+          "score": 7,
+          "ownership": "expected"
+        }
+      ]
+    },
+    {
+      "id": "billing",
+      "label": "Billing",
+      "description": "Tier classification, paid/free module behavior, monetization rules, and upgrade prompt timing.",
+      "expected_owners": ["billing-monetization", "builder", "validation-gate", "review"],
+      "missing_expected_owners": [],
+      "status": "covered",
+      "flags": [],
+      "owners": [
+        {
+          "name": "billing-monetization",
+          "file": ".claude/skills/billing-monetization/SKILL.md",
+          "score": 24,
+          "ownership": "expected"
+        },
+        {
+          "name": "builder",
+          "file": ".claude/skills/builder/SKILL.md",
+          "score": 1,
+          "ownership": "expected"
+        },
+        {
+          "name": "review",
+          "file": ".claude/skills/review/SKILL.md",
+          "score": 0,
+          "ownership": "expected"
+        },
+        {
+          "name": "validation-gate",
+          "file": ".claude/skills/validation-gate/SKILL.md",
+          "score": 0,
+          "ownership": "expected"
+        }
+      ]
+    },
+    {
+      "id": "stripe-webhooks",
+      "label": "Stripe/Webhooks",
+      "description": "Stripe integration, webhook processing, tickets, idempotency, and external payment events.",
+      "expected_owners": ["stripe-webhook-integrity", "builder", "debug", "review"],
+      "missing_expected_owners": [],
+      "status": "covered",
+      "flags": [],
+      "owners": [
+        {
+          "name": "stripe-webhook-integrity",
+          "file": ".claude/skills/stripe-webhook-integrity/SKILL.md",
+          "score": 23,
+          "ownership": "expected"
+        },
+        {
+          "name": "ledger-safety",
+          "file": ".claude/skills/ledger-safety/SKILL.md",
+          "score": 13,
+          "ownership": "inferred"
+        },
+        {
+          "name": "billing-monetization",
+          "file": ".claude/skills/billing-monetization/SKILL.md",
+          "score": 7,
+          "ownership": "inferred"
+        },
+        {
+          "name": "findings-triage",
+          "file": ".claude/skills/findings-triage/SKILL.md",
+          "score": 7,
+          "ownership": "inferred"
+        },
+        {
+          "name": "builder",
+          "file": ".claude/skills/builder/SKILL.md",
+          "score": 1,
+          "ownership": "expected"
+        },
+        {
+          "name": "debug",
+          "file": ".claude/skills/debug/SKILL.md",
+          "score": 1,
+          "ownership": "expected"
+        },
+        {
+          "name": "review",
+          "file": ".claude/skills/review/SKILL.md",
+          "score": 0,
+          "ownership": "expected"
+        }
+      ]
+    },
+    {
+      "id": "validation",
+      "label": "Validation",
+      "description": "User-validation evidence, launch readiness, feedback gates, and product surface restraint.",
+      "expected_owners": ["validation-gate", "research", "audit"],
+      "missing_expected_owners": [],
+      "status": "covered",
+      "flags": [],
+      "owners": [
+        {
+          "name": "validation-gate",
+          "file": ".claude/skills/validation-gate/SKILL.md",
+          "score": 23,
+          "ownership": "expected"
+        },
+        {
+          "name": "findings-triage",
+          "file": ".claude/skills/findings-triage/SKILL.md",
+          "score": 22,
+          "ownership": "inferred"
+        },
+        {
+          "name": "answer-provenance",
+          "file": ".claude/skills/answer-provenance/SKILL.md",
+          "score": 19,
+          "ownership": "inferred"
+        },
+        {
+          "name": "market-research-router",
+          "file": ".claude/skills/market-research-router/SKILL.md",
+          "score": 18,
+          "ownership": "inferred"
+        },
+        {
+          "name": "audit",
+          "file": ".claude/skills/audit/SKILL.md",
+          "score": 8,
+          "ownership": "expected"
+        },
+        {
+          "name": "research",
+          "file": ".claude/skills/research/SKILL.md",
+          "score": 4,
+          "ownership": "expected"
+        }
+      ]
+    },
+    {
+      "id": "docs",
+      "label": "Docs",
+      "description": "Living docs, user manual updates, audits, reports, and documentation drift.",
+      "expected_owners": ["document", "audit", "research"],
+      "missing_expected_owners": [],
+      "status": "covered",
+      "flags": [],
+      "owners": [
+        {
+          "name": "document",
+          "file": ".claude/skills/document/SKILL.md",
+          "score": 14,
+          "ownership": "expected"
+        },
+        {
+          "name": "freeze-audit",
+          "file": ".claude/skills/freeze-audit/SKILL.md",
+          "score": 14,
+          "ownership": "inferred"
+        },
+        {
+          "name": "research",
+          "file": ".claude/skills/research/SKILL.md",
+          "score": 13,
+          "ownership": "expected"
+        },
+        {
+          "name": "evidence-integrity",
+          "file": ".claude/skills/evidence-integrity/SKILL.md",
+          "score": 12,
+          "ownership": "inferred"
+        },
+        {
+          "name": "context-continuity",
+          "file": ".claude/skills/context-continuity/SKILL.md",
+          "score": 11,
+          "ownership": "inferred"
+        },
+        {
+          "name": "audit",
+          "file": ".claude/skills/audit/SKILL.md",
+          "score": 4,
+          "ownership": "expected"
+        }
+      ]
+    },
+    {
+      "id": "review",
+      "label": "Review",
+      "description": "Code review, findings-first output, risk ordering, test gaps, and shipping readiness.",
+      "expected_owners": ["review", "compliance", "evidence-integrity"],
+      "missing_expected_owners": [],
+      "status": "covered",
+      "flags": [],
+      "owners": [
+        {
+          "name": "swarm-governor",
+          "file": ".claude/skills/swarm-governor/SKILL.md",
+          "score": 17,
+          "ownership": "inferred"
+        },
+        {
+          "name": "evidence-integrity",
+          "file": ".claude/skills/evidence-integrity/SKILL.md",
+          "score": 14,
+          "ownership": "expected"
+        },
+        {
+          "name": "freeze-audit",
+          "file": ".claude/skills/freeze-audit/SKILL.md",
+          "score": 13,
+          "ownership": "inferred"
+        },
+        {
+          "name": "debug",
+          "file": ".claude/skills/debug/SKILL.md",
+          "score": 12,
+          "ownership": "inferred"
+        },
+        {
+          "name": "review",
+          "file": ".claude/skills/review/SKILL.md",
+          "score": 12,
+          "ownership": "expected"
+        },
+        {
+          "name": "compliance",
+          "file": ".claude/skills/compliance/SKILL.md",
+          "score": 0,
+          "ownership": "expected"
+        }
+      ]
+    },
+    {
+      "id": "closeout",
+      "label": "Closeout",
+      "description": "Commit, push, session close, changed-file ownership, validation evidence, and branch safety.",
+      "expected_owners": ["close-session", "ship", "feature-closeout"],
+      "missing_expected_owners": [],
+      "status": "covered",
+      "flags": [],
+      "owners": [
+        {
+          "name": "close-session",
+          "file": ".claude/skills/close-session/SKILL.md",
+          "score": 19,
+          "ownership": "expected"
+        },
+        {
+          "name": "ship",
+          "file": ".claude/skills/ship/SKILL.md",
+          "score": 17,
+          "ownership": "expected"
+        },
+        {
+          "name": "autonomous-build-loop",
+          "file": ".claude/skills/autonomous-build-loop/SKILL.md",
+          "score": 13,
+          "ownership": "inferred"
+        },
+        {
+          "name": "feature-closeout",
+          "file": ".claude/skills/feature-closeout/SKILL.md",
+          "score": 13,
+          "ownership": "expected"
+        },
+        {
+          "name": "status",
+          "file": ".claude/skills/status/SKILL.md",
+          "score": 13,
+          "ownership": "inferred"
+        },
+        {
+          "name": "swarm-governor",
+          "file": ".claude/skills/swarm-governor/SKILL.md",
+          "score": 11,
+          "ownership": "inferred"
+        }
+      ]
+    }
+  ]
+}

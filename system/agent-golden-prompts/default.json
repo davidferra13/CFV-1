@@ -1,5 +1,14 @@
 [
   {
+    "name": "show me website proof",
+    "prompt": "Show me what is built on the website.",
+    "expect": ["omninet", "show-me"],
+    "evidence": {
+      "omninet": ["show-me", "show me what is built"],
+      "show-me": ["visual proof", "actual ChefFlow website"]
+    }
+  },
+  {
     "name": "bulk persona paste",
     "prompt": "Can I paste a huge third-party ChatGPT persona dump here?",
     "expect": ["omninet", "persona-dump"],

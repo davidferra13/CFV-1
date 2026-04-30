@@ -28,6 +28,20 @@ const lowerPrompt = prompt.toLowerCase()
 
 const rules = [
   {
+    skill: 'show-me',
+    terms: [
+      'show me',
+      'show me the site',
+      'show me what is built',
+      'show me the website',
+      'show the website',
+      'open the website',
+      'open the site',
+      'current app',
+      'what is built',
+    ],
+  },
+  {
     skill: 'autonomous-build-loop',
     terms: [
       'autonomous builder',
@@ -524,6 +538,11 @@ function isExplicitlyNamed(skill) {
 
 const conflictPriorityRules = [
   {
+    winner: 'show-me',
+    beats: ['builder', 'debug', 'question-optimizer', 'research', 'verify', 'warmup', 'host-integrity'],
+    reason: 'show-me owns visual proof of the live ChefFlow website without changing code or controlling servers',
+  },
+  {
     winner: 'stripe-webhook-integrity',
     beats: ['builder', 'debug', 'review', 'ledger-safety'],
     reason: 'stripe-webhook-integrity owns external payment event intake and idempotency',
@@ -671,6 +690,7 @@ if (
 }
 if (
   skillNames.has('context-continuity') &&
+  primarySkill !== 'show-me' &&
   primarySkill !== 'context-continuity' &&
   !sidecarSkills.includes('context-continuity') &&
   [
@@ -693,6 +713,7 @@ if (
 }
 if (
   skillNames.has('software-fundamentals') &&
+  primarySkill !== 'show-me' &&
   primarySkill !== 'software-fundamentals' &&
   !sidecarSkills.includes('software-fundamentals') &&
   [
