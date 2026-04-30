@@ -16,6 +16,7 @@ function writeStateInputs() {
   fs.mkdirSync(stickyConfig.outputRoot, { recursive: true })
   const snapshotFile = path.join(stickyConfig.outputRoot, 'state-test-snapshot.json')
   const classificationFile = path.join(stickyConfig.outputRoot, 'state-test-classification.json')
+  const attachmentFile = path.join(stickyConfig.outputRoot, 'state-test-attachments.json')
   const processedFile = path.join(stickyConfig.outputRoot, 'state-test-processed.json')
 
   writeJson(snapshotFile, {
@@ -56,6 +57,8 @@ function writeStateInputs() {
         noteId: 1,
         class: 'chefFlow.feature',
         confidence: 0.82,
+        status: 'classified',
+        reasons: ['ChefFlow product request language'],
         nextAction: 'review_for_v1_classification',
       },
       {
@@ -63,6 +66,8 @@ function writeStateInputs() {
         noteId: 2,
         class: 'archive.duplicate',
         confidence: 0.95,
+        status: 'classified',
+        reasons: ['content hash matches an earlier note'],
         nextAction: 'attach_to_canonical_note',
       },
       {
@@ -70,7 +75,31 @@ function writeStateInputs() {
         noteId: 3,
         class: 'chefFlow.directive',
         confidence: 0.9,
+        status: 'classified',
+        reasons: ['durable project or agent behavior markers'],
         nextAction: 'review_for_skill_patch',
+      },
+    ],
+  })
+  writeJson(attachmentFile, {
+    attachments: [
+      {
+        noteRef: 'simple-sticky-notes:1:feature',
+        destination: 'system/sticky-notes/actions/spec-candidates/0001.md',
+        mayMutateProject: false,
+        requiresReview: true,
+      },
+      {
+        noteRef: 'simple-sticky-notes:2:archive',
+        destination: 'system/sticky-notes/archive/duplicates/0002.md',
+        mayMutateProject: false,
+        requiresReview: true,
+      },
+      {
+        noteRef: 'simple-sticky-notes:3:active',
+        destination: 'system/sticky-notes/actions/skill-garden-candidates/0003.md',
+        mayMutateProject: false,
+        requiresReview: true,
       },
     ],
   })
@@ -84,7 +113,7 @@ function writeStateInputs() {
     ],
   })
 
-  return { snapshotFile, classificationFile, processedFile }
+  return { snapshotFile, classificationFile, attachmentFile, processedFile }
 }
 
 describe('sticky notes color state index', () => {
@@ -98,6 +127,8 @@ describe('sticky notes color state index', () => {
     assert.equal(result.unprocessed[0]?.targetColorName, 'yellow')
     assert.equal(result.finished.length, 1)
     assert.equal(result.finished[0]?.noteId, 2)
+    assert.equal(result.finished[0]?.extracted, true)
+    assert.equal(result.finished[0]?.verified, true)
     assert.equal(
       result.active.some((item) => item.noteId === 2),
       false
@@ -109,6 +140,23 @@ describe('sticky notes color state index', () => {
     assert.equal(latestUnprocessed?.count, 1)
     assert.equal(latestFinished?.count, 1)
     assert.equal(fs.existsSync(result.unprocessedFile), true)
+  })
+
+  it('blocks completion when extraction verification is missing', () => {
+    const files = writeStateInputs()
+    const result = buildStickyNoteState({
+      snapshotFile: files.snapshotFile,
+      classificationFile: files.classificationFile,
+      attachmentFile: path.join(stickyConfig.outputRoot, 'missing-attachments.json'),
+      processedFile: files.processedFile,
+      stamp: 'state-unverified-test',
+    })
+    const duplicate = result.items.find((item) => item.noteId === 2)
+
+    assert.equal(duplicate?.requestedState, 'complete')
+    assert.equal(duplicate?.pipelineState, 'blocked')
+    assert.equal(duplicate?.blockedReason, 'missing_extraction_verification')
+    assert.equal(duplicate?.finished, false)
   })
 
   it('plans lifecycle color updates without applying them by default', () => {
@@ -134,6 +182,7 @@ describe('sticky notes color state index', () => {
 
     assert.equal(plan.updateCount, 3)
     assert.equal(active?.pipelineState, 'in_progress')
+    assert.equal(active && active.left < 0, true)
     assert.equal(active?.minimize, 0)
     assert.equal(finished?.pipelineState, 'complete')
     assert.equal(finished?.minimize, 1)

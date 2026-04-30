@@ -62,3 +62,5 @@ The unprocessed index is the source of truth for: "What is unprocessed right now
 `npm run sticky:colors` previews color drift. `npm run sticky:colors:apply` applies the current state index to Simple Sticky Notes by updating only the `COLOR` column.
 
 `npm run sticky:layout` previews the visual layout. `npm run sticky:layout:apply` arranges active notes into queued, in-progress, and blocked lanes, then minimizes complete notes into the finished layer.
+
+Complete means visually dismissed only after extraction and verification. The state builder requires a durable attachment or processed action plus non-mutating review metadata before a note can become green, minimized, and moved into the finished layer.

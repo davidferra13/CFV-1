@@ -119,6 +119,8 @@ White is non-negotiable. Any white source note is treated as unresolved input ev
 
 Completed notes are moved out of the active index and into `system/sticky-notes/finished/latest.json`. The active index must only contain categorized live work: queued, in progress, or blocked.
 
+A note may become `complete` only after extracted information has a durable artifact and verification metadata. Classification alone is not enough. If a note looks complete but lacks an attachment, processed action, confidence, reasons, or non-mutating review boundary, it remains `blocked` with `missing_extraction_verification` until the pipeline can prove it was fully extracted.
+
 ### Classification Taxonomy
 
 | Class                   | Meaning                                                       | Default Destination                                    |

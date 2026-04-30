@@ -56,6 +56,14 @@ function latestProcessedByNoteRef(processed) {
   return byRef
 }
 
+function latestAttachmentsByNoteRef(attached) {
+  const byRef = new Map()
+  for (const attachment of attached?.attachments || []) {
+    if (attachment.noteRef) byRef.set(attachment.noteRef, attachment)
+  }
+  return byRef
+}
+
 function compactNote(note) {
   return {
     noteRef: note.noteRef,
@@ -68,9 +76,32 @@ function compactNote(note) {
   }
 }
 
-function itemFor(note, classification, processedAction) {
+function extractionVerificationFor(classification, attachment, processedAction) {
+  const attachmentExtracted = Boolean(attachment?.destination)
+  const processedExtracted = Boolean(processedAction?.packet || processedAction?.actionId)
+  const classificationVerified =
+    classification?.status === 'classified' &&
+    Number(classification.confidence ?? 0) >= 0.65 &&
+    Array.isArray(classification.reasons) &&
+    classification.reasons.length > 0
+  const attachmentVerified =
+    attachmentExtracted && attachment?.mayMutateProject === false && attachment?.requiresReview === true
+  const processedVerified =
+    processedExtracted && processedAction?.mayMutateProject === false && processedAction?.requiresReview === true
+
+  return {
+    extracted: attachmentExtracted || processedExtracted,
+    verified: Boolean((classificationVerified && attachmentVerified) || processedVerified),
+    attachment: attachment?.destination || null,
+    processedActionId: processedAction?.actionId || null,
+  }
+}
+
+function itemFor(note, classification, attachment, processedAction) {
   const baseState = stateFromClass(classification)
-  const pipelineState = processedStateFor(processedAction) || baseState
+  const requestedState = processedStateFor(processedAction) || baseState
+  const extraction = extractionVerificationFor(classification, attachment, processedAction)
+  const pipelineState = requestedState === 'complete' && !extraction.verified ? 'blocked' : requestedState
   const expected = stickyColorForState(pipelineState)
   const sourceColorValue = Number(note.sourceColorValue ?? stickyColorTaxonomy.unprocessed.value)
   const sourceIsWhite = sourceColorValue === stickyColorTaxonomy.unprocessed.value
@@ -81,6 +112,11 @@ function itemFor(note, classification, processedAction) {
     class: classification?.class || null,
     confidence: classification?.confidence ?? null,
     pipelineState,
+    requestedState,
+    extracted: extraction.extracted,
+    verified: extraction.verified,
+    extractionAttachment: extraction.attachment,
+    processedActionId: extraction.processedActionId,
     sourceState: sourceIsWhite ? 'unprocessed' : 'colored',
     targetColorName: expected.color,
     targetColorValue: expected.value,
@@ -88,7 +124,12 @@ function itemFor(note, classification, processedAction) {
     unprocessed,
     active: pipelineState !== 'complete',
     finished: pipelineState === 'complete',
-    blockedReason: pipelineState === 'blocked' ? classification?.nextAction || processedAction?.nextAction || null : null,
+    blockedReason:
+      requestedState === 'complete' && !extraction.verified
+        ? 'missing_extraction_verification'
+        : pipelineState === 'blocked'
+          ? classification?.nextAction || processedAction?.nextAction || null
+          : null,
     nextAction: processedAction?.nextAction || classification?.nextAction || 'classify_note',
   }
 }
@@ -122,13 +163,20 @@ export function buildStickyNoteState(options = {}) {
   ensureOutputRoot()
   const snapshot = readJson(options.snapshotFile || outputPaths.normalizedLatest, null)
   const classified = readJson(options.classificationFile || outputPaths.classificationsLatest, null)
+  const attached = readJson(options.attachmentFile || outputPaths.attachmentsLatest, { attachments: [] })
   const processed = readJson(options.processedFile || outputPaths.processedLatest, { actions: [] })
   if (!snapshot?.records) throw new Error(`No normalized Sticky Notes snapshot found: ${outputPaths.normalizedLatest}`)
 
   const classificationsByRef = new Map((classified?.classifications || []).map((item) => [item.noteRef, item]))
+  const attachmentsByRef = latestAttachmentsByNoteRef(attached)
   const processedByRef = latestProcessedByNoteRef(processed)
   const items = snapshot.records.map((note) =>
-    itemFor(note, classificationsByRef.get(note.noteRef), processedByRef.get(note.noteRef)),
+    itemFor(
+      note,
+      classificationsByRef.get(note.noteRef),
+      attachmentsByRef.get(note.noteRef),
+      processedByRef.get(note.noteRef),
+    ),
   )
 
   const payload = {
@@ -137,6 +185,7 @@ export function buildStickyNoteState(options = {}) {
     sourceClassifications: classified?.classifications
       ? relativePath(options.classificationFile || outputPaths.classificationsLatest)
       : null,
+    sourceAttachments: attached?.attachments ? relativePath(options.attachmentFile || outputPaths.attachmentsLatest) : null,
     taxonomy: stickyColorTaxonomy,
     counts: countBy(items, 'pipelineState'),
     colorMismatches: items.filter((item) => item.colorMismatch).length,
