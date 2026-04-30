@@ -37,3 +37,11 @@ test('approved dictionary review items become private searchable chef terms', ()
   assert.match(querySource, /id:\s*`chef-review-\$\{String\(row\.id\)\}`/)
   assert.match(querySource, /\.\.\.baseTerms,\s*\.\.\.approvedReviewTerms/)
 })
+
+test('dictionary search misses can be queued as chef-scoped review candidates', () => {
+  assert.match(source, /createDictionarySearchReviewCandidate/)
+  assert.match(source, /source_surface: parsed\.data\.sourceSurface/)
+  assert.match(source, /source_value: parsed\.data\.query/)
+  assert.match(source, /\.eq\('chef_id', user\.entityId\)/)
+  assert.match(source, /search_miss_capture/)
+})

@@ -1,12 +1,16 @@
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { ChefDictionaryTermCard } from '@/components/culinary-dictionary/chef-dictionary-term-card'
 import { DictionaryCommandCenter } from '@/components/culinary-dictionary/dictionary-command-center'
+import { DictionaryOperationsPanel } from '@/components/culinary-dictionary/dictionary-operations-panel'
+import { DictionaryOutcomesWorkbench } from '@/components/culinary-dictionary/dictionary-outcomes-workbench'
 import { DictionaryReviewQueue } from '@/components/culinary-dictionary/dictionary-review-queue'
 import { DictionarySearch } from '@/components/culinary-dictionary/dictionary-search'
 import { DictionarySidePanel } from '@/components/culinary-dictionary/dictionary-side-panel'
 import { LanguageAuditorPanel } from '@/components/culinary-dictionary/language-auditor-panel'
+import { createDictionarySearchReviewCandidateForm } from '@/lib/culinary-dictionary/actions'
 import {
   getDictionaryTermBySlug,
   getDictionaryReviewQueue,
@@ -74,7 +78,15 @@ export default async function CulinaryDictionaryPage({ searchParams }: Props) {
 
       <DictionaryCommandCenter terms={terms} reviewItems={reviewItems} />
 
+      <DictionaryOutcomesWorkbench terms={terms} />
+
       <LanguageAuditorPanel terms={terms} />
+
+      <DictionaryOperationsPanel
+        terms={terms}
+        reviewItems={reviewItems}
+        selectedTerm={selectedTerm}
+      />
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
         <section className="space-y-3">
@@ -84,6 +96,15 @@ export default async function CulinaryDictionaryPage({ searchParams }: Props) {
               <p className="mt-2 text-sm text-stone-500">
                 Reset filters or add a chef-specific term through the review workflow.
               </p>
+              {query.trim() && (
+                <form action={createDictionarySearchReviewCandidateForm} className="mt-4">
+                  <input type="hidden" name="query" value={query} />
+                  <input type="hidden" name="sourceSurface" value="dictionary_search" />
+                  <Button type="submit" variant="secondary" size="sm">
+                    Send search miss to review
+                  </Button>
+                </form>
+              )}
             </div>
           ) : (
             terms.map((term) => <ChefDictionaryTermCard key={term.id} term={term} />)

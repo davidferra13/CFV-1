@@ -44,6 +44,15 @@ const CreateTermSchema = z.object({
   aliases: z.array(z.string().min(1).max(80)).optional(),
 })
 
+const SearchMissReviewCandidateSchema = z.object({
+  query: z
+    .string()
+    .min(1)
+    .max(100)
+    .transform((value) => value.trim()),
+  sourceSurface: z.string().max(80).default('dictionary_search'),
+})
+
 const ResolveReviewSchema = z.object({
   reviewId: z.string().min(1),
   decision: z.enum(['approved', 'rejected', 'dismissed']),
@@ -228,6 +237,76 @@ export async function createChefDictionaryTerm(input: unknown) {
   } catch (error) {
     console.error('[createChefDictionaryTerm] Error:', error)
     return { success: false, error: 'Dictionary tables are not available yet' }
+  }
+}
+
+export async function createDictionarySearchReviewCandidate(input: unknown) {
+  const user = await requireChef()
+  const parsed = SearchMissReviewCandidateSchema.safeParse(input)
+  if (!parsed.success) return { success: false, error: 'Invalid dictionary search miss' }
+
+  const normalizedValue = normalizeDictionaryAlias(parsed.data.query)
+  if (!normalizedValue) return { success: false, error: 'Dictionary search is invalid' }
+
+  try {
+    const existingMatches = await searchDictionaryTerms({
+      query: parsed.data.query,
+      chefId: user.entityId,
+      limit: 5,
+    })
+    if (existingMatches.length > 0) {
+      return { success: true, captured: false, reason: 'already_matched' }
+    }
+
+    const db: any = createServerClient()
+    const { data: existing, error: readError } = await db
+      .from('culinary_dictionary_review_queue' as any)
+      .select('id')
+      .eq('chef_id', user.entityId)
+      .eq('source_surface', parsed.data.sourceSurface)
+      .eq('normalized_value', normalizedValue)
+      .eq('status', 'pending')
+      .maybeSingle()
+
+    if (readError) return { success: false, error: 'Failed to check review queue' }
+    if (existing?.id) {
+      return { success: true, captured: false, reviewId: existing.id as string, reason: 'already_pending' }
+    }
+
+    const { data, error } = await db
+      .from('culinary_dictionary_review_queue' as any)
+      .insert({
+        chef_id: user.entityId,
+        source_surface: parsed.data.sourceSurface,
+        source_value: parsed.data.query,
+        normalized_value: normalizedValue,
+        confidence: null,
+        status: 'pending',
+        resolution: {
+          action: 'search_miss_capture',
+          capturedAt: new Date().toISOString(),
+        },
+      })
+      .select('id')
+      .single()
+
+    if (error) return { success: false, error: 'Failed to queue dictionary search miss' }
+
+    revalidateDictionarySurfaces()
+    return { success: true, captured: true, reviewId: data?.id as string | undefined }
+  } catch (error) {
+    console.error('[createDictionarySearchReviewCandidate] Error:', error)
+    return { success: false, error: 'Dictionary tables are not available yet' }
+  }
+}
+
+export async function createDictionarySearchReviewCandidateForm(formData: FormData): Promise<void> {
+  const result = await createDictionarySearchReviewCandidate({
+    query: String(formData.get('query') ?? ''),
+    sourceSurface: String(formData.get('sourceSurface') ?? 'dictionary_search'),
+  })
+  if (!result.success) {
+    console.error('[createDictionarySearchReviewCandidateForm] Error:', result.error)
   }
 }
 

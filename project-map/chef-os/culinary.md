@@ -12,7 +12,7 @@
 - Menu intelligence sidebar: legacy taste-summary shape preserved for the existing UI, but client taste and dietary conflict sections now read CP-Engine profile vectors when available, including hard veto, severe dislike, and ambiguity overlap detection; absent cleanly when `client_profile_*` tables are missing
 - Recipes: full detail with ingredients, yield, nutrition (AI), technique tags, photos, cost breakdown, scaled ingredient lists. Manual entry only (AI never generates recipes)
 - Ingredients: master list, cost history, sustainability, allergen classification (FDA Big 9)
-- Culinary Dictionary: canonical culinary terms, ingredient aliases, safety flags, public-safe definitions, chef review queue, decision builder, impact map, publication gate, alias conflict detector, related terms, vocabulary standards, and deterministic menu/staff-prep language auditor
+- Culinary Dictionary: canonical culinary terms, ingredient aliases, safety flags, public-safe definitions, chef review queue, decision builder, impact map, publication gate, alias conflict detector, related terms, vocabulary standards, deterministic menu/staff-prep language auditor, dictionary outcomes workbench, menu publish preflight, public/internal language guard, prep specificity checklist, safety coverage board, batch review grouping, term history timeline, and search-miss capture
 - Price Catalog: 15K+ items from OpenClaw, 10-tier price resolution chain
 - Components: pre-prep elements with quantities and cost
 - Costing: per-event menu cost breakdown, per-guest, historical trending

@@ -15,12 +15,23 @@ const sidePanelSource = readFileSync(
   'components/culinary-dictionary/dictionary-side-panel.tsx',
   'utf8'
 )
+const outcomesSource = readFileSync(
+  'components/culinary-dictionary/dictionary-outcomes-workbench.tsx',
+  'utf8'
+)
+const operationsSource = readFileSync(
+  'components/culinary-dictionary/dictionary-operations-panel.tsx',
+  'utf8'
+)
 
 test('chef dictionary page exposes operational command surfaces', () => {
   assert.match(pageSource, /DictionaryCommandCenter/)
+  assert.match(pageSource, /DictionaryOutcomesWorkbench/)
+  assert.match(pageSource, /DictionaryOperationsPanel/)
   assert.match(pageSource, /LanguageAuditorPanel/)
   assert.match(pageSource, /DictionarySidePanel/)
   assert.match(pageSource, /selectedTermParam/)
+  assert.match(pageSource, /createDictionarySearchReviewCandidateForm/)
 })
 
 test('command center uses deterministic intelligence and standards modules', () => {
@@ -40,4 +51,20 @@ test('side panel shows term impact and publication gate', () => {
   assert.match(sidePanelSource, /getDictionaryTermImpact/)
   assert.match(sidePanelSource, /evaluateVocabularyPublicationGate/)
   assert.match(sidePanelSource, /Publication gate/)
+})
+
+test('outcomes workbench connects dictionary terms to publish and prep outcomes', () => {
+  assert.match(outcomesSource, /analyzeDictionaryTextSurface/)
+  assert.match(outcomesSource, /buildMenuPublishPreflight/)
+  assert.match(outcomesSource, /guardPublicInternalLanguage/)
+  assert.match(outcomesSource, /buildPrepSpecificityChecklist/)
+  assert.match(outcomesSource, /does not generate recipes/)
+})
+
+test('operations panel exposes safety, batch review, conflict, and history surfaces', () => {
+  assert.match(operationsSource, /buildDictionarySurfaceImpactDrilldown/)
+  assert.match(operationsSource, /buildSafetyCoverageBoard/)
+  assert.match(operationsSource, /buildBatchReviewGroups/)
+  assert.match(operationsSource, /buildAliasConflictResolutionOptions/)
+  assert.match(operationsSource, /buildTermHistoryTimeline/)
 })
