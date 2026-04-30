@@ -87,6 +87,33 @@
       }
     },
     {
+      "id": "sticky-notes-intake-layer",
+      "label": "Sticky Notes Intake Layer",
+      "description": "Internal local source adapter that turns Simple Sticky Notes records into captured, classified, attached, activated, deferred, archived, personal, or restricted intake records.",
+      "keywords": [
+        "sticky notes",
+        "simple sticky notes",
+        "notes.db",
+        "organize everything",
+        "note ingestion",
+        "local notes",
+        "sticky intake",
+        "captured classified attached",
+        "activate defer archive",
+        "personal separation"
+      ],
+      "canonical_routes": [],
+      "canonical_files": [
+        "docs/specs/sticky-notes-intake-layer.md",
+        "devtools/sticky-notes/read-db.mjs",
+        "devtools/sticky-notes/organize.mjs"
+      ],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach Sticky Notes work to the local intake layer instead of client intake, Remy memory, or an ungoverned backlog."
+      }
+    },
+    {
       "id": "chef-command-plane",
       "label": "ChefFlow Command Plane",
       "description": "Canonical user-facing operating state contract for next action, blockers, risk, proof, recent changes, and page context across dashboard, event, client, finance, menus, and Remy read-only answers.",

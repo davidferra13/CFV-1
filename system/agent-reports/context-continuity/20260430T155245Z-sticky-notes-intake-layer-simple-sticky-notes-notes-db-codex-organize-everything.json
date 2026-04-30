@@ -1,0 +1,453 @@
+{
+  "generated_at": "2026-04-30T15:52:42.749Z",
+  "prompt": "Sticky Notes intake layer Simple Sticky Notes Notes.db Codex organize everything local note ingestion classify attach activate defer archive ChefFlow personal separation",
+  "terms": [
+    "sticky",
+    "notes",
+    "intake",
+    "layer",
+    "simple",
+    "organize",
+    "local",
+    "note",
+    "ingestion",
+    "classify",
+    "attach",
+    "activate",
+    "defer",
+    "archive",
+    "chefflow",
+    "personal",
+    "separation"
+  ],
+  "scanned_dirs": [
+    "app",
+    "components",
+    "lib",
+    "docs/specs",
+    "docs/changes",
+    "docs/app-complete-audit.md",
+    "project-map",
+    "memory",
+    "system/intake",
+    "system/agent-reports"
+  ],
+  "canonical_surfaces": [
+    {
+      "id": "client-intake",
+      "label": "Client Intake",
+      "score": 6,
+      "hits": ["intake", "chefflow"],
+      "canonical_routes": ["/book", "/clients/intake"],
+      "canonical_files": [
+        "app/api/book/route.ts",
+        "lib/inquiries/public-actions.ts",
+        "public/embed/chefflow-widget.js"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach to the existing intake lane contract."
+      }
+    },
+    {
+      "id": "context-continuity",
+      "label": "Context Continuity",
+      "score": 3,
+      "hits": ["layer", "attach"],
+      "canonical_routes": [],
+      "canonical_files": [
+        ".claude/skills/context-continuity/SKILL.md",
+        "devtools/context-continuity-scan.mjs",
+        "system/canonical-surfaces.json"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Extend the continuity layer in place."
+      }
+    },
+    {
+      "id": "chef-command-plane",
+      "label": "ChefFlow Command Plane",
+      "score": 3,
+      "hits": ["layer", "chefflow"],
+      "canonical_routes": ["/dashboard"],
+      "canonical_files": [
+        "docs/specs/chefflow-command-plane.md",
+        "lib/interface/action-layer.ts",
+        "lib/events/operating-spine.ts",
+        "components/platform-shell/context-command-panel.tsx"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach command-plane behavior to the canonical computed contract instead of creating another dashboard, Remy hub, command palette, or page-local action list."
+      }
+    },
+    {
+      "id": "remy-ai",
+      "label": "Remy AI",
+      "score": 3,
+      "hits": ["local", "chefflow"],
+      "canonical_routes": [],
+      "canonical_files": ["components/ai/remy-drawer.tsx", "lib/ai/remy-actions.ts"],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach new assistant behavior to Remy or its shared AI modules."
+      }
+    },
+    {
+      "id": "agent-skill-system",
+      "label": "Agent Skill System",
+      "score": 1,
+      "hits": ["chefflow"],
+      "canonical_routes": [],
+      "canonical_files": [
+        "devtools/skill-router.mjs",
+        "devtools/skill-validator.mjs",
+        "devtools/skill-trigger-tests.mjs",
+        "system/agent-golden-prompts/default.json"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Add to the existing skill harness."
+      }
+    }
+  ],
+  "related_files": [
+    {
+      "file": "docs/specs/notes-dishes-menus-client-event-pipeline.md",
+      "kind": "spec",
+      "score": 45,
+      "hits": ["notes", "note", "intake", "layer", "simple", "local", "attach", "archive"]
+    },
+    {
+      "file": "docs/specs/continuous-intelligence-layer.md",
+      "kind": "spec",
+      "score": 44,
+      "hits": [
+        "layer",
+        "sticky",
+        "notes",
+        "simple",
+        "local",
+        "note",
+        "ingestion",
+        "activate",
+        "defer",
+        "archive"
+      ]
+    },
+    {
+      "file": "docs/specs/openclaw-archive-digester.md",
+      "kind": "spec",
+      "score": 37,
+      "hits": ["archive", "notes", "organize", "local", "note", "classify", "attach", "chefflow"]
+    },
+    {
+      "file": "docs/specs/openclaw-food-price-intelligence.md",
+      "kind": "spec",
+      "score": 37,
+      "hits": [
+        "notes",
+        "layer",
+        "simple",
+        "local",
+        "note",
+        "classify",
+        "attach",
+        "defer",
+        "archive",
+        "chefflow"
+      ]
+    },
+    {
+      "file": "docs/specs/p1-chef-collab-spaces.md",
+      "kind": "spec",
+      "score": 37,
+      "hits": [
+        "notes",
+        "layer",
+        "simple",
+        "organize",
+        "note",
+        "attach",
+        "defer",
+        "archive",
+        "chefflow",
+        "separation"
+      ]
+    },
+    {
+      "file": "docs/specs/culinary-radar-intelligence-layer.md",
+      "kind": "spec",
+      "score": 34,
+      "hits": [
+        "layer",
+        "notes",
+        "simple",
+        "organize",
+        "local",
+        "note",
+        "ingestion",
+        "archive",
+        "chefflow"
+      ]
+    },
+    {
+      "file": "docs/specs/navigation-action-bar.md",
+      "kind": "spec",
+      "score": 33,
+      "hits": [
+        "notes",
+        "layer",
+        "organize",
+        "local",
+        "note",
+        "attach",
+        "archive",
+        "chefflow",
+        "personal"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-client-management.md",
+      "kind": "spec",
+      "score": 33,
+      "hits": [
+        "notes",
+        "intake",
+        "layer",
+        "local",
+        "note",
+        "activate",
+        "archive",
+        "chefflow",
+        "personal"
+      ]
+    },
+    {
+      "file": "docs/specs/p1-google-contacts-import-via-google-people-api.md",
+      "kind": "spec",
+      "score": 32,
+      "hits": [
+        "notes",
+        "intake",
+        "layer",
+        "simple",
+        "local",
+        "note",
+        "ingestion",
+        "attach",
+        "chefflow"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-local-ai-cohesion.md",
+      "kind": "spec",
+      "score": 32,
+      "hits": ["local", "layer", "note", "classify", "chefflow", "personal"]
+    },
+    {
+      "file": "docs/specs/chef-flow-decision-ledger-v1.md",
+      "kind": "spec",
+      "score": 31,
+      "hits": [
+        "notes",
+        "intake",
+        "layer",
+        "note",
+        "ingestion",
+        "attach",
+        "defer",
+        "archive",
+        "chefflow"
+      ]
+    },
+    {
+      "file": "docs/specs/openclaw-social-media-orchestration.md",
+      "kind": "spec",
+      "score": 31,
+      "hits": ["notes", "layer", "simple", "local", "note", "ingestion", "attach", "chefflow"]
+    },
+    {
+      "file": "docs/specs/openclaw-total-catalog-intelligence.md",
+      "kind": "spec",
+      "score": 31,
+      "hits": ["sticky", "notes", "simple", "organize", "local", "note", "defer", "chefflow"]
+    },
+    {
+      "file": "docs/specs/universal-intake-pipeline.md",
+      "kind": "spec",
+      "score": 31,
+      "hits": ["intake", "notes", "layer", "simple", "local", "note", "defer", "chefflow"]
+    },
+    {
+      "file": "docs/specs/openclaw-phase-3-full-integration.md",
+      "kind": "spec",
+      "score": 30,
+      "hits": ["notes", "simple", "local", "note", "activate", "defer", "chefflow", "personal"]
+    },
+    {
+      "file": "docs/specs/p0-chef-cpa-ready-tax-export-and-reconciliation.md",
+      "kind": "spec",
+      "score": 30,
+      "hits": [
+        "notes",
+        "layer",
+        "simple",
+        "local",
+        "note",
+        "ingestion",
+        "attach",
+        "archive",
+        "chefflow",
+        "separation"
+      ]
+    },
+    {
+      "file": "docs/specs/openclaw-pc-local-mirror-and-backup-contract.md",
+      "kind": "spec",
+      "score": 29,
+      "hits": ["local", "notes", "layer", "simple", "note", "chefflow"]
+    },
+    {
+      "file": "docs/specs/p0-zero-manual-entry-form-control-plane.md",
+      "kind": "spec",
+      "score": 29,
+      "hits": [
+        "notes",
+        "intake",
+        "layer",
+        "local",
+        "note",
+        "ingestion",
+        "activate",
+        "defer",
+        "chefflow"
+      ]
+    },
+    {
+      "file": "docs/specs/system-surface-role-classification-foundation.md",
+      "kind": "spec",
+      "score": 29,
+      "hits": ["notes", "intake", "layer", "simple", "note", "classify", "chefflow", "separation"]
+    },
+    {
+      "file": "components/menus/workflow-notes-panel.tsx",
+      "kind": "component",
+      "score": 28,
+      "hits": ["notes", "note", "attach", "archive"]
+    },
+    {
+      "file": "docs/specs/autonomous-v1-builder-contract.md",
+      "kind": "spec",
+      "score": 28,
+      "hits": ["notes", "intake", "layer", "simple", "local", "note", "attach", "chefflow"]
+    },
+    {
+      "file": "docs/specs/chefflow-command-plane.md",
+      "kind": "spec",
+      "score": 28,
+      "hits": ["chefflow", "notes", "intake", "layer", "simple", "local", "note", "attach", "defer"]
+    },
+    {
+      "file": "docs/specs/interaction-engine.md",
+      "kind": "spec",
+      "score": 28,
+      "hits": ["notes", "layer", "local", "note", "ingestion", "archive", "chefflow", "personal"]
+    },
+    {
+      "file": "lib/quick-notes/intelligence-processor.ts",
+      "kind": "module",
+      "score": 28,
+      "hits": ["notes", "note", "layer", "attach", "chefflow"]
+    },
+    {
+      "file": "docs/specs/bob-and-joy-action-catalog.md",
+      "kind": "spec",
+      "score": 27,
+      "hits": ["notes", "local", "note", "activate", "archive", "chefflow", "personal"]
+    },
+    {
+      "file": "docs/specs/chef-communication-noise-simulation.md",
+      "kind": "spec",
+      "score": 27,
+      "hits": ["notes", "organize", "note", "attach", "archive", "chefflow", "personal"]
+    },
+    {
+      "file": "docs/specs/comprehensive-domain-inventory-phase-1.md",
+      "kind": "spec",
+      "score": 27,
+      "hits": ["notes", "intake", "layer", "note", "classify", "chefflow", "separation"]
+    },
+    {
+      "file": "docs/specs/openclaw-ideal-runtime-and-national-intelligence.md",
+      "kind": "spec",
+      "score": 27,
+      "hits": ["notes", "layer", "local", "note", "ingestion", "classify", "chefflow"]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-cannabis-cohesion.md",
+      "kind": "spec",
+      "score": 27,
+      "hits": ["notes", "intake", "layer", "note", "attach", "chefflow", "personal", "separation"]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-competitive-surface.md",
+      "kind": "spec",
+      "score": 27,
+      "hits": [
+        "notes",
+        "intake",
+        "local",
+        "note",
+        "attach",
+        "activate",
+        "archive",
+        "chefflow",
+        "personal"
+      ]
+    }
+  ],
+  "recent_commits": [
+    {
+      "line": "d255d7b00 chore(agent): build chefflow command plane spec feature/professional-pwa-install",
+      "score": 1,
+      "hits": ["chefflow"]
+    }
+  ],
+  "dirty_matches": [],
+  "claim_matches": [
+    {
+      "file": "system/agent-claims/20260429T235629Z-feature-voice-ops-complete-build-the-complete-context-continuity-tooling-layer-s.json",
+      "score": 2,
+      "hits": ["layer"],
+      "prompt": "Build the complete context continuity tooling layer: scanner CLI, canonical surface registry, pre-build gate, Obsidian packet exporter, near-duplicate detector, spec template continuity section, feature family map, and dashboard",
+      "owned": [],
+      "status": "active"
+    }
+  ],
+  "duplicate_risks": [
+    {
+      "level": "medium",
+      "reason": "Multiple canonical surfaces matched the prompt.",
+      "owners": ["client-intake", "context-continuity", "chef-command-plane"]
+    },
+    {
+      "level": "medium",
+      "reason": "Active or recorded claims overlap this domain.",
+      "claims": [
+        "system/agent-claims/20260429T235629Z-feature-voice-ops-complete-build-the-complete-context-continuity-tooling-layer-s.json"
+      ]
+    }
+  ],
+  "continuity": {
+    "decision": "attach",
+    "stop_required": false,
+    "reason": "Matched canonical surface client-intake."
+  }
+}
