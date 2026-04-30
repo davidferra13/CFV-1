@@ -118,13 +118,13 @@ function defaultExecutor(root: string, prompt: string) {
   return {
     command: 'codex',
     args: [
-      'exec',
-      '--cd',
-      root,
       '--sandbox',
       'danger-full-access',
       '--ask-for-approval',
       'never',
+      'exec',
+      '--cd',
+      root,
       prompt,
     ],
   }
