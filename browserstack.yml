@@ -1,0 +1,17 @@
+userName: ${BROWSERSTACK_USERNAME}
+accessKey: ${BROWSERSTACK_ACCESS_KEY}
+framework: playwright
+
+platforms:
+  - browserName: safari
+    osVersion: 18
+    deviceName: iPhone 16
+
+browserstackLocal: true
+projectName: ChefFlow
+buildName: ${BROWSERSTACK_BUILD_NAME}
+sessionName: ChefFlow real iPhone Safari smoke
+debug: true
+networkLogs: false
+video: true
+parallelsPerPlatform: 1

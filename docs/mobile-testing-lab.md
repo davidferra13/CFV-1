@@ -95,6 +95,43 @@ Use this for release candidates and high-risk flows:
 - PWA install and standalone mode
 - Camera, file upload, or keyboard-heavy forms
 
+## Automated Real iPhone Smoke
+
+ChefFlow has an optional BrowserStack Automate path for real iPhone Safari Playwright checks. It uses `browserstack.yml` and never stores BrowserStack secrets in the repo.
+
+Set credentials in PowerShell:
+
+```powershell
+$env:BROWSERSTACK_USERNAME = "YOUR_USERNAME"
+$env:BROWSERSTACK_ACCESS_KEY = "YOUR_ACCESS_KEY"
+```
+
+Preview the BrowserStack command:
+
+```bash
+node scripts/browserstack-ios-smoke.mjs --dry-run
+```
+
+Run public routes only:
+
+```bash
+node scripts/browserstack-ios-smoke.mjs --public-only --run
+```
+
+Run the authenticated quick mobile audit on real iPhone Safari:
+
+```bash
+node scripts/browserstack-ios-smoke.mjs --run
+```
+
+Use `--base-url=https://beta.cheflowhq.com` when checking beta instead of local development:
+
+```bash
+node scripts/browserstack-ios-smoke.mjs --base-url=https://beta.cheflowhq.com --run
+```
+
+This command can start paid BrowserStack Automate sessions. Run it intentionally, not as part of casual local edits.
+
 ## If The Samsung Cannot Be Plugged In
 
 Use this fallback order:
