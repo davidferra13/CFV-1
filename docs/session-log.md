@@ -3,6 +3,14 @@
 ## 2026-04-30
 
 - Agent: Codex
+- Task: Expand Culinary Radar into action lanes, source trust, and real downstream actions
+- Status: completed
+- Files touched: `app/(chef)/radar/page.tsx`, `components/radar/radar-card.tsx`, `components/ai/remy-task-card.tsx`, `lib/culinary-radar/actions.ts`, `lib/culinary-radar/insights.ts`, `lib/ai/command-*`, `lib/ai/remy-*`, focused Radar tests, docs
+- Commits: pending at log-write time
+- Build state on departure: focused Radar unit tests pass and changed-file ESLint passes; full `npx tsc --noEmit --skipLibCheck` timed out twice in this worktree
+- Notes: Added action lanes for safety impact, local sourcing, opportunity inbox, and sustainability brief. Added a source trust panel with stale/degraded/fresh source labels. Radar cards can now create review tasks, local vendor leads, and local market calendar notes through scoped server actions. Remy now routes sustainability and source-trust questions into source-backed Radar read tasks.
+
+- Agent: Codex
 - Task: Add USDA farmers market and local sourcing coverage to Culinary Radar
 - Status: completed
 - Files touched: `lib/culinary-radar/*`, `lib/culinary-radar/adapters/farmers-markets.ts`, `lib/ai/command-*`, `lib/ai/remy-*`, `components/ai/remy-task-card.tsx`, focused Radar tests, `docs/app-complete-audit.md`, `docs/build-state.md`, `project-map/chef-os/culinary.md`

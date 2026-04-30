@@ -3,6 +3,9 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import {
+  createRadarMarketCalendarNote,
+  createRadarReviewTask,
+  createRadarVendorLead,
   dismissRadarMatch,
   markRadarMatchRead,
   markRadarMatchUseful,
@@ -51,6 +54,21 @@ async function dismissAction(id: string) {
 async function usefulAction(id: string, useful: boolean) {
   const result = await markRadarMatchUseful(id, useful)
   if (!result.success) throw new Error(result.error ?? 'Could not save radar feedback.')
+}
+
+async function createReviewTaskAction(id: string) {
+  const result = await createRadarReviewTask(id)
+  if (!result.success) throw new Error(result.error ?? 'Could not create Radar task.')
+}
+
+async function createVendorLeadAction(id: string) {
+  const result = await createRadarVendorLead(id)
+  if (!result.success) throw new Error(result.error ?? 'Could not save local source lead.')
+}
+
+async function createMarketNoteAction(id: string) {
+  const result = await createRadarMarketCalendarNote(id)
+  if (!result.success) throw new Error(result.error ?? 'Could not add market calendar note.')
 }
 
 export function RadarCard({ match }: { match: RadarMatchView }) {
@@ -146,6 +164,25 @@ export function RadarCard({ match }: { match: RadarMatchView }) {
           >
             Open source
           </Button>
+          <form action={createReviewTaskAction.bind(null, match.id)}>
+            <Button type="submit" variant="secondary" size="sm">
+              Make task
+            </Button>
+          </form>
+          {match.item.category === 'local' && (
+            <>
+              <form action={createVendorLeadAction.bind(null, match.id)}>
+                <Button type="submit" variant="secondary" size="sm">
+                  Save lead
+                </Button>
+              </form>
+              <form action={createMarketNoteAction.bind(null, match.id)}>
+                <Button type="submit" variant="secondary" size="sm">
+                  Add market note
+                </Button>
+              </form>
+            </>
+          )}
           {match.deliveryState !== 'read' && (
             <form action={markReadAction.bind(null, match.id)}>
               <Button type="submit" variant="ghost" size="sm">

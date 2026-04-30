@@ -291,14 +291,22 @@ const DETERMINISTIC_PATTERNS: DeterministicPattern[] = [
   },
   {
     pattern:
-      /\b(?:culinary radar|latest culinary news|food safety alerts?|recalls?|outbreaks?|wck|world central kitchen|chef opportunities)\b/i,
+      /\b(?:culinary radar|latest culinary news|food safety alerts?|recalls?|outbreaks?|wck|world central kitchen|chef opportunities|radar source trust|source health|source freshness|sustainability|sustainable|waste reduction|packaging)\b/i,
     build: (_match, raw) => {
       const taskType = /\b(?:recalls?|outbreaks?|safety)\b/i.test(raw)
         ? 'radar.safety'
+        : /\b(?:source trust|source health|source freshness|freshness|current|trustworthy)\b/i.test(
+              raw
+            )
+          ? 'radar.source_trust'
         : /\b(?:farmers?\s+markets?|farmer'?s\s+markets?|local\s+markets?|local\s+sourcing|where\s+to\s+source|source\s+local)\b/i.test(
               raw
             )
           ? 'radar.local_markets'
+          : /\b(?:sustainability|sustainable|waste reduction|packaging|compost|food waste)\b/i.test(
+                raw
+              )
+            ? 'radar.sustainability'
         : /\b(?:wck|world central kitchen|opportunit|charity|relief|volunteer|career)\b/i.test(raw)
           ? 'radar.opportunities'
           : 'radar.latest'

@@ -196,12 +196,28 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     inputSchema: '{ "limit": "number - optional, defaults to 5" }',
   },
   {
+    type: 'radar.sustainability',
+    tier: 1,
+    name: 'Radar Sustainability Brief',
+    description:
+      'Show source-backed sustainability, waste reduction, sourcing, packaging, and food business operations signals from Culinary Radar.',
+    inputSchema: '{ "limit": "number - optional, defaults to 5" }',
+  },
+  {
     type: 'radar.local_markets',
     tier: 1,
     name: 'Local Market Radar',
     description:
       'Show source-backed local sourcing and farmers market signals from Culinary Radar, including the USDA Farmers Market Directory when available. Read-only, source-attributed, and never fabricated.',
     inputSchema: '{ "limit": "number - optional, defaults to 5" }',
+  },
+  {
+    type: 'radar.source_trust',
+    tier: 1,
+    name: 'Radar Source Trust',
+    description:
+      'Show Culinary Radar source health, freshness, degraded sources, and stale source counts. Use when the chef asks whether Radar is current or trustworthy.',
+    inputSchema: '{}',
   },
   {
     type: 'radar.explain_item',

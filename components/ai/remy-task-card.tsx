@@ -418,6 +418,7 @@ function TaskDataRenderer({ taskType, data }: { taskType: string; data: unknown 
     case 'radar.latest':
     case 'radar.safety':
     case 'radar.opportunities':
+    case 'radar.sustainability':
     case 'radar.local_markets': {
       const d = data as {
         matches: Array<{
@@ -475,6 +476,37 @@ function TaskDataRenderer({ taskType, data }: { taskType: string; data: unknown 
               Degraded sources: {d.unavailableSources.join(', ')}
             </p>
           )}
+        </div>
+      )
+    }
+
+    case 'radar.source_trust': {
+      const d = data as {
+        message?: string
+        unavailable?: boolean
+        sources?: Array<{
+          name: string
+          category: string
+          health: string
+          freshness: string
+          lastError?: string | null
+        }>
+      }
+      if (d.unavailable) {
+        return <p className="text-xs text-amber-500">{d.message ?? 'Source health unavailable.'}</p>
+      }
+      return (
+        <div className="space-y-2">
+          <p className="text-xs text-stone-400">{d.message ?? 'Radar source health loaded.'}</p>
+          {(d.sources ?? []).slice(0, 8).map((source) => (
+            <div key={source.name} className="text-xs border-l-2 border-stone-600 pl-2">
+              <p className="font-medium text-stone-200">{source.name}</p>
+              <p className="text-stone-500">
+                {source.category} - {source.health} - {source.freshness}
+              </p>
+              {source.lastError && <p className="text-amber-500">{source.lastError}</p>}
+            </div>
+          ))}
         </div>
       )
     }

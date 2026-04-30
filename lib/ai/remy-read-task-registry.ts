@@ -2,6 +2,7 @@ import 'server-only'
 
 import type { PlannedTask } from '@/lib/ai/command-types'
 import { searchClientsByName } from '@/lib/clients/actions'
+import { buildRadarInsightSummary } from '@/lib/culinary-radar/insights'
 import { loadRadarDataForChef } from '@/lib/culinary-radar/read-model'
 import type { RadarMatchView } from '@/lib/culinary-radar/view-model'
 import { createServerClient } from '@/lib/db/server'
@@ -291,8 +292,11 @@ const REMY_READ_TASK_EXECUTORS: Record<string, ReadTaskExecutor> = {
     executeRadarLatest({ ...task, inputs: { ...task.inputs, category: 'safety' } }, ctx),
   'radar.opportunities': (task, ctx) =>
     executeRadarLatest({ ...task, inputs: { ...task.inputs, category: 'opportunity' } }, ctx),
+  'radar.sustainability': (task, ctx) =>
+    executeRadarLatest({ ...task, inputs: { ...task.inputs, category: 'sustainability' } }, ctx),
   'radar.local_markets': (task, ctx) =>
     executeRadarLatest({ ...task, inputs: { ...task.inputs, category: 'local' } }, ctx),
+  'radar.source_trust': (_task, ctx) => executeRadarSourceTrust(ctx),
   'radar.explain_item': (task, ctx) => executeRadarExplain(task, ctx),
 }
 
@@ -366,6 +370,28 @@ async function executeRadarExplain(task: PlannedTask, ctx: ReadTaskContext) {
     reasons: match.matchReasons,
     matchedEntities: match.matchedEntities,
     recommendedActions: match.recommendedActions,
+  }
+}
+
+async function executeRadarSourceTrust(ctx: ReadTaskContext) {
+  const overview = await loadRadarDataForChef(ctx.tenantId, undefined, 1)
+  if (!overview.success) {
+    return {
+      unavailable: true,
+      message: overview.error ?? 'Culinary Radar source health could not load.',
+    }
+  }
+
+  const insights = buildRadarInsightSummary(overview)
+  return {
+    message: `Radar source trust: ${insights.trustedSourceCount} fresh, ${insights.staleSourceCount} stale, ${insights.degradedSourceCount} degraded.`,
+    sources: insights.sourceTrust.map((source) => ({
+      name: source.name,
+      category: source.defaultCategory,
+      health: source.health,
+      freshness: source.freshnessLabel,
+      lastError: source.lastError,
+    })),
   }
 }
 
