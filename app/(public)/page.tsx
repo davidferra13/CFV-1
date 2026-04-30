@@ -14,6 +14,10 @@ import {
 import { buildMarketingSourceHref } from '@/lib/marketing/source-links'
 import { buildOperatorWalkthroughHref } from '@/lib/marketing/walkthrough-links'
 import { buildMarketingMetadata } from '@/lib/site/public-site'
+import {
+  getPublicSupporterProofReport,
+  type PublicSupporterProofReport,
+} from '@/lib/supporter-signals/report'
 import { HomepageLiveSignal } from './_components/homepage-live-signal'
 import { HomepageMotionController } from './_components/homepage-motion-controller'
 import { HomepageSearch } from './_components/homepage-search'
@@ -65,7 +69,75 @@ const HOME_BOOKING_INTENT_MESSAGES = [
   'From first search to paid event, ChefFlow keeps the next step clear.',
 ] as const
 
-export default function Home() {
+function HomepageSupporterProof({ report }: { report: PublicSupporterProofReport }) {
+  return (
+    <section className="border-y border-stone-800/30 bg-stone-950/40">
+      <div className="mx-auto grid w-full max-w-6xl gap-8 px-4 py-12 sm:px-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:items-center lg:px-8">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-500">
+            Proof without inflated claims
+          </p>
+          <h2 className="mt-3 max-w-xl text-2xl font-display tracking-[-0.035em] text-stone-100 md:text-3xl">
+            {report.headline}
+          </h2>
+          <p className="mt-4 max-w-xl text-sm leading-6 tracking-[-0.01em] text-stone-400">
+            {report.detail}
+          </p>
+          <div className="mt-5 rounded-2xl border border-stone-800/50 bg-stone-900/35 p-4">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-300/80">
+              Safe public claim
+            </p>
+            <p className="mt-2 text-sm font-medium text-stone-200">{report.safePublicClaim}</p>
+          </div>
+        </div>
+
+        {report.items.length > 0 ? (
+          <div className="grid gap-3 sm:grid-cols-2">
+            {report.items.map((item) => (
+              <div
+                key={item.id}
+                className="rounded-2xl border border-stone-800/50 bg-stone-900/45 p-4"
+              >
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-stone-500">
+                  {item.label}
+                </p>
+                <p className="mt-3 text-base font-semibold tracking-[-0.01em] text-stone-100">
+                  {item.name}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-stone-400">{item.detail}</p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-stone-800/50 bg-stone-900/35 p-6">
+            <p className="text-sm font-semibold text-stone-200">
+              Names, logos, and quotes stay private until permission is clear.
+            </p>
+            <p className="mt-3 text-sm leading-6 text-stone-500">
+              ChefFlow can publish an honest early proof section now, then upgrade it as featured
+              testimonials and showcase-visible partners are approved.
+            </p>
+            <TrackedLink
+              href={buildOperatorWalkthroughHref({
+                sourcePage: 'home',
+                sourceCta: 'supporter_proof_walkthrough',
+              })}
+              analyticsName="home_supporter_proof_walkthrough"
+              analyticsProps={{ section: 'supporter_proof' }}
+              className="mt-5 inline-flex min-h-11 items-center justify-center rounded-2xl border border-stone-700/80 bg-stone-950/60 px-5 py-2.5 text-sm font-medium tracking-[-0.01em] text-stone-300 transition-all duration-200 hover:border-stone-600 hover:bg-stone-900 hover:text-stone-100"
+            >
+              Request walkthrough
+            </TrackedLink>
+          </div>
+        )}
+      </div>
+    </section>
+  )
+}
+
+export default async function Home() {
+  const supporterProof = await getPublicSupporterProofReport()
+
   return (
     <>
       <PublicPageView
@@ -130,6 +202,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <HomepageSupporterProof report={supporterProof} />
 
       <div className="py-6 sm:py-8">
         <div className="mx-auto flex max-w-6xl items-center gap-6 px-4 sm:px-6 lg:px-8">

@@ -1,5 +1,6 @@
 import { requireAdmin } from '@/lib/auth/admin'
 import { createAdminClient } from '@/lib/db/admin'
+import { createServerClient } from '@/lib/db/server'
 
 export type SupporterSignalStatus =
   | 'public_ready'
@@ -50,6 +51,23 @@ export type SupporterSignalsReport = {
     safePublicClaim: string
     blockedClaim: string
   }
+}
+
+export type PublicSupporterProofItem = {
+  id: string
+  kind: 'quote' | 'partner'
+  label: string
+  name: string
+  detail: string
+}
+
+export type PublicSupporterProofReport = {
+  generatedAt: string
+  status: 'ready' | 'early' | 'unavailable'
+  headline: string
+  detail: string
+  safePublicClaim: string
+  items: PublicSupporterProofItem[]
 }
 
 export type TestimonialSignalRow = {
@@ -416,5 +434,102 @@ export async function getSupporterSignalsReport(): Promise<SupporterSignalsRepor
     partners: assertQuery<PartnerSignalRow>(partnerResult, 'referral_partners'),
     betaSignups: assertQuery<BetaSignupSignalRow>(betaResult, 'beta_signups'),
     feedback: assertQuery<FeedbackSignalRow>(feedbackResult, 'user_feedback'),
+  })
+}
+
+export function buildPublicSupporterProofReport(input: {
+  generatedAt: string
+  featuredTestimonials: Pick<TestimonialSignalRow, 'id' | 'guest_name' | 'testimonial'>[]
+  publicPartners: Pick<PartnerSignalRow, 'id' | 'name' | 'partner_type'>[]
+  unavailable?: boolean
+}): PublicSupporterProofReport {
+  if (input.unavailable) {
+    return {
+      generatedAt: input.generatedAt,
+      status: 'unavailable',
+      headline: 'Credibility proof is being verified.',
+      detail:
+        'ChefFlow only publishes supporter proof when the underlying approval records are available.',
+      safePublicClaim: 'Built for chef-led culinary operators.',
+      items: [],
+    }
+  }
+
+  const quoteItems: PublicSupporterProofItem[] = input.featuredTestimonials.map((row) => ({
+    id: `quote-${row.id}`,
+    kind: 'quote',
+    label: 'Featured testimonial',
+    name: row.guest_name,
+    detail: excerpt(row.testimonial, 96),
+  }))
+  const partnerItems: PublicSupporterProofItem[] = input.publicPartners.map((row) => ({
+    id: `partner-${row.id}`,
+    kind: 'partner',
+    label: 'Public partner',
+    name: row.name,
+    detail: row.partner_type,
+  }))
+  const items = [...quoteItems, ...partnerItems].slice(0, 6)
+
+  if (items.length === 0) {
+    return {
+      generatedAt: input.generatedAt,
+      status: 'early',
+      headline: 'Built with input from culinary operators.',
+      detail:
+        'ChefFlow is collecting consent-backed testimonials and partner proof before publishing names, logos, or quotes.',
+      safePublicClaim: 'Built with input from culinary operators.',
+      items,
+    }
+  }
+
+  return {
+    generatedAt: input.generatedAt,
+    status: 'ready',
+    headline: 'Public proof, only when permission is clear.',
+    detail:
+      'This section uses featured testimonials and showcase-visible partners from ChefFlow records.',
+    safePublicClaim: 'ChefFlow is building from permissioned operator and event evidence.',
+    items,
+  }
+}
+
+export async function getPublicSupporterProofReport(): Promise<PublicSupporterProofReport> {
+  const db: any = createServerClient({ admin: true })
+
+  const [testimonialResult, partnerResult] = await Promise.all([
+    db
+      .from('guest_testimonials')
+      .select('id, guest_name, testimonial')
+      .eq('is_approved', true)
+      .eq('is_featured', true)
+      .order('created_at', { ascending: false })
+      .limit(3),
+    db
+      .from('referral_partners')
+      .select('id, name, partner_type')
+      .eq('status', 'active')
+      .eq('is_showcase_visible', true)
+      .order('showcase_order', { ascending: true })
+      .limit(3),
+  ])
+
+  if (testimonialResult.error || partnerResult.error) {
+    console.error('[getPublicSupporterProofReport] query failed', {
+      testimonials: testimonialResult.error,
+      partners: partnerResult.error,
+    })
+    return buildPublicSupporterProofReport({
+      generatedAt: new Date().toISOString(),
+      featuredTestimonials: [],
+      publicPartners: [],
+      unavailable: true,
+    })
+  }
+
+  return buildPublicSupporterProofReport({
+    generatedAt: new Date().toISOString(),
+    featuredTestimonials: testimonialResult.data ?? [],
+    publicPartners: partnerResult.data ?? [],
   })
 }

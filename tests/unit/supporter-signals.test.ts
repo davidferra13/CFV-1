@@ -1,6 +1,7 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import {
+  buildPublicSupporterProofReport,
   buildSupporterSignalsReport,
   type SupporterSignalsFacts,
 } from '@/lib/supporter-signals/report'
@@ -155,5 +156,64 @@ describe('supporter signals report', () => {
       ['Keep homepage proof copy early-stage', 'Request beta reference permission']
     )
     assert.equal(report.candidates[0]?.status, 'private_candidate')
+  })
+})
+
+describe('public supporter proof report', () => {
+  it('uses honest early copy when no public proof is approved', () => {
+    const report = buildPublicSupporterProofReport({
+      generatedAt: '2026-04-30T12:00:00.000Z',
+      featuredTestimonials: [],
+      publicPartners: [],
+    })
+
+    assert.equal(report.status, 'early')
+    assert.equal(report.items.length, 0)
+    assert.match(report.detail, /before publishing names/)
+    assert.equal(report.safePublicClaim, 'Built with input from culinary operators.')
+  })
+
+  it('publishes only featured testimonials and showcase partners', () => {
+    const report = buildPublicSupporterProofReport({
+      generatedAt: '2026-04-30T12:00:00.000Z',
+      featuredTestimonials: [
+        {
+          id: 'testimonial-1',
+          guest_name: 'Ava Client',
+          testimonial: 'ChefFlow kept every planning detail visible.',
+        },
+      ],
+      publicPartners: [
+        {
+          id: 'partner-1',
+          name: 'Venue Partner',
+          partner_type: 'venue',
+        },
+      ],
+    })
+
+    assert.equal(report.status, 'ready')
+    assert.equal(report.items.length, 2)
+    assert.deepEqual(
+      report.items.map((item) => item.kind),
+      ['quote', 'partner']
+    )
+    assert.equal(
+      report.safePublicClaim,
+      'ChefFlow is building from permissioned operator and event evidence.'
+    )
+  })
+
+  it('does not render fake proof when public data is unavailable', () => {
+    const report = buildPublicSupporterProofReport({
+      generatedAt: '2026-04-30T12:00:00.000Z',
+      featuredTestimonials: [],
+      publicPartners: [],
+      unavailable: true,
+    })
+
+    assert.equal(report.status, 'unavailable')
+    assert.equal(report.items.length, 0)
+    assert.match(report.detail, /approval records are available/)
   })
 })
