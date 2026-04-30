@@ -1,0 +1,822 @@
+{
+  "generated_at": "2026-04-30T22:57:53.393Z",
+  "prompt": "Build spec for V1 Control Plane module connecting product blueprint V1 V2 governor cannot-fail contracts request ledger approved queue claims receipts Mission Control progress tracking",
+  "terms": [
+    "spec",
+    "control",
+    "plane",
+    "module",
+    "connecting",
+    "product",
+    "blueprint",
+    "governor",
+    "cannot-fail",
+    "contracts",
+    "request",
+    "ledger",
+    "approved",
+    "queue",
+    "claims",
+    "receipts",
+    "mission",
+    "progress",
+    "tracking"
+  ],
+  "scanned_dirs": [
+    "app",
+    "components",
+    "lib",
+    "docs/specs",
+    "docs/changes",
+    "docs/app-complete-audit.md",
+    "project-map",
+    "memory",
+    "system/intake",
+    "system/agent-reports"
+  ],
+  "canonical_surfaces": [
+    {
+      "id": "autonomous-v1-builder",
+      "label": "Autonomous V1 Builder Loop",
+      "score": 15,
+      "hits": ["spec", "control", "governor", "approved", "queue", "receipts", "mission"],
+      "canonical_routes": [],
+      "canonical_files": [
+        "docs/specs/autonomous-v1-builder-contract.md",
+        "docs/v1-v2-governor.md",
+        "docs/specs/p0-builder-agent-foundation.md"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Extend the governed V1 builder contract instead of creating another queue or autonomous agent surface."
+      }
+    },
+    {
+      "id": "chef-command-plane",
+      "label": "ChefFlow Command Plane",
+      "score": 5,
+      "hits": ["spec", "plane"],
+      "canonical_routes": ["/dashboard"],
+      "canonical_files": [
+        "docs/specs/chefflow-command-plane.md",
+        "lib/interface/action-layer.ts",
+        "lib/events/operating-spine.ts",
+        "components/platform-shell/context-command-panel.tsx"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach command-plane behavior to the canonical computed contract instead of creating another dashboard, Remy hub, command palette, or page-local action list."
+      }
+    },
+    {
+      "id": "finance",
+      "label": "Finance and Ledger",
+      "score": 5,
+      "hits": ["ledger"],
+      "canonical_routes": ["/finance", "/quotes"],
+      "canonical_files": [
+        "lib/ledger/append.ts",
+        "lib/ledger/compute.ts",
+        "lib/events/transitions.ts"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Financial behavior must attach to ledger and quote owners."
+      }
+    },
+    {
+      "id": "public-homepage",
+      "label": "Public Homepage",
+      "score": 1,
+      "hits": ["product"],
+      "canonical_routes": ["/"],
+      "canonical_files": ["app/(public)/page.tsx"],
+      "sandbox_routes": ["/sandbox/homepage"],
+      "duplicate_policy": {
+        "allowed_duplicates": 1,
+        "allowed_reason": "One sandbox duplicate for interactive experimentation."
+      }
+    },
+    {
+      "id": "sticky-notes-intake-layer",
+      "label": "Sticky Notes Intake Layer",
+      "score": 1,
+      "hits": ["spec"],
+      "canonical_routes": [],
+      "canonical_files": [
+        "docs/specs/sticky-notes-intake-layer.md",
+        "devtools/sticky-notes/read-db.mjs",
+        "devtools/sticky-notes/organize.mjs"
+      ],
+      "sandbox_routes": [],
+      "duplicate_policy": {
+        "allowed_duplicates": 0,
+        "allowed_reason": "Attach Sticky Notes work to the local intake layer instead of client intake, Remy memory, or an ungoverned backlog."
+      }
+    }
+  ],
+  "related_files": [
+    {
+      "file": "docs/specs/autonomous-v1-builder-contract.md",
+      "kind": "spec",
+      "score": 61,
+      "hits": [
+        "spec",
+        "control",
+        "module",
+        "product",
+        "governor",
+        "request",
+        "ledger",
+        "approved",
+        "queue",
+        "claims"
+      ]
+    },
+    {
+      "file": "docs/specs/private-dev-cockpit-consolidation.md",
+      "kind": "spec",
+      "score": 56,
+      "hits": [
+        "spec",
+        "control",
+        "module",
+        "product",
+        "blueprint",
+        "governor",
+        "approved",
+        "queue",
+        "claims",
+        "receipts"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-competitive-surface.md",
+      "kind": "spec",
+      "score": 55,
+      "hits": [
+        "spec",
+        "control",
+        "module",
+        "product",
+        "blueprint",
+        "contracts",
+        "request",
+        "ledger",
+        "queue",
+        "receipts"
+      ]
+    },
+    {
+      "file": "docs/specs/openclaw-ideal-runtime-and-national-intelligence.md",
+      "kind": "spec",
+      "score": 54,
+      "hits": [
+        "spec",
+        "control",
+        "plane",
+        "product",
+        "governor",
+        "contracts",
+        "request",
+        "approved",
+        "queue",
+        "claims"
+      ]
+    },
+    {
+      "file": "system/agent-reports/context-continuity/20260430T030830Z-create-build-spec-for-autonomous-v1-builder-loop-intake-v1-governor-classificati.json",
+      "kind": "system",
+      "score": 52,
+      "hits": [
+        "spec",
+        "governor",
+        "control",
+        "plane",
+        "module",
+        "approved",
+        "queue",
+        "claims",
+        "receipts",
+        "mission"
+      ]
+    },
+    {
+      "file": "docs/specs/bob-and-joy-action-catalog.md",
+      "kind": "spec",
+      "score": 50,
+      "hits": [
+        "spec",
+        "control",
+        "module",
+        "product",
+        "contracts",
+        "request",
+        "ledger",
+        "approved",
+        "queue",
+        "receipts"
+      ]
+    },
+    {
+      "file": "docs/specs/mission-control-passive-dashboard.md",
+      "kind": "spec",
+      "score": 49,
+      "hits": [
+        "spec",
+        "control",
+        "mission",
+        "connecting",
+        "product",
+        "blueprint",
+        "queue",
+        "progress"
+      ]
+    },
+    {
+      "file": "system/agent-reports/context-continuity/20260430T203703Z-add-website-page-to-monitor-live-codex-v1-builder-queue-active-claims-receipts-b.json",
+      "kind": "system",
+      "score": 48,
+      "hits": [
+        "queue",
+        "claims",
+        "receipts",
+        "spec",
+        "plane",
+        "module",
+        "governor",
+        "request",
+        "ledger",
+        "approved"
+      ]
+    },
+    {
+      "file": "components/navigation/nav-config.tsx",
+      "kind": "component",
+      "score": 47,
+      "hits": [
+        "spec",
+        "module",
+        "product",
+        "contracts",
+        "request",
+        "ledger",
+        "approved",
+        "queue",
+        "claims",
+        "receipts"
+      ]
+    },
+    {
+      "file": "docs/specs/interaction-engine.md",
+      "kind": "spec",
+      "score": 47,
+      "hits": [
+        "spec",
+        "control",
+        "module",
+        "request",
+        "ledger",
+        "approved",
+        "queue",
+        "receipts",
+        "mission",
+        "progress"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-cohesiveness-synthesis.md",
+      "kind": "spec",
+      "score": 47,
+      "hits": [
+        "spec",
+        "module",
+        "product",
+        "blueprint",
+        "contracts",
+        "request",
+        "ledger",
+        "queue",
+        "receipts",
+        "mission"
+      ]
+    },
+    {
+      "file": "docs/specs/comprehensive-domain-inventory-phase-1.md",
+      "kind": "spec",
+      "score": 45,
+      "hits": [
+        "spec",
+        "control",
+        "module",
+        "product",
+        "contracts",
+        "request",
+        "ledger",
+        "queue",
+        "claims",
+        "receipts"
+      ]
+    },
+    {
+      "file": "lib/admin/v1-builder-monitor.ts",
+      "kind": "module",
+      "score": 45,
+      "hits": [
+        "spec",
+        "control",
+        "request",
+        "ledger",
+        "approved",
+        "queue",
+        "claims",
+        "receipts",
+        "mission"
+      ]
+    },
+    {
+      "file": "docs/specs/chefflow-command-plane.md",
+      "kind": "spec",
+      "score": 44,
+      "hits": [
+        "spec",
+        "plane",
+        "module",
+        "product",
+        "contracts",
+        "request",
+        "ledger",
+        "approved",
+        "queue",
+        "claims"
+      ]
+    },
+    {
+      "file": "docs/specs/platform-intelligence-hub.md",
+      "kind": "spec",
+      "score": 44,
+      "hits": [
+        "spec",
+        "product",
+        "request",
+        "ledger",
+        "queue",
+        "claims",
+        "receipts",
+        "mission",
+        "progress",
+        "tracking"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-full-cohesion.md",
+      "kind": "spec",
+      "score": 43,
+      "hits": [
+        "spec",
+        "control",
+        "module",
+        "product",
+        "contracts",
+        "request",
+        "ledger",
+        "queue",
+        "receipts",
+        "mission"
+      ]
+    },
+    {
+      "file": "lib/db/fk-map.ts",
+      "kind": "module",
+      "score": 43,
+      "hits": [
+        "spec",
+        "control",
+        "product",
+        "contracts",
+        "request",
+        "ledger",
+        "queue",
+        "claims",
+        "mission",
+        "progress"
+      ]
+    },
+    {
+      "file": "docs/specs/cross-boundary-flow-interrogation.md",
+      "kind": "spec",
+      "score": 42,
+      "hits": [
+        "spec",
+        "control",
+        "contracts",
+        "request",
+        "ledger",
+        "queue",
+        "receipts",
+        "mission",
+        "progress"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-full-cohesion-answers.md",
+      "kind": "spec",
+      "score": 42,
+      "hits": [
+        "spec",
+        "module",
+        "product",
+        "contracts",
+        "request",
+        "ledger",
+        "queue",
+        "receipts",
+        "mission",
+        "tracking"
+      ]
+    },
+    {
+      "file": "system/agent-reports/context-continuity/20260430T163511Z-private-dev-cockpit-consolidate-3977-sticky-notes-v1-builder-queue-claims-receip.json",
+      "kind": "system",
+      "score": 42,
+      "hits": [
+        "queue",
+        "claims",
+        "spec",
+        "control",
+        "plane",
+        "module",
+        "governor",
+        "receipts",
+        "mission"
+      ]
+    },
+    {
+      "file": "docs/specs/openclaw-goal-governor-and-kpi-contract.md",
+      "kind": "spec",
+      "score": 39,
+      "hits": [
+        "spec",
+        "governor",
+        "product",
+        "contracts",
+        "request",
+        "queue",
+        "claims",
+        "mission",
+        "progress"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-consumer-discovery-cohesion-v1.md",
+      "kind": "spec",
+      "score": 39,
+      "hits": [
+        "spec",
+        "control",
+        "product",
+        "blueprint",
+        "request",
+        "ledger",
+        "approved",
+        "queue",
+        "claims",
+        "mission"
+      ]
+    },
+    {
+      "file": "app/(chef)/dashboard/_sections/business-section-mobile-content.tsx",
+      "kind": "route",
+      "score": 38,
+      "hits": [
+        "spec",
+        "control",
+        "contracts",
+        "request",
+        "approved",
+        "queue",
+        "receipts",
+        "mission",
+        "progress",
+        "tracking"
+      ]
+    },
+    {
+      "file": "docs/specs/chef-flow-decision-ledger-v1.md",
+      "kind": "spec",
+      "score": 38,
+      "hits": ["spec", "ledger", "control", "product", "request", "claims", "mission", "progress"]
+    },
+    {
+      "file": "docs/specs/openclaw-food-price-intelligence.md",
+      "kind": "spec",
+      "score": 38,
+      "hits": ["spec", "product", "request", "approved", "queue", "receipts", "mission", "tracking"]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-operational-pressure.md",
+      "kind": "spec",
+      "score": 38,
+      "hits": [
+        "spec",
+        "control",
+        "product",
+        "request",
+        "ledger",
+        "queue",
+        "receipts",
+        "mission",
+        "progress",
+        "tracking"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set.md",
+      "kind": "spec",
+      "score": 38,
+      "hits": [
+        "spec",
+        "control",
+        "module",
+        "product",
+        "contracts",
+        "request",
+        "ledger",
+        "approved",
+        "queue",
+        "receipts"
+      ]
+    },
+    {
+      "file": "docs/specs/operational-resilience-interrogation.md",
+      "kind": "spec",
+      "score": 37,
+      "hits": [
+        "spec",
+        "control",
+        "connecting",
+        "product",
+        "contracts",
+        "request",
+        "ledger",
+        "approved",
+        "queue",
+        "mission"
+      ]
+    },
+    {
+      "file": "docs/specs/remy-capability-operating-layer.md",
+      "kind": "spec",
+      "score": 37,
+      "hits": [
+        "spec",
+        "control",
+        "plane",
+        "module",
+        "product",
+        "governor",
+        "contracts",
+        "request",
+        "ledger",
+        "approved"
+      ]
+    },
+    {
+      "file": "docs/specs/system-integrity-question-set-cannabis-cohesion.md",
+      "kind": "spec",
+      "score": 37,
+      "hits": [
+        "spec",
+        "control",
+        "module",
+        "product",
+        "blueprint",
+        "contracts",
+        "ledger",
+        "receipts",
+        "progress"
+      ]
+    }
+  ],
+  "recent_commits": [
+    {
+      "line": "f2ce36f20 chore(agent): fix third monitor mission control launch feature/v1-builder-runtime-scaffold",
+      "score": 2,
+      "hits": ["control", "mission"]
+    },
+    {
+      "line": "40c898698 chore(agent): build mission control autonomy wallboard feature/v1-builder-runtime-scaffold",
+      "score": 2,
+      "hits": ["control", "mission"]
+    },
+    {
+      "line": "68e2a1ca3 chore(agent): codify third monitor mission control feature/v1-builder-runtime-scaffold",
+      "score": 2,
+      "hits": ["control", "mission"]
+    },
+    {
+      "line": "84053bad0 chore(agent): spec remy capability operating layer feature/v1-builder-runtime-scaffold",
+      "score": 1,
+      "hits": ["spec"]
+    }
+  ],
+  "dirty_matches": [
+    {
+      "line": "A  system/agent-reports/context-continuity/20260430T203703Z-add-website-page-to-monitor-live-codex-v1-builder-queue-active-claims-receipts-b.json",
+      "file": "system/agent-reports/context-continuity/20260430T203703Z-add-website-page-to-monitor-live-codex-v1-builder-queue-active-claims-receipts-b.json",
+      "score": 6,
+      "hits": ["queue", "claims", "receipts"]
+    },
+    {
+      "line": "M  system/v1-builder/approved-queue.jsonl",
+      "file": "system/v1-builder/approved-queue.jsonl",
+      "score": 4,
+      "hits": ["approved", "queue"]
+    },
+    {
+      "line": "M  system/v1-builder/claims/20260430T195139Z-queue-a50a0a35bac30470.json",
+      "file": "system/v1-builder/claims/20260430T195139Z-queue-a50a0a35bac30470.json",
+      "score": 4,
+      "hits": ["queue", "claims"]
+    },
+    {
+      "line": "A  system/v1-builder/claims/20260430T201139Z-queue-427c0058ee6ce70d.json",
+      "file": "system/v1-builder/claims/20260430T201139Z-queue-427c0058ee6ce70d.json",
+      "score": 4,
+      "hits": ["queue", "claims"]
+    },
+    {
+      "line": "A  system/v1-builder/claims/20260430T204139Z-queue-427c0058ee6ce70d.json",
+      "file": "system/v1-builder/claims/20260430T204139Z-queue-427c0058ee6ce70d.json",
+      "score": 4,
+      "hits": ["queue", "claims"]
+    },
+    {
+      "line": "A  system/v1-builder/claims/20260430T212639Z-queue-6f6835a5cc6b9bf2.json",
+      "file": "system/v1-builder/claims/20260430T212639Z-queue-6f6835a5cc6b9bf2.json",
+      "score": 4,
+      "hits": ["queue", "claims"]
+    },
+    {
+      "line": "A  system/v1-builder/claims/20260430T214639Z-queue-6f6835a5cc6b9bf2.json",
+      "file": "system/v1-builder/claims/20260430T214639Z-queue-6f6835a5cc6b9bf2.json",
+      "score": 4,
+      "hits": ["queue", "claims"]
+    },
+    {
+      "line": "A  system/v1-builder/receipts/20260430T200801Z-queue-a50a0a35bac30470.json",
+      "file": "system/v1-builder/receipts/20260430T200801Z-queue-a50a0a35bac30470.json",
+      "score": 4,
+      "hits": ["queue", "receipts"]
+    },
+    {
+      "line": "A  system/v1-builder/receipts/20260430T203800Z-queue-427c0058ee6ce70d.json",
+      "file": "system/v1-builder/receipts/20260430T203800Z-queue-427c0058ee6ce70d.json",
+      "score": 4,
+      "hits": ["queue", "receipts"]
+    },
+    {
+      "line": "A  system/v1-builder/receipts/20260430T212407Z-queue-427c0058ee6ce70d.json",
+      "file": "system/v1-builder/receipts/20260430T212407Z-queue-427c0058ee6ce70d.json",
+      "score": 4,
+      "hits": ["queue", "receipts"]
+    },
+    {
+      "line": "A  system/v1-builder/receipts/20260430T214351Z-queue-6f6835a5cc6b9bf2.json",
+      "file": "system/v1-builder/receipts/20260430T214351Z-queue-6f6835a5cc6b9bf2.json",
+      "score": 4,
+      "hits": ["queue", "receipts"]
+    },
+    {
+      "line": "A  system/v1-builder/receipts/20260430T220749Z-queue-6f6835a5cc6b9bf2.json",
+      "file": "system/v1-builder/receipts/20260430T220749Z-queue-6f6835a5cc6b9bf2.json",
+      "score": 4,
+      "hits": ["queue", "receipts"]
+    },
+    {
+      "line": "MM system/v1-builder/request-ledger.jsonl",
+      "file": "system/v1-builder/request-ledger.jsonl",
+      "score": 4,
+      "hits": ["request", "ledger"]
+    },
+    {
+      "line": "?? system/v1-builder/claims/20260430T223139Z-queue-6f6835a5cc6b9bf2.json",
+      "file": "system/v1-builder/claims/20260430T223139Z-queue-6f6835a5cc6b9bf2.json",
+      "score": 4,
+      "hits": ["queue", "claims"]
+    },
+    {
+      "line": "?? system/v1-builder/claims/20260430T225138Z-queue-12304699a6043c3d.json",
+      "file": "system/v1-builder/claims/20260430T225138Z-queue-12304699a6043c3d.json",
+      "score": 4,
+      "hits": ["queue", "claims"]
+    },
+    {
+      "line": "?? system/v1-builder/receipts/20260430T225029Z-queue-6f6835a5cc6b9bf2.json",
+      "file": "system/v1-builder/receipts/20260430T225029Z-queue-6f6835a5cc6b9bf2.json",
+      "score": 4,
+      "hits": ["queue", "receipts"]
+    },
+    {
+      "line": "A  docs/specs/founder-confidence-gate.md",
+      "file": "docs/specs/founder-confidence-gate.md",
+      "score": 2,
+      "hits": ["spec"]
+    },
+    {
+      "line": "A  system/agent-claims/20260430T175158Z-feature-pricing-proof-evidence-scoring-build-pricing-reliability-engine-proof-lo.json",
+      "file": "system/agent-claims/20260430T175158Z-feature-pricing-proof-evidence-scoring-build-pricing-reliability-engine-proof-lo.json",
+      "score": 2,
+      "hits": ["claims"]
+    },
+    {
+      "line": "M  system/identity-claims/identity-claim-report.md",
+      "file": "system/identity-claims/identity-claim-report.md",
+      "score": 2,
+      "hits": ["claims"]
+    },
+    {
+      "line": "M  system/identity-claims/state.json",
+      "file": "system/identity-claims/state.json",
+      "score": 2,
+      "hits": ["claims"]
+    }
+  ],
+  "claim_matches": [
+    {
+      "file": "system/agent-claims/20260430T163810Z-feature-private-dev-cockpit-spec-build-geographic-pricing-proof-harness-from-doc.json",
+      "score": 4,
+      "hits": ["spec"],
+      "prompt": "Build Geographic Pricing Proof Harness from docs/specs/geographic-pricing-proof-harness.md",
+      "owned": [],
+      "status": "active"
+    },
+    {
+      "file": "system/agent-claims/20260429T235629Z-feature-voice-ops-complete-build-the-complete-context-continuity-tooling-layer-s.json",
+      "score": 1,
+      "hits": ["spec"],
+      "prompt": "Build the complete context continuity tooling layer: scanner CLI, canonical surface registry, pre-build gate, Obsidian packet exporter, near-duplicate detector, spec template continuity section, feature family map, and dashboard",
+      "owned": [],
+      "status": "active"
+    },
+    {
+      "file": "system/agent-claims/20260430T165049Z-feature-sticky-notes-promoted-items-processing-build-v1-support-state-change-mot.json",
+      "score": 1,
+      "hits": ["progress"],
+      "prompt": "Build V1 support state-change motion primitives and apply to existing ChefFlow workflow surfaces",
+      "owned": [],
+      "status": "finished"
+    },
+    {
+      "file": "system/agent-claims/20260430T170821Z-feature-sticky-notes-process-command-keep-improving-v1-state-motion-by-adding-li.json",
+      "score": 1,
+      "hits": ["queue"],
+      "prompt": "Keep improving V1 state motion by adding list and action card motion to existing dashboard surfaces",
+      "owned": [],
+      "status": "finished"
+    },
+    {
+      "file": "system/agent-claims/20260430T192043Z-feature-v1-builder-runtime-scaffold-build-chefflow-obsidian-index-notes-and-wire.json",
+      "score": 1,
+      "hits": ["claims"],
+      "prompt": "Build ChefFlow Obsidian index notes and wire future memory packets",
+      "owned": [],
+      "status": "finished"
+    }
+  ],
+  "duplicate_risks": [
+    {
+      "level": "medium",
+      "reason": "Multiple canonical surfaces matched the prompt.",
+      "owners": ["autonomous-v1-builder", "chef-command-plane", "finance"]
+    },
+    {
+      "level": "medium",
+      "reason": "Dirty files already exist in this domain and may be another agent active work.",
+      "files": [
+        "system/agent-reports/context-continuity/20260430T203703Z-add-website-page-to-monitor-live-codex-v1-builder-queue-active-claims-receipts-b.json",
+        "system/v1-builder/approved-queue.jsonl",
+        "system/v1-builder/claims/20260430T195139Z-queue-a50a0a35bac30470.json",
+        "system/v1-builder/claims/20260430T201139Z-queue-427c0058ee6ce70d.json",
+        "system/v1-builder/claims/20260430T204139Z-queue-427c0058ee6ce70d.json"
+      ]
+    },
+    {
+      "level": "medium",
+      "reason": "Active or recorded claims overlap this domain.",
+      "claims": [
+        "system/agent-claims/20260430T163810Z-feature-private-dev-cockpit-spec-build-geographic-pricing-proof-harness-from-doc.json",
+        "system/agent-claims/20260429T235629Z-feature-voice-ops-complete-build-the-complete-context-continuity-tooling-layer-s.json",
+        "system/agent-claims/20260430T165049Z-feature-sticky-notes-promoted-items-processing-build-v1-support-state-change-mot.json"
+      ]
+    }
+  ],
+  "continuity": {
+    "decision": "attach",
+    "stop_required": false,
+    "reason": "Matched canonical surface autonomous-v1-builder."
+  }
+}
