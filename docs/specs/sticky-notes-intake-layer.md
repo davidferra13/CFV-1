@@ -7,16 +7,18 @@
 
 ## Timeline
 
-| Event                    | Date             | Agent/Session | Commit |
-| ------------------------ | ---------------- | ------------- | ------ |
-| Created                  | 2026-04-30 11:55 | Codex         |        |
-| Status: ready            | 2026-04-30 11:55 | Codex         |        |
-| Claimed                  | 2026-04-30 12:24 | Codex         |        |
-| Build completed          | 2026-04-30 12:31 | Codex         |        |
-| Unit tests passed        | 2026-04-30 12:31 | Codex         |        |
-| Sticky commands verified | 2026-04-30 12:32 | Codex         |        |
-| Type check passed        | 2026-04-30 12:33 | Codex         |        |
-| Status: verified         | 2026-04-30 12:33 | Codex         |        |
+| Event                      | Date             | Agent/Session | Commit |
+| -------------------------- | ---------------- | ------------- | ------ |
+| Created                    | 2026-04-30 11:55 | Codex         |        |
+| Status: ready              | 2026-04-30 11:55 | Codex         |        |
+| Claimed                    | 2026-04-30 12:24 | Codex         |        |
+| Build completed            | 2026-04-30 12:31 | Codex         |        |
+| Unit tests passed          | 2026-04-30 12:31 | Codex         |        |
+| Sticky commands verified   | 2026-04-30 12:32 | Codex         |        |
+| Type check passed          | 2026-04-30 12:33 | Codex         |        |
+| Status: verified           | 2026-04-30 12:33 | Codex         |        |
+| Review cockpit added       | 2026-04-30 12:44 | Codex         |        |
+| Promotion packets verified | 2026-04-30 12:44 | Codex         |        |
 
 ---
 

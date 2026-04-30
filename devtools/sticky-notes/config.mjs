@@ -24,6 +24,10 @@ export const outputPaths = {
   classificationsLatest: path.join(stickyConfig.outputRoot, 'classified', 'latest.json'),
   attachments: path.join(stickyConfig.outputRoot, 'attached'),
   attachmentsLatest: path.join(stickyConfig.outputRoot, 'attached', 'latest.json'),
+  review: path.join(stickyConfig.outputRoot, 'review-cockpit'),
+  reviewLatest: path.join(stickyConfig.outputRoot, 'review-cockpit', 'latest.json'),
+  promotions: path.join(stickyConfig.outputRoot, 'promotions'),
+  promotionsLatest: path.join(stickyConfig.outputRoot, 'promotions', 'latest.json'),
   reports: path.join(stickyConfig.outputRoot, 'reports'),
   lockFile: path.join(stickyConfig.outputRoot, '.organize.lock'),
 }
@@ -43,6 +47,34 @@ export const destinationByClass = {
   needsReview: 'review',
 }
 
+export const promotionDestinationByClass = {
+  'chefFlow.directive': {
+    route: 'skill-garden',
+    directory: 'skill-garden-candidates',
+    action: 'review_for_skill_patch',
+  },
+  'chefFlow.feature': {
+    route: 'v1-governor',
+    directory: 'v1-governor-candidates',
+    action: 'review_for_v1_classification',
+  },
+  'chefFlow.bug': {
+    route: 'findings-triage',
+    directory: 'bug-triage-candidates',
+    action: 'review_for_bug_triage',
+  },
+  'chefFlow.specFragment': {
+    route: 'context-continuity',
+    directory: 'spec-attachment-candidates',
+    action: 'review_for_spec_attachment',
+  },
+  'chefFlow.context': {
+    route: 'context-continuity',
+    directory: 'context-packet-candidates',
+    action: 'review_for_memory_packet',
+  },
+}
+
 export function ensureDir(dir) {
   fs.mkdirSync(dir, { recursive: true })
 }
@@ -54,6 +86,9 @@ export function ensureOutputRoot() {
   }
   for (const relativeDir of Object.values(destinationByClass)) {
     ensureDir(path.join(stickyConfig.outputRoot, relativeDir))
+  }
+  for (const destination of Object.values(promotionDestinationByClass)) {
+    ensureDir(path.join(outputPaths.promotions, destination.directory))
   }
 }
 
