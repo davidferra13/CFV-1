@@ -102,6 +102,14 @@ const nextConfig = {
         async_hooks: false,
       }
     }
+
+    // Exclude worktree directories from webpack file watching.
+    // Worktrees contain duplicate app/components that break the dev server build.
+    config.watchOptions = {
+      ...config.watchOptions,
+      ignored: /\.v1-builder-worktrees/,
+    }
+
     return config
   },
   images: {

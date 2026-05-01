@@ -87,6 +87,7 @@ import {
   MultiLocationSummarySkeleton,
 } from './_sections/multi-location-summary'
 import { CompletionSummaryWidgetServer } from '@/components/completion/completion-summary-server'
+import { ClientAttentionSection } from './_sections/client-attention-data'
 import { NetworkActivitySection } from './_sections/network-activity'
 import { OnboardingChecklistWidget } from '@/components/dashboard/onboarding-checklist-widget'
 import { getOnboardingProgress } from '@/lib/onboarding/progress-actions'
@@ -1780,6 +1781,15 @@ export default async function ChefDashboard() {
           </Suspense>
         </WidgetErrorBoundary>
       )}
+
+      {/* ============================================ */}
+      {/* CLIENT ATTENTION - who's waiting on you?    */}
+      {/* ============================================ */}
+      <WidgetErrorBoundary name="Client Attention" compact>
+        <Suspense fallback={null}>
+          <ClientAttentionSection />
+        </Suspense>
+      </WidgetErrorBoundary>
 
       {/* ============================================ */}
       {/* FOCUS: What needs attention now              */}
