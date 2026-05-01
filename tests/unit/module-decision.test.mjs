@@ -23,6 +23,8 @@ test('uses exact queue source path before keyword inference', () => {
       classification: 'v1_blocker',
       approvalState: 'candidate_review_required',
       module: { id: 'finance-ledger', label: 'Finance and Ledger' },
+      submodule: { id: 'stripe-payments', label: 'Stripe Payments' },
+      assignment: 'reviewed',
     },
   ])
 
@@ -35,6 +37,8 @@ test('uses exact queue source path before keyword inference', () => {
   assert.equal(decision.status, 'module_owner_found')
   assert.equal(decision.module.id, 'finance-ledger')
   assert.equal(decision.confidence, 'queue')
+  assert.equal(decision.submodule.id, 'stripe-payments')
+  assert.equal(decision.assignment, 'reviewed')
 })
 
 test('blocks queue candidates that are still unassigned', () => {
@@ -46,6 +50,8 @@ test('blocks queue candidates that are still unassigned', () => {
       classification: 'v1_support',
       approvalState: 'candidate_review_required',
       module: { id: 'unassigned', label: 'Unassigned' },
+      submodule: { id: 'unassigned', label: 'Unassigned' },
+      assignment: 'unassigned',
     },
   ])
 
@@ -53,6 +59,8 @@ test('blocks queue candidates that are still unassigned', () => {
 
   assert.equal(decision.status, 'module_review_required')
   assert.equal(decision.module.id, 'unassigned')
+  assert.equal(decision.submodule.id, 'unassigned')
+  assert.equal(decision.assignment, 'unassigned')
 })
 
 test('infers module from unified taxonomy keywords', () => {
@@ -63,6 +71,8 @@ test('infers module from unified taxonomy keywords', () => {
 
   assert.equal(decision.status, 'module_owner_found')
   assert.equal(decision.module.id, 'pricing-trust')
+  assert.equal(decision.submodule.id, 'quote-safety')
+  assert.equal(decision.assignment, 'proposed')
   assert.equal(decision.confidence, 'high')
 })
 

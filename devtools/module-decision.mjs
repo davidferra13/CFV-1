@@ -3,7 +3,7 @@ import { existsSync, readFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
-import { MODULES } from '../scripts/unified-build-queue/generate.mjs'
+import { MODULES, decideModuleOwnership } from '../scripts/unified-build-queue/generate.mjs'
 
 export function decideModule({
   root = process.cwd(),
@@ -22,6 +22,12 @@ export function decideModule({
     return decisionFromCandidate(exactCandidate, 'queue-source-path')
   }
 
+  const ownership = decideModuleOwnership({
+    title,
+    summary,
+    sourcePath,
+    text: prompt,
+  })
   const text = [prompt, title, summary, sourcePath].join('\n').toLowerCase()
   const scored = MODULES.map((module) => {
     const hits = module.keywords.filter((keyword) => text.includes(keyword.toLowerCase()))
@@ -30,11 +36,13 @@ export function decideModule({
     .filter((entry) => entry.score > 0)
     .sort((left, right) => right.score - left.score || left.module.id.localeCompare(right.module.id))
 
-  const best = scored[0]
+  const best = scored.find((entry) => entry.module.id === ownership.module.id)
   if (!best) {
     return {
       status: 'module_review_required',
-      module: { id: 'unassigned', label: 'Unassigned' },
+      module: ownership.module,
+      submodule: ownership.submodule,
+      assignment: ownership.assignment,
       confidence: 'none',
       evidence: [],
       reason: 'No queue candidate or module keyword evidence matched this work.',
@@ -46,10 +54,12 @@ export function decideModule({
   const confidence = best.score >= 2 && tied.length === 1 ? 'high' : 'medium'
   return {
     status: 'module_owner_found',
-    module: { id: best.module.id, label: best.module.label },
+    module: ownership.module,
+    submodule: ownership.submodule,
+    assignment: ownership.assignment,
     confidence,
     evidence: best.hits.map((hit) => ({ type: 'keyword', value: hit })),
-    alternates: tied.slice(1, 4).map((entry) => ({
+    alternates: tied.filter((entry) => entry.module.id !== best.module.id).slice(0, 3).map((entry) => ({
       module: { id: entry.module.id, label: entry.module.label },
       hits: entry.hits,
     })),
@@ -60,10 +70,14 @@ export function decideModule({
 
 function decisionFromCandidate(candidate, evidenceType) {
   const module = candidate.module ?? { id: 'unassigned', label: 'Unassigned' }
+  const submodule = candidate.submodule ?? { id: 'unassigned', label: 'Unassigned' }
+  const assignment = candidate.assignment ?? (module.id === 'unassigned' ? 'unassigned' : 'proposed')
   const unassigned = module.id === 'unassigned'
   return {
     status: unassigned ? 'module_review_required' : 'module_owner_found',
     module,
+    submodule,
+    assignment,
     confidence: 'queue',
     evidence: [
       {

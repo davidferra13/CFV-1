@@ -213,7 +213,157 @@ export const MODULES = [
     label: 'Docs and Release Proof',
     keywords: ['documentation', 'proof', 'audit', 'definition of done', 'release'],
   },
+  {
+    id: 'client-memory',
+    label: 'Client Memory',
+    keywords: ['client memory', 'preference', 'preferences', 'household', 'relationship timeline', 'follow-up memory'],
+  },
+  {
+    id: 'quality-hallucination',
+    label: 'Quality and Hallucination',
+    keywords: ['no fake', 'hallucination', 'optimistic', 'rollback', 'error state', 'empty state', 'hardcoded metric'],
+  },
 ]
+
+export const SUBMODULES = {
+  'pricing-trust': [
+    submodule('price-resolution', 'Price Resolution', ['price resolution', 'ingredient price', 'observed price', 'price source']),
+    submodule('pricing-confidence', 'Pricing Confidence', ['confidence', 'freshness', 'current price', 'pricing trust']),
+    submodule('ingredient-matching', 'Ingredient Matching', ['ingredient matching', 'alias', 'recognized ingredient']),
+    submodule('unit-conversion', 'Unit Conversion', ['unit conversion', 'convert', 'unit confidence']),
+    submodule('yield-normalization', 'Yield Normalization', ['yield', 'trim loss', 'portion yield']),
+    submodule('quote-safety', 'Quote Safety', ['quote safety', 'safe to quote', 'safe_to_quote', 'verify first', 'quote']),
+    submodule('cost-export', 'Cost Export', ['export', 'csv', 'cost export']),
+    submodule('openclaw-price-adapter', 'OpenClaw Price Adapter', ['openclaw', 'sync', 'pipeline']),
+  ],
+  'finance-ledger': [
+    submodule('ledger-core', 'Ledger Core', ['ledger', 'balance', 'append', 'immutable']),
+    submodule('stripe-payments', 'Stripe Payments', ['stripe', 'payment', 'checkout', 'webhook']),
+    submodule('invoices', 'Invoices', ['invoice']),
+    submodule('quote-payment-boundary', 'Quote Payment Boundary', ['quote payment', 'paid', 'agreement']),
+    submodule('expenses-tax', 'Expenses and Tax', ['expense', 'tax', 'cpa']),
+    submodule('financial-reports', 'Financial Reports', ['reporting', 'financial report', 'profit']),
+    submodule('supporter-contributions', 'Supporter Contributions', ['supporter', 'contribution']),
+    submodule('finance-export-adapter', 'Finance Export Adapter', ['finance export', 'export']),
+  ],
+  'client-intake': [
+    submodule('public-booking', 'Public Booking', ['public booking', 'booking']),
+    submodule('direct-inquiry', 'Direct Inquiry', ['inquiry', 'direct inquiry']),
+    submodule('embed-intake', 'Embed Intake', ['embed', 'widget']),
+    submodule('intake-lane-truth', 'Intake Lane Truth', ['intake lane', 'lane truth']),
+    submodule('booking-follow-through', 'Booking Follow Through', ['follow through', 'follow-through']),
+    submodule('intake-to-client-adapter', 'Intake To Client Adapter', ['intake to client', 'client onboarding']),
+  ],
+  'events-ops': [
+    submodule('event-fsm', 'Event FSM', ['fsm', 'event state', 'transition']),
+    submodule('event-detail-truth', 'Event Detail Truth', ['event detail', 'detail truth']),
+    submodule('quote-agreement-boundary', 'Quote Agreement Boundary', ['quote agreement', 'agreement']),
+    submodule('prep-service-readiness', 'Prep Service Readiness', ['prep', 'service', 'checklist', 'readiness']),
+    submodule('guest-dietary-handoff', 'Guest Dietary Handoff', ['guest', 'dietary handoff']),
+    submodule('service-format-specialization', 'Service Format Specialization', ['grazing', 'service format']),
+    submodule('followup-after-action', 'Followup After Action', ['follow-up', 'followup', 'after action']),
+    submodule('event-route-discoverability', 'Event Route Discoverability', ['route', 'navigation', 'discoverability']),
+  ],
+  'menus-offers': [
+    submodule('menu-builder', 'Menu Builder', ['menu builder', 'menu']),
+    submodule('proposal-offer-state', 'Proposal Offer State', ['proposal', 'offer']),
+    submodule('recipe-book-search', 'Recipe Book Search', ['recipe search', 'recipe book']),
+    submodule('menu-cost-adapter', 'Menu Cost Adapter', ['menu cost', 'costing']),
+    submodule('public-sample-menus', 'Public Sample Menus', ['sample menu']),
+    submodule('package-tasting-offers', 'Package Tasting Offers', ['package', 'tasting']),
+  ],
+  'dietary-safety': [
+    submodule('allergy-records', 'Allergy Records', ['allergy', 'allergies']),
+    submodule('guest-dietary-handoff', 'Guest Dietary Handoff', ['guest', 'dietary']),
+    submodule('menu-safety-check', 'Menu Safety Check', ['menu safety', 'safety check']),
+    submodule('severity-source-truth', 'Severity Source Truth', ['severity', 'source truth']),
+  ],
+  'sourcing-inventory': [
+    submodule('inventory-quantity-truth', 'Inventory Quantity Truth', ['inventory', 'quantity']),
+    submodule('vendor-supplier-truth', 'Vendor Supplier Truth', ['vendor', 'supplier', 'farm']),
+    submodule('pantry-stock-flow', 'Pantry Stock Flow', ['pantry', 'stock']),
+    submodule('procurement-planning', 'Procurement Planning', ['procurement', 'sourcing plan', 'grocery list']),
+    submodule('price-source-adapters', 'Price Source Adapters', ['price source']),
+    submodule('stock-to-costing-adapter', 'Stock To Costing Adapter', ['stock to costing']),
+  ],
+  'v1-control-plane': [
+    submodule('v1-roadmap-release-truth', 'V1 Roadmap Release Truth', ['roadmap', 'release truth', 'blueprint']),
+    submodule('builder-queue', 'Builder Queue', ['builder queue', 'queue', 'unified build queue']),
+    submodule('claims-receipts', 'Claims Receipts', ['claim', 'receipt']),
+    submodule('cannot-fail-gates', 'Cannot Fail Gates', ['cannot fail', 'gate']),
+    submodule('validation-proof', 'Validation Proof', ['validation', 'survey', 'pilot']),
+    submodule('cross-system-integrity', 'Cross System Integrity', ['cross system', 'sync status', 'runtime proof']),
+    submodule('mission-control-status', 'Mission Control Status', ['mission control', 'status']),
+    submodule('scheduled-ops-proof', 'Scheduled Ops Proof', ['scheduled', 'watchdog', 'cron']),
+    submodule('planning', 'Planning', ['planning']),
+  ],
+  'auth-security': [
+    submodule('founder-authority', 'Founder Authority', ['founder authority']),
+    submodule('tenant-scoping', 'Tenant Scoping', ['tenant', 'scoping', 'tenant_id']),
+    submodule('role-hierarchy', 'Role Hierarchy', ['role', 'admin', 'permission']),
+    submodule('admin-gates', 'Admin Gates', ['admin gate', 'admin-only', 'admin route']),
+    submodule('server-action-auth', 'Server Action Auth', ['server action', 'requirechef', 'requireauth']),
+    submodule('public-token-auth', 'Public Token Auth', ['token', 'public token']),
+    submodule('data-portability', 'Data Portability', ['export', 'takeout', 'portability']),
+    submodule('secret-management', 'Secret Management', ['secret', 'env']),
+  ],
+  'ai-boundaries': [
+    submodule('ollama-gateway', 'Ollama Gateway', ['ollama', 'parsewithollama', 'gateway']),
+    submodule('remy-surfaces', 'Remy Surfaces', ['remy']),
+    submodule('recipe-ip-protection', 'Recipe IP Protection', ['recipe', 'creative ip']),
+    submodule('ai-privacy', 'AI Privacy', ['privacy']),
+    submodule('ai-tool-permissions', 'AI Tool Permissions', ['tool permission']),
+    submodule('ai-offline-failure', 'AI Offline Failure', ['offline', 'runtime unreachable']),
+    submodule('ai-output-validation', 'AI Output Validation', ['zod', 'validation', 'repair pass']),
+  ],
+  'public-trust': [
+    submodule('public-homepage', 'Public Homepage', ['homepage', 'home page']),
+    submodule('public-chef-profile', 'Public Chef Profile', ['chef profile']),
+    submodule('nearby-directory', 'Nearby Directory', ['nearby', 'directory']),
+    submodule('public-seo-metadata', 'Public SEO Metadata', ['seo', 'metadata']),
+    submodule('public-claim-flow', 'Public Claim Flow', ['claim']),
+    submodule('public-proof-copy', 'Public Proof Copy', ['copy', 'claim']),
+  ],
+  'chef-workspace': [
+    submodule('dashboard-return-to-work', 'Dashboard Return To Work', ['dashboard', 'return to work']),
+    submodule('task-calendar-command', 'Task Calendar Command', ['task', 'calendar']),
+    submodule('settings-configuration', 'Settings Configuration', ['settings', 'configuration']),
+    submodule('mobile-runtime', 'Mobile Runtime', ['mobile', 'pwa']),
+    submodule('workspace-navigation', 'Workspace Navigation', ['workspace', 'navigation']),
+    submodule('operator-empty-error-states', 'Operator Empty Error States', ['empty state', 'error state']),
+  ],
+  'staff-partner': [
+    submodule('staff-execution', 'Staff Execution', ['staff']),
+    submodule('partner-referrals', 'Partner Referrals', ['partner', 'referral']),
+  ],
+  'docs-release-proof': [
+    submodule('build-integrity', 'Build Integrity', ['build', 'typecheck']),
+    submodule('test-proof', 'Test Proof', ['test', 'proof']),
+    submodule('evidence-freshness', 'Evidence Freshness', ['freshness', 'stale']),
+    submodule('release-attestation', 'Release Attestation', ['attestation', 'release']),
+    submodule('documentation-drift', 'Documentation Drift', ['docs drift', 'documentation drift']),
+    submodule('module-ownership-registry', 'Module Ownership Registry', ['module ownership', 'registry', 'module cards']),
+  ],
+  'client-memory': [
+    submodule('client-identity', 'Client Identity', ['client identity']),
+    submodule('client-preferences', 'Client Preferences', ['preference', 'taste']),
+    submodule('household-guest-memory', 'Household Guest Memory', ['household', 'guest']),
+    submodule('client-portal-visibility', 'Client Portal Visibility', ['portal visibility']),
+    submodule('relationship-timeline', 'Relationship Timeline', ['relationship timeline', 'timeline']),
+    submodule('communication-ingestion', 'Communication Ingestion', ['communication', 'gmail', 'message', 'thread']),
+    submodule('followup-memory', 'Followup Memory', ['follow-up memory', 'followup memory']),
+    submodule('dinner-circle-continuity', 'Dinner Circle Continuity', ['dinner circle']),
+  ],
+  'quality-hallucination': [
+    submodule('unavailable-state-contracts', 'Unavailable State Contracts', ['unavailable']),
+    submodule('optimistic-rollback', 'Optimistic Rollback', ['optimistic', 'rollback']),
+    submodule('no-fake-money', 'No Fake Money', ['fake money', '$0.00', 'money']),
+    submodule('no-noop-actions', 'No Noop Actions', ['noop', 'no-op', 'button']),
+    submodule('error-empty-partial-states', 'Error Empty Partial States', ['error state', 'empty state', 'partial state']),
+    submodule('hardcoded-metric-detection', 'Hardcoded Metric Detection', ['hardcoded metric', 'hardcoded']),
+    submodule('cache-truth', 'Cache Truth', ['cache', 'revalidate']),
+  ],
+}
 
 export function generateUnifiedQueue({
   root = process.cwd(),
@@ -403,6 +553,9 @@ function candidateFromRecord(record, options) {
       status: record.status ?? null,
       classification: record.classification ?? null,
       canonicalOwner: record.canonicalOwner ?? null,
+      module: record.module ?? (record.moduleId ? { id: record.moduleId } : null),
+      submodule: record.submodule ?? (record.submoduleId ? { id: record.submoduleId } : null),
+      assignment: record.assignment ?? null,
       forcedClassification: options.forcedClassification ?? null,
     },
     createdAt: record.createdAt ?? null,
@@ -420,6 +573,8 @@ function baseCandidate(fields) {
     canonicalTitle,
     summary: truncate(fields.summary || '', 500),
     module: null,
+    submodule: null,
+    assignment: null,
     classification: null,
     classificationReason: null,
     duplicateOf: null,
@@ -439,11 +594,13 @@ function baseCandidate(fields) {
 function normalizeAndDedupe(rawCandidates, evidence) {
   const firstByGroup = new Map()
   const normalized = rawCandidates.map((candidate) => {
-    const module = assignModule(candidate)
+    const ownership = decideModuleOwnership(candidate)
     const classification = classifyCandidate(candidate, evidence)
     const result = {
       ...candidate,
-      module,
+      module: ownership.module,
+      submodule: ownership.submodule,
+      assignment: ownership.assignment,
       classification: classification.value,
       classificationReason: classification.reason,
       approvalState: approvalStateFor(classification.value, candidate),
@@ -571,10 +728,100 @@ function approvalStateFor(classificationValue, candidate) {
   return 'not_approved'
 }
 
-function assignModule(candidate) {
-  const text = `${candidate.title}\n${candidate.summary}\n${candidate.sourcePath}`.toLowerCase()
-  const match = MODULES.find((item) => item.keywords.some((keyword) => text.includes(keyword)))
-  return match ? { id: match.id, label: match.label } : { id: 'unassigned', label: 'Unassigned' }
+function submodule(id, label, keywords) {
+  return { id, label, keywords }
+}
+
+export function decideModuleOwnership(candidate = {}) {
+  const metadata = candidate.metadata ?? {}
+  const text = [
+    candidate.title,
+    candidate.summary,
+    candidate.sourcePath,
+    candidate.text,
+    metadata.canonicalOwner,
+  ]
+    .filter(Boolean)
+    .join('\n')
+    .toLowerCase()
+
+  const explicitModule = moduleById(
+    valueId(metadata.module) ??
+      valueId(metadata.moduleId) ??
+      valueId(metadata.module_id),
+  )
+  const moduleMatch = explicitModule ?? MODULES.find((item) =>
+    item.keywords.some((keyword) => text.includes(keyword.toLowerCase())),
+  )
+
+  if (!moduleMatch) {
+    return {
+      module: { id: 'unassigned', label: 'Unassigned' },
+      submodule: { id: 'unassigned', label: 'Unassigned' },
+      assignment: 'unassigned',
+    }
+  }
+
+  const explicitSubmoduleId =
+    valueId(metadata.submodule) ??
+    valueId(metadata.submoduleId) ??
+    valueId(metadata.submodule_id)
+  const submoduleMatch = findSubmodule(moduleMatch.id, explicitSubmoduleId, text)
+  const explicitAssignment = normalizeAssignment(metadata.assignment ?? metadata.assignmentStatus)
+
+  return {
+    module: { id: moduleMatch.id, label: moduleMatch.label },
+    submodule: submoduleMatch,
+    assignment: explicitAssignment ?? (explicitModule && explicitSubmoduleId ? 'manual' : 'proposed'),
+  }
+}
+
+function moduleById(id) {
+  if (!id) return null
+  return MODULES.find((item) => item.id === id) ?? null
+}
+
+function findSubmodule(moduleId, explicitSubmoduleId, text) {
+  const submodules = SUBMODULES[moduleId] ?? []
+  const explicit = explicitSubmoduleId
+    ? submodules.find((item) => item.id === explicitSubmoduleId)
+    : null
+  if (explicit) return { id: explicit.id, label: explicit.label }
+
+  const scored = submodules
+    .map((item) => ({
+      item,
+      hits: item.keywords.filter((keyword) => text.includes(keyword.toLowerCase())),
+    }))
+    .filter((entry) => entry.hits.length > 0)
+    .sort((left, right) => {
+      const longestLeft = Math.max(...left.hits.map((hit) => hit.length))
+      const longestRight = Math.max(...right.hits.map((hit) => hit.length))
+      return right.hits.length - left.hits.length || longestRight - longestLeft
+    })
+  const inferred = scored[0]?.item
+  if (inferred) return { id: inferred.id, label: inferred.label }
+
+  return { id: 'unassigned', label: 'Unassigned' }
+}
+
+function valueId(value) {
+  if (value && typeof value === 'object') return normalizeId(value.id)
+  return normalizeId(value)
+}
+
+function normalizeId(value) {
+  const text = String(value ?? '').trim()
+  if (!text) return null
+  return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+}
+
+function normalizeAssignment(value) {
+  const normalized = normalizeId(value)
+  if (['reviewed', 'manual', 'proposed', 'unassigned', 'needs-review'].includes(normalized)) {
+    return normalized
+  }
+  return null
 }
 
 function buildModuleBatches(candidates) {
@@ -584,20 +831,23 @@ function buildModuleBatches(candidates) {
 
   const groups = new Map()
   for (const candidate of pending) {
-    const key = `${candidate.module.id}:${candidate.classification}`
+    const key = `${candidate.module.id}:${candidate.submodule.id}:${candidate.classification}`
     if (!groups.has(key)) groups.set(key, [])
     groups.get(key).push(candidate)
   }
 
   const batches = []
   for (const [key, group] of groups.entries()) {
-    const [moduleId, classificationValue] = key.split(':')
+    const [moduleId, submoduleId, classificationValue] = key.split(':')
     const chunks = chunkBatch(group, 7)
     chunks.forEach((items, index) => {
       const module = items[0]?.module ?? { id: moduleId, label: moduleId }
+      const submodule = items[0]?.submodule ?? { id: submoduleId, label: submoduleId }
       batches.push({
-        id: stableId(`batch:${moduleId}:${classificationValue}:${index}:${items.map((item) => item.id).join(':')}`),
+        id: stableId(`batch:${moduleId}:${submoduleId}:${classificationValue}:${index}:${items.map((item) => item.id).join(':')}`),
         module,
+        submodule,
+        assignment: batchAssignment(items),
         classification: classificationValue,
         approvalState: 'candidate_review_required',
         executionEligible: false,
@@ -610,7 +860,21 @@ function buildModuleBatches(candidates) {
     })
   }
 
-  return batches.sort((left, right) => classificationRank(left.classification) - classificationRank(right.classification) || left.module.id.localeCompare(right.module.id))
+  return batches.sort(
+    (left, right) =>
+      classificationRank(left.classification) - classificationRank(right.classification) ||
+      left.module.id.localeCompare(right.module.id) ||
+      left.submodule.id.localeCompare(right.submodule.id),
+  )
+}
+
+function batchAssignment(items) {
+  const assignments = items.map((item) => item.assignment)
+  if (assignments.includes('unassigned')) return 'unassigned'
+  if (assignments.includes('needs-review')) return 'needs-review'
+  if (assignments.includes('proposed')) return 'proposed'
+  if (assignments.includes('manual')) return 'manual'
+  return 'reviewed'
 }
 
 function chunkBatch(group, size) {
@@ -635,6 +899,8 @@ function buildSummary({ candidates, moduleBatches, evidence, context }) {
   const sourceCounts = countBy(candidates, (item) => item.source)
   const classificationCounts = countBy(candidates, (item) => item.classification)
   const moduleCounts = countBy(candidates, (item) => item.module.id)
+  const submoduleCounts = countBy(candidates, (item) => `${item.module.id}:${item.submodule.id}`)
+  const assignmentCounts = countBy(candidates, (item) => item.assignment)
   const approvedWithoutReceipt = candidates.filter(
     (item) => item.source === 'v1-approved-queue' && item.status === 'queued' && !evidence.builtTaskIds.has(item.metadata.queueId),
   )
@@ -670,6 +936,8 @@ function buildSummary({ candidates, moduleBatches, evidence, context }) {
     bySource: sourceCounts,
     byClassification: classificationCounts,
     byModule: moduleCounts,
+    bySubmodule: submoduleCounts,
+    byAssignment: assignmentCounts,
     batchPolicy: {
       minIdealTasks: 3,
       maxTasks: 7,
@@ -686,6 +954,12 @@ function buildWarnings(candidates, moduleBatches) {
   }
   if (candidates.some((candidate) => candidate.module.id === 'unassigned')) {
     warnings.push('Some candidates are unassigned and need module review before approval.')
+  }
+  if (candidates.some((candidate) => candidate.submodule.id === 'unassigned')) {
+    warnings.push('Some candidates have a module but no submodule and need module review before approval.')
+  }
+  if (candidates.some((candidate) => candidate.assignment === 'proposed')) {
+    warnings.push('Some candidates have proposed module assignments that require review before high-risk execution.')
   }
   if (candidates.some((candidate) => candidate.source === 'sticky-notes')) {
     warnings.push('Sticky Notes candidates are staged as research_required until reviewed.')

@@ -100,6 +100,8 @@ function approveBatch(batch, candidateById, context) {
     title: candidate.title,
     classification: candidate.classification,
     module: candidate.module,
+    submodule: candidate.submodule ?? null,
+    assignment: candidate.assignment ?? null,
     duplicateOf: candidate.duplicateOf ?? null,
   }))
 
@@ -120,7 +122,8 @@ function approveBatch(batch, candidateById, context) {
 function queueRecordForBatch(batch, context) {
   const queueClassification = CLASSIFICATION_TO_QUEUE[batch.classification]
   const id = `batch-queue-${stableId(batch.id)}`
-  const title = `Module Batch: ${batch.module.label} (${batch.taskCount} tasks)`
+  const submoduleLabel = batch.submodule?.label ? ` / ${batch.submodule.label}` : ''
+  const title = `Module Batch: ${batch.module.label}${submoduleLabel} (${batch.taskCount} tasks)`
   const rawAskSummary = batch.titles
     .map((title, index) => `${index + 1}. ${title}`)
     .join('\n')
@@ -146,6 +149,8 @@ function queueRecordForBatch(batch, context) {
     blockedBy: null,
     batchId: batch.id,
     moduleId: batch.module.id,
+    submoduleId: batch.submodule?.id ?? null,
+    assignment: batch.assignment ?? null,
     candidateIds: batch.candidateIds,
     sourceCounts: batch.sourceCounts,
   }

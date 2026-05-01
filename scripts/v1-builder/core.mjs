@@ -189,6 +189,8 @@ export function resolveTaskModuleDecision(task, context = createBuilderContext()
     return {
       status: unassigned ? 'module_review_required' : 'module_owner_found',
       module: task.module,
+      submodule: task.submodule ?? task.moduleDecision?.submodule ?? { id: 'unassigned', label: 'Unassigned' },
+      assignment: task.assignment ?? task.moduleDecision?.assignment ?? (unassigned ? 'unassigned' : 'proposed'),
       confidence: 'task',
       evidence: [
         {
@@ -218,6 +220,8 @@ export function attachModuleDecision(task, context = createBuilderContext()) {
   return {
     ...task,
     module: moduleDecision.module,
+    submodule: moduleDecision.submodule,
+    assignment: moduleDecision.assignment,
     moduleDecision,
   }
 }
@@ -266,6 +270,8 @@ export function createClaim(task, context = createBuilderContext(), now = new Da
     classification: task.classification,
     canonicalOwner: task.canonicalOwner,
     module: moduleDecision.module,
+    submodule: moduleDecision.submodule,
+    assignment: moduleDecision.assignment,
     moduleDecision,
     status: 'claimed',
     claimedAt: now.toISOString(),
@@ -298,6 +304,9 @@ export function writeReceipt(receipt, context = createBuilderContext(), now = ne
     branch: receipt.branch ?? null,
     classification: receipt.classification ?? null,
     canonicalOwner: receipt.canonicalOwner ?? null,
+    module: receipt.module ?? null,
+    submodule: receipt.submodule ?? null,
+    assignment: receipt.assignment ?? null,
     status: receipt.status ?? 'blocked',
     startedAt: receipt.startedAt ?? null,
     finishedAt: receipt.finishedAt ?? now.toISOString(),

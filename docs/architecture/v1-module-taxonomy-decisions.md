@@ -10,15 +10,15 @@ ChefFlow is in a module freeze for non-emergency V1 builds.
 
 No new V1 implementation work should proceed unless it maps to an existing module card or a newly approved submodule card. Emergency exceptions are limited to production breakage, security, money, data safety, or explicit Founder Authority override.
 
-The immediate implementation order is:
+The implementation order is:
 
 1. Document the reviewed taxonomy decisions.
 2. Create an initial human-readable ownership registry.
 3. Update module primer and module cards.
-4. Later, update generator rules and add first-class submodule output.
-5. Later, regenerate queue artifacts and review assignment quality.
+4. Update generator rules and add first-class submodule output.
+5. Regenerate queue artifacts and review assignment quality.
 
-Generator changes, generated queue artifacts, approved queue changes, and product code are out of scope for this baseline.
+Generator support now emits module, submodule, and assignment metadata. Generated queue artifacts, approved queue changes, and product code remain out of scope for this baseline until the generated output is reviewed.
 
 ## Accepted Build Rule
 

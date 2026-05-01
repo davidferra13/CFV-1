@@ -19,6 +19,8 @@ test('promotes approved module batches without writing raw candidates to live qu
       title: 'Pricing proof A',
       classification: 'v1_blocker',
       module: { id: 'pricing-trust', label: 'Pricing Trust' },
+      submodule: { id: 'quote-safety', label: 'Quote Safety' },
+      assignment: 'reviewed',
       duplicateOf: null,
     },
     {
@@ -28,6 +30,8 @@ test('promotes approved module batches without writing raw candidates to live qu
       title: 'Pricing proof B',
       classification: 'v1_blocker',
       module: { id: 'pricing-trust', label: 'Pricing Trust' },
+      submodule: { id: 'quote-safety', label: 'Quote Safety' },
+      assignment: 'reviewed',
       duplicateOf: null,
     },
     {
@@ -37,6 +41,8 @@ test('promotes approved module batches without writing raw candidates to live qu
       title: 'Research item',
       classification: 'research_required',
       module: { id: 'pricing-trust', label: 'Pricing Trust' },
+      submodule: { id: 'pricing-confidence', label: 'Pricing Confidence' },
+      assignment: 'proposed',
       duplicateOf: null,
     },
   ]
@@ -45,6 +51,8 @@ test('promotes approved module batches without writing raw candidates to live qu
     {
       id: 'batch-pricing',
       module: { id: 'pricing-trust', label: 'Pricing Trust' },
+      submodule: { id: 'quote-safety', label: 'Quote Safety' },
+      assignment: 'reviewed',
       classification: 'v1_blocker',
       approvalState: 'candidate_review_required',
       executionEligible: false,
@@ -57,6 +65,8 @@ test('promotes approved module batches without writing raw candidates to live qu
     {
       id: 'batch-research',
       module: { id: 'pricing-trust', label: 'Pricing Trust' },
+      submodule: { id: 'pricing-confidence', label: 'Pricing Confidence' },
+      assignment: 'proposed',
       classification: 'research_required',
       approvalState: 'candidate_review_required',
       executionEligible: false,
@@ -90,4 +100,6 @@ test('promotes approved module batches without writing raw candidates to live qu
   assert.equal(result.queuePreview[0].source, 'unified-module-batch')
   assert.deepEqual(result.queuePreview[0].candidateIds, ['candidate-a', 'candidate-b'])
   assert.equal(result.queuePreview[0].classification, 'approved_v1_blocker')
+  assert.equal(result.queuePreview[0].submoduleId, 'quote-safety')
+  assert.equal(result.approvedBatches[0].candidateSummaries[0].submodule.id, 'quote-safety')
 })
