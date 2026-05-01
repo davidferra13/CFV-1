@@ -66,6 +66,27 @@ Results:
 
 Low. The deleted files were client components or pure wrappers with no import path, no export reference, and no route-level owner. The remaining client files include active canonical owners and were not touched.
 
+## Client Component Wrapper Slice
+
+- Date: 2026-05-01
+- Scope: `components/clients/client-dates-form.tsx`, `components/clients/communication-stats.tsx`
+- Decision: delete two unused client wrappers
+
+### Evidence
+
+| Candidate | Live usage evidence | Canonical owner | Decision |
+| --- | --- | --- | --- |
+| `components/clients/client-dates-form.tsx` | No import path, export-name, or JSX usage outside the file. The only reference was the explicit `tsconfig.ci.expanded.json` file entry. | Client detail demographics and milestone surfaces. | Delete |
+| `components/clients/communication-stats.tsx` | No import path, export-name, or JSX usage outside the file. The only reference was the explicit `tsconfig.ci.expanded.json` file entry. | Client communication card, `MessageThread`, and `UnifiedClientTimeline`. | Delete |
+
+### Validation
+
+```text
+rg -n "client-dates-form|ClientDatesForm|communication-stats|CommunicationStatsCard|@/components/clients/client-dates-form|@/components/clients/communication-stats" app components lib hooks tests scripts tsconfig.ci.expanded.json
+```
+
+Result after deletion and tsconfig cleanup: no matches.
+
 ## Cannabis Client Actions Slice
 
 - Date: 2026-05-01
@@ -100,7 +121,7 @@ rg -n "getCannabisInviteByToken|claimCannabisInvite|buildCannabisHostAgreementSn
 ## Client Duplicate Action Slice
 
 - Date: 2026-05-01
-- Scope: `lib/clients/payment-plan-actions.ts`, `lib/clients/loyalty-program.ts`, `lib/clients/passport-actions.ts`, `lib/clients/referral-tree.ts`
+- Scope: `lib/clients/payment-plan-actions.ts`, `lib/clients/loyalty-program.ts`, `lib/clients/passport-actions.ts`, `lib/clients/referral-tree.ts`, `lib/clients/bulk-actions.ts`
 - Decision: delete clear unused duplicates, retain ambiguous passport behavior
 
 ### Import And Symbol Proof
@@ -123,6 +144,7 @@ Results:
 | `lib/clients/loyalty-program.ts` | No live import path. Exact wrapper symbol search only found the candidate exports. | Delete |
 | `lib/clients/passport-actions.ts` | No live import path. Exact symbol search only found the candidate exports. Behavior is not equivalent to `lib/hub/passport-actions.ts`: this file keys passport records by `tenant_id` and `client_id`, supports `deleteClientPassport`, and writes delegate fields. Current orphan-lane rule requires deletion when there are no live callers and no route owner, even if behavior is unique dormant code. | Delete |
 | `lib/clients/referral-tree.ts` | No live import path. Exact symbol search only found the candidate exports, except an unrelated `ReferralNode` interface in `lib/intelligence/referral-chain-mapping.ts`. | Delete |
+| `lib/clients/bulk-actions.ts` | No live import path. Exact symbol search only found the candidate export. | Delete |
 
 ### Canonical Owner Proof
 
@@ -143,6 +165,7 @@ Evidence:
 | Loyalty | `lib/loyalty/actions.ts` plus `lib/loyalty/store.ts` | Imported by chef loyalty pages, client rewards pages, onboarding, event transitions, and client dashboard actions. |
 | Passport | `lib/clients/client-default-knowledge-actions.ts` plus `lib/hub/passport-actions.ts` | `app/(client)/my-profile/page.tsx`, `app/(client)/my-profile/default-knowledge-panel.tsx`, and `app/(client)/book-now/page.tsx` import the default-knowledge owner. It reads and upserts `client_passports` by `tenant_id` plus `client_id`, including delegate fields. `lib/hub/passport-actions.ts` is the dormant hub owner for profile-keyed passport records. |
 | Referrals | `lib/clients/referral-actions.ts` and referral health modules | `components/analytics/referral-dashboard.tsx` and `components/clients/referral-panel.tsx` import referral actions. Referral health and client health modules also use referral fields. |
+| Bulk client archive | `lib/clients/actions.ts` | Client soft-delete behavior is owned by `deleteClient`, which updates `deleted_at` and `deleted_by` with tenant scoping. There is no live bulk client UI caller for the deleted wrapper. |
 
 ### Deleted Files
 
@@ -150,6 +173,7 @@ Evidence:
 - `lib/clients/loyalty-program.ts`
 - `lib/clients/passport-actions.ts`
 - `lib/clients/referral-tree.ts`
+- `lib/clients/bulk-actions.ts`
 
 ### Deleted Dormant Passport Behavior
 
