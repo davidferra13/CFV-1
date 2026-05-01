@@ -19,7 +19,7 @@ Builder agents are queue-aware. They do not wait to be told what to build:
 
 1. **Scan** every file in `docs/specs/`. Collect all specs with status `ready`.
 2. **Filter** out any spec whose "Depends on" references a spec that is NOT `verified` or `built`.
-3. **Module gate.** Run `improve-codebase-architecture` and identify the module owner before claiming. If the item is unassigned, cross-module without a named owner, or only a vague finding, classify it for module review or planning and do not build.
+3. **Module gate.** Run `improve-codebase-architecture`, read `docs/architecture/v1-module-primer.md`, and identify the module owner before claiming. Prefer module evidence from `system/unified-build-queue/candidates.json`, `module-batches.json`, `approved-batches.json`, and `system/v1-builder/approved-queue.jsonl`. If the item is unassigned, cross-module without a named owner, or only a vague finding, classify it for module review or planning and do not build.
 4. **Sort** by priority: P0 first, then P1, P2, P3.
 5. **Pick the first moduled item.** That is the build target.
 6. **Claim it** immediately: change status to `in-progress`, set "Built by" to your session, add a Timeline entry, commit the claim. This prevents double-picking.
@@ -50,6 +50,7 @@ If the developer says "Build [specific spec or plain English]," skip the queue a
    - "The spec is wrong or incomplete about: [what doesn't match reality]"
    - "Developer intent from the notes: [summary of what the developer actually wants]"
    - "Continuity decision: [extend / attach / merge-candidate / new] and canonical owner: [path or route]"
+   - "Module decision: [module id], interface: [interface], invariants: [owned invariants], test surface: [tests]"
    - If the spec is wrong: **STOP. Do not improvise.** Update the spec with corrections, then continue.
 
 ## Build Phase (Continuous Verification)
