@@ -146,7 +146,7 @@ const files = {
   clientPreviewTabs: abs('app/(chef)/settings/client-preview/client-preview-tabs.tsx'),
   professionalTabs: abs('app/(chef)/settings/professional/professional-development-client.tsx'),
   haccpTabs: abs('app/(chef)/settings/compliance/haccp/tabs-client.tsx'),
-  adminSidebar: abs('components/admin/admin-sidebar.tsx'),
+  adminShell: abs('components/navigation/admin-shell.tsx'),
 }
 
 const settingsSections = [
@@ -723,7 +723,7 @@ for (const section of surfaceSections) {
   out += '\n'
 }
 
-out += `### Surface: Admin Sidebar\ncomponent: ${files.adminSidebar}\nsource: hardcoded component\n\n`
+out += `### Surface: Admin Shell\ncomponent: ${files.adminShell}\nsource: admin nav config rendered by admin shell\n\n`
 for (const [label, href, icon, visibility, conditions] of adminItems) {
   totalNavigationItems += 1
   trackHref(href)
@@ -732,7 +732,7 @@ for (const [label, href, icon, visibility, conditions] of adminItems) {
       label,
       type: 'link',
       href,
-      component: files.adminSidebar,
+      component: files.adminShell,
       source: 'hardcoded component',
       visibility,
       conditions,
@@ -747,7 +747,7 @@ out +=
     label: 'Sign Out',
     type: 'action',
     href: '/',
-    component: files.adminSidebar,
+    component: files.adminShell,
     source: 'hardcoded component',
     visibility: 'permission-based',
     conditions: 'admin user',

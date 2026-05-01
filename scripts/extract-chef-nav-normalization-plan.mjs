@@ -93,7 +93,13 @@ function canonicalEntity(route) {
 function surfaceScore(surface, section, itemType) {
   let score = 0
   if (surface === 'Surface: Chef Desktop Sidebar' || surface === 'Chef Desktop Sidebar') score = 100
-  else if (surface === 'Surface: Admin Sidebar' || surface === 'Admin Sidebar') score = 95
+  else if (
+    surface === 'Surface: Admin Shell' ||
+    surface === 'Admin Shell' ||
+    surface === 'Surface: Admin Sidebar' ||
+    surface === 'Admin Sidebar'
+  )
+    score = 95
   else if (surface === 'Surface: Chef Mobile Navigation' || surface === 'Chef Mobile Navigation') score = 80
   else if ((surface || '').includes('Settings Hub')) score = 70
   else if ((surface || '').includes('Action Bar')) score = 60

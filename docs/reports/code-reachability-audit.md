@@ -42,7 +42,7 @@ Total first-pass production-surface orphan signal after the first cleanup pass: 
 | --- | --- | --- |
 | `hooks/use-field-validation.ts` and `lib/validation/use-field-validation.ts` | Both defined `useFieldValidation`; no production, test, or script caller imported either hook by name in the scanned surface. `lib/validation/form-rules.ts` supports the lib version. | Resolved on 2026-05-01 by deleting the unused root hook and keeping `lib/validation/use-field-validation.ts` as the canonical Form Validation Module. |
 | `components/ai/remy-public-widget.tsx` | Static import graph reports no inbound production, test, or script references. | `uncertain`. Remy surfaces can be dynamically embedded or product-owned elsewhere, so inspect public Remy routes before deletion. |
-| `components/admin/admin-sidebar.tsx` | Static import graph reports no inbound production, test, or script references. | `duplicate-or-prune-candidate`. Admin shell ownership must be checked first. |
+| `components/admin/admin-sidebar.tsx` | Static import graph reported no inbound production references. Admin inventory proved `/admin/**` is owned by `components/navigation/admin-shell.tsx`; nav report tooling now points at that shell. | Resolved on 2026-05-01 by deleting the duplicate sidebar. |
 | `components/activity/client-activity-timeline.tsx` | Static import graph reports no inbound production, test, or script references. | `recover-or-prune-candidate`. Client activity may be a real feature that lost route wiring. |
 | `lib/ai/menu-suggestions.ts` | Static import graph reports no inbound callers. Targeted search found only its own logging string and an entry in `lib/ai/privacy-audit.ts`. Push snapshot guard still treats `getAIMenuSuggestions` and `getAIMenuSuggestionsFromContext` as exported contract. The implementation delegates to the live read-only recipe-book interface, `lib/menus/recipe-book-suggestions-actions.ts`. | `contract-retained`. Keep until the snapshot contract is intentionally updated, then prune in a separate compatibility-removal slice. |
 | `lib/events/fsm.ts` | Targeted search found production imports from `app/api/v2/events/[id]/transition/route.ts`, `lib/events/transitions.ts`, and `lib/events/readiness.ts`, plus unit coverage. | `keep`. The older seed claim that it is test-only is stale. |
@@ -86,7 +86,7 @@ Files: `components/admin/admin-sidebar.tsx`, `components/navigation/admin-nav-co
 
 Problem: `admin-sidebar.tsx` appears unused, but admin route ownership is security-sensitive. A sidebar can be stale UI or a missing shell adapter.
 
-Solution: verify admin shell imports and route policy first, then either recover the sidebar as the shell adapter or remove it as a stale duplicate.
+Solution: completed on 2026-05-01. Admin shell imports and route policy were verified in `docs/reports/admin-shell-inventory.md`; the stale duplicate sidebar was removed and nav report tooling now points at `components/navigation/admin-shell.tsx`.
 
 Benefits: clearer admin control-plane ownership and less chance of admin UI drifting into chef workspace navigation.
 

@@ -119,7 +119,7 @@ Admin shell implementation renders the same nav ownership data twice:
 | Route inventory to nav ownership     | 3 static admin routes are hidden from admin nav: `/admin/openclaw`, `/admin/outreach`, and `/admin/price-catalog`.                                           | Hidden admin routes may be valid deep links, parked recovery surfaces, or stale surfaces. They are not prune proof by themselves. | Classify each hidden route as keep, recover, or prune-candidate in a separate focused slice.                             |
 | Parent nav to child active state     | `/admin/beta/onboarding` is a child of the Early Signups nav owner, but `isAdminNavItemActive()` disables child matching for `/admin/beta`.                  | Admins can reach a child route without its parent nav state highlighting.                                                         | Decide whether `/admin/beta/onboarding` needs an exact nav item, a different parent, or intentional hidden-child status. |
 | Admin page route to policy           | All listed page routes are under `/admin`, and route policy protects `/admin` as an admin path root.                                                         | No policy gap found in this read-only join.                                                                                       | Keep admin route additions under the `(admin)` group or `/admin` policy root.                                            |
-| Duplicate sidebar to canonical shell | The prune register marks `components/admin/admin-sidebar.tsx` as duplicate, but current runtime ownership points to `components/navigation/admin-shell.tsx`. | Deleting the duplicate without a focused diff could still miss references outside this report scope.                              | Use this report as prerequisite evidence only, then run a separate prune proof before deleting code.                     |
+| Duplicate sidebar to canonical shell | The prune register marked `components/admin/admin-sidebar.tsx` as duplicate, and current runtime ownership points to `components/navigation/admin-shell.tsx`. | Resolved by a focused prune proof after this inventory. | Duplicate sidebar deleted on 2026-05-01; nav report tooling now points at the canonical admin shell. |
 
 ## Adapter
 
@@ -159,7 +159,7 @@ No code was changed. Future work should stay local:
 | ----------------------- | -------------------------------------------------------------------------------------------------------------------- |
 | Nav recovery            | Edit only `components/navigation/admin-nav-config.ts` plus route-specific tests or docs needed for the chosen route. |
 | Active-state fix        | Edit only `components/navigation/admin-shell.tsx` if the beta child highlight is intentional to fix.                 |
-| Duplicate sidebar prune | Delete only the duplicate sidebar file in a separate approved cleanup slice after reference proof.                   |
+| Duplicate sidebar prune | Completed on 2026-05-01 by deleting only the duplicate sidebar and updating nav report tooling to the admin shell. |
 | Route deletion          | Do not delete hidden admin routes from this report. Each route needs its own keep, recover, or prune proof.          |
 
 ## Conclusion
@@ -168,4 +168,4 @@ Admin shell ownership is coherent: admin layout, admin shell, admin nav config, 
 
 The important gaps are discoverability gaps, not deletion permission. `/admin/openclaw`, `/admin/outreach`, and `/admin/price-catalog` are hidden static routes. `/admin/beta/onboarding` has parent ownership through Early Signups but no active parent state because of the shell's special-case matching.
 
-The duplicate admin sidebar listed in the prune register can now be investigated with this inventory as prerequisite evidence, but no file is cleared for deletion by this report alone.
+The duplicate admin sidebar listed in the prune register was pruned after this inventory with a focused reference proof. Admin shell ownership remains `components/navigation/admin-shell.tsx`.
