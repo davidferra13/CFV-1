@@ -1,0 +1,3287 @@
+{
+  "generated_at": "2026-05-01T00:06:00.720Z",
+  "specs": {
+    "total": 496,
+    "by_status": {
+      "draft": 10,
+      "ready": 61,
+      "in-progress": 0,
+      "built": 19,
+      "verified": 93,
+      "unknown": 313
+    },
+    "by_priority": {
+      "P0": 99,
+      "P1": 124,
+      "P2": 11,
+      "P3": 1,
+      "unknown": 261
+    },
+    "items": [
+      {
+        "file": "docs/specs/action-bar-missing-tabs.md",
+        "status": "verified",
+        "priority": "P1",
+        "complexity": "small"
+      },
+      {
+        "file": "docs/specs/adaptive-sourcing-workflow.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/adhoc-schedule-changes.md",
+        "status": "verified",
+        "priority": "P2",
+        "complexity": "small"
+      },
+      {
+        "file": "docs/specs/admin-platform-pulse.md",
+        "status": "verified",
+        "priority": "P1",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/android-home-screen-widgets.md",
+        "status": "ready",
+        "priority": "P1",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/api-integration-health-audit.md",
+        "status": "verified",
+        "priority": "P0",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/app-final-touches.md",
+        "status": "verified",
+        "priority": "P1",
+        "complexity": "small"
+      },
+      {
+        "file": "docs/specs/app-polish-and-completion.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "was"
+      },
+      {
+        "file": "docs/specs/arthur-klein-fix-1-configurable-plate-cost.md",
+        "status": "ready",
+        "priority": "P0",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/arthur-klein-fix-2-cost-csv-exports.md",
+        "status": "ready",
+        "priority": "P1",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/arthur-klein-fix-3-costing-transparency-ui.md",
+        "status": "ready",
+        "priority": "P2",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/auth-password-security-hardening-2026-04-10.md",
+        "status": "verified",
+        "priority": "P0",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/auto-costing-engine.md",
+        "status": "verified",
+        "priority": "P0",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/autonomous-v1-builder-contract.md",
+        "status": "ready",
+        "priority": "P0",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/beta-first-monetization-decision-archive.md",
+        "status": "draft",
+        "priority": "P1",
+        "complexity": "small"
+      },
+      {
+        "file": "docs/specs/bob-and-joy-action-catalog.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/build-client-relationship-closure-communications.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/build-client-relationship-closure-data-contract.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/build-client-relationship-closure-guards-and-tests.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/build-client-relationship-closure-server-actions.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/build-client-relationship-closure-ui.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/build-dashboard-interactivity.md",
+        "status": "unknown",
+        "priority": "P1",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/build-fix-tsc-errors.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/build-group-split-page.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/build-pipeline-reliability.md",
+        "status": "unknown",
+        "priority": "P0",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/build-referral-context-badge.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/build-report-normalization.md",
+        "status": "unknown",
+        "priority": "P0",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/build-shareable-menu-selection.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/build-ticketed-events-chef-wiring-fix.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/build-ticketed-events-migration.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/build-ticketed-events-public-view.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/build-ticketed-events-wiring.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/byoai-phase2-ollama-adapter.md",
+        "status": "ready",
+        "priority": "P1",
+        "complexity": "small"
+      },
+      {
+        "file": "docs/specs/byoai-phase2-privacy-narrative.md",
+        "status": "ready",
+        "priority": "P1",
+        "complexity": "small"
+      },
+      {
+        "file": "docs/specs/byoai-phase2-prompt-api.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/canonical-tasks-create-regression-harness.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/catalog-chef-upgrade.md",
+        "status": "verified",
+        "priority": "P1",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/catalog-power-tools.md",
+        "status": "verified",
+        "priority": "P1",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/catalog-store-selection-and-image-delivery-contract.md",
+        "status": "verified",
+        "priority": "P0",
+        "complexity": "small"
+      },
+      {
+        "file": "docs/specs/catalog-ux-overhaul.md",
+        "status": "verified",
+        "priority": "P1",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/chef-communication-noise-simulation.md",
+        "status": "draft",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/chef-event-briefing.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/chef-flow-decision-ledger-v1.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/chef-gear-check.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/chef-operations-interrogation.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/chef-opportunity-network.md",
+        "status": "built",
+        "priority": "P1",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/chef-portal-priority-restructure-2026-04-23.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/chef-pricing-override-infrastructure.md",
+        "status": "built",
+        "priority": "P0",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/chef-shell-clarity-and-guided-settings.md",
+        "status": "verified",
+        "priority": "P1",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/chef-user-journey-interrogation.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/chefflow-command-plane.md",
+        "status": "ready",
+        "priority": "P1",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/cil-phase1-implementation.md",
+        "status": "unknown",
+        "priority": "P0",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/client-experience-interrogation.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/client-resilience-interrogation.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/client-survey-launch-console.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/client-survey-launch-without-openclaw.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/cloud-mobile-unified-migration.md",
+        "status": "unknown",
+        "priority": "P0",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/co-hosted-dinner-build-spec.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-circle-approval-flow.md",
+        "status": "unknown",
+        "priority": "P0",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-circle-command-briefing.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "low"
+      },
+      {
+        "file": "docs/specs/codex-circle-command-center.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-circle-event-broadcast.md",
+        "status": "unknown",
+        "priority": "P0",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-circle-prep-assignments.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-circle-quick-actions.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "low"
+      },
+      {
+        "file": "docs/specs/codex-circle-reminder-cascade.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-circle-sourcing-board.md",
+        "status": "ready",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-circle-triage-engine.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "low"
+      },
+      {
+        "file": "docs/specs/codex-circles-agent-1-bug-fixes.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-circles-agent-2-ticketing-circle-bridge.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-circles-agent-3-lifecycle-notifications.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-circles-agent-4-public-event-page-polish.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-circles-momentum-strip.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "low"
+      },
+      {
+        "file": "docs/specs/codex-circles-nav-activation.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "trivial"
+      },
+      {
+        "file": "docs/specs/codex-client-list-health-enrichment.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-client-passport-and-delegation.md",
+        "status": "unknown",
+        "priority": "P0",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-client-passport-persistence.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-client-ux-bug-sweep.md",
+        "status": "unknown",
+        "priority": "P1",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-collaborator-circle-bridge.md",
+        "status": "unknown",
+        "priority": "P0",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-consumer-upcoming-events.md",
+        "status": "unknown",
+        "priority": "P0",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-corporate-procurement-layer.md",
+        "status": "unknown",
+        "priority": "P1",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-event-completion-menu-autolog.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-events-list-urgency-indicators.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-fix-auto-join-consent.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-fix-chat-empty-state.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-fix-dev-note-circles.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-fix-quote-phantom-terms.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-fix-rebooking-prefill.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-guest-preference-profile.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-handoff-context-enrichment.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-hub-table-schema-sync.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-ingredient-showcase-action.md",
+        "status": "ready",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-inquiry-event-urgency.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-international-readiness-layer.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-intl-phase2-format-wiring.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-launch-stabilization-agent-1.md",
+        "status": "unknown",
+        "priority": "P0",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-launch-stabilization-agent-2.md",
+        "status": "unknown",
+        "priority": "P0",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-launch-stabilization-agent-3.md",
+        "status": "unknown",
+        "priority": "P0",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-marisol-1-circle-bridge.md",
+        "status": "unknown",
+        "priority": "P0",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-marisol-2-batch-view.md",
+        "status": "unknown",
+        "priority": "P1",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-marisol-3-weekly-retro.md",
+        "status": "unknown",
+        "priority": "P2",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-menu-performance-dashboard.md",
+        "status": "ready",
+        "priority": "P0",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/codex-open-slot-broadcast.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-overnight-batch-2026-04-24.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-p0-hallucination-fixes.md",
+        "status": "unknown",
+        "priority": "P0",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-p1-allergen-word-boundary.md",
+        "status": "unknown",
+        "priority": "P1",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-p1-cashflow-expense-projection.md",
+        "status": "unknown",
+        "priority": "P1",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-p2-prep-timeline-ical.md",
+        "status": "unknown",
+        "priority": "P2",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-persona-drift-guard-generator.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-persona-drift-inbox-preview.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-post-dinner-circle-onramp.md",
+        "status": "unknown",
+        "priority": "P0",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-preference-sync-bridge.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-prep-sheet-generator.md",
+        "status": "ready",
+        "priority": "P0",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/codex-price-intel-spec-1-government-expansion.md",
+        "status": "unknown",
+        "priority": "P0",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-price-intel-spec-2-nationwide-config-gapfill.md",
+        "status": "unknown",
+        "priority": "P0",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-price-intel-spec-3-scraper-hardening.md",
+        "status": "unknown",
+        "priority": "P1",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-private-circle-messaging.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-provenance-data-capture.md",
+        "status": "ready",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-quick-price-from-menu.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-rotation-guard.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-saturation-tracking-core.md",
+        "status": "ready",
+        "priority": "P1",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/codex-service-day-closeout.md",
+        "status": "ready",
+        "priority": "P0",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/codex-shift-history-page.md",
+        "status": "unknown",
+        "priority": "P1",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-shift-knowledge-search.md",
+        "status": "unknown",
+        "priority": "P1",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-stabilize-build-verification.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-stabilize-migration-audit.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-stabilize-ticketing-wiring.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-station-nav-links.md",
+        "status": "unknown",
+        "priority": "P1",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/codex-waste-patterns-page.md",
+        "status": "unknown",
+        "priority": "P1",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/cohesion-checklist-prep-timeline.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/commerce-financial-integrity-interrogation.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/communication-ingestion-pipeline.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/completion-contract.md",
+        "status": "verified",
+        "priority": "P0",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/component-aware-prep-scheduling.md",
+        "status": "verified",
+        "priority": "P1",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/comprehensive-domain-inventory-phase-1.md",
+        "status": "ready",
+        "priority": "P0",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/comprehensive-qa-validation.md",
+        "status": "ready",
+        "priority": "P0",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/configuration-engine.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/consumer-booking-clarity.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/consumer-first-discovery-and-dinner-planning-expansion.md",
+        "status": "ready",
+        "priority": "P1",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/continuous-intelligence-layer.md",
+        "status": "unknown",
+        "priority": "P0",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/cost-propagation-wiring.md",
+        "status": "verified",
+        "priority": "P0",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/crew-circles-build-spec.md",
+        "status": "unknown",
+        "priority": "P1",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/critical-path-and-dinner-circle-onboarding.md",
+        "status": "verified",
+        "priority": "P0",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/cross-boundary-flow-interrogation.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/cross-system-question-set-role-hierarchy.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/culinary-radar-intelligence-layer.md",
+        "status": "ready",
+        "priority": "P1",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/curated-viewer-experience.md",
+        "status": "verified",
+        "priority": "P2",
+        "complexity": "small"
+      },
+      {
+        "file": "docs/specs/davids-docket-openclaw-cartridge.md",
+        "status": "unknown",
+        "priority": "P0",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/decision-queue.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/devtools-codex-review.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/devtools-core-loop-hardening.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/devtools-eyes-and-supervisor.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/devtools-trust-layer.md",
+        "status": "ready",
+        "priority": "P1",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/devtools-wish-to-codex.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/devtools-wish-ui.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/digital-twin-simulation-protocol.md",
+        "status": "ready",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/dinner-circle-cohesion-interrogation.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/dinner-circle-elevation.md",
+        "status": "verified",
+        "priority": "P0",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/dinner-circle-invite-journey-regression.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/dinner-circle-multi-host-collaboration.md",
+        "status": "draft",
+        "priority": "P1",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/dinner-circle-unification.md",
+        "status": "draft",
+        "priority": "P1",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/dinner-circles-elevation-spec.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/dinner-circles-expansion-spec.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/dinner-lifecycle-e2e-interrogation.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/directory-operator-outreach.md",
+        "status": "verified",
+        "priority": "P2",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/directory-post-claim-enhancement-flow.md",
+        "status": "ready",
+        "priority": "P1",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/discover-directory-polish.md",
+        "status": "verified",
+        "priority": "P2",
+        "complexity": "small"
+      },
+      {
+        "file": "docs/specs/discover-state-normalization-hardening.md",
+        "status": "verified",
+        "priority": "P1",
+        "complexity": "small"
+      },
+      {
+        "file": "docs/specs/email-snapshot-and-portal-strategy.md",
+        "status": "verified",
+        "priority": "P1",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/equipment-intelligence-system.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/event-financial-interrogation.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/event-ops-hub.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/event-ops-quality-bar-build.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/event-ops-quality-bar-prompt.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/event-pricing-ingredient-spike-warnings-build.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/event-pricing-intelligence-panel.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/event-readiness-assistant-persistent-dismissals.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/event-readiness-assistant.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/feature-registry-builder-handoff.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/featured-chef-links-and-conversion.md",
+        "status": "verified",
+        "priority": "P1",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/featured-chef-public-proof-and-booking.md",
+        "status": "verified",
+        "priority": "P1",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/financial-models-remediation.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/fix-double-loading-message.md",
+        "status": "unknown",
+        "priority": "P1",
+        "complexity": "small"
+      },
+      {
+        "file": "docs/specs/fix-google-maps-csp.md",
+        "status": "verified",
+        "priority": "P1",
+        "complexity": "small"
+      },
+      {
+        "file": "docs/specs/fix-onboarding-gmail-connect.md",
+        "status": "verified",
+        "priority": "P1",
+        "complexity": "small"
+      },
+      {
+        "file": "docs/specs/fix-root-page-500.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/food-costing-knowledge-system.md",
+        "status": "built",
+        "priority": "P1",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/food-directory-import.md",
+        "status": "verified",
+        "priority": "P1",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/food-operator-survey-launch-console.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/food-operator-survey-launch-without-openclaw.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/full-cloud-ai-runtime-and-disclosure.md",
+        "status": "built",
+        "priority": "P0",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/gemma4-integration.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/geographic-pricing-proof-harness.md",
+        "status": "built",
+        "priority": "P0",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/global-loading-feedback.md",
+        "status": "verified",
+        "priority": "P0",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/grazing-table-ops-engine.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/guest-dietary-rollup.md",
+        "status": "ready",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/household-profiles.md",
+        "status": "verified",
+        "priority": "P1",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/infrastructure-acquisition-manifest.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/ingredient-lifecycle-question-set.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/ingredient-quantity-lifecycle.md",
+        "status": "verified",
+        "priority": "P0",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/ingredient-sourcing-intelligence.md",
+        "status": "verified",
+        "priority": "P1",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/inquiry-parse-reliability.md",
+        "status": "verified",
+        "priority": "P0",
+        "complexity": "small"
+      },
+      {
+        "file": "docs/specs/interaction-engine-application-gateway.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/interaction-engine-client-gateway-adapter.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/interaction-engine.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/internal-codex-readiness-pack.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/international-readiness-layer.md",
+        "status": "unknown",
+        "priority": "P1",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/kill-onboarding-redirect.md",
+        "status": "verified",
+        "priority": "P0",
+        "complexity": "small"
+      },
+      {
+        "file": "docs/specs/launch-stabilization-strategy.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/lead-engine-cartridge.md",
+        "status": "unknown",
+        "priority": "P1",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/live-service-execution-tracker-regression-coverage.md",
+        "status": "ready",
+        "priority": "P1",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/live-service-execution-tracker.md",
+        "status": "ready",
+        "priority": "P1",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/local-ai-integration.md",
+        "status": "built",
+        "priority": "P1",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/login-settings-qol.md",
+        "status": "verified",
+        "priority": "P1",
+        "complexity": "small"
+      },
+      {
+        "file": "docs/specs/loyalty-client-experience.md",
+        "status": "verified",
+        "priority": "P1",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/loyalty-phase1-visibility-and-perks.md",
+        "status": "verified",
+        "priority": "P1",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/loyalty-phase2-auto-referral-guest-milestones.md",
+        "status": "verified",
+        "priority": "P2",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/loyalty-phase3-sse-hybrid-presets-progress.md",
+        "status": "verified",
+        "priority": "P1",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/loyalty-program-perfection.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/loyalty-trigger-expansion.md",
+        "status": "verified",
+        "priority": "P1",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/managed-channel-integration-note.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/marisol-meal-prep-recurring-engine.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/meal-feedback.md",
+        "status": "verified",
+        "priority": "P0",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/menu-approval-workflow.md",
+        "status": "unknown",
+        "priority": "P3",
+        "complexity": "small"
+      },
+      {
+        "file": "docs/specs/menu-cost-estimator.md",
+        "status": "verified",
+        "priority": "P0",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/menu-costing-interrogation.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/menu-hero-access.md",
+        "status": "verified",
+        "priority": "P1",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/menu-system-interrogation.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/mission-control-passive-dashboard.md",
+        "status": "ready",
+        "priority": "P1",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/mobile-ux-bugfixes.md",
+        "status": "verified",
+        "priority": "P1",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/nationwide-ingredient-catalog.md",
+        "status": "verified",
+        "priority": "P0",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/navigation-action-bar.md",
+        "status": "verified",
+        "priority": "P0",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/nearby-directory-redesign.md",
+        "status": "ready",
+        "priority": "P1",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/noah-kim-pop-up-operating-system.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/notes-dishes-menus-client-event-pipeline.md",
+        "status": "built",
+        "priority": "P1",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/ollama-delegate-mcp.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/onboarding-cohesion-rework.md",
+        "status": "draft",
+        "priority": "P1",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/onboarding-dismissal-fix.md",
+        "status": "verified",
+        "priority": "P0",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/onboarding-overhaul.md",
+        "status": "verified",
+        "priority": "P0",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/openclaw-archive-digester.md",
+        "status": "ready",
+        "priority": "P2",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/openclaw-canonical-scope-and-sequence.md",
+        "status": "verified",
+        "priority": "P0",
+        "complexity": "small"
+      },
+      {
+        "file": "docs/specs/openclaw-capture-countdown-and-pixel-schedule.md",
+        "status": "ready",
+        "priority": "P1",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/openclaw-cartridge-infrastructure.md",
+        "status": "verified",
+        "priority": "P1",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/openclaw-data-completeness-engine.md",
+        "status": "verified",
+        "priority": "P0",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/openclaw-developer-usage-page.md",
+        "status": "verified",
+        "priority": "P1",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/openclaw-directory-images-cartridge.md",
+        "status": "unknown",
+        "priority": "P2",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/openclaw-email-agent.md",
+        "status": "verified",
+        "priority": "P1",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/openclaw-food-price-intelligence.md",
+        "status": "draft",
+        "priority": "P1",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/openclaw-goal-governor-and-kpi-contract.md",
+        "status": "ready",
+        "priority": "P0",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/openclaw-hermes-migration.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/openclaw-ideal-runtime-and-national-intelligence.md",
+        "status": "ready",
+        "priority": "P1",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/openclaw-intelligence-layer.md",
+        "status": "unknown",
+        "priority": "P1",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/openclaw-internal-only-boundary-and-debranding.md",
+        "status": "verified",
+        "priority": "P0",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/openclaw-inventory-evolution.md",
+        "status": "unknown",
+        "priority": "P1",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/openclaw-mission-control.md",
+        "status": "verified",
+        "priority": "P0",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/openclaw-nationwide-pricing-strategy.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/openclaw-non-goals-and-never-do-rules.md",
+        "status": "ready",
+        "priority": "P0",
+        "complexity": "small"
+      },
+      {
+        "file": "docs/specs/openclaw-opus-distillation-burst.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/openclaw-pc-local-mirror-and-backup-contract.md",
+        "status": "ready",
+        "priority": "P0",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/openclaw-phase-3-full-integration.md",
+        "status": "unknown",
+        "priority": "P1",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/openclaw-playwright-sentinel.md",
+        "status": "verified",
+        "priority": "P1",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/openclaw-price-expansion-tasks.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/openclaw-price-surfacing.md",
+        "status": "verified",
+        "priority": "P1",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/openclaw-reference-libraries.md",
+        "status": "unknown",
+        "priority": "P1",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/openclaw-refresh-status-badge.md",
+        "status": "verified",
+        "priority": "P1",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/openclaw-scraper-enrichment.md",
+        "status": "unknown",
+        "priority": "P0",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/openclaw-social-media-orchestration.md",
+        "status": "verified",
+        "priority": "P1",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/openclaw-total-capture.md",
+        "status": "ready",
+        "priority": "P0",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/openclaw-total-catalog-intelligence.md",
+        "status": "verified",
+        "priority": "P0",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/openclaw-v2-intelligence.md",
+        "status": "verified",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/openclaw-v2-unified-pricing.md",
+        "status": "verified",
+        "priority": "P0",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/operational-resilience-interrogation.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/operational-workflow-interrogation.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/orchestration-data-pipeline.md",
+        "status": "unknown",
+        "priority": "P1",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/p0-boundary-first-architecture-sequence.md",
+        "status": "ready",
+        "priority": "P0",
+        "complexity": "small"
+      },
+      {
+        "file": "docs/specs/p0-builder-agent-foundation.md",
+        "status": "ready",
+        "priority": "P0",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/p0-chef-cpa-ready-tax-export-and-reconciliation.md",
+        "status": "built",
+        "priority": "P0",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/p0-chef-golden-path-reliability-checklist.md",
+        "status": "verified",
+        "priority": "P0",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/p0-chef-golden-path-reliability.md",
+        "status": "built",
+        "priority": "P0",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/p0-chef-pricing-readiness-gate.md",
+        "status": "verified",
+        "priority": "P0",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/p0-client-portal-payment-intent-hardening.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/p0-onboarding-first-week-activation-contract.md",
+        "status": "ready",
+        "priority": "P0",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/p0-openclaw-health-contract-and-chefflow-bridge.md",
+        "status": "unknown",
+        "priority": "P0",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/p0-openclaw-health-contract-consumer-bridge.md",
+        "status": "unknown",
+        "priority": "P0",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/p0-public-booking-routing-and-source-truth.md",
+        "status": "ready",
+        "priority": "P0",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/p0-request-trust-and-api-tenant-boundary-hardening.md",
+        "status": "verified",
+        "priority": "P0",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/p0-runtime-surface-boundary-enforcement.md",
+        "status": "verified",
+        "priority": "P0",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/p0-survey-passive-voluntary-deploy-verification.md",
+        "status": "ready",
+        "priority": "P0",
+        "complexity": "small"
+      },
+      {
+        "file": "docs/specs/p0-survey-passive-voluntary-surfacing.md",
+        "status": "unknown",
+        "priority": "P0",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/p0-system-improvement-control-tower.md",
+        "status": "verified",
+        "priority": "P0",
+        "complexity": "small"
+      },
+      {
+        "file": "docs/specs/p0-work-continuity-control-plane.md",
+        "status": "unknown",
+        "priority": "P0",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/p0-zero-manual-entry-form-control-plane.md",
+        "status": "ready",
+        "priority": "P0",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/p1-allergy-and-dietary-trust-alignment.md",
+        "status": "unknown",
+        "priority": "P1",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/p1-alternate-entry-points-and-support-visibility.md",
+        "status": "verified",
+        "priority": "P1",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/p1-analytics-surface-ownership-and-route-truth.md",
+        "status": "ready",
+        "priority": "P1",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/p1-automated-database-backup-system.md",
+        "status": "ready",
+        "priority": "P1",
+        "complexity": "small"
+      },
+      {
+        "file": "docs/specs/p1-build-and-release-contract-truth.md",
+        "status": "ready",
+        "priority": "P1",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/p1-buyer-education-and-pre-decision-guidance.md",
+        "status": "ready",
+        "priority": "P1",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/p1-canonical-culinary-dictionary.md",
+        "status": "built",
+        "priority": "P1",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/p1-chef-collab-spaces.md",
+        "status": "verified",
+        "priority": "P1",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/p1-chef-getting-started-surface-consolidation.md",
+        "status": "verified",
+        "priority": "P1",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/p1-code-reachability-and-safe-prune-audit.md",
+        "status": "verified",
+        "priority": "P1",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/p1-data-export-takeout.md",
+        "status": "draft",
+        "priority": "P1",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/p1-dead-zone-gating-and-surface-honesty.md",
+        "status": "verified",
+        "priority": "P1",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/p1-demo-continuity-and-portal-proof.md",
+        "status": "ready",
+        "priority": "P1",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/p1-event-scheduling-surface-ownership-and-route-truth.md",
+        "status": "ready",
+        "priority": "P1",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/p1-finance-root-canonicalization.md",
+        "status": "verified",
+        "priority": "P1",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/p1-google-contacts-import-via-google-people-api.md",
+        "status": "verified",
+        "priority": "P1",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/p1-introduction-bridge.md",
+        "status": "verified",
+        "priority": "P1",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/p1-navigation-and-cta-continuity.md",
+        "status": "built",
+        "priority": "P1",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/p1-operational-reassurance-and-what-happens-next.md",
+        "status": "ready",
+        "priority": "P1",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/p1-ops-external-services-setup.md",
+        "status": "unknown",
+        "priority": "P1",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/p1-performance-optimization.md",
+        "status": "built",
+        "priority": "P1",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/p1-pipeline-analytics-truth-and-honesty.md",
+        "status": "verified",
+        "priority": "P1",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/p1-recipe-root-canonicalization-and-route-truth.md",
+        "status": "built",
+        "priority": "P1",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/p1-request-correlation-and-observability-wiring.md",
+        "status": "verified",
+        "priority": "P1",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/p1-search-intent-landing-architecture.md",
+        "status": "ready",
+        "priority": "P1",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/p1-source-provenance-and-conversion-analytics-correction.md",
+        "status": "verified",
+        "priority": "P1",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/p1-survey-public-hardening-and-results-scale.md",
+        "status": "unknown",
+        "priority": "P1",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/p1-task-and-todo-contract-truth.md",
+        "status": "verified",
+        "priority": "P1",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/p1-work-continuity-drift-guard.md",
+        "status": "unknown",
+        "priority": "P1",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/paid-leverage-roadmap.md",
+        "status": "ready",
+        "priority": "P0",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/partner-mobile-signout-footer.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/passive-store-source-driven-sync.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/passive-store-sync-state-bootstrap.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/persona-batch-synthesizer.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/persona-build-receipt.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/persona-codex-prompter.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/persona-gap-deduplication.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/persona-gap-quality-gate.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/persona-generator-and-validator.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/persona-pipeline-autonomous-agent.md",
+        "status": "ready",
+        "priority": "P0",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/persona-pipeline-runner.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/persona-pipeline-v2.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/persona-pipeline-v3-upgrades.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/persona-quality-standard.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/persona-regression-guard.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/persona-report-audit.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/persona-saturation-targeting.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/persona-score-seeder.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/persona-smart-rescore.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/pi-data-synthesis-pipeline.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/pipeline-bugfix-synthesis-deadlock.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/pipeline-interrogation.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/platform-intelligence-hub.md",
+        "status": "unknown",
+        "priority": "P1",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/platform-role-hierarchy.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/platform-shell-command-center.md",
+        "status": "ready",
+        "priority": "P1",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/portfolio-upload-fix.md",
+        "status": "verified",
+        "priority": "P1",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/post-event-trust-loop-consolidation.md",
+        "status": "verified",
+        "priority": "P1",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/prep-timeline-professional-grade.md",
+        "status": "unknown",
+        "priority": "P0",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/price-flag-resolution-ui.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/pricing-vertical-slice.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/privacy-data-handling-baseline.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/private-dev-cockpit-consolidation.md",
+        "status": "ready",
+        "priority": "P0",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/private-secret-complimentary-system.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/projected-cost-pipeline-fix.md",
+        "status": "unknown",
+        "priority": "P0",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/public-chef-credentials-showcase.md",
+        "status": "verified",
+        "priority": "P1",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/public-only-monitored-cloud-ai-gateway.md",
+        "status": "built",
+        "priority": "P0",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/public-surface-interrogation.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/pulse-capture-integration.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/purchase-feedback-panel.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/rbac-system-specification.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/receipt-intelligence-and-recipe-scaling.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/recipe-costing-integrity.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/recipe-peak-windows.md",
+        "status": "draft",
+        "priority": "P0",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/remy-advisor-pattern.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/remy-capability-operating-layer.md",
+        "status": "ready",
+        "priority": "P1",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/remy-fix-01-public-activation.md",
+        "status": "unknown",
+        "priority": "P0",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/remy-fix-02-markdown-and-streaming.md",
+        "status": "unknown",
+        "priority": "P1",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/remy-fix-03-safety-and-a11y.md",
+        "status": "unknown",
+        "priority": "P1",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/remy-hybrid-cloud-routing.md",
+        "status": "unknown",
+        "priority": "P0",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/remy-model-discovery.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/remy-model-puller.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/remy-model-registry.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/remy-runtime-unification-and-quality-recovery.md",
+        "status": "unknown",
+        "priority": "P0",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/remy-smart-router.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/respectful-monetization-foundation.md",
+        "status": "draft",
+        "priority": "P1",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/restaurant-adoption-interrogation.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/restaurant-ops-surface-and-reliability-pass.md",
+        "status": "verified",
+        "priority": "P1",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/rich-text-editor-dinner-circles.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/rich-text-editor-extended-surfaces.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/saturation-tracking.md",
+        "status": "ready",
+        "priority": "P1",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/scheduled-jobs-integrity-interrogation.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/self-hosted-deployment-standard.md",
+        "status": "ready",
+        "priority": "P0",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/service-lifecycle-intelligence.md",
+        "status": "verified",
+        "priority": "P0",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/service-simulation-proof-closeout.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/service-simulation.md",
+        "status": "built",
+        "priority": "P1",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/settings-branding-account-security.md",
+        "status": "built",
+        "priority": "P2",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/showcase-image-upload.md",
+        "status": "verified",
+        "priority": "P1",
+        "complexity": "small"
+      },
+      {
+        "file": "docs/specs/simulation-orchestrator.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/smart-input-autocomplete.md",
+        "status": "verified",
+        "priority": "P1",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/soft-close-leverage-and-reactivation.md",
+        "status": "built",
+        "priority": "P1",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/sophie-kaplan-dinner-circle-control-surface.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/spring-surge-command-center.md",
+        "status": "verified",
+        "priority": "P0",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/staff-ops-unified-workflow.md",
+        "status": "built",
+        "priority": "P1",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/sticky-notes-intake-layer.md",
+        "status": "verified",
+        "priority": "P0",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/stress-test-question-set-role-hierarchy.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/surface-grammar-governance.md",
+        "status": "ready",
+        "priority": "P0",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/survey-wave-1-internal-launch-builder-handoff-2026-04-02.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-completeness-interrogation.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-interrogation-r2.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-interrogation-r3.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-interrogation-r4.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-interrogation.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-ai-remy.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-analytics.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-api-routes.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-auth.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-battle-tested-seams.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-calendar-scheduling.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-calendar.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-cannabis-cohesion.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-cannabis-portal.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-chef-to-chef.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-client-hub-portal.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-client-management-phase2.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-client-management.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-client-portal.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-cohesiveness-synthesis.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-cohosting.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-community-circles.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-competitive-surface.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-configuration-engine.md",
+        "status": "built",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-consumer-discovery-cohesion-v1.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-cron-operations.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-cross-boundary-enforcement.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-cross-system-cohesion.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-cross-system.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-culinary.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-dashboard.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-data-export.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-data-layer.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-email-notifications.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-end-to-end-chains-answers.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-end-to-end-chains.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-event-fsm.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-event-lifecycle.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-export-cohesion.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-export-external-recipients.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-extraction-frontier.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-finance.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-financial-ops.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-financials-phase2.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-financials.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-first-time-experience.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-full-cohesion-answers.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-full-cohesion.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-guest-experience.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-inquiries-quotes.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-inquiry-pipeline.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-inquiry-to-completion.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-local-ai-cohesion.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-money-flow.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-nearby-cohesion.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-network-collab.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-notifications.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-onboarding-production-readiness.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-onboarding.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-openclaw-cohesion-v2-answers.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-openclaw-cohesion-v2.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-openclaw-cohesion-v3.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-openclaw-cohesion.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-operational-pressure.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-phase3.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-prep-push.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-prep-timeline-chaos.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-prep-timeline-integration.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-prep-timeline-v2.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-prep-timeline.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-public-surface-cohesion-v1.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-public-surface.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-recipes-menus-ingredients.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-remy-cohesion.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-role-hierarchy.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-seam-cohesion.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-settings-preferences.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-settings.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set-staff-ops.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-integrity-question-set.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-interrogation-protocol.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-stress-questions.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/system-surface-role-classification-foundation.md",
+        "status": "verified",
+        "priority": "P0",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/takeachef-privatechefmanager-parity-doc-program.md",
+        "status": "ready",
+        "priority": "P0",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/ticketed-events-and-distribution.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/token-efficiency-interrogation.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/unit-conversion-costing-design.md",
+        "status": "draft",
+        "priority": "unknown",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/universal-intake-pipeline.md",
+        "status": "unknown",
+        "priority": "P0",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/universal-interface-philosophy.md",
+        "status": "ready",
+        "priority": "P0",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/universal-price-intelligence.md",
+        "status": "verified",
+        "priority": "P0",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/v1-control-plane.md",
+        "status": "ready",
+        "priority": "P0",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/vendor-personalization-layer.md",
+        "status": "verified",
+        "priority": "P1",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/visual-representation-strategy.md",
+        "status": "verified",
+        "priority": "P1",
+        "complexity": "large"
+      },
+      {
+        "file": "docs/specs/website-build-research-spec-code-cross-reference-upgrade.md",
+        "status": "ready",
+        "priority": "P0",
+        "complexity": "small"
+      },
+      {
+        "file": "docs/specs/weekly-meal-board.md",
+        "status": "verified",
+        "priority": "P0",
+        "complexity": "medium"
+      },
+      {
+        "file": "docs/specs/weekly-template-cloning.md",
+        "status": "verified",
+        "priority": "P1",
+        "complexity": "small"
+      },
+      {
+        "file": "docs/specs/workspace-density.md",
+        "status": "ready",
+        "priority": "P0",
+        "complexity": "unknown"
+      },
+      {
+        "file": "docs/specs/yield-normalization-verification-harness.md",
+        "status": "unknown",
+        "priority": "unknown",
+        "complexity": "unknown"
+      }
+    ]
+  },
+  "audits": {
+    "total": 17,
+    "fresh": 2,
+    "aging": 0,
+    "stale": 15,
+    "items": [
+      {
+        "file": "docs/admin-client-audit.md",
+        "date": "2026-03-25",
+        "files_changed_since": 3884,
+        "decay": "stale"
+      },
+      {
+        "file": "docs/anthropic-follow-on-audit-answers-2026-04-18.md",
+        "date": "2026-04-18",
+        "files_changed_since": 2267,
+        "decay": "stale"
+      },
+      {
+        "file": "docs/anthropic-follow-on-audit-supplement-2026-04-18.md",
+        "date": "2026-04-18",
+        "files_changed_since": 2267,
+        "decay": "stale"
+      },
+      {
+        "file": "docs/anthropic-system-audit-2026-04-18.md",
+        "date": "2026-04-18",
+        "files_changed_since": 2267,
+        "decay": "stale"
+      },
+      {
+        "file": "docs/api-integration-health-audit-implementation.md",
+        "date": "2026-03-27",
+        "files_changed_since": 3855,
+        "decay": "stale"
+      },
+      {
+        "file": "docs/app-complete-audit.md",
+        "date": "2026-04-30",
+        "files_changed_since": 0,
+        "decay": "fresh"
+      },
+      {
+        "file": "docs/dead-code-audit-2026-04-04.md",
+        "date": "2026-04-04",
+        "files_changed_since": 3341,
+        "decay": "stale"
+      },
+      {
+        "file": "docs/external-directory-audit.md",
+        "date": "2026-03-20",
+        "files_changed_since": 4712,
+        "decay": "stale"
+      },
+      {
+        "file": "docs/frontend-backend-parity-audit.md",
+        "date": "2026-03-25",
+        "files_changed_since": 3884,
+        "decay": "stale"
+      },
+      {
+        "file": "docs/palace-audit-build-spec.md",
+        "date": "2026-04-25",
+        "files_changed_since": 1442,
+        "decay": "stale"
+      },
+      {
+        "file": "docs/platform-identity-audit.md",
+        "date": "2026-03-25",
+        "files_changed_since": 3884,
+        "decay": "stale"
+      },
+      {
+        "file": "docs/production-readiness-audit-2026-03-18.md",
+        "date": "2026-03-18",
+        "files_changed_since": 4811,
+        "decay": "stale"
+      },
+      {
+        "file": "docs/project-freeze-skill-audit-2026-04-30.md",
+        "date": "2026-04-30",
+        "files_changed_since": 0,
+        "decay": "fresh"
+      },
+      {
+        "file": "docs/security-audit-2026-04-04.md",
+        "date": "2026-04-04",
+        "files_changed_since": 3341,
+        "decay": "stale"
+      },
+      {
+        "file": "docs/server-action-audit.md",
+        "date": "2026-03-25",
+        "files_changed_since": 3884,
+        "decay": "stale"
+      },
+      {
+        "file": "docs/ui-ux-audit-report.md",
+        "date": "2026-04-17",
+        "files_changed_since": 2595,
+        "decay": "stale"
+      },
+      {
+        "file": "docs/zero-hallucination-audit.md",
+        "date": "2026-03-15",
+        "files_changed_since": 5311,
+        "decay": "stale"
+      }
+    ]
+  },
+  "personas": {
+    "tested": 11,
+    "defined": 12,
+    "research_cataloged": 13,
+    "unique_gaps": 42,
+    "saturation": "MEDIUM"
+  },
+  "sessions": {
+    "total": 72,
+    "date_range": {
+      "earliest": "2026-04-04",
+      "latest": "2026-04-27"
+    },
+    "top_topics": [
+      {
+        "word": "draft",
+        "count": 8
+      },
+      {
+        "word": "audit",
+        "count": 6
+      },
+      {
+        "word": "openclaw",
+        "count": 5
+      },
+      {
+        "word": "hardening",
+        "count": 4
+      },
+      {
+        "word": "mempalace",
+        "count": 4
+      },
+      {
+        "word": "sweep",
+        "count": 4
+      },
+      {
+        "word": "system",
+        "count": 4
+      },
+      {
+        "word": "boundary",
+        "count": 3
+      },
+      {
+        "word": "client",
+        "count": 3
+      },
+      {
+        "word": "complete",
+        "count": 3
+      },
+      {
+        "word": "gap",
+        "count": 3
+      },
+      {
+        "word": "api",
+        "count": 2
+      },
+      {
+        "word": "cleanup",
+        "count": 2
+      },
+      {
+        "word": "closure",
+        "count": 2
+      },
+      {
+        "word": "cloud",
+        "count": 2
+      },
+      {
+        "word": "completion",
+        "count": 2
+      },
+      {
+        "word": "costing",
+        "count": 2
+      },
+      {
+        "word": "crash",
+        "count": 2
+      },
+      {
+        "word": "create",
+        "count": 2
+      },
+      {
+        "word": "date",
+        "count": 2
+      }
+    ]
+  },
+  "file_heatmap": [
+    {
+      "file": "app/(chef)/events/[id]/page.tsx",
+      "commits": 39
+    },
+    {
+      "file": "components/navigation/nav-config.tsx",
+      "commits": 36
+    },
+    {
+      "file": "lib/events/transitions.ts",
+      "commits": 32
+    },
+    {
+      "file": "app/(chef)/dashboard/page.tsx",
+      "commits": 31
+    },
+    {
+      "file": "app/api/calling/gather/route.ts",
+      "commits": 29
+    },
+    {
+      "file": "app/(chef)/culinary/price-catalog/catalog-browser.tsx",
+      "commits": 22
+    },
+    {
+      "file": "lib/calling/twilio-actions.ts",
+      "commits": 21
+    },
+    {
+      "file": "lib/events/actions.ts",
+      "commits": 21
+    },
+    {
+      "file": "app/(public)/chef/[slug]/page.tsx",
+      "commits": 20
+    },
+    {
+      "file": "lib/ai/remy-context.ts",
+      "commits": 20
+    },
+    {
+      "file": "app/api/webhooks/stripe/route.ts",
+      "commits": 19
+    },
+    {
+      "file": "app/(chef)/layout.tsx",
+      "commits": 18
+    },
+    {
+      "file": "app/(public)/page.tsx",
+      "commits": 18
+    },
+    {
+      "file": "components/calling/call-hub.tsx",
+      "commits": 18
+    },
+    {
+      "file": "lib/inquiries/actions.ts",
+      "commits": 17
+    },
+    {
+      "file": "lib/inquiries/public-actions.ts",
+      "commits": 17
+    },
+    {
+      "file": "lib/quotes/actions.ts",
+      "commits": 17
+    },
+    {
+      "file": "components/navigation/chef-nav.tsx",
+      "commits": 16
+    },
+    {
+      "file": "components/public/public-inquiry-form.tsx",
+      "commits": 16
+    },
+    {
+      "file": "lib/clients/actions.ts",
+      "commits": 16
+    }
+  ]
+}
