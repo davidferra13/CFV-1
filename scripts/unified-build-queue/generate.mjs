@@ -142,7 +142,7 @@ const V1_SUPPORT_PATTERNS = [
   /\bavailability\b/i,
 ]
 
-const MODULES = [
+export const MODULES = [
   {
     id: 'pricing-trust',
     label: 'Pricing Trust',

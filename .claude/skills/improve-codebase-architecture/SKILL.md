@@ -49,6 +49,7 @@ Use these sources in order:
 4. `system/v1-builder/approved-queue.jsonl`
 5. `docs/architecture/v1-module-primer.md`
 6. `docs/architecture/v1-module-cards.md`
-7. Code truth in `app/`, `components/`, `lib/`, `database/`, `scripts/`, and `public/embed/chefflow-widget.js`
+7. `node devtools/module-decision.mjs --prompt "..."` or `node devtools/module-decision.mjs --source-path path`
+8. Code truth in `app/`, `components/`, `lib/`, `database/`, `scripts/`, and `public/embed/chefflow-widget.js`
 
 The generated queue taxonomy is build-backlog truth. It does not prove every code file has an owner yet. If code truth contradicts the queue module, treat that as a module-review finding before implementation.
