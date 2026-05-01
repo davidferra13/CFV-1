@@ -65,3 +65,34 @@ Results:
 ## Residual Risk
 
 Low. The deleted files were client components or pure wrappers with no import path, no export reference, and no route-level owner. The remaining client files include active canonical owners and were not touched.
+
+## Cannabis Client Actions Slice
+
+- Date: 2026-05-01
+- Candidate: `lib/clients/cannabis-client-actions.ts`
+- Decision: Delete
+
+### Evidence
+
+`lib/clients/cannabis-client-actions.ts` had no live import path from `app`, `components`, `lib`, `tests`, or `scripts`. Exact symbol and filename search only found historical docs/spec references for `clientHasCannabisAccess`, `getClientCannabisEvents`, and `cannabis-client-actions.ts`.
+
+Canonical cannabis owners exist and are live:
+
+| Owner | Evidence |
+| --- | --- |
+| `app/(client)/my-cannabis/page.tsx` | Client cannabis portal is intentionally disabled for clients. The route calls `requireClient()` and redirects to `/my-events`. |
+| `lib/chef/cannabis-actions.ts` | Chef cannabis actions are imported by `app/(chef)/cannabis/*`, `app/api/cannabis/rsvps/[eventId]/summary/route.ts`, `lib/chef/cannabis-access-guards.ts`, and `app/(chef)/dashboard/_sections/business-section-loader.ts`. |
+| `lib/cannabis/invitation-actions.ts` | Public invite claiming is imported by `app/(public)/cannabis-invite/[token]/cannabis-claim-client.tsx`. |
+| `lib/cannabis/control-packet-engine.ts` | Control packet engine is imported by chef control packet actions, template page, and unit tests. |
+
+### Commands Run
+
+```text
+rg --pcre2 -n "(?<!function\s)\bclientHasCannabisAccess\b|(?<!function\s)\bgetClientCannabisEvents\b|cannabis-client-actions|@/lib/clients/cannabis-client-actions|lib/clients/cannabis-client-actions" app components lib tests scripts docs
+rg -n "hasCannabisAccess|getCannabisEvents|getCannabisEventDetails|sendCannabisInvite|getCannabisRSVPDashboardData|updateChefCannabisGuestProfile" app lib tests
+rg -n "getCannabisInviteByToken|claimCannabisInvite|buildCannabisHostAgreementSnapshot|generateSeatBlueprint|evaluateReconciliation" app lib tests
+```
+
+### Residual Artifact
+
+`tsconfig.ci.expanded.json` contains a generated explicit-file reference to the deleted path. It was not edited because this worker owns only `lib/clients/cannabis-client-actions.ts` and `docs/reports/clients-orphan-lanes.md`.

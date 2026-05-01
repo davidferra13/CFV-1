@@ -39,6 +39,10 @@ Reference checks:
 | `components/events/settlement-summary.tsx`         | `SettlementSummary`              | No import path or JSX/function call references outside the file. Generic `getSettlementSummary` hits are commerce actions, not this component. | `components/collaboration/settlement-preview-panel.tsx`, rendered by event money route.                                |
 | `components/events/take-a-chef-convert-banner.tsx` | `TakeAChefConvertBanner`         | No import path or JSX/function call references outside the file.                                                                               | `components/events/marketplace-convert-banner.tsx`, rendered by event detail page with a platform label.               |
 | `components/events/weather-forecast-card.tsx`      | `WeatherForecastCard`            | No import path or JSX/function call references outside the file.                                                                               | `components/events/weather-panel.tsx` and packing weather handling in `PackingListClient`.                             |
+| `components/events/aar-prompt-banner.tsx`          | `AARPromptBanner`                | No import path or JSX/function call references outside the file.                                                                               | `/aar`, `/events/[id]/aar`, dashboard AAR widgets, and `components/events/quick-debrief-prompt.tsx`.                   |
+| `components/events/collaborator-panel.tsx`         | `CollaboratorPanel`              | No import path or JSX/function call references outside the file.                                                                               | `components/events/event-collaborators-panel.tsx`, `components/collaboration/event-collaborators-panel.tsx`, and event detail collaboration sections. |
+| `components/events/dietary-rollup.tsx`             | `DietaryRollupCard`              | No import path or JSX/function call references outside the file.                                                                               | `components/events/dietary-complexity-badge.tsx`, `components/events/constraint-radar-panel.tsx`, hub dietary summaries, and dietary email rollup. |
+| `components/events/waste-log-panel.tsx`            | `WasteLogPanel`                  | No import path or JSX/function call references outside the file.                                                                               | `components/events/close-out-wizard.tsx` waste step, `/inventory/waste`, and `/stations/waste`.                        |
 
 ## Canonical Owner Proof
 
@@ -48,17 +52,22 @@ Reference checks:
 - `app/(chef)/events/[id]/_components/event-detail-money-tab.tsx` imports and renders `EventPricingIntelligencePanel` and `SettlementPreviewPanel`.
 - `app/(chef)/events/[id]/page.tsx` imports and renders `MarketplaceConvertBanner`, and imports `WeatherPanel`.
 - `app/(chef)/events/[id]/_components/event-detail-overview-tab.tsx` imports and renders `WeatherPanel`.
+- `app/(chef)/aar/page.tsx` imports and renders `FileAARButton`; `app/(chef)/dashboard/_sections/business-section.tsx` fetches `getEventsNeedingAAR` from the dashboard actions, not `components/events/aar-prompt-banner.tsx`.
+- `app/(chef)/events/[id]/page.tsx` imports `DietaryComplexityBadge` and renders the event dietary surface from live guest data.
+- `app/(chef)/events/[id]/_components/event-detail-overview-tab.tsx` imports and renders `EventCollaboratorsPanel` from `components/collaboration/event-collaborators-panel`.
+- `app/(chef)/events/[id]/_components/event-detail-ops-tab.tsx` imports and renders `EventCollaboratorsPanel` from `components/events/event-collaborators-panel`.
+- `components/events/close-out-wizard.tsx` imports `addWasteEntry`, renders `WasteStep`, and writes post-event waste entries without using `WasteLogPanel`.
 
 ## Not Cleared In This Slice
 
 The following events bucket files remain outside this deletion slice:
 
 - Recover candidates: `alcohol-service-log.tsx`, `cancellation-dialog.tsx`, `capacity-warning-banner.tsx`, `circle-rebook-button.tsx`, `equipment-redundancy-checklist.tsx`, `event-inventory-panel.tsx`, `events-bulk-table.tsx`, `events-view-filter-bar.tsx`, `kitchen-profile-callout.tsx`, `photo-tagger.tsx`, `post-event-feedback.tsx`, `pre-service-safety-checklist.tsx`, `production-report-button.tsx`, `scope-drift-banner.tsx`, `tip-request-button.tsx`.
-- Other duplicate candidates: `aar-prompt-banner.tsx`, `collaborator-panel.tsx`, `dietary-rollup.tsx`, `waste-log-panel.tsx`.
 - Prune candidate still pending focused proof: `photo-permission-indicator.tsx`.
 
-## Validation Plan
+## Validation
 
-- Em dash scan on changed files.
-- `git diff --check`.
-- Focused TypeScript validation only if practical after deletion proof.
+- `rg -n 'aar-prompt-banner|collaborator-panel|dietary-rollup|waste-log-panel' app components lib tests scripts docs/reports docs/specs docs/multi-chef-coordination.md` found only report and historical docs references after deletion. No code import references remained.
+- `rg -n -e '@/components/events/aar-prompt-banner' -e '@/components/events/collaborator-panel' -e '@/components/events/dietary-rollup' -e '@/components/events/waste-log-panel' -e '<AARPromptBanner' -e '<CollaboratorPanel' -e '<DietaryRollupCard' -e '<WasteLogPanel' app components lib tests scripts` returned no matches.
+- `Select-String -Path docs/reports/events-orphan-lanes.md -Pattern ([char]0x2014) -SimpleMatch` returned no matches.
+- `git diff --check -- components/events/aar-prompt-banner.tsx components/events/collaborator-panel.tsx components/events/dietary-rollup.tsx components/events/waste-log-panel.tsx docs/reports/events-orphan-lanes.md` passed with only the existing line-ending warning for `docs/reports/events-orphan-lanes.md`.

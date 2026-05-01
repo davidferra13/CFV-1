@@ -12,6 +12,7 @@
 | ----------------------------- | --------------------------------------------------------- | -------- |
 | `lib/ai/vendor-comparison.ts` | `compareVendors`, `VendorEntry`, `VendorComparisonResult` | Deleted  |
 | `lib/ai/lead-scoring.ts`      | `scoreInquiry`, `LeadScore`                               | Deleted  |
+| `lib/ai/remy-conversation-actions.ts` | `createConversation`, `listConversations`, `loadConversationMessages`, `saveConversationMessage`, `autoTitleConversation`, `deleteConversationMessage`, `summarizeConversationHistory`, `exportConversation`, `deleteConversation`, `RemyConversation` | Deleted |
 
 ## Current Reachability Proof
 
@@ -51,6 +52,14 @@ GOLDMINE inquiry scoring is owned by the inquiry intake module:
 - `components/inquiries/lead-score-badge.tsx` renders `LeadScoreData` from the Gmail bridge.
 - `app/(chef)/inquiries/[id]/page.tsx` imports `scoreInquiryFields`, `LeadScoreData`, and `LeadScoreBadge`, then renders the stored or computed GOLDMINE score.
 
+Remy conversation storage is owned by the browser-local Remy modules:
+
+- `components/ai/remy-drawer.tsx` imports `useConversationManagement` from `@/lib/hooks/use-conversation-management` and renders `RemyConversationList`.
+- `lib/hooks/use-conversation-management.ts` maps local IndexedDB conversations into the drawer shape and never imports the deleted server action file.
+- `lib/ai/remy-local-storage.ts` owns IndexedDB conversation CRUD, messages, projects, archive, pinning, export, search, retention, and local summaries.
+- `components/ai/remy-conversation-list.tsx` imports browser-local conversation helpers and handles conversation list operations on local data.
+- `lib/ai/support-share-action.ts` is the explicit server seam for voluntary support sharing. It receives exported browser-local conversation content only when the chef chooses to send it.
+
 ## Evidence Classification
 
 - `current-dirty`: `git status --short --branch` showed many unrelated dirty files owned by other agents. None were in the owned paths at task start.
@@ -63,6 +72,10 @@ GOLDMINE inquiry scoring is owned by the inquiry intake module:
 Delete `lib/ai/vendor-comparison.ts` and `lib/ai/lead-scoring.ts`.
 
 Reason: both modules fail the deletion test. Removing them does not push behavior into callers because no caller exists, and the active behavior is already concentrated in canonical inventory and inquiry modules.
+
+Delete `lib/ai/remy-conversation-actions.ts`.
+
+Reason: targeted reachability found no live importer for the file path or its exported action names. Keeping it creates a second Remy storage seam that writes conversation content to `remy_conversations` and `remy_messages`, while the live Remy drawer and privacy copy use browser-local IndexedDB with a separate explicit support-share action. The file also exported an interface from a `'use server'` file, which violates the project server action rules.
 
 ## Residual Risk
 
