@@ -24,8 +24,8 @@
 | `hooks/use-field-validation.ts` and `lib/validation/use-field-validation.ts` | resolved | Both defined `useFieldValidation`; no production, test, or script imports found in targeted search. | Medium, future forms could choose the wrong interface. | Completed 2026-05-01: deleted `hooks/use-field-validation.ts`; kept `lib/validation/use-field-validation.ts` as canonical. |
 | `lib/ai/menu-suggestions.ts` | contract-retained | Static graph reports no inbound callers; targeted search found only self string and privacy audit mention. Push snapshot guard still treats `getAIMenuSuggestions` and `getAIMenuSuggestionsFromContext` as exported contract. Implementation delegates to `lib/menus/recipe-book-suggestions-actions.ts`, which only searches the chef's recipe book. | Medium, stale naming is misleading, but removal needs snapshot contract approval. | Keep as compatibility adapter until a dedicated snapshot-contract removal slice is approved. |
 | `components/ai/remy-public-widget.tsx` | uncertain | Static graph reports no inbound callers. | High, Remy public surfaces may be externally embedded or route-owned. | Compare against public Remy API routes and current public page widgets before deciding. |
-| `components/admin/admin-sidebar.tsx` | duplicate | Static graph reports no inbound callers. Parallel explorer verified the live admin layout imports `AdminSidebar` from `components/navigation/admin-shell`, while this file exports a second stale sidebar adapter with an older prop contract. | High, admin shell is a control-plane trust boundary. | Add admin route-to-nav inventory, then prune this duplicate in a separate deletion slice. |
-| `components/activity/client-activity-timeline.tsx` | duplicate | Static graph reports no inbound callers. Parallel explorer verified active activity UI uses `ClientActivityFeed` and client detail uses the unified client timeline instead. Activity server actions now throw on query failure, and client detail renders unavailable states instead of fake empty activity. | Medium, client memory is part of the V1 Spine. | Prune this duplicate in a separate deletion slice. |
+| `components/admin/admin-sidebar.tsx` | resolved | Static graph reported no inbound callers. Admin inventory verified the live admin layout imports `AdminSidebar` from `components/navigation/admin-shell`, while this file exported a second stale sidebar adapter with an older prop contract. | High, admin shell is a control-plane trust boundary. | Completed 2026-05-01: deleted duplicate sidebar and moved nav report tooling to `components/navigation/admin-shell.tsx`. |
+| `components/activity/client-activity-timeline.tsx` | resolved | Completed 2026-05-01: deleted after focused proof in `docs/reports/activity-orphan-lanes.md`. Current targeted search found `ClientActivityTimeline` only in the candidate file, with no live path refs across `app`, `components`, `lib`, `tests`, or `scripts`. Active owners are `ClientActivityFeed` on `/activity` and `UnifiedClientTimeline` plus `getUnifiedClientTimeline` on client detail. | Low after deletion proof. Historical docs still mention the path as an audit artifact. | Done. |
 | `components/dashboard/*` orphan bucket | mixed | 31 component files in dashboard bucket have no production inbound references in static graph. Parallel explorer found current read-only mapping shows 32 dashboard orphans, with recover lanes for client relationship, compliance, and dashboard preferences; duplicate lanes for action, finance, inventory, intelligence, and health; prune candidates for chrome-only files. | Medium, dashboard is the chef command plane. | Work one dashboard lane at a time. Start with prune-proof chrome or recover client relationship, not money widgets. |
 | `components/events/*` orphan bucket | mixed | 27 component files in events bucket have no production inbound references in static graph. Parallel explorer classified 15 recover candidates, 11 duplicates, and 1 prune-candidate. | High, event workflow owns proposal, payment, prep, service, and follow-up. | Start with the duplicate cleanup proof slice. Recover safety and post-event modules only through canonical event routes. |
 | `components/finance/*` orphan bucket | mixed | 22 component files in finance bucket have no production inbound references in static graph. Parallel explorer classified 14 recover candidates and 8 duplicates. No finance file is cleared as prune-candidate because the bucket touches ledger, taxes, deposits, cost history, and reporting. | High, money surfaces can hide ledger or quote behavior. | Recover or fold ledger-backed modules into canonical finance surfaces; prune only proven duplicates. |
@@ -42,7 +42,7 @@
 
 ## Current Prune Permission
 
-No product code is cleared for deletion yet.
+`components/activity/client-activity-timeline.tsx` was cleared by focused proof and removed on 2026-05-01. No other product code is cleared for deletion yet.
 
 The first cleanup pass resolved the duplicate root form-validation hook. The AI menu suggestion compatibility wrapper was restored because the snapshot guard still treats its exports as public contract.
 
@@ -72,9 +72,7 @@ The activity load-state hardening slice is complete: activity query actions now 
 
 ## Next Safe Cleanup Sequence
 
-1. Add admin route-to-nav inventory before deleting `components/admin/admin-sidebar.tsx`.
-2. Prune-proof dashboard chrome files: `dashboard-category-header.tsx`, `mobile-dashboard-expander.tsx`, `quick-create-strip.tsx`, and `shortcut-strip.tsx`.
-3. Prune-proof UI duplicate wrappers with clear canonical replacements.
-4. Prune-proof event duplicate cleanup slice: `events-kanban.tsx`, `packing-checklist-button.tsx`, `packing-list.tsx`, `pricing-insights-panel.tsx`, `settlement-summary.tsx`, `take-a-chef-convert-banner.tsx`, and `weather-forecast-card.tsx`.
-5. Recover dashboard client relationship widgets only if they attach to one canonical dashboard surface.
-6. Convert route discoverability gaps into recover tickets, not prune tickets.
+1. Prune-proof UI duplicate wrappers with clear canonical replacements.
+2. Prune-proof event duplicate cleanup slice: `events-kanban.tsx`, `packing-checklist-button.tsx`, `packing-list.tsx`, `pricing-insights-panel.tsx`, `settlement-summary.tsx`, `take-a-chef-convert-banner.tsx`, and `weather-forecast-card.tsx`.
+3. Recover dashboard client relationship widgets only if they attach to one canonical dashboard surface.
+4. Convert route discoverability gaps into recover tickets, not prune tickets.
