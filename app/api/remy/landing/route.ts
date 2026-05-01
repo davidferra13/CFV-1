@@ -1,7 +1,7 @@
 // Remy - Landing Page Concierge Streaming API
 // UNAUTHENTICATED - for visitors on the public landing page and marketing pages.
 // No tenantId required - uses platform-level feature knowledge instead.
-// Rate-limited per IP. Routes through configured cloud AI runtime.
+// Rate-limited per IP. Routes through the configured Ollama-compatible runtime.
 
 import { NextRequest } from 'next/server'
 import { Ollama } from 'ollama'
@@ -22,12 +22,6 @@ import {
   getSurfaceRuntimeOptions,
   trySurfaceInstantAnswer,
 } from '../surface-runtime-utils'
-import {
-  PublicCloudGatewayError,
-  isPublicCloudAiConfigured,
-  streamPublicCloudAi,
-} from '@/lib/ai/public-cloud-gateway'
-import { isPublicCloudAiEnabled } from '@/lib/ai/public-cloud-policy'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -182,52 +176,6 @@ export async function POST(req: NextRequest) {
         encodeSSE({ type: 'token', data: instant.text }) + encodeSSE({ type: 'done', data: null }),
         { headers: sseHeaders() }
       )
-    }
-
-    if (isPublicCloudAiEnabled()) {
-      if (!isPublicCloudAiConfigured()) {
-        return new Response(
-          encodeSSE({
-            type: 'error',
-            data: "I'm taking a quick break - check back in a few minutes!",
-          }),
-          { headers: sseHeaders() }
-        )
-      }
-
-      const encoder = new TextEncoder()
-      const stream = new ReadableStream({
-        async start(controller) {
-          try {
-            for await (const token of streamPublicCloudAi({
-              taskId: 'landing_concierge',
-              surface: 'public_landing',
-              message,
-              history,
-              systemPrompt,
-              userPrompt: fullPrompt,
-              maxTokens: tokenBudget,
-            })) {
-              latency.markFirstToken()
-              controller.enqueue(encoder.encode(encodeSSE({ type: 'token', data: token })))
-            }
-
-            latency.logDone({ route_ms: Date.now() - routeStartedAt, token_budget: tokenBudget })
-            controller.enqueue(encoder.encode(encodeSSE({ type: 'done', data: null })))
-          } catch (err) {
-            latency.logError(err)
-            const message =
-              err instanceof PublicCloudGatewayError
-                ? err.publicMessage
-                : "Something went wrong - I'll be back shortly!"
-            controller.enqueue(encoder.encode(encodeSSE({ type: 'error', data: message })))
-          } finally {
-            controller.close()
-          }
-        },
-      })
-
-      return new Response(stream, { headers: sseHeaders() })
     }
 
     const config = getOllamaConfig()
