@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import type { CompletionResult, CompletionRequirement } from '@/lib/completion/types'
 
-// -- Score ring (SVG, matches health-score-widget pattern) -------------------
+// -- Score ring --------------------------------------------------------------
 
 function scoreColor(score: number): string {
   if (score >= 80) return '#10b981' // emerald

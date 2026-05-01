@@ -61,6 +61,34 @@ These references were found outside production, test, and script import paths:
 
 These are historical, generated, or audit references. None are inbound runtime, test, or script imports.
 
+## Dashboard Widget Prune Slice
+
+- Date: 2026-05-01
+- Decision: delete dashboard widgets classified as safe duplicate surfaces after current reachability and targeted `rg` proof.
+
+| Deleted file | Export | Canonical owner |
+| --- | --- | --- |
+| `components/dashboard/feedback-widget.tsx` | `FeedbackWidget` | `/feedback` and `/feedback/dashboard` |
+| `components/dashboard/forecast-widget.tsx` | `ForecastWidget` | `PipelineForecastWidget` and dashboard business section |
+| `components/dashboard/grocery-price-widget.tsx` | `GroceryPriceWidget` | dashboard price intelligence and `/culinary/price-catalog` |
+| `components/dashboard/health-score-widget.tsx` | `HealthScoreWidget` | dashboard intelligence cards and business health summary |
+| `components/dashboard/intelligence-summary-card.tsx` | `IntelligenceSummaryCard` | dashboard intelligence cards and `/intelligence` |
+| `components/dashboard/meal-prep-widget.tsx` | `MealPrepWidget` | commerce storefront and commerce order surfaces |
+| `components/dashboard/menu-history-widget.tsx` | `MenuHistoryWidget` | `/clients/history/past-menus` and menu surfaces |
+| `components/dashboard/onboarding-reminder-banner.tsx` | `OnboardingReminderBanner` | onboarding checklist widget and `/onboarding` |
+| `components/dashboard/recurring-prep-widget.tsx` | `RecurringPrepWidget` | `/clients/recurring` and recurring client pages |
+| `components/dashboard/referral-widget.tsx` | `ReferralWidget` | network intelligence and `/analytics/referral-sources` |
+| `components/dashboard/retention-widget.tsx` | `RetentionWidget` | `/analytics/client-ltv` and business cards |
+| `components/dashboard/sourcing-widget.tsx` | `SourcingWidget` | `/inventory/procurement` and price catalog sourcing |
+
+Validation after deletion:
+
+```text
+rg -n "feedback-widget|forecast-widget|grocery-price-widget|health-score-widget|intelligence-summary-card|meal-prep-widget|menu-history-widget|onboarding-reminder-banner|recurring-prep-widget|referral-widget|retention-widget|sourcing-widget|FeedbackWidget|ForecastWidget|GroceryPriceWidget|HealthScoreWidget|IntelligenceSummaryCard|MealPrepWidget|MenuHistoryWidget|OnboardingReminderBanner|RecurringPrepWidget|ReferralWidget|RetentionWidget|SourcingWidget" app components lib hooks scripts tsconfig.ci.expanded.json --glob '!docs/**'
+```
+
+Result: no deleted-file or deleted-export live references remained. The only pre-delete non-self matches were `PipelineForecastWidget`, the live canonical forecast widget, and a comment in `completion-card.tsx` referencing the old health widget pattern.
+
 ## Remaining Dashboard Orphan Lanes
 
 The same reachability pass reported these remaining `components/dashboard/*` files as used nowhere before this prune:
@@ -68,8 +96,6 @@ The same reachability pass reported these remaining `components/dashboard/*` fil
 ### Action And Operations
 
 - `components/dashboard/aar-reminder-widget.tsx`
-- `components/dashboard/meal-prep-widget.tsx`
-- `components/dashboard/recurring-prep-widget.tsx`
 - `components/dashboard/respond-next-card.tsx`
 - `components/dashboard/upcoming-reminders-widget.tsx`
 - `components/dashboard/va-tasks-widget.tsx`
@@ -77,11 +103,6 @@ The same reachability pass reported these remaining `components/dashboard/*` fil
 ### Client Relationship
 
 - `components/dashboard/client-lookup-widget.tsx`
-- `components/dashboard/feedback-widget.tsx`
-- `components/dashboard/menu-history-widget.tsx`
-- `components/dashboard/onboarding-reminder-banner.tsx`
-- `components/dashboard/referral-widget.tsx`
-- `components/dashboard/retention-widget.tsx`
 - `components/dashboard/touchpoint-reminders-widget.tsx`
 
 ### Compliance And Safety
@@ -93,22 +114,17 @@ The same reachability pass reported these remaining `components/dashboard/*` fil
 ### Money And Forecasting
 
 - `components/dashboard/expense-widget.tsx`
-- `components/dashboard/forecast-widget.tsx`
 - `components/dashboard/overdue-payments-widget.tsx`
 
 ### Inventory And Sourcing
 
-- `components/dashboard/grocery-price-widget.tsx`
 - `components/dashboard/pantry-alerts-widget.tsx`
-- `components/dashboard/sourcing-widget.tsx`
 - `components/dashboard/waste-summary-widget.tsx`
 
 ### Intelligence, Preferences, And Health
 
 - `components/dashboard/dashboard-quick-settings.tsx`
 - `components/dashboard/dashboard-reset-banner.tsx`
-- `components/dashboard/health-score-widget.tsx`
-- `components/dashboard/intelligence-summary-card.tsx`
 
 ## Blockers
 
