@@ -11,11 +11,11 @@
 | --------------------- | ---------------- | ------------------ | ------ |
 | Created               | 2026-04-06 20:00 | Planner (Opus 4.6) |        |
 | Status: ready         | 2026-04-06 20:00 | Planner (Opus 4.6) |        |
-| Claimed (in-progress) | 2026-04-30 20:19 | Codex V1 Builder   | 4d9439408 |
-| Build completed       | 2026-04-30 20:29 | Codex V1 Builder   | 4d9439408 |
-| Type check passed     | 2026-04-30 20:29 | Codex V1 Builder   | 4d9439408 |
-| Build check skipped   | 2026-04-30 20:29 | User scoped validation, no next build | 4d9439408 |
-| Status: built         | 2026-04-30 20:29 | Codex V1 Builder   | 4d9439408 |
+| Claimed (in-progress) | 2026-04-30 20:19 | Codex V1 Builder   | 4185aa260 |
+| Build completed       | 2026-04-30 20:29 | Codex V1 Builder   | 4185aa260 |
+| Type check passed     | 2026-04-30 20:29 | Codex V1 Builder   | 4185aa260 |
+| Build check skipped   | 2026-04-30 20:29 | User scoped validation, no next build | 4185aa260 |
+| Status: built         | 2026-04-30 20:29 | Codex V1 Builder   | 4185aa260 |
 
 ---
 
