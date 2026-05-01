@@ -341,6 +341,40 @@ test('normalizer is idempotent by source path', () => {
   assert.equal(readJsonl(join(context.builderDir, 'approved-queue.jsonl')).records.length, 1)
 })
 
+test('normalizer routes ready V1 specs without module ownership to research', () => {
+  const context = tempContext()
+  const specDir = join(context.root, 'docs', 'specs')
+  writeFileSync(
+    join(specDir, 'vague-builder-work.md'),
+    [
+      '# Vague Builder Work',
+      '',
+      '> **Status:** ready',
+      '> **Priority:** P0',
+      '',
+      'Make the vague V1 thing better without naming ownership.',
+    ].join('\n'),
+    'utf8',
+  )
+
+  const summary = normalizeIntake({
+    context,
+    write: true,
+    profile: 'full',
+    now: new Date('2026-04-30T12:00:00Z'),
+  })
+
+  const ledger = readJsonl(join(context.builderDir, 'request-ledger.jsonl')).records
+  const research = readJsonl(join(context.builderDir, 'research-queue.jsonl')).records
+
+  assert.equal(summary.byStatus.research_required, 1)
+  assert.equal(readJsonl(join(context.builderDir, 'approved-queue.jsonl')).records.length, 0)
+  assert.equal(research.length, 1)
+  assert.equal(ledger[0].status, 'research_required')
+  assert.equal(ledger[0].module.id, 'unassigned')
+  assert.equal(ledger[0].moduleDecision.status, 'module_review_required')
+})
+
 test('normalizer rejects recipe generation asks before any queue write', () => {
   const context = tempContext()
   const specDir = join(context.root, 'docs', 'specs')

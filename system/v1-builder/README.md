@@ -43,7 +43,7 @@ node scripts/v1-builder/normalize-intake.mjs --profile builder-gate --max-approv
 
 ## Module Gate
 
-The runner treats module ownership as part of queue eligibility. A task must resolve to a concrete module owner before `next`, `claim`, or `run-once` can select it. Module evidence comes from the task record first, then `system/unified-build-queue/candidates.json`, then `devtools/module-decision.mjs` keyword inference.
+The intake normalizer and runner treat module ownership as part of queue eligibility. A ready spec must resolve to a concrete module owner before it can enter `approved-queue.jsonl`, and a queued task must resolve again before `next`, `claim`, or `run-once` can select it. Module evidence comes from the task record first, then `system/unified-build-queue/candidates.json`, then `devtools/module-decision.mjs` keyword inference.
 
 If the decision is `unassigned` or `module_review_required`, the task is skipped before selection. `createClaim()` repeats the check and refuses to write a claim for unmoduled work.
 

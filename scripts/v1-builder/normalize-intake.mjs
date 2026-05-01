@@ -19,6 +19,7 @@ import {
   readJsonl,
   slugify,
 } from './core.mjs'
+import { decideModule } from '../../devtools/module-decision.mjs'
 
 const MAX_SOURCE_BYTES = 200_000
 
@@ -162,12 +163,20 @@ export function normalizeIntake({
       continue
     }
 
-    const classification = classifyCandidate(candidate, activeLane)
+    const moduleDecision = decideModule({
+      root: context.root,
+      sourcePath: candidate.sourcePath,
+      title: candidate.title,
+      summary: candidate.summary,
+      prompt: candidate.text,
+    })
+    const classification = classifyCandidate(candidate, activeLane, moduleDecision)
     candidatePlans.push({
       candidate,
+      moduleDecision,
       classification,
-      ledgerRecord: createLedgerRecord(candidate, classification, now),
-      sinkRecord: createSinkRecord(candidate, classification, activeLane, now),
+      ledgerRecord: createLedgerRecord(candidate, classification, moduleDecision, now),
+      sinkRecord: createSinkRecord(candidate, classification, moduleDecision, activeLane, now),
     })
   }
 
@@ -393,7 +402,7 @@ function shouldImportStickyAttachment(attachment) {
   return classification.startsWith('chefFlow.') || classification === 'needsReview'
 }
 
-function classifyCandidate(candidate, activeLane) {
+function classifyCandidate(candidate, activeLane, moduleDecision) {
   const text = `${candidate.title}\n${candidate.summary}\n${candidate.text}`.toLowerCase()
 
   if (REJECTION_TERMS.some((term) => text.includes(term))) {
@@ -427,6 +436,15 @@ function classifyCandidate(candidate, activeLane) {
   if (candidate.source === 'spec' && status === 'ready') {
     const priority = normalizePriority(candidate.metadata.priority)
     if (priority === 'p0' && isV1Relevant(candidate, activeLane)) {
+      if (!isBuildableModuleDecision(moduleDecision)) {
+        return {
+          builderClassification: 'module_review_required',
+          ledgerStatus: 'research_required',
+          sink: 'research-queue.jsonl',
+          reason: 'Ready P0 spec is V1 relevant, but module ownership is unassigned or ambiguous.',
+        }
+      }
+
       return {
         builderClassification: 'approved_v1_blocker',
         ledgerStatus: 'queued',
@@ -436,6 +454,15 @@ function classifyCandidate(candidate, activeLane) {
     }
 
     if (priority === 'p1' && isV1Relevant(candidate, activeLane)) {
+      if (!isBuildableModuleDecision(moduleDecision)) {
+        return {
+          builderClassification: 'module_review_required',
+          ledgerStatus: 'research_required',
+          sink: 'research-queue.jsonl',
+          reason: 'Ready P1 spec is V1 relevant, but module ownership is unassigned or ambiguous.',
+        }
+      }
+
       return {
         builderClassification: 'approved_v1_support',
         ledgerStatus: 'queued',
@@ -487,7 +514,11 @@ function classifyCandidate(candidate, activeLane) {
   }
 }
 
-function createLedgerRecord(candidate, classification, now) {
+function isBuildableModuleDecision(moduleDecision) {
+  return moduleDecision.status === 'module_owner_found' && moduleDecision.module?.id !== 'unassigned'
+}
+
+function createLedgerRecord(candidate, classification, moduleDecision, now) {
   const queueId = classification.sink === 'approved-queue.jsonl'
     ? `queue-${candidate.id.replace(/^ask-/, '')}`
     : null
@@ -502,6 +533,8 @@ function createLedgerRecord(candidate, classification, now) {
     status: classification.ledgerStatus,
     statusReason: classification.reason,
     canonicalOwner: candidate.sourcePath,
+    module: moduleDecision.module,
+    moduleDecision,
     queueId,
     receiptPath: null,
     blockedBy: classification.ledgerStatus === 'blocked' ? classification.reason : null,
@@ -509,7 +542,7 @@ function createLedgerRecord(candidate, classification, now) {
   }
 }
 
-function createSinkRecord(candidate, classification, activeLane, now) {
+function createSinkRecord(candidate, classification, moduleDecision, activeLane, now) {
   if (!classification.sink) return null
 
   const base = {
@@ -525,6 +558,8 @@ function createSinkRecord(candidate, classification, activeLane, now) {
     status: classification.sink === 'approved-queue.jsonl' ? 'queued' : classification.ledgerStatus,
     statusReason: classification.reason,
     canonicalOwner: candidate.sourcePath,
+    module: moduleDecision.module,
+    moduleDecision,
     createdAt: candidate.createdAt ?? now.toISOString(),
     updatedAt: now.toISOString(),
   }

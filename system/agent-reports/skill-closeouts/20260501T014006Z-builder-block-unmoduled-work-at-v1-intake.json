@@ -1,0 +1,18 @@
+{
+  "created_at": "2026-05-01T01:40:06.180Z",
+  "goal": "block unmoduled work at V1 intake",
+  "primary_skill": "builder",
+  "sidecar_skills": [],
+  "skill_delta": "none",
+  "durable_behavior_seen": null,
+  "skill_gap_seen": null,
+  "validation": {
+    "skill_validator": null,
+    "trigger_tests": "node --test tests/unit/v1-builder-queue.test.mjs; node --test tests/unit/unified-build-queue.test.mjs tests/unit/module-decision.test.mjs tests/unit/v1-builder-queue.test.mjs",
+    "compliance": "git diff --check on changed files; em dash scan on changed files",
+    "other": "node --check scripts/v1-builder/normalize-intake.mjs; node scripts/v1-builder/normalize-intake.mjs --profile builder-gate --limit 1"
+  },
+  "commit": null,
+  "pushed": false,
+  "notes": ""
+}
