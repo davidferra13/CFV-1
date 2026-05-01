@@ -1,6 +1,6 @@
 # Spec: Build and Release Contract Truth
 
-> **Status:** ready
+> **Status:** built-build-proof-blocked
 > **Priority:** P1 (next up)
 > **Depends on:** none
 > **Estimated complexity:** medium-large (8-12 files)
@@ -13,14 +13,16 @@ _Every status change, every claim, every verification gets a row. This is the au
 | --------------------- | -------------------- | --------------- | ------ |
 | Created               | 2026-04-03 23:40 EDT | Planner (Codex) |        |
 | Status: ready         | 2026-04-03 23:40 EDT | Planner (Codex) |        |
-| Claimed (in-progress) |                      |                 |        |
-| Spike completed       |                      |                 |        |
-| Pre-flight passed     |                      |                 |        |
-| Build completed       |                      |                 |        |
-| Type check passed     |                      |                 |        |
-| Build check passed    |                      |                 |        |
-| Playwright verified   |                      |                 |        |
-| Status: verified      |                      |                 |        |
+| Claimed (in-progress) | 2026-04-30 22:01 EDT | Codex builder   | this commit |
+| Spike completed       | 2026-04-30 22:01 EDT | Codex builder   | this commit |
+| Pre-flight passed     | 2026-04-30 22:01 EDT | Codex builder   | this commit |
+| Implementation completed | 2026-04-30 22:01 EDT | Codex builder | this commit |
+| Type check passed     | 2026-04-30 22:01 EDT | Codex builder   | this commit |
+| Build check blocked   | 2026-04-30 22:01 EDT | Codex builder   | this commit |
+| Playwright not needed | 2026-04-30 22:01 EDT | Codex builder   | this commit |
+| Status: built-build-proof-blocked | 2026-04-30 22:01 EDT | Codex builder | this commit |
+
+Build check blocker: `npm run build -- --no-lint` timed out after 15 minutes in this worktree and left `.next/BUILD_ID` missing. Targeted unit tests, `npm run test:unit:web-beta`, `npm run typecheck:web-beta`, `npm run lint:web-beta`, the build-surface audit, and heap-expanded `npx tsc --noEmit --skipLibCheck` passed.
 
 ---
 

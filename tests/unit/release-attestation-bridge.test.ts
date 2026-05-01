@@ -107,11 +107,7 @@ test('runReleaseVerification writes an attestation report with tracked advisorie
         if (step.name === 'build') {
           return createSuccessfulStepResult(
             step,
-            [
-              'Compilation complete.',
-              'DYNAMIC_SERVER_USAGE',
-              'Warning: serverActions is an unrecognized key in next.config.js',
-            ].join('\n')
+            ['Compilation complete.', 'DYNAMIC_SERVER_USAGE'].join('\n')
           )
         }
 
@@ -121,11 +117,11 @@ test('runReleaseVerification writes an attestation report with tracked advisorie
 
     assert.equal(report.status, 'passed')
     assert.equal(report.summary.blockerCount, 0)
-    assert.equal(report.summary.advisoryCount, 2)
+    assert.equal(report.summary.advisoryCount, 1)
     assert.equal(report.blockers.length, 0)
     assert.deepEqual(
       report.advisories.map((finding: { policyId: string | null }) => finding.policyId).sort(),
-      ['dynamic_server_usage', 'next_server_actions_config']
+      ['dynamic_server_usage']
     )
     assert.equal(report.steps[1]?.name, 'audit:completeness:json')
     assert.equal(report.steps[1]?.machineReadableOutput?.failCount, 0)
@@ -133,7 +129,7 @@ test('runReleaseVerification writes an attestation report with tracked advisorie
 
     const persisted = JSON.parse(readFileSync(attestationPaths.primaryPath, 'utf8'))
     assert.equal(persisted.status, 'passed')
-    assert.equal(persisted.summary.advisoryCount, 2)
+    assert.equal(persisted.summary.advisoryCount, 1)
     assert.equal(persisted.summary.blockerCount, 0)
   })
 })

@@ -8,6 +8,7 @@ import {
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
+// Readiness shares the route-level DATABASE_URL contract and adds cron readiness.
 const REQUIRED_ENV_VARS = ['DATABASE_URL'] as const
 
 function isStrict(request: NextRequest): boolean {

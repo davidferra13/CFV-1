@@ -6,8 +6,6 @@
     "app/(public)/page.tsx",
     "app/(public)/_components/landing-below-fold.tsx",
     "app/(public)/pricing/page.tsx",
-    "app/(public)/pricing/_components/pricing-faq.tsx",
-    "app/(public)/blog/[slug]/page.tsx",
     "app/(chef)/settings/page.tsx",
     "app/(client)/my-profile/page.tsx",
     "app/api/health/route.ts",

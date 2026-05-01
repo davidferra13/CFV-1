@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 // PWA: @ducanh2912/next-pwa's dual webpack compilation pass corrupts
 // build-manifest.json / pages-manifest.json on Windows. Bypass the wrapper
-// entirely — the service worker in public/sw.js is served correctly at runtime.
+// entirely, the service worker in public/sw.js is served correctly at runtime.
 // To rebuild the SW, temporarily set ENABLE_PWA_BUILD=1 and run `npx next build`.
 //
 // Sentry: wrapped with withSentryConfig at the bottom for source maps + error tracking.
@@ -16,7 +16,7 @@ if (process.env.ENABLE_PWA_BUILD === '1') {
       disable: process.env.NODE_ENV === 'development',
     })
   } catch {
-    console.warn('[next.config] WARNING: @ducanh2912/next-pwa not found — PWA features disabled.')
+    console.warn('[next.config] WARNING: @ducanh2912/next-pwa not found, PWA features disabled.')
     withPWA = (config) => config
   }
 } else {
@@ -41,11 +41,6 @@ const devConnectSrc = isDev
 const devEval = isDev ? " 'unsafe-eval'" : ''
 
 const nextConfig = {
-  // Allow large FormData payloads for photo uploads (default is 1MB).
-  // Applies globally to all server actions.
-  serverActions: {
-    bodySizeLimit: '50mb',
-  },
   // Keep dev artifacts separate from production build output.
   // This prevents `npm run build` from corrupting a running `next dev` session.
   distDir:
@@ -54,6 +49,11 @@ const nextConfig = {
   // enough time on resource-constrained build environments (default 60s).
   staticPageGenerationTimeout: 180,
   experimental: {
+    // Allow large FormData payloads for photo uploads (default is 1MB).
+    // Applies globally to all server actions.
+    serverActions: {
+      bodySizeLimit: '50mb',
+    },
     // Large shared icon/chart barrels otherwise dominate the module graph during production builds.
     optimizePackageImports: ['@phosphor-icons/react', 'recharts', 'lucide-react', 'date-fns'],
     // Next 14 still uses the experimental flag for keeping server-only SDKs out of the
@@ -68,7 +68,7 @@ const nextConfig = {
       .map((value) => value.trim())
       .filter(Boolean),
   ],
-  // ESLint: skip during production build — tsc --noEmit is the type-safety gate.
+  // ESLint: skip during production build, tsc --noEmit is the type-safety gate.
   // Pre-existing admin files have @typescript-eslint disable comments that reference
   // rules not in the base ESLint config, causing ESLint to error on unknown rules.
   eslint: {
@@ -157,7 +157,7 @@ const nextConfig = {
           },
         ],
       },
-      // Embed pages — allow framing from any origin (the whole point is external embeds)
+      // Embed pages, allow framing from any origin (the whole point is external embeds)
       {
         source: '/embed/:path*',
         headers: [
@@ -201,7 +201,7 @@ const nextConfig = {
           },
         ],
       },
-      // Kiosk pages — strict security, no framing
+      // Kiosk pages, strict security, no framing
       {
         source: '/kiosk/:path*',
         headers: [
@@ -247,7 +247,7 @@ const nextConfig = {
           },
         ],
       },
-      // All other pages — strict security headers
+      // All other pages, strict security headers
       {
         source: '/((?!embed/|kiosk/).*)',
         headers: [
@@ -281,7 +281,7 @@ const nextConfig = {
             value: [
               "default-src 'self'",
               // 'unsafe-inline' is required by Next.js App Router (inline hydration scripts).
-              // NOTE: Do NOT add 'strict-dynamic' — it overrides 'self' and 'unsafe-inline'
+              // NOTE: Do NOT add 'strict-dynamic', it overrides 'self' and 'unsafe-inline'
               // in CSP3 browsers, requiring nonce-based script loading which Next.js 14
               // does not support. Adding it blocks ALL JS and kills hydration.
               `script-src 'self' 'unsafe-inline'${devEval} https://js.stripe.com https://us-assets.i.posthog.com https://maps.googleapis.com https://challenges.cloudflare.com https://static.cloudflareinsights.com`,

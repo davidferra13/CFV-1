@@ -22,21 +22,13 @@ const WEB_BETA_INCLUDE = Object.freeze([
   { path: 'app/api/health', kind: BUILD_SURFACE_INCLUDE_KINDS.API_TREE },
   { path: 'app/auth/layout.tsx', kind: BUILD_SURFACE_INCLUDE_KINDS.SUPPORT_FILE },
   { path: 'app/auth/callback', kind: BUILD_SURFACE_INCLUDE_KINDS.APP_ENTRY },
+  { path: 'app/auth/signin', kind: BUILD_SURFACE_INCLUDE_KINDS.PAGE_TREE },
   { path: 'app/auth/forgot-password', kind: BUILD_SURFACE_INCLUDE_KINDS.PAGE_TREE },
   { path: 'app/auth/reset-password', kind: BUILD_SURFACE_INCLUDE_KINDS.PAGE_TREE },
   { path: 'app/auth/role-selection', kind: BUILD_SURFACE_INCLUDE_KINDS.PAGE_TREE },
   { path: 'app/(chef)/onboarding', kind: BUILD_SURFACE_INCLUDE_KINDS.PAGE_TREE },
   { path: 'app/(client)/my-profile', kind: BUILD_SURFACE_INCLUDE_KINDS.PAGE_TREE },
   { path: 'app/unauthorized', kind: BUILD_SURFACE_INCLUDE_KINDS.PAGE_TREE },
-])
-
-const WEB_BETA_REQUIRED_OVERLAY_PATHS = Object.freeze([
-  'build-surfaces/web-beta/app/(chef)/layout.tsx',
-  'build-surfaces/web-beta/app/(chef)/dashboard/page.tsx',
-  'build-surfaces/web-beta/app/(client)/layout.tsx',
-  'build-surfaces/web-beta/app/(client)/my-events/page.tsx',
-  'build-surfaces/web-beta/app/auth/signin/page.tsx',
-  'build-surfaces/web-beta/app/_components/release-portal-shell.tsx',
 ])
 
 const WEB_BETA_EXPECTED_PAGE_ROUTES = Object.freeze([
@@ -47,9 +39,7 @@ const WEB_BETA_EXPECTED_PAGE_ROUTES = Object.freeze([
   '/auth/forgot-password',
   '/auth/reset-password',
   '/auth/role-selection',
-  '/dashboard',
   '/onboarding',
-  '/my-events',
   '/my-profile',
   '/unauthorized',
 ])
@@ -59,10 +49,8 @@ const WEB_BETA_EXPECTED_API_ROUTES = Object.freeze(['/api/health', '/api/health/
 export const BUILD_SURFACE_MANIFESTS = {
   'web-beta': {
     description:
-      'Hosted beta surface: public marketing, health endpoints, auth recovery, and minimal onboarding/profile routes.',
+      'Hosted beta surface: public marketing, health endpoints, auth recovery, onboarding, and client profile routes.',
     include: WEB_BETA_INCLUDE,
-    overlayAppDir: 'build-surfaces/web-beta/app',
-    requiredOverlayPaths: WEB_BETA_REQUIRED_OVERLAY_PATHS,
     expectedPageRoutes: WEB_BETA_EXPECTED_PAGE_ROUTES,
     expectedApiRoutes: WEB_BETA_EXPECTED_API_ROUTES,
     releaseProfile: {

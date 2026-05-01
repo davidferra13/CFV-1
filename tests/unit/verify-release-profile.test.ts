@@ -48,7 +48,8 @@ test('verify-release supports profile selection and exposes beta release scripts
   )
   assert.match(buildSurfaceManifest, /'web-beta': \{/)
   assert.match(buildSurfaceManifest, /app\/\(public\)/)
-  assert.match(buildSurfaceManifest, /build-surfaces\/web-beta\/app/)
+  assert.match(buildSurfaceManifest, /app\/auth\/signin/)
+  assert.doesNotMatch(buildSurfaceManifest, /build-surfaces\/web-beta\/app/)
   assert.ok(manifest)
   assert.ok(webBetaProfile)
   assert.deepEqual(

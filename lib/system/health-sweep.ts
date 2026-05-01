@@ -45,7 +45,7 @@ export const SERVICE_REGISTRY: ServiceDefinition[] = [
     tier: 1,
     description: 'database connection',
     dependsOn: ['network'],
-    envVars: ['NEXT_PUBLIC_DB_URL', 'DB_SERVICE_ROLE_KEY'],
+    envVars: ['DATABASE_URL'],
     fixActions: [
       fix('reset_db_breaker', 'Reset Breaker', 'Reset the database circuit breaker', 'database'),
     ],
@@ -57,7 +57,7 @@ export const SERVICE_REGISTRY: ServiceDefinition[] = [
     tier: 2,
     description: 'Auth service',
     dependsOn: ['database'],
-    envVars: ['NEXT_PUBLIC_DB_ANON_KEY'],
+    envVars: [],
     fixActions: [],
   },
   // Tier 3

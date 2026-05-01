@@ -8,6 +8,8 @@ import {
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
+// Route-level health only proves the canonical server database contract.
+// Deeper cron readiness is reserved for /api/health/readiness.
 const REQUIRED_ENV_VARS = ['DATABASE_URL'] as const
 
 function isStrict(request: NextRequest): boolean {

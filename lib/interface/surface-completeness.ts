@@ -417,9 +417,7 @@ const SURFACE_MODE_CONTRACT_EXPECTATIONS: SurfaceModeContractExpectation[] = [
     role: 'partner',
   },
 ]
-const BUILD_SURFACE_MODE_SHELL_PATHS = [
-  'build-surfaces/web-beta/app/_components/release-portal-shell.tsx',
-]
+const BUILD_SURFACE_MODE_SHELL_PATHS: string[] = []
 
 const SYSTEM_AUDIT_ENTRYPOINT_DEFINITIONS: SystemAuditEntrypointDefinition[] = [
   {
