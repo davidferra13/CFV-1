@@ -6,6 +6,36 @@
 - Scope: `components/events/events-kanban.tsx`, `components/events/packing-checklist-button.tsx`, `components/events/packing-list.tsx`, `components/events/pricing-insights-panel.tsx`, `components/events/settlement-summary.tsx`, `components/events/take-a-chef-convert-banner.tsx`, `components/events/weather-forecast-card.tsx`, `components/events/photo-permission-indicator.tsx`
 - Decision: delete proven duplicate wrappers only
 
+## Current Slice: Event Lib Duplicate Prune
+
+- Date: 2026-05-01
+- Worker role: duplicate prune only
+- Owned scope: `lib/events/collaborator-actions.ts`, `lib/events/fire-order.ts`, `lib/events/prep-timeline-constants.ts`, this report, and `tsconfig.ci.expanded.json` only if a deleted file had an explicit entry.
+- Decision: deleted only high-confidence duplicate lib files with no live app, component, lib, script, or test imports and a clear canonical owner.
+
+### Deleted Event Lib Files
+
+| Deleted file | Export proof | Import path proof | Canonical owner |
+| --- | --- | --- | --- |
+| `lib/events/collaborator-actions.ts` | `rg -n -e "getEventCollaborators" -e "addCollaborator" -e "updateCollaborator" -e "removeCollaborator" -e "getCollaboratorSummary" -e "CollaboratorSummary" -e "AddCollaboratorInput" -e "UpdateCollaboratorInput" app components lib tests scripts docs tsconfig.ci.expanded.json` found this file plus active collaboration symbols in `lib/collaboration/actions.ts`, `lib/collaboration/settlement-actions.ts`, app/components using those canonical modules, and docs references. No live import used `lib/events/collaborator-actions.ts`. | `rg -n -e "@/lib/events/collaborator-actions" -e "lib/events/collaborator-actions" -e "./collaborator-actions" -e "../collaborator-actions" app components lib tests scripts docs tsconfig.ci.expanded.json` returned no live app/component/lib/script/test import references. | `lib/collaboration/actions.ts` owns event collaboration actions and is imported by `app/(chef)/events/[id]/page.tsx`, `components/events/event-collaborators-panel.tsx`, and `components/collaboration/event-collaborators-panel.tsx`. `lib/collaboration/settlement-actions.ts` owns settlement and station collaborator summaries. |
+| `lib/events/prep-timeline-constants.ts` | `rg -n -e "PrepCategory" -e "CATEGORY_LABELS" app components lib tests scripts docs tsconfig.ci.expanded.json` found no live use of this constants file. It found the active `PrepCategory` and `CATEGORY_LABELS` inside `lib/events/prep-timeline.ts`, unrelated local constants elsewhere, and one stale comment in the read-only canonical context `lib/events/prep-timeline.ts`. | `rg -n -e "@/lib/events/prep-timeline-constants" -e "lib/events/prep-timeline-constants" -e "./prep-timeline-constants" -e "../prep-timeline-constants" app components lib tests scripts docs tsconfig.ci.expanded.json` returned no live app/component/lib/script/test import references. | Active prep timeline behavior is owned by `lib/prep-timeline/actions.ts`, `lib/prep-timeline/compute-timeline.ts`, and event detail imports from `@/lib/prep-timeline/*`. Legacy PDF generation and its local labels remain in `lib/events/prep-timeline.ts`. |
+
+### Retained Candidates
+
+| Retained file | Reason | Canonical or related owner |
+| --- | --- | --- |
+| `lib/events/fire-order.ts` | Retained as uncertain deferred event ops. Exact path proof showed no live app/component/lib/script import, but docs and tests still classify it as deferred fire order behavior: `docs/frontend-backend-parity-audit.md`, `docs/system-behavior-map.md`, `docs/session-digests/2026-04-11-deferred-unblock-analytics-kitchen.md`, `docs/specs/interaction-engine.md`, and `tests/system-integrity/q181-production-readiness.spec.ts`. The request explicitly says not to delete candidates with uncertain event ops behavior. | `lib/events/fire-order-constants.ts` owns exported course and station constants used by `lib/taxonomy/system-defaults.ts`. `lib/mise-en-place/engine.ts` owns an active exported `inferStation` implementation for mise en place behavior. |
+
+### TSConfig Cleanup
+
+- `rg -n -e "./lib/events/collaborator-actions.ts" -e "./lib/events/fire-order.ts" -e "./lib/events/prep-timeline-constants.ts" tsconfig.ci.expanded.json` found only `./lib/events/fire-order.ts`.
+- No `tsconfig.ci.expanded.json` edit was needed because neither deleted file had an explicit entry.
+
+### Residual Text References After Deletion
+
+- `docs/multi-chef-coordination.md` and `docs/specs/system-integrity-question-set-cross-system-cohesion.md` still reference `lib/events/collaborator-actions.ts` historically. They were outside the owned scope and were not edited.
+- `lib/events/prep-timeline.ts` still has a comment saying category labels are also exported from `prep-timeline-constants.ts`. That file was read-only canonical context for this task, so the stale comment was not edited.
+
 ## Hard Stops
 
 - No event recover candidates touched.
