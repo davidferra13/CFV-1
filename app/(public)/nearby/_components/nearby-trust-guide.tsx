@@ -20,9 +20,9 @@ const TRUST_STATE_ITEMS = [
   },
   {
     key: 'discovered',
-    label: 'Discovered',
+    label: 'Listed',
     description:
-      'Public-source-only listing. Good for discovery, but key details can need confirmation.',
+      'Public-source-only listing. Good for browsing, but key details can need confirmation.',
   },
 ] as const
 
@@ -103,7 +103,7 @@ export function NearbyTrustGuide({ listings }: Props) {
         <p className="mt-2 max-w-3xl text-sm leading-relaxed text-stone-400">
           Nearby keeps the current category and location browse model, but now makes the confidence
           level explicit: verified is owner-confirmed, claimed is owner-managed with possible
-          carryover public fields, and discovered is public-source-only. Freshness is tracked
+          carryover public fields, and listed is public-source-only. Freshness is tracked
           separately so older public details can be signaled without hiding useful cards.
         </p>
 

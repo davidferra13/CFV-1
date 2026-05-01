@@ -70,6 +70,14 @@ export function getCategoryConfig(businessType: string): CategoryConfig {
   return CATEGORY_MAP[businessType] || DEFAULT_CONFIG
 }
 
+export function getCategoryGradient(businessType: string): string {
+  return getCategoryConfig(businessType).gradient
+}
+
+export function getCategoryIcon(businessType: string): LucideIcon {
+  return getCategoryConfig(businessType).icon
+}
+
 export function CategoryPlaceholder({
   businessType,
   name,

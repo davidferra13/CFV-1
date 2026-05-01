@@ -72,11 +72,10 @@ function buildTrustPresentation(status: string) {
   }
 
   return {
-    statusLabel: 'Discovered',
+    statusLabel: 'Listed',
     confidenceLabel: 'Public-source only',
     confidenceTone: 'public' as const,
-    summary:
-      'This listing was discovered from public sources and may need confirmation before use.',
+    summary: 'This listing comes from public sources and may need confirmation before use.',
     fallbackPrefix: 'Public-source listing',
   }
 }
@@ -143,10 +142,21 @@ export function ListingCard({ listing, favoriteMode = 'hidden', visualMode = fal
       ? `${trustPresentation.fallbackPrefix} in ${location}.`
       : `${trustPresentation.fallbackPrefix}.`)
   const imageAspectClass = visualMode ? 'aspect-[3/4]' : 'aspect-[16/10]'
+  const isListed = listing.status === 'discovered'
+  const cardToneClass =
+    listing.status === 'verified'
+      ? 'hover:ring-emerald-600'
+      : listing.status === 'claimed'
+        ? 'hover:ring-brand-600'
+        : 'hover:ring-stone-700'
 
   return (
     <React.Fragment>
-      <article className="group relative flex flex-col overflow-hidden rounded-2xl bg-stone-900 ring-1 ring-stone-800 transition-all duration-300 hover:-translate-y-1 hover:ring-stone-600 hover:shadow-[0_8px_40px_rgb(0,0,0,0.25)]">
+      <article
+        className={`group relative flex flex-col overflow-hidden rounded-2xl bg-stone-900 ring-1 ring-stone-800 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_40px_rgb(0,0,0,0.25)] ${cardToneClass} ${
+          isListed ? 'opacity-95' : ''
+        }`}
+      >
         {/* Image area */}
         <div className={`relative ${imageAspectClass} overflow-hidden`}>
           {hasPhoto ? (
@@ -285,6 +295,18 @@ export function ListingCard({ listing, favoriteMode = 'hidden', visualMode = fal
               Review details
             </Link>
           </div>
+
+          {isListed && (
+            <p className="mt-3 text-xs text-stone-500">
+              Is this your business?{' '}
+              <Link
+                href={`/nearby/${listing.slug}`}
+                className="font-medium text-brand-400 transition-colors hover:text-brand-300"
+              >
+                Claim for free
+              </Link>
+            </p>
+          )}
         </div>
       </article>
     </React.Fragment>

@@ -54,13 +54,11 @@ export const NEUTRAL_NETWORK_URGENT_NEED_PLACEHOLDER =
   'Urgent: need a server tonight in City, state from 6-10 PM.'
 
 export const NEUTRAL_NEARBY_QUERY_EXAMPLES = [
-  'City, state Thai food...',
-  'ZIP code caterers...',
-  'City, state bakeries...',
-  'Current location food trucks...',
-  'City, state private chefs...',
-  'ZIP code seafood...',
-  'City, state Italian restaurants...',
+  'Thai food in Boston...',
+  'Caterers near Austin...',
+  'Bakeries in Portland...',
+  'Private chefs in Miami...',
+  'Food trucks in Denver...',
 ]
 
 export const NEUTRAL_NEARBY_OG_LOCATION_TOKENS = ['City, state', 'ZIP code', 'Current location']

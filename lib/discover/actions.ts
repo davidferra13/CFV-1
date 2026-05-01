@@ -1464,7 +1464,7 @@ export async function requestListingClaim(input: {
 
 /**
  * Claim a listing by fuzzy matching on business name + city + state.
- * Used by the /discover/join page (outreach funnel).
+ * Used by the /nearby/join page (outreach funnel).
  * Public (no auth) - operators clicking from invitation email are not logged in.
  */
 export async function claimListingByMatch(input: {

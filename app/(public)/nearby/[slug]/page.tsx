@@ -182,6 +182,7 @@ export default async function ListingDetailPage({ params }: Props) {
   const showMenuLink = Boolean(listing.menu_url && !trust.menu?.suppress)
   const showContactCard = Boolean(listing.phone || listing.email || listing.website_url)
   const showWebsiteInContactCard = Boolean(listing.website_url && !listing.phone && !listing.email)
+  const isListed = listing.status === 'discovered'
 
   return (
     <div className="min-h-screen">
@@ -264,6 +265,26 @@ export default async function ListingDetailPage({ params }: Props) {
             ) : null}
           </div>
         </div>
+
+        {isListed ? (
+          <div className="mt-8 rounded-2xl border border-brand-700/40 bg-brand-950/30 p-5 sm:flex sm:items-center sm:justify-between sm:gap-6">
+            <div>
+              <h2 className="text-base font-semibold text-stone-100">
+                Is this your business?
+              </h2>
+              <p className="mt-1.5 text-sm leading-relaxed text-stone-400">
+                Claim your free listing to add photos, update your hours, and control how you
+                appear.
+              </p>
+            </div>
+            <a
+              href="#claim-this-business"
+              className="mt-4 inline-flex h-11 items-center justify-center rounded-xl bg-brand-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-brand-700 sm:mt-0 sm:flex-shrink-0"
+            >
+              Claim this business
+            </a>
+          </div>
+        ) : null}
 
         <div className="mt-8 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
           <div>
@@ -457,7 +478,10 @@ export default async function ListingDetailPage({ params }: Props) {
               </div>
             ) : null}
 
-            <div className="rounded-xl border border-stone-800/30 bg-stone-900/30 p-4">
+            <div
+              id="claim-this-business"
+              className="rounded-xl border border-stone-800/30 bg-stone-900/30 p-4"
+            >
               <h3 className="text-xs font-semibold text-stone-300">
                 {listing.status === 'discovered' ? 'Own this business?' : 'Need a correction?'}
               </h3>

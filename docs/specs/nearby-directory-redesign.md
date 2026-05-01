@@ -1,6 +1,6 @@
 # Spec: Nearby - Directory Redesign
 
-> **Status:** ready
+> **Status:** built
 > **Priority:** P1 (next up)
 > **Depends on:** none
 > **Estimated complexity:** large (9+ files)
@@ -11,11 +11,11 @@
 | --------------------- | ---------------- | ------------------ | ------ |
 | Created               | 2026-04-06 20:00 | Planner (Opus 4.6) |        |
 | Status: ready         | 2026-04-06 20:00 | Planner (Opus 4.6) |        |
-| Claimed (in-progress) |                  |                    |        |
-| Build completed       |                  |                    |        |
-| Type check passed     |                  |                    |        |
-| Build check passed    |                  |                    |        |
-| Status: verified      |                  |                    |        |
+| Claimed (in-progress) | 2026-04-30 20:19 | Codex V1 Builder   | 4d9439408 |
+| Build completed       | 2026-04-30 20:29 | Codex V1 Builder   | 4d9439408 |
+| Type check passed     | 2026-04-30 20:29 | Codex V1 Builder   | 4d9439408 |
+| Build check skipped   | 2026-04-30 20:29 | User scoped validation, no next build | 4d9439408 |
+| Status: built         | 2026-04-30 20:29 | Codex V1 Builder   | 4d9439408 |
 
 ---
 

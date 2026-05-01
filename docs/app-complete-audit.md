@@ -2210,12 +2210,12 @@ Operator comparison hub for chefs deciding against spreadsheets or generalized C
 | ------------- | ---------------- | --------------------- |
 | Book a Chef   | `/book`          | Open booking form     |
 | Browse Chefs  | `/chefs`         | Chef directory        |
-| Discover      | `/discover`      | Food directory        |
+| Nearby        | `/nearby`        | Food discovery        |
 | For Operators | `/for-operators` | Operator landing page |
 
 ### Navigation (Public Footer)
 
-Discover section: Book a Chef, Browse Chefs, Food Directory, Gift Cards, Contact.
+Nearby section: Book a Chef, Browse Chefs, Nearby, Gift Cards, Contact.
 For Operators section: Why ChefFlow (`/for-operators`), Marketplace Chefs, Become a Partner, Operator sign up.
 Resources: FAQ, Trust Center.
 Legal: Privacy Policy, Terms of Service.

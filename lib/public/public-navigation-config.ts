@@ -32,7 +32,7 @@ export const PUBLIC_CONSUMER_DISCOVERY_ENTRY: PublicCta = {
 
 export const PUBLIC_SUPPORTING_DIRECTORY_ENTRY: PublicCta = {
   href: '/nearby',
-  label: 'Food Directory',
+  label: 'Nearby',
 }
 
 export const PUBLIC_DINNER_CIRCLES_ENTRY: PublicCta = {

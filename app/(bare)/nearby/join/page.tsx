@@ -4,8 +4,8 @@ import { createServerClient } from '@/lib/db/server'
 import { decryptRef } from '@/lib/discover/outreach-crypto'
 
 export const metadata: Metadata = {
-  title: 'Join the Food Directory',
-  description: 'Get your food business featured for free.',
+  title: 'Join Nearby',
+  description: 'Get your food business listed for free.',
   robots: 'noindex',
 }
 
@@ -46,8 +46,8 @@ export default async function JoinPage({ searchParams }: Props) {
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-white mb-2">Get your business featured</h1>
           <p className="text-zinc-400">
-            Join a free food directory. Add your menu, photos, and hours. People near you find you
-            directly.
+            Claim your free Nearby listing. Add your menu, photos, and hours so people near you can
+            find you directly.
           </p>
         </div>
         <JoinForm ref_={ref} prefill={prefill} />

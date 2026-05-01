@@ -739,7 +739,7 @@ export default async function NearbyPage({ searchParams }: PageProps) {
   }
   const mapToggleHref = nearbyHref(mapParams)
 
-  const heroTitle = state ? `Nearby Food in ${getStateName(state)}` : 'Nearby Food Directory'
+  const heroTitle = state ? `Nearby Food in ${getStateName(state)}` : 'Nearby'
   const heroSubtitle =
     hasUserLocation && activeLocation
       ? requestedRadiusMiles != null
@@ -749,7 +749,7 @@ export default async function NearbyPage({ searchParams }: PageProps) {
         ? `Browse live listings in ${city}, ${getStateName(state)}.`
         : state
           ? `Browse live listings across ${getStateName(state)}.`
-          : 'Start with city hubs, category hubs, curated collections, or the live listings below, then narrow by city, state, cuisine, business type, or your current location.'
+          : 'Find food near you. Restaurants, private chefs, caterers, food trucks, bakeries, and more.'
 
   const seoEvaluation = evaluateNearbyBrowseSeo(seoBase, result.total)
   const breadcrumbItems = buildNearbyBrowseBreadcrumbItems({ appUrl: APP_URL, base: seoBase })
@@ -847,6 +847,10 @@ export default async function NearbyPage({ searchParams }: PageProps) {
             {heroTitle}
           </h1>
           <p className="mt-3 max-w-3xl text-base leading-relaxed text-stone-400">{heroSubtitle}</p>
+          <p className="mt-3 text-sm font-medium text-stone-500">
+            {stats.totalListings.toLocaleString()} food businesses across{' '}
+            {stats.states.length.toLocaleString()} states
+          </p>
 
           <div className="mt-5 flex flex-col items-start gap-3 rounded-2xl border border-stone-800/60 bg-stone-900/40 p-4 sm:flex-row sm:items-center sm:justify-between">
             <div>

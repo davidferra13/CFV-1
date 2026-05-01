@@ -8,7 +8,7 @@ const NearbyMapDiscovery = dynamic(
     ssr: false,
     loading: () => (
       <div className="flex min-h-[620px] items-center justify-center rounded-2xl border border-stone-800 bg-stone-950">
-        <p className="text-sm text-stone-500">Loading map discovery...</p>
+        <p className="text-sm text-stone-500">Loading map view...</p>
       </div>
     ),
   }

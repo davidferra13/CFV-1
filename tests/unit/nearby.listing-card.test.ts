@@ -59,7 +59,7 @@ test('ListingCard omits distance text when no distance is available', () => {
   assert.match(html, /Boston, MA/)
 })
 
-test('ListingCard makes discovered trust and freshness cues explicit', () => {
+test('ListingCard makes listed trust and freshness cues explicit', () => {
   const html = renderToStaticMarkup(
     React.createElement(ListingCard, {
       listing: createListing({
@@ -70,10 +70,11 @@ test('ListingCard makes discovered trust and freshness cues explicit', () => {
     })
   )
 
-  assert.match(html, /Discovered/)
+  assert.match(html, /Listed/)
   assert.match(html, /Public-source only/)
   assert.match(html, /Check freshness/)
   assert.match(html, /Older contact details may still need confirmation\./)
+  assert.match(html, /Claim for free/)
 })
 
 test('ListingCard shows owner-verified confidence with a concrete update date', () => {

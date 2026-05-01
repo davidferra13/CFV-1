@@ -450,7 +450,7 @@ function PlaceDrawer({
 
           <div className="rounded-2xl border border-brand-900/50 bg-brand-950/20 p-4">
             <h3 className="text-sm font-semibold text-stone-100">
-              Turn this discovery into a hosted meal
+              Turn this find into a hosted meal
             </h3>
             <p className="mt-1.5 text-xs leading-relaxed text-stone-400">
               ChefFlow carries the place, location, and food context into booking so matched chefs
@@ -473,7 +473,7 @@ function PlaceDrawer({
               ) : null}
             </div>
             <p className="mt-3 text-[11px] leading-relaxed text-stone-500">
-              Discovery - request - matched chefs - booking status.
+              Nearby - request - matched chefs - booking status.
             </p>
           </div>
 
@@ -526,7 +526,7 @@ export function NearbyMapDiscovery({
       <div className="flex flex-col border-b border-stone-800 bg-stone-950/95 px-4 py-3 md:flex-row md:items-center md:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-300">
-            Map discovery
+            Map view
           </p>
           <h2 className="mt-1 text-lg font-semibold text-stone-100">
             {total.toLocaleString()} live listing{total === 1 ? '' : 's'}
