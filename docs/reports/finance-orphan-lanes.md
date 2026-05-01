@@ -1,9 +1,8 @@
 # Finance Orphan Lane Prune Proof
 
 - Date: 2026-05-01
-- Scope: prune only finance components already classified safe-delete.
-- Decision: delete six orphan components with no live imports.
-- Intentionally retained: `components/finance/food-cost-panel.tsx` and `components/finance/mileage-tracker.tsx`.
+- Scope: prune finance components already classified safe-delete.
+- Decision: delete eight orphan components with no live imports.
 
 ## Deleted Components
 
@@ -15,14 +14,17 @@
 | `components/finance/forecast-chart.tsx` | `ForecastChart` | No import path hits in `app`, `components`, or `lib`; export-name hits were self references only. |
 | `components/finance/mileage-summary-widget.tsx` | `MileageSummaryWidget` | No import path hits in `app`, `components`, or `lib`; export-name hits were self references only. |
 | `components/finance/yoy-comparison.tsx` | `YoYComparisonPanel` | The broad path search matched `yoy-comparison-dashboard`, not this component. Export-name hits were self references only. |
+| `components/finance/food-cost-panel.tsx` | `FoodCostPanel` | No live import path or JSX usage. Active event food-cost UI is owned by `EventDetailMoneyTab` and `EventFoodCostInsight`; server food-cost actions remain live. |
+| `components/finance/mileage-tracker.tsx` | `MileageTracker` | No live import path or JSX usage. Active event mileage UI is `MileageLogPanel`; Tax Center mileage is owned by `lib/tax/actions.ts`. |
 
 ## Canonical Owner Evidence
 
-`food-cost-panel.tsx` and `mileage-tracker.tsx` were intentionally not touched. Targeted owner search found active component declarations:
+The active event food-cost and mileage owners are outside the deleted components:
 
 ```text
-components\finance\food-cost-panel.tsx:32:export function FoodCostPanel({ eventId, initialData }: Props) {
-components\finance\mileage-tracker.tsx:32:export function MileageTracker({ initialEntries, initialSummary, events = [] }: Props) {
+app\(chef)\events\[id]\_components\event-detail-money-tab.tsx imports EventFoodCostInsight and MileageLogPanel
+app\(chef)\events\[id]\page.tsx imports getMileageLogs from lib/finance/mileage-actions
+app\(chef)\finance\tax\page.tsx imports getYearlyMileageSummary from lib/tax/actions
 ```
 
 The active year-over-year reporting route imports `yoy-comparison-dashboard`, which is outside this prune scope:
@@ -58,8 +60,12 @@ rg -n "expense-list|ExpenseList|expense-summary-chart|ExpenseSummaryChart|food-c
 rg -n ([char]0x2014) docs/reports/finance-orphan-lanes.md
 ```
 
+## Integration Notes
+
+- The orchestrator integration pass removed the six deleted finance component entries from `tsconfig.ci.expanded.json` before commit.
+- The second integration pass removed the `food-cost-panel.tsx` and `mileage-tracker.tsx` entries from `tsconfig.ci.expanded.json`.
+
 ## Residual Risk
 
-- `tsconfig.ci.expanded.json` still listed the deleted files during pre-delete proof. This task did not touch it because it is outside the owned scope and may be generated or owned by another agent.
 - Historical docs and system reports can still mention deleted filenames as audit history. Those references are not live imports.
 - No server actions, finance action modules, tax code, ledger code, `types/database.ts`, or migrations were touched.

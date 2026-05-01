@@ -3,7 +3,7 @@
 - Date: 2026-05-01
 - Module owner: `events-ops`
 - Slice: safe duplicate cleanup for event wrapper files
-- Scope: `components/events/events-kanban.tsx`, `components/events/packing-checklist-button.tsx`, `components/events/packing-list.tsx`, `components/events/pricing-insights-panel.tsx`, `components/events/settlement-summary.tsx`, `components/events/take-a-chef-convert-banner.tsx`, `components/events/weather-forecast-card.tsx`
+- Scope: `components/events/events-kanban.tsx`, `components/events/packing-checklist-button.tsx`, `components/events/packing-list.tsx`, `components/events/pricing-insights-panel.tsx`, `components/events/settlement-summary.tsx`, `components/events/take-a-chef-convert-banner.tsx`, `components/events/weather-forecast-card.tsx`, `components/events/photo-permission-indicator.tsx`
 - Decision: delete proven duplicate wrappers only
 
 ## Hard Stops
@@ -43,6 +43,7 @@ Reference checks:
 | `components/events/collaborator-panel.tsx`         | `CollaboratorPanel`              | No import path or JSX/function call references outside the file.                                                                               | `components/events/event-collaborators-panel.tsx`, `components/collaboration/event-collaborators-panel.tsx`, and event detail collaboration sections. |
 | `components/events/dietary-rollup.tsx`             | `DietaryRollupCard`              | No import path or JSX/function call references outside the file.                                                                               | `components/events/dietary-complexity-badge.tsx`, `components/events/constraint-radar-panel.tsx`, hub dietary summaries, and dietary email rollup. |
 | `components/events/waste-log-panel.tsx`            | `WasteLogPanel`                  | No import path or JSX/function call references outside the file.                                                                               | `components/events/close-out-wizard.tsx` waste step, `/inventory/waste`, and `/stations/waste`.                        |
+| `components/events/photo-permission-indicator.tsx` | `PhotoPermissionIndicator`       | No exact import path, export name, JSX, or function call references outside the file. Only self, report, prune-register, and CI-expanded tsconfig references remained. | Client NDA/photo permission settings, event photo gallery/actions, guest photo consent, and portfolio gallery/actions.   |
 
 ## Canonical Owner Proof
 
@@ -57,17 +58,24 @@ Reference checks:
 - `app/(chef)/events/[id]/_components/event-detail-overview-tab.tsx` imports and renders `EventCollaboratorsPanel` from `components/collaboration/event-collaborators-panel`.
 - `app/(chef)/events/[id]/_components/event-detail-ops-tab.tsx` imports and renders `EventCollaboratorsPanel` from `components/events/event-collaborators-panel`.
 - `components/events/close-out-wizard.tsx` imports `addWasteEntry`, renders `WasteStep`, and writes post-event waste entries without using `WasteLogPanel`.
+- `app/(chef)/events/[id]/page.tsx` imports `getEventPhotosForChef` and `EventPhotoGallery`, then renders the active event photo management surface.
+- `components/events/photo-consent-summary.tsx` owns guest-level photo consent display.
+- `app/(chef)/settings/portfolio/page.tsx` imports `getPortfolio` and renders `GridEditor`; `app/(chef)/portfolio/page.tsx` imports `getPortfolioPhotos` and renders `PortfolioGallery`.
+- `lib/portfolio/permission-actions.ts` and `lib/portfolio/permission-check.ts` own event photo permission override and effective permission computation.
 
 ## Not Cleared In This Slice
 
 The following events bucket files remain outside this deletion slice:
 
 - Recover candidates: `alcohol-service-log.tsx`, `cancellation-dialog.tsx`, `capacity-warning-banner.tsx`, `circle-rebook-button.tsx`, `equipment-redundancy-checklist.tsx`, `event-inventory-panel.tsx`, `events-bulk-table.tsx`, `events-view-filter-bar.tsx`, `kitchen-profile-callout.tsx`, `photo-tagger.tsx`, `post-event-feedback.tsx`, `pre-service-safety-checklist.tsx`, `production-report-button.tsx`, `scope-drift-banner.tsx`, `tip-request-button.tsx`.
-- Prune candidate still pending focused proof: `photo-permission-indicator.tsx`.
+- Photo permission prune candidate proved orphaned and deleted in this slice.
 
 ## Validation
 
 - `rg -n 'aar-prompt-banner|collaborator-panel|dietary-rollup|waste-log-panel' app components lib tests scripts docs/reports docs/specs docs/multi-chef-coordination.md` found only report and historical docs references after deletion. No code import references remained.
 - `rg -n -e '@/components/events/aar-prompt-banner' -e '@/components/events/collaborator-panel' -e '@/components/events/dietary-rollup' -e '@/components/events/waste-log-panel' -e '<AARPromptBanner' -e '<CollaboratorPanel' -e '<DietaryRollupCard' -e '<WasteLogPanel' app components lib tests scripts` returned no matches.
+- `rg -n -e '@/components/events/photo-permission-indicator' -e 'components/events/photo-permission-indicator' -e './photo-permission-indicator' -e 'PhotoPermissionIndicator' app components lib tests scripts tsconfig.ci.expanded.json` returned no matches after deletion and tsconfig cleanup.
+- `rg -n -e 'photo-permission-indicator' -e 'PhotoPermissionIndicator' .` returned only documentation audit references after deletion: this report and `docs/reports/prune-candidate-register.md`.
+- `rg -n -e 'updatePhotoPermission' -e 'getPortfolioPermissionAudit' -e 'getPhotoPermissionStatus' -e 'EventPhotoGallery' -e 'PhotoConsentSummary' app components lib tests` identified active photo permission and event photo owners outside the deleted file.
 - `Select-String -Path docs/reports/events-orphan-lanes.md -Pattern ([char]0x2014) -SimpleMatch` returned no matches.
-- `git diff --check -- components/events/aar-prompt-banner.tsx components/events/collaborator-panel.tsx components/events/dietary-rollup.tsx components/events/waste-log-panel.tsx docs/reports/events-orphan-lanes.md` passed with only the existing line-ending warning for `docs/reports/events-orphan-lanes.md`.
+- `git diff --check -- components/events/photo-permission-indicator.tsx docs/reports/events-orphan-lanes.md tsconfig.ci.expanded.json` passed with only line-ending warnings for `docs/reports/events-orphan-lanes.md` and `tsconfig.ci.expanded.json`.

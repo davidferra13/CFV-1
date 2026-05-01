@@ -96,3 +96,62 @@ rg -n "getCannabisInviteByToken|claimCannabisInvite|buildCannabisHostAgreementSn
 ### Residual Artifact
 
 `tsconfig.ci.expanded.json` contains a generated explicit-file reference to the deleted path. It was not edited because this worker owns only `lib/clients/cannabis-client-actions.ts` and `docs/reports/clients-orphan-lanes.md`.
+
+## Client Duplicate Action Slice
+
+- Date: 2026-05-01
+- Scope: `lib/clients/payment-plan-actions.ts`, `lib/clients/loyalty-program.ts`, `lib/clients/passport-actions.ts`, `lib/clients/referral-tree.ts`
+- Decision: delete clear unused duplicates, retain ambiguous passport behavior
+
+### Import And Symbol Proof
+
+Commands run:
+
+```text
+rg -n "payment-plan-actions|loyalty-program|passport-actions|referral-tree" .
+rg -n "\b(getPaymentPlan|calculateInstallments|Installment|PaymentPlanOption|EventPaymentPlan)\b" app components lib tests scripts
+rg -n "\b(getClientLoyaltySummary|getLoyaltyRewardCatalog|awardClientLoyaltyBonus|redeemClientLoyaltyReward)\b" app components lib tests scripts
+rg -n "\b(getClientPassport|upsertClientPassport|deleteClientPassport)\b" app components lib tests scripts
+rg -n "\b(getClientReferralTree|ReferralNode)\b" app components lib tests scripts
+```
+
+Results:
+
+| Candidate | Live usage evidence | Decision |
+| --- | --- | --- |
+| `lib/clients/payment-plan-actions.ts` | No live import path. Symbol search only found the candidate exports plus unrelated generic `Installment` text. Live callers import `getPaymentPlan` from `@/lib/finance/payment-plan-actions`. | Delete |
+| `lib/clients/loyalty-program.ts` | No live import path. Exact wrapper symbol search only found the candidate exports. | Delete |
+| `lib/clients/passport-actions.ts` | No live import path. Exact symbol search only found the candidate exports. Behavior is not equivalent to `lib/hub/passport-actions.ts`: this file keys passport records by `tenant_id` and `client_id`, supports `deleteClientPassport`, and writes delegate fields. The hub owner keys by `profile_id` and exposes no delete action. | Keep uncertain |
+| `lib/clients/referral-tree.ts` | No live import path. Exact symbol search only found the candidate exports, except an unrelated `ReferralNode` interface in `lib/intelligence/referral-chain-mapping.ts`. | Delete |
+
+### Canonical Owner Proof
+
+Commands run:
+
+```text
+rg -n "@/lib/finance/payment-plan-actions|lib/finance/payment-plan-actions" app components lib tests scripts
+rg -n "@/lib/loyalty/actions|lib/loyalty/actions|awardBonusPoints|getClientLoyaltyProfile|getRewards|redeemReward" app components lib tests scripts
+rg -n "@/lib/hub/passport-actions|lib/hub/passport-actions|getPassportForProfile|upsertPassport" app components lib tests scripts
+rg -n "@/lib/clients/referral-actions|lib/clients/referral-actions|getClientReferral|updateClientReferral|getReferralOptions|client_referrals|referred_by_client_id" app components lib tests scripts
+```
+
+Evidence:
+
+| Lane | Canonical owner | Evidence |
+| --- | --- | --- |
+| Payment plans | `lib/finance/payment-plan-actions.ts` | Imported by `components/finance/payment-plan-panel.tsx`, `app/(chef)/events/[id]/page.tsx`, `app/(chef)/events/[id]/billing/page.tsx`, and Remy intelligence actions. |
+| Loyalty | `lib/loyalty/actions.ts` plus `lib/loyalty/store.ts` | Imported by chef loyalty pages, client rewards pages, onboarding, event transitions, and client dashboard actions. |
+| Passport | `lib/hub/passport-actions.ts` | Exports `getPassportForProfile` and `upsertPassport`, but no live imports were found and the data contract differs from the client action slice. Retained for recovery review instead of pruning. |
+| Referrals | `lib/clients/referral-actions.ts` and referral health modules | `components/analytics/referral-dashboard.tsx` and `components/clients/referral-panel.tsx` import referral actions. Referral health and client health modules also use referral fields. |
+
+### Deleted Files
+
+- `lib/clients/payment-plan-actions.ts`
+- `lib/clients/loyalty-program.ts`
+- `lib/clients/referral-tree.ts`
+
+### Retained For Review
+
+- `lib/clients/passport-actions.ts`
+
+Reason: no live imports, but behavior is unique enough that deleting it would risk losing a recoverable tenant/client passport contract.
