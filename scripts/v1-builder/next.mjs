@@ -33,7 +33,7 @@ if (errors.length > 0) {
   process.exit(0)
 }
 
-const task = selectNextTask(records, activeLane, loadReceipts(context))
+const task = selectNextTask(records, activeLane, loadReceipts(context), context)
 if (!task) {
   console.log(JSON.stringify({
     status: 'idle',

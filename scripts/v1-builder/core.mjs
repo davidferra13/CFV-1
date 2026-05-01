@@ -2,6 +2,8 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+import { decideModule } from '../../devtools/module-decision.mjs'
+
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
 
 export const QUEUE_FILES = [
@@ -150,20 +152,22 @@ export function completedTaskIds(receipts) {
   )
 }
 
-export function selectNextTask(records, activeLane, receipts = []) {
+export function selectNextTask(records, activeLane, receipts = [], context = createBuilderContext()) {
   const completed = completedTaskIds(receipts)
   const eligible = records.filter((record) => {
     if (completed.has(record.id)) return false
-    return isEligibleTask(record, activeLane)
+    return isEligibleTask(record, activeLane, context)
   })
   eligible.sort(compareTasks)
-  return eligible[0] ?? null
+  const task = eligible[0] ?? null
+  return task ? attachModuleDecision(task, context) : null
 }
 
-export function isEligibleTask(task, activeLane) {
+export function isEligibleTask(task, activeLane, context = createBuilderContext()) {
   if (task.status !== 'queued') return false
   if (!task.canonicalOwner) return false
   if (task.blockedBy) return false
+  if (!hasModuleOwner(task, context)) return false
 
   if (task.classification === 'approved_v1_blocker') return dependenciesSatisfied(task)
 
@@ -172,6 +176,50 @@ export function isEligibleTask(task, activeLane) {
   }
 
   return false
+}
+
+export function hasModuleOwner(task, context = createBuilderContext()) {
+  const decision = resolveTaskModuleDecision(task, context)
+  return decision.status === 'module_owner_found' && decision.module?.id !== 'unassigned'
+}
+
+export function resolveTaskModuleDecision(task, context = createBuilderContext()) {
+  if (task.module?.id) {
+    const unassigned = task.module.id === 'unassigned'
+    return {
+      status: unassigned ? 'module_review_required' : 'module_owner_found',
+      module: task.module,
+      confidence: 'task',
+      evidence: [
+        {
+          type: 'task-module',
+          sourcePath: task.sourcePath ?? task.canonicalOwner ?? null,
+        },
+      ],
+      reason: unassigned
+        ? 'Task carries an unassigned module.'
+        : 'Task already carries a module owner.',
+      nextAction: unassigned
+        ? 'Route to module review before implementation.'
+        : 'Verify against code truth, then name interface, invariants, and test surface before implementation.',
+    }
+  }
+
+  return decideModule({
+    root: context.root,
+    sourcePath: task.sourcePath ?? task.canonicalOwner ?? '',
+    title: task.title ?? '',
+    summary: [task.rawAskSummary, task.statusReason, task.canonicalOwner].filter(Boolean).join('\n'),
+  })
+}
+
+export function attachModuleDecision(task, context = createBuilderContext()) {
+  const moduleDecision = resolveTaskModuleDecision(task, context)
+  return {
+    ...task,
+    module: moduleDecision.module,
+    moduleDecision,
+  }
 }
 
 function dependenciesSatisfied(task) {
@@ -202,6 +250,10 @@ function riskRank(risk) {
 
 export function createClaim(task, context = createBuilderContext(), now = new Date()) {
   mkdirSync(context.claimsDir, { recursive: true })
+  const moduleDecision = resolveTaskModuleDecision(task, context)
+  if (moduleDecision.status !== 'module_owner_found' || moduleDecision.module?.id === 'unassigned') {
+    throw new Error(`Cannot claim unmoduled V1 builder task: ${task.id}`)
+  }
 
   const stamp = now.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z')
   const branchStamp = slugify(stamp)
@@ -213,6 +265,8 @@ export function createClaim(task, context = createBuilderContext(), now = new Da
     branch: `feature/v1-builder-${slugify(task.id)}-${branchStamp}-${slugify(task.title ?? task.id)}`.slice(0, 96),
     classification: task.classification,
     canonicalOwner: task.canonicalOwner,
+    module: moduleDecision.module,
+    moduleDecision,
     status: 'claimed',
     claimedAt: now.toISOString(),
     expiresAt: new Date(now.getTime() + 3 * 60 * 60 * 1000).toISOString(),

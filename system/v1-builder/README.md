@@ -41,6 +41,12 @@ node scripts/v1-builder/normalize-intake.mjs --profile full --write
 node scripts/v1-builder/normalize-intake.mjs --profile builder-gate --max-approved 3 --max-hard-stops 10 --write
 ```
 
+## Module Gate
+
+The runner treats module ownership as part of queue eligibility. A task must resolve to a concrete module owner before `next`, `claim`, or `run-once` can select it. Module evidence comes from the task record first, then `system/unified-build-queue/candidates.json`, then `devtools/module-decision.mjs` keyword inference.
+
+If the decision is `unassigned` or `module_review_required`, the task is skipped before selection. `createClaim()` repeats the check and refuses to write a claim for unmoduled work.
+
 ## Runner Rule
 
 The first implementation may select, claim, and record work. It must not run unattended code edits unless the task is already in `approved-queue.jsonl`, passes the V1 governor, has a canonical owner, and can be validated with receipts.

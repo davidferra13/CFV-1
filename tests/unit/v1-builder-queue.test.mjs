@@ -33,6 +33,10 @@ function tempContext() {
   return context
 }
 
+function moduleOwner(id = 'event-spine') {
+  return { id, label: id }
+}
+
 test('reads active lane from governor', () => {
   const context = tempContext()
   assert.equal(readActiveLane(context), 'V1 event spine stabilization')
@@ -49,6 +53,7 @@ test('selects V1 blockers before lower priority support', () => {
       risk: 'low',
       createdAt: '2026-04-29T00:00:00Z',
       canonicalOwner: 'docs/specs/support.md',
+      module: moduleOwner(),
     },
     {
       id: 'v1-blocker',
@@ -57,6 +62,7 @@ test('selects V1 blockers before lower priority support', () => {
       risk: 'medium',
       createdAt: '2026-04-30T00:00:00Z',
       canonicalOwner: 'docs/specs/blocker.md',
+      module: moduleOwner(),
     },
   ]
 
@@ -78,6 +84,7 @@ test('does not select tasks with completed receipts', () => {
       risk: 'low',
       createdAt: '2026-04-30T00:00:00Z',
       canonicalOwner: 'docs/specs/blocker.md',
+      module: moduleOwner(),
     },
   ]
 
@@ -94,9 +101,59 @@ test('rejects support outside the active lane', () => {
       risk: 'low',
       createdAt: '2026-04-30T00:00:00Z',
       canonicalOwner: 'docs/specs/other.md',
+      module: moduleOwner(),
     }, 'V1 event spine stabilization'),
     false,
   )
+})
+
+test('rejects otherwise eligible tasks that have no module owner', () => {
+  assert.equal(
+    isEligibleTask({
+      id: 'unmoduled',
+      status: 'queued',
+      classification: 'approved_v1_blocker',
+      risk: 'low',
+      createdAt: '2026-04-30T00:00:00Z',
+      canonicalOwner: 'docs/specs/unmoduled.md',
+      module: { id: 'unassigned', label: 'Unassigned' },
+    }, 'V1 event spine stabilization'),
+    false,
+  )
+})
+
+test('queue source path module review blocks selection', () => {
+  const context = tempContext()
+  const unifiedDir = join(context.root, 'system', 'unified-build-queue')
+  mkdirSync(unifiedDir, { recursive: true })
+  writeFileSync(
+    join(unifiedDir, 'candidates.json'),
+    `${JSON.stringify([
+      {
+        source: 'docs-specs',
+        sourcePath: 'docs/specs/fuzzy.md',
+        title: 'Fuzzy platform idea',
+        classification: 'v1_support',
+        approvalState: 'candidate_review_required',
+        module: { id: 'unassigned', label: 'Unassigned' },
+      },
+    ], null, 2)}\n`,
+    'utf8',
+  )
+
+  const task = selectNextTask([
+    {
+      id: 'fuzzy',
+      status: 'queued',
+      classification: 'approved_v1_blocker',
+      risk: 'low',
+      createdAt: '2026-04-30T00:00:00Z',
+      canonicalOwner: 'docs/specs/fuzzy.md',
+      sourcePath: 'docs/specs/fuzzy.md',
+    },
+  ], 'V1 event spine stabilization', [], context)
+
+  assert.equal(task, null)
 })
 
 test('claims block later claims until they expire', () => {
@@ -107,6 +164,7 @@ test('claims block later claims until they expire', () => {
     title: 'Repair event quote truth',
     classification: 'approved_v1_blocker',
     canonicalOwner: 'docs/specs/example.md',
+    module: moduleOwner(),
   }, context, now)
 
   const freshClaims = loadFreshClaims(context, new Date('2026-04-30T13:00:00Z'))
@@ -121,6 +179,7 @@ test('claims generate unique retry-safe branch names', () => {
     title: 'Repair event quote truth',
     classification: 'approved_v1_blocker',
     canonicalOwner: 'docs/specs/example.md',
+    module: moduleOwner(),
   }
 
   const first = createClaim(task, context, new Date('2026-04-30T12:00:00Z'))
@@ -128,6 +187,21 @@ test('claims generate unique retry-safe branch names', () => {
 
   assert.notEqual(first.claim.branch, second.claim.branch)
   assert.match(first.claim.branch, /^feature\/v1-builder-v1-1-20260430t120000z-/)
+})
+
+test('claim creation refuses unmoduled tasks', () => {
+  const context = tempContext()
+
+  assert.throws(
+    () => createClaim({
+      id: 'unmoduled',
+      title: 'Unmoduled task',
+      classification: 'approved_v1_blocker',
+      canonicalOwner: 'docs/specs/unmoduled.md',
+      module: { id: 'unassigned', label: 'Unassigned' },
+    }, context, new Date('2026-04-30T12:00:00Z')),
+    /Cannot claim unmoduled V1 builder task/,
+  )
 })
 
 test('reads jsonl records and records parse errors by line', () => {
