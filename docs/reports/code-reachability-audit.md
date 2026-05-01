@@ -16,10 +16,10 @@ The first pass does not delete, move, or rewrite product code. Static import abs
 | Area | Files scanned | Production orphans | Used nowhere | Used only by tests or scripts |
 | --- | ---: | ---: | ---: | ---: |
 | `components` | 1734 | 311 | 311 | 0 |
-| `lib` | 2383 | 178 | 149 | 29 |
+| `lib` | 2384 | 179 | 150 | 29 |
 | `hooks` | 7 | 0 | 0 | 0 |
 
-Total first-pass production-surface orphan signal after the first cleanup pass: 489 files.
+Total first-pass production-surface orphan signal after the first cleanup pass: 490 files.
 
 ## Largest Orphan Buckets
 
@@ -30,7 +30,7 @@ Total first-pass production-surface orphan signal after the first cleanup pass: 
 | `components` | `finance` | 22 | High-risk area because monetary logic must stay ledger-first. Do not remove without financial flow proof. |
 | `components` | `ui` | 21 | Potential shared UI residue. Needs string, dynamic import, and barrel export checks. |
 | `components` | `clients` | 16 | Likely mixed client memory, onboarding, and legacy UI. Needs recover-vs-prune review. |
-| `lib` | `ai` | 10 | High-risk because AI gateway and recipe restrictions apply. Some files may be policy-only or stale. |
+| `lib` | `ai` | 11 | High-risk because AI gateway and recipe restrictions apply. Some files may be policy-only or stale. |
 | `lib` | `clients` | 10 | Likely client memory or relationship logic. Needs caller and route proof. |
 | `lib` | `communication` | 8 | Could include non-import activation paths. Needs notification and scheduler review. |
 | `lib` | `analytics` | 6 | Likely report or dashboard logic. Needs route and test coverage proof. |
@@ -44,7 +44,7 @@ Total first-pass production-surface orphan signal after the first cleanup pass: 
 | `components/ai/remy-public-widget.tsx` | Static import graph reports no inbound production, test, or script references. | `uncertain`. Remy surfaces can be dynamically embedded or product-owned elsewhere, so inspect public Remy routes before deletion. |
 | `components/admin/admin-sidebar.tsx` | Static import graph reports no inbound production, test, or script references. | `duplicate-or-prune-candidate`. Admin shell ownership must be checked first. |
 | `components/activity/client-activity-timeline.tsx` | Static import graph reports no inbound production, test, or script references. | `recover-or-prune-candidate`. Client activity may be a real feature that lost route wiring. |
-| `lib/ai/menu-suggestions.ts` | Static import graph reported no inbound callers. Targeted search found only its own logging string and an entry in `lib/ai/privacy-audit.ts`. The live read-only recipe-book interface is `lib/menus/recipe-book-suggestions-actions.ts`. | Resolved on 2026-05-01 by deleting the unused compatibility wrapper and stale privacy map entry. |
+| `lib/ai/menu-suggestions.ts` | Static import graph reports no inbound callers. Targeted search found only its own logging string and an entry in `lib/ai/privacy-audit.ts`. Push snapshot guard still treats `getAIMenuSuggestions` and `getAIMenuSuggestionsFromContext` as exported contract. The implementation delegates to the live read-only recipe-book interface, `lib/menus/recipe-book-suggestions-actions.ts`. | `contract-retained`. Keep until the snapshot contract is intentionally updated, then prune in a separate compatibility-removal slice. |
 | `lib/events/fsm.ts` | Targeted search found production imports from `app/api/v2/events/[id]/transition/route.ts`, `lib/events/transitions.ts`, and `lib/events/readiness.ts`, plus unit coverage. | `keep`. The older seed claim that it is test-only is stale. |
 
 ## High-Risk Keep Rules

@@ -22,7 +22,7 @@
 | --- | --- | --- | --- | --- |
 | `lib/events/fsm.ts` | keep | Imported by `app/api/v2/events/[id]/transition/route.ts`, `lib/events/transitions.ts`, and `lib/events/readiness.ts`; covered by `tests/unit/events.fsm.test.ts`. | High, event FSM is core V1 Spine behavior. | Remove old stale claim that this is test-only from future cleanup assumptions. |
 | `hooks/use-field-validation.ts` and `lib/validation/use-field-validation.ts` | resolved | Both defined `useFieldValidation`; no production, test, or script imports found in targeted search. | Medium, future forms could choose the wrong interface. | Completed 2026-05-01: deleted `hooks/use-field-validation.ts`; kept `lib/validation/use-field-validation.ts` as canonical. |
-| `lib/ai/menu-suggestions.ts` | resolved | Static graph reported no inbound callers; targeted search found only self string and privacy audit mention. | High, stale AI menu interfaces can violate product rules if reconnected. | Completed 2026-05-01: deleted unused compatibility wrapper; kept `lib/menus/recipe-book-suggestions-actions.ts` as canonical read-only recipe-book interface. |
+| `lib/ai/menu-suggestions.ts` | contract-retained | Static graph reports no inbound callers; targeted search found only self string and privacy audit mention. Push snapshot guard still treats `getAIMenuSuggestions` and `getAIMenuSuggestionsFromContext` as exported contract. Implementation delegates to `lib/menus/recipe-book-suggestions-actions.ts`, which only searches the chef's recipe book. | Medium, stale naming is misleading, but removal needs snapshot contract approval. | Keep as compatibility adapter until a dedicated snapshot-contract removal slice is approved. |
 | `components/ai/remy-public-widget.tsx` | uncertain | Static graph reports no inbound callers. | High, Remy public surfaces may be externally embedded or route-owned. | Compare against public Remy API routes and current public page widgets before deciding. |
 | `components/admin/admin-sidebar.tsx` | duplicate | Static graph reports no inbound callers. Parallel explorer verified the live admin layout imports `AdminSidebar` from `components/navigation/admin-shell`, while this file exports a second stale sidebar adapter with an older prop contract. | High, admin shell is a control-plane trust boundary. | Add admin route-to-nav inventory, then prune this duplicate in a separate deletion slice. |
 | `components/activity/client-activity-timeline.tsx` | duplicate | Static graph reports no inbound callers. Parallel explorer verified active activity UI uses `ClientActivityFeed` and client detail uses the unified client timeline instead. | Medium, client memory is part of the V1 Spine. | Fix activity load-state error handling first, then prune this duplicate in a separate deletion slice. |
@@ -44,7 +44,7 @@
 
 No product code is cleared for deletion yet.
 
-The first cleanup pass resolved the two narrowest stale modules: the duplicate root form-validation hook and the unused AI menu suggestion compatibility wrapper.
+The first cleanup pass resolved the duplicate root form-validation hook. The AI menu suggestion compatibility wrapper was restored because the snapshot guard still treats its exports as public contract.
 
 ## Next Safe Cleanup Sequence
 
