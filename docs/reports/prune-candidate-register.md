@@ -1,4 +1,4 @@
-# Prune Candidate Register
+﻿# Prune Candidate Register
 
 - Date: 2026-05-01
 - Scope: first-pass code reachability and route discoverability candidates
@@ -27,6 +27,7 @@
 | `components/ai/remy-public-widget.tsx`                                       | uncertain         | Static graph reports no inbound callers.                                                                                                                                                                                                                                                                                                                                                              | High, Remy public surfaces may be externally embedded or route-owned.                               | Compare against public Remy API routes and current public page widgets before deciding.                                                     |
 | `components/admin/admin-sidebar.tsx`                                         | resolved          | Static graph reported no inbound callers. Admin inventory verified the live admin layout imports `AdminSidebar` from `components/navigation/admin-shell`, while this file exported a second stale sidebar adapter with an older prop contract.                                                                                                                                                        | High, admin shell is a control-plane trust boundary.                                                | Completed 2026-05-01: deleted duplicate sidebar and moved nav report tooling to `components/navigation/admin-shell.tsx`.                    |
 | `components/activity/client-activity-timeline.tsx`                           | resolved          | Completed 2026-05-01: deleted after focused proof in `docs/reports/activity-orphan-lanes.md`. Current targeted search found `ClientActivityTimeline` only in the candidate file, with no live path refs across `app`, `components`, `lib`, `tests`, or `scripts`. Active owners are `ClientActivityFeed` on `/activity` and `UnifiedClientTimeline` plus `getUnifiedClientTimeline` on client detail. | Low after deletion proof. Historical docs still mention the path as an audit artifact.              | Done.                                                                                                                                       |
+| `components/clients/client-timeline.tsx`, `components/clients/client-value-card.tsx`, `components/clients/dietary-summary-badge.tsx`, `components/clients/nda-badge.tsx`, `components/clients/top-clients-widget.tsx` | resolved | Completed 2026-05-01: deleted after focused proof in `docs/reports/clients-orphan-lanes.md`. Targeted searches found each exported symbol and filename only in its candidate file. Canonical owners are `UnifiedClientTimeline`, the client detail financial section plus `ClientFinancialPanel` and `LTVChart`, `AllergyRecordsPanel`, `NDAPanel`, and `/clients/insights/top-clients`. | Low after deletion proof. Client detail and insights routes keep the live owners. | Done. |
 | `components/dashboard/*` orphan bucket                                       | mixed             | 31 component files in dashboard bucket have no production inbound references in static graph. Parallel explorer found current read-only mapping shows 32 dashboard orphans, with recover lanes for client relationship, compliance, and dashboard preferences; duplicate lanes for action, finance, inventory, intelligence, and health; prune candidates for chrome-only files.                      | Medium, dashboard is the chef command plane.                                                        | Work one dashboard lane at a time. Start with prune-proof chrome or recover client relationship, not money widgets.                         |
 | `components/events/*` orphan bucket                                          | mixed             | 27 component files in events bucket have no production inbound references in static graph. Parallel explorer classified 15 recover candidates, 11 duplicates, and 1 prune-candidate. Duplicate cleanup proof completed for 7 safe wrappers in `docs/reports/events-orphan-lanes.md`.                                                                                                                  | High, event workflow owns proposal, payment, prep, service, and follow-up.                          | Continue one lane at a time. Recover safety and post-event modules only through canonical event routes.                                     |
 | `components/finance/*` orphan bucket                                         | mixed             | 22 component files in finance bucket have no production inbound references in static graph. Parallel explorer classified 14 recover candidates and 8 duplicates. No finance file is cleared as prune-candidate because the bucket touches ledger, taxes, deposits, cost history, and reporting.                                                                                                       | High, money surfaces can hide ledger or quote behavior.                                             | Recover or fold ledger-backed modules into canonical finance surfaces; prune only proven duplicates.                                        |
@@ -44,6 +45,8 @@
 ## Current Prune Permission
 
 `components/activity/client-activity-timeline.tsx` was cleared by focused proof and removed on 2026-05-01.
+
+The clients duplicate wrapper pass was cleared by focused proof on 2026-05-01 and removed `client-timeline.tsx`, `client-value-card.tsx`, `dietary-summary-badge.tsx`, `nda-badge.tsx`, and `top-clients-widget.tsx`. Canonical owners remain `UnifiedClientTimeline`, the client detail financial section plus `ClientFinancialPanel` and `LTVChart`, `AllergyRecordsPanel`, `NDAPanel`, and `/clients/insights/top-clients`.
 
 The UI duplicate wrapper pass was cleared by focused proof on 2026-05-01 and removed `confirm-destructive-dialog.tsx`, `conflict-dialog.tsx`, `draft-save-indicator.tsx`, `error-boundary.tsx`, `shortcuts-help-panel.tsx`, `shortcut-hint.tsx`, `status-badge.tsx`, `status-dot.tsx`, `determinate-progress.tsx`, and `remy-loader.tsx`. `rich-note-editor.tsx` remains because `docs/specs/rich-text-editor-dinner-circles.md` explicitly blocks deletion.
 
@@ -76,6 +79,11 @@ The activity load-state hardening slice is complete: activity query actions now 
 - Duplicate: `expense-list.tsx`, `expense-summary-chart.tsx`, `food-cost-panel.tsx`, `food-cost-widget.tsx`, `forecast-chart.tsx`, `mileage-summary-widget.tsx`, `mileage-tracker.tsx`, `yoy-comparison.tsx`.
 - Prune-candidate: none.
 
+### Clients Bucket
+
+- Resolved duplicate cleanup: deleted `client-timeline.tsx`, `client-value-card.tsx`, `dietary-summary-badge.tsx`, `nda-badge.tsx`, and `top-clients-widget.tsx` on 2026-05-01 after exact import proof and canonical owner proof. See `docs/reports/clients-orphan-lanes.md`.
+- Keep: `unified-client-timeline.tsx`, `allergy-records-panel.tsx`, `ltv-chart.tsx`, `client-financial-panel.tsx`, and `components/protection/nda-panel.tsx`.
+- Recover or uncertain: no files reviewed in this slice.
 ### AI Bucket
 
 - Keep: `lib/ai/agent-actions/recipe-actions.ts`, `lib/ai/menu-suggestions.ts`, `lib/ai/privacy-audit.ts`, `lib/ai/remy-actions.ts`.
@@ -88,5 +96,6 @@ The activity load-state hardening slice is complete: activity query actions now 
 
 1. UI duplicate wrappers were prune-proofed on 2026-05-01. Revisit only `rich-note-editor.tsx` if the explicit retention note in `docs/specs/rich-text-editor-dinner-circles.md` is superseded.
 2. Continue event duplicate cleanup only for remaining duplicates with separate proof: `aar-prompt-banner.tsx`, `collaborator-panel.tsx`, `dietary-rollup.tsx`, and `waste-log-panel.tsx`.
-3. Recover dashboard client relationship widgets only if they attach to one canonical dashboard surface.
-4. Convert route discoverability gaps into recover tickets, not prune tickets.
+3. Client duplicate wrappers were prune-proofed on 2026-05-01. Revisit only new client candidates with exact symbol proof and canonical owner proof.
+4. Recover dashboard client relationship widgets only if they attach to one canonical dashboard surface.
+5. Convert route discoverability gaps into recover tickets, not prune tickets.
