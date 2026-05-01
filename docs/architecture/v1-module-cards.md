@@ -17,31 +17,41 @@ Generated evidence snapshot: `2026-04-30T23:37:52.894Z`.
 Before implementation, pick one module card and state:
 
 1. Module owner.
-2. Existing interface to attach to.
-3. Invariants the change must preserve.
-4. Test surface that proves the module still works.
+2. Submodule owner.
+3. Existing interface to attach to.
+4. Invariants the change must preserve.
+5. Test surface that proves the module still works.
 
 If a task spans multiple cards, pick the primary owner and name any secondary modules as adapters or dependencies. If no primary owner is clear, stop and route to module review.
 
+The accepted submodule baseline is recorded in `docs/architecture/v1-module-taxonomy-decisions.md`. The ownership scaffold is recorded in `docs/architecture/v1-module-ownership-registry.md`.
+
 ## Module Summary
 
-| Module | Candidates | V1 | Batches | Approved Batch Tasks |
-| --- | ---: | ---: | ---: | ---: |
-| `pricing-trust` | 37 | 18 | 7 | 17 |
-| `finance-ledger` | 22 | 14 | 5 | 14 |
-| `client-intake` | 30 | 10 | 6 | 6 |
-| `events-ops` | 100 | 48 | 14 | 35 |
-| `menus-offers` | 21 | 14 | 3 | 0 |
-| `dietary-safety` | 8 | 2 | 3 | 2 |
-| `sourcing-inventory` | 46 | 27 | 9 | 0 |
-| `v1-control-plane` | 245 | 145 | 33 | 0 |
-| `auth-security` | 64 | 56 | 9 | 0 |
-| `ai-boundaries` | 136 | 73 | 19 | 0 |
-| `public-trust` | 12 | 3 | 4 | 0 |
-| `chef-workspace` | 34 | 5 | 6 | 0 |
-| `staff-partner` | 9 | 1 | 3 | 0 |
-| `docs-release-proof` | 12 | 0 | 2 | 0 |
-| `unassigned` | 328 | 51 | 35 | 0 |
+| Module               | Candidates |  V1 | Batches | Approved Batch Tasks |
+| -------------------- | ---------: | --: | ------: | -------------------: |
+| `pricing-trust`      |         37 |  18 |       7 |                   17 |
+| `finance-ledger`     |         22 |  14 |       5 |                   14 |
+| `client-intake`      |         30 |  10 |       6 |                    6 |
+| `events-ops`         |        100 |  48 |      14 |                   35 |
+| `menus-offers`       |         21 |  14 |       3 |                    0 |
+| `dietary-safety`     |          8 |   2 |       3 |                    2 |
+| `sourcing-inventory` |         46 |  27 |       9 |                    0 |
+| `v1-control-plane`   |        245 | 145 |      33 |                    0 |
+| `auth-security`      |         64 |  56 |       9 |                    0 |
+| `ai-boundaries`      |        136 |  73 |      19 |                    0 |
+| `public-trust`       |         12 |   3 |       4 |                    0 |
+| `chef-workspace`     |         34 |   5 |       6 |                    0 |
+| `staff-partner`      |          9 |   1 |       3 |                    0 |
+| `docs-release-proof` |         12 |   0 |       2 |                    0 |
+| `unassigned`         |        328 |  51 |      35 |                    0 |
+
+Additional accepted modules not yet emitted by the generator:
+
+| Module                  | Reason                                                                                               |
+| ----------------------- | ---------------------------------------------------------------------------------------------------- |
+| `client-memory`         | Client truth is a V1 spine endpoint and cannot-fail contract, not just intake or workspace behavior. |
+| `quality-hallucination` | No fake UI needs owned patterns plus cross-cutting checks.                                           |
 
 ## Pricing Trust
 
@@ -55,6 +65,17 @@ Backlog shape:
 - `3` approved batches, `17` approved tasks.
 
 Build posture: current high-priority approved module. Treat pricing work as release-critical unless evidence proves it is V2.
+
+Accepted submodules:
+
+- `price-resolution`
+- `pricing-confidence`
+- `ingredient-matching`
+- `unit-conversion`
+- `yield-normalization`
+- `quote-safety`
+- `cost-export`
+- `openclaw-price-adapter`
 
 Likely anchors:
 
@@ -71,6 +92,12 @@ Owned invariants:
 - Costing confidence and freshness stay visible.
 - Tenant-scoped price and export reads.
 - Missing price is represented honestly.
+
+Forbidden moves:
+
+- Do not render missing price as `$0.00`.
+- Do not treat modeled price as observed.
+- Do not bypass confidence or freshness labels.
 
 Test surface:
 
@@ -92,6 +119,17 @@ Backlog shape:
 
 Build posture: current high-priority approved module. Treat money movement as append-only and evidence-first.
 
+Accepted submodules:
+
+- `ledger-core`
+- `stripe-payments`
+- `invoices`
+- `quote-payment-boundary`
+- `expenses-tax`
+- `financial-reports`
+- `supporter-contributions`
+- `finance-export-adapter`
+
 Likely anchors:
 
 - `lib/ledger/append.ts`
@@ -108,6 +146,12 @@ Owned invariants:
 - Balances are computed, not stored as mutable truth.
 - Payment side effects are idempotent.
 - Tenant scoping is mandatory.
+
+Forbidden moves:
+
+- Do not store mutable balances.
+- Do not mutate ledger entries.
+- Do not treat budget as revenue.
 
 Test surface:
 
@@ -128,6 +172,15 @@ Backlog shape:
 - `1` approved batch, `6` approved tasks.
 
 Build posture: V1 proof module. Intake must stay public-safe and honest.
+
+Accepted submodules:
+
+- `public-booking`
+- `direct-inquiry`
+- `embed-intake`
+- `intake-lane-truth`
+- `booking-follow-through`
+- `intake-to-client-adapter`
 
 Likely anchors:
 
@@ -165,6 +218,17 @@ Backlog shape:
 
 Build posture: large V1 surface. Use small owner slices, not broad rewrites.
 
+Accepted submodules:
+
+- `event-fsm`
+- `event-detail-truth`
+- `quote-agreement-boundary`
+- `prep-service-readiness`
+- `guest-dietary-handoff`
+- `service-format-specialization`
+- `followup-after-action`
+- `event-route-discoverability`
+
 Likely anchors:
 
 - `lib/events/transitions.ts`
@@ -201,6 +265,15 @@ Backlog shape:
 
 Build posture: module review before broad build. Avoid recipe generation.
 
+Accepted submodules:
+
+- `menu-builder`
+- `proposal-offer-state`
+- `recipe-book-search`
+- `menu-cost-adapter`
+- `public-sample-menus`
+- `package-tasting-offers`
+
 Likely anchors:
 
 - `lib/menus/`
@@ -234,6 +307,13 @@ Backlog shape:
 - `1` approved batch, `2` approved tasks.
 
 Build posture: safety-critical when active. Prefer explicit severity and source fields.
+
+Accepted submodules:
+
+- `allergy-records`
+- `guest-dietary-handoff`
+- `menu-safety-check`
+- `severity-source-truth`
 
 Likely anchors:
 
@@ -269,6 +349,15 @@ Backlog shape:
 
 Build posture: substantial future module. Require clear owner before implementation.
 
+Accepted submodules:
+
+- `inventory-quantity-truth`
+- `vendor-supplier-truth`
+- `pantry-stock-flow`
+- `procurement-planning`
+- `price-source-adapters`
+- `stock-to-costing-adapter`
+
 Likely anchors:
 
 - `lib/inventory/`
@@ -301,6 +390,18 @@ Backlog shape:
 - `0` approved batch tasks.
 
 Build posture: huge meta-module. Keep it operational and evidence-driven.
+
+Accepted submodules:
+
+- `v1-roadmap-release-truth`
+- `builder-queue`
+- `claims-receipts`
+- `cannot-fail-gates`
+- `validation-proof`
+- `cross-system-integrity`
+- `mission-control-status`
+- `scheduled-ops-proof`
+- `planning`
 
 Likely anchors:
 
@@ -338,6 +439,17 @@ Backlog shape:
 
 Build posture: security-critical. Scope narrowly and test aggressively.
 
+Accepted submodules:
+
+- `founder-authority`
+- `tenant-scoping`
+- `role-hierarchy`
+- `admin-gates`
+- `server-action-auth`
+- `public-token-auth`
+- `data-portability`
+- `secret-management`
+
 Likely anchors:
 
 - auth helpers
@@ -352,6 +464,12 @@ Owned invariants:
 - Founder Authority keeps owner-level access.
 - Admin-only surfaces stay hidden and guarded.
 - Generated database types are not manually edited.
+
+Forbidden moves:
+
+- Do not trust tenant id from request body.
+- Do not weaken Founder Authority.
+- Do not manually edit `types/database.ts`.
 
 Test surface:
 
@@ -373,6 +491,16 @@ Backlog shape:
 
 Build posture: high-risk module. Keep the single-provider and no-recipe rules central.
 
+Accepted submodules:
+
+- `ollama-gateway`
+- `remy-surfaces`
+- `recipe-ip-protection`
+- `ai-privacy`
+- `ai-tool-permissions`
+- `ai-offline-failure`
+- `ai-output-validation`
+
 Likely anchors:
 
 - `lib/ai/parse-with-ollama.ts`
@@ -387,6 +515,12 @@ Owned invariants:
 - AI never generates recipes or chef creative IP.
 - Offline AI fails clearly.
 - AI output is Zod-validated where structured.
+
+Forbidden moves:
+
+- Do not generate recipes.
+- Do not add fallback AI providers.
+- Do not silently degrade when Ollama is offline.
 
 Test surface:
 
@@ -407,6 +541,15 @@ Backlog shape:
 - `0` approved batch tasks.
 
 Build posture: public claims must match product truth.
+
+Accepted submodules:
+
+- `public-homepage`
+- `public-chef-profile`
+- `nearby-directory`
+- `public-seo-metadata`
+- `public-claim-flow`
+- `public-proof-copy`
 
 Likely anchors:
 
@@ -442,6 +585,15 @@ Backlog shape:
 
 Build posture: attach new work to existing workspace surfaces rather than creating duplicate dashboards.
 
+Accepted submodules:
+
+- `dashboard-return-to-work`
+- `task-calendar-command`
+- `settings-configuration`
+- `mobile-runtime`
+- `workspace-navigation`
+- `operator-empty-error-states`
+
 Likely anchors:
 
 - dashboard routes
@@ -476,6 +628,11 @@ Backlog shape:
 
 Build posture: small module. Keep role boundaries clear.
 
+Accepted lanes:
+
+- `staff-execution`
+- `partner-referrals`
+
 Likely anchors:
 
 - staff routes
@@ -506,6 +663,15 @@ Backlog shape:
 - `0` approved batch tasks.
 
 Build posture: evidence module. Treat docs as proof only when tied to current verification.
+
+Accepted submodules:
+
+- `build-integrity`
+- `test-proof`
+- `evidence-freshness`
+- `release-attestation`
+- `documentation-drift`
+- `module-ownership-registry`
 
 Likely anchors:
 
@@ -545,6 +711,19 @@ Required action:
 2. Assign a primary module owner or split into multiple module-owned tasks.
 3. Update source evidence or regenerate queue artifacts.
 4. Only then promote into a build queue.
+
+Current accepted module-review targets:
+
+- `client-memory`
+- `quality-hallucination`
+- `validation-proof`
+- `build-integrity`
+- `cross-system-integrity`
+- `data-portability`
+- `mobile-runtime`
+- `communication-ingestion`
+- `role-hierarchy`
+- `settings-configuration`
 
 Common signals:
 
