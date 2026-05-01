@@ -19,10 +19,11 @@ Builder agents are queue-aware. They do not wait to be told what to build:
 
 1. **Scan** every file in `docs/specs/`. Collect all specs with status `ready`.
 2. **Filter** out any spec whose "Depends on" references a spec that is NOT `verified` or `built`.
-3. **Sort** by priority: P0 first, then P1, P2, P3.
-4. **Pick the first one.** That is the build target.
-5. **Claim it** immediately: change status to `in-progress`, set "Built by" to your session, add a Timeline entry, commit the claim. This prevents double-picking.
-6. If no buildable specs remain, report "Queue empty" and stop.
+3. **Module gate.** Run `improve-codebase-architecture` and identify the module owner before claiming. If the item is unassigned, cross-module without a named owner, or only a vague finding, classify it for module review or planning and do not build.
+4. **Sort** by priority: P0 first, then P1, P2, P3.
+5. **Pick the first moduled item.** That is the build target.
+6. **Claim it** immediately: change status to `in-progress`, set "Built by" to your session, add a Timeline entry, commit the claim. This prevents double-picking.
+7. If no buildable specs remain, report "Queue empty" and stop.
 
 If the developer says "Build [specific spec or plain English]," skip the queue and build that. The rest of the gate still applies.
 
@@ -57,6 +58,7 @@ If the developer says "Build [specific spec or plain English]," skip the queue a
 - **No subtractive cleanup by assumption.** Do not remove features, UI, fields, docs, routes, tests, scripts, or behavior just because they look old, duplicated, incomplete, or awkward. If something conflicts with the current build, adapt around it or mark it for developer review.
 - **Progress over rewrite.** Prefer small forward steps that deepen the current system: add a guarded branch, extend a component, introduce an additive helper, fill a missing state, or connect an existing flow. Treat rewrites, simplifications that reduce surface area, and broad pruning as out of scope without explicit approval.
 - **Modular refinement always.** As builds expand, continuously refine repeated logic, tangled UI, and fuzzy domain behavior into deep TypeScript modules with small public interfaces. Use `software-fundamentals` as the Matt Pocock-style lens and `improve-codebase-architecture` as the architecture sidecar: shared language, clear boundaries, interface seams, locality, tested contracts, hidden complexity, and humans owning architecture.
+- **Module gate always.** Nothing gets built if it does not get moduled. Every build must name the module owner, canonical files or route family, interface, invariants, and test surface before implementation code starts.
 - **No module theater.** Do not split code into shallow helper files just to look organized. Extract a module only when it creates a clearer contract, reduces real cognitive load, protects an invariant, improves testability, or gives future agents a better boundary to work inside.
 - Implement exactly what the spec defines. No unapproved additions.
 - No "while I'm here" refactors. No bonus features.
