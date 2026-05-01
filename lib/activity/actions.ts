@@ -12,8 +12,8 @@ import type {
   ActiveClientWithContext,
   ActivityEventRow,
 } from './types'
-import { incrementMetric, logActivityEvent } from './observability'
 import { computeEngagementScore } from './engagement'
+import { failActivityQuery } from './query-errors'
 
 function normalizeMetadata(input: ActivityEventRow['metadata']): Record<string, unknown> {
   if (!input || typeof input !== 'object' || Array.isArray(input)) return {}
@@ -60,9 +60,7 @@ export async function getActiveClients(minutesWindow = 15): Promise<ActiveClient
     .order('created_at', { ascending: false })
 
   if (error) {
-    incrementMetric('activity.feed.query_failure')
-    logActivityEvent('error', 'getActiveClients failed', { error: error.message })
-    return []
+    failActivityQuery('getActiveClients', error)
   }
 
   const clientMap = new Map<string, ActiveClient>()
@@ -137,9 +135,7 @@ export async function getActivityFeed(
   const { data, error } = await query
 
   if (error) {
-    incrementMetric('activity.feed.query_failure')
-    logActivityEvent('error', 'getActivityFeed failed', { error: error.message, options })
-    return { items: [], nextCursor: null }
+    failActivityQuery('getActivityFeed', error, { options })
   }
 
   const rows = (data || []) as ActivityEventRow[]
@@ -192,7 +188,7 @@ export async function getEngagementStats(): Promise<{
   todayStart.setHours(0, 0, 0, 0)
   const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
 
-  const { data: todayData } = await db
+  const { data: todayData, error: todayError } = await db
     .from('activity_events')
     .select('client_id')
     .eq('tenant_id', user.tenantId!)
@@ -200,9 +196,13 @@ export async function getEngagementStats(): Promise<{
     .not('client_id', 'is', null)
     .gte('created_at', todayStart.toISOString())
 
+  if (todayError) {
+    failActivityQuery('getEngagementStats.todayClients', todayError)
+  }
+
   const uniqueToday = new Set((todayData || []).map((r: any) => r.client_id).filter(Boolean))
 
-  const { data: weekData } = await db
+  const { data: weekData, error: weekError } = await db
     .from('activity_events')
     .select('client_id')
     .eq('tenant_id', user.tenantId!)
@@ -210,14 +210,22 @@ export async function getEngagementStats(): Promise<{
     .not('client_id', 'is', null)
     .gte('created_at', weekAgo.toISOString())
 
+  if (weekError) {
+    failActivityQuery('getEngagementStats.weekClients', weekError)
+  }
+
   const uniqueWeek = new Set((weekData || []).map((r: any) => r.client_id).filter(Boolean))
 
-  const { count } = await db
+  const { count, error: countError } = await db
     .from('activity_events')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', user.tenantId!)
     .eq('actor_type', 'client')
     .gte('created_at', weekAgo.toISOString())
+
+  if (countError) {
+    failActivityQuery('getEngagementStats.weekEvents', countError)
+  }
 
   return {
     activeToday: uniqueToday.size,
@@ -256,9 +264,21 @@ export async function getActiveClientsWithContext(
       .gte('created_at', since14d)
       .order('created_at', { ascending: false }),
     eventEntityIds.length > 0
-      ? db.from('events').select('id, occasion').in('id', eventEntityIds)
+      ? db
+          .from('events')
+          .select('id, occasion')
+          .eq('tenant_id', user.tenantId!)
+          .in('id', eventEntityIds)
       : Promise.resolve({ data: [] as { id: string; occasion: string | null }[], error: null }),
   ])
+
+  if (recentEventsResult.error) {
+    failActivityQuery('getActiveClientsWithContext.recentEvents', recentEventsResult.error)
+  }
+
+  if (eventTitlesResult.error) {
+    failActivityQuery('getActiveClientsWithContext.eventTitles', eventTitlesResult.error)
+  }
 
   // Group raw events by client for engagement scoring
   const eventsByClient = new Map<string, ActivityEvent[]>()

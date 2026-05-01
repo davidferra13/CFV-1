@@ -11,13 +11,22 @@ import { SOURCE_CONFIG } from '@/lib/clients/unified-timeline-utils'
 
 interface UnifiedClientTimelineProps {
   items: UnifiedTimelineItem[]
+  unavailable?: boolean
 }
 
 const INITIAL_SHOW = 20
 
-export function UnifiedClientTimeline({ items }: UnifiedClientTimelineProps) {
+export function UnifiedClientTimeline({ items, unavailable = false }: UnifiedClientTimelineProps) {
   const [showAll, setShowAll] = useState(false)
   const visible = showAll ? items : items.slice(0, INITIAL_SHOW)
+
+  if (unavailable) {
+    return (
+      <div className="text-sm text-red-300 py-4 text-center">
+        Could not load the relationship timeline. Refresh to try again.
+      </div>
+    )
+  }
 
   if (items.length === 0) {
     return <div className="text-sm text-stone-400 py-4 text-center">No activity recorded yet</div>

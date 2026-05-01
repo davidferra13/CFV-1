@@ -25,11 +25,11 @@
 | `lib/ai/menu-suggestions.ts` | contract-retained | Static graph reports no inbound callers; targeted search found only self string and privacy audit mention. Push snapshot guard still treats `getAIMenuSuggestions` and `getAIMenuSuggestionsFromContext` as exported contract. Implementation delegates to `lib/menus/recipe-book-suggestions-actions.ts`, which only searches the chef's recipe book. | Medium, stale naming is misleading, but removal needs snapshot contract approval. | Keep as compatibility adapter until a dedicated snapshot-contract removal slice is approved. |
 | `components/ai/remy-public-widget.tsx` | uncertain | Static graph reports no inbound callers. | High, Remy public surfaces may be externally embedded or route-owned. | Compare against public Remy API routes and current public page widgets before deciding. |
 | `components/admin/admin-sidebar.tsx` | duplicate | Static graph reports no inbound callers. Parallel explorer verified the live admin layout imports `AdminSidebar` from `components/navigation/admin-shell`, while this file exports a second stale sidebar adapter with an older prop contract. | High, admin shell is a control-plane trust boundary. | Add admin route-to-nav inventory, then prune this duplicate in a separate deletion slice. |
-| `components/activity/client-activity-timeline.tsx` | duplicate | Static graph reports no inbound callers. Parallel explorer verified active activity UI uses `ClientActivityFeed` and client detail uses the unified client timeline instead. | Medium, client memory is part of the V1 Spine. | Fix activity load-state error handling first, then prune this duplicate in a separate deletion slice. |
+| `components/activity/client-activity-timeline.tsx` | duplicate | Static graph reports no inbound callers. Parallel explorer verified active activity UI uses `ClientActivityFeed` and client detail uses the unified client timeline instead. Activity server actions now throw on query failure, and client detail renders unavailable states instead of fake empty activity. | Medium, client memory is part of the V1 Spine. | Prune this duplicate in a separate deletion slice. |
 | `components/dashboard/*` orphan bucket | mixed | 31 component files in dashboard bucket have no production inbound references in static graph. Parallel explorer found current read-only mapping shows 32 dashboard orphans, with recover lanes for client relationship, compliance, and dashboard preferences; duplicate lanes for action, finance, inventory, intelligence, and health; prune candidates for chrome-only files. | Medium, dashboard is the chef command plane. | Work one dashboard lane at a time. Start with prune-proof chrome or recover client relationship, not money widgets. |
-| `components/events/*` orphan bucket | uncertain | 27 component files in events bucket have no production inbound references in static graph. | High, event workflow owns proposal, payment, prep, service, and follow-up. | Do not delete as a batch. Classify by event lifecycle stage. |
-| `components/finance/*` orphan bucket | uncertain | 22 component files in finance bucket have no production inbound references in static graph. | High, money surfaces can hide ledger or quote behavior. | Check ledger, quote, payment, and reporting flows before any pruning. |
-| `components/ui/*` orphan bucket | uncertain | 21 component files in UI bucket have no production inbound references in static graph. | Low to medium, but shared UI can be dynamically imported or retained for design system consistency. | Check barrel exports, string registries, Storybook-like references, and replacement modules. |
+| `components/events/*` orphan bucket | mixed | 27 component files in events bucket have no production inbound references in static graph. Parallel explorer classified 15 recover candidates, 11 duplicates, and 1 prune-candidate. | High, event workflow owns proposal, payment, prep, service, and follow-up. | Start with the duplicate cleanup proof slice. Recover safety and post-event modules only through canonical event routes. |
+| `components/finance/*` orphan bucket | mixed | 22 component files in finance bucket have no production inbound references in static graph. Parallel explorer classified 14 recover candidates and 8 duplicates. No finance file is cleared as prune-candidate because the bucket touches ledger, taxes, deposits, cost history, and reporting. | High, money surfaces can hide ledger or quote behavior. | Recover or fold ledger-backed modules into canonical finance surfaces; prune only proven duplicates. |
+| `components/ui/*` orphan bucket | mixed | 21 component files in UI bucket have no production inbound references in static graph. Parallel explorer found 1 keep, 2 recover, 10 duplicates, 6 prune-candidates, and 2 uncertain primitives. | Low to medium, but shared UI can be dynamically imported or retained for design system consistency. | Start with duplicate cleanup only after replacement owner proof; recover `offline-banner` through root runtime if offline UX remains desired. |
 | `lib/activity/activity-load-state.ts` | test-only | Referenced by `tests/unit/activity-load-state.test.ts`, not production graph. | Low to medium, may protect loading-state contract. | Keep unless activity load-state contract is obsolete. |
 | `lib/ai/dispatch/index.ts` | tool-only | Referenced by `scripts/migrate-to-dispatch.ts`, not production graph. | Medium, AI routing migration tool may be historical. | Decide whether the migration script remains useful. |
 | `lib/auth/google-oauth-errors.ts` | test-only | Referenced by `tests/unit/google-oauth-errors.test.ts`, not production graph. | Medium, auth error policy can be contract-only. | Keep if tests protect active OAuth UX. |
@@ -46,10 +46,35 @@ No product code is cleared for deletion yet.
 
 The first cleanup pass resolved the duplicate root form-validation hook. The AI menu suggestion compatibility wrapper was restored because the snapshot guard still treats its exports as public contract.
 
+The activity load-state hardening slice is complete: activity query actions now throw on DB errors, client detail preserves unavailable states for client activity surfaces, and the activity pages that already catch section failures can show explicit partial-load warnings.
+
+## Parallel Classification Updates
+
+### UI Bucket
+
+- Keep: `components/ui/theme-provider.tsx`.
+- Recover: `components/ui/offline-banner.tsx`, `components/ui/responsive-table.tsx`.
+- Duplicate: `confirm-destructive-dialog.tsx`, `conflict-dialog.tsx`, `draft-save-indicator.tsx`, `error-boundary.tsx`, `rich-note-editor.tsx`, `shortcuts-help-panel.tsx`, `shortcut-hint.tsx`, `status-badge.tsx`, `status-dot.tsx`, `determinate-progress.tsx`, `remy-loader.tsx`.
+- Prune-candidate: `external-link.tsx`, `page-header.tsx`, `progress-ring.tsx`, `section-divider.tsx`, `success-check.tsx`, `theme-toggle.tsx`.
+- Uncertain: `combobox-input.tsx`, `inline-edit-cell.tsx`.
+
+### Events Bucket
+
+- Recover: `alcohol-service-log.tsx`, `cancellation-dialog.tsx`, `capacity-warning-banner.tsx`, `circle-rebook-button.tsx`, `equipment-redundancy-checklist.tsx`, `event-inventory-panel.tsx`, `events-bulk-table.tsx`, `events-view-filter-bar.tsx`, `kitchen-profile-callout.tsx`, `photo-tagger.tsx`, `post-event-feedback.tsx`, `pre-service-safety-checklist.tsx`, `production-report-button.tsx`, `scope-drift-banner.tsx`, `tip-request-button.tsx`.
+- Duplicate: `aar-prompt-banner.tsx`, `collaborator-panel.tsx`, `dietary-rollup.tsx`, `events-kanban.tsx`, `packing-checklist-button.tsx`, `packing-list.tsx`, `pricing-insights-panel.tsx`, `settlement-summary.tsx`, `take-a-chef-convert-banner.tsx`, `waste-log-panel.tsx`, `weather-forecast-card.tsx`.
+- Prune-candidate: `photo-permission-indicator.tsx`, pending focused photo-permission proof.
+
+### Finance Bucket
+
+- Recover: `cash-flow-calendar.tsx`, `catering-bid-calculator.tsx`, `catering-bid-history.tsx`, `chargeback-rate-card.tsx`, `deposit-settings-form.tsx`, `deposit-tracker.tsx`, `event-sales-tax-form.tsx`, `expense-line-items-panel.tsx`, `grocery-price-log.tsx`, `grocery-price-trends.tsx`, `profit-dashboard.tsx`, `tax-prep-dashboard.tsx`, `vendor-payment-aging.tsx`, `w9-form-panel.tsx`.
+- Duplicate: `expense-list.tsx`, `expense-summary-chart.tsx`, `food-cost-panel.tsx`, `food-cost-widget.tsx`, `forecast-chart.tsx`, `mileage-summary-widget.tsx`, `mileage-tracker.tsx`, `yoy-comparison.tsx`.
+- Prune-candidate: none.
+
 ## Next Safe Cleanup Sequence
 
 1. Add admin route-to-nav inventory before deleting `components/admin/admin-sidebar.tsx`.
-2. Fix Client Activity Load-State Adapter so activity query failures do not render as empty states.
-3. Prune-proof dashboard chrome files: `dashboard-category-header.tsx`, `mobile-dashboard-expander.tsx`, `quick-create-strip.tsx`, and `shortcut-strip.tsx`.
-4. Recover dashboard client relationship widgets only if they attach to one canonical dashboard surface.
-5. Convert route discoverability gaps into recover tickets, not prune tickets.
+2. Prune-proof dashboard chrome files: `dashboard-category-header.tsx`, `mobile-dashboard-expander.tsx`, `quick-create-strip.tsx`, and `shortcut-strip.tsx`.
+3. Prune-proof UI duplicate wrappers with clear canonical replacements.
+4. Prune-proof event duplicate cleanup slice: `events-kanban.tsx`, `packing-checklist-button.tsx`, `packing-list.tsx`, `pricing-insights-panel.tsx`, `settlement-summary.tsx`, `take-a-chef-convert-banner.tsx`, and `weather-forecast-card.tsx`.
+5. Recover dashboard client relationship widgets only if they attach to one canonical dashboard surface.
+6. Convert route discoverability gaps into recover tickets, not prune tickets.

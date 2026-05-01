@@ -14,6 +14,7 @@ type ClientPortalActivityCardProps = {
   clientId: string
   clientName: string
   events: ActivityEvent[]
+  unavailable?: boolean
 }
 
 const INTENT_BADGE_VARIANT: Record<
@@ -31,8 +32,9 @@ export function ClientPortalActivityCard({
   clientId,
   clientName,
   events,
+  unavailable = false,
 }: ClientPortalActivityCardProps) {
-  const summary = buildClientPortalActivitySummary(events, clientId)
+  const summary = unavailable ? null : buildClientPortalActivitySummary(events, clientId)
 
   return (
     <Card>
@@ -44,13 +46,23 @@ export function ClientPortalActivityCard({
               Client-side ChefFlow signals connected to follow-up work for {clientName}.
             </p>
           </div>
-          <Badge variant={INTENT_BADGE_VARIANT[summary.intentLevel]} className="w-fit">
-            {summary.intentLabel}
+          <Badge
+            variant={summary ? INTENT_BADGE_VARIANT[summary.intentLevel] : 'error'}
+            className="w-fit"
+          >
+            {summary ? summary.intentLabel : 'Unavailable'}
           </Badge>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        {summary.lastActivity ? (
+        {unavailable ? (
+          <div className="rounded-lg border border-red-900/60 bg-red-950/30 p-4">
+            <p className="text-sm font-semibold text-red-200">Could not load portal activity</p>
+            <p className="mt-1 text-sm text-red-100/80">
+              Refresh before making follow-up decisions from this client&apos;s portal signals.
+            </p>
+          </div>
+        ) : summary?.lastActivity ? (
           <>
             <div className="rounded-lg border border-stone-700 bg-stone-800/60 p-4">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
@@ -115,7 +127,7 @@ export function ClientPortalActivityCard({
         )}
 
         <div className="flex flex-wrap gap-2">
-          {summary.nextActions.map((action) => (
+          {summary?.nextActions.map((action) => (
             <ActionLink key={`${action.href}-${action.label}`} action={action} />
           ))}
         </div>

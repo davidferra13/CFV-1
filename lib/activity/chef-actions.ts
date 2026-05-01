@@ -10,7 +10,7 @@ import type {
   ChefActivityQueryOptions,
   ChefActivityQueryResult,
 } from './chef-types'
-import { incrementMetric, logActivityEvent } from './observability'
+import { failActivityQuery } from './query-errors'
 
 function parseDaysBack(daysBack?: number): number {
   if (daysBack === 0) return 0 // "all time" sentinel
@@ -64,9 +64,7 @@ export async function getChefActivityFeed(
   const { data, error } = await query
 
   if (error) {
-    incrementMetric('activity.feed.query_failure')
-    logActivityEvent('error', 'getChefActivityFeed failed', { error: error.message, options })
-    return { items: [], nextCursor: null }
+    failActivityQuery('getChefActivityFeed', error, { options })
   }
 
   const rows = (data || []) as unknown as ChefActivityEntry[]
@@ -106,9 +104,7 @@ export async function getActivityCountsByDomain(
   const { data, error } = await query
 
   if (error) {
-    incrementMetric('activity.feed.query_failure')
-    logActivityEvent('error', 'getActivityCountsByDomain failed', { error: error.message })
-    return {}
+    failActivityQuery('getActivityCountsByDomain', error)
   }
 
   const counts: Record<string, number> = {}

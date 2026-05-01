@@ -162,8 +162,8 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
     clientNotes,
     connections,
     allClients,
-    chefActivity,
-    clientPortalActivity,
+    chefActivityLoad,
+    clientPortalActivityLoad,
     financialDetail,
     funQAAnswers,
     allergyRecords,
@@ -174,7 +174,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
     ltvTrajectory,
     menuHistory,
     healthScore,
-    unifiedTimeline,
+    unifiedTimelineLoad,
     clientTags,
     allUsedTags,
     clientNBA,
@@ -194,8 +194,8 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
     getClientNotes(params.id).catch(() => []),
     getClientConnections(params.id).catch(() => []),
     getClients().catch(() => []),
-    getClientChefActivity(params.id).catch(() => []),
-    getClientTimeline(params.id).catch(() => []),
+    loadClientDetailSection('chefActivity', () => getClientChefActivity(params.id), []),
+    loadClientDetailSection('clientPortalActivity', () => getClientTimeline(params.id), []),
     getClientFinancialDetail(params.id).catch(() => null),
     getClientFunQA(params.id).catch(() => ({})),
     getClientAllergyRecords(params.id).catch(() => []),
@@ -206,7 +206,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
     getClientLTVTrajectory(params.id).catch(() => null),
     getClientMenuHistory(params.id).catch(() => null),
     getSingleClientHealthScore(params.id).catch(() => null),
-    getUnifiedClientTimeline(params.id).catch(() => []),
+    loadClientDetailSection('unifiedTimeline', () => getUnifiedClientTimeline(params.id), []),
     getClientTags(params.id).catch(() => []),
     getAllUsedTags().catch(() => []),
     getClientNextBestAction(params.id).catch(() => null),
@@ -243,7 +243,15 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
     })),
   ])
 
-  const engagementScore = computeEngagementScore(clientPortalActivity as any[])
+  const chefActivity = chefActivityLoad.data
+  const clientPortalActivity = clientPortalActivityLoad.data
+  const unifiedTimeline = unifiedTimelineLoad.data
+  const activityLoadFailed = chefActivityLoad.error !== null || clientPortalActivityLoad.error !== null
+  const portalActivityUnavailable = clientPortalActivityLoad.error !== null
+  const unifiedTimelineUnavailable = unifiedTimelineLoad.error !== null
+  const engagementScore = portalActivityUnavailable
+    ? null
+    : computeEngagementScore(clientPortalActivity as any[])
 
   const clientReviews = allReviews.filter((r: any) => r.client?.id === params.id)
   const avgRating =
@@ -408,13 +416,27 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
       id: 'client-activity',
       title: 'Recent client activity',
       description:
-        chefActivity.length + clientPortalActivity.length > 0
+        activityLoadFailed
+          ? 'Client activity did not load, so this panel is not showing fake empty activity.'
+          : chefActivity.length + clientPortalActivity.length > 0
           ? 'Chef and client portal activity is available for this client.'
           : 'No recent activity is recorded for this client.',
-      state: chefActivity.length + clientPortalActivity.length > 0 ? 'populated' : 'empty',
+      state: activityLoadFailed
+        ? 'error'
+        : chefActivity.length + clientPortalActivity.length > 0
+          ? 'populated'
+          : 'empty',
       metrics: [
-        { label: 'Chef actions', value: chefActivity.length },
-        { label: 'Portal signals', value: clientPortalActivity.length },
+        {
+          label: 'Chef actions',
+          value: chefActivityLoad.error ? 'Unavailable' : chefActivity.length,
+          tone: chefActivityLoad.error ? 'error' : undefined,
+        },
+        {
+          label: 'Portal signals',
+          value: clientPortalActivityLoad.error ? 'Unavailable' : clientPortalActivity.length,
+          tone: clientPortalActivityLoad.error ? 'error' : undefined,
+        },
       ],
       actions: [{ label: 'Open activity', href: `/activity?domain=client` }],
     },
@@ -452,7 +474,9 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
                 showScore
               />
             )}
-            <EngagementBadge level={engagementScore.level} signals={engagementScore.signals} />
+            {engagementScore ? (
+              <EngagementBadge level={engagementScore.level} signals={engagementScore.signals} />
+            ) : null}
           </div>
           <div className="mt-1 text-stone-300">
             <EmailHandoff
@@ -544,6 +568,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
             clientId={client.id}
             clientName={client.full_name}
             events={clientPortalActivity}
+            unavailable={portalActivityUnavailable}
           />
 
           <ClientCallMemoryPanel
@@ -1427,7 +1452,10 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
               <CardTitle>Full Relationship Timeline</CardTitle>
             </CardHeader>
             <CardContent>
-              <UnifiedClientTimeline items={unifiedTimeline} />
+              <UnifiedClientTimeline
+                items={unifiedTimeline}
+                unavailable={unifiedTimelineUnavailable}
+              />
             </CardContent>
           </Card>
 
@@ -1549,6 +1577,30 @@ async function DuplicatesSection({
 }) {
   const matches = await findPotentialClientMatches(clientId)
   return <PotentialDuplicatesCard clientId={clientId} clientName={clientName} matches={matches} />
+}
+
+type ClientDetailLoadResult<T> = {
+  data: T
+  error: unknown | null
+}
+
+async function loadClientDetailSection<T>(
+  label: string,
+  fn: () => Promise<T>,
+  fallback: T
+): Promise<ClientDetailLoadResult<T>> {
+  try {
+    return {
+      data: await fn(),
+      error: null,
+    }
+  } catch (error) {
+    console.error(`[ClientDetailPage] ${label} failed:`, error)
+    return {
+      data: fallback,
+      error,
+    }
+  }
 }
 
 async function ClientEventsContent({ clientId }: { clientId: string }) {

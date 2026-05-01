@@ -26,9 +26,9 @@ Total first-pass production-surface orphan signal after the first cleanup pass: 
 | Area | Bucket | Count | Interpretation |
 | --- | --- | ---: | --- |
 | `components` | `dashboard` | 31 | Likely old or parallel dashboard surface work. Needs route and import proof before cleanup. |
-| `components` | `events` | 27 | High-risk area because event work touches the V1 Spine. Treat as recover or uncertain until checked against event pages. |
-| `components` | `finance` | 22 | High-risk area because monetary logic must stay ledger-first. Do not remove without financial flow proof. |
-| `components` | `ui` | 21 | Potential shared UI residue. Needs string, dynamic import, and barrel export checks. |
+| `components` | `events` | 27 | Parallel classification found mixed lifecycle modules: 15 recover, 11 duplicate, 1 prune-candidate. Do not batch delete. |
+| `components` | `finance` | 22 | Parallel classification found 14 recover and 8 duplicate files. No finance orphan is deletion-ready because ledger, tax, deposit, and cost-history risk is high. |
+| `components` | `ui` | 21 | Parallel classification found 1 keep, 2 recover, 10 duplicate, 6 prune-candidates, and 2 uncertain primitives. |
 | `components` | `clients` | 16 | Likely mixed client memory, onboarding, and legacy UI. Needs recover-vs-prune review. |
 | `lib` | `ai` | 11 | High-risk because AI gateway and recipe restrictions apply. Some files may be policy-only or stale. |
 | `lib` | `clients` | 10 | Likely client memory or relationship logic. Needs caller and route proof. |
@@ -46,6 +46,7 @@ Total first-pass production-surface orphan signal after the first cleanup pass: 
 | `components/activity/client-activity-timeline.tsx` | Static import graph reports no inbound production, test, or script references. | `recover-or-prune-candidate`. Client activity may be a real feature that lost route wiring. |
 | `lib/ai/menu-suggestions.ts` | Static import graph reports no inbound callers. Targeted search found only its own logging string and an entry in `lib/ai/privacy-audit.ts`. Push snapshot guard still treats `getAIMenuSuggestions` and `getAIMenuSuggestionsFromContext` as exported contract. The implementation delegates to the live read-only recipe-book interface, `lib/menus/recipe-book-suggestions-actions.ts`. | `contract-retained`. Keep until the snapshot contract is intentionally updated, then prune in a separate compatibility-removal slice. |
 | `lib/events/fsm.ts` | Targeted search found production imports from `app/api/v2/events/[id]/transition/route.ts`, `lib/events/transitions.ts`, and `lib/events/readiness.ts`, plus unit coverage. | `keep`. The older seed claim that it is test-only is stale. |
+| Activity query actions | `lib/activity/actions.ts` and `lib/activity/chef-actions.ts` previously converted DB errors into empty arrays or empty cursors in several paths. | Resolved on 2026-05-01 by adding a shared activity query failure seam and explicit unavailable states on client detail activity surfaces. |
 
 ## High-Risk Keep Rules
 
