@@ -13,6 +13,7 @@
 | Status: ready    | 2026-03-31 23:55 | Codex planner  |        |
 | Reports produced | 2026-04-01       | Claude builder |        |
 | Status: verified | 2026-04-01       | Claude builder |        |
+| Audit refreshed  | 2026-05-01       | Codex          |        |
 
 ---
 
@@ -280,6 +281,16 @@ No product UI should be added or changed. The outputs are markdown reports only.
 - proof
 - risk
 - next action
+
+### 2026-05-01 Refresh
+
+The audit was refreshed in:
+
+- `docs/reports/code-reachability-audit.md`
+- `docs/reports/route-discoverability-audit.md`
+- `docs/reports/prune-candidate-register.md`
+
+Important correction: the old seed finding that `lib/events/fsm.ts` is test-only is stale. Current proof shows production imports from the event transition route, `lib/events/transitions.ts`, and `lib/events/readiness.ts`, plus unit coverage.
 
 ### States
 
