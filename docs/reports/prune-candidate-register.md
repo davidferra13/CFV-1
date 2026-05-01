@@ -24,9 +24,9 @@
 | `hooks/use-field-validation.ts` and `lib/validation/use-field-validation.ts` | resolved | Both defined `useFieldValidation`; no production, test, or script imports found in targeted search. | Medium, future forms could choose the wrong interface. | Completed 2026-05-01: deleted `hooks/use-field-validation.ts`; kept `lib/validation/use-field-validation.ts` as canonical. |
 | `lib/ai/menu-suggestions.ts` | resolved | Static graph reported no inbound callers; targeted search found only self string and privacy audit mention. | High, stale AI menu interfaces can violate product rules if reconnected. | Completed 2026-05-01: deleted unused compatibility wrapper; kept `lib/menus/recipe-book-suggestions-actions.ts` as canonical read-only recipe-book interface. |
 | `components/ai/remy-public-widget.tsx` | uncertain | Static graph reports no inbound callers. | High, Remy public surfaces may be externally embedded or route-owned. | Compare against public Remy API routes and current public page widgets before deciding. |
-| `components/admin/admin-sidebar.tsx` | duplicate-or-prune-candidate | Static graph reports no inbound callers. | High, admin shell is a control-plane trust boundary. | Verify `app/(admin)/layout.tsx` and admin navigation owner before cleanup. |
-| `components/activity/client-activity-timeline.tsx` | recover-or-prune-candidate | Static graph reports no inbound callers. | Medium, client memory is part of the V1 Spine. | Check client detail and activity routes for a missing timeline surface. |
-| `components/dashboard/*` orphan bucket | uncertain | 31 component files in dashboard bucket have no production inbound references in static graph. | Medium, dashboard is the chef command plane. | Cluster by feature, then classify as dashboard widget recoveries or stale duplicates. |
+| `components/admin/admin-sidebar.tsx` | duplicate | Static graph reports no inbound callers. Parallel explorer verified the live admin layout imports `AdminSidebar` from `components/navigation/admin-shell`, while this file exports a second stale sidebar adapter with an older prop contract. | High, admin shell is a control-plane trust boundary. | Add admin route-to-nav inventory, then prune this duplicate in a separate deletion slice. |
+| `components/activity/client-activity-timeline.tsx` | duplicate | Static graph reports no inbound callers. Parallel explorer verified active activity UI uses `ClientActivityFeed` and client detail uses the unified client timeline instead. | Medium, client memory is part of the V1 Spine. | Fix activity load-state error handling first, then prune this duplicate in a separate deletion slice. |
+| `components/dashboard/*` orphan bucket | mixed | 31 component files in dashboard bucket have no production inbound references in static graph. Parallel explorer found current read-only mapping shows 32 dashboard orphans, with recover lanes for client relationship, compliance, and dashboard preferences; duplicate lanes for action, finance, inventory, intelligence, and health; prune candidates for chrome-only files. | Medium, dashboard is the chef command plane. | Work one dashboard lane at a time. Start with prune-proof chrome or recover client relationship, not money widgets. |
 | `components/events/*` orphan bucket | uncertain | 27 component files in events bucket have no production inbound references in static graph. | High, event workflow owns proposal, payment, prep, service, and follow-up. | Do not delete as a batch. Classify by event lifecycle stage. |
 | `components/finance/*` orphan bucket | uncertain | 22 component files in finance bucket have no production inbound references in static graph. | High, money surfaces can hide ledger or quote behavior. | Check ledger, quote, payment, and reporting flows before any pruning. |
 | `components/ui/*` orphan bucket | uncertain | 21 component files in UI bucket have no production inbound references in static graph. | Low to medium, but shared UI can be dynamically imported or retained for design system consistency. | Check barrel exports, string registries, Storybook-like references, and replacement modules. |
@@ -48,7 +48,8 @@ The first cleanup pass resolved the two narrowest stale modules: the duplicate r
 
 ## Next Safe Cleanup Sequence
 
-1. Review admin shell ownership before touching `components/admin/admin-sidebar.tsx`.
-2. Review client activity ownership before touching `components/activity/client-activity-timeline.tsx`.
-3. Cluster the dashboard orphan bucket into recover, duplicate, and prune candidates.
-4. Convert route discoverability gaps into recover tickets, not prune tickets.
+1. Add admin route-to-nav inventory before deleting `components/admin/admin-sidebar.tsx`.
+2. Fix Client Activity Load-State Adapter so activity query failures do not render as empty states.
+3. Prune-proof dashboard chrome files: `dashboard-category-header.tsx`, `mobile-dashboard-expander.tsx`, `quick-create-strip.tsx`, and `shortcut-strip.tsx`.
+4. Recover dashboard client relationship widgets only if they attach to one canonical dashboard surface.
+5. Convert route discoverability gaps into recover tickets, not prune tickets.

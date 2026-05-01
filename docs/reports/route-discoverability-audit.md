@@ -30,9 +30,9 @@ Findings:
 
 - Top-level visible count is 23; expected maximum is 16.
 - 14 duplicate nav hrefs exist.
-- 6 primary nav routes point to placeholder or prototype surfaces.
-- 1 secondary nav route points to a placeholder or prototype surface.
-- 42 implemented non-placeholder static chef routes are missing from nav.
+- 4 nav hrefs do not match chef-owned static routes from `lib/interface/route-inventory.ts`.
+- 45 implemented non-placeholder static chef routes are missing from nav.
+- Placeholder false positives from normal JSX `placeholder=` props were removed on 2026-05-01 by narrowing `scripts/audit-chef-nav.ts`.
 
 Duplicate hrefs:
 
@@ -53,24 +53,18 @@ Duplicate hrefs:
 | `/meal-prep` | 2 |
 | `/marketplace` | 2 |
 
-Primary placeholder or prototype routes:
+Nav hrefs without matching chef-owned static routes:
 
-- `/guests`
-- `/commerce/table-service`
-- `/documents`
-- `/scheduling`
-- `/prospecting`
-- `/vendors`
-
-Secondary placeholder or prototype route:
-
-- `/finance/sales-tax/settings`
+- `/feedback`
+- `/feedback/dashboard`
+- `/feedback/requests`
+- `/availability`
 
 ## Missing Chef Routes From Nav
 
 The audit found these implemented non-placeholder static routes missing from the chef nav:
 
-`/analytics/marketing/spend`, `/cannabis`, `/cannabis/agreement`, `/cannabis/compliance`, `/cannabis/events`, `/cannabis/handbook`, `/cannabis/hub`, `/cannabis/invite`, `/cannabis/ledger`, `/cannabis/rsvps`, `/cannabis/unlock`, `/chef/cannabis/handbook`, `/chef/cannabis/rsvps`, `/classes`, `/classes/new`, `/clients/strategy-readiness`, `/culinary/dictionary`, `/culinary/recipes`, `/culinary/recipes/new`, `/culinary/supplier-calls`, `/culinary/vendors`, `/daily-checklist`, `/dev/simulate`, `/events/series`, `/finance/ledger/owner-draws`, `/financials`, `/growth`, `/network/opportunities`, `/onboarding`, `/onboarding/clients`, `/onboarding/loyalty`, `/onboarding/recipes`, `/onboarding/staff`, `/pilot`, `/prospecting/openclaw`, `/schedule`, `/stations/menu-board`, `/stations/menu-performance`, `/stations/service-log`, `/stations/waste/patterns`, `/store`, `/welcome`.
+`/analytics/marketing/spend`, `/cannabis`, `/cannabis/about`, `/cannabis/agreement`, `/cannabis/compliance`, `/cannabis/control-packet/template`, `/cannabis/events`, `/cannabis/handbook`, `/cannabis/hub`, `/cannabis/invite`, `/cannabis/ledger`, `/cannabis/rsvps`, `/cannabis/unlock`, `/classes`, `/classes/new`, `/clients/strategy-readiness`, `/culinary/dictionary`, `/culinary/recipes`, `/culinary/recipes/new`, `/culinary/supplier-calls`, `/culinary/vendors`, `/daily-checklist`, `/dev/simulate`, `/events/series`, `/events/series/new`, `/finance/ledger/owner-draws`, `/financials`, `/growth`, `/network/opportunities`, `/onboarding`, `/onboarding/clients`, `/onboarding/loyalty`, `/onboarding/recipes`, `/onboarding/staff`, `/pilot`, `/prospecting/openclaw`, `/schedule`, `/stations/knowledge`, `/stations/menu-board`, `/stations/menu-performance`, `/stations/service-log`, `/stations/service-log/new`, `/stations/waste/patterns`, `/store`, `/welcome`.
 
 ## Route Classification
 
@@ -98,7 +92,7 @@ These are not prune candidates. They are likely real surfaces that need ownershi
 
 Files: `components/navigation/nav-config.tsx`, `lib/interface/route-inventory.ts`, `scripts/audit-chef-nav.ts`
 
-Problem: route existence, nav visibility, placeholder status, and coverage status are split across several shallow interfaces. The audit can find problems, but the product has no single deep module that answers whether a route is correctly discoverable.
+Problem: route existence, nav visibility, placeholder status, and coverage status were split across several shallow interfaces. On 2026-05-01, `scripts/audit-chef-nav.ts` was deepened to reuse `lib/interface/route-inventory.ts` for chef route existence, but the product still lacks one interface that answers whether a route is correctly discoverable across nav, All Features, contextual links, and role ownership.
 
 Solution: deepen route inventory into a Navigation Discoverability Module that returns one classification per route: linked, hidden-valid, placeholder-visible, dynamic-token, or external-entry.
 

@@ -1,14 +1,17 @@
 import fs from 'node:fs'
-import path from 'node:path'
 import { createRequire } from 'node:module'
 
 const require = createRequire(import.meta.url)
 const navConfig = require('../components/navigation/nav-config.tsx')
+const routeInventory = require('../lib/interface/route-inventory.ts')
 const navGroups = (navConfig.navGroups ?? navConfig.default?.navGroups ?? []) as any[]
 const standaloneTop = (navConfig.standaloneTop ?? navConfig.default?.standaloneTop ?? []) as any[]
 const standaloneBottom = (navConfig.standaloneBottom ??
   navConfig.default?.standaloneBottom ??
   []) as any[]
+const getStaticPageRouteEntriesForRole =
+  routeInventory.getStaticPageRouteEntriesForRole ??
+  routeInventory.default?.getStaticPageRouteEntriesForRole
 
 type Visibility = 'primary' | 'secondary' | 'advanced'
 
@@ -19,10 +22,8 @@ type NavEntry = {
   source: string
 }
 
-const projectRoot = process.cwd()
-const chefAppRoot = path.join(projectRoot, 'app', '(chef)')
 const placeholderPattern =
-  /currently being built|coming soon|placeholder|under construction|work in progress/i
+  /currently being built|coming soon|under construction|work in progress/i
 const prototypePattern = /const\s+mock[A-Za-z0-9_]*\s*=|will be here\.|TODO:\s*replace mock/i
 const MAX_TOP_LEVEL_VISIBLE = 16
 
@@ -74,38 +75,6 @@ function collectNavEntries(): NavEntry[] {
   return entries
 }
 
-function collectChefPageFiles(dir: string): string[] {
-  const out: string[] = []
-  const stack = [dir]
-
-  while (stack.length > 0) {
-    const current = stack.pop()!
-    const items = fs.readdirSync(current, { withFileTypes: true })
-
-    for (const item of items) {
-      const full = path.join(current, item.name)
-      if (item.isDirectory()) {
-        stack.push(full)
-        continue
-      }
-
-      if (item.isFile() && item.name === 'page.tsx') {
-        out.push(full)
-      }
-    }
-  }
-
-  return out
-}
-
-function routeFromPageFile(filePath: string): string {
-  const relative = path.relative(chefAppRoot, filePath)
-  const withoutPage = relative.replace(/\\page\.tsx$/, '').replace(/\/page\.tsx$/, '')
-  const normalized = withoutPage.split(path.sep).join('/')
-  if (normalized === '' || normalized === '.') return '/'
-  return `/${normalized}`
-}
-
 function isPlaceholderOrPrototype(route: string, staticRouteToFile: Map<string, string>): boolean {
   const file = staticRouteToFile.get(route)
   if (!file) return false
@@ -146,16 +115,13 @@ function main() {
     failures.push(`Found duplicate nav hrefs (${duplicateHrefs.length})`)
   }
 
-  const pageFiles = collectChefPageFiles(chefAppRoot)
+  const pageEntries = getStaticPageRouteEntriesForRole('chef')
   const allRoutes = new Set<string>()
   const staticRouteToFile = new Map<string, string>()
 
-  for (const file of pageFiles) {
-    const route = routeFromPageFile(file)
-    allRoutes.add(route)
-    if (!route.includes('[')) {
-      staticRouteToFile.set(route, file)
-    }
+  for (const entry of pageEntries) {
+    allRoutes.add(entry.route)
+    staticRouteToFile.set(entry.route, entry.filePath)
   }
 
   const navMissingRoutes = navEntries
@@ -199,7 +165,6 @@ function main() {
 
   const discoverableRoutes = Array.from(allRoutes)
     .filter((route) => route !== '/')
-    .filter((route) => !route.includes('['))
     .filter((route) => !discoverabilityExcludePrefixes.some((prefix) => route.startsWith(prefix)))
     .filter((route) => !isPlaceholderOrPrototype(route, staticRouteToFile))
 
