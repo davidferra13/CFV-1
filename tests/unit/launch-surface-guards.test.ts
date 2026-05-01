@@ -24,6 +24,19 @@ test('public launch surfaces use launch-mode-aware signup helpers instead of har
   assert.match(remy, /buildMarketingSignupHref/)
 })
 
+test('homepage first viewport avoids flicker-prone continuous motion', () => {
+  const home = read('app/(public)/page.tsx')
+  const liveSignal = read('app/(public)/_components/homepage-live-signal.tsx')
+  const globals = read('app/globals.css')
+
+  assert.doesNotMatch(home, /homepage-hero-shimmer/)
+  assert.doesNotMatch(liveSignal, /setIsVisible\(false\)/)
+  assert.doesNotMatch(
+    globals,
+    /animation:\s*homepage-(?:ambient-breathe|light-drift|light-wash|quiet-rise|metal-shimmer|booking-signal|panel-float|screen-drift|proof-pulse)/
+  )
+})
+
 test('beta signup flow persists landing attribution and admin table exposes it', () => {
   const betaActions = read('lib/beta/actions.ts')
   const betaForm = read('components/beta/beta-signup-form.tsx')

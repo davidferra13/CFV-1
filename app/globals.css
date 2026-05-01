@@ -2084,10 +2084,9 @@ select:focus {
 }
 
 .homepage-ambient-field {
+  opacity: 0.9;
   transform: scale(1.02);
   transform-origin: 50% 0%;
-  animation: homepage-ambient-breathe 82s ease-in-out infinite alternate;
-  will-change: transform, opacity;
 }
 
 .homepage-ambient-field::after {
@@ -2097,15 +2096,13 @@ select:focus {
   background:
     radial-gradient(circle at 18% 34%, rgb(var(--brand-500) / 0.08), transparent 30%),
     radial-gradient(circle at 78% 18%, rgb(245 245 244 / 0.055), transparent 28%);
-  opacity: 0.68;
+  opacity: 0.55;
   transform: translate3d(-1.5%, 0, 0) scale(1.04);
-  animation: homepage-light-drift 96s ease-in-out infinite alternate;
 }
 
 .homepage-light-wash,
 .homepage-operator-glow {
-  animation: homepage-light-wash 74s ease-in-out infinite alternate;
-  will-change: transform, opacity;
+  opacity: 0.72;
 }
 
 .homepage-depth-layer {
@@ -2125,23 +2122,7 @@ select:focus {
 }
 
 .homepage-hero-copy {
-  animation: homepage-quiet-rise 22s ease-in-out infinite alternate;
-}
-
-.homepage-hero-shimmer {
-  background-image: linear-gradient(
-    105deg,
-    rgb(var(--brand-100)) 0%,
-    rgb(var(--stone-950)) 18%,
-    rgb(var(--brand-200)) 36%,
-    rgb(255 255 255 / 0.92) 46%,
-    rgb(var(--brand-300)) 54%,
-    rgb(var(--stone-950)) 72%,
-    rgb(var(--brand-100)) 100%
-  );
-  background-size: 260% 100%;
-  background-position: 0% 50%;
-  animation: homepage-metal-shimmer 68s ease-in-out infinite alternate;
+  transform: translate3d(0, 0, 0);
 }
 
 .homepage-intent-signal {
@@ -2172,8 +2153,7 @@ select:focus {
     rgb(var(--brand-500) / 0.04) 62%,
     transparent 100%
   );
-  transform: translateX(-120%);
-  animation: homepage-booking-signal 9.5s ease-in-out infinite;
+  opacity: 0.12;
 }
 
 .homepage-booking-field > * {
@@ -2189,122 +2169,15 @@ select:focus {
 }
 
 .homepage-operator-panel {
-  animation: homepage-panel-float 26s ease-in-out infinite alternate;
-  will-change: transform, box-shadow;
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.32);
 }
 
 .homepage-operator-screen img {
-  transform: scale(1.006);
-  animation: homepage-screen-drift 38s ease-in-out infinite alternate;
-  will-change: transform;
+  transform: none;
 }
 
 .homepage-proof-tile {
-  animation: homepage-proof-pulse 18s ease-in-out infinite;
-}
-
-.homepage-proof-tile:nth-child(2) {
-  animation-delay: 4s;
-}
-
-.homepage-proof-tile:nth-child(3) {
-  animation-delay: 8s;
-}
-
-@keyframes homepage-ambient-breathe {
-  from {
-    opacity: 0.72;
-    transform: scale(1.02) translate3d(-0.6%, -0.4%, 0);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1.07) translate3d(0.8%, 0.9%, 0);
-  }
-}
-
-@keyframes homepage-light-drift {
-  from {
-    opacity: 0.5;
-    transform: translate3d(-1.6%, -0.8%, 0) scale(1.03);
-  }
-  to {
-    opacity: 0.86;
-    transform: translate3d(1.8%, 1.2%, 0) scale(1.08);
-  }
-}
-
-@keyframes homepage-light-wash {
-  from {
-    opacity: 0.58;
-    transform: translate3d(-1.2%, 0, 0);
-  }
-  to {
-    opacity: 0.95;
-    transform: translate3d(1.4%, 0, 0);
-  }
-}
-
-@keyframes homepage-quiet-rise {
-  from {
-    transform: translate3d(0, 0, 0);
-  }
-  to {
-    transform: translate3d(0, -3px, 0);
-  }
-}
-
-@keyframes homepage-metal-shimmer {
-  from {
-    background-position: 0% 50%;
-  }
-  to {
-    background-position: 100% 50%;
-  }
-}
-
-@keyframes homepage-booking-signal {
-  0%,
-  42% {
-    transform: translateX(-120%);
-  }
-  68%,
-  100% {
-    transform: translateX(120%);
-  }
-}
-
-@keyframes homepage-panel-float {
-  from {
-    box-shadow: 0 32px 80px rgba(0, 0, 0, 0.32);
-    transform: translate3d(0, var(--homepage-depth-far-y, 0px), 0);
-  }
-  to {
-    box-shadow:
-      0 34px 88px rgba(0, 0, 0, 0.34),
-      0 0 42px rgb(var(--brand-500) / 0.04);
-    transform: translate3d(0, calc(var(--homepage-depth-far-y, 0px) - 4px), 0);
-  }
-}
-
-@keyframes homepage-screen-drift {
-  from {
-    transform: scale(1.006) translate3d(-0.45%, -0.35%, 0);
-  }
-  to {
-    transform: scale(1.026) translate3d(0.6%, 0.45%, 0);
-  }
-}
-
-@keyframes homepage-proof-pulse {
-  0%,
-  100% {
-    border-color: rgb(var(--stone-800) / 0.3);
-    transform: translate3d(0, 0, 0);
-  }
-  50% {
-    border-color: rgb(var(--brand-500) / 0.12);
-    transform: translate3d(0, -1px, 0);
-  }
+  border-color: rgb(var(--stone-800) / 0.3);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -2314,7 +2187,6 @@ select:focus {
   .homepage-operator-glow,
   .homepage-depth-layer,
   .homepage-hero-copy,
-  .homepage-hero-shimmer,
   .homepage-booking-field::before,
   .homepage-operator-panel,
   .homepage-operator-screen img,
