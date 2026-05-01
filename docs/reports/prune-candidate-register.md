@@ -21,8 +21,8 @@
 | Candidate | Class | Proof | Risk | Next action |
 | --- | --- | --- | --- | --- |
 | `lib/events/fsm.ts` | keep | Imported by `app/api/v2/events/[id]/transition/route.ts`, `lib/events/transitions.ts`, and `lib/events/readiness.ts`; covered by `tests/unit/events.fsm.test.ts`. | High, event FSM is core V1 Spine behavior. | Remove old stale claim that this is test-only from future cleanup assumptions. |
-| `hooks/use-field-validation.ts` and `lib/validation/use-field-validation.ts` | duplicate | Both define `useFieldValidation`; no production imports found in targeted search. | Medium, future forms could choose the wrong interface. | Pick canonical Form Validation Module, add or preserve tests, then remove duplicate in a separate cleanup commit. |
-| `lib/ai/menu-suggestions.ts` | prune-candidate | Static graph reports no inbound callers; targeted search found only self string and privacy audit mention. | High, AI recipe generation is restricted and stale AI code can violate product rules if reconnected. | Inspect file behavior. If it suggests or drafts menus or recipes, delete or quarantine behind explicit policy proof. |
+| `hooks/use-field-validation.ts` and `lib/validation/use-field-validation.ts` | resolved | Both defined `useFieldValidation`; no production, test, or script imports found in targeted search. | Medium, future forms could choose the wrong interface. | Completed 2026-05-01: deleted `hooks/use-field-validation.ts`; kept `lib/validation/use-field-validation.ts` as canonical. |
+| `lib/ai/menu-suggestions.ts` | resolved | Static graph reported no inbound callers; targeted search found only self string and privacy audit mention. | High, stale AI menu interfaces can violate product rules if reconnected. | Completed 2026-05-01: deleted unused compatibility wrapper; kept `lib/menus/recipe-book-suggestions-actions.ts` as canonical read-only recipe-book interface. |
 | `components/ai/remy-public-widget.tsx` | uncertain | Static graph reports no inbound callers. | High, Remy public surfaces may be externally embedded or route-owned. | Compare against public Remy API routes and current public page widgets before deciding. |
 | `components/admin/admin-sidebar.tsx` | duplicate-or-prune-candidate | Static graph reports no inbound callers. | High, admin shell is a control-plane trust boundary. | Verify `app/(admin)/layout.tsx` and admin navigation owner before cleanup. |
 | `components/activity/client-activity-timeline.tsx` | recover-or-prune-candidate | Static graph reports no inbound callers. | Medium, client memory is part of the V1 Spine. | Check client detail and activity routes for a missing timeline surface. |
@@ -44,12 +44,11 @@
 
 No product code is cleared for deletion yet.
 
-The strongest immediate cleanup candidate is `lib/ai/menu-suggestions.ts`, but it still needs a focused policy review because AI must not generate recipes or menu suggestions for chefs. If the file violates that rule and has no callers, deletion is likely safer than recovery.
+The first cleanup pass resolved the two narrowest stale modules: the duplicate root form-validation hook and the unused AI menu suggestion compatibility wrapper.
 
 ## Next Safe Cleanup Sequence
 
-1. Resolve the Form Validation Module duplicate because the candidate is narrow and low blast radius.
-2. Review `lib/ai/menu-suggestions.ts` for AI recipe or menu-generation behavior, then delete only if no legitimate read-only search behavior exists.
-3. Review admin shell ownership before touching `components/admin/admin-sidebar.tsx`.
-4. Review client activity ownership before touching `components/activity/client-activity-timeline.tsx`.
-5. Convert route discoverability gaps into recover tickets, not prune tickets.
+1. Review admin shell ownership before touching `components/admin/admin-sidebar.tsx`.
+2. Review client activity ownership before touching `components/activity/client-activity-timeline.tsx`.
+3. Cluster the dashboard orphan bucket into recover, duplicate, and prune candidates.
+4. Convert route discoverability gaps into recover tickets, not prune tickets.

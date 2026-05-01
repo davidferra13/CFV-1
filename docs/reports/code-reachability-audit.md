@@ -16,10 +16,10 @@ The first pass does not delete, move, or rewrite product code. Static import abs
 | Area | Files scanned | Production orphans | Used nowhere | Used only by tests or scripts |
 | --- | ---: | ---: | ---: | ---: |
 | `components` | 1734 | 311 | 311 | 0 |
-| `lib` | 2384 | 179 | 150 | 29 |
-| `hooks` | 8 | 1 | 1 | 0 |
+| `lib` | 2383 | 178 | 149 | 29 |
+| `hooks` | 7 | 0 | 0 | 0 |
 
-Total first-pass production-surface orphan signal: 491 files.
+Total first-pass production-surface orphan signal after the first cleanup pass: 489 files.
 
 ## Largest Orphan Buckets
 
@@ -30,7 +30,7 @@ Total first-pass production-surface orphan signal: 491 files.
 | `components` | `finance` | 22 | High-risk area because monetary logic must stay ledger-first. Do not remove without financial flow proof. |
 | `components` | `ui` | 21 | Potential shared UI residue. Needs string, dynamic import, and barrel export checks. |
 | `components` | `clients` | 16 | Likely mixed client memory, onboarding, and legacy UI. Needs recover-vs-prune review. |
-| `lib` | `ai` | 11 | High-risk because AI gateway and recipe restrictions apply. Some files may be policy-only or stale. |
+| `lib` | `ai` | 10 | High-risk because AI gateway and recipe restrictions apply. Some files may be policy-only or stale. |
 | `lib` | `clients` | 10 | Likely client memory or relationship logic. Needs caller and route proof. |
 | `lib` | `communication` | 8 | Could include non-import activation paths. Needs notification and scheduler review. |
 | `lib` | `analytics` | 6 | Likely report or dashboard logic. Needs route and test coverage proof. |
@@ -40,11 +40,11 @@ Total first-pass production-surface orphan signal: 491 files.
 
 | File or cluster | Fresh evidence | Classification |
 | --- | --- | --- |
-| `hooks/use-field-validation.ts` and `lib/validation/use-field-validation.ts` | Both define `useFieldValidation`; no production caller imports either hook by name in the scanned surface. `lib/validation/form-rules.ts` appears as supporting code for the lib version. | `duplicate`, with no deletion yet. Decide canonical hook location, then delete only after import and test proof. |
+| `hooks/use-field-validation.ts` and `lib/validation/use-field-validation.ts` | Both defined `useFieldValidation`; no production, test, or script caller imported either hook by name in the scanned surface. `lib/validation/form-rules.ts` supports the lib version. | Resolved on 2026-05-01 by deleting the unused root hook and keeping `lib/validation/use-field-validation.ts` as the canonical Form Validation Module. |
 | `components/ai/remy-public-widget.tsx` | Static import graph reports no inbound production, test, or script references. | `uncertain`. Remy surfaces can be dynamically embedded or product-owned elsewhere, so inspect public Remy routes before deletion. |
 | `components/admin/admin-sidebar.tsx` | Static import graph reports no inbound production, test, or script references. | `duplicate-or-prune-candidate`. Admin shell ownership must be checked first. |
 | `components/activity/client-activity-timeline.tsx` | Static import graph reports no inbound production, test, or script references. | `recover-or-prune-candidate`. Client activity may be a real feature that lost route wiring. |
-| `lib/ai/menu-suggestions.ts` | Static import graph reports no inbound callers. Targeted search found only its own logging string and an entry in `lib/ai/privacy-audit.ts`. | `prune-candidate`, blocked by AI recipe restriction review. If it generates or suggests recipes, removal may be the right architectural cleanup. |
+| `lib/ai/menu-suggestions.ts` | Static import graph reported no inbound callers. Targeted search found only its own logging string and an entry in `lib/ai/privacy-audit.ts`. The live read-only recipe-book interface is `lib/menus/recipe-book-suggestions-actions.ts`. | Resolved on 2026-05-01 by deleting the unused compatibility wrapper and stale privacy map entry. |
 | `lib/events/fsm.ts` | Targeted search found production imports from `app/api/v2/events/[id]/transition/route.ts`, `lib/events/transitions.ts`, and `lib/events/readiness.ts`, plus unit coverage. | `keep`. The older seed claim that it is test-only is stale. |
 
 ## High-Risk Keep Rules
@@ -65,7 +65,7 @@ Files: `hooks/use-field-validation.ts`, `lib/validation/use-field-validation.ts`
 
 Problem: two shallow hook interfaces expose similar validation behavior with no current production callers. The duplication lowers locality because a future form could import either one.
 
-Solution: choose one Form Validation Module interface, keep rules and hook together, and remove the duplicate only after tests prove no production or test caller depends on it.
+Solution: completed on 2026-05-01. `lib/validation/use-field-validation.ts` remains the canonical hook next to `form-rules.ts`; the unused root hook was deleted.
 
 Benefits: a single test surface for validation rules, less import ambiguity, and better locality for future form fixes.
 

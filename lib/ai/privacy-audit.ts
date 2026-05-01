@@ -185,12 +185,6 @@ export const AI_MODULE_ROUTING: Record<string, AIModuleRouting> = {
   // ── Formerly Gemini (now Ollama) - Low-sensitivity tasks ───────────
 
   // Creative / marketing
-  'menu-suggestions': {
-    provider: 'ollama',
-    modelTier: 'standard',
-    dataSensitivity: 'low',
-    reason: 'Occasion + guest count only, no PII',
-  },
   'quote-draft': {
     provider: 'ollama',
     modelTier: 'standard',
