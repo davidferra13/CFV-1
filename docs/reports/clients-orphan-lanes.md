@@ -121,7 +121,7 @@ Results:
 | --- | --- | --- |
 | `lib/clients/payment-plan-actions.ts` | No live import path. Symbol search only found the candidate exports plus unrelated generic `Installment` text. Live callers import `getPaymentPlan` from `@/lib/finance/payment-plan-actions`. | Delete |
 | `lib/clients/loyalty-program.ts` | No live import path. Exact wrapper symbol search only found the candidate exports. | Delete |
-| `lib/clients/passport-actions.ts` | No live import path. Exact symbol search only found the candidate exports. Behavior is not equivalent to `lib/hub/passport-actions.ts`: this file keys passport records by `tenant_id` and `client_id`, supports `deleteClientPassport`, and writes delegate fields. The hub owner keys by `profile_id` and exposes no delete action. | Keep uncertain |
+| `lib/clients/passport-actions.ts` | No live import path. Exact symbol search only found the candidate exports. Behavior is not equivalent to `lib/hub/passport-actions.ts`: this file keys passport records by `tenant_id` and `client_id`, supports `deleteClientPassport`, and writes delegate fields. Current orphan-lane rule requires deletion when there are no live callers and no route owner, even if behavior is unique dormant code. | Delete |
 | `lib/clients/referral-tree.ts` | No live import path. Exact symbol search only found the candidate exports, except an unrelated `ReferralNode` interface in `lib/intelligence/referral-chain-mapping.ts`. | Delete |
 
 ### Canonical Owner Proof
@@ -141,17 +141,35 @@ Evidence:
 | --- | --- | --- |
 | Payment plans | `lib/finance/payment-plan-actions.ts` | Imported by `components/finance/payment-plan-panel.tsx`, `app/(chef)/events/[id]/page.tsx`, `app/(chef)/events/[id]/billing/page.tsx`, and Remy intelligence actions. |
 | Loyalty | `lib/loyalty/actions.ts` plus `lib/loyalty/store.ts` | Imported by chef loyalty pages, client rewards pages, onboarding, event transitions, and client dashboard actions. |
-| Passport | `lib/hub/passport-actions.ts` | Exports `getPassportForProfile` and `upsertPassport`, but no live imports were found and the data contract differs from the client action slice. Retained for recovery review instead of pruning. |
+| Passport | `lib/clients/client-default-knowledge-actions.ts` plus `lib/hub/passport-actions.ts` | `app/(client)/my-profile/page.tsx`, `app/(client)/my-profile/default-knowledge-panel.tsx`, and `app/(client)/book-now/page.tsx` import the default-knowledge owner. It reads and upserts `client_passports` by `tenant_id` plus `client_id`, including delegate fields. `lib/hub/passport-actions.ts` is the dormant hub owner for profile-keyed passport records. |
 | Referrals | `lib/clients/referral-actions.ts` and referral health modules | `components/analytics/referral-dashboard.tsx` and `components/clients/referral-panel.tsx` import referral actions. Referral health and client health modules also use referral fields. |
 
 ### Deleted Files
 
 - `lib/clients/payment-plan-actions.ts`
 - `lib/clients/loyalty-program.ts`
+- `lib/clients/passport-actions.ts`
 - `lib/clients/referral-tree.ts`
 
-### Retained For Review
+### Deleted Dormant Passport Behavior
 
-- `lib/clients/passport-actions.ts`
+`lib/clients/passport-actions.ts` was deleted on 2026-05-01 after focused proof found no live imports, no symbol callers, and no route owner. The deleted dormant code provided chef-authenticated CRUD wrappers around `client_passports` by `tenant_id` and `client_id`, including `getClientPassport`, `upsertClientPassport`, and `deleteClientPassport`. It also wrote communication preferences, chef autonomy, auto-approval cents, service defaults, default locations, delegate fields, and revalidated `/clients/${clientId}`.
 
-Reason: no live imports, but behavior is unique enough that deleting it would risk losing a recoverable tenant/client passport contract.
+The live canonical owner for client self-service passport defaults is `lib/clients/client-default-knowledge-actions.ts`, reached from `app/(client)/my-profile/page.tsx`, `app/(client)/my-profile/default-knowledge-panel.tsx`, and `app/(client)/book-now/page.tsx`. The dormant profile-keyed hub owner remains `lib/hub/passport-actions.ts` with `getPassportForProfile` and `upsertPassport`.
+
+### Passport Orphan Lane Commands
+
+```text
+rg -n "passport-actions" app components lib tests scripts docs tsconfig.ci.expanded.json
+rg -n -F "@/lib/clients/passport-actions" app components lib tests scripts docs tsconfig.ci.expanded.json
+rg -n -F "lib/clients/passport-actions" app components lib tests scripts docs tsconfig.ci.expanded.json
+rg -n -F "./passport-actions" app components lib tests scripts docs tsconfig.ci.expanded.json
+rg -n -F "../passport-actions" app components lib tests scripts docs tsconfig.ci.expanded.json
+rg -n "\b(getClientPassport|upsertClientPassport|deleteClientPassport)\b" app components lib tests scripts docs
+rg -n "client-default-knowledge-actions|getMyDefaultKnowledgeSettings|updateMyDefaultKnowledgeSettings|client_passports|CLIENT_PASSPORT_SELECT" "app/(client)" "app/(chef)/clients" components/clients lib tests
+rg -n "@/lib/hub/passport-actions|lib/hub/passport-actions|getPassportForProfile|upsertPassport" app components lib tests scripts docs
+rg -n -F "./lib/clients/passport-actions.ts" tsconfig.ci.expanded.json
+rg -n -F "passport-actions.ts" tsconfig.ci.expanded.json
+```
+
+Results: no live `@/lib/clients/passport-actions`, relative import path, or exported-symbol caller was found. Filename hits were limited to this report and historical specs after deletion. `tsconfig.ci.expanded.json` had no explicit `lib/clients/passport-actions.ts` entry, so it was not changed.

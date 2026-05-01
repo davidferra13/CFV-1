@@ -44,6 +44,8 @@ Reference checks:
 | `components/events/dietary-rollup.tsx`             | `DietaryRollupCard`              | No import path or JSX/function call references outside the file.                                                                               | `components/events/dietary-complexity-badge.tsx`, `components/events/constraint-radar-panel.tsx`, hub dietary summaries, and dietary email rollup. |
 | `components/events/waste-log-panel.tsx`            | `WasteLogPanel`                  | No import path or JSX/function call references outside the file.                                                                               | `components/events/close-out-wizard.tsx` waste step, `/inventory/waste`, and `/stations/waste`.                        |
 | `components/events/photo-permission-indicator.tsx` | `PhotoPermissionIndicator`       | No exact import path, export name, JSX, or function call references outside the file. Only self, report, prune-register, and CI-expanded tsconfig references remained. | Client NDA/photo permission settings, event photo gallery/actions, guest photo consent, and portfolio gallery/actions.   |
+| `components/events/events-bulk-table.tsx`          | `EventsBulkTable`                | No exact import path, export name, JSX, or function call references outside the file. Only self and CI-expanded tsconfig references remained.  | Active events table/list UI is owned by `app/(chef)/events/page.tsx`; bulk behavior remains out of this deletion slice.  |
+| `components/events/events-view-filter-bar.tsx`     | `EventsViewFilterBar`            | No exact import path, export name, JSX, or function call references outside the file. Only self and CI-expanded tsconfig references remained.  | Active filtering and view switching are owned by `app/(chef)/events/page.tsx` and `app/(chef)/events/board/page.tsx`.    |
 
 ## Canonical Owner Proof
 
@@ -67,8 +69,9 @@ Reference checks:
 
 The following events bucket files remain outside this deletion slice:
 
-- Recover candidates: `alcohol-service-log.tsx`, `cancellation-dialog.tsx`, `capacity-warning-banner.tsx`, `circle-rebook-button.tsx`, `equipment-redundancy-checklist.tsx`, `event-inventory-panel.tsx`, `events-bulk-table.tsx`, `events-view-filter-bar.tsx`, `kitchen-profile-callout.tsx`, `photo-tagger.tsx`, `post-event-feedback.tsx`, `pre-service-safety-checklist.tsx`, `production-report-button.tsx`, `scope-drift-banner.tsx`, `tip-request-button.tsx`.
+- Recover candidates: `alcohol-service-log.tsx`, `cancellation-dialog.tsx`, `capacity-warning-banner.tsx`, `circle-rebook-button.tsx`, `equipment-redundancy-checklist.tsx`, `event-inventory-panel.tsx`, `kitchen-profile-callout.tsx`, `photo-tagger.tsx`, `post-event-feedback.tsx`, `pre-service-safety-checklist.tsx`, `production-report-button.tsx`, `scope-drift-banner.tsx`, `tip-request-button.tsx`.
 - Photo permission prune candidate proved orphaned and deleted in this slice.
+- Event list wrapper prune candidates `events-bulk-table.tsx` and `events-view-filter-bar.tsx` proved orphaned and were deleted in this slice.
 
 ## Validation
 
@@ -77,5 +80,6 @@ The following events bucket files remain outside this deletion slice:
 - `rg -n -e '@/components/events/photo-permission-indicator' -e 'components/events/photo-permission-indicator' -e './photo-permission-indicator' -e 'PhotoPermissionIndicator' app components lib tests scripts tsconfig.ci.expanded.json` returned no matches after deletion and tsconfig cleanup.
 - `rg -n -e 'photo-permission-indicator' -e 'PhotoPermissionIndicator' .` returned only documentation audit references after deletion: this report and `docs/reports/prune-candidate-register.md`.
 - `rg -n -e 'updatePhotoPermission' -e 'getPortfolioPermissionAudit' -e 'getPhotoPermissionStatus' -e 'EventPhotoGallery' -e 'PhotoConsentSummary' app components lib tests` identified active photo permission and event photo owners outside the deleted file.
+- `rg -n -e 'events-bulk-table' -e 'EventsBulkTable' -e 'events-view-filter-bar' -e 'EventsViewFilterBar' app components lib tests scripts tsconfig.ci.expanded.json` returned no matches after deletion and tsconfig cleanup.
 - `Select-String -Path docs/reports/events-orphan-lanes.md -Pattern ([char]0x2014) -SimpleMatch` returned no matches.
 - `git diff --check -- components/events/photo-permission-indicator.tsx docs/reports/events-orphan-lanes.md tsconfig.ci.expanded.json` passed with only line-ending warnings for `docs/reports/events-orphan-lanes.md` and `tsconfig.ci.expanded.json`.
