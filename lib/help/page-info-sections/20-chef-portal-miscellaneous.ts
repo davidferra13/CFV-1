@@ -103,8 +103,12 @@ export const CHEF_PORTAL_MISCELLANEOUS_PAGE_INFO: Record<string, PageInfoEntry> 
   '/guest-analytics': {
     title: 'Guest Analytics',
     description:
-      'Guest-level analytics across events - dietary trends, group sizes, and preferences.',
-    features: ['Guest count trends', 'Dietary distribution', 'Group size patterns'],
+      'Guest-domain relationship analytics for repeat guests, dinner groups, attendance patterns, and preferences.',
+    features: [
+      'Repeat guest patterns',
+      'Dinner group attendance',
+      'Dietary and preference distribution',
+    ],
   },
 
   '/guest-leads': {
@@ -163,12 +167,6 @@ export const CHEF_PORTAL_MISCELLANEOUS_PAGE_INFO: Record<string, PageInfoEntry> 
     title: 'Data Import',
     description: 'Bulk import data - clients, recipes, events, and more.',
     features: ['CSV import', 'Data mapping', 'Validation and preview'],
-  },
-
-  '/insights': {
-    title: 'Business Insights',
-    description: 'AI-generated business insights and recommendations.',
-    features: ['Revenue insights', 'Client behavior analysis', 'Operational recommendations'],
   },
 
   '/insights/time-analysis': {

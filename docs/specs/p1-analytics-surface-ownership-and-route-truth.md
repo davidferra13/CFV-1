@@ -1,6 +1,6 @@
 # Spec: Analytics Surface Ownership and Route Truth
 
-> **Status:** ready
+> **Status:** built
 > **Priority:** P1
 > **Depends on:** none
 > **Estimated complexity:** medium-large (8-12 files)
@@ -13,14 +13,16 @@ _Every status change, every claim, every verification gets a row. This is the au
 | --------------------- | -------------------- | --------------- | ------ |
 | Created               | 2026-04-03 06:05 EDT | Planner (Codex) |        |
 | Status: ready         | 2026-04-03 06:05 EDT | Planner (Codex) |        |
-| Claimed (in-progress) |                      |                 |        |
-| Spike completed       |                      |                 |        |
-| Pre-flight passed     |                      |                 |        |
-| Build completed       |                      |                 |        |
-| Type check passed     |                      |                 |        |
-| Build check passed    |                      |                 |        |
-| Playwright verified   |                      |                 |        |
-| Status: verified      |                      |                 |        |
+| Claimed (in-progress) | 2026-04-30 21:09 EDT | Codex Builder   |        |
+| Spike completed       | 2026-04-30 21:09 EDT | Codex Builder   |        |
+| Pre-flight attempted  | 2026-04-30 21:17 EDT | Codex Builder   |        |
+| Build completed       | 2026-04-30 21:17 EDT | Codex Builder   |        |
+| Type check attempted  | 2026-04-30 21:17 EDT | Codex Builder   |        |
+| Build check skipped   | 2026-04-30 21:17 EDT | Codex Builder   |        |
+| Playwright blocked    | 2026-04-30 21:17 EDT | Codex Builder   |        |
+| Status: built         | 2026-04-30 21:17 EDT | Codex Builder   |        |
+
+Validation note: focused ESLint and route-truth grep passed. Full `npx tsc --noEmit --skipLibCheck` timed out twice without diagnostics, `next build` was skipped because this build packet forbids unneeded builds, and Playwright was blocked because no `.auth/agent.json` file was present and localhost route probes timed out.
 
 ---
 

@@ -221,12 +221,14 @@ export const navGroups: NavGroup[] = [
     module: 'more',
     items: [
       {
-        href: '/analytics/benchmarks',
-        label: 'Business Analytics',
+        href: '/analytics',
+        label: 'Analytics Hub',
         icon: TrendingUp,
         children: [
+          { href: '/analytics/benchmarks', label: 'Benchmarks' },
           { href: '/analytics/client-ltv', label: 'Client Value' },
           { href: '/analytics/demand', label: 'Demand Heatmap' },
+          { href: '/analytics?tab=marketing', label: 'Marketing Metrics' },
           { href: '/analytics/pipeline', label: 'Pipeline Forecast' },
           { href: '/analytics/referral-sources', label: 'Referral Sources' },
         ],
@@ -247,12 +249,12 @@ export const navGroups: NavGroup[] = [
       },
       {
         href: '/insights',
-        label: 'Insights',
+        label: 'Clientele Insights',
         icon: BarChart3,
         children: [
-          { href: '/analytics/reports', label: 'Custom Reports' },
-          { href: '/analytics/daily-report', label: 'Daily Report' },
-          { href: '/analytics', label: 'Source Analytics' },
+          { href: '/insights?tab=client-base', label: 'Client Base Patterns' },
+          { href: '/insights?tab=operations', label: 'Operations Patterns' },
+          { href: '/insights?tab=seasons', label: 'Seasonal Patterns' },
           { href: '/insights/time-analysis', label: 'Time Analysis' },
         ],
       },
@@ -260,11 +262,20 @@ export const navGroups: NavGroup[] = [
         href: '/intelligence',
         label: 'Intelligence Hub',
         icon: Compass,
-        children: [{ href: '/intelligence', label: 'Full Dashboard' }],
+        children: [{ href: '/intelligence', label: 'Recommendation Engine' }],
+      },
+      {
+        href: '/analytics/reports',
+        label: 'Reports',
+        icon: FileText,
+        children: [
+          { href: '/analytics/daily-report', label: 'Daily Report' },
+          { href: '/analytics/reports', label: 'Custom Reports' },
+        ],
       },
       {
         href: '/reports',
-        label: 'Reports',
+        label: 'Report Library',
         icon: FileText,
       },
       {

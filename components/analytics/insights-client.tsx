@@ -3,6 +3,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import {
   DinnerTimeChart,
@@ -923,10 +924,25 @@ export function InsightsClient({
   metricCoverage,
 }: InsightsClientProps) {
   const [activeTab, setActiveTab] = useState<TabId>(() => validateTabId(initialTab))
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
 
   useEffect(() => {
     setActiveTab(validateTabId(initialTab))
   }, [initialTab])
+
+  function selectTab(tabId: TabId) {
+    setActiveTab(tabId)
+    const nextParams = new URLSearchParams(searchParams.toString())
+    if (tabId === DEFAULT_TAB) {
+      nextParams.delete('tab')
+    } else {
+      nextParams.set('tab', tabId)
+    }
+    const query = nextParams.toString()
+    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false })
+  }
 
   return (
     <div>
@@ -935,7 +951,7 @@ export function InsightsClient({
         {TABS.map((tab) => (
           <button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
+            onClick={() => selectTab(tab.id)}
             className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-colors rounded-t-lg ${
               activeTab === tab.id
                 ? 'text-violet-700 border-b-2 border-violet-600 bg-violet-950/50'

@@ -347,6 +347,8 @@ Then:
 
 - build `docs/specs/p1-dead-zone-gating-and-surface-honesty.md`
 - use `docs/specs/p1-analytics-surface-ownership-and-route-truth.md` where the assigned problem is the dashboard, briefing, analytics, insights, guest-analytics, and intelligence overlap lane
+  - Analytics slice ownership: `/dashboard` is the daily operating home, `/briefing` is the daily readout, `/analytics` is the canonical reporting root, `/insights` is client and history interpretation, `/intelligence` is the deterministic recommendation engine, and `/guest-analytics` stays under guests/clients.
+  - Route-truth fix: generic analytics links should target `/analytics` or validated `?tab=` deep-links, while dedicated drill-downs should target existing `/analytics/*` routes only.
 - after that route-ownership slice, build `docs/specs/p1-pipeline-analytics-truth-and-honesty.md` when the assigned lane is false-complete pipeline reporting
 - if the assigned goal is buyer-facing proof or demo readiness after the active validation lane closes, build `docs/specs/p1-demo-continuity-and-portal-proof.md`
 - use `docs/specs/p1-chef-getting-started-surface-consolidation.md` where the assigned problem is the intrusive setup layer

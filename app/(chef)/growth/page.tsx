@@ -42,21 +42,21 @@ const sections = [
     heading: 'Analytics',
     items: [
       {
-        href: '/analytics/benchmarks',
-        label: 'Business Analytics',
-        description: 'Client value, demand heatmap, pipeline forecast, referral sources',
+        href: '/analytics',
+        label: 'Analytics Hub',
+        description: 'Canonical reporting root for metrics, sources, revenue, operations, and marketing',
         icon: '📈',
       },
       {
         href: '/insights',
-        label: 'Insights',
-        description: 'Daily reports, custom reports, time analysis, and source analytics',
+        label: 'Clientele Insights',
+        description: 'Client behavior, event history, seasonal patterns, and operations interpretation',
         icon: '💡',
       },
       {
         href: '/intelligence',
         label: 'Intelligence Hub',
-        description: 'Full business intelligence dashboard',
+        description: 'Deterministic recommendations, forecasts, alerts, and next-action prompts',
         icon: '🧠',
       },
     ],

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -782,8 +783,8 @@ function MarketingTab({ p }: { p: AnalyticsHubProps }) {
           {p.marketingSpend.length === 0 ? (
             <p className="text-stone-300 text-sm">
               No marketing spend logged yet.{' '}
-              <a href="/analytics/marketing/spend" className="text-amber-600 hover:underline">
-                Add spend
+              <a href="/analytics?tab=marketing" className="text-amber-600 hover:underline">
+                Review marketing metrics
               </a>
             </p>
           ) : (
@@ -1159,10 +1160,25 @@ function LoadErrorBanner({ errors, section }: { errors: string[]; section: strin
 export function AnalyticsHub(props: AnalyticsHubProps) {
   const [activeTab, setActiveTab] = useState<TabId>(() => validateTabId(props.initialTab))
   const errors = props.loadErrors ?? []
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
 
   useEffect(() => {
     setActiveTab(validateTabId(props.initialTab))
   }, [props.initialTab])
+
+  function selectTab(tabId: TabId) {
+    setActiveTab(tabId)
+    const nextParams = new URLSearchParams(searchParams.toString())
+    if (tabId === DEFAULT_TAB) {
+      nextParams.delete('tab')
+    } else {
+      nextParams.set('tab', tabId)
+    }
+    const query = nextParams.toString()
+    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false })
+  }
 
   return (
     <div>
@@ -1174,7 +1190,7 @@ export function AnalyticsHub(props: AnalyticsHubProps) {
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => selectTab(tab.id)}
                 className={`px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
                   activeTab === tab.id
                     ? 'border-amber-500 text-amber-700'

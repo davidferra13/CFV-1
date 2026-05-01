@@ -704,7 +704,7 @@ Founder-owned operator walkthrough requests from `/for-operators/walkthrough` al
 
 **Route:** `/guest-leads` - Filter tabs (All/New/Contacted/Converted/Archived). Per lead: status-specific action buttons (Convert to Client, Mark Contacted, Archive, Restore, View Client).
 
-**`/guest-analytics`** - Repeat guests with event badges, dinner groups with co-attendance data.
+**`/guest-analytics`** - Guest-domain analytics for repeat guests, dinner groups, co-attendance, and guest-to-client relationship signals. This remains under the guest/client domain, not the generic business analytics root.
 
 ### 4.8 Proposals
 
@@ -1001,7 +1001,7 @@ Founder-owned operator walkthrough requests from `/for-operators/walkthrough` al
 
 ## 10. ANALYTICS
 
-**Route:** `/analytics` - 9-tab hub (Overview, Revenue, Operations, Pipeline, Clients, Marketing, Social, Culinary, Benchmarks) with 38+ data streams via `Promise.allSettled`.
+**Route:** `/analytics` - Canonical reporting root for generic analytics, metrics, reports, sources, and measurement CTAs. The 9-tab hub (Overview, Revenue, Operations, Pipeline, Clients, Marketing, Social, Culinary, Benchmarks) has 38+ data streams via `Promise.allSettled` and accepts validated `?tab=` deep-links.
 
 | Tab        | Key Data                                                                                                                                         |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -1015,15 +1015,15 @@ Founder-owned operator walkthrough requests from `/for-operators/walkthrough` al
 | Culinary   | Recipe reuse rate, top recipes, dietary restrictions, menu modification/approval rates                                                           |
 | Benchmarks | → `/analytics/benchmarks`                                                                                                                        |
 
-**Sub-pages:** `/analytics/daily-report` (daily business snapshot - 13 metric categories: schedule, revenue, pipeline, operations, client activity, schedule conflicts, milestones, dormant clients, action items, pipeline forecast; date navigation + regenerate button + past reports browser; emailed daily at 7 AM ET via Vercel Cron), `/analytics/benchmarks` (benchmark dashboard), `/analytics/pipeline` (forecast), `/analytics/demand` (heatmap + holiday YoY), `/analytics/client-ltv` (LTV chart), `/analytics/referral-sources` (referral analytics), `/analytics/reports` (custom report builder), `/analytics/funnel` (conversion funnel: Inquiry→Quote→Booking→Completed visualization, KPI cards for response time/conversion rate/ghost rate/lead time, channel performance comparison, decline reason breakdown, lead time distribution).
+**Sub-pages:** `/analytics/daily-report` (daily business snapshot - 13 metric categories: schedule, revenue, pipeline, operations, client activity, schedule conflicts, milestones, dormant clients, action items, pipeline forecast; date navigation + regenerate button + past reports browser; emailed daily at 7 AM ET via scheduled cron), `/analytics/benchmarks` (benchmark dashboard), `/analytics/pipeline` (forecast), `/analytics/demand` (heatmap + holiday YoY), `/analytics/client-ltv` (LTV chart), `/analytics/referral-sources` (referral analytics), `/analytics/reports` (custom report builder), `/analytics/funnel` (conversion funnel: Inquiry→Quote→Booking→Completed visualization, KPI cards for response time/conversion rate/ghost rate/lead time, channel performance comparison, decline reason breakdown, lead time distribution).
 
-**Route:** `/insights` - Clientele Insights tabbed dashboard. Tabs: Clientele, Seasons & Trends, Client Base, Operations, Culinary Usage, Metric Registry, Take a Chef ROI. Culinary Usage reads linked event menus, dishes, components, recipes, recipe ingredients, and ingredients to show coverage, most-used ingredients, most-used recipes, most-picked menus, and a 12-month usage signal. It is read-only and does not infer usage for events without linked menus. Metric Registry exposes the canonical contract for analytics metrics, including source tables, source action, freshness SLA, tenant scope, value kind, and destination surfaces.
+**Route:** `/insights` - Companion interpretation surface for client behavior, event history, seasonality, operations patterns, culinary usage, metric definitions, and Take a Chef ROI. It accepts validated `?tab=` deep-links, but it is not the generic analytics home. Culinary Usage reads linked event menus, dishes, components, recipes, recipe ingredients, and ingredients to show coverage, most-used ingredients, most-used recipes, most-picked menus, and a 12-month usage signal. It is read-only and does not infer usage for events without linked menus. Metric Registry exposes the canonical contract for analytics metrics, including source tables, source action, freshness SLA, tenant scope, value kind, and destination surfaces.
 
 ---
 
 ## 10b. INTELLIGENCE HUB (Pro)
 
-**Route:** `/intelligence` - 25-engine deterministic analytics hub. All engines are Formula > AI (zero Ollama dependency). Pro-gated via `requirePro('intelligence-hub')` + `<UpgradeGate>`. All 25 data fetches run in parallel via `Promise.all()` with `.catch(() => null)` graceful degradation.
+**Route:** `/intelligence` - Deterministic recommendation, alert, and forecast engine. It is not a second dashboard and not the generic analytics root. All engines are Formula > AI (zero Ollama dependency). Pro-gated via `requirePro('intelligence-hub')` + `<UpgradeGate>`. All 25 data fetches run in parallel via `Promise.all()` with `.catch(() => null)` graceful degradation.
 
 **Tier 1 - Foundation (10 engines):**
 

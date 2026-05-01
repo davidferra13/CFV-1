@@ -4,13 +4,38 @@ export const CHEF_PORTAL_ANALYTICS_PAGE_INFO: Record<string, PageInfoEntry> = {
   '/analytics': {
     title: 'Analytics Hub',
     description:
-      'Comprehensive business analytics across 9 domains - clients, pipeline, revenue, operations, and more.',
+      'Canonical reporting root for metrics, measurement, source performance, revenue, operations, clients, marketing, social, and culinary reporting.',
     features: [
-      'Overview with month revenue and event counts',
+      'Overview with monthly revenue and event counts',
       'Client analytics (retention, churn, acquisition, NPS)',
       'Pipeline analytics (funnel, ghost rate, lead time)',
       'Revenue analytics (per-unit, by day of week, by season)',
-      'Operations, marketing, social, and culinary analytics tabs',
+      'Validated tab deep-links for focused reporting sections',
+    ],
+  },
+
+  '/insights': {
+    title: 'Clientele Insights',
+    description:
+      'Companion interpretation surface for client behavior, event history, seasonality, operations patterns, and Take a Chef ROI.',
+    features: [
+      'Clientele and guest count patterns',
+      'Seasonal and day-of-week trends',
+      'Client base, retention, and lifetime value interpretation',
+      'Operations and quality patterns from event history',
+      'Validated tab deep-links for focused interpretation sections',
+    ],
+  },
+
+  '/intelligence': {
+    title: 'Intelligence Hub',
+    description:
+      'Deterministic recommendation and alert engine for forecasts, risks, client signals, and next-action prompts.',
+    features: [
+      'Recommendation engine panels',
+      'Forecasts and proactive alerts',
+      'Client, event, inquiry, pricing, and scheduling intelligence',
+      'Upgrade-gated engine workspace',
     ],
   },
 

@@ -1925,7 +1925,7 @@ export default async function ChefDashboard() {
             href="/briefing"
             className="inline-flex items-center justify-center px-4 py-2.5 border border-stone-700 text-stone-300 rounded-xl hover:bg-stone-800 hover:border-stone-600 transition-all font-medium text-sm"
           >
-            Briefing
+            Morning Briefing
           </Link>
           {!simplifyForNewChef && (
             <>
