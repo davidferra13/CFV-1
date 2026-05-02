@@ -171,10 +171,82 @@ Keep this file current. Add new rules when patterns are established or mistakes 
 
 ---
 
+## PROACTIVE SKILL INVOCATION (MANDATORY)
+
+**Skills are not just slash commands. They are autonomous reflexes.** Claude MUST detect when a skill is relevant and invoke it WITHOUT being asked. The user typing `/debug` is a failure state; Claude should have already fired `/debug` when it saw the error.
+
+**The rule:** If a trigger condition matches, invoke the skill IMMEDIATELY via the Skill tool. Do not mention the skill, do not ask permission, do not describe what you're about to do. Just fire it. Same way you'd breathe.
+
+### Auto-Trigger Map
+
+| Trigger Condition                    | Skill                            | Why                                       |
+| ------------------------------------ | -------------------------------- | ----------------------------------------- |
+| **ANY first message (ALWAYS)**       | `context-load` (internal)        | Never start cold. Silent context recovery |
+| First message is greeting/open-ended | `/morning`                       | Full briefing when no specific task       |
+| Error encountered during work        | `/debug`                         | Root cause before fix                     |
+| About to commit/push code            | `/review`                        | Quality gate                              |
+| After writing/editing code files     | `/compliance`                    | Rule violations caught early              |
+| After code changes to UI/features    | `/document`                      | Living docs stay current                  |
+| Bug persists after 2 fix attempts    | `/5-whys`                        | Stop thrashing, find root cause           |
+| About to build a feature from spec   | `/builder`                       | Full gate procedure                       |
+| Writing or reviewing a spec          | `/planner`                       | Full gate procedure                       |
+| Investigating a question for report  | `/research`                      | Full gate procedure                       |
+| End of session / user says goodbye   | `/close-session`                 | Nothing left uncommitted                  |
+| User asks "what's going on" / status | `/status`                        | Structured snapshot                       |
+| Build fails or type errors appear    | `/health`                        | Diagnose before guessing                  |
+| Hard bug or performance regression   | `/diagnose`                      | 6-phase disciplined diagnosis (Pocock)    |
+| After significant code changes       | `/review` then `/ship`           | Ship clean code                           |
+| Feature work complete                | `/feature-closeout`              | tsc + build + commit + push               |
+| Stress testing or persona simulation | `/persona-stress-test`           | Deterministic audit                       |
+| Need to start dev environment        | `/warmup`                        | Server + auth + browser ready             |
+| Planning a feature or major change   | `/grill-me`                      | Stress-test plan before building          |
+| Planning with domain model impact    | `/grill-with-docs`               | Grill + update CONTEXT.md/ADRs            |
+| Breaking work into tasks/issues      | `/to-issues`                     | Vertical-slice issue decomposition        |
+| Need higher-level code understanding | `/zoom-out`                      | Module map before diving in               |
+| Architecture feels muddy/coupled     | `/improve-codebase-architecture` | Deep module analysis (Ousterhout)         |
+| Synthesizing conversation into spec  | `/to-prd`                        | PRD from current context                  |
+| New issue/bug report arrives         | `/triage`                        | State machine triage workflow             |
+| Creating a new skill                 | `/write-a-skill`                 | Proper structure + progressive disclosure |
+| Feature touches Remy-accessible area | `/remy-gate`                     | Ensure Remy write parity                  |
+| Feature discussion concluded         | `/audit`                         | Lock down before moving on                |
+
+### Autonomous Behaviors (No Trigger Needed)
+
+These are NOT skill invocations. These are behaviors Claude does silently, always, without being asked:
+
+| Behavior                     | When                                                             | How                                                                                    |
+| ---------------------------- | ---------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| **Check server before work** | Before any localhost testing/verification                        | `curl -s localhost:3000`, if down: `bash scripts/services.sh up`                       |
+| **Check services on start**  | First message of session                                         | `bash scripts/services.sh status`, kill garbage silently                               |
+| **Run tsc after TS edits**   | After completing a logical unit of work (not every edit)         | `npx tsc --noEmit --skipLibCheck`, fix errors before moving on                         |
+| **Rebuild if stale**         | Before any UI verification if last build >24h old                | `npm run build -- --no-lint`                                                           |
+| **Commit at milestones**     | After completing a feature, fixing a bug, or meaningful progress | Stage + commit with conventional message. Do not batch 20 files                        |
+| **Update build-state.md**    | After any successful tsc + build                                 | Write green status, date, commit hash                                                  |
+| **Write session digest**     | On session end (auto via `/close-session`)                       | Compact summary of what was done, unfinished items, flags                              |
+| **Fix broken things**        | Anytime tsc/build/test fails                                     | Fix it. Do not report it. (per FIX IT DONT REPORT IT memory)                           |
+| **Clean imports**            | After editing a file                                             | Remove unused imports. Do not leave stray code                                         |
+| **Module placement**         | When creating new files                                          | Put files in correct module directory. Never create stray files at root or wrong level |
+
+### Skill Creation (Autonomous)
+
+**If Claude notices a repeated multi-step workflow (3+ times same pattern), it MUST create a new skill for it.** Use `/write-a-skill` to create it properly. Do not ask. Add it to the WORKFLOW SKILLS list below and use it going forward.
+
+**Skill creation criteria:**
+
+- Pattern repeated 3+ times across sessions
+- Multi-step (2+ tool calls in sequence)
+- Deterministic (same trigger = same steps)
+- Not already covered by an existing skill
+
+**After creating a skill:** invoke it immediately for the current task, then mention to the user: "Created `/skill-name` for this pattern."
+
+---
+
 ## WORKFLOW SKILLS (Slash Commands)
 
-These workflows are now available as `/slash-commands`. Type the command name to run the full procedure:
+These workflows are available as `/slash-commands` AND are auto-invoked by the trigger map above:
 
+- **`context-load`** (INTERNAL, auto-fires every conversation) - Silent project context recovery. Never start cold.
 - **`/morning`** - Daily briefing: build state, overnight changes, servers, Pi health, priorities, session continuity. Start your day here.
 - **`/status`** - Quick "where am I?" snapshot: branch, uncommitted work, last commit, what was in progress, what's next.
 - **`/ship`** - git add + commit + push. The full "ship it" chain. No confirmation needed.
@@ -196,6 +268,20 @@ These workflows are now available as `/slash-commands`. Type the command name to
 - **`/heal-skill`** - Self-repair a skill that failed or produced bad results.
 - **`/persona-stress-test`** - Deterministic persona-based system stress test. Accepts a persona, runs full workflow simulation, capability audit, failure mapping, and scoring. Supports batch mode for cross-persona synthesis.
 - **`/warmup`** - Get a chef account warm and on standby. Server up, authenticated, routes compiled, browser open. Usage: `/warmup [account] [port]`. Accounts: chef-bob (default), agent, developer.
+- **`/remy-gate`** - Remy Inclusion Gate. Auto-fires during feature builds. 8-question checklist ensuring every feature has Remy write parity, approval tiers, and real-time UI sync.
+
+### Matt Pocock Skills (installed from github.com/mattpocock/skills)
+
+- **`/diagnose`** - 6-phase disciplined bug diagnosis: reproduce, minimize, hypothesize (3-5 ranked), instrument, fix + regression test, cleanup. Stricter than `/debug`.
+- **`/grill-me`** - Relentless interview about a plan. Walks each branch of the decision tree one question at a time until shared understanding.
+- **`/grill-with-docs`** - Same as `/grill-me` but also maintains CONTEXT.md domain glossary and ADRs as decisions crystallize.
+- **`/improve-codebase-architecture`** - Find "deepening opportunities" using Ousterhout's deep/shallow module framework. Small interface hiding significant complexity.
+- **`/tdd`** (Pocock variant) - Red-green-refactor with vertical slices. Behavior-based testing. Never horizontal slicing.
+- **`/to-issues`** - Break plans into vertical-slice GitHub issues. Each issue cuts through ALL layers end-to-end.
+- **`/to-prd`** - Synthesize current conversation context into a PRD. No interview, just synthesis.
+- **`/triage`** - 5-state issue triage machine: needs-triage, needs-info, ready-for-agent, ready-for-human, wontfix.
+- **`/zoom-out`** - Go up a layer of abstraction. Map relevant modules and their relationships before diving into code.
+- **`/write-a-skill`** - Meta-skill for creating new skills with proper structure, progressive disclosure, and bundled resources.
 
 **End every session:** run `/close-session` or `/ship`. Work must be on GitHub before signing off.
 
@@ -225,15 +311,33 @@ All configured in `.claude/mcp.json`. Use them.
 
 ---
 
-## SESSION AWARENESS (MANDATORY)
+## SESSION AWARENESS (MANDATORY - EVERY CONVERSATION)
 
-### On Start
+Claude must NEVER start cold. Every conversation begins with full project context loaded. The developer should never have to explain where things stand.
 
-Run `bash scripts/session-briefing.sh` then read `docs/.session-briefing.md`. If build state is broken, fix it before new work.
+### On Start (AUTOMATIC - First Response)
+
+Before doing ANYTHING the user asks, execute this context-loading sequence. This is not optional. This is not "if you have time." This happens first, silently, every single time.
+
+**Phase 1: State Recovery (parallel)**
+
+1. Run `bash scripts/session-briefing.sh` then read `docs/.session-briefing.md`
+2. Read the last 3 session digests from `docs/session-digests/` (most recent files)
+3. Read `docs/build-state.md` (is the build green or broken?)
+4. Read `memory/project_current_priorities.md` (what matters right now)
+5. `git log --oneline -10` + `git status --short` (what changed, what's dirty)
+
+**Phase 2: Prior Conversation Recovery** 6. Read the last `## ` entry in `docs/session-log.md` (what happened last session) 7. Search MemPalace MCP for context related to the user's current request (if MemPalace is available) 8. Check MEMORY.md index for relevant memories
+
+**Phase 3: Situational Awareness** 9. If build is broken: flag it, fix it before new work 10. If last session was >48h ago: flag staleness, verify assumptions 11. If uncommitted work exists: identify what areas it touches, do not clobber it 12. If user's request relates to prior work: load that specific digest/memory
+
+**Output:** No output. This is silent. Claude just KNOWS. The only exception: if the build is broken or something critical is flagged, mention it in 1 line before proceeding.
+
+**If the user's first message is a greeting or open-ended:** invoke `/morning` for a full briefing. If the user's first message is a specific task: load context silently and start working.
 
 ### On End
 
-Run `bash scripts/session-close.sh` to generate digest template and session log entry. Fill in judgment parts. Update `docs/build-state.md`, `docs/product-blueprint.md`, and relevant `project-map/` file if applicable. Commit everything + push.
+Run `bash scripts/session-close.sh` to generate digest template and session log entry. Fill in judgment parts. Update `docs/build-state.md`, `docs/product-blueprint.md`, and relevant `project-map/` file if applicable. Commit everything + push. This is auto-triggered by `/close-session` skill.
 
 ---
 
@@ -246,6 +350,65 @@ Full gate procedures are available as skills. They load automatically when relev
 - **`/research`** - Full Research Gate: investigation rules, report format, citation requirements. Use when producing research reports.
 
 **Key rule across all gates:** Every claim must cite file paths and line numbers. No citation = not verified.
+
+---
+
+## CODE ORGANIZATION (MANDATORY)
+
+**Every file lives in a module. No stray code. No orphan files. No "I'll organize it later."**
+
+A `module-guard.sh` PostToolUse hook fires on every `Write` and warns if a source file lands outside established directories. But the hook is a safety net; Claude should place files correctly the first time.
+
+### Module Map
+
+| Directory       | Contains                                  | Examples                                        |
+| --------------- | ----------------------------------------- | ----------------------------------------------- |
+| `app/`          | Next.js routes, pages, layouts            | `app/(chef)/events/page.tsx`                    |
+| `lib/`          | Business logic, server actions, utilities | `lib/chef/actions.ts`, `lib/ai/remy-actions.ts` |
+| `components/`   | Reusable UI components                    | `components/billing/upgrade-gate.tsx`           |
+| `types/`        | TypeScript type definitions               | `types/database.ts`                             |
+| `database/`     | Schema, migrations, seeds                 | `database/schema.ts`                            |
+| `middleware.ts` | Edge middleware                           | Root-level, single file                         |
+| `scripts/`      | CLI tools, build scripts                  | `scripts/services.sh`                           |
+| `tests/`        | All test files                            | `tests/unit/`, `tests/e2e/`                     |
+
+### Rules
+
+1. **New lib code:** goes in `lib/{domain}/`. If the domain doesn't exist yet, create the directory.
+2. **New components:** go in `components/{domain}/`. Group by feature area, not by component type.
+3. **New pages:** follow Next.js app router conventions in `app/`.
+4. **Never create loose `.ts` files** at the project root or inside `app/` that aren't route files.
+5. **Shared utilities** go in `lib/utils/` or a domain-specific lib, never as standalone files.
+6. **After creating a file:** verify it's importable from where it needs to be used. Check for circular deps.
+
+---
+
+## NEVER ASK FOR SIMPLE THINGS (ABSOLUTE)
+
+**If Claude can determine the answer from context, code, memory, or prior conversations, it MUST act, not ask.**
+
+These are things Claude must NEVER ask the developer:
+
+| Never ask this                        | Just do this instead                          |
+| ------------------------------------- | --------------------------------------------- |
+| "Should I start the server?"          | Check if it's running. If not, start it.      |
+| "Should I run tsc?"                   | If you edited TS files, run it.               |
+| "Should I commit?"                    | If meaningful work is done, commit it.        |
+| "What file should I put this in?"     | Read the module map. Place it correctly.      |
+| "Should I fix this type error?"       | Fix it.                                       |
+| "Should I update the docs?"           | If you changed UI/features, update them.      |
+| "Want me to run the tests?"           | If you changed code, run them.                |
+| "Should I check the build?"           | If you're about to ship, check it.            |
+| "Where was this discussed before?"    | Check session digests, MemPalace, memory.     |
+| "What's the current state of X?"      | Read build-state.md, session-log.md, git log. |
+| "Should I clean up imports?"          | Clean them. Always.                           |
+| "Is the server on port 3000 or 3100?" | 3000. Always. (per memory)                    |
+| "Should I push to GitHub?"            | At session end, yes. Always.                  |
+| "Which branch?"                       | main, unless told otherwise.                  |
+
+**The test:** Before asking any question, check: "Could I answer this by reading a file, running a command, or checking memory?" If yes, do that instead of asking.
+
+**The only things worth asking about:** irreversible actions (DB drops, deploys, force pushes), ambiguous product decisions, and scope choices the developer hasn't specified.
 
 ---
 

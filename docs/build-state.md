@@ -12,10 +12,10 @@ Last known state of the app. Updated after every successful type check and build
 
 ## Current State
 
-| Check                                                | Status | Last Verified | Commit | Agent                                     |
-| ---------------------------------------------------- | ------ | ------------- | ------ | ----------------------------------------- |
-| `node scripts/run-typecheck.mjs -p tsconfig.ci.json` | green  | 2026-04-24    | dirty  | Codex (first-time progressive disclosure) |
-| `npm run build -- --no-lint` (16GB heap)             | green  | 2026-04-24    | dirty  | Codex (first-time progressive disclosure) |
+| Check                                                | Status | Last Verified | Commit | Agent                                    |
+| ---------------------------------------------------- | ------ | ------------- | ------ | ---------------------------------------- |
+| `node scripts/run-typecheck.mjs -p tsconfig.ci.json` | green  | 2026-05-02    | dirty  | Claude Opus 4.6 (workflow audit session) |
+| `npm run build -- --no-lint` (12GB heap)             | green  | 2026-05-02    | dirty  | Claude Opus 4.6 (workflow audit session) |
 
 **Green note (2026-04-12, dead-zone session):** tsc remains green after: (1) financials/page.tsx cash-flow tile gating via getFinanceSurfaceAvailability, (2) remy-personality-engine.ts sync export -> async fix (Next.js build requirement), (3) cron definitions for proactive-alerts and scheduled-messages. No new TS errors introduced. tsc not re-run (changes are type-safe: async wrappers over same return types, filtered array map, object literal additions).
 
