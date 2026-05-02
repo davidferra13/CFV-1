@@ -25,16 +25,7 @@ if (process.env.ENABLE_PWA_BUILD === '1') {
 
 const isDev = process.env.NODE_ENV === 'development'
 
-const devConnectSrc = isDev
-  ? [
-      'http://127.0.0.1:54321',
-      'ws://127.0.0.1:54321',
-      'http://localhost:54321',
-      'ws://localhost:54321',
-      'ws://127.0.0.1:3100',
-      'ws://localhost:3100',
-    ]
-  : []
+const devConnectSrc = isDev ? ['ws://127.0.0.1:3100', 'ws://localhost:3100'] : []
 
 // Next.js dev mode uses eval-based source maps (webpack devtool). Without
 // 'unsafe-eval' in CSP, all client-side JS fails to hydrate in development.
