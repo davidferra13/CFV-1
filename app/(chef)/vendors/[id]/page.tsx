@@ -21,6 +21,10 @@ import { VendorPriceAlertSettings } from '@/components/vendors/vendor-price-aler
 import { InvoiceForm } from '@/components/vendors/invoice-form'
 import { VendorComparisonPanel } from '@/components/inventory/vendor-comparison-panel'
 import { EntityPhotoUpload } from '@/components/entities/entity-photo-upload'
+import { VendorScorecardCard } from '@/components/vendors/vendor-scorecard'
+import { VendorVettingChecklist } from '@/components/vendors/vendor-vetting-checklist'
+import { getVendorScorecard } from '@/lib/vendors/scorecard-actions'
+import { getVendorVetting } from '@/lib/vendors/vetting-actions'
 import Link from 'next/link'
 
 export const metadata: Metadata = { title: 'Vendor Detail' }
@@ -45,20 +49,29 @@ export default async function VendorDetailPage({ params }: { params: Promise<{ i
   } catch {
     notFound()
   }
-  const [invoices, allVendors, pendingCatalogRows, vendorUploads, vendorInsights] =
-    await Promise.all([
-      listInvoices(id),
-      listVendors(),
-      listVendorCatalogQueue(vendor.id, 'pending'),
-      listVendorDocumentUploads(vendor.id, 30),
-      getVendorPriceInsights({
-        vendorId: vendor.id,
-        limit: 10,
-        trendItems: 6,
-        pointsPerTrend: 8,
-        lookbackDays: 180,
-      }),
-    ])
+  const [
+    invoices,
+    allVendors,
+    pendingCatalogRows,
+    vendorUploads,
+    vendorInsights,
+    scorecard,
+    vetting,
+  ] = await Promise.all([
+    listInvoices(id),
+    listVendors(),
+    listVendorCatalogQueue(vendor.id, 'pending'),
+    listVendorDocumentUploads(vendor.id, 30),
+    getVendorPriceInsights({
+      vendorId: vendor.id,
+      limit: 10,
+      trendItems: 6,
+      pointsPerTrend: 8,
+      lookbackDays: 180,
+    }),
+    getVendorScorecard(vendor.id),
+    getVendorVetting(vendor.id),
+  ])
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
@@ -157,6 +170,12 @@ export default async function VendorDetailPage({ params }: { params: Promise<{ i
           </details>
         </CardContent>
       </Card>
+
+      {/* Scorecard + Vetting */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {scorecard && <VendorScorecardCard scorecard={scorecard} />}
+        {vetting && <VendorVettingChecklist vetting={vetting} />}
+      </div>
 
       {/* Price list */}
       <VendorPriceList vendorId={vendor.id} items={vendor.items ?? []} />

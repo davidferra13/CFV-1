@@ -50,6 +50,7 @@ import { parseConflictError, type ConflictErrorPayload } from '@/lib/mutations/c
 import { ValidationError } from '@/lib/errors/app-error'
 import { mapErrorToUI } from '@/lib/errors/map-error-to-ui'
 import type { QuoteDraftPrefillSource } from '@/lib/quotes/quote-prefill'
+import { PricingTierBreakdown } from '@/components/quotes/pricing-tier-breakdown'
 
 type Client = {
   id: string
@@ -963,6 +964,27 @@ export function QuoteForm({
                 Apply weekend premium (Fri/Sat)
               </label>
             </div>
+
+            {/* Dynamic Pricing Tier Breakdown */}
+            {chefPricingConfig && calcServiceType === 'private_dinner' && (
+              <PricingTierBreakdown
+                serviceType={calcServiceType}
+                courseCount={parseInt(calcCourseCount) || 3}
+                couplesRates={{
+                  3: chefPricingConfig.couples_rate_3_course,
+                  4: chefPricingConfig.couples_rate_4_course,
+                  5: chefPricingConfig.couples_rate_5_course,
+                }}
+                groupRates={{
+                  3: chefPricingConfig.group_rate_3_course,
+                  4: chefPricingConfig.group_rate_4_course,
+                  5: chefPricingConfig.group_rate_5_course,
+                }}
+                largeGroupMin={chefPricingConfig.large_group_min}
+                largeGroupMax={chefPricingConfig.large_group_max}
+                currentGuestCount={parseInt(guestCount) || undefined}
+              />
+            )}
 
             <div className="space-y-1.5">
               {!guestCount || parseInt(guestCount) <= 0 ? (
