@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
 import { StaffScheduler } from '@/components/staffing/StaffScheduler'
+import { StaffScheduleBoard } from '@/components/staffing/staff-schedule-board'
 import { getDefaultStaffingWindow, getStaffSchedulerData } from '@/lib/staff/staffing-actions'
 
 export const metadata: Metadata = { title: 'Staff Schedule' }
@@ -52,6 +53,10 @@ export default async function StaffSchedulePage() {
           </Link>
         </div>
       </div>
+      {/* Visual week-at-a-glance board */}
+      <StaffScheduleBoard data={schedulerData} />
+
+      {/* Assignment manager */}
       <StaffScheduler initialData={schedulerData} />
     </div>
   )

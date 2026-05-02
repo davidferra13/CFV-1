@@ -17,6 +17,7 @@ import {
   updateTicketAttendance,
 } from '@/lib/tickets/actions'
 import type { EventTicketType, EventTicket, EventTicketSummary } from '@/lib/tickets/types'
+import { TicketWaitlistPanel } from '@/components/tickets/ticket-waitlist-panel'
 
 type Props = {
   activeTab: EventDetailTab
@@ -647,6 +648,8 @@ export function EventDetailTicketsTab({
             </div>
           </Card>
         )}
+        {/* Waitlist & Access Control */}
+        <TicketWaitlistPanel eventId={eventId} />
       </div>
     </EventDetailSection>
   )
