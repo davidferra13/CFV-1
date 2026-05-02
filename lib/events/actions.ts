@@ -18,6 +18,7 @@ import {
   normalizeEventTimezoneTruthValue,
 } from '@/lib/events/time-truth'
 import { executeInteraction } from '@/lib/interactions'
+import { detectEventConflicts } from '@/lib/events/conflict-detection'
 import {
   EVENT_TIME_ACTIVITY_TYPES,
   EVENT_TIME_ACTIVITY_CONFIG,
@@ -406,7 +407,36 @@ export async function createEvent(input: CreateEventInput) {
     console.error('[createEvent] Webhook dispatch failed (non-blocking):', err)
   }
 
-  return result
+  // Check for scheduling conflicts with existing events (non-blocking)
+  let warnings: string[] = []
+  try {
+    const existingEvents = await getEvents()
+    const allEvents = [
+      ...existingEvents.map((e: any) => ({
+        id: e.id,
+        occasion: e.occasion,
+        event_date: e.event_date,
+        serve_time: e.serve_time,
+        status: e.status,
+      })),
+      {
+        id: result.event.id,
+        occasion: validated.occasion || null,
+        event_date: validated.event_date,
+        serve_time: validated.serve_time || null,
+        status: 'draft',
+      },
+    ]
+    const conflicts = detectEventConflicts(allEvents)
+    const newEventConflicts = conflicts.filter(
+      (c) => c.eventA.id === result.event.id || c.eventB.id === result.event.id
+    )
+    warnings = newEventConflicts.map((c) => c.message)
+  } catch (err) {
+    console.error('[createEvent] Conflict detection failed (non-blocking):', err)
+  }
+
+  return { ...result, warnings }
 }
 
 /**

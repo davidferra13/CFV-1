@@ -20,13 +20,14 @@ import {
 } from '@/components/ui/table'
 import { Card, CardContent } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils/format'
-import { getRegionalSettings } from '@/lib/chef/actions'
 import { format } from 'date-fns'
 import { isDemoEvent } from '@/lib/onboarding/demo-data-utils'
 import { createServerClient } from '@/lib/db/server'
 import { EmptyState } from '@/components/ui/empty-state'
 import { getCachedChefArchetype } from '@/lib/chef/layout-data-cache'
 import { getArchetypeCopy } from '@/lib/archetypes/ui-copy'
+import { detectEventConflicts } from '@/lib/events/conflict-detection'
+import { ConflictBadge } from '@/components/events/conflict-badge'
 
 export const metadata: Metadata = { title: 'Events' }
 
@@ -151,7 +152,7 @@ function getEventStaleness(updatedAt: string | null, status: string): 'ok' | 'wa
 async function EventsList({ status }: { status: EventStatus }) {
   const user = await requireChef()
 
-  const [events_raw, regional] = await Promise.all([getEvents(), getRegionalSettings()])
+  const events_raw = await getEvents()
   let events = events_raw
 
   if (status !== 'all') {
@@ -307,8 +308,8 @@ async function EventsList({ status }: { status: EventStatus }) {
                 </TableCell>
                 <TableCell>
                   {formatCurrency(event.quoted_price_cents ?? 0, {
-                    locale: regional.locale,
-                    currency: regional.currencyCode,
+                    locale: 'en-US',
+                    currency: 'USD',
                   })}
                 </TableCell>
                 <TableCell>
@@ -341,6 +342,21 @@ async function EventsList({ status }: { status: EventStatus }) {
       </Table>
     </Card>
   )
+}
+
+async function EventConflictsBadge() {
+  const events_raw = await getEvents()
+  const conflicts = detectEventConflicts(
+    events_raw.map((e: any) => ({
+      id: e.id,
+      occasion: e.occasion,
+      event_date: e.event_date,
+      serve_time: e.serve_time,
+      status: e.status,
+    }))
+  )
+  if (conflicts.length === 0) return null
+  return <ConflictBadge conflicts={conflicts} />
 }
 
 async function TodayEventsBanner() {
@@ -416,9 +432,14 @@ export default async function EventsPage({
 
       {/* Header */}
       <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-stone-100">Events</h1>
-          <p className="text-stone-500 mt-1">Calendar, pipeline, and event management</p>
+        <div className="flex items-center gap-3">
+          <div>
+            <h1 className="text-3xl font-bold text-stone-100">Events</h1>
+            <p className="text-stone-500 mt-1">Calendar, pipeline, and event management</p>
+          </div>
+          <Suspense fallback={null}>
+            <EventConflictsBadge />
+          </Suspense>
         </div>
         <Link href="/events/new">
           <Button data-tour="create-event">+ New Event</Button>

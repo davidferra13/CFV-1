@@ -49,6 +49,7 @@ import {
   Kanban,
   Landmark,
   LayoutDashboard,
+  Lightbulb,
   List,
   ListChecks,
   MagnifyingGlassPlus,
@@ -168,6 +169,7 @@ export const standaloneTop: NavItem[] = [
       { href: '/culinary/costing', label: 'Costing' },
       { href: '/culinary/prep', label: 'Prep' },
       { href: '/culinary/prep/shopping', label: 'Shopping Lists' },
+      { href: '/culinary/cheftips', label: 'ChefTips' },
     ],
   },
   {
@@ -520,6 +522,11 @@ export const navGroups: NavGroup[] = [
         icon: ChefHat,
       },
       {
+        href: '/culinary/cheftips',
+        label: 'ChefTips',
+        icon: Lightbulb,
+      },
+      {
         href: '/culinary/price-catalog',
         label: 'Food Catalog',
         icon: Store,
@@ -673,6 +680,7 @@ export const navGroups: NavGroup[] = [
           { href: '/events/new/from-text', label: 'Create from Text' },
           { href: '/events/new/wizard', label: 'Event Wizard' },
           { href: '/events/board', label: 'Kanban Board' },
+          { href: '/events/timeline', label: 'Timeline' },
         ],
       },
     ],
@@ -1218,6 +1226,11 @@ export const navGroups: NavGroup[] = [
     icon: ShieldCheck,
     module: 'protection',
     items: [
+      {
+        href: '/protection/audit-trail',
+        label: 'Audit Trail',
+        icon: ScrollText,
+      },
       {
         href: '/safety/backup-chef',
         label: 'Backup Coverage',
