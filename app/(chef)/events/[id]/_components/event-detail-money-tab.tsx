@@ -20,6 +20,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils/format'
 import type { CostForecast } from '@/lib/openclaw/cost-forecast-actions'
+import { CostForecastCard } from '@/components/finance/cost-forecast-card'
 import type { EventSettlement } from '@/lib/collaboration/settlement-actions'
 import { PriceComparisonSummary } from '@/components/pricing/price-comparison-summary'
 import { rowToPriceComparison } from '@/lib/pricing/pricing-decision'
@@ -140,34 +141,7 @@ export function EventDetailMoneyTab(props: EventDetailMoneyTabProps) {
       )}
 
       {/* Cost Forecast (future events with menu only) */}
-      {costForecast && (
-        <div className="rounded-lg border border-stone-700 bg-stone-800/50 px-4 py-3 flex items-center gap-3">
-          <div className="flex-1">
-            <span className="text-sm text-stone-400">Menu Cost: </span>
-            <span className="text-sm font-medium">{fmt(costForecast.currentCostCents)} today</span>
-            <span className="text-sm text-stone-400">
-              {' '}
-              · Forecast for {format(new Date(event.event_date), 'MMM d')}:{' '}
-            </span>
-            <span
-              className={`text-sm font-medium ${costForecast.changePct > 0 ? 'text-red-400' : costForecast.changePct < 0 ? 'text-green-400' : ''}`}
-            >
-              ~{fmt(costForecast.forecastCostCents)} ({costForecast.changePct > 0 ? '+' : ''}
-              {costForecast.changePct}%)
-            </span>
-          </div>
-          <div className="group relative">
-            <span className="text-xs text-stone-500 cursor-help border-b border-dotted border-stone-600">
-              {costForecast.confidence} confidence
-            </span>
-            {costForecast.caveat && (
-              <div className="hidden group-hover:block absolute bottom-full right-0 mb-2 w-64 p-2 rounded bg-stone-900 border border-stone-700 text-xs text-stone-400 z-10">
-                {costForecast.caveat}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      {costForecast && <CostForecastCard forecast={costForecast} />}
 
       {/* Food Cost Analysis (operator-aware, from menu_cost_summary) */}
       {menuCostSummary && (
