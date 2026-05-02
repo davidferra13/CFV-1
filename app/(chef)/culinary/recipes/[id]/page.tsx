@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import { RecipeScalingPanel } from '@/components/ai/recipe-scaling-panel'
+import { RecipeScalingPreview } from '@/components/culinary/recipe-scaling-preview'
 import Link from 'next/link'
 import { getRecipeById } from '@/lib/recipes/actions'
 import { getPlaceholderImage } from '@/lib/images/placeholder-actions'
@@ -299,6 +300,25 @@ export default async function ChefRecipeDetailPage({ params }: { params: { id: s
 
       {/* Nutrition Lookup - Open Food Facts */}
       <NutritionLookupPanel defaultQuery={r.name} />
+
+      {/* Deterministic Scaling Preview */}
+      {(r.recipe_ingredients ?? []).length > 0 && (
+        <Card className="p-5">
+          <RecipeScalingPreview
+            ingredients={(r.recipe_ingredients ?? [])
+              .filter((ri: any) => ri.ingredient)
+              .map((ri: any) => ({
+                ingredientId: ri.ingredient.id ?? ri.ingredient_id,
+                name: ri.ingredient.name,
+                quantity: ri.quantity,
+                unit: ri.unit,
+                ingredientCategory: ri.ingredient.category ?? 'other',
+              }))}
+            baseYield={r.yield_quantity ?? r.servings ?? 4}
+            yieldUnit={r.yield_unit ?? 'servings'}
+          />
+        </Card>
+      )}
 
       {/* AI Recipe Scaling */}
       <RecipeScalingPanel

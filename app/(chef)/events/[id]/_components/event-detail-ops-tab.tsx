@@ -22,6 +22,7 @@ import { ContingencyAIPanel } from '@/components/ai/contingency-ai-panel'
 import { DocumentSection } from '@/components/documents/document-section'
 import { AllergyCardButton } from '@/components/events/allergy-card-button'
 import { ReadinessGatePanel } from '@/components/events/readiness-gate-panel'
+import { ComplianceGatePanel } from '@/components/protection/compliance-gate-panel'
 import { PrepPlanPanel } from '@/components/events/prep-plan-panel'
 import { ServiceSimulationPanel } from '@/components/events/service-simulation-panel'
 import { LiveServiceTracker } from '@/components/events/live-service-tracker'
@@ -275,6 +276,9 @@ export function EventDetailOpsTab(props: EventDetailOpsTabProps) {
 
       {/* Emergency Allergy Card (standalone landscape PDF for kitchen) */}
       <AllergyCardButton eventId={event.id} hasAllergyData={hasAllergyData} />
+
+      {/* Compliance Gate - certs, insurance, permits check */}
+      {!isCompletedOrBeyond && <ComplianceGatePanel />}
 
       {/* Readiness Gate Panel â€” shown for events approaching their next transition */}
       {eventReadiness && eventReadiness.gates.length > 0 && (

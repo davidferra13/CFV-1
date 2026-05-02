@@ -3,6 +3,7 @@ import { format } from 'date-fns'
 import type { EventDetailTab } from '@/components/events/event-detail-mobile-nav'
 import { EventDetailSection } from '@/components/events/event-detail-mobile-nav'
 import { AARGeneratorPanel } from '@/components/ai/aar-generator-panel'
+import { EventReportCard } from '@/components/stories/event-report-card'
 import { ReviewRequestPanel } from '@/components/ai/review-request-panel'
 import { GratuityPanel } from '@/components/ai/gratuity-panel'
 import { SocialCaptionsPanel } from '@/components/ai/social-captions-panel'
@@ -112,6 +113,9 @@ export function EventDetailWrapTab({
         followUpSent={followUpSent}
         followUpSentAt={followUpSentAt}
       />
+
+      {/* Event Storytelling Report - comprehensive post-event summary */}
+      {eventStatus === 'completed' && <EventReportCard eventId={eventId} />}
 
       {/* AI AAR Generator - for completed events without a filed review */}
       {eventStatus === 'completed' && !hasAAR && <AARGeneratorPanel eventId={eventId} />}

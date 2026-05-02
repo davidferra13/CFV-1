@@ -21,6 +21,7 @@ import { Card } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils/format'
 import type { CostForecast } from '@/lib/openclaw/cost-forecast-actions'
 import { CostForecastCard } from '@/components/finance/cost-forecast-card'
+import { EventLaborCostCard } from '@/components/staff/event-labor-cost-card'
 import type { EventSettlement } from '@/lib/collaboration/settlement-actions'
 import { PriceComparisonSummary } from '@/components/pricing/price-comparison-summary'
 import { rowToPriceComparison } from '@/lib/pricing/pricing-decision'
@@ -152,6 +153,9 @@ export function EventDetailMoneyTab(props: EventDetailMoneyTabProps) {
           archetype={chefArchetype}
         />
       )}
+
+      {/* Labor Cost (per-event staff hours + pay, rolls into P&L) */}
+      <EventLaborCostCard eventId={event.id} quotedPriceCents={event.quoted_price_cents} />
 
       <EventPricingIntelligencePanel data={pricingIntelligence ?? null} />
 

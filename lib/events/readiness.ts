@@ -195,6 +195,49 @@ async function evaluateReadinessInternal(params: {
     buildGateResult(proof, targetStatus, overrideRows.get(proof.id), simulationState.hash)
   )
 
+  // Compliance gate: check certs, insurance, permits before confirming
+  if (targetStatus === 'confirmed' || targetStatus === 'in_progress') {
+    try {
+      const { checkComplianceGate } = await import('@/lib/protection/compliance-gate-actions')
+      const compliance = await checkComplianceGate()
+      for (const item of compliance.items) {
+        if (item.status === 'fail') {
+          gates.push({
+            gate: 'service_plan_flow' as ReadinessGate,
+            status: 'unverified',
+            label: item.label,
+            description: item.detail,
+            isHardBlock: true,
+            blocking: true,
+            severity: 'critical',
+            sourceOfTruth: 'compliance system',
+            lastVerifiedAt: null,
+            verifyRoute: item.route,
+            verifyTarget: item.key,
+            ctaLabel: `Fix ${item.label}`,
+          })
+        } else if (item.status === 'warn') {
+          gates.push({
+            gate: 'service_plan_flow' as ReadinessGate,
+            status: 'unverified',
+            label: item.label,
+            description: item.detail,
+            isHardBlock: false,
+            blocking: false,
+            severity: 'warning',
+            sourceOfTruth: 'compliance system',
+            lastVerifiedAt: null,
+            verifyRoute: item.route,
+            verifyTarget: item.key,
+            ctaLabel: `Review ${item.label}`,
+          })
+        }
+      }
+    } catch {
+      // Non-blocking if compliance system unavailable
+    }
+  }
+
   // Soft contract gate: warn if no signed contract when confirming
   if (targetStatus === 'confirmed' || targetStatus === 'in_progress') {
     try {
