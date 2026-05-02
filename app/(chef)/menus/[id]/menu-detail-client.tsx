@@ -41,6 +41,7 @@ import { MenuGeneratorUI } from '@/components/menus/menuGeneratorUI'
 import { CocktailBrowserPanel } from '@/components/menus/cocktail-browser-panel'
 import { MenuTranslateButton } from '@/components/menus/menu-translate-button'
 import { AllergenMatrix } from '@/components/menus/allergen-matrix'
+import { CrossContactRiskWrapper } from '@/components/culinary/cross-contact-risk-wrapper'
 import {
   MenuSimulatorPanel,
   type MenuSimulatorPanelProps,
@@ -1048,6 +1049,16 @@ export function MenuDetailClient({
           {menu.dishes.length > 0 && (
             <Card className="p-6">
               <AllergenMatrix menuId={menu.id} />
+            </Card>
+          )}
+
+          {/* Cross-Contact Risk Matrix */}
+          {menu.dishes.length > 0 && (
+            <Card className="p-6">
+              <h3 className="text-sm font-semibold text-stone-200 mb-3">
+                Cross-Contact Risk Analysis
+              </h3>
+              <CrossContactRiskWrapper menuId={menu.id} />
             </Card>
           )}
         </>

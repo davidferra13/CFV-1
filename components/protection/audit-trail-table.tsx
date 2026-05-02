@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useTransition } from 'react'
 import Link from 'next/link'
 import type { AuditEntry } from '@/lib/protection/audit-trail-actions'
+import { exportTraceabilityCSV } from '@/lib/protection/traceability-export-actions'
 
 const TYPE_FILTERS = ['all', 'event', 'quote', 'ledger'] as const
 type TypeFilter = (typeof TYPE_FILTERS)[number]
@@ -51,6 +52,26 @@ function relativeTime(dateStr: string): string {
 
 export function AuditTrailTable({ entries }: { entries: AuditEntry[] }) {
   const [activeFilter, setActiveFilter] = useState<TypeFilter>('all')
+  const [exporting, startExport] = useTransition()
+
+  const handleExportCSV = () => {
+    startExport(async () => {
+      try {
+        const { csv, filename } = await exportTraceabilityCSV(
+          activeFilter !== 'all' ? { entity_type: activeFilter } : undefined
+        )
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = filename
+        a.click()
+        URL.revokeObjectURL(url)
+      } catch (err) {
+        console.error('Export failed:', err)
+      }
+    })
+  }
 
   const filtered = useMemo(() => {
     if (activeFilter === 'all') return entries
@@ -59,8 +80,8 @@ export function AuditTrailTable({ entries }: { entries: AuditEntry[] }) {
 
   return (
     <div className="space-y-4">
-      {/* Filter bar */}
-      <div className="flex gap-2">
+      {/* Filter bar + export */}
+      <div className="flex items-center gap-2">
         {TYPE_FILTERS.map((filter) => (
           <button
             key={filter}
@@ -79,6 +100,16 @@ export function AuditTrailTable({ entries }: { entries: AuditEntry[] }) {
             )}
           </button>
         ))}
+        <div className="ml-auto">
+          <button
+            type="button"
+            onClick={handleExportCSV}
+            disabled={exporting}
+            className="rounded-md px-3 py-1.5 text-sm font-medium bg-stone-800 text-stone-400 hover:bg-stone-700 hover:text-stone-200 transition-colors disabled:opacity-50"
+          >
+            {exporting ? 'Exporting...' : 'Export CSV'}
+          </button>
+        </div>
       </div>
 
       {/* Table */}
