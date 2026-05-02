@@ -33,6 +33,8 @@ import { menuProposalAgentActions } from './menu-proposal-actions'
 import { lifecycleCircleAgentActions } from './lifecycle-circle-actions'
 // ─── Workflow actions (2026-04-18) ──────────────────────────────────────────
 import { workflowAgentActions } from './workflow-actions'
+// ─── ChefTips actions (2026-05-02) ──────────────────────────────────────────
+import { cheftipsAgentActions } from './cheftips-actions'
 
 let registered = false
 
@@ -76,4 +78,7 @@ export function ensureAgentActionsRegistered(): void {
 
   // ─── Workflow actions (2026-04-18) ──────────────────────────────────────────
   registerAgentActions(workflowAgentActions)
+
+  // ─── ChefTips actions (2026-05-02) ──────────────────────────────────────────
+  registerAgentActions(cheftipsAgentActions)
 }

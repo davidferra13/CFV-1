@@ -1,6 +1,12 @@
 import { Suspense } from 'react'
 import { Lightbulb } from '@/components/ui/icons'
-import { getChefTips, getChefTipStats, getMonthlyTipCounts } from '@/lib/cheftips/actions'
+import {
+  getChefTips,
+  getChefTipStats,
+  getMonthlyTipCounts,
+  getTopTags,
+  getOnThisDayTips,
+} from '@/lib/cheftips/actions'
 import { CHEFTIP_CATEGORIES } from '@/lib/cheftips/types'
 import { ChefTipsArchive } from './cheftips-archive'
 
@@ -34,10 +40,12 @@ export default async function ChefTipsPage() {
 }
 
 async function ChefTipsContent() {
-  const [{ tips, total }, stats, monthlyCounts] = await Promise.all([
-    getChefTips({ limit: 50 }),
+  const [{ tips, total }, stats, monthlyCounts, topTags, onThisDayTips] = await Promise.all([
+    getChefTips({ limit: 30 }),
     getChefTipStats(),
     getMonthlyTipCounts(6),
+    getTopTags(8),
+    getOnThisDayTips(),
   ])
 
   return (
@@ -55,6 +63,8 @@ async function ChefTipsContent() {
         initialTotal={total}
         categories={CHEFTIP_CATEGORIES}
         monthlyCounts={monthlyCounts}
+        topTags={topTags}
+        onThisDayTips={onThisDayTips}
       />
     </>
   )

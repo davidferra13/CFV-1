@@ -107,6 +107,8 @@ import { getEventReadiness } from '@/lib/events/readiness'
 import { getLatestGroceryQuote } from '@/lib/grocery/pricing-actions'
 import { getEventTrustLoopState } from '@/lib/post-event/trust-loop-actions'
 import { getNextBestActions } from '@/lib/clients/next-best-action'
+import { ChefTipsWidget } from '@/components/dashboard/cheftips-widget'
+import { getTodaysTips, getCachedTipStats, getRandomPastTip } from '@/lib/cheftips/actions'
 import { checkAssignmentConflict, getEventStaffRoster, listStaffMembers } from '@/lib/staff/actions'
 import { eventsOverlapInTime } from '@/lib/staff/time-overlap'
 import { getSupportStatus } from '@/lib/monetization/status'
@@ -1753,6 +1755,16 @@ export default async function ChefDashboard() {
       </section>
 
       {/* ============================================ */}
+      {/* CHEFTIPS - daily learning prompt              */}
+      {/* Default widget, always visible               */}
+      {/* ============================================ */}
+      <WidgetErrorBoundary name="ChefTips" compact>
+        <Suspense fallback={null}>
+          <ChefTipsSection />
+        </Suspense>
+      </WidgetErrorBoundary>
+
+      {/* ============================================ */}
       {/* EVENT READINESS - completion scores           */}
       {/* Hidden until the chef has created events     */}
       {/* ============================================ */}
@@ -1929,5 +1941,24 @@ export default async function ChefDashboard() {
         </DashboardSecondaryInsights>
       )}
     </div>
+  )
+}
+
+// ─── ChefTips Section ──────────────────────────────────
+async function ChefTipsSection() {
+  const user = await requireChef()
+  const [todaysTips, stats, pastTip] = await Promise.all([
+    getTodaysTips(),
+    getCachedTipStats(user.entityId),
+    getRandomPastTip(),
+  ])
+
+  return (
+    <ChefTipsWidget
+      todaysTips={todaysTips}
+      totalCount={stats.total}
+      streak={stats.streak}
+      pastTip={pastTip}
+    />
   )
 }

@@ -117,6 +117,7 @@ export const DASHBOARD_WIDGET_IDS = [
   'smart_hours',
   'inline_aar',
   'quick_create',
+  'cheftips',
 ] as const
 
 export type DashboardWidgetId = (typeof DASHBOARD_WIDGET_IDS)[number]
@@ -272,6 +273,7 @@ export const DASHBOARD_WIDGET_META: Record<DashboardWidgetId, WidgetMeta> = {
   activity: { category: 'system', size: 'lg', defaultEnabled: false },
   todo_list: { category: 'system', size: 'sm', defaultEnabled: false },
   career_growth: { category: 'system', size: 'sm', defaultEnabled: false },
+  cheftips: { category: 'today', size: 'sm', defaultEnabled: true },
   beta_program: { category: 'system', size: 'sm', defaultEnabled: false },
   prospecting_hub: { category: 'system', size: 'sm', defaultEnabled: false },
   remy_status: { category: 'system', size: 'sm', defaultEnabled: false },
@@ -462,6 +464,7 @@ export const WIDGET_ICONS: Partial<Record<DashboardWidgetId, string>> = {
   reviews_reputation: '\u2B50',
   client_growth_signals: '\u{1F4C8}',
   active_clients_now: '\u{1F7E2}',
+  cheftips: '\u{1F4A1}',
 }
 
 /** Get icon for a specific widget (falls back to category icon) */
@@ -629,6 +632,7 @@ export const DASHBOARD_WIDGET_LABELS: Record<DashboardWidgetId, string> = {
   smart_hours: 'Smart Hours',
   inline_aar: 'Quick Debrief',
   quick_create: 'Quick Create',
+  cheftips: 'ChefTips',
 }
 
 // Legacy alias kept for compatibility with older code paths.

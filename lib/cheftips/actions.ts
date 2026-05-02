@@ -1,15 +1,91 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag, unstable_cache } from 'next/cache'
 import { createServerClient } from '@/lib/db/server'
+import { createAdminClient } from '@/lib/db/admin'
 import { requireChef } from '@/lib/auth/get-user'
 import type { ChefTipCategory, ChefTip } from './types'
 
 const TIP_FIELDS = 'id, content, tags, shared, created_at, updated_at'
 
-function revalidateTips() {
+function revalidateTips(chefId?: string) {
   revalidatePath('/dashboard')
   revalidatePath('/culinary/cheftips')
+  if (chefId) {
+    revalidateTag(`cheftips-stats-${chefId}`)
+  }
+}
+
+// ─── CACHED STATS (for dashboard, 60s TTL) ────────────
+
+export async function getCachedTipStats(chefId: string): Promise<{
+  total: number
+  thisWeek: number
+  thisMonth: number
+  streak: number
+}> {
+  return unstable_cache(
+    async () => {
+      const db: any = createAdminClient()
+
+      const now = new Date()
+      const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+      const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+
+      const [totalRes, weekRes, monthRes] = await Promise.all([
+        db.from('chef_tips').select('id', { count: 'exact', head: true }).eq('chef_id', chefId),
+        db
+          .from('chef_tips')
+          .select('id', { count: 'exact', head: true })
+          .eq('chef_id', chefId)
+          .gte('created_at', weekAgo.toISOString()),
+        db
+          .from('chef_tips')
+          .select('id', { count: 'exact', head: true })
+          .eq('chef_id', chefId)
+          .gte('created_at', monthAgo.toISOString()),
+      ])
+
+      // Streak calculation
+      const { data: recentDays } = await db
+        .from('chef_tips')
+        .select('created_at')
+        .eq('chef_id', chefId)
+        .order('created_at', { ascending: false })
+        .limit(90)
+
+      let streak = 0
+      if (recentDays && recentDays.length > 0) {
+        const daySet = new Set<string>()
+        for (const row of recentDays) {
+          daySet.add(new Date(row.created_at).toISOString().split('T')[0])
+        }
+
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+
+        for (let i = 0; i < 90; i++) {
+          const checkDate = new Date(today.getTime() - i * 24 * 60 * 60 * 1000)
+          const dateStr = checkDate.toISOString().split('T')[0]
+          if (daySet.has(dateStr)) {
+            streak++
+          } else {
+            if (i === 0) continue
+            break
+          }
+        }
+      }
+
+      return {
+        total: totalRes.count ?? 0,
+        thisWeek: weekRes.count ?? 0,
+        thisMonth: monthRes.count ?? 0,
+        streak,
+      }
+    },
+    [`cheftips-stats-${chefId}`],
+    { revalidate: 60, tags: [`cheftips-stats-${chefId}`] }
+  )()
 }
 
 // ─── READ ──────────────────────────────────────────────
@@ -179,7 +255,7 @@ export async function addChefTip(
     return { success: false, error: 'Failed to save tip' }
   }
 
-  revalidateTips()
+  revalidateTips(user.entityId)
   return { success: true, id: data.id }
 }
 
@@ -219,7 +295,7 @@ export async function updateChefTip(
     return { success: false, error: 'Failed to update tip' }
   }
 
-  revalidateTips()
+  revalidateTips(user.entityId)
   return { success: true }
 }
 
@@ -286,6 +362,103 @@ export async function getMonthlyTipCounts(
   return results.reverse()
 }
 
+// ─── TOP TAGS ─────────────────────────────────────────
+
+export async function getTopTags(limit: number = 8): Promise<{ tag: string; count: number }[]> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const { data } = await db.from('chef_tips').select('tags').eq('chef_id', user.entityId)
+
+  if (!data || data.length === 0) return []
+
+  const tagCounts: Record<string, number> = {}
+  for (const row of data) {
+    if (Array.isArray(row.tags)) {
+      for (const tag of row.tags) {
+        tagCounts[tag] = (tagCounts[tag] || 0) + 1
+      }
+    }
+  }
+
+  return Object.entries(tagCounts)
+    .map(([tag, count]) => ({ tag, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, limit)
+}
+
+// ─── ON THIS DAY ──────────────────────────────────────
+
+export async function getOnThisDayTips(): Promise<ChefTip[]> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const today = new Date()
+  const month = today.getMonth() + 1
+  const day = today.getDate()
+
+  // Get all tips, then filter by month/day in JS (more reliable across TZs)
+  const { data } = await db
+    .from('chef_tips')
+    .select(TIP_FIELDS)
+    .eq('chef_id', user.entityId)
+    .order('created_at', { ascending: false })
+
+  if (!data) return []
+
+  const todayStr = today.toISOString().split('T')[0]
+
+  return (data as ChefTip[]).filter((tip) => {
+    const d = new Date(tip.created_at)
+    const tipDate = d.toISOString().split('T')[0]
+    // Same month and day, but not today
+    return d.getMonth() + 1 === month && d.getDate() === day && tipDate !== todayStr
+  })
+}
+
+// ─── EXPORT AS MARKDOWN ───────────────────────────────
+
+export async function exportTipsAsMarkdown(): Promise<string> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const { data } = await db
+    .from('chef_tips')
+    .select(TIP_FIELDS)
+    .eq('chef_id', user.entityId)
+    .order('created_at', { ascending: false })
+
+  if (!data || data.length === 0) return '# ChefTips\n\nNo tips recorded yet.\n'
+
+  const lines: string[] = ['# ChefTips - Learning Log\n']
+
+  // Group by month
+  const byMonth = new Map<string, ChefTip[]>()
+  for (const tip of data as ChefTip[]) {
+    const d = new Date(tip.created_at)
+    const key = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+    const arr = byMonth.get(key) ?? []
+    arr.push(tip)
+    byMonth.set(key, arr)
+  }
+
+  for (const [month, monthTips] of byMonth) {
+    lines.push(`\n## ${month}\n`)
+    for (const tip of monthTips) {
+      const date = new Date(tip.created_at).toLocaleDateString('en-US', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+      })
+      const tagStr = tip.tags.length > 0 ? ` [${tip.tags.join(', ')}]` : ''
+      lines.push(`- **${date}**${tagStr}: ${tip.content}`)
+    }
+  }
+
+  lines.push(`\n---\n*Exported from ChefFlow on ${new Date().toLocaleDateString()}*\n`)
+  return lines.join('\n')
+}
+
 // ─── DELETE ────────────────────────────────────────────
 
 export async function deleteChefTip(id: string): Promise<{ success: boolean; error?: string }> {
@@ -299,6 +472,6 @@ export async function deleteChefTip(id: string): Promise<{ success: boolean; err
     return { success: false, error: 'Failed to delete tip' }
   }
 
-  revalidateTips()
+  revalidateTips(user.entityId)
   return { success: true }
 }
