@@ -8,6 +8,7 @@ import { OpenSlotForm } from '@/components/hub/open-slot-form'
 import { PrivateMessagesTab } from '@/components/hub/private-messages-tab'
 import type { CircleDetail } from '@/lib/hub/circle-detail-actions'
 import { CircleSourcingBoard } from '@/components/circles/circle-sourcing-board'
+import { IngredientAvailabilityBoard } from '@/components/hub/ingredient-availability-board'
 import {
   addClientToCircle,
   removeCircleMember,
@@ -16,7 +17,7 @@ import {
   getClientsNotInCircle,
 } from '@/lib/hub/circle-detail-actions'
 
-type Tab = 'overview' | 'members' | 'events' | 'sourcing' | 'messages' | 'private'
+type Tab = 'overview' | 'members' | 'events' | 'sourcing' | 'ingredients' | 'messages' | 'private'
 
 export function CircleDetailClient({ circle }: { circle: CircleDetail }) {
   const [tab, setTab] = useState<Tab>('overview')
@@ -28,6 +29,7 @@ export function CircleDetailClient({ circle }: { circle: CircleDetail }) {
     { key: 'members', label: 'Members', count: circle.members.length },
     { key: 'events', label: 'Events', count: circle.events.length },
     { key: 'sourcing', label: 'Sourcing' },
+    { key: 'ingredients', label: 'Ingredients' },
     { key: 'messages', label: 'Messages', count: circle.message_count },
     { key: 'private', label: 'Private' },
   ]
@@ -96,6 +98,9 @@ export function CircleDetailClient({ circle }: { circle: CircleDetail }) {
       {tab === 'members' && <MembersTab circle={circle} />}
       {tab === 'events' && <EventsTab circle={circle} />}
       {tab === 'sourcing' && <CircleSourcingBoard circleId={circle.id} />}
+      {tab === 'ingredients' && (
+        <IngredientAvailabilityBoard groupId={circle.id} eventId={circle.events[0]?.id} />
+      )}
       {tab === 'messages' && <MessagesTab circle={circle} />}
       {tab === 'private' && <PrivateMessagesTabWrapper circle={circle} />}
     </div>

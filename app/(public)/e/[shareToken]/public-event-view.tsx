@@ -17,6 +17,7 @@ type Props = {
   justPurchased: boolean
   purchaseCancelled: boolean
   ticketId?: string
+  ticketGuestToken?: string | null
   circleUrl: string | null
 }
 
@@ -137,6 +138,7 @@ export function PublicEventView({
   justPurchased,
   purchaseCancelled,
   ticketId,
+  ticketGuestToken,
   circleUrl,
 }: Props) {
   const initialMode: ViewMode = justPurchased
@@ -424,6 +426,21 @@ export function PublicEventView({
             <p className="mt-3 text-sm leading-6 text-stone-400">
               Your tickets are confirmed. Check your email for details.
             </p>
+
+            {/* QR Code for check-in */}
+            {ticketId && ticketGuestToken && (
+              <div className="mt-6 flex flex-col items-center">
+                <p className="text-xs text-stone-500 mb-2">Show this at the door</p>
+                <img
+                  src={`/api/tickets/${ticketId}/qr?token=${encodeURIComponent(ticketGuestToken)}`}
+                  alt="Ticket QR Code"
+                  width={200}
+                  height={200}
+                  className="rounded-lg border border-stone-700"
+                />
+                <p className="mt-2 text-xs text-stone-500">Your check-in QR code</p>
+              </div>
+            )}
 
             {circleUrl && (
               <a

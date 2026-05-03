@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useEffect } from 'react'
 import type { EventDetailTab } from '@/components/events/event-detail-mobile-nav'
 import { EventDetailSection } from '@/components/events/event-detail-mobile-nav'
 import { Card } from '@/components/ui/card'
@@ -16,8 +16,13 @@ import {
   toggleEventTicketing,
   updateTicketAttendance,
 } from '@/lib/tickets/actions'
+import { exportGuestListCSV } from '@/lib/tickets/export-actions'
+import { resendTicketConfirmation } from '@/lib/tickets/resend-confirmation-actions'
+import { notifyPastGuests, getPastGuestCount } from '@/lib/tickets/past-guest-notify-actions'
+import { sendThankYouEmails } from '@/lib/tickets/thank-you-actions'
 import type { EventTicketType, EventTicket, EventTicketSummary } from '@/lib/tickets/types'
 import { TicketWaitlistPanel } from '@/components/tickets/ticket-waitlist-panel'
+import { DistributionPanel } from '@/components/tickets/distribution-panel'
 
 type Props = {
   activeTab: EventDetailTab
@@ -55,6 +60,16 @@ export function EventDetailTicketsTab({
   const [guestQty, setGuestQty] = useState(1)
   const [guestNotes, setGuestNotes] = useState('')
   const [walkInPaid, setWalkInPaid] = useState('')
+
+  const [pastGuestCount, setPastGuestCount] = useState<number | null>(null)
+  const [notifySent, setNotifySent] = useState<number | null>(null)
+  const [thankYouSent, setThankYouSent] = useState<number | null>(null)
+
+  useEffect(() => {
+    getPastGuestCount(eventId)
+      .then(setPastGuestCount)
+      .catch(() => {})
+  }, [eventId])
 
   const appUrl = typeof window !== 'undefined' ? window.location.origin : ''
   const publicUrl = shareToken ? `${appUrl}/e/${shareToken}` : null
@@ -209,6 +224,85 @@ export function EventDetailTicketsTab({
     })
   }
 
+  function handleExportCSV() {
+    setError(null)
+    startTransition(async () => {
+      try {
+        const { csv, filename } = await exportGuestListCSV(eventId)
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = filename
+        a.click()
+        URL.revokeObjectURL(url)
+      } catch (err: any) {
+        setError(err.message || 'Failed to export CSV')
+      }
+    })
+  }
+
+  function handleResendConfirmation(ticketId: string) {
+    setError(null)
+    startTransition(async () => {
+      try {
+        const result = await resendTicketConfirmation({ eventId, ticketId })
+        if (!result.success) {
+          setError(result.error || 'Failed to resend confirmation')
+        }
+      } catch (err: any) {
+        setError(err.message || 'Failed to resend confirmation')
+      }
+    })
+  }
+
+  function handleNotifyPastGuests() {
+    setError(null)
+    startTransition(async () => {
+      try {
+        const result = await notifyPastGuests({ eventId })
+        if (!result.success) {
+          setError(result.error || 'Failed to notify past guests')
+        } else {
+          setNotifySent(result.sent)
+        }
+      } catch (err: any) {
+        setError(err.message || 'Failed to notify past guests')
+      }
+    })
+  }
+
+  function handleSendThankYou() {
+    setError(null)
+    startTransition(async () => {
+      try {
+        const result = await sendThankYouEmails({ eventId })
+        if (!result.success) {
+          setError(result.error || 'Failed to send thank-you emails')
+        } else {
+          setThankYouSent(result.sent)
+        }
+      } catch (err: any) {
+        setError(err.message || 'Failed to send thank-you emails')
+      }
+    })
+  }
+
+  function handleBulkMarkNoShow() {
+    setError(null)
+    const unchecked = tickets.filter((t) => t.payment_status === 'paid' && t.attended !== true)
+    if (unchecked.length === 0) return
+    startTransition(async () => {
+      try {
+        for (const t of unchecked) {
+          await updateTicketAttendance({ eventId, ticketId: t.id, attended: false })
+        }
+      } catch (err: any) {
+        setError(err.message || 'Failed to mark no-shows')
+      }
+    })
+  }
+
   return (
     <EventDetailSection tab="tickets" activeTab={activeTab}>
       <div className="space-y-6">
@@ -307,6 +401,116 @@ export function EventDetailTicketsTab({
             </div>
           </div>
         </Card>
+
+        {/* Dietary & Allergy Summary */}
+        {tickets.length > 0 &&
+          (() => {
+            const paidTickets = tickets.filter((t) => t.payment_status === 'paid')
+            const dietaryMap = new Map<string, number>()
+            const allergyMap = new Map<string, number>()
+            for (const t of paidTickets) {
+              for (const d of t.dietary_restrictions || []) {
+                dietaryMap.set(d, (dietaryMap.get(d) || 0) + t.quantity)
+              }
+              for (const a of t.allergies || []) {
+                allergyMap.set(a, (allergyMap.get(a) || 0) + t.quantity)
+              }
+            }
+            if (dietaryMap.size === 0 && allergyMap.size === 0) return null
+            return (
+              <Card className="p-5">
+                <h3 className="font-semibold text-white mb-3">Guest Dietary Needs</h3>
+                <div className="grid grid-cols-2 gap-6">
+                  {dietaryMap.size > 0 && (
+                    <div>
+                      <p className="text-xs text-stone-400 mb-2 uppercase tracking-wide">
+                        Restrictions
+                      </p>
+                      <div className="space-y-1.5">
+                        {[...dietaryMap.entries()]
+                          .sort((a, b) => b[1] - a[1])
+                          .map(([restriction, count]) => (
+                            <div key={restriction} className="flex items-center justify-between">
+                              <span className="text-sm text-stone-200">{restriction}</span>
+                              <span className="text-xs px-2 py-0.5 rounded-full bg-orange-900/40 text-orange-300">
+                                {count}
+                              </span>
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+                  {allergyMap.size > 0 && (
+                    <div>
+                      <p className="text-xs text-stone-400 mb-2 uppercase tracking-wide">
+                        Allergies
+                      </p>
+                      <div className="space-y-1.5">
+                        {[...allergyMap.entries()]
+                          .sort((a, b) => b[1] - a[1])
+                          .map(([allergy, count]) => (
+                            <div key={allergy} className="flex items-center justify-between">
+                              <span className="text-sm text-stone-200">{allergy}</span>
+                              <span className="text-xs px-2 py-0.5 rounded-full bg-red-900/40 text-red-300">
+                                {count}
+                              </span>
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </Card>
+            )
+          })()}
+
+        {/* Post-Event Thank You */}
+        {eventStatus === 'completed' && tickets.length > 0 && (
+          <Card className="p-4 border-emerald-800/50">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-emerald-300">Thank Your Guests</p>
+                <p className="text-xs text-stone-400 mt-0.5">
+                  {thankYouSent !== null
+                    ? `Sent to ${thankYouSent} guest${thankYouSent !== 1 ? 's' : ''}`
+                    : 'Send a personal thank-you email to all attendees'}
+                </p>
+              </div>
+              <Button
+                variant="primary"
+                onClick={handleSendThankYou}
+                disabled={isPending || thankYouSent !== null}
+                className="text-xs shrink-0"
+              >
+                {isPending ? 'Sending...' : thankYouSent !== null ? 'Sent' : 'Send Thank You'}
+              </Button>
+            </div>
+          </Card>
+        )}
+
+        {/* Post-Event No-Show Summary */}
+        {eventStatus === 'completed' && missingArrivals > 0 && (
+          <Card className="p-4 border-amber-800/50">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-amber-300">
+                  {missingArrivals} guest{missingArrivals > 1 ? 's' : ''} never checked in
+                </p>
+                <p className="text-xs text-stone-400 mt-0.5">
+                  Mark all unchecked guests as no-shows for your records.
+                </p>
+              </div>
+              <Button
+                variant="ghost"
+                onClick={handleBulkMarkNoShow}
+                disabled={isPending}
+                className="text-xs text-amber-300 hover:text-amber-200"
+              >
+                {isPending ? 'Marking...' : 'Mark All No-Show'}
+              </Button>
+            </div>
+          </Card>
+        )}
 
         {/* Ticket Types */}
         <Card className="p-5">
@@ -451,6 +655,16 @@ export function EventDetailTicketsTab({
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold text-white">Ticket Holders ({tickets.length})</h3>
             <div className="flex items-center gap-2">
+              {tickets.length > 0 && (
+                <Button
+                  variant="ghost"
+                  onClick={handleExportCSV}
+                  disabled={isPending}
+                  className="text-xs"
+                >
+                  Export CSV
+                </Button>
+              )}
               <Button
                 variant="ghost"
                 onClick={() => setShowAddGuest('comp')}
@@ -614,6 +828,14 @@ export function EventDetailTicketsTab({
                       </Button>
                       <Button
                         variant="ghost"
+                        onClick={() => handleResendConfirmation(t.id)}
+                        disabled={isPending}
+                        className="text-xs"
+                      >
+                        Resend
+                      </Button>
+                      <Button
+                        variant="ghost"
                         onClick={() => handleRefund(t.id)}
                         disabled={isPending}
                         className="text-xs text-red-400 hover:text-red-300"
@@ -648,6 +870,33 @@ export function EventDetailTicketsTab({
             </div>
           </Card>
         )}
+        {/* Past Guest Notifications */}
+        {pastGuestCount !== null && pastGuestCount > 0 && (
+          <Card className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-white">Notify Past Guests</p>
+                <p className="text-xs text-stone-400 mt-0.5">
+                  {notifySent !== null
+                    ? `Sent to ${notifySent} guest${notifySent !== 1 ? 's' : ''}`
+                    : `${pastGuestCount} past guest${pastGuestCount !== 1 ? 's' : ''} from your previous events`}
+                </p>
+              </div>
+              <Button
+                variant="primary"
+                onClick={handleNotifyPastGuests}
+                disabled={isPending || notifySent !== null}
+                className="text-xs shrink-0"
+              >
+                {isPending ? 'Sending...' : notifySent !== null ? 'Sent' : 'Notify All'}
+              </Button>
+            </div>
+          </Card>
+        )}
+
+        {/* Distribution */}
+        <DistributionPanel eventId={eventId} shareToken={shareToken} />
+
         {/* Waitlist & Access Control */}
         <TicketWaitlistPanel eventId={eventId} />
       </div>

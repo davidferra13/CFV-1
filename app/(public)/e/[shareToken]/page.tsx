@@ -126,6 +126,22 @@ export default async function PublicEventPage({ params, searchParams }: Props) {
       : {}),
   }
 
+  // Fetch ticket guest_token for QR code on confirmation screen
+  let ticketGuestToken: string | null = null
+  if (search.ticket) {
+    try {
+      const dbTicket: any = createServerClient({ admin: true })
+      const { data: ticketRow } = await dbTicket
+        .from('event_tickets')
+        .select('guest_token')
+        .eq('id', search.ticket)
+        .maybeSingle()
+      if (ticketRow) ticketGuestToken = ticketRow.guest_token
+    } catch {
+      // Non-blocking
+    }
+  }
+
   // Fetch circle URL for purchase preview and post-purchase confirmation screen
   let circleUrl: string | null = null
   try {
@@ -157,6 +173,7 @@ export default async function PublicEventPage({ params, searchParams }: Props) {
         justPurchased={search.purchased === 'true'}
         purchaseCancelled={search.cancelled === 'true'}
         ticketId={search.ticket}
+        ticketGuestToken={ticketGuestToken}
         circleUrl={circleUrl}
       />
     </>

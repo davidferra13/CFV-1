@@ -249,7 +249,7 @@ export async function respondToEventInvitation(input: {
 
   // Verify the row belongs to the caller
   const { data: row, error: fetchErr } = await collab(db)
-    .select('id, event_id, status')
+    .select('id, event_id, status, role')
     .eq('id', input.collaboratorId)
     .eq('chef_id', user.entityId)
     .single()
@@ -328,8 +328,9 @@ export async function respondToEventInvitation(input: {
                 group_id: circleInfo.groupId,
                 profile_id: hubProfileId,
                 role: 'chef',
+                is_co_host: row.role === 'co_host',
                 can_post: true,
-                can_invite: false,
+                can_invite: row.role === 'co_host',
                 can_pin: true,
               })
 
