@@ -968,6 +968,25 @@ export async function deleteClient(clientId: string) {
     throw new UnknownAppError('Failed to delete client')
   }
 
+  // Cancel pending follow-up sends and scheduled notifications for deleted client
+  try {
+    const { cancelFollowUpSends } = await import('@/lib/follow-up/sequence-engine')
+    await cancelFollowUpSends(clientId, user.tenantId!)
+  } catch (err) {
+    console.error('[deleteClient] Follow-up cancellation failed (non-blocking):', err)
+  }
+
+  try {
+    await db
+      .from('scheduled_notifications')
+      .update({ status: 'cancelled' } as any)
+      .eq('client_id', clientId)
+      .eq('tenant_id', user.tenantId!)
+      .eq('status', 'pending')
+  } catch (err) {
+    console.error('[deleteClient] Notification cancellation failed (non-blocking):', err)
+  }
+
   revalidatePath('/clients')
   revalidatePath(`/clients/${clientId}`)
   invalidateRemyContextCache(user.tenantId!)
@@ -1263,6 +1282,17 @@ export async function updateClientStatus(clientId: string, status: string) {
   if (error) {
     console.error('[updateClientStatus] Error:', error)
     throw new UnknownAppError('Failed to update client status')
+  }
+
+  // Downstream side effects based on new status
+  try {
+    if (status === 'dormant') {
+      // Cancel pending follow-up sends; dormant clients should not receive nudges
+      const { cancelFollowUpSends } = await import('@/lib/follow-up/sequence-engine')
+      await cancelFollowUpSends(clientId, user.tenantId!)
+    }
+  } catch (err) {
+    console.error('[updateClientStatus] Side effect failed (non-blocking):', err)
   }
 
   revalidatePath(`/clients/${clientId}`)

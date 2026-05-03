@@ -1554,6 +1554,14 @@ export async function transitionEvent({
     } catch (err) {
       log.events.warn('Inngest post-event enqueue failed (non-blocking)', { error: err })
     }
+
+    // Schedule follow-up sends from chef's followup_rules (or defaults)
+    try {
+      const { schedulePostEventFollowUp } = await import('@/lib/follow-up/sequence-engine')
+      await schedulePostEventFollowUp(eventId, event.tenant_id)
+    } catch (err) {
+      log.events.warn('Follow-up sequence scheduling failed (non-blocking)', { error: err })
+    }
   }
 
   // Post-event AAR prompt: Remy alert asking chef to capture while fresh (non-blocking)

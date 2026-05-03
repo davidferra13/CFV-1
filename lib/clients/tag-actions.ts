@@ -40,7 +40,7 @@ export async function addClientTag(clientId: string, tag: string): Promise<void>
   const user = await requireChef()
   const db: any = createServerClient()
 
-  const trimmed = tag.trim().slice(0, 50)
+  const trimmed = tag.trim().toLowerCase().slice(0, 50)
   if (!trimmed) return
 
   await db

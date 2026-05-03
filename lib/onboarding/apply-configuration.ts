@@ -82,12 +82,46 @@ async function upsertChefPreferences(
   }
 
   const { data: existing } = await fromTable(db, 'chef_preferences')
-    .select('id')
+    .select(
+      'id, archetype, enabled_modules, primary_nav_hrefs, mobile_tab_hrefs, dashboard_widgets, default_prep_hours, default_buffer_minutes, default_shopping_minutes, target_margin_percent, focus_mode'
+    )
     .eq('chef_id', chefId)
     .single()
 
   if (existing) {
-    const { error } = await fromTable(db, 'chef_preferences').update(payload).eq('chef_id', chefId)
+    // Re-run merge: always update archetype + focus_mode (identity fields).
+    // Operational fields only update if the chef has NOT manually customized them
+    // (current value still matches what the previous archetype would have set, or is null).
+    const prev = existing as any
+    const mergedPayload: Record<string, unknown> = {
+      archetype: payload.archetype,
+      focus_mode: payload.focus_mode,
+      updated_at: payload.updated_at,
+    }
+
+    // Fields that merge conditionally: only overwrite if still at default/null
+    const conditionalFields = [
+      'enabled_modules',
+      'primary_nav_hrefs',
+      'mobile_tab_hrefs',
+      'dashboard_widgets',
+      'default_prep_hours',
+      'default_buffer_minutes',
+      'default_shopping_minutes',
+      'target_margin_percent',
+    ] as const
+
+    for (const field of conditionalFields) {
+      const currentVal = prev[field]
+      // Write if current is null/empty, or if archetype changed (new archetype = new defaults)
+      if (currentVal == null || prev.archetype !== config.archetype) {
+        mergedPayload[field] = (payload as any)[field]
+      }
+    }
+
+    const { error } = await fromTable(db, 'chef_preferences')
+      .update(mergedPayload)
+      .eq('chef_id', chefId)
     if (error) {
       console.error('[applyConfiguration] chef_preferences update error:', error)
       throw new Error('Failed to apply workspace configuration')
