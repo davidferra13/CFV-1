@@ -15,7 +15,7 @@ import {
   Users,
 } from '@/components/ui/icons'
 import { BookingCalendar } from '@/components/booking/booking-calendar'
-import { BookingForm } from '@/components/booking/booking-form'
+import { BookingForm, type BookingPrefill } from '@/components/booking/booking-form'
 import { formatCurrency } from '@/lib/utils/currency'
 
 export type BookingConfig = {
@@ -39,6 +39,7 @@ type Props = {
   chefSlug: string
   bookingConfig: BookingConfig
   chef: BookingPageChefSummary
+  prefill?: BookingPrefill
 }
 
 function formatSelectedDate(value: string | null) {
@@ -122,7 +123,7 @@ function StepPill({ step, active }: { step: string; active: boolean }) {
   )
 }
 
-export function BookingPageClient({ chefSlug, bookingConfig, chef }: Props) {
+export function BookingPageClient({ chefSlug, bookingConfig, chef, prefill }: Props) {
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
 
   const isInstantBook = bookingConfig.bookingModel === 'instant_book'
@@ -194,6 +195,7 @@ export function BookingPageClient({ chefSlug, bookingConfig, chef }: Props) {
                 selectedDate={selectedDate}
                 onBack={() => setSelectedDate(null)}
                 bookingConfig={bookingConfig}
+                prefill={prefill}
               />
             </div>
           </section>

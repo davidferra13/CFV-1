@@ -181,6 +181,20 @@ export async function searchSubstitutions(
     }
   }
 
+  // Sort: safe substitutes first, then by conflict severity (anaphylaxis last)
+  allSubstitutes.sort((a, b) => {
+    const aConflict = a.allergyConflicts?.length ?? 0
+    const bConflict = b.allergyConflicts?.length ?? 0
+    if (aConflict === 0 && bConflict > 0) return -1
+    if (aConflict > 0 && bConflict === 0) return 1
+    if (aConflict > 0 && bConflict > 0) {
+      const aMax = a.allergyConflicts?.some((c) => c.severity === 'anaphylaxis') ? 2 : 1
+      const bMax = b.allergyConflicts?.some((c) => c.severity === 'anaphylaxis') ? 2 : 1
+      return aMax - bMax
+    }
+    return 0
+  })
+
   // Find the best matching original name for display
   const bestOriginal = systemMatches[0]?.original ?? chefSubs?.[0]?.original ?? ingredientName
 

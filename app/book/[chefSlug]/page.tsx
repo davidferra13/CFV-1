@@ -96,7 +96,13 @@ function getDepositLabel(input: {
   return `${input.depositPercent ?? 30}% deposit due today`
 }
 
-export default async function BookingPage({ params }: { params: { chefSlug: string } }) {
+export default async function BookingPage({
+  params,
+  searchParams,
+}: {
+  params: { chefSlug: string }
+  searchParams: { rebook?: string }
+}) {
   const chef = await getChefForBooking(params.chefSlug)
 
   if (!chef) {
@@ -122,6 +128,47 @@ export default async function BookingPage({ params }: { params: { chefSlug: stri
     bioShort: chef.booking_bio_short || null,
     profileHref: profileSlug ? `/chef/${profileSlug}` : null,
     inquiryHref: inquirySlug ? `/chef/${inquirySlug}/inquire` : null,
+  }
+
+  // Resolve rebook token to prefill data from last event
+  let prefill: import('@/components/booking/booking-form').BookingPrefill | undefined
+  if (searchParams.rebook) {
+    try {
+      const adminDb: any = createAdminClient()
+      const { data: token } = await adminDb
+        .from('rebook_tokens')
+        .select('client_id, event_id')
+        .eq('token', searchParams.rebook)
+        .maybeSingle()
+      if (token?.client_id) {
+        const { data: client } = await adminDb
+          .from('clients')
+          .select(
+            'full_name, email, phone, address, typical_guest_count, dietary_restrictions, allergies'
+          )
+          .eq('id', token.client_id)
+          .single()
+        const { data: lastEvent } = token.event_id
+          ? await adminDb
+              .from('events')
+              .select('occasion, guest_count, location_address')
+              .eq('id', token.event_id)
+              .single()
+          : { data: null }
+        if (client) {
+          prefill = {
+            fullName: client.full_name ?? undefined,
+            email: client.email ?? undefined,
+            phone: client.phone ?? undefined,
+            occasion: lastEvent?.occasion ?? undefined,
+            guestCount: String(lastEvent?.guest_count ?? client.typical_guest_count ?? ''),
+            address: lastEvent?.location_address ?? client.address ?? undefined,
+          }
+        }
+      }
+    } catch {
+      /* rebook prefill is non-blocking */
+    }
   }
 
   return (
@@ -231,6 +278,7 @@ export default async function BookingPage({ params }: { params: { chefSlug: stri
           chefSlug={normalizedBookingSlug}
           bookingConfig={bookingConfig}
           chef={chefSummary}
+          prefill={prefill}
         />
       </section>
     </div>

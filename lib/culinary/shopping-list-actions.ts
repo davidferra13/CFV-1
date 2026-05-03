@@ -31,7 +31,7 @@ export type ShoppingListItem = {
   priceSource: string | null
   eventCount: number
   allergenFlags: string[] // EC-G8: allergen flags from ingredient for safety cross-reference
-  dietaryWarnings: { clientName: string; allergen: string; severity: string }[] // Q11: cross-ref with client allergies
+  dietaryWarnings: { clientName: string; allergen: string; severity: string; eventLabel?: string }[] // Q11: cross-ref with client allergies
 }
 
 export type ShoppingListResult = {
@@ -297,9 +297,22 @@ export async function generateShoppingList(input: {
   const clientIds = [
     ...new Set((events as any[]).map((e: any) => e.client_id).filter(Boolean)),
   ] as string[]
+  // Map client_id -> event label (date + occasion) for per-event attribution
+  const clientEventLabelMap = new Map<string, string>()
+  for (const ev of events as any[]) {
+    if (ev.client_id) {
+      const label = `${ev.event_date ?? 'TBD'}${ev.occasion ? ` (${ev.occasion})` : ''}`
+      const existing = clientEventLabelMap.get(ev.client_id)
+      if (existing) {
+        clientEventLabelMap.set(ev.client_id, `${existing}, ${label}`)
+      } else {
+        clientEventLabelMap.set(ev.client_id, label)
+      }
+    }
+  }
   const clientAllergyMap = new Map<
     string,
-    Array<{ clientName: string; allergen: string; severity: string }>
+    Array<{ clientName: string; allergen: string; severity: string; eventLabel?: string }>
   >()
   if (clientIds.length > 0) {
     const [clientNamesResult, allergyRecordsResult] = await Promise.all([
@@ -318,6 +331,7 @@ export async function generateShoppingList(input: {
         clientName: nameMap.get(r.client_id) ?? 'Client',
         allergen: r.allergen,
         severity: r.severity,
+        eventLabel: clientEventLabelMap.get(r.client_id),
       })
       clientAllergyMap.set(r.client_id, list)
     }
@@ -371,7 +385,12 @@ export async function generateShoppingList(input: {
         priceSource: ingredient.last_price_source || null,
         eventCount: events.length,
         allergenFlags: (ingredient.allergen_flags as string[]) ?? [],
-        dietaryWarnings: [] as { clientName: string; allergen: string; severity: string }[],
+        dietaryWarnings: [] as {
+          clientName: string
+          allergen: string
+          severity: string
+          eventLabel?: string
+        }[],
         _recipeAccum: [{ qty: recipeQty, unit: normUnit }],
         _buyAccum: [{ qty: buyQty, unit: normUnit }],
       })

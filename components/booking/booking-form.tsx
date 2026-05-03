@@ -19,11 +19,23 @@ import {
 import type { BookingConfig } from '@/app/book/[chefSlug]/booking-page-client'
 import { NEUTRAL_ADDRESS_PLACEHOLDER } from '@/lib/site/national-brand-copy'
 
+export type BookingPrefill = {
+  fullName?: string
+  email?: string
+  phone?: string
+  occasion?: string
+  guestCount?: string
+  address?: string
+  notes?: string
+  dietaryText?: string
+}
+
 type Props = {
   chefSlug: string
   selectedDate: string // YYYY-MM-DD pre-filled from calendar
   onBack: () => void
   bookingConfig?: BookingConfig
+  prefill?: BookingPrefill
 }
 
 type MultiDayMealSlot = 'breakfast' | 'lunch' | 'dinner' | 'late_snack' | 'dropoff' | 'other'
@@ -80,16 +92,16 @@ function createPublicAttemptId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2)}`
 }
 
-export function BookingForm({ chefSlug, selectedDate, onBack, bookingConfig }: Props) {
+export function BookingForm({ chefSlug, selectedDate, onBack, bookingConfig, prefill }: Props) {
   const router = useRouter()
 
   const isInstantBook = bookingConfig?.bookingModel === 'instant_book'
   const [instantAttemptId] = useState(createPublicAttemptId)
 
-  const [fullName, setFullName] = useState('')
-  const [email, setEmail] = useState('')
-  const [phone, setPhone] = useState('')
-  const [occasion, setOccasion] = useState('')
+  const [fullName, setFullName] = useState(prefill?.fullName ?? '')
+  const [email, setEmail] = useState(prefill?.email ?? '')
+  const [phone, setPhone] = useState(prefill?.phone ?? '')
+  const [occasion, setOccasion] = useState(prefill?.occasion ?? '')
   const [serviceMode, setServiceMode] = useState<'one_off' | 'recurring' | 'multi_day'>('one_off')
   const [recurringFrequency, setRecurringFrequency] = useState<'weekly' | 'biweekly' | 'monthly'>(
     'weekly'
@@ -102,10 +114,10 @@ export function BookingForm({ chefSlug, selectedDate, onBack, bookingConfig }: P
   const [multiDaySessions, setMultiDaySessions] = useState<MultiDaySessionRow[]>([
     createSessionRow(selectedDate),
   ])
-  const [guestCount, setGuestCount] = useState('')
+  const [guestCount, setGuestCount] = useState(prefill?.guestCount ?? '')
   const [serveTime, setServeTime] = useState('')
-  const [address, setAddress] = useState('')
-  const [notes, setNotes] = useState('')
+  const [address, setAddress] = useState(prefill?.address ?? '')
+  const [notes, setNotes] = useState(prefill?.notes ?? '')
   const [dietaryIntake, setDietaryIntake] = useState<DietaryIntakeValue>(emptyDietaryIntake())
   const [websiteUrl, setWebsiteUrl] = useState('')
 
