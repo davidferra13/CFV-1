@@ -237,6 +237,89 @@ export async function updateMyProfile(input: UpdateClientProfileInput) {
             clientId: user.entityId,
           })
         }
+
+        // SAFETY: Sync flat array -> structured allergy records so readiness
+        // gates and menu allergen checks see the updated data
+        try {
+          if (oldAllergies !== newAllergies) {
+            const { syncFlatToStructured } = await import('@/lib/dietary/allergy-sync')
+            await syncFlatToStructured({
+              tenantId: oldProfile.tenant_id,
+              clientId: user.entityId,
+              db,
+            })
+          }
+        } catch (syncErr) {
+          console.error('[updateMyProfile] Allergy sync failed (non-blocking):', syncErr)
+        }
+
+        // SAFETY: Log dietary changes for chef audit trail
+        try {
+          const { logDietaryChangeInternal } = await import('@/lib/clients/dietary-alert-actions')
+          if (oldAllergies !== newAllergies) {
+            const changeType =
+              (validated.allergies ?? []).length > (oldProfile.allergies ?? []).length
+                ? 'allergy_added'
+                : 'allergy_removed'
+            await logDietaryChangeInternal(
+              oldProfile.tenant_id,
+              user.entityId,
+              changeType,
+              'allergies',
+              (oldProfile.allergies ?? []).join(', ') || null,
+              (validated.allergies ?? []).join(', ') || null
+            )
+          }
+          if (oldDietary !== newDietary) {
+            const changeType =
+              (validated.dietary_restrictions ?? []).length >
+              (oldProfile.dietary_restrictions ?? []).length
+                ? 'restriction_added'
+                : 'restriction_removed'
+            await logDietaryChangeInternal(
+              oldProfile.tenant_id,
+              user.entityId,
+              changeType,
+              'dietary_restrictions',
+              (oldProfile.dietary_restrictions ?? []).join(', ') || null,
+              (validated.dietary_restrictions ?? []).join(', ') || null
+            )
+          }
+        } catch (logErr) {
+          console.error('[updateMyProfile] Dietary change log failed (non-blocking):', logErr)
+        }
+
+        // SAFETY: Recheck upcoming event menus for allergen conflicts
+        try {
+          const { recheckUpcomingMenusForClient } = await import('@/lib/dietary/menu-recheck')
+          await recheckUpcomingMenusForClient({
+            tenantId: oldProfile.tenant_id,
+            clientId: user.entityId,
+            db,
+          })
+        } catch (recheckErr) {
+          console.error('[updateMyProfile] Menu recheck failed (non-blocking):', recheckErr)
+        }
+
+        // SAFETY: Propagate allergy/dietary changes to active events
+        try {
+          const activeStatuses = ['accepted', 'paid', 'confirmed', 'in_progress']
+          const propagateFields: Record<string, unknown> = {}
+          if (oldAllergies !== newAllergies) {
+            propagateFields.allergies = validated.allergies ?? []
+          }
+          if (oldDietary !== newDietary) {
+            propagateFields.dietary_restrictions = validated.dietary_restrictions ?? []
+          }
+          await db
+            .from('events')
+            .update(propagateFields)
+            .eq('client_id', user.entityId)
+            .eq('tenant_id', oldProfile.tenant_id)
+            .in('status', activeStatuses)
+        } catch (propErr) {
+          console.error('[updateMyProfile] Event propagation failed (non-blocking):', propErr)
+        }
       }
 
       const oldFavoriteDishes = serializePreferenceList(

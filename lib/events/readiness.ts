@@ -633,6 +633,14 @@ export async function addAllergyRecord(
     console.error('[addAllergyRecord] Allergy sync to flat failed (non-blocking):', syncErr)
   }
 
+  // Log dietary change for audit trail
+  try {
+    const { logDietaryChange } = await import('@/lib/clients/dietary-alert-actions')
+    await logDietaryChange(clientId, 'allergy_added', 'allergies', null, data.allergen.trim())
+  } catch (logErr) {
+    console.error('[addAllergyRecord] Dietary change log failed (non-blocking):', logErr)
+  }
+
   try {
     const { recheckUpcomingMenusForClient } = await import('@/lib/dietary/menu-recheck')
     await recheckUpcomingMenusForClient({ tenantId: user.tenantId!, clientId, db })

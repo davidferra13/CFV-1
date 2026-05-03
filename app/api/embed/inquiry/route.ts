@@ -10,6 +10,11 @@ import { validateEmailLocal, suggestEmailCorrection } from '@/lib/email/email-va
 import { PUBLIC_INTAKE_JSON_BODY_MAX_BYTES } from '@/lib/api/request-body'
 import { guardPublicIntent } from '@/lib/security/public-intent-guard'
 import { PUBLIC_INTAKE_LANE_KEYS, withSubmissionSource } from '@/lib/public/intake-lane-config'
+import {
+  parseFreeTextDietary,
+  buildAllergyRecordRows,
+  recordsToStringArray,
+} from '@/lib/dietary/intake'
 
 // ── CORS headers for cross-origin embeds ──
 const corsHeaders = {
@@ -160,13 +165,16 @@ export async function POST(request: NextRequest) {
     const tenantId = chef.id as string
     const chefName = (chef.business_name as string | null) || 'Your Chef'
 
-    // Parse dietary restrictions early (needed for client + event + inquiry)
-    const allergiesList = data.allergies_food_restrictions
-      ? data.allergies_food_restrictions
-          .split(/[\n,]/)
-          .map((item: string) => stripHtml(item))
-          .filter(Boolean)
-      : null
+    // Parse dietary restrictions with severity-aware splitting
+    const dietaryRecords = data.allergies_food_restrictions
+      ? parseFreeTextDietary(stripHtml(data.allergies_food_restrictions), 'intake_form')
+      : []
+    const allergiesList = dietaryRecords.length > 0 ? recordsToStringArray(dietaryRecords) : null
+    const trueAllergyRecords = dietaryRecords.filter(
+      (r) => r.severity === 'allergy' || r.severity === 'anaphylaxis'
+    )
+    const confirmedAllergiesList =
+      trueAllergyRecords.length > 0 ? recordsToStringArray(trueAllergyRecords) : null
 
     // 2. Create or find existing client (idempotent by email)
     const clientEmail = data.email.toLowerCase().trim()
@@ -208,6 +216,19 @@ export async function POST(request: NextRequest) {
         )
       }
       clientId = newClient.id
+
+      // Persist structured allergy records for the new client
+      if (dietaryRecords.length > 0) {
+        const rows = buildAllergyRecordRows(tenantId, clientId, dietaryRecords)
+        try {
+          await db.from('client_allergy_records').upsert(rows, {
+            onConflict: 'client_id,allergen',
+            ignoreDuplicates: true,
+          })
+        } catch (syncErr) {
+          console.error('[embed-inquiry] Allergy record sync failed (non-blocking):', syncErr)
+        }
+      }
     }
 
     // 3. Build source message from optional fields
@@ -286,6 +307,7 @@ export async function POST(request: NextRequest) {
         confirmed_budget_cents: budgetCents,
         confirmed_service_expectations: `Serve time ${data.serve_time.trim()}. Chef will arrive 2hr prior.`,
         confirmed_dietary_restrictions: allergiesList,
+        confirmed_allergies: confirmedAllergiesList,
         source_message: sourceMessage,
         unknown_fields: withSubmissionSource(PUBLIC_INTAKE_LANE_KEYS.embed_inquiry, {
           embed_source: true,

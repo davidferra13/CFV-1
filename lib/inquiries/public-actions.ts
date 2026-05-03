@@ -153,6 +153,12 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
     ? parseFreeTextDietary(validated.allergies_food_restrictions, 'intake_form')
     : []
   const allergiesList = dietaryRecords.length > 0 ? recordsToStringArray(dietaryRecords) : null
+  // Split: true allergies (allergy/anaphylaxis) vs dietary preferences (preference/intolerance)
+  const trueAllergyRecords = dietaryRecords.filter(
+    (r) => r.severity === 'allergy' || r.severity === 'anaphylaxis'
+  )
+  const confirmedAllergiesList =
+    trueAllergyRecords.length > 0 ? recordsToStringArray(trueAllergyRecords) : null
   const serviceMode = validated.service_mode ?? 'one_off'
   const scheduleSummary = summarizeScheduleRequest(validated.schedule_request_jsonb)
 
@@ -353,6 +359,7 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
       confirmed_budget_cents: budgetCents,
       confirmed_service_expectations: serviceExpectations,
       confirmed_dietary_restrictions: allergiesList,
+      confirmed_allergies: confirmedAllergiesList,
       source_message: sourceMessage || null,
       referral_source: validated.referral_source?.trim() || null,
       referral_partner_id: resolvedAttribution.referralPartnerId,

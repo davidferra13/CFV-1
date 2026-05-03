@@ -337,6 +337,18 @@ export async function syncHubPreferencesToClient(clientId: string) {
       synced.clientAllergiesAdded = newClientAllergies.length
     }
 
+    // SAFETY: If allergies changed, recheck upcoming menus for conflicts
+    if (synced.allergies > 0 || synced.clientAllergiesAdded > 0) {
+      try {
+        const { createServerClient } = await import('@/lib/db/server')
+        const db: any = createServerClient()
+        const { recheckUpcomingMenusForClient } = await import('@/lib/dietary/menu-recheck')
+        await recheckUpcomingMenusForClient({ tenantId, clientId, db })
+      } catch (recheckErr) {
+        console.error('[syncHubPreferences] Menu recheck failed (non-blocking):', recheckErr)
+      }
+    }
+
     return {
       success: true,
       synced: {

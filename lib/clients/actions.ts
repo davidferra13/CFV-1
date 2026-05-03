@@ -477,6 +477,35 @@ export async function createClient(input: CreateClientInput) {
     console.error('[createClient] Allergy sync failed (non-blocking):', err)
   }
 
+  // Log initial dietary data for audit trail (non-blocking)
+  try {
+    const { logDietaryChangeInternal } = await import('@/lib/clients/dietary-alert-actions')
+    const allergies = validated.allergies as string[] | undefined
+    const dietary = validated.dietary_restrictions as string[] | undefined
+    if (allergies?.length) {
+      await logDietaryChangeInternal(
+        user.tenantId!,
+        client.id,
+        'allergy_added',
+        'allergies',
+        null,
+        allergies.join(', ')
+      )
+    }
+    if (dietary?.length) {
+      await logDietaryChangeInternal(
+        user.tenantId!,
+        client.id,
+        'restriction_added',
+        'dietary_restrictions',
+        null,
+        dietary.join(', ')
+      )
+    }
+  } catch (err) {
+    console.error('[createClient] Dietary change log failed (non-blocking):', err)
+  }
+
   // Log chef activity (non-blocking)
   try {
     const { logChefActivity } = await import('@/lib/activity/log-chef')
@@ -1443,17 +1472,17 @@ export async function addClientFromInquiry(input: {
       return { success: true, clientId: existing.id }
     }
 
-    // Read inquiry record to copy dietary/preference data
+    // Read inquiry record to copy dietary/preference/context data
     const { data: inquiry } = await db
       .from('inquiries')
       .select(
-        'confirmed_dietary_restrictions, confirmed_guest_count, confirmed_occasion, confirmed_budget_cents, service_style_pref, source_message'
+        'confirmed_dietary_restrictions, confirmed_allergies, confirmed_guest_count, confirmed_occasion, confirmed_budget_cents, confirmed_location, service_style_pref, source_message, referral_source'
       )
       .eq('id', input.inquiryId)
       .eq('tenant_id', user.tenantId!)
       .single()
 
-    // Build insert payload with dietary data from inquiry
+    // Build insert payload, copying all available inquiry data to client record
     const insertPayload: Record<string, unknown> = {
       tenant_id: user.tenantId!,
       full_name: input.full_name.trim(),
@@ -1463,6 +1492,44 @@ export async function addClientFromInquiry(input: {
 
     if (inquiry?.confirmed_dietary_restrictions?.length) {
       insertPayload.dietary_restrictions = inquiry.confirmed_dietary_restrictions
+    }
+
+    if (inquiry?.confirmed_allergies?.length) {
+      insertPayload.allergies = inquiry.confirmed_allergies
+    }
+
+    // Copy address from inquiry location
+    if (inquiry?.confirmed_location) {
+      insertPayload.address = inquiry.confirmed_location
+    }
+
+    // Copy budget as min range (best signal we have from a single number)
+    if (inquiry?.confirmed_budget_cents) {
+      insertPayload.budget_range_min_cents = inquiry.confirmed_budget_cents
+    }
+
+    // Copy service style preference
+    if (inquiry?.service_style_pref) {
+      insertPayload.preferred_service_style = inquiry.service_style_pref
+    }
+
+    // Copy typical guest count (clients column is text, inquiry is integer)
+    if (inquiry?.confirmed_guest_count) {
+      insertPayload.typical_guest_count = String(inquiry.confirmed_guest_count)
+    }
+
+    // Copy referral source (clients column is enum; only copy if value is valid)
+    const validReferralSources = [
+      'take_a_chef',
+      'instagram',
+      'referral',
+      'website',
+      'phone',
+      'email',
+      'other',
+    ]
+    if (inquiry?.referral_source && validReferralSources.includes(inquiry.referral_source)) {
+      insertPayload.referral_source = inquiry.referral_source
     }
 
     // Create the client record
@@ -1481,12 +1548,39 @@ export async function addClientFromInquiry(input: {
     // (submitPublicInquiry writes structured records keyed to inquiry context)
     try {
       const { syncAllergyStores } = await import('@/lib/dietary/allergy-sync')
-      // If dietary restrictions were copied, sync flat -> structured
-      if (inquiry?.confirmed_dietary_restrictions?.length) {
+      // If dietary restrictions or allergies were copied, sync both stores
+      if (inquiry?.confirmed_dietary_restrictions?.length || inquiry?.confirmed_allergies?.length) {
         await syncAllergyStores({ tenantId: user.tenantId!, clientId: client.id, db })
       }
     } catch (syncErr) {
       console.error('[addClientFromInquiry] Allergy sync failed (non-blocking):', syncErr)
+    }
+
+    // Log initial dietary data for audit trail (non-blocking)
+    try {
+      const { logDietaryChangeInternal } = await import('@/lib/clients/dietary-alert-actions')
+      if (inquiry?.confirmed_dietary_restrictions?.length) {
+        await logDietaryChangeInternal(
+          user.tenantId!,
+          client.id,
+          'restriction_added',
+          'dietary_restrictions',
+          null,
+          inquiry.confirmed_dietary_restrictions.join(', ')
+        )
+      }
+      if (inquiry?.confirmed_allergies?.length) {
+        await logDietaryChangeInternal(
+          user.tenantId!,
+          client.id,
+          'allergy_added',
+          'allergies',
+          null,
+          inquiry.confirmed_allergies.join(', ')
+        )
+      }
+    } catch (logErr) {
+      console.error('[addClientFromInquiry] Dietary change log failed (non-blocking):', logErr)
     }
 
     // Link inquiry to new client
