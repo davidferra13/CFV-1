@@ -203,14 +203,11 @@ export const resolveCurrentUserPermissions = cache(
   async (authUserId: string, tenantId: string | null): Promise<PermissionSet> => {
     const tenantRole = await resolveTenantRole(authUserId)
 
-    // Load role defaults
-    const roleDefaults = await loadRoleDefaults(tenantRole)
-
-    // Load per-user overrides (only if we have a tenant context)
-    let overrides: PermissionEntry[] = []
-    if (tenantId) {
-      overrides = await loadUserOverrides(tenantId, authUserId)
-    }
+    // Parallelize: role defaults and user overrides are independent
+    const [roleDefaults, overrides] = await Promise.all([
+      loadRoleDefaults(tenantRole),
+      tenantId ? loadUserOverrides(tenantId, authUserId) : Promise.resolve([] as PermissionEntry[]),
+    ])
 
     // Merge: role defaults + overrides
     return new PermissionSet([...roleDefaults, ...overrides])

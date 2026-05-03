@@ -522,3 +522,34 @@ export async function setBusinessMode(input: {
   revalidatePath('/settings')
   return { success: true }
 }
+
+// ---------------------------------------------------------------------------
+// Regional Settings (stub for international readiness layer)
+// ---------------------------------------------------------------------------
+
+type RegionalSettings = {
+  currencyCode: 'USD' | 'EUR' | 'GBP' | 'CAD' | 'AUD'
+  locale: string
+  measurementSystem: 'imperial' | 'metric'
+  timezone: string
+}
+
+export async function getRegionalSettings(): Promise<RegionalSettings> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  let timezone = 'America/New_York'
+  try {
+    const { data } = await db.from('chefs').select('timezone').eq('id', user.entityId).single()
+    if (data?.timezone) timezone = data.timezone
+  } catch {
+    // timezone column may not exist yet; use default
+  }
+
+  return {
+    currencyCode: 'USD',
+    locale: 'en-US',
+    measurementSystem: 'imperial',
+    timezone,
+  }
+}

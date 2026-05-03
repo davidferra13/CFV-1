@@ -1536,7 +1536,6 @@ export default async function EventDetailPage({
         tickets={ticketList as any[]}
         summary={ticketSummary}
         shareToken={publicTicketShareToken}
-        ticketsEnabled={ticketsEnabled}
       />
 
       {/* ============================================ */}

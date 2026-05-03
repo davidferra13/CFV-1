@@ -202,25 +202,46 @@ export async function createTodo(
 
   const nextOrder = (last?.sort_order ?? -1) + 1
 
-  const { data: created, error } = await db
+  // Core columns that exist in chef_todos table
+  const insertData: Record<string, unknown> = {
+    chef_id: user.entityId,
+    text: trimmed,
+    completed: false,
+    sort_order: nextOrder,
+    created_by: user.id,
+  }
+
+  // Extended columns (added via migration, may not exist in all environments)
+  const extendedFields: Record<string, unknown> = {
+    due_date: params.due_date || null,
+    due_time: params.due_time || null,
+    priority: params.priority || 'medium',
+    category: params.category || 'general',
+    reminder_at: params.reminder_at || null,
+    notes: params.notes?.trim() || null,
+    event_id: params.event_id || null,
+    client_id: params.client_id || null,
+  }
+
+  // Try with extended fields first, fall back to core-only
+  let created: any = null
+  let error: any = null
+
+  const fullResult = await db
     .from('chef_todos')
-    .insert({
-      chef_id: user.entityId,
-      text: trimmed,
-      completed: false,
-      sort_order: nextOrder,
-      created_by: user.id,
-      due_date: params.due_date || null,
-      due_time: params.due_time || null,
-      priority: params.priority || 'medium',
-      category: params.category || 'general',
-      reminder_at: params.reminder_at || null,
-      notes: params.notes?.trim() || null,
-      event_id: params.event_id || null,
-      client_id: params.client_id || null,
-    })
+    .insert({ ...insertData, ...extendedFields })
     .select('id')
     .single()
+
+  if (fullResult.error) {
+    // Extended columns may not exist yet; retry with core columns only
+    const coreResult = await db.from('chef_todos').insert(insertData).select('id').single()
+    created = coreResult.data
+    error = coreResult.error
+  } else {
+    created = fullResult.data
+    error = fullResult.error
+  }
 
   if (error || !created) {
     console.error('[Todos] createTodo failed:', error)

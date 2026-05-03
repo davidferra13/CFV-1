@@ -536,25 +536,38 @@ class QueryBuilder<T = any> {
     // Build LIMIT/OFFSET
     const { limitSql, offsetSql } = this.buildLimitOffset()
 
-    // Count query
-    let count: number | null = null
-    if (this._selectOpts.count === 'exact') {
-      const countSql = `SELECT COUNT(*) AS "count" FROM ${fromSql}${whereSql}`
-      const countResult = await pgClient.unsafe(
-        countSql,
-        params.slice(0, whereParams.length) as any[]
-      )
-      count = parseInt(countResult[0]?.count ?? '0', 10)
-    }
-
-    // Head mode returns no data
+    // Head mode: count only, no data
     if (this._selectOpts.head) {
+      let count: number | null = null
+      if (this._selectOpts.count === 'exact') {
+        const countSql = `SELECT COUNT(*) AS "count" FROM ${fromSql}${whereSql}`
+        const countResult = await pgClient.unsafe(
+          countSql,
+          params.slice(0, whereParams.length) as any[]
+        )
+        count = parseInt(countResult[0]?.count ?? '0', 10)
+      }
       return { data: null, error: null, count, status: 200, statusText: 'OK' }
     }
 
-    // Main query
-    const sql = `SELECT ${columnsSql} FROM ${fromSql}${whereSql}${orderSql}${limitSql}${offsetSql}`
-    const rows = await pgClient.unsafe(sql, params.slice(0, whereParams.length) as any[])
+    // Main query (parallelize with count when both needed)
+    const mainSql = `SELECT ${columnsSql} FROM ${fromSql}${whereSql}${orderSql}${limitSql}${offsetSql}`
+    const queryParams = params.slice(0, whereParams.length) as any[]
+
+    let count: number | null = null
+    let rows: any[]
+
+    if (this._selectOpts.count === 'exact') {
+      const countSql = `SELECT COUNT(*) AS "count" FROM ${fromSql}${whereSql}`
+      const [countResult, dataResult] = await Promise.all([
+        pgClient.unsafe(countSql, queryParams),
+        pgClient.unsafe(mainSql, queryParams),
+      ])
+      count = parseInt(countResult[0]?.count ?? '0', 10)
+      rows = dataResult as any[]
+    } else {
+      rows = (await pgClient.unsafe(mainSql, queryParams)) as any[]
+    }
 
     // Post-process: nest joined data
     let data: any[] = hasJoins ? this.nestJoinedRows(rows, parsed, joinPlans) : [...rows]
