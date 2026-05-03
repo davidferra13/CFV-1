@@ -126,6 +126,24 @@ export async function submitTestimonial(input: {
     console.error('[submitTestimonial] Notification failed (non-blocking):', err)
   }
 
+  // Non-blocking loyalty trigger: award points for review_submitted (GAP #196)
+  try {
+    const { data: event } = await db
+      .from('events')
+      .select('client_id')
+      .eq('id', share.event_id)
+      .single()
+    if (event?.client_id) {
+      const { fireTrigger } = await import('@/lib/loyalty/triggers')
+      await fireTrigger('review_submitted', share.tenant_id, event.client_id, {
+        eventId: share.event_id,
+        description: `Guest testimonial submitted by ${validated.guestName.trim()}`,
+      })
+    }
+  } catch (err) {
+    console.error('[submitTestimonial] Loyalty trigger failed (non-blocking):', err)
+  }
+
   return { success: true, updated: false }
 }
 

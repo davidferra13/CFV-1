@@ -68,7 +68,7 @@ export async function computeCLV(clientId: string): Promise<ClientLTV> {
   // Get completed events for this client
   const { data: events } = await db
     .from('events')
-    .select('id, quoted_price_cents, event_date')
+    .select('id, event_date')
     .eq('client_id', validated.clientId)
     .eq('tenant_id', user.tenantId!)
     .eq('is_demo', false)
@@ -76,10 +76,20 @@ export async function computeCLV(clientId: string): Promise<ClientLTV> {
     .order('event_date', { ascending: true })
 
   const completedEvents = events || []
-  const totalRevenueCents = completedEvents.reduce(
-    (sum: any, e: any) => sum + (e.quoted_price_cents || 0),
-    0
-  )
+
+  // GAP #240: Use actual paid (event_financial_summary) not quoted_price_cents
+  let totalRevenueCents = 0
+  if (completedEvents.length > 0) {
+    const eventIds = completedEvents.map((e: any) => e.id)
+    const { data: financials } = await db
+      .from('event_financial_summary')
+      .select('event_id, total_paid_cents')
+      .eq('tenant_id', user.tenantId!)
+      .in('event_id', eventIds)
+    for (const f of financials ?? []) {
+      totalRevenueCents += f.total_paid_cents ?? 0
+    }
+  }
 
   // Get associated expenses (business expenses linked to this client's events)
   let totalExpensesCents = 0
@@ -130,13 +140,27 @@ export async function getTopClientsByLTV(limit?: number): Promise<ClientLTV[]> {
 
   if (!clients || clients.length === 0) return []
 
-  // Get all completed events with revenue
+  // Get all completed events
   const { data: events } = await db
     .from('events')
-    .select('id, client_id, quoted_price_cents, event_date')
+    .select('id, client_id, event_date')
     .eq('tenant_id', user.tenantId!)
     .eq('is_demo', false)
     .eq('status', 'completed')
+
+  // GAP #240: Use actual paid from event_financial_summary (not quoted_price_cents)
+  const allEventIds = (events || []).map((e: any) => e.id)
+  const revenueByEvent = new Map<string, number>()
+  if (allEventIds.length > 0) {
+    const { data: financials } = await db
+      .from('event_financial_summary')
+      .select('event_id, total_paid_cents')
+      .eq('tenant_id', user.tenantId!)
+      .in('event_id', allEventIds)
+    for (const f of financials ?? []) {
+      revenueByEvent.set(f.event_id, f.total_paid_cents ?? 0)
+    }
+  }
 
   // Get all business expenses linked to events
   const { data: expenses } = await db
@@ -175,7 +199,7 @@ export async function getTopClientsByLTV(limit?: number): Promise<ClientLTV[]> {
       lastDate: null,
     }
 
-    existing.revenueCents += event.quoted_price_cents || 0
+    existing.revenueCents += revenueByEvent.get(event.id) || 0
     existing.expenseCents += expenseByEvent.get(event.id) || 0
     existing.eventCount += 1
 

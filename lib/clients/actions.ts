@@ -232,7 +232,18 @@ export async function inviteClient(input: InviteClientInput) {
   const existingClient = existingClientResponse.data
 
   if (existingClient) {
-    throw new ValidationError('Client with this email already exists in your tenant')
+    // GAP #200: If client exists but has no auth account, allow sending
+    // an invitation that will link to the existing record on signup
+    const { data: existingAuth } = await db
+      .from('clients')
+      .select('id, auth_user_id')
+      .eq('id', existingClient.id)
+      .single()
+
+    if (existingAuth?.auth_user_id) {
+      throw new ValidationError('Client with this email already has an active account')
+    }
+    // Fall through: create invitation that will link to existing client on signup
   }
 
   // Check if pending invitation exists
