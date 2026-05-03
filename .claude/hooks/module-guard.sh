@@ -35,7 +35,8 @@ for dir in $VALID_DIRS; do
 done
 
 if [ -z "$MATCHED" ]; then
-  echo "{\"hookSpecificOutput\":{\"hookEventName\":\"PostToolUse\",\"additionalContext\":\"MODULE GUARD: File '$FILE_PATH' is outside established module directories (app/, lib/, components/, types/, database/, middleware). Every source file must live in its correct module. If this is a new top-level concern, create a proper module directory for it.\"}}"
+  echo "MODULE GUARD BLOCKED: File '$FILE_PATH' is outside established module directories (app/, lib/, components/, types/, database/, middleware). Every source file must live in its correct module." >&2
+  exit 1
 fi
 
 exit 0

@@ -1,7 +1,4 @@
-// Utility functions - shared across components
-import { clsx, type ClassValue } from 'clsx'
-
-/** Merge class names, filtering falsy values. */
-export function cn(...inputs: ClassValue[]) {
-  return clsx(inputs)
-}
+// Re-export shim: cn() moved to lib/utils/cn.ts
+// Existing imports of '@/lib/utils' resolve here (file beats directory).
+// New code should import from '@/lib/utils/cn' or '@/lib/utils/index'.
+export { cn } from './utils/cn'

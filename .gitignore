@@ -50,8 +50,9 @@ next-env.d.ts
 # temp/debug files
 .tmp-*
 tmp_*
-tmp-warmup/
+tmp-*/
 tmp-chef-bob-*
+scripts/scratch/
 .tsc-dirty
 .hallucination-scan-results.md
 docs/.session-briefing.md
