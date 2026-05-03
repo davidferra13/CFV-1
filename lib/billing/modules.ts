@@ -3,8 +3,7 @@
 
 export type ModuleTier = 'free' | 'paid'
 
-export type { Tier } from '@/lib/billing/tier'
-import type { Tier } from '@/lib/billing/tier'
+export type Tier = 'free' | 'pro'
 
 export type ModuleDefinition = {
   slug: string

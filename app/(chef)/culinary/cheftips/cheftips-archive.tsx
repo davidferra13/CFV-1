@@ -2,14 +2,20 @@
 
 import { useState, useTransition, useRef, useEffect, useCallback } from 'react'
 import {
+  ArrowUpRight,
+  Bookmark,
   Check,
   Clock,
   Download,
   Edit2,
   Lightbulb,
+  Link2,
+  Lock,
+  Pin,
   Plus,
   Search,
   Trash2,
+  Unlock,
   X,
 } from '@/components/ui/icons'
 import {
@@ -18,8 +24,13 @@ import {
   updateChefTip,
   getChefTips,
   exportTipsAsMarkdown,
-} from '@/lib/cheftips/actions'
-import type { ChefTip, ChefTipCategory } from '@/lib/cheftips/types'
+  pinChefTip,
+  setChefTipReview,
+  shareChefTip,
+  promoteTipToNote,
+} from '@/lib/chef/knowledge/tip-actions'
+import type { ChefTip, ChefTipCategory } from '@/lib/chef/knowledge/tip-types'
+import { KnowledgeLinkPicker } from '@/components/knowledge/knowledge-link-picker'
 import { toast } from 'sonner'
 
 const PAGE_SIZE = 30
@@ -54,6 +65,7 @@ export function ChefTipsArchive({
   const [isPending, startTransition] = useTransition()
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
+  const [linkingId, setLinkingId] = useState<string | null>(null)
 
   const doSearch = useCallback(
     (searchVal?: string, tagVal?: string) => {
@@ -99,6 +111,9 @@ export function ChefTipsArchive({
               content: trimmed,
               tags: newTags,
               shared: false,
+              pinned: false,
+              review: false,
+              promoted_to: null,
               created_at: new Date().toISOString(),
               updated_at: new Date().toISOString(),
             },
@@ -194,6 +209,78 @@ export function ChefTipsArchive({
         toast.success('Tips exported')
       } catch {
         toast.error('Export failed')
+      }
+    })
+  }
+
+  function handleTogglePin(tip: ChefTip) {
+    const newPinned = !tip.pinned
+    setTips((prev) => prev.map((t) => (t.id === tip.id ? { ...t, pinned: newPinned } : t)))
+    startTransition(async () => {
+      try {
+        const result = await pinChefTip(tip.id, newPinned)
+        if (!result.success) {
+          setTips((prev) => prev.map((t) => (t.id === tip.id ? { ...t, pinned: !newPinned } : t)))
+          toast.error(result.error || 'Failed')
+        }
+      } catch {
+        setTips((prev) => prev.map((t) => (t.id === tip.id ? { ...t, pinned: !newPinned } : t)))
+      }
+    })
+  }
+
+  function handleToggleReview(tip: ChefTip) {
+    const newReview = !tip.review
+    setTips((prev) => prev.map((t) => (t.id === tip.id ? { ...t, review: newReview } : t)))
+    startTransition(async () => {
+      try {
+        const result = await setChefTipReview(tip.id, newReview)
+        if (!result.success) {
+          setTips((prev) => prev.map((t) => (t.id === tip.id ? { ...t, review: !newReview } : t)))
+          toast.error(result.error || 'Failed')
+        }
+      } catch {
+        setTips((prev) => prev.map((t) => (t.id === tip.id ? { ...t, review: !newReview } : t)))
+      }
+    })
+  }
+
+  function handleToggleShare(tip: ChefTip) {
+    const newShared = !tip.shared
+    setTips((prev) => prev.map((t) => (t.id === tip.id ? { ...t, shared: newShared } : t)))
+    startTransition(async () => {
+      try {
+        const result = await shareChefTip(tip.id, newShared)
+        if (!result.success) {
+          setTips((prev) => prev.map((t) => (t.id === tip.id ? { ...t, shared: !newShared } : t)))
+          toast.error(result.error || 'Failed')
+        } else {
+          toast.success(newShared ? 'Tip shared' : 'Tip set to private')
+        }
+      } catch {
+        setTips((prev) => prev.map((t) => (t.id === tip.id ? { ...t, shared: !newShared } : t)))
+      }
+    })
+  }
+
+  function handlePromote(tip: ChefTip) {
+    if (tip.promoted_to) {
+      toast.error('Already promoted to a note')
+      return
+    }
+    startTransition(async () => {
+      try {
+        const result = await promoteTipToNote(tip.id)
+        if (result.success) {
+          setTips((prev) =>
+            prev.map((t) => (t.id === tip.id ? { ...t, promoted_to: result.noteId! } : t))
+          )
+          toast.success('Tip promoted to note')
+        } else {
+          toast.error(result.error || 'Failed')
+        }
+      } catch {
+        toast.error('Failed to promote tip')
       }
     })
   }
@@ -461,25 +548,95 @@ export function ChefTipsArchive({
                     ) : (
                       <>
                         <div className="flex items-start justify-between gap-3">
-                          <p className="text-sm text-stone-300 flex-1 whitespace-pre-wrap">
-                            {tip.content}
-                          </p>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5 mb-0.5">
+                              {tip.pinned && <Pin className="h-3 w-3 text-amber-500 shrink-0" />}
+                              {tip.shared && <Unlock className="h-3 w-3 text-green-500 shrink-0" />}
+                              {tip.promoted_to && (
+                                <span className="text-[10px] text-blue-400 bg-blue-900/30 rounded px-1.5 py-0.5">
+                                  promoted
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-sm text-stone-300 whitespace-pre-wrap">
+                              {tip.content}
+                            </p>
+                          </div>
                           {/* Always visible on mobile, hover on desktop */}
-                          <div className="shrink-0 flex gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                          <div className="shrink-0 flex gap-0.5 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                            <button
+                              type="button"
+                              onClick={() => handleTogglePin(tip)}
+                              className={`rounded p-1.5 transition-colors ${
+                                tip.pinned
+                                  ? 'text-amber-400'
+                                  : 'text-stone-600 hover:text-amber-400'
+                              }`}
+                              title={tip.pinned ? 'Unpin' : 'Pin'}
+                            >
+                              <Pin className="h-3.5 w-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleToggleReview(tip)}
+                              className={`rounded p-1.5 transition-colors ${
+                                tip.review ? 'text-blue-400' : 'text-stone-600 hover:text-blue-400'
+                              }`}
+                              title={tip.review ? 'Remove from review' : 'Add to review'}
+                            >
+                              <Bookmark className="h-3.5 w-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleToggleShare(tip)}
+                              className={`rounded p-1.5 transition-colors ${
+                                tip.shared
+                                  ? 'text-green-400'
+                                  : 'text-stone-600 hover:text-green-400'
+                              }`}
+                              title={tip.shared ? 'Make private' : 'Share'}
+                            >
+                              {tip.shared ? (
+                                <Unlock className="h-3.5 w-3.5" />
+                              ) : (
+                                <Lock className="h-3.5 w-3.5" />
+                              )}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setLinkingId(linkingId === tip.id ? null : tip.id)}
+                              className={`rounded p-1.5 transition-colors ${
+                                linkingId === tip.id
+                                  ? 'text-cyan-400'
+                                  : 'text-stone-600 hover:text-cyan-400'
+                              }`}
+                              title="Link to entity"
+                            >
+                              <Link2 className="h-3.5 w-3.5" />
+                            </button>
+                            {!tip.promoted_to && (
+                              <button
+                                type="button"
+                                onClick={() => handlePromote(tip)}
+                                className="rounded p-1.5 text-stone-600 hover:text-purple-400 transition-colors"
+                                title="Promote to note"
+                              >
+                                <ArrowUpRight className="h-3.5 w-3.5" />
+                              </button>
+                            )}
                             <button
                               type="button"
                               onClick={() => startEdit(tip)}
-                              className="rounded p-1.5 text-stone-600 hover:text-amber-400 active:text-amber-400"
+                              className="rounded p-1.5 text-stone-600 hover:text-amber-400"
                               title="Edit tip"
                             >
-                              <Edit2 className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
+                              <Edit2 className="h-3.5 w-3.5" />
                             </button>
                             {confirmDelete === tip.id ? (
                               <button
                                 type="button"
                                 onClick={() => handleDelete(tip.id)}
                                 className="rounded px-2 py-1 text-xs bg-red-900/60 text-red-300 hover:bg-red-800/60"
-                                title="Confirm delete"
                                 onBlur={() => setConfirmDelete(null)}
                               >
                                 Delete?
@@ -488,10 +645,10 @@ export function ChefTipsArchive({
                               <button
                                 type="button"
                                 onClick={() => handleDelete(tip.id)}
-                                className="rounded p-1.5 text-stone-600 hover:text-red-400 active:text-red-400"
+                                className="rounded p-1.5 text-stone-600 hover:text-red-400"
                                 title="Delete tip"
                               >
-                                <Trash2 className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
+                                <Trash2 className="h-3.5 w-3.5" />
                               </button>
                             )}
                           </div>
@@ -514,6 +671,15 @@ export function ChefTipsArchive({
                             })}
                           </span>
                         </div>
+                        {linkingId === tip.id && (
+                          <div className="mt-3">
+                            <KnowledgeLinkPicker
+                              sourceType="tip"
+                              sourceId={tip.id}
+                              onClose={() => setLinkingId(null)}
+                            />
+                          </div>
+                        )}
                       </>
                     )}
                   </div>

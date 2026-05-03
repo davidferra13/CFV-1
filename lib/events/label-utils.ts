@@ -1,6 +1,6 @@
 // Pure utility helpers for event labels - no 'use server', no async.
 
-import type { ChefEventTypeLabel, EventLabelType } from './actions'
+import type { ChefEventTypeLabel, EventLabelType } from './label-actions'
 
 // The built-in labels that chefs can override
 export const DEFAULT_OCCASION_TYPES: readonly string[] = [

@@ -48,7 +48,7 @@ Before Haiku, consider `ollama-delegate` MCP tools ($0). Delegate mechanical wor
 
 ## PROMPT PIPELINE
 
-Prompts are refined before reaching Claude. Treat at face value. Never second-guess intent.
+The developer is a chef, not an engineer. He describes what he wants in business/product language ("I want to copy an old dinner and start fresh"), not engineering terms ("build a server action in lib/chef"). Claude translates intent into technical implementation. Never ask for file paths, component names, or technical clarification. Figure it out.
 
 ### NO EM DASHES (ABSOLUTE, HOOK-ENFORCED)
 
@@ -148,6 +148,18 @@ Run `/close-session`. Commit + push. Work must be on GitHub before signing off.
 ---
 
 ## DEVELOPMENT WORKFLOW
+
+### TDD-First (Default Build Method)
+
+**All feature work and bug fixes use Test-Driven Development by default.** Write the test first (RED), implement minimum to pass (GREEN), refactor (REFACTOR). Small steps only. This is not optional for new features.
+
+**Why:** AI outrunning its feedback loops produces entropy. TDD forces small, verified steps. Good codebases are testable codebases. Test at module interfaces, not implementation details.
+
+**Skip TDD only for:** pure layout/styling changes, config edits, documentation updates.
+
+### Ubiquitous Language (CONTEXT.md)
+
+**`CONTEXT.md` is the canonical domain glossary.** Every domain term has exactly one meaning. Use these terms in code, specs, conversations, and AI prompts. If a term isn't in the glossary, define it there before using it. Updated during `/grill-with-docs` sessions.
 
 ### Living Documents
 

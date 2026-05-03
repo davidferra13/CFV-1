@@ -19,6 +19,9 @@ export type ChefTip = {
   content: string
   tags: string[]
   shared: boolean
+  pinned: boolean
+  review: boolean
+  promoted_to: string | null
   created_at: string
   updated_at: string
 }

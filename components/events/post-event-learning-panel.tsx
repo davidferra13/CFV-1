@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { getEventOutcomeSummary } from '@/lib/post-event/learning-actions'
+import { getEventOutcomeSummary } from '@/lib/events/post-event-learning-actions'
 
 type Props = {
   eventId: string

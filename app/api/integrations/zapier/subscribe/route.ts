@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
-import { requirePro } from '@/lib/billing/require-pro'
-import { hasProAccess } from '@/lib/billing/tier'
-import { ProFeatureRequiredError } from '@/lib/billing/errors'
 import { ZAPIER_EVENT_TYPES, type ZapierEventType } from '@/lib/integrations/zapier/zapier-events'
 import { validateWebhookUrl } from '@/lib/security/url-validation'
 import {
@@ -65,7 +62,7 @@ async function authorizeRequest(req: NextRequest, body?: Record<string, unknown>
       throw new HttpError(403, 'Developer tools are not enabled for this account')
     }
     try {
-      await requirePro('integrations')
+      await requireChef()
       return { tenantId: user.entityId, actorId: user.id }
     } catch (err) {
       throw err

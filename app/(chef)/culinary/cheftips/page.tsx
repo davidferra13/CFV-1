@@ -6,9 +6,10 @@ import {
   getMonthlyTipCounts,
   getTopTags,
   getOnThisDayTips,
-} from '@/lib/cheftips/actions'
-import { CHEFTIP_CATEGORIES } from '@/lib/cheftips/types'
+} from '@/lib/chef/knowledge/tip-actions'
+import { CHEFTIP_CATEGORIES } from '@/lib/chef/knowledge/tip-types'
 import { ChefTipsArchive } from './cheftips-archive'
+import { KnowledgeTabs } from '@/components/knowledge/knowledge-tabs'
 
 export const metadata = {
   title: 'ChefTips - Your Learning Log',
@@ -58,14 +59,16 @@ async function ChefTipsContent() {
         <StatCard label="Day Streak" value={stats.streak} />
       </div>
 
-      <ChefTipsArchive
-        initialTips={tips}
-        initialTotal={total}
-        categories={CHEFTIP_CATEGORIES}
-        monthlyCounts={monthlyCounts}
-        topTags={topTags}
-        onThisDayTips={onThisDayTips}
-      />
+      <KnowledgeTabs mode="tips" myLabel="My Tips">
+        <ChefTipsArchive
+          initialTips={tips}
+          initialTotal={total}
+          categories={CHEFTIP_CATEGORIES}
+          monthlyCounts={monthlyCounts}
+          topTags={topTags}
+          onThisDayTips={onThisDayTips}
+        />
+      </KnowledgeTabs>
     </>
   )
 }

@@ -4,9 +4,9 @@ import { revalidatePath, revalidateTag, unstable_cache } from 'next/cache'
 import { createServerClient } from '@/lib/db/server'
 import { createAdminClient } from '@/lib/db/admin'
 import { requireChef } from '@/lib/auth/get-user'
-import type { ChefTipCategory, ChefTip } from './types'
+import type { ChefTipCategory, ChefTip } from './tip-types'
 
-const TIP_FIELDS = 'id, content, tags, shared, created_at, updated_at'
+const TIP_FIELDS = 'id, content, tags, shared, pinned, review, promoted_to, created_at, updated_at'
 
 function revalidateTips(chefId?: string) {
   revalidatePath('/dashboard')
@@ -457,6 +457,140 @@ export async function exportTipsAsMarkdown(): Promise<string> {
 
   lines.push(`\n---\n*Exported from ChefFlow on ${new Date().toLocaleDateString()}*\n`)
   return lines.join('\n')
+}
+
+// ─── TOGGLES ──────────────────────────────────────────
+
+export async function pinChefTip(
+  id: string,
+  pinned: boolean
+): Promise<{ success: boolean; error?: string }> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const { error } = await db
+    .from('chef_tips')
+    .update({ pinned, updated_at: new Date().toISOString() })
+    .eq('id', id)
+    .eq('chef_id', user.entityId)
+
+  if (error) {
+    console.error('[ChefTips] pinChefTip failed:', error)
+    return { success: false, error: 'Failed to update pin' }
+  }
+
+  revalidateTips(user.entityId)
+  return { success: true }
+}
+
+export async function setChefTipReview(
+  id: string,
+  review: boolean
+): Promise<{ success: boolean; error?: string }> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const { error } = await db
+    .from('chef_tips')
+    .update({ review, updated_at: new Date().toISOString() })
+    .eq('id', id)
+    .eq('chef_id', user.entityId)
+
+  if (error) {
+    console.error('[ChefTips] setChefTipReview failed:', error)
+    return { success: false, error: 'Failed to update review' }
+  }
+
+  revalidateTips(user.entityId)
+  return { success: true }
+}
+
+export async function shareChefTip(
+  id: string,
+  shared: boolean
+): Promise<{ success: boolean; error?: string }> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const { error } = await db
+    .from('chef_tips')
+    .update({ shared, updated_at: new Date().toISOString() })
+    .eq('id', id)
+    .eq('chef_id', user.entityId)
+
+  if (error) {
+    console.error('[ChefTips] shareChefTip failed:', error)
+    return { success: false, error: 'Failed to update sharing' }
+  }
+
+  revalidateTips(user.entityId)
+  return { success: true }
+}
+
+// ─── PROMOTE TO NOTE ──────────────────────────────────
+
+export async function promoteTipToNote(
+  tipId: string
+): Promise<{ success: boolean; noteId?: string; error?: string }> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  // Get the tip
+  const { data: tip } = await db
+    .from('chef_tips')
+    .select(TIP_FIELDS)
+    .eq('id', tipId)
+    .eq('chef_id', user.entityId)
+    .single()
+
+  if (!tip) {
+    return { success: false, error: 'Tip not found' }
+  }
+
+  if (tip.promoted_to) {
+    return { success: false, error: 'Tip already promoted to a note' }
+  }
+
+  // Create note from tip
+  const { data: note, error: noteError } = await db
+    .from('chef_notes')
+    .insert({
+      chef_id: user.entityId,
+      title: tip.content.length > 200 ? tip.content.slice(0, 197) + '...' : tip.content,
+      body: tip.content,
+      note_type: 'journal',
+      tags: tip.tags,
+      shared: false,
+      pinned: false,
+      review: false,
+    })
+    .select('id')
+    .single()
+
+  if (noteError || !note) {
+    console.error('[ChefTips] promoteTipToNote note creation failed:', noteError)
+    return { success: false, error: 'Failed to create note from tip' }
+  }
+
+  // Link tip to note
+  await db
+    .from('chef_tips')
+    .update({ promoted_to: note.id, updated_at: new Date().toISOString() })
+    .eq('id', tipId)
+    .eq('chef_id', user.entityId)
+
+  // Create knowledge link
+  await db.from('chef_knowledge_links').insert({
+    source_type: 'note',
+    source_id: note.id,
+    target_type: 'tip',
+    target_id: tipId,
+    chef_id: user.entityId,
+  })
+
+  revalidateTips(user.entityId)
+  revalidatePath('/culinary/chefnotes')
+  return { success: true, noteId: note.id }
 }
 
 // ─── DELETE ────────────────────────────────────────────

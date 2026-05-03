@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { draftPostEventEmail, draftTestimonialRequest } from '@/lib/guest-comms/actions'
+import { draftPostEventEmail, draftTestimonialRequest } from '@/lib/guests/comms-actions'
 
 type EmailDraft = {
   subject: string

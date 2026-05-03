@@ -4,8 +4,8 @@ import { sendClientSurvey } from '@/lib/surveys/actions'
 import {
   getEventTrustLoopState,
   markSurveyReviewRequestSent,
-} from '@/lib/post-event/trust-loop-actions'
-import { getReviewRequestGate } from '@/lib/post-event/trust-loop-helpers'
+} from '@/lib/events/post-event-trust-loop-actions'
+import { getReviewRequestGate } from '@/lib/events/post-event-trust-loop-helpers'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'

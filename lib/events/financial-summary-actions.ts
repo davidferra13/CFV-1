@@ -327,7 +327,7 @@ export async function markFinancialClosed(eventId: string) {
   // Update closure streak - non-blocking, don't fail the close if streak update fails
   if (eventRow?.event_date) {
     try {
-      const { recordClosureForStreak } = await import('@/lib/chefs/streaks')
+      const { recordClosureForStreak } = await import('@/lib/chef/streaks')
       await recordClosureForStreak(dateToDateString(eventRow.event_date as Date | string))
     } catch (streakErr) {
       console.error('[markFinancialClosed] Streak update failed (non-critical):', streakErr)

@@ -47,15 +47,34 @@ If the developer says "Build [specific spec or plain English]," skip the queue a
    - "Developer intent from the notes: [summary of what the developer actually wants]"
    - If the spec is wrong: **STOP. Do not improvise.** Update the spec with corrections, then continue.
 
-## Build Phase (Continuous Verification)
+## Build Phase (TDD-First, Continuous Verification)
+
+**TDD is the default build method.** "The rate of feedback is your speed limit" (Pragmatic Programmer). AI outrunning its headlights produces garbage. TDD forces small, verified steps.
+
+### The TDD Loop (Mandatory for All Feature Work)
+
+For each behavior the spec defines:
+
+1. **RED:** Write a test that describes the expected behavior. Run it. It must FAIL. If it passes, the test is wrong or the feature already exists.
+2. **GREEN:** Write the minimum code to make that test pass. Nothing more. No "while I'm here" additions.
+3. **REFACTOR:** Clean up the code. Consider the module design. Does this belong in a deep module? Is the interface simple?
+4. **Repeat** for the next behavior.
+
+**Test granularity:** Test at the interface level (what the module does), not the implementation level (how it does it). This matches the deep module principle: simple interface, complex internals.
+
+**What to test:** Behaviors, not functions. "When a chef creates a quote, the event financial summary updates" (good). "The createQuote function returns an object" (bad).
+
+**When TDD doesn't apply:** Pure UI layout changes with no logic, configuration changes, documentation. Everything else gets TDD.
+
+### Continuous Verification (Still Required)
 
 - Implement exactly what the spec defines. No unapproved additions.
 - No "while I'm here" refactors. No bonus features.
 - If you discover something the spec didn't anticipate: stop, update the spec, then continue.
 
-**After every significant change (new file, major edit, or completing a logical unit):**
+**After every RED-GREEN-REFACTOR cycle:**
 
-Run `npx tsc --noEmit --skipLibCheck`. If it fails, fix it NOW before touching another file. Do not accumulate type errors. Catch regressions the moment they happen, not at the end.
+Run `npx tsc --noEmit --skipLibCheck`. If it fails, fix it NOW before the next cycle. Do not accumulate type errors. Catch regressions the moment they happen, not at the end.
 
 ## Verification Plan (State Before Building)
 

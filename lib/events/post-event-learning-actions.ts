@@ -19,7 +19,7 @@ import {
   LEARNING_ISSUE_FLAGS,
   LEARNING_PREP_ACCURACY_VALUES,
   LEARNING_TIME_ACCURACY_VALUES,
-} from './learning-logic'
+} from './post-event-learning-logic'
 
 type EventRow = {
   id: string

@@ -1,11 +1,11 @@
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
-import { getEventLabels } from '@/lib/event-labels/actions'
+import { getEventLabels } from '@/lib/events/label-actions'
 import {
   buildLabelMap,
   DEFAULT_OCCASION_TYPES,
   DEFAULT_STATUS_LABELS,
-} from '@/lib/event-labels/utils'
+} from '@/lib/events/label-utils'
 import { EventLabelEditor } from '@/components/settings/event-label-editor'
 
 export const metadata: Metadata = { title: 'Event Types & Labels' }

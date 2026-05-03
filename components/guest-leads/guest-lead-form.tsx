@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { submitGuestLead } from '@/lib/guest-leads/actions'
+import { submitGuestLead } from '@/lib/guests/lead-actions'
 
 type Props = {
   guestCode: string

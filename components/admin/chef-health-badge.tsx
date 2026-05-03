@@ -5,7 +5,7 @@ import {
   CHEF_TIER_LABELS,
   CHEF_TIER_COLORS,
   type ChefHealthInput,
-} from '@/lib/chefs/health-score'
+} from '@/lib/chef/health-score'
 
 interface Props extends ChefHealthInput {
   showScore?: boolean

@@ -7,7 +7,9 @@ import { TrackedVideo } from '@/components/analytics/tracked-video'
 import { ClipboardList, LayoutDashboard, Repeat, ShieldCheck, Users } from '@/components/ui/icons'
 import { PublicSecondaryEntryCluster } from '@/components/public/public-secondary-entry-cluster'
 import { getFreeFeatures } from '@/lib/billing/feature-classification'
-import { PRO_PRICE_MONTHLY } from '@/lib/billing/constants'
+import { SUPPORT_DEFAULT_MONTHLY_AMOUNT_CENTS } from '@/lib/monetization/offers'
+
+const PRO_PRICE_MONTHLY = SUPPORT_DEFAULT_MONTHLY_AMOUNT_CENTS / 100
 import { LAUNCH_MODE } from '@/lib/marketing/launch-mode'
 import {
   buildMarketingSourceHref,

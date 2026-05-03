@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { format } from 'date-fns'
 import { requireChef } from '@/lib/auth/get-user'
-import { getEventOutcomeCapture } from '@/lib/post-event/learning-actions'
+import { getEventOutcomeCapture } from '@/lib/events/post-event-learning-actions'
 import { PostEventLearningForm } from '@/components/events/post-event-learning-form'
 import { Button } from '@/components/ui/button'
 

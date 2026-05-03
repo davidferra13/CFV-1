@@ -9,7 +9,7 @@ import {
   saveChefOutcomeCapture,
   type EventOutcomeCaptureData,
   type ChefOutcomeDishInput,
-} from '@/lib/post-event/learning-actions'
+} from '@/lib/events/post-event-learning-actions'
 import {
   LEARNING_DISH_OUTCOME_STATUS_VALUES,
   LEARNING_ISSUE_FLAGS,
@@ -19,7 +19,7 @@ import {
   type LearningIssueFlag,
   type LearningPrepAccuracy,
   type LearningTimeAccuracy,
-} from '@/lib/post-event/learning-logic'
+} from '@/lib/events/post-event-learning-logic'
 
 type Props = {
   capture: EventOutcomeCaptureData

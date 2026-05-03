@@ -2,11 +2,11 @@
 
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
-import { ArrowRight, Lightbulb, Plus, X, Clock } from '@/components/ui/icons'
+import { ArrowRight, BookOpen, Bookmark, Lightbulb, Plus, X, Clock } from '@/components/ui/icons'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { addChefTip } from '@/lib/cheftips/actions'
-import { CHEFTIP_CATEGORIES } from '@/lib/cheftips/types'
-import type { ChefTip } from '@/lib/cheftips/types'
+import { addChefTip } from '@/lib/chef/knowledge/tip-actions'
+import { CHEFTIP_CATEGORIES } from '@/lib/chef/knowledge/tip-types'
+import type { ChefTip } from '@/lib/chef/knowledge/tip-types'
 import { toast } from 'sonner'
 
 type ChefTipsWidgetProps = {
@@ -14,6 +14,7 @@ type ChefTipsWidgetProps = {
   totalCount: number
   streak: number
   pastTip: ChefTip | null
+  reviewCount?: number
 }
 
 const PLACEHOLDERS = [
@@ -37,7 +38,13 @@ function relativeDate(dateStr: string): string {
   return `${Math.floor(days / 30)} months ago`
 }
 
-export function ChefTipsWidget({ todaysTips, totalCount, streak, pastTip }: ChefTipsWidgetProps) {
+export function ChefTipsWidget({
+  todaysTips,
+  totalCount,
+  streak,
+  pastTip,
+  reviewCount = 0,
+}: ChefTipsWidgetProps) {
   const [tips, setTips] = useState(todaysTips)
   const [content, setContent] = useState('')
   const [selectedTags, setSelectedTags] = useState<string[]>([])
@@ -65,6 +72,9 @@ export function ChefTipsWidget({ todaysTips, totalCount, streak, pastTip }: Chef
               content: trimmed,
               tags: selectedTags,
               shared: false,
+              pinned: false,
+              review: false,
+              promoted_to: null,
               created_at: new Date().toISOString(),
               updated_at: new Date().toISOString(),
             },
@@ -91,13 +101,28 @@ export function ChefTipsWidget({ todaysTips, totalCount, streak, pastTip }: Chef
             <Lightbulb className="h-4 w-4 text-amber-400" />
             What did you learn today?
           </CardTitle>
-          <Link
-            href="/culinary/cheftips"
-            className="inline-flex items-center gap-1 text-xs text-stone-500 hover:text-stone-400"
-          >
-            {totalCount > 0 && <span>{totalCount} tips</span>}
-            <ArrowRight className="h-3 w-3" />
-          </Link>
+          <div className="flex items-center gap-2">
+            {reviewCount > 0 && (
+              <span className="flex items-center gap-1 rounded-full bg-blue-900/40 px-2 py-0.5 text-[10px] text-blue-400">
+                <Bookmark className="h-3 w-3" />
+                {reviewCount} to review
+              </span>
+            )}
+            <Link
+              href="/culinary/chefnotes"
+              className="inline-flex items-center gap-1 text-xs text-stone-600 hover:text-stone-400"
+              title="ChefNotes"
+            >
+              <BookOpen className="h-3 w-3" />
+            </Link>
+            <Link
+              href="/culinary/cheftips"
+              className="inline-flex items-center gap-1 text-xs text-stone-500 hover:text-stone-400"
+            >
+              {totalCount > 0 && <span>{totalCount} tips</span>}
+              <ArrowRight className="h-3 w-3" />
+            </Link>
+          </div>
         </div>
       </CardHeader>
 

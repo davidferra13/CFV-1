@@ -12,7 +12,7 @@ import {
   isPositiveSurveyRating,
   normalizePublicReviewText,
   shouldPromoteSurveyToPublicReview,
-} from './trust-loop-helpers'
+} from './post-event-trust-loop-helpers'
 
 type SurveyPageDish = {
   id: string
@@ -311,7 +311,7 @@ export async function getPostEventSurveyPageData(
   let dishes: SurveyPageDish[] = []
   if (survey.event_id) {
     const { getEventDishFeedbackChoicesByTenant } =
-      await import('@/lib/post-event/learning-actions')
+      await import('@/lib/events/post-event-learning-actions')
     const choices = await getEventDishFeedbackChoicesByTenant(survey.event_id, survey.tenant_id)
     dishes = choices.map((choice) => ({
       id: choice.id,
@@ -402,7 +402,7 @@ export async function submitPostEventSurveyResponse(
   revalidatePath(`/events/${survey.event_id}`)
   {
     const { refreshEventOutcomeLearningByTenant } =
-      await import('@/lib/post-event/learning-actions')
+      await import('@/lib/events/post-event-learning-actions')
     await refreshEventOutcomeLearningByTenant(survey.event_id, survey.tenant_id)
   }
 

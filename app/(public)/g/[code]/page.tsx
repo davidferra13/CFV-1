@@ -7,7 +7,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { headers } from 'next/headers'
-import { getChefByGuestCode } from '@/lib/guest-leads/actions'
+import { getChefByGuestCode } from '@/lib/guests/lead-actions'
 import { GuestLeadForm } from '@/components/guest-leads/guest-lead-form'
 import { checkRateLimit } from '@/lib/rateLimit'
 

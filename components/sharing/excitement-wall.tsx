@@ -2,7 +2,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { postGuestMessage, getEventMessages } from '@/lib/guest-messages/actions'
+import { postGuestMessage, getEventMessages } from '@/lib/guests/message-actions'
 
 type Message = {
   id: string

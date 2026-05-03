@@ -10,7 +10,7 @@ import {
   toggleMessageVisibility,
   toggleMessagePin,
   deleteGuestMessage,
-} from '@/lib/guest-messages/actions'
+} from '@/lib/guests/message-actions'
 
 type Message = {
   id: string

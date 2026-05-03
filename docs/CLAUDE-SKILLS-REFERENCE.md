@@ -14,7 +14,8 @@
 | After writing/editing code files     | `/compliance` (HOOK-ENFORCED)    | Rule violations caught early              |
 | After code changes to UI/features    | `/document`                      | Living docs stay current                  |
 | Bug persists after 2 fix attempts    | `/5-whys`                        | Stop thrashing, find root cause           |
-| About to build a feature from spec   | `/builder`                       | Full gate procedure                       |
+| About to build a feature from spec   | `/builder` (TDD default)         | Full gate procedure, TDD-first            |
+| Building any new feature or fix      | `/tdd`                           | Default build method. Red-green-refactor  |
 | Writing or reviewing a spec          | `/planner`                       | Full gate procedure                       |
 | Investigating a question for report  | `/research`                      | Full gate procedure                       |
 | End of session / user says goodbye   | `/close-session`                 | Nothing left uncommitted                  |
@@ -42,6 +43,7 @@
 | ---------------------------- | ---------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
 | **Check server before work** | Before any localhost testing/verification                        | `curl -s localhost:3000`, if down: `bash scripts/services.sh up`                       |
 | **Check services on start**  | First message of session                                         | `bash scripts/services.sh status`, kill garbage silently                               |
+| **TDD-first (default)**      | When building any new feature, fix, or significant change        | Write test first (RED), implement minimum to pass (GREEN), refactor. Small steps only  |
 | **Run tsc after TS edits**   | After completing a logical unit of work (not every edit)         | `npx tsc --noEmit --skipLibCheck`, fix errors before moving on                         |
 | **Rebuild if stale**         | Before any UI verification if last build >24h old                | `npm run build -- --no-lint`                                                           |
 | **Commit at milestones**     | After completing a feature, fixing a bug, or meaningful progress | Stage + commit with conventional message. Do not batch 20 files                        |

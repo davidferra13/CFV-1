@@ -105,10 +105,15 @@ import { hasAllergyData } from '@/lib/documents/generate-allergy-card'
 import { checkMenuAllergenConflicts } from '@/lib/dietary/cross-contamination-check'
 import { getEventReadiness } from '@/lib/events/readiness'
 import { getLatestGroceryQuote } from '@/lib/grocery/pricing-actions'
-import { getEventTrustLoopState } from '@/lib/post-event/trust-loop-actions'
+import { getEventTrustLoopState } from '@/lib/events/post-event-trust-loop-actions'
 import { getNextBestActions } from '@/lib/clients/next-best-action'
 import { ChefTipsWidget } from '@/components/dashboard/cheftips-widget'
-import { getTodaysTips, getCachedTipStats, getRandomPastTip } from '@/lib/cheftips/actions'
+import {
+  getTodaysTips,
+  getCachedTipStats,
+  getRandomPastTip,
+} from '@/lib/chef/knowledge/tip-actions'
+import { getReviewQueueCount } from '@/lib/knowledge/review-actions'
 import { checkAssignmentConflict, getEventStaffRoster, listStaffMembers } from '@/lib/staff/actions'
 import { eventsOverlapInTime } from '@/lib/staff/time-overlap'
 import { getSupportStatus } from '@/lib/monetization/status'
@@ -1947,10 +1952,11 @@ export default async function ChefDashboard() {
 // ─── ChefTips Section ──────────────────────────────────
 async function ChefTipsSection() {
   const user = await requireChef()
-  const [todaysTips, stats, pastTip] = await Promise.all([
+  const [todaysTips, stats, pastTip, reviewCount] = await Promise.all([
     getTodaysTips(),
     getCachedTipStats(user.entityId),
     getRandomPastTip(),
+    getReviewQueueCount(),
   ])
 
   return (
@@ -1959,6 +1965,7 @@ async function ChefTipsSection() {
       totalCount={stats.total}
       streak={stats.streak}
       pastTip={pastTip}
+      reviewCount={reviewCount}
     />
   )
 }

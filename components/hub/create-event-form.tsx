@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { createEventStub } from '@/lib/event-stubs/actions'
+import { createEventStub } from '@/lib/events/stub-actions'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { CalendarPlus, Loader2 } from '@/components/ui/icons'

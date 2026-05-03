@@ -3,8 +3,8 @@
 // Public - no auth required
 
 import { getEventShareByToken } from '@/lib/sharing/actions'
-import { getEventMessages } from '@/lib/guest-messages/actions'
-import { getEventGuestPhotos } from '@/lib/guest-photos/actions'
+import { getEventMessages } from '@/lib/guests/message-actions'
+import { getEventGuestPhotos } from '@/lib/guests/photo-actions'
 import { notFound } from 'next/navigation'
 import { format } from 'date-fns'
 import { Card, CardContent } from '@/components/ui/card'

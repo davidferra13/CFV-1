@@ -3,7 +3,7 @@ import {
   getRepeatGuests,
   getGuestFrequencyStats,
   getDinnerGroups,
-} from '@/lib/guest-analytics/actions'
+} from '@/lib/guests/analytics-actions'
 import { dateToDateString } from '@/lib/utils/format'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'

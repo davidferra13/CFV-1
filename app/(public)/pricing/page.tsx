@@ -6,7 +6,9 @@ import {
   type FeatureCategory,
   type FeatureDefinition,
 } from '@/lib/billing/feature-classification'
-import { PRO_PRICE_MONTHLY } from '@/lib/billing/constants'
+import { SUPPORT_DEFAULT_MONTHLY_AMOUNT_CENTS } from '@/lib/monetization/offers'
+
+const PRO_PRICE_MONTHLY = SUPPORT_DEFAULT_MONTHLY_AMOUNT_CENTS / 100
 import { FAQPageJsonLd } from '@/components/seo/json-ld'
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'

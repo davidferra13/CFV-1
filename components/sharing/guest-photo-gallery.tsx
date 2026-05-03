@@ -2,7 +2,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { uploadGuestPhoto, getEventGuestPhotos } from '@/lib/guest-photos/actions'
+import { uploadGuestPhoto, getEventGuestPhotos } from '@/lib/guests/photo-actions'
 
 type Photo = {
   id: string

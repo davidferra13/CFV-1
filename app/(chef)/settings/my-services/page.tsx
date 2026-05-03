@@ -7,7 +7,7 @@ import {
   getServiceConfig,
   saveServiceConfig,
   type ChefServiceConfig,
-} from '@/lib/chef-services/service-config-actions'
+} from '@/lib/chef/service-config-actions'
 
 // ─── Toggle Section Component ───────────────────────────────────────────────
 

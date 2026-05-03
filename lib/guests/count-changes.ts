@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { requireChef, requireClient } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { invalidateRemyContextCache } from '@/lib/ai/remy-context'
-import { getServiceConfigForTenant } from '@/lib/chef-services/service-config-internal'
+import { getServiceConfigForTenant } from '@/lib/chef/service-config-internal'
 import { createChefNotification } from '@/lib/notifications/chef-actions'
 import { createClientNotification } from '@/lib/notifications/client-actions'
 import {

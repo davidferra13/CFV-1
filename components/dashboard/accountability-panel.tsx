@@ -5,7 +5,7 @@
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import type { WeeklyAccountabilityStats } from '@/lib/dashboard/accountability'
-import type { ClosureStreakData } from '@/lib/chefs/streaks'
+import type { ClosureStreakData } from '@/lib/chef/streaks'
 
 type Props = {
   weeklyStats: WeeklyAccountabilityStats

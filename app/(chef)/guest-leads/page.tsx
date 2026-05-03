@@ -4,7 +4,7 @@
 
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
-import { getGuestLeads, getGuestLeadStats } from '@/lib/guest-leads/actions'
+import { getGuestLeads, getGuestLeadStats } from '@/lib/guests/lead-actions'
 import { GuestLeadsList } from '@/components/guest-leads/guest-leads-list'
 import { Card } from '@/components/ui/card'
 

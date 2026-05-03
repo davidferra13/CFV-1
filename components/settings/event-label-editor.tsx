@@ -6,8 +6,8 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { RotateCcw, Check } from '@/components/ui/icons'
 import { toast } from 'sonner'
-import { upsertEventLabel } from '@/lib/event-labels/actions'
-import type { EventLabelType } from '@/lib/event-labels/actions'
+import { upsertEventLabel } from '@/lib/events/label-actions'
+import type { EventLabelType } from '@/lib/events/label-actions'
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 

@@ -6,7 +6,7 @@
 import type { FoodCostTrend } from '@/lib/analytics/cost-trends'
 import type { BookingSeasonality } from '@/lib/analytics/seasonality'
 import type { DormantClientEntry } from '@/lib/clients/dormancy'
-import type { ClosureStreakData } from '@/lib/chefs/streaks'
+import type { ClosureStreakData } from '@/lib/chef/streaks'
 import type {
   OverdueFollowUpEvent,
   WeeklyAccountabilityStats,

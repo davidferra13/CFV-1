@@ -1277,14 +1277,16 @@ export async function transitionEvent({
   // Create post-event survey and email client (non-blocking)
   if (toStatus === 'completed' && fromStatus === 'in_progress') {
     try {
-      const { ensureEventOutcomeSeedByTenant } = await import('@/lib/post-event/learning-actions')
+      const { ensureEventOutcomeSeedByTenant } =
+        await import('@/lib/events/post-event-learning-actions')
       await ensureEventOutcomeSeedByTenant(eventId, event.tenant_id)
     } catch (learningErr) {
       log.events.warn('Post-event outcome seed failed (non-blocking)', { error: learningErr })
     }
 
     try {
-      const { sendPostEventSurveyForEvent } = await import('@/lib/post-event/trust-loop-actions')
+      const { sendPostEventSurveyForEvent } =
+        await import('@/lib/events/post-event-trust-loop-actions')
       await sendPostEventSurveyForEvent(eventId, event.tenant_id)
     } catch (surveyErr) {
       log.events.warn('Survey creation failed (non-blocking)', { error: surveyErr })
