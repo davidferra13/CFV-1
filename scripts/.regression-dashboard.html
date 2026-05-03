@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChefFlow Regression Dashboard</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0d1117; color: #c9d1d9; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; padding: 20px; max-width: 1100px; margin: 0 auto; }
+  h1 { font-size: 1.4em; margin-bottom: 4px; color: #e6edf3; }
+  h2 { font-size: 1.15em; color: #e6edf3; margin: 24px 0 12px 0; padding-bottom: 6px; border-bottom: 1px solid #21262d; }
+  h3 { font-size: 1em; color: #8b949e; margin: 12px 0 8px 0; }
+  .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .header-meta { font-size: 0.82em; color: #8b949e; text-align: right; }
+  .status-banner { padding: 16px 24px; border-radius: 8px; text-align: center; font-size: 1.5em; font-weight: 700; letter-spacing: 1px; margin-bottom: 20px; }
+  .status-clean { background: #0d3520; color: #3fb950; border: 1px solid #238636; }
+  .status-fail { background: #3d1a1a; color: #f85149; border: 1px solid #da3633; }
+  .vitals { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 8px; }
+  .vital-card { background: #161b22; border: 1px solid #21262d; border-radius: 8px; padding: 16px; text-align: center; }
+  .vital-value { font-size: 2em; font-weight: 700; color: #e6edf3; }
+  .vital-label { font-size: 0.85em; color: #8b949e; margin-top: 4px; }
+  .delta { font-size: 0.7em; margin-left: 6px; }
+  .delta.up { color: #3fb950; }
+  .delta.down { color: #f85149; }
+  .delta.neutral { color: #484f58; }
+  .chart-container { background: #161b22; border: 1px solid #21262d; border-radius: 8px; padding: 16px; }
+  .chart-legend { font-size: 0.8em; color: #8b949e; margin-bottom: 10px; display: flex; gap: 16px; }
+  .legend-pages { display: inline-block; width: 12px; height: 12px; background: #58a6ff; border-radius: 2px; vertical-align: middle; margin-right: 4px; }
+  .legend-exports { display: inline-block; width: 12px; height: 12px; background: #8b5cf6; border-radius: 2px; vertical-align: middle; margin-right: 4px; }
+  .chart-rows { display: flex; flex-direction: column; gap: 4px; }
+  .chart-row { display: flex; align-items: center; gap: 8px; }
+  .chart-label { font-size: 0.72em; color: #8b949e; min-width: 90px; text-align: right; font-family: monospace; }
+  .chart-bars { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+  .bar { height: 16px; border-radius: 3px; font-size: 0.68em; line-height: 16px; padding-left: 6px; color: #fff; min-width: 28px; white-space: nowrap; }
+  .bar-pages { background: #58a6ff; }
+  .bar-exports { background: #8b5cf6; }
+  .regression-list { list-style: none; padding: 0; }
+  .regression-list li { padding: 6px 10px; border-bottom: 1px solid #21262d; font-size: 0.88em; }
+  .regression-list li:last-child { border-bottom: none; }
+  .regression-list code { color: #f0883e; }
+  .tag { font-size: 0.75em; background: #21262d; color: #8b949e; padding: 2px 8px; border-radius: 10px; margin-left: 8px; }
+  table { width: 100%; border-collapse: collapse; background: #161b22; border: 1px solid #21262d; border-radius: 8px; overflow: hidden; font-size: 0.88em; }
+  th { background: #1c2128; color: #8b949e; text-align: left; padding: 8px 12px; font-weight: 600; }
+  td { padding: 8px 12px; border-top: 1px solid #21262d; }
+  td code { color: #f0883e; }
+  .risk-badge { padding: 2px 10px; border-radius: 10px; font-size: 0.8em; font-weight: 600; text-transform: uppercase; }
+  .risk-high { background: #3d1a1a; color: #f85149; }
+  .risk-med { background: #3d2e00; color: #d29922; }
+  .risk-low { background: #0d3520; color: #3fb950; }
+  .muted { color: #484f58; font-style: italic; }
+  .section { background: #161b22; border: 1px solid #21262d; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+  footer { text-align: center; color: #484f58; font-size: 0.75em; margin-top: 24px; padding-top: 12px; border-top: 1px solid #21262d; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>ChefFlow Regression Dashboard</h1>
+  <div class="header-meta">
+    <div>feature/weather-visibility-analysis</div>
+    <div>2026-04-27T18:19:08Z</div>
+  </div>
+</div>
+
+<div class="status-banner status-clean">ALL CLEAR</div>
+
+<h2>Codebase Vitals</h2>
+<div class="vitals">
+  <div class="vital-card">
+    <div class="vital-value">791 <span class="delta neutral">-</span></div>
+    <div class="vital-label">Pages</div>
+  </div>
+  <div class="vital-card">
+    <div class="vital-value">345 <span class="delta neutral">-</span></div>
+    <div class="vital-label">API Routes</div>
+  </div>
+  <div class="vital-card">
+    <div class="vital-value">4776 <span class="delta neutral">-</span></div>
+    <div class="vital-label">Exports</div>
+  </div>
+  <div class="vital-card">
+    <div class="vital-value">682 <span class="delta neutral">-</span></div>
+    <div class="vital-label">Tables</div>
+  </div>
+</div>
+
+<h2>Trend</h2>
+<div class="chart-container">
+    <div class="chart-legend"><span class="legend-pages"></span> Pages <span class="legend-exports"></span> Exports</div>
+    <div class="chart-rows"><div class="chart-row">
+      <span class="chart-label">04-27 18:09</span>
+      <div class="chart-bars">
+        <div class="bar bar-pages" style="width:100%" title="Pages: 791">791</div>
+        <div class="bar bar-exports" style="width:100%" title="Exports: 4776">4776</div>
+      </div>
+    </div><div class="chart-row">
+      <span class="chart-label">04-27 18:12</span>
+      <div class="chart-bars">
+        <div class="bar bar-pages" style="width:100%" title="Pages: 791">791</div>
+        <div class="bar bar-exports" style="width:100%" title="Exports: 4776">4776</div>
+      </div>
+    </div></div>
+  </div>
+
+<h2>Current Regressions</h2>
+<div class="section">
+<h3>Semantic Checks</h3><p>Status: FAILED (210 failures, 34 warnings) | Checks: 7154 | Warnings: 34</p><ul class="regression-list"><li><code>Missing auth gate: lib/ai/ace-ollama.ts</code></li><li><code>Missing auth gate: lib/ai/chat-insights.ts</code></li><li><code>Missing auth gate: lib/ai/command-intent-parser.ts</code></li><li><code>Missing auth gate: lib/ai/extract-client-memory.ts</code></li><li><code>Missing auth gate: lib/ai/mempalace-persist.ts</code></li><li><code>Missing auth gate: lib/ai/parse-brain-dump.ts</code></li><li><code>Missing auth gate: lib/ai/parse-client.ts</code></li><li><code>Missing auth gate: lib/ai/parse-clients-bulk.ts</code></li><li><code>Missing auth gate: lib/ai/parse-document-text.ts</code></li><li><code>Missing auth gate: lib/ai/parse-inquiries-bulk.ts</code></li><li><code>Missing auth gate: lib/ai/parse-inquiry.ts</code></li><li><code>Missing auth gate: lib/ai/parse-ollama.ts</code></li><li><code>Missing auth gate: lib/ai/parse-receipt.ts</code></li><li><code>Missing auth gate: lib/ai/parse-recipe-vision.ts</code></li><li><code>Missing auth gate: lib/ai/parse-recipe.ts</code></li><li><code>Missing auth gate: lib/ai/parse-transcript.ts</code></li><li><code>Missing auth gate: lib/ai/reactive/handlers.ts</code></li><li><code>Missing auth gate: lib/ai/reactive/hooks.ts</code></li><li><code>Missing auth gate: lib/ai/remy-classifier.ts</code></li><li><code>Missing auth gate: lib/ai/remy-morning-briefing.ts</code></li><li class="muted">... and more (see .regression-semantic-report.md)</li></ul>
+</div>
+
+<h2>Recent Sessions</h2>
+<table><thead><tr><th>Time</th><th>Branch</th><th>Files</th><th>Label</th></tr></thead><tbody><tr>
+      <td>2026-04-27 18:12</td>
+      <td>feature/weather-visibility-analysis</td>
+      <td>51</td>
+      <td>regression detection system build</td>
+    </tr></tbody></table>
+
+<h2>Fragile Files</h2>
+<p class="muted">No fragile watchlist found.</p>
+
+<footer>Generated by regression-dashboard.sh | ChefFlow V1</footer>
+
+</body>
+</html>

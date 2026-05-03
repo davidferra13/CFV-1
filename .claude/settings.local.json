@@ -6,7 +6,8 @@
       "Bash(find:*)",
       "Bash(npx drizzle-kit push:*)",
       "Bash(npx drizzle-kit migrate:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(npx tsc:*)"
     ]
   }
 }
