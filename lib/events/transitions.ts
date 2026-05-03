@@ -17,6 +17,21 @@ import {
   type TransitionActor,
 } from './fsm'
 import { executeInteraction } from '@/lib/interactions'
+import { recordSideEffectFailure } from '@/lib/monitoring/non-blocking'
+
+// Helper: log AND persist side effect failures in transitions
+function logTransitionFailure(operation: string, eventId: string, tenantId: string, err: unknown) {
+  log.events.warn(`${operation} failed (non-blocking)`, { error: err })
+  recordSideEffectFailure({
+    source: 'event-transition',
+    operation,
+    severity: 'high',
+    entityType: 'event',
+    entityId: eventId,
+    tenantId,
+    errorMessage: err instanceof Error ? err.message : String(err),
+  })
+}
 
 // Re-export EventStatus so existing consumers that import from transitions.ts still work
 export type { EventStatus }
@@ -542,7 +557,47 @@ export async function transitionEvent({
         }
       }
     } catch (err) {
-      log.events.warn('Staff briefing reminder failed (non-blocking)', { error: err })
+      logTransitionFailure('staff_briefing_reminder', eventId, event.tenant_id, err)
+    }
+  }
+
+  // Notify staff members directly on confirmed, in_progress, and completed transitions
+  if (['confirmed', 'in_progress', 'completed', 'cancelled'].includes(toStatus)) {
+    try {
+      const staffDb2: any = createServerClient({ admin: true })
+      const { data: staffAssignments2 } = await staffDb2
+        .from('event_staff_assignments')
+        .select('staff_member_id, staff_members(name, user_id)')
+        .eq('event_id', eventId)
+        .eq('chef_id', event.tenant_id)
+
+      if (staffAssignments2?.length) {
+        const { createNotification } = await import('@/lib/notifications/actions')
+        const eventTitle = event.occasion || 'Event'
+        const statusLabels: Record<string, string> = {
+          confirmed: 'confirmed',
+          in_progress: 'now in progress',
+          completed: 'completed',
+          cancelled: 'cancelled',
+        }
+
+        for (const sa of staffAssignments2 as any[]) {
+          const userId = sa.staff_members?.user_id
+          if (!userId) continue
+          await createNotification({
+            tenantId: event.tenant_id,
+            recipientId: userId,
+            category: 'ops',
+            action: `event_${toStatus}` as any,
+            title: `Event ${statusLabels[toStatus] ?? toStatus}`,
+            body: `"${eventTitle}" has been ${statusLabels[toStatus] ?? toStatus}`,
+            actionUrl: `/events/${eventId}`,
+            eventId,
+          })
+        }
+      }
+    } catch (err) {
+      logTransitionFailure('staff_direct_notification', eventId, event.tenant_id, err)
     }
   }
 
@@ -609,7 +664,7 @@ export async function transitionEvent({
         }
       }
     } catch (err) {
-      log.events.warn('Cancellation refund notification failed (non-blocking)', { error: err })
+      logTransitionFailure('cancellation_refund_notification', eventId, event.tenant_id, err)
     }
 
     // FC-G22: Detect already-purchased ingredients that are now surplus
@@ -648,7 +703,7 @@ export async function transitionEvent({
         }
       }
     } catch (err) {
-      log.events.warn('Surplus ingredient detection failed (non-blocking)', { error: err })
+      logTransitionFailure('surplus_ingredient_detection', eventId, event.tenant_id, err)
     }
   }
 
@@ -708,7 +763,7 @@ export async function transitionEvent({
       }
     }
   } catch (err) {
-    log.events.warn('Chef notification creation failed (non-blocking)', { error: err })
+    logTransitionFailure('chef_notification', eventId, event.tenant_id, err)
   }
 
   // Create client notification for chef-initiated transitions (non-blocking)
@@ -804,7 +859,7 @@ export async function transitionEvent({
       }
     }
   } catch (err) {
-    log.events.warn('Client notification failed (non-blocking)', { error: err })
+    logTransitionFailure('client_notification', eventId, event.tenant_id, err)
   }
 
   // Send transactional emails (non-blocking)
@@ -1199,7 +1254,7 @@ export async function transitionEvent({
       }
     }
   } catch (emailErr) {
-    log.events.warn('Email send failed (non-blocking)', { error: emailErr })
+    logTransitionFailure('email_send', eventId, event.tenant_id, emailErr)
   }
 
   // Circle posts: accepted + paid + in_progress (confirmed + completed handled by circleFirstNotify above)
@@ -1552,7 +1607,7 @@ export async function transitionEvent({
         },
       })
     } catch (err) {
-      log.events.warn('Inngest post-event enqueue failed (non-blocking)', { error: err })
+      logTransitionFailure('inngest_post_event', eventId, event.tenant_id, err)
     }
 
     // Schedule follow-up sends from chef's followup_rules (or defaults)
@@ -1560,7 +1615,7 @@ export async function transitionEvent({
       const { schedulePostEventFollowUp } = await import('@/lib/follow-up/sequence-engine')
       await schedulePostEventFollowUp(eventId, event.tenant_id)
     } catch (err) {
-      log.events.warn('Follow-up sequence scheduling failed (non-blocking)', { error: err })
+      logTransitionFailure('follow_up_scheduling', eventId, event.tenant_id, err)
     }
   }
 

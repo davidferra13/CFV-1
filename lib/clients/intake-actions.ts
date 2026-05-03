@@ -214,6 +214,10 @@ export async function getIntakeShares(formId: string) {
 // ============================================
 
 export async function getShareByToken(token: string) {
+  // Rate limit token lookups to prevent brute-force enumeration
+  const { checkRateLimit } = await import('@/lib/security/rate-limit')
+  await checkRateLimit(`intake-token-lookup:${token.slice(0, 8)}`, 20, 15 * 60 * 1000)
+
   const db: any = createAdminClient()
 
   // Load the share record
@@ -250,6 +254,10 @@ export async function submitIntakeResponse(
   clientName: string,
   clientEmail: string
 ) {
+  // Rate limit submissions to prevent spam
+  const { checkRateLimit } = await import('@/lib/security/rate-limit')
+  await checkRateLimit(`intake-submit:${token.slice(0, 8)}`, 5, 60 * 60 * 1000)
+
   const db: any = createAdminClient()
 
   // Validate the share token

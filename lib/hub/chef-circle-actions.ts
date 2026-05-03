@@ -739,9 +739,14 @@ export async function createCircleForEvent(eventId: string): Promise<{ groupToke
     authUserId: user.userId,
   })
 
-  const groupName = event.occasion
+  const rawGroupName = event.occasion
     ? `${event.occasion} with ${clientName}`
     : `Dinner with ${clientName}`
+
+  // Content moderation: sanitize circle name
+  const { validateCircleName } = await import('@/lib/moderation/content-filter')
+  const modResult = validateCircleName(rawGroupName)
+  const groupName = modResult.allowed ? rawGroupName : `Dinner Circle`
 
   // Create the group
   const { createHubGroup } = await import('./group-actions')

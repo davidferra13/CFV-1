@@ -30,12 +30,19 @@ export async function getUnifiedAlerts(limit = 25): Promise<UnifiedAlert[]> {
     const { getDietaryAlerts } = await import('@/lib/clients/dietary-alert-actions')
     const dietaryAlerts = await getDietaryAlerts(true)
     for (const a of dietaryAlerts.slice(0, 10)) {
+      const changeLabel = [
+        a.field_name,
+        a.old_value ? `was "${a.old_value}"` : null,
+        a.new_value ? `now "${a.new_value}"` : null,
+      ]
+        .filter(Boolean)
+        .join(' ')
       alerts.push({
         id: `dietary-${a.id}`,
         source: 'dietary',
         severity: a.severity === 'critical' ? 'critical' : 'warning',
-        title: a.title ?? 'Dietary change detected',
-        body: a.description ?? a.change_summary ?? '',
+        title: `Dietary change: ${a.change_type}`,
+        body: changeLabel || `${a.field_name} updated`,
         clientId: a.client_id,
         clientName: a.client_name ?? undefined,
         actionUrl: a.client_id ? `/clients/${a.client_id}` : undefined,
@@ -52,15 +59,15 @@ export async function getUnifiedAlerts(limit = 25): Promise<UnifiedAlert[]> {
     const milestones = await getUpcomingMilestones(14)
     for (const m of milestones.slice(0, 10)) {
       alerts.push({
-        id: `birthday-${m.clientId}-${m.milestoneDate}`,
+        id: `birthday-${m.clientId}-${m.date}`,
         source: 'birthday',
         severity: 'info',
         title: m.label ?? 'Upcoming milestone',
-        body: m.description ?? '',
+        body: m.daysUntil === 0 ? 'Today!' : `In ${m.daysUntil} days`,
         clientId: m.clientId,
         clientName: m.clientName ?? undefined,
         actionUrl: `/clients/${m.clientId}`,
-        createdAt: m.milestoneDate ?? new Date().toISOString(),
+        createdAt: m.date ?? new Date().toISOString(),
       })
     }
   } catch (err) {

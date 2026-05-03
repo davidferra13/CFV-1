@@ -77,6 +77,22 @@ export async function createCommunityCircle(input: {
     throw new Error('Circle name is required (max 100 characters)')
   }
 
+  // Content moderation
+  const { validateCircleName } = await import('@/lib/moderation/content-filter')
+  const modResult = validateCircleName(name)
+  if (!modResult.allowed) {
+    throw new Error(modResult.reason ?? 'Circle name contains inappropriate content')
+  }
+
+  // Also check description
+  if (input.description) {
+    const { moderateText } = await import('@/lib/moderation/content-filter')
+    const descResult = moderateText(input.description)
+    if (!descResult.allowed) {
+      throw new Error(descResult.reason ?? 'Description contains inappropriate content')
+    }
+  }
+
   const group = await createHubGroup({
     name,
     description: input.description?.trim() || null,
