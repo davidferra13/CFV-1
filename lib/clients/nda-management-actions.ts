@@ -59,6 +59,34 @@ function computeStatus(nda: NdaRow): NdaRow {
   return nda
 }
 
+/**
+ * Sync the management NDA status back to the legacy clients.nda_active column.
+ * This keeps the two NDA systems consistent (GAP #220).
+ */
+async function syncNdaToClientRow(db: any, clientId: string, tenantId: string) {
+  try {
+    // Check if any signed (non-expired) NDA exists for this client
+    const { data: activeNdas } = await db
+      .from('client_ndas' as any)
+      .select('id, status, expiry_date')
+      .eq('client_id', clientId)
+      .eq('tenant_id', tenantId)
+      .eq('status', 'signed')
+
+    const hasActive = (activeNdas ?? []).some(
+      (n: any) => !n.expiry_date || new Date(n.expiry_date) >= new Date()
+    )
+
+    await db
+      .from('clients')
+      .update({ nda_active: hasActive } as any)
+      .eq('id', clientId)
+      .eq('tenant_id', tenantId)
+  } catch (err) {
+    console.error('[syncNdaToClientRow] Non-blocking sync failed:', err)
+  }
+}
+
 function computeStatuses(ndas: NdaRow[]): NdaRow[] {
   return ndas.map(computeStatus)
 }
@@ -91,6 +119,7 @@ export async function createNdaRecord(clientId: string, data: NdaCreateInput): P
     throw new Error('Failed to create NDA')
   }
 
+  await syncNdaToClientRow(db, clientId, tenantId)
   revalidatePath('/clients')
   return computeStatus(nda as NdaRow)
 }
@@ -124,6 +153,10 @@ export async function updateNdaRecord(id: string, data: NdaUpdateInput): Promise
     throw new Error('Failed to update NDA')
   }
 
+  // Sync NDA active flag to client row
+  if (nda) {
+    await syncNdaToClientRow(db, (nda as NdaRow).client_id, tenantId)
+  }
   revalidatePath('/clients')
   return computeStatus(nda as NdaRow)
 }
@@ -132,6 +165,14 @@ export async function deleteNdaRecord(id: string): Promise<void> {
   const user = await requireChef()
   const db: any = createServerClient()
   const tenantId = user.tenantId!
+
+  // Fetch client_id before deleting so we can sync the flag after
+  const { data: existing } = await db
+    .from('client_ndas' as any)
+    .select('client_id')
+    .eq('id', id)
+    .eq('tenant_id', tenantId)
+    .maybeSingle()
 
   const { error } = await db
     .from('client_ndas' as any)
@@ -142,6 +183,10 @@ export async function deleteNdaRecord(id: string): Promise<void> {
   if (error) {
     console.error('[deleteNdaRecord] Delete error:', error)
     throw new Error('Failed to delete NDA')
+  }
+
+  if (existing?.client_id) {
+    await syncNdaToClientRow(db, existing.client_id, tenantId)
   }
 
   revalidatePath('/clients')

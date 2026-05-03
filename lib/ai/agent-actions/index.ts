@@ -35,6 +35,46 @@ import { lifecycleCircleAgentActions } from './lifecycle-circle-actions'
 import { workflowAgentActions } from './workflow-actions'
 // ─── ChefTips actions (2026-05-02) ──────────────────────────────────────────
 import { cheftipsAgentActions } from './cheftips-actions'
+// ─── ChefNotes + knowledge routing actions (2026-05-02) ─────────────────────
+import { chefnotesAgentActions } from './chefnotes-actions'
+
+// All action module files that SHOULD be registered.
+// If you add a new *-actions.ts file, add it here too.
+// recipe-actions is intentionally excluded (restricted).
+const EXPECTED_ACTION_MODULES = [
+  'client-actions',
+  'event-actions',
+  'inquiry-actions',
+  'menu-actions',
+  'quote-actions',
+  'operations-actions',
+  'restricted-actions',
+  'menu-edit-actions',
+  'draft-email-actions',
+  'event-ops-actions',
+  'staff-actions',
+  'notes-tags-actions',
+  'calendar-actions',
+  'financial-call-actions',
+  'grocery-actions',
+  'proactive-actions',
+  'intake-actions',
+  'briefing-actions',
+  'inquiry-response-actions',
+  'menu-proposal-actions',
+  'lifecycle-circle-actions',
+  'workflow-actions',
+  'cheftips-actions',
+  'chefnotes-actions',
+] as const
+
+/**
+ * Validates that all expected action modules are imported.
+ * Call from tests to catch forgotten registrations (GAP #189).
+ */
+export function getExpectedActionModules(): readonly string[] {
+  return EXPECTED_ACTION_MODULES
+}
 
 let registered = false
 
@@ -81,4 +121,7 @@ export function ensureAgentActionsRegistered(): void {
 
   // ─── ChefTips actions (2026-05-02) ──────────────────────────────────────────
   registerAgentActions(cheftipsAgentActions)
+
+  // ─── ChefNotes + knowledge routing actions (2026-05-02) ─────────────────────
+  registerAgentActions(chefnotesAgentActions)
 }
