@@ -136,8 +136,8 @@ export function CashFlowChart({ initialForecast }: Props) {
               <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#78716c' }} />
               <YAxis tickFormatter={formatDollars} tick={{ fontSize: 11, fill: '#78716c' }} />
               <Tooltip
-                formatter={(v: number | undefined) => [
-                  `$${(Math.abs(v ?? 0) / 100).toLocaleString()}`,
+                formatter={(v) => [
+                  `$${(Math.abs(typeof v === 'number' ? v : 0) / 100).toLocaleString()}`,
                   '',
                 ]}
               />

@@ -209,8 +209,8 @@ export function ReferralAnalyticsDashboard({ data }: { data: ReferralAnalyticsDa
                     />
                     <Tooltip
                       contentStyle={{ borderRadius: '8px', border: '1px solid #e7e5e4' }}
-                      formatter={(value: number | undefined) => [
-                        formatCurrency(value ?? 0),
+                      formatter={(value) => [
+                        formatCurrency(typeof value === 'number' ? value : 0),
                         'Revenue',
                       ]}
                     />

@@ -169,8 +169,8 @@ export function CustomReportBuilder() {
                     tick={{ fontSize: 11 }}
                   />
                   <Tooltip
-                    formatter={(v: number | undefined) =>
-                      v != null ? [formatValue(v), config.metric] : ['-', config.metric]
+                    formatter={(v) =>
+                      typeof v === 'number' ? [formatValue(v), config.metric] : ['-', config.metric]
                     }
                   />
                   <Bar dataKey="value" fill="#d47530" radius={[4, 4, 0, 0]} />
@@ -189,8 +189,8 @@ export function CustomReportBuilder() {
                     tick={{ fontSize: 11 }}
                   />
                   <Tooltip
-                    formatter={(v: number | undefined) =>
-                      v != null ? [formatValue(v), config.metric] : ['-', config.metric]
+                    formatter={(v) =>
+                      typeof v === 'number' ? [formatValue(v), config.metric] : ['-', config.metric]
                     }
                   />
                   <Line
@@ -224,9 +224,7 @@ export function CustomReportBuilder() {
                     ))}
                   </Pie>
                   <Tooltip
-                    formatter={(v: number | undefined) =>
-                      v != null ? [formatValue(v), ''] : ['-', '']
-                    }
+                    formatter={(v) => (typeof v === 'number' ? [formatValue(v), ''] : ['-', ''])}
                   />
                 </PieChart>
               </ResponsiveContainer>
