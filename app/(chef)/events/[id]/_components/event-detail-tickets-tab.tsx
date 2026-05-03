@@ -23,25 +23,37 @@ import { sendThankYouEmails } from '@/lib/tickets/thank-you-actions'
 import type { EventTicketType, EventTicket, EventTicketSummary } from '@/lib/tickets/types'
 import { TicketWaitlistPanel } from '@/components/tickets/ticket-waitlist-panel'
 import { DistributionPanel } from '@/components/tickets/distribution-panel'
+import { RevenueSplitPanel } from '@/components/tickets/revenue-split-panel'
+import { WeatherAlertPanel } from '@/components/events/weather-alert-panel'
+import { DayOfChecklistPanel } from '@/components/events/day-of-checklist-panel'
+import { PrepTimelinePanel } from '@/components/events/prep-timeline-panel'
 
 type Props = {
   activeTab: EventDetailTab
   eventId: string
   eventStatus: string
+  eventDate: string | null
+  eventLatitude?: number | null
+  eventLongitude?: number | null
   ticketTypes: EventTicketType[]
   tickets: EventTicket[]
   summary: EventTicketSummary | null
   shareToken: string | null
+  hasCollaborators?: boolean
 }
 
 export function EventDetailTicketsTab({
   activeTab,
   eventId,
   eventStatus,
+  eventDate,
+  eventLatitude,
+  eventLongitude,
   ticketTypes,
   tickets,
   summary,
   shareToken,
+  hasCollaborators,
 }: Props) {
   const [showCreateType, setShowCreateType] = useState(false)
   const [showAddGuest, setShowAddGuest] = useState<'comp' | 'walkin' | null>(null)
@@ -893,6 +905,23 @@ export function EventDetailTicketsTab({
             </div>
           </Card>
         )}
+
+        {/* Revenue Split - for co-hosted events */}
+        {hasCollaborators && <RevenueSplitPanel eventId={eventId} />}
+
+        {/* Weather Alert - outdoor event forecast */}
+        <WeatherAlertPanel
+          eventDate={eventDate}
+          location={null}
+          latitude={eventLatitude}
+          longitude={eventLongitude}
+        />
+
+        {/* Day-of Checklist */}
+        <DayOfChecklistPanel eventId={eventId} />
+
+        {/* Prep Timeline */}
+        <PrepTimelinePanel eventId={eventId} />
 
         {/* Distribution */}
         <DistributionPanel eventId={eventId} shareToken={shareToken} />

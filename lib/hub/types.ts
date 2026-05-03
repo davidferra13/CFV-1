@@ -106,6 +106,7 @@ export interface HubGroupMember {
   quiet_hours_end?: string | null
   digest_mode?: HubDigestMode
   on_behalf_of_profile_id?: string | null
+  is_co_host?: boolean
   joined_at: string
   // Joined data
   profile?: HubGuestProfile

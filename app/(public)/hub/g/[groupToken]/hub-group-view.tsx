@@ -37,6 +37,7 @@ import { CircleChefProof } from '@/components/hub/circle-chef-proof'
 import { CircleEventPlan } from '@/components/hub/circle-event-plan'
 import { CircleShareCard } from '@/components/hub/circle-share-card'
 import { HostDashboardTab } from '@/components/hub/host-dashboard-tab'
+import { IngredientAvailabilityBoard } from '@/components/hub/ingredient-availability-board'
 import type { GuestCriticalPathResult } from '@/lib/lifecycle/critical-path'
 import type { CircleChefProofData } from '@/lib/hub/circle-chef-proof'
 import type { HouseholdDietarySummary } from '@/lib/hub/household-actions'
@@ -59,6 +60,7 @@ type Tab =
   | 'dashboard'
   | 'chat'
   | 'meals'
+  | 'ingredients'
   | 'plan'
   | 'events'
   | 'photos'
@@ -203,6 +205,9 @@ export function HubGroupView({
 
   const baseTabs: { id: Tab; label: string; emoji: string; count?: number }[] = [
     ...(isOwnerOrAdmin ? [{ id: 'dashboard' as Tab, label: 'Dashboard', emoji: '📊' }] : []),
+    ...(isOwnerOrAdmin && linkedEventId
+      ? [{ id: 'ingredients' as Tab, label: 'Ingredients', emoji: '🥬' }]
+      : []),
     { id: 'chat', label: 'Chat', emoji: '💬' },
     ...(profileToken ? [{ id: 'private' as Tab, label: 'Private', emoji: '\u{1F512}' }] : []),
     { id: 'meals', label: 'Meals', emoji: '🍽️' },
@@ -290,8 +295,11 @@ export function HubGroupView({
                 {/* Notification preferences dropdown */}
                 {showNotifPrefs && (
                   <>
-                    <div className="fixed inset-0 z-40" onClick={() => setShowNotifPrefs(false)} />
-                    <div className="absolute right-0 top-full z-50 mt-2 w-72 rounded-xl border border-stone-700 bg-stone-900 p-4 shadow-xl">
+                    <div
+                      className="fixed inset-0 z-page-bar"
+                      onClick={() => setShowNotifPrefs(false)}
+                    />
+                    <div className="absolute right-0 top-full z-float mt-2 w-72 rounded-xl border border-stone-700 bg-stone-900 p-4 shadow-xl">
                       <NotificationPreferences
                         groupId={group.id}
                         profileToken={profileToken!}
@@ -540,6 +548,14 @@ export function HubGroupView({
             memberCount={members.length}
             mediaCount={media.length}
             onSwitchTab={(tab) => setActiveTab(tab as Tab)}
+          />
+        )}
+
+        {activeTab === 'ingredients' && isOwnerOrAdmin && linkedEventId && (
+          <IngredientAvailabilityBoard
+            groupId={group.id}
+            eventId={linkedEventId}
+            isCoHost={currentMember?.role === 'chef' && currentMember?.is_co_host}
           />
         )}
 

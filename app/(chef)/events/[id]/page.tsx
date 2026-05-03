@@ -1532,10 +1532,14 @@ export default async function EventDetailPage({
         activeTab={activeTab}
         eventId={event.id}
         eventStatus={event.status}
+        eventDate={event.event_date ? dateToDateString(event.event_date) : null}
+        eventLatitude={(event as any).location_lat ?? null}
+        eventLongitude={(event as any).location_lng ?? null}
         ticketTypes={ticketTypes as any[]}
         tickets={ticketList as any[]}
         summary={ticketSummary}
         shareToken={publicTicketShareToken}
+        hasCollaborators={(eventCollaborators as any[]).length > 0}
       />
 
       {/* ============================================ */}
