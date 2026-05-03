@@ -10,7 +10,7 @@ import { getPriorityQueue } from '@/lib/queue/actions'
 import { getCachedChefArchetype, getCachedIsPrivileged } from '@/lib/chef/layout-data-cache'
 import { getDashboardPrimaryAction } from '@/lib/archetypes/ui-copy'
 import Link from 'next/link'
-import { Plus, Store, UtensilsCrossed } from '@/components/ui/icons'
+import { ArrowRight, Plus, Store, UtensilsCrossed } from '@/components/ui/icons'
 import type { PriorityQueue } from '@/lib/queue/types'
 import { CommandCenterSection } from './_sections/command-center-data'
 import { ListCard, type ListCardItem } from '@/components/dashboard/widget-cards/list-card'
@@ -36,6 +36,7 @@ import {
   type ServiceReadyCandidate,
   type TeamReadyCandidate,
   type TravelConfirmCandidate,
+  type SurfaceActionTask,
   type TrustLoopCandidate,
   resolveCollectBalanceTask,
   resolveCommitNextTask,
@@ -77,6 +78,8 @@ import { SmartSuggestions, SmartSuggestionsSkeleton } from './_sections/smart-su
 import { MetricsStrip } from './_sections/metrics-strip'
 import { PulseSummary } from './_sections/pulse-summary'
 import { OpenClawLiveAlerts } from '@/components/pricing/openclaw-live-alerts'
+import { StaleItemsWidget } from '@/components/dashboard/stale-items-widget'
+import { getStaleItems } from '@/lib/actions/stale-items'
 import { PipelineStatusBadge } from '@/components/pricing/pipeline-status-badge'
 import { DashboardHeartbeat } from '@/components/dashboard/dashboard-heartbeat'
 import { RemyAlertsWidget } from '@/components/dashboard/remy-alerts-widget'
@@ -93,9 +96,27 @@ import { OnboardingChecklistWidget } from '@/components/dashboard/onboarding-che
 import { getOnboardingProgress } from '@/lib/onboarding/progress-actions'
 import { getDashboardWorkSurface } from '@/lib/workflow/actions'
 import type { DashboardWorkSurface, WorkStage } from '@/lib/workflow/types'
-import { getAllPrepPrompts, getEventDOPProgress } from '@/lib/scheduling/actions'
+import { getAllPrepPrompts, getEventDOPProgress, getWeekSchedule } from '@/lib/scheduling/actions'
 import { autoSuggestEventBlocks } from '@/lib/scheduling/prep-block-actions'
 import { getEventsNeedingClosure } from '@/lib/events/actions'
+import { getNextUpcomingEvent, getTodayActionCount } from '@/lib/dashboard/actions'
+import { DayTimeline, type TimelineEvent } from '@/components/dashboard/day-timeline'
+import { StaggerIn } from '@/components/dashboard/stagger-in'
+import { MomentumIndicator } from '@/components/dashboard/momentum-indicator'
+import { LiveCountdown } from '@/components/dashboard/live-countdown'
+import { AmbientBackground, type WorkloadState } from '@/components/dashboard/ambient-background'
+import { KeyboardNav } from '@/components/dashboard/keyboard-nav'
+import { TypewriterText } from '@/components/dashboard/typewriter-text'
+import { ParticleField } from '@/components/dashboard/particle-field'
+import { TimePalette } from '@/components/dashboard/time-palette'
+import {
+  AmbientContextWidget,
+  AmbientContextSkeleton,
+} from '@/components/dashboard/ambient-context-widget'
+import { getAmbientContext } from '@/lib/ambient/actions'
+import { AnimatedCounter } from '@/components/dashboard/animated-counter'
+import { WeekStrip } from '@/components/dashboard/week-strip'
+import { format } from 'date-fns'
 import { getTenantDataPresence } from '@/lib/progressive-disclosure/tenant-data-presence'
 import { isBrandNewChef } from '@/lib/progressive-disclosure/nav-visibility'
 import { GettingStartedSection } from '@/components/dashboard/getting-started-section'
@@ -1507,26 +1528,16 @@ async function QuickNotesLoader() {
 
 export default async function ChefDashboard() {
   const user = await requireChef()
-  const queuePromise = safe('queue', getPriorityQueue, emptyQueue)
-  const decisionQueuePromise = safe('decisionQueue', getDecisionQueue, emptyDecisionQueue)
+  const queue = await safe('queue', getPriorityQueue, emptyQueue)
 
   const hour = new Date().getHours()
   const timeOfDay = hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening'
   const firstName = (user.email ?? '').split('@')[0].split('.')[0]
 
-  const [
-    archetype,
-    onboardingProgress,
-    remyAlerts,
-    profileGated,
-    presence,
-    supportStatus,
-    userIsPrivileged,
-    workspaceDensity,
-  ] = await Promise.all([
-    safe('archetype', () => getCachedChefArchetype(user.entityId), null),
+  const ambientContext = await safe('ambient', getAmbientContext, null)
+
+  const [onboardingProgress, profileGated, presence, todayActionCount] = await Promise.all([
     safe('onboardingProgress', () => getOnboardingProgress(), null),
-    safe('remyAlerts', () => getActiveAlerts(10), []),
     safe(
       'profileGated',
       async () => {
@@ -1537,7 +1548,7 @@ export default async function ChefDashboard() {
           .select('bio, tagline, display_name, slug')
           .eq('id', user.tenantId)
           .single()
-        if (!data?.slug) return false // no public page yet
+        if (!data?.slug) return false
         const isEmailPrefix =
           data.display_name?.includes('@') || /^[a-z0-9]+$/i.test(data.display_name?.trim() || '')
         return !(data.bio || data.tagline) || isEmailPrefix
@@ -1545,407 +1556,484 @@ export default async function ChefDashboard() {
       false
     ),
     safe('presence', () => getTenantDataPresence(user.tenantId!), null),
-    safe('supportStatus', () => getSupportStatus(user.entityId), null),
-    safe('privilegedAccess', () => getCachedIsPrivileged(user.id), false),
-    safe('workspaceDensity', getWorkspaceDensity, 'standard' as const),
+    safe('momentum', getTodayActionCount, 0),
   ])
   const isNewChef = presence ? isBrandNewChef(presence) : false
-  const bypassProgressiveDisclosure = userIsPrivileged || process.env.DEMO_MODE_ENABLED === 'true'
-  const simplifyForNewChef = isNewChef && !bypassProgressiveDisclosure
-  const isMinimalDensity = workspaceDensity === 'minimal'
-  const primaryAction = getDashboardPrimaryAction(archetype)
 
-  // Time-aware greeting
-  const greeting =
-    timeOfDay === 'morning'
-      ? "Here's your day at a glance."
-      : timeOfDay === 'afternoon'
-        ? 'Your afternoon overview.'
-        : 'End-of-day summary.'
+  // Resolve the ONE primary action
+  const heroTask = resolveDashboardNextTask({
+    priorityQueue: queue,
+    onboardingProgress,
+    profileGated,
+  })
+
+  // Onboarding graduates out once chef has real data or 4/6 steps done
+  const onboardingComplete =
+    onboardingProgress &&
+    (onboardingProgress.completedSteps >= 4 ||
+      (presence && (presence.hasEvents || presence.hasInquiries)))
+  const showOnboarding = isNewChef && !onboardingComplete
+
+  // Context-aware greeting based on actual chef state
+  const waitingCount =
+    queue.summary.byDomain.inquiry + queue.summary.byDomain.message + queue.summary.byDomain.client
+  const contextGreeting =
+    heroTask.source === 'clear'
+      ? 'All clear. Nothing waiting on you.'
+      : waitingCount > 5
+        ? `${waitingCount} people are waiting on you.`
+        : waitingCount > 0
+          ? `${waitingCount} ${waitingCount === 1 ? 'person is' : 'people are'} waiting on you.`
+          : 'Here\u2019s your next move.'
+
+  // Compute workload state for ambient background
+  const criticalCount = queue.summary.byUrgency.critical + queue.summary.byUrgency.high
+  const workloadState: WorkloadState = queue.summary.allCaughtUp
+    ? 'clear'
+    : criticalCount > 0
+      ? 'overdue'
+      : queue.summary.totalItems > 10
+        ? 'busy'
+        : 'light'
 
   return (
-    <div className="space-y-8">
-      {/* OpenClaw SSE listeners (admin-only, no visible UI, just toast alerts) */}
+    <div className="mx-auto max-w-2xl space-y-12 py-6">
+      {/* Ambient mood background + particles */}
+      <AmbientBackground state={workloadState} />
+      <ParticleField state={workloadState} />
+
+      {/* Invisible SSE listener for admin alerts */}
       <Suspense fallback={null}>
         <OpenClawLiveAlertsSection />
       </Suspense>
 
       {/* ============================================ */}
-      {/* GREETING + ACTIONS                          */}
+      {/* BLOCK 1: HERO - Greeting + One Action        */}
       {/* ============================================ */}
-      <header className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4">
-        <div>
-          <div className="flex items-center gap-3">
-            <p className="text-sm text-stone-500 font-medium">
-              Good {timeOfDay}
-              {firstName ? `, ${firstName}` : ''}
-            </p>
-            <DashboardHeartbeat tenantId={user.tenantId!} />
-            {supportStatus?.badgeLabel && (
-              <span className="inline-flex items-center rounded-full border border-emerald-800 bg-emerald-950/60 px-2.5 py-1 text-xs font-medium text-emerald-300">
-                {supportStatus.badgeLabel}
-              </span>
-            )}
-          </div>
-          <h1 className="text-3xl sm:text-4xl font-display text-stone-100 mt-1 tracking-tight">
-            {greeting}
-          </h1>
-        </div>
-        <div className="flex gap-2 items-center flex-wrap shrink-0">
-          <Link
-            href="/briefing"
-            className="inline-flex items-center justify-center px-4 py-2.5 border border-stone-700 text-stone-300 rounded-xl hover:bg-stone-800 hover:border-stone-600 transition-all font-medium text-sm"
-          >
-            Briefing
-          </Link>
-          {!simplifyForNewChef && (
-            <>
-              <Link
-                href="/menus/new"
-                className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 border border-stone-700 text-stone-300 rounded-xl hover:bg-stone-800 hover:border-stone-600 transition-all font-medium text-sm"
-              >
-                <UtensilsCrossed className="h-4 w-4" />
-                Create Menu
-              </Link>
-              <Link
-                href="/commerce/storefront"
-                className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 border border-stone-700 text-stone-300 rounded-xl hover:bg-stone-800 hover:border-stone-600 transition-all font-medium text-sm"
-              >
-                <Store className="h-4 w-4" />
-                Storefront
-              </Link>
-            </>
-          )}
-          <Link
-            href={primaryAction.href}
-            data-tour="chef-dashboard-home"
-            className="inline-flex items-center justify-center gap-1.5 px-5 py-2.5 gradient-accent text-white rounded-xl font-medium text-sm glow-hover"
-          >
-            <Plus className="h-4 w-4" />
-            {primaryAction.label}
-          </Link>
-        </div>
-      </header>
+      <StaggerIn index={0}>
+        <section className="space-y-8">
+          {/* Time-aware accent line + color temperature overlay */}
+          <TimePalette />
 
-      {!isMinimalDensity && (
-        <WidgetErrorBoundary name="Client Pulse" compact>
+          {/* Ambient context: location, weather, sun/moon arc */}
+          {ambientContext && <AmbientContextWidget context={ambientContext} />}
+
+          <header className="flex items-start justify-between gap-4">
+            <div className="space-y-1">
+              <p className="text-sm text-stone-500 font-medium tracking-wide">
+                Good {timeOfDay}
+                {firstName ? `, ${firstName}` : ''}
+              </p>
+              <h1 className="text-2xl sm:text-3xl font-display text-stone-100 tracking-tight">
+                <TypewriterText text={contextGreeting} speed={20} delay={150} />
+              </h1>
+            </div>
+            <MomentumIndicator count={todayActionCount} />
+          </header>
+
+          {/* Count strip */}
           <Suspense fallback={null}>
-            <PulseSummary />
+            <CountStrip queueSummary={queue.summary} />
           </Suspense>
-        </WidgetErrorBoundary>
-      )}
 
-      {!isMinimalDensity && (
-        <WidgetErrorBoundary name="Decision Queue" compact>
-          <Suspense fallback={<WidgetCardSkeleton size="md" />}>
-            <DecisionQueueSection decisionQueuePromise={decisionQueuePromise} />
-          </Suspense>
-        </WidgetErrorBoundary>
-      )}
-
-      {!isMinimalDensity && (
-        <WidgetErrorBoundary name="Resolve Next" compact>
-          <Suspense fallback={<ResolveNextSkeleton />}>
-            <ResolveNextSection
-              queuePromise={queuePromise}
-              onboardingProgress={onboardingProgress}
-              profileGated={profileGated}
-            />
-          </Suspense>
-        </WidgetErrorBoundary>
-      )}
-
-      {!isMinimalDensity && (
-        <WidgetErrorBoundary name="Lifecycle Actions" compact>
-          <Suspense fallback={null}>
-            <LifecycleActionLayerSection />
-          </Suspense>
-        </WidgetErrorBoundary>
-      )}
-
-      {!isMinimalDensity && (
-        <WidgetErrorBoundary name="Relationship Actions" compact>
-          <Suspense fallback={null}>
-            <RelationshipActionLayerSection />
-          </Suspense>
-        </WidgetErrorBoundary>
-      )}
-
-      {/* Onboarding banner - shows until setup is complete, then auto-hides */}
-      {!isMinimalDensity && <OnboardingBanner />}
-
-      {/* Profile gated warning - public profile hidden because bio/tagline missing */}
-      {!isMinimalDensity && profileGated && (
-        <div className="rounded-xl border border-amber-800/40 bg-amber-950/30 px-5 py-3 flex items-center justify-between gap-4">
-          <p className="text-sm text-amber-300">
-            Your public profile is hidden because it&apos;s missing a bio or tagline.
-          </p>
-          <Link
-            href="/settings/my-profile"
-            className="text-sm font-medium text-amber-400 hover:text-amber-300 whitespace-nowrap"
-          >
-            Complete Profile &rarr;
-          </Link>
-        </div>
-      )}
-
-      {/* Onboarding checklist widget - shows setup progress until all phases complete */}
-      {!isMinimalDensity && onboardingProgress && (
-        <OnboardingChecklistWidget progress={onboardingProgress} />
-      )}
-
-      {/* Getting Started - shown for brand-new chefs, auto-hides as they add data */}
-      {!isMinimalDensity && presence && simplifyForNewChef && (
-        <GettingStartedSection presence={presence} />
-      )}
-
-      {/* Remy proactive alerts - urgent/high priority items needing attention */}
-      {!isMinimalDensity && remyAlerts.length > 0 && (
-        <div>
-          <div className="section-label mb-3">Alerts</div>
-          <RemyAlertsWidget alerts={remyAlerts} />
-        </div>
-      )}
-
-      {/* ============================================ */}
-      {/* RESTAURANT DAILY OPS - prime cost, labor %  */}
-      {/* Shows for restaurant/food-truck/bakery only */}
-      {/* ============================================ */}
-      {!isMinimalDensity &&
-        archetype &&
-        ['restaurant', 'food-truck', 'bakery'].includes(archetype) && (
-          <WidgetErrorBoundary name="Restaurant Metrics" compact>
-            <Suspense fallback={<RestaurantMetricsSkeleton />}>
-              <RestaurantMetricsSection />
-            </Suspense>
-          </WidgetErrorBoundary>
-        )}
-
-      {/* ============================================ */}
-      {/* MULTI-LOCATION OVERVIEW                      */}
-      {/* Shows for operators with 2+ business locations */}
-      {/* ============================================ */}
-      {!isMinimalDensity && (
-        <WidgetErrorBoundary name="Multi-Location Summary" compact>
-          <Suspense fallback={<MultiLocationSummarySkeleton />}>
-            <MultiLocationSummary />
-          </Suspense>
-        </WidgetErrorBoundary>
-      )}
-
-      {/* ============================================ */}
-      {/* TODAY & THIS WEEK - first thing a chef needs */}
-      {/* ============================================ */}
-      <section>
-        <div className="section-label mb-4">Today &amp; This Week</div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 stagger-grid">
-          <WidgetErrorBoundary name="Schedule" compact>
-            <Suspense fallback={<ScheduleCardsSkeleton />}>
-              <ScheduleCards />
-            </Suspense>
-          </WidgetErrorBoundary>
-          <Suspense fallback={null}>
-            <WidgetErrorBoundary name="Prep Pressure">
-              <div className="col-span-full">
-                <PrepPressureCard />
+          {/* Hero action card */}
+          {heroTask.source !== 'clear' && (
+            <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-stone-900/30 backdrop-blur-xl p-6 sm:p-8 space-y-5 shadow-lg shadow-black/20 hover-lift shimmer-border">
+              {/* Subtle glow behind card */}
+              <div className="pointer-events-none absolute -top-24 -right-24 h-48 w-48 rounded-full bg-brand-500/[0.07] blur-3xl" />
+              <div className="relative space-y-3">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-400/80">
+                  {heroTask.badge}
+                </p>
+                <h2 className="text-xl sm:text-2xl font-display tracking-tight text-stone-50 leading-snug">
+                  {heroTask.title}
+                </h2>
+                <p className="text-sm leading-relaxed text-stone-400 max-w-lg">
+                  {heroTask.description}
+                </p>
               </div>
-            </WidgetErrorBoundary>
-          </Suspense>
-          <WidgetErrorBoundary name="Saturation" compact>
-            <Suspense fallback={<SaturationCardsSkeleton />}>
-              <SaturationCards />
-            </Suspense>
-          </WidgetErrorBoundary>
-        </div>
-      </section>
+              {heroTask.context.length > 0 && (
+                <div className="relative flex flex-wrap gap-2">
+                  {heroTask.context.map((chip) => (
+                    <span
+                      key={chip}
+                      className="inline-flex items-center rounded-full border border-white/[0.08] bg-white/[0.04] backdrop-blur-sm px-2.5 py-1 text-xs text-stone-400"
+                    >
+                      {chip}
+                    </span>
+                  ))}
+                </div>
+              )}
+              <Link
+                href={heroTask.href}
+                className="relative inline-flex items-center gap-2 rounded-xl gradient-accent px-6 py-2.5 text-sm font-semibold text-white shadow-md shadow-brand-500/20 hover:shadow-lg hover:shadow-brand-500/30 hover:brightness-110 transition-all glow-hover"
+              >
+                {heroTask.ctaLabel}
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+          )}
 
-      {/* ============================================ */}
-      {/* CHEFTIPS - daily learning prompt              */}
-      {/* Default widget, always visible               */}
-      {/* ============================================ */}
-      <WidgetErrorBoundary name="ChefTips" compact>
-        <Suspense fallback={null}>
-          <ChefTipsSection />
-        </Suspense>
-      </WidgetErrorBoundary>
-
-      {/* ============================================ */}
-      {/* EVENT READINESS - completion scores           */}
-      {/* Hidden until the chef has created events     */}
-      {/* ============================================ */}
-      {!isMinimalDensity && (bypassProgressiveDisclosure || !presence || presence.hasEvents) && (
-        <WidgetErrorBoundary name="Event Readiness" compact>
-          <Suspense fallback={null}>
-            <CompletionSummaryWidgetServer />
-          </Suspense>
-        </WidgetErrorBoundary>
-      )}
-
-      {/* Network Activity - hidden until network use */}
-      {!isMinimalDensity && (bypassProgressiveDisclosure || !presence || presence.hasNetwork) && (
-        <WidgetErrorBoundary name="Network Activity" compact>
-          <Suspense fallback={null}>
-            <NetworkActivitySection />
-          </Suspense>
-        </WidgetErrorBoundary>
-      )}
-
-      {/* Dinner Circles - hidden until circles exist */}
-      {!isMinimalDensity && (bypassProgressiveDisclosure || !presence || presence.hasCircles) && (
-        <WidgetErrorBoundary name="Dinner Circles" compact>
-          <Suspense fallback={null}>
-            <DinnerCirclesSection />
-          </Suspense>
-        </WidgetErrorBoundary>
-      )}
-
-      {/* ============================================ */}
-      {/* CLIENT ATTENTION - who's waiting on you?    */}
-      {/* ============================================ */}
-      <WidgetErrorBoundary name="Client Attention" compact>
-        <Suspense fallback={null}>
-          <ClientAttentionSection />
-        </Suspense>
-      </WidgetErrorBoundary>
-
-      {/* ============================================ */}
-      {/* FOCUS: What needs attention now              */}
-      {/* ============================================ */}
-      {!isMinimalDensity && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 stagger-grid">
-          {/* PRIORITY QUEUE (streamed, non-blocking) */}
-          <WidgetErrorBoundary name="Priority Queue" compact>
-            <Suspense fallback={<PriorityQueueSkeleton />}>
-              <PriorityQueueSection queuePromise={queuePromise} />
-            </Suspense>
-          </WidgetErrorBoundary>
-
-          {/* POST-EVENT ACTIONS (internal close-out + client trust loop) */}
-          <div className="col-span-1 sm:col-span-2 lg:col-span-4">
-            <WidgetErrorBoundary name="Post-Event Actions" compact>
-              <Suspense fallback={null}>
-                <PostEventActionLayerSection />
-              </Suspense>
-            </WidgetErrorBoundary>
-          </div>
-
-          {/* UPCOMING TOUCHPOINTS (streamed, non-blocking) */}
-          <WidgetErrorBoundary name="Upcoming Touchpoints" compact>
-            <Suspense fallback={<TouchpointsSkeleton />}>
-              <TouchpointsSection />
-            </Suspense>
-          </WidgetErrorBoundary>
-        </div>
-      )}
-
-      {/* ============================================ */}
-      {/* SMART SUGGESTIONS - actionable data gaps     */}
-      {/* ============================================ */}
-      {!isMinimalDensity && (
-        <section>
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
-            <div className="section-label">Suggestions</div>
-            <Suspense fallback={null}>
-              <MetricsStrip />
-            </Suspense>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 stagger-grid">
-            <WidgetErrorBoundary name="Smart Suggestions" compact>
-              <Suspense fallback={<SmartSuggestionsSkeleton />}>
-                <SmartSuggestions />
-              </Suspense>
-            </WidgetErrorBoundary>
-          </div>
+          {/* Onboarding for brand-new chefs only */}
+          {showOnboarding && presence && <GettingStartedSection presence={presence} />}
         </section>
-      )}
+      </StaggerIn>
 
       {/* ============================================ */}
-      {/* QUICK NOTES - capture pad, below the fold   */}
+      {/* BLOCK 2: SCHEDULE STRIP + DAY TIMELINE       */}
       {/* ============================================ */}
-      <WidgetErrorBoundary name="Quick Notes" compact>
-        <Suspense fallback={<WidgetCardSkeleton size="md" />}>
-          <QuickNotesLoader />
-        </Suspense>
-      </WidgetErrorBoundary>
+      <StaggerIn index={1}>
+        <WidgetErrorBoundary name="Schedule" compact>
+          <Suspense fallback={<ScheduleStripSkeleton />}>
+            <ScheduleStripSection />
+          </Suspense>
+        </WidgetErrorBoundary>
+      </StaggerIn>
 
       {/* ============================================ */}
-      {/* SECONDARY INSIGHTS (collapsed by default)   */}
-      {/* Hidden entirely for brand-new chefs          */}
+      {/* BLOCK 2.5: STALE ITEMS (NEEDS ATTENTION)     */}
       {/* ============================================ */}
-      {!simplifyForNewChef && !isMinimalDensity && (
-        <DashboardSecondaryInsights>
-          {/* BUSINESS OVERVIEW - metrics moved here, not above-fold */}
-          <section className="px-4 pt-4">
-            <div className="section-label mb-4">Business Overview</div>
-            <WidgetErrorBoundary name="Hero Metrics" compact>
-              <Suspense fallback={<HeroMetricsSkeleton />}>
-                <HeroMetrics archetype={archetype} />
-              </Suspense>
-            </WidgetErrorBoundary>
-          </section>
+      <Suspense fallback={null}>
+        <StaleItemsSection />
+      </Suspense>
 
-          {/* COMMAND CENTER - feature directory, accessible but not daily-driver */}
-          <section className="px-4">
-            <WidgetErrorBoundary name="Command Center" compact>
-              <Suspense fallback={<CommandCenterSkeleton />}>
-                <CommandCenterSection />
-              </Suspense>
-            </WidgetErrorBoundary>
-          </section>
+      {/* ============================================ */}
+      {/* BLOCK 2.7: DIETARY CHANGE ALERTS             */}
+      {/* ============================================ */}
+      <Suspense fallback={null}>
+        <DietaryAlertsBanner />
+      </Suspense>
 
-          {/* WEEKLY PRICE BRIEFING */}
-          <section className="px-4">
-            <WidgetErrorBoundary name="WeeklyBriefing" compact>
-              <Suspense fallback={null}>
-                <WeeklyBriefingSection />
-              </Suspense>
-            </WidgetErrorBoundary>
-          </section>
+      {/* ============================================ */}
+      {/* BLOCK 3: UP NEXT QUEUE                       */}
+      {/* ============================================ */}
+      <StaggerIn index={2}>
+        <WidgetErrorBoundary name="Up Next" compact>
+          <Suspense fallback={<UpNextSkeleton />}>
+            <UpNextSection />
+          </Suspense>
+        </WidgetErrorBoundary>
+      </StaggerIn>
 
-          {/* PRICE COVERAGE HEALTH + PIPELINE STATUS (admin only) */}
-          <section className="px-4">
-            <Suspense fallback={null}>
-              <CoverageHealthSection />
-            </Suspense>
-            <div className="mt-2">
-              <Suspense fallback={null}>
-                <PipelineStatusSection />
-              </Suspense>
-            </div>
-          </section>
-
-          {/* ALERTS + INTELLIGENCE */}
-          <section className="px-4">
-            <div className="section-label mb-4">Alerts &amp; Health</div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 stagger-grid">
-              <WidgetErrorBoundary name="Alerts" compact>
-                <Suspense fallback={<AlertCardsSkeleton />}>
-                  <AlertCards />
-                </Suspense>
-              </WidgetErrorBoundary>
-
-              <WidgetErrorBoundary name="Intelligence" compact>
-                <Suspense fallback={<IntelligenceCardsSkeleton />}>
-                  <IntelligenceCards />
-                </Suspense>
-              </WidgetErrorBoundary>
-            </div>
-          </section>
-
-          {/* BUSINESS METRICS */}
-          <section className="px-4">
-            <div className="section-label mb-4">Business</div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 stagger-grid">
-              <WidgetErrorBoundary name="Business" compact>
-                <Suspense fallback={<BusinessCardsSkeleton />}>
-                  <BusinessCards />
-                </Suspense>
-              </WidgetErrorBoundary>
-            </div>
-          </section>
-        </DashboardSecondaryInsights>
-      )}
+      {/* Keyboard navigation */}
+      <StaggerIn index={3}>
+        <KeyboardNav heroHref={heroTask.source !== 'clear' ? heroTask.href : null} />
+      </StaggerIn>
     </div>
+  )
+}
+
+// ─── Count Strip ─────────────────────────────────────────
+function CountStrip({ queueSummary }: { queueSummary: PriorityQueue['summary'] }) {
+  const waitingCount =
+    queueSummary.byDomain.inquiry + queueSummary.byDomain.message + queueSummary.byDomain.client
+  const eventCount = queueSummary.byDomain.event
+  const financialCount = queueSummary.byDomain.financial + queueSummary.byDomain.quote
+
+  if (queueSummary.allCaughtUp) return null
+
+  const items = [
+    waitingCount > 0 && { label: 'people waiting', value: waitingCount },
+    eventCount > 0 && { label: 'event actions', value: eventCount },
+    financialCount > 0 && { label: 'financial', value: financialCount },
+  ].filter(Boolean) as Array<{ label: string; value: number }>
+
+  if (items.length === 0) return null
+
+  return (
+    <div className="flex items-center gap-3 flex-wrap">
+      {items.map((item, i) => (
+        <div key={item.label} className="flex items-center gap-3">
+          {i > 0 && <div className="h-4 w-px bg-stone-800" />}
+          <div className="flex items-center gap-2 rounded-lg border border-white/[0.06] bg-stone-900/25 backdrop-blur-md px-3 py-1.5">
+            <AnimatedCounter
+              value={item.value}
+              delay={200 + i * 100}
+              className="text-base font-semibold tabular-nums text-stone-100"
+            />
+            <span className="text-xs text-stone-500">{item.label}</span>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+// ─── Stale Items ────────────────────────────────────────
+async function StaleItemsSection() {
+  const items = await safe('staleItems', getStaleItems, [])
+  if (items.length === 0) return null
+  return (
+    <StaggerIn index={1}>
+      <StaleItemsWidget items={items} />
+    </StaggerIn>
+  )
+}
+
+// ─── Schedule Strip ─────────────────────────────────────
+async function ScheduleStripSection() {
+  const [weekSchedule, nextEvent] = await Promise.all([
+    safe('weekSchedule', () => getWeekSchedule(0), {
+      weekStart: '',
+      weekEnd: '',
+      days: [],
+      warnings: [],
+    }),
+    safe('nextEvent', getNextUpcomingEvent, null),
+  ])
+
+  const weekEvents = weekSchedule.days.flatMap((d) => d.events)
+  const totalEvents = weekEvents.length
+  const totalGuests = weekEvents.reduce((sum, e) => sum + (e.guestCount ?? 0), 0)
+
+  // Today's events for the day timeline
+  const todayStr = new Date().toISOString().slice(0, 10)
+  const todayDay = weekSchedule.days.find((d) => d.date === todayStr)
+  const timelineEvents: TimelineEvent[] = (todayDay?.events ?? [])
+    .filter((e) => e.serveTime && e.serveTime !== 'TBD')
+    .map((e) => ({
+      id: e.id,
+      occasion: e.occasion,
+      serveTime: e.serveTime,
+      guestCount: e.guestCount,
+    }))
+
+  // Relative time for next event
+  const daysUntilNext = nextEvent ? getDaysUntil(nextEvent.eventDate) : null
+  const relativeTime =
+    daysUntilNext === null
+      ? null
+      : daysUntilNext === 0
+        ? 'Today'
+        : daysUntilNext === 1
+          ? 'Tomorrow'
+          : `in ${daysUntilNext} days`
+  const isUrgent = daysUntilNext !== null && daysUntilNext <= 1
+
+  return (
+    <section className="space-y-4">
+      <h2 className="text-xs font-medium uppercase tracking-[0.2em] text-stone-500">Schedule</h2>
+
+      {/* Next event card */}
+      <div
+        className={`rounded-2xl border p-5 backdrop-blur-xl transition-colors hover-lift ${
+          isUrgent ? 'border-amber-500/15 bg-amber-950/15' : 'border-white/[0.06] bg-stone-900/25'
+        }`}
+      >
+        {nextEvent ? (
+          <Link
+            href={`/events/${nextEvent.id}`}
+            className="flex items-center justify-between group"
+          >
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2.5">
+                <p className="text-stone-100 font-medium truncate">
+                  {nextEvent.occasion || 'Event'}
+                </p>
+                <LiveCountdown
+                  eventDate={nextEvent.eventDate}
+                  serveTime={nextEvent.serveTime ?? null}
+                />
+              </div>
+              <p className="text-sm text-stone-500 mt-0.5">
+                {format(new Date(nextEvent.eventDate + 'T12:00:00'), 'EEEE, MMM d')}
+                {nextEvent.guestCount ? ` \u00B7 ${nextEvent.guestCount} guests` : ''}
+              </p>
+            </div>
+            <ArrowRight className="h-4 w-4 text-stone-600 group-hover:text-stone-300 shrink-0 transition-colors" />
+          </Link>
+        ) : (
+          <p className="text-sm text-stone-500">No upcoming events.</p>
+        )}
+      </div>
+
+      {/* Day timeline - shows when there are events today or this week */}
+      {(timelineEvents.length > 0 || totalEvents > 0) && (
+        <div className="rounded-2xl border border-white/[0.06] bg-stone-900/20 backdrop-blur-xl p-4 hover-lift">
+          <DayTimeline events={timelineEvents} />
+        </div>
+      )}
+
+      {/* Week summary + strip */}
+      {totalEvents > 0 && (
+        <div className="space-y-3">
+          <div className="flex items-baseline justify-between">
+            <p className="text-sm text-stone-300">
+              {totalEvents} event{totalEvents !== 1 ? 's' : ''} this week
+              {totalGuests > 0 ? ` \u00B7 ${totalGuests} guests` : ''}
+            </p>
+            <Link
+              href="/calendar/week"
+              className="text-xs font-medium text-stone-500 hover:text-stone-300 transition-colors"
+            >
+              Full schedule &rarr;
+            </Link>
+          </div>
+          <WeekStrip schedule={weekSchedule} />
+        </div>
+      )}
+    </section>
+  )
+}
+
+function ScheduleStripSkeleton() {
+  return (
+    <section className="space-y-4">
+      <div className="h-3 w-16 loading-bone loading-bone-muted rounded" />
+      <div className="rounded-2xl border border-stone-800 bg-stone-900/40 p-5">
+        <div className="h-5 w-48 loading-bone loading-bone-muted rounded" />
+        <div className="h-4 w-32 loading-bone loading-bone-muted rounded mt-2" />
+      </div>
+    </section>
+  )
+}
+
+// ─── Up Next Queue ──────────────────────────────────────
+async function UpNextSection() {
+  // Gather all action tasks from every layer
+  const [workSurface, prepPrompts] = await Promise.all([
+    safe('workSurface', getDashboardWorkSurface, null),
+    safe('prepPrompts', getAllPrepPrompts, []),
+  ])
+
+  const [
+    menuDecisionCandidates,
+    safetyCheckCandidates,
+    collectBalanceCandidates,
+    receiptCaptureCandidates,
+    teamReadyCandidates,
+    serviceReadyCandidates,
+    relationshipCandidates,
+    eventsNeedingClosure,
+    trustLoopCandidates,
+  ] = await Promise.all([
+    safe('menuDecisionCandidates', getMenuDecisionCandidates, []),
+    safe('safetyCheckCandidates', getSafetyCheckCandidates, []),
+    safe('collectBalanceCandidates', getCollectBalanceCandidates, []),
+    safe('receiptCaptureCandidates', getReceiptCaptureCandidates, []),
+    safe('teamReadyCandidates', getTeamReadyCandidates, []),
+    safe('serviceReadyCandidates', getServiceReadyCandidates, []),
+    safe('relationshipCandidates', getRelationshipNextCandidates, []),
+    safe('eventsNeedingClosure', getEventsNeedingClosure, []),
+    safe('trustLoopCandidates', getTrustLoopCandidates, []),
+  ])
+
+  // Resolve lifecycle tasks (only if work surface exists)
+  const lifecycleTasks: Array<{ label: string; task: SurfaceActionTask }> = []
+  if (workSurface) {
+    const [
+      procurementCandidates,
+      prepFlowCandidates,
+      travelConfirmCandidates,
+      executionNextCandidates,
+    ] = await Promise.all([
+      safe('procurement', () => getProcurementCandidates(workSurface), []),
+      safe('prepFlow', () => getPrepFlowCandidates(workSurface), []),
+      safe('travel', () => getTravelConfirmCandidates(workSurface), []),
+      safe('execution', getExecutionNextCandidates, []),
+    ])
+
+    const pairs: Array<[string, SurfaceActionTask | null]> = [
+      ['Prepare', resolvePrepareNextTask({ workSurface, prepPrompts })],
+      ['Procurement', resolveProcurementNextTask(procurementCandidates)],
+      ['Prep Flow', resolvePrepFlowTask(prepFlowCandidates)],
+      ['Travel', resolveTravelConfirmTask(travelConfirmCandidates)],
+      ['Blocked', resolveFixMissingFactTask(workSurface)],
+      ['Commit', resolveCommitNextTask(workSurface)],
+      ['Menu', resolveMenuDecisionTask(menuDecisionCandidates as MenuDecisionCandidate[])],
+      ['Safety', resolveSafetyCheckTask(safetyCheckCandidates as SafetyCheckCandidate[])],
+      ['Balance', resolveCollectBalanceTask(collectBalanceCandidates as CollectBalanceCandidate[])],
+      [
+        'Receipts',
+        resolveReceiptCaptureTask(receiptCaptureCandidates as ReceiptCaptureCandidate[]),
+      ],
+      ['Team', resolveTeamReadyTask(teamReadyCandidates as TeamReadyCandidate[])],
+      ['Service', resolveServiceReadyTask(serviceReadyCandidates)],
+      ['Execution', resolveExecutionNextTask(executionNextCandidates)],
+    ]
+
+    for (const [label, task] of pairs) {
+      if (task) lifecycleTasks.push({ label, task })
+    }
+  }
+
+  // Relationship + post-event tasks
+  const relationshipTask = resolveRelationshipNextTask(
+    relationshipCandidates as RelationshipNextCandidate[]
+  )
+  const resetTask = resolveResetNextTask(eventsNeedingClosure as ResetNextCandidate[])
+  const closeOutTask = resolveCloseOutNextTask(eventsNeedingClosure as CloseOutCandidate[])
+  const trustTask = resolveTrustLoopNextTask(trustLoopCandidates)
+
+  if (relationshipTask) lifecycleTasks.push({ label: 'Relationship', task: relationshipTask })
+  if (resetTask) lifecycleTasks.push({ label: 'Reset', task: resetTask })
+  if (closeOutTask) lifecycleTasks.push({ label: 'Close Out', task: closeOutTask })
+  if (trustTask) lifecycleTasks.push({ label: 'Trust Loop', task: trustTask })
+
+  // Show top 4 items
+  const visibleTasks = lifecycleTasks.slice(0, 4)
+
+  if (visibleTasks.length === 0) return null
+
+  const URGENCY_DOT: Record<string, string> = {
+    rose: 'bg-red-400',
+    amber: 'bg-amber-400',
+    brand: 'bg-stone-500',
+    sky: 'bg-stone-500',
+    emerald: 'bg-stone-500',
+    slate: 'bg-stone-600',
+  }
+
+  return (
+    <section className="space-y-4">
+      <div className="flex items-baseline justify-between">
+        <h2 className="text-xs font-medium uppercase tracking-widest text-stone-500">Up next</h2>
+        {lifecycleTasks.length > 4 && (
+          <span className="text-xs text-stone-600">+{lifecycleTasks.length - 4} more</span>
+        )}
+      </div>
+      <div className="space-y-0.5 rounded-2xl border border-white/[0.06] bg-stone-900/15 backdrop-blur-xl p-1.5 hover-lift">
+        {visibleTasks.map(({ task }, i) => (
+          <Link
+            key={task.id}
+            href={task.href}
+            data-upnext-index={i}
+            data-upnext-label={task.title}
+            className="upnext-item flex items-center gap-3 rounded-xl px-4 py-3.5 hover:bg-stone-800/40 transition-all duration-150 group"
+          >
+            <span
+              className={`h-2 w-2 shrink-0 rounded-full ring-2 ring-transparent transition-all group-hover:ring-stone-700/50 ${URGENCY_DOT[task.tone] ?? 'bg-stone-600'}`}
+            />
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-stone-300 truncate group-hover:text-stone-50 transition-colors">
+                {task.title}
+              </p>
+              <p className="text-xs text-stone-600 truncate group-hover:text-stone-400 transition-colors">
+                {task.description}
+              </p>
+            </div>
+            <ArrowRight className="upnext-arrow h-3.5 w-3.5 text-stone-400 shrink-0" />
+          </Link>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+function UpNextSkeleton() {
+  return (
+    <section className="space-y-4">
+      <div className="h-3 w-14 loading-bone loading-bone-muted rounded" />
+      {[1, 2, 3].map((i) => (
+        <div key={i} className="flex items-center gap-3 px-4 py-3">
+          <div className="h-2 w-2 rounded-full loading-bone loading-bone-muted" />
+          <div className="flex-1 space-y-1">
+            <div className="h-4 w-48 loading-bone loading-bone-muted rounded" />
+            <div className="h-3 w-32 loading-bone loading-bone-muted rounded" />
+          </div>
+        </div>
+      ))}
+    </section>
   )
 }
 
@@ -1968,4 +2056,54 @@ async function ChefTipsSection() {
       reviewCount={reviewCount}
     />
   )
+}
+
+// ─── Dietary Change Alerts Banner ─────────────────────
+async function DietaryAlertsBanner() {
+  try {
+    const { getDietaryAlerts } = await import('@/lib/clients/dietary-alert-actions')
+    const alerts = await getDietaryAlerts(true)
+    if (!alerts || alerts.length === 0) return null
+
+    return (
+      <div className="rounded-2xl border border-amber-900/40 bg-amber-950/20 p-4 space-y-3">
+        <div className="flex items-center gap-2">
+          <span className="text-amber-400 text-sm font-semibold">Dietary changes</span>
+          <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-xs font-medium text-amber-300">
+            {alerts.length}
+          </span>
+        </div>
+        <div className="space-y-2">
+          {alerts.slice(0, 3).map((a) => (
+            <Link
+              key={a.id}
+              href={`/clients/${a.client_id}`}
+              className="flex items-center justify-between gap-3 rounded-lg border border-stone-800 bg-stone-900/50 px-3 py-2 text-sm hover:bg-stone-800/50 transition-colors"
+            >
+              <div className="min-w-0">
+                <span className="font-medium text-stone-200">{a.client_name ?? 'Client'}</span>
+                <span className="text-stone-500 mx-1.5">{a.change_type}</span>
+                <span className="text-stone-400">{a.field_name}</span>
+              </div>
+              {a.severity === 'critical' && (
+                <span className="shrink-0 rounded-full bg-red-500/20 px-2 py-0.5 text-xs font-medium text-red-300">
+                  critical
+                </span>
+              )}
+            </Link>
+          ))}
+        </div>
+        {alerts.length > 3 && (
+          <Link
+            href="/clients"
+            className="text-xs text-stone-500 hover:text-stone-300 transition-colors"
+          >
+            +{alerts.length - 3} more changes
+          </Link>
+        )}
+      </div>
+    )
+  } catch {
+    return null
+  }
 }
