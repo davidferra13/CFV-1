@@ -24,6 +24,7 @@ import type { EventTicketType, EventTicket, EventTicketSummary } from '@/lib/tic
 import { TicketWaitlistPanel } from '@/components/tickets/ticket-waitlist-panel'
 import { DistributionPanel } from '@/components/tickets/distribution-panel'
 import { RevenueSplitPanel } from '@/components/tickets/revenue-split-panel'
+import { CoHostDashboard } from '@/components/tickets/cohost-dashboard'
 import { WeatherAlertPanel } from '@/components/events/weather-alert-panel'
 import { DayOfChecklistPanel } from '@/components/events/day-of-checklist-panel'
 import { PrepTimelinePanel } from '@/components/events/prep-timeline-panel'
@@ -905,6 +906,9 @@ export function EventDetailTicketsTab({
             </div>
           </Card>
         )}
+
+        {/* Co-Host Dashboard - shared metrics for collaborators */}
+        {hasCollaborators && <CoHostDashboard eventId={eventId} />}
 
         {/* Revenue Split - for co-hosted events */}
         {hasCollaborators && <RevenueSplitPanel eventId={eventId} />}
