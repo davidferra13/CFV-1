@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import { reportClientBoundaryError } from '@/lib/monitoring/report-client-error'
+import { ErrorReportButton } from '@/components/feedback/error-report-button'
 
 export default function KioskError({
   error,
@@ -44,6 +45,7 @@ export default function KioskError({
         >
           Try Again
         </button>
+        <ErrorReportButton error={error} boundary="kiosk" />
       </div>
     </div>
   )

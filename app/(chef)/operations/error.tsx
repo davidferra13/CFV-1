@@ -8,6 +8,8 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { reportClientBoundaryError } from '@/lib/monitoring/report-client-error'
+import { ErrorReportButton } from '@/components/feedback/error-report-button'
+import { CopyableErrorId } from '@/components/feedback/copyable-error-id'
 
 export default function OperationsError({
   error,
@@ -33,7 +35,7 @@ export default function OperationsError({
         <CardContent className="space-y-4">
           {error.digest && (
             <div className="bg-red-950 border border-red-200 rounded-md p-3">
-              <p className="text-xs text-red-600">Error ID: {error.digest}</p>
+              <CopyableErrorId digest={error.digest} />
             </div>
           )}
           <div className="space-y-2">
@@ -45,6 +47,7 @@ export default function OperationsError({
                 Back to Operations
               </Button>
             </Link>
+            <ErrorReportButton error={error} boundary="operations" />
           </div>
         </CardContent>
       </Card>

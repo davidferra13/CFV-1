@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import { useChunkErrorRecovery } from '@/lib/hooks/use-chunk-error-recovery'
+import { ErrorReportButton } from '@/components/feedback/error-report-button'
 
 export default function Error({
   error,
@@ -43,6 +44,7 @@ export default function Error({
       >
         Try again
       </button>
+      <ErrorReportButton error={error} boundary="mobile" />
     </div>
   )
 }

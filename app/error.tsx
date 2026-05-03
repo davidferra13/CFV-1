@@ -6,6 +6,8 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useChunkErrorRecovery } from '@/lib/hooks/use-chunk-error-recovery'
+import { ErrorReportButton } from '@/components/feedback/error-report-button'
+import { CopyableErrorId } from '@/components/feedback/copyable-error-id'
 
 /**
  * Report an error to Sentry via the lightweight API route.
@@ -84,7 +86,9 @@ export default function Error({
                 An unexpected error occurred. Please try again.
               </p>
               {error.digest && (
-                <p className="text-xs text-red-600 mt-2">Error ID: {error.digest}</p>
+                <div className="mt-2">
+                  <CopyableErrorId digest={error.digest} />
+                </div>
               )}
             </div>
           )}
@@ -111,6 +115,7 @@ export default function Error({
                     Go Home
                   </Button>
                 </Link>
+                <ErrorReportButton error={error} boundary="global" />
               </>
             )}
           </div>

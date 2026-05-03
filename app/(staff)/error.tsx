@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { reportClientBoundaryError } from '@/lib/monitoring/report-client-error'
 import { useChunkErrorRecovery } from '@/lib/hooks/use-chunk-error-recovery'
+import { ErrorReportButton } from '@/components/feedback/error-report-button'
 
 export default function StaffError({
   error,
@@ -58,6 +59,7 @@ export default function StaffError({
           <Button variant="primary" onClick={reset} className="w-full">
             Try Again
           </Button>
+          <ErrorReportButton error={error} boundary="staff" />
         </CardContent>
       </Card>
     </div>

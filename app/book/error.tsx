@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+import { ErrorReportButton } from '@/components/feedback/error-report-button'
 
 export default function Error({
   error,
@@ -25,6 +26,7 @@ export default function Error({
       >
         Try again
       </button>
+      <ErrorReportButton error={error} boundary="book" />
     </div>
   )
 }

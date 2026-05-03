@@ -9,6 +9,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { reportClientBoundaryError } from '@/lib/monitoring/report-client-error'
 import { useChunkErrorRecovery } from '@/lib/hooks/use-chunk-error-recovery'
+import { ErrorReportButton } from '@/components/feedback/error-report-button'
 
 export default function AdminError({
   error,
@@ -84,6 +85,7 @@ export default function AdminError({
             </Button>
           </Link>
         </div>
+        <ErrorReportButton error={error} boundary="admin" />
       </div>
     </div>
   )

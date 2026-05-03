@@ -5,6 +5,8 @@
 
 import { useEffect } from 'react'
 import { Button } from '@/components/ui/button'
+import { reportClientBoundaryError } from '@/lib/monitoring/report-client-error'
+import { ErrorReportButton } from '@/components/feedback/error-report-button'
 
 export default function DailyOpsError({
   error,
@@ -14,6 +16,7 @@ export default function DailyOpsError({
   reset: () => void
 }) {
   useEffect(() => {
+    reportClientBoundaryError(error, { boundary: 'daily', digest: error.digest })
     console.error('[DailyOps] Page error:', error)
   }, [error])
 
@@ -28,6 +31,7 @@ export default function DailyOpsError({
         <Button onClick={reset} variant="secondary">
           Try again
         </Button>
+        <ErrorReportButton error={error} boundary="daily" />
       </div>
     </div>
   )

@@ -10,6 +10,8 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { reportClientBoundaryError } from '@/lib/monitoring/report-client-error'
 import { useChunkErrorRecovery } from '@/lib/hooks/use-chunk-error-recovery'
+import { ErrorReportButton } from '@/components/feedback/error-report-button'
+import { CopyableErrorId } from '@/components/feedback/copyable-error-id'
 
 export default function AuthError({
   error,
@@ -72,7 +74,10 @@ export default function AuthError({
         <CardContent className="space-y-3">
           {error.digest && (
             <div className="bg-stone-800 rounded-md p-2.5">
-              <p className="text-xs text-stone-500">Error ID: {error.digest}</p>
+              <CopyableErrorId
+                digest={error.digest}
+                className="text-stone-500 hover:text-stone-300"
+              />
             </div>
           )}
           <Button variant="primary" onClick={reset} className="w-full">
@@ -83,6 +88,7 @@ export default function AuthError({
               Back to Sign In
             </Button>
           </Link>
+          <ErrorReportButton error={error} boundary="auth" />
         </CardContent>
       </Card>
     </div>

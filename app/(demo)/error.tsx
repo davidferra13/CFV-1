@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { reportClientBoundaryError } from '@/lib/monitoring/report-client-error'
+import { ErrorReportButton } from '@/components/feedback/error-report-button'
 
 export default function DemoError({
   error,
@@ -35,6 +36,7 @@ export default function DemoError({
           <Button variant="primary" onClick={reset} className="w-full">
             Try Again
           </Button>
+          <ErrorReportButton error={error} boundary="demo" />
         </CardContent>
       </Card>
     </div>

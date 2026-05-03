@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { reportClientBoundaryError } from '@/lib/monitoring/report-client-error'
+import { ErrorReportButton } from '@/components/feedback/error-report-button'
+import { CopyableErrorId } from '@/components/feedback/copyable-error-id'
 
 export default function SocialError({
   error,
@@ -29,9 +31,12 @@ export default function SocialError({
         </CardHeader>
         <CardContent className="space-y-4">
           {error.digest && (
-            <p className="text-xs text-muted-foreground font-mono text-center">
-              Error ID: {error.digest}
-            </p>
+            <div className="text-center">
+              <CopyableErrorId
+                digest={error.digest}
+                className="text-muted-foreground hover:text-foreground"
+              />
+            </div>
           )}
           <div className="space-y-2">
             <Button variant="primary" onClick={reset} className="w-full">
@@ -42,6 +47,7 @@ export default function SocialError({
                 Go to Dashboard
               </Button>
             </Link>
+            <ErrorReportButton error={error} boundary="social" />
           </div>
         </CardContent>
       </Card>

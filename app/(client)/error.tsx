@@ -10,6 +10,8 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { reportClientBoundaryError } from '@/lib/monitoring/report-client-error'
 import { useChunkErrorRecovery } from '@/lib/hooks/use-chunk-error-recovery'
+import { ErrorReportButton } from '@/components/feedback/error-report-button'
+import { CopyableErrorId } from '@/components/feedback/copyable-error-id'
 
 export default function ClientError({
   error,
@@ -72,7 +74,7 @@ export default function ClientError({
         <CardContent className="space-y-4">
           {error.digest && (
             <div className="bg-red-950 border border-red-200 rounded-md p-3">
-              <p className="text-xs text-red-600">Error ID: {error.digest}</p>
+              <CopyableErrorId digest={error.digest} />
             </div>
           )}
           <div className="space-y-2">
@@ -84,6 +86,7 @@ export default function ClientError({
                 Go to My Events
               </Button>
             </Link>
+            <ErrorReportButton error={error} boundary="client" />
           </div>
         </CardContent>
       </Card>
