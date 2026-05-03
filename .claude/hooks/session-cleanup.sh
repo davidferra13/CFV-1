@@ -100,6 +100,11 @@ EOF
   rm -f "$DIRTY_FILE"
 fi
 
+# 7. Clear context-loaded flag so next session triggers context-load
+rm -f "$PROJECT_DIR/.context-loaded"
+rm -f "$PROJECT_DIR/.review-done"
+echo "[$(timestamp)] Cleared session flags (.context-loaded, .review-done)" >> "$LOG_FILE"
+
 # Keep log file from growing forever (last 200 lines)
 if [ -f "$LOG_FILE" ]; then
   tail -200 "$LOG_FILE" > "$LOG_FILE.tmp" && mv "$LOG_FILE.tmp" "$LOG_FILE"
