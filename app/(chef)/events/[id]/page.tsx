@@ -1540,6 +1540,12 @@ export default async function EventDetailPage({
         summary={ticketSummary}
         shareToken={publicTicketShareToken}
         hasCollaborators={(eventCollaborators as any[]).length > 0}
+        collaboratorList={(eventCollaborators as any[])
+          .filter((c: any) => c.status === 'accepted' && c.chef)
+          .map((c: any) => ({
+            chefId: c.chef_id,
+            name: c.chef?.display_name || c.chef?.business_name || 'Collaborator',
+          }))}
       />
 
       {/* ============================================ */}

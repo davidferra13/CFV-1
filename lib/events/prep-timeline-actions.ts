@@ -17,6 +17,8 @@ export interface PrepTimelineItem {
   completed: boolean
   notes: string | null
   sort_order: number
+  assigned_to: string | null
+  assigned_name: string | null
 }
 
 export interface PrepTimeline {
@@ -271,4 +273,31 @@ export async function generatePrepTimeline(eventId: string): Promise<{
 
   revalidatePath(`/events/${eventId}`)
   return { success: true, generated: rows.length }
+}
+
+/**
+ * Assign a prep timeline item to a specific collaborator.
+ */
+export async function assignPrepItem(input: {
+  itemId: string
+  eventId: string
+  assignedTo: string | null // chef ID or null to unassign
+  assignedName: string | null
+}): Promise<{ success: boolean; error?: string }> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const { error } = await db
+    .from('event_prep_timeline')
+    .update({
+      assigned_to: input.assignedTo,
+      assigned_name: input.assignedName,
+    })
+    .eq('id', input.itemId)
+    .eq('tenant_id', user.entityId)
+
+  if (error) return { success: false, error: 'Failed to assign item' }
+
+  revalidatePath(`/events/${input.eventId}`)
+  return { success: true }
 }

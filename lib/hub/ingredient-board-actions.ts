@@ -54,7 +54,7 @@ export async function getOrCreateIngredientBoard(input: {
   const user = await requireChef()
   const db: any = createServerClient()
 
-  // Check existing board
+  // Check existing board owned by current user
   const { data: existing } = await db
     .from('circle_ingredient_board')
     .select('*')
@@ -64,6 +64,29 @@ export async function getOrCreateIngredientBoard(input: {
 
   let board = existing
 
+  // If no board owned by user, check if there's one for this group (collaborator access)
+  if (!board) {
+    const { data: anyBoard } = await db
+      .from('circle_ingredient_board')
+      .select('*')
+      .eq('group_id', input.groupId)
+      .maybeSingle()
+
+    if (anyBoard && anyBoard.event_id) {
+      // Verify collaborator access
+      const { data: collab } = await db
+        .from('event_collaborators')
+        .select('id')
+        .eq('event_id', anyBoard.event_id)
+        .eq('chef_id', user.entityId)
+        .eq('status', 'accepted')
+        .maybeSingle()
+
+      if (collab) board = anyBoard
+    }
+  }
+
+  // Create new board if still none (only owner can create)
   if (!board) {
     const { data: created, error } = await db
       .from('circle_ingredient_board')
@@ -92,6 +115,7 @@ export async function getOrCreateIngredientBoard(input: {
 
 /**
  * Add an ingredient item to the board.
+ * Accessible by board owner OR accepted collaborators on the linked event.
  */
 export async function addIngredientItem(input: {
   boardId: string
@@ -106,15 +130,27 @@ export async function addIngredientItem(input: {
   const user = await requireChef()
   const db: any = createServerClient()
 
-  // Verify board belongs to chef
+  // Verify board belongs to chef or user is a collaborator
   const { data: board } = await db
     .from('circle_ingredient_board')
-    .select('id, group_id')
+    .select('id, group_id, tenant_id, event_id')
     .eq('id', input.boardId)
-    .eq('tenant_id', user.entityId)
     .single()
 
   if (!board) return { success: false, error: 'Board not found' }
+
+  const isOwner = board.tenant_id === user.entityId
+  if (!isOwner) {
+    if (!board.event_id) return { success: false, error: 'Access denied' }
+    const { data: collab } = await db
+      .from('event_collaborators')
+      .select('id')
+      .eq('event_id', board.event_id)
+      .eq('chef_id', user.entityId)
+      .eq('status', 'accepted')
+      .maybeSingle()
+    if (!collab) return { success: false, error: 'Access denied' }
+  }
 
   // Get max sort order
   const { data: maxItem } = await db
@@ -148,6 +184,7 @@ export async function addIngredientItem(input: {
 
 /**
  * Update an ingredient item (status, notes, quantity).
+ * Accessible by the board owner OR accepted collaborators on the linked event.
  */
 export async function updateIngredientItem(input: {
   itemId: string
@@ -160,17 +197,37 @@ export async function updateIngredientItem(input: {
   const user = await requireChef()
   const db: any = createServerClient()
 
-  // Verify ownership through board
+  // Fetch item with board details
   const { data: item } = await db
     .from('circle_ingredient_items')
-    .select('id, board_id, circle_ingredient_board!inner(tenant_id)')
+    .select(
+      'id, board_id, ingredient_name, status, circle_ingredient_board!inner(tenant_id, event_id, group_id)'
+    )
     .eq('id', input.itemId)
     .single()
 
-  if (!item || item.circle_ingredient_board?.tenant_id !== user.entityId) {
-    return { success: false, error: 'Item not found' }
+  if (!item) return { success: false, error: 'Item not found' }
+
+  const boardTenantId = item.circle_ingredient_board?.tenant_id
+  const boardEventId = item.circle_ingredient_board?.event_id
+  const isOwner = boardTenantId === user.entityId
+
+  // If not the owner, check collaborator access
+  if (!isOwner) {
+    if (!boardEventId) return { success: false, error: 'Access denied' }
+
+    const { data: collab } = await db
+      .from('event_collaborators')
+      .select('id, role')
+      .eq('event_id', boardEventId)
+      .eq('chef_id', user.entityId)
+      .eq('status', 'accepted')
+      .maybeSingle()
+
+    if (!collab) return { success: false, error: 'Access denied' }
   }
 
+  const previousStatus = item.status
   const updateData: Record<string, any> = { updated_at: new Date().toISOString() }
   if (input.status !== undefined) updateData.status = input.status
   if (input.quantityNotes !== undefined) updateData.quantity_notes = input.quantityNotes
@@ -185,8 +242,76 @@ export async function updateIngredientItem(input: {
 
   if (error) return { success: false, error: 'Failed to update ingredient' }
 
+  // Notify board owner if a collaborator changed status
+  if (!isOwner && input.status && input.status !== previousStatus && boardTenantId) {
+    void notifyIngredientStatusChange({
+      ownerChefId: boardTenantId,
+      ingredientName: item.ingredient_name,
+      newStatus: input.status,
+      changedByChefId: user.entityId!,
+      eventId: boardEventId,
+    })
+  }
+
   revalidatePath(`/hub`)
   return { success: true }
+}
+
+/**
+ * Notify the board owner when a collaborator changes ingredient status.
+ * Non-blocking, fire-and-forget.
+ */
+async function notifyIngredientStatusChange(params: {
+  ownerChefId: string
+  ingredientName: string
+  newStatus: IngredientStatus
+  changedByChefId: string
+  eventId: string | null
+}) {
+  try {
+    const { createElement } = await import('react')
+    const db: any = createServerClient({ admin: true })
+
+    // Get collaborator name
+    const { data: collab } = await db
+      .from('chefs')
+      .select('display_name, business_name')
+      .eq('id', params.changedByChefId)
+      .single()
+
+    const collabName = collab?.business_name || collab?.display_name || 'Co-host'
+    const statusLabel =
+      params.newStatus === 'sourced_externally' ? 'needs sourcing' : params.newStatus
+
+    // Get owner email
+    const { data: owner } = await db
+      .from('chefs')
+      .select('email')
+      .eq('id', params.ownerChefId)
+      .single()
+
+    if (!owner?.email) return
+
+    const { sendEmail } = await import('@/lib/email/send')
+    const { NotificationGenericEmail } = await import('@/lib/email/templates/notification-generic')
+
+    const actionUrl = params.eventId
+      ? `${process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'}/events/${params.eventId}?tab=tickets`
+      : null
+
+    await sendEmail({
+      to: owner.email,
+      subject: `${collabName} updated ingredient: ${params.ingredientName} is now ${statusLabel}`,
+      react: createElement(NotificationGenericEmail, {
+        title: `Ingredient Update: ${params.ingredientName}`,
+        body: `${collabName} changed the status of "${params.ingredientName}" to ${statusLabel}. Check your ingredient board for the latest availability.`,
+        actionUrl,
+        actionLabel: 'View Event',
+      }),
+    })
+  } catch (err) {
+    console.error('[non-blocking] notifyIngredientStatusChange failed', err)
+  }
 }
 
 /**

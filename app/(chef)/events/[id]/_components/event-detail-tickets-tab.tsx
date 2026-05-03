@@ -41,6 +41,7 @@ type Props = {
   summary: EventTicketSummary | null
   shareToken: string | null
   hasCollaborators?: boolean
+  collaboratorList?: { chefId: string; name: string }[]
 }
 
 export function EventDetailTicketsTab({
@@ -55,6 +56,7 @@ export function EventDetailTicketsTab({
   summary,
   shareToken,
   hasCollaborators,
+  collaboratorList,
 }: Props) {
   const [showCreateType, setShowCreateType] = useState(false)
   const [showAddGuest, setShowAddGuest] = useState<'comp' | 'walkin' | null>(null)
@@ -925,7 +927,7 @@ export function EventDetailTicketsTab({
         <DayOfChecklistPanel eventId={eventId} />
 
         {/* Prep Timeline */}
-        <PrepTimelinePanel eventId={eventId} />
+        <PrepTimelinePanel eventId={eventId} collaborators={collaboratorList} />
 
         {/* Distribution */}
         <DistributionPanel eventId={eventId} shareToken={shareToken} />

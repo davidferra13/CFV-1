@@ -9,6 +9,7 @@ import {
   togglePrepItem,
   removePrepItem,
   generatePrepTimeline,
+  assignPrepItem,
   type PrepTimeline,
   type PrepTimelineItem,
 } from '@/lib/events/prep-timeline-actions'
@@ -44,11 +45,17 @@ function formatActualTime(serveTime: string | null, minutesBefore: number): stri
   return `${displayHour}:${min.toString().padStart(2, '0')} ${period}`
 }
 
-type Props = {
-  eventId: string
+type Collaborator = {
+  chefId: string
+  name: string
 }
 
-export function PrepTimelinePanel({ eventId }: Props) {
+type Props = {
+  eventId: string
+  collaborators?: Collaborator[]
+}
+
+export function PrepTimelinePanel({ eventId, collaborators }: Props) {
   const [timeline, setTimeline] = useState<PrepTimeline | null>(null)
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
@@ -122,6 +129,22 @@ export function PrepTimelinePanel({ eventId }: Props) {
       await removePrepItem({ itemId, eventId })
       setTimeline((prev) =>
         prev ? { ...prev, items: prev.items.filter((i) => i.id !== itemId) } : prev
+      )
+    })
+  }
+
+  function handleAssign(item: PrepTimelineItem, chefId: string | null, name: string | null) {
+    startTransition(async () => {
+      await assignPrepItem({ itemId: item.id, eventId, assignedTo: chefId, assignedName: name })
+      setTimeline((prev) =>
+        prev
+          ? {
+              ...prev,
+              items: prev.items.map((i) =>
+                i.id === item.id ? { ...i, assigned_to: chefId, assigned_name: name } : i
+              ),
+            }
+          : prev
       )
     })
   }
@@ -261,6 +284,29 @@ export function PrepTimelinePanel({ eventId }: Props) {
                       {actualTime && <span className="text-xs text-stone-500">({actualTime})</span>}
                       {item.duration_minutes && (
                         <span className="text-xs text-stone-500">~{item.duration_minutes}min</span>
+                      )}
+                      {item.assigned_name && (
+                        <span className="text-xs px-1.5 py-0.5 rounded bg-brand-900/40 text-brand-300">
+                          {item.assigned_name}
+                        </span>
+                      )}
+                      {collaborators && collaborators.length > 0 && !item.assigned_name && (
+                        <select
+                          title="Assign to collaborator"
+                          className="text-xs bg-transparent border border-stone-700 rounded px-1 py-0.5 text-stone-400"
+                          value=""
+                          onChange={(e) => {
+                            const selected = collaborators.find((c) => c.chefId === e.target.value)
+                            if (selected) handleAssign(item, selected.chefId, selected.name)
+                          }}
+                        >
+                          <option value="">Assign...</option>
+                          {collaborators.map((c) => (
+                            <option key={c.chefId} value={c.chefId}>
+                              {c.name}
+                            </option>
+                          ))}
+                        </select>
                       )}
                     </div>
                   </div>
