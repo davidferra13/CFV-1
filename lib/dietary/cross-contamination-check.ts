@@ -119,21 +119,29 @@ export async function checkMenuAllergenConflicts(
     throw new Error('Event not found')
   }
 
-  // 2. Fetch client dietary info
-  const { data: client } = await db
-    .from('clients')
-    .select('full_name, dietary_restrictions, allergies')
-    .eq('id', event.client_id)
-    .eq('tenant_id', tenantId)
-    .single()
+  // 2. Fetch client info + structured allergy records (source of truth)
+  const [clientResult, structuredAllergyResult, guestsResult] = await Promise.all([
+    db
+      .from('clients')
+      .select('full_name, dietary_restrictions, allergies')
+      .eq('id', event.client_id)
+      .eq('tenant_id', tenantId)
+      .single(),
+    db.from('client_allergy_records').select('allergen, severity').eq('client_id', event.client_id),
+    db
+      .from('event_guests')
+      .select(
+        'full_name, dietary_restrictions, allergies, plus_one_name, plus_one_dietary, plus_one_allergies'
+      )
+      .eq('event_id', eventId),
+  ])
 
-  // 3. Fetch guests for this event
-  const { data: guests } = await db
-    .from('event_guests')
-    .select(
-      'full_name, dietary_restrictions, allergies, plus_one_name, plus_one_dietary, plus_one_allergies'
-    )
-    .eq('event_id', eventId)
+  const client = clientResult.data
+  const structuredAllergies = (structuredAllergyResult.data ?? []) as Array<{
+    allergen: string
+    severity: string
+  }>
+  const guests = guestsResult.data
 
   // 4. Build person list with their restrictions
   type PersonRestrictions = {
@@ -144,11 +152,16 @@ export async function checkMenuAllergenConflicts(
 
   const people: PersonRestrictions[] = []
 
-  // Client restrictions (from client profile + event-level)
+  // Client restrictions: prefer structured allergy records, fall back to flat arrays
   if (client) {
+    const structuredAllergenNames = structuredAllergies.map((r) => r.allergen)
     const clientRestrictions = [
       ...(Array.isArray(client.dietary_restrictions) ? client.dietary_restrictions : []),
-      ...(Array.isArray(client.allergies) ? client.allergies : []),
+      ...(structuredAllergenNames.length > 0
+        ? structuredAllergenNames
+        : Array.isArray(client.allergies)
+          ? client.allergies
+          : []),
       ...(Array.isArray(event.dietary_restrictions) ? event.dietary_restrictions : []),
       ...(Array.isArray(event.allergies) ? event.allergies : []),
     ].filter(Boolean)

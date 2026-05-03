@@ -13,6 +13,7 @@ import {
   type GenerateBidParams,
   type BidResult,
 } from '@/lib/finance/catering-bid-actions'
+import { getPricingConfig } from '@/lib/pricing/config-actions'
 import { CateringBidSummary } from './catering-bid-summary'
 import { formatCurrency } from '@/lib/utils/currency'
 
@@ -118,6 +119,19 @@ export function CateringBidCalculator({
       .then(setSearchResults)
       .catch((err) => {
         console.error('[catering-bid] Search failed:', err)
+      })
+    // Hydrate labor rate and overhead from chef pricing config
+    getPricingConfig()
+      .then((config) => {
+        if (config.hourly_rate_cents != null && config.hourly_rate_cents > 0) {
+          setLaborRateDollars(config.hourly_rate_cents / 100)
+        }
+        if (config.overhead_percent != null && config.overhead_percent > 0) {
+          setOverheadPercent(config.overhead_percent)
+        }
+      })
+      .catch(() => {
+        /* keep defaults */
       })
   }, [])
 

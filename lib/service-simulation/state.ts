@@ -145,6 +145,7 @@ async function buildEventServiceSimulationContextForScope(
       `
       id,
       tenant_id,
+      client_id,
       occasion,
       status,
       updated_at,
@@ -201,6 +202,8 @@ async function buildEventServiceSimulationContextForScope(
     prepBlocksResult,
     packingConfirmationsResult,
     travelLegsResult,
+    allergyRecordsResult,
+    menuComponentsResult,
   ] = await Promise.all([
     db
       .from('menus')
@@ -237,6 +240,15 @@ async function buildEventServiceSimulationContextForScope(
       .select('id, leg_type, status, updated_at')
       .eq('tenant_id', scope.tenantId)
       .or(`primary_event_id.eq.${eventId},linked_event_ids.cs.{\"${eventId}\"}`),
+    event.client_id
+      ? db
+          .from('client_allergy_records')
+          .select('allergen, severity, updated_at')
+          .eq('client_id', event.client_id)
+          .eq('confirmed_by_chef', true)
+          .in('severity', ['allergy', 'anaphylaxis'])
+      : Promise.resolve({ data: [], error: null }),
+    db.from('menu_components').select('name, ingredients').eq('event_id', eventId),
   ])
 
   if (menusResult.error) {
@@ -486,6 +498,46 @@ async function buildEventServiceSimulationContextForScope(
       completedLegCount: travelRows.filter((leg) => leg.status === 'completed').length,
       latestUpdatedAt: getLatestTimestamp(travelRows.map((leg) => leg.updated_at)),
     },
+    allergenConflicts: (() => {
+      const allergyRows = (allergyRecordsResult.data ?? []) as Array<{
+        allergen: string
+        severity: string
+        updated_at: string | null
+      }>
+      const menuComps = (menuComponentsResult.data ?? []) as Array<{
+        name: string | null
+        ingredients: string[] | null
+      }>
+      if (allergyRows.length === 0 || menuComps.length === 0) {
+        return {
+          checked: allergyRows.length > 0 && menuComps.length > 0,
+          hasConflicts: false,
+          conflicts: [] as Array<{ allergen: string; severity: string; menuItem?: string }>,
+          checkedAt: getLatestTimestamp(allergyRows.map((r) => r.updated_at)),
+        }
+      }
+      const conflicts: Array<{ allergen: string; severity: string; menuItem?: string }> = []
+      for (const allergy of allergyRows) {
+        const allergenLower = allergy.allergen.toLowerCase()
+        for (const comp of menuComps) {
+          const compText = [comp.name || '', ...(comp.ingredients || [])].join(' ').toLowerCase()
+          if (compText.includes(allergenLower)) {
+            conflicts.push({
+              allergen: allergy.allergen,
+              severity: allergy.severity,
+              menuItem: comp.name ?? undefined,
+            })
+            break
+          }
+        }
+      }
+      return {
+        checked: true,
+        hasConflicts: conflicts.length > 0,
+        conflicts,
+        checkedAt: localDateIso(),
+      }
+    })(),
     dop: dopProgress
       ? {
           completed: dopProgress.completed,

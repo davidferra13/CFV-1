@@ -91,9 +91,10 @@ export async function getKnowledgeDietaryCheck(eventId: string): Promise<Knowled
     flaggedIngredients: [],
   }
 
-  // 1. Fetch event + menu
+  // 1. Fetch event + menu + client info
   const events = await pgClient`
     SELECT e.menu_id,
+           e.client_id,
            e.dietary_restrictions,
            e.allergies,
            c.dietary_restrictions AS client_dietary,
@@ -107,20 +108,39 @@ export async function getKnowledgeDietaryCheck(eventId: string): Promise<Knowled
   const event = (events as any[])[0]
   if (!event || !event.menu_id) return empty
 
-  // 2. Fetch guest restrictions
-  const guests = await pgClient`
-    SELECT dietary_restrictions, allergies,
-           plus_one_dietary, plus_one_allergies
-    FROM event_guests
-    WHERE event_id = ${eventId}
-  `
+  // 2. Fetch structured allergy records (source of truth) + guest restrictions
+  const [structuredAllergies, guests] = await Promise.all([
+    event.client_id
+      ? pgClient`
+          SELECT allergen FROM client_allergy_records
+          WHERE client_id = ${event.client_id}
+        `
+      : Promise.resolve([]),
+    pgClient`
+      SELECT dietary_restrictions, allergies,
+             plus_one_dietary, plus_one_allergies
+      FROM event_guests
+      WHERE event_id = ${eventId}
+    `,
+  ])
+
+  // Use structured records if available, otherwise fall back to flat client_allergies
+  const structuredAllergenNames = (structuredAllergies as any[]).map(
+    (r: any) => r.allergen as string
+  )
+  const clientAllergySource =
+    structuredAllergenNames.length > 0
+      ? structuredAllergenNames
+      : Array.isArray(event.client_allergies)
+        ? event.client_allergies
+        : []
 
   // 3. Collect all restrictions from all sources
   const allRestrictions: string[] = [
     ...(Array.isArray(event.dietary_restrictions) ? event.dietary_restrictions : []),
     ...(Array.isArray(event.allergies) ? event.allergies : []),
     ...(Array.isArray(event.client_dietary) ? event.client_dietary : []),
-    ...(Array.isArray(event.client_allergies) ? event.client_allergies : []),
+    ...clientAllergySource,
     ...(guests as any[]).flatMap((g: any) => [
       ...(Array.isArray(g.dietary_restrictions) ? g.dietary_restrictions : []),
       ...(Array.isArray(g.allergies) ? g.allergies : []),

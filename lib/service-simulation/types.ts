@@ -62,6 +62,7 @@ export type ServiceSimulationProofId =
   | 'prep_timeline'
   | 'packing_list'
   | 'dietary_constraints'
+  | 'allergen_safety'
   | 'arrival_logistics'
   | 'service_plan_flow'
 
@@ -219,6 +220,12 @@ export type ServiceSimulationContext = {
     completed: number
     total: number
   } | null
+  allergenConflicts: {
+    checked: boolean
+    hasConflicts: boolean
+    conflicts: Array<{ allergen: string; severity: string; menuItem?: string }>
+    checkedAt: string | null
+  }
   closeOut: {
     aarFiled: boolean
     resetComplete: boolean

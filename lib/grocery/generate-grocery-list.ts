@@ -15,6 +15,11 @@ import { PORTIONS_BY_SERVICE_STYLE } from '@/lib/finance/industry-benchmarks'
 
 // ── Types ─────────────────────────────────────────────────────────────
 
+export interface GroceryItemAllergenWarning {
+  allergen: string
+  severity: string
+}
+
 export interface GroceryItem {
   ingredientId: string
   ingredientName: string
@@ -29,6 +34,7 @@ export interface GroceryItem {
   checked: boolean
   isCustom: false
   isStaple: boolean // pantry staple (assumed on hand)
+  allergenWarnings: GroceryItemAllergenWarning[] // per-ingredient allergy cross-reference
 }
 
 export interface CustomGroceryItem {
@@ -108,7 +114,7 @@ export async function generateGroceryList(eventId: string): Promise<GroceryListD
     throw new Error('Event not found or access denied')
   }
 
-  // FC-G6: Collect dietary/allergy warnings from event + client
+  // FC-G6: Collect dietary/allergy warnings from event + client (structured records preferred)
   const allergyWarnings: string[] = []
   const eventAllergies = (event.allergies as string[] | null) ?? []
   const eventDietary = (event.dietary_restrictions as string[] | null) ?? []
@@ -116,16 +122,26 @@ export async function generateGroceryList(eventId: string): Promise<GroceryListD
   if (eventDietary.length > 0) allergyWarnings.push(`Dietary: ${eventDietary.join(', ')}`)
   if (event.client_id) {
     try {
-      const { data: clientRow } = await db
-        .from('clients')
-        .select('allergies, dietary_restrictions')
-        .eq('id', event.client_id)
-        .single()
-      for (const a of (clientRow?.allergies as string[] | null) ?? []) {
-        if (!eventAllergies.includes(a)) allergyWarnings.push(`Client allergy: ${a}`)
-      }
-      for (const d of (clientRow?.dietary_restrictions as string[] | null) ?? []) {
-        if (!eventDietary.includes(d)) allergyWarnings.push(`Client dietary: ${d}`)
+      const { data: structuredRows } = await db
+        .from('client_allergy_records')
+        .select('allergen, severity')
+        .eq('client_id', event.client_id)
+      if (structuredRows && structuredRows.length > 0) {
+        for (const r of structuredRows as Array<{ allergen: string; severity: string }>) {
+          allergyWarnings.push(`Client ${r.severity}: ${r.allergen}`)
+        }
+      } else {
+        const { data: clientRow } = await db
+          .from('clients')
+          .select('allergies, dietary_restrictions')
+          .eq('id', event.client_id)
+          .single()
+        for (const a of (clientRow?.allergies as string[] | null) ?? []) {
+          if (!eventAllergies.includes(a)) allergyWarnings.push(`Client allergy: ${a}`)
+        }
+        for (const d of (clientRow?.dietary_restrictions as string[] | null) ?? []) {
+          if (!eventDietary.includes(d)) allergyWarnings.push(`Client dietary: ${d}`)
+        }
       }
     } catch {
       /* non-blocking */
@@ -396,7 +412,33 @@ export async function generateGroceryList(eventId: string): Promise<GroceryListD
       checked: false,
       isCustom: false,
       isStaple: entry.isStaple,
+      allergenWarnings: [],
     })
+  }
+
+  // 4b. Cross-reference each ingredient against client allergy records
+  if (event.client_id && items.length > 0) {
+    try {
+      const { ingredientMatchesAllergen } = await import('@/lib/menus/allergen-check')
+      const { data: allergyRecords } = await db
+        .from('client_allergy_records')
+        .select('allergen, severity')
+        .eq('client_id', event.client_id)
+      if (allergyRecords && allergyRecords.length > 0) {
+        for (const item of items) {
+          for (const record of allergyRecords as Array<{ allergen: string; severity: string }>) {
+            if (ingredientMatchesAllergen(item.ingredientName, record.allergen)) {
+              item.allergenWarnings.push({
+                allergen: record.allergen,
+                severity: record.severity,
+              })
+            }
+          }
+        }
+      }
+    } catch {
+      /* non-blocking: allergy cross-ref is safety-additive, not blocking */
+    }
   }
 
   // 5. Group by category

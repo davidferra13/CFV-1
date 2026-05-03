@@ -468,17 +468,37 @@ async function computeProjectedNonFoodCosts(
     }
   }
 
-  // 3. Compute labor cost from recipe times + chef hourly rate
+  // 3. Fetch chef pricing config (source of truth for overhead/labor rate)
+  let configOverheadPercent = 15
+  let configHourlyRateCents = 5000
+  let configMileageRateCents = 70
+  try {
+    const { data: pricingConfig } = await db
+      .from('chef_pricing_config')
+      .select('overhead_percent, hourly_rate_cents, mileage_rate_cents')
+      .eq('chef_id', tenantId)
+      .maybeSingle()
+    if (pricingConfig) {
+      if (pricingConfig.overhead_percent != null)
+        configOverheadPercent = pricingConfig.overhead_percent
+      if (pricingConfig.hourly_rate_cents != null)
+        configHourlyRateCents = pricingConfig.hourly_rate_cents
+      if (pricingConfig.mileage_rate_cents != null)
+        configMileageRateCents = pricingConfig.mileage_rate_cents
+    }
+  } catch {
+    /* fall through to defaults */
+  }
+
+  // 3b. Compute labor cost from recipe times + chef hourly rate
   const laborHours = (totalPrepMinutes + totalCookMinutes) / 60
-  const hourlyRateCents = prefs?.owner_hourly_rate_cents || 5000 // default $50/hr
-  const laborCostCents = Math.round(laborHours * hourlyRateCents)
+  const laborCostCents = Math.round(laborHours * configHourlyRateCents)
 
-  // 4. Compute travel cost from event mileage + IRS rate
-  const mileageRateCents = 70 // IRS 2026 rate, matches true-plate-cost.ts constant
-  const travelCostCents = Math.round(mileageMiles * mileageRateCents)
+  // 4. Compute travel cost from event mileage
+  const travelCostCents = Math.round(mileageMiles * configMileageRateCents)
 
-  // 5. Compute overhead as 15% of ingredient cost (matches true-plate-cost.ts DEFAULT_OVERHEAD_PERCENT)
-  const overheadCostCents = Math.round((totalIngredientCostCents * 15) / 100)
+  // 5. Compute overhead from configurable percentage
+  const overheadCostCents = Math.round((totalIngredientCostCents * configOverheadPercent) / 100)
 
   return {
     laborCostCents,

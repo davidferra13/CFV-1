@@ -1031,6 +1031,7 @@ function buildGuests(input: {
   eventAllergies: string[]
   clientDietary: string[]
   clientAllergies: string[]
+  clientAllergySeverityMap?: Map<string, string>
   eventGuests: Array<{
     id: string
     full_name: string | null
@@ -1085,7 +1086,8 @@ function buildGuests(input: {
     ...input.clientAllergies.map((label) => ({
       label,
       type: 'allergy' as const,
-      severity: 'anaphylaxis' as const,
+      severity: (input.clientAllergySeverityMap?.get(label.toLowerCase()) ??
+        'anaphylaxis') as 'anaphylaxis',
     })),
   ]
 
@@ -1347,6 +1349,7 @@ async function buildChefDecisionContextForEvent(
     equipmentAssignmentsResponse,
     ownedEquipmentResponse,
     legacyEquipmentResponse,
+    structuredAllergyResponse,
   ] = await Promise.all([
     db.from('menu_preferences').select('selected_menu_id').eq('event_id', eventId).maybeSingle(),
     loadHubSelectionSignals(db, eventId),
@@ -1371,6 +1374,12 @@ async function buildChefDecisionContextForEvent(
       .eq('chef_id', tenantId)
       .eq('status', 'owned'),
     db.from('chef_equipment').select('name').eq('chef_id', tenantId),
+    event.client_id
+      ? db
+          .from('client_allergy_records')
+          .select('allergen, severity')
+          .eq('client_id', event.client_id)
+      : Promise.resolve({ data: [], error: null }),
   ])
 
   const menuPreferenceMenuId = cleanText(
@@ -1508,12 +1517,25 @@ async function buildChefDecisionContextForEvent(
       | null
       | undefined) ?? []
 
+  const structuredAllergies =
+    (structuredAllergyResponse.data as Array<{
+      allergen: string
+      severity: string
+    }> | null) ?? []
+  const structuredAllergyLabels = structuredAllergies.map((r) => r.allergen)
+  const clientAllergyList =
+    structuredAllergyLabels.length > 0 ? structuredAllergyLabels : (clientData?.allergies ?? [])
+  const clientAllergySeverityMap = new Map(
+    structuredAllergies.map((r) => [r.allergen.toLowerCase(), r.severity])
+  )
+
   const guests = buildGuests({
     eventClientName: cleanText(clientData?.full_name) ?? null,
     eventDietary: (event.dietary_restrictions as string[] | null) ?? [],
     eventAllergies: (event.allergies as string[] | null) ?? [],
     clientDietary: clientData?.dietary_restrictions ?? [],
-    clientAllergies: clientData?.allergies ?? [],
+    clientAllergies: clientAllergyList,
+    clientAllergySeverityMap,
     eventGuests,
     guestDietaryItems,
   })

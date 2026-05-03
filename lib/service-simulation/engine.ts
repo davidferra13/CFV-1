@@ -45,6 +45,7 @@ const PROOF_PHASE_MAP: Record<
   prep_timeline: { phaseKey: 'prep', phaseLabel: 'Prep' },
   packing_list: { phaseKey: 'equipment_packing', phaseLabel: 'Equipment and Packing' },
   dietary_constraints: { phaseKey: 'menu_guest_truth', phaseLabel: 'Menu and Guest Truth' },
+  allergen_safety: { phaseKey: 'menu_guest_truth', phaseLabel: 'Menu and Guest Truth' },
   arrival_logistics: { phaseKey: 'travel_arrival', phaseLabel: 'Travel and Arrival' },
   service_plan_flow: { phaseKey: 'service', phaseLabel: 'Service' },
 }
@@ -271,6 +272,17 @@ function buildReadinessProofs(
       ? 'stale'
       : 'verified'
 
+  const allergenChecked = ctx.allergenConflicts.checked
+  const allergenHasConflicts = ctx.allergenConflicts.hasConflicts
+  const allergenVerifiedAt = allergenChecked ? ctx.allergenConflicts.checkedAt : null
+  const allergenStatus: ServiceSimulationProofStatus = !allergenChecked
+    ? 'unverified'
+    : allergenHasConflicts
+      ? 'unverified'
+      : menuChangedAt && allergenVerifiedAt && toMs(menuChangedAt) > toMs(allergenVerifiedAt)
+        ? 'stale'
+        : 'verified'
+
   const logisticsVerifiedAt =
     hasLocation(ctx) &&
     ctx.event.arrivalTime &&
@@ -362,6 +374,24 @@ function buildReadinessProofs(
       sourceOfTruth: dietaryVerifiedAt
         ? `${ctx.guests.accountedGuestCount}/${ctx.event.guestCount ?? 0} guests are accounted for in guest records.`
         : 'Guest dietary coverage is incomplete for the current guest count.',
+      verifyAction: routes.edit,
+    }),
+    makeProof({
+      id: 'allergen_safety',
+      label: 'Allergen Safety',
+      status: allergenStatus,
+      lastVerifiedAt: allergenVerifiedAt,
+      staleReason:
+        allergenStatus === 'stale'
+          ? 'The menu changed after the last allergen cross-reference check.'
+          : null,
+      blocking: true,
+      severity: 'critical',
+      sourceOfTruth: !allergenChecked
+        ? 'No client allergy records or menu data available to cross-reference.'
+        : allergenHasConflicts
+          ? `CONFLICT: ${ctx.allergenConflicts.conflicts.map((c) => `${c.allergen} (${c.severity})${c.menuItem ? ` in ${c.menuItem}` : ''}`).join(', ')}`
+          : 'No allergen conflicts found between client allergy records and finalized menu.',
       verifyAction: routes.edit,
     }),
     makeProof({

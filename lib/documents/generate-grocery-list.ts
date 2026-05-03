@@ -110,7 +110,7 @@ export async function fetchGroceryListData(eventId: string): Promise<GroceryList
     .select(
       `
       occasion, event_date, serve_time, guest_count,
-      location_city, quoted_price_cents, allergies,
+      location_city, quoted_price_cents, allergies, client_id,
       client:clients(full_name, allergies)
     `
     )
@@ -529,10 +529,28 @@ export async function fetchGroceryListData(eventId: string): Promise<GroceryList
     allergies: string[] | null
   } | null
 
-  // Merge event + client allergies
+  // Merge event + client allergies (prefer structured records)
   const allAllergies = new Set<string>()
   for (const a of event.allergies ?? []) allAllergies.add(a.trim())
-  for (const a of clientData?.allergies ?? []) allAllergies.add(a.trim())
+  if (event.client_id) {
+    try {
+      const { data: structuredRows } = await db
+        .from('client_allergy_records')
+        .select('allergen, severity')
+        .eq('client_id', event.client_id)
+      if (structuredRows && structuredRows.length > 0) {
+        for (const r of structuredRows as Array<{ allergen: string; severity: string }>) {
+          allAllergies.add(`${r.allergen} (${r.severity})`)
+        }
+      } else {
+        for (const a of clientData?.allergies ?? []) allAllergies.add(a.trim())
+      }
+    } catch {
+      for (const a of clientData?.allergies ?? []) allAllergies.add(a.trim())
+    }
+  } else {
+    for (const a of clientData?.allergies ?? []) allAllergies.add(a.trim())
+  }
 
   return {
     event: {
