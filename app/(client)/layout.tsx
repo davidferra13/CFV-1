@@ -18,6 +18,7 @@ import { TestAccountBanner } from '@/components/dev/test-account-banner'
 import { ClientTourWrapper } from '@/components/onboarding/client-tour-wrapper'
 import { AnalyticsIdentify } from '@/components/analytics/analytics-identify'
 import { MarketResearchBannerWrapper } from '@/components/beta-survey/market-research-banner-wrapper'
+import { GlobalReportButton } from '@/components/feedback/global-report-button'
 import { PATHNAME_HEADER } from '@/lib/auth/request-auth-context'
 import { resolveClientSurfaceMode } from '@/lib/interface/surface-governance'
 
@@ -65,6 +66,7 @@ export default async function ClientLayout({ children }: { children: React.React
             traits={{ entity_id: user.entityId, tenant_id: user.tenantId || '' }}
           />
           <PresenceBeacon userId={user.id} email={user.email} />
+          <GlobalReportButton />
           <PageInfoButton />
         </div>
       </NotificationProvider>

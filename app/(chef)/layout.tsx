@@ -10,13 +10,13 @@ import { ChefMainContent } from '@/components/navigation/chef-main-content'
 import { ToastProvider } from '@/components/notifications/toast-provider'
 import { NotificationProvider } from '@/components/notifications/notification-provider'
 import { getChefLayoutData } from '@/lib/chef/layout-cache'
+import { getCachedChefPreferences } from '@/lib/chef/layout-data-cache'
 import { KeyboardShortcutsWrapper } from '@/components/navigation/keyboard-shortcuts-wrapper'
-import { getAnnouncement } from '@/lib/admin/platform-actions'
+import { getCachedAnnouncement } from '@/lib/chef/layout-data-cache'
 import { PlatformAnnouncementBanner } from '@/components/admin/platform-announcement-banner'
 import { OfflineProvider } from '@/components/offline/offline-provider'
 import { EnvironmentBadge } from '@/components/ui/environment-badge'
 import { DeletionPendingBanner } from '@/components/settings/deletion-pending-banner'
-import { createServerClient } from '@/lib/db/server'
 import { DEFAULT_ENABLED_MODULES } from '@/lib/billing/modules'
 import { differenceInDays } from 'date-fns'
 import { AnalyticsIdentify } from '@/components/analytics/analytics-identify'
@@ -29,11 +29,14 @@ import {
   getCachedIsPrivileged,
 } from '@/lib/chef/layout-data-cache'
 import { TestAccountBanner } from '@/components/dev/test-account-banner'
-import { CommandPalette } from '@/components/search/command-palette'
+const CommandPalette = dynamic(
+  () => import('@/components/search/command-palette').then((m) => m.CommandPalette),
+  { ssr: false }
+)
 import { NavigationPendingProvider } from '@/components/navigation/navigation-pending-provider'
 import { AppContextProvider } from '@/lib/context/app-context'
 import { FormatProviderWrapper } from '@/components/providers/format-provider-wrapper'
-import { getRegionalSettings } from '@/lib/chef/actions'
+// getRegionalSettings removed - timezone comes from cached layoutData, rest are constants
 import type { FormatContext } from '@/lib/hooks/use-format-context'
 import { PermissionProvider } from '@/lib/context/permission-context'
 import { resolveCurrentUserPermissions } from '@/lib/auth/permissions'
@@ -82,6 +85,10 @@ const ChefLiveAlerts = dynamic(
   () => import('@/components/calling/chef-live-alerts').then((m) => m.ChefLiveAlerts),
   { ssr: false }
 )
+const GlobalReportButton = dynamic(
+  () => import('@/components/feedback/global-report-button').then((m) => m.GlobalReportButton),
+  { ssr: false }
+)
 // RouteProgress: regular import (not dynamic) so the bar is available from first render
 import { RouteProgress } from '@/components/ui/route-progress'
 import { getTenantDataPresence } from '@/lib/progressive-disclosure/tenant-data-presence'
@@ -98,12 +105,7 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
     redirect('/auth/signin?portal=chef')
   }
 
-  const db: any = createServerClient()
-  const { data: prefData } = await db
-    .from('chef_preferences')
-    .select('workspace_density, archetype, created_at, updated_at')
-    .eq('chef_id', user.entityId)
-    .single()
+  const prefData = await getCachedChefPreferences(user.entityId)
 
   const densityWasExplicitlyChosen = Boolean(
     prefData?.workspace_density &&
@@ -140,12 +142,11 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
     remyEnabled,
     chefArchetype,
     tenantPresence,
-    regionalSettings,
   ] = await Promise.all([
     // Cached for 60s - slug and nav prefs change rarely, keyed per chef
     getChefLayoutData(user.entityId),
-    // Platform announcement (non-fatal - fail open)
-    getAnnouncement().catch(() => null),
+    // Platform announcement - cached 300s, admin-set, changes rarely
+    getCachedAnnouncement().catch(() => null),
     // Cannabis tier check - kept in Promise.all to avoid reindexing, but unused (cannabis is admin-only now)
     getCachedCannabisAccess(user.id).catch(() => false),
     // Admin check (admin + owner only, NOT vip) - cached 60s
@@ -168,21 +169,15 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
     getCachedChefArchetype(user.entityId).catch(() => null),
     // Tenant data presence for progressive disclosure (short cached)
     getTenantDataPresence(user.tenantId!).catch(() => null as TenantDataPresence | null),
-    // Regional settings for international format context
-    getRegionalSettings().catch(() => ({
-      currencyCode: 'USD' as const,
-      locale: 'en-US' as const,
-      measurementSystem: 'imperial' as const,
-    })),
   ])
   const effectiveAdmin = userIsAdmin || process.env.DEMO_MODE_ENABLED === 'true'
   const effectivePrivileged = userIsPrivileged || process.env.DEMO_MODE_ENABLED === 'true'
 
   const formatContextValue: FormatContext = {
-    locale: regionalSettings.locale,
-    currency: regionalSettings.currencyCode,
+    locale: 'en-US',
+    currency: 'USD',
     timezone: layoutData.timezone,
-    measurementSystem: regionalSettings.measurementSystem,
+    measurementSystem: 'imperial',
   }
 
   const primaryNavHrefs = layoutData.primary_nav_hrefs
@@ -301,6 +296,9 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
 
                       {/* Mobile quick capture FAB - mobile-only, hidden on desktop */}
                       {shellBudget.showQuickCapture ? <QuickCapture /> : null}
+
+                      {/* Global issue report button - fixed bottom-left */}
+                      <GlobalReportButton />
 
                       {/* Breadcrumb tracker - silent navigation tracking for retrace mode */}
                       <BreadcrumbTracker />

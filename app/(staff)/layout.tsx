@@ -12,6 +12,7 @@ import { TestAccountBanner } from '@/components/dev/test-account-banner'
 import { StaffTourWrapper } from '@/components/onboarding/staff-tour-wrapper'
 import { PATHNAME_HEADER } from '@/lib/auth/request-auth-context'
 import { resolveStaffSurfaceMode } from '@/lib/interface/surface-governance'
+import { GlobalReportButton } from '@/components/feedback/global-report-button'
 
 export const metadata = {
   title: {
@@ -52,6 +53,7 @@ export default async function StaffLayout({ children }: { children: React.ReactN
         <StaffTourWrapper>{children}</StaffTourWrapper>
       </main>
       <PresenceBeacon userId={user.id} email={user.email} />
+      <GlobalReportButton />
     </div>
   )
 }

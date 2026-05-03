@@ -22,6 +22,33 @@ import {
 import { ARCHETYPE_IDS } from '@/lib/archetypes/presets'
 import type { ArchetypeId } from '@/lib/archetypes/presets'
 
+// ─── Chef Preferences (cached 60s) ──────────────────────────────────────────
+// Used by layout to determine workspace density and first-time redirect.
+// Runs before the main Promise.all so it must be fast.
+
+export type CachedChefPrefs = {
+  workspace_density: string | null
+  archetype: string | null
+  created_at: string | null
+  updated_at: string | null
+} | null
+
+export function getCachedChefPreferences(chefId: string): Promise<CachedChefPrefs> {
+  return unstable_cache(
+    async (): Promise<CachedChefPrefs> => {
+      const db: any = createAdminClient()
+      const { data } = await db
+        .from('chef_preferences')
+        .select('workspace_density, archetype, created_at, updated_at')
+        .eq('chef_id', chefId)
+        .single()
+      return data ?? null
+    },
+    [`chef-prefs-${chefId}`],
+    { revalidate: 60, tags: [`chef-prefs-${chefId}`] }
+  )()
+}
+
 // ─── Cannabis Access (cached 60s) ────────────────────────────────────────────
 
 export function getCachedCannabisAccess(authUserId: string): Promise<boolean> {
@@ -129,6 +156,37 @@ export function getCachedIsAdmin(authUserId: string): Promise<boolean> {
     },
     [`is-admin-${authUserId}`],
     { revalidate: 60, tags: [`is-admin-${authUserId}`] }
+  )()
+}
+
+// ─── Platform Announcement (cached 300s) ─────────────────────────────────
+// Announcements change extremely rarely (admin-set). 5min TTL avoids
+// hitting the DB on every page navigation for something that almost never changes.
+// Revalidated by setAnnouncement() via revalidateTag('platform-announcement').
+
+export type CachedAnnouncement = { text: string; type: 'info' | 'warning' | 'critical' } | null
+
+export function getCachedAnnouncement(): Promise<CachedAnnouncement> {
+  return unstable_cache(
+    async (): Promise<CachedAnnouncement> => {
+      const db: any = createAdminClient()
+      const { data } = await db
+        .from('platform_settings')
+        .select('key, value')
+        .in('key', ['announcement', 'announcement_type'])
+
+      if (!data) return null
+      const rows = data as { key: string; value: string }[]
+      const text = rows.find((r) => r.key === 'announcement')?.value ?? ''
+      const type = (rows.find((r) => r.key === 'announcement_type')?.value ?? 'info') as
+        | 'info'
+        | 'warning'
+        | 'critical'
+      if (!text.trim()) return null
+      return { text: text.trim(), type }
+    },
+    ['platform-announcement'],
+    { revalidate: 300, tags: ['platform-announcement'] }
   )()
 }
 

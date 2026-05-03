@@ -8,6 +8,10 @@ const PresenceBeacon = dynamic(
   () => import('@/components/admin/presence-beacon').then((m) => m.PresenceBeacon),
   { ssr: false }
 )
+const GlobalReportButton = dynamic(
+  () => import('@/components/feedback/global-report-button').then((m) => m.GlobalReportButton),
+  { ssr: false }
+)
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -30,6 +34,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
         {children}
       </main>
       <PublicFooter />
+      <GlobalReportButton />
     </div>
   )
 }

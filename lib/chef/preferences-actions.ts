@@ -48,5 +48,6 @@ export async function setWorkspaceDensity(
   revalidatePath('/dashboard')
   revalidatePath('/settings')
   revalidateTag(`chef-layout-${user.entityId}`)
+  revalidateTag(`chef-prefs-${user.entityId}`)
   return { success: true }
 }
