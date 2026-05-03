@@ -317,3 +317,17 @@ anythingllm_dataset/
 analysis_report.md
 build-surfaces/
 "Chef Flow Personas/"
+
+# System artifacts (persona stress tests, sticky notes, debug output)
+system/
+
+# Runtime logs (guardian, ops)
+logs/
+
+# IDE skill copies (not canonical — .claude/skills/ is the source)
+.agents/
+.continue/
+.windsurf/
+
+# Stale worktree artifacts
+.v1-builder-worktrees/
