@@ -1,0 +1,67 @@
+**Staff Profile: "Jacques" - Prep Kitchen Assistant (The Utility Knife)**
+
+I am Jacques, and my job is to make sure the station chefs have everything they need, exactly when they need it, and in the perfect condition. I spend my days in the back, handling the bulk of the prep work—chopping, trimming, washing, and portioning ingredients for whatever menu we are running that day. My entire existence revolves around the rhythm of the kitchen, ensuring that the ingredients flow from the receiving dock to the pass without a single bottleneck.
+
+### Business Reality
+
+Right now:
+* I work **5** shifts per week, usually spanning **10 to 12 hours** per day.
+* I am paid **$18.00/hour** and I require a basic food handler certification, which I have. My assignment is always 'Prep Utility,' and my shift starts 3 hours before the first service.
+* I report to the Head Prep Cook, who in turn reports to the Sous Chef. My primary constraint is that I must be available to assist with deep cleaning and receiving whenever the main cooks are at the line.
+* My scope is the entire back-of-house prep kitchen, which services a main dining room of **150-200 seats** and occasionally supports a private catering event of up to **50 guests**.
+* My current briefing and scheduling setup is a chaotic mix: I get the daily prep list via a group text from the Sous Chef, which then gets transferred to a giant, messy shared Google Sheet that nobody consistently updates, and then I have to cross-reference it with a printed weekly schedule that sometimes gets thrown away.
+
+---
+
+### Primary Failure: Ingredient Hand-off Cascade Failure
+
+The single biggest operational problem is the handoff of prepped ingredients between shifts, stations, and prep roles. Because we are operating on perishable goods and high volume, if the sheet lists 10 lbs of brunoise shallots, but the previous shift only prepped 7 lbs, the entire morning's workflow grinds to a halt. We lose time, we lose product, and worse, we risk over-prepping some items just to compensate for the missing ingredients on others. This inefficiency costs the restaurant an estimated **$400-$600** in wasted labor and spoiled product every week, simply because we cannot track the *actual* inventory output against the *required* input across shifts.
+
+---
+
+### Structural Issue: Fragmented Prep List Management
+
+The prep list is never in one place. The initial list comes from a menu PDF, the revisions come from a text message from the Sous Chef, and the final, actionable list is written on a whiteboard that gets erased daily. If I am assigned to prep "15 lbs of root vegetables," but the revision notes say "cut down to 12 lbs because of the vendor delivery," I waste time prepping the wrong amount, or I finish early and have nothing else to do. I spend 15 minutes every morning just confirming the correct, updated volume and cut requirements for the day.
+
+---
+
+### Structural Issue: Unlinked Skill/Task Assignment
+
+The prep lists are just a massive list of tasks, not structured by the physical constraints of the kitchen or my actual skill level. I might be assigned to prep 50 pounds of delicate microgreens, which requires extreme care and specific tools, on the same day I am assigned to wash and cube 80 pounds of potatoes, which is purely brute labor. The current system treats all prep work equally, forcing me to switch mental gears and physical tools constantly, which drastically reduces my output and increases the risk of injury or poor quality control.
+
+---
+
+### Structural Issue: Lack of Real-Time Inventory Accountability
+
+When I finish a massive prep task, say, prepping 20 liters of diced mirepoix, I have to manually write it on a clipboard and hope someone sees it. If the line cook needs more, they don't know if I've already used the last of it, or if I've prepped 25 liters. This lack of real-time, centralized tracking means we often either over-prep (wasting space/refrigeration) or under-prep (causing service delays). I am physically limited to carrying a clipboard and a pen, which is useless in a busy kitchen.
+
+---
+
+### Structural Issue: Inflexible Schedule Swaps and Role Coverage
+
+If a Prep Cook calls out sick, the scheduling spreadsheet is useless because it doesn't account for my specific skill set or the nature of the task. The manager just throws me into the gap, whether it's deep cleaning the walk-in freezer (a skill I don't need) or covering a specific service role (which I am not certified for). My schedule is treated as a single unit, not as a flexible resource pool that can be matched to specific, high-priority operational needs.
+
+---
+
+### Psychological Model
+
+I optimize for: Predictability and efficient flow. I need to know exactly what I am prepping, in what quantity, and when it needs to be ready for the next stage.
+I refuse to compromise on: Cleanliness and measurable inventory count. If the tools are messy or the counts are wrong, the whole system fails.
+I avoid: Being told to "just prep everything." I need specific, quantifiable instructions.
+I evaluate tools by: How quickly they reduce manual data entry and how accurately they track physical, perishable items.
+
+I am detail-oriented and physically driven. I think in terms of yield, cubic measurements, and time-to-completion. My focus is always on the transition point—the moment an item moves from "raw prep" to "ready to cook."
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must generate a single, dynamic prep sheet that automatically adjusts ingredient quantities and units based on the final booked guest count and any last-minute menu changes.
+2. The system must allow me to clock out a prep task (e.g., "20 liters of mirepoix completed") and automatically decrement that inventory count from the central, visible stock count.
+3. The system must link my assigned prep task directly to the specific kitchen station (e.g., "Prep station A: Shallots") so that the Head Cook knows exactly where the finished product is stored.
+4. The system must generate a clear, prioritized daily workflow that groups similar tasks (e.g., all washing tasks first, followed by all chopping tasks) to minimize tool and mental switching costs.
+5. The system must provide a visible, real-time countdown or warning when a critical ingredient's prep time is running out (e.g., "Shredded cheese inventory warning: 15 minutes remaining until optimal storage temperature is breached").
+6. The system must allow me to digitally confirm my prep list completion and generate a digital handoff checklist that the next shift must acknowledge and sign off on.
+7. The system must automatically generate the cost of goods sold (COGS) for the prepped items, linking the initial purchase order unit cost to the final yield unit cost.

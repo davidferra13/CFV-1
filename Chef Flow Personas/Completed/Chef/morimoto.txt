@@ -1,0 +1,71 @@
+**Chef Profile: Morimoto - Hotel / Resort Executive Chef (Morimoto)**
+I am Masaharu "Morimoto" Sugiyama, an accomplished Japanese-born American chef known for my fusion cuisine and appearances on TV shows like Iron Chef America. In my current role as the executive chef at a luxury resort, I oversee five dining outlets, banquet events, room service operations, and manage a large culinary brigade. My goal is to provide exceptional dining experiences while maintaining tight cost control and adapting to the seasonal tourism flow.
+
+Right now:
+I manage 15 fine dining, casual, poolside, and banquet clients across the resort's premises.
+Our annual revenue target for all food and beverage outlets combined is $10 million.
+My culinary team consists of 80 members, including chefs de cuisine, sous chefs, line cooks, and support staff.
+The resort is located in a picturesque coastal area with stunning views, attracting both domestic and international tourists during the peak summer months (June to August).
+
+---
+
+### Primary Failure: Inconsistent Menu Quality Across Outlets
+
+Consistently delivering high-quality dishes across all five dining outlets proves challenging. While our fine dining restaurant excels in creativity and presentation, the casual outlets struggle to maintain the same level of quality due to different kitchen setups, available ingredients, and staff skill levels. This inconsistency leads to dissatisfied guests and tarnishes the resort's reputation.
+
+---
+
+### Structural Issue: Limited Inventory Management System
+
+Our current inventory management system is outdated and does not integrate with our POS systems. We manually track ingredient usage through spreadsheets, which often leads to overstocking or running out of critical items. During peak seasons, this issue becomes more pronounced, resulting in wasted resources and increased costs.
+
+---
+
+### Structural Issue: Poor Communication Between Departments
+
+Communication between the culinary team and other resort departments, such as purchasing, procurement, and housekeeping, is suboptimal. This lack of collaboration often leads to misaligned expectations regarding ingredient availability, inventory levels, and guest feedback. Consequently, we struggle to quickly adapt to changing demands and maintain a seamless dining experience.
+
+---
+
+### Structural Issue: Inefficient Staff Scheduling
+
+Our current staff scheduling process relies heavily on paper-based rosters created by the sous chefs. This manual approach often results in over- or under-scheduling, leading to burnt-out employees during peak periods or last-minute coverage needs. The lack of transparency and accountability within the team negatively impacts morale and productivity.
+
+---
+
+### Structural Issue: Difficulty in Adapting to Seasonal Fluctuations
+
+Managing the seasonal fluctuations in tourist numbers is a significant challenge. During peak seasons, we need to quickly scale up our operations to meet increased demand, while during off-peak periods, we face the opposite challenge of maintaining staff engagement and preventing skills from becoming rusty.
+
+---
+
+### Psychological Model
+
+I optimize for:
+Delivering unique dining experiences that showcase my culinary creativity.
+Maintaining a tight cost control to ensure profitability across all outlets.
+Providing a positive work environment that fosters teamwork and skill development among my team members.
+
+I refuse to compromise on:
+The quality of ingredients used in our dishes, as they are crucial to the overall guest experience.
+The training and development opportunities provided to my culinary team.
+Maintaining a consistent and reliable dining experience across all outlets.
+
+I avoid:
+Over-reliance on manual processes that hinder efficiency and accuracy.
+Inefficient communication channels between departments, leading to misunderstandings and misaligned goals.
+Neglecting the well-being of my team members, which can negatively impact morale and productivity.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. Seamlessly integrate with our existing POS systems to provide real-time inventory tracking and manage ingredient levels effectively.
+2. Foster open communication between culinary teams and other resort departments through a centralized platform, ensuring alignment of expectations regarding inventory management and guest feedback.
+3. Streamline staff scheduling processes by implementing a user-friendly system that allows for transparent communication and accountability among team members.
+4. Offer flexibility in adapting to seasonal fluctuations while maintaining consistent quality across all dining outlets.
+5. Provide an easy-to-use recipe management tool for chefs de cuisine to contribute their unique creations, ensuring consistency in presentation and taste.
+6. Integrate with our existing training modules to offer a comprehensive learning experience for my culinary team members.
+7. Offer a mobile-friendly interface for staff to easily access important information, such as updated schedules, emergency contacts, and department-wide announcements.

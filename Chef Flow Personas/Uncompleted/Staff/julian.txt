@@ -1,0 +1,73 @@
+**Staff Profile: "Julian" - Event Service Captain (Service Conductor)**
+
+I am the conductor of the dining experience. My job is not merely to ensure the plates leave the pass, but to ensure the entire evening—from the moment the guest is seated to the moment they depart—is seamless, synchronized, and perfect. I am responsible for coordinating the timing, quality, and execution of service across multiple stations and shifts, especially during high-volume, multi-course events. I ensure the entire brigade operates as one machine, invisible to the guest.
+
+### Business Reality
+
+Right now:
+* I work **4-6** shifts per week, handling 2-3 major events and 5-8 smaller private functions per week.
+* I am paid hourly, often with a minimum guarantee of $30/hour, plus a 15% service gratuity pool that depends entirely on the success of the evening.
+* I am a lead captain, reporting directly to the Head Chef and the Maître D’. My role requires advanced knowledge of all stations, meticulous timing, and impeccable presentation. I must wear the designated black Captain’s uniform and am available for prep starting 3 hours before the first guest arrives.
+* My scope is typically confined to the main dining room and adjacent prep/staging areas (the pass), but I must manage the flow of people and items across multiple adjacent kitchens or external venues (e.g., a ballroom adjacent to the kitchen).
+* My current briefing and scheduling setup is a chaotic mix: the Head Chef sends preliminary menus and staffing requirements via a group text chat, the Sous Chef updates the service flow and assignments on a rapidly changing Google Sheet, and the Maître D’ issues final, printed, handwritten service plans and station notes the morning of.
+
+---
+
+### Primary Failure: The Hand-Off Abyss
+
+The single biggest operational problem is the lack of a single source of truth for dynamic service assignments, particularly during the crucial shift changes or when an event size changes unexpectedly. Because the initial menu, the guest count, and the staffing levels are managed across three different platforms (text, Google Sheet, paper), I waste up to 45 minutes at the start of every shift trying to manually reconcile who is supposed to be where, who is responsible for which specific course, and who needs to be pre-briefed on a last-minute menu change. This causes service delays, increases stress, and directly compromises the initial impression of the evening, costing us potential tips and jeopardizing the reputation we've spent years building.
+
+---
+
+### Structural Issue: Fragmented Service Flow Management
+
+The current process for managing the physical flow of courses from the kitchen pass to the service stations is entirely manual and relies on verbal confirmation and physical planners. If the station runner is delayed or if a course needs an unexpected modification (e.g., the wine pairing changes the timing of the main course), the change has to be communicated via a shouted update or a quick, illegible note on the paper plan. This creates bottlenecks at the pass, forces redundant communication, and means that if the original plan is printed and discarded, the new, updated flow is lost or misinterpreted, leading to mis-timed service and poor guest experience.
+
+---
+
+### Structural Issue: Dynamic Staff Assignment and Cross-Training Visibility
+
+When a staff member calls out, or when an unexpected surge in guest count occurs (e.g., 10 extra guests arrive late), the process for reassigning roles is reactive, inefficient, and stressful. The Sous Chef must manually cross-reference the original plan (Google Sheet) with the available team members and their stated skills (often captured only in memory). This forces me to constantly interrupt prep and service to manage people, instead of focusing on the service flow. This manual triage slows down the start of service and forces staff to operate outside their comfort zone without proper, immediate guidance.
+
+---
+
+### Structural Issue: Multi-Venue/Multi-Day Prep and Compliance Tracking
+
+When we host a multi-day, multi-location corporate event (e.g., a client dinner in the main house followed by a reception in the adjacent ballroom), the prep requirements and compliance checklists become impossible to manage. We use a combination of physical binder checklists and shared email threads. If the compliance checklist for the ballroom (e.g., fire marshal sign-offs, specific liquor license restrictions) is updated, I have no centralized way of knowing *when* that update happened or *who* was responsible for executing it, forcing us to physically check off items on laminated paper that quickly becomes outdated and hard to audit.
+
+---
+
+### Structural Issue: Menu/Recipe Version Control and Costing Sync
+
+We often operate with limited-time or highly customized menus for VIP clients, meaning the recipe card used on the night of service is frequently different from the standard recipe book. When a menu changes, the Sous Chef must manually update the recipe card, and I must then manually verify that the service staff and the expediter are using the correct version, which impacts ingredient prep and costing. If the wrong version is used, we either under-prep critical items, or worse, the service team uses an ingredient that was not properly costed into the client's final bill.
+
+---
+
+### Structural Issue: Pre-Shift Briefing Documentation and Distribution
+
+The current briefing process is a nightmare of fragmentation. The Head Chef provides the 'Why' (the overall vision), the Sous Chef provides the 'How' (the technical flow), and the Maître D’ provides the 'Who' (the guest list and seating assignments). These three pieces of information never live together. I spend 20 minutes at the start of service collecting these disparate pieces of information—a printed guest list, a whiteboard sketch of the service flow, and a group text with the dietary restrictions—and synthesizing them into a single, actionable plan for the team. This setup wastes critical pre-service time and guarantees that some crucial detail will be missed.
+
+---
+
+### Psychological Model
+
+I optimize for: Flawless, repeatable execution under extreme time pressure.
+I refuse to compromise on: The perceived seamlessness of the guest experience.
+I avoid: Any process that requires me to spend time aggregating or cross-referencing data from more than two sources.
+I evaluate tools by: How quickly and reliably they can provide a single, definitive status update on resource availability (staff, ingredients, time).
+
+I think in terms of flow diagrams and critical path analysis. If a step is not timed, assigned, and confirmed, it does not exist. I need the system to function as an invisible second set of hands, managing the chaos of human interaction and physical movement.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1.  The system must provide a real-time, single source of truth for all active reservations and assigned seating plans, including immediate alerts for changes or walk-outs.
+2.  The system must allow the Head Chef to push immediate, mandatory service flow updates (e.g., "All courses must be delivered 3 minutes faster tonight") that are visible to all assigned staff roles and are time-stamped.
+3.  The system must integrate ingredient prep lists directly with the final service schedule, flagging low-inventory items *before* the prep shift starts and automatically adjusting the required prep quantity based on the confirmed guest count.
+4.  The system must house all version-controlled recipes and compliance checklists, allowing managers to generate a final, immutable service binder for any given event date and location, ensuring the staff only sees the approved version.
+5.  The system must manage and track staff assignment changes (e.g., "John is covering the dessert pass tonight") and display this instantly on a visual, shift-based roster that can be filtered by skill set, role, and availability status.
+6.  The system must allow for the digital assignment of specific pre-shift briefings (e.g., "Focus on the new Bordeaux pairing for Table 12") that are delivered to the relevant staff member's mobile device 30 minutes before their shift starts.
+7.  The system must track and log every service modification made during the event (e.g., "Client requested substitution of lamb for duck") and automatically feed that change into the corresponding staff member's task list for the remainder of the night.

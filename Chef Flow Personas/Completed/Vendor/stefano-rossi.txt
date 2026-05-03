@@ -1,0 +1,67 @@
+**Vendor Profile: "Stefano Rossi" - Specialty Ingredient Distributor (Niche, Premium Goods)**
+
+I specialize in sourcing and distributing authentic, high-quality specialty ingredients—from rare Italian varietals and artisanal cheeses to exotic spices and imported oils. My clients are not just restaurants; they are high-end kitchens that demand consistency, quality, and storytelling in every dish. I pride myself on being a curator, not just a supplier, making me essential to the culinary identity of my customers.
+
+### Business Reality
+
+Right now:
+* I fulfill approximately 55 chef orders, deliveries, or event rentals per week across the season.
+* My standard bulk wholesale pricing is 25% off the published retail list price, but requires a minimum order value of $150, with a 10% prepayment deposit required for any order exceeding $2,500.
+* I manage a catalog of over 120 unique SKUs, many of which are seasonal, highly perishable (within 7 days of receipt), or require specific handling (e.g., vacuum-sealing, temperature control).
+* I service a defined Tri-State area, focusing on high-density commercial kitchens in downtown Manhattan and Brooklyn, plus a limited radius for private events.
+* My current ordering and communication setup is a chaotic mix: chefs send WhatsApp texts for immediate needs, group emails for weekly menu plans, and I manually input all final details into a shared, constantly updated Google Sheet that is prone to version control errors.
+
+---
+
+### Primary Failure: Inventory Forecasting and Shelf-Life Management
+
+My biggest operational headache is visibility into perishable inventory and accurate forecasting. When a client places an emergency order for 10 lbs of a specific cheese, and I don't know exactly how many units of that cheese are currently in the back room, or if they are nearing their sell-by date, I risk massive spoilage and service failure. Because I have to manually reconcile incoming shipments against current stock levels, and then factor in the specific usage rates of 30 different chefs who might use a single item (like fresh basil or specialty olives), I often over-order or, worse, have to discard high-value inventory because I missed a minor depletion rate. This lack of real-time, integrated inventory tracking costs me an estimated $1,500 to $3,000 in wasted product and emergency rush fees monthly.
+
+---
+
+### Structural Issue: Handling Substitutions and Custom Mixes
+
+When a chef's menu changes last minute—say, they originally ordered oregano but now need za'atar—they rarely know the exact SKU or even the correct usage ratio. They simply text, "Need more Middle Eastern spice mix." I have to stop my current task, pull up the master sheet, cross-reference the flavor profile, determine the correct substitutions (e.g., "Use 3 parts cumin, 2 parts coriander, and 1 part sumac"), and then manually update the invoice. This constant, non-structured, text-based communication breaks my ability to focus on logistics, leading to missed quantities and incorrect pricing on the final bill.
+
+---
+
+### Structural Issue: Cross-Departmental Costing and Pricing
+
+My pricing is incredibly complex because it involves multiple cost factors: the base wholesale cost, the regional tariff/import duty (which changes), the handling/refrigeration cost (which is time-based), and the minimum bulk requirement. If a chef needs 8 lbs of a product that normally sells in 10 lb bulk bins, I have to manually calculate the cost of the partial bin, ensuring they are not overcharged for the remaining product. My current workaround is building a massive, complex spreadsheet with dozens of tabs just for costing, which means any change to an import duty or a bulk minimum requires me to spend a full day auditing the entire sheet, risking miscalculating the final invoice total by $50-$100.
+
+---
+
+### Structural Issue: Tracking Client-Specific Usage Profiles
+
+Different kitchens use the same ingredient differently. Chef A uses specialty olive oil in a delicate finishing drizzle, while Chef B uses it for deep-frying. Chef A needs 1 gallon, while Chef B needs 20 quarts. My system has no way to track these usage profiles, so every time I fulfill an order, I have to rely on the chef's memory and their previous week's order history (which is often inaccurate). If I don't track the unique usage profile for a key item, I fail to accurately predict the optimal next order size, resulting in the kitchen running out of critical items and calling me at 7 PM on a Saturday, which costs me staff time and damages my reputation.
+
+---
+
+### Structural Issue: Coordinating Multi-Vendor/Multi-Source Orders
+
+Sometimes a client needs an item that I source, but another item that a partner vendor (like a specialty local bakery) provides. I have to track two entirely separate fulfillment workflows: the refrigerated pickup from my warehouse and the fresh drop-off from the bakery. I manage this by creating a separate "Fulfillment Coordination" section in my Google Sheet, manually listing the pick-up time, the required personnel, and the associated payment terms for both parties. This manual coordination is a massive bottleneck; if one delivery is delayed by 30 minutes, I must manually call and reschedule the other vendor, creating significant logistical friction and potential delays for the client.
+
+---
+
+### Psychological Model
+
+I optimize for: Predictable quality and operational consistency.
+I refuse to compromise on: The authenticity and provenance of the ingredients.
+I avoid: Any process that requires me to spend time correcting or reconciling human errors or fragmented data points.
+I evaluate tools by: How quickly they can automate the transfer of data from the point of consumption (or order) to the point of invoicing, while maintaining audit-level detail.
+
+I think in terms of margins, spoilage rates, and the cost of time. My decision-making is highly risk-averse; I will only adopt a system if I am certain it saves me at least 5 hours of administrative time per week, otherwise, the complexity overhead is too high.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must track and display the remaining sell-by date and usage rate for every perishable SKU in real-time inventory.
+2. The system must allow me to dynamically generate a complex invoice that accounts for multiple pricing models (e.g., partial bulk bins, percentage discounts, and variable tariffs) and calculate the final cost automatically.
+3. The system must allow chefs to specify usage profiles per client location, enabling accurate predictive ordering suggestions based on historical depletion rates.
+4. The system must provide a single, unified dashboard that coordinates multiple simultaneous fulfillment routes, including external partner vendors, and automatically flags potential scheduling conflicts.
+5. The system must allow me to create and manage a deep, searchable catalog that supports complex ingredient relationships, enabling me to suggest chemically or culinarily accurate substitutions based on keywords and categories.
+6. The system must automate the conversion of an initial order list into a detailed, itemized recipe cost sheet, linking ingredient depletion directly to the projected cost of the next batch of menus.
+7. The system must allow me to set up minimum order thresholds and pre-payment triggers that automatically block fulfillment scheduling until the necessary financial conditions are met.

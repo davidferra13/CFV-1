@@ -1,0 +1,53 @@
+Client Profile: "Jordan Hale" - Venture Capital Principal, Hale Ridge Capital (Impatient)
+
+I don’t chase vendors. I make a request, and whoever responds first with clarity gets the business. If I don’t hear back quickly, I assume you’re unreliable and move on.
+
+Business Reality
+Right now:
+
+I host 10–14 private dinners per year, mostly last-minute. Half are booked within 72 hours of the event, and a few are same-day.
+
+Budgets range from $1,800 for casual dinners to $8,000+ for investor-facing events. I’m not price-sensitive if the response is fast and competent.
+
+I expect a deposit link immediately - no back-and-forth. If I have to ask “how do I pay?” you’ve already lost me.
+
+Guest count is usually 4–10, but it changes frequently. I’ll text “add 2 more” two hours before service and expect it handled.
+
+Dietary restrictions are minimal but non-negotiable: one severe nut allergy in my core group. I mention it once. I don’t repeat myself.
+
+Events happen at my apartment, hotel suites, or short-term rentals. I don’t inventory kitchens. That’s your job.
+
+I currently use iMessage and email. If I have to open a PDF, download a file, or log into something before I even know if you’re available, I’m out.
+
+Primary Failure: Response Latency
+The biggest problem is that chefs respond too slowly. I send an inquiry, and hours go by. Or I get a vague “let me check” with no timeline. By then, I’ve already booked someone else. Speed is the entire game. If you can’t confirm availability, propose a menu, and send a payment link within minutes, you’re not in my consideration set. Every delay signals risk. I don’t care how talented you are if you can’t operate at my pace.
+
+Structural Issue: Friction Before Commitment
+Most systems force too much upfront effort. Forms, accounts, detailed questionnaires - I haven’t even decided to book you yet. I want a fast path: date, time, headcount, any critical restriction, and a quick menu direction. Anything beyond that should come after I’ve committed. Right now, I abandon most interactions because they feel like work before value.
+
+Structural Issue: Ambiguous Availability
+I often ask, “Are you available Thursday?” and get back something like “possibly” or “I’ll confirm later.” That’s useless. I need binary answers fast. If you’re not sure, I assume you’re unavailable. There’s no system that gives me real-time availability or holds a slot while I decide. So I blast multiple chefs and go with whoever locks it first.
+
+Structural Issue: Payment Delay
+Even when I decide quickly, payment becomes a bottleneck. Some chefs send invoices hours later or require manual steps. I want to pay immediately and secure the booking. If I can’t transact in under a minute, I lose confidence. I’ve had bookings fall apart because the payment link came too late and I moved on.
+
+Psychological Model
+I optimize for: speed, certainty, and minimal interaction
+I refuse to compromise on: immediate acknowledgment and clear next steps
+I avoid: forms, delays, and anything that feels like admin work
+I evaluate tools by: how quickly they get me from inquiry to confirmed booking
+
+Pass / Fail Conditions
+For this system to work for me, it must:
+
+Deliver an automated acknowledgment within seconds of my inquiry, confirming receipt and expected response time (ideally under 5 minutes).
+
+Provide real-time availability or a definitive yes/no within minutes, not hours.
+
+Allow me to submit a minimal inquiry (date, time, headcount, key restriction) without creating an account or filling out long forms.
+
+Generate an immediate, clear menu proposal or selectable options within the first response.
+
+Include a one-click payment link (Apple Pay, card, etc.) in the initial or second message so I can secure the booking instantly.
+
+Support rapid updates (e.g., adding guests) with automatic pricing adjustments and no need for renegotiation.

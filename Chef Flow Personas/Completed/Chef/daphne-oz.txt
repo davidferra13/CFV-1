@@ -1,0 +1,37 @@
+**Chef Profile: Daphne Oz - Culinary Entrepreneur**
+
+I am a culinary entrepreneur who has built a thriving business around my passion for healthy, delicious food. Right now, I manage 15 high-end catering events per month with an average revenue of $10,000 per event. My team consists of 25 chefs, assistants, and support staff, all working together to create unforgettable dining experiences across the New York City metropolitan area.
+
+Currently, my tech setup includes a mix of Google Sheets for inventory tracking, a private Facebook group for communication among my team, and a simple online calendar for scheduling. While this setup has worked so far, I am constantly looking for ways to streamline operations, reduce human error, and scale my business without sacrificing quality or personal touch.
+
+### Primary Failure: Lack of Comprehensive Event Management
+
+The biggest challenge in my business is the lack of a comprehensive event management system that can handle all aspects of planning, execution, and feedback. Without such a system, I am forced to rely heavily on manual tracking and communication, which leads to frequent misunderstandings, missed deadlines, and costly errors. For example, just last month, we accidentally ordered twice the amount of kale for an event due to miscommunication in our group chat, resulting in wasted ingredients and increased costs.
+
+### Structural Issue: Inefficient Inventory Management
+
+Our current system of using Google Sheets for inventory tracking is inefficient and prone to human error. Each chef is responsible for updating the sheets with the ingredients they used after each event, but this process often gets overlooked or rushed, leading to inaccurate counts and stockouts. On several occasions, we have run out of crucial ingredients at a critical moment during an event, forcing us to make last-minute substitutions or even cancel menu items.
+
+### Structural Issue: Difficulty in Scheduling and Assigning Tasks
+
+With 25 team members, scheduling and assigning tasks has become increasingly difficult without a centralized system. We currently use a shared online calendar, but it is not sufficient for tracking the many smaller tasks that need to be completed before each event. This often results in confusion about who is responsible for what, leading to missed deadlines and increased stress during peak periods.
+
+### Structural Issue: Limited Communication Tools
+
+Our primary mode of communication is through a private Facebook group, which has served us well but has its limitations. We are unable to effectively use it for assigning tasks or tracking progress on specific projects, making it difficult to ensure everyone is on the same page and working towards the same goals.
+
+### Structural Issue: Lack of Feedback Collection
+
+Collecting feedback from clients after each event is crucial for our business growth, but our current system of sending individual emails and collecting responses in a spreadsheet is slow and inefficient. We often miss out on valuable insights that could help us improve our services because we are unable to follow up in a timely manner.
+
+For this system to work for me, it must:
+
+1. Provide a centralized platform for event planning, inventory management, team scheduling, and communication.
+2. Offer robust task management features with built-in reminders and progress tracking.
+3. Include a comprehensive feedback collection tool that allows us to gather insights from clients quickly and easily.
+4. Integrate seamlessly with our existing tech stack, including Google Sheets and the online calendar.
+5. Be user-friendly and intuitive enough for my entire team to adopt without extensive training.
+6. Prioritize security and privacy when it comes to client information and internal communications.
+7. Provide analytics and reporting features that help me make data-driven decisions about scaling my business.
+
+By addressing these challenges, ChefFlow has the potential to revolutionize how I run my culinary business, allowing me to focus on what I do best - creating unforgettable dining experiences for my clients.

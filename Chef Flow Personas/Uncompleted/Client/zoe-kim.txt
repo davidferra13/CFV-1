@@ -1,0 +1,55 @@
+Client Profile: "Zoe Kim" - AI Researcher (Explainer)
+
+If the system can’t explain its pricing, I don’t trust it. Transparency means understanding, not just seeing numbers.
+
+Business Reality
+Right now:
+
+I book 3–6 private dining experiences per year.
+
+Budget ranges from $1,500 to $6,000.
+
+I expect to understand how pricing works conceptually.
+
+Dietary needs are simple but must be integrated.
+
+Locations vary but should not obscure pricing logic.
+
+I analyze systems deeply.
+
+I expect explainability.
+
+Primary Failure: Unexplained Pricing
+Seeing a number isn’t enough. I need to understand how it was derived. Without explanation, it feels arbitrary.
+
+Structural Issue: No Explainability Layer
+There’s no way to explore “why” behind pricing decisions. I want to drill down into logic.
+
+Structural Issue: Black-Box Adjustments
+If pricing changes without explanation, trust is lost.
+
+Structural Issue: Lack of Transparency Controls
+I want to choose how much detail I see - high-level or deep.
+
+Psychological Model
+I optimize for: understanding and transparency
+I refuse to compromise on: explainable systems
+I avoid: opaque logic
+I evaluate tools by: how well they explain themselves
+
+Pass / Fail Conditions
+For this system to work for me, it must:
+
+Provide an explainable breakdown of pricing logic.
+
+Allow users to explore deeper levels of detail.
+
+Show clear reasons for any pricing changes.
+
+Maintain consistency between explanation and output.
+
+Offer adjustable levels of detail.
+
+Avoid black-box behavior.
+
+Deliver transparent, understandable pricing.

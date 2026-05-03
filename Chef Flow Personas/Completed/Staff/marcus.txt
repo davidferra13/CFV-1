@@ -1,0 +1,73 @@
+**Staff Profile: "Marcus" - Event Service Captain (Logistics Lead)**
+
+I am the captain on the floor. I'm the person who makes sure the service flow doesn't collapse when the reservations hit 150 people at once. My job is to manage the entire guest experience from the moment they arrive until the final cleanup is logged. I don't just serve; I coordinate the runners, manage the table assignments, and make sure the kitchen knows exactly when the main course is needed for the 12th table, 15 minutes after the soup was delivered to the 8th.
+
+### Business Reality
+
+Right now:
+* I work an average of **4** shifts per week, covering a mix of private events, corporate functions, and high-volume restaurant services.
+* My pay is hourly, averaging **$18.50/hour**, and I require a valid Food Handlers card and basic First Aid certification.
+* I am the designated lead for a team of **6 to 10** servers/runners per event. I am responsible for training new hires on service standards and executing the final briefing. My uniform includes a specific branded apron, black pants, and a required team jacket.
+* My scope is highly varied, ranging from high-end private galas (100+ guests) in rented ballroom venues, to high-volume corporate lunch services (200+ guests) in downtown convention centers, and occasional off-site pop-ups.
+* My current briefing and scheduling setup is a chaotic mix of emails, shared Google Sheets that require multiple people to edit, and then immediate verbal updates from the lead manager when something changes last minute.
+
+---
+
+### Primary Failure: Fragmented Event Communication
+
+The biggest operational problem is that no single source of truth exists for the event details. Because I have to pull client numbers, menu changes, staff assignments, and floor plans from four or five different places (the client email, the catering spreadsheet, the venue coordinator's text, and the operational planner's binder), I waste at least 60 minutes of my shift just cross-referencing conflicting information. This leads to critical errors—like being told the menu is Italian, but the kitchen has prepped Mexican ingredients—which not only cost the client hundreds of dollars in wasted product but severely compromises the service quality and my reputation.
+
+---
+
+### Structural Issue: Conflicting Service Data
+
+The event sheet I receive often lists a final guest count (e.g., 120), but the separate staffing sheet lists a different number of required stations (e.g., 10). When the numbers conflict, I have to call the lead manager, who then has to check the original client booking and update the spreadsheet, which often means the information I was using 30 minutes ago is already obsolete. This constant manual reconciliation burns crucial time and makes me doubt which number is correct, leading to poor resource allocation (too few servers, too many unused stations).
+
+---
+
+### Structural Issue: Dynamic Menu and Ingredient Changes
+
+A client often calls the day before and changes the main course—say, they switch from salmon to beef—and they might also add a dietary restriction (e.g., "gluten-free bread only for the vegetarian table"). This change is relayed to me via a quick text message, but it never gets logged in the official menu document that the kitchen uses for prep lists. I have to manually track these ad-hoc changes and verbally remind the kitchen staff, creating a massive risk that a key ingredient or dish modification is missed entirely, resulting in wasted prep time or, worse, a completely unsalvageable dish being served.
+
+---
+
+### Structural Issue: Handoff and Cleanup Logging
+
+The shift doesn't end when the last guest leaves; I am responsible for the cleanup handoff, which involves logging inventory used, identifying damaged equipment, and confirming which sections of the venue need specialized cleaning. Right now, I fill out a printed, physical log sheet that gets handed to the next day's prep crew. If that sheet is lost, or if the next crew member doesn't read it thoroughly, we lose track of expensive items (like specialized linens or high-end serving platters) and fail to log actual waste/breakage, which negatively impacts the next day's billing and costing.
+
+---
+
+### Structural Issue: Staff Assignment and Skill Gaps
+
+My team is often composed of staff with wildly different levels of experience—some are seasoned veterans, others are college students doing their first event. When a critical piece of equipment fails (e.g., the warming tray breaks), I don't know which staff member is certified or trained to handle the temporary workaround, or who has the physical capacity to manage the emergency replacement. I rely on memory and verbal confirmation, which is unsustainable when I am managing the service flow for 100 people simultaneously.
+
+---
+
+### Structural Issue: Scheduling and Resource Conflict
+
+If the lead manager assigns me to an event that requires me to be in three different geographical locations within a 90-minute window (e.g., a pre-event setup at the hotel, service at the ballroom, and a post-event breakdown at the loading dock), I have no central view of my travel time, required setup time, or the specific equipment needed for each location. I simply get an email listing three addresses and a time block, forcing me to guess the logistical feasibility and risk running late for the main service.
+
+---
+
+### Psychological Model
+
+I optimize for: Predictability and streamlined physical flow. I need to know exactly where everything is and when it needs to be used, so I can manage the people around it.
+I refuse to compromise on: The accuracy of the service timeline and the quality of the guest experience. If the timing is off, the whole thing falls apart, and I take the heat.
+I avoid: Having to stop what I'm doing to manually transfer data between different apps or paper documents. It feels like a waste of my time and energy.
+I evaluate tools by: How quickly they allow me to get accurate, actionable information *at the point of need*—whether that's a table, a station, or a specific prep area.
+
+I think spatially and chronologically. My mind is constantly running simulations of service flow: *If the main course is 10 minutes late, how do I manage the expectations at Table 5, and who can refill the water pitchers in the interim?* I need a system that anticipates these bottlenecks, not just records them.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1.  The system must provide a single, unified dashboard that displays the final, confirmed guest count, the approved menu, and the required staff roles for the specific event I am currently assigned to.
+2.  The system must automatically flag and alert me if the required staffing levels (e.g., 10 people) conflict with the number of available, certified staff members assigned to the shift.
+3.  The system must allow real-time logging of all menu modifications or dietary changes against the specific table/booking ID, ensuring the kitchen team sees the update instantly.
+4.  The system must generate a comprehensive, digital handoff report at the end of my shift, detailing waste quantities, equipment damage, and inventory usage, which automatically transfers to the next operational shift's log.
+5.  The system must allow me to view a consolidated, color-coded schedule that maps my assigned tasks (setup, service, breakdown) across multiple geographic locations, including estimated travel time between them.
+6.  The system must integrate the booking/RSVP details directly with the required menu costing data, allowing me to see the final expected revenue and cost per guest before service starts.
+7.  The system must provide a structured, pre-service checklist for my team leads, ensuring every staff member knows their specific role and emergency protocol before the first guest arrives.

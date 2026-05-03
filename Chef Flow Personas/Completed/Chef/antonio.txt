@@ -1,0 +1,69 @@
+**
+
+**Chef Profile: "Antonio" - Street Food Master (High Volume Chaos)**
+
+I run a line of food trucks, specializing in high-impact, quick-serve global street cuisine. I don't cook for fine dining critics; I cook for crowds, for sheer volume. My business runs on adrenaline, perfect timing, and the ability to turn cheap, local ingredients into a memorable, high-energy experience. I’m constantly hustling, trying to prove that world-class flavor can come out of a box on wheels, not out of a $5 million kitchen.
+
+### Business Reality
+
+Right now:
+* I manage **7** different locations or booked events every week, ranging from corporate lunch spots to weekend festivals.
+* My revenue model is highly volatile, averaging between $8,000 and $15,000 in gross sales per week, but the actual profit margin often dips below 15% once labor and unpredictable waste are factored in.
+* I have a core team of **5** people—a line cook, two prep staff, and two runners/cashiers—plus myself. The structure is highly fluid and depends entirely on the location's demands.
+* My geographic scope is hyper-local, concentrated within the city's downtown core and major industrial park areas, meaning I am always moving within a 5-mile radius.
+* My current tech setup is a mix of a basic Square POS terminal for credit cards, a dedicated Google Sheet for tracking inventory waste, and a chaotic mix of physical paper planners and group texts for scheduling.
+
+---
+
+### Primary Failure: Operational Bleed and Waste Tracking
+
+My biggest problem isn't the cooking; it's the sheer difficulty of knowing where my perishable inventory goes and how much money I lose to waste *after* I buy it. Because I operate out of 7 different, temporary sites, I can't do a consistent count. On a bad day, I might over-prep 20 pounds of specialty sausage that gets slightly bruised, and I have no easy way to track that spoilage against the actual sales count. This waste tracking is done manually—I write it down on a sticky note—and I only realize the financial hit days later, when I've already paid for the ingredients. This loss of visibility means I'm constantly guessing my true Cost of Goods Sold (COGS), which directly eats into my already razor-thin profit margins.
+
+---
+
+### Structural Issue: Inventory Synchronization Across Multiple Sites
+
+When I prep ingredients, I do it at a central commissary, but I then split them into containers that go to multiple trucks or locations. My current workaround is labeling every single container with a handwritten note detailing the item and the specific location it's going to. This is a nightmare. If a container is misplaced or if I need to adjust the recipe for Site 3 because Site 1 unexpectedly closed, I have to physically check 7 different locations and cross-reference my paper labels with my central spreadsheet. This process is slow, error-prone, and means I often have to over-prep just to hedge against the chaos of manual tracking.
+
+---
+
+### Structural Issue: Labor Scheduling for Volatile Demand
+
+My staff is paid hourly and must be flexible, which means I can't commit to a fixed schedule. When a major event gets canceled last minute, I have to scramble to call and reschedule 4-5 people, and I lose money on their travel time and wasted shifts. My current workaround is a group WhatsApp chat where I post changes, but this is pure chaos; people miss messages, and I have no way to track who confirmed for which shift or if I need to cross-train them for a different role on short notice. I spend hours every Monday morning just mediating scheduling conflicts and calculating the minimum viable team size.
+
+---
+
+### Structural Issue: Permit and Compliance Documentation Chaos
+
+Operating 7 different locations means 7 different sets of local rules, and those rules change constantly. I have to keep track of everything: fire marshal sign-offs, health department checklists, specific grease disposal requirements, and temporary vendor permits. My current workaround is a physical binder full of photocopies, filing folders, and laminated checklists that I physically carry with me. If I forget to update one rule (like a new local waste disposal mandate), I risk a massive fine or, worse, being shut down for the day. This constant manual audit process is draining, and I spend valuable pre-shift time just reviewing paperwork instead of prepping.
+
+---
+
+### Structural Issue: Pre-Order Management and Payment Tracking
+
+I get pre-orders coming in from three different sources: my website (which uses a basic form), direct calls to the commissary number, and emails from corporate catering contacts. I have to manually input all of these orders into a separate ledger spreadsheet and then reconcile them against the POS system at the end of the day. This means I never have a single, unified view of what is coming in, who paid for what, or if a corporate client prepaid for 100 meals that were never picked up. This process causes significant cash flow headaches and leads to lost revenue because I assume the payment cleared when it might not have.
+
+---
+
+### Psychological Model
+
+I optimize for: Speed and profitability. If a process takes more than 30 seconds of my time, I hate it.
+I refuse to compromise on: The freshness and quality of the ingredients. If the system compromises the product, I walk.
+I avoid: Any form of overly complex, multi-step bureaucracy, especially anything that requires me to sit down and "optimize" a workflow. I need action.
+I evaluate tools by: How quickly they can save me money *today*. If I can't see the dollar value of the time saved, it's useless.
+
+I think in terms of immediate execution and risk mitigation. If I can't see the cash flow, I can't plan the next day. My brain is always running five steps ahead—what if the weather changes? What if the power goes out? What if the local health inspector shows up?
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must allow me to input a specific ingredient batch (e.g., 15 lbs of sausage) and track its depletion and associated cost across 7 distinct, temporary locations, generating a real-time COGS report.
+2. The system must automatically calculate and flag labor costs based on shifts booked via a central calendar, allowing me to adjust staffing levels instantly when a location cancels or reduces its booking count.
+3. The system must maintain a centralized, auditable digital repository for all location-specific permits and compliance documents, and flag expiration dates 30 days in advance.
+4. The system must provide a single dashboard view of all incoming orders—whether from the website, phone, or email—and allow me to mark them as paid, pending, or fulfilled to reconcile cash flow.
+5. The system must integrate with a simple, mobile-friendly interface that allows me to adjust daily menus and recipes and instantly update the required ingredient quantities for my prep staff.
+6. The system must allow me to quickly generate a costed menu sheet based on fluctuating ingredient prices and projected labor hours for a single, temporary event booking.
+7. The system must handle the physical intake of cash payments and reconcile them against the digital POS record, flagging any discrepancies over $50 immediately.

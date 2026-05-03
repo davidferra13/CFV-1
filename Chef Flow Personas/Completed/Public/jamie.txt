@@ -1,0 +1,66 @@
+**Public Profile: "Jamie" Rosenthal - Local Culinary Curator (Experience Hunter)**
+
+I live for the moment when I find a hidden gem—a chef or a concept that tells a truly unique story, especially when it’s popping up for a limited time. I spend my time scouting these micro-events, finding the next big thing before the mainstream media catches on. I need to curate a week's worth of amazing, varied food experiences that feel authentic and genuinely local, not just another corporate dinner.
+
+### Business Reality
+
+Right now:
+* I search for or compare **7 to 10** chefs, events, cuisines, or menus per **week**
+* My typical ticket price range is **$150 to $400** per person, and I manage bookings for groups of **8 to 150** guests per event.
+* I need hyper-local, high-concept events, preferably within a **15-mile radius** of a major urban center, with a focus on seasonal, unique, or ethnic cuisines.
+* My inquiry context is always a **media booking/feature story**, requiring me to vet the chef's operational capability, the menu's story, and the logistics for a public audience.
+* My current discovery setup is a fragmented mess: **Instagram DMs**, **Google Maps searches**, **Scattered local food blogs**, and **Excel spreadsheets** I manually update every Friday.
+
+---
+
+### Primary Failure: The Story-to-Service Gap
+
+The biggest operational problem is that the discovery process I rely on is purely aesthetic and anecdotal. I can find a chef who looks amazing on Instagram and has a beautiful photo of their dish, but I have no verifiable, aggregated data on their *operational capacity* for a pop-up. For example, I might love a chef's concept, but if they can only handle 20 guests a night and their prep kitchen is only available 4 days a week, I don't know that until I send 3-4 separate emails and get vague answers. This uncertainty forces me to significantly over-book my initial research time, often spending 6+ hours a week just confirming basic availability and scale, which severely limits how many high-potential concepts I can vet before my deadline.
+
+---
+
+### Structural Issue: Vetting Operational Capacity vs. Concept Appeal
+
+I find it incredibly difficult to compare a chef's *artistic concept* against their *practical, scalable capacity*. If a chef posts a beautiful menu of 10 courses, I need to know immediately: Is this menu possible with their current equipment? Are they staffed to execute this volume for 150 people? My current workaround is calling them directly and asking a series of highly technical, open-ended questions that require them to switch from 'creative chef mode' to 'operations manager mode.' This often leads to vague, unquantifiable answers that I have to manually translate into risk assessments.
+
+---
+
+### Structural Issue: Tracking Multi-Stage Pop-Up Logistics
+
+Pop-ups are transient, meaning their logistics change constantly (e.g., "We're moving the pop-up from the back patio to the warehouse parking lot if it rains"). I need a centralized view of the *physical and logistical constraints* for the entire event week. I currently manage this using a combination of Google Docs and text message chains with my assistant, which means if one chef changes their power requirements (e.g., needing three dedicated high-amperage outlets instead of one), I have to manually cross-reference that against the venue's capacity plan, risking a massive, last-minute operational failure.
+
+---
+
+### Structural Issue: Contextualizing Public Interest and Media Appeal
+
+I need to understand how a chef’s *story* translates into a public experience, which is different from just viewing a menu. I want to see aggregated data points like, "This chef has successfully run 12 pop-ups in the last 18 months, averaging a 4.8/5 star rating from 800+ guests," or "This concept has been featured in 5 major local publications." Right now, I have to pull this data from disparate sources (Yelp, Google Reviews, local news archives, my own contacts), which is time-consuming, incomplete, and makes it impossible to quickly compare the *market viability* of two equally talented chefs.
+
+---
+
+### Structural Issue: Managing the Booking Trust and Inquiry Funnel
+
+The process of getting a public to commit to a high-ticket pop-up experience is fragile. I need a system that manages the pre-booking inquiry funnel, allowing me to qualify the interest of potential attendees (e.g., "Are you interested in the high-end tasting menu, or the casual street food option?"). Currently, I am forced to use a combination of email forms and phone calls, which means I lose the conversational context of their initial interest. I can't track if they were initially drawn to the chef's backstory, the unique cocktail pairing, or the specific cuisine, making it impossible to optimize my promotion for future events.
+
+---
+
+### Psychological Model
+
+I optimize for: **Novelty, Storytelling, and Proven Operational Excellence.**
+I refuse to compromise on: **The perceived scarcity and high quality of the experience.**
+I avoid: **Bureaucratic, opaque, or overly technical interfaces.**
+
+I think like a curator: I am always looking for the intersection of *uniqueness* and *feasibility*. I am highly visual and process-driven; if the data presentation isn't immediately scannable, color-coded, and narrative-rich, I will abandon it. I evaluate tools by how quickly they allow me to build a compelling, trustworthy narrative for a third party (the consumer) while simultaneously giving me a clear, real-time view of the chef's operational constraints.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must allow me to filter chefs based on **verified operational metrics** (e.g., maximum simultaneous cover count, required kitchen equipment, and average weekly prep time).
+2. The system must provide a **unified, time-series view** of a chef’s booking history, showing which specific date ranges and days of the week they have already booked or are unavailable for the next 90 days.
+3. The system must allow me to **overlay real-time venue constraints** (e.g., "max 100 guests," "outdoor seating only," "requires external generator access") directly onto a chef's proposed event profile.
+4. The system must generate a **"Story Scorecard"** for a chef, compiling verifiable data points like "Number of featured media mentions," "Average guest rating from last 5 pop-ups," and "Total unique cuisines covered."
+5. The system must allow me to **save and compare multiple competing pop-up concepts** side-by-side, showing their respective menus, pricing structures, and estimated staffing needs in a single view.
+6. The system must provide a **public-facing, but customizable, booking inquiry form** that allows me to qualify the user's interest level (e.g., "Are you interested in the $150 tasting menu or the $50 street food pairing?") before the booking is confirmed.
+7. The system must integrate a **dynamic scheduling calendar** that shows available dates and automatically flags potential conflicts based on the chef's stated capacity limits, preventing me from proposing an impossible event.

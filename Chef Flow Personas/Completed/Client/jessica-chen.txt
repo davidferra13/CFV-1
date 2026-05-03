@@ -1,0 +1,67 @@
+**Client Profile: "Jessica Chen" - Corporate Event Planner (High-Volume Coordinator)**
+
+I am a Corporate Event Planner, and my job is essentially to make high-stakes, branded food experiences look effortless for the executive team. I don't manage the food; I manage the *perception* of the food. My company relies on us running sophisticated, seamless events—from holiday parties to quarterly leadership summits—that must reflect the brand's polish and budget. I am the point person who has to coordinate everything from the initial budget approval to the final vendor invoice, meaning I am constantly juggling corporate politics and logistical nightmares.
+
+### Business Reality
+
+Right now:
+* I book or manage **10–15** private dining, catering, or meal prep events per **quarter** (300–500 total guests).
+* My average event budget ranges from **$8,000 to $18,000** per single booking, with deposits typically being **$2,000** and final payments due **30 days post-event**.
+* I work for a large tech firm, meaning I deal with dozens of internal stakeholders: HR, Marketing, Executive Assistants, and Finance.
+* The venue is typically a large, rented hotel ballroom or a corporate offsite facility, with headcount fluctuating wildly (e.g., 120 initial invitees, but only 105 confirmed). Dietary and preference complexity is extreme: we must cater to Celiac, multiple severe allergies (nuts, dairy, gluten), and a range of religious dietary requirements (Kosher/Halal options are sometimes required).
+* My current booking and communication setup is a chaotic mix of Google Sheets for RSVPs, shared corporate email inboxes for approvals, and a patchwork of text messages and PDF contracts emailed back and forth.
+
+---
+
+### Primary Failure: The Headcount Volatility Gap
+
+My biggest pain point is the inability to accurately and immediately adjust costing and menu planning when the guest count shifts. We often get initial quotes based on a "best guess" headcount of 150, but by the day of the event, we might only have 110, or worse, 175. Because I have to manage the financial implications of that variance—adjusting the food cost *and* renegotiating staffing hours—I spend hours manually cross-referencing multiple spreadsheets, often contacting the kitchen directly via phone just to confirm if the quote needs to be scaled down or up. This constant, manual re-costing process is extremely time-consuming, creates significant risk of error, and directly impacts the executive team’s trust in my planning ability.
+
+---
+
+### Structural Issue: Approvals and Scope Creep
+
+I have to get formal sign-off from at least two department heads (e.g., Marketing and HR) before I can even book the menu or the date. These approvals are rarely digitized; they come as email chains, sometimes requiring a physical signature on a printed contract. If the scope changes—say, HR decides we need an extra dessert station or a specialized beverage—I have to manually draft a Change Order document, get it signed, and then remember to email that change order to the kitchen and the finance team. This friction point means that approved changes often get lost, delayed, or simply not implemented, leading to last-minute panic calls and scope creep that costs us money.
+
+---
+
+### Structural Issue: Ingredient and Vendor Costing Reconciliation
+
+When I receive initial quotes, they are always itemized but lack transparency on sourcing. They might list "premium dessert platter" but not specify if that means local farm berries or a national distributor. When I try to negotiate or adjust the menu (e.g., swapping out a specific fish for a vegetarian option), I have to call the chef directly and ask, "What is the cost difference for that ingredient?" I cannot audit the cost of goods sold (COGS) against the menu plan because the pricing is opaque, forcing me to rely solely on the vendor's word and making it impossible for me to build accurate internal budget models.
+
+---
+
+### Structural Issue: The Post-Event Financial Audit Trail
+
+The process of reconciling the final invoice against the original quote is a nightmare. The original quote is a PDF, the final invoice is a PDF, and the internal budget is in a Google Sheet. When the invoice comes in, I have to manually compare every line item—the initial headcount cost, the final headcount cost, the negotiated discount, the added service charge—to ensure we were billed correctly. This reconciliation process is manual, takes me a full afternoon, and because it relies on comparing disparate documents, I am constantly worried about missing a small fee or an incorrect multiplier, which puts me in a difficult position with the finance department.
+
+---
+
+### Structural Issue: Multi-Phase Booking Management
+
+Our events rarely happen in a vacuum. We might plan a networking lunch (Phase 1), followed by a dinner reception (Phase 2), and then a small breakout breakfast (Phase 3), all within the same week. Because the vendor relationship is handled by one primary contact, all three phases are bundled into one communication thread and one massive invoice. If I need to change the menu for Phase 2, I have to email the vendor, who then has to reference the original booking details from Phase 1, which can lead to confusion and miscommunication about which dates or contracts are being adjusted.
+
+---
+
+### Psychological Model
+
+I optimize for: **Predictability and Professionalism.** If the process feels messy, the client (the executive team) thinks I am messy, and that is a career risk.
+I refuse to compromise on: **The Brand Experience.** Everything must look seamless, high-end, and effortless, regardless of the internal chaos.
+I avoid: **Ad-hoc communication and manual data entry.** Nothing that requires me to copy and paste information between more than two systems is acceptable.
+I evaluate tools by: **The depth of integrated workflow management.** If the tool can handle the entire lifecycle—from initial concept to final invoice—in one place, I will use it.
+
+I think in terms of minimizing risk and maximizing perceived effortlessness. My decisions are driven by the need to present a flawless, financially accountable experience to the C-Suite. If I can't quickly pull up a historical cost sheet or a final RSVP count and match it to a menu and a budget in under 60 seconds, I am stressed, and the entire plan is compromised.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1.  **Allow me to import and adjust menu pricing and COGS based on a fluctuating guest count (e.g., 120 to 150) and instantly re-calculate the total cost and necessary adjustments to the initial quote.**
+2.  **Provide a centralized, auditable record of all menu changes and scope creep, requiring formal, digital sign-off (from multiple stakeholders) before those changes are reflected in the final cost projection.**
+3.  **Enable me to generate and track a complete financial audit trail that links the original quote, the approved changes, the final headcount, and the final invoice line-by-line, all within the platform.**
+4.  **Support multi-phase event bookings (e.g., Lunch, Dinner, Brunch) under a single master client contract and invoice, while allowing specific menus, budgets, and staff schedules to be managed independently for each phase.**
+5.  **Allow me to upload a master corporate guest list (CSV) and automatically manage the RSVP status, track specific dietary requirements, and generate a consolidated, actionable list for the kitchen and staff.**
+6.  **Provide a searchable library of historical event menus and associated COGS data, so I can quickly reference the cost of a successful "Holiday Cocktail Reception" from last year and compare it to current market pricing.**
+7.  **Integrate with common corporate booking systems (like Outlook/Teams) to allow me to book and manage event logistics directly from the communication thread, minimizing the need to switch between email and the platform.**

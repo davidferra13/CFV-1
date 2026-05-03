@@ -1,0 +1,67 @@
+**Staff Profile: "Ted Allen" - Event Service Captain (High-stakes logistics)**
+
+I am the captain of the service team, which means I am the operational brain during the event. I don't just manage the flow of plates; I manage the flow of people, the timing of the courses, and the overall narrative of the dining experience. My job is to ensure that when the client walks in, they feel completely taken care of, and that the kitchen and the front of house never get out of sync. I am responsible for the seamless execution of everything from cocktail hour canapés to the final dessert service, which requires coordinating up to 15 specialized staff members and managing the expectations of 100 to 300 high-net-worth guests.
+
+### Business Reality
+
+Right now:
+* I work an average of 3 shifts per week, ranging from 4 to 8 hours, across various client sites.
+* My pay structure is a flat rate per event, supplemented by a service management bonus, and I am responsible for managing the labor cost of up to 15 service staff and 2 kitchen prep leads.
+* I am the designated team lead, requiring advanced crisis management training and needing to be available for on-site deployment, often requiring weekend availability.
+* My scope is highly variable: I might be setting up a buffet service in a historic mansion in Greenwich, Connecticut, one day, and running a plated dinner service in a modern convention center the next.
+* Current briefing and scheduling setup is a disastrous mix of tools: the initial booking details come via email attachments, the menu changes are relayed through group texts, and the final service assignments are printed on handwritten sheets that get lost or photocopied incorrectly.
+
+---
+
+### Primary Failure: Misalignment Between Prep and Service Staffing
+
+The single biggest operational problem is the inability to dynamically adjust staff assignments based on real-time event changes. When a client suddenly increases their guest count from 120 to 150, or when the menu pivots from a plated dinner to a heavy buffet setup, I have no single source of truth that shows which staff members are trained for the new service style, who is available for the extra hours, and which station needs immediate reinforcement. This forces me to manually re-assign people, which leads to confusion, wasted labor time, and a significant degradation of the guest experience because service slows down and staff members are cross-trained on the fly, which is inefficient and expensive.
+
+---
+
+### Structural Issue: Disconnected Scheduling and Venue Logistics
+
+I receive my core schedule via email or a shared Google Sheet, which lists my required shifts and general location. However, this sheet has zero connection to the specific venue details, required equipment (e.g., 12 portable heating chafing dishes, 6 beverage stations), or the necessary load-in/load-out protocols for that specific property. My current workaround is to maintain a separate, physical binder of site-specific vendor contacts, required insurance riders, and unique access codes. What breaks is that if the site details change—say, the loading dock access shifts from the North Gate to the service entrance—I have to call the client or the venue manager directly, wasting valuable time that should be spent prepping my team.
+
+---
+
+### Structural Issue: Fluid Menu Changes and Ingredient Tracking
+
+The menu is never static. A client might call the day before and say, "We're changing the main course from lamb to halibut." This menu change is communicated via a quick text message to the lead chef, and then the necessary ingredient adjustments (e.g., needing 20 lbs of fresh halibut instead of 8 lbs of lamb) are then manually logged into a separate spreadsheet that tracks inventory. I have no way to confirm if the kitchen has updated the primary event costing sheets, or if the sourcing team has actually ordered the new, more expensive ingredients. This forces me to run three separate checks (text confirmation, verbal confirmation, and manual inventory check), increasing the risk of service failure due to misplaced ingredients or incorrect costing.
+
+---
+
+### Structural Issue: The Hand-Off Gap (Service to Cleanup)
+
+My shift ends when the last guest leaves and the plates are cleared. However, my responsibility doesn't end there; I am responsible for the orderly handoff of the entire operational site to the cleanup crew and the next day's event team. Currently, I use a stack of printed "Daily Closeout Checklists" that are passed physically to the next team lead. These checklists are notoriously incomplete—staff often forget to log the specific inventory depletion (e.g., how many bottles of specific wine were opened, or how many extra linens were used), or they forget to note minor damage (e.g., a scratched floorboard or a broken centerpiece). This lack of a structured, digital log creates disputes over post-event billing and makes it impossible for the next day's setup team to know exactly what needs to be recovered or replaced.
+
+---
+
+### Structural Issue: Team Communication and Role Clarity
+
+When I arrive at a new venue, I am responsible for briefing a team of 10-15 staff members who may have varying levels of experience. The current process is that I print out a generic "Event Flow Sheet" that lists the station assignments (e.g., Station 1: Cold Appetizers, Station 2: Beverage Service). If the event requires a highly specialized station—like a live carving station or a dedicated bar service—that station's unique operational requirements (e.g., specific tools, specialized plating instructions, or the required number of supporting staff) are often buried in a separate, unintegrated document. I have to read through multiple PDFs and physical notes just to get a clear, actionable picture of every team member's precise role and their direct supervisor for that specific event.
+
+---
+
+### Psychological Model
+
+I optimize for: Seamless transitions and predictable workflow. If I can anticipate a bottleneck—whether it's the wine service or the carving station—and pre-stage the solution, the event is a success.
+I refuse to compromise on: The accuracy of the final service timeline. Guests expect things to happen on cue, and any visible lag or confusion reflects poorly on me and the company.
+I avoid: Having to manually reconcile conflicting information from three different sources (email, text, paper). It is inefficient, frustrating, and wastes my mental energy.
+I evaluate tools by: How quickly they can consolidate complex, multi-stage operational data into one clear, real-time dashboard that I can reference while standing on the floor.
+
+I think like a conductor, orchestrating dozens of moving parts. My decision-making is driven by mitigating risk and maintaining the illusion of effortless perfection. I need to know not just *what* is happening, but *when* it's happening and *who* is responsible for the next step.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must display a single, comprehensive event timeline that automatically tracks the service start time, expected duration for each course, and the responsible team lead for that segment.
+2. The system must allow me to receive immediate, push-notification alerts for any last-minute menu or guest count changes, and simultaneously flag the necessary cost adjustments for the event budget.
+3. The system must provide a centralized, digital resource library for each specific venue, containing access codes, contact lists, and load-in/load-out instructions that are tied directly to the event date.
+4. The system must generate a detailed, mandatory digital checklist at the end of my shift, forcing all assigned staff to log specific inventory depletion (e.g., '12 bottles of Sauvignon Blanc opened') and report any site damage against the client's property.
+5. The system must integrate team assignments with specialized skills, allowing me to instantly filter and assign staff based on their confirmed training (e.g., "Only staff trained in live carving" or "Staff available for 8+ hours").
+6. The system must allow me to dynamically adjust the service schedule and automatically notify the relevant team leads and kitchen leads of the change, minimizing manual communication.
+7. The system must provide a comprehensive view of all active and upcoming events for the week, allowing me to pre-load the specific unique operational requirements (e.g., specialized equipment rentals, unique service flow diagrams) for each one before I arrive on site.

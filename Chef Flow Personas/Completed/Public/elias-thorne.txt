@@ -1,0 +1,73 @@
+**Public Profile: "Elias Thorne" - Global Culinary Archivist (Discerning Explorer)**
+
+I don't just eat; I conduct investigations. My life is spent tracking the provenance of flavors, the history of techniques, and the people who keep ancient culinary traditions alive in modern kitchens. I am less interested in the Michelin star hype and more interested in the narrative—the story of the ingredients, the lineage of the dish, and the chef's personal struggle to perfect it. I've eaten in 47 countries and documented the journey of nearly 1,200 unique local dishes.
+
+### Business Reality
+
+Right now:
+* I search for or compare **4 to 6** chefs, events, cuisines, or menus per **week**.
+* I budget between **$50 and $350** per person, depending on the event's complexity or rarity.
+* I need to filter by specific, often niche, criteria: **historical significance, ingredient sourcing (e.g., specific regional grain), and low-volume, high-storytelling menu structure**.
+* I am constantly making inquiries and bookings for **small, intimate group dinners (6-12 people)** in specific, often hard-to-find, historic neighborhoods or venues.
+* My current discovery setup is a messy combination of **academic journal articles, local word-of-mouth texts, Instagram deep dives into neighborhood accounts, and scattered Google Maps searches**.
+
+---
+
+### Primary Failure: The Story Gap
+
+The single biggest operational pain point is the inability to verify the *narrative* of the cuisine before committing to a booking. I can find a chef and a menu, but I cannot easily cross-reference the menu items with the chef's stated philosophy, the historical origin of the recipe, or the sourcing logistics of the key ingredients. This forces me to book a preliminary tasting, which is a massive time and cost sink (easily $150-$250 per person, per visit) just to confirm the story is authentic and compelling. If the story is weak, I waste a full evening and lose credibility with my own network.
+
+---
+
+### Structural Issue: Disjointed Provenance Data
+
+I find menus online that list beautiful ingredients, but the listing is always a bullet point of names, not a narrative of source. If a menu mentions "smoked paprika," I have no way to tell if the chef sourced it from the specific region I'm interested in (e.g., La Vera, Spain) or if it’s a generic import. My current workaround is asking the restaurant's management via a general email, which results in a 24-hour delay, a single-sentence answer, and often no verifiable proof of sourcing.
+
+---
+
+### Structural Issue: Booking Contextualization Failure
+
+Most booking platforms only allow me to select a date and a time, treating the meal as a commodity slot. They fail to allow me to attach the *context* of the booking—e.g., "This dinner is for a documentary segment focusing on 19th-century Sicilian culinary techniques." I have to manually communicate this deep context via a follow-up email, which often gets lost or ignored by the restaurant's reservations staff, leading to mismanaged expectations or a lack of personalized experience.
+
+---
+
+### Structural Issue: Multi-Tiered Experience Comparison
+
+I am constantly comparing different *types* of culinary experiences: a formal, high-end tasting menu versus an informal, hyper-local market-to-table pop-up event. ChefFlow presents them all as equally bookable "restaurants." I need a system that allows me to compare the *operational structure* of these experiences—for example, comparing the required guest count minimums, the necessary vendor setup, or the complexity of the menu flow—on a single, comparative dashboard. Currently, I must visit 3-5 separate websites and PDF menus just to gather this logistical data.
+
+---
+
+### Structural Issue: Post-Visit Documentation & Archiving
+
+After I visit a location, I need to archive the details—not just the bill, but the exact recipe components, the conversation with the chef, the wine pairing, and the logistical notes (e.g., "Requires 3 hours notice for seating"). ChefFlow, as a booking tool, treats the interaction as complete once the booking is made. There is no integrated space for me to log this rich, qualitative, operational data that I use to build my own global culinary index. I currently use a combination of Notion and physical index cards.
+
+---
+
+### Structural Issue: Dynamic Availability for Niche Ingredients
+
+If I am researching a specific, highly seasonal, or hard-to-source ingredient (e.g., wild foraged mushrooms, or a specific regional fish), I need to know *which* chefs in a given city are actively using it *this week*. The platform doesn't link ingredient sourcing directly to the daily menu or the chef's current operational capacity. I have to rely on local food blogs or Instagram stories, which are unreliable and non-archival.
+
+---
+
+### Psychological Model
+
+I optimize for: **Narrative Depth and Provenance**. The story behind the food must be as compelling as the food itself.
+I refuse to compromise on: **Transparency of Process**. I need to know *how* something is done, not just that it tastes good.
+I avoid: **Generic, high-volume, tourist-trap experiences**. I also hate vague "Local Flavors" categories.
+I evaluate tools by: **The depth of the data fields they require from the chef.** If the platform doesn't ask for the sourcing details, I assume the data is lacking.
+
+I am a researcher first, and a diner second. My decision-making process is inherently investigative; I am building a body of work, and the platform must facilitate the collection of highly specific, qualitative data points that survive the booking transaction.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1.  **Allow me to filter by specific, documented sourcing criteria** (e.g., "Must use grains milled within 50 miles of the venue" or "Requires documented seasonality").
+2.  **Provide a dedicated, structured input field for chefs to upload their culinary narrative,** separate from the menu, allowing me to read the philosophy before booking.
+3.  **Support the creation of a "Research Itinerary" view** where I can map out multiple potential stops for a single day, comparing logistical constraints (booking requirements, travel time, required guest count) side-by-side.
+4.  **Enable the attachment of rich, post-visit operational notes** to a booking record, including custom fields for "Observed Technique" or "Key Ingredient Source."
+5.  **Allow me to flag and track the operational status of a specific ingredient** across multiple menus and chefs in a given region (e.g., "Wild Ramp availability: High/Medium/Low this week").
+6.  **Require chefs to input detailed, multi-level menus** that link specific dishes to specific sourcing vendors and corresponding cost data, making the provenance visible to the public user.
+7.  **Facilitate the inquiry process by allowing me to upload a document or detailed prompt** outlining the academic or documentary context of my visit, ensuring the kitchen staff is prepared for a specialized visit.

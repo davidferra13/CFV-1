@@ -1,0 +1,67 @@
+**Staff Profile: "Robert 'Bob' Hayes" - Event Service Captain (High-Volume Service Lead)**
+
+I am a seasoned service captain, responsible for executing high-volume, high-touch catering events for corporate and private clients. My job is to ensure that everything, from the initial placement of the service stations to the final cleanup, runs flawlessly, making the entire experience seamless for the guest and the client. I lead a small team of 4-6 servers and manage the entire flow of food and service logistics, which means I am the primary point of contact between the kitchen, the event planner, and the paying client.
+
+### Business Reality
+
+Right now:
+* I work an average of **3-4** shifts per week, ranging from full-day prep assignments to single, high-intensity evening events.
+* My pay structure is a base hourly wage of **$25/hour**, plus a per-event service stipend that averages **$150-$300** depending on the client size and complexity, plus mandatory tips.
+* I am certified in basic food safety (ServSafe) and have 15 years of experience in high-end event service. My role requires me to be the primary team lead, manage inventory counts for linens/serving ware, and oversee the entire operational flow.
+* My scope is highly varied, ranging from large ballroom setups (e.g., 500+ guests) to intimate, 25-person private dinners. Locations are scattered across downtown venues, requiring me to travel between **3 to 5** distinct sites per week.
+* My current briefing and scheduling setup is a chaotic mix: the main scheduling is handled via a Google Sheet that is updated by a single coordinator, but any last-minute changes (vendor cancellations, client additions) are communicated via group texts, and the final, detailed prep sheet is printed on standard office paper.
+
+---
+
+### Primary Failure: Reactive Chaos Management
+
+The biggest operational problem is that our entire system is built on reacting to changes, not anticipating them. When a client adds 50 unexpected guests, or when a key vendor cancels equipment, the entire team's workflow grinds to a halt because there is no single source of truth for the immediate, modified plan. This leads to missed service timings, wasted prep time, and requires me to spend valuable minutes fielding calls and cross-referencing multiple documents, which significantly reduces my capacity to manage the actual service flow.
+
+---
+
+### Structural Issue: Fragmented Day-of Communication
+
+The scheduling information is split across three different channels: the master Google Sheet (which is often outdated by 12 hours), the group text thread (which is searchable but disorganized), and the physical printed prep sheet (which is often incomplete). If I arrive on site and the printed sheet says we need 12 champagne flutes, but the group text mentioned an equipment change that requires 18, I waste 15 minutes verifying the actual count with a junior lead, delaying the setup and causing tension with the venue staff.
+
+---
+
+### Structural Issue: Inventory and Equipment Handoff
+
+We do not have a centralized, digital system for tracking service equipment or linens. When a large event is done, my team must manually count and record every item—from the number of Charger plates used to the count of specialized chafing dishes—and mark them on a physical manifest sheet. If I forget to record that we used 3 extra warming trays, we don't know until the next day when the vendor charges us for the missing items, costing the company an estimated **$400-$800** per incident.
+
+---
+
+### Structural Issue: Variable Prep/Service Mapping
+
+The prep list is always manually tailored to the specific venue layout and guest count. For instance, if we are serving a 25-person plated dinner in a narrow loft space, the prep needs are entirely different (and require different staff assignments) than a 150-person buffet in a large ballroom. Currently, I have to take the standard menu prep guide and manually overlay the spatial constraints and the specific staff ratios, which is a highly time-consuming, high-risk process done late at night in my car.
+
+---
+
+### Structural Issue: Team Lead Task Assignment Visibility
+
+My role requires me to delegate specific tasks—like setting up the beverage station or managing the flow of the dessert service—to specific team members (John handles linens, Sarah handles bar setup). Because the assignments are written on a general "tasks" list, and I am running around managing people and crises, I often forget who was assigned what, or I delegate the same task twice. This leads to redundant work or, worse, critical tasks being completely overlooked, such as the required final walk-through check of the client's specific branding signage.
+
+---
+
+### Psychological Model
+
+I optimize for: Predictability and clear, actionable checklists. I need to know exactly who is doing what, and when, without having to ask.
+I refuse to compromise on: The integrity of the service timeline. If the timeline slips by even 15 minutes, the whole event feels compromised, and I feel the pressure from the client.
+I avoid: Any tool that forces me to stop and input data when I am physically moving or managing a crisis. Typing on a phone in the middle of a crowded ballroom is a nightmare.
+I evaluate tools by: How quickly and accurately it can communicate *real-time* changes to my team and me, especially regarding resource location (e.g., "The extra stack of napkins is in the loading dock, not the main kitchen").
+
+I think spatially and sequentially. My mind is constantly mapping out the flow of people and items. When I see a process that requires more than three steps or involves more than two different pieces of paper, I know it’s going to fail.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must provide a single, real-time "Service Flow Map" that dynamically adjusts resource allocation (staff, equipment, and ingredients) when a client changes the guest count by more than 10%.
+2. The system must allow me to generate and instantly distribute a detailed, printable, role-specific checklist for the day, which includes the required service stations and their exact setup measurements (e.g., "Bar setup must be 8 feet from the main entrance").
+3. The system must track and generate a discrepancy report for all high-value, reusable equipment and linens used per shift, allowing me to submit the count and receive an immediate, accurate invoice reconciliation draft.
+4. The system must allow me to push urgent, critical operational updates (e.g., "Fire Marshal requires us to move the buffet line 10 feet left") directly to the entire team's mobile device, bypassing email and text messages.
+5. The system must integrate the final menu costing and ingredient sourcing list directly into the prep checklist, so that when I check off the "Prep Complete" status, the platform automatically updates the expected waste/inventory count.
+6. The system must generate a comprehensive shift handover report that details which tasks were completed, which tasks were deferred, and which team members were responsible for the handover status, ensuring accountability.
+7. The system must provide a dedicated 'Vendor Resource Library' where I can instantly pull up the contact details, specific setup requirements, and contractual obligations for all third-party vendors (e.g., florist, DJ, specialized rental company).

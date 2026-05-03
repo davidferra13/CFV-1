@@ -1,0 +1,67 @@
+**Public Profile: "Phil Rosenthal" - Local Food Explorer (Curator of Discovery)**
+
+I am a professional culinary storyteller, primarily focused on documenting the best, most authentic, and most surprising local dining experiences for a national audience. My job is not just to eat; it is to find the story behind the plate, the history in the kitchen, and the passionate people who run these places. I live by the principle that every meal should feel like a discovery, even if it’s in a major city.
+
+### Business Reality
+
+Right now:
+* I search for or compare **4-6** chefs, events, cuisines, or menus per **week** to build my content pipeline.
+* My budget for recommending experiences ranges from **$75 to $150** per person, depending on the exclusivity of the event, but I need options that can scale from small, intimate gatherings (under 10 people) to larger, semi-private group dinners (up to 40 people).
+* I need results filtered by **hyper-local neighborhood**, **specific cuisine heritage** (e.g., Sicilian, Sichuan, Polish), **availability within the next 14 days**, and **proven local acclaim** (beyond just star ratings).
+* My inquiry context is always *referral* or *booking for content*. I need to know the operational capacity, the chef’s story, and the cost structure *before* I talk to the restaurant owner, as my recommendations are often time-sensitive and high-profile.
+* My current discovery setup is a scattered mix of **Google Maps searches**, **Instagram Story scouting**, **local food blogger newsletters**, and **manual follow-up emails** to people I met at previous events.
+
+---
+
+### Primary Failure: The "Authenticity Gap"
+
+The biggest operational problem is that the current discovery process is optimized for volume and convenience, not for *story* or *authenticity*. When I find a promising concept, I waste valuable time doing deep due diligence that a simple search engine cannot provide. I might find a beautiful menu, but I have no quick way to verify if the chef is truly running this kitchen, or if it’s a corporate front. This forces me to spend 2-3 hours per week on basic vetting—calling the restaurant, asking if the owner is actually involved, and confirming the history of the menu—time that should be spent writing or scouting the next location. This vetting process is the single biggest bottleneck to my content creation, and it costs me the opportunity to recommend genuinely unique spots because I don't have time to vet them properly.
+
+---
+
+### Structural Issue: Hyper-Specific Culinary Filtering
+
+I need to filter far beyond just "Italian" or "Asian." I need filters for *regional* or *heritage* cuisine (e.g., "Coastal Californian," "Northern Italian, Emilia-Romagna style," or "Yemeni street food"). My current workarounds involve typing vague keywords into search bars and then manually scrolling through irrelevant results. This breaks down because local chefs often specialize in a narrow, unique niche that general platforms don't categorize correctly, meaning I miss 30-40% of the genuinely compelling local talent.
+
+---
+
+### Structural Issue: Operational Capacity vs. Booking Window
+
+I need to know, *right now*, not just if a restaurant is "open," but its actual operational capacity for a specific, non-standard booking. For example, "Can this chef accommodate a private group of 18 people on a Saturday evening with a pre-set menu that requires 4 hours, not just 2?" I currently have to use a mix of calls, emails, and sometimes a simple text message chain to get this information. This is extremely inefficient and breaks down because I can't compare the availability of three different venues (e.g., a bistro, a restaurant, and a pop-up kitchen) against a single, complex event requirement.
+
+---
+
+### Structural Issue: Menu Story and Ingredient Provenance
+
+A menu is more than just a list of prices; it's a narrative. I need to see the *story* of the ingredients and the *provenance* of the menu items (e.g., "This pasta uses flour milled in town" or "The tomatoes are from Farmer Joe's plot, 5 miles away"). I currently have to call the restaurant and ask the server, or sometimes read a poorly printed chalkboard, just to get this information. This is a major blocker because the story of the food is what sells the experience to my audience, and if I can't quickly verify the sourcing, the content loses its core appeal.
+
+---
+
+### Structural Issue: Review Context vs. Operational Reliability
+
+Reviews are usually focused on the *food* ("The pasta was delicious") or the *service* ("The waiter was nice"). They rarely discuss the operational reliability for groups or the specifics of the booking process. If I'm planning a high-profile, 30-person event, I need to know things like: "Are they reliable for 30 people?" or "Do they require a 50% deposit 60 days out?" I have to rely on anecdotal evidence from my network, which is unreliable and doesn't scale, making it impossible to trust the platform for critical logistical details.
+
+---
+
+### Psychological Model
+
+I optimize for: **The narrative quality of the experience and the ease of vetting a unique concept.**
+I refuse to compromise on: **The perceived authenticity of the location and the ability to confirm operational capacity for non-standard groups.**
+I avoid: **Complex, enterprise-level dashboards or anything that requires me to learn a new workflow.**
+I evaluate tools by: **How quickly they allow me to gather actionable, unique story details (provenance, history, capacity) and compare them across multiple venues.**
+
+I think like a curator and a journalist. I am constantly looking for the *exception*—the hidden gem that tells a better story than the standard, famous spot. I don't want the "best Italian restaurant"; I want the "small, family-run Trattoria that has been serving the same dish since 1952." My decision-making is driven by the potential for a compelling story, which requires deep, immediate, and actionable data.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must allow me to filter search results by specific regional culinary heritage (e.g., "Basque Tapas" or "Jamaican Jerk") and not just broad cuisine types.
+2. The system must provide a clear, consolidated view of a venue's operational capacity (max group size, required advance booking window, and deposit structure) alongside its menu.
+3. The system must require and display verifiable details on ingredient sourcing and local provenance for key menu items, allowing me to instantly verify the story.
+4. The system must allow me to compare the booking and pricing structures of 3+ different venues (e.g., a pop-up vs. a full restaurant) on a single, side-by-side comparison page.
+5. The system must provide a dedicated "Story/History" section for each venue that is easily readable and verifiable, detailing the chef's background and the establishment's founding story.
+6. The system must allow me to save and organize multiple "story concepts" (a collection of 5-10 venues) that I can then review and write about later, without needing to book anything.
+7. The system must allow me to initiate a complex booking inquiry (e.g., "30 people, private event, specific date range, custom menu") and receive a structured, multi-option response from the venue, not just a "Contact Us" form.

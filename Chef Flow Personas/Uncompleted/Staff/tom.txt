@@ -1,0 +1,73 @@
+**Staff Profile: "Tom" Colicchio - Event Service Captain (Execution Specialist)**
+
+I am the Captain for high-end, multi-venue private events, meaning I am responsible for the flawless execution of service for groups ranging from 50 to 300 people. My job is not just to manage the front of the house, but to manage the flow of service, the team, and the integration of the kitchen output into a perfect guest experience, regardless of the venue's complexity or the client's specific demands.
+
+### Business Reality
+
+Right now:
+* I work **3-4** shifts per **week**, handling 2-3 large-scale events, plus 1-2 smaller private bookings.
+* My pay is a mix of hourly wages and a guaranteed minimum for leads, plus a service gratuity pool that can reach $5,000+ per event. I am certified in advanced wine service, large-group dining logistics, and multiple venue protocols.
+* I manage a team of 15-20 staff (servers, bartenders, runners, coat check) and report directly to the Maître d' and the Head Chef. I am responsible for the entire pre-service briefing, the service floor management, and the post-service cleanup handoff.
+* My scope is highly fluid, spanning multiple locations—from the main restaurant kitchen to the hotel ballroom, and sometimes an off-site private estate.
+* My current briefing and scheduling setup is a nightmare: I get initial assignments via a shared Google Sheet that is updated inconsistently, followed by a printed, handwritten service plan that gets laminated, and then I receive last-minute adjustments via group text messages from the Maître d'.
+
+---
+
+### Primary Failure: Disconnected Service Handoffs
+
+The biggest operational problem is the lack of a single source of truth for the service flow, especially during handoffs. When an event transitions—say, from a cocktail reception to a seated three-course meal, or from the main restaurant to an external ballroom—the knowledge of what happened, what was ordered, or what is missing is lost in verbal handoffs. Because I have to rely on physical manifests, sticky notes, and repeated verbal check-ins between the FOH team, the kitchen, and the bar, we waste an estimated 15-20 minutes of critical service time per transition. This not only degrades the guest experience (the staff seems disorganized) but also increases the risk of mis-billing or incorrect plating, costing us reputation and potential revenue per incident.
+
+---
+
+### Structural Issue: Manual Manifesting of Guest Counts
+
+I have to manually reconcile the RSVP count from the client spreadsheet, the pre-paid guarantee count, and the actual guest count when they arrive. If the booking system is separate from the event logistics, I spend 45 minutes before every major event simply cross-referencing names and numbers across three different documents (the initial booking sheet, the final guaranteed count sheet, and the check-in list). This process is prone to human error—missing a name or miscounting a guaranteed minimum—and it pulls me away from my primary role of managing the floor and briefing my team.
+
+---
+
+### Structural Issue: Non-Integrated Service Timeline Management
+
+Our service timelines are managed entirely via printed, laminated planners that get marked up constantly. If the Head Chef makes a last-minute change to the plating sequence or the wine service timing (e.g., "Move the dessert service up by 15 minutes"), I have to physically redraw the entire timeline and distribute new copies to 20+ people, who then have to physically discard the old, incorrect version. This process is slow, wasteful, and guarantees that at least half the team will be operating off outdated information, leading to service delays or conflicting instructions.
+
+---
+
+### Structural Issue: Fragmented Team Communication and Assignment Tracking
+
+Assigning tasks to my 15-person team is a nightmare of texts and whispered instructions. I use a mix of WhatsApp group chats, specific email threads, and verbal assignments to track who is responsible for what—who is managing coat check, who is running the specialized station, who needs to be available for the bar transition, etc. If I send a text about a setup change, the team members might miss it, or they might assume it applies to a different event. I spend 30 minutes pre-service just ensuring every single person knows their *exact* role, their *specific* station, and their *backup* assignment if the primary fails.
+
+---
+
+### Structural Issue: Lack of Consolidated Vendor/Client Requirement Documentation
+
+Every major client has unique requirements, whether it’s a dietary restriction for 5 specific VIPs, a specific floral arrangement placement, or a required local permitting document. These details are scattered across emails, physical folders, and notes from the sales team. When I arrive on site, I cannot quickly pull up a single, comprehensive "Client Profile Sheet" that lists every constraint—the required equipment, the VIP needs, the allergen matrix, and the client contact—without calling the sales manager or digging through email archives.
+
+---
+
+### Structural Issue: Inefficient Post-Service Breakdown Checklist
+
+The cleanup process is currently managed by a printed checklist that is often ignored or completed incorrectly because it is static and linear. Since we handle diverse venues (ballrooms, private homes, multiple restaurant sections), the cleanup steps vary wildly. We often find that critical steps—like proper disposal of specific waste streams, or confirming the removal of specialized equipment—are missed because the checklist doesn't adapt to the physical layout or the specific items used that night. It is a reactive, human-memory process, not a systematic one.
+
+---
+
+### Psychological Model
+
+I optimize for: Seamless, predictable execution that feels invisible to the guest.
+I refuse to compromise on: The operational flow or the accuracy of the service sequence.
+I avoid: Ambiguity, redundant communication, and any process that requires me to spend my time chasing down information or confirming basic facts.
+I evaluate tools by: How quickly they reduce cognitive load and eliminate the need for physical paper or constant manual reconciliation.
+
+I think in terms of process flow and potential failure points. I am constantly anticipating the next three steps of the service, and I need a system that can manage the entire event lifecycle—from the initial reservation details to the final staff payroll deduction—without forcing me to be an administrator first and a captain second.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must consolidate all guest information (RSVPs, dietary restrictions, VIP status) and make it instantly accessible by event date, client name, and party size.
+2. The system must allow me to digitally build and dynamically adjust a service timeline that automatically notifies all assigned staff members of changes and updates the physical station layout.
+3. The system must provide a single, structured handoff log that captures the status of key elements (e.g., "3 courses served," "wine service complete," "station X cleaned") so the next shift captain knows exactly where to pick up the baton.
+4. The system must integrate event-specific operational checklists that dynamically adapt based on the venue type and the services booked (e.g., if "Private Estate" is selected, it must prompt for "Off-site vendor contact" and "Specialized equipment inventory").
+5. The system must allow me to assign specific, measurable roles and track accountability for every single team member across different shifts, ensuring no task (like "bar garnish inventory check") is forgotten or assigned to the wrong person.
+6. The system must provide a clear, auditable record of all client communications and requirements, linking them directly to the final menu and pricing to prevent billing discrepancies.
+7. The system must manage the complex flow of event resources, allowing me to check out specialized equipment (e.g., portable buffet warmers, specialized lighting) and automatically generate a detailed inventory manifest for cleanup handoff.

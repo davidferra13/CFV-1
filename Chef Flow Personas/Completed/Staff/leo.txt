@@ -1,0 +1,67 @@
+**Staff Profile: "Leo" - Prep Kitchen Assistant (Hyper-seasonal forager)**
+
+I am Leo, and my job is to turn the raw, often unpredictable bounty of the local landscape into usable components. I assist the main line chefs by preparing ingredients—cutting, cleaning, preserving, and stabilizing—ensuring that when service hits, every unique, seasonal element is ready to go. My day is dictated not by a fixed roster, but by the harvest, the weather, and the availability of the most exceptional, fleeting ingredient.
+
+### Business Reality
+
+Right now:
+* I work an average of **4** shifts per week, but this fluctuates wildly based on the seasonal cycle, sometimes requiring **7** shifts in peak harvest periods.
+* I am paid an hourly wage of **$18.50**, plus a small percentage bonus on the successful utilization of rare, foraged goods. I hold a basic food handler certification, but my real qualification is deep knowledge of regional botany and seasonality.
+* My team structure is small; I report directly to the Sous Chef, but I must coordinate prep tasks with the Garde Manger and the Butcher, who often have conflicting schedules. I have no standardized uniform, just durable, stain-resistant field gear.
+* My scope is hyper-local, spanning the main kitchen prep area, the root cellar, and often requiring trips to specific foraging sites **10–15 miles** outside the main venue.
+* Our current briefing and scheduling setup is a chaotic mix: the Sous Chef sends urgent texts about ingredient shortages, the Head Chef updates the menu via a shared Google Sheet, and I rely on a printed, handwritten "harvest manifest" that is constantly being updated and often lost.
+
+---
+
+### Primary Failure: Unpredictable Ingredient Hand-off and Inventory Tracking
+
+The biggest pain point is that the core ingredients—the ones that define the menu—are not commodities; they are ephemeral and highly variable. When the Sous Chef confirms we have a "good yield" of wild mushrooms, that yield might be 5 pounds one day and 15 pounds the next. Our current system has no way to track the precise origin, quantity, and usable state of these foraged goods once they enter the kitchen. Because we rely on hand-written manifests and manual counting, if the initial count is wrong, we risk either massive over-prep (wasting labor and storage space) or, worse, running out of a signature ingredient minutes before service, forcing a last-minute, uncosted menu change.
+
+---
+
+### Structural Issue: Tracking Unique, Variable Inventory
+
+The problem is that our inventory system treats everything like a standardized commodity (e.g., 50 lbs of potatoes). It cannot handle items like "Wild Morel Harvest, Lot A, 2024." We use a physical clipboard and a spreadsheet that I manually update at the end of the day, which is prone to human error and cannot be accessed by the prep team in real-time. This forces the Sous Chef to constantly stop prep work to physically verify if the ingredient was logged and accounted for before the next prep task can begin.
+
+---
+
+### Structural Issue: Dynamic Prep List Generation
+
+Our prep lists are often generated 48 hours before service, but they must be adjusted hourly based on the harvest. We currently have a printed, static prep sheet that lists "Prep X: 10 units." If the harvest changes the requirement to "Prep X: 25 units, plus 5 additional units for the amuse-bouche," the entire sheet must be physically marked up, leading to confusion and forcing me to stop my current task to wait for the corrected paper.
+
+---
+
+### Structural Issue: Cross-Functional Scheduling Dependencies
+
+My prep work is dependent on three separate groups: the Foragers (who dictate the ingredient availability), the Kitchen Management (who dictate the menu), and the Receiving Team (who dictate the ingredient handoff schedule). There is no central system that synchronizes the "availability" of the ingredient with the "need" for the ingredient. This means I often arrive at the kitchen and find that the required ingredients for the entire day’s prep are not yet logged, or that the scheduled prep time conflicts with an unscheduled, high-priority sourcing trip.
+
+---
+
+### Structural Issue: Ingredient Provenance Documentation
+
+For our signature dishes, the story of the ingredient is as important as the taste. We need to document not just "type" (e.g., wild garlic), but also the exact "origin coordinates," the "date of harvest," and the "harvesting group/person." Currently, this vital information is written on small, often illegible tags and filed in a binder, which is impossible to search or share digitally with the front-of-house team who need to tell the story.
+
+---
+
+### Psychological Model
+
+I optimize for: Provenance and the ingredient's peak condition.
+I refuse to compromise on: The accurate, real-time physical count of highly valuable or limited ingredients.
+I avoid: Systems that require me to input data multiple times or that force me to work on a computer when my hands are dirty.
+I evaluate tools by: How quickly and intuitively they allow me to log a physical action (e.g., "3 lbs of truffle added to station B").
+
+I think in terms of flow and physical limitations. Every task must feel connected to the ingredient's life cycle—from the ground to the plate. If a process introduces friction or requires me to stop my physical prep work to deal with a digital or paper bottleneck, the whole system fails.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must automatically adjust the prep list and task assignments when a specific ingredient's logged inventory count drops below a critical threshold (e.g., 5 lbs).
+2. The system must allow me to log ingredients with geo-coordinates, lot numbers, and harvest dates, linking this data directly to the specific recipe that uses it.
+3. The system must provide a single, consolidated view showing the real-time availability status of all ingredients required for today's menu, integrating data from the sourcing team, the inventory team, and the kitchen schedule.
+4. The system must allow for dynamic prep list modification and immediate notification to all relevant staff (Sous Chef, Garde Manger) when a key ingredient is unexpectedly added or removed from the day's manifest.
+5. The system must facilitate the creation of digital "ingredient handoff tickets," which track the movement of ingredients from the receiving station, to the storage unit, and finally to the specific prep station, maintaining an auditable trail.
+6. The system must calculate and adjust the labor cost of prep tasks in real time, factoring in the fluctuating cost and yield of hyper-seasonal, variable ingredients.
+7. The system must allow me to quickly scan or log the physical receipt of unique ingredients, automatically updating the inventory count and assigning a unique lot identifier to that specific batch.

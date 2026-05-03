@@ -1,0 +1,67 @@
+**Public Profile: "Elara Chen" - High-End Event Curator (Experience Seeker)**
+
+I am the person my friends call when they have a milestone event—an anniversary, a significant birthday, or a corporate gathering that simply cannot be average. I don't just book a dinner; I am responsible for curating an entire memorable experience. I am detail-oriented, I value aesthetics, and I have an expectation of flawless execution. My goal is to find a unique culinary performance that matches the sophistication and size of the occasion, making sure that the food service feels like a seamless part of the overall entertainment, not an afterthought.
+
+### Business Reality
+
+Right now:
+* I search for or compare **5 to 10** chefs, event concepts, or cuisines per **month** when planning a significant gathering.
+* My budget is typically **$1,500 to $5,000** for the food/experience portion, depending on the guest count of **30 to 80 people**.
+* I need venues and chefs with strong portfolio reviews, highly flexible menus (Italian, Japanese, Mediterranean are favorites), and established availability in **urban, high-density neighborhoods** like Soho or West Village.
+* My inquiry context is always a specific, high-stakes venue (e.g., a rented gallery space or a private rooftop) and I am looking for a complete, turn-key booking solution.
+* My current discovery setup is a messy mix: I start with **Yelp and Instagram** for initial inspiration, but the actual vetting and comparison process is done through **Google Sheets, Pinterest boards, and fragmented emails** from multiple sources.
+
+---
+
+### Primary Failure: Lack of Operational Confidence
+
+The single biggest pain point is that I cannot accurately predict the final cost or scope of an event until I have gone through multiple rounds of back-and-forth communication. I am forced to ask, "What if we add X?" or "How does this cost scale if we move from 40 to 55 people?" Because the initial quote is often a highly curated, non-binding "starter menu," I have no confidence in the final pricing structure or the chef's ability to adapt the logistics to my specific venue constraints (e.g., limited electrical outlets, restricted kitchen access). This uncertainty forces me to build large buffers into my budget, which is a significant financial risk and adds immense stress to the planning process.
+
+---
+
+### Structural Issue: Comparing Operational Details Across Profiles
+
+I find it nearly impossible to compare the functional details of 3 or 4 different chefs at once. One chef's profile might list "Italian," but another might mention "tapas" and "pasta dishes" in a separate portfolio gallery. I have to open 4 separate websites and mentally cross-reference their stated specialties, their average guest count, and their menu flexibility. This constant manual data gathering means I lose momentum and often abandon the comparison process entirely, leading me to settle for the first chef who responds quickly, regardless of fit.
+
+---
+
+### Structural Issue: The Availability and Constraint Matrix
+
+I am trying to plan an event for 50 people on a Saturday night, but the availability I see is usually just "Available." This tells me nothing about the *constraints*—does the chef require a commercial kitchen setup? Is their minimum booking time 5 hours, which conflicts with my 3-hour venue rental? I am forced to call or email the chef just to confirm basic logistical compatibility (kitchen access, equipment needs, minimum guest count), turning a simple search into a time-consuming phone call chain.
+
+---
+
+### Structural Issue: Vetting Review Data vs. Operational Capability
+
+The reviews are fantastic—they rave about the *food* and the *service*. But the reviews rarely mention the operational reality. For example, a review might say, "The presentation was stunning!" but it never tells me if the chef can handle a 75-person crowd in a non-commercial setting, or if their menu is too complex for a limited time frame. I have to treat the review as a glowing anecdote rather than a reliable data point regarding the chef's scalable operational capacity.
+
+---
+
+### Structural Issue: Managing the Inquiry and Revision History
+
+The inquiry process is a disaster. I send an initial detailed brief via a form. The chef responds with a PDF menu. I reply with three changes and a specific budget constraint. They reply with a revised PDF and a new price sheet. I then have to consolidate all these documents—the original brief, the initial quote, the revisions, and the final pricing—into a single, chronological source of truth, usually in a private email folder or a messy spreadsheet. This lack of centralized history makes contract negotiation incredibly difficult and time-consuming.
+
+---
+
+### Psychological Model
+
+I optimize for: Proof of concept (reviews, portfolio depth) and logistical transparency.
+I refuse to compromise on: The overall aesthetic and the emotional impact of the event.
+I avoid: Friction, ambiguity, and any process that requires me to manually transfer data between systems.
+I evaluate tools by: How quickly they can provide a comprehensive, multi-faceted view of a service provider's operational scope.
+
+I think like a project manager and a curator. I am not emotionally driven by one single element; I am driven by the probability that all elements—the food, the presentation, the timing, the cost—will align perfectly. I need the platform to do the heavy lifting of synthesis and comparison for me.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must allow me to filter chefs based on required logistical constraints (e.g., "minimum commercial kitchen size," "max 4-hour event window").
+2. The system must consolidate all communication (inquiries, revisions, quotes, contract amendments) into a single, time-stamped client event timeline.
+3. The system must provide a transparent, dynamic costing calculator that adjusts the menu total based on real-time changes to guest count or menu additions, showing the cost per person at every step.
+4. The system must allow me to compare the operational scope (menu flexibility, capacity, required equipment) of 3-5 different chefs side-by-side on one dashboard.
+5. The system must clearly link customer reviews not just to "taste," but to specific operational aspects (e.g., "Excellent handling of 75 guests," or "Great for limited venue space").
+6. The system must allow me to upload my specific venue floor plans and automatically flag potential conflicts or constraints the chef needs to address.
+7. The system must provide a comprehensive, downloadable contract template that outlines the service scope, payment schedule, and cancellation policy, derived from the booking process.

@@ -1,0 +1,67 @@
+**Guest Profile: Venus Williams - Dietary Guest (Conscious Consumer)**
+
+I am Venus Williams. I live in a small town, and my life revolves around supporting local businesses and enjoying the absolute best seasonal food that the community has to offer. I believe in supporting the farmers and artisans who make the market thrive. I don't just show up for an event; I invest in the experience, and for me, the food *is* the experience. I am very careful about what I consume, not because I'm overly dramatic, but because I have genuine, complex restrictions that require precision.
+
+### Business Reality
+
+Right now:
+* I attend **2** private dining or ticketed events per quarter, usually seasonal market dinners or pop-up farm dinners.
+* I spend approximately $150 - $300 per event, which includes my ticket, any pre-booked accommodations, and drinks. I rarely spend more than $45 per person, even for a high-end experience.
+* I have multiple severe allergies: Gluten, Soy, Shellfish, Nightshades (tomatoes/peppers), and cross-contamination risks. I also follow a low-FODMAP diet when traveling.
+* My current event is a fall harvest dinner at The Old Mill Community Hall, scheduled for October 12th. The event organizer expects a headcount of 12 people total, including my family.
+* My current communication setup is a chaotic mix of the organizer’s general email list (which sends mass updates), fragmented text messages from different volunteers, and a poorly formatted Google Sheet I had to manually fill out.
+
+---
+
+### Primary Failure: The Assumption of Safety
+
+The single biggest operational failure is when the kitchen or staff assumes my restrictions are minor or easily managed. If the food I am served is not 100% accurate, it isn't just a bad meal—it’s a genuine health risk. If I have a reaction, the resulting medical emergency doesn't just cost the organizer money; it costs *me* my health, my time, and my trust in their entire operation. If I have to explain my restrictions to three different people—the reservationist, the server, and the chef—it signals to me that the operation is disorganized and unprofessional. This level of stress ruins the entire atmosphere, turning what should be a relaxing, celebratory meal into a stressful investigation of every single ingredient.
+
+---
+
+### Structural Issue: Lack of Centralized Dietary Confirmation
+
+The primary problem is that my dietary restrictions are treated as an afterthought, not as a core component of the booking. I fill out a form, but that information doesn't seem to propagate through the booking system or the kitchen prep list. My current workaround is to follow up with a personal email to the coordinator *one week* before the event, attaching a detailed list of my restrictions and cross-contamination requirements. This breaks down because the coordinator is constantly managing 12 different groups, and my email gets lost in the noise, meaning I have no confirmation that the kitchen even saw my specific needs.
+
+---
+
+### Structural Issue: Ambiguous Menu Visibility
+
+I cannot confidently plan my meal or verify my restrictions simply by looking at a printed menu or a general digital slideshow. The menu needs to be designed for safety, not just for aesthetics. My current workaround is to wait until I sit down at the table and ask the server, "Which dishes are safe for someone with multiple severe allergies?" This is inefficient, requires me to draw attention to myself, and means I don't get to enjoy the ambiance or the conversation while I wait for clarification.
+
+---
+
+### Structural Issue: Event Accommodation Tracking
+
+There is no reliable system for tracking if my specific dietary needs were actually accommodated on the day of the event. I don't get a simple, physical sign-off sheet or a confirmation from a dedicated staff member that the kitchen received the final, accurate details (e.g., "Venus Williams: Vegan, Gluten-Free, No Soy"). My workaround is relying on my own memory and repeatedly asking the staff, which feels like I am constantly correcting an error, rather than being treated as a valued, pre-vetted guest.
+
+---
+
+### Structural Issue: Pre-Event Communication Fatigue
+
+The volume and source of communication are overwhelming and unreliable. I receive a mass email from the vendor, a text from the volunteer, and a link to a separate RSVP survey—all within 48 hours. I end up needing to check three different channels just to find out the parking details, the dress code, and if the reservation is confirmed. This fragmentation makes me feel like I am doing the work of the event planner, and it drastically increases my anxiety before I even arrive.
+
+---
+
+### Psychological Model
+
+I optimize for: Reliability and demonstrable care. If I see a system that proves safety and attention to detail, I feel safe and comfortable.
+I refuse to compromise on: The absolute accuracy of my meal ingredients and the clarity of the accommodation process.
+I avoid: Spreadsheets, vague language, and having to ask the same question more than twice.
+I evaluate tools by: How seamlessly they integrate the critical information (allergies) into the operational flow, ensuring the kitchen sees it, the server sees it, and I see it.
+
+I think like a consumer who is highly educated and highly risk-averse. I don't want to be treated like a liability; I want to be treated like a fully integrated, valued guest whose needs are already accounted for in the planning process.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must allow me to enter my full list of dietary restrictions and allergies (including cross-contamination warnings) and automatically tag every related booking and RSVP.
+2. The system must generate a unique, visible 'Dietary Alert Card' that is physically accessible to all staff members (servers, kitchen staff, and bartenders) at the event, ensuring no one forgets my needs.
+3. The system must provide a single, reliable confirmation channel that sends a comprehensive itinerary and a dedicated contact number 72 hours before the event, preventing communication fatigue.
+4. The system must allow the event organizer to upload a dynamic, filterable menu where every single dish is flagged with clear, color-coded allergen icons and a simple description of which major allergens are present (e.g., GF, V, DF).
+5. The system must allow me to view a digital "Accommodation Confirmation Sheet" that shows my specific needs have been verified and logged by the head chef, not just by the booking manager.
+6. The system must generate a final, itemized ticket/bill that clearly lists any special dietary costs or required sourcing notes, confirming the financial accountability of my accommodation.
+7. The system must provide a dedicated section for the event organizer to track and confirm which specific dietary accommodations were successfully delivered to the guest upon arrival (e.g., "Venus: Accommodated - GF bread and separate plate").

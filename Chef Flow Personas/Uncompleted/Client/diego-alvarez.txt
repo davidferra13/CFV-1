@@ -1,0 +1,55 @@
+Client Profile: "Diego Alvarez" - Staff Backend Engineer, Real-Time Systems (Latency Hawk)
+
+If I change a number and the price doesn’t update instantly, I assume your system is either slow or fake. I work on low-latency systems. Sub-second feedback is the baseline.
+
+Business Reality
+Right now:
+
+I book 4–7 private dinners per year, usually 2–6 guests.
+
+Budget ranges from $1,200 to $5,500.
+
+I expect to configure and pay in one uninterrupted session.
+
+Dietary constraints are simple but must be enforced automatically.
+
+Locations vary but should be abstracted into pricing.
+
+I use mobile primarily, desktop occasionally.
+
+I notice performance immediately.
+
+Primary Failure: Pricing Latency
+The biggest issue is delay. I change guest count or add a course and the UI hesitates, spins, or recalculates slowly. That’s a broken feedback loop. Pricing must feel instantaneous. If it doesn’t, I don’t trust the number or the system.
+
+Structural Issue: Server-Dependent Pricing
+If every pricing update requires a round-trip to the server, you’ve already lost. Core pricing logic should be computed client-side or cached intelligently. Waiting on network latency for basic math is unacceptable.
+
+Structural Issue: Jittery UI States
+Totals flicker, jump, or briefly show incorrect numbers before settling. That inconsistency makes the system feel unstable. Pricing should be stable and atomic - no intermediate wrong states.
+
+Structural Issue: No Offline Resilience
+If my connection drops, the system becomes unusable. I should still be able to configure and see pricing locally. Losing that capability breaks continuity.
+
+Psychological Model
+I optimize for: speed, responsiveness, and stability
+I refuse to compromise on: instant, reliable feedback
+I avoid: systems with visible lag or jitter
+I evaluate tools by: how fast and stable pricing updates feel
+
+Pass / Fail Conditions
+For this system to work for me, it must:
+
+Update pricing instantly (<100ms perceived latency) for any input change.
+
+Compute core pricing locally or with minimal network dependency.
+
+Maintain stable UI states with no flicker or intermediate errors.
+
+Support offline or degraded modes where pricing still functions.
+
+Ensure consistent totals across all views without recalculation delays.
+
+Avoid loading spinners or blocking states for pricing updates.
+
+Deliver a smooth, uninterrupted configuration-to-payment experience.

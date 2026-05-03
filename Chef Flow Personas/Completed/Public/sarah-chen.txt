@@ -1,0 +1,67 @@
+**Public Profile: "Sarah Chen" - Affluent Home Host (Event Planner)**
+
+I subscribe to NYT Cooking because I love cooking, but lately, my culinary interests have grown beyond weeknight dinners. I now host sophisticated dinner parties and small-scale celebratory events—think 12 to 20 guests—that require professional-level execution without the stress of managing every detail myself. I'm looking for the perfect blend of gourmet quality, logistical reliability, and genuine culinary artistry for my social calendar.
+
+### Business Reality
+
+Right now:
+* I search for or compare **5 to 8** chefs, events, cuisines, or menus per **month** (especially for weekends).
+* My budget is generally **$500 to $1,500** per person, excluding beverage costs, but I need transparency on the staffing and ingredient costs.
+* I need high ratings for **reliability, aesthetic presentation, and local availability**, specifically in the **Brooklyn and Manhattan** area.
+* My booking context is always a specific, semi-private venue (a rented loft, a friend’s large home, or a private restaurant space) and requires a professional contact flow for quotes.
+* My current discovery setup is a scattered mix: initial inspiration from Instagram (Pinterest boards), targeted Google searches ("gourmet catering Brooklyn"), and then relying heavily on word-of-mouth referrals from friends who have hosted before.
+
+---
+
+### Primary Failure: Lack of End-to-End Trust Scoring
+
+The biggest operational problem for me is that the current discovery process provides fragmented information, making it impossible to accurately assess a chef's reliability for a high-stakes, booked event. I spend hours cross-referencing Google reviews, Yelp reviews, Instagram aesthetics, and the chef's own website, only to find conflicting or incomplete information about their actual operational capacity (e.g., do they handle 20 people reliably on a Saturday night, or only 8?). Because I cannot quickly vet the confluence of operational capacity, aesthetic consistency, and documented client feedback, I risk booking a chef who looks amazing online but fails on execution, leading to massive stress, ruined social events, and a reputational hit for me as the host. This friction costs me time, and more importantly, it costs me the peace of mind I pay for when I plan these events.
+
+---
+
+### Structural Issue: Disconnected Portfolio and Logistics
+
+I have to piece together a chef's aesthetic portfolio (Instagram/website) separately from their actual service menu and pricing structure. I might find a chef whose photos are stunning, but I then have to email them a separate request to see if they can handle a specific cuisine (e.g., modern Peruvian) or if they have a scalable menu for 20 people. This requires me to manage multiple communication threads (WhatsApp for availability, email for menus, text for deposit details). What breaks is the assumption that a chef's visual brand is synonymous with their operational capability or their ability to adjust their menu based on my specific venue constraints (e.g., limited prep space, specific kitchen equipment).
+
+---
+
+### Structural Issue: Inefficient Comparative Pricing and Costing
+
+When I am comparing three different chefs, I am forced to gather wildly different quotes. Chef A might quote a flat rate for "service," Chef B might quote per-person pricing, and Chef C might only provide a minimum ticket cost. To compare apples-to-apples, I have to take all these disparate quotes and manually plug them into a large Google Sheet to calculate the total cost, including estimated staffing, ingredient cost, and potential service fees. This spreadsheet process is tedious and prone to error, and I often have to call the chefs back up just to confirm which line item covers the wine service vs. the actual plating labor.
+
+---
+
+### Structural Issue: Poor Booking Visibility and Availability Management
+
+Chefs do not have a centralized, real-time calendar that reflects their operational availability across multiple service types. If I am looking for a Saturday night event for 18 guests, I might find a chef who is booked solid, but I don't know if they are only booked for *private events* or if they are booked for *all private events*. I often have to ask, "Are you open on the 15th, even if it's a smaller party?" and wait for a manual response. This makes the discovery process feel like chasing individual availability, rather than browsing a system of confirmed openings that accounts for both the date and the scale of the booking.
+
+---
+
+### Structural Issue: Review Isolation and Context
+
+I cannot compare reviews based on the *type* of event or the *size* of the group. I might read a review that says, "Amazing for a small family of 4," but I have no way of knowing if that chef successfully handled a large 20-person event the following month. The review context is completely lost. I need to filter reviews by criteria like "Group Size: 15+," "Event Type: Celebration/Party," or "Menu Complexity: Multi-Course," but this filtering doesn't exist anywhere.
+
+---
+
+### Psychological Model
+
+I optimize for: **Trust, Consistency, and Effortless Luxury.** I need to feel like the logistics are handled by a professional system, allowing me to focus entirely on the enjoyment of the event.
+I refuse to compromise on: **High-quality presentation and transparent costing.** If the final bill is vague, or if the aesthetic doesn't match the professional photos, I am immediately frustrated.
+I avoid: **Repetitive administrative tasks, manual calculations, and vague communications.** I hate opening five different tabs and switching between emails and spreadsheets.
+I evaluate tools by: **How quickly they reduce my cognitive load.** If I have to think about the system, it's too complicated.
+
+I think about my hosting duties like a project manager: every variable—from the headcount to the final plating—needs to be accounted for and tracked in one place. I am willing to pay a premium for a system that acts as a single source of truth for the entire event lifecycle.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must allow me to search and filter available chefs by **specific operational criteria** (e.g., "Can handle 15-25 guests," "Specializes in Mediterranean cuisine," "Available on Saturday, October 12th").
+2. The system must provide a **centralized, comparative quote dashboard** where I can input my guest count and venue details, and receive standardized cost breakdowns (per person, service fee, ingredient cost) from multiple chefs simultaneously.
+3. The system must integrate a **verified review system** that allows me to filter testimonials based on the event's scale and type (e.g., "Review for 18-person celebratory dinner").
+4. The system must allow me to save and compare multiple **draft menus and costing sheets** from different chefs side-by-side, highlighting the potential cost differences for specific ingredients.
+5. The system must provide a **single, verifiable booking inquiry flow** that manages my initial contact, service availability check, and deposit payment, eliminating the need to switch between text messages, email, and phone calls.
+6. The system must map the chef’s public portfolio (Instagram, website) directly to their **operational service constraints** (e.g., "Capacity limit: 25 guests," "Minimum event size: 10 guests").
+7. The system must provide a clear, multi-stage **booking checklist** that reminds me of necessary follow-up steps (e.g., "Finalize wine pairing by X date," "Confirm staffing ratio by Y date") once a booking is secured.

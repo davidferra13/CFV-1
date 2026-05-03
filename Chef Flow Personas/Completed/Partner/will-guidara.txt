@@ -1,0 +1,67 @@
+**Partner Profile: Will Guidara - Venue Collaboration Partner (High-Profile Collaborator)**
+
+I am here to elevate the dining experience, not just sell tickets. My role is to bring together visionary chefs, unique venues, and exceptional guests for highly curated, memorable events that define a brand. I don't just host events; I craft cultural moments that build buzz and reputation.
+
+### Business Reality
+
+Right now:
+* I co-host, promote, or support **8-12** events, referrals, or partnerships per **quarter**.
+* My revenue share model is complex, involving tiered ticket percentages, a minimum guaranteed spend per collaborating venue, and a variable media/PR retainer. For example, I might receive 15% of gross ticket revenue from a partnership, plus a minimum $15,000 retainer from the venue, paid out 30 days post-event.
+* We frequently collaborate with large, high-end venues—think grand ballrooms, major art installations, or unique historical locations—and often feature joint menu offerings with specific, high-cost, or hard-to-source ingredients (e.g., seasonal Italian truffles, bespoke charcuterie elements).
+* Our shared event locations and availability constraints are constantly shifting, requiring multiple sign-offs from venue management, the kitchen team, and the PR agency. The guest list is often a mix of pre-sold tickets, VIP referrals, and on-site walk-ins, requiring multiple handoffs.
+* Our current coordination setup is a chaotic mix: dedicated project management folders on Google Drive, constant updates via WhatsApp threads between the PR team and the venue manager, and a final, uneditable Excel sheet that tracks RSVPs and payments, which almost never matches the actual point-of-sale data.
+
+---
+
+### Primary Failure: Event Costing and Profit Visibility
+
+The single biggest operational problem is the lack of real-time, unified cost visibility across the entire collaboration ecosystem. Because the revenue structure is so complex (multiple revenue streams, different cost centers, variable staffing rates based on the collaborating venue's payroll), I cannot accurately project the true profit margin for a joint event until days after the fact. This cost uncertainty means I am forced to over-estimate the minimum guaranteed revenue in my initial contracts, which strains relationships with venues and makes it impossible to confidently pitch the next collaboration. The financial reconciliation process alone requires 40+ hours of manual spreadsheet work, delaying crucial performance analysis and making me look disorganized to investors.
+
+---
+
+### Structural Issue: Multi-Stakeholder Booking and Availability
+
+When coordinating a joint event, I have to check the availability of four separate entities: the primary venue, the collaborating kitchen/chef, the dedicated event staff, and the unique equipment needed (e.g., a specific antique oven or projection system). Currently, I manage this by calling or emailing a separate point-of-contact for each party and updating a massive, color-coded Outlook calendar that I manually cross-reference. When one party shifts their availability—say, the venue cancels the marquee tent due to weather—I have to manually update every single related booking, RSVP list, and contracted menu, leading to critical data fragmentation and booking errors.
+
+---
+
+### Structural Issue: Ingredient Sourcing and Joint Menu Reconciliation
+
+Our joint menus are brilliant, but they are logistical nightmares. We often feature highly specialized, seasonal, or expensive ingredients that are sourced from multiple vendors across different regions (e.g., local farm eggs, Italian olive oil, Japanese seafood). Because the menu is shared between three different kitchen operations (mine, the venue's, and a dedicated prep kitchen), I have to create and maintain a single, comprehensive Bill of Materials (BOM) in a separate spreadsheet, manually cross-referencing minimum order quantities and vendor pricing. If one vendor changes their price or availability, I must manually update the BOM and then notify three different chefs, risking both over-ordering and under-stocking.
+
+---
+
+### Structural Issue: Guest Experience and Journey Mapping
+
+The guest journey is not linear. They arrive at the venue, are greeted by the venue's front-of-house staff, are directed to a specific area, and then the food service starts. Right now, the handoff of the guest experience—from the ticketing system to the staff who greet them, to the kitchen that plates the food—is handled by separate teams using different systems. I have to print and manually track a guest manifest that contains the ticket type, the specific dietary restrictions, and the designated seating area. If the printed manifest is lost, the staff are unprepared, leading to immediate, visible service failures and a damaged brand experience.
+
+---
+
+### Structural Issue: Revenue Share Tracking and Billing
+
+My financial coordination is the most fragile part of the process. Since the revenue comes from multiple sources (tickets, sponsorships, and minimum spend guarantees), and the payout structure is complex, I rely on the venue's finance team to provide a highly detailed, itemized statement, often weeks after the event. This statement is usually an attachment to an email and must be manually reconciled against the initial contract, the POS system data (if I can get it), and the projected sales figures. This manual reconciliation process is prone to human error, delays payments, and makes auditing the partnership financials incredibly difficult.
+
+---
+
+### Psychological Model
+
+I optimize for: **Brand elevation and narrative coherence.** Everything must look seamless, feel luxurious, and tell a compelling story.
+I refuse to compromise on: **The quality of the guest experience and the visibility of the partnership's success.** If the logistics fail, the narrative fails, and the brand suffers.
+I avoid: **Spreadsheets, email chains, and any system that forces me to be a data entry clerk.** I need systems that feel invisible but powerful.
+I evaluate tools by: **How quickly they allow me to pivot and scale a concept without losing creative control.**
+
+I think in terms of experience flow and brand storytelling. I need the operational backend to be invisible to the guest but flawlessly managed by the team. Time is my most valuable commodity, and I cannot spend it chasing down misplaced documents or reconciling conflicting data points.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1.  The system must **automatically generate** a comprehensive, real-time profit and loss statement for any joint event, integrating ticket sales, minimum spend guarantees, and variable ingredient costs across all collaborating partners.
+2.  The system must **manage and track** the entire guest journey, from the initial booking/ticket type to the assigned seating, ensuring the front-of-house staff are instantly alerted to complex dietary restrictions or special needs upon arrival.
+3.  The system must **centralize** the scheduling and availability of multiple, external entities (venues, specialized equipment, collaborating chefs) into one single source of truth that automatically flags conflicts and suggests alternatives.
+4.  The system must **generate** a single, unified, auditable report that tracks every revenue stream (tickets, sponsorships, minimum spend) and automatically calculates the agreed-upon revenue share payout structure based on the actual POS data.
+5.  The system must **allow for** the collaborative management of complex, multi-site menus, automatically adjusting the Bill of Materials (BOM) and costing when any single ingredient's price or availability changes across multiple vendor sources.
+6.  The system must **provide** a seamless, integrated communication channel that allows me to instantly share operational updates (e.g., a venue closure, a menu change) directly to all relevant parties (PR, venue staff, kitchen team) with an immutable record of that communication.
+7.  The system must **support** the uploading and management of legal collaboration contracts and revenue share agreements, linking the specific terms (e.g., 15% commission, $15k retainer) directly to the financial tracking module.

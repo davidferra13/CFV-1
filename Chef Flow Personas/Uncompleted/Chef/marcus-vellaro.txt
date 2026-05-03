@@ -1,0 +1,58 @@
+Chef Profile: "Marcus Vellaro" - Private Chef & Network Operator (Connector)
+
+I’ve built a career on food, but I’ve sustained it through people. I don’t just have contacts - I have a living ledger of who does what, who shows up, who folds under pressure, and who to call for very specific problems. That knowledge is everything, and it’s all in my head and scattered notes.
+
+Business Reality
+Right now:
+
+8–14 private events per month (high-end, repeat clients)
+
+$40,000–$95,000 monthly revenue
+
+15+ years across restaurants, consulting, and private dining
+
+Active network of 120–250 culinary contacts (chefs, pastry, vendors, operators)
+
+20–40 interactions per week with network (advice, staffing, sourcing, referrals)
+
+3000+ cumulative personal notes across people (strengths, weaknesses, reliability)
+
+10–20 decisions per month directly based on “who I call”
+
+Primary Failure: Unstructured Human Intelligence
+My network is my biggest asset, but it’s not structured. I know who to call for pastry, who to trust with money, who flakes, who overpromises - but that information lives in memory, old texts, and random notes. When I need to make a decision quickly, I rely on recall, which isn’t perfect. The cost is missed opportunities, wrong calls, or wasted time. My workaround is keeping mental rankings and occasional notes, but it doesn’t scale.
+
+Structural Issue: Context Loss Over Time
+People change. Someone who was unreliable five years ago might be solid now. Someone who used to be great might be burned out. I don’t have a clean way to track evolution over time. My notes are static snapshots, not living records. My workaround is updating mentally, but that leads to outdated assumptions.
+
+Structural Issue: Multi-Dimensional Relationships
+Each person exists in multiple contexts - skillset, personality, reliability, communication style. Someone might be brilliant but difficult. Someone might be consistent but limited. There’s no simple label. My current system doesn’t capture nuance well. My workaround is gut instinct, but that’s not always accurate under pressure.
+
+Structural Issue: Retrieval Friction
+I know I know the right person - but finding them in the moment is the problem. Searching through contacts or messages is inefficient. I need to filter by context: “Who’s good for last-minute pastry help and actually shows up?” That query doesn’t exist in my current setup. My workaround is texting multiple people, which wastes time.
+
+Structural Issue: Sensitive Information Management
+Some of what I know is not meant to be shared openly - reliability issues, personal behavior, financial habits. This information is valuable but sensitive. I need to track it privately and securely without risking exposure. My workaround is keeping it vague or in my head, which limits usefulness.
+
+Psychological Model
+I optimize for: making the right call quickly based on real experience
+I refuse to compromise on: trusting the wrong person for the wrong task
+I avoid: relying purely on memory for critical decisions
+I evaluate tools by: whether they enhance my judgment without oversimplifying people
+
+Pass / Fail Conditions
+For this system to work for me, it must:
+
+Allow me to maintain a detailed, private ledger of contacts with multi-dimensional attributes (skills, reliability, personality).
+
+Track interactions over time so I can see how someone evolves or changes.
+
+Enable fast filtering and retrieval based on specific needs (skill + reliability + context).
+
+Support nuanced notes that go beyond simple ratings or tags.
+
+Keep sensitive information completely private and under my control.
+
+Integrate with my existing communication history so context is preserved.
+
+Continuously update and refine profiles based on new interactions without manual overhead.

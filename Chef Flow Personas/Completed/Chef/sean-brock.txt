@@ -1,0 +1,67 @@
+**Chef Profile: "Sean Brock" - Pop-Up Specialist (Seasonal Culinary Artist)**
+
+I am a culinary artist and pop-up chef. My entire existence revolves around the seasonal cycle and the purest expression of a single location's bounty. I don't run a restaurant; I run an experience—a temporary convergence of hyper-local ingredients and immediate, focused execution. My operation is defined by its scarcity, its intensity, and its deep relationship with the land.
+
+### Business Reality
+
+Right now:
+* I manage **4** distinct pop-up locations/events over a typical 12-week season, each requiring 3-5 days of intense setup and execution.
+* My revenue model fluctuates wildly, averaging between **$18,000** and **$35,000** per event, depending on the yield of the harvest and the booked capacity.
+* My team size is tiny but highly specialized: myself, a sous chef, and 2-4 temporary prep/service staff, totaling 4-7 people on site.
+* My geographic scope is intensely localized, primarily within the coastal region of South Carolina, but the ingredients dictate the menu, not the location.
+* My current tech setup is a chaotic mix: Google Sheets for inventory tracking, WhatsApp for urgent vendor communications, and a shared Google Calendar for booking confirmations and scheduling.
+
+---
+
+### Primary Failure: Unpredictable Ingredient Yields
+
+My entire business model is predicated on the absolute peak of seasonality. If a key ingredient—say, a specific variety of heirloom tomato or a batch of fresh okra—fails to meet the expected volume or quality due to weather or harvest issues, my entire menu, and thus my entire revenue stream for that event, collapses. This isn't a simple inventory shortage; it means I have to pivot the entire conceptual framework of the meal, requiring immediate menu changes and corresponding adjustments to the cost sheet and the supplier's expectation. This uncertainty costs me not just profit, but credibility and time, forcing me to spend hours on the day of the event renegotiating the menu structure with my sous and the supplier.
+
+---
+
+### Structural Issue: Ingredient-to-Menu Costing Drift
+
+The moment I finalize a menu, I create a detailed costing sheet based on projected ingredient prices from my core suppliers. However, because I am sourcing hyper-locally, the actual cost of the ingredients changes daily—sometimes the farm over-harvests and offers a bulk discount on greens, while a different specialty item is unexpectedly expensive. I have no systematic way to update the ingredient cost on my menu sheet *after* the initial planning phase. I end up manually recalculating the entire BOM (Bill of Materials) in a spreadsheet every time a primary ingredient price shifts by more than 10%, leading to significant human error and delays when I am trying to finalize the menu 48 hours out.
+
+---
+
+### Structural Issue: Multi-Vendor Booking Coordination
+
+I deal with 5 to 8 distinct, small-scale vendors per event (e.g., the oyster farmer, the heirloom tomato grower, the local butcher, the specialty bread baker, the forager). Each vendor operates on their own schedule and invoicing system. Coordinating their availability, ensuring their specific product requirements are met on the day (e.g., "the smoked fish must arrive chilled and packaged by 10 AM"), and reconciling their varied invoices into one cohesive operational budget is a nightmare. I currently manage this using a combination of email threads and a physical whiteboard, which is prone to missed details and conflicting times.
+
+---
+
+### Structural Issue: Recipe Scalability and Documentation
+
+My recipes are often fluid and deeply informed by what is available that day. They are not static, professional recipes. They are more like "principles" or "guidelines." When I need to scale a recipe—say, taking a small, perfect batch of smoked vegetables for 20 people and scaling it up to 150 for a larger market event—I cannot rely on a standard recipe card. I have to mentally or manually estimate how the ratios change when moving from a small, artisanal batch to a commercial volume, leading to inconsistent execution and potential waste.
+
+---
+
+### Structural Issue: Capacity and Inventory Flow Planning
+
+My pop-ups are limited by the physical space and the volume of ingredients that can be properly stored and prepped on site. I cannot simply over-order everything. I have to predict the *flow* of ingredients: what arrives fresh, what needs immediate deep storage, what can be used in the next 48 hours, and what must be given back to the farm or composted. This requires constant, manual tracking across multiple spreadsheets (one for perishable greens, one for root vegetables, one for proteins) that are never truly synchronized, leading to unnecessary waste or, worse, running out of a core component mid-service.
+
+---
+
+### Psychological Model
+
+I optimize for: **Purity of the ingredient and the integrity of the concept.**
+I refuse to compromise on: **The relationship with the source.** If the supplier is treated poorly or the product is substandard, the entire operation fails, regardless of how good the tech is.
+I avoid: **Any system that requires me to input data repeatedly across different platforms.** I hate the friction of switching between spreadsheets, texts, and paper.
+I evaluate tools by: **How seamlessly they handle variable, non-standard inputs (like "this week's harvest") and allow for rapid, flexible recalculation.**
+
+I think cyclically. I live in the moment of the harvest and the peak of the service. My decisions are heavily influenced by the current reality of the materials, not by fixed processes. I need the platform to feel like an extension of my palate—intuitive, adaptable, and focused on the *source* rather than the *process*.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must **automatically adjust menu costing** when I input a variable ingredient price change from a specific vendor, and recalculate the full BOM instantly.
+2. The system must **allow me to build menus based on seasonal ingredient availability** (i.e., I must select "heirloom tomatoes" and the system must only suggest recipes or pairings that are flagged as available in the current month/region).
+3. The system must **integrate vendor invoicing and delivery manifests** into a single operational timeline, flagging discrepancies (e.g., "Expected delivery: 10 AM; Actual manifest: 12 PM").
+4. The system must **support the creation of 'Principle Recipes'**—recipes that allow for defined variable inputs and automatically calculate required ratios when scaling from a small test batch to a large event capacity.
+5. The system must **provide a centralized, visualized inventory flow plan** that tracks ingredients by freshness window (e.g., "must be used within 48 hours") and calculates optimal prep schedules to minimize spoilage.
+6. The system must **support collaborative sourcing documentation** where I can log notes, photos, and specific yield expectations directly from the supplier's point of view, linking that data to the final event's cost sheet.
+7. The system must **generate compliant, customized sales and service tickets** that reflect the highly customized, non-standard nature of the pop-up experience, rather than standardized restaurant dining.

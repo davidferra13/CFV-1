@@ -1,0 +1,49 @@
+**Chef Profile: "Oscar Bell" - Multi Time Zone Client Chef (Private Chef Ops Edge Case)**
+
+I support clients who travel across time zones and expect meal planning, provisioning, and household coordination to follow them. Calendar math becomes operational risk.
+
+### Business Reality
+
+Right now:
+
+* I manage 8 active clients, accounts, venues, productions, or recurring event relationships.
+* I execute 5 paid services, prep cycles, pop-ups, classes, consulting visits, or private dining events per month.
+* My monthly revenue usually ranges from $13,000 to $33,000, with reimbursements and pass-through costs handled separately.
+* My team is usually solo plus 1-3 assistants, subcontractors, venue contacts, or client-side staff depending on the event.
+* Most work happens within 12 miles of my home base, but I also handle off-site constraints when the client or venue requires it.
+* My current system is texts, email, screenshots, spreadsheets, PDFs, paper notes, and platform dashboards.
+* I adopt software only if it reduces risk inside a live event week, not just if it looks organized in a demo.
+
+### Primary Failure
+
+Client travel changes meal timing and delivery windows. The consequence is real operational exposure: missed approvals, incorrect prep, privacy risk, avoidable cost, or reputation damage. My workaround is to manually reconcile details across messages, documents, and memory after the pressure has already started. That means the system of record is weakest exactly when the event needs the most confidence.
+
+### Structural Issue: Fragmented Evidence
+
+Assistants work in different time zones. My workaround is to preserve whole message threads, PDFs, and photo rolls as proof. What breaks is speed. Evidence technically exists, but I cannot use it quickly enough when a vendor, client, assistant, or venue asks for a decision.
+
+### Structural Issue: Hidden Cost And Risk
+
+Reminders fire at the wrong local time. My workaround is to absorb the cost, apologize, or fix the issue manually. What breaks is margin and consistency. I may still save the event, but I lose the ability to learn from it or prevent the same issue next time.
+
+### Structural Issue: Role Confusion
+
+The people involved often have different authority, visibility, and context. A client, assistant, venue manager, staff member, vendor, family office contact, or institution may each control one piece of the truth. My workaround is to ask clarifying questions in more threads. What breaks is accountability, because later I cannot always prove who approved what or whether they had the authority to approve it.
+
+### Structural Issue: Real-World Adoption Pressure
+
+I do not test tools in a clean lab. I test them while prep is happening, while a client is texting, while a vendor is late, and while money or safety may be affected. My workaround is to keep the old messy workflow running in parallel. What breaks is adoption. If the software creates duplicate entry, hides failure, or makes claims without source evidence, I stop trusting it.
+
+### Psychological Model
+
+I optimize for proof, control, client trust, and fewer avoidable surprises. I refuse to compromise on privacy, event accuracy, food safety, financial clarity, or the creative boundaries around my own food. I avoid tools that make me retype facts from messages, flatten specialist constraints into generic notes, or pretend that a missing value is the same as zero. I evaluate software by whether it catches one real mistake, protects one sensitive detail, or makes one hard conversation easier during the first week of use.
+
+### Pass / Fail Conditions
+
+* The system must store event and task times with location context.
+* The system must show client, chef, and venue time zones clearly.
+* The system must prevent deadline confusion during travel planning.
+* The system must attach source evidence to approvals, constraints, costs, safety notes, and client-visible decisions.
+* The system must distinguish private operational notes from collaborator-facing or client-facing information.
+* The system must warn when required data is missing instead of showing a clean but false empty state.
+* The system must keep AI, if used, limited to operational extraction and never generate recipes or chef creative IP.

@@ -1,0 +1,50 @@
+**Chef Profile: "Jisoo Han" - Private Chef & Culinary Consultant (Dual-Native)**
+
+I’m fully bilingual in Korean and English, and I operate comfortably in both—but I prefer to think, read, and organize my work in Korean. It’s not about ability. It’s about precision and comfort. When everything defaults to English, I lose speed, clarity, and control.
+
+### Business Reality
+
+Right now:
+
+* 9–13 events per month (private dining + occasional consulting)
+* $20,000–$42,000 monthly revenue
+* Solo operator with 1 consistent prep assistant
+* Based in the U.S., serving both Korean-speaking and English-speaking clients
+* 60% of my internal work (notes, menus, planning) is written in Korean
+* Client communication split between English (clients) and Korean (personal workflow)
+* Tools and platforms primarily in English, forcing constant mental switching
+
+### Primary Failure: Language Context Switching
+
+I operate in two languages constantly, but systems only support one at a time. I plan menus in Korean, then translate them into English for clients. I think through sourcing and prep in Korean, but all my tools—booking systems, vendor sites, forms—are in English. This constant switching slows me down and introduces small errors. It’s not that I don’t understand English—it’s that Korean is faster and more precise for how I think. My workaround is duplicating everything—Korean for me, English for others—but it’s inefficient and redundant.
+
+### Structural Issue: Internal vs External Language Split
+
+My internal workflow is Korean. My external-facing business is English. There is no system that supports both simultaneously. If I write a menu in Korean, I have to manually translate it for clients. If I receive a request in English, I mentally convert it before processing it. Nothing bridges the two cleanly. My workaround is maintaining parallel versions of everything, which doubles the work and creates sync issues.
+
+### Structural Issue: Loss of Nuance in Translation
+
+Food language is specific. Ingredients, techniques, textures—Korean expresses certain concepts more precisely for me. When I translate into English, I sometimes lose that nuance or spend extra time trying to explain it correctly. This affects menu descriptions, client communication, and even sourcing decisions. My workaround is simplifying descriptions, but that reduces the quality of communication.
+
+### Structural Issue: Platform Language Rigidity
+
+Most platforms assume a single language setting. If I set something to Korean, it affects everything—including what clients see. If I keep it in English, I lose my preferred working environment. There’s no layered language system where I can operate in Korean while clients see English. My workaround is tolerating English interfaces, but it slows down my internal operations.
+
+### Psychological Model
+
+I optimize for: clarity in my native thinking language and efficiency in execution
+I refuse to compromise on: precision in how I process and structure information
+I avoid: unnecessary translation work and duplicated effort
+I evaluate tools by: whether they let me operate in Korean without breaking client-facing English
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. Allow me to operate entirely in Korean internally while presenting everything in English externally to clients.
+2. Automatically translate menus, notes, and communications between Korean and English with high accuracy.
+3. Preserve culinary nuance when translating ingredients, techniques, and descriptions.
+4. Support dual-language workflows without requiring duplicate entries or manual syncing.
+5. Adapt interfaces so I can read and interact with tools in Korean regardless of their default language.
+6. Keep all data unified, ensuring Korean and English versions are always linked and consistent.
+7. Eliminate the need for me to constantly switch mental context between languages during daily operations.

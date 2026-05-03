@@ -1,0 +1,73 @@
+**Guest Profile: "Novak Djokovic" - Elite Athlete Guest (High-Demand, Sensitive)**
+
+I am an elite athlete, and while my primary focus is my physical performance, when I participate in a community or promotional event—like a small-town market appearance—the entire experience must be seamless and controlled. My presence elevates the event, but it also introduces significant operational complexity, especially concerning my specific dietary needs and the high expectations of the organizers and my support team. I expect the food service operation to be flawless, anticipating needs before they become problems.
+
+### Business Reality
+
+Right now:
+* I attend **4 to 6** highly managed, private dining, or ticketed events per **quarter**.
+* The associated event spend, including catering and private dining elements, runs between **$8,000 and $15,000** per event, plus dedicated travel and accommodation costs.
+* My dietary needs are extremely specific: I require **gluten-free, low-FODMAP, and high-protein** options, and I carry a detailed list of **12+ severe allergies** (e.g., nuts, soy, cross-contamination risks) that must be communicated to every single staff member.
+* My event context is typically a small, highly visible location (e.g., a local market pavilion or designated private dining corner), requiring a dedicated team of **4-6 people** (staff, organizers, support) to manage my arrival, meals, and departure.
+* My current communication setup is a mix of **dedicated WhatsApp group chats** for last-minute changes, **printed checklists** handed to the main point of contact, and **multiple email chains** that often contradict each other.
+
+---
+
+### Primary Failure: Critical Allergen Data Fragmentation
+
+The biggest operational problem is that my severe allergen data is not centralized or enforced across the entire platform. If the kitchen staff, the front-of-house staff, and the event coordinator are looking at different versions of my dietary requirements—or worse, if the information is only on a piece of paper—it creates unacceptable risk. This failure isn't just an inconvenience; a single cross-contamination incident could lead to a medical emergency, resulting in significant reputational damage for the venue, potential litigation, and an immediate, irreversible loss of trust in the entire food service operation.
+
+---
+
+### Structural Issue: Manual Allergy Confirmation and Verification
+
+The system currently relies on the event coordinator to manually cross-reference my dietary survey against the menu options and then physically write down the accommodations. This process is prone to human error; a simple misread or a missed update in a spreadsheet means the required ingredients might be incorrectly flagged or, worse, entirely overlooked when the menu is finalized. I spend valuable time having my team physically check off items on printed menus to confirm safety, which slows down the entire service flow and makes me feel like I am constantly being interrogated about my own meal.
+
+---
+
+### Structural Issue: Event-Specific Ingredient Tracking
+
+Because my diet is so restricted, the kitchen must track specific ingredients (e.g., specific brands of quinoa, certain oils, certified GF breads) that are non-standard for a typical market menu. Currently, the event organizer has to manually check inventory spreadsheets and then call the head chef to confirm stock levels *and* the proper sourcing documentation. This delay is unacceptable; it forces the culinary team to waste time sourcing and confirming items that should have been pre-vetted and logged into the system, slowing down the entire menu build process by hours.
+
+---
+
+### Structural Issue: Dynamic Staff Communication of Restrictions
+
+When the event day arrives, the operational staff must be informed of my specific needs (e.g., "Guest 1: Gluten-Free, Low-FODMAP, Severe Peanut Allergy") *every single time* they interact with me. Right now, this information is often only communicated via a printed, laminated card that is easily lost, or it's relayed verbally during a hectic setup. This failure means that line staff, who are often the first point of contact, may be completely unaware of critical, life-saving details, leading to potential service failures and staff anxiety.
+
+---
+
+### Structural Issue: Meal Flow and Timing Coordination
+
+My meals are not flexible; they are timed precisely around my training and public appearances. The system fails to provide a single, cohesive timeline that links my physical location, my required meal service time, and the readiness of the kitchen/staff. I am often left waiting, or worse, my meal is ready but served at a time that conflicts with my next scheduled activity, requiring multiple phone calls between my manager and the kitchen manager just to coordinate the timing.
+
+---
+
+### Structural Issue: Iterative Feedback Loop Management
+
+After the event, the feedback process is cumbersome. My team fills out a detailed physical feedback sheet (or sometimes a separate Google Form) that tracks everything from the quality of the service to the allergen safety protocol. The organizer then has to manually compile this data, cross-reference it with the initial planning documents, and then send it to the client/venue manager via email. This manual aggregation means that actionable insights about process failures are often delayed by 24 to 48 hours, making rapid, preventative operational improvement impossible.
+
+---
+
+### Psychological Model
+
+I optimize for: Predictability and uncompromising safety. I need to know, with absolute certainty, that the process is managed by a system, not by human memory.
+I refuse to compromise on: My health protocols or the quality of the athletic experience. Anything that introduces risk or unnecessary friction is a failure.
+I avoid: Ad-hoc communication, redundant paperwork, and having to repeat critical information to multiple people.
+I evaluate tools by: How efficiently they centralize high-stakes, critical data points and how reliably they enforce protocol across multiple departments.
+
+I think like a high-performance system: every element must connect logically, and every failure point must be eliminated. I expect the technology to be proactive, managing the risk and the logistics so that I can simply focus on the event and the community interaction, without worrying about the details of my meal or my safety.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must centralize and make visible all critical allergen and dietary restrictions on a single, non-editable guest profile accessible to all relevant staff (front-of-house, kitchen, and management) at all times.
+2. The system must automatically trigger a mandatory "Allergen Confirmation Checklist" for every single dish served to me, requiring digital sign-off from both the prep chef and the expediter before the order can be finalized.
+3. The system must allow me to upload and link my personal, certified dietary restrictions document (PDF, photo) directly to my profile, making it the primary source of truth that overrides all other menu inputs.
+4. The system must provide a comprehensive, integrated event timeline view that maps my physical location and scheduled activity checkpoints against the required service readiness times for my meal.
+5. The system must capture all post-event feedback data (including specific allergen incidents, service timings, and quality scores) and automatically generate a structured, actionable compliance report for the venue manager within 2 hours of event conclusion.
+6. The system must enforce a menu costing module that automatically flags any ingredient substitution or sourcing change that violates my pre-approved allergen profile or dietary mandate.
+7. The system must generate a printable, standardized Staff Briefing Sheet for every shift, populated automatically with my name, my full list of restrictions, and the specific menu items I am scheduled to receive.

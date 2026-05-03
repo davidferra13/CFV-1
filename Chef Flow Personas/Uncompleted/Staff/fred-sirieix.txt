@@ -1,0 +1,73 @@
+**Staff Profile: "Fred Sirieix" - Event Service Captain (Logistics Maestro)**
+
+I am the point person for service execution at large, high-end private banquets and corporate galas. I manage the flow of service from the moment the kitchen plate leaves the pass until the final table is cleared and the venue is handed back. I am responsible for coordinating 20-40 staff members across multiple service stations, ensuring the client experience is seamless, flawless, and totally invisible.
+
+### Business Reality
+
+Right now:
+* I work an average of 4-6 shifts per week, ranging from 6-12 hours per shift, typically over weekends.
+* I am paid a base rate of $25/hour plus a mandatory 15% service gratuity pool, plus a $50 call-out fee if I have to adjust my schedule within 48 hours.
+* My team structure is highly variable; I report to the Banquet Manager, but I manage the entire floor staff (servers, bussers, bartenders) and coordinate with the Sous Chef and the Cleanup Lead. I have mandatory training on specific client service protocols (e.g., 'The XYZ Corp Gala Protocol'). My uniform is formal, requiring black trousers, a white shirt, and a mandatory black vest with my name embroidered in silver thread.
+* My scope is geographically confined to large, high-traffic commercial venues (e.g., convention centers, major hotel ballrooms) but involves coordinating prep work in the central kitchen, service execution on the floor, and deep cleanup handoff of the entire room.
+* Current briefing and scheduling setup is a chaotic mix: the Banquet Manager sends a preliminary schedule via email, which is then updated with critical changes (e.g., "Client requested linen change") via a group WhatsApp text, and the final, minute-by-minute flow of service is printed on large, often illegible, paper planners that get physically distributed to my team leads 30 minutes before the shift starts.
+
+---
+
+### Primary Failure: Unpredictable Operational Hand-offs
+
+My biggest operational problem is the handoff between the three main phases of an event: Service, Cleanup, and Billing. When the food service ends, the chaos doesn't stop; it just changes form. The cleanup crew needs to know exactly which stations were used, which linens need special handling, and what inventory needs to be flagged for damage *before* the catering team leaves. Because the service team (me) and the cleanup team (the porters) operate in silos, there is a massive delay—sometimes 45 minutes—while we are manually reconciling usage and inventory, which costs the venue valuable post-event time and slows down the revenue cycle.
+
+---
+
+### Structural Issue: Fragmented Communication of Service Changes
+
+The moment a client makes a change—say, they switch from a plated dinner to a buffet setup—the change propagates through at least three different channels: the Banquet Manager (email), the Sous Chef (phone call), and me (WhatsApp text). I am forced to cross-reference these three sources, which is highly prone to human error. If I miss a single detail in the text stream (e.g., "Remember the bread service is now served *before* the soup course"), the entire service flow collapses, leading to a visible, embarrassing mistake in front of the client.
+
+---
+
+### Structural Issue: Manual Inventory Reconciliation During Cleanup
+
+After a major event, we have to reconcile hundreds of items: 40 place settings, 120 wine bottles, 15 rolls of linen, and 8 full crates of specific glassware. The cleanup process requires physically counting and logging every item back to its initial inventory count. Right now, I rely on paper clipboards and physical tally sheets that are easily lost, illegible, or damaged in the cleanup rush. This manual process means that discrepancies (e.g., 3 missing wine glasses) are flagged hours later, requiring tedious manual investigation and potentially delaying the final bill submission.
+
+---
+
+### Structural Issue: Unstructured Assignment and Prep Allocation
+
+My prep time—the 90 minutes before the event starts—is spent coordinating things that should be automated. I have to manually assign roles to my 20-person team (who are often cross-trained but not formally assigned) based on the specific menu and client list. For example, if the client has 5 VIP tables, I have to manually designate which 5 servers are 'VIP lead' and assign them specific table numbers and protocols. If the team size fluctuates by just 2 people, I have to manually re-slot everyone, wasting valuable prep time and increasing the risk of misassignment.
+
+---
+
+### Structural Issue: Lack of Centralized Service Flow Documentation
+
+Every client is unique, meaning every service flow is unique. The protocols for the "Tech Conference Gala" are vastly different from the "Family Anniversary Banquet." Right now, all these protocols—from table setup schematics to the exact timing of bread service—are stored in a chaotic mix of shared Google Docs, physical binders, and my own memory. If a junior staff member is assigned to a new client, they have no single source of truth, forcing me to repeatedly repeat critical, complex service steps.
+
+---
+
+### Structural Issue: Difficulty in Tracking Real-Time Staff Status and Breaks
+
+Managing 20+ people across a large floor means I am constantly coordinating breaks, restock cycles, and station changes. There is no centralized system to know, for instance, which servers are currently assigned to the kitchen restock cycle versus which ones are free to take an extra table or need immediate attention. This leads to bottlenecks; stations get overloaded because no one knows who is available, or staff members are overworked because the breaks aren't managed efficiently by the system.
+
+---
+
+### Psychological Model
+
+I optimize for: Flawless, visible execution and minimizing unexpected friction points.
+I refuse to compromise on: The seamless flow of service; if the client sees a glitch, I fail.
+I avoid: Any technology that requires me to switch between more than two different interfaces, or anything that relies on predictive AI, because I trust human coordination under pressure more.
+I evaluate tools by: How quickly they reduce the number of physical pieces of paper I have to handle or manually transfer data from.
+
+I think like a conductor. I don't care about the recipe or the ingredients; I care about the rhythm, the timing, and the moment the baton passes from one section to the next. My decisions are always weighted toward mitigating the highest risk of public failure.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must generate a single, comprehensive service map that overlays assigned staff, required equipment, and specific station protocols for a given event time slot.
+2. The system must allow me to digitally track the completion of cleanup tasks (e.g., "Table 14 glassware cleared") and automatically generate a reconciled inventory report for billing upon exit.
+3. The system must allow the Banquet Manager to push critical, immediate service updates (e.g., "Soup course moved 15 minutes") directly to my assigned shift group, visible and immutable, overriding older data.
+4. The system must manage my team's shifts by automatically balancing assignment load, ensuring that no single staff member is assigned more than 8 hours of active service time without mandatory, logged breaks.
+5. The system must house all client-specific service protocols (from setup to teardown) in one accessible, searchable location, linked directly to the assigned event booking.
+6. The system must provide a real-time status view of my 20+ staff members, indicating their current task assignment (e.g., "Restocking Station 3," "Available," "On Break") to prevent bottlenecks.
+7. The system must calculate the final labor cost and service gratuity pool allocation based on the actual number of staff present and the hours worked, generating a verifiable payroll ledger.

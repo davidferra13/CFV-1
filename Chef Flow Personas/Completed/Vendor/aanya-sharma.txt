@@ -1,0 +1,48 @@
+**Vendor Profile: "Aanya Sharma" - Owner/Director of Sourcing (Analyst)**
+
+I’ve spent the last fifteen years building a network of small-batch producers across South Asia and the Middle East, making sure the integrity of every spice we handle is absolutely unimpeachable. My operation is built on trust—relationships are our most valuable commodity—but lately, that trust has been threatened by paperwork, regulatory headaches, and the sheer inefficiency of managing complex, multi-source supply chains.
+
+### Business Reality
+
+Right now:
+*   We manage sourcing from over 35 individual suppliers across four continents.
+*   Our team consists of 6 full-time employees: three importers, one logistics coordinator, and two administrative/compliance specialists.
+*   Our annual gross revenue has stabilized at $4.5 million, with 65% of that coming from high-volume regional restaurant clients in the Denver Metro area.
+*   Our sourcing model relies on seasonal, small-batch inputs, meaning inventory risk is high and fluctuating.
+*   We currently use a mix of QuickBooks for finance, Google Sheets for inventory tracking (which is terrible), and email/WhatsApp for supplier communication.
+*   We generate approximately 18-25 shipments per month, each requiring custom compliance checks for customs documentation.
+
+### Primary Failure: Compliance Fragmentation and Source Verification
+
+Our biggest pain point is the sheer fragmentation of our compliance and sourcing documentation. When a new shipment comes in—say, a specialty cardamom from Kerala—we need to track not just the Certificates of Origin, but also the unique lot number from the farm, the processing date, and the specific testing results for pesticides, which must align with the end-user's required authenticity certification (like organic or specific geographical designation). When we scaled up, we relied on filing cabinets and shared network drives, and now that a former partner has initiated a cease-and-desist order, we cannot instantly prove, digitally and verifiably, the full chain of custody for every single container. It costs us valuable time, potential fines, and frankly, it undermines the relationships we’ve built with the premium clientele who demand documented authenticity.
+
+### Structural Issue: Decentralized Inventory and Shelf-Life Management
+
+Our inventory management is completely decentralized across physical warehouse locations and outdated spreadsheets. We source materials with wildly different shelf lives—some dried chili powders are stable for years, but fresh saffron threads degrade rapidly and require specific climate control. Because we don't have a centralized, real-time view of inventory *by lot number and expiration date*, we frequently over-order some high-stability items while risking spoilage and write-offs on seasonal, perishable goods. This leads to unnecessary capital expenditure and requires my team to manually calculate the optimal order size, a task that is mathematically intensive and highly prone to human error.
+
+### Structural Issue: Supplier Relationship History Tracking
+
+Because we are relationship-first, the history of a supplier's performance is critical. It’s not just about the price; it’s about reliability, consistency, and ethical sourcing adherence. Currently, I track these details (e.g., "Supplier X was delayed 3 times last quarter," or "Supplier Y met organic certification 100% of the time") in a combination of my personal Notion database and sometimes just my memory. When an issue arises, I have to cross-reference multiple emails, phone calls, and spreadsheets to determine if the failure was due to them, or if it was a logistics breakdown. This lack of a unified, searchable 'Supplier Performance Ledger' means I can't make data-driven decisions on relationship continuance, forcing me to make decisions based on gut feeling rather than documented history.
+
+### Structural Issue: Pricing Tier and Volume Scaling Analysis
+
+Our pricing structure is incredibly complex, involving tiered bulk pricing based on volume *and* the commodity type. A client might buy 500 lbs of cumin, but if they exceed 1,000 lbs, the unit cost drops 8%, but only if the purchase includes at least two other commodities from the same geographical region. Calculating the true cost-of-goods-sold (COGS) for large, custom bids is currently a manual, multi-spreadsheet exercise that takes an employee an entire afternoon. We are constantly losing potential large-scale institutional sales because the time required to generate a precise, accurate, and compliant quote is too high.
+
+### Psychological Model
+
+I optimize for: Proven traceability and the quantifiable reduction of risk factors.
+I refuse to compromise on: The verifiable integrity of the product’s origin and the speed of data retrieval.
+I avoid: Manual data aggregation, unstructured data, and systems that require me to "trust" the data without providing a clear audit trail.
+I evaluate tools by: Their ability to synthesize complex, disparate data streams (compliance, inventory, financials, supplier history) into a single, actionable dashboard.
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1.  Allow for rapid, granular input of multi-level sourcing data (Farm Lot ID -> Processor Lot ID -> Shipment Lot ID) to verify end-to-end compliance.
+2.  Automatically flag inventory approaching critical shelf-life thresholds based on specific, customizable commodity expiry profiles.
+3.  Provide a centralized, searchable dashboard tracking supplier performance metrics (delivery delay count, quality failure count, certification adherence score) tied directly to invoicing.
+4.  Handle dynamic, multi-variable pricing models that adjust the final COGS calculation based on specified volume and commodity relationships.
+5.  Integrate with common accounting software (e.g., QuickBooks) for automated ledger posting directly from finalized invoices.
+6.  Support the simultaneous management of multiple regulatory documentation types (e.g., Phytosanitary Certificate, Certificate of Origin, COA) and link them directly to the corresponding inventory lot.
+7.  Provide a single, auditable export function that can generate a full compliance package for any given product batch, suitable for legal or customs review.

@@ -1,0 +1,55 @@
+Client Profile: "Brandon Cole" - Accessibility Engineer (Inclusive)
+
+If I can’t use your system without friction using accessibility tools, it’s broken. Pricing visibility must be universal.
+
+Business Reality
+Right now:
+
+I book 3–5 private dining experiences per year.
+
+Budget ranges from $1,000 to $4,000.
+
+I rely on screen readers and keyboard navigation.
+
+Dietary needs are straightforward but must be accessible in UI.
+
+Locations vary but should not affect usability.
+
+I expect full accessibility compliance.
+
+I test systems for inclusivity instinctively.
+
+Primary Failure: Inaccessible Pricing
+If pricing isn’t readable by assistive technology, it doesn’t exist. Hidden or visually dependent pricing is a failure.
+
+Structural Issue: Poor Semantic Structure
+If totals and breakdowns aren’t properly labeled, screen readers can’t interpret them. That breaks the experience.
+
+Structural Issue: Interaction Barriers
+If I can’t adjust inputs (guest count, courses) easily via keyboard or assistive tech, the system is unusable.
+
+Structural Issue: Dynamic Updates Not Announced
+Real-time pricing changes must be communicated to assistive tools. Silent updates create confusion.
+
+Psychological Model
+I optimize for: accessibility and equal usability
+I refuse to compromise on: full assistive compatibility
+I avoid: visually dependent interfaces
+I evaluate tools by: accessibility compliance and usability
+
+Pass / Fail Conditions
+For this system to work for me, it must:
+
+Ensure all pricing elements are accessible via screen readers.
+
+Use proper semantic structure for totals and breakdowns.
+
+Allow full interaction via keyboard and assistive tools.
+
+Announce dynamic pricing updates clearly.
+
+Maintain accessibility across all devices and flows.
+
+Avoid reliance on visual-only cues.
+
+Provide an inclusive, frictionless experience.

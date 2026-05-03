@@ -1,0 +1,67 @@
+**Staff Profile: "Ethan 'The Engine' Reed" - Event Service Captain (High-Energy Operator)**
+
+I run the flow. When the kitchen gets slammed and the service line is backed up, I'm the one keeping the pace, making sure the guests feel like they are having an incredible, seamless experience, not just eating. I’m responsible for the entire front-of-house experience, from the initial guest greeting to the final cleanup handoff, ensuring the operation always looks polished and effortless, even when we are running 30 minutes behind schedule.
+
+### Business Reality
+
+Right now:
+* I work **5 to 7** shifts per week, typically covering **4-8** distinct events or venues per week.
+* My pay is **$22/hour** plus a **$50-$150** per-event captain bonus based on guest count and positive feedback. I have my **ServSafe Manager certification** and I am required to be available for at least **10 hours** of prep/setup time before the service starts.
+* I lead a team of **8 to 15** servers and bartenders, acting as the primary communication link between the kitchen leads, the prep crew, and the actual guests. I am responsible for the correct use of the mandated **black polo shirt, apron, and station badge**.
+* My scope is highly varied, covering everything from **high-volume corporate banquets (300+ guests)** in downtown convention centers to **intimate, high-end private dinners (25 guests)** in residential venues.
+* My current briefing setup is a chaotic mix of **group texts (for general reminders)**, a shared **Google Sheet (for staffing assignments and station layouts)**, and mandatory **printed pre-shift checklists/flow charts** that get crumpled up at the end of the night.
+
+---
+
+### Primary Failure: Dynamic Staff Allocation and Conflict Resolution
+
+The biggest operational pain point is that I am constantly playing human resource manager, logistics coordinator, and service captain all at once. Because I am managing 8 to 15 people across highly variable events, I spend the first 30 minutes of every shift manually solving staffing conflicts—who is trained on which station, who is available for the late shift, and who needs a specific piece of equipment. This manual allocation process means I am never fully focused on the guest experience or the service flow. It costs us, on average, **45 minutes of peak service time** per event due to these internal organizational delays, which directly impacts the client's perception of our professionalism and efficiency.
+
+---
+
+### Structural Issue: Fragmented Pre-Shift Communication
+
+I receive assignment changes and necessary updates (e.g., "Table 4 needs a dietary restriction update," or "The cocktail service is now moving to the patio") via a mix of **group texts and quick calls**. I have to manually cross-reference these disparate pieces of information with the **printed pre-shift checklist** I received, hoping nothing critical falls through the cracks. This system is prone to failure because critical, time-sensitive operational details are never centralized, leading to servers being under-briefed on specific guest needs or service flow changes.
+
+---
+
+### Structural Issue: Real-Time Resource and Inventory Tracking
+
+When I arrive at a venue, I am responsible for ensuring the correct amount of service collateral is present: linens, glassware, specific branded menus, and specialized serving tools. Currently, I rely on the **event lead's memory and a hastily filled-out clipboard checklist** to confirm everything is staged and accounted for. If the initial inventory count was wrong (e.g., we only had 12 bottle openers instead of 20), the entire setup stalls while we scramble to track down the missing items, wasting valuable setup time and risking a poor first impression.
+
+---
+
+### Structural Issue: Dynamic Staff Shift and Availability Management
+
+Scheduling is a nightmare. My staff operates with unpredictable availability due to college classes and other side gigs. I currently manage this using a complex, shared **Google Sheet that requires constant, manual updating** from every team member, and then I manually reconcile that sheet against the client's contracted headcount. If a team member calls out last minute, I must manually adjust the entire shift schedule and re-assign roles, a process that is incredibly time-consuming and introduces a high risk of double-booking or miscommunication regarding who is actually available for the 6 pm slot versus the 8 pm slot.
+
+---
+
+### Structural Issue: Handoff and Cleanup Protocol Documentation
+
+The shift doesn't end when the last guest leaves. I am responsible for the handover to the cleanup crew, which involves checking off specific operational items: liquor stock levels, misplaced equipment, and any damaged property. Right now, this is done via a **printed "End-of-Shift Log" that gets lost or filed incorrectly**. Because the documentation is physical and siloed, the next day's operations team doesn't have a clean, structured record of *why* we ran out of specific items or *where* the maintenance needs to focus, leading to preventable operational inefficiencies and lost revenue opportunities.
+
+---
+
+### Psychological Model
+
+I optimize for: **Seamless, visible efficiency.** If the operation looks smooth, the client thinks it was magic.
+I refuse to compromise on: **Real-time, accurate communication.** Nothing makes me more stressed than a team member being unaware of a key change or delay.
+I avoid: **Overly complex tech or mandatory training modules.** I need tools that are intuitive and immediately actionable under high pressure.
+I evaluate tools by: **How quickly they allow me to communicate a critical, immediate change to 15 people while simultaneously viewing the current state of the inventory.**
+
+I operate best when I have a single source of truth that I can trust, allowing me to pivot my attention entirely to the guest. I am driven by the successful completion of a high-stakes event and the visible praise from the client.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. **Show me the real-time status of the current shift's assigned resources** (e.g., how many linens, how many branded menus) so I can flag missing items before the setup crew even starts.
+2. **Allow me to instantly broadcast a critical, event-specific update** (e.g., "Patio service moved 30 minutes early due to rain") that is visible and acknowledged by all 15 assigned staff members, regardless of their location.
+3. **Provide a single, dynamic calendar view of all staff shifts, roles, and certifications** so I can instantly see who is available, who is required, and who is cross-trained for the next 7 days.
+4. **Facilitate a digital, structured handoff log** that allows me to check off required cleanup tasks and automatically generate a summary report for the next day's operations team regarding inventory depletion or maintenance needs.
+5. **Allow me to assign and track specific operational roles (e.g., "High-Touch Wine Service")** to individual staff members within a specific event context, ensuring that every critical role is covered and that staff are only assigned tasks they are certified for.
+6. **Display a running timeline of the event schedule** that I can update in real-time (e.g., "Appetizer service delayed by 15 minutes") and automatically recalculate the required staffing shifts and prep times needed to catch up.
+7. **Generate a comprehensive, client-specific prep sheet** that synthesizes all sources of information—RSVPs, dietary restrictions, and service flow changes—into one digestible document I can print and hand out during the pre-shift briefing.

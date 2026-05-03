@@ -1,0 +1,65 @@
+**Guest Profile: "Hailey" - First-Time Private Dining Guest (Luxury Patron)**
+
+I am someone who values my time and expects an experience that feels effortlessly curated. My life revolves around high-profile social engagements and private dinners with close friends, often in unique, exclusive venues. I don't just attend events; I expect the entire flow—from the initial booking inquiry to the final dessert—to be seamless, discreet, and flawless. When I commit to an experience, I expect it to be the absolute best, and I have zero patience for friction points.
+
+### Business Reality
+
+Right now:
+* I attend 1-2 private dining or ticketed events per quarter.
+* My average spend per event is $1,500-$3,000, primarily covering food and beverage, but I also manage event-related travel and accommodation costs exceeding $800 per night.
+* My dietary needs are complex: I am severely allergic to peanuts and sesame, and I often require specific macro-nutrient accommodations (low carb, high protein). I also require a specific seating arrangement for conversation flow.
+* My current event context is a private dinner for 6 people at a highly sought-after, non-chain restaurant in Los Angeles, requiring booking on a specific date in the next 4-6 weeks.
+* My current communication setup is a chaotic mix of confirmation texts from the host, an email chain from the restaurant manager, and sometimes a separate, physical printed document with the reservation details.
+
+---
+
+### Primary Failure: The Unpredictable Friction Points
+
+The biggest operational problem is the feeling of institutional disorganization. Because I am a first-time guest, I am expected to navigate a system that is poorly communicated and scattered across multiple channels. When I have to piece together my dietary restrictions from an initial email, then confirm the headcount via a separate text, and finally receive a printed ticket that contradicts the seating arrangement I discussed, it signals a profound lack of control and care. This costs me not just my time—which is priceless—but my confidence in the establishment. I worry that if the operational logistics are this messy, the actual food experience or service quality will suffer equally.
+
+---
+
+### Structural Issue: Confusing Booking and Confirmation Flow
+
+The initial RSVP process is confusing because the platform mixes inquiry, booking, and confirmation status into one unintuitive flow. I have to submit a request, then wait for a manual confirmation, and then potentially receive a third-party link to "finalize" details. If the platform doesn't clearly distinguish between *I am interested* and *My reservation is secured and confirmed*, I waste time chasing down status updates via phone calls or texts.
+
+---
+
+### Structural Issue: Managing Complex, High-Stakes Dietary Restrictions
+
+The current workaround for managing allergies and dietary needs is often a simple text message to the host, which is then manually forwarded to the kitchen. There is no single, authoritative source of truth for my restrictions that is accessible to the kitchen staff, the server, and the manager *simultaneously*. If the kitchen staff accidentally sees a general menu and not my specific, critical restrictions (peanuts/sesame), the consequence is catastrophic—not just a bad meal, but a medical emergency and total loss of trust.
+
+---
+
+### Structural Issue: Disconnected Pre-Event Logistics Communication
+
+The communication about the event itself (timing, dress code, parking, and seating plan) is never centralized. I might get a text from the host about the parking garage, an email from the restaurant about the menu pre-read, and then a printed card with a seating chart that is outdated. I am forced to maintain multiple communication streams and manually cross-reference details, which feels amateurish and unreliable.
+
+---
+
+### Structural Issue: Zero-Effort Feedback Loop for Repeat Bookings
+
+Leaving a good experience requires me to be able to book again with minimal effort. If the system requires me to re-enter my dietary restrictions, re-submit my name, or answer boilerplate questions just because I am returning guest, it feels like I am starting over and wasting time. The platform needs to recognize my history and make the re-booking process feel like a simple, trusted extension of the first experience.
+
+---
+
+### Psychological Model
+
+I optimize for: Seamless exclusivity and flawless execution.
+I refuse to compromise on: Safety (allergy protocols) and the feeling that the experience is highly curated and unique to me.
+I avoid: Any process that requires me to use a spreadsheet, manually copy-paste information, or repeat details I have already provided.
+I evaluate tools by: How discreetly and efficiently they handle high-stakes, personalized details without creating visible friction.
+
+I think in terms of minimizing variables and maximizing the perceived value of my time. If a process takes more than three clicks or requires me to switch between three different applications, I assume it is inefficient and therefore not worth my patronage.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1.  **The system must** provide a single, authoritative dashboard view of my reservation status, clearly distinguishing between "Inquiry Submitted," "Confirmed," and "Checked In."
+2.  **The system must** allow me, or my trusted coordinator, to input and permanently store complex, multi-allergy profiles that are instantly visible and flagged to the kitchen and serving staff on the day of the event.
+3.  **The system must** consolidate all pre-event communication—including seating charts, parking details, and final menu adaptations—into one dedicated, accessible digital itinerary, eliminating reliance on external texts or emails.
+4.  **The system must** allow me to view my full booking history and, upon re-booking, automatically pre-populate all my known preferences and dietary needs, requiring only a simple confirmation click.
+5.  **The system must** provide a structured, immediate feedback mechanism tied directly to the specific operational aspects of the event (e.g., "How was the timing of the appetizer course?" vs. just "Overall rating"), allowing the restaurant to quickly improve service flow.

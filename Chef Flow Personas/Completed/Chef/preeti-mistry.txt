@@ -1,0 +1,44 @@
+**Chef Profile: Preeti Mistry - Culinary Entrepreneur and Pop-Up Supper Club Host**
+
+I am Preeti Mistry, a self-taught chef with a passion for bringing Indian flavors to the masses through my pop-up supper clubs and small-scale events. My culinary journey began in my hometown market, where I honed my skills by experimenting with traditional recipes and modernizing them to suit contemporary palates. Currently, I manage a portfolio of 12 unique events per month across three different locations within a 20-mile radius of my home base.
+
+My revenue model is built on ticket sales for these intimate dining experiences, averaging $60 per guest. This translates to a monthly revenue of around $7,200, supporting a team of five part-time chefs and kitchen assistants. My target audience is food enthusiasts who crave unique culinary adventures, with events held in hidden gems like rustic barns, cozy lofts, and secret gardens.
+
+### Primary Failure: Event Overcapacity
+
+My biggest operational headache stems from the sheer popularity of my supper clubs. Despite having waitlists that reach up to 100 eager diners for each event, I often find myself overrun by last-minute RSVP changes and walk-ins. This leads to a chaotic kitchen environment where we struggle to accommodate everyone in real-time. The costs associated with overcapacity are high—unsatisfied guests lead to poor reviews and lost future bookings, while the need to source extra ingredients on short notice drives up my food costs.
+
+### Structural Issue: Guest Communication
+
+Managing guest communication is another area I constantly grapple with. My reliance on a patchwork of emails, WhatsApp groups, and Google spreadsheets for event coordination has resulted in missed RSVPs, incorrect dietary requirement tracking, and confusion around last-minute changes. This lack of centralized guest management often leads to last-minute scrambling to reorganize ingredients or seatings.
+
+### Structural Issue: Menu Planning and Sourcing
+
+Planning menus and sourcing ingredients is an intricate dance that I choreograph each week. Given my commitment to using fresh, locally-sourced ingredients, the unpredictability of seasonal produce and supplier availability poses a constant challenge. My current workaround involves maintaining a sprawling network of small-scale suppliers and farmers while constantly refining my menu offerings based on what's available. However, this process often leaves me short on certain key ingredients or overrun with others, impacting both my food costs and the consistency of my dishes.
+
+### Structural Issue: Staff Scheduling
+
+My staff scheduling system is as varied as it gets—I rely heavily on a mix of text messages, personal references, and a bit of trial and error to ensure I have enough help in the kitchen. This ad-hoc approach means I often find myself with too many chefs for some events or not enough for others, leading to inefficient use of resources and sometimes, suboptimal guest experiences.
+
+### Structural Issue: Compliance and Documentation
+
+Finally, compliance with food safety laws and documentation is an area where I struggle. With my current setup, I manage this through a combination of online courses, personal notebooks, and memory. This has led to lapses in record-keeping for ingredients, training records, and compliance certifications, which could potentially lead to penalties or operational shutdowns.
+
+### Psychological Model
+
+I optimize for the unique dining experience that each event provides. My events are my canvas, and I refuse to compromise on delivering an immersive culinary adventure that reflects my cultural heritage while pushing boundaries. I avoid tech and processes that don't align with this vision, preferring a hands-on approach where I can flex my creativity. When it comes to evaluating new software or tools, I judge them by how well they support the storytelling aspect of my events without disrupting the organic flow of my kitchen operations.
+
+### Pass / Fail Conditions
+
+For ChefFlow to work for me:
+1. The system must seamlessly integrate guest communication and RSVP management, eliminating missed notifications and last-minute changes.
+2. It must offer a robust inventory management feature that adapts to local produce seasons and supplier availability, reducing the guesswork in my menu planning and sourcing.
+3. Staff scheduling should be intuitive, allowing me to forecast needs accurately without over or understaffing.
+4. The platform must include comprehensive compliance tracking for food safety and legal documentation, ensuring I meet all requirements without manual tracking.
+5. It should offer a centralized recipe management system that is flexible enough for my creative flair but structured enough to support efficient kitchen operations.
+6. The pricing and costing module must be dynamic, allowing me to experiment with different revenue models while maintaining profitability.
+7. Finally, ChefFlow must provide a platform for public discovery and partner collaboration, helping me expand my reach and network without compromising the intimate, exclusive feel of my events.
+
+---
+
+[END OF PROFILE]

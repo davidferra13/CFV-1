@@ -1,0 +1,67 @@
+**Vendor Profile: Eliot Coleman - Local Farm Supplier (Hyper-Fresh Produce)**
+
+I run a highly specialized, small-batch operation. We don't just grow vegetables; we are deeply connected to the seasonal rhythm of the land, focusing on hyper-local, heirloom varieties that demand constant attention. My reputation hinges entirely on the quality and uniqueness of what I deliver, making the relationship with the chefs who buy from me just as critical as the product itself.
+
+### Business Reality
+
+Right now:
+* I fulfill 18 chef orders, plus 4 smaller pop-up/event rentals per week.
+* My standard invoicing is Net 30, but I require a 25% deposit for any order over $1,000, due to the perishable nature of the goods.
+* My inventory is dictated by extreme seasonality and daily harvest yields; we have zero shelf-stable stock, and quality is highly variable (e.g., "today's tomatoes are oversized, but tomorrow's are smaller").
+* I operate out of a farm warehouse and a refrigerated pickup area in Central Jersey, servicing high-end kitchens primarily in NYC and Hoboken.
+* Our current ordering setup is a chaotic mix: initial commitments are made via phone calls, changes are texted, and finalized weekly manifests are shared as heavily edited PDFs or Google Sheets.
+
+---
+
+### Primary Failure: Unpredictable Yields and Quality Grading
+
+The biggest operational headache is that I cannot guarantee a fixed inventory list. If a rainstorm hits or the soil is too dry, the entire yield of a crop—say, the heirloom carrots—can be reduced by 50% overnight. Because I sell by visual inspection and quality grade, I have to call every chef and manually explain what I *can* provide, and they have to accept it. This unpredictable nature leads to significant waste (I have to quickly re-route or discount excess produce) and creates massive friction in the ordering cycle, because the chef has to constantly adapt their menu to my daily reality.
+
+---
+
+### Structural Issue: The Chaos of Real-Time Substitutions
+
+When a chef commits to a specific item (e.g., "10 lbs of purple kale"), but that crop is stressed and only 5 lbs of decent quality is available, I have to stop the entire ordering process and call them. They then have to spend time figuring out a suitable substitute that fits their menu and budget. This constant back-and-forth over the phone wastes my time and theirs, and the chance of miscommunication means I sometimes overpromise on a crop that hasn't matured yet.
+
+---
+
+### Structural Issue: Manual Harvest-to-Invoice Tracking
+
+I track my inventory and my sales using a combination of physical harvest logs, a massive binder full of sticky notes, and a local accounting spreadsheet. When I harvest 40 cases of cherry tomatoes, I manually log them, and then I have to cross-reference that against the order confirmations I received via text and the invoices I send later. This is extremely prone to human error—I have already misbilled a client twice this quarter because I forgot to adjust the unit cost based on a special bulk discount given over a phone call.
+
+---
+
+### Structural Issue: Scheduling and Route Optimization
+
+Because my product is so delicate, I have a narrow, critical delivery window (7:00 AM to 11:00 AM). I currently manage my delivery schedule using a physical whiteboard and a printed map. If a chef calls the night before saying they added a large event order, I have to physically redraw the entire day's route, which often results in me being late to one location or having to make an unplanned, costly stop in the middle of the day.
+
+---
+
+### Structural Issue: Pricing and Costing Complexity
+
+My pricing isn't static; it depends heavily on the volume, the specific varietal, and the current market yield. I often need to apply a "yield discount" (e.g., if I have a massive surplus of zucchini, I discount it by 15% for bulk buyers) or a "premium surcharge" (if the tomatoes are perfect, I charge a premium). Managing these variable, non-standard pricing adjustments across multiple invoices and different client accounts is impossible with current methods.
+
+---
+
+### Psychological Model
+
+I optimize for: Unquestionable product quality and immediate reliability.
+I refuse to compromise on: The sustainability of the harvest or the freshness of the product.
+I avoid: Any complex software that requires dedicated staff training or significant upfront time investment.
+I evaluate tools by: How quickly and intuitively they integrate into an existing, manual workflow.
+
+I think in terms of physical flow—from seed to harvest to delivery—and every piece of technology must respect that physical reality. I need to see the *whole* cycle, not just the ordering part.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must allow me to input variable, real-time inventory counts based on harvest yields and automatically adjust the available stock quantity for that day's orders.
+2. The system must manage and track complex, multi-layered pricing rules, including percentage-based discounts (e.g., 15% off all squash over 50 lbs) applied to specific client invoices.
+3. The system must allow me to schedule and optimize multiple delivery routes and time slots for perishable goods, ensuring I don't miss the critical 7:00 AM - 11:00 AM window.
+4. The system must provide a centralized communication channel that links a specific order modification (via text or call) directly to the corresponding line item on the invoice without requiring manual data entry.
+5. The system must allow me to group ingredients by seasonal availability and flag items that are nearing their peak harvest window, helping me communicate realistic expectations to the chefs.
+6. The system must generate a comprehensive, single invoice that tracks not only the ingredients sold but also the associated event revenue and any necessary deposit amounts.
+7. The system must support the creation of customized, multi-day menus based on the actual ingredients that were harvested and confirmed for sale, rather than being based on a static catalog.

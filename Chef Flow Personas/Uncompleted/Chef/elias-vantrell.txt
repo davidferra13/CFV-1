@@ -1,0 +1,55 @@
+Chef Profile: "Elias Vantrell" - Private Chef & Experiential Dinner Operator (Showrunner)
+
+I run a high-frequency, ticketed dinner series that sells out faster than I can announce it. Most of my guests don’t even wait for menus anymore - they trust the experience and buy blind. The problem is not demand. The problem is holding the entire operation together without it collapsing under its own momentum.
+
+Business Reality
+Right now:
+
+12–18 events per month (average 22–38 guests per event)
+
+$85,000–$140,000 monthly revenue depending on seasonality
+
+Core team of 3 (myself, 1 sous, 1 operations assistant) + 4–6 rotating event staff
+
+Operating across 3–5 rotating venues within a 60-mile radius
+
+Ticketing via Eventbrite, payments split across Stripe + Venmo + Zelle
+
+Menus built in Google Docs, costing in Excel, sourcing via 6–10 vendors manually
+
+Customer communication split between Instagram DMs, Gmail, and SMS threads
+
+Primary Failure: Fragmented Execution Layer
+Everything breaks at the handoff between systems. A dinner gets announced on Instagram, tickets sell through Eventbrite, dietary restrictions come in through DMs, final counts live in a spreadsheet, and menu adjustments happen in Google Docs. None of these systems talk to each other. I spend 8–12 hours per week just reconciling information - copying guest notes, adjusting counts, updating costs manually. When something changes last-minute (which it always does), I’m chasing inconsistencies across five tools. The cost is real: missed allergies, incorrect prep quantities, and occasional over-ordering that burns $300–$800 per event. My current workaround is brute-force manual syncing, but it doesn’t scale and it’s fragile.
+
+Structural Issue: Demand Without Structure
+I sell out events before I even finalize menus or venues. That sounds like a good problem, but it creates chaos. Guests buy into an idea, not a finalized product. That means I’m constantly updating expectations - menu changes, venue confirmations, timing adjustments. Right now, I manage this through mass texts and Instagram updates, which is inefficient and inconsistent. There is no central “truth” for the event that updates in real time for every guest. If I miss one communication thread, someone shows up misinformed. My workaround is over-communicating everywhere, which wastes time and still fails under pressure.
+
+Structural Issue: Dynamic Menu Costing Failure
+My menus are fluid by design - I build around what’s available, seasonal, and interesting. But my costing is static. I build a menu, then manually price it in Excel using rough vendor estimates. When ingredient prices shift or I swap components, nothing updates automatically. I either eat the margin loss or spend hours recalculating. This disconnect means I’m often operating blind on profitability until after the event. My workaround is padding prices, which protects me but makes pricing less competitive and less precise.
+
+Structural Issue: Inventory & Equipment Blind Spots
+I don’t have a reliable system for knowing what I own, what I need, and what I’ve already allocated to an event. I’ve bought duplicate equipment more times than I want to admit - $40 tools turning into $400 mistakes over time. For ingredients, I track orders manually per event, but there’s no persistent inventory layer. If I have leftover product from a previous dinner, it’s not accounted for unless I remember it. The workaround is mental tracking plus scattered notes, which fails the moment volume increases.
+
+Psychological Model
+I optimize for: speed, clarity, and control under pressure
+I refuse to compromise on: guest experience and execution precision
+I avoid: repetitive manual work, double entry, and anything that slows me down mid-service
+I evaluate tools by: how much operational weight they remove without adding friction
+
+Pass / Fail Conditions
+For this system to work for me, it must:
+
+Automatically ingest inquiries and guest data from Instagram DMs, SMS, and email into a single unified event record without manual entry.
+
+Maintain a live event dashboard where guest count, dietary restrictions, payments, and communication updates sync in real time across all sources.
+
+Dynamically recalculate menu costing at the component level when ingredients or quantities change, using real vendor pricing tied to location.
+
+Provide a centralized guest communication layer where updates (menu, time, location) propagate instantly to all attendees with confirmation tracking.
+
+Track inventory and equipment persistently across events, preventing duplicate purchases and surfacing shortages before prep begins.
+
+Allow flexible payment structures (tickets, deposits, split payments, staggered billing) while automatically reconciling totals per event.
+
+Eliminate the need for switching between more than one primary interface during active event management.

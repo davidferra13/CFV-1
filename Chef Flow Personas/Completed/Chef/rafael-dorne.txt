@@ -1,0 +1,50 @@
+**Chef Profile: "Rafael Dorne" - Independent Private Chef & Regional Network Node (Networked)**
+
+I run a solo private chef business, but I’m no longer just coordinating with one other chef—there are now three to four of us across New England loosely working together. It’s not a team, but it’s also not independent anymore. The system hasn’t caught up to that complexity.
+
+### Business Reality
+
+Right now:
+
+* 18–24 events per month (mix of private dinners and small series events)
+* Average booking: $2,200; monthly revenue: $42,000–$60,000
+* Solo operator; rotates freelancers depending on event size
+* Geographic scope: Massachusetts, Connecticut, Rhode Island, with overlap into all New England states
+* Network: 3–4 independent chefs, all covering different regions with overlap
+* Current tools: Instagram + SMS (leads), Google Sheets (tracking), Calendar (scheduling), Notes app (prep)
+* Coordination: fragmented—group texts, individual threads, inconsistent sharing
+
+### Primary Failure: Coordination Breakdown at Scale
+
+What worked with one other chef breaks completely with three or four. Information gets lost, duplicated, or inconsistently shared. One person knows something another doesn’t. Leads get passed unevenly. Sourcing trips aren’t coordinated. There’s no central layer—just fragmented communication. The workaround is group chats and manual updates, which quickly become noise and get ignored.
+
+### Structural Issue: No Multi-Party Visibility Control
+
+I can’t control who sees what across multiple collaborators. Sharing something in a group exposes it to everyone, even if it’s only relevant to one person. The workaround is separate conversations, which fragments everything further.
+
+### Structural Issue: No Network-Level Coordination
+
+There’s no system that understands the network as a whole—who’s available, who’s closest, who’s best suited. Everything is handled one-to-one instead of across the group. The workaround is manual decision-making, which doesn’t scale.
+
+### Structural Issue: No Standardization of Interaction
+
+Each chef operates differently—different pricing, workflows, communication styles. There’s no shared structure for how we coordinate, which creates friction. The workaround is adapting per person, which slows everything down.
+
+### Psychological Model
+
+I optimize for: scalable coordination without losing control
+I refuse to compromise on: independence and flexibility
+I avoid: group noise and unclear communication
+I evaluate tools by: whether they can handle multiple collaborators cleanly
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. Support coordination across multiple chefs without requiring group chats.
+2. Allow selective sharing to specific individuals within a network.
+3. Provide network-level visibility into availability and location.
+4. Avoid duplication of information across multiple threads.
+5. Maintain independent workflows for each chef.
+6. Scale cleanly from 2 to 5+ collaborators without redesign.
+7. Keep coordination structured and low-noise.

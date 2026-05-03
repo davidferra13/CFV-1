@@ -1,0 +1,67 @@
+**Guest Profile: "Richard 'KSI' Kyle" - High-Profile VIP (Influencer Status)**
+
+I’m Richard Kyle, and while my public profile is massive—YouTube, UFC, music, business ventures—my private time is surprisingly structured. I am constantly traveling, so when I do attend a private dining or ticketed event, I expect the experience to be flawlessly seamless and, frankly, impressive. I don't just eat; I am a central element of the evening's entertainment and networking, meaning the operation around me has to be perfect.
+
+### Business Reality
+
+Right now:
+* I attend **1 to 2** high-profile private dining or ticketed events per **quarter**.
+* My event spend, factoring in private tickets and associated travel/accommodation, is easily **$5,000+** per single engagement, and I often bring a small group of **4 to 7** people.
+* I am extremely sensitive to specific dietary needs—I require a high-protein, low-carb menu that can accommodate my specific athletic requirements, and my entire group must be cleared of peanuts and gluten, which is non-negotiable.
+* My last major event was the 'UFC Partner Appreciation Gala' at the Grove, London, on November 15th, last year. The entire group consisted of my closest associates, managers, and high-value business partners.
+* My communication setup is chaotic; I receive confirmations via my manager's texts, the host's emails, and sometimes a link from a third-party ticketing site, meaning I rarely have one reliable source of truth.
+
+---
+
+### Primary Failure: Event Flow Collapse Due to Information Silos
+
+The biggest operational problem is the total lack of a single source of truth for my entire party's details, which causes the operational flow to seize up before the meal even starts. Because the RSVP, the dietary restrictions, the seating assignments, and the final headcount are spread across 3-4 different communication channels, I am constantly worried that the kitchen or the front-of-house team will be using outdated or incomplete information. This doesn't just mean a bad meal; it means a logistical failure that impacts the reputation of the entire event, and that is a cost I cannot afford.
+
+---
+
+### Structural Issue: Fragmented Guest Confirmation and RSVP Tracking
+
+I often receive initial invites via email (the general marketing invite), followed by a confirmation text from my manager, and then finally a separate ticketing link from the venue. My workaround is having my assistant manually cross-reference all three sources into a personal Google Sheet just to confirm the final headcount and who is bringing which dietary restrictions. This process is time-consuming, prone to human error (a missing text, an old email), and forces my team to spend valuable minutes confirming basic logistical data instead of focusing on the event itself.
+
+---
+
+### Structural Issue: Inconsistent Management of Dietary and Allergy Needs
+
+My dietary requirements are complex and high-stakes (multiple severe allergies, specific macro targets). Currently, the dietary needs are often communicated verbally to the event coordinator, then sometimes repeated in an email, and finally, I have to manually confirm them via text the day before. There is no centralized, visible system that holds this information for the entire service team. If a single ingredient is misinterpreted or forgotten, the consequences are immediate and severe, risking not just a ruined meal, but a medical emergency.
+
+---
+
+### Structural Issue: Lack of Real-Time Seating and Flow Management
+
+Because I am a VIP, my seating is critical to the networking dynamic. The seating chart is usually provided days in advance, but it is static. If the event flow changes—for example, if I need to move from the main dining room to a private lounge for a photo op—the service team has no single, immediate view of where I am, who I am with, or when I need to be back at the table. My team has to physically track me and communicate the status updates manually, which is inefficient and breaks the illusion of seamless service.
+
+---
+
+### Structural Issue: Dispersed and Non-Standardized Feedback Loop
+
+When the event is over, I expect the service to be impeccable, but the feedback process is non-existent or highly manual. I usually send a direct, private text to the host or my manager, referencing a specific service interaction ("The sommelier was brilliant, but the bread service was slow"). There is no integrated way for the operation to capture this real-time, high-value qualitative feedback (positive or negative) that can be immediately routed back to the appropriate department head (FOH, kitchen, beverage program) for immediate coaching or improvement.
+
+---
+
+### Psychological Model
+
+I optimize for: **Seamless, invisible luxury and efficiency.** The process should feel effortless, allowing me to focus 100% on the experience and the people I am with.
+I refuse to compromise on: **The quality and reliability of the service details.** If the food or the flow is off, the entire experience fails.
+I avoid: **Any process that requires me, my team, or my assistant to manually cross-reference data or ask for confirmation.**
+I evaluate tools by: **How quickly and reliably they can unify disparate pieces of event data (people, allergies, timing, menu) into one single, actionable view for the operational staff.**
+
+I think in terms of high-level outcomes and risk mitigation. My time is my most valuable asset, and if a process adds friction, it is immediately deemed worthless. I need a system that anticipates the failure points before they happen.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must **display** a single, unified dashboard view that shows the final, confirmed headcount, the associated reservation ticket details, and all associated dietary/allergy notes for my entire party, accessible to FOH and kitchen staff.
+2. The system must **allow** my manager to update my personal event preferences (e.g., "Requires early exit due to media commitment") and have that information instantly visible on the staff's operational schedule and tablet view.
+3. The system must **automatically generate** a detailed, multi-day event timeline that tracks my movements (e.g., 7:00 PM - Arrival/Cocktail; 8:30 PM - Main Seating; 10:00 PM - Lounge Move) and alerts staff to any necessary transitions.
+4. The system must **accept** and categorize detailed, private feedback (e.g., "The specific seasoning on the main course was excellent") and route that feedback immediately to the responsible department manager (Chef, Sommelier, Service Captain) for follow-up action.
+5. The system must **validate** and lock down the final menu and costing details (including specific ingredient substitutions for allergies) once the reservation is confirmed, preventing any last-minute menu changes that violate dietary restrictions.
+6. The system must **integrate** the initial invitation source (email), the confirmation source (text/app), and the final ticketing source into one master guest profile, eliminating the need for manual data cross-referencing.
+7. The system must **provide** a digital, single point of contact for all required event documentation (e.g., emergency contact numbers, insurance waivers, required pre-reading materials) accessible via the service staff's device.

@@ -1,0 +1,61 @@
+**Chef Profile: "Michael Greger" - Nutrition Specialist (Dietary Consultant)**
+
+I run a specialized operation that doesn't just cook food; I manage complex dietary compliance for people with severe, often intersecting medical conditions. My focus is always on the source and the nutritional integrity of the ingredients. My work involves translating complex medical requirements—like managing low sodium, high fiber, gluten-free, anti-inflammatory, and low FODMAP diets simultaneously—into safe, delicious, and scalable meals. I am constantly balancing the demands of high-volume meal preparation with the non-negotiable need for pinpoint accuracy, ensuring that every single bite meets rigorous clinical standards.
+
+### Business Reality
+
+Right now:
+* I manage **12** private clients and **4** large corporate speaking engagements per quarter, focusing on specialized meal prep and consultation.
+* My revenue model is a mix of retainer fees ($4,000/month per client) and event fees ($8,000 per quarter engagement), generating approximately $180,000 annually.
+* My team consists of **4** core staff: one sous chef, two prep cooks, and one administrative assistant.
+* My geographic scope is limited to the **NYC metro area**, requiring both centralized kitchen prep and occasional off-site event catering.
+* My current tech setup is a combination of Google Sheets for inventory and costing, Trello for general task management, and WhatsApp for urgent client coordination, which is inherently chaotic.
+
+---
+
+### Primary Failure: Liability and Documentation Gap
+
+The biggest operational problem is the systemic risk posed by cross-contamination and inaccurate ingredient tracking, which directly impacts my professional liability. Because my clients often have life-threatening allergies (e.g., severe nut, soy, and gluten allergies) or require medical-grade diets, I cannot afford any errors. Right now, I rely on printed, color-coded prep sheets and manual checklists, which are easily lost, misinterpreted, or edited incorrectly. A single missed ingredient swap or a failure to accurately document the source of a specialty item (like specific anti-inflammatory oils) could lead to a severe medical event, costing me not just the client, but potentially my professional standing and insurability.
+
+---
+
+### Structural Issue: Cross-Contamination Protocol Enforcement
+
+I have a complex prep flow where ingredients for highly restrictive diets (e.g., pure organic, raw, specific anti-inflammatory items) must be processed entirely separately from general meals. My current workaround is physically sectioning off prep stations with yellow caution tape and using separate cutting boards and utensils for each "allergen zone." This is labor-intensive, slows down the entire prep line, and is impossible to scale when we have more than 3 concurrent, highly restricted meals.
+
+### Structural Issue: Real-Time Ingredient Compliance Tracking
+
+When a client's medical doctor makes a last-minute dietary adjustment (e.g., "switch out the quinoa for brown rice because of gut inflammation"), I cannot simply update a recipe. I must track not only the substitution but also the specific sourcing requirements (e.g., "must be certified organic, unpolished, and non-GMO"). My workaround is updating a shared Google Sheet, which then needs to be manually cross-referenced against the physical inventory and the final prep ticket, creating massive data latency and high error risk.
+
+### Structural Issue: Event-Specific Regulatory Documentation
+
+For my quarterly corporate engagements, I am required to provide comprehensive documentation to the venue and the client's medical liaison. This includes detailed ingredient sourcing sheets, allergen matrices for every item, and a full nutritional breakdown, all tailored to the specific event menu. Currently, I compile these documents by manually exporting data from various spreadsheets (recipe costs, inventory sheets, client forms) and then reformulating them into a single, professional PDF package, which is incredibly time-consuming and prone to version control errors.
+
+### Structural Issue: Staff Training and Recipe Version Control
+
+Because my recipes are constantly evolving based on new scientific research and client feedback, I have dozens of highly specialized, proprietary recipes. When a new cook is hired, or when an existing cook is assigned a new prep task, I have to physically print out the specific, version-controlled recipe card, highlighting all the required substitutions and compliance notes. This process relies on manual handoffs and printed documents, meaning if the wrong version is pulled, the entire meal could be unsafe or incorrect.
+
+---
+
+### Psychological Model
+
+I optimize for: **Absolute, documented accuracy and verifiable sourcing.** Nothing gets passed to the plate unless I know its origin and its exact nutritional profile.
+I refuse to compromise on: **The integrity of the ingredient list.** If the source or the purity of an ingredient cannot be verified, it is unusable.
+I avoid: **Guesswork and ambiguity.** I hate vague instructions or processes that rely on memory or generalized best practices.
+I evaluate tools by: **How rigorously they enforce compliance workflows and maintain an immutable record of ingredients and substitutions.**
+
+My decision-making is highly risk-averse and evidence-based. I view food preparation as a clinical process, not an artistic one. If a system doesn't build compliance and traceability into its core function, I assume it is unreliable for my operations.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must **track and enforce** ingredient substitutions against a central, compliant recipe library, flagging any deviation from certified sources or required dietary restrictions instantly.
+2. The system must **generate a comprehensive, auditable allergen matrix** for every menu item, linking specific ingredients back to the raw ingredient inventory and the final client booking profile.
+3. The system must **manage and version-control** detailed prep tickets, ensuring that staff only access the most current, clinically approved version of a recipe, complete with mandatory safety notes.
+4. The system must **allow me to generate compliant, multi-format documentation** (e.g., PDF for medical liaisons, sheet for kitchen staff) from a single menu and client profile, ensuring all regulatory data points are captured.
+5. The system must **log the entire process chain**—from initial ingredient booking/receipt to final prep completion—to prove due diligence and minimize liability exposure.
+6. The system must **manage complex, multi-site scheduling and inventory allocation** for specialized ingredients (e.g., 5 lbs of organic, unpolished brown rice allocated specifically for the Downtown corporate event).
+7. The system must **support granular cost modeling** that accounts for fluctuating, high-end sourcing costs (e.g., organic, certified gluten-free, local farm-to-table premiums) to accurately price specialized meals.

@@ -1,0 +1,54 @@
+**Chef Profile: "Landon Pierce" - Private Chef & Event Operator (Logistician)**
+
+I don’t just cook—I build the entire environment around the food. Every event is a moving system: location, equipment, vendors, timing, transport. If one piece isn’t accounted for, the whole thing collapses. I’m constantly planning for variables I don’t fully control.
+
+### Business Reality
+
+Right now:
+
+* 10–18 events per month (private dinners, pop-ups, outdoor series)
+* $28,000–$65,000 monthly revenue
+* Solo operator + 2–6 rotating staff depending on event size
+* Working across 5–10 different venues per month (homes, farms, rented spaces)
+* 3–8 active vendor relationships per week (rentals, farms, specialty suppliers)
+* 20–50 logistical decisions per event (transport, setup, equipment, layout)
+* 2–4 recurring event series in development or rotation at any time
+
+### Primary Failure: Incomplete Logistics Mapping
+
+If I don’t fully map an event, it fails—simple as that. Transport, equipment, timing, setup, teardown—every piece has to be accounted for ahead of time. The problem is I rarely have full information upfront. Venues say they have equipment, but it’s incomplete. Vendors confirm late. Weather changes everything. I’m constantly filling in gaps. My workaround is over-preparing—bringing more than I need—but that increases cost, complexity, and transport risk.
+
+### Structural Issue: Unknown Venue Variables
+
+Every space is different. Some have full kitchens, some have nothing. Some have tables, burners, refrigeration—others are empty shells. Even when I’m told what’s available, it’s often inaccurate or incomplete. I have to verify everything manually or plan for worst-case scenarios. My workaround is building redundant setups, but it’s inefficient and heavy.
+
+### Structural Issue: Transport Fragility
+
+Transport is where everything becomes real. If I don’t pack correctly, stage correctly, and sequence correctly, I lose product or time. Coolers need to be pre-chilled, ice needs to be ready, fragile items need protection, and everything needs to load in a specific order. One mistake—forgotten ice, poor packing, wrong load order—and the event degrades before it even starts. My workaround is checklists, but they’re static and don’t adapt to each event.
+
+### Structural Issue: Equipment Ambiguity
+
+I’m always negotiating what exists vs. what I need. Does the venue have enough burners? Are there enough tables? Is there refrigeration? Do I need to bring my own knives, thermometers, plating tools, extension cords? I’m constantly reconciling two inventories: theirs and mine. My workaround is defaulting to bringing essentials, but it doesn’t scale for larger events.
+
+### Structural Issue: Series Coordination Complexity
+
+Running recurring events sounds efficient, but it compounds complexity. Different venues, different vendors, slightly different setups each time. There’s no stable baseline. I’m rebuilding the system every time instead of refining a consistent one. My workaround is templating mentally, but variations break those templates quickly.
+
+### Psychological Model
+
+I optimize for: preparedness, redundancy, and zero surprises
+I refuse to compromise on: showing up fully equipped and in control
+I avoid: assumptions about venues, vendors, or equipment
+I evaluate tools by: whether they eliminate uncertainty before I arrive on-site
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. Build a complete logistical map for every event (location, equipment, transport, timing) before execution.
+2. Allow me to compare venue-provided equipment vs. my required setup and highlight gaps automatically.
+3. Generate dynamic packing and transport plans based on the specific event configuration.
+4. Track vendor commitments and confirm what is actually being delivered vs. assumed.
+5. Provide adaptable checklists that change based on event type, size, and location.
+6. Maintain reusable templates for recurring events while accounting for variations.
+7. Ensure that nothing critical (tools, ingredients, equipment) can be forgotten or mis-sequenced.

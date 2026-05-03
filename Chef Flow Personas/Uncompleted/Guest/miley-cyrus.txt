@@ -1,0 +1,67 @@
+**Guest Profile: Miley Cyrus - High-Profile Guest (Dietary Specialist)**
+
+I’m used to controlling every single aspect of my public life, so when I commit to something, I expect it to be perfect, seamless, and entirely effortless. When I visit a place like this small-town market, I’m not just a guest; I’m a major draw, and the entire experience—from the minute I arrive to the last bite of food—has to feel curated and flawless.
+
+### Business Reality
+
+Right now:
+* I attend 1 private dining experience and 1 ticketed market event per quarter.
+* My estimated spend for one day’s visit, including accommodation and private dining, is $18,000. I expect the venue to handle all ticketing, accommodations, and private dining costs through a single, pre-paid package.
+* My constraints are severe: I am strictly gluten-free, dairy-free, and have a severe nut allergy. I also have a visible sensitivity to excessive artificial coloring, which needs to be communicated to the kitchen.
+* The event context is a weekend-long festival in a small, historic town (e.g., Asheville, NC), involving a private "pop-up" dinner at a rented barn venue on Saturday, and a public appearance/market browsing on Sunday. My entourage size is 6 people (myself plus managers and security).
+* My current communication setup is a chaotic mix: my manager texts the venue manager (via personal phone), the venue uses a separate email list, and the dietary requirements are sometimes scribbled on a physical planner that is handed off between staff. There is no single source of truth.
+
+---
+
+### Primary Failure: The Cascade of Miscommunication
+
+The single biggest operational problem is the lack of a unified, real-time communication channel regarding my dietary needs and schedule changes. Because my allergies are life-threatening, any failure in communication costs me immense personal stress, and it risks the entire event's reputation, which is worth millions. If the chef or the front-of-house staff only receives my requirements via a text message 30 minutes before service, they are forced to scramble, leading to panic, potential cross-contamination, and, at minimum, a ruined, expensive meal. This operational failure forces me to have multiple members of my team constantly checking in with three different points of contact (venue manager, chef, and catering lead), which is exhausting and unprofessional.
+
+---
+
+### Structural Issue: Fragmented Dietary Intake Confirmation
+
+The problem is that the dietary requirements are captured in multiple, non-linked systems. I initially fill out a survey (via a generic Google Form), but then my manager has to manually call the head chef to confirm the severity of my nut allergy, and finally, the private dining reservation specialist must manually input it into the booking system. This redundancy means that if one person updates the dietary needs, the others remain unaware, creating a high risk of critical error. I have to manually verify these details with three different staff members before I feel safe enough to eat anything.
+
+---
+
+### Structural Issue: Invisible Menu Customization & Costing
+
+I cannot see a single, definitive menu that confirms how my requirements have been integrated into the overall event menu. When I look at the advertised menu, it mentions "seasonal dishes," but I have no way of knowing if the seasonal dish that day contains the specific gluten or dairy items I am allergic to. I currently rely on the venue providing a physical, printed "special allergy menu" that is handwritten and often changes, making it impossible to plan or trust. Furthermore, I have no insight into how these customized dishes are being costed or sourced, which adds a layer of distrust regarding the quality and effort put into the accommodation.
+
+---
+
+### Structural Issue: Lack of Single-Source Operational Timeline
+
+Because the event spans multiple locations (the market, the accommodation, the private dining barn), the operational schedule is scattered across multiple platforms. The market hours are on a printed flyer; the accommodation check-in is confirmed via email; and the private dining start time is confirmed via a text message. If there is a 45-minute delay in my arrival, no single system can automatically notify *all* relevant parties—the kitchen, the sommelier, and the front-of-house staff—to adjust the workflow, reschedule the seating, or adjust the pre-ordered dishes. I have to constantly manage the timeline myself, which is a massive operational burden.
+
+---
+
+### Structural Issue: Inconsistent Vendor and Ingredient Transparency
+
+I am highly sensitive to visible ingredients, particularly artificial colors and specific grains. I need to know, with absolute certainty, the provenance of every key ingredient used in my meal. Currently, the venue provides a list of vendors (e.g., "Local Farm A," "Bakery B"), but there is no integrated way to view the ingredient list or the sourcing certification for those items within the event booking platform. This forces my team to conduct multiple phone calls to verify that the specific batch of flour or oil used meets my rigorous standards.
+
+---
+
+### Psychological Model
+
+I optimize for: Effortless luxury and absolute certainty. If the process feels complicated, I assume the outcome will be flawed.
+I refuse to compromise on: The safety and integrity of my dietary requirements. This is non-negotiable, and any perceived risk shuts down the entire experience immediately.
+I avoid: Manual coordination, conflicting communication channels, and having to ask clarifying questions about basic ingredients.
+I evaluate tools by: How seamlessly they integrate multiple, disparate aspects of a high-stakes experience (e.g., booking, menu, allergy management, staffing).
+
+I think in terms of luxury service standards—if it requires me to manage the logistics, the system has failed. I expect the platform to preemptively solve every potential point of failure before I even realize it exists.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1.  **Confirm** my full, detailed dietary profile (including specific allergens and cross-contamination risks) and automatically display this information to every staff member (FOH, BOH, Sommelier) who interacts with my booking, regardless of the communication channel.
+2.  **Generate** a single, dynamic event timeline that automatically adjusts and notifies all relevant staff (kitchen, service team) of any delay or change to my arrival time or private dining start time.
+3.  **Display** a fully customized, interactive menu that explicitly lists every ingredient, allowing me to filter or confirm the absence of all my restricted items, alongside the corresponding cost to the event.
+4.  **Provide** a consolidated view of the entire booking, linking the initial RSVP/survey data, the final accommodation details, and the specific menu build, so I never have to verify the same information via multiple methods.
+5.  **Verify** the sourcing and compliance of critical ingredients (e.g., "Gluten-Free Certification from Farm X") and make this verifiable information visible to my team members within the event profile.
+6.  **Allow** my manager to update my dietary needs or schedule, and instantly trigger a confirmation workflow that requires mandatory sign-off from the Head Chef and the Event Coordinator before the change is finalized.
+7.  **Cost** the entire personalized experience—including all required substitutions and specialized sourcing—and present a single, transparent invoice that breaks down the cost of the accommodation, the menu, and the necessary operational adjustments.

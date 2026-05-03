@@ -1,0 +1,90 @@
+Chef Profile: "Milo Renner" - Private Chef & Local AI Operator (Sovereign)
+
+I love AI, but only if it’s mine. I don’t want some platform’s black-box assistant reading my menus, clients, pricing, messages, vendor history, or private notes. If AI is going to touch my business, it needs to run locally, privately, and plug into the tools I already use.
+
+Business Reality
+Right now:
+
+8–14 private events per month
+
+$30,000–$85,000 monthly revenue
+
+100+ weekly messages across SMS, email, vendor threads, and client planning
+
+Running local AI models on my laptop and phone for drafts, summaries, planning, and search
+
+Using private AI for menus, costing notes, client memory, prep planning, and document analysis
+
+Refuse to upload sensitive client data into generic cloud AI tools
+
+Constantly testing smaller local models that can run fast on consumer devices
+
+Primary Failure: Platforms Forcing Their Own AI
+My biggest issue is when a platform says it has “AI,” but it means their AI. That’s useless to me if I can’t control the model, storage, logs, permissions, or data flow. My client conversations, pricing structure, private addresses, dietary notes, and sourcing history are not training material. If I already have a private AI running locally, the platform should let me connect it. I don’t want to copy data out, paste it into some other assistant, and hope nothing leaks. My workaround is keeping sensitive workflows outside those platforms, but that defeats the entire point of automation.
+
+Structural Issue: No Bring-Your-Own-AI Layer
+Every serious tool should let me choose the AI backend. Local model, private server, on-device model, hosted model - my choice. A dropdown should let me switch from the platform’s default AI to my own private model. Better yet, for sensitive workflows, AI should not activate at all until I configure my own approved model. My workaround is using separate local AI tools, but then nothing is integrated.
+
+Structural Issue: Privacy vs Usefulness Conflict
+The more useful AI becomes, the more sensitive the data it needs. Menus are easy. But real usefulness means reading client history, messages, allergies, payments, addresses, and vendor data. I will not give that to a black-box system. My workaround is limiting AI to generic tasks, which wastes its potential.
+
+Structural Issue: Local AI Is Now Good Enough
+This is not 2020 anymore. Small private models can run on laptops, desktops, and phones. I don’t need every request routed through a giant cloud model. For 80% of my workflow - summaries, extraction, categorization, note cleanup, prep planning, reminders - a local model is enough. My workaround is building my own local stack, but most culinary software still acts like cloud AI is the only option.
+
+Structural Issue: AI Without Tool Access Is Just Chat
+A private AI is only powerful if it can act inside my systems. It needs access to menus, calendars, messages, recipes, costing, vendor profiles, and task queues - with permissions I control. Otherwise, it’s just a chatbot sitting next to the real work. My workaround is manually feeding it context, which creates duplicate labor.
+
+Psychological Model
+I optimize for: private intelligence, local control, and automation without exposure
+I refuse to compromise on: ownership of my data and model choice
+I avoid: platform-owned AI, hidden logging, and forced cloud processing
+I evaluate tools by: whether they let my own AI operate inside the workflow
+
+Pass / Fail Conditions
+For this system to work for me, it must:
+
+Allow me to bring my own AI model and select it as the active assistant backend.
+
+Support local or private AI execution without forcing sensitive data through platform-owned cloud AI.
+
+Provide clear controls for what the AI can access: messages, clients, menus, recipes, pricing, and vendor data.
+
+Keep all AI logs, memory, and outputs under my control, with no hidden training or retention.
+
+Let AI act inside the system - creating tasks, summarizing threads, drafting menus, updating notes - not just chat beside it.
+
+Offer per-workflow AI permissions so sensitive areas require my private model by default.
+
+Work across phone and desktop so my private AI follows me everywhere without exposing client data.
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Flags: none
+Rejected: 2026-04-30T16:46:04.682Z
+-->
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Flags: none
+Rejected: 2026-04-30T21:21:15.763Z
+-->
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Flags: none
+Rejected: 2026-05-01T05:31:25.238Z
+-->
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Flags: none
+Rejected: 2026-05-01T19:09:52.523Z
+-->

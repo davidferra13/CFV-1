@@ -1,0 +1,55 @@
+Client Profile: "Derek Langford" - Head of Partnerships, Multi-Brand Hospitality Group (Coordinator)
+
+I don’t run a single dinner - I run a network of people, opinions, and moving parts. If everything isn’t captured, visible, and traceable in one place, I lose control fast. I need a system that behaves like a living record, not just a chat.
+
+Business Reality
+Right now:
+
+I coordinate 10–15 multi-stakeholder dinners per year - brand collaborations, investor-hosted events, and cross-company gatherings with 10–20 guests.
+
+Budgets range from $5,000 to $20,000. Multiple parties sometimes split costs - my company, a partner brand, and occasionally a sponsor.
+
+Payments are fragmented. One group pays the chef, another covers alcohol, another handles rentals. I’m tracking commitments across email and spreadsheets.
+
+Guest lists are fluid and political - VIPs get added late, certain people can’t sit together, and preferences matter more than they say.
+
+Dietary restrictions are complex but also reputational - if a VIP isn’t accommodated perfectly, it reflects on me, not the chef.
+
+Venues vary widely - private homes, partner venues, pop-up locations - each with different expectations and constraints.
+
+Communication is spread across Slack channels, email threads, WhatsApp groups, and internal docs. No one sees the full picture.
+
+Primary Failure: Fragmented Group Intelligence
+The biggest problem is that the “group brain” doesn’t exist in one place. Decisions happen everywhere - someone approves a menu tweak in Slack, another person flags a dietary issue in WhatsApp, and a third confirms a guest via email. None of it is unified. When I try to consolidate, I’m always behind. I’ve had situations where a chef executed a plan that was technically correct based on one thread but completely wrong based on another. The cost is credibility - I look disorganized even when I’m doing the work of five systems manually.
+
+Structural Issue: No Centralized Decision Layer
+There’s no system that captures group decisions as structured outcomes. Conversations happen, but they don’t resolve cleanly. I need a place where a question is asked, options are presented, feedback is collected, and a decision is locked - with all of that preserved. Right now, decisions are implied, not recorded. That leads to constant second-guessing and reversal.
+
+Structural Issue: Multi-Party Visibility Gaps
+Different stakeholders see different slices of the event. My internal team sees one version, the chef sees another, and partner brands see something else entirely. There’s no unified view with controlled access. I end up forwarding messages, summarizing threads, and trying to keep everyone aligned manually. It’s inefficient and introduces errors every time information is translated.
+
+Structural Issue: Unstructured Group Input
+Group feedback is messy. People respond at different times, in different formats, and with varying levels of clarity. “I’m fine with anything” from one person and “no dairy, no mushrooms, prefer lighter dishes” from another. There’s no system that turns this into structured, actionable data without me interpreting it. That interpretation step is where mistakes happen.
+
+Psychological Model
+I optimize for: alignment across multiple stakeholders and zero information loss
+I refuse to compromise on: visibility into every decision and who made it
+I avoid: translating information between tools and re-explaining context
+I evaluate tools by: how well they unify group communication into structured, reliable outcomes
+
+Pass / Fail Conditions
+For this system to work for me, it must:
+
+Provide a single “Dinner Circle” environment where all stakeholders (host, chef, partners, guests) interact within one unified space.
+
+Capture every message, file, and decision chronologically, with the ability to collapse older threads while keeping them fully accessible.
+
+Convert discussions into structured decisions - questions, options, votes/feedback, and final outcomes - clearly recorded and visible.
+
+Offer role-based visibility so each participant sees the relevant information without fragmenting the overall system.
+
+Aggregate unstructured group input (dietary restrictions, preferences, attendance) into structured data tied to each guest.
+
+Maintain a live “current state” view (menu, guest list, budget, timeline) that is always synchronized with the underlying conversation history.
+
+Allow instant traceability - click any part of the current plan and see the full chain of decisions and discussions that led to it.

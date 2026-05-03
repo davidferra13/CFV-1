@@ -1,0 +1,67 @@
+**Staff Profile: "Alec" Dubois - Prep Kitchen Assistant (Precision Engine)**
+
+I am the person who ensures that every single ingredient, every single component, is ready, perfectly portioned, and waiting exactly when the line needs it. My job isn't just chopping; it's managing the flow of raw materials into usable components, making sure that the brigade doesn't stop for anything less than perfection. I operate at the critical intersection of the purchasing team, the sous chef, and the line cooks, meaning I see the failure points before they happen.
+
+### Business Reality
+
+Right now:
+* I work 3 shifts, 2-3 high-volume events, and 1 regular service per week.
+* I am paid at $18.50/hour, and my required certification is HACCP Level 2. I am expected to maintain a minimum 95% completion rate on all pre-assigned prep tasks.
+* I report directly to the Sous Chef, but I take direction from the Lead Prep Cook on specific daily tasks. I am expected to work with a team of 4-6 other prep assistants and 2 station leads. My uniform is a black poly-blend chef coat, and I must be available for 10-12 hour shifts.
+* My scope is limited to the central prep kitchen located at 123 Culinary Way. I handle all mise en place for the main dining room and the private event space.
+* My current briefing and scheduling setup is a chaotic mix: the Sous Chef sends urgent updates via a WhatsApp group chat, the main prep list is printed on oversized, often illegible, whiteboards, and any major shift change requires a follow-up text message confirmation.
+
+---
+
+### Primary Failure: Component Availability Gap
+
+The single biggest problem is the handoff gap between bulk ingredient receipt and component readiness. Because I am responsible for prepping 50-70 different ingredients (from root vegetables to specialty sauces) for a single service, if the purchasing team doesn't log the exact delivery time and quality of the goods, I cannot plan my time. This results in critical bottlenecks where I have to wait 1 to 2 hours for ingredients that should have been staged, forcing me to stop work entirely. This isn't just wasted time; it directly costs the kitchen an estimated $300 to $600 per major event due to lost labor hours and subsequent menu delays, which then stress the line staff and increase waste.
+
+---
+
+### Structural Issue: Ingredient Receipt Tracking
+
+When the purchasing team receives a large delivery (e.g., 50 cases of assorted produce), they simply dump it in the walk-in and write a generic "Received" note on a clipboard. I have no visibility into which ingredients are ready for use, which are compromised, or what specific lot numbers were received. I have to physically check the receiving area, wasting 30-45 minutes of my shift just cataloging inventory that should be digitally logged and assigned to me immediately.
+
+---
+
+### Structural Issue: Dynamic Prep List Management
+
+The prep list is always printed and static. If the Sous Chef changes the menu by just one item—for example, swapping roasted carrots for braised parsnips—the entire prep sheet must be physically marked up with a sharpie. This means the entire team risks prepping the wrong item in bulk (wasting dozens of pounds of ingredients) or worse, missing the new prep entirely because the physical sheet gets lost or overwritten.
+
+---
+
+### Structural Issue: Cross-Client Prep Scheduling
+
+When we host multiple private events (say, a 40-person corporate lunch and a 15-person wedding dinner) on the same day, the prep lists are managed in separate, physical binders, and I have no consolidated view of ingredient usage across both clients. I might prep 20 pounds of specific herb mix for the lunch, only to realize 3 hours later that the wedding menu also requires that same herb mix, forcing me to redo the prep or scramble for a replacement, which causes major stress and delay.
+
+---
+
+### Structural Issue: Shift-Specific Task Delegation
+
+When I finish my shift, my handoff notes are usually a stack of sticky notes left on the prep station detailing what was done and what needs to be started. There is no structured way to log the *status* of a task (e.g., "Carrots: 60% complete; need to finish blanching") or the *reason* for the handoff (e.g., "Ran out of time; finish tomorrow morning"). This forces the next shift to start by re-reading handwritten notes, which is highly inefficient and prone to misinterpretation.
+
+---
+
+### Psychological Model
+
+I optimize for: Precision and predictability. I need to know exactly what I am touching, how much I have, and when it needs to be done, down to the gram.
+I refuse to compromise on: Standardized digital workflow. If I have to rely on memory, paper, or verbal confirmation, the process is flawed.
+I avoid: Chaos and redundancy. I hate having to check the same information in three different places (WhatsApp, whiteboard, printed sheet).
+I evaluate tools by: How quickly they can process data and assign ownership. If I have to click through more than four screens to confirm an ingredient status, I assume the tool is too slow.
+
+I think like a highly optimized machine. Every decision I make is based on the most efficient path from raw ingredient to usable component. My time is valuable, and any system that introduces friction or requires me to context-switch between multiple sources of truth will cause immediate operational failure.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1.  The system must allow me to digitally clock out the exact quantity and lot number of ingredients I receive, immediately updating the inventory for the prep station.
+2.  The system must provide a single, unified prep schedule that automatically adjusts ingredient requirements and task assignments when a menu change occurs, highlighting only the changes.
+3.  The system must allow me to log component status and handoff notes (e.g., "Parma Ham: 80% finished; needs 2 hours of cooling time") that are viewable by the incoming shift and the Sous Chef.
+4.  The system must integrate ingredient usage tracking across multiple simultaneous client bookings, showing real-time depletion rates to prevent over-prepping or running out of key components.
+5.  The system must allow me to generate a digital "Day Prep Manifest" that links specific ingredients (sourced from specific vendors/deliveries) directly to the prep task and the assigned staff member.
+6.  The system must alert me 2 hours in advance if a key component's prep task is falling behind schedule, allowing me to preemptively adjust my workflow or request immediate support.
+7.  The system must allow me to receive automated, structured push notifications for urgent changes (e.g., "The main course protein has been upgraded; increase prep volume for Item X by 20%") that are immediately actionable and tied to a specific recipe.

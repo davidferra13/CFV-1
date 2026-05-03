@@ -1,0 +1,77 @@
+**Chef Profile: Christina Tosi - Pastry Chef / Bakery (Pop-up)**
+
+I am Christina Tosi, a renowned pastry chef and founder of several successful bakeries and dessert companies. Currently, I manage a dynamic pop-up bakery concept that takes on various events and locations across New York City. Our revenue model is built around a mix of retail sales at each event and wholesale orders from partner restaurants and cafes. The team consists of six dedicated bakers, two front-of-house staff, and myself as the head chef and creative director. We focus our efforts on high-profile events like weddings, fashion shows, and exclusive parties.
+
+### Business Reality
+
+Right now:
+* I manage 12 high-profile clients spanning weddings, fashion shows, and corporate events
+* Our revenue model generates $50,000 per event with a profit margin of 30%
+* The team size includes six bakers, two front-of-house staff, and myself
+* We operate out of a shared commercial kitchen in Brooklyn
+
+### Primary Failure: Inefficient Inventory Management
+
+The lack of an integrated inventory management system leads to overstocking on some ingredients and stockouts on others. This not only increases our waste but also drives up costs due to last-minute ingredient purchases. On average, we lose $5,000 per event due to poor inventory control.
+
+---
+
+### Structural Issue: Difficulty in Recipe Scaling
+
+Our recipes are meticulously designed for small-scale production at our bakeries. Scaling these up for events requires manual adjustments that often lead to inconsistencies and increased waste. What breaks is the delicate balance between ingredient quality and quantity. While we have developed workarounds by creating event-specific recipe cards, it's a time-consuming process prone to errors.
+
+---
+
+### Structural Issue: Perishability Challenges
+
+The perishable nature of our ingredients necessitates precise scheduling and coordination. We currently rely on a shared whiteboard in the kitchen for tracking production schedules, which is ineffective as our team grows. This results in missed deadlines and product spoilage, costing us around $10,000 per event.
+
+---
+
+### Structural Issue: Integrating Retail and Wholesale Orders
+
+Our dual revenue model complicates our order management system. We use a combination of spreadsheets and text messages to coordinate retail sales at events with wholesale orders from partners. This creates confusion over ingredient allocations and order fulfillment, leading to errors that cost us approximately $8,000 per event.
+
+---
+
+### Structural Issue: Lack of Recipe Precision in Production
+
+Our recipes are designed for perfection but can be difficult to replicate on a larger scale or different kitchen setup. This leads to inconsistencies in product quality, resulting in customer dissatisfaction and loss of business. On average, we experience a 15% increase in returns and complaints due to production discrepancies.
+
+### Psychological Model
+
+I optimize for:
+* Consistency in product quality
+* Flexibility to adapt recipes for specific events
+* A seamless guest experience that reflects our brand's creativity and passion
+
+I refuse to compromise on:
+* Ingredient quality, no matter the cost
+* The creative integrity of my desserts
+* The personalized service we offer to each client
+
+I avoid:
+* Rigid processes that stifle innovation
+* Technology that complicates rather than simplifies operations
+* Neglecting customer feedback and preferences
+
+I evaluate tools by:
+* How they streamline our workflow without compromising on quality
+* Their adaptability to our unique needs in events and custom orders
+* The support and training provided for our team's adoption
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. Streamline inventory management to reduce waste and cost.
+2. Provide a scalable recipe platform that maintains ingredient quality and quantity at any scale.
+3. Offer an integrated order management system for retail and wholesale sales.
+4. Implement a scheduling tool that accommodates perishability without product spoilage.
+5. Ensure consistency in production across different kitchen setups while allowing flexibility for specific events.
+6. Enable team-wide access to recipe knowledge, ensuring quality service delivery.
+7. Provide real-time insights into customer satisfaction and feedback for continuous improvement.
+
+---
+
+[END]

@@ -1,0 +1,103 @@
+Chef Profile: "Luca Moretti" - Private Chef & Household Operator (Steward)
+
+I don’t just cook - I manage money that isn’t mine, at a high volume, every day. Groceries, specialty orders, last-minute requests, household restocks - it all runs through cards that belong to the family. I’m expected to move fast, spend intelligently, and account for every dollar without ever slowing down service.
+
+Business Reality
+Right now:
+
+5–7 active households under management (primary focus on 2 high-net-worth families)
+
+$120,000–$250,000 monthly spend flowing through me (groceries, vendors, household items)
+
+20–40 transactions per day across multiple cards/accounts
+
+Operating within a 25–50 mile radius with frequent same-day sourcing
+
+Payments split across family-issued credit cards, reimbursements, and occasional cash handling
+
+Tracking done via notes, photos of receipts, and end-of-week summaries in spreadsheets
+
+Weekly or bi-weekly reporting expected by clients with full breakdowns
+
+Primary Failure: Unstructured Financial Tracking
+Money moves constantly, but the tracking is fragmented. I’ll make 15 purchases in a day across different stores, sometimes for different households, and there’s no clean system tying each transaction to a purpose, a meal, or a request. Receipts get photographed, stored, or sometimes lost. At the end of the week, I’m reconstructing everything manually - what was bought, for who, and why. It’s time-consuming and error-prone. If something doesn’t line up, it reflects on my trustworthiness, even if the mistake is small. My workaround is over-documenting, but it slows me down and still isn’t bulletproof.
+
+Structural Issue: Multi-Client Fund Separation
+I’m often using multiple cards in the same day, sometimes within the same store. One purchase might be for Family A’s dinner, another for Family B’s pantry, and a third for a shared event. There’s no enforced separation at the moment of purchase. Everything relies on me remembering and labeling correctly later. My workaround is mental tagging and quick notes, but it breaks under volume and speed.
+
+Structural Issue: Receipt & Justification Friction
+Clients expect clarity - what was purchased, where, and for what purpose. But receipts don’t tell the full story. A grocery receipt might include 20 items, but only 12 relate to a specific meal. I have to manually annotate or explain these later. There’s no system that links purchases directly to menus, events, or requests in a structured way. My workaround is writing summaries in spreadsheets, but it’s disconnected from the actual transactions.
+
+Structural Issue: Real-Time Visibility vs Post-Hoc Reporting
+Clients trust me, but they also want visibility. Right now, they only get clarity after the fact - weekly reports, summaries, and occasional updates. There’s no real-time view of spending as it happens. If they ask mid-week, I have to pause and reconstruct the current state. My workaround is giving rough verbal updates, but it’s not precise and doesn’t scale.
+
+Psychological Model
+I optimize for: speed, accuracy, and maintaining absolute trust
+I refuse to compromise on: financial transparency and accountability
+I avoid: situations where money feels ambiguous or untraceable
+I evaluate tools by: whether they make financial tracking automatic without slowing me down
+
+Pass / Fail Conditions
+For this system to work for me, it must:
+
+Automatically log every transaction (card, amount, location) and assign it to the correct client or household in real time.
+
+Allow me to tag or confirm the purpose of a purchase instantly (meal, pantry, event) at the moment it happens.
+
+Link receipts to transactions automatically and enable quick annotation when needed.
+
+Provide a live dashboard per client showing current spending, categorized and continuously updated.
+
+Generate clear, itemized reports that explain not just what was spent, but why.
+
+Handle reimbursements, adjustments, and returns cleanly, including tracking money owed back to clients.
+
+Eliminate manual reconciliation at the end of the week by keeping everything accurate as I go.
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Flags: none
+Rejected: 2026-04-30T10:04:06.278Z
+-->
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Flags: none
+Rejected: 2026-04-30T11:16:07.164Z
+-->
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Flags: none
+Rejected: 2026-04-30T15:16:04.918Z
+-->
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Flags: none
+Rejected: 2026-04-30T21:21:15.736Z
+-->
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Flags: none
+Rejected: 2026-05-01T05:31:25.221Z
+-->
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Flags: none
+Rejected: 2026-05-01T19:09:52.505Z
+-->

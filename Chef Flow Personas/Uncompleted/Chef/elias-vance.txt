@@ -1,0 +1,67 @@
+**Chef Profile: "Elias Vance" - Executive Chef (Brand Operator)**
+
+I built my reputation on the belief that a great meal is a story, and every plate needs to tell it truthfully. I don't just run restaurants; I curate experiences that connect the diner directly to the source of the ingredients and the heart of the community. My challenge isn't cooking; it's scaling the soul of my kitchen while maintaining the illusion that I'm still personally overseeing every single plate.
+
+### Business Reality
+
+Right now:
+* I manage **4** full-service restaurant locations, plus **6** regular private event bookings per month, and **2** pop-up concepts.
+* We generate approximately **$8.5 million** in annual revenue, broken down into $5.5M from dine-in services and $3M from events/wholesale/pop-ups.
+* My core team is comprised of 150 employees (full-time salaried managers, part-time line staff, and contracted specialty vendors).
+* My geographic scope covers the entire greater Asheville area, from the downtown core to the outlying farm markets.
+* My current tech setup is a patchwork: Lightspeed for POS/basic inventory, QuickBooks for accounting, Google Workspace for communication and shared documents, and laminated binders for core recipes and seasonal menus.
+
+---
+
+### Primary Failure: Maintaining Brand Consistency at Scale
+
+My biggest headache isn't cost or labor; it's the dilution of the brand story. When I designed the menu, I built in specific, unique seasonal components sourced from local farms. If the Asheville location runs out of the specific heritage tomatoes I wanted, the team *must* pivot to a pre-approved, equally story-rich alternative, and that pivot needs immediate, clear communication to the kitchen and the front-of-house staff. Right now, that communication happens via frantic group texts and manager email chains. This results in inconsistent execution, where one location might use a Grade B substitute while another uses a Grade A substitute, leading to a palpable drop in the perceived quality of the guest experience. This inconsistency directly damages the brand trust I spent decades building and is the single largest threat to our repeat business revenue.
+
+---
+
+### Structural Issue: Cross-Location Ingredient Standardization
+
+When the farmer calls, I need to know which of my four locations can handle a 400-pound delivery of a specific cut of local pork shoulder, and which manager is responsible for receiving, logging, and immediately assigning that inventory to the correct unit’s menu cycle. I currently track this using a shared Google Sheet that is updated manually by three different managers. This process is prone to double-booking, mis-logging incoming inventory, and often results in me calling multiple managers repeatedly to confirm a simple count, costing me an estimated 3-4 hours of my week in pure administrative follow-up.
+
+---
+
+### Structural Issue: Dynamic Event Costing and Ingredient Allocation
+
+We frequently take on private events (weddings, corporate dinners) that require bespoke menus and specialized ingredient allocations, often using high-cost, non-standard items. I currently create a separate, highly customized Excel cost sheet for every single event, manually calculating ingredient usage, labor hours, and waste factor. If the sourcing team changes the price of a key item (say, the heirloom potato), I have to manually update 10-15 different event spreadsheets, which is time-consuming and guarantees that a costing error will slip through, costing us hundreds of dollars in unaccounted-for profit loss per month.
+
+---
+
+### Structural Issue: Seasonal Menu Recipe Lifecycle Management
+
+Our recipes are not static; they are living documents that change with the harvest. When a new seasonal menu drops, the core recipe needs to be updated everywhere: the physical binder at the station, the inventory sheet used for ordering, the recipe card used for training, and the POS menu listing. I currently maintain this using a combination of Word documents and laminated printouts. When the recipe changes (e.g., reducing the sodium content or changing the prep time), I have to physically print and laminate new versions and manually discard the old ones across all four locations, leading to staff confusion and time spent searching for the "correct" version of a recipe.
+
+---
+
+### Structural Issue: Staff Skill Gap Mapping and Training Compliance
+
+My kitchen managers are excellent, but they are managing 150 people across multiple roles. When we introduce a new technique—say, a specific fermentation process or a new piece of high-end equipment—I need to know *exactly* which employees have been trained, which managers are certified, and when their refresher training is due. I currently use a printed, physical logbook that I hand to the HR manager, who then emails the list to the four location managers to track. This system is completely decentralized, and I frequently discover that a critical manager at a smaller location is operating with outdated knowledge because the training record was lost or never entered into the shared system.
+
+---
+
+### Psychological Model
+
+I optimize for: **The seamless guest experience.** If the system makes me worry about the ingredients or the staffing, it's failing.
+I refuse to compromise on: **The integrity of the source.** If the platform makes it difficult to track where the ingredients came from, it's useless to me.
+I avoid: **Any system that forces me to become a data entry clerk.** If I have to input the same piece of information into three different places, I will abandon it.
+I evaluate tools by: **How quickly they can make the back-of-house operations invisible to the front-of-house flow.**
+
+I think in terms of flow and narrative. Every system must support the story of the food, not complicate it. I need a single source of truth that feels intuitive to the person executing the service, whether they are a line cook or a front-of-house host.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. **Centralize** all recipes, including ingredient specifications, portion sizes, and prep instructions, so that a single change automatically updates the costing, inventory usage, and physical printout for all four locations.
+2. **Generate** a real-time, consolidated inventory report that tracks ingredient depletion across all four locations and can automatically flag when a specific local vendor’s weekly supply is running below a critical threshold.
+3. **Manage** complex event bookings by allowing me to build bespoke menus and generate accurate, profit-loss costings instantly, even when factoring in non-standard or highly variable ingredients.
+4. **Provide** a unified scheduling view that maps employee roles, required skills, and training compliance across all 150 staff members, allowing me to see who is certified for what shift.
+5. **Streamline** the vendor ordering process by integrating the current menu's projected ingredient needs with the vendor's actual inventory capacity, minimizing waste and manual negotiation.
+6. **Support** multi-stage event planning by allowing me to manage bookings, track deposits, and generate a complete guest manifest that includes dietary restrictions and historical preferences.
+7. **Allow** me to create a single, auditable trail from the moment I commit to a seasonal ingredient purchase to the final meal being plated and sold, connecting sourcing, cost, and revenue.

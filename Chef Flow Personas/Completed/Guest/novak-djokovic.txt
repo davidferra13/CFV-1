@@ -1,0 +1,73 @@
+**Guest Profile: "Novak Djokovic" - Elite Athlete (Precision Diner)**
+
+I am a professional athlete whose performance is entirely dependent on highly optimized, meticulously controlled nutrition. My schedule is intense, demanding peak physical output followed by equally precise recovery protocols. Everything I consume must be clean, bioavailable, and non-inflammatory. When I commit to an event, whether it’s a sponsor dinner or a private team gathering, I am not just a guest; I am a highly critical stakeholder whose physical well-being dictates my capacity to perform. My dietary needs are not preferences; they are medical requirements that cannot be compromised for the sake of convenience or standard menu offerings.
+
+### Business Reality
+
+Right now:
+* I attend an average of **3-5** private, high-stakes dinners or team events per month, especially during tournament cycles.
+* My travel and event spend is estimated at over **$8,000 - $12,000** per week during peak season, covering accommodation, specialized meals, and recovery resources.
+* I require a highly restrictive, anti-inflammatory, and clean diet: zero gluten, zero dairy, minimal processed sugars, and specific macro ratios (e.g., high Omega-3, specific carb loading profiles). I have severe allergies to peanuts, soy, and nightshades.
+* My current event context is usually a high-end, intimate venue (e.g., a private dining room in a major city like Miami or London) with a small, curated headcount of **6 to 12** people. The dates are highly volatile, dictated by tournament schedules (often requiring confirmation 48-72 hours out).
+* My current communication setup is a chaotic mix: initial RSVPs are often via a concierge’s email, dietary needs are submitted via a separate, often outdated PDF survey, and final confirmations are usually handled by frantic text messages between my team manager and the venue coordinator. Nothing is centralized or reliably confirmed.
+
+---
+
+### Primary Failure: The Nutritional Integrity Risk
+
+The single biggest operational failure is the inability to guarantee the nutritional integrity of the meal. When I arrive at an event, I am operating under extreme physical stress, and any deviation from my optimized diet—even a minor cross-contamination risk or an unlisted ingredient—can lead to GI distress, which severely impacts my energy and focus for the next day’s performance. This isn't just a bad dinner; it's a performance risk. If the food service team cannot provide an ironclad, documented confirmation of ingredient sourcing, preparation method, and allergy protocol compliance, the entire event is jeopardized. The cost isn't just the meal; it's the potential loss of a high-stakes match or the inability to follow a critical recovery protocol.
+
+---
+
+### Structural Issue: Fragmented Dietary Input and Verification
+
+The process for recording and verifying my dietary needs is broken. I fill out an initial survey (PDF), but that data is never seamlessly integrated into the menu planning or the kitchen's execution system. My team then has to manually re-communicate these constraints (e.g., "NO SOY," "NO GLUTEN") via text to the event organizer, who then forwards them to the chef. This creates multiple points of failure where the critical dietary restriction is lost, misinterpreted, or simply forgotten by the kitchen staff.
+
+---
+
+### Structural Issue: Lack of Real-Time Menu Adaptability
+
+Menus are presented as fixed documents, which is wholly inadequate for my needs. If I have a last-minute requirement (e.g., "I need the main protein to be cooked medium-rare, and the carb source must be sweet potato, not quinoa"), there is no visible mechanism for the kitchen or the platform to adapt the menu in real-time or confirm that the substitution is feasible and compliant with my overall dietary plan. I am left waiting for manual confirmation via text, slowing down the entire experience and eroding trust.
+
+---
+
+### Structural Issue: Ingredient Cross-Contamination Tracking
+
+Because my allergies are severe, the risk of cross-contamination is paramount. The current system requires me to verbally confirm my allergies upon arrival, and the kitchen staff must rely on memory or a separate, non-integrated checklist. There is no digital, mandatory workflow that forces the kitchen manager to acknowledge, document, and confirm that the preparation area, utensils, and ingredients used for my specific plate were segregated and compliant. This is a critical compliance and safety failure.
+
+---
+
+### Structural Issue: Inaccurate Allergen Manifest Visibility
+
+When I view the menu or the event details, allergen information is often generic (e.g., "Contains Gluten"). What I need is hyper-specific, actionable visibility: "This plate contains 100% certified gluten-free oats, prepared on a dedicated, sanitized line, and is cross-checked for soy contamination." The lack of this level of granular, auditable ingredient documentation makes the menu unusable for my specific medical requirements, forcing me to assume the worst.
+
+---
+
+### Structural Issue: Post-Event Feedback Loop Failure
+
+The feedback process is typically a generic satisfaction survey sent to the entire group, asking things like "Overall Experience" or "Would you recommend us?" This is useless. I require specific, targeted feedback prompts that relate directly to the operational execution of my dietary needs: "Was the preparation of the main protein compliant with the requested medium-rare temperature?" or "Were the specified allergens (peanuts/soy) successfully avoided throughout the meal?" The lack of specific metric tracking means operational failures go uncorrected.
+
+---
+
+### Psychological Model
+
+I optimize for: **Absolute certainty and documented compliance.** I need to know, definitively, that every single element of my meal adheres to my performance requirements.
+I refuse to compromise on: **The safety and integrity of my specialized nutrition.** No exceptions can be made regarding ingredient sourcing or preparation method.
+I avoid: **Ambiguity, manual verification steps, and generalized assumptions.** I hate having to repeat my constraints or wait for confirmation via unreliable channels.
+I evaluate tools by: **The level of operational detail and auditable compliance tracking.** If the platform can't prove the food was prepared correctly, it's useless to me.
+
+I think like a performance manager: every variable must be controlled, measured, and optimized. I don't trust gut feelings or general statements; I trust verified data and robust protocols.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1.  **Mandatory Ingredient Documentation:** Allow the kitchen manager to digitally upload and link sourcing certificates for all critical ingredients (e.g., "Certified Gluten-Free Oats Batch #45").
+2.  **Automated Allergen Exclusion Workflow:** Force the system to require a mandatory, digital sign-off from the chef confirming that the preparation area and all utensils used for my plate were segregated and allergen-free.
+3.  **Dynamic Menu Modification:** Allow my team manager to input last-minute, specific substitutions (e.g., "Replace Quinoa with Sweet Potato") and require the platform to generate a revised, compliant menu and alert all relevant staff immediately.
+4.  **Centralized Single Source of Truth:** Consolidate all RSVPs, dietary surveys, and medical constraints into one single, non-editable profile that is automatically visible to the event planner, the chef, and the service staff.
+5.  **Specific Feedback Metrics:** Provide dedicated, mandatory feedback prompts tied directly to the operational execution of the meal (e.g., "Was the temperature of the protein correct?" or "Were all listed allergens successfully avoided?").
+6.  **Accommodation Logistics Integration:** Allow the platform to track and flag potential logistical conflicts between my designated accommodation location and the event venue, highlighting potential transportation or specialized delivery needs.
+7.  **Costing Transparency:** Provide a clear breakdown of the specialized ingredients and preparation costs associated with my highly restricted menu, ensuring the event budget accounts for the premium nature of my requirements.

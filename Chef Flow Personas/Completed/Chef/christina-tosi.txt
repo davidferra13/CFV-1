@@ -1,0 +1,75 @@
+**Chef Profile: Christina Tosi - Pastry Chef / Bakery Innovator**
+
+I am the founder and CEO of Milk Bar, a fast-growing bakery empire with locations across the US. From our flagship store in New York City to new outposts popping up in major cities, we're known for our inventive desserts that push the boundaries of flavor and texture.
+
+Right now:
+* I manage 15 stores [details]
+* $25M in annual revenue [team size and structure]
+* 500+ employees across production, retail, wholesale [Geographic scope with specific location]
+
+My biggest challenge is balancing the creative side of my business with the logistical demands of running a nationwide operation. 
+
+---
+
+### Primary Failure: Inventory Accuracy
+
+Our inventory system is outdated and prone to errors. We still rely on manual counts and spreadsheets, which leads to overstocking or stockouts of key ingredients like our signature caramel sauce or compostable packaging. Last quarter, we lost $100k due to expired perishables and unsold seasonal items that didn't sell as expected.
+
+---
+
+### Structural Issue: Recipe Precision
+
+While our R&D team has digitized most recipes, the process is far from perfect. We often discover inconsistencies between locations, like different stores using slightly varying proportions of ingredients in the same product. This results in inconsistent quality and customer complaints. 
+
+To work around it, we've had to add more QA checks and increase headcount for recipe enforcement - a costly bandaid.
+
+---
+
+### Structural Issue: Seasonal Items
+
+Introducing seasonal items is exciting but challenging. Forecasting demand is tricky, and if an item doesn't sell well or spoils before selling through, the losses can be steep. We've had to write off thousands in unsold pumpkin spice everything after the season ended!
+
+To mitigate this, we've shifted more production to our wholesale business which has steady year-round demand. But it's not a perfect solution - we still take hits on seasonal misfires.
+
+---
+
+### Structural Issue: Perishability
+
+Managing perishable ingredients is an ongoing battle. Our cookie doughs and cake truffles have long shelf lives but require constant refrigeration. Keeping track of what needs to go where between stores is a logistical nightmare prone to human error that can lead to food waste or quality issues. 
+
+We've had to bring on more production staff just to manage ingredient flows.
+
+---
+
+### Psychological Model
+
+I optimize for:
+* Consistency across locations 
+* Speed and efficiency in production
+* Novelty and innovation in our offerings
+
+I refuse to compromise on:
+* Quality of ingredients
+* Uniqueness of our flavors
+* Creative freedom in my R&D team
+
+I avoid:
+* Restrictive vendor relationships
+* Overly prescriptive corporate cultures
+* Inflexible technology that doesn't evolve with the business
+
+For me, a system has to be powerful yet flexible enough to handle our constant experimentation and scaling. It needs to keep every location on-brand while allowing us to bring new ideas to life at speed.
+
+---
+
+### Pass / Fail Conditions
+
+1. The system must accurately track inventory across all stores in real-time with <5% error rate
+2. Recipe management should allow easy updates from HQ that automatically propagate to locations with 100% accuracy
+3. Forecasting tools for seasonal items must predict demand ±10% or better to avoid overproduction 
+4. Perishable ingredient tracking shows expiration dates and optimizes usage across stores, minimizing waste
+5. The system integrates seamlessly with our wholesale production to balance retail/wholesale supply needs
+6. All locations can place supply orders directly in the system for same-day shipping to avoid stockouts 
+7. The platform must handle complex costing calculations per product/location to ensure profitability everywhere
+
+I will only adopt a system that meets these critical operational needs - my business and reputation are on the line. Anything less and we'll be stuck with the status quo, which is simply not an option for where Milk Bar needs to go next.

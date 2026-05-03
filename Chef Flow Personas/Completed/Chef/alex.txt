@@ -1,0 +1,67 @@
+**Chef Profile: "Alex" Chen - Head Chef (Purist Operator)**
+
+I run a small, deeply focused restaurant that operates on the principle that the menu must be a direct reflection of what the land and sea offered that day. I don't cook for profit margins; I cook for the integrity of the ingredient. My job is less about standard service and more about managing a complex, hyper-local supply chain that dictates the entire menu.
+
+### Business Reality
+
+Right now:
+* I manage **4** core restaurant locations/partners (the main restaurant, and three seasonal pop-ups/catering spots) that require daily menu adjustments.
+* My revenue model is highly variable, averaging **$70,000 to $95,000** per month, depending entirely on the yield and quality of the primary seasonal inputs.
+* My team size is **10** full-time staff (including sous chefs and prep cooks) plus 2-3 part-time event staff.
+* My geographic scope is limited to a **20-mile radius** that encompasses the city core, the surrounding farmland, and the immediate coastal access points.
+* My current tech setup is a chaotic mix: a shared Google Sheet for basic inventory, a series of WhatsApp groups for supplier communication, and physical, spiral-bound recipe binders kept in the office.
+
+---
+
+### Primary Failure: Ingredient Volatility and Inventory Drift
+
+My biggest operational pain point is that my business model is inherently reactive, not proactive. I don't buy ingredients; the ingredients dictate the menu, and the menu dictates the purchasing. If a major storm hits the local berry patch, or if the oyster yield is unexpectedly low, my entire menu changes, and the cost structure shifts instantly. I spend an average of **4-6 hours every Monday morning** just cross-referencing what the suppliers *said* they could deliver versus what I *need* to cost the week's menu. This manual, panic-driven reconciliation process is inefficient, prone to human error, and costs me valuable time that should be spent in the kitchen or with my suppliers.
+
+---
+
+### Structural Issue: Tracking Variable Sourcing Yields
+
+I have no centralized way to track the actual yield of my ingredients versus the promised yield. Suppliers give me estimates—"we should have 30 cases of heirloom tomatoes"—but what I actually receive is often 20 cases, or perhaps 40, depending on the morning. I track this using a stack of physical invoices and notes, which means I have to manually update my master recipe cost sheets every time I take a delivery. If I miscalculate the actual cost per pound of a key item like heritage pork due to a poor yield, the entire week’s projected COGS is wrong, and I might over-order or under-price a menu item by as much as **$3,000** of lost margin.
+
+---
+
+### Structural Issue: Dynamic Menu Costing
+
+Because my menu changes daily or even twice a day based on what’s freshest, I cannot use static recipe cards. My current workaround is to maintain a massive, disorganized Excel file that contains hundreds of ingredients, each with multiple seasonal cost entries. When I swap out a primary ingredient (e.g., switching from standard zucchini to purple pattypan squash), I have to manually update the cost of the dish, then update the portioning guide for the prep cooks, and then update the associated event pricing sheet. This process is slow, and it is incredibly easy to forget to update the cost for a secondary ingredient, leading to unexpected losses when I invoice for a pop-up event.
+
+---
+
+### Structural Issue: Supplier Communication and Compliance
+
+My 12-15 key suppliers (farmers, fishmongers, dairy, bakers) communicate via a mix of texts, emails, and phone calls. This makes it impossible to maintain a single, auditable record of who supplied what, when, and under what specific compliance conditions (e.g., "these mussels were harvested on Tuesday, lot 3, and must be served within 48 hours"). I keep these details in my memory and in fragmented notes. If an issue arises—say, a food safety query—I cannot quickly pull up a complete chain of custody record for a specific batch of product that was used 3 weeks ago, which creates enormous liability risk.
+
+---
+
+### Structural Issue: Labor Scheduling Based on Ingredient Flow
+
+My prep list and therefore my staffing needs are dictated by the harvest schedule, which is unpredictable. If I receive a massive, unexpected shipment of root vegetables on a Monday, I suddenly need 4 extra hours of specialized prep labor (peeling, sorting, trimming) that wasn't budgeted or scheduled. I currently have to call my sous and physically adjust the staff roster and prep checklist via text message. This reactive scheduling wastes time and often means I pay premium overtime rates for sudden, unbudgeted labor spikes, because I have no system to predict prep volume based on expected sourcing inputs.
+
+---
+
+### Psychological Model
+
+I optimize for: **Ingredient integrity and transparency.**
+I refuse to compromise on: **The direct connection between the plate and the source.**
+I avoid: **Any process that forces me to think about "efficiency" over "purity."**
+I evaluate tools by: **How little they require me to look away from the kitchen or the farm.**
+
+I trust my gut and the immediate reality of the sourcing more than any predictive model. Technology must be invisible—it must organize the chaos of the inputs without creating a layer of abstraction between me and the raw material.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must allow me to input a fluctuating supply yield (e.g., 20-40 lbs) and automatically recalculate the cost and number of servings for all associated recipes.
+2. The system must provide a centralized, chronological record of every ingredient batch, including the specific supplier, date of harvest/delivery, and compliance notes.
+3. The system must allow me to create a "Menu Builder" that automatically suggests recipe adjustments when a core ingredient is flagged as unavailable or significantly over-yielded.
+4. The system must enable me to create a detailed inventory ledger that tracks ingredient consumption based on *actual* prep time and labor allocation, not just theoretical recipe counts.
+5. The system must facilitate real-time communication with my 15 key suppliers to confirm expected yields and delivery windows, and automatically flag discrepancies against current menu plans.
+6. The system must generate a single, unified cost sheet that rolls up sourcing costs, labor costs, and waste/shrinkage percentages for any given menu or event.
+7. The system must allow me to flag specific ingredients as "Hyper-Seasonal" so that their sourcing and pricing data automatically expires or changes based on the calendar date.

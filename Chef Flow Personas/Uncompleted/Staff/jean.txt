@@ -1,0 +1,67 @@
+**Staff Profile: "Jean-Pierre" - Prep Kitchen Assistant (Muscle Memory)**
+
+I am Jean-Pierre, and my job is to make sure that everything is ready before the Chef even thinks about it. I work the deep prep—the tedious, necessary work of washing, chopping, brining, and organizing massive amounts of ingredients so the line cooks can actually cook. I don't get the glory of plating, but if the prep isn't perfect, the whole service falls apart, and we lose money.
+
+### Business Reality
+
+Right now:
+* I work **5** shifts per week, often 10-hour days, across **3** different kitchen stations (garde manger, saucier, and general prep).
+* I am paid minimum wage plus gratuity, and I am expected to be certified in basic food handling, but I am treated as expendable labor.
+* I report directly to the Sous Chef, but I take instructions from the station lead, and I am constantly being trained on new techniques, which means I have no guaranteed role stability.
+* My scope is the main commissary kitchen, which handles prep for 3 distinct client events a week, plus our regular restaurant service.
+* My current briefing and scheduling setup is a mix of a physical whiteboard in the break room and a frantic group text thread that changes at least 15 times before the service starts.
+
+---
+
+### Primary Failure: Ingredient Misallocation and Spoilage
+
+The biggest operational headache is that I rarely know the *exact* volume needed for a specific service until the night before, or even 2 hours before the event. If the Sous Chef estimates 10 lbs of diced fennel and the line cook needs 15 lbs, I spend 20 minutes chopping the wrong amount, which means we are either left with a massive surplus that will spoil, or we have to scramble and pay overtime labor to fix the shortage. This inconsistency costs the kitchen at least $300 a week in wasted produce and labor hours, and it forces me to work at a frantic pace just trying to meet impossible, changing targets.
+
+---
+
+### Structural Issue: Prep List Ambiguity
+
+The written prep lists are almost always vague, using terms like "adequate amount" or "enough for the menu." My current workaround is to corner the Sous Chef or the station lead 30 minutes before I start and ask them, "How much?" This forces them to calculate it on the spot, which interrupts their flow and makes them late for their own tasks. The process breaks down when the lead chef is busy communicating with the Head Chef, leaving me with no one to confirm my quantities with.
+
+---
+
+### Structural Issue: Last-Minute Schedule Whiplash
+
+The schedule is never final. A text message might say "Prep 8 AM - 4 PM," but then a quick follow-up text changes it to "Start 10 AM - 6 PM, focus on pastry assist." I have to constantly re-prioritize my physical setup and my energy for tasks that are completely different from what I was told to do. I usually have to physically clear my station and reorganize my tools, wasting 15-20 minutes of prime prep time every time the schedule shifts, which happens at least 3 times a week.
+
+---
+
+### Structural Issue: Inefficient Ingredient Handoff
+
+When the produce delivery arrives, it is dumped onto a single, crowded stainless steel table, regardless of the recipe or the intended use. I have to physically search through stacks of bulk boxes and labeled bins to find the specific 15 lbs of heritage tomatoes needed for the *garde manger* board, rather than the 20 lbs of standard Roma tomatoes meant for the sauce. This physical chaos increases the chance of cross-contamination and adds 10 minutes of fruitless searching time before I can even begin my assigned prep tasks.
+
+---
+
+### Structural Issue: Lack of Centralized Task Handoff
+
+Communication about completed tasks is purely verbal or written on scraps of paper that get thrown away. If I finish brining the pork shoulder, I have to physically walk over and announce it to the Sous Chef, who may then get distracted by a phone call. If I don't make that verbal announcement, they assume the task is incomplete, leading to unnecessary second-guessing and micromanagement. There is no single, visible place for me to mark "Task Complete" that everyone can see.
+
+---
+
+### Psychological Model
+
+I optimize for: Physical flow and muscle memory. I need to know exactly where every ingredient, every cutting board, and every tool is located before I start.
+I refuse to compromise on: The structural integrity of the prep process. If the prep is sloppy, the service is sloppy, no matter how good the chef is.
+I avoid: Digital clutter and complexity. If I have to click through five menus or read a complex PDF to know where to chop something, I stop working.
+I evaluate tools by: Immediate, clear, physical utility. If I can see it, touch it, and use it quickly, it works.
+
+I think in terms of throughput—how many pounds of product can I process in the next 45 minutes. My focus is always on efficiency and minimizing wasted movement. If a system adds a step or requires me to stop chopping to input data, it is a failure in my eyes.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must provide a clear, centralized, and downloadable prep list that specifies ingredient quantity (in lbs or kgs) and the required preparation method (e.g., "Dice 1/2 inch," "Marinate for 4 hours").
+2. The system must allow the Sous Chef to adjust my shift assignment and prep list in real-time, and I must receive an immediate, single notification (not a text chain) with the updated task and estimated completion time.
+3. The system must map ingredients to specific station needs and generate a "Pre-Service Inventory Manifest" that dictates where the raw product should be staged upon delivery, reducing search time.
+4. The system must allow me to mark specific prep tasks (e.g., "Pork Brine Complete") as finished and visible to the entire kitchen team, eliminating the need for verbal announcements.
+5. The system must generate a daily, printable, single-page schedule that consolidates my required role, start/end time, and top three priorities for the shift, eliminating reliance on the whiteboard and text messages.
+6. The system must integrate with the ordering process to automatically calculate and suggest prep quantities based on the final menu ticket count (e.g., 40 covers = 12 lbs of fennel).
+7. The system must provide a clear, visual guide showing which prep tools (e.g., mandolines, industrial slicers) are assigned to which prep list item, preventing me from wasting time looking for the right equipment.

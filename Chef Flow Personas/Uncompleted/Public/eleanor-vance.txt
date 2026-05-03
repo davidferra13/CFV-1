@@ -1,0 +1,67 @@
+**Public Profile: "Eleanor Vance" - High-End Culinary Explorer (Discerning Booker)**
+
+I am a marketing executive who lives for unique, curated experiences. I don't just "eat out"; I treat dining as an event, a piece of cultural education, and a highly anticipated social outing. I am constantly on the lookout for the next innovative chef, the hidden gem concept, or the one-night-only tasting menu that hasn't hit the mainstream yet. I value originality, sourcing transparency, and the narrative behind the plate almost as much as the food itself.
+
+### Business Reality
+
+Right now:
+* I search for or compare **5 to 8** unique chef concepts, pop-ups, or specific menus per **month**
+* My budget is typically **$120 to $350** per person, depending on the experience's rarity and perceived exclusivity.
+* I need to see **detailed availability calendars**, a transparent review score (4.5 stars minimum), and clear information on the chef's background and sourcing philosophy.
+* My booking context is almost always a **date-specific, limited-seating event** in major metropolitan hubs like NYC, LA, and Chicago.
+* My current discovery setup is a messy mix: **Instagram Reels** (for discovery), **Google Maps** (for location validation), **Email Newsletters** (for direct invites), and **Word-of-Mouth/Referrals** (for the ultimate trust signal).
+
+---
+
+### Primary Failure: Discovery-to-Commitment Friction
+
+The single biggest operational problem is the chasm between *discovering* an exciting concept and *actually booking* it. Most platforms make the initial discovery easy, but the moment I need to compare three different concepts—say, a Peruvian tasting menu, a molecular gastronomy pop-up, and a wood-fired pizza dinner—the process breaks down into dozens of tabs, conflicting price points, and unclear availability. I spend an average of 30 minutes trying to compile a single, coherent itinerary that includes pricing, dietary notes, and actual booking links. This friction not only costs me time (which is money) but, more critically, it causes decision fatigue, leading me to abandon genuinely exciting, niche experiences in favor of the familiar, easy-to-book chains.
+
+---
+
+### Structural Issue: Fragmented Menu and Pricing Data
+
+I find that the menu, the price list, and the booking calendar are almost always housed on three different digital locations. I might find a beautiful Instagram post detailing a $150 tasting menu, but when I click the link, I land on a general reservation page that doesn't confirm if the $150 price includes the beverage pairing or if the dish is seasonal. I am forced to assume or, worse, email the restaurant just to confirm the total cost, which breaks my entire planning flow.
+
+---
+
+### Structural Issue: Lack of Holistic Event Comparison
+
+I cannot compare the *value* of different events side-by-side. If I am comparing three options for a Friday night—a fixed-price chef's dinner, a set-menu tasting, and a wine pairing experience—I have to open three separate websites, dealing with three separate booking forms and three separate sets of rules (e.g., "must book 3 weeks out" vs. "walk-in only"). There is no single view that says: "Option A: $200, 6 PM, 80% Availability; Option B: $180, 7 PM, 95% Availability; Option C: $250, 7:30 PM, 20% Availability."
+
+---
+
+### Structural Issue: Disconnect Between Chef Profile and Availability
+
+I am heavily influenced by the chef's story, their background, and their commitment to local sourcing. I might spend 10 minutes reading a chef’s impressive profile, watching their video, and getting excited. But then, when I finally click "Book," the booking system is generic and unbranded. It feels like the chef's personality and the unique story I just read about evaporates into a standard calendar widget, creating a jarring loss of trust and perceived quality.
+
+---
+
+### Structural Issue: Manual Cross-Referencing of Dietary Needs
+
+I often book for groups of 6 or more, and my group always has complex dietary needs—I might have one person who is vegan, one who has a severe nut allergy, and one who is gluten-free. The booking process does not allow me to easily flag these needs *before* confirming the reservation. I have to manually search the restaurant's website or call them, wasting time and raising my anxiety about the meal itself.
+
+---
+
+### Psychological Model
+
+I optimize for: **Transparency and Ease of Comparison**. I want to see all the critical information (price, availability, dietary notes, concept description) in one unified view.
+I refuse to compromise on: **The Story and the Effortless Booking Flow**. If the story is compelling, the booking process must feel as premium and seamless as the experience itself.
+I avoid: **Ambiguity and Manual Follow-Up**. If I have to send an email, follow up via text, or use a spreadsheet to track a booking, I will get frustrated and leave the platform.
+I evaluate tools by: **The Depth of Data and the Quality of UX**. If the data is rich (e.g., ingredient sourcing, wine pairings, chef bio) but the interface is clunky, I will leave.
+
+I am highly motivated by scarcity and prestige. I view a perfect booking experience as a high-level transaction that requires minimal friction. If the system forces me to do any non-search-related work (like data entry or cross-referencing), I will assume the experience is equally cumbersome.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1.  The system must **allow me to filter** search results by specific criteria like "Vegan-Friendly," "Tasting Menu," or "Maximum Price Point ($200)."
+2.  The system must **display a unified, real-time cost breakdown** on the booking page that includes the base ticket price, any mandatory service fees, and required beverage pairings.
+3.  The system must **provide a single, unified booking flow** that integrates the chef's narrative and brand aesthetic directly into the reservation confirmation process.
+4.  The system must **allow me to input and save multiple, complex dietary restrictions** for my entire party (e.g., "GF, No Nuts, Mild Vegetarian") and display confirmation that the chef has acknowledged them.
+5.  The system must **show an integrated calendar view** that clearly indicates remaining capacity (e.g., "4/10 seats remaining") rather than just a simple "Book Now" button.
+6.  The system must **provide aggregated, detailed reviews** that are specific to the *type* of event I am booking (e.g., "Dessert Pairing," "Seafood Focus") rather than just a generic 5-star rating.
+7.  The system must **allow me to save and compare 3-5 potential events** into a private itinerary view so I can review all pricing and details before committing to a single booking.

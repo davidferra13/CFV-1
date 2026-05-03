@@ -1,0 +1,61 @@
+**Client Profile: "Martha Stewart" - Elite Event Curator (Impeccable Standards)**
+
+I am a creator, a curator, and a host. My professional life revolves around bringing together the best elements of life—from the perfect holiday table setting to the most exquisite seasonal menu. I don't just host events; I execute experiences that must feel utterly seamless, flawless, and deeply personal to every guest. My reputation, and the reputation of my collaborators, rests entirely on the flawless execution of every detail, especially the food.
+
+### Business Reality
+
+Right now:
+* I book or manage **8 to 12** private dining or catering events per **month**.
+* Deposits start at **$5,000** and often require a signed contract with a minimum commitment of **$10,000** per event.
+* My stakeholder group involves my private assistant, my contract chef, and high-profile clients (CEOs, celebrities, and generational families).
+* The typical venue is a private estate or high-end rented facility, hosting **25 to 50** guests. The complexity involves menus that must cater to multiple, often conflicting, dietary restrictions (e.g., Celiac, severe nut allergies, vegan, Kosher, etc.), requiring bespoke ingredient sourcing and specialized staffing.
+* My current booking and communication setup is a chaotic mix: initial inquiries are handled via my assistant’s personal email, contract details are stored in shared Google Docs, menus are drafted and edited using shared Word documents, and final RSVPs/dietary notes are tracked on a perpetually outdated Excel spreadsheet that nobody trusts.
+
+---
+
+### Primary Failure: Loss of Control Over the Guest Experience
+
+The single biggest operational failure is the inability to centralize the complex, bespoke information required for execution. When the dietary requirements, seating charts, and menu modifications are spread across emails, spreadsheets, and texts, the risk of a critical error—like serving a guest with a severe allergy the wrong ingredient—is unacceptable. This doesn't just cost time; it jeopardizes my brand and my reputation for perfection. A single misstep can lead to negative PR or, worse, physical distress for a guest, which is a total operational failure that costs me professional credibility and, therefore, revenue.
+
+---
+
+### Structural Issue: Fragmented Ingredient and Allergen Compliance Tracking
+
+I have three separate documents: the initial menu plan (Word), the ingredient sourcing list (Excel), and the vendor communication log (Email). When a last-minute change occurs—for example, swapping out a local heirloom tomato for a specific imported variety—I must manually cross-reference the new ingredient against the list of all 30+ known severe allergies. This manual process is prone to human error, and if the chef or prep staff misses a single mention of "gluten-free" on the sourcing list, the entire event is compromised.
+
+### Structural Issue: Non-Standardized Contract and Deposit Management
+
+Since I am dealing with multiple, independent private chefs and venue partners, I manage contracts and deposits using a combination of paper physical contracts and a shared Dropbox folder. When a client pays a deposit, I have to manually update a master spreadsheet to ensure the payment amount, the agreed-upon scope of work, and the corresponding menu revision are all linked. If the spreadsheet is not updated immediately after payment, the accounting team and the operational team will be working off conflicting financial data, causing payment disputes and delays.
+
+### Structural Issue: Lack of Integrated Guest Profile and Service History
+
+I rely on my assistant to compile a guest profile for each event. This profile includes not just the name and RSVP, but deep personal details: which wine they prefer, if they are allergic to shellfish, if they prefer a specific type of seating arrangement, and if they have been a guest before. This information is currently siloed in a handwritten binder or a messy CRM entry that is not linked to the specific menu or the final seating plan. If the system doesn't link the guest profile directly to the meal ticket, the service feels generic, ruining the curated experience I sell.
+
+### Structural Issue: Difficulty in Tracking Complex, Multi-Stage Menu Adjustments
+
+My menus are never simple. They involve seasonal changes, sourcing restrictions, and multiple taste profile adjustments based on the client's mood or the venue's available ingredients. When I revise a dish—say, changing the sauce base from cream to coconut milk because of a local shortage—I must manually update the recipe card, the ingredient costing sheet, the vendor order ticket, and the final service menu. This ripple effect is a massive drain on my time and makes auditing the final cost and compliance incredibly difficult.
+
+---
+
+### Psychological Model
+
+I optimize for: **Flawless, predictable elegance.** The entire process must feel intuitive, highly curated, and maintain an air of exclusivity.
+I refuse to compromise on: **The integrity of the guest experience and the precision of the ingredient sourcing.** If the system makes the process feel messy, I will reject it, no matter how powerful it is.
+I avoid: **Anything that requires manual cross-referencing or feels like "spreadsheet management."** I expect the technology to handle the complexity so I can focus on the artistry.
+I evaluate tools by: **How seamlessly they integrate the creative process (menu design) with the logistical reality (costing/sourcing).**
+
+I think in terms of brand integrity and emotional resonance. Every step, from the initial concept to the final plating, must tell a story of quality. I don't want a tool that just tracks tickets; I want a tool that helps me *design* the perfect, profitable experience, and then ensures that every single person involved executes that vision perfectly.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must allow me to create a single, living Menu Master that automatically generates detailed, compliant ingredient lists and associated costings, regardless of the sourcing location (local market vs. specialized importer).
+2. The system must link every guest profile to their specific menu ticket, flagging any potential allergen conflict immediately upon menu finalization or booking modification.
+3. The system must provide a centralized, chronological record of all contract amendments, deposits, and scope changes, ensuring that the operational team and the accounting team are always working from the same, definitive legal agreement.
+4. The system must allow me to assign specific, required tasks (e.g., "Confirm availability of imported saffron from vendor X") and track the completion status across my assistant, the chef, and the venue manager within the context of the specific event.
+5. The system must manage the entire lifecycle of a booking, from the initial $5,000 deposit payment to the final invoice, ensuring that the payment status dictates which menu revisions are accessible and visible to the operational team.
+6. The system must maintain a library of approved vendor profiles, including their compliance documentation (insurance, certifications), and automatically alert me if a key supplier has an expiring credential relevant to a booked event.
+7. The system must allow me to upload and associate high-resolution visual mood boards, aesthetic notes, and non-textual preferences (e.g., "Rustic Italian feel," "Midnight blue palette") directly into the event file, making it mandatory for the chef to acknowledge these notes during menu creation.

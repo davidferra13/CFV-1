@@ -1,0 +1,111 @@
+Chef Profile: "Evan Carter" - Commis Chef in Michelin-Starred Kitchen (Converter)
+
+I was trained in the U.S., and everything I know lives in cups, ounces, and Fahrenheit. Now I’m in a Michelin-starred kitchen in France where everything is grams, liters, and Celsius - and precision is non-negotiable. I understand metric, but I don’t think in it yet, and that gap shows up in the smallest, most exacting ways.
+
+Business Reality
+Right now:
+
+5–6 services per week (lunch + dinner in a Michelin-starred kitchen)
+
+60–90 covers per service depending on season
+
+Brigade of 12–18 chefs on the line
+
+Responsible for 2–3 stations rotating weekly
+
+100% of recipes, prep lists, and ordering in metric units
+
+Personal notes and intuition still rooted in imperial
+
+10–20 on-the-fly conversions per shift under time pressure
+
+Primary Failure: Precision Conflict Between Systems
+The issue isn’t just converting - it’s that the numbers don’t translate cleanly. In my head, roasting chicken at 350°F is normal. Here, it’s 180°C. Fine. But when I convert that back, it’s 356°F - not a number I would ever naturally use. So now I’m stuck between two systems where neither one aligns perfectly with the other. If I round to 350°F, it’s technically wrong. If I say 356°F, it feels unnatural. And in this kitchen, “close enough” is not a philosophy - it’s a mistake. My workaround is memorizing anchor points, but the mismatch never fully resolves, and it creates constant low-level friction.
+
+Structural Issue: Non-Intuitive Temperature Mapping
+Temperature is where the disconnect becomes obvious. I don’t just execute temperatures - I feel them. Searing, roasting, baking - I know how heat behaves in Fahrenheit. In Celsius, I’m translating behavior, not just numbers. And the conversions don’t land on clean, intuitive values. 160°C, 170°C, 185°C - they all map to strange Fahrenheit numbers that I would never write down. My workaround is approximating internally, but approximation conflicts with the level of precision expected here.
+
+Structural Issue: Mental Model Misalignment
+Metric is built on clean scaling - grams, liters, percentages. Imperial is not. My instincts are shaped by volume (cups, tablespoons) and rough visual estimation. Here, everything is weight-based and exact. Even when I follow recipes perfectly, I don’t internalize them the same way. I’m executing instructions instead of understanding them at a reflex level. My workaround is taking detailed notes and repeating tasks, but it’s a slower path to fluency.
+
+Structural Issue: Conversion Overload in Motion
+During prep and service, I’m constantly bridging two systems in my head. A chef calls out 225g - I translate to ounces. I check a temperature - I convert to Fahrenheit. That extra step compounds throughout the day. It’s not catastrophic, but it adds hesitation, and hesitation is visible in a kitchen like this. My workaround is building mental shortcuts, but anything outside those patterns slows me down.
+
+Psychological Model
+I optimize for: exactness, consistency, and internal clarity
+I refuse to compromise on: precision, even at the level of a few degrees or grams
+I avoid: rounding, guessing, or “close enough” conversions
+I evaluate tools by: whether they eliminate translation and let me operate in one coherent system
+
+Pass / Fail Conditions
+For this system to work for me, it must:
+
+Present temperatures and quantities in metric while optionally showing exact imperial equivalents (not rounded estimates).
+
+Eliminate the need for mental conversion by allowing me to think in imperial while executing in metric.
+
+Provide precise, non-rounded conversions (e.g., 180°C = 356°F) when needed, without forcing approximation.
+
+Help me internalize metric relationships (ratios, scaling, heat behavior) so I stop relying on translation.
+
+Integrate seamlessly into recipes, prep lists, and station workflows without adding extra steps.
+
+Allow me to annotate and build my own reference system to bridge intuition over time.
+
+Remove hesitation during service by making all unit interactions immediate and unambiguous.
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Flags: none
+Rejected: 2026-04-29T19:27:46.515Z
+-->
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Flags: none
+Rejected: 2026-04-30T08:05:36.036Z
+-->
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Flags: none
+Rejected: 2026-04-30T11:16:07.062Z
+-->
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Flags: none
+Rejected: 2026-04-30T15:16:04.587Z
+-->
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Flags: none
+Rejected: 2026-04-30T21:21:15.612Z
+-->
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Flags: none
+Rejected: 2026-05-01T05:31:25.142Z
+-->
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Flags: none
+Rejected: 2026-05-01T19:09:52.408Z
+-->

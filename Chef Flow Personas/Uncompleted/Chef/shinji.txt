@@ -1,0 +1,67 @@
+**Chef Profile: "Shinji" Morimoto - Executive Chef (Coastal Luxury)**
+
+I am the Executive Chef at the resort, responsible for everything from the high-volume Japanese teppanyaki restaurant to the intimate private dining rooms, and the entire banquet operation supporting the 500-room property. My job is not just to create food; it is to maintain a standard of Japanese culinary perfection across multiple revenue streams, ensuring every guest experience is seamless and profitable, regardless of the operational chaos beneath the surface.
+
+### Business Reality
+
+Right now:
+* I manage **4** distinct outlets: the signature Japanese restaurant, the continental breakfast buffet, the in-room dining service, and the dedicated 150-guest banquet facility.
+* Revenue model is complex, spanning $12 million in room service/breakfast revenue, $7 million from private dining/events, and $3 million from the main restaurant's A la Carte sales.
+* My team is structured with a brigade of **45** staff members, including 12 line cooks, 6 prep staff, 3 pastry chefs, 1 kitchen manager, and 2 banquet servers, plus outsourced dishwashing support.
+* My geographic scope is a large, coastal resort located in Hawaii, meaning we deal with extreme seasonality and highly fluctuating staffing pools.
+* Current tech setup is fragmented: We use Micros for point-of-sale (POS), Excel spreadsheets for weekly inventory tracking, Google Calendar for staff scheduling, and dedicated email chains for coordinating banquet menu changes.
+
+---
+
+### Primary Failure: Inaccurate Labor Allocation During High-Volume Events
+
+My biggest operational nightmare is the gap between estimated labor needs and actual, dynamic service requirements. Because I have to service 150-guest banquets and 30 room service orders simultaneously, I cannot rely on static scheduling. When a major banquet requires a shift in cuisine type—say, switching from a plated steak dinner to a large seafood buffet—the prep and line staff assignments become obsolete within minutes. This leads to significant waste (over-prepping items that aren't used) and, more critically, service delays because the right specialized staff (e.g., a dedicated oyster shucker or a specialized sushi prep cook) aren't where they need to be, costing us potential tips and reputation damage.
+
+---
+
+### Structural Issue: Cross-Outlet Inventory Reconciliation
+
+The physical inventory is handled by three separate systems: the main warehouse tracking raw goods, the banquet inventory tracking bulk event purchases, and the POS system tracking daily ingredient consumption. This means I spend at least four hours every Monday morning manually cross-referencing the total usable inventory against the theoretical yield of the week's menus, often discovering discrepancies of 15-20% that require manual adjustments to the entire week's purchasing plan. This process is slow, prone to human error, and makes real-time cost control impossible, especially when a small over-pour of premium sake or an excess of Wagyu trimmings occurs.
+
+---
+
+### Structural Issue: Dynamic Menu Costing for Banquet Upgrades
+
+When a corporate client books a 100-person banquet, the initial quote is based on a standard menu package. However, guests frequently request expensive upgrades—say, adding a lobster bisque or switching from standard beef to dry-aged wagyu. Currently, the sales team must manually calculate the precise marginal cost of that upgrade (including labor, ingredients, and waste factor) and update the quote sheet in a separate spreadsheet, which is then reviewed by me. This process is slow, requires multiple people to touch the spreadsheet, and introduces significant risk of pricing errors or delayed approvals, potentially costing us profit margins on high-value customizations.
+
+---
+
+### Structural Issue: Seasonal Staffing Skill Matching and Scheduling
+
+Given the resort’s reliance on seasonal tourism, my team's skill set changes dramatically between peak season (summer) and slow season (winter). I cannot simply schedule staff by role (e.g., "Line Cook"). I must schedule by *specialized skill* (e.g., "Expert in Cantonese dim sum prep" or "Certified teppanyaki grill master"). Currently, I use a combination of phone calls, email, and physical whiteboard tracking to match available staff skills to the specific, fluctuating needs of upcoming events and outlets. This manual matching process is exhausting, often results in underutilized highly skilled staff, or, conversely, over-relying on generalists who lack the specific expertise needed for a key revenue stream.
+
+---
+
+### Structural Issue: Room Service and Banquet Order Fulfillment Tracking
+
+The path from a booking (the client places an order for 50 guests) to the actual ticket being printed and served is highly disconnected. The reservations team uses one calendar, the banquet sales team uses a CRM, and the kitchen receives the order via a handwritten or emailed PDF. If a guest cancels 10 plates of dessert 3 hours before service, the kitchen staff only learn of the reduction when they physically check the ticket. This lack of a single source of truth means we frequently over-prep perishable goods, resulting in direct waste costs and increasing my labor oversight time by 15-20% just managing the changes.
+
+---
+
+### Psychological Model
+
+I optimize for: **Perfection of execution and maintaining brand reputation.**
+I refuse to compromise on: **The quality of the core ingredients and the consistency of the final plate.**
+I avoid: **Spreadsheets that require VLOOKUPs and manual data entry.**
+I evaluate tools by: **How quickly they can prove a measurable reduction in food waste or labor overhead.**
+
+I am a perfectionist who sees the kitchen as a highly complex, synchronized machine. I do not trust abstract digital workflows; I trust precision, repeatable processes, and the tangible data that proves profitability. My decision-making is always rooted in minimizing variables and maximizing the consistency of the guest experience.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must automatically adjust ingredient inventory and projected costings in real-time when a banquet order changes, and generate a revised profit margin report immediately.
+2. The system must allow me to define and track staff skills (e.g., 'Oyster Prep,' 'Teppanyaki') and automatically suggest the best available staff for a specific shift based on those defined skills and current availability.
+3. The system must centralize all incoming orders (room service, POS, banquet, etc.) into one dynamic kitchen ticket system, instantly notifying the relevant prep station of changes or cancellations.
+4. The system must integrate cost data from the Point-of-Sale (POS) system directly with the recipe library to calculate dynamic, accurate menu pricing based on fluctuating ingredient costs.
+5. The system must provide a clear, auditable dashboard showing the variance between theoretical inventory usage (based on sales) and actual physical usage, flagging discrepancies above a 5% threshold.
+6. The system must handle multi-currency pricing and complex tax structures necessary for international resort bookings, ensuring the final invoice accurately reflects the cost structure.
+7. The system must allow me to build complex, tiered menus where the cost of an upgrade or deletion is calculated dynamically and displayed instantly to the sales team.

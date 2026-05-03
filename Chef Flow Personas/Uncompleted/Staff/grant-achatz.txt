@@ -1,0 +1,67 @@
+**Staff Profile: "Grant Achatz" - Prep Kitchen Assistant (Detail-Oriented Prepper)**
+
+I am the person responsible for getting every single component of the menu ready, 12 to 14 hours before service starts. My job isn't just chopping; it's about anticipating the flow of a kitchen that runs at 150% capacity, ensuring that every station—from the garde manger to the pastry section—has exactly what it needs, at the moment it needs it, and nothing more. My existence revolves around meticulously organized prep lists and the relentless rhythm of the service cycle.
+
+### Business Reality
+
+Right now:
+* I work **6** shifts per week, usually covering dinner service prep, which involves 12-hour days, and I am also called in for **2** weekend events per month.
+* I am paid a minimum of **$18.00/hour** plus tips, and I require full Food Handler certification, which I maintain. My average weekly hours are **55-60** hours.
+* I report directly to the Sous Chef, but I work under the immediate direction of the Prep Lead. I have no official team structure, but I am trained by three different stations (pastry, grill, cold station) and must maintain a uniform of chef coat, black pants, and non-slip shoes. My availability is dictated by the daily prep schedule, meaning I must be there 2 hours before the listed start time.
+* My scope is the central prep kitchen located in the back of the main dining room, but I must also coordinate ingredient handoffs to the smaller satellite stations used for events.
+* My current briefing and scheduling setup is a combination of a shared Google Sheet updated by the Kitchen Manager, supplemented by frantic text messages from the Sous Chef detailing last-minute ingredient changes, and a printed, hand-annotated prep list that gets marked up throughout the day.
+
+---
+
+### Primary Failure: Ingredient Hand-off Chaos
+
+The biggest operational problem is the fragmentation of ingredient knowledge during the hand-off between prep and service. Because the prep list is finalized 48 hours out, but the service menu changes hourly based on client feedback or inventory shortages, I spend excessive time cross-referencing multiple sources (the Google Sheet, the printed list, and the Sous Chef's texts) to confirm the correct yield, portion size, and actual ingredient needed. This causes bottlenecks, leading to crucial components being under-prepped (like the specific emulsion for the seafood dish) or, conversely, over-prepped and wasted. On a high-volume night, this inefficiency can cost the kitchen an estimated **$500 - $1,000** in wasted labor and ingredients, plus the cost of service delays and poor guest experiences.
+
+---
+
+### Structural Issue: Lack of Centralized, Dynamic Prep List Management
+
+The prep list is currently a static document that requires manual updating. When the menu changes, the Kitchen Manager updates the Google Sheet, but this sheet is often not the primary source of truth on the floor. I am forced to cross-reference the sheet with a printed version, and then ignore both in favor of the verbal updates I receive via text. This means if the sheet says I need 5kg of diced fennel, but the Sous Chef texts "Cut the fennel down to 3kg today," I waste time verifying which instruction is correct, leading to potential preparation errors and delays when the prep needs to be scaled down or up rapidly.
+
+---
+
+### Structural Issue: Unstructured Ingredient Tracking and Storage
+
+We have no single system for tracking ingredients once they are prepped. When I prep 20kg of brunoise shallots for three different dishes (tapas, main course, dessert), they are stored in three separate bins that are labeled manually with handwriting, which is illegible by the end of a long shift. If the Prep Lead needs 5kg of the shallots for the dessert, they might grab the wrong bin, or I might fail to correctly log the usage. This leads to unnecessary manual inventory counts at the end of the shift, which takes me away from active prep and causes discrepancies in the next day’s ordering process.
+
+---
+
+### Structural Issue: Disconnected Scheduling and Prep Requirements
+
+My schedule is managed by the Kitchen Manager via a general scheduling platform, but the specific, complex prep requirements for any given service are managed by the Sous Chef and are communicated ad hoc. This means I might be scheduled for a 10-hour shift, but the necessary prep for that shift (e.g., 40 hours of specialized fish cleaning) is not visible until 24 hours before, requiring me to rush to source specialty equipment or confirm my availability for specific, intensive tasks. This lack of visibility forces me to constantly check in with multiple people to understand my actual workload and required readiness.
+
+---
+
+### Structural Issue: Manual Handoff of Component Readiness
+
+When I finish a major component (like the smoked pork belly preparation), I physically move it to a designated station and verbally tell the station chef that it is ready. There is no digital sign-off or notification that confirms the component’s readiness, quality, or final yield. If I accidentally prep 10kg instead of the required 5kg, the station chef might not know until service starts, leading to an immediate, high-stress scrambling situation and a potential service failure.
+
+---
+
+### Psychological Model
+
+I optimize for: **Efficiency and predictive workflow.** I need to know the full scope of the prep list and the expected service flow so I can time my tasks perfectly, minimizing downtime and maximizing continuous output.
+I refuse to compromise on: **Accuracy and data integrity.** If the recorded inventory count or the prep requirement is wrong, the entire subsequent workflow fails, and that's unacceptable.
+I avoid: **Manual data transcription and ambiguity.** I hate having to manually copy data from a sheet, then interpret a text, then write it on a physical planner. It’s redundant and error-prone.
+I evaluate tools by: **The ability to create a single, verifiable source of truth.** If I have to look in two places to confirm a number or a task, the tool fails me.
+
+I think like a system. Every action must be logged and traceable to prevent waste. My decisions are based on the most current, validated data set. If the data is messy, the preparation is messy, and the service fails.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1.  **Generate a single, dynamic Prep Manifest** that automatically adjusts the required ingredient quantities and task list whenever the menu or client booking changes.
+2.  **Allow for real-time inventory logging** of prepped components (e.g., "5kg of shallot brunoise used by Station A") linked directly to the recipe cost and the specific service order/event.
+3.  **Provide a centralized, auditable scheduling view** that maps specific, high-effort prep tasks to my assigned shifts, preventing me from being scheduled for prep work I cannot complete.
+4.  **Support a digital hand-off checklist** where I can digitally mark a component (e.g., "Pork Belly, 5kg, Ready") as completed and confirmed for a specific station, creating a verifiable record of readiness.
+5.  **Integrate prep lists with the POS/Booking system** so that prep requirements for an event are automatically pulled based on the final guest count and menu selection, eliminating manual calculation.
+6.  **Send proactive alerts** regarding potential supply shortages or ingredient overages based on the current prep list versus the tracked inventory, allowing me to adjust my workflow before I run out of something critical.
+7.  **Maintain a historical log of prep changes** (e.g., "Fennel requirement reduced from 5kg to 3kg at 10:00 AM on 10/25"), so that the source of truth for the current prep list is always traceable and verifiable.

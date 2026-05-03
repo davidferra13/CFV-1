@@ -1,0 +1,67 @@
+**Chef Profile: "DJ Khaled" - Culinary Architect (High Volume Concept)**
+
+I am the mastermind behind a culinary empire, a machine built for maximum impact and unparalleled success. I don't cook; I orchestrate the perfect dining experience across multiple, distinct virtual brands. My job is to make sure that every single plate, regardless of the brand or the concept, hits the mark—and hits it perfectly, every time. I treat the kitchen less like a place to cook and more like a high-stakes concert stage where flawless execution is the only acceptable outcome.
+
+### Business Reality
+
+Right now:
+* I manage **7** distinct virtual brands (ranging from Mediterranean bowls to gourmet BBQ to high-end vegan fare) operating out of **1** centralized ghost kitchen location.
+* My revenue model is based on a minimum average daily revenue of **$28,000**, with gross profit margins needing to remain above **35%** across all concepts.
+* My team size is **45** full-time staff, including 3 shift managers, 15 line cooks, 10 prep staff, and 7 dedicated delivery runners.
+* My geographic scope is limited to the **North Miami/Miami Beach** zip code cluster, which is hyper-dense and highly competitive.
+* My current tech setup is a chaotic mix: we use **Toast POS** for order intake, **Google Sheets** for inventory tracking and labor scheduling, **Slack** for immediate communication, and **WhatsApp** for vendor confirmations and last-minute changes.
+
+---
+
+### Primary Failure: Cross-Brand Ingredient Waste and Costing Inaccuracy
+
+My biggest operational failure is the lack of a unified, real-time ingredient consumption tracking system across all my brands. Because I am constantly optimizing for cost, I need to know exactly how much chicken breast, how many limes, or how many specific spices are consumed by Brand A, Brand B, and Brand C *at the same time*. Right now, I rely on shift managers manually reconciling physical inventory counts against the total sales reports from Toast at the end of the day. This process is prone to massive human error, often leading to us over-ordering high-cost items by **15-20%** just to compensate for lost time or miscounted prep. This waste directly impacts my 35% margin goal and is the single biggest threat to profitability.
+
+---
+
+### Structural Issue: Recipe and Scaling Documentation
+
+Every brand has unique recipes, but they are all housed in a mix of physical binders, old PDFs, and sticky notes. When I want to scale a successful item from Brand A to Brand B, I have to spend an entire afternoon manually re-calculating ingredient ratios, adjusting portion sizes, and re-writing prep steps to fit the new kitchen flow. This is a massive bottleneck because I cannot rapidly iterate and test new menu combinations across my portfolio. I lose an estimated **10-15 hours per week** just trying to standardize and document recipes, time that should be spent on marketing or testing new concepts.
+
+---
+
+### Structural Issue: Dynamic Labor Allocation and Skill Matching
+
+My staff is highly skilled, but labor scheduling is a nightmare. I use Google Sheets, which means I have to manually track the specific skill set (e.g., deep fryer expert, advanced butchery, specific cuisine expertise) and availability of **45** people against the predicted demand for **7** separate brands. If I predict a massive spike in BBQ orders for Brand C at 6 PM, I have to manually check if I have enough staff with deep fryer certification and availability. If I don't, I delay the schedule and risk operational failure, costing me thousands in missed revenue and damaged reputation.
+
+---
+
+### Structural Issue: Predictive Ingredient Sourcing and Vendor Management
+
+I run on massive volume, meaning I need bulk sourcing for high-demand, perishable items like fresh produce and proteins. My current vendor management is reactive: I wait until the Google Sheet shows I'm critically low on an item, and then I send out **15-20** individual texts or emails to various suppliers. This is inefficient and gives me zero leverage on pricing. I cannot leverage my total volume across all 7 brands to negotiate better bulk pricing or guarantee consistent, timely delivery, leading to unexpected cost spikes and last-minute operational stress.
+
+---
+
+### Structural Issue: Multi-Brand Menu Conflict Resolution
+
+When I run a limited-time offer (LTO) that needs to cross-pollinate two or more brands—say, a BBQ dip served with a Mediterranean flatbread—the operational conflicts are immense. The inventory tracking system doesn't know how to cost the shared ingredients, the kitchen prep workflow doesn't know which station owns the primary prep, and the POS system doesn't know how to calculate the combined revenue accurately. I spend an entire morning manually reconciling the pricing and costing for these complex, cross-brand items using a separate Excel macro, which is a recipe for errors.
+
+---
+
+### Psychological Model
+
+I optimize for: **Maximum measurable efficiency and quantifiable profit margins.** I need to see the data that proves I am winning.
+I refuse to compromise on: **Scalability and speed of execution.** If a system slows down the process or requires manual intervention, it is unacceptable.
+I avoid: **Any system that requires me to manage individual employee complaints or handle basic data entry.** I want the system to handle the boring, complex math.
+I evaluate tools by: **How quickly they integrate with my existing POS and how many disparate data streams they can unify into one actionable dashboard.**
+
+I think in terms of ratios, throughput, and optimization percentages. My decision-making process is purely data-driven; if the numbers don't support a process, I don't do it. I expect the system to operate at the level of a highly paid, flawless operations analyst, 24/7.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must provide a unified, real-time ingredient depletion report that aggregates consumption across all 7 virtual brands, allowing me to run automated, optimized purchase orders for all vendors simultaneously.
+2. The system must allow me to create a master recipe library that can automatically adjust portioning, prep time, and costings when a single ingredient is substituted or when the concept is scaled across different brands.
+3. The system must offer a dynamic labor scheduler that accepts multiple skill tags (e.g., "Deep Fryer Certified," "Prep Chef - Vegan") and maps staff availability against predicted order volume per brand, flagging skill shortages before the shift even starts.
+4. The system must manage multi-brand menu items and automatically calculate the combined, accurate cost of goods sold (COGS) when ingredients are shared across different concepts.
+5. The system must integrate with my existing POS (Toast) to pull granular, hourly sales data and automatically map that sales data back to the specific ingredients consumed to calculate a true, real-time profit margin per brand.
+6. The system must manage and document all vendor relationships and usage volumes, generating consolidated purchasing data that I can use to negotiate bulk discounts and service level agreements.
+7. The system must provide a comprehensive dashboard that shows the aggregated weekly performance metrics (labor cost %, COGS %, Average Order Value) for all 7 brands side-by-side, allowing for immediate performance comparison and optimization.

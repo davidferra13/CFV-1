@@ -1,0 +1,61 @@
+**Staff Profile: "Julia" Child - Prep Kitchen Assistant (High Volume Prep)**
+
+I've been in professional kitchens for nearly 8 years now, handling everything from basic mise en place to complex component prep for large-scale events. My job is to ensure that when the line cooks arrive, all the ingredients and components are ready, properly scaled, and labeled for service. I manage the bulk of the vegetable and protein prep, which is often the most tedious and time-sensitive part of the day.
+
+### Business Reality
+
+Right now:
+* I work an average of **4** shifts per week, covering both dedicated prep days and service support, which can sometimes escalate to **6** shifts during peak event seasons.
+* I am paid an hourly rate of **$17.50/hour**, and I am required to maintain up-to-date food handler certification and basic knife safety training.
+* My team structure is small: I report directly to the Sous Chef, but I work alongside 2-3 other Prep Assistants and a dedicated Expediter. I am generally expected to be available from 7:00 AM to 3:00 PM, though my availability shifts wildly depending on the event schedule.
+* My kitchen scope is usually the main Prep Kitchen located in the back of the downtown venue, but I frequently have to deploy to satellite staging areas across the city for large festivals or catered functions.
+* Current briefing and scheduling setup is a chaotic mix of group texts (for urgent changes), a shared Google Sheet (for the week’s core prep list), and then printed, color-coded prep sheets that are handed out on the morning of the shift.
+
+---
+
+### Primary Failure: Ingredient Hand-off and Traceability
+
+The single biggest operational problem is the hand-off of prepared ingredients between shifts and between prep stations. Because we are prepping dozens of components for multiple services (e.g., a main course for a wedding, a buffet station for a luncheon, and a special tasting menu), tracking exactly what was prepped, by whom, and when it expires is a nightmare. We lose time and money because we often over-prep ingredients that spoil before the next shift can use them, or worse, we run out of a critical component because the previous shift couldn't properly document its depletion. This results in wasted labor costs (paying staff to prep ingredients that are thrown out) and revenue loss (having to scramble for expensive ingredients because the prep wasn't logged).
+
+---
+
+### Structural Issue: Managing Dynamic Prep Lists
+
+The prep lists are almost never static. A client might call at 8 AM and change the menu for a 200-person dinner, which means the entire prep list—which was already printed and assigned to me—is useless. My current workaround is physically cross-referencing the revised menu against the printed prep sheets and then manually updating the Google Sheet, which is prone to human error. What breaks is the workflow: the prep list becomes a living document that requires constant, manual reconciliation, slowing down the entire team before we even start cutting.
+
+### Structural Issue: Tracking Component Consumption
+
+We prep large, bulk components (e.g., 50 lbs of diced potatoes, 10 gallons of stock, 30 cases of lemon zest). When the service starts, the line cooks use these components, but they don't track the exact usage. My workaround is keeping physical tally sheets and doing manual spot checks throughout the service, which is impossible to maintain accurately when the kitchen is moving at peak speed. This breaks inventory control, forcing the Sous Chef to estimate how much we actually need to order for the next day, leading to either overstocking (spoilage) or understocking (emergency, expensive rush orders).
+
+### Structural Issue: Cross-Site Scheduling and Equipment Assignment
+
+When we move to a satellite staging area for a 10-hour festival, the scheduling changes are handled via a flurry of texts, and the equipment needs (e.g., 4 industrial mixers, 3 commercial slicers, 6 prep tables) are communicated verbally. My workaround is keeping a notepad and manually checking off equipment needs against the printed site manifest. What breaks is the reliability: if a text message is missed, or if the Sous Chef forgets to mention a required piece of equipment, the entire prep workflow stalls because we don't have the tools to do the assigned prep.
+
+### Structural Issue: Multi-Day Recipe Component Scaling
+
+Sometimes we are prepping components for a multi-day event (e.g., a signature sauce base that needs to be ready for 3 days of service). The recipe card gives us a yield for one day, but we have to scale it up by 3. I have to manually calculate the required ingredients, then manually track the partial depletion of the component across the three days. There is no central system that manages the recipe yield against the total required service volume, meaning I often prep too much, or worse, I accidentally use the wrong batch of sauce because the date and batch ID are lost in the prep cooler.
+
+---
+
+### Psychological Model
+
+I optimize for: Efficiency and tangible inventory flow. I need to know exactly what I have, where it is, and how much of it is left *before* I start cutting.
+I refuse to compromise on: Accuracy of ingredient counts. If the system can't give me a precise count of what's available for the next shift, I cannot trust the prep plan.
+I avoid: Any process that requires me to input data multiple times into different systems (e.g., logging prep in a spreadsheet, then logging the same item into a physical inventory sheet).
+I evaluate tools by: How quickly they integrate prep planning, inventory tracking, and labor assignment into one seamless, mobile workflow.
+
+I am meticulous and detail-oriented, but I operate under extreme time pressure. My decision-making is highly reactive to the flow of the kitchen; I need the system to manage the *process* so I can focus on the *prep*.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1.  **Allow me to log prep components (e.g., "12 lbs diced potato") against a specific recipe ID and a specific client booking ID, immediately reducing the available inventory count.**
+2.  **Generate a consolidated prep manifest that automatically adjusts the required ingredient list when the client changes the menu, flagging all discrepancies from the original plan.**
+3.  **Allow the Sous Chef to assign specific prep tasks (e.g., "Prep 10 gallons stock") to me for a specific date, and then allow me to digitally check off completion, which automatically triggers a status change for the component.**
+4.  **Provide a single, easily viewable dashboard that shows the current inventory levels of bulk components, noting the batch date and expiration date, which is critical for FIFO compliance.**
+5.  **Accept scheduling changes (e.g., a prep shift cancellation) and automatically redistribute my assigned prep tasks to other available Prep Assistants, while updating the required ingredient count accordingly.**
+6.  **Generate a daily prep checklist that groups required ingredients by the prep station and the required equipment, ensuring I know exactly what I need to gather before I start my shift.**
+7.  **Allow for digital photo documentation of prep components (e.g., "This is the fresh batch of sauce") linked to the batch ID and the service date to maintain legal and quality control records.**

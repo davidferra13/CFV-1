@@ -1,0 +1,50 @@
+**Chef Profile: "Adrian Solis" - Solo Private Chef & Regional Counterpart (Synchronizer)**
+
+I operate a solo private chef business across northern New England, but I work in constant parallel with another independent chef based in the south. We’re two separate businesses with our own clients, pricing, and identities, but we intentionally overlap to cover the entire region. The reality is we act like a distributed system with no infrastructure, and it’s starting to cost us time, money, and missed coordination.
+
+### Business Reality
+
+Right now:
+
+* 16–22 events per month (private dinners, weekend-heavy scheduling)
+* Average booking: $2,400; monthly revenue: $38,000–$52,000
+* Solo operator with occasional contracted help (1–2 assistants per larger event)
+* Geographic scope: Maine, New Hampshire, Vermont, Massachusetts, with frequent travel south
+* Counterpart chef (southern region): similar volume, fully independent, overlapping client base
+* Current tools: Gmail + Instagram (inquiries), Google Sheets (event tracking), Notes app (logistics), Square/Venmo (payments), iMessage threads (coordination)
+* Coordination style: reactive texting, occasional calls, memory-based tracking of who’s doing what
+
+### Primary Failure: Lack of Passive Shared Awareness
+
+We don’t need constant communication—we need ambient awareness. Right now, I only know what the other chef is doing if they tell me directly. If they book three events in my region next week, I have no visibility unless they text me. That creates blind spots: I might accept a booking that would have been better for them, or vice versa. It’s not a communication issue—it’s the absence of a shared layer where activity exists without needing to be announced. The workaround is over-texting or asking “what’s your week look like?” which is inefficient and rarely up to date.
+
+### Structural Issue: Event-Level Isolation
+
+Every event I run exists in isolation from theirs, even when they’re happening in the same area, same day, or even same client network. There’s no system that lets us see contextual overlap—like both of us working in Boston on the same weekend, or both sourcing similar ingredients. The workaround is occasional manual check-ins, but that depends on timing and memory. We miss chances to consolidate effort, share resources, or even just avoid stepping on each other’s toes in the same market.
+
+### Structural Issue: Unstructured Resource Sharing
+
+We constantly share resources—ingredients, equipment, even last-minute labor—but it’s all handled informally. If I have extra product or need something urgently, I text. If they don’t see it, it doesn’t happen. There’s no persistent system for listing “available” or “needed” resources tied to time and location. The workaround is fragmented: texts, calls, or just eating the cost and solving it alone. This leads to unnecessary purchases, duplicated inventory, and missed chances to optimize.
+
+### Structural Issue: Trust Without Boundaries System
+
+We trust each other, but the system doesn’t enforce boundaries—it relies entirely on judgment. There’s no way to define rules like “auto-share my bookings in this region, but never share client identity” or “surface my availability but not my pricing.” Everything is either fully private or manually shared. That creates friction: I hesitate to share because I can’t control what’s exposed, and that hesitation reduces the effectiveness of the collaboration. The workaround is selective texting, which is inconsistent and not scalable.
+
+### Psychological Model
+
+I optimize for: coverage, efficiency, and reducing unnecessary movement
+I refuse to compromise on: control over my business, client relationships, and decision-making authority
+I avoid: redundant effort, constant check-ins, and systems that feel like forced collaboration
+I evaluate tools by: whether they let me stay independent while making coordination feel automatic and low-effort
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. Provide a shared, passive activity layer where bookings, inquiries, and movements can be optionally surfaced without requiring direct communication.
+2. Allow rule-based visibility controls (by region, date, event type, or data field) so I can define what is shared automatically versus what stays private.
+3. Surface geographic and temporal overlap between our schedules (e.g., both in Boston on the same day) without exposing sensitive client details.
+4. Enable structured resource exchange where I can post “available” or “needed” items tied to location and time, and the other chef can act without messaging.
+5. Keep all client-facing data strictly owned and non-transferable unless explicitly shared, with no accidental leakage through the system.
+6. Maintain separate operational environments (menus, pricing, branding, payments) with zero forced merging or standardization.
+7. Provide a clear audit trail of shared interactions (leads passed, resources exchanged, schedule overlaps) so we can refine how we collaborate without relying on memory.

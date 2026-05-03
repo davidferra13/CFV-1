@@ -1,0 +1,67 @@
+**Chef Profile: "Jeff" - Cannabis Culinary Expert (Compliance Catering)**
+
+I run a high-end, bespoke culinary experience specializing in cannabis-infused menus for private events. My brand promise is luxury, safety, and precision, meaning I am catering to affluent clients who expect a perfect, flawlessly compliant experience every time. My job is not just cooking; it's managing a highly regulated, high-risk chemical service delivered through gastronomy.
+
+### Business Reality
+
+Right now:
+* I manage **12** private events and **3** recurring corporate bookings per month, handling everything from small intimate dinners to large gallery receptions.
+* My revenue model is highly variable, averaging **$15,000** per event, with an estimated monthly gross revenue of $180,000.
+* My team is a core group of **3** people: myself (Head Chef/Compliance Officer), one Sous Chef, and two rotating Prep/Service staff.
+* My geographic scope is primarily focused on the greater Los Angeles area, requiring me to travel to multiple high-end venues and residential locations across LA County.
+* My current tech setup is a patchwork of tools: Google Sheets for inventory and costing, physical binder logs for compliance/dosing records, a shared Slack channel for scheduling changes, and dedicated email threads for vendor communications.
+
+---
+
+### Primary Failure: Liability and Batch Tracking Failure
+
+My biggest operational nightmare is the risk of misdosing or mixing batches across different client events, which is a massive liability issue. Because I am handling multiple strains, potencies, and client-specific dosing requirements simultaneously, the manual logging process is fragile. If I mix up the ingredient tracking for an event scheduled for Friday with the one scheduled for Monday, I am not just wasting product; I am jeopardizing my license, risking legal action, and, most importantly, endangering my guests. This uncertainty forces me to build in a 20% buffer time and significantly limits how many events I can take on without risking a compliance violation.
+
+---
+
+### Structural Issue: Multi-State Legal Compliance Management
+
+I have clients who travel, and my operational guidelines change dramatically based on which state we are in—Colorado, California, Washington, etc. I maintain separate, constantly updated compliance checklists for each state (e.g., different potencies allowed, different legal service parameters). My current workaround is a massive, unlinked digital binder full of PDFs and spreadsheets that must be manually cross-referenced before every single booking. When a client changes their location last minute, I have to spend at least 90 minutes reviewing the legal parameters just to confirm the menu is even viable, creating significant scheduling bottlenecks.
+
+---
+
+### Structural Issue: Ingredient Source Documentation and Shelf Life
+
+The cannabis ingredients I use are highly sensitive, and tracking their specific batch origin, potency, and remaining shelf life is critical for compliance. I currently manage this using a separate Google Sheet for every ingredient category (e.g., "Strain A Edibles," "Strain B Infusion"). When I receive new product from a vendor, I must manually log the specific batch number, the expiration date, and the receiving temperature. This system is prone to human error; if I forget to update the sheet when a portion is used, I risk over-using or, worse, using an expired batch, which is a compliance violation.
+
+---
+
+### Structural Issue: Event-Specific Ingredient Allocation and Costing
+
+For every single event, the ingredient cost and the final potency calculation are unique, requiring a dedicated cost sheet. I build these out in Excel, manually referencing the specific batch inventory sheets (see above). The problem is that if a client suddenly reduces their guest count from 50 to 30, I have to manually recalculate the *entire* recipe cost, the remaining inventory, and the required staffing hours. This process is slow, error-prone, and means I often have to over-estimate ingredient purchasing just to be safe, inflating my Cost of Goods Sold (COGS) and reducing my profitability margin.
+
+---
+
+### Structural Issue: Recipe Variation and Scaling Documentation
+
+My recipes are highly variable; I might need to scale a recipe that uses 50 grams of infused butter for 50 people down to 12 grams for 12 people, or I might need to change the infusion medium entirely (e.g., moving from butter to oil). Currently, I document the base recipe in a physical cookbook, and then I create a completely separate, manual scaling sheet for every single event. This means the actual, operational recipe used for the event (the final, scaled version) is never centralized, leading to confusion among my staff and making it impossible to quickly audit my true standard recipes for compliance purposes.
+
+---
+
+### Psychological Model
+
+I optimize for: **Predictable compliance and safety.** My primary goal is to execute flawless, legally sound culinary experiences that minimize my personal and business liability.
+I refuse to compromise on: **Dosing precision.** The accuracy of the potency in every single bite is non-negotiable.
+I avoid: **Manual data reconciliation.** Anything that requires me to manually transfer data between three or more separate documents (sheets, binders, emails) is a time sink and a compliance risk.
+I evaluate tools by: **How quickly they reduce the chance of a human error leading to a legal issue.** If the tool doesn't save me time *and* reduce risk, it's useless.
+
+I am hyper-vigilant about documentation. My entire business model rests on being able to prove, step-by-step, that every ingredient was sourced, tracked, and utilized correctly according to state law. I think in terms of risk mitigation and operational workflow integrity.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must automatically pull the correct legal service parameters (potency limits, ingredients allowed) based on the confirmed event location and date.
+2. The system must allow me to track every ingredient batch using a unique identifier, linking it to its initial source, expiration date, and the specific event where it was consumed.
+3. The system must calculate and adjust recipe costs and ingredient requirements in real-time based on the final confirmed guest count for any specific event.
+4. The system must generate an auditable, single-page compliance report for every event, detailing the total ingredients used, the calculated potency, and the required legal disclaimers.
+5. The system must centralize and version-control my master recipes, allowing me to scale them accurately while documenting which version was used for which event.
+6. The system must integrate vendor documentation (COAs, Certificates of Analysis) directly into the ingredient profile to ensure immediate compliance review.
+7. The system must manage the workflow of bookings, ensuring that location, date, and client-specific compliance requirements are locked down *before* I can even begin costing the menu.

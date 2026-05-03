@@ -1,0 +1,67 @@
+**Partner Profile: "Jim Denevan" - Farm Dinner Co-host (Experiential Host)**
+
+I design and execute hyper-local, seasonal culinary experiences that bridge the gap between the farm and the dining table. My goal is always to create a deeply immersive, memorable meal that highlights the peak quality and seasonality of the ingredients grown nearby. I don't just host dinners; I facilitate a narrative about the land and the people who cultivate it.
+
+### Business Reality
+
+Right now:
+* I co-host, promote, or support **8 to 12** events, referrals, or partnerships per **quarter**
+* Our revenue share is structured as a **20% commission** on all ticket sales, plus a flat **$500 minimum retainer** for any multi-day collaboration or sourcing of specialized equipment.
+* I work with a diverse group of farms (e.g., Willow Creek Apiary, Red Barn Orchard) and high-end local brands (e.g., artisanal bakeries, micro-distilleries), often at my own venue or a partner's barn/field.
+* Our collaborations require joint event location coordination, shared seasonal availability constraints, and cross-promotion that must be managed across three separate calendars (mine, the farm’s, and the caterer’s).
+* Our current coordination setup is a chaotic mix of Google Sheets for guest lists and revenue tracking, shared Dropbox folders for menus and photos, and critical scheduling updates handled through a constant barrage of text messages and emails that rarely link to a single source of truth.
+
+---
+
+### Primary Failure: Coordinated Inventory and Menu Costing
+
+The biggest operational headache is tracking the real-time cost and availability of ingredients across multiple, independent sources. Because the menu is dictated by what is *perfectly ripe* that day—whether it's a specific harvest of heirloom tomatoes or a unique batch of forageable greens—I cannot pre-cost the menu accurately. I spend an average of 6-8 hours per event trying to manually reconcile the fluctuating pricing (e.g., a bulk purchase of specialty eggs from the farm vs. a small, premium order from a local vendor) against the recipes. This manual effort is prone to error, leading to over- or under-budgeting, which directly impacts my profit margins and makes it impossible to quote accurate, reliable prices to the client or the catering team before the event.
+
+---
+
+### Structural Issue: Fragmented Booking and Guest Data
+
+I have to manually aggregate guest RSVPs from four different channels: my personal website booking form (via Squarespace), the farm’s dedicated ticketing page (via Eventbrite), the caterer’s booking sheet, and any direct email bookings. All this data ends up in separate, non-synced Google Sheets. If a guest books via the farm's site, but I send them a custom follow-up email that requires me to manually update the spreadsheet, I frequently miss key information (e.g., dietary restrictions, specific allergies, or required parking details). This fragmentation means I never have a single, reliable source of truth for who is coming, what they need, or how many tickets we have actually sold for a specific date.
+
+---
+
+### Structural Issue: Managing Dynamic Menu and Ingredient Flow
+
+My menus are not static; they are living documents that change based on the harvest. I currently manage the core recipe concepts in a separate document from the farm, but the actual ingredient availability and sourcing details are communicated via email or texts 48 hours before the event. When the farm calls and says, "We have a massive surplus of these specialty berries, but only for the next 24 hours," I have no structured way to update the menu, recalculate the associated costing, and communicate that change to the caterer and the marketing team simultaneously. This manual, reactive communication loop is incredibly slow and risks having the entire menu concept derailed by a sudden availability change.
+
+---
+
+### Structural Issue: Tracking Multi-Party Promotional Attribution
+
+When we promote an event, the marketing effort is split across three parties: me, the farm, and the local media outlet. We agree on a joint promotional effort, but tracking which party's promotion leads to a booking is almost impossible. I have to ask each party for proof of their specific referral (e.g., "Did you book through the link on your Instagram story, or did you get it from the local paper?"). We currently track this using a manual, shared spreadsheet where people fill in the "source" column, but this is easily manipulated, unreliable, and means I cannot accurately attribute the ticket sales revenue back to the correct promotional partner for accurate commission payouts or future marketing investment decisions.
+
+---
+
+### Structural Issue: Joint Operational Scheduling and Resource Allocation
+
+Scheduling is a nightmare because I am coordinating resources that are physically located in different places and operated by different people. For a single event, I need to coordinate the availability of the main dining table (mine), the specific outdoor cooking station (the caterer’s), and the specific harvest area for ingredient pickup (the farm’s). I use a combination of physical whiteboards, email chains, and repeated phone calls to confirm that all three parties are available at the exact same time, day, and location. Missing one confirmation step—for example, assuming the farm will be available until 6 PM when they actually shut down at 5 PM—causes immediate, unrecoverable operational failure and requires last-minute, costly rescheduling.
+
+---
+
+### Psychological Model
+
+I optimize for: **Authenticity, seamless flow, and the narrative integrity of the meal.**
+I refuse to compromise on: **The quality of the ingredients or the emotional connection between the guest and the source of the food.**
+I avoid: **Complex, clunky technology that requires a dedicated IT person to set it up or maintain.**
+I evaluate tools by: **How quickly they allow me to turn an idea (a concept/harvest) into a fully costed, scheduled, and booked reality.**
+
+I operate by trusting my gut and my relationships. I view technology as a necessary assistant, not a primary decision-maker. If a tool doesn't immediately make my life *easier* in terms of communication and data consolidation, I will revert to the most familiar, albeit inefficient, process—which usually means a phone call or a text chain.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1.  The system must **allow me to link a specific ingredient sourcing event (e.g., "Willow Creek Harvest") directly to a menu item, calculate its current wholesale cost, and auto-update the overall event COGS.**
+2.  The system must **serve as the single source of truth for all guest bookings, automatically consolidating RSVPs from multiple partner ticketing platforms (Eventbrite, my site, etc.) into one clean, filterable guest list.**
+3.  The system must **facilitate a structured, trackable workflow for joint promotion, allowing me to generate unique, traceable booking links for each partner (Farm, Media, Local Vendor) and track those sales against the partner.**
+4.  The system must **handle complex, multi-stakeholder scheduling across different physical locations, ensuring that all necessary resources (tables, equipment, staff) are booked and confirmed in a single calendar view.**
+5.  The system must **support dynamic menu creation where ingredient availability changes (e.g., "limited supply of heirloom tomatoes") automatically flag a cost update and prompt a menu revision, notifying all relevant partners.**
+6.  The system must **provide a clear, unified dashboard showing the total ticket revenue, the breakdown of partner commission payouts, and the associated operational costs for a specific event date.**
+7.  The system must **allow me to upload detailed, finalized seasonal recipes and dynamically manage inventory/sourcing needs for those recipes, linking vendors and their specific pricing to the recipe card.**

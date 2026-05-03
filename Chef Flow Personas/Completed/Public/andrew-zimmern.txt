@@ -1,0 +1,67 @@
+**Public Profile: "Andrew Zimmern" - Local Food Explorer (Authentic Discovery)**
+
+I spend my life chasing the most unique, deeply rooted culinary experiences, often far outside major tourist hubs. I don't just look for a meal; I look for a story and a connection to a specific culture or technique. When I'm in a new city, my process is highly investigative—I want to know the *real* local gems, the places that haven't been polished for the mass market. I am looking for intimate, high-quality experiences, whether it's a single pop-up dinner in a warehouse or a private cooking demonstration.
+
+### Business Reality
+
+Right now:
+* I search for or compare **3 to 5** chefs, events, cuisines, or menus per **week** when I am traveling or planning a trip.
+* My budget is typically **$150–$350 per person** for a single experience, but I am willing to spend up to **$500+** if the story and quality are exceptional.
+* I prioritize **hyper-local availability**, specific ethnic/regional cuisines (e.g., Yemeni, Peruvian, specific regional Italian), and high-quality, verifiable ratings from multiple sources.
+* My inquiry context is always highly specific: I need to know if a chef is doing a limited, private event at a specific venue (e.g., "a loft in Brooklyn") or if they have a pre-booked, niche pop-up series.
+* My current discovery setup is a scattered mix: Instagram hashtags (e.g., #popupparis), local foodie blogs, word-of-mouth referrals from contacts, and sometimes searching general Google Maps for "unique dining experience."
+
+---
+
+### Primary Failure: Trust and Verification Gap
+
+The single biggest operational problem is verifying that a pop-up or small-scale event is legitimate, operational, and actually happening. When I find a promising listing, I cannot tell if the chef is a professional operating on a temporary basis, or if it's just a curated photo shoot or a theoretical idea. This lack of real-time operational status creates massive friction. I waste time following up on 2-3 potential events that end up being canceled or rescheduled without any clear, centralized notification. This costs me time, and critically, it compromises my ability to recommend a truly unique experience to my audience, which is my reputation.
+
+---
+
+### Structural Issue: Fragmented Event Status and History
+
+I find potential events through Instagram or niche blogs, but the status updates are scattered across multiple platforms. A chef might announce "Pop-up Week 2" on Instagram Stories, change the date on Facebook, and then post the final, confirmed ticket link via a private email. I am forced to manually cross-reference 3-4 different sources just to confirm one date, which is exhausting. If a chef changes a booking or cancels an event, I have no single, reliable source to check, making my planning feel like detective work.
+
+---
+
+### Structural Issue: Deep Menu/Concept Discovery
+
+When I find a chef I like, the initial discovery only shows the cuisine type (e.g., "Tuscan"). I cannot browse the *depth* of their specific concept, the ingredients they use, or the story behind the menu structure. I have to click through to a third-party site or send a direct message just to ask, "What kind of dishes are you featuring?" This forces me to piece together the culinary identity from vague descriptions, preventing me from making an informed decision about whether the experience is worth the ticket price.
+
+---
+
+### Structural Issue: Location and Venue Specificity
+
+I often want to find a chef doing a pop-up *within* a specific neighborhood or even a specific type of venue (e.g., "a converted industrial space in the East Village," or "a rooftop with a view"). Current platforms only allow filtering by general zip code or city. I cannot filter for the *type* of operational space, which is crucial because the venue itself is often part of the experience I am looking for. This severely limits my ability to pinpoint ideal, high-concept dining opportunities.
+
+---
+
+### Structural Issue: Difficulty in Comparing Niche Offerings
+
+I might be interested in three different types of pop-ups on the same night: one tasting menu, one private cooking demonstration, and one simple street food pop-up. Currently, I have to visit three different websites, with three different booking processes, and three different pricing structures. There is no single dashboard that allows me to compare the *format* (tasting menu vs. demonstration vs. single course) and the *total investment* (ticket cost + estimated drink cost) across multiple chefs on a given date.
+
+---
+
+### Psychological Model
+
+I optimize for: **Authenticity and Narrative.** The story behind the food and the chef is often more important to me than the perfection of the presentation.
+I refuse to compromise on: **Operational Transparency.** If the chef cannot clearly communicate the *how* and *when* of the experience, I assume it's not ready for the public.
+I avoid: **Overly curated, polished, or generic experiences.** If it feels like it's been designed for mass appeal, I move on immediately.
+I evaluate tools by: **Information Density and Trust Signals.** Can the system aggregate complex, fragmented data (like availability, location, and menu details) into one reliable view?
+
+I think like a journalist and a traveler: I am skeptical, highly detail-oriented, and I need proof that the experience is both high-quality *and* logistically feasible. My decision process is weighted heavily by how much effort I have to exert to confirm the basic details.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1.  **Allow me to filter by the operational *type* of event** (e.g., "private demonstration," "single-course pop-up," "full tasting menu") in addition to cuisine and price.
+2.  **Provide a unified, real-time status tracker** for every listed event, clearly showing "Confirmed," "Pending," "Date Change," or "Cancelled," and making it easy to sign up for immediate alerts on status changes.
+3.  **Display a structured, expandable menu preview** that details the *concept* (e.g., "A Peruvian-Japanese fusion focusing on cured fish") alongside the ingredients, rather than just a price.
+4.  **Integrate a robust booking/inquiry flow** that allows me to request specific dates or group sizes, and immediately receive a consolidated, transparent response from the chef/operator detailing availability and initial pricing.
+5.  **Visually map the event to its physical venue** and allow me to filter by the *neighborhood character* or *venue type* (e.g., "industrial loft," "historic market stall," "rooftop").
+6.  **Provide a comparison view** that lets me select 3-5 different types of culinary experiences (e.g., dinner, demo, street food) on a single date and see their total cost and format side-by-side.
+7.  **Display a transparent history or portfolio** for the chef, detailing past successful pop-ups, major collaborations, and the backstory of their core techniques, building immediate trust.

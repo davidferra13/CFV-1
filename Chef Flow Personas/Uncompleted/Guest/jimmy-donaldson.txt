@@ -1,0 +1,67 @@
+**Guest Profile: Jimmy Donaldson - Event Director (Mass Scale)**
+
+I am the person responsible for making sure the spectacle is flawless, which means I am constantly in charge of coordinating logistics for massive, highly attended, and often unique experiential events. When I plan a private gathering, it’s not just a dinner—it’s a production that must feel seamless, even if the content is chaotic.
+
+### Business Reality
+
+Right now:
+* I attend approximately 12 large, ticketed, or private dinner events per quarter, each involving 200 to 1,500 attendees.
+* My event spend per single guest is easily $500 to $1,200, covering bespoke meals, high-end entertainment, and massive logistical support.
+* Dietary needs are extremely complex; we deal with over 30 unique allergies (gluten, nuts, dairy, shellfish, etc.) and must accommodate specific cultural/religious requirements for 100% of the headcount.
+* Our most recent event was a 1,200-person 'Survival Dinner' at a remote, custom-built venue in Georgia, requiring a 3-day setup and teardown, with 80% of the attendees needing specific seating arrangements based on their role in the event narrative.
+* Our current communication setup is a chaotic mix: I get confirmation texts, follow-up details in Google Docs shared via a link, and the final menu tweaks are communicated via a dedicated Slack channel that everyone has to monitor, making it impossible to track the definitive source of truth.
+
+---
+
+### Primary Failure: Scaled Dietary Compliance and Cross-Contamination Risk
+
+The single biggest operational problem is the sheer volume of highly customized dietary restrictions combined with the massive guest count. Because the platform doesn't seamlessly link the RSVP profile (which says "Severe Peanut Allergy") directly to the kitchen's inventory management and the assigned staff member, we are operating at critical risk. If even one staff member incorrectly labels or serves a dish, the potential for an allergic reaction is catastrophic, not just for the guest, but for my reputation and the entire operation. This failure costs us not just the cost of a single meal, but the potential loss of trust, which is priceless in my industry. We cannot afford a single point of failure when scaling to 1,200 people.
+
+---
+
+### Structural Issue: The RSVP to Menu Flow Gap
+
+The moment a guest RSVPs, the system fails to immediately and permanently lock in their necessary dietary and seating requirements for the specific event instance. We currently have to manually copy and paste the names and associated restrictions from a separate Google Form spreadsheet into a dedicated Excel sheet that the Head Chef uses. This process is highly prone to human error—a single misspell or misplaced comma means the kitchen doesn't know the requirement. This breakdown forces us to run parallel systems just to manage basic guest data, wasting 4-6 hours of high-level logistical planning time per event.
+
+---
+
+### Structural Issue: Real-Time Headcount vs. Catering Inventory Discrepancy
+
+Because the initial RSVP is just a "soft commit," and we frequently have last-minute additions or cancellations due to the nature of our events, there is no single source of truth for the final, committed headcount. We are forced to use a combination of repeated email follow-ups and text message confirmations to track the final count. If the catering team is given a number that is even 10% off the final count, they will either over-order (massive waste of $10,000+ in food) or, worse, under-order (leading to immediate, visible service failures).
+
+---
+
+### Structural Issue: The Event Communication Omnibus
+
+Our guests are not single consumers; they are participants in a narrative. The critical information (e.g., "Arrive at 4 PM," "The seating plan requires you to meet the entertainment team first," "The main course is served at 8:15 PM") is scattered across three different platforms: a formal email, a group text, and a printed timeline handed out at check-in. There is no single, authoritative, time-sensitive communication channel tied to the specific ticket or RSVP that aggregates all this information. This fragmentation causes confusion, missed instructions, and makes the entire guest journey feel amateurish and uncoordinated.
+
+---
+
+### Structural Issue: Post-Event Feedback Loop Isolation
+
+The process for collecting feedback is entirely disconnected from the initial booking and event details. After a massive dinner, we want to know if the specific dietary accommodations worked, if the seating arrangement was optimal for their group, and which elements of the menu were the biggest hit. Currently, we send a generic, post-event survey link. This survey cannot reference the specific ticket type, the unique dietary restrictions, or the original booking details, rendering the feedback data useless for improving future event costing or menu planning.
+
+---
+
+### Psychological Model
+
+I optimize for: Spectacle, flawless execution, and the elimination of visible logistical friction.
+I refuse to compromise on: Scale and complexity. If the system cannot handle 1,500 people with 30 unique dietary needs simultaneously, it is useless.
+I avoid: Anything that requires me to manually reconcile data between three different spreadsheets or communication channels.
+I evaluate tools by: Their ability to scale from 100 people to 1,500 people without a single operational breakdown.
+
+I think in terms of maximum throughput and minimizing the chances of catastrophic failure. If a process requires a human to remember to manually transfer data, that process is a liability and a bottleneck.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must instantly validate and permanently lock in all guest dietary restrictions and accessibility needs against a single event instance, linking it directly to the kitchen's ingredient inventory.
+2. The system must provide a definitive, real-time, and single-source-of-truth headcount that automatically adjusts the final menu costing and vendor orders upon every change to the RSVP status.
+3. The system must allow me to schedule, communicate, and track time-sensitive, mandatory instructions (e.g., "Meet at Gate B at 3:45 PM") directly to the specific guest's profile and ticket purchase, visible across all channels.
+4. The system must generate a detailed, granular post-event report that links specific feedback (e.g., "The vegan option was great") directly back to the originating ticket, guest profile, and menu item cost.
+5. The system must handle the generation of highly complex, customized event tickets that include seating assignments, specific dietary markers, and unique access codes, all within one unified booking flow.
+6. The system must allow me to define and manage multiple, simultaneous, and interacting event elements (e.g., "Pre-Dinner Mixer," "Dinner Service," "Dessert Showcase") and track the required staffing and resources for each phase.
+7. The system must allow me to input bespoke pricing structures and calculate the variable cost per guest based on their unique ticket tier (e.g., Platinum Tier gets $100 more food cost allocation than Gold Tier).

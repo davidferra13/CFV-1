@@ -1,0 +1,55 @@
+Client Profile: "Naomi Kessler" - Senior Program Manager, Distributed Teams (Archivist)
+
+I don’t trust memory, and I don’t trust fragmented conversations. If a decision was made, I need to know where it came from, what options were considered, and why we landed where we did. Otherwise, the same conversations repeat and things quietly break.
+
+Business Reality
+Right now:
+
+I organize 4–6 high-coordination group dinners per year - team offsites, milestone celebrations, and mixed personal/professional events with 8–16 people.
+
+Budgets range from $3,500 to $11,000. I’m responsible for staying within budget while still accommodating preferences and constraints.
+
+Payments are split, reimbursed, or expensed depending on the group. Some people pay directly, others need invoices formatted for corporate reimbursement.
+
+Guest inputs are constant: dietary restrictions, preferences, schedule conflicts, plus-ones. These come in through Slack, text, email, and sometimes verbal conversations.
+
+I’m the central point of coordination, but decisions are distributed - people weigh in asynchronously and often contradict earlier inputs.
+
+Events happen in varied locations - homes, rentals, corporate spaces - each with different constraints that evolve as we learn more.
+
+My current stack is Slack threads, Google Docs, Notion pages, and calendar events. None of them preserve the full decision trail cleanly.
+
+Primary Failure: Loss of Decision History
+The core problem is that decisions don’t carry their context forward. We make a choice - menu direction, budget allocation, guest inclusion - but the reasoning gets buried in a thread or lost entirely. Weeks later, someone asks, “Why aren’t we doing X?” and we either rehash the conversation or make a conflicting change. I’ve had menus drift away from original constraints because no one could see the earlier tradeoffs. It creates confusion, rework, and subtle errors that compound.
+
+Structural Issue: Context Collapse Across Channels
+All inputs come from different places. Someone answers a dietary question in Slack, another sends a preference via text, and I summarize it in a doc. That summary becomes the “official” version, but it strips nuance and sometimes misses edge cases. When something goes wrong - like a missed allergy - I have no reliable way to trace back to the original input. My workaround is over-documenting everything, which creates clutter and still isn’t complete.
+
+Structural Issue: No Layered Visibility
+When everything is visible at once, it’s overwhelming. When I simplify, I lose detail. There’s no system that lets me collapse history while keeping it fully accessible. I want a clean current view - final menu, confirmed guests, locked decisions - but I also want to expand any part and see the entire chain: initial question, options considered, votes or feedback, and the final decision. Right now, I either drown in information or operate with incomplete context.
+
+Structural Issue: Repeated Questions and Rework
+Because history isn’t clearly accessible, people ask the same questions repeatedly. “Did we already decide on vegetarian options?” “Who confirmed attendance?” I end up answering or re-explaining decisions that were already made. Worse, sometimes people act on outdated information, causing conflicts with the chef or within the group. This wastes time and erodes confidence in the plan.
+
+Psychological Model
+I optimize for: traceability, clarity, and continuity
+I refuse to compromise on: being able to justify every decision with context
+I avoid: duplicated conversations, hidden information, and unclear sources of truth
+I evaluate tools by: how well they preserve and expose the full decision lifecycle without overwhelming the present view
+
+Pass / Fail Conditions
+For this system to work for me, it must:
+
+Maintain a complete, chronological record of all inputs, discussions, decisions, and changes related to the event, without loss of detail.
+
+Present a clean “current state” view (final menu, guest list, pricing, timeline) while allowing any element to be expanded to reveal its full history.
+
+Link every final decision to its originating inputs (questions, options, feedback) so I can trace why it was made.
+
+Aggregate inputs from multiple participants into structured data (dietary restrictions, preferences, attendance) without losing the original source context.
+
+Prevent duplicate or conflicting decisions by clearly showing when a topic has already been resolved and what the outcome was.
+
+Allow participants to view the history without editing it, while restricting who can make changes to the current state.
+
+Provide a searchable, filterable archive of all past events and decisions so I can reuse or reference them without starting from scratch.

@@ -1,0 +1,69 @@
+**Chef Profile: Aaron Sanchez - Street Food Hustler**
+
+I'm Aaron Sanchez, head chef and owner of three thriving street food trucks crisscrossing the city's busiest streets and neighborhoods. Each truck specializes in different cuisines—Mexican, Thai, and Mediterranean—that I've honed over years of fine dining experience. My goal? To serve delicious, authentic food to hungry crowds on the go, without breaking the bank or compromising quality.
+
+Right now:
+* I manage 12 trucks [clients/locations], each doing an average $5k per day in sales
+* My team is a lean 45 people - drivers, prep cooks, line cooks, cashiers 
+* I cover 5 key city areas: downtown, waterfront, arts district, university campus, and parklands
+
+---
+
+### Primary Failure: Cash Flow Nightmares
+
+My trucks are high volume but low margin. A single truck can turn $5000 in a day, but after food costs, labor, permits, fuel, and maintenance, I'm often left with less than 10% profit. Tracking cash flow across multiple trucks is a nightmare without a system, leaving me scrambling to pay bills and reinvest.
+
+---
+
+### Structural Issue: Permit Chaos
+
+Each truck needs a different set of permits for each location - zoning, health, parking. It's a mess of paperwork I manage with spreadsheets and reminders in my phone. If a permit lapses, the trucks can't operate there legally until I notice and reapply. Big fines are possible if caught.
+
+---
+
+### Structural Issue: Weather Whiplash
+
+Being mobile means we can adapt to weather changes better than bricks-and-mortar restaurants. But extreme heat or rain in one area can make or break a day's sales for my trucks there. I work around it by moving trucks, but it's a gamble and takes real-time info I don't have now.
+
+---
+
+### Structural Issue: Cash-Heavy
+
+My customers want cash-only for privacy reasons. Counting up $5000-$10k in cash per truck daily is time-consuming and risky. I take it to the bank myself each night, but sometimes it gets skimmed off by my guys. More oversight is needed.
+
+---
+
+### Psychological Model
+
+I optimize for:
+* Turnover speed and efficiency
+* Food quality and authenticity
+* Customer satisfaction scores
+I refuse to compromise on: 
+* My recipes and flavor profiles
+* Hiring top culinary talent
+* Quality food ingredients
+I avoid:
+* Overly complex systems
+* Tech that requires a degree to use
+* Processes that slow down service 
+
+For me, tech has to integrate with my kitchen processes seamlessly or I won't adopt it.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. Seamlessly manage multiple permits and inspections across trucks and locations
+2. Provide real-time weather forecasts and crowd data to optimize daily routes 
+3. Securely process payments with cashless options that customers love
+4. Automate payroll for my 45 people based on hours worked each shift
+5. Integrate directly with my kitchen systems to speed up service
+6. Deliver actionable customer feedback so I can improve menus
+7. Optimize inventory and sourcing for fresh food at scale and cost
+
+---
+
+ChefFlow must be a restaurant ops platform that handles permits, scheduling, payments, labor management, customer feedback, and ingredient sourcing for mobile food trucks. It needs to fit the unique workflows of street food service or it won't work in my operations.

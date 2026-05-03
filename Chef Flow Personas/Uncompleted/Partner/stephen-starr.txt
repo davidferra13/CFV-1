@@ -1,0 +1,67 @@
+**Partner Profile: "Stephen Starr" - Restaurant Group Owner (High-end Pop-up)**
+
+I run a multi-concept restaurant group that specializes in high-visibility, temporary dining experiences. My primary business involves securing unique, high-demand venues for limited-run pop-ups, often collaborating with established brands, artists, or other culinary leaders. My brand reputation is tied to flawless execution and an unparalleled guest experience.
+
+### Business Reality
+
+Right now:
+* I co-host, promote, or support **8 to 12** events, referrals, or partnerships per **quarter**.
+* Our revenue share model is highly variable: typically, we negotiate a 15-25% revenue share on ticket sales for the pop-up, plus a minimum guaranteed booking fee of $5,000 per event.
+* Our collaborations involve securing unique, high-profile venues (e.g., abandoned warehouses, art galleries, private estates) and joint offers with luxury brands (e.g., high-end spirits, fashion houses).
+* Venue availability and guest list coordination is a nightmare, often requiring us to manage 3-4 distinct shared event locations and corresponding guest lists simultaneously.
+* Our current coordination setup is a chaotic mix: contracts are signed on physical paper, vendor payments are tracked via shared Google Sheets, menu costing is done in Excel, and guest communication relies entirely on a mix of personal texts and a dedicated, but unintegrated, email list.
+
+---
+
+### Primary Failure: Fragmented Revenue Tracking
+
+The single biggest operational problem is the lack of a unified view of revenue generation across multiple collaborating parties. Because we are managing 3-5 distinct revenue streams (ticket sales, brand sponsorships, minimum guarantees, and ancillary bar sales) for each event, manual reconciliation is a nightmare. When a pop-up ends, I have to spend 2-3 full days chasing down deposits, reconciling POS reports from multiple venues, and ensuring every partner gets paid accurately and on time according to the negotiated revenue share. This process is prone to human error, delays payments to crucial collaborators, and distracts me from planning the next event.
+
+---
+
+### Structural Issue: Multi-Party Guest Flow and Booking Management
+
+We are managing the guest journey through multiple, disparate booking systems. Sometimes, the venue uses Eventbrite, the brand partner uses a proprietary form, and we use our own booking widget. This means I cannot get a single, accurate source of truth on who is attending, what they purchased, or if they have been properly accounted for in the final headcount for catering and staffing. We spend hours cross-referencing guest lists via spreadsheets, leading to over-ordering ingredients or having staff unprepared for unexpected attendance spikes.
+
+---
+
+### Structural Issue: Dynamic Menu Costing and Inventory Allocation
+
+Our pop-ups require hyper-specific, limited ingredient sourcing based on the venue and the brand partner's availability. The menus change constantly (sometimes within a week) based on what is available at the pop-up location or what the brand is donating. Tracking the true cost of goods sold (COGS) for these temporary, limited menus is nearly impossible. I have to manually input ingredient costs from multiple vendors into a spreadsheet and then adjust the projected profit margin based on the final, often incomplete, POS data, which makes financial forecasting for the next event extremely unreliable.
+
+---
+
+### Structural Issue: Vendor and Staff Compliance/Credentialing
+
+Because we are operating in non-traditional venues (galleries, warehouses), the compliance requirements are constantly changing and are handled by 3-5 different external entities (the venue owner, the liquor license holder, the brand sponsor). I have to chase down temporary permits, insurance certificates, and staff credentialing documents from multiple sources, often via email, just days before the event. If one document is missing or expired, the entire event can be shut down, costing us not just the revenue, but the credibility of the group.
+
+---
+
+### Structural Issue: Promotion, Ticketing, and Partner Attribution
+
+The promotion and ticket sales are highly segmented. One brand might sell tickets through their website, while another might sell them through a specific ticketing platform, and we handle direct sales via our site. I have no automated way to track which specific promotional channel or partner referral generated the ticket sale, making it impossible to accurately calculate which marketing efforts or collaborators deserve credit or commission. I am forced to manually track these referrals in a spreadsheet, which is time-consuming and highly inaccurate.
+
+---
+
+### Psychological Model
+
+I optimize for: *Brand consistency and seamless, high-touch guest experience.*
+I refuse to compromise on: *The perceived exclusivity and flawless flow of the physical guest journey.*
+I avoid: *Administrative friction, manual data reconciliation, and any process that requires me to manage multiple, disconnected spreadsheets.*
+I evaluate tools by: *How quickly and reliably they can provide a single, consolidated view of event logistics, finances, and guest attendance.*
+
+I think in terms of the end-to-end customer journey, from the initial booking through the final checkout and payment settlement. My focus is always on maximizing the *feeling* of luxury and control, which means the back-end systems must be invisible, robust, and flawlessly coordinated across all collaborators.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1.  The system must consolidate all event-related financial data (ticket sales, sponsorships, guaranteed minimums, bar revenue) into one single, auditable ledger, eliminating the need for manual spreadsheet reconciliation.
+2.  The system must provide a single source of truth for all guest RSVPs and attendance data, regardless of which external partner or ticketing platform the guest initially booked through.
+3.  The system must allow me to rapidly update and cost temporary menus, linking ingredient sourcing, vendor pricing, and final projected COGS directly to the event booking, and allowing for real-time adjustments.
+4.  The system must manage and track all required compliance documentation (insurance, licenses, permits) for all collaborators and venues, with automated alerts for expiration dates.
+5.  The system must track and attribute every ticket sale and revenue stream back to the specific promoting partner or referral channel, providing instant commission calculation.
+6.  The system must facilitate the sharing of operational menus and ingredient lists with collaborating chefs and vendors, ensuring version control and immediate accessibility.
+7.  The system must allow me to manage and track the unique venue constraints (capacity, load-in times, special equipment needs) for each temporary pop-up location.

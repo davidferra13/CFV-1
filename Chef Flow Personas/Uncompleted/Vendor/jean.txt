@@ -1,0 +1,67 @@
+**Vendor Profile: "Jean-Martin Fortier" - Local Farm Supplier (Seasonal Produce)**
+
+I run a small, highly specialized farm operation focusing exclusively on hyper-local, seasonal, and heirloom produce. My entire business model revolves around the absolute peak quality of ingredients, meaning my inventory is inherently unpredictable and non-scalable. I don't process large, bulk orders; I process curatorial orders. My clients are predominantly high-end restaurants and boutique catering operations that demand unique, traceable ingredients.
+
+### Business Reality
+
+Right now:
+* I fulfill an average of 18-25 chef orders per week, ranging from small, highly personalized boxes (20-50 lbs) to custom event baskets for 150-200 guests.
+* My wholesale pricing is highly variable, based on day-of-harvest quality, and requires a 40% deposit for any order over $1,500, with the remaining balance due upon delivery.
+* My catalog is entirely constrained by seasonality (e.g., specific root vegetables only exist from late fall to early spring); I cannot guarantee specific quantities or varieties months in advance.
+* I service a narrow, high-density geographic area (within a 10-mile radius of my farm/packing house) but my delivery windows are extremely strict (usually 8:00 AM – 10:00 AM).
+* My current ordering setup is a chaotic mix: initial inquiries are via text message, follow-ups are via email, and the final weekly commitment sheet is a shared Google Sheet that multiple chefs edit, which is then supplemented by a quick phone call confirmation the day before delivery.
+
+---
+
+### Primary Failure: Inventory-to-Commitment Discrepancy
+
+My biggest operational problem is the inherent mismatch between what a chef *needs* and what the earth *gives* that week. When I commit to a specific quantity or variety in a preliminary order, I am essentially making a promise based on a forecast, not a guarantee. If a sudden rainstorm or pest issue impacts a specific crop (say, I promise 50 lbs of heirloom tomatoes, but only 30 lbs are viable), I have to call the client, renegotiate the pricing/volume immediately, and scramble to find a suitable substitute ingredient that fits their menu. This constant, reactive communication drains my time, damages my reputation for reliability, and makes accurate financial forecasting nearly impossible, costing me time and forcing me to reject potentially profitable orders just because the risk of a shortfall is too high.
+
+---
+
+### Structural Issue: Dynamic Volume Management
+
+The problem is that my inventory volume changes hourly, and the chefs need to know exactly what's available *right now* to build their menu. My current workaround is for the head chef to text me a list of their desired ingredients by 3 PM, and I have to manually cross-reference that list with what I've just harvested and what's already allocated to other pickings. This process is highly prone to error, especially when I am managing multiple harvest stations and cannot dedicate full attention to the spreadsheet. When a conflict arises (e.g., two chefs want the last of the specialty radishes), the negotiation is done over the phone, which slows down the entire workflow and requires me to maintain a mental ledger of who got what.
+
+---
+
+### Structural Issue: Variable Pricing and Negotiation
+
+Because my quality is so unique and fluctuates daily, my pricing is rarely fixed. If a chef orders a box of Mixed Greens, the price changes depending on whether it's a perfect, crisp harvest or a slightly less perfect, but still usable, batch. My workaround is to use a highly customized PDF quote sheet that requires the chef to approve the specific *batch* or *day's yield* before I finalize the invoice. This forces me to manually generate new invoices every single week, even if the core menu items haven't changed, just because the variable pricing changed. This administrative burden is immense and prone to human data entry errors, particularly when dealing with 5-7 different pricing tiers for the same product.
+
+---
+
+### Structural Issue: Multi-Channel Communication Overload
+
+The biggest time sink is coordinating changes. A chef might send a preliminary request via the Google Sheet, then follow up with a clarifying question via email, and finally, confirm the substitution of a key ingredient via a quick text message late at night. I have no single, centralized record of the final, agreed-upon order. I am forced to keep three separate communication threads (Sheet, Email, Text) open just to confirm one week's delivery. This dramatically increases the risk of me accidentally fulfilling an order based on an outdated or contradictory message, which requires me to spend valuable time calling the chef back to rectify the mistake.
+
+---
+
+### Structural Issue: Deposit and Payment Tracking
+
+My financial process is decentralized. I take a 40% deposit via various methods (Venmo, bank transfer, or sometimes even a check) depending on how quickly the chef needs to commit. I then have to manually track which payments correspond to which specific invoice, and whether that payment covered the initial deposit, the final balance, or a previous month's debt. This means I spend hours every Monday morning reconciling the money received against the pending invoices in a separate accounting ledger, creating a significant bottleneck before I can even start harvesting the week's inventory.
+
+---
+
+### Psychological Model
+
+I optimize for: Provenance, quality, and the narrative of the ingredients.
+I refuse to compromise on: The integrity of the product and the relationship built on trust and exceptional quality.
+I avoid: Large-scale industrial operations, excessive bureaucracy, and any system that feels detached from the actual harvest.
+I evaluate tools by: How little they require me to deviate from my current, highly manual, specialized process.
+
+I think in terms of the natural cycle—the harvest, the processing, the delivery. My decisions are weighted heavily by the physical state of the ingredients. I trust systems that allow me to input variability (e.g., "estimated yield range") rather than systems that demand rigid, fixed inputs.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must allow me to input dynamic, variable inventory yields (e.g., "30-50 lbs of zucchini") and calculate potential cost ranges based on those estimates.
+2. The system must centralize all communication (texts, emails, sheets) into a single, chronological record tied to the specific order and invoice.
+3. The system must generate customizable, multi-tier invoices that automatically adjust the final cost based on variable quality/volume inputs, and allow multiple payment types to be reconciled against a single invoice.
+4. The system must map ingredient sourcing (the "provenance") directly to the specific order, allowing me to track which harvest batch was used for which client.
+5. The system must enforce a clear, step-by-step workflow that forces the user to confirm the final, negotiated quantity *before* the system allows me to generate the final fulfillment manifest or invoice.
+6. The system must support managing highly localized, time-sensitive delivery windows and automatically trigger reminders to both the client and myself 24 hours prior to the delivery time.
+7. The system must allow me to flag ingredients that are "seasonal" or "variable" in nature, so clients cannot commit to them outside of their actual harvest window.

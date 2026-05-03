@@ -1,0 +1,55 @@
+Client Profile: "Julian Marks" - Growth Hacker, SaaS Startups (Velocity)
+
+If I can’t move fast, I lose interest. Pricing should accelerate me, not slow me down.
+
+Business Reality
+Right now:
+
+I book 4–8 private dinners per year, usually 2–10 guests.
+
+Budget ranges from $1,000 to $6,000.
+
+I expect to configure and pay quickly.
+
+Dietary needs are minimal but must be captured.
+
+Locations vary but should not slow the flow.
+
+I act on impulse - speed matters.
+
+I abandon anything that slows me down.
+
+Primary Failure: Slow Decision Loop
+The biggest issue is when pricing slows my decision-making. If I have to wait, interpret, or ask questions, I lose momentum. I want to move from idea to booking immediately.
+
+Structural Issue: Too Many Steps
+Multiple steps between configuration and pricing create friction. I want everything visible at once.
+
+Structural Issue: Delayed Feedback
+Any delay in pricing updates interrupts flow. I want continuous feedback.
+
+Structural Issue: No Instant Action Path
+Even when I see pricing, there’s often no immediate way to act. That’s wasted momentum.
+
+Psychological Model
+I optimize for: speed and momentum
+I refuse to compromise on: immediate pricing and action
+I avoid: slow or multi-step flows
+I evaluate tools by: how fast I can complete the process
+
+Pass / Fail Conditions
+For this system to work for me, it must:
+
+Display pricing immediately with no gating steps.
+
+Update pricing continuously as I interact.
+
+Minimize steps between configuration and payment.
+
+Provide a clear, immediate action path to book.
+
+Maintain fast, responsive interactions.
+
+Avoid any delays or interruptions in flow.
+
+Enable completion in a single, rapid session.

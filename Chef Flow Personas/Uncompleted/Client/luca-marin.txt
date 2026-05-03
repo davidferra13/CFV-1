@@ -1,0 +1,51 @@
+Client Profile: "Luca Marin" - Creative Director, Independent Brand Studio (Collaborator)
+
+I don’t “hire” a chef - I work with them. The dinner is a shared output, and I expect to shape every part of it. If I can’t go back and forth constantly, the experience feels generic.
+
+Business Reality
+Right now:
+
+I host 8–12 private dinners per year, most with a theme or creative direction - seasonal concepts, regional deep-dives, or visual storytelling.
+
+Budgets range from $3,000 to $10,000 depending on complexity. I’m flexible on price if I feel like I’m building something unique.
+
+I usually pay a 40% deposit, but I expect the scope to evolve after that. Static pricing doesn’t match how I work.
+
+Guest count is typically 6–10, but I curate the group intentionally. I might swap guests based on the menu direction or vibe.
+
+Dietary needs exist but are secondary to the concept. I still need them respected precisely, but I don’t want them to limit creativity - I want them integrated into it.
+
+Locations vary: my loft, rented creative spaces, sometimes outdoor settings. I care about how the space interacts with the food.
+
+Communication is constant - text, voice notes, shared docs, image references. I send inspiration at random times and expect it to be absorbed into the process.
+
+Primary Failure: Rigid Process
+The biggest issue is that most chefs operate in a fixed workflow. They propose a menu, I approve it, and that’s it. That doesn’t work for me. I want to iterate - adjust dishes, swap components, change pacing, rethink presentation. When the system locks too early or makes changes slow, the end result feels flat. I’ve had dinners where I knew it could have been better if we had just gone one more round of refinement.
+
+Structural Issue: No Iteration Layer
+There’s no structured way to collaborate on the menu in real time. I end up sending edits in texts, comments in PDFs, and voice notes explaining changes. The chef then translates that into their own version, and we repeat. It’s inefficient and error-prone. Sometimes changes don’t make it through, or we lose track of which version is final. I need a live, shared space where we can iterate directly.
+
+Structural Issue: Creative Context Loss
+I communicate in references - photos, color palettes, music, even films. That context rarely carries through. I might send five images that define the tone, but they get lost in the thread. The chef focuses on the menu but misses the broader direction. The result is technically good but creatively disconnected. I need a way to anchor the concept so it informs every decision.
+
+Structural Issue: Change Friction
+Every change feels heavier than it should. If I want to swap a dish or adjust a course, it triggers a mini negotiation - timing, cost, feasibility. That slows down the creative process. I’m not trying to be difficult; I just want fluidity. I need to see the impact of changes instantly - how it affects cost, timing, and flow - without breaking momentum.
+
+Psychological Model
+I optimize for: creative control, iteration, and uniqueness
+I refuse to compromise on: the ability to shape the experience continuously
+I avoid: one-and-done proposals and slow back-and-forth cycles
+I evaluate tools by: how well they support collaboration and real-time refinement
+
+Pass / Fail Conditions
+For this system to work for me, it must:
+
+Provide a live, collaborative menu builder where both I and the chef can edit, comment, and iterate in real time without creating separate versions.
+
+Allow me to attach and organize creative references (images, notes, themes) that stay linked to the event and inform the menu.
+
+Show immediate impact of changes (cost, timing, course flow) as I adjust elements, without requiring manual recalculation.
+
+Maintain a clear version history so we can track what changed, when, and revert if needed.
+
+Support continuous communication (text, comments, quick reactions) directly tied to specific parts of the menu or plan.

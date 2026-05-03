@@ -1,0 +1,55 @@
+Client Profile: "Victor Salgado" - Corporate Lawyer (Compliance-Oriented)
+
+If pricing isn’t clear, consistent, and documented, it creates risk. I need defensible numbers.
+
+Business Reality
+Right now:
+
+I book 4–7 private dining events per year for clients and internal teams.
+
+Budgets range from $2,000 to $10,000.
+
+I require invoices that match quoted pricing exactly.
+
+Dietary needs are secondary but must be handled.
+
+Locations vary but must be documented.
+
+I often expense or bill these events.
+
+I expect legal clarity in transactions.
+
+Primary Failure: Pricing Inconsistency
+If the quoted price doesn’t match the final invoice, it’s a problem. I need consistency and documentation.
+
+Structural Issue: Lack of Audit Trail
+I need to see how pricing was derived and be able to reference it later. Without that, I can’t defend the expense.
+
+Structural Issue: Hidden Terms
+If fees or conditions aren’t visible upfront, it creates legal ambiguity.
+
+Structural Issue: No Formal Documentation
+Casual pricing without structured output (invoice, breakdown) is not acceptable.
+
+Psychological Model
+I optimize for: clarity, consistency, and defensibility
+I refuse to compromise on: documented pricing
+I avoid: ambiguous or inconsistent numbers
+I evaluate tools by: legal and financial clarity
+
+Pass / Fail Conditions
+For this system to work for me, it must:
+
+Provide clear, consistent pricing from configuration to final invoice.
+
+Maintain a full audit trail of pricing decisions.
+
+Display all fees and terms upfront.
+
+Generate formal, structured invoices automatically.
+
+Ensure no discrepancy between quoted and charged amounts.
+
+Preserve pricing records for future reference.
+
+Support defensible financial documentation.

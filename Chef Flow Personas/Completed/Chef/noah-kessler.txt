@@ -1,0 +1,158 @@
+---
+
+**Chef Profile: "Noah Kessler" - Solo Private Chef & Regional Counterpart (Allocator)**
+
+I operate a solo private chef business across coastal New England, and I coordinate loosely with another chef who covers inland and northern routes. We’re independent, but we constantly intersect—geographically, logistically, and operationally. The issue now isn’t lack of coordination—it’s inefficient allocation of work between us.
+
+### Business Reality
+
+Right now:
+
+* 17–23 events per month (high-density weekends, scattered weekday bookings)
+* Average booking: $2,300; monthly revenue: $41,000–$57,000
+* Solo operator with occasional 1–2 assistants for larger events
+* Geographic scope: Rhode Island, Cape Cod, Boston, with overlap into New Hampshire and Maine
+* Counterpart chef: similar structure, northern-focused but flexible
+* Current tools: Instagram + SMS (inquiries), Google Calendar (availability), Excel (costing), Notes app (event prep)
+* Coordination method: texting leads, occasional call handoffs, no structured system
+
+### Primary Failure: No Intelligent Work Allocation
+
+We constantly encounter situations where one of us is better positioned to take a job—closer, more available, or better suited—but there’s no system to determine that automatically. Instead, it’s reactive: whoever responds first or happens to be thinking about it takes the work. That leads to inefficient routing—driving further than necessary, declining jobs that could have been fulfilled, or overloading one chef while the other is underbooked. The workaround is manually asking “do you want this?” which is slow and inconsistent.
+
+### Structural Issue: No Capacity Modeling
+
+There’s no visibility into actual workload capacity. I might look “available” on paper, but in reality I’m stretched thin with prep, travel, and back-to-back events. The other chef has the same issue. We can’t see each other’s true capacity, only surface-level availability. The workaround is gut-based decisions, which leads to overbooking or underutilization.
+
+### Structural Issue: No Economic Optimization Layer
+
+We don’t optimize for cost efficiency across both businesses. For example, one of us might take a lower-margin job in a far location while the other is closer and could have done it more profitably. There’s no system that evaluates travel cost, time, and revenue together. The workaround is individual decision-making, which ignores the shared efficiency opportunity.
+
+### Structural Issue: No Historical Learning
+
+We don’t track outcomes of shared decisions. If I pass a lead and it converts well, or if I take a job that turns out to be inefficient, that information isn’t captured. We’re not improving how we allocate work over time. The workaround is memory, which is unreliable and not scalable.
+
+### Psychological Model
+
+I optimize for: efficient routing, balanced workload, and maximizing revenue per hour
+I refuse to compromise on: control over my bookings and pricing
+I avoid: unnecessary travel, missed opportunities, and reactive decision-making
+I evaluate tools by: whether they make smarter decisions than I can manually
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. Evaluate incoming opportunities against both chefs’ location, availability, and workload to suggest optimal allocation.
+2. Provide a clear capacity view that reflects real workload, not just calendar availability.
+3. Factor in travel distance, prep load, and revenue to rank who should take a job.
+4. Allow me to accept or decline system suggestions without losing control of the lead.
+5. Track outcomes of shared decisions to improve future allocation logic.
+6. Operate without requiring manual data entry beyond what I already do.
+7. Never auto-assign work without explicit confirmation from the chef.
+
+---
+
+**Chef Profile: "Derek Halvorsen" - Independent Private Chef & Regional Peer (Boundary Setter)**
+
+I run a solo private chef operation across northern New England and coordinate selectively with another chef in the south. We collaborate, but only when it makes sense. The problem is that collaboration currently has no boundaries—it’s either too open or completely shut off.
+
+### Business Reality
+
+Right now:
+
+* 13–18 events per month (higher-end private dinners, occasional weekend clusters)
+* Average booking: $2,800; monthly revenue: $36,000–$50,000
+* Solo operator, hires specialized freelancers as needed
+* Geographic scope: Maine, Vermont, New Hampshire, occasional Boston travel
+* Counterpart chef: southern-focused, similar pricing and clientele
+* Current tools: Gmail (clients), Instagram (leads), Apple Notes (internal tracking), Square (payments)
+* Coordination: selective sharing via text, no persistent system
+
+### Primary Failure: No Enforceable Boundaries in Collaboration
+
+We collaborate based on trust, but there’s no system enforcing boundaries. If I share something, I lose control over how it’s used. If I don’t share, we lose efficiency. There’s no middle ground where I can define rules like “visible but not actionable” or “shared only after I decline.” The result is hesitation—I either overshare or withhold too much. The workaround is instinct, which leads to inconsistent collaboration.
+
+### Structural Issue: No Conditional Sharing Logic
+
+I can’t define conditions for when something should be shared. For example, I might want to share a lead only if I decline it, or only if it’s outside my preferred radius. There’s no system to automate that logic. The workaround is remembering to manually forward things, which often doesn’t happen.
+
+### Structural Issue: No Reversibility
+
+Once something is shared, I can’t pull it back. If I expose a lead or a plan, it’s out there permanently. There’s no way to revoke access or change visibility after the fact. The workaround is caution—sharing less than I should to avoid losing control.
+
+### Structural Issue: No Differentiation of Data Sensitivity
+
+Not all data is equal—some information is harmless (general location, date), while other data is sensitive (client identity, pricing). The system doesn’t distinguish between these levels. The workaround is all-or-nothing sharing, which reduces usefulness.
+
+### Psychological Model
+
+I optimize for: controlled collaboration and risk management
+I refuse to compromise on: ownership of my leads and client relationships
+I avoid: irreversible actions and unclear boundaries
+I evaluate tools by: how precisely they let me define and enforce rules
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. Allow conditional sharing rules (e.g., share only if declined, share only outside radius).
+2. Support revocable visibility—shared data can be restricted or hidden after initial exposure.
+3. Differentiate data sensitivity levels and allow selective exposure of fields.
+4. Prevent the other chef from acting on shared data unless explicitly permitted.
+5. Provide clear indicators of what is shared, with whom, and under what rules.
+6. Require zero manual duplication of data to enable sharing.
+7. Default to privacy unless rules explicitly allow sharing.
+
+---
+
+**Chef Profile: "Ethan Moreau" - Solo Private Chef & Regional Collaborator (Optimizer)**
+
+I operate a solo private chef business across southern New England and coordinate with another chef in the north to extend coverage and efficiency. We’ve reached a point where coordination is no longer optional—it’s necessary—but the system we use hasn’t evolved to support that.
+
+### Business Reality
+
+Right now:
+
+* 18–25 events per month (high-volume, mix of private and repeat clients)
+* Average booking: $2,100; monthly revenue: $45,000–$62,000
+* Solo operator with occasional freelance staff
+* Geographic scope: Connecticut, Massachusetts, Rhode Island, with travel north
+* Counterpart chef: northern-focused, similar volume
+* Current tools: Instagram + SMS (leads), Google Docs (menus), Calendar (scheduling), Venmo/Square (payments)
+* Coordination: frequent texting, occasional shared decisions, no system
+
+### Primary Failure: No Optimization of Shared Movement
+
+We both move constantly—driving across states, sourcing ingredients, setting up events—and none of that movement is optimized between us. We could reduce travel, consolidate trips, and share effort, but there’s no system to coordinate movement at scale. Everything is reactive and manual. The workaround is occasional coordination texts, which only capture a fraction of opportunities.
+
+### Structural Issue: No Route Visibility
+
+I don’t know where the other chef is going beyond what they tell me. If they’re already driving through an area I need something from, I have no way of knowing unless we happen to communicate. The workaround is asking proactively, which is inefficient and often too late.
+
+### Structural Issue: No Task Layer on Movement
+
+Even when we know each other’s plans, there’s no structured way to attach tasks. For example, I can’t easily say “pick this up while you’re there” in a way that’s tracked and confirmed. The workaround is text messages, which get buried and forgotten.
+
+### Structural Issue: No Efficiency Metrics
+
+We’re not measuring how efficient we are as a combined system. We don’t track saved trips, shared resources, or reduced costs. Without that, we can’t improve or justify changing behavior. The workaround is intuition, which doesn’t scale.
+
+### Psychological Model
+
+I optimize for: efficiency of movement, reduced redundancy, and time savings
+I refuse to compromise on: independence and control over my schedule
+I avoid: wasted travel, missed coordination opportunities, and manual tracking
+I evaluate tools by: how much time and cost they eliminate in real terms
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. Provide visibility into planned routes and travel between both chefs without requiring manual input.
+2. Allow structured task assignment tied to movement (e.g., pickups, drop-offs) with confirmation tracking.
+3. Surface opportunities to consolidate trips or share effort automatically.
+4. Track measurable efficiency gains (time saved, trips reduced, cost impact).
+5. Keep all movement coordination optional and non-intrusive.
+6. Integrate with existing workflows without requiring new systems to be maintained.
+7. Never expose sensitive client or event details through movement data.

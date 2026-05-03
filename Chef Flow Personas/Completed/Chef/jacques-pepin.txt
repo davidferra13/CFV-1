@@ -1,0 +1,67 @@
+**Chef Profile: "Jacques Pepin" - Culinary Educator (Master Instructor)**
+
+I am Jacques Pepin, and I teach the art of classic French technique—the foundational skills that separate a cook from a true chef. My operation is less about volume and more about the meticulous execution of technique, whether that’s teaching a perfect *roux* or mastering the art of the *pâté en croûte*. I am a teacher first, a restaurateur second, which means my operational needs are highly specialized: I need to run a high-end, flexible, educational service that maintains the integrity of the cuisine while maximizing my time in the kitchen.
+
+### Business Reality
+
+Right now:
+* I manage **18 to 25** private, bespoke class bookings and demonstration events annually, ranging from intimate groups of 8 to larger corporate groups of 30.
+* My revenue model is highly variable, averaging between **$45,000 and $60,000** in gross revenue per year, with 70% coming from private educational bookings and 30% from recurring corporate wellness/team-building classes.
+* My team structure is lean but specialized: myself, one dedicated Sous Chef (who handles prep and execution), and one part-time prep cook.
+* My geographic scope is centered in the Tri-State Area, primarily operating out of my commercial kitchen space in Brooklyn, New York.
+* My current tech setup is a chaotic mix of tools: Google Calendar for booking, Google Sheets for costing/recipe tracking, email chains for vendor confirmations, and physical, ring-bound binders for the actual recipes and technique notes.
+
+---
+
+### Primary Failure: Recipe Scalability and Variation Costing
+
+My biggest headache is the time spent manually adjusting recipes and recalculating costs whenever a booking changes size or scope. If I teach a class for 12 people, I calculate ingredient needs for 12. If the group shrinks to 10, I have to manually adjust every single yield and recalculate the associated cost per person. If the group grows to 15, I repeat the process. This manual scaling is prone to error, and the time spent on these calculations means I am not preparing materials or resting. It costs me, conservatively, 4-6 hours of administrative time per week, which is money I should be earning in the kitchen.
+
+---
+
+### Structural Issue: Multi-Variable Menu Planning
+
+When I plan a class, I am not just creating a menu; I am creating a structured, multi-course *experience*. The menu must accommodate the number of participants, the time allotted (usually 3 hours), and the skill level of the group. My current workaround is a master Google Sheet where I list every course, the required ingredients, and the estimated time. What breaks is the inability to link the ingredients list directly to the cost sheets and the booking count. I have to calculate the cost for *Course A* for 15 people, then *Course B* for 15 people, then *Course C* for 15 people, and then manually sum the total and divide by 15.
+
+---
+
+### Structural Issue: Managing Ingredient Specification and Sourcing for Demos
+
+My recipes require highly specific, often artisanal ingredients—a particular French butter, a specific grade of flour, or a regional spice blend. I cannot simply tell a vendor, "We need 5 pounds of flour." I need "5 pounds of Italian '00' flour, milled within the last three months, suitable for pasta." My current workaround is calling multiple specialty vendors and sending them photos and detailed descriptions via email. This is non-scalable, leads to significant communication lag, and requires me to manually track multiple quotes and compare quality/price on a separate spreadsheet.
+
+---
+
+### Structural Issue: Coordinating Complex, Multi-Day Booking Logistics
+
+My most profitable bookings are multi-day workshops (e.g., a 3-day pastry module). These require booking the same team (Sous Chef, Prep Cook) across three separate dates, ensuring the kitchen space is booked, and coordinating ingredient sourcing for three distinct menus. I use a combination of text messages, email threads, and a physical whiteboard calendar to track this. This system is a disaster because it lacks a single source of truth. If one date gets bumped, I have to manually edit 15 different communications, and the chance of a scheduling conflict or miscommunication is incredibly high.
+
+---
+
+### Structural Issue: Tracking and Accounting for Variable Class Costs
+
+For every single class, the cost center is different. Sometimes the main expense is the specialized ingredient (e.g., foie gras for a demo), sometimes it is the labor cost (e.g., an external pastry expert), and sometimes it is the rental cost of specialty equipment (e.g., a smoker). I currently calculate the cost per class by manually gathering receipts and cross-referencing them with the initial booking sheet. This process is entirely retroactive and manual, leading to significant delays in invoicing and making it difficult to accurately calculate my true profit margin on a per-event basis.
+
+---
+
+### Psychological Model
+
+I optimize for: **Precision and Reliability.** If the system is imprecise, the final product is flawed. Everything must be predictable and repeatable.
+I refuse to compromise on: **The integrity of the technique.** If the tool forces me to simplify or compromise a classic method for the sake of efficiency, I will reject it.
+I avoid: **Unnecessary complexity and non-linear processes.** I hate having to jump between a spreadsheet, an email, and a physical binder to complete a single task.
+I evaluate tools by: **How quickly they allow me to move from concept to executable, costed plan.**
+
+I think in terms of process flow and material science. My decisions are governed by the efficiency of the workflow. I need a system that feels like a highly organized, intuitive mise en place—everything in its proper place, ready to be executed.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must allow me to create a master recipe that can automatically scale ingredient quantities and calculate total material costs based on a dynamic group size input (e.g., 8 to 30 people).
+2. The system must integrate my booking calendar with the recipe costing engine, so that when an event is booked, the required ingredient list and cost breakdown are immediately generated and associated with that specific event.
+3. The system must allow me to create and manage vendor profiles with highly detailed specifications (e.g., "Grade A, milled locally, 2024 harvest") and automatically generate RFQs (Requests for Quote) for multiple specialized ingredients simultaneously.
+4. The system must provide a single dashboard view that consolidates all scheduled events, associated ingredient needs, required team members, and their respective paid hours, allowing me to spot resource conflicts immediately.
+5. The system must manage the entire lifecycle of a class booking, from initial inquiry to paid deposit, generating a detailed, itemized invoice that accounts for multiple cost centers (labor, materials, rentals) and automatically generating a final, accurate P&L statement for that single event.
+6. The system must handle the documentation of technical processes—not just recipes, but the step-by-step methodology for techniques like braising or tempering—and link these documents directly to the specific booking that requires that technique.
+7. The system must allow me to establish and manage recurring "class types" (e.g., "Beginner Pasta Workshop") with pre-defined menus, default staffing levels, and baseline costing, which I can then simply activate and modify for individual bookings.

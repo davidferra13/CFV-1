@@ -1,0 +1,67 @@
+**Guest Profile: "Jimmy Donaldson" - Ultra-High-Scale Guest (Massive Logistics)**
+
+I’m Jimmy. My brand is built on scale, spectacle, and executing massive, complex challenges for millions of people to watch. When I book a private event, it’s not just a dinner; it’s a production, and the guest experience has to be flawless because the cameras are always rolling, even if they aren't. My expectation is that every single detail—from the appetizer temperature to the final check-out—is managed with military precision and massive capacity.
+
+### Business Reality
+
+Right now:
+* I attend **1** major private dining/ticketed event per **quarter**, but the preparation and logistical planning phase lasts for **3-6 months**.
+* My events require managing a minimum of **1,500** ticketed attendees, generating an estimated **$750,000** in gross revenue per event, covering catering, venue, and merchandise.
+* My dietary needs are extremely complex, requiring specialized, allergy-free menus for a core group of **15** people, while the main menu must scale for 1,500 people and accommodate 4-5 different major allergies (gluten, nuts, shellfish, etc.).
+* The event context is usually a massive, multi-day, pop-up spectacle at a large, non-standard venue (e.g., a repurposed warehouse or a festival grounds), requiring 1,500 tickets, seating assignments based on "team" groups, and a specialized flow for media access and VIP zones.
+* Current communication setup is a patchwork: dedicated Eventbrite links for initial sales, Google Forms for dietary/RSVP follow-up, Slack channels for the core team, and physical signage/paper planners for the day-of execution. There is no single source of truth.
+
+---
+
+### Primary Failure: Unpredictable Scale Collapse
+
+The biggest operational problem is the inability of any single system to handle a massive, rapidly changing guest count and complex, tiered access levels. Because the system treats my event like a standard reservation, it fails when 10% of the expected attendance (150 people) suddenly changes their status (e.g., VIP upgrade, media access, last-minute cancellation). This forces manual recalculations of ingredient sourcing, staffing ratios, and seating charts, leading to inevitable over- or under-stocking, wasted perishable goods valued at over **$50,000** per event, and, worst of all, a visibly stressed guest experience that ruins the content and the revenue potential.
+
+---
+
+### Structural Issue: Fragmented RSVP and Ticketing Lifecycle
+
+The ticketing system (Eventbrite) handles the initial sale, but the subsequent data (dietary, seating preference, media access) is dumped into a Google Sheet. When 1,500 people are involved, reconciling who paid, who is confirmed, what they ate, and where they sit becomes a manual, high-risk data entry process. If the sheet is not updated immediately when a booking changes, the kitchen receives inaccurate counts, resulting in incorrect menu costing and unnecessary operational delays when staff have to physically cross-reference lists.
+
+---
+
+### Structural Issue: Multi-Tiered Menu Customization and Costing
+
+We don't just have one menu; we have 4 tiers (General Admission, VIP, Media, Staff) and 3 specialized menus within each tier (Vegetarian, High-Protein, Allergy-Specific). Currently, I have to manually calculate the total ingredient cost for 1,500 people using a mix of spreadsheets and vendor quotes. If I forget to apply the specialized pricing for the 15 allergy-specific dishes, the overall food cost percentage is inaccurate, meaning I cannot accurately forecast profitability or negotiate the final vendor payment.
+
+---
+
+### Structural Issue: Day-of Flow Management and Seating Assignments
+
+My events require complex, multi-zone seating that is communicated to both the guest and the staff. We use paper seating charts and directional signage. When a major group (e.g., the "Dream Team" group of 50) is seated, the system has no way to automatically flag that area as "occupied" for the rest of the staff or the operational flow. This leads to staff confusion, bottlenecks in service flow, and the inability to quickly reroute service when a zone needs to be cleared for a media shoot, costing valuable service minutes and guest satisfaction.
+
+---
+
+### Structural Issue: Communication and Feedback Loop Gap
+
+My communication strategy changes dramatically based on the event phase (pre-sale, 2 weeks out, day-of). I currently use three different channels (Email marketing, dedicated SMS service, and Instagram stories) to relay updates. There is no centralized platform to push critical, time-sensitive operational changes (e.g., "The main entrance is temporarily closed due to vendor setup") that is guaranteed to reach all 1,500 guests and the operational staff simultaneously, leading to confusion, lost revenue from missed check-ins, and negative immediate feedback that impacts future ticket sales.
+
+---
+
+### Psychological Model
+
+I optimize for: **Scale and Virality.** Everything must look spectacular, work at massive volumes, and be easily documented and shared.
+I refuse to compromise on: **Flawless, Predictable Logistics.** If the system breaks, the spectacle breaks, and the financial loss is immediate and highly visible.
+I avoid: **Complexity hidden behind poor UX.** I hate systems that require training manuals or multiple logins.
+I evaluate tools by: **Capacity and Integrations.** If it can't handle 2,000 people and link to my payment processor and my inventory system, it's useless.
+
+I think in terms of maximum throughput and minimizing friction points at high volume. My decision-making is driven by the single biggest lever for growth, which is making the spectacle bigger and more reliable.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1.  **Manage Scaled Menus:** Allow me to define multiple, complex, and interconnected menu variants (e.g., 15 allergy-specific meals) and automatically calculate the total ingredient cost and required sourcing quantity for 1,500 guests.
+2.  **Centralize RSVP and Data:** Integrate ticketing, dietary restrictions, and access levels into a single, real-time, authoritative guest profile that updates instantly when a status changes (e.g., paid ticket to VIP upgrade).
+3.  **Control Operational Flow:** Provide a visual map or zoning tool that allows administrators to block off areas and manage real-time seating assignments, communicating that status to all staff devices.
+4.  **Automate Communication:** Be able to push segmented, time-sensitive operational updates (e.g., "VIP Check-in opens now") to specific groups of guests and staff via a single dashboard.
+5.  **Forecast Inventory Needs:** Take the final, confirmed guest count and the menu details, and automatically generate a comprehensive ingredient purchasing list, flagging potential supply shortages based on vendor lead times.
+6.  **Handle Financial Complexity:** Accurately track and reconcile the cost of different ticket tiers and service levels (e.g., General Admission vs. VIP add-ons) to generate a precise P&L statement immediately after the event concludes.
+7.  **Manage Multi-Day Event Logistics:** Allow me to schedule and manage multiple, sequential events or zones within a single large venue over a period of 3-5 days, ensuring resource allocation (staff, kitchen prep) is correctly sequenced.

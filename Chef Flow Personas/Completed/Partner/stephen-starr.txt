@@ -1,0 +1,67 @@
+**Partner Profile: "Stephen Starr" - Multi-Concept Venue Group Owner (Luxury Collaborator)**
+
+I own and operate multiple, distinct, high-end dining concepts across various locations. My job is not just running restaurants; it's curating experiences, building brand equity, and ensuring every guest interaction—whether at my flagship venue or a partner's location—is flawless and profitable. I oversee the entire lifecycle, from initial concept development and securing venue buy-ins, to final billing and revenue reconciliation.
+
+### Business Reality
+
+Right now:
+* I co-host, promote, or support **4-6** large-scale, multi-concept events or partnerships per **month**.
+* I negotiate revenue share agreements ranging from **15% to 35%** of gross sales, requiring detailed tracking of allocated costs and net revenue for every event.
+* My primary collaborations involve securing exclusive event dates at high-value, limited-capacity venues, such as historic estates or other high-profile restaurants.
+* We deal with shared event locations, shared calendar constraints, and complex guest lists that need to be segmented by source (e.g., partner promotion vs. organic booking).
+* Current coordination setup is a mess: I use a combination of encrypted WhatsApp texts for immediate booking confirmations, shared Google Sheets for preliminary revenue tracking, formal contracts stored in Dropbox, and a physical, color-coded planner for critical venue availability dates. There is no single source of truth.
+
+---
+
+### Primary Failure: Unreconciled Revenue Attribution
+
+The single biggest operational problem is definitively tracking and reconciling revenue share across multiple, distinct venues and partnership agreements. When a large event is co-hosted, the revenue isn't simply attributed to one source; it is split based on contracted percentage, and then *deducted* against variable costs (staffing, ingredients, décor). Because we rely on manual invoicing and spreadsheet reconciliation, it often takes 2-3 weeks after a major event to settle the final financials. This delay creates massive cash flow uncertainty, strains relationships with partners, and means I cannot quickly prove profitability for the next negotiation round. It costs us valuable time and jeopardizes future high-value partnerships due to lack of immediate financial transparency.
+
+---
+
+### Structural Issue: Shared Venue Availability and Conflict Management
+
+When I negotiate a partnership, the first and most critical step is locking down a date and time slot at the partner's venue. We currently manage this through a combination of back-and-forth email chains and phone calls, checking their physical calendar, which is often inaccurate or outdated. If a major event is booked by a third party, or if the partner double-books, the conflict is only discovered days before the event, forcing us to scramble and potentially losing the booking entirely. This manual process is inefficient and severely limits my ability to book high-demand, premium dates.
+
+---
+
+### Structural Issue: Cross-Concept Menu and Ingredient Costing Consistency
+
+Since I operate multiple venues, every single menu item—from the appetizer at my flagship location to the main course at a partner's estate—must adhere to a strict, consistent cost of goods sold (COGS) model. When we co-host, the menu needs to be dynamically adjusted to account for ingredient sourcing limitations at the partner's kitchen, or specific equipment constraints. Currently, I have to build and manually update separate, detailed costing spreadsheets for every single collaboration, leading to errors in ingredient drawdowns and making it impossible to predict the overall profitability of the combined menu before the event even starts.
+
+---
+
+### Structural Issue: Guest Journey and Promotional Hand-off Tracking
+
+The guest experience is paramount. When a guest is first booked through a partner's promotion (e.g., a "Partner X Exclusive Night"), that initial booking must be seamlessly handed off to my ticketing and reservation system. We currently use a manual process: the partner sends a spreadsheet of names/tickets, which I then have to manually input into my reservation system. This process is prone to typos, makes it impossible to track the original source of the booking for commission purposes, and creates a gap in the guest journey where the booking feels disconnected from the final experience.
+
+---
+
+### Structural Issue: Contractual Compliance and Menu/Service Scope Definition
+
+My agreements with partners are incredibly detailed, covering everything from staffing ratios to specific menu exclusions and beverage service scope. These terms are often contained in 10-20 page contracts. When we run an event, the kitchen staff, service staff, and billing department must reference these specific, agreed-upon parameters. If the system doesn't have a single, easily accessible repository that links the *contractual agreement* to the *operational menu* and the *final billing structure*, we risk over-servicing or under-charging, leading to disputes and financial losses.
+
+---
+
+### Psychological Model
+
+I optimize for: **Brand control, predictable high-margin revenue, and operational elegance.**
+I refuse to compromise on: **The seamlessness of the guest experience and the integrity of the revenue split.**
+I avoid: **Any process that requires me to manually cross-reference information across more than three different systems or documents.**
+I evaluate tools by: **How quickly they allow me to generate a reconciled, auditable financial report tied directly to a specific event or partnership.**
+
+I think in terms of assets and utilization. Every venue, every staff hour, and every dollar of revenue must be maximized and traceable. Time is my most expensive commodity; I will pay for anything that reduces my required administrative oversight or eliminates the risk of a financial error.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1.  **Allow me to upload and reference a signed contract** and automatically link the specific revenue share percentages and operational rules (e.g., "Partner X pays 20% of gross sales") to the event's financial ledger.
+2.  **Provide a single, shared calendar view** that automatically blocks out time slots at partner venues and alerts me immediately if an overlapping booking conflict is detected.
+3.  **Facilitate the ingestion of booking data** from an external partner source (e.g., a CSV upload) and automatically tag those reservations with the correct promotional source for commission tracking.
+4.  **Allow me to build a dynamic, event-specific menu** that automatically calculates COGS and adjusts ingredient inventory drawdowns based on the unique sourcing constraints of the co-hosting venue.
+5.  **Generate a real-time, auditable reconciliation report** that tracks gross revenue, allocated costs, and the final net revenue split between myself and the partner, accessible to all parties involved.
+6.  **Manage the full guest lifecycle** from the initial booking source (Partner Promotion) through the reservation, the menu selection, and the final bill, all within one source of truth.
+7.  **Provide a clear, digital repository** for all signed contracts and operational agreements that can be cross-referenced against the running event parameters.

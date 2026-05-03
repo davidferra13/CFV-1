@@ -1,0 +1,58 @@
+Chef Profile: "Andre Costa" - Private Chef & Culinary Fixer (Indexer)
+
+I don’t think in contacts - I think in outcomes. I’ve spent years building a network where every person maps to a result: who can salvage a broken sauce at 6pm, who can staff a last-minute event, who I trust with money, who I never put in front of a client. That knowledge is sharp, but it’s fragmented, and I’m starting to hit the limits of memory.
+
+Business Reality
+Right now:
+
+9–15 private events per month (high-touch, repeat clientele)
+
+$45,000–$110,000 monthly revenue
+
+12+ years across restaurants, pop-ups, and private dining
+
+Active network of 180–300 contacts (chefs, vendors, operators, freelancers)
+
+30–60 weekly interactions (calls, texts, referrals, problem-solving)
+
+4,000+ cumulative notes across people (performance, behavior, context)
+
+15–25 decisions per month driven by “who I route this to”
+
+Primary Failure: No Queryable Network
+I know the right person exists - I just can’t query for them. My brain holds patterns like “reliable under pressure + pastry + shows up early,” but my tools don’t. Contacts are flat lists; messages are unstructured logs. When I need to move fast, I end up broadcasting to multiple people instead of targeting the exact fit. My workaround is shortlists and favorites, but they’re crude and drift over time.
+
+Structural Issue: Signal vs Noise in History
+Years of messages contain the truth about people - who confirmed, who canceled, who delivered - but it’s buried. There’s no extraction layer that turns history into signal. I can’t easily see consistency, no-shows, or response latency trends. My workaround is anecdotal recall, which biases recent events over long-term patterns.
+
+Structural Issue: Role Fluidity
+People aren’t static. A line cook becomes a sous, a freelancer becomes a vendor, someone pivots out entirely. My ledger needs to track role changes and capabilities over time. Right now, updates are manual and sporadic. My workaround is periodic mental updates, which miss transitions and create stale mappings.
+
+Structural Issue: Contextual Trust
+Trust is situational. Someone I trust for pastry might be wrong for client-facing service. Another is great for emergencies but not for long-term projects. My current notes don’t encode trust by context. My workaround is keeping separate mental buckets, which breaks when decisions are urgent.
+
+Structural Issue: Private vs Shareable Intelligence
+Some insights are strictly private (reliability issues, interpersonal dynamics). Others could be shared with collaborators. I need a split-brain system: private annotations and optional, sanitized summaries. My workaround is keeping everything private, which limits coordination with trusted partners.
+
+Psychological Model
+I optimize for: precise routing - right person, right task, right moment
+I refuse to compromise on: putting the wrong person in a critical role
+I avoid: broadcast requests and guesswork under time pressure
+I evaluate tools by: whether they turn history into a fast, accurate decision engine
+
+Pass / Fail Conditions
+For this system to work for me, it must:
+
+Build a queryable network graph (skills, reliability, availability, context-specific trust) instead of a flat contact list.
+
+Extract signal from communication history (confirmations, cancellations, response times) into structured metrics.
+
+Track role and capability changes over time with minimal manual input.
+
+Support context-specific trust profiles (e.g., “pastry - high trust,” “client-facing - low trust”).
+
+Enable instant filtering (e.g., “last-minute, high-reliability, pastry, within 20 miles”).
+
+Separate private annotations from shareable summaries with strict access control.
+
+Continuously refine profiles based on new interactions without requiring me to re-enter data.

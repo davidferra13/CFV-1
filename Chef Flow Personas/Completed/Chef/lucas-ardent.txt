@@ -1,0 +1,50 @@
+**Chef Profile: "Lucas Ardent" - Independent Private Chef & Cross-Regional Operator (Balancer)**
+
+I run a solo private chef business based in central Massachusetts, and I operate in parallel with another independent chef who covers the coastal and northern zones. We move fluidly across each other’s regions when needed, and we coordinate just enough to stay efficient. The issue is we’ve built a semi-shared system without rules, and it’s starting to create subtle conflicts that didn’t exist when volume was lower.
+
+### Business Reality
+
+Right now:
+
+* 15–21 events per month (mostly private dinners, occasional multi-day bookings)
+* Average booking: $2,600; monthly revenue: $40,000–$55,000
+* Solo operator; hires 1–3 freelancers for larger events
+* Geographic scope: Massachusetts, Connecticut, Rhode Island, with frequent overlap into New Hampshire and Maine
+* Counterpart chef: similar scale, fully independent business, overlapping service areas
+* Current tools: Gmail (contracts), Instagram + SMS (leads), Google Calendar (scheduling), Excel (costing), Notes app (event breakdowns)
+* Coordination system: shared awareness through conversation, no persistent infrastructure
+
+### Primary Failure: Context Without Prioritization
+
+We’ve started sharing more information, but there’s no system to prioritize what matters. If I surface everything—bookings, inquiries, sourcing trips, availability—it becomes noise. If I filter too aggressively, I lose the benefit of coordination. Right now, everything is treated equally, which means nothing stands out. I miss important overlaps because they’re buried in low-value updates. The workaround is manually deciding what to share and when, but that depends on judgment in the moment and often fails under pressure.
+
+### Structural Issue: Conflict Without Resolution Layer
+
+There are moments where both of us could take the same opportunity—same date, same region, similar client profile—and there’s no system to handle that cleanly. We don’t want to compete directly, but we also don’t want to artificially limit ourselves. Right now, it’s first-come, first-served based on who sees or acts on it faster. That creates subtle tension and inefficiency. The workaround is informal etiquette—“you take this one, I’ll take the next”—but it’s inconsistent and not tracked. There’s no mechanism to surface conflicts or resolve them intelligently.
+
+### Structural Issue: Temporal Drift in Shared Data
+
+When something is shared between us, it’s often a snapshot, not a live object. If I share that I’m planning a sourcing trip or that I have availability on a date, that information can become outdated quickly. The other chef might act on it assuming it’s still valid when it’s not. There’s no guarantee that shared data stays current or expires appropriately. The workaround is follow-up messages to confirm, which defeats the purpose of having a shared layer in the first place.
+
+### Structural Issue: Uneven Contribution & Visibility
+
+We don’t always contribute equally to the shared layer. Some weeks I’m actively sharing sourcing runs, leads, and availability; other weeks I’m heads down and share nothing. The system doesn’t account for that imbalance, so visibility becomes inconsistent. One person might be operating with full context while the other is effectively blind. The workaround is periodic check-ins, but that reintroduces manual communication and doesn’t solve the underlying inconsistency.
+
+### Psychological Model
+
+I optimize for: balanced autonomy, fair opportunity, and minimal friction
+I refuse to compromise on: independence of my business and clarity in decision-making
+I avoid: noisy systems, ambiguous ownership, and anything that creates hidden competition
+I evaluate tools by: whether they reduce ambiguity and make coordination feel fair, predictable, and low-effort
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. Prioritize surfaced information based on relevance (region, date proximity, event size) so critical overlaps are immediately visible and low-value updates are suppressed.
+2. Detect and flag potential conflicts (same date/region/opportunity type) and provide a neutral mechanism to resolve or acknowledge them.
+3. Ensure all shared data is live or clearly time-bound, with automatic updates or expiration so outdated information cannot be acted on.
+4. Track participation in the shared layer (what is being surfaced by each party) without enforcing quotas, so visibility gaps can be identified.
+5. Allow contextual visibility—e.g., I can see that the other chef is booked in my region without seeing client identity or pricing details.
+6. Provide a lightweight acknowledgment system (not messaging) so one chef can signal “seen,” “handled,” or “not relevant” on shared items.
+7. Maintain zero disruption to individual workflows—no required new input steps, no forced data entry, and no dependency on constant interaction to keep the system accurate.

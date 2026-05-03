@@ -1,0 +1,73 @@
+**Staff Profile: "Jacques Pepin" - Prep Kitchen Assistant (High-Volume Prep)**
+
+I'm the guy who keeps the line running, even if the line is just the prep station. My job is to take massive, vague orders—like "we need enough mirepoix for the grand service"—and turn them into perfectly portioned, ready-to-go ingredients. I don't cook the final dish, but if I mess up the foundation, the entire service stalls. I work constantly, moving from the raw ingredients storage to the main prep stations, and sometimes I’m working on three different menus for three different clients that day.
+
+### Business Reality
+
+Right now:
+* I work an average of **5-6** shifts per week, often including **2** weekend shifts, sometimes 12 hours each.
+* I am paid **$16.00/hour** and am expected to work 40-50 hours a week. I have completed basic food handler certification, but I am constantly cross-training on new station roles.
+* My team structure is highly fluid. I report to the Sous Chef, but I take direction from the station lead (the line cook) who is often stressed and yelling. I am expected to be available for prep, service, and deep cleaning, often with no specific downtime.
+* My kitchen scope is the main commissary prep kitchen, but I frequently move my work to the private banquet kitchen (Location A) or the satellite catering venue (Location B), which requires me to move massive amounts of equipment and ingredients daily.
+* My current briefing and scheduling setup is a mix of printed, handwritten daily prep lists handed out by the Sous Chef, followed by urgent texts from the Banquet Manager ("We need 30 extra portions of this, NOW").
+
+---
+
+### Primary Failure: Ingredient Hand-Off Inaccuracy
+
+The biggest operational problem is the constant, chaotic hand-off of prep requirements between stations and prep. The Sous Chef gives me a list, but the Line Cook only remembers 80% of it, and the Banquet Manager changes the guest count from 50 to 75 last minute. Because of this, I often over-prep massive amounts of ingredients that go bad (costing us $300-$500 in waste per major event), or worse, I under-prep a critical component, causing the service to slow down and requiring an expensive, panicked scramble to source or prep the missing item on the fly.
+
+---
+
+### Structural Issue: Fragmented Prep Lists
+
+I receive prep lists in at least three different formats: a printed sheet for the main kitchen, a handwritten list on a napkin for the banquet, and a verbal instruction over the radio for the pop-up event. I have to cross-reference these manually to ensure I haven't missed a key ingredient or a required quantity. If the list is incomplete or contradictory, I spend valuable prep time stopping to ask a manager, which slows down the entire prep kitchen and makes me look inefficient.
+
+---
+
+### Structural Issue: Dynamic Inventory Visibility
+
+When a line cook suddenly realizes they are running low on a specific pre-prepped component—say, we need 12 more cups of diced shallots—they don't have a way to check if I already made them or if they are in the holding area. They usually just yell, which disrupts the flow, or they wait for a manager to manually count it. This lack of real-time inventory visibility means ingredients sit in the holding fridge until someone physically checks them, leading to confusion and wasted labor.
+
+---
+
+### Structural Issue: Multi-Location Prep Tracking
+
+When we prep for a large corporate event, I might start in the commissary kitchen, move the ingredients to the banquet kitchen, and then finally hand off the components to the line cooks at the actual event venue. Currently, I track this using a series of sticky notes and a whiteboard checklist. When a key item (like the special dipping oil) is moved, it's easy for the note to fall off, or for a shift change to mean the new staff member doesn't know which ingredients are already accounted for, forcing a redundant count and wasting 15-20 minutes of critical setup time.
+
+---
+
+### Structural Issue: Role-Based Workflow Overlap
+
+I am technically a prep assistant, but I am often forced into line cook roles when the main chef is sick. When I switch roles, my workflow changes entirely—from batch processing hundreds of items to precise plating and timing. I have no structured way to document the shift in responsibilities, which means I either waste time relearning a complex station or I get overwhelmed by the sudden change in pace and required focus.
+
+---
+
+### Structural Issue: Scheduling and Equipment Assignment
+
+My schedule changes constantly based on the client bookings. If I am assigned to prep for three different clients on one day, I don't know in advance which specific pieces of large, specialized equipment (like the industrial mandolinos or the vacuum sealers) I will need, or which prep station will be available. This forces me to physically walk around the kitchen in the morning, asking maintenance or the Sous Chef where everything is, creating bottleneck time before any actual prep can begin.
+
+---
+
+### Psychological Model
+
+I optimize for: Efficiency of physical flow. I need to move ingredients from storage to prep to service with the absolute minimum amount of human intervention or searching.
+I refuse to compromise on: Consistency of portioning. If I am told to prep 50 pounds of chopped herbs, I need to know exactly how to measure and count that so the final product is uniform, regardless of who is doing the prep.
+I avoid: Paperwork that requires more than a quick checkmark. I hate being forced to write things down or fill out forms that delay me from cutting.
+I evaluate tools by: How quickly they let me get back to the knife. If I have to click through five menus or log into three different dashboards just to get the ingredient list, it's too slow.
+
+I think like a process engineer. I see the entire kitchen as one giant, complex machine, and every paper list or phone call is a wrench thrown into the gears. My decision-making is based on minimizing physical steps and maximizing throughput.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1.  The system must automatically generate a consolidated prep list, combining ingredients and quantities from all booked menus (Banquet, A La Carte, Catering) for a single service date.
+2.  The system must allow me to log the exact weight or count of ingredients prepped against a specific job ticket, providing real-time visibility to the Sous Chef and Line Cook.
+3.  The system must track and reserve specialized equipment (e.g., "Mandoline Unit 3") and link that equipment assignment directly to the specific service booking and time slot.
+4.  The system must provide an immediate, centralized alert if a critical ingredient falls below a pre-set threshold (e.g., "Shallots: 15% remaining") and automatically notify the purchasing manager and the head chef.
+5.  The system must allow me to view my full, cross-functional shift assignment (Prep -> Line -> Cleanup) and automatically generate a checklist of required station roles and necessary safety certifications for that specific day.
+6.  The system must allow me to digitally mark ingredients as "Transferred to Location B" and automatically adjust the inventory count for the commissary kitchen and the banquet kitchen simultaneously.
+7.  The system must generate a single, consolidated, printable prep sheet that is grouped by ingredient type and required prep station, minimizing the need for me to physically move between different work areas.

@@ -1,0 +1,73 @@
+**Chef Profile: "Andrea Reusing" - Catering Director (High-Volume Culinary Service)**
+
+I run a high-end, large-scale catering operation that specializes in transforming diverse, complex menus for major corporate and private events. My job is to manage everything from initial client pitch and menu design to managing 50-person prep crews and overseeing the final, flawless execution of a 500-person meal service. We are constantly juggling extreme demands for quality, massive volume, and absolute logistical precision.
+
+### Business Reality
+
+Right now:
+* I manage **15-20** large-scale catering events per month, ranging from 150 to 500 guests, primarily corporate headquarters and luxury venues.
+* My revenue model is built on a mix of fixed event contracts (average $15,000 per event) and variable staffing/logistics fees, generating an annual revenue of approximately **$1.8 million to $2.2 million**.
+* My core team consists of **1 Executive Chef (myself), 2 Sous Chefs, 1 Operations Manager, and 15-25 contract kitchen staff**, plus an outsourced accounting/HR function.
+* My geographic scope is focused within the **Greater New York City area**, but we frequently travel to surrounding boroughs and Westchester County.
+* My current tech setup is a chaotic mix of **Google Sheets (for costing and inventory), shared Dropbox folders (for vendor PDFs and menus), WhatsApp groups (for last-minute staffing changes), and dedicated physical binder/planner systems (for event timelines and guest counts)**.
+
+---
+
+### Primary Failure: Menu-to-Costing Reconciliation
+
+The single biggest operational headache is reconciling the final, approved menu cost against the actual ingredient purchasing and inventory depletion. Because menus are constantly changing based on client feedback or seasonal availability—and because we source specialty items from 5-7 different vendors—I cannot get a real-time, accurate cost per head. If a client requests a substitution (e.g., swapping sea bass for salmon), I have to manually calculate the cost difference using a separate spreadsheet, risking human error. This failure means I often quote a menu that is either underpriced (leaving us vulnerable to cost overruns) or overpriced (losing the bid). It costs me, conservatively, **5-10 hours of manual reconciliation per major event**, time that should be spent on creative development or client relations.
+
+---
+
+### Structural Issue: Ingredient Usage Tracking
+
+We have no centralized system for tracking how much of a specialty ingredient (like a specific heirloom tomato variety or a rare spice blend) was used in a catering event versus how much was pre-allocated for the next event. My workaround is physically marking down amounts on the *Google Sheet* after the prep crew finishes, but this sheet is never fully synced with the actual inventory management system (which is just a separate, less reliable spreadsheet). What breaks is when I try to source a highly seasonal ingredient for a new menu, only to discover we have already depleted the necessary stock for the next week's events, leading to emergency, high-cost sourcing.
+
+---
+
+### Structural Issue: Staffing and Skill Matching for Events
+
+Assigning the right staff (e.g., a station chef proficient in Thai cuisine vs. a pastry chef) to a specific event is a nightmare. I keep a massive, out-of-date spreadsheet of my contract staff's skills, availability, and day rates. I manage this by having the Operations Manager manually cross-reference the event menu requirements (e.g., "needs 4 people for live pasta station, 2 for charcuterie") against the spreadsheet and then sending individual text messages. What breaks is when a key staff member calls out sick, and I have no immediate, structured way to identify a replacement who not only has the required skill set but is also available and within the budget for that specific shift.
+
+---
+
+### Structural Issue: Vendor and Compliance Documentation
+
+Every event requires a unique stack of vendor documents: Certificates of Origin, allergen declarations, health permits, and specialized delivery schedules. I currently maintain these in a massive, disorganized Dropbox folder structure, organized by event date and client name. When a client or venue requires a specific vendor's up-to-date compliance document (e.g., the linen supplier's insurance certificate for the venue's risk assessment), I waste time digging through folders, often emailing a request to a vendor just to confirm if the file I *think* is there is the most recent one. The manual process increases the risk of using outdated documentation, which could result in a massive compliance failure on site.
+
+---
+
+### Structural Issue: Guest Count and Menu Scaling
+
+Our menu pricing is based on a per-head cost, but the actual guest count is often fluid until 72 hours out. I manage this by maintaining a separate, constantly updated RSVP spreadsheet that I manually cross-reference with the venue's final head count. If the count changes by even 15-20 people, I have to manually recalculate the required ingredients, the necessary staffing hours, and the revised labor costs. This manual process is prone to mathematical errors and makes it impossible to quickly model "what if" scenarios (e.g., "What if we had 30 more guests?").
+
+---
+
+### Structural Issue: Multi-Phase Project Timeline Management
+
+A single major event is not one day; it involves weeks of menu development, costing, vendor booking, staff training, and execution. I use a combination of physical project planners and shared email chains to track milestones. For instance, the timeline for a major corporate dinner might require the floral vendor to confirm the design by Day 21, the bread vendor to provide samples by Day 14, and the final staffing roster to be locked by Day 7. If any one of these stakeholders misses their deadline, I rely on chasing them via email, and there is no single, visible, chronological dashboard showing the true status of all moving parts.
+
+---
+
+### Psychological Model
+
+I optimize for: **Predictive accuracy and minimizing operational friction.** I need to know, at a glance, whether a complex event is profitable, compliant, and logistically sound.
+I refuse to compromise on: **The quality of the final plate and the adherence to the menu concept.** If the process compromises the food, the client leaves.
+I avoid: **Any system that requires me to input the same data repeatedly, or any process that forces me to wait for confirmation via email.**
+I evaluate tools by: **How quickly and automatically they close the loop between the client's initial idea, the final cost, and the operational execution.**
+
+I think in terms of resource constraints and maximizing throughput. My decision-making process is ruthlessly efficient, focused on reducing variables and eliminating manual data transfer points. I need a system that handles the complexity of simultaneous, interconnected processes without me having to manually connect the dots.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must **automatically calculate and display the true cost-per-head** by reconciling the approved menu against real-time ingredient inventory depletion.
+2. The system must **generate a unified, editable master timeline** that tracks deadlines and dependencies for all vendors and internal teams for a specific event.
+3. The system must **allow me to build and manage multi-tiered menus** and instantly update the associated ingredient requirements and labor costs when a single item is swapped out.
+4. The system must **maintain a searchable, centralized repository of all vendor compliance documents** (insurance, permits, etc.) linked directly to the specific event they are working on.
+5. The system must **manage and allocate staff based on a skills matrix** (e.g., "needs 3 people trained in charcuterie and available next Friday") and track their specific shift hours against the event budget.
+6. The system must **provide a single source of truth for guest count and RSVPs** that automatically triggers necessary recalculations of food inventory and staffing needs.
+7. The system must **store and categorize all unique recipes** with associated ingredient costs, preparation times, and necessary equipment, accessible for both costing and prep crew viewing.

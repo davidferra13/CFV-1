@@ -1,0 +1,50 @@
+**Chef Profile: "Ronan Vale" - Private Chef & Procurement Operator (Automator)**
+
+I spend more time on the phone than I do cooking. My day is a constant loop of calling suppliers, confirming orders, chasing availability, and responding to clients. I don’t need another app—I need something that can speak, listen, act, and remember everything for me.
+
+### Business Reality
+
+Right now:
+
+* 8–14 events per month (multi-course private dinners + small events)
+* $18,000–$36,000 monthly revenue
+* Solo operator with occasional prep help (1–2 assistants per event)
+* 25–60 phone calls per day (suppliers, clients, logistics)
+* 6–12 active vendors per week (butchers, fishmongers, farms, specialty distributors)
+* Orders placed manually via phone, voicemails, and text confirmations
+* Tracking done in Notes app + scattered text threads + memory
+
+### Primary Failure: Phone-Driven Operations Bottleneck
+
+Everything critical happens over the phone, and none of it is structured. I call a fishmonger to ask what’s fresh, leave a voicemail for a farm order, get a callback while I’m driving, and confirm details verbally. Then I have to remember it or write it down later. There’s no system of record. If I forget something, it’s gone. If I mishear something, it’s my fault. I lose hours every day just dialing, waiting, repeating myself, and confirming basics. The cost is missed items, incorrect quantities, and constant mental overhead. My workaround is writing quick notes mid-call or after, but it’s inconsistent and unreliable.
+
+### Structural Issue: No Persistent Call Memory
+
+Every call resets context. I might call the same butcher three times in a week, and each time I have to re-explain what I need, confirm pricing, and restate preferences. There’s no persistent thread that tracks what’s been discussed, ordered, or promised. Even when vendors know me, the details don’t carry forward. My workaround is relying on personal relationships and memory, but that breaks under volume and time pressure.
+
+### Structural Issue: Sourcing Without Systemization
+
+Sourcing is dynamic—availability changes daily. I need to know what exists right now, not what existed yesterday. But the only way to get that information is by calling. There’s no centralized, real-time inventory view across my vendors. I end up calling multiple places for the same item, comparing verbally, and making decisions on the fly. My workaround is building a mental map of who usually has what, but it’s inefficient and often wrong.
+
+### Structural Issue: No Execution Traceability
+
+Once an order is placed, there’s no clean record of what happened. Who called, what was ordered, what was confirmed, what’s pending—it’s all fragmented. If something goes wrong, I have no audit trail. I can’t prove what was said or agreed to. I also can’t delegate effectively because there’s no shared system showing the current state of sourcing. My workaround is texting confirmations when possible, but many vendors still operate primarily via phone.
+
+### Psychological Model
+
+I optimize for: speed, minimal friction, and not having to repeat myself
+I refuse to compromise on: accuracy of orders and reliability of sourcing
+I avoid: dialing, waiting on hold, and re-explaining the same thing multiple times
+I evaluate tools by: whether they remove calls or make calls for me without losing control
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. Place outbound calls to vendors on my behalf, handle conversations, and return structured summaries of what was discussed and confirmed.
+2. Maintain persistent vendor profiles that remember preferences, past orders, pricing, and typical availability.
+3. Log every call (inbound and outbound) into a searchable timeline with transcripts, key decisions, and action items.
+4. Allow me to approve, modify, or trigger orders via voice or quick commands without manually dialing anyone.
+5. Track sourcing status in real time (requested, confirmed, pending, unavailable) across all vendors in one view.
+6. Handle voicemail workflows (leave orders, capture callbacks, follow up automatically) without requiring my intervention.
+7. Provide a clear audit trail of who did what—whether it was me or the system—so nothing is ever lost or ambiguous.

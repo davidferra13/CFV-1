@@ -1,0 +1,73 @@
+**Public Profile: "Arthur" - Local Food Investigator (Curiosity Driven)**
+
+I’m a writer and food journalist who specializes in unearthing authentic, hyper-local culinary experiences. My job isn't just to write about food; it's to tell the story of the chef and the community that supports them. I’m always looking for the next great story—the small, family-run operation that hasn't been polished for the tourist masses.
+
+### Business Reality
+
+Right now:
+* I search for or compare **15 to 20** chefs, events, cuisines, or menus per **week**
+* My typical budget is **$50 - $300** per experience, but I need to track the total potential revenue/cost for a feature, so I keep a running total estimate.
+* I need to filter by hyper-local **neighborhoods** (e.g., "historic district," "dockyards"), specific **cuisine types** (e.g., "regional Italian," "Pacific Northwest seafood"), and **price range** (must be affordable enough for a general audience, but high enough to feel special).
+* I frequently make inquiries, often leading to a booking context, with specific, niche venues or city districts that require detailed local knowledge.
+* My current discovery setup is a highly scattered mix: I start with old neighborhood guides, I cross-reference local Reddit threads, I use Google Maps for proximity, and I maintain a massive, unsorted Google Sheet that tracks potential story leads.
+
+---
+
+### Primary Failure: The Story Gap
+
+The biggest operational problem is the massive gap between *discovery* and *viability*. I can find a chef and a menu that sounds incredible, but I have no standardized way to immediately assess if that experience is actually bookable, scalable, or even if the chef can accommodate a group of **10 to 25 people** on a specific date. This forces me to waste hours sending fragmented emails asking five different questions (Is it private? Can you adjust the menu? What is the minimum headcount? Is there a deposit? What are your cancellation terms?). This inefficiency costs me potential stories and delays my writing schedule by an average of **2 to 3 days** per major feature.
+
+---
+
+### Structural Issue: Non-Standardized Discovery Data
+
+When I use Google or Yelp, the data is too generic. If I search for "best local Italian cooking class," I get 50 results, but I can’t filter by things that matter to my story, like "uses heirloom tomatoes," "requires a minimum of 3 hours," or "is located within 1 mile of the historic market." I end up having to manually click through dozens of pages just to filter by a few key operational parameters, which is extremely time-consuming and prone to missing the truly unique, niche spots.
+
+---
+
+### Structural Issue: The Broken Booking/Inquiry Funnel
+
+A chef’s profile often provides a menu preview and a contact form, but the journey from "interested" to "quote received" is broken. I might love a menu that looks perfect, but if the booking system only accepts a date and a headcount, I can’t specify that I need a *modified* version of the menu (e.g., removing shellfish for a dietary restriction) or that I need a detailed breakdown of the total cost *before* I commit to an inquiry. I have to follow up with a separate email and wait for a manual quote, which kills the momentum of the discovery process.
+
+---
+
+### Structural Issue: Tracking and Comparison Fatigue
+
+I am constantly comparing potential story leads. I find a phenomenal chef in the North End, and then I find another equally phenomenal chef in the South End. I cannot keep all the details—the specific menu items, the average price per person, the required minimum group size, and the chef's unique selling points—in one place. I currently use multiple, siloed spreadsheets (one for the chef, one for the menu, one for the logistics) that don't talk to each other, making it nearly impossible to synthesize a comprehensive story plan without spending an entire afternoon doing cross-sheet data entry.
+
+---
+
+### Structural Issue: Operational Transparency and Flexibility
+
+Many profiles are beautiful but lack operational transparency. I might see a menu titled "Seafood Feast," but I have no clear visibility into the sourcing requirements. Does the chef need to source the scallops from a specific local vendor? Does that add a cost? If the chef can only accommodate a minimum of 12 people, and I only have 8, I need to know that immediately, rather than finding out after spending an hour on the phone. This lack of immediate, detailed operational constraints is a major risk.
+
+---
+
+### Structural Issue: Lack of Contextual Filtering
+
+My interest is highly contextual. I might be writing a piece about "holiday celebrations," which requires a chef who specializes in group events of 20+ and can provide a full event package. I might then switch to "quick weekday lunch spots" the next week, requiring a chef who handles small groups of 4-6 and has a limited, pre-set menu. The platform fails to allow me to save and switch between these distinct *modes* of discovery, forcing me to start my search from scratch every single time.
+
+---
+
+### Psychological Model
+
+I optimize for: **Authenticity and narrative potential.** I prioritize the story over the seamless transaction.
+I refuse to compromise on: **Operational detail.** I need to know the 'why' and the 'how' behind the food, not just the 'what.'
+I avoid: **Overly polished, corporate experiences.** I am looking for the grit and the history.
+I evaluate tools by: **The depth of the available metadata.** Can I filter by something unique, like "uses open-fire cooking" or "family recipe"?
+
+I think like an investigator. I don't want a simple directory; I want a research database. My process is slow, detailed, and highly selective. I need the platform to support complex, multi-variable research before it supports a simple booking.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1.  The system must allow me to save and compare up to **10 unique chefs** simultaneously, displaying their key operational metrics (minimum group size, typical cost range, and average event duration) on a single dashboard view.
+2.  The system must provide a structured, standardized inquiry form that allows me to submit **multiple, distinct, non-standard questions** (e.g., "Can we substitute X for Y?" or "What is the cost breakdown for a 15-person booking?") without requiring a phone call.
+3.  The system must allow me to filter results not just by cuisine, but by **operational parameters** like "private event capacity (min/max)" and "available kitchen space (e.g., 'open kitchen,' 'private annex')".
+4.  The system must aggregate and display **community-sourced narrative details** alongside reviews, such as "Best for date night," "Ideal for corporate team-building," or "Specializes in late-night service."
+5.  The system must allow me to save and organize multiple, disparate *story concepts* (e.g., "Latin American Street Food Story," "1920s Cocktail Experience") and map the necessary chefs, venues, and dates to each concept in a single planning view.
+6.  The system must allow me to immediately view the **detailed pricing structure**—not just the total—including estimated costs for ingredients, staffing, and taxes, even before I have made a formal booking request.
+7.  The system must allow me to receive and track **all communication** (initial inquiry, menu adjustments, final quote) within a single, chronological thread associated with the potential booking, eliminating the need to juggle email and text messages.

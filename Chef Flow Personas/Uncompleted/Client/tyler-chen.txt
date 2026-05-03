@@ -1,0 +1,47 @@
+Client Profile: "Tyler Chen" - Mobile Payments Engineer, Big Tech (Tap-Only)
+
+If I have to type my card number, I’m gone. I’ve worked on wallets, autofill, tokenization - there is zero reason in 2026 to manually enter payment info. Payment should be one tap, authenticated, done.
+
+Business Reality
+Right now:
+
+I book 5–9 private dining experiences per year, usually 2–6 guests.
+
+Budget ranges from $1,000 to $6,000. I’m flexible, but I move fast.
+
+I expect to complete booking and payment in under 60 seconds once I decide.
+
+Dietary needs are minimal but must persist - if I’ve entered it once, I won’t do it again.
+
+Locations vary - home, Airbnb, occasionally traveling - but that should not affect payment flow.
+
+I operate almost entirely on mobile. Desktop is secondary.
+
+I use Apple Pay, Google Pay, and browser autofill everywhere. That’s the baseline.
+
+Primary Failure: Manual Payment Entry
+The moment I see a credit card form - name, number, expiration, CVV - I lose interest. That’s a broken experience. It signals that the system is outdated or not integrated properly. I’m not typing sensitive information into random forms. I expect secure, tokenized, wallet-based payments. Anything else is friction and risk.
+
+Structural Issue: No Native Wallet Integration
+If the system doesn’t support Apple Pay, Google Pay, or equivalent browser-native wallets, it’s behind. These are standard now. I shouldn’t have to ask for them. I want to tap, authenticate with Face ID or fingerprint, and be done. No redirects, no extra steps.
+
+Structural Issue: Repeated Payment Friction
+Even worse is having to enter payment details multiple times - deposit, final payment, add-ons. That’s unacceptable. Once I’ve authorized payment, the system should handle future charges within defined limits. I shouldn’t have to re-authenticate every step unless required for security thresholds.
+
+Structural Issue: Payment Flow Breakage
+Some systems show pricing correctly but then break at payment - redirecting to third-party pages, losing context, or requiring re-entry of information. That disconnect kills trust. Payment should feel like a continuation of the same flow, not a separate system.
+
+Psychological Model
+I optimize for: speed, security, and zero manual input
+I refuse to compromise on: one-tap, wallet-based payments
+I avoid: card forms, redirects, and repeated authentication
+I evaluate tools by: how seamless the transition is from decision to payment
+
+Pass / Fail Conditions
+For this system to work for me, it must:
+
+Support native wallet payments (Apple Pay, Google Pay, browser autofill) as the primary payment method.
+
+Allow one-tap payment with biometric or device authentication - no manual card entry.
+
+Maintain payment context so I don’t have to re-enter or re-select payment methods for deposits, add-ons, or final charges.

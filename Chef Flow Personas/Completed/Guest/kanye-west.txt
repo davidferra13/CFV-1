@@ -1,0 +1,67 @@
+**Guest Profile: "Kanye West" - High-Profile Attendee (Demanding VIP)**
+
+I am someone who moves in high-stakes circles; my presence is often the main event. When I attend a private dining experience, it’s not just a meal—it's a statement, and I expect the entire operation to reflect that level of detail and seamless execution. I don't tolerate anything that feels amateur or disorganized.
+
+### Business Reality
+
+Right now:
+* I attend an average of **4 to 6** private dining, farm dinner, or ticketed events per **quarter**.
+* My spend on single tickets or private event attendance is easily **$1,500 to $5,000** per event, often exceeding that when factoring in pre-paid experiences or curated group seating.
+* I have complex dietary needs—I am strictly gluten-free, and I have a severe allergy to cilantro and pine nuts. I also require a main course that is prepared off-menu and requires specific protein sourcing.
+* I was recently invited to a private, ticketed dinner at The Vanguard Steakhouse on October 25th, with a small, curated group of **6 people** total, requiring dedicated, semi-private seating away from the main flow.
+* My current communication setup is a chaotic mix of text messages from the host, a link to a generic RSVP form I barely remember, and sometimes a printed card with vague instructions.
+
+---
+
+### Primary Failure: Pre-Event Operational Friction
+
+The biggest operational problem is the sheer lack of a single, reliable source of truth for my entire experience. Because I have to coordinate my attendance across multiple, distinct channels (my manager texts the host, the host emails the reservation, the venue uses a separate ticketing platform), I frequently receive conflicting information about things like the actual seating assignment, the correct check-in time, or whether my special dietary accommodations were successfully logged and confirmed. This causes unnecessary anxiety and, when it fails, it severely impacts my ability to make an effortless entrance, which is critical to the event's success and my comfort.
+
+---
+
+### Structural Issue: Disjointed RSVP and Guest Manifesting
+
+I am required to fill out an RSVP form (usually a Google Form) that only asks for my name and perhaps a plus-one. However, the actual event staff then have to cross-reference that form with a separate group text message that confirms who is *actually* attending and who is paying. This manual data transfer means that if I change my attendance or need to add a plus-one last minute, the data gap is massive. My workaround is to text the host directly, which creates a siloed communication channel that the venue staff cannot access, leading to potential overbooking or miscommunication about my actual headcount.
+
+---
+
+### Structural Issue: Fragmented Accommodation and Dietary Logging
+
+My dietary needs are highly specific and cannot be treated as a simple checkbox. When I RSVP, I fill out a field that just says "Dietary Restrictions." This is insufficient. The host then has to manually copy and paste my specific allergies (e.g., "Severe cilantro and pine nut allergy, must be gluten-free") into a separate document or email to the kitchen manager. This process is prone to copy-paste errors, and if the kitchen manager doesn't receive it until the day before, the kitchen staff might forget or misinterpret the severity of the restriction, forcing the kitchen to scramble and potentially ruining the meal.
+
+---
+
+### Structural Issue: Inconsistent Pre- and Post-Event Communication
+
+The communication I receive is wildly inconsistent. I get a vague "See you soon!" text 3 days out, followed by an email 1 hour before asking me to bring a specific, unmentioned item (like a jacket or a printed reservation confirmation). I have to keep multiple sources of truth: my calendar, my text messages, and the venue's website. This means if the venue needs to change the check-in process (e.g., moving from a coat check to a dedicated VIP entry), I won't know until I find out from a mutual acquaintance, creating a moment of operational panic for me.
+
+---
+
+### Structural Issue: Lack of Centralized Seating and Ticket Visibility
+
+My tickets and seating assignments are managed by three different people across three different platforms (the booking agent, the restaurant manager, and the event planner). I often receive a printed ticket that seems to contradict the seating chart shown on the event website, or the host tells me I'm at Table 4, but the staff check-in system says I'm at Table 9. This requires me to be actively looking for confirmation, which defeats the purpose of a seamless, high-end experience. I end up having to ask staff multiple times, wasting valuable time and attention.
+
+---
+
+### Psychological Model
+
+I optimize for: **Effortless luxury and exclusivity.** My time and comfort are premium commodities, and any friction point is unacceptable.
+I refuse to compromise on: **Hyper-personalization and flawless execution.** If the details aren't perfect, the entire experience feels cheap.
+I avoid: **Having to ask for information or wait for confirmation.** I expect the system to anticipate my needs.
+I evaluate tools by: **How seamlessly they integrate into the existing high-end experience.** If it feels clunky or corporate, I won't engage with it.
+
+I think in terms of curated, end-to-end experiences. The entire journey—from the initial invite to the final dessert—must feel cohesive, managed by a single, intelligent source that anticipates my next move.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must **provide a single, immutable source of truth** for my entire event journey (RSVP, seating, dietary needs, and check-in instructions).
+2. The system must **allow the host to confirm my complex, non-standard dietary requirements** and push that data directly and permanently into the kitchen operations view.
+3. The system must **automatically send me a single, consolidated event itinerary** (via my preferred communication channel) that combines ticketing details, seating assignments, and pre-event instructions.
+4. The system must **manage the entire guest manifest in real-time**, allowing the host to see who is confirmed, who has modified their attendance, and which specific seats are reserved, all in one dashboard.
+5. The system must **handle my feedback and service requests** (e.g., "I need the vegetarian option to be plated separately") and ensure those notes are visible to the service staff and kitchen staff immediately.
+6. The system must **generate a comprehensive post-event feedback report** that I can view, which confirms that all my accommodations were met (e.g., "Gluten-free meal served at 7:15 PM").
+7. The system must **allow the host to manage multiple, sequential private events** with the same guest, maintaining a consistent service history and personalized touchpoint across all occasions.

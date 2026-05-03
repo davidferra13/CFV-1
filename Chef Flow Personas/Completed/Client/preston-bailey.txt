@@ -1,0 +1,67 @@
+**Client Profile: "Preston Bailey" - Corporate Event Planner (High-Volume Logistics)**
+
+I am a high-level corporate event planner responsible for coordinating internal and client-facing galas, executive dinners, and large-scale team celebrations for major tech and financial firms. My job is to translate a company's high-level morale goals into a flawlessly executed, memorable meal experience, while managing multiple stakeholders and strict budgetary constraints. I don't just book food; I manage the entire emotional and logistical narrative of a company's relationship with its employees and clients.
+
+### Business Reality
+
+Right now:
+* I book or manage **8–12** private dining, catering, or meal prep events per **quarter**.
+* My budget negotiations typically involve minimum commitments of **$15,000 to $80,000** per single event, often requiring deposits between **$3,000 and $10,000**.
+* My stakeholder group involves the corporate HR department, the Marketing Director, the Finance VP (for approvals), and the CEO (for final sign-off).
+* My venue complexity is extreme: 300+ guests for a gala, 75 executives for a board dinner, and 200 employees for a casual networking lunch. Guest list complexity includes 20% dietary restrictions (vegan, gluten-free, nut allergies), and 15% VIP/executive needs (specific beverage pairing, dietary requirements).
+* My current booking and communication setup is a chaotic mix of shared Google Drive spreadsheets (for menus and RSVPs), email threads (for vendor approvals and payment confirmations), and WhatsApp texts (for last-minute headcount changes or vendor emergencies).
+
+---
+
+### Primary Failure: The Headcount Volatility Tax
+
+The single biggest operational problem is the sheer unpredictability and lack of a single source of truth for guest headcount and dietary needs. A client might call two weeks out and say, "We're down 15 people, but we added 5 new executives, and three of those need specific allergy meals." Because I am relying on fragmented communication—a spreadsheet updated by HR, a text from the Marketing Director, and a separate email from the venue coordinator—I cannot get a single, reliable number. This forces me to constantly over-order or under-order, which leads to either significant financial waste (paying for unused food/staffing) or, much worse, a visible service failure during the event (running out of a key dish, or having to make last-minute, visible compromises on dietary accommodations). This uncertainty costs me valuable time, increases my stress load, and risks the company's reputation every single time.
+
+---
+
+### Structural Issue: Disjointed Approval Flow
+
+The process of getting a menu approved requires multiple sign-offs, and currently, there is no system to track who has approved what, and by when. I send a catering proposal (PDF) via email to the Marketing Director, who forwards it to the HR VP. I then have to track three different email replies ("Looks good," "Wait, can we adjust the wine pairing?," and "The budget only allows for two courses, not three."). If any one person misses an email or adds a comment, the entire process stalls for 24–48 hours. I spend more time chasing digital signatures and tracking revisions than I do actually planning the culinary experience.
+
+---
+
+### Structural Issue: Menu Costing and Budget Tracking
+
+Budget tracking is completely manual, relying on a massive, shared Google Sheet that is perpetually outdated. When I get a quote for a premium protein (e.g., rack of lamb), I have to manually cross-reference the price per person, the total headcount, the required deposits, and the available budget line item. If the venue changes the service style (e.g., from plated to family-style buffet), I have to recalculate the entire cost matrix from scratch, often having to email the vendor just to confirm the new pricing structure. This spreadsheet is the single most fragile point in my entire operation, and a single formula error could result in the event being over budget by tens of thousands of dollars.
+
+---
+
+### Structural Issue: Vendor Compliance and Coordination
+
+Managing multiple vendors (catering, floral, entertainment, venue staff) means I am the single point of failure for coordinating their operational requirements. For example, the caterer needs to know the exact electrical capacity of the ballroom, the floral needs to know the precise dimensions of the cocktail tables, and the venue staff needs to know the specific delivery time windows for the refrigerated goods. I currently have to send a massive, confusing "Day-Of Logistics" email that attempts to coordinate all these moving parts. This results in missed handoffs, late deliveries, and vendors arriving unprepared because the logistical requirements were buried in a 10-page document nobody reads.
+
+---
+
+### Structural Issue: Guest Profile and Dietary Management
+
+The most critical data—the actual guest list with allergies and specific preferences—is held by a separate system (usually the HR department's internal database) and then manually transferred to a separate spreadsheet. This process is prone to human error. A guest's allergy status (e.g., "Severe Peanut Allergy") might be entered in one column, but the corresponding menu note (e.g., "Keep off the garnish") might be missed, or the required meal might be forgotten entirely. If the system doesn't link the guest's profile directly to the menu selection and the final plated order, a critical health risk is introduced.
+
+---
+
+### Psychological Model
+
+I optimize for: **Predictability and seamless handoffs.** I need to know that once a decision is made—from the menu to the final headcount—that decision will not change without a formal, traceable approval process.
+I refuse to compromise on: **The guest experience.** If the food or the service fails, the company reputation suffers, and I will be the one responsible.
+I avoid: **Manual data reconciliation.** I hate opening ten different tabs and having to manually compare data points (e.g., comparing the RSVP count to the catering quote count).
+I evaluate tools by: **The ability to centralize high-stakes, variable data.** If it can't handle dynamic headcount, allergies, and budget changes in one view, it's useless.
+
+I am a highly structured, detail-oriented planner who thrives on control. My decision-making is based on risk mitigation; I always choose the process that has the fewest potential points of failure. I need a system that allows me to enforce rules (like "no more than 15% dietary restriction") while remaining flexible enough to handle the inevitable, last-minute corporate changes.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must **centralize** the guest list, allowing me to filter and track RSVPs and associated dietary restrictions in real-time against the final menu selection.
+2. The system must **generate** a dynamic, real-time cost breakdown for the event, updating instantly when I adjust the headcount or change a menu item, and flagging if I exceed the approved budget threshold.
+3. The system must **provide** a dedicated workflow engine for menu and vendor approvals, requiring sequential sign-offs (HR -> Marketing -> Finance) before the final quote can be locked and paid.
+4. The system must **manage** the end-to-end logistics timeline, allowing me to assign specific tasks (e.g., "Deliver chilled linens," "Confirm electrical access") to multiple vendors and internal staff with automated reminders and status tracking.
+5. The system must **link** the final confirmed guest headcount and their dietary needs directly to the kitchen's production manifest and the staff's day-of schedule, ensuring zero manual data transfer errors.
+6. The system must **handle** multi-currency invoicing and payment tracking, automatically generating invoices based on variable deposits and final event costs from multiple vendors.
+7. The system must **allow** me to save and modify pre-approved vendor contracts and pricing models (e.g., "Standard Gala Buffet Package") so I don't have to re-negotiate basic costs every quarter.

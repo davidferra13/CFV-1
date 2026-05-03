@@ -1,0 +1,67 @@
+**Chef Profile: "David Chang" - Executive Chef (Multi-Unit Operator)**
+
+I’ve built a system, not just a restaurant. My operation is a network of distinct, high-concept culinary experiences, each demanding a unique brand identity while feeding into a central, profitable machine. I manage the entire lifecycle—from developing a signature cocktail to coordinating a 300-person private dinner—and the complexity is always in the seams between the concepts.
+
+### Business Reality
+
+Right now:
+* I manage **4** distinct restaurant concepts and **18** dedicated staff locations, plus an average of **3** large-scale private events per month (ranging from 50 to 300 guests).
+* Our annual gross revenue is approximately **$15 million**, with a high variable cost percentage driven by bespoke sourcing and limited-run ingredients.
+* The core team is structured around **2** General Managers (each overseeing 2-3 locations), **12** salaried kitchen leads, and a variable pool of **150+** hourly service and prep staff.
+* Our geographic scope is primarily concentrated in the **NYC metropolitan area**, requiring complex interstate sourcing for specialty goods.
+* Our current tech setup is a patchwork: Toast for POS, dedicated Google Sheets for inventory and labor tracking, QuickBooks for accounting, and WhatsApp/email for all inter-departmental scheduling and communication.
+
+---
+
+### Primary Failure: Cross-Concept Costing and Menu Development
+
+The single biggest operational headache is maintaining accurate, real-time profitability when a core ingredient is shared across multiple, distinct menus. Because each concept has its own unique identity and pricing model (e.g., one is casual, one is fine dining, one is event-only), I cannot quickly model the impact of a sudden 20% price spike on a key ingredient like specialty smoked pork belly across all 4 concepts simultaneously. When we develop a new dish for the Wild Expresario, I spend an average of 10-15 hours wrestling with spreadsheets to manually adjust cost sheets for the Thompson Kitchen, the other two concepts, and the dedicated event portfolio. This manual process is slow, prone to human error, and forces us to delay menu launches or risk undercutting our margins because we can’t model the elasticity of cost changes quickly enough.
+
+---
+
+### Structural Issue: Inter-Location Inventory Synchronization
+
+When a specialty vendor—say, a specific batch of heirloom tomatoes—is sourced for the high-end dining room, that ingredient needs to be allocated to three separate physical locations (prep kitchen, main dining room, event prep). Currently, I use a combination of physical clipboard sign-out sheets and a central Google Sheet updated by the most senior line cook. This system breaks down immediately when a cook is sick or a manager is out of the office, leading to multiple versions of the "true" inventory count. We frequently over-order or, worse, run out of critical, high-value items because the physical count doesn't match the digital ledger, leading to last-minute, expensive emergency sourcing trips.
+
+---
+
+### Structural Issue: Seasonal Staffing and Skill Mapping
+
+Our staff pool is highly specialized. We have station-specific skill sets (e.g., charcuterie expertise, specific cocktail mixing certifications, advanced pastry work) that are required for peak seasons or large events. Because we rely on a mix of full-time, part-time, and contracted seasonal staff, we have no centralized, dynamic view of who is available, what their specific certification is, and which concept they are best suited for on a given day. I currently maintain a massive, unorganized database of staff skills in a shared Drive folder, which means scheduling often involves me manually cross-referencing availability with required skills, which is impossible to do accurately more than 48 hours in advance.
+
+---
+
+### Structural Issue: Vendor Compliance and Menu Version Control
+
+Every menu version, whether it's the seasonal brunch menu or the quarterly private event menu, requires a unique set of vendor specifications (e.g., required COA documentation for local meat, specific handling requirements for oyster shells). Because these specs are scattered across emails, PDFs, and physical binders, ensuring that the *right* version of the menu is paired with the *right* set of vendor specifications and compliance documents for a specific date/location is a constant battle. If a new allergen rule or sourcing mandate comes through, updating and communicating that precise, actionable compliance requirement to the 12 kitchen leads across 4 locations is a manual, multi-step communication failure point.
+
+---
+
+### Structural Issue: Peak Event Resource Forecasting
+
+For large private events (200+ guests), I need to forecast resource needs far beyond just food—I need to track things like specialized equipment rentals (e.g., portable induction burners, specialized plating stations), necessary staffing ratios based on expected service tempo, and even utility requirements (e.g., specialized refrigeration units). Currently, this is handled by a combination of specialized vendor emails and my own personal Notion board. If the event size increases by just 50 people, I have to manually re-calculate the required equipment inventory, the labor hours needed per station, and the revised ingredient manifest, creating significant lag time and increasing the risk of under-equipping the service.
+
+---
+
+### Psychological Model
+
+I optimize for: **Operational Predictability**—knowing that the cost, labor, and sourcing for any single dish will remain consistent, regardless of which concept or location is serving it.
+I refuse to compromise on: **Culinary Integrity**. If the process compromises the quality or the unique vision of a dish, the system fails, no matter how efficient it is.
+I avoid: **Guesswork and Data Silos**. I hate having to pull information from five different sources (POS, Google Sheets, email, clipboard, vendor portal) just to understand one operational metric.
+I evaluate tools by: **The Depth of Integration.** If it requires a dedicated workflow or custom API connection to my existing accounting/POS setup, I will reject it, no matter how polished the UI is.
+
+I think in terms of systems and bottlenecks. I don't care about a slick dashboard; I care about a single source of truth that eliminates manual handoffs between departments. My decision-making is always driven by risk mitigation—if a process relies on human memory or physical movement of paper, it is too fragile for my operation.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must **automatically generate** a real-time cost sheet for any dish, pulling ingredient costs and adjusting them across all associated concepts and menu versions instantly.
+2. The system must **synchronize** ingredient depletion across multiple physical locations and concepts, flagging low stock levels and generating a consolidated purchasing list for the central receiving department.
+3. The system must **map** staff skills (e.g., "Advanced Pastry," "Truffle Prep") to available shifts and required station roles across all 18 locations, eliminating manual scheduling cross-referencing.
+4. The system must **centralize** all vendor compliance documentation (COAs, handling specs) and link those documents directly to the specific menu version and date it applies to, flagging expirations automatically.
+5. The system must **allow me to model** an event's resource needs (equipment, staffing ratio, inventory count) based on a single variable input (guest count) and instantly generate a comprehensive manifest for procurement and scheduling.
+6. The system must **provide a single dashboard view** of profitability per menu item, broken down by concept, location, and specific date range, eliminating the need to manually reconcile data from the POS.
+7. The system must **manage** the entire lifecycle of a recipe—from initial draft and costing to final approved version—and track which physical locations have adopted which approved version.

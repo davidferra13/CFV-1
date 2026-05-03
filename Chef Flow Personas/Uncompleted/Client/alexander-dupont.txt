@@ -1,0 +1,55 @@
+Client Profile: "Alexander DuPont" - Family Office Principal (Decisive)
+
+I don’t ask for quotes. I expect to see numbers instantly and decide immediately. Price is not the constraint - time and clarity are. If I have to request pricing, the system has already failed.
+
+Business Reality
+Right now:
+
+I host 10–18 private dining experiences per year across multiple properties - city residences, coastal homes, and occasional international locations.
+
+Budgets range from $10,000 to $75,000+ depending on scale. I am fully willing to spend more if the experience warrants it.
+
+I do not negotiate pricing. I evaluate it quickly and move forward or move on.
+
+Guest lists range from 6–20, often including high-profile individuals where execution must be flawless.
+
+Dietary requirements are precise and non-negotiable - often communicated through assistants but expected to be handled seamlessly.
+
+Events vary in complexity - intimate dinners, multi-night experiences, or hybrid formats with staff, rentals, and external vendors.
+
+I operate through my assistant for logistics, but I personally approve final decisions. I expect systems to respect both roles without friction.
+
+Primary Failure: Absence of Immediate Pricing
+The most unacceptable failure is not seeing a price immediately. There is no justification for withholding pricing in a modern system. If I’m evaluating an experience, I need to know the cost instantly. I am not waiting for a response, not scheduling a call, and not entering a conversation just to get a number. The absence of pricing signals either a lack of operational maturity or intentional opacity - both disqualifying.
+
+Structural Issue: Misuse of “Custom” as a Shield
+“Custom” is not an excuse for not displaying pricing. Everything is custom at my level. That does not prevent you from showing a structured estimate. A system should understand inputs - guest count, menu complexity, location - and generate a high-confidence range instantly. If the final number adjusts later, that’s acceptable. What is not acceptable is starting from zero visibility.
+
+Structural Issue: No Dynamic Pricing Engine
+Most systems are static. They show a fixed menu with no pricing flexibility or require manual recalculation for every change. That’s inefficient. I expect a dynamic system where I can adjust variables - add courses, increase guest count, upgrade ingredients - and see the financial impact immediately. Without that, I’m operating blind.
+
+Structural Issue: Lack of Source Transparency
+When pricing escalates due to premium ingredients or sourcing, I want to see why. If a dish includes rare seafood or specialty imports, I expect visibility into that supply chain. Not because I need to validate the cost, but because I expect a system to reflect reality. If pricing is driven by market conditions, show the underlying factors. Anything else feels arbitrary.
+
+Psychological Model
+I optimize for: speed of decision and total transparency
+I refuse to compromise on: immediate access to pricing information
+I avoid: any process that requires requesting, waiting, or negotiating for numbers
+I evaluate tools by: how quickly they allow me to understand cost and act on it
+
+Pass / Fail Conditions
+For this system to work for me, it must:
+
+Display immediate, real-time pricing for any configuration (menu, guest count, location) without requiring a request or interaction.
+
+Provide structured pricing breakdowns that clearly show how totals are derived (base cost, per-person, premium add-ons).
+
+Generate high-confidence estimates for custom experiences instantly, with visible ranges where exact numbers may vary.
+
+Update pricing dynamically and instantly as I modify any parameter - no delays, no recalculations by a human.
+
+Expose underlying cost drivers (ingredient sourcing, staffing, logistics) in a transparent, optional layer.
+
+Eliminate all “contact for pricing” flows - every offering must be evaluable financially at first glance.
+
+Allow immediate progression from pricing to confirmation and payment without restarting or entering a separate process.

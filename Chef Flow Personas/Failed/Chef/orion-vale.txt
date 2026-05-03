@@ -1,0 +1,74 @@
+Chef Profile: "Orion Vale" - Private Chef & Cultural Architect (Myth)
+
+I don’t operate in “events.” I create moments people reference later without being able to explain why they mattered. I don’t market. I don’t chase. Things find me because the signal is clean and rare. If it becomes explainable, it’s already diluted.
+
+Business Reality
+Right now:
+
+3–6 appearances per month (invite-only, private estates, off-grid locations)
+
+$120,000–$400,000 monthly revenue (variable, project-based)
+
+No fixed team - rotating, pre-vetted collaborators pulled per need (1–5 max)
+
+90% of work initiated through direct threads (SMS/DM/email), zero public intake
+
+20–40 active threads, all high-context, high-stakes
+
+No public menus, no repeats, no templates - everything is constructed in real time
+
+Parallel projects across cities; constant movement, minimal footprint
+
+Primary Failure: Signal Corruption
+Scale doesn’t break me - noise does. One wrong message tone, one over-explained brief, one extra touchpoint, and the entire experience loses edge. Most systems optimize for throughput; I optimize for purity. If I have to translate what I do into forms, fields, or templates, I’ve already compromised it. My workaround is radical selectivity, but it constrains expansion.
+
+Structural Issue: No Native Medium for High-Context Work
+Everything meaningful happens inside threads - subtext, timing, intent. Traditional tools flatten that into tasks and checklists, which strips context. I need a medium that preserves nuance while extracting only what’s necessary to act. My workaround is staying inside messages, but it doesn’t scale coordination.
+
+Structural Issue: Controlled Visibility
+Access is the product. Not everyone should see everything, and almost no one should see the whole. I need precise, per-person windows into a live system - what they need, when they need it - nothing more. Current tools are all-or-nothing. My workaround is manual curation, which is fragile.
+
+Structural Issue: Ephemeral-to-Action Translation
+My work is ephemeral by design, but execution requires precision. Converting a feeling into a timeline, a layout, a sequence - without killing it - is the hardest part. My workaround is internalizing everything, which makes me the bottleneck.
+
+Structural Issue: Movement Without Friction
+I’m always in transit. Any system that requires setup, logging, or structured input is dead. I need zero-friction capture and projection - think in threads, act in systems, without noticing the switch. My workaround is memory and minimal notes, which risks drift.
+
+Psychological Model
+I optimize for: signal purity, controlled access, and decisive execution
+I refuse to compromise on: mystique, tone, and intent
+I avoid: templates, duplication, and anything that explains too much
+I evaluate tools by: whether they disappear while increasing precision
+
+Pass / Fail Conditions
+For this system to work for me, it must:
+
+Treat communication threads as the source of truth and derive structure invisibly.
+
+Create selective, role-based “views” so each collaborator sees only what’s relevant, in real time.
+
+Preserve tone and context while extracting actionable data (timing, counts, locations) without re-entry.
+
+Operate with near-zero input friction - no forms, no templates, no duplicate typing.
+
+Translate ephemeral intent into precise execution (timelines, layouts) without flattening nuance.
+
+Enable movement-first usage (mobile, offline-resilient, instant) with no setup overhead.
+
+Scale coordination without increasing surface noise or diluting the experience.
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Flags: none
+Rejected: 2026-05-01T17:09:58.870Z
+-->
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Flags: none
+Rejected: 2026-05-01T19:09:52.555Z
+-->

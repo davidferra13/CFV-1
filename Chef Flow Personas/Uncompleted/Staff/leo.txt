@@ -1,0 +1,17 @@
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+File not found
+Flags: none
+Rejected: 2026-04-28T11:30:24.327Z
+-->
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, business_reality, primary_failure, structural_issues, psychological_model, pass_fail
+Word count too low: 15 (minimum 500)
+Flags: none
+Rejected: 2026-04-28T16:53:31.189Z
+-->

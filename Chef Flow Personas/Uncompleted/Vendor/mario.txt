@@ -1,0 +1,67 @@
+**Vendor Profile: "Mario" - Specialty Ingredient Distributor (Market Specialist)**
+
+I run the back-of-house sourcing for the best, most unique ingredients in town. I started this operation twenty years ago when I realized that the big distributors couldn't handle the specialized, hyper-local, or wildly seasonal items that true culinary talent needs. I am the person chefs call when they need the perfect, obscure Japanese chili paste, or a specific cut of heirloom vegetable that hasn't been standardized yet. My reputation is built on my ability to source quality and deliver it with zero fuss, even when the order is wildly complicated.
+
+### Business Reality
+
+Right now:
+* I fulfill approximately 45 highly complex chef orders, plus 12 large catering event pickups, per week.
+* My average weekly revenue is $18,000, but I deal with complex variable pricing. I require a minimum order of $350 to ensure efficient delivery routes. I also require a 25% deposit for any order over $5,000.
+* My catalog is massive and highly volatile. I carry over 800 SKUs, but the effective inventory is closer to 300, as 40% of my stock is highly seasonal or requires custom sourcing. Freshness is paramount, and I often need to substitute items based on market availability rather than just SKU codes.
+* I operate out of a 1,500 sq ft warehouse/market hybrid in the downtown district. My delivery area covers a 5-mile radius, but I often make specialized, multi-stop pickups at various restaurants and catering venues within that radius.
+* My current ordering and communication setup is a disaster: chefs send me texts with photos of ingredients they want, I manage the core catalog via a shared Google Sheet that gets updated daily, and the final invoices are created manually in QuickBooks and then sent via email.
+
+---
+
+### Primary Failure: The Last-Minute Customization Crisis
+
+My biggest operational headache is the sheer volume of last-minute, ad-hoc ingredient requests that break the system. Chefs don't just order standard items; they order *solutions*. If a chef runs out of a specific regional Italian pasta and needs a substitute that is gluten-free *and* has a similar mouthfeel, I have to manually check 15 different suppliers, confirm availability, adjust the pricing, and then email a new, revised quote. This process takes me 2-3 hours per major incident, pulling me away from fulfilling current orders. Because I can’t reliably predict or automate these complex, multi-variable substitutions, I frequently miss the window to suggest a perfect alternative, which costs the client time and potentially starves the kitchen of the perfect element for their menu.
+
+---
+
+### Structural Issue: Inventory Volatility and Forecasting
+
+I currently manage inventory by manually cross-referencing my physical stock count against the Google Sheet. When a highly seasonal item (like certain heirloom tomatoes or specific wild mushrooms) arrives, I have to immediately update the sheet, which is a tedious process that takes me 30 minutes every single morning. If a chef places an order for a specific mushroom variety that was sold out *after* I updated the sheet, but *before* the chef placed the order, we have to stop the whole process and manually track down the correct pricing and substitution options.
+
+---
+
+### Structural Issue: Complex Pricing and Costing Logic
+
+My pricing is not static. It changes based on volume, source, and market conditions. For example, a standard case of olive oil might be $45 for a bulk restaurant order, but if the chef needs a custom blend of three different oils, the pricing structure becomes entirely non-linear, requiring me to use a custom spreadsheet formula that the client cannot even see. This complexity forces me to send multiple, highly detailed PDF quotes that are essentially mini-spreadsheets, leading to confusion and errors when the final invoice needs to reconcile these unique, non-standard charges.
+
+---
+
+### Structural Issue: Multi-Step Order Fulfillment
+
+My orders are rarely simple. They often involve 3 to 5 different fulfillment steps: 1) Sourcing (calling a farm), 2) Customizing (blending/cutting the ingredients), 3) Staging (packing the items in temperature-controlled bins), 4) Invoicing (calculating the final cost), and 5) Delivery (scheduling the multi-stop route). Because these steps are highly interdependent and manual, if one step fails—say, the farm is closed or the specialty cut isn't ready—the entire subsequent workflow collapses, requiring me to call the chef, reschedule, and re-send the entire plan.
+
+---
+
+### Structural Issue: Communication and Revision Tracking
+
+When a chef sends an initial order via text or email, and then calls me to change 5 items, and then sends a follow-up email with a photo of a replacement item, I have to physically track all those changes across three different communication channels (text, email, phone notes). There is no single source of truth for the order revision history. If I forget to document a change, the final invoice will be incorrect, leading to disputes and significant time spent resolving billing discrepancies at the end of the week.
+
+---
+
+### Psychological Model
+
+I optimize for: Reliability of unique, high-quality sourcing and immediate availability of specialized ingredients.
+I refuse to compromise on: The integrity of the ingredients or the speed of the fulfillment process.
+I avoid: Large, generic corporate systems that don't allow for manual overrides or complex, non-standardized input.
+I evaluate tools by: How easily they allow me to build a bespoke workflow that mimics my current, highly customized manual process.
+
+I think like a master craftsman: I see the entire journey—from the raw source to the plated dish—and I need the tool to support that holistic vision, not just the checkout button. Any system that forces standardization where none exists will break my workflow.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1.  The system must allow me to define custom, multi-variable pricing rules that automatically adjust based on source, volume, and combination of ingredients.
+2.  The system must track and manage order revisions and communication notes (text/email/call) in a single, chronological, and searchable history attached to the order ticket.
+3.  The system must support 'Substitute Inventory' logic, allowing me to flag a primary SKU as unavailable and instantly suggest and price a pre-approved, functionally equivalent alternative SKU to the chef.
+4.  The system must generate a single, consolidated invoice that clearly itemizes and explains all non-standard charges and substitutions made throughout the order process.
+5.  The system must integrate the delivery route planning with the inventory staging, allowing me to see which ingredients are ready for which specific pickup location on a given day.
+6.  The system must support flexible, non-standard order minimums and required deposits that are dynamically calculated based on the complexity of the order, not just the dollar amount.
+7.  The system must provide a centralized communication log where chefs can upload photos or documents (e.g., a farmer's catalog) and have those details attached to the specific order item.

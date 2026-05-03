@@ -1,0 +1,67 @@
+**Public Profile: "Samin Nosrat" - Culinary Experience Curator (Discovery Seeker)**
+
+I am a professional food writer and consultant, deeply immersed in the culture of food. I don't just write about food; I curate the experiences and stories behind the meals. My job requires me to constantly scout, discover, and validate unique culinary moments—from hyper-local pop-ups to high-concept private dinners. I am always searching for the next great, undiscovered ingredient, technique, or chef story to bring to my readers and clients.
+
+### Business Reality
+
+Right now:
+* I search for or compare **5 to 8** unique chefs, pop-up events, or specialized cuisines per **month**.
+* My budget for these discovery meals ranges from **$150 to $600 per person**, depending on the exclusivity and perceived quality of the experience.
+* I need locations that offer high flexibility, including both established brick-and-mortar spots and temporary, pop-up venues, with clear menus and visible pricing tiers.
+* I am often making inquiries and booking recommendations for clients in major metropolitan areas like NYC, Chicago, and Miami, often requiring specific dietary accommodations (e.g., gluten-free, specific regional spice needs).
+* My current discovery setup is a chaotic mix of targeted Instagram searches (following niche food accounts), referrals from my network (texting contacts for leads), and cross-referencing disparate local restaurant guides and Google Maps listings.
+
+---
+
+### Primary Failure: Discovery Friction and Trust Validation
+
+My biggest operational problem is the sheer friction involved in validating a truly unique, high-quality experience before committing time and money. When I find a promising lead—say, a chef doing a one-off regional Italian tasting menu—I have no immediate way to confirm if the menu is actually available, what the cost per plate is, or if the chef has previously worked with similar high-end venues. This forces me to spend hours on phone calls or emails, chasing down basic operational details that should be transparently visible. This inefficiency costs me time, which is my most valuable asset, and risks missing out on genuinely exceptional, fleeting opportunities.
+
+---
+
+### Structural Issue: Lack of Contextual Menu Deep Dives
+
+I find it nearly impossible to compare menus across different chefs or venues because the presentation is inconsistent. Some chefs post a vague "Seasonal Tasting Menu," while others list only ingredients. I have to constantly jump between a chef's Instagram bio, their basic website, and a separate booking page just to piece together what the experience entails—is it a 5-course meal? Is the cost *per person* or *per tasting*? Because of this, I often resort to asking my contacts (referrals) to send me photos of the menu or copies of the pricing sheet, which are always outdated or incomplete.
+
+---
+
+### Structural Issue: Fragmented Booking and Availability Tracking
+
+The booking process is completely unintegrated. I might discover a fantastic pop-up event on a local guide, but the actual booking link takes me to a third-party ticketing service (Eventbrite, Resy, etc.) that doesn't show the chef's profile, the menu, or the venue's operational details. I end up maintaining a massive, unsynchronized spreadsheet that tracks the event name, the booking link, the required payment, the date, and the required minimum number of guests, leading to frequent double-bookings or missed deadlines.
+
+---
+
+### Structural Issue: Difficulty Mapping Expertise to Need
+
+I am often looking for a specific *expertise*—for example, "a chef specializing in pre-Colonial Mesoamerican cooking" or "a master baker focused on obscure sourdough cultures." Current platforms are optimized for broad cuisine types (e.g., "Italian," "Mexican"). I can't filter by niche technique or specific regional focus. My workaround is to rely on my personal network (referrals) to give me names, and then I have to do deep, manual research on those names, wasting valuable scouting time.
+
+---
+
+### Structural Issue: Inconsistent Costing Transparency
+
+When I am researching, the pricing model is never clear. Is the price listed a deposit, a per-person minimum, or the full ticket cost? Some chefs list a general "Starting At $X" price, which is useless for comparison. I have to assume the highest possible cost and build my budget around that worst-case scenario, which makes it difficult to recommend a precise, cost-effective experience to a client with a fixed budget.
+
+---
+
+### Psychological Model
+
+I optimize for: **Narrative Depth and Operational Transparency.** I need to know not just *what* I'm eating, but *why* it matters, and I need to know the exact logistics (cost, time, location) with zero ambiguity.
+I refuse to compromise on: **The Story.** If the culinary concept or the chef’s story isn't compelling enough to write about, I won't bother booking it, no matter how good the food is.
+I avoid: **Generalized, superficial listings.** I hate having to sift through 50 listings just to find the 3 truly unique, highly specific options.
+I evaluate tools by: **How quickly they consolidate disparate data points.** If a tool requires me to manually transfer information from one page to another, it’s useless to me.
+
+I think of the process as investigative journalism: I am gathering data points (menu details, pricing, availability, story) and I need the platform to act as a comprehensive research assistant, not just a booking engine.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must allow me to filter chefs not just by cuisine, but by **specific culinary technique or regional expertise** (e.g., fermentation, wood-fired, specific ethnic focus).
+2. The system must provide a **consolidated "Experience Snapshot"** for any listing, showing the menu, the total per-person cost, and the duration of the event on a single screen.
+3. The system must allow me to **track multiple potential leads simultaneously** in a single dashboard, comparing their pricing, booking status, and unique selling points without leaving the platform.
+4. The system must integrate real-time **operational status updates**, letting me know if a chef is currently accepting bookings for a specific date range, preventing me from wasting time on inactive listings.
+5. The system must allow me to **generate a professional, shareable summary** of the booking details (including menu highlights and operational notes) that I can send directly to a client or editor.
+6. The system must clearly distinguish between **deposit payments, full ticket costs, and variable add-ons** (e.g., wine pairings, beverage minimums) within the pricing structure.
+7. The system must allow me to **filter by venue type and capacity**, enabling me to find suitable pop-up locations that match the scale of the culinary concept I am researching.

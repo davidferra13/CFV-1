@@ -1,0 +1,67 @@
+**Staff Profile: "Antoine Dubois" - Prep Kitchen Assistant (Foraging Specialist)**
+
+I am Antoine, and my job is to ensure that every single ingredient that touches the plate is at its absolute peak. I don't just chop vegetables; I process the entire seasonal narrative of the menu. My role is to take the raw, often unpredictable bounty—whether it's foraged mushrooms, hyper-local root vegetables, or delicate herbs—and transform it into stable, usable components that the line cooks can execute flawlessly during service. I am the bridge between the field and the fire.
+
+### Business Reality
+
+Right now:
+* I work **3** shifts per week, often spanning 10 to 12 hours, covering both prep and service support.
+* My pay is **$18.50/hour**, plus a small stipend for specialized sourcing, but I am responsible for managing the prep waste, which can fluctuate by **15%** depending on the ingredient.
+* I am the most junior member of the prep team, reporting directly to the Sous Chef, but I am expected to manage the inventory and prep lists for **4** different seasonal stations (vegetables, grains, charcuterie, and foraged goods).
+* My scope is limited to the main prep kitchen, but my ingredients often come from external, non-standard sources (local farms, foraging trips) and must be processed immediately upon arrival.
+* My current briefing and scheduling setup is a chaotic mix: the main prep list is a laminated printout that gets marked up with Sharpie, changes are communicated via a dedicated WhatsApp group, and the final ingredient handoff list is a handwritten notepad that gets lost.
+
+---
+
+### Primary Failure: Ingredient Handoff Disconnect
+
+The biggest operational problem is the complete disconnect between the *planned* prep list and the *actual* ingredients available at the start of service. Because I am handling highly perishable, non-standard ingredients (like specific mushroom varieties or delicate herbs), if the prep list doesn't accurately reflect the yield or the quality of the day's harvest, the entire service flow grinds to a halt. This forces the Sous Chef to make real-time, costly decisions, often leading to menu compromises or, worse, running out of key components for high-ticket dishes. This inefficiency costs us time, labor, and potentially, reputation.
+
+---
+
+### Structural Issue: Dynamic Prep List Management
+
+The prep list is static and printed 24 hours in advance, assuming perfect yield and availability. When I receive a spontaneous, high-quality delivery of a specific root vegetable that wasn't budgeted for, or if a foraging trip yields 30% more mushrooms than anticipated, I have no way to update the master prep list or communicate the change to the line cooks until the Sous Chef manually updates the laminated sheet. This forces me to physically cross out items and write in new ones, creating a confusing, outdated document that nobody trusts.
+
+---
+
+### Structural Issue: Cross-Functional Ingredient Tracking
+
+I am responsible for tracking ingredients that move between prep, storage, and service stations. Right now, I use a combination of physical bins and a shared Google Sheet that is constantly out of sync. If the line cook uses the last of the pickled fennel, I don't know until they ask for it, and the sheet might show "5 units remaining." This lack of real-time, granular inventory tracking means I often over-prep or, conversely, waste perfectly good ingredients because I thought they were already used.
+
+---
+
+### Structural Issue: Scheduling and Skill Gap Visibility
+
+My schedule is often dictated by the *availability* of a specific ingredient or vendor, not by a standard shift pattern. If the local farm delivers a massive haul of heirloom tomatoes on a Tuesday, I might be scheduled for 14 hours just to process that single ingredient, leaving me exhausted and unable to assist with other prep tasks. The current scheduling system treats me as a generic "Prep Assistant" and cannot account for the specialized, variable time commitment required for specific, high-volume, or highly delicate prep tasks.
+
+---
+
+### Structural Issue: Recipe Component Version Control
+
+The recipes are stored in a binder, and the prep instructions are often vague ("Use seasonal greens"). When the menu changes, or when a specific ingredient is substituted (e.g., using purple carrots instead of orange), the prep list and the recipe documentation are not linked. I spend time cross-referencing which version of the recipe is active, leading to confusion about required quantities, specific cuts, and preparation methods, which slows down the entire prep process by at least 30 minutes per station.
+
+---
+
+### Psychological Model
+
+I optimize for: **Precision and traceability.** I need to know exactly where every ingredient came from, how much was used, and what its optimal storage conditions are.
+I refuse to compromise on: **The integrity of the ingredient.** If the system forces me to prep something that is past its peak, or if I can't track its source, I refuse to process it.
+I avoid: **Generic, non-contextualized digital forms.** I hate having to input data that I already know by sight or smell.
+I evaluate tools by: **How quickly they reduce physical movement and manual data reconciliation.** If I have to move between three different screens or physical locations to complete one task, the tool fails.
+
+I think in terms of flow and yield. My decision-making is based on minimizing waste and maximizing the utilization of the most perishable components first. I am highly detail-oriented, and any system that forces me to guess or rely on memory is a failure.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must allow me to update the ingredient yield and availability in real-time, automatically adjusting the required prep quantities for the service menu.
+2. The system must link specific, seasonal ingredient sourcing (e.g., "Local Farm X, Batch 3") directly to the recipe component and the final cost of goods sold (COGS).
+3. The system must generate a dynamic, shift-specific prep checklist that automatically adjusts the required labor hours based on the actual ingredient volume received that day.
+4. The system must allow me to log the exact location and remaining quantity of prepped components (e.g., "3.5 kg of pickled fennel, Station B") so that line cooks can check inventory digitally.
+5. The system must provide a clear, single source of truth for the current menu version, linking the specific ingredient substitution (e.g., "Purple Carrot") to the correct prep instructions and required yield.
+6. The system must allow me to schedule prep tasks based on ingredient perishability and required processing time, rather than just arbitrary time slots.
+7. The system must generate a comprehensive waste report, tracking the reason and estimated cost of any ingredient that cannot be used in the final service menu.

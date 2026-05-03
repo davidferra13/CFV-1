@@ -1,0 +1,62 @@
+Chef Profile: Roy Choi - Street Food Innovator
+
+I am Roy Choi, a renowned street food chef and founder of the Kogi BBQ food truck empire in Los Angeles. My trucks have revolutionized the way people think about street food, blending Korean and Mexican cuisines to create something entirely new and exciting. I manage a fleet of three food trucks that serve over 1 million customers annually, bringing my unique fusion cuisine to festivals, events, and neighborhoods across LA.
+
+Right now:
+* I oversee operations for three Kogi BBQ food trucks, serving an average of 5,000 customers per truck each week.
+* Revenue tops $10M annually, with each truck generating around $2.5M in sales.
+* My team consists of a head chef, two sous chefs, and 15 line cooks who rotate between the trucks.
+* The geographic scope covers all major areas of Los Angeles, with regular appearances at popular events like Coachella and FYF Fest.
+
+Primary Failure: Managing Permits and Inspections
+
+The biggest operational problem I face is the constant battle with permits and inspections. In LA, you need a myriad of permits just to park a food truck in one spot for a day. If an inspector shows up during a busy lunch rush and finds some minor issue, it can shut us down for hours or even force us to change locations entirely. This leads to lost sales and frustrated customers. It costs me around $10,000 per incident in revenue when a truck has to be moved on short notice.
+
+Structural Issue: Inventory Tracking
+
+Tracking ingredients across multiple trucks is a nightmare. We currently use a combination of handwritten inventory sheets and text messages to keep tabs on what's running low. This system works ok when things are steady, but during peak events we can run out of key items if someone forgets to message the update. It's led to some high-profile menu changes at festivals that made us look unprepared.
+
+Structural Issue: Staff Scheduling
+
+Scheduling is a complete mess. We use Google Sheets to try and keep track of who works when, but it's constantly being updated by multiple people which leads to conflicts and confusion. Last minute callouts are common since cooking on a truck is brutal and many staff have other jobs. This leaves us short-staffed at times and overstaffed others.
+
+Structural Issue: Cash Handling
+
+Handling cash across three trucks is a huge hassle. We make around $100,000 in cash per week that needs to be deposited securely while also giving out change and dealing with disputes. It's risky and time-consuming. We've had trucks held up by robbers twice now.
+
+Psychological Model
+
+I optimize for:
+- Creativity and innovation in my food
+- Speed and efficiency in operations 
+- Building community through the trucks
+
+I refuse to compromise on:
+- The quality of our ingredients
+- The friendliness and enthusiasm of our staff
+- Consistently delivering on our brand promise
+
+I avoid:
+- Over-relying on any one tech solution
+- Bureaucracy and red tape
+- Stifling creativity with too much process
+
+For this system to work for me, it must:
+
+1. Seamlessly integrate inventory across all trucks in real-time.
+2. Automate staff scheduling based on historical data and predicted demand.
+3. Provide a secure, efficient cash management system that frees up staff.
+4. Streamline permit tracking so we can plan our routes weeks in advance.
+5. Allow me to customize menus per truck/location without hassle.
+6. Integrate with my existing POS for end-to-end visibility.
+7. Offer an employee app to simplify shifts and communication on the go.
+
+---
+<!-- GENERATION VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Flags: none
+Generated: 2026-04-28T00:27:46.244Z
+Model: hermes3:8b
+Category: street-food-truck
+Seed: Roy Choi
+-->

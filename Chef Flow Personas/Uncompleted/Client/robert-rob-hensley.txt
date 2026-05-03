@@ -1,0 +1,55 @@
+Client Profile: "Robert “Rob” Hensley" - Owner, Regional HVAC Company (Minimalist)
+
+I’m not here to manage a process. I just want a good dinner, handled cleanly, without me learning a new system. If it feels like work, I’m out.
+
+Business Reality
+Right now:
+
+I book 3–5 private dinners per year - anniversaries, small family gatherings, occasional client dinners. Usually 4–8 people.
+
+Budget is straightforward: $1,200–$3,500. I don’t want surprises or line-item debates.
+
+I expect to pay once, maybe twice (deposit + final). I’m not splitting payments or managing other people.
+
+Guest details are simple: one gluten-free, one “no seafood,” that’s about it. I’ll tell you once.
+
+Events are almost always at my house. Standard kitchen, nothing fancy. I assume a professional can figure it out.
+
+I use text and email. That’s it. No apps, no logins, no dashboards.
+
+My wife might weigh in on menu preferences, but I’m the one booking and paying.
+
+Primary Failure: Too Much Process
+The biggest issue is that booking a chef turns into a project. I send an inquiry, and suddenly I’m filling out forms, reviewing documents, confirming details across multiple messages. I don’t want to manage anything. I’ve walked away from bookings because it felt like I was doing half the work. I’m paying to not think about it - if I have to track details or repeat myself, the system is failing.
+
+Structural Issue: Input Overload
+Most systems ask for too much upfront - detailed questionnaires, preferences, timelines. I don’t have that ready, and I don’t want to spend time figuring it out. I’d rather give a few basics and let the chef handle the rest. When I’m forced to input everything myself, I either rush it or abandon it.
+
+Structural Issue: Communication Drag
+Back-and-forth messaging kills momentum. I don’t want a conversation - I want a result. If I ask for availability and pricing, I expect a clear answer, not a thread that drags on for hours or days. Every extra message increases the chance I lose interest or forget to respond.
+
+Structural Issue: Payment Confusion
+Payment should be the easiest part, but it rarely is. Invoices, links, different methods - it’s inconsistent. Sometimes I don’t even know if I’m fully booked until I ask. I want a simple, clear transaction that locks everything in. No ambiguity.
+
+Psychological Model
+I optimize for: simplicity and minimal time spent
+I refuse to compromise on: clarity of price and confirmation
+I avoid: forms, apps, and extended communication
+I evaluate tools by: how quickly they get me from “I want this” to “it’s booked and handled”
+
+Pass / Fail Conditions
+For this system to work for me, it must:
+
+Allow me to submit a booking request with minimal input (date, headcount, basic preferences) in under a minute.
+
+Provide a clear, immediate response with availability, a simple menu direction, and total price.
+
+Require no account creation or app download to complete the booking.
+
+Offer a single, straightforward payment flow (deposit or full payment) that confirms the booking instantly.
+
+Capture and retain the few details I provide without asking me to repeat them.
+
+Minimize communication to only what’s necessary - no long threads or redundant questions.
+
+Give me a simple confirmation with everything handled, so I don’t have to think about it again before the event.

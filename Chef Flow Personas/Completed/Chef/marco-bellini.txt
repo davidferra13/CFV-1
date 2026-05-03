@@ -1,0 +1,50 @@
+**Chef Profile: "Marco Bellini" - Independent Private Chef & Regional Operator (Collaborator)**
+
+I run a solo private chef business across southern New England, but I operate in tight coordination with another independent chef based in the north. We’re not partners on paper—we each run our own brand, pricing, and clients—but in practice we function like a distributed team. The gap is that our coordination layer is completely informal, and it’s starting to break under volume.
+
+### Business Reality
+
+Right now:
+
+* 14–20 private events per month (mix of in-home dinners and small gatherings)
+* Average booking: $2,200; monthly revenue: $32,000–$44,000
+* Solo operator (no permanent staff; occasional freelancers)
+* Geographic scope: Connecticut, Rhode Island, Massachusetts, with regular overlap into each other’s territory
+* Secondary chef (northern region): similar volume, similar pricing, fully independent business
+* Current tools: Instagram DMs + SMS (inquiries), Google Docs (menus), Apple Notes (personal logs), Venmo/Square (payments), shared text threads (coordination)
+* Ad hoc coordination: texting each other about leads, sourcing runs, schedule conflicts, and overflow work
+
+### Primary Failure: No Shared Operational Layer Between Independent Operators
+
+We operate like a team without having a system that supports that reality. If I book a dinner that’s closer to his region, I have to manually decide whether to pass it off, split it, or keep it—and that decision happens in a text message with zero structure. Same thing with sourcing: if I’m driving two hours to pick up something rare, I’ll text him, but that relies on timing and memory. There’s no persistent, shared layer where relevant activity surfaces automatically. The cost is missed opportunities—duplicate sourcing trips, unshared leads that could have been fulfilled, and constant low-level communication overhead. The current workaround is “just text each other everything,” which doesn’t scale and becomes noise fast.
+
+### Structural Issue: Selective Visibility vs. Total Privacy
+
+We need to share information, but not everything. Some inquiries are too valuable or too specific to pass along, and that’s a real boundary even between close collaborators. Right now, there’s no way to selectively expose activity. It’s either fully private (stays in my phone) or fully shared (I text him). There’s no middle layer where I can say: “I just got a 12-person inquiry in Cape Cod on June 18—visible to him as availability context, but not as a lead he can take.” The workaround is judgment-based filtering in real time, which is inconsistent and easy to get wrong. Sometimes I overshare and lose leverage; sometimes I undershare and we both lose efficiency.
+
+### Structural Issue: Uncoordinated Sourcing Logistics
+
+We both make frequent, high-effort sourcing trips—Boston, specialty purveyors, farms, importers—and we constantly duplicate work. I’ll drive to Boston for black truffles or specialty items, and he might do the same two days later without knowing I already went. When we do coordinate, it’s through last-minute texts: “I’m heading to Eataly, need anything?” That only works if he sees it in time and knows what he needs. There’s no system that surfaces planned movements or sourcing runs in a structured way. The workaround is habit-based communication, which fails under busy schedules and leads to wasted time and fuel.
+
+### Structural Issue: Lead Overflow and Geographic Optimization
+
+We regularly receive inquiries that are better suited for the other person—wrong geography, double-booked dates, or just operational overload. Passing those leads is manual and inconsistent. Sometimes I forget, sometimes I’m too busy, sometimes the timing doesn’t line up. There’s also no tracking—once I pass a lead, I lose visibility entirely. I don’t know if it converted, how it was handled, or if I should keep routing similar leads. The workaround is forwarding messages or screenshots, which is messy and breaks continuity. There’s no system-level routing or shared visibility that respects ownership while enabling smart distribution.
+
+### Psychological Model
+
+I optimize for: efficiency, coverage, and making fewer high-effort mistakes
+I refuse to compromise on: ownership of my clients, control over my leads, and my pricing structure
+I avoid: constant texting, redundant trips, and anything that forces me to re-explain context
+I evaluate tools by: whether they let me coordinate with another operator without turning us into a single business or creating noise
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. Provide a shared coordination hub where key actions (new inquiry, confirmed booking, planned sourcing trip) can surface automatically between us without requiring manual messages.
+2. Allow granular, per-event and per-action visibility controls so I can choose exactly what the other chef sees (full details, partial context, or nothing).
+3. Enable structured sourcing coordination where I can log a planned trip (location, date, purpose) and the other chef can attach requests or items without direct messaging.
+4. Support lead routing with ownership rules: I can forward or expose a lead to the other chef while retaining control over whether they can act on it, view it, or ignore it.
+5. Maintain separate business identities—no shared branding, no merged client lists, no forced data blending—while still enabling operational overlap.
+6. Provide passive awareness (activity feed or timeline) that is informative but not notification-heavy, so I can check context when I need it without being interrupted.
+7. Track outcomes of shared or routed activity (e.g., whether a passed lead converted, whether a sourcing request was fulfilled) without requiring follow-up messages.

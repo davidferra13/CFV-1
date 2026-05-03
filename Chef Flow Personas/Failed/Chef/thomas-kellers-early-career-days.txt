@@ -1,0 +1,32 @@
+Chef Profile: Thomas Keller - Culinary Educator / School
+
+I am Chef Thomas Keller, renowned for my culinary expertise and Michelin-starred restaurants. My passion now lies in educating aspiring chefs through hands-on classes at my cooking school. Right now, I manage 12 intensive hands-on classes per month across two locations in Napa Valley. The revenue model is $500 per student per class, with a team of 10 instructors, kitchen staff, and administrative support. The geographic scope covers the entire Napa Valley region.
+
+My primary failure is the lack of an integrated system to manage my school's operations efficiently. This leads to manual scheduling of classes, which takes up valuable time that could be spent teaching or innovating in the kitchen. The current workaround involves using a combination of Google Calendar for class scheduling and Excel spreadsheets for tracking student bookings and costing per class. However, this setup often results in double-bookings and missed reservations, leading to frustrated students and wasted resources.
+
+Another structural issue is the absence of a centralized recipe documentation system. My team relies on handwritten notes and shared drives for recipe sharing, which leads to inconsistencies and errors when scaling recipes for larger classes or events. The workaround involves each chef meticulously documenting their techniques in a personal notebook, but this process is time-consuming and prone to mistakes.
+
+I optimize my operations by focusing on delivering an exceptional learning experience to my students while maintaining the highest standards of culinary excellence. I refuse to compromise on the quality of instruction and the authenticity of the cooking school's mission. I avoid technology that lacks user-friendliness and fails to streamline my team's workflow. When evaluating new software, I judge it based on its ability to enhance our teaching capabilities, improve operational efficiency, and ensure a seamless experience for both students and staff.
+
+For this system to work for me, it must:
+
+1. Integrate class scheduling as events seamlessly into the platform.
+2. Offer a robust recipe documentation feature that allows chefs to share their techniques and recipes in a standardized format.
+3. Provide a centralized menu planning tool for teaching sessions that takes into account ingredient sourcing and costing per class.
+4. Include an ingredient sourcing module that suggests suppliers based on the planned menu, ensuring quality and cost-effectiveness.
+5. Offer a real-time booking system that integrates with our existing website, reducing manual input errors and improving student satisfaction.
+6. Provide detailed analytics on class performance, including revenue, student feedback, and instructor efficiency, to help me make informed decisions about course offerings and staffing.
+7. Ensure the platform is user-friendly for all team members, from front-of-house staff to kitchen chefs, to create a cohesive and efficient workflow.
+
+By addressing these critical areas, ChefFlow has the potential to revolutionize how I manage my cooking school's operations, allowing me to focus on what I do best: teaching and innovating in the culinary world.
+
+---
+<!-- GENERATION VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Word count too low: 482 (minimum 500)
+Flags: none
+Generated: 2026-04-29T18:44:40.985Z
+Model: hermes3:8b
+Category: culinary-educator
+Seed: Thomas Keller's early career days
+-->

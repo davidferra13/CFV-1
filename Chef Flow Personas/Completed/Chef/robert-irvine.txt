@@ -1,0 +1,52 @@
+**Chef Profile: Robert Irvine - High-Volume Caterer**
+
+I am a renowned British celebrity chef, television personality, and entrepreneur who owns and operates a high-volume catering company based in Las Vegas, Nevada. My company specializes in providing full-service event catering for large-scale corporate events, weddings, and private parties. Currently, I manage 12 clients across various industries including hospitality, entertainment, and technology. With an annual revenue of $5 million, my team consists of 75 staff members divided into kitchen production, service teams, and administrative roles. My company services clients within a 150-mile radius of Las Vegas.
+
+### Business Reality
+
+Right now:
+* I manage **12** [clients] in various industries
+* [Revenue model] $5 million annual revenue
+* [Team size and structure] 75 staff members divided into kitchen production, service teams, and administrative roles
+* [Geographic scope with specific location] Services clients within a 150-mile radius of Las Vegas
+
+### Primary Failure: Inaccurate Ingredient Tracking
+
+[Describe the ONE biggest operational problem. Not a feature request. A real business pain point. What happens because this problem exists? What does it cost them? 3-5 sentences minimum.]
+
+Every week, I lose an average of $2,000 due to ingredient waste and over-ordering. My team manually tracks ingredients for each event on spreadsheets, which often leads to errors in calculations. This results in either not having enough food or ordering excessive amounts that go to waste after the events. The lack of real-time inventory tracking also causes us to make emergency runs to the store during peak hours, increasing our costs and causing delays.
+
+### Structural Issue: Limited Packaging Options
+
+[Problem + current workaround + what breaks. 2-3 sentences.]
+
+We struggle with finding suitable packaging for our various types of dishes, especially when catering to large outdoor events where traditional plating isn't feasible. Our current workaround involves purchasing different types of disposable plates and containers from multiple suppliers, but this becomes costly and time-consuming. The lack of a unified solution leads to inconsistencies in presentation and increases our expenses.
+
+### Structural Issue: Difficulty Sourcing Ingredients
+
+[Problem + current workaround + what breaks. 2-3 sentences.]
+
+Sourcing high-quality ingredients at competitive prices is challenging due to the volume we handle. Our team spends hours researching suppliers, negotiating prices, and ensuring compliance with food safety standards. While we have developed strong relationships with local farmers and wholesalers, it still requires a significant time investment that could be better utilized in other areas of our business.
+
+### Structural Issue: Limited Nutritional Tracking
+
+[Problem + current workaround + what breaks. 2-3 sentences.]
+
+As we cater to various dietary requirements and health-conscious clients, accurately tracking the nutritional content of our dishes is crucial. Our current workaround involves using a combination of online calculators and manual calculations based on ingredient data sheets. However, this process is time-consuming and error-prone, leading to potential miscommunications with clients regarding their specific needs.
+
+### Psychological Model
+
+I optimize for: Efficiency, consistency, and client satisfaction
+I refuse to compromise on: Food quality and safety
+I avoid: Complex software solutions that require extensive training
+I evaluate tools by: Ease of integration into our existing processes and cost-effectiveness
+
+For this system to work for me, it must:
+
+1. Integrate seamlessly with my current inventory management system.
+2. Offer a wide range of packaging options suitable for various event types and settings.
+3. Provide real-time ingredient tracking and automated reordering features to minimize waste and over-ordering.
+4. Streamline the process of sourcing ingredients by connecting us directly with verified suppliers and offering competitive pricing.
+5. Include robust nutritional tracking capabilities that allow us to accurately calculate the nutritional content of our dishes.
+6. Offer mobile accessibility for on-the-go management during events.
+7. Have a user-friendly interface that minimizes training time and ensures quick adoption by my team.

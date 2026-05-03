@@ -1,0 +1,73 @@
+**Guest Profile: "Zooey Deschanel" - High-Profile Guest (Dietary Sensitive)**
+
+I am someone who moves within circles that value curated experiences—whether it’s a private gallery viewing, a high-end charity gala, or a small, intimate farm dinner. My professional life means my schedule is constantly crisscrossing various locations, and my social calendar is often highly curated. I expect every detail, especially the food, to be perfect, because the experience *is* the event, and I’m very conscious of my health needs.
+
+### Business Reality
+
+Right now:
+* I attend an average of **3 to 5** private dining, farm dinner, or ticketed events per **month**.
+* My average event spend is around **$800-$1,500** per person, excluding travel, but the perceived value of the experience must justify that cost.
+* I have severe, documented allergies (specifically **dairy, gluten, and nightshades**) and I require detailed dietary accommodation confirmation. I also need seating that allows for comfortable movement and conversation.
+* My next major event is the "Autumn Harvest Gala" at the Hawthorne Estate on October 12th, with a confirmed headcount of **12** guests, and I am responsible for confirming the dietary needs of three other guests.
+* My current communication setup is a mix of dedicated event coordinator texts (WhatsApp), a formal email thread, and a single, often confusing, online survey link that expires quickly.
+
+---
+
+### Primary Failure: The Lack of a Single Source of Truth for Dietary Needs
+
+The single biggest operational problem is the catastrophic information silo effect surrounding my dietary restrictions. If the event organizer, the caterer, and the venue staff are working off three different documents—a spreadsheet, an email, and a napkin scribble—my meal is at risk. If my allergies are not confirmed *at the point of service*, I am not only experiencing a medical emergency, but the event itself is ruined, costing me not just my dinner, but my reputation and peace of mind. The cost of this failure is immense: immediate medical attention, stress, and the loss of trust in the host and the entire operation.
+
+---
+
+### Structural Issue: Fragmented RSVP and Dietary Data Collection
+
+The initial RSVP process is broken because the dietary requirements are collected via a standalone online survey that is completely divorced from the main ticketing system. I have to fill out this secondary survey *after* I buy my ticket, and I often lose the confirmation link or the data is entered manually into a separate Google Sheet by the coordinator. This means the kitchen team only sees a CSV file that is not cross-referenced with my actual booking or ticket type, forcing manual data entry and a high risk of omission.
+
+---
+
+### Structural Issue: Inconsistent Accommodation and Menu Visibility
+
+When I book a weekend event package, the menu options, the required dietary accommodations, and the room booking are managed by three different third-party systems (e.g., the hotel booking engine, the event planning portal, and the catering vendor's website). I have to jump between at least three logins to confirm that the special meal I requested (e.g., "gluten-free, dairy-free, nightshade-free") is physically listed on the final menu I am viewing, creating massive confusion about what is actually being served.
+
+---
+
+### Structural Issue: Manual Coordination of Multi-Day Event Flow
+
+For multi-day events (like a farm dinner weekend), the dietary and scheduling information is handed off manually via text messages between the hosts and the operations team. I might get a text saying, "Lunch tomorrow is rustic," but I have no way of knowing if that means the kitchen can handle my specific nightshade allergy, or if I need to pre-book a specific accommodation detail like a ground-floor room, because the information is only in fragmented, conversational messages.
+
+---
+
+### Structural Issue: Lack of Real-Time Allergen Verification
+
+I am concerned that the final confirmation of the meal—the plating and the dish description—is not integrated into the system that manages the inventory and ingredients. If the chef makes a substitution or if the kitchen runs low on a specific safe ingredient, there is no automated way for the system to flag this potential cross-contamination risk or communicate the change to me, the guest, in real-time.
+
+---
+
+### Structural Issue: Difficulty Tracking Accommodations Status
+
+If I am attending an event that includes lodging, the system fails to link my confirmed dietary needs and specific accessibility requirements (e.g., needing a roll-in shower) directly to my guest profile within the venue's booking system. I have to follow up with a separate phone call to the accommodation manager just to confirm the basic physical setup, which adds unnecessary stress and time.
+
+---
+
+### Psychological Model
+
+I optimize for: **Reliability and seamless luxury.** Everything must work perfectly, invisibly. I expect the system to anticipate my needs before I even have to ask.
+I refuse to compromise on: **My health and the quality of the experience.** If the food is wrong, or if the process is confusing, the entire event is a failure.
+I avoid: **Spreadsheets, phone calls for confirmation, and redundant forms.** I will abandon any process that requires me to repeat information or jump between more than two screens.
+I evaluate tools by: **The depth of their integration.** If it requires me to leave the platform to confirm a key piece of information (like the menu or the allergy status), I assume the platform is inadequate.
+
+I think I am highly detail-oriented and expect the operational staff to be equally meticulous. I am not easily frustrated, but I am highly discerning; a failure in logistics or care is noticed instantly and remembered forever.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1.  **Centralize** my dietary and allergy profile and ensure that this profile automatically populates and is visible to the kitchen staff, the server, and the event manager, regardless of how many people are involved in the event.
+2.  **Provide** a single, persistent confirmation dashboard where I can view my RSVP status, my confirmed meal accommodations, and the final menu details, all linked to my booking.
+3.  **Allow** the event coordinator to map confirmed dietary restrictions and accessibility needs directly to a specific table and seating chart within the platform.
+4.  **Trigger** automated alerts to the kitchen team if any key ingredient (like gluten or dairy) is running low, flagging potential cross-contamination risks before service begins.
+5.  **Integrate** the accommodation booking confirmation with the event profile, so I can verify my room type and accessibility features without calling the venue separately.
+6.  **Allow** the system to manage the entire flow of communications (RSVP, dietary update, menu changes) through one channel, eliminating the need for follow-up texts or external email chains.
+7.  **Generate** a comprehensive, printable PDF summary of my entire visit, including my allergies, my assigned seating, and my pre-selected menu accommodations, which I can physically carry and show to staff upon arrival.

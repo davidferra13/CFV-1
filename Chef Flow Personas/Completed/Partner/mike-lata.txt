@@ -1,0 +1,46 @@
+**Partner Profile: "Mike Lata" - Farm Dinner Co-host (Elevated Culinary Experience)**
+
+I co-host, promote, or support an average of 5 ticketed dinners and 3 associated farm visits per month, generating over $45,000 in gross revenue per month. Our revenue structure is complex: I receive a minimum guaranteed fee of $3,000 per event, plus a $30\%$ commission on all tickets sold through my promotional channels, and a variable percentage (ranging from $10\%$ to $25\%$) on any direct vendor sales of specialized ingredients back to the farm. Our primary venue shifts between my flagship restaurant (high volume, controlled kitchen) and the partner farm's open-air pavilion (limited capacity, unpredictable resources). We operate across a shared calendar, relying heavily on email threads, shared Google Sheets, and a chaotic mix of text messages between the farm manager, the restaurant reservations team, and myself.
+
+### Primary Failure: Inventory and Costing Drift
+
+My biggest operational headache is reconciling the actual cost of goods sold (COGS) across multiple, highly seasonal, and geographically disparate sources. Because I am sourcing ingredients directly from the farm *and* supplementing with my restaurant's established vendor network, I cannot accurately track the cost or yield of every item on a single menu. This forces me to manually calculate the COGS for every single dinner, often spending 4-6 hours per event just reconciling the Google Sheet inputs from the farm manager, which are usually just handwritten notes or photos of crates. If the farm over-promises a yield of specialty greens or heritage pork, and that ingredient costs me $8 per pound, but I only use half of it, the subsequent menu change breaks the entire cost model, leading to either massive overspending or, worse, underpricing the ticket, damaging my reputation and profitability.
+
+### Structural Issue: Cross-Platform Ticketing and Capacity Management
+
+When I promote an event, I use my own ticketing platform (Eventbrite or similar) because it gives me the most control over the branding and the initial payment flow. However, the venue's own reservation system (Resy/OpenTable) often handles the final confirmation and seating chart, and the farm needs to know the raw headcount for labor and prep. This means I have to manually export the guest list from my platform, cross-reference it against the venue’s capacity sheet, and then send a separate, updated list to the farm manager via email. This manual transfer process is prone to failure; if one person forgets to update the sheet or if the guest list changes after the initial booking, we are left with a single source of truth problem that causes immediate operational chaos on the night of the event.
+
+### Structural Issue: Multi-Tiered Commission and Payment Tracking
+
+My revenue is a patchwork of guaranteed fees, variable commissions, and direct vendor sales. I have to track payments coming in from three different sources: the restaurant’s POS system (for the main meal), my ticketing platform (for the initial reservation), and the farm’s direct sales receipts (for wine/produce). I currently maintain a separate, highly complex spreadsheet just for financial reconciliation, which I update weekly. The breakdown breaks down because the commission structure changes based on the season or the specific partnership. For example, if we run a "Truffle Weekend," the commission rate shifts from $25\%$ to $35\%$ and the guaranteed fee increases by $1,000$. Manually reconciling these variable rates against fluctuating daily ticket sales is time-consuming, error-prone, and delays my ability to pay my staff or vendors on time.
+
+### Structural Issue: Coordinated Marketing and Promotion Tracking
+
+When I promote a dinner, the promotion requires joint effort: I need the farm to generate content (photos of harvest, stories about the animals), the restaurant needs to generate content (menu descriptions, chef stories), and the ticketing needs to be linked to a single, cohesive landing page. Currently, I coordinate this promotion using a group Slack channel, which is terrible for tracking assets. We have dozens of files, 20 different cell contacts, and three different versions of the promotional flyer. If we need to run a targeted ad campaign (e.g., promoting only to existing high-value patrons who bought a $500 bottle of wine last year), I have to manually pull that list from my CRM, cross-reference it with the farm’s mailing list, and then ensure the ad copy aligns with the seasonal narrative, which is a massive, multi-day coordination effort.
+
+### Structural Issue: Ingredient Sourcing and Yield Documentation
+
+My operational risk is entirely tied to the unpredictable nature of the harvest. When I commit to a menu, I am committing to an ingredient availability that only the farm can guarantee. I need a way to pre-book or estimate a specific yield (e.g., "We need 15 pounds of heirloom tomatoes and 10 dozen eggs") weeks in advance, and then have that request logged, tracked, and updated by the farm manager as the harvest progresses. Right now, this is done through a series of back-and-forth texts and emails, leading to conflicting availability dates. If the farm misses the window for the promised specialty ingredient, the menu must be adjusted immediately, and the entire cost model and staff prep schedule must be updated simultaneously.
+
+---
+
+### Psychological Model
+
+I optimize for: Provenance and narrative quality. The story of the ingredients and the collaboration must be impeccable and easily communicated.
+I refuse to compromise on: The integrity of the guest experience. The dinner must feel seamless, elevated, and deeply connected to the source.
+I avoid: Administrative friction and data silos. I hate spending time in spreadsheets that don't immediately inform my operational decisions or revenue tracking.
+I evaluate tools by: How quickly they can provide a unified view of my revenue streams, inventory costs, and guest data without requiring me to retrain my kitchen staff or my farm manager.
+
+I think in terms of high-touch, multi-variable systems. My process is inherently collaborative, but the partners are often using entirely different, legacy operational systems (e.g., the farm uses paper ledgers, the restaurant uses a modern POS). The ideal tool must bridge that gap without forcing me to adopt a complex, academic-style enterprise resource planning (ERP) system.
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must allow me to define and track complex, tiered revenue splits based on the source of the booking (e.g., $30\%$ commission vs. $10\%$ guaranteed fee).
+2. The system must integrate event ticketing and capacity planning with external partner venue systems, ensuring real-time conflict resolution for guest counts.
+3. The system must allow me to log ingredient sourcing requests against specific menu items, tracking the projected cost, the actual received yield, and the resulting variance in COGS for profitability analysis.
+4. The system must generate a unified, single-source-of-truth guest list that automatically updates across all promotional and reservation touchpoints, flagging immediate capacity limits.
+5. The system must provide a dedicated workflow for managing joint marketing assets and promotional links, allowing me to track the specific booking conversion rate from each partner channel (farm, restaurant, personal).
+6. The system must handle variable pricing structures, allowing me to model and track profitability changes when I modify a menu item due to ingredient shortages or yield increases.
+7. The system must manage multi-location scheduling, coordinating staff prep time and labor costs across both the kitchen and the farm site for a single event.

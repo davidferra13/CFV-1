@@ -1,0 +1,73 @@
+**Public Profile: "Phil Rosenthal" - Local Food Explorer (Culinary Adventurer)**
+
+I’m an absolute sucker for a good, authentic meal, and nothing gets me more excited than finding a hidden gem—a restaurant or pop-up that feels genuinely special. I don't just want dinner; I want a story, a memorable culinary experience that I can tell people about for years. My goal is always to elevate a mundane outing into a genuine discovery, and I approach every meal like I’m researching a new cultural treasure.
+
+### Business Reality
+
+Right now:
+* I search for or compare **5 to 10** chefs, events, cuisines, or menus per **weekend**
+* My budget is flexible, but I usually allocate **$150 - $300 per person** for a high-quality, novel experience (including drinks/dessert).
+* I need location filtering within a **5-mile radius** of a specific neighborhood (e.g., Williamsburg, Brooklyn) that has a high concentration of unique, non-chain establishments, and a strong review rating (4.5 stars+) focused on atmosphere and originality.
+* I'm looking for a booking context that allows me to quickly gauge the overall vibe and operational capacity of a chef's current project, ideally for a unique, intimate pop-up event rather than a standard restaurant reservation.
+* My current discovery setup is a messy mix: a few trusted Instagram accounts, links shared by friends who have been to places *last week*, and cross-referencing Google Maps listings with Yelp reviews, which never quite match the real experience.
+
+---
+
+### Primary Failure: Lack of Trust in Novelty
+
+The biggest problem is determining if a chef's "pop-up" or "special event" is actually going to be worth the time and the money. Many chefs boast about their creativity on social media, but there is no centralized way for me to verify that the concept is feasible, that the venue can handle the volume, or that the menu items listed are actually representative of the quality I expect. I have wasted my time and money on at least **3** "pop-ups" in the last year that were poorly executed, poorly publicized, or simply disappointing, costing me an average of **$75** per failure and, worse, my enthusiasm.
+
+---
+
+### Structural Issue: Vague Concept vs. Operational Reality
+
+Chefs are fantastic at describing their *vision*—"a deconstructed take on Sicilian street food"—but they rarely provide operational details. I have to click through multiple pages, piecing together if the menu items are seasonal, if the required equipment is standard, or if the venue size actually matches the proposed guest count. My workaround is asking mutual friends in local foodie groups to "do their homework" for me, which is unreliable and requires me to constantly manage multiple text chains and WhatsApp groups just to get basic logistical confirmations.
+
+---
+
+### Structural Issue: Disconnected Portfolio Review
+
+A chef's work is constantly evolving, and their past success doesn't guarantee their current quality. I need to see a comprehensive, time-stamped portfolio of their recent work—not just their main restaurant, but their last **4 to 6** distinct pop-ups or catering events. Currently, I have to manually scroll through years of Instagram posts, trying to determine if the chef has been consistently executing at a high level, or if they had a single "good week" years ago. This manual vetting process is exhausting and makes me feel like I’m doing the chef’s due diligence for them.
+
+---
+
+### Structural Issue: Non-Standard Pricing Models
+
+Pop-ups rarely use standard à la carte pricing. They might be fixed-price tasting menus, ticketed events, or "chef's choice" bundles. When I find an exciting event, I spend 15 minutes trying to determine the total cost because the pricing structure is scattered across the website, the reservation link, and a separate PDF attachment. Sometimes the "per person" price excludes the mandatory service fee, and I only find out when I get to the checkout page, leading to a jarring and frustrating moment of unexpected cost increase.
+
+---
+
+### Structural Issue: Location/Vibe Mismatch
+
+I am looking for an intimate, unique experience, but the discovery tools often lump all events together. I need to filter not just by cuisine or neighborhood, but by the *type* of environment: "small industrial kitchen," "gallery space," or "historic loft." When I find an event that looks amazing, I have to cross-reference its Instagram photos with the venue's actual street view to see if the atmosphere matches the promise. This friction means I often default to established, predictable restaurants because the discovery process is too much work.
+
+---
+
+### Structural Issue: Booking Uncertainty and Capacity
+
+Pop-ups are high-demand, limited-capacity events. If I find something I love, I need to know the immediate, accurate booking status and how many spots are left *right now*. Currently, I often have to send a direct email or call a temporary number, only to find out the event was fully booked **3 days** ago, or that the booking system is only accepting reservations for a small, inconvenient window (e.g., only 10 spots left, and they require a 50% deposit immediately). The lack of real-time, aggregated availability is a massive barrier to conversion.
+
+---
+
+### Psychological Model
+
+I optimize for: **The Story and the Experience.** I want the narrative of the meal to be as strong as the meal itself.
+I refuse to compromise on: **Authenticity and Novelty.** If it feels corporate, predictable, or mass-market, I’m out.
+I avoid: **Information Overload and Friction.** I hate having to jump between 5 different tabs or use 3 different apps just to get one piece of information.
+I evaluate tools by: **Confidence and Effortlessness.** If the platform makes me feel like I'm doing the work, I won't use it.
+
+I am highly motivated by scarcity and recommendation. I trust the curated judgment of my peers and niche experts far more than I trust a general search engine. I expect the platform to do the heavy lifting of vetting the quality and the logistics so I can focus purely on the fun of discovery.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must provide a unified, easily digestible "Vibe Score" or "Concept Clarity" rating that summarizes the operational feasibility and novelty of the chef’s proposed event.
+2. The system must allow me to filter pop-ups and events not just by cuisine, but by the *type* of venue space (e.g., "industrial," "private loft," "market stall").
+3. The system must integrate a mandatory, standardized section for all chefs detailing the full cost breakdown (per person, service fee, tax) and clearly labeling any required deposit or minimum spend.
+4. The system must display real-time capacity data, showing the number of remaining tickets and the booking window for the next 30 days, reducing the need for direct emails or calls.
+5. The system must aggregate and display a consistent, longitudinal portfolio view that clearly shows the chef's activity level and quality consistency across their last 10 unique public events.
+6. The system must allow me to save and compare multiple potential pop-up concepts side-by-side (e.g., "Concept A vs. Concept B") to help me decide which experience I want to prioritize.
+7. The system must provide immediate, contextual links to the venue’s location and a vetted photo gallery of the *actual* physical space, not just professional stock photos.

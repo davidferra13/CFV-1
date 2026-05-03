@@ -1,0 +1,67 @@
+**Guest Profile: "Hailey Bieber" - First-Time Private Dining Guest (Curated Experience)**
+
+I am someone who values discretion, flawless execution, and the feeling that I am the most important person in the room. My time is incredibly valuable, and I expect any experience, especially a private dining event, to feel effortless and highly curated. I am used to operating in circles where the logistics are handled entirely by my team, so when I encounter any friction, it feels disproportionately stressful.
+
+### Business Reality
+
+Right now:
+* I attend **1 to 2** private dining, farm dinner, or ticketed events per **quarter**.
+* My average spend per person for a single event is **$750 to $1,200**, which includes the full beverage and premium service experience.
+* I have extremely specific dietary needs (e.g., gluten-free, low FODMAP, and highly sensitive to certain oils/seasonings) that must be communicated well in advance. Seating is critical; I require a premium, semi-private corner table with optimal lighting and minimal foot traffic disturbance.
+* My last major event was a private tasting at a highly-rated, intimate city restaurant, involving **3 to 5** guests, held on a Friday evening, requiring 2 hours of continuous, uninterrupted service.
+* My current communication setup is a mix: the initial booking is handled via a specialized planner’s email, followed by a dedicated, private link for confirmation, and any last-minute details are sent via a quick, professional text message, because I cannot trust mass email blasts.
+
+---
+
+### Primary Failure: The Mismanaged Dietary Restriction
+
+The single biggest operational problem is when the kitchen or service staff fail to correctly interpret or execute a complex dietary restriction. If I arrive and am presented with a dish that contains an ingredient I am severely allergic to—even a cross-contamination risk—the entire evening is ruined instantly. This doesn't just mean I skip a dish; it means I am physically uncomfortable, embarrassed, and the entire mood shifts from celebratory to stressful. The cost isn't just the cost of the meal; it’s the loss of the entire evening’s atmosphere, the reputational damage to the venue, and the necessity of my team having to intervene and apologize, which is the absolute worst feeling.
+
+---
+
+### Structural Issue: The Fragmented RSVP/Booking Flow
+
+The initial booking process is a nightmare of disparate touchpoints. I often receive a link from my planner, which then redirects me to a generic form that requires me to input my name, but then I have to confirm my attendance via a separate email, and finally, I might receive a physical printed card later. This fragmentation means I have no single source of truth for my booking status or my personal details. My current workaround is having my assistant manually track every confirmation link and date in a shared Google Sheet, cross-referencing it with texts. This is tedious, prone to human error, and feels deeply unprofessional to the high-end guest.
+
+---
+
+### Structural Issue: The Dietary Data Silo
+
+My dietary restrictions are not simply "vegetarian" or "gluten-free"; they are highly nuanced (e.g., "no nightshades, no processed sugar, no canola oil, and must be low-FODMAP"). When I book, this information is often typed into a separate field on a booking form, which then gets copied manually into a spreadsheet, and then *re-written* by the kitchen staff onto the day-of ticket. If the system relies on multiple humans copying and pasting this data, there is a massive failure point. My workaround is always having my planner pre-call the restaurant a week out and verbally reiterate every single restriction to the manager, which is redundant and inefficient for the venue.
+
+---
+
+### Structural Issue: The Lack of Seating/Flow Guarantee
+
+For a small, private group, the physical layout of the dining experience is part of the service. I need to know *exactly* where my table is, and if there are any other high-traffic areas or potential bottlenecks (like a visible service station or a loud bar area) that might interrupt our conversation. I don't want my group placed near the kitchen entrance or in a spot that feels exposed. The current process often only confirms "a table in the main dining room," which is useless. My workaround is having my planner physically call the venue manager 48 hours before the event just to confirm the *specific quadrant* of the dining room and the table layout.
+
+---
+
+### Structural Issue: The Post-Event Feedback Loop
+
+The feedback process is usually an afterthought, a generic email sent 24 hours after the event asking me to rate the service on a scale of 1 to 5. This feels impersonal and meaningless. If there was a genuine issue (e.g., the bread basket was empty for 10 minutes, or the wine pairing suggestion was off), I need an immediate, discreet way to report it or receive clarification, not a survey. My workaround is often sending a direct, personal text message to the venue manager the morning after the event, which is time-consuming and requires me to remember the manager’s direct line.
+
+---
+
+### Psychological Model
+
+I optimize for: **Perceived seamlessness and exclusivity.** If the process is invisible, I assume it worked perfectly.
+I refuse to compromise on: **Discretion and flawless execution.** Any noticeable friction, delay, or communication gap suggests incompetence.
+I avoid: **Generic, mass-market technology or processes.** I hate anything that feels like it was designed for the average person, not someone who demands perfection.
+I evaluate tools by: **How much they reduce my cognitive load and the time spent managing logistics.**
+
+I think that if a system requires me to initiate a step or remember a detail, the system has failed. My decision-making is based on minimizing perceived risk and maximizing the luxurious feeling of being completely catered to.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must **confirm** my full profile, including all allergies and dietary nuances, to the kitchen staff and service lead **at least 72 hours** before the event date.
+2. The system must **provide** a single, unified dashboard for my planner that displays my RSVP status, payment details, and any required pre-event forms, eliminating the need for cross-referencing multiple links.
+3. The system must **allow** for the guaranteed reservation and communication of a specific seating area or table type (e.g., "Private corner table, Booth A") and confirm this detail in the final guest communication.
+4. The system must **send** pre-event, customized communication that includes a clear, timed itinerary for the evening, eliminating the need for me to track down physical or verbal confirmations.
+5. The system must **support** immediate, discreet, and secure channels for service feedback or minor issues to be reported directly to the floor manager during the event, rather than relying on a post-event survey.
+6. The system must **generate** a final, consolidated event cost breakdown that clearly separates the ticket cost, the per-person consumption spend, and any special add-ons (like wine pairings), which I need for my internal budgeting records.
+7. The system must **flag** any potential operational conflict—such as a conflicting booking time or a missing dietary confirmation—and alert my planner immediately, before the conflict reaches the restaurant manager.

@@ -1,0 +1,67 @@
+**Client Profile: "Bryan Rafanelli" - Corporate Event Planner (High-Volume Client)**
+
+I am a corporate event planner, primarily handling large-scale, high-stakes events for major financial and tech firms. My job is to translate a company's annual goals—like celebrating a successful quarter or launching a new product—into a flawlessly executed, memorable dining experience. I manage the entire lifecycle, from the initial concept and budget approval to the final vendor invoicing and post-event feedback.
+
+### Business Reality
+
+Right now:
+* I book or manage **12 to 18** private dining, catering, or meal prep events per **quarter** (averaging 3-4 major events per month).
+* My budget range for a single event is typically **$15,000 to $75,000**, requiring multiple rounds of deposits and final payment reconciliation.
+* The stakeholder group involved is usually a mix of the company's **C-Suite executive team, HR department, and the Marketing/PR team.**
+* The venue complexity is extreme: high-end hotel ballrooms, corporate campuses with internal kitchens, and sometimes off-site, specialized pop-up locations. Headcount fluctuates wildly, often requiring us to scale from **80 to 350 people** in a single day.
+* My current booking and communication setup is a patchwork: initial quotes are handled via **email and Word documents**, contract signing uses **DocuSign**, ingredient/menu adjustments are tracked in a **shared Google Sheet**, and final guest RSVPs and dietary restrictions are managed via a combination of **Eventbrite and manual texts.**
+
+---
+
+### Primary Failure: Loss of Centralized Operational Truth
+
+My biggest operational pain point is that my project status is never in one place. Because the logistics are so complex—involving multiple stakeholders (the client company, the venue, the caterer, the bar vendor, and the chef)—I spend 30% of my time acting as a human data integrator. If the sheet used for guest counts is not updated, the kitchen is understaffed or over-ordered, which leads to massive cost overruns (like paying for 50 extra plates that nobody eats) or, worse, a poor guest experience. This fragmentation means I can never confidently give the client a real-time, accurate picture of the project health, which erodes my credibility and slows down approvals.
+
+---
+
+### Structural Issue: The Approval Waterfall
+
+The moment I get a final menu or a quote, it must pass through at least three levels of corporate approval (Marketing Director, CFO, and sometimes the CEO). The current workaround is sending a detailed PDF package that needs signatures, followed by endless "Can you just adjust this line item?" emails. What breaks is the timeline. I cannot move forward with ingredient sourcing or staffing until I have the final, approved numbers, and the back-and-forth on a single line item can stall the entire project for 48 hours, jeopardizing our vendor commitments.
+
+---
+
+### Structural Issue: Headcount Volatility and Costing
+
+We often commit to a preliminary headcount (say, 250) to get a venue quote, but the final RSVP count can fluctuate by 15-20% in the 7 days leading up to the event. My current workaround is maintaining a dedicated, volatile column in the Google Sheet that I manually update from the event ticketing system. This makes accurate costing nearly impossible because the catering vendor requires a firm count 72 hours out, but the financial department requires the final, billed count. If I don't track this fluctuation and its resulting cost impact *in the same place*, I risk under-billing or over-spending against the approved budget.
+
+---
+
+### Structural Issue: Dietary and Allergen Complexity
+
+Managing dietary restrictions is a nightmare because the information is scattered. One guest might request gluten-free, another might be severely allergic to nuts, and a third might be vegan—and these details are often entered by different people into different systems (the RSVP form, the internal sheet, the venue binder). My current workaround is having a dedicated, color-coded printout that I physically manage and hand off to the catering staff. If I misplace this sheet, or if the catering staff doesn't receive the latest version, the risk of a severe allergic reaction is immediate and catastrophic, representing not just a health risk, but a massive liability failure.
+
+---
+
+### Structural Issue: Invoice Reconciliation and Vendor Tracking
+
+After a large event, I receive 5 to 8 separate invoices—one from the venue, one from the liquor vendor, one from the floral team, and multiple from the catering sub-vendors. These invoices arrive via email at different times, often with different formatting, and they all reference different internal job codes. My current workaround is downloading every single PDF invoice and manually entering the line items (e.g., "250 dinner plates @ $4.50," "10 bottles of wine @ $60") into a master Excel ledger. This process takes 4-6 hours per event, is highly prone to human data entry errors, and makes reconciling the final client bill against the actual incurred costs almost impossible.
+
+---
+
+### Psychological Model
+
+I optimize for: **Predictability and Auditability.** I need to know, with 100% certainty, what the cost is, what the timeline is, and who is responsible for the next action, all within a single, verifiable source of truth.
+I refuse to compromise on: **Compliance and Risk Mitigation.** If I cannot prove that the correct allergen protocols were followed and that the payment trail is perfectly documented, I cannot sign off on the event.
+I avoid: **Swivel-chair data entry.** I hate opening four different tabs (email, sheet, portal, document) just to update one piece of information that should already be linked.
+I evaluate tools by: **Integration Depth and Workflow Automation.** If the system doesn't automatically push a status change from booking to invoicing, it's wasting my time.
+
+I am a planner who operates under immense time pressure and high stakes. My decision-making process is highly risk-averse; I need the system to handle the complexity so I can focus on the creative elements of the event, not the administrative chaos.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must **centralize** the entire client lifecycle, from initial quote generation to final invoice, preventing the need for multiple disparate documents and spreadsheets.
+2. The system must **automatically flag** when a key piece of operational data—like the confirmed final headcount or the approved budget revision—is missing or has been changed, alerting the entire stakeholder group instantly.
+3. The system must **manage dynamic inventory and costing**, allowing me to adjust the guest count and instantly recalculate the total cost impact across all vendor line items (catering, staffing, linens) in real-time.
+4. The system must **provide a single, auditable source of truth for all menu and allergen details**, ensuring that the information given to the kitchen staff is the same, final version approved by the client.
+5. The system must **streamline the invoicing process** by ingesting multiple vendor invoices (PDFs) and automatically mapping them against the event's master budget and job code, minimizing manual data entry.
+6. The system must **handle complex contract and approval workflows**, routing documents and budget revisions through defined corporate stakeholders and tracking the necessary sign-offs and revision history.
+7. The system must **support multi-stage event planning**, allowing me to save a project as a template and quickly replicate the core structure (vendor lists, initial menus, budget parameters) for a similar event happening three months later.

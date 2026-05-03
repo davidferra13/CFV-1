@@ -1,0 +1,38 @@
+**Chef Profile: "Sofia Silva" - Culinary Operations Director (Farm-to-Table Purist)
+
+I am Sofia Silva, the culinary operations director of a small to medium-sized farm-to-table restaurant group in Berkeley, California. Our group consists of three high-end restaurants that I manage and operate, each with its own unique concept but all centered around my passion for fresh, locally sourced ingredients. My restaurants have built a strong reputation in the Bay Area due to our commitment to sustainable farming practices, seasonal menus, and supporting local suppliers.
+
+Currently:
+* I oversee 3 restaurant locations.
+* Annual revenue hovers around $4 million per restaurant, with a total group revenue of $12 million.
+* Our team consists of approximately 75 employees across all three restaurants.
+* We operate in the Berkeley area, with each restaurant having its own distinct neighborhood presence and clientele.
+
+### Primary Failure: Menu Sourcing Challenges
+
+The biggest challenge we face is the sourcing of high-quality, seasonal ingredients that align with our farm-to-table ethos. Despite our best efforts to build strong relationships with local farmers and suppliers, there are times when certain produce or proteins are not available due to weather conditions or unexpected market fluctuations. This often leads to last-minute adjustments in our menus, which can impact our reputation for consistency and freshness among our patrons.
+
+### Structural Issue: Inventory Management
+
+Our current inventory management system is largely based on manual spreadsheets and phone calls to suppliers. While this has worked well enough for a small-scale operation, as we grow, the complexity of tracking and managing ingredients across multiple restaurants becomes more challenging. There have been instances where overordering or underestimating demand resulted in either excess inventory that couldn't be used quickly enough or stockouts that affected our ability to deliver on menu promises.
+
+### Structural Issue: Staff Scheduling
+
+Scheduling staff across three locations while ensuring we meet labor requirements for each shift has proven to be a cumbersome process. We rely heavily on a combination of personal networks and temporary staffing agencies, but finding the right fit—especially in a market that values culinary expertise as much as ours does—can be time-consuming and often leaves us with gaps that need to be filled at the last minute.
+
+### Structural Issue: Technology Integration
+
+While we have embraced technology for our customer-facing aspects, integrating various systems (like reservations, online ordering, and feedback) has shown its limitations in terms of scalability and operational efficiency. We struggle to find a unified platform that can handle everything from staff scheduling and inventory management to supplier relations without causing more confusion or reducing the personal touch we pride ourselves on.
+
+### Structural Issue: Compliance and Training
+
+Ensuring all employees are adequately trained on our culinary practices, food safety protocols, and customer service standards across multiple locations is another area where we find our resources stretched thin. Our training programs, though comprehensive, require a significant time investment to maintain consistency and compliance.
+
+For this system to work for me, it must:
+1. Streamline inventory management across all three restaurants without manual intervention.
+2. Provide an intuitive staff scheduling tool that considers labor laws, seasonal fluctuations, and our unique culinary needs.
+3. Offer an integrated platform for managing reservations, online ordering, and guest feedback, enhancing the customer experience while allowing us to maintain a high level of personal touch.
+4. Facilitate easier communication with suppliers and ensure we have real-time visibility into ingredient availability and pricing.
+5. Integrate seamlessly with our current technology stack without causing additional complexity or requiring significant learning curves for my team.
+6. Include robust training modules that can be customized for different roles within the restaurants, ensuring all employees are on the same page regarding our culinary philosophy and operational standards.
+7. Help us manage compliance issues (like food safety certifications) in a way that is both efficient and ensures we meet regulatory requirements across multiple locations.

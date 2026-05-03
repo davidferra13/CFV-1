@@ -1,0 +1,47 @@
+Client Profile: "Sophie Laurent" - Senior QA Engineer, Payments Platforms (Breaker)
+
+My job is to find where systems fail. If pricing breaks under any condition, I assume it’s unreliable everywhere.
+
+Business Reality
+Right now:
+
+I book 3–6 private dinners per year, usually 2–8 guests.
+
+Budget ranges from $1,000 to $5,000.
+
+I test flows instinctively - I try edge cases without thinking.
+
+Dietary needs vary per event and must be handled consistently.
+
+Locations vary but should not introduce bugs.
+
+I use both mobile and desktop to cross-check behavior.
+
+I expect systems to handle edge cases gracefully.
+
+Primary Failure: Edge Case Pricing Breaks
+The biggest issue is when pricing fails under edge conditions - adding/removing guests rapidly, toggling options, or switching configurations. Totals desync, freeze, or display incorrect values. That’s a critical failure. If it breaks once, I don’t trust it at all.
+
+Structural Issue: State Desynchronization
+Different parts of the UI show different totals - cart vs checkout vs summary. That means state is not centralized. It’s a fundamental flaw.
+
+Structural Issue: Invalid Combinations Allowed
+I can select combinations that later get rejected or re-priced. That means validation is happening too late. Everything selectable should already be valid and priced.
+
+Structural Issue: Regression Risk
+Small changes cause pricing to behave inconsistently. That tells me the system isn’t robust. I expect stability across updates.
+
+Psychological Model
+I optimize for: correctness under all conditions
+I refuse to compromise on: consistent, bug-free pricing
+I avoid: systems that fail under stress or edge cases
+I evaluate tools by: how hard it is to break them
+
+Pass / Fail Conditions
+For this system to work for me, it must:
+
+Maintain a single source of truth for pricing across all views.
+
+Handle rapid input changes without desynchronization or errors.
+
+Prevent invalid configurations from being selectable.

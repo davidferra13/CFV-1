@@ -1,0 +1,61 @@
+**Guest Profile: KSI Olaitan Ahmed - High-Profile VIP Guest (Demanding Experience)**
+
+I am KSI, and my life is built on massive scale, intense brand management, and high-stakes public appearances. When I attend a private dining event, I don't just show up; I am part of a curated, multi-million dollar experience. I expect every single detail, from the initial invitation to the final check, to be flawless because my presence reflects directly on my brand's image.
+
+### Business Reality
+
+Right now:
+* I attend at least **3 to 5** highly publicized private dining, launch, or ticketed events per **quarter**.
+* My average spend per event is easily **$15,000 to $30,000+**, covering catering, beverage pairings, and VIP add-ons.
+* We often have complex dietary requirements, including multiple severe allergies (e.g., gluten, nuts, shellfish) that must be tracked per person, alongside general preferences for premium/organic options.
+* My most recent event was a large-scale **120-person** launch party at a private downtown venue, requiring staggered seating and multiple food stations.
+* My current communication setup is a chaotic mix: my manager relies on shared Google Sheets for RSVPs, individual texts for immediate changes, and a final email blast that often gets lost or requires manual follow-up.
+
+---
+
+### Primary Failure: The Information Silo Nightmare
+
+The single biggest operational problem is the fragmentation of data and communication. Because my events involve dozens of stakeholders—from the venue coordinator to the catering lead to the brand sponsor—all the critical information lives in separate silos: one sheet for RSVPs, a text chain for last-minute dietary changes, and a separate file for the final seating chart. This lack of a single source of truth means the staff often receives conflicting instructions. When the kitchen receives a dietary change via text, but the front-of-house staff sees the original booking on a printed sheet, the guest experience immediately suffers. It costs us time, and worse, it costs reputation. A single misunderstanding about an allergen or a seating preference can lead to a major PR issue or, worse, a physical health incident, which is unacceptable.
+
+---
+
+### Structural Issue: Tracking Guest Changes and Allergies
+
+The current workaround is a combination of shared Google Sheets and constant WhatsApp communication. When a guest cancels or changes their dietary needs, the information is updated in the chat, but the venue and kitchen staff only see the old, printed manifest. This breaks the moment a change happens, as the kitchen and service team are operating on outdated, manual data.
+
+### Structural Issue: Seating and Flow Management
+
+We rely on printed, physical seating charts that are often incomplete or quickly become obsolete when a VIP needs to be moved last minute. My event planner has to physically redraw the plan and then reprint it, which is incredibly inefficient. This breaks when a high-profile guest needs to be accommodated mid-event due to an unexpected schedule change, requiring instant, visible adjustments to the floor plan.
+
+### Structural Issue: Multi-Phase Billing and Sponsorship Tracking
+
+Our events are never simple; they involve multiple revenue streams—ticket sales, sponsor contributions, and actual consumption. Currently, we manage this using multiple invoicing systems and detailed spreadsheets that require hours of manual reconciliation. This breaks down during reconciliation when reconciling which specific sponsor contribution applies to which specific meal item, leading to billing disputes and delayed payments.
+
+### Structural Issue: Event Feedback Loop and Compliance
+
+After a massive event, collecting and correlating feedback (e.g., "The cocktail menu was great, but the seating was too loud") is a messy process involving paper comment cards and scattered emails. We have no systematic way to tie the feedback directly back to the specific element of the service (e.g., "The noise level in Booth 7 was too high"). This breaks our ability to continuously improve the guest experience based on granular, actionable operational data.
+
+---
+
+### Psychological Model
+
+I optimize for: **Seamless Prestige.** Everything must feel effortless, premium, and perfectly executed. The technology should vanish into the background, making the operation invisible to me, but flawless to the staff.
+I refuse to compromise on: **Accuracy and Scalability.** If the system can't handle 120+ people, multiple dietary restrictions, and complex billing simultaneously, it's useless.
+I avoid: **Manual Data Entry and Paperwork.** If I have to look at a spreadsheet or a printed manifest, I assume the process is outdated and prone to error.
+I evaluate tools by: **Integration and Reliability.** Does it talk to the POS, the RSVP system, and the kitchen manifest simultaneously?
+
+I think in terms of operational flow and measurable risk. My decisions are driven by ensuring that the guest experience is always premium, and the internal operations are always scalable enough to handle a 50% increase in headcount with zero loss of quality or data integrity.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must allow my team to update a guest's dietary restriction (e.g., 'Severe Peanut Allergy') and instantly push that alert to the kitchen, the front-of-house tablet, and the bar staff’s handheld device.
+2. The system must generate a comprehensive, single-source-of-truth manifest that combines the final RSVP count, the confirmed seating arrangement, and all individual allergy/preference notes, accessible to all relevant staff roles.
+3. The system must allow me to allocate specific revenue streams (e.g., "Sponsor A contributed $5,000") directly to specific cost centers (e.g., "Premium Wine Pairing Cost") during the event booking phase.
+4. The system must enable me to track and log post-event feedback and automatically link that feedback to the specific event components (e.g., "Seating Arrangement - Table 7," "Dessert Menu - Chocolate Tart") for continuous improvement.
+5. The system must provide a dynamic floor plan view that allows my event manager to digitally move or reassign seating for up to 150 guests in real-time, updating the manifest instantly.
+6. The system must provide a dedicated, secure portal for me or my manager to handle last-minute confirmations, cancellations, and major changes (e.g., "Adding 10 people") outside of business hours without needing staff intervention.
+7. The system must integrate the final check-out process with the original sponsorship agreements to generate a single, itemized invoice that clearly separates core costs from sponsor contributions.

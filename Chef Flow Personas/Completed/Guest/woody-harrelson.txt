@@ -1,0 +1,67 @@
+**Guest Profile: "Woody Harrelson" - High-Profile Guest (Dietary-Restricted)**
+
+I am a guest who attends highly curated, intimate events—the kind where the setting and the experience are as important as the conversation. My attendance is rarely casual; it's part of a professional circuit, a networking opportunity, or a genuine passion for authentic, high-quality food experiences. I expect the operation behind the meal to be flawless, allowing me to focus entirely on the people and the moment, not the logistics of my plate.
+
+### Business Reality
+
+Right now:
+* I attend an average of **3** private dining, farm dinner, or ticketed events per **quarter**.
+* I typically spend between **$15,000 and $25,000** on single-event ticket and accommodation spending, excluding travel.
+* My primary constraint is a severe, life-threatening **nut allergy** (including trace amounts) and I must also manage a high degree of gluten sensitivity. I require confirmation of dedicated, separate preparation areas to prevent cross-contamination.
+* My current event is a private, seated dinner at a small, rustic estate in Napa Valley, scheduled for October 18th, 2024, with a small, invite-only headcount of 12 people.
+* My communication setup is highly fragmented: initial invites come via physical mail, RSVP confirmations are handled by a dedicated event planner's personal email, and all critical dietary information is usually conveyed via a separate, often outdated, Google Form that I am asked to fill out days before the event.
+
+---
+
+### Primary Failure: Cross-Contamination Risk and Safety Liability
+
+The single biggest operational problem is the lack of a centralized, verifiable system that guarantees the safety of my meal. If the kitchen staff cannot confirm, in real-time and through a single platform, that my meal preparation area is entirely separate from the general kitchen workflow, the risk is catastrophic. This isn't just an inconvenience; it’s a health crisis that could lead to emergency room visits, public liability issues for the host, and irreparable reputational damage to the venue and the organizer. The cost of failure here is measured in medical costs, legal exposure, and the total loss of trust.
+
+---
+
+### Structural Issue: Dietary Information Silos
+
+The process for collecting and transmitting dietary restrictions is broken. I am forced to fill out a generic survey (like a Google Form) that is separate from the actual booking or RSVP system. This means the event planner, the kitchen manager, and the server are all operating off different, non-synchronized pieces of paper or digital information. If the planner updates the guest list but forgets to cross-reference my specific, severe nut allergy notes, the kitchen receives an incomplete or incorrect profile, forcing me to rely on last-minute, unreliable verbal communication with the server, which is a massive operational risk.
+
+---
+
+### Structural Issue: Menu Visibility and Confirmation Gap
+
+I cannot see a finalized, customized menu that specifically confirms my dietary accommodations are met. Instead, I only see a general "farm-to-table, seasonal menu" posted on the website. This lack of granular detail forces me to assume the safest outcome, which is often the worst outcome. The system does not provide a clear, dedicated pathway for the host to submit a *confirmed, modified* menu for me (e.g., "Woody's meal: Seared salmon with roasted root vegetables, prepared in a dedicated GF/allergy prep zone") and for me to digitally approve that specific modification prior to the event.
+
+---
+
+### Structural Issue: Event Coordination and Vendor Communication
+
+The coordination of necessary specialized vendors (like the baker who must prepare my gluten-free bread, or the dietary consulting chef) happens entirely through personal emails and phone calls. There is no centralized platform that tracks these specialized vendor inputs against the master event schedule and guest profile. If the baker calls the venue 48 hours before the event to say they can't deliver the specific GF sourdough, the host must manually track that change, potentially missing a crucial detail about the timing or required storage, leading to last-minute, chaotic adjustments in the operational schedule.
+
+---
+
+### Structural Issue: Pre-Event Allergy Protocol Documentation
+
+There is no single, mandatory protocol documented and acknowledged by *all* parties (host, chef, server, kitchen staff) that outlines the specific allergen handling steps. Currently, the host is expected to send a separate, printed "Allergy Protocol Sheet" to the kitchen. This sheet gets lost, photocopied incorrectly, or is simply filed away. A proper system must mandate the documentation of a formal, signed acknowledgement from the head chef and kitchen lead confirming they have received, understood, and committed to executing the specific allergy protocols for every guest with restrictions, linking this confirmation directly to the event booking.
+
+---
+
+### Psychological Model
+
+I optimize for: **Predictability and Trust**. I need to know that once the promise is made—especially regarding health and safety—it will be maintained flawlessly from the moment I RSVP until the moment I leave the venue.
+I refuse to compromise on: **Safety and Transparency**. If I feel like I am having to advocate for my own physical safety, the experience has failed, regardless of how beautiful the setting is.
+I avoid: **Ambiguity and Disjointed Processes**. I hate having to follow up on details that should already be confirmed, and I detest switching between multiple communication channels (texting the planner, emailing the chef, calling the venue).
+I evaluate tools by: **Completeness of the Workflow**. If the system forces me to use an external spreadsheet or a text message to bridge a gap, I assume the platform is insufficient.
+
+I think in terms of risk mitigation and operational rigor. My decision to attend an event is based on the perceived quality of the experience; if the logistics feel haphazard or incomplete, I assume the quality of the food will be similarly flawed.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. **Provide a single, mandatory input field** during RSVP that allows the host to upload a detailed, multi-allergen protocol document that is visible to all operational staff (kitchen, server, manager).
+2. **Mandate a digital confirmation step** where the Head Chef must electronically acknowledge and sign off on the specific handling procedures for all documented severe allergies *before* the event booking is finalized.
+3. **Display a dedicated, editable menu section** for each guest, showing the finalized, customized dish names and ingredients that have been confirmed to be free of my specific allergens, rather than just a general menu.
+4. **Integrate a specialized vendor checklist** into the event profile, allowing the host to track the delivery, prep, and compliance of external dietary ingredients (e.g., GF bread, allergen-free wine pairing) against the master timeline.
+5. **Generate a printable, physical "Safety Card"** for the server that contains my full allergy profile and the specific cross-contamination warnings, ensuring the information is physically available on the night of the event.
+6. **Allow the host to communicate necessary dietary modifications** directly to the specific guest's profile, generating an automated, confirmed acknowledgment email for me, reducing reliance on personal email chains.
+7. **Provide a clear, chronological timeline view** for the event staff that highlights critical preparation deadlines (e.g., "GF bread must arrive by 4:00 PM," "Prep zone cleaning must start by 5:00 PM") to ensure the operational flow remains safe and efficient.

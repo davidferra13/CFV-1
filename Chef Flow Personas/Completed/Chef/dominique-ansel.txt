@@ -1,0 +1,62 @@
+**Chef Profile: Dominique Ansel - Pastry Chef / Bakery Entrepreneur**
+
+I am Dominique Ansel, a renowned pastry chef and bakery owner known for my innovative creations and lines out the door at my New York City bakery. My business now spans multiple locations and collaborations worldwide, with each location serving over 1,000 guests daily on average across retail sales, wholesale orders, and custom event cakes.
+
+### Business Reality
+
+Right now:
+* I manage **[12] [retail bakeries/locations]** in major cities globally, including New York City, London, Tokyo, and Los Angeles.
+* The annual revenue model is projected at $**[10 million]** from a mix of retail sales, wholesale orders to high-end stores and restaurants, and custom event cakes for weddings and corporate events. 
+* My team size includes **[300+] [staff members]** with specialized roles in production, design, customer service, logistics, and management across various locations.
+* The geographic scope covers major urban hubs worldwide with flagship locations in the heart of New York City's SoHo neighborhood and London's Mayfair district.
+
+My current tech setup involves a patchwork of tools including:
+- **Excel spreadsheets** for recipe documentation and inventory tracking
+- **Google Calendars** for scheduling staff across multiple locations
+- **Text messages** to communicate with suppliers about ingredient sourcing
+- **Paper planners** for event-specific scheduling and customization needs
+- **Basic CRM software** for handling bookings but lacks integration for wholesale orders or retail sales
+
+### Primary Failure: Perishable Inventory Management
+
+My biggest operational problem lies in managing the highly perishable nature of my baked goods. The lack of real-time inventory tracking across locations leads to overstocking at one site and shortages at another, causing significant waste. This issue costs me **$[500,000] annually** due to expired products that could not be sold or donated.
+
+### Structural Issue: Inefficient Staff Scheduling
+
+Our current method of scheduling staff relies heavily on Google Calendars, which works well for individual locations but fails to account for the complexities of managing multiple sites. This leads to overstaffing at slow times and understaffing during peak hours, resulting in customer frustration and increased labor costs. The lack of an overarching view also makes it difficult to identify patterns or predict staffing needs accurately.
+
+### Structural Issue: Wholesale Order Integration
+
+Handling wholesale orders from high-end stores and restaurants is a manual process that involves tracking orders through multiple systems including email confirmations, phone calls with suppliers, and basic CRM updates. This disjointed approach often results in errors or delays, leading to lost business opportunities and dissatisfied clients. 
+
+### Structural Issue: Custom Event Logistics
+
+Custom event cakes are a key revenue stream for my business but the process of managing these orders is cumbersome. Each event requires manual tracking through paper planners and multiple follow-up communications with the client, chef, and supplier to ensure all details align. This lack of integration leads to potential miscommunications or last-minute changes that throw off production schedules.
+
+### Structural Issue: Seasonal Inventory Challenges
+
+As a pastry chef specializing in seasonal items, I face challenges in predicting demand and ordering ingredients accordingly. The inability to track historical sales data by item and season across locations results in under- or over-ordering of key ingredients, leading to stockouts or excess inventory that ties up capital.
+
+### Psychological Model
+
+I optimize for:
+- **Consistency** across all my locations while allowing for local flavor adaptations
+- **Innovation** in product development with a focus on limited-time offerings 
+- I refuse to compromise on:
+- The quality of ingredients and production techniques, no matter the cost
+- Customizing each event or client experience to be truly unique
+- Exceeding customer expectations through surprise and delight
+- I avoid:
+- Relying on generic software solutions that don't meet my specific needs
+- Compromising on the freshness or quality of my products 
+- Over-reliance on manual processes when a digital solution exists
+
+For this system to work for me, it must:
+
+1. Integrate real-time inventory tracking across all locations with alerts for low stock levels
+2. Provide an overarching view of staffing needs that accounts for each location's unique demands  
+3. Streamline the wholesale order process from initial booking to delivery with automated confirmations and updates
+4. Offer a centralized system for managing custom event logistics, including recipe sharing, ingredient sourcing, and production scheduling
+5. Utilize predictive analytics to optimize seasonal inventory ordering based on historical sales data by item and season 
+6. Allow customization at the location level while enforcing brand standards and quality controls
+7. Integrate seamlessly with my existing tech stack without requiring additional headcount or costly overhauls

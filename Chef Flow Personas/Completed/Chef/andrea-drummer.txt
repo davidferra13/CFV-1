@@ -1,0 +1,73 @@
+**Chef Profile: "Andrea Drummer" - Culinary Director (Compliance-Focused)**
+
+I am Andrea Drummer, and I specialize in crafting high-end, legally compliant cannabis culinary experiences. My mission is to elevate cannabis from a niche product to a sophisticated, gastronomic art form. I don't just cook; I architect an entire experience that must satisfy both the palate and the most stringent regulatory body in the state. Every dish I create is a calculated balance of flavor, presentation, and, most importantly, precise dosage.
+
+### Business Reality
+
+Right now:
+* I manage **10-12** distinct events and pop-ups per month, serving clients ranging from high-end private parties to boutique retail partners. These are typically ticketed, multi-course tasting menus.
+* My revenue model is highly variable but averages between **$18,000 and $25,000** per event, factoring in ingredient cost, staffing, and the compliance overhead.
+* My team consists of **5-6** people: myself, one sous chef, two prep cooks, one dedicated compliance officer (who is non-culinary), and 1-2 event servers.
+* My geographic scope is concentrated in the Los Angeles metropolitan area, but I frequently cater to events in Santa Monica, Venice, and Orange County, each with subtle, varying local regulations.
+* My current tech setup is a chaotic mix: I use Google Sheets for inventory and costing, shared Dropbox folders for vendor receipts and compliance documents, a mix of text messages and WhatsApp for immediate scheduling changes, and physical, color-coded binders for state-specific legal guidelines and dosing protocols.
+
+---
+
+### Primary Failure: Cross-Jurisdictional Compliance Tracking
+
+My biggest operational headache is that compliance isn't static; it shifts based on where the event is held and who the guests are. If I accidentally use an ingredient batch that was processed under State A's regulations but is being served at an event in State B, the entire operation is illegal and immediately shut down. This isn't just a "paperwork problem"; it's a liability issue. A single compliance oversight can cost me tens of thousands of dollars in fines, require immediate suspension of my operating license, and, worst of all, destroys my reputation for safety and precision.
+
+---
+
+### Structural Issue: Dosage Protocol Management
+
+I have no centralized system for tracking the cannabinoid content of a specific batch of ingredients *after* they have been incorporated into a recipe. We rely on physical ingredient logs and my sous chef’s memory, cross-referencing the initial Certificate of Analysis (COA) against the final menu build. If a batch of infused oil is slightly off, or if I have to substitute an ingredient mid-event, we have to manually recalculate the dosage for every single guest on a custom-built spreadsheet. This process is slow, highly prone to human error, and makes scaling impossible.
+
+---
+
+### Structural Issue: State-Specific Legal Documentation
+
+The legal documentation required for an event changes constantly based on the county and the client’s licensing status (medical vs. recreational). My compliance officer maintains dozens of physical binders, and when I need to host an event, I spend hours manually reviewing which state-specific waivers, permits, and guest intake forms are needed. We currently use a shared Google Drive folder, but it’s a massive dumping ground of PDFs, and finding the *most current* version for a specific zip code is a nightmare of version control and manual cross-referencing.
+
+---
+
+### Structural Issue: Inventory Reconciliation & Tracing
+
+I source ingredients from multiple licensed cultivators and processors, each with their own batch numbers and COAs. When an ingredient is used, I have to manually log it into a master spreadsheet, linking the usage amount, the recipe used, the event date, and the batch number. If we run out of a specific product, or if a batch is flagged for testing, I cannot quickly trace which finished dishes, which events, and which specific guests received that compromised batch. This manual tracing process is too slow to handle real-time safety recalls.
+
+---
+
+### Structural Issue: Event Guest Profile Management
+
+The guest list is never simple. For a single event, I might have 30 guests: 5 are medically supervised with specific titration requirements, 10 are recreational, and 15 are simply paying attendees. I currently manage this by having the compliance officer manually input all guest notes, allergies, and specific dosing needs (e.g., "needs 1.5mg of THC maximum") into a physical binder or a single, massive Excel sheet. This data is siloed and cannot be easily linked back to the specific menu items they ordered, creating a significant risk of mis-serving or mis-documenting a dose.
+
+---
+
+### Structural Issue: Staff Training & Protocol Enforcement
+
+Because compliance is so high-stakes, my staff must be trained not just in culinary skills, but in regulatory protocols (e.g., how to handle a medical patient's intake form, how to clean specific equipment according to state guidelines). I currently run mandatory, pre-event training sessions, and all the materials (SOPs, legal updates, safety checklists) are housed in a network drive folder. It’s impossible to ensure that the sous chef and the prep cook are using the *exact* same version of the SOP for cleaning the infusion equipment, leading to inconsistency and potential health code violations.
+
+---
+
+### Psychological Model
+
+I optimize for: **Precision and risk mitigation.** My entire career is built on the premise that safety and legal compliance must always precede creativity.
+I refuse to compromise on: **The immutable link between ingredient batch, dosage, and final plate documentation.** If I cannot prove the source and quantity of every single cannabinoid unit, the dish doesn't exist.
+I avoid: **Spreadsheets that require manual merging of data from different sources.** I hate having to copy-paste data across multiple tabs or applications.
+I evaluate tools by: **How quickly and reliably they can generate an audit trail.** If I have to spend more than 15 minutes trying to reconstruct the usage history of a single ingredient, the system fails.
+
+I think linearly and obsessively about risk. Every decision, from the choice of plate ware to the timing of the service, is viewed through the lens of "What if this fails an inspection?" My focus is always on building an unassailable paper trail that can withstand immediate, intense regulatory scrutiny.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1.  **Track and link** the precise cannabinoid content (e.g., milligrams of THC/CBD) from a source COA directly to the final dish recipe and the specific guest profile who consumed it.
+2.  **Generate automated, multi-state compliance reports** that summarize ingredient usage, vendor batch numbers, and event details for specific regulatory bodies.
+3.  **Manage ingredient inventory** by allowing me to input batch numbers and track the remaining quantity of specific, regulated components (e.g., "Batch XYZ: 150mg THC remaining").
+4.  **Maintain a centralized, version-controlled repository** for all state-specific legal guidelines and SOPs that can be assigned to specific roles and trained staff members.
+5.  **Automate the generation of guest consumption reports** that cross-reference the guest's pre-registered medical profile, their ordered menu items, and the calculated total dosage for their safety record.
+6.  **Handle complex event bookings** by requiring me to input the destination address and date, and then dynamically presenting the full, applicable set of legal permits and required client waivers.
+7.  **Provide a single point of truth** for all vendor invoices and receipts, allowing me to instantly reconcile costs against specific client events and generate accurate P&L statements.

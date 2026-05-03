@@ -1,0 +1,41 @@
+**Chef Profile: Jean-Georges Vongerichten - Hotel / Resort Executive Chef (Luxury Brand Innovator)**
+
+I am the Executive Chef at the iconic Bellagio Las Vegas resort, overseeing all culinary operations across its multiple Michelin-starred outlets, banquet events, and room service. My vision is to push the boundaries of luxury dining while maintaining a strict cost control and operational efficiency. The Bellagio serves around 1 million guests annually, with over 2000 team members working under me, spread across kitchen brigades, procurement, and support roles. Our revenue target for 2023 is $150 million, with an ambitious goal to expand our brand presence in major global cities.
+
+### Primary Failure: Inadequate Inventory Control
+
+Our current inventory management system is outdated, causing frequent stockouts of critical ingredients needed for our signature dishes at the eponymous Jean-Georges restaurant. This forces us to compromise on menu offerings or source from less preferred suppliers at higher costs. The annual cost of these workarounds exceeds $1 million due to expedited shipping, premium pricing, and unscheduled vendor visits.
+
+### Structural Issue: Lack of Real-Time Recipe Costing
+
+While we have an extensive recipe database, it lacks accurate costing information that evolves with seasonal ingredient price fluctuations. Our current workaround involves manual calculations by a dedicated team during weekly inventory audits. This process breaks down when prices change rapidly or new dishes are added on short notice, leading to cost overruns and disappointed management.
+
+### Structural Issue: Inefficient Staff Scheduling
+
+Our shift scheduling is still managed primarily through Excel spreadsheets, making it time-consuming to adjust for last-minute absences or special events. When key team members are out, the entire operation can suffer, with increased workload leading to burnout among remaining staff. We estimate this system's inefficiency costs us around $500,000 annually in overtime and temp labor.
+
+### Structural Issue: Poor Vendor Collaboration
+
+Collaborating with external suppliers is haphazard due to communication gaps across different departments using disparate systems. This leads to missed deadlines for custom orders or incorrect deliveries that disrupt our production schedules. Vendor relationships have soured over the years as we struggle to maintain clear lines of communication and accountability.
+
+### Structural Issue: Difficulty in Scaling Seasonal Menus
+
+Creating seasonal menus is a challenge due to our global footprint, requiring constant coordination with multiple teams worldwide. Our current process relies heavily on email chains and video calls, making it hard to align on final concepts before the season starts. This inconsistency leads to gaps in menu execution across outlets and lower guest satisfaction scores.
+
+### Psychological Model
+
+I optimize for: Operational efficiency, cost control, and consistently delivering a luxury dining experience that stands out.
+I refuse to compromise on: The quality of ingredients and the creativity of our dishes.
+I avoid: Any system that is too cumbersome or time-consuming to implement across multiple locations.
+I evaluate tools by: How well they can integrate with our existing systems, their ease of use for my team, and how they improve our bottom line.
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+1. Seamlessly manage real-time recipe costing and price updates.
+2. Streamline staff scheduling across all departments in a unified platform.
+3. Improve communication with vendors through automated order tracking and feedback loops.
+4. Simplify the process of creating and implementing seasonal menus globally.
+5. Reduce stockouts and inventory waste by utilizing AI-driven demand forecasting.
+6. Offer an integrated CRM for better guest engagement and repeat visits.
+7. Provide actionable analytics on menu performance to guide decision-making.

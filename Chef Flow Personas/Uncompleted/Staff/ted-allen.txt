@@ -1,0 +1,67 @@
+**Staff Profile: "Ted Allen" - Event Service Captain (Market Floor Manager)**
+
+I've been managing food service at the Willow Creek Market for over 15 years. I'm not a chef, but I'm the guy who makes sure the line moves, the stations are stocked, and the vibe is right, even when the crowd swells unexpectedly. My job is to take the planned flow—the menus, the station layouts, the staffing—and make it run smoothly for the guests, which means I'm constantly juggling people and physical space.
+
+### Business Reality
+
+Right now:
+* I work an average of 4-5 shifts per week, primarily focused on weekend market days and special seasonal events.
+* My pay is $18/hour, plus a guaranteed $50 stipend per major event shift, and I manage a team of 8-12 temporary and permanent staff.
+* I report to the Market Operations Manager, who handles overall scheduling, vendor placement, and final sign-off on staffing levels. My role requires me to manage the flow from the initial setup (pre-market prep) through service, and finally, the complete cleanup and handoff to the market crew.
+* My scope is the entire central market district, which covers approximately 15,000 sq ft, encompassing 12-15 separate vendor stations, plus the main staging and waste area.
+* Our current briefing and scheduling setup is a messy combination: the Market Manager sends out a preliminary schedule via a group text (WhatsApp), the finalized assignments are printed onto large, laminated sheets that get posted in the back office, and any last-minute changes are communicated verbally or via a quick call to the team lead.
+
+---
+
+### Primary Failure: Dynamic Staffing and Deployment
+
+The single biggest operational problem is the sheer unpredictability of the crowd and the resulting staffing mismatch. We are scheduled for 10 people, but if the weather is perfect or a local attraction draws a crowd, we suddenly need 15 people—more hands for plating, more people managing the queue, and more staff to handle the spillover. Because our scheduling is based on fixed shifts and headcount, we are consistently under-resourced during peak moments, leading to bottlenecks, long guest wait times (which costs us reputation and revenue), and staff burnout. When the lines back up, I have to physically re-deploy people from non-critical tasks, which is reactive, stressful, and completely unoptimized.
+
+---
+
+### Structural Issue: Fragmented Communication of Real-Time Changes
+
+The scheduling information is scattered across multiple mediums—text, printed sheets, and verbal updates. If the Market Manager texts a change to the team lead (e.g., "Vendor B is closing early today"), but that change isn't physically updated on the printed schedule I use for my prep checklist, we are operating with conflicting information. This forces me to spend the first 30 minutes of every shift verifying if the paper plan matches reality, wasting critical setup time and leading to confusion among the crew before we even open the doors.
+
+---
+
+### Structural Issue: Non-Integrated Prep-to-Service Handoff
+
+Our prep list and the service manifest are managed by two different people using separate checklists. The person doing the deep prep (e.g., chopping 40 lbs of vegetables) doesn't know if the service station needs those items allocated to a specific vendor, and I don't have a single, visible checklist that ties the inventory required for the day's menu to the labor needed to prep it. We often over-prep some items because we aren't tracking the *actual* usage rate per station against the scheduled team capacity, resulting in unnecessary waste of ingredients and labor hours.
+
+---
+
+### Structural Issue: Lack of Geospatial Assignment Mapping
+
+The market is massive, and vendors are placed dynamically based on flow and power access. My assignments are currently just a list of station numbers (e.g., "Station 7," "Station 12"). When I need to assign a staff member to manage a specific zone or bottleneck (e.g., the junction between the bakery and the meat vendor), I have no visual or digital map showing the optimal path or the specific constraints of that physical location. I have to mentally overlay a map while simultaneously managing 10 people, which is impossible under pressure.
+
+---
+
+### Structural Issue: Post-Service Cleanup Accountability
+
+Cleanup is currently a manual, multi-step process that relies on printed "Cleanup Checklists" which are often incomplete or signed off by people who have already left the site. There is no system that ties the completion of a specific cleanup task (e.g., "Deep clean grease trap at Station 12") to the specific crew members assigned to that task, nor is there a way to track if the required cleaning equipment was physically logged and retrieved. This means we often have to redo cleanup tasks because accountability is purely reliant on memory and paper signatures.
+
+---
+
+### Psychological Model
+
+I optimize for: Predictability in chaos and clear, immediate communication.
+I refuse to compromise on: Physical efficiency and clear lines of accountability.
+I avoid: Spreadsheets and complex digital interfaces that require too much setup time.
+I evaluate tools by: How quickly I can get a clear, actionable view of the day's operational status and how many taps/clicks it takes to communicate a critical change.
+
+I think in terms of flow: People moving, ingredients moving, waste moving. If the flow breaks, the whole operation stops. I need to see the whole picture—from the initial booking to the final waste disposal—on one screen, not across five different apps.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. **Visually map** the assigned staffing levels and required labor hours onto a dynamic, navigable market floor layout.
+2. **Allow the Market Manager to broadcast** real-time, high-priority operational changes (e.g., "Station 7 is closed due to electrical failure") that instantly update all staff devices and visible schedules.
+3. **Automatically generate** a service manifest that links the daily ingredient stock (from the prep sheet) directly to the station and the assigned staff member responsible for its use.
+4. **Provide a dedicated, sequential checklist** for the cleanup phase that requires staff sign-off and logs the specific cleaning equipment used for compliance tracking.
+5. **Enable the assignment of temporary "flow roles"** (like Queue Manager or Spillover Handler) that can be activated and deactivated instantly based on real-time guest count metrics.
+6. **Allow me to easily adjust** the service shift schedule and re-allocate staff members (e.g., moving two people from station plating to queue management) without needing to manually edit and reprint documents.
+7. **Integrate the booking/event data** to predict expected guest volume and corresponding staffing needs, generating a recommended staffing model 7 days out.

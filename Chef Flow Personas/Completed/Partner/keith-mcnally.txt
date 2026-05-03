@@ -1,0 +1,61 @@
+**Partner Profile: "Keith McNally" - Venue Collaboration Partner (High-End Nightlife)**
+
+I am a highly visible operator in the entertainment and hospitality sector. I don't just book venues; I curate experiences. My brand is built on exclusivity, high-profile talent, and creating unforgettable, revenue-generating nightlife destinations. I work with chefs, mixologists, and event planners to execute massive, flawless events that command premium pricing and generate significant media buzz.
+
+### Business Reality
+
+Right now:
+* I co-host, promote, or support **8–12** major events, referrals, or partnerships per month.
+* My typical revenue share model is a mix of guaranteed minimums ($10,000–$30,000 per event) plus a 15–25% gross revenue cut from ticket sales and bar/bottle service, which requires complex reconciliation.
+* My primary collaborations involve high-end restaurant groups (like The Standard or local luxury hotel chains), major talent booking agencies, and specific liquor/wine brands that require dedicated tasting/display areas.
+* My venue is a high-capacity, semi-private space that requires managing both fixed seating and standing room capacity, plus specialized bar setups. Availability is highly constrained, especially on weekends and holidays.
+* Current coordination setup is a chaotic mix of WhatsApp group texts, Google Sheet tracking for guest counts, email chains for contract amendments, and physical paper manifests for final guest lists. There is absolutely no single source of truth.
+
+---
+
+### Primary Failure: The Reconciliation Nightmare
+
+My biggest operational headache is the financial reconciliation process. Because the revenue model is complex—involving ticket sales, separate bar tabs, brand minimums, and varying percentages—tracking who paid what, and when, is a manual, multi-day nightmare. When the numbers don't match the initial contract, the resulting disputes delay payouts and damage trust with my key collaborators, costing me valuable time and reputation equity.
+
+---
+
+### Structural Issue: Fragmented Booking Visibility
+
+I have multiple booking channels: my website, my booking agent’s portal, and direct reservations handled by the venue staff. These channels feed into separate, non-communicating reservation systems (a mix of Resy, OpenTable, and manual spreadsheets). This means I can never get a single, accurate real-time count of guaranteed guests or projected attendance, making accurate inventory management (staffing, bar stock, food prep) impossible and leading to either massive overstock or, worse, embarrassing shortages.
+
+### Structural Issue: Dynamic Menu/Pricing Changes
+
+Our high-end events require dynamic menus. Last minute changes happen constantly—a chef swaps out a dish, a liquor brand changes its bottle count, or a special "VIP" cocktail is added. Because we don't have a central, structured system for updating menu items, associated ingredient costs, and the corresponding pricing structure, I am relying on physical printouts and memory. This guarantees margin errors, costing us thousands in unreported costs and inaccurate profit reports.
+
+### Structural Issue: Guest Flow and Compliance Tracking
+
+When we host large, mixed-use events, I need to track specific guest groups for compliance (e.g., VIP list access, private table reservations, or group spending limits). Currently, this is managed by assigning physical wristbands and updating a paper manifest. If a guest list is wrong, or if a group needs special access, the staff has no digital way to verify their status or manage their group spending limits against the contract, leading to confusion, potential revenue leakage, and security risks.
+
+### Structural Issue: Vendor/Staff Scheduling Overlap
+
+I manage a large, rotating staff pool (bartenders, servers, security, chefs) for every event. Scheduling them is currently done via shared Google Calendar, which is notorious for overlapping shifts, double-booking, and failing to account for necessary specialized equipment (e.g., a specific mixing station or wine cooler). This operational friction leads to understaffing during peak hours or, conversely, paying for unused labor hours, which is a direct drain on profitability.
+
+---
+
+### Psychological Model
+
+I optimize for: **Exclusivity and perceived value.** If I can make the process feel seamless, premium, and highly controlled, I can charge premium prices and maintain my brand image.
+I refuse to compromise on: **The guest experience and financial transparency.** Any glitch in the operation—a wrong drink, a mistaken bill, or a delayed payout—is a public failure that damages my reputation instantly.
+I avoid: **Anything that requires me to spend time manually reconciling data.** Spreadsheets are my personal enemy; they are slow, error-prone, and never the single source of truth.
+I evaluate tools by: **How quickly they can integrate complex financial rules into the operational flow.** If it doesn't help me prove revenue and manage contracts automatically, it's irrelevant.
+
+I think in terms of scalable revenue streams and operational polish. I need systems that handle complexity behind the scenes so that the front-of-house experience feels effortlessly flawless.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1.  **Automatically reconcile revenue from multiple sources (tickets, bar, deposits) against a single, pre-loaded contract model, generating a dispute-proof ledger report within 24 hours of event close.**
+2.  **Maintain a single, dynamic booking calendar that instantly aggregates RSVPs, direct bookings, and confirmed capacities, flagging overbooking risks for specific venue zones (e.g., "VIP Zone 3 capacity reached").**
+3.  **Allow me to build, modify, and publish highly detailed, multi-tiered event menus, automatically calculating the associated COGS and adjusting the final selling price and tax structure in real-time.**
+4.  **Manage and track specialized guest access lists and group spending limits digitally, providing staff with a simple, scannable verification tool to enforce contract terms at the point of service.**
+5.  **Provide a centralized scheduling and resource allocation dashboard that maps staff roles, required equipment, and shift times for multi-day events, preventing overlap and tracking resource utilization against the booked revenue.**
+6.  **Handle multi-party contract management (e.g., Chef A, Venue B, Brand C) within a single event record, clearly outlining responsibilities, revenue splits, and payment triggers.**
+7.  **Allow me to generate detailed, auditable reports showing the guest count and revenue breakdown by specific co-host or contributing partner, enabling immediate payout calculation.**

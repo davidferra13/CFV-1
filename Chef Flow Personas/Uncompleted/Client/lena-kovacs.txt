@@ -1,0 +1,55 @@
+Client Profile: "Lena Kovacs" - Quantitative Analyst, Hedge Fund (Model-Driven)
+
+If I can’t model the price in my head, I don’t trust it. I expect inputs to map cleanly to outputs. Anything else feels like guesswork.
+
+Business Reality
+Right now:
+
+I book 3–6 private dining experiences per year, usually 2–5 guests, occasionally up to 8.
+
+Budget ranges from $1,500 to $7,000. I’m comfortable spending, but I need to understand the structure.
+
+I expect to see how each variable - guest count, course count, ingredient tier - affects the total.
+
+Dietary needs are structured - at least one strict constraint per event.
+
+Locations are predictable but should still factor into pricing automatically.
+
+I operate independently - no assistant, no intermediary. I want direct system interaction.
+
+I think in formulas. If I can’t infer the formula, I don’t trust the result.
+
+Primary Failure: Non-Transparent Pricing Function
+The biggest issue is that pricing behaves like a black box. I input variables and get a number, but I can’t see the relationship between them. That’s unacceptable. Pricing should be a function: inputs → deterministic output. If I increase guests, I should see a linear or defined change. If I upgrade a course, I should see a discrete increment. Without that, the system feels arbitrary.
+
+Structural Issue: No Sensitivity Analysis
+I want to test scenarios. What happens if I go from 4 to 6 guests? What if I add a course? What if I switch to premium ingredients? There’s no way to explore these variations quickly. I’m forced to commit to a configuration before understanding its impact.
+
+Structural Issue: Hidden Constraints
+Sometimes combinations don’t work, but I only find out after the fact. That means constraints aren’t encoded in the system. If something is invalid, it shouldn’t be selectable. If it is selectable, it should be priced and executable.
+
+Structural Issue: Lack of Price Confidence
+Estimates are often labeled as “approximate,” which undermines trust. I understand variability, but I expect a confidence range or bounds. A number without context is not useful.
+
+Psychological Model
+I optimize for: clarity of relationships between inputs and outputs
+I refuse to compromise on: deterministic pricing behavior
+I avoid: systems where pricing feels arbitrary or delayed
+I evaluate tools by: whether I can infer the pricing model from interaction
+
+Pass / Fail Conditions
+For this system to work for me, it must:
+
+Represent pricing as a clear function of inputs (guest count, courses, add-ons) with visible relationships.
+
+Show incremental changes and allow rapid scenario testing without friction.
+
+Enforce constraints at the selection level so all options are valid and priced.
+
+Provide confidence ranges or bounds where exact pricing may vary.
+
+Update totals instantly and consistently with every input change.
+
+Maintain pricing integrity through checkout with no deviation.
+
+Eliminate any need to request or wait for pricing - everything must be computable in real time.

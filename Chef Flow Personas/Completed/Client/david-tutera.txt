@@ -1,0 +1,67 @@
+**Client Profile: "David Tutera" - Corporate Event Planner (High-Stakes Events)**
+
+I am David Tutera, and my job is managing the logistics for high-profile corporate events, galas, and large client celebrations. Essentially, I am the person responsible for ensuring that when a company needs to impress its top executives or partners, the entire dining experience—from the first appetizer to the final dessert—is flawless and executed perfectly. I deal with intense pressure, large budgets, and a constant stream of last-minute changes, making the food service component the most critical element of the entire event structure.
+
+### Business Reality
+
+Right now:
+* I book or manage **12 to 18** private dining, catering, or meal prep events per **quarter**.
+* My typical event budget ranges from **$15,000 to $75,000** per single event, with deposits often starting at **15%** and final payments due **30 days** post-event.
+* The stakeholder group involved is almost always the **client's corporate event planning committee**, which means I have to appease multiple departments (Marketing, HR, Executive Leadership) and their respective budget holders.
+* We usually host events of **150 to 300** guests, often with a complexity involving **10+** distinct dietary restrictions (vegan, gluten-free, severe nut allergies, etc.), plus a fluctuating headcount of **5% to 10%** due to last-minute RSVPs.
+* My current booking and communication setup is a chaotic blend of **Email (for initial quotes), Google Sheets (for guest lists and dietary tracking), Text Messages (for immediate changes), and paper-based contracts (for vendor sign-offs)**.
+
+---
+
+### Primary Failure: Cross-Departmental Communication Breakdown
+
+The single biggest operational problem I face is that the communication surrounding the event is siloed, leading to massive gaps between the booking, the menu design, and the final invoicing. Because I rely on a patchwork of email chains and spreadsheets, if the Marketing department updates the guest count in one sheet, but the Finance department uses an old version for the deposit invoice, or if the venue coordinator changes the timeline in a separate document, the entire culinary operation is jeopardized. This breakdown means we often over-order or under-order food, leading to significant wasted food costs (which can cost us **$500 to $1,500** per single event) or, worse, a critically poor guest experience that damages the client's reputation.
+
+---
+
+### Structural Issue: Tracking Dynamic Guest Lists and Dietary Requirements
+
+We receive the master guest list in a spreadsheet, but that list is never static. We use Google Sheets, which is prone to version control issues, and we manually track dietary restrictions in a separate column. What breaks is the moment a guest confirms their attendance via a different channel (like a dedicated RSVP form) that doesn't feed back into the master sheet, or when a guest adds a severe allergy note via a text message to a junior planner. We have to manually cross-reference **3-5 different sources** just to confirm the total number of gluten-free meals needed, and if we miss one, the risk of a serious guest incident is immediate.
+
+---
+
+### Structural Issue: Coordinating Multi-Phase Payments and Change Orders
+
+Our payment process is fragmented across three main stages: the initial retainer, the menu confirmation deposit, and the final invoice. These payments are often handled by three different departments (e.g., Finance, HR, and the client's Executive Assistant). We currently track these payments using a combination of email confirmation receipts and a physical binder. What breaks is when a change order occurs—say, we add 50 people—and the required payment adjustment is handled via a separate, manual email amendment. If the Operations team doesn't receive the signed, paid amendment *before* the final menu is locked, we are operating on an assumption, which opens us up to payment disputes and cash flow issues.
+
+---
+
+### Structural Issue: Centralizing Venue Logistics and Menu Flow
+
+When planning a large event, the venue's capacity constraints, the kitchen's service flow, and the menu's complexity all interact. We currently use a combination of paper floor plans and multiple PDFs (one from the venue, one from the caterer). What breaks is when the venue requires a change to the service setup—for instance, moving the buffet line to a different wall—and that change conflicts with the physical space needed for the dessert station or the staffing requirements for the bar. We have no single source of truth that ties the *physical space* and the *menu design* together, forcing us to rely on whiteboard sketches and verbal confirmations, which is too unreliable for a high-stakes event.
+
+---
+
+### Structural Issue: Managing Multiple Stakeholder Approvals and Sign-Offs
+
+Because the client is corporate, we have multiple layers of approval: the Budget Owner (approves the cost), the Marketing Director (approves the theme/menu vibe), and the Operations Lead (approves the feasibility). Currently, we use shared cloud folders where documents are saved, but the system for tracking who has approved what, and when, is non-existent. If the Operations Lead changes the wine pairing recommendations, I have to manually track which approvals need to be re-secured. This forces me to send follow-up emails like, "Just confirming that the revised wine list meets your approval, as per the 3.1 revision of the contract," slowing down the process and making it feel disorganized.
+
+---
+
+### Psychological Model
+
+I optimize for: **Predictability and Risk Mitigation.** My job is to make sure that nothing goes wrong, and that means every single detail—from the canapés to the staffing schedule—must be verifiable and documented in one place.
+I refuse to compromise on: **Accuracy of the Headcount and Dietary Requirements.** If I am wrong on these two things, the client experience fails, and I lose the contract.
+I avoid: **Any process that requires me to switch between more than three different applications or physical documents.** I hate the constant context switching.
+I evaluate tools by: **How quickly they can consolidate disparate data (guest lists, budgets, menus, and timelines) into a single, immutable source of truth.**
+
+I think in terms of dependency chains. If the vendor booking is delayed, the menu design cannot be finalized, which prevents the billing process from starting. I am constantly juggling these interlocking dependencies, and the stress comes from the fear that one single, small piece of information is floating in an email and will be missed.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. **Centralize** the master list of all guests, including dietary restrictions and confirmed attendance status, and prevent manual entry errors.
+2. **Automate** the calculation of cost adjustments and invoice amendments whenever a booking change (headcount change, menu upgrade) is approved by a stakeholder.
+3. **Provide** a single, dynamic view of the event timeline that links required setup time (e.g., buffet setup) to the venue's physical floor plan and staffing assignments.
+4. **Allow** multiple stakeholder logins with distinct permissions, ensuring that the Finance department can only view billing details, while the Culinary team can only modify menu recipes and costing.
+5. **Track** the history of all menu and booking changes, showing who approved the change, when they approved it, and the impact on the final total cost, all in one audit trail.
+6. **Manage** the relationship between the initial booking deposit, the final guest count, and the total invoice amount, automatically flagging any discrepancies of more than $500 before the billing cycle starts.
+7. **Generate** a comprehensive, multi-departmental event checklist that automatically updates and assigns tasks to the venue coordinator, the kitchen manager, and the staffing team based on the finalized menu.

@@ -1,0 +1,33 @@
+**Chef Profile: Wolfgang Puck - Startup Operator**
+
+I am Wolfgang Puck, a renowned chef and entrepreneur who has built my business from the ground up. Today, I manage 26 Spago by Wolfgang Puck locations across the United States, catering over 1,200 events each year with an average revenue of $50 million per year. My team consists of 500 employees, including chefs, servers, and event coordinators. Our geographic scope spans major cities like Beverly Hills, Miami, and Chicago.
+
+### Primary Failure: Large Event Logistics
+
+My biggest operational challenge lies in managing the logistics of large events, which can accommodate anywhere from 50 to 500 guests. Coordinating the right number of staff, ensuring precise menu execution, and maintaining a high level of quality control becomes increasingly difficult as event sizes increase. This results in increased costs per head, ranging from $100 to $300 per guest for larger events, due to the need for more specialized staff and resources.
+
+### Structural Issue: Staffing Shortfalls
+
+To manage staffing levels, I rely heavily on my event coordinators who communicate directly with team members via text messages to ensure everyone is where they need to be. However, this system often breaks down during peak times or when last-minute changes occur, leading to understaffed or overstaffed events.
+
+### Structural Issue: Recipe Scaling
+
+Scaling recipes for large events remains a challenge. I currently use a mix of handwritten recipe cards and spreadsheets to track ingredient quantities. This method is prone to errors, especially when scaling up, which can lead to shortages or surpluses of key ingredients.
+
+### Structural Issue: Menu Costing
+
+Accurate menu costing becomes increasingly difficult with the number of custom orders and specialty items we offer. Our current workaround involves manual calculations by chefs and event coordinators, which is time-consuming and error-prone.
+
+### Structural Issue: Seasonal Demand Fluctuations
+
+Dealing with seasonal demand fluctuations is another challenge. During peak seasons, such as holidays or events, our team often scrambles to find vendors who can meet our high standards for quality ingredients at short notice.
+
+For this system to work for me, it must:
+
+1. Streamline event logistics and staffing management.
+2. Provide accurate recipe scaling with a centralized database of all recipes.
+3. Offer automated menu costing tools that account for custom orders and specialty items.
+4. Integrate seamlessly with existing vendor networks for easy ingredient sourcing.
+5. Allow real-time inventory tracking to prevent shortages or surpluses.
+6. Facilitate communication among team members, including chefs, event coordinators, and servers.
+7. Enable detailed financial tracking of costs per head across different events.

@@ -1,0 +1,106 @@
+Chef Profile: "Lucien Crowe" - Private Chef & Experience Director (Phantom)
+
+I don’t announce anything. If you know, you know. My work moves through tight circles - quiet, deliberate, and exact. The value isn’t just the food, it’s the orchestration of everything around it. If something leaks, lags, or gets misinterpreted, the whole thing collapses.
+
+Business Reality
+Right now:
+
+4–7 engagements per month (private estates, off-calendar dinners, brand-adjacent collaborations)
+
+$150,000–$500,000 monthly revenue (project-based, irregular cadence)
+
+No fixed team - handpicked collaborators per project (1–6 people)
+
+95% of coordination happens through direct threads (SMS, email, encrypted apps)
+
+25–50 active high-context conversations at any time
+
+Zero public-facing documentation; all planning is ephemeral or private
+
+Multi-city movement with overlapping timelines and no central “home base”
+
+Primary Failure: Exposure Through Coordination
+The more people involved, the higher the risk of exposure - wrong message, wrong recipient, outdated detail forwarded. I need precision without broadcast. Current tools assume visibility equals efficiency; for me, visibility is risk. My workaround is fragmenting communication across threads and platforms, but that creates sync issues and blind spots.
+
+Structural Issue: No Compartmentalization Layer
+I need hard boundaries between collaborators. The pastry chef should not see client details. The driver should not see menu changes. Right now, I manually gatekeep information across threads. One slip, and the boundary breaks. My workaround is hyper-control, which is slow and fragile.
+
+Structural Issue: No Single Ephemeral Source
+Information lives everywhere - one change in a thread, another in a note, another in memory. There’s no single, living source that updates and expires appropriately. Static docs persist too long; messages disappear too fast. My workaround is constant reminders and re-sends, which increases noise.
+
+Structural Issue: Zero-Trace Execution
+Some engagements require minimal footprint - no residual data, no lasting records. Most systems are built to store everything forever. I need selective persistence: what to keep, what to expire, what to never record. My workaround is avoiding tools entirely for sensitive work, which reduces coordination efficiency.
+
+Structural Issue: Asynchronous Precision
+My collaborators operate in different cities and time zones. I can’t be online to coordinate every step. Instructions must be precise enough to execute without follow-up, but still adaptable. Current tools either over-specify (killing flexibility) or under-specify (causing errors). My workaround is over-briefing, which slows everything down.
+
+Psychological Model
+I optimize for: control, discretion, and exact execution
+I refuse to compromise on: privacy, boundaries, and timing
+I avoid: shared spaces that expose more than necessary
+I evaluate tools by: whether they reduce exposure while increasing precision
+
+Pass / Fail Conditions
+For this system to work for me, it must:
+
+Enable strict compartmentalization - each collaborator sees only their scoped data, nothing else.
+
+Provide a single, ephemeral source of truth that updates in real time and expires by design.
+
+Support selective data retention (persist, auto-expire, or never store) at a granular level.
+
+Derive all coordination from communication threads without requiring re-entry.
+
+Allow asynchronous execution with precise, role-specific instructions.
+
+Minimize surface area - no broadcast channels, no unnecessary visibility.
+
+Maintain full control over access, timing, and data lifecycle without adding friction.
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Flags: none
+Rejected: 2026-04-30T10:16:06.557Z
+-->
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Flags: none
+Rejected: 2026-04-30T11:16:07.173Z
+-->
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Flags: none
+Rejected: 2026-04-30T15:16:04.925Z
+-->
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Flags: none
+Rejected: 2026-04-30T21:21:15.749Z
+-->
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Flags: none
+Rejected: 2026-05-01T05:31:25.225Z
+-->
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Flags: none
+Rejected: 2026-05-01T19:09:52.510Z
+-->

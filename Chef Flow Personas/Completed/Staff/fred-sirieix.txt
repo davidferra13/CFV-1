@@ -1,0 +1,67 @@
+**Staff Profile: "Fred Sirieix" - Event Service Captain (High Volume Coordinator)**
+
+I am the captain on the floor, responsible for ensuring that every single element of the service—from the minute the guest walks through the door to the final cleanup handoff—is executed flawlessly. My job is to manage a large, unpredictable team under intense time pressure, making sure the guest experience is nothing short of spectacular, every single time.
+
+### Business Reality
+
+Right now:
+* I work **5 to 6** shifts per week, covering an average of **20 to 30** different events, kitchens, or service roles per month.
+* My pay is based on a blend of hourly wages and per-event bonuses, requiring me to be available for mandatory pre-shift meetings and mandatory post-shift cleanup oversight.
+* I am the lead captain for a team of **12 to 25** service staff members, including 4 dedicated sub-captains. I require full certification in multiple high-volume service protocols and am expected to be available for mandatory weekend assignments.
+* My scope is highly variable, ranging from small, private 50-person corporate dinners to massive 500+ guest gala events held across different venues (e.g., downtown convention center, off-site ballroom, and in-house restaurant).
+* My current briefing and scheduling setup is a nightmare: I receive shift changes via **group texts**, mandatory prep checklists are usually **printed sheets** that get lost, and final service assignments are often relayed verbally by the Venue Manager, requiring me to cross-reference a **Google Sheet** created by the Operations Director.
+
+---
+
+### Primary Failure: Fragmented Service Handoff Accountability
+
+The single biggest operational failure point is the lack of a single, definitive handoff protocol between the service, cleanup, and inventory teams. Because the schedule is managed by multiple people (Operations, Venue Manager, Kitchen Lead), I spend 30-45 minutes *per shift* simply reconciling who is responsible for what after the main event concludes. This leads to massive cost overruns and compliance risks—for example, if the cleanup crew doesn't know the specific inventory count of the 200 wine bottles opened, or if the kitchen team assumes the 150 place settings were cleared when they weren't. This waste of time and resources severely impacts my ability to manage the next shift’s prep and causes repeated complaints from the venue's general manager about accountability.
+
+---
+
+### Structural Issue: Cross-Venue Equipment Tracking
+
+When we move from a 300-person gala to a 150-person dinner, the required equipment (e.g., specialized chafing dishes, extra linens, specific serving trays) changes dramatically. Currently, we rely on the Event Manager to manually create a checklist, which is then printed and physically checked off by the venue staff. This is slow, prone to human error (miscounting 5 to 10 items), and if the checklist is misplaced or damaged, the entire setup is delayed by 20-30 minutes while we hunt for the necessary item.
+
+---
+
+### Structural Issue: Dynamic Staff Assignment & Conflict Resolution
+
+When a sub-captain calls out sick 2 hours before a 400-person event, I have to scramble to reassign 6-8 people across 4 different stations (salad, main course, dessert, beverage). My current workaround is a highly chaotic series of phone calls and texts to check people's availability and skill sets. This process is non-scalable, wastes critical pre-shift time, and means I cannot track which staff members are cross-trained or have mandatory time-off conflicts until I physically call them.
+
+---
+
+### Structural Issue: Real-Time Menu Revision Management
+
+During large-scale events, the client or the chef often makes last-minute changes—a guest requests a vegan alternative, or the kitchen realizes they are out of a key ingredient. This revision needs to be communicated instantly to the floor captains and the service staff (e.g., "Instead of the standard chocolate garnish, use the raspberry reduction today"). Currently, these changes are communicated via a flurry of text messages or shouted instructions, which leads to confusion, inconsistent service, and staff members forgetting the *actual* revised menu item.
+
+---
+
+### Structural Issue: Compliance and Documentation Handoff
+
+At the end of a high-volume event, I am responsible for ensuring that all mandatory compliance steps are documented—things like temperature logs for the food storage, the count of opened liquor bottles, or the signature confirmations for damaged equipment. This documentation is currently done on a mix of physical clipboard forms, emailed PDFs, and sticky notes left on a central counter. If any one of these forms is missing, the venue loses compliance documentation, and we are exposed to potential liability issues, costing the company potentially thousands in insurance write-downs.
+
+---
+
+### Psychological Model
+
+I optimize for: Predictable, structured workflow and clear lines of accountability.
+I refuse to compromise on: The seamless flow of the guest experience; any visible operational failure is an immediate personal failure.
+I avoid: Anything that requires me to be a data entry clerk, or any system that forces me to rely on paper or multiple different communication channels.
+I evaluate tools by: How quickly they can consolidate real-time, multi-departmental information into a single, actionable view, and how robust they are when 20 people are using them simultaneously.
+
+I think in terms of 'flow states'—the entire event must feel like one continuous, effortless performance. If the scheduling, inventory, or communication systems create a bottleneck, the entire service collapses. I need the system to manage the complexity so I can manage the people.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1.  The system must allow me to assign specific staff members to defined stations and track their real-time location and shift status during the event.
+2.  The system must centralize all event documentation—from initial RSVPs to final cleanup checklists and temperature logs—into one audit trail, visible to all relevant managers.
+3.  The system must provide an immediate, mandatory notification system for last-minute menu or inventory changes, pushing the updated information directly to my mobile device and the staff’s assigned stations.
+4.  The system must allow me to build and manage complex shift rotations and assign specialized cross-training requirements, flagging conflicts (e.g., if I assign a captain who hasn't received the required high-volume service training).
+5.  The system must integrate the physical inventory count (e.g., 200 wine bottles opened) directly into the shift completion checklist, making the handoff process digital and accountable.
+6.  The system must generate a single, consolidated operational report at the end of the shift, detailing staff hours, equipment usage, compliance status, and revenue generated, eliminating the need for cross-referencing multiple spreadsheets.
+7.  The system must allow me to receive and confirm urgent, mandatory shift changes (like a sick call) directly within the platform, triggering an automated re-assignment workflow to minimize downtime.

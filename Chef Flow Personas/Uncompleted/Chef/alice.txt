@@ -1,0 +1,67 @@
+**Chef Profile: "Alice" Waters - Purist Operator (Farm-to-Table Purist)**
+
+I run a small, deeply rooted restaurant concept that emphasizes hyper-local sourcing and seasonal integrity. My philosophy isn't about maximizing profit margin through volume; it's about creating an authentic, deeply connected dining experience that respects the ingredients and the community that provides them. My business is built on trust—trust with my suppliers, trust with my staff, and trust with my guests—and that trust is maintained through meticulous attention to detail that is impossible to scale without breaking the core product.
+
+### Business Reality
+
+Right now:
+* I manage **3** permanent dining location services (including a seasonal pop-up kitchen), handling an average of **12** catered events per month, and maintaining **1** core supplier network.
+* Our revenue model is highly variable, averaging $75,000 to $120,000 per month, depending heavily on the seasonal harvest and the number of booked private events.
+* My team consists of **1** sous chef, **3** line cooks, **2** prep staff, and **1** front-of-house manager. We are lean, but highly specialized.
+* Our geographic scope is confined to the Santa Cruz County area, meaning 90% of our ingredients must come within a 50-mile radius.
+* Our current tech setup is a mess: I use Google Sheets for inventory tracking and costing, Trello for booking coordination, dedicated text threads for supplier communication, and a mix of paper planners and sticky notes for daily prep lists.
+
+---
+
+### Primary Failure: Maintaining Ingredient Integrity Through Scale
+
+My biggest operational problem is that the hyper-seasonal nature of my menu is inherently difficult to document and track across multiple locations and event types. Because I am constantly pivoting based on what the farmers deliver that day—if the heirloom tomatoes are spectacular, the menu changes; if the local salmon is out of season, the entire protein concept must pivot—my standard recipe documentation becomes useless within days. This means that every time I scale a recipe or execute a complex multi-course event, I am forced to rebuild the costing, prep list, and ingredient matrix manually, leading to significant waste and operational friction. Last month, I had to scrap $1,800 worth of allocated prep time because the sous chef misinterpreted the required yield for a seasonal vegetable, simply because the initial, fluid recipe change wasn't logged correctly.
+
+---
+
+### Structural Issue: Supplier Communication and Yield Tracking
+
+When I commit to a menu, I need specific, confirmed yields and availability from my core suppliers (e.g., "5 lbs of ripe chard, 1 dozen microgreens, 1 crate of fingerling potatoes"). I currently manage this via a dedicated WhatsApp group and a weekly email chain that I have to manually consolidate into a master sheet. What breaks is the handoff: I confirm the delivery quantity, but the sheet doesn't automatically update the *usable* inventory count, nor does it flag potential discrepancies (e.g., "They delivered 10 lbs, but my sheet only allocated 8, meaning 2 lbs are unaccounted for"). This forces me to manually audit every single delivery, wasting valuable sous chef time.
+
+---
+
+### Structural Issue: Menu Costing and Dynamic Pivoting
+
+My costing system is fatally flawed because it doesn't account for the real-time volatility of my ingredients. I build a theoretical menu cost in a Google Sheet based on a wholesale price I got last week. If the local fisherman calls and says the catch of the day is 40% more expensive than anticipated, or if the farmer over-harvests and drops the price significantly, I have no way to instantly recalculate the entire menu's cost-per-plate and adjust the selling price or the plating components. I spend hours every Monday morning manually cross-referencing cost sheets with the previous week's invoices, which is a huge drain on my time and often leads to pricing errors on the menu board.
+
+---
+
+### Structural Issue: Staff Prep Task Allocation and Waste Minimization
+
+Since my menu is seasonal, prep tasks are never static. One day, I might have a massive volume of radish greens; the next day, it might be excess fennel tops. I have to manually assign these fluctuating, highly specific prep tasks (e.g., "Chop 15 lbs of fennel, separate the fronds, blanch 20 lbs of radish greens") to my three line cooks and prep staff using a whiteboard and a physical planner. The problem is that if the task list is too long or too vague, the staff members get confused about who is responsible for which yield, leading to overlapping efforts or, worse, valuable ingredients being left to spoil because no one knew who was assigned the cleanup or processing.
+
+---
+
+### Structural Issue: Event Menu Documentation and Staff Training
+
+When we host a private event for 20 people, the menu often requires unique, off-standard prep and plating techniques that are not in our core recipe library. I document these deviations—like "Plate the mussels with a saffron foam and three edible flowers"—on a printed event binder. When the staff executes the event, they are working off a physical document that doesn't link back to the core ingredients, the standard prep procedures, or the required staffing time. This means that if the event shifts to a different day, the staff must re-read and interpret the entire physical binder, greatly increasing the risk of execution error and requiring me to spend hours updating physical binders after every single booking.
+
+---
+
+### Psychological Model
+
+I optimize for: **Ingredient purity and the narrative connection between the plate and the source.**
+I refuse to compromise on: **The seasonal integrity of the menu; if the ingredients aren't perfect, the meal is compromised.**
+I avoid: **Any system that requires me to input data that I suspect is inaccurate or that forces me to abandon the spontaneous creative process.**
+I evaluate tools by: **How well they handle complex, variable relationships (e.g., "Ingredient A is only available if Supplier B delivers it, and its cost changes daily").**
+
+I am fundamentally a process-driven artist. My decisions are rooted in availability and quality, not in maximizing efficiency metrics. If a tool adds friction to the creative flow, or if it forces me into rigid, predictable processes, I will abandon it immediately. I need a system that acts as an intelligent, supportive sous chef—one that anticipates physical limitations and ingredient volatility without dictating my creative choices.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. **Automatically adjust and recalculate the entire menu cost and required ingredient yield when I update a single ingredient's wholesale price or availability status.**
+2. **Provide a centralized, real-time ledger that deducts confirmed, delivered ingredient quantities from the initial allocated inventory, preventing waste and over-ordering.**
+3. **Allow me to draft and store temporary, non-standard event menus that link to core ingredient profiles but can flag deviations in prep tasks and costing without corrupting the main menu library.**
+4. **Generate dynamic, printable prep lists for the entire team that are automatically generated from the final, approved menu and that can be easily modified by task type (e.g., "All vegetable prep" or "All protein prep").**
+5. **Integrate a communication channel directly into the sourcing module, allowing me to confirm and log specific yields and prices from named, primary local suppliers, keeping that data tied to the specific menu item it supports.**
+6. **Allow me to quickly cross-reference the optimal ingredients and prep tasks available from my local network against a desired menu concept, suggesting viable seasonal pivots when a core ingredient is out of season or too expensive.**
+7. **Generate a single, consolidated financial report that tracks the cost of goods sold (COGS) for a specific event or service date, factoring in variable ingredient costs, allocated labor time, and any noted waste write-offs.**

@@ -1,0 +1,119 @@
+Chef Profile: "Aiden Clarke" - Private Chef (Resilient)
+
+I cook everything, but I can’t eat or safely handle a lot of it without thinking hard about every step. I’m allergic to multiple ingredients - seafood being the biggest - but I don’t advertise it. Clients don’t need that burden. I manage it quietly, precisely, and constantly.
+
+Business Reality
+Right now:
+
+6–10 events per month (multi-course private dinners)
+
+$18,000–$36,000 monthly revenue
+
+Solo operator with occasional prep support
+
+3–5 high-risk allergens for me (seafood, certain nuts, select spices)
+
+8–15 dishes per week involving at least one trigger ingredient
+
+20–40 internal safety notes per week (handling, substitution, cross-contact)
+
+Zero incidents tolerated - any exposure shuts me down for hours or days
+
+Primary Failure: Invisible Risk Management
+The risk is continuous but invisible to everyone except me. I have to remember which steps are dangerous, which tools were used, and where cross-contact could happen - while executing at speed. One missed detail - a shared board, a splash, a mislabeled container - and I’m exposed. I can’t rely on memory alone, but I also can’t slow the kitchen down. My workaround is hyper-vigilance and scattered notes, which works until I’m fatigued or under pressure.
+
+Structural Issue: Cross-Contact Control
+Handling allergens safely requires strict separation - tools, surfaces, storage, and sequencing. In private kitchens, environments vary, and I don’t control the baseline. I often have to reconfigure workflows on the fly to avoid exposure. My workaround is bringing extra tools and setting up ad hoc zones, but it’s inconsistent and easy to break under time pressure.
+
+Structural Issue: Recipe & Step-Level Hazard Mapping
+A dish isn’t just “contains seafood” - specific steps are risky: cleaning fish, reducing sauces, plating garnishes. Those moments need explicit handling protocols. Right now, that knowledge lives in my head or scattered notes. My workaround is annotating recipes manually, but it’s not standardized and doesn’t surface at the exact moment I need it.
+
+Structural Issue: Private Safety vs Client Experience
+I keep this to myself to avoid shifting the emotional weight onto clients. That means no one else is actively watching for my safety. I have to maintain perfect control without signaling why. My workaround is silent redundancy - double-checks, backups - but it adds mental load and can still fail if I miss something.
+
+Psychological Model
+I optimize for: safety without disrupting flow
+I refuse to compromise on: zero exposure, even if it costs time
+I avoid: reliance on memory for safety-critical steps
+I evaluate tools by: whether they make risk visible at the exact moment of action
+
+Pass / Fail Conditions
+For this system to work for me, it must:
+
+Allow me to tag personal allergens and automatically flag risk at the ingredient and step level within recipes.
+
+Surface real-time, step-specific handling instructions (tools, zones, sequencing) during prep and service.
+
+Enforce or guide cross-contact controls (dedicated tools, surfaces, and cleaning checkpoints) without slowing workflow.
+
+Maintain a private safety layer that only I can see, separate from client-facing materials.
+
+Provide quick substitutions or alternative handling methods when a step is high-risk.
+
+Track and log exposure-sensitive actions so I can audit and refine my process over time.
+
+Work offline and on-device to ensure reliability and keep sensitive health details private.
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Flags: none
+Rejected: 2026-04-29T02:20:40.144Z
+-->
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Flags: none
+Rejected: 2026-04-29T04:53:31.252Z
+-->
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Flags: none
+Rejected: 2026-04-30T06:46:06.179Z
+-->
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Flags: none
+Rejected: 2026-04-30T10:46:06.125Z
+-->
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Flags: none
+Rejected: 2026-04-30T14:46:06.268Z
+-->
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Flags: none
+Rejected: 2026-04-30T20:51:14.966Z
+-->
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Flags: none
+Rejected: 2026-05-01T04:56:37.889Z
+-->
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Flags: none
+Rejected: 2026-05-01T19:09:51.500Z
+-->

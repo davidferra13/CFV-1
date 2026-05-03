@@ -1,0 +1,54 @@
+**Chef Profile: Ludo Lefebvre - High-Energy Event Caterer**
+
+I am Ludo Lefebvre, a renowned French chef known for my high-energy event catering business that caters to events ranging from 50 to 500 guests. My company manages over 150 clients across the Los Angeles area and hosts around 250 events per year. The revenue model focuses on per-head pricing, with an average cost of $150 per guest. My team consists of 30 dedicated staff members, including chefs, waiters, bartenders, and kitchen assistants, who are divided into various roles to efficiently manage the logistics of each event.
+
+Currently, we operate a mix of digital tools, such as Google Drive for recipe management and spreadsheets for inventory tracking, alongside traditional pen-and-paper methods. However, this setup often leads to inconsistencies and inefficiencies in our operations, particularly during large-scale events.
+
+### Primary Failure: Lack of Integrated Event Management
+
+The biggest operational problem I face is the lack of an integrated platform that can handle all aspects of event management, from menu planning to inventory tracking and staff scheduling. This fragmentation results in miscommunications, errors in ordering ingredients, and last-minute scrambles to fill staffing gaps. The costs associated with these inefficiencies are substantial; we've had instances where events have gone over budget by up to 20%, leading to dissatisfied clients and tarnished reputations.
+
+### Structural Issue: Inconsistent Inventory Management
+
+Our current inventory management system is a mix of spreadsheets and supplier communications, which often leads to under or over-ordering. We frequently face situations where we've run out of critical ingredients at an event, forcing us to make last-minute substitutions that can compromise the quality of our dishes. To mitigate these issues, we maintain a 20% buffer in our inventory, adding to the cost per head.
+
+### Structural Issue: Staff Scheduling and Communication
+
+Our staff scheduling is done manually, relying on various people's memories for shifts and responsibilities. This leads to gaps where key team members are unavailable at crucial times, and poor communication regarding event specifics can result in confusion and errors during service. We often have to resort to last-minute adjustments or pay overtime to cover shortfalls.
+
+### Structural Issue: Menu Planning and Costing
+
+Our menu planning is currently done using Google Drive documents, which makes it challenging to accurately track the costs per dish and adjust prices accordingly. This lack of precision can lead us to underprice our services, affecting our profit margins significantly.
+
+### Structural Issue: Real-time Event Tracking and Reporting
+
+We do not have a centralized system to track event progress in real time or provide detailed post-event reports for clients. This means we're unable to give our clients the level of service they expect when it comes to understanding the specifics of their events, leading to missed opportunities for upselling and feedback.
+
+I optimize for:
+- Seamless event execution from start to finish.
+- The ability to quickly adapt menus based on guest dietary restrictions and preferences.
+- Efficient inventory management that minimizes waste and cost overruns.
+
+I refuse to compromise on:
+- The quality of the food we serve, no matter the scale of the event.
+- Our commitment to sustainability in sourcing ingredients.
+- Personalized service for each client and their guests.
+
+I avoid:
+- Any tool or process that doesn't significantly improve efficiency without adding unnecessary complexity.
+- Tools that require extensive learning curves or significant time investments from my team.
+
+I evaluate tools by:
+- How they integrate with our existing systems (Google Drive, Slack).
+- Their ease of use and ability to be adopted quickly by staff.
+- The level of customer support provided and the company's reputation in the industry.
+
+For this system to work for me, it must:
+
+1. Integrate seamlessly with our current tools (Google Drive, spreadsheets) to avoid disrupting our workflow.
+2. Offer robust inventory management features that can accurately track orders and prevent stockouts or overstocking.
+3. Provide a dynamic scheduling platform that allows for easy adjustments based on event needs and staff availability.
+4. Have a menu planning module that includes real-time costing and pricing recommendations.
+5. Include an event tracking system that offers live updates to key stakeholders, including clients, and provides detailed post-event reports for analysis.
+6. Offer advanced communication tools within the platform that can keep all members of my team informed and engaged throughout each event.
+7. Be backed by a reliable customer support team that understands our unique needs as caterers and is committed to our success with their product.

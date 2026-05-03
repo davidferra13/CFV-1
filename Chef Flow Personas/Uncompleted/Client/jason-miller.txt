@@ -1,0 +1,59 @@
+Client Profile: "Jason Miller" - Airline Status Chaser (Points Maximizer)
+
+I don’t spend money - I convert it into points. If I’m not earning rewards, I’m losing value. Every purchase needs to contribute to something bigger.
+
+Business Reality
+Right now:
+
+I book 4–8 private dinners per year, usually 2–6 guests.
+
+Budget ranges from $1,000 to $5,000.
+
+I rotate payment methods based on reward multipliers (travel cards, dining cards, etc.).
+
+I track every transaction in points, not dollars.
+
+I expect receipts and categorization to align with reward systems.
+
+I often book based on bonus categories.
+
+I compare value across platforms constantly.
+
+Primary Failure: No Rewards Integration
+If I can’t earn points or see how I’m earning them, I hesitate. I’ve skipped bookings because I couldn’t justify the lost rewards.
+
+Structural Issue: No Points Visibility
+I want to see how many points I’ll earn before I pay - not after.
+
+Structural Issue: Payment Category Mismatch
+If transactions don’t code correctly (e.g., dining vs services), I lose value.
+
+Structural Issue: No Incentive Layer
+There’s no reason to stay loyal if I’m not rewarded.
+
+Psychological Model
+I optimize for: maximizing reward yield
+I refuse to compromise on: earning points on every dollar
+I avoid: purchases without clear reward return
+I evaluate tools by: how well they integrate with reward ecosystems
+
+Pass / Fail Conditions
+Show estimated rewards before payment.
+
+Support multiple reward-optimized payment methods.
+
+Ensure correct transaction categorization.
+
+Offer platform-specific loyalty points.
+
+Track cumulative rewards over time.
+
+Provide incentives for repeat bookings.
+
+Allow stacking rewards (card + platform).
+
+Show reward history clearly.
+
+Notify of bonus opportunities.
+
+Never hide reward potential.

@@ -1,0 +1,49 @@
+Client Profile: "Samantha Ruiz" - Maid of Honor & Trip Coordinator (Organizer)
+
+I’m the one everyone depends on to make the weekend actually happen. I don’t get credit when it goes well, but I take the blame if anything goes wrong. I need everything in one place or it falls apart fast.
+
+Business Reality
+Right now:
+
+I plan 2–3 major group events per year like bachelorettes, birthdays, and girls’ trips. The current one is a 3-day bachelorette with 11 girls.
+
+Total budget is around $6,000–$9,000 for one dinner night alone. Per person we’re targeting $120–$180, but not everyone agrees on spending.
+
+Payments are chaotic. Some girls pay immediately, others ghost. I’m fronting deposits ($1,500–$3,000) and chasing people in Venmo, Zelle, and texts.
+
+Guest count is unstable. People drop out, bring plus-ones, or change plans last minute. I need flexibility without recalculating everything manually.
+
+Dietary restrictions are all over the place: one vegan, one gluten-free, one “no seafood,” and two picky eaters who won’t say anything until it’s too late.
+
+The event is at a rented Airbnb with an unknown kitchen setup. I don’t know what’s there, and I don’t want to manage that.
+
+I’m coordinating everything through a group chat, Instagram DMs, Google Sheets for payments, and random screenshots. It’s a mess.
+
+Primary Failure: Group Chaos
+The biggest problem is that everything is scattered across too many places. I have one version of the plan, but everyone else has their own understanding based on what they saw in the group chat. People ask the same questions over and over - “what time is dinner?”, “did I pay?”, “what are we eating?” - and I have to keep answering. Payments don’t match the plan, headcounts don’t match the chef, and dietary notes get lost. It makes me look disorganized when really the system is broken.
+
+Structural Issue: Payment Herding
+Getting everyone to pay is the hardest part. There’s no single place where people can see what they owe, what they’ve paid, and what’s left. I’m manually tracking it in a spreadsheet and sending reminders in the group chat, which gets ignored. When someone drops out or joins late, I have to recalculate everything and explain it again. It creates tension in the group, and I end up being the bad guy chasing money.
+
+Structural Issue: No Shared Source of Truth
+There’s no central place where everyone can see the plan. I send a menu screenshot, then someone suggests a change, then I send an updated version, but half the group is still looking at the old one. Same with timing, location details, and expectations. People show up late or confused because they didn’t see the latest message. I need one place where everything is always current and visible.
+
+Structural Issue: Communication Noise
+Group chats are chaos. Important details get buried between memes, reactions, and side conversations. I can’t pin everything, and people don’t scroll back. If someone asks a question, three people answer differently. I need structured communication where updates are clear and don’t get lost.
+
+Psychological Model
+I optimize for: clarity, fairness, and not having to repeat myself
+I refuse to compromise on: everyone knowing the plan and paying their share
+I avoid: chasing people, doing math manually, and answering the same question multiple times
+I evaluate tools by: whether they reduce group chaos and make everyone self-sufficient
+
+Pass / Fail Conditions
+For this system to work for me, it must:
+
+Provide a single shared event page where all guests can see the current plan (menu, time, location, headcount) without needing multiple apps.
+
+Track individual payments automatically, showing each person what they owe, what they’ve paid, and sending reminders without me manually chasing.
+
+Allow guests to confirm attendance and update their status (in/out/plus-one) with automatic recalculation of per-person costs.
+
+Capture dietary restrictions in a structured way per guest and ensure they are clearly reflected in the final menu.

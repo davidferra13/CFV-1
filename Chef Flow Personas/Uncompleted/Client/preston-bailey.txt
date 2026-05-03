@@ -1,0 +1,73 @@
+**Client Profile: "Preston Bailey" - Pop-Up Culinary Director (High-Volume Event Specialist)**
+
+I am a culinary professional who specializes in transforming unique, temporary spaces—like corporate lobbies, private event halls, or festival venues—into high-impact dining experiences. I don't just cook; I manage the entire operational flow, from initial menu concept and costing to the final plating and guest experience. My business model relies on executing flawless, highly personalized, limited-run events that generate significant buzz and premium revenue.
+
+### Business Reality
+
+Right now:
+* I book or manage **8 to 12** private dining, catering, or meal prep events per **quarter**.
+* My average revenue per event ranges from **$15,000 to $35,000**, with deposits typically requiring a **$1,500** retainer and final payment due **30 days** prior to the event.
+* My stakeholder group involves corporate marketing departments, HR teams, event planners (who are the primary decision-makers), and the end-client guests.
+* Venues are highly variable: a **50-person** corporate lobby dinner one week, and a **200-person** festival booth the next. Complexity involves managing diverse dietary restrictions (vegan, gluten-free, severe allergies), vendor logistics (power, water access), and shifting headcount based on last-minute corporate guest list changes.
+* My current booking and communication setup is a chaotic mix of **email chains** (with 5-7 people CC'd), **Google Sheets** (for RSVPs and costing), **WhatsApp texts** (for immediate vendor/staff coordination), and sometimes nothing at all, meaning key details are often only available in a physical planner.
+
+---
+
+### Primary Failure: Disconnected Booking to Logistics Flow
+
+The biggest operational pain point is that my booking process and my logistical execution are entirely separate systems. When a corporate client books me, I receive the initial inquiry via a form, which triggers a quote in a spreadsheet. Once the contract is signed, I have to manually transfer the confirmed details (final headcount, menu choices, special requests) from that sheet into a separate, physical event binder. If the corporate planner updates the guest list in the master sheet, I might not see that change until I physically check in with them, leading to wasted ingredients, incorrect staffing allocations, and, worst of all, an unpredictable guest experience that costs me reputation and future bookings.
+
+---
+
+### Structural Issue: The Headcount Volatility Gap
+
+The corporate event planners rarely give me a firm, final headcount until 72 hours before the event, and even then, it changes. I currently use a combination of the corporate planner’s provided spreadsheet and frantic follow-up calls to try and nail down the final number. This lack of real-time, predictable guest count forces me to over-prepare ingredients or significantly under-staff, leading to wasted inventory (costing me thousands per event) or service failures (damaging my brand).
+
+---
+
+### Structural Issue: Deposit-to-Invoice Friction
+
+My payment structure is complicated: a deposit is paid via a credit card link (Square/Stripe), a signed contract is emailed, and the final, detailed invoice is often handled by a different accounting system (QuickBooks). There is no single source of truth that links the initial deposit payment to the specific event booking, the confirmed menu items, and the final service invoice. This forces me to spend 4-6 hours per week manually reconciling payments and generating follow-up invoices, which is non-billable time.
+
+---
+
+### Structural Issue: Menu Customization and Pricing Chaos
+
+Because every event is bespoke, I cannot use standardized pricing. The corporate planner likes the "Mediterranean Mezze Experience," but they also need to swap out the hummus for a special vegan dip, and they want to add a $50 add-on cocktail station. I currently manage this by sending a massive, multi-page PDF proposal, which then requires a follow-up email with manual edits and a third follow-up email with the revised pricing. This process is non-linear, time-consuming, and increases the chance of me miscalculating the final event cost or the required ingredients.
+
+---
+
+### Structural Issue: Vendor Coordination Overload
+
+My logistics require multiple external vendors: linen rental, specialized power generators, and sometimes specialized entertainment. I am the central point of contact for all of them, and I manage their scheduling, invoicing, and communication through a mix of vendor-specific email threads and text messages. If one vendor changes their arrival time by 30 minutes, I have to manually communicate that change to my staff, the kitchen team, and the client contact—a high-risk, multi-channel relay that is prone to human error.
+
+---
+
+### Structural Issue: Post-Event Feedback Capture
+
+After a successful event, the corporate planner is usually too busy to provide immediate, detailed feedback. I often rely on a general "thank you" email, which tells me nothing about what worked or what failed. I have to send a manual follow-up questionnaire (via Google Forms) and then manually collate and analyze those responses to determine my strengths and weaknesses for the next booking. This process is reactive, slow, and prevents me from capturing the critical moment of peak satisfaction while the memory is fresh.
+
+---
+
+### Psychological Model
+
+I optimize for: **Flawless, seamless execution and premium experience.** My brand reputation is entirely dependent on the perceived perfection of the final product.
+I refuse to compromise on: **The culinary quality and the operational flow.** If the service feels clunky, no amount of beautiful food can save the event.
+I avoid: **Manual data transfer and reconciliation.** Anything that requires me to copy-paste a headcount from one document to another, or reconcile two different payment sources, is a time sink I hate.
+I evaluate tools by: **How quickly they consolidate disparate information (headcounts, menus, payments) into one actionable dashboard.**
+
+I think like an operational manager first, and a chef second. I am focused on minimizing friction points and maximizing efficiency, because every minute I spend on admin is a minute I'm not sourcing premium ingredients or refining a recipe.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1.  The system must automatically update the ingredient inventory cost and required prep lists the moment a confirmed menu selection is finalized.
+2.  The system must provide a centralized, single source of truth for all guest details, allowing real-time adjustments to the final headcount and dietary restrictions.
+3.  The system must integrate payment processing and invoicing, automatically linking the initial deposit, the service contract, and the final event cost into one auditable record.
+4.  The system must allow me to map specific operational dependencies (e.g., "The linen vendor must arrive 30 minutes before the catering setup crew") and send automated alerts to all relevant parties.
+5.  The system must generate a post-event feedback loop that automatically prompts the corporate planner for specific feedback categories (e.g., "Speed of Service," "Presentation," "Menu Variety") within 24 hours of the event completion.
+6.  The system must allow me to build and save highly customized, variable pricing templates based on event type, headcount range, and service level (e.g., "Dinner, 50 pax, Full Service, Premium").
+7.  The system must house all my specialized vendor contacts and their service agreements, allowing me to track their invoices and service status alongside the client's overall booking status.

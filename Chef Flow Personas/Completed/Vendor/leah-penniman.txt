@@ -1,0 +1,73 @@
+**Vendor Profile: Leah Penniman - Local Farm Supplier (Seasonal Produce)**
+
+I specialize in sourcing and delivering the absolute best seasonal produce—the kind that tastes like it was picked that morning. I don't just sell vegetables; I sell the peak flavor of the growing season, and I work directly with small, sustainable farms within a 50-mile radius. My passion is quality control, and I maintain extremely tight relationships with my growers because they understand that the yield of a perfect heirloom tomato or a crisp bunch of rainbow chard is entirely dependent on the weather and the day of the week.
+
+### Business Reality
+
+Right now:
+* I fulfill approximately 35-45 chef orders, 12-18 catering deliveries, and 4-6 large event rentals per week.
+* My wholesale pricing starts at $2.50 per pound for commodity items (e.g., potatoes) but ranges up to $8.00 per pound for specialty items (e.g., purple Peruvian heirloom tomatoes). I require a 50% deposit for any order exceeding $1,500, with the remaining balance due upon delivery.
+* My inventory is highly constrained by seasonality (e.g., berries are only available from May to August). I also have quality constraints; if the produce doesn't meet my strict visual standards (e.g., bruise-free, firm skins), it cannot be sold, regardless of the quantity.
+* I operate out of a small, refrigerated warehouse located in the northern part of the city, but my sourcing and delivery geography covers three distinct zones: the farm cluster (rural), the main warehouse (industrial), and the client sites (urban/event venues).
+* My current ordering and communication setup is a chaotic mix of dedicated texts from chefs, weekly PDF spec sheets that I email, and a shared Google Sheet that tracks current inventory counts, which is notoriously difficult to keep updated in real-time.
+
+---
+
+### Primary Failure: Supply Chain Visibility and Yield Prediction
+
+My biggest operational headache is the sheer unpredictability of the harvest. I can't promise a client 50 lbs of zucchini on Tuesday if the rain washed out the picking crew on Monday. When a key crop fails or is severely under-yielded—say, a planned 100 lbs of local asparagus drops to 30 lbs—I have to call 10 different clients, adjust their menus, and re-cost their entire event budget manually. This process is incredibly time-consuming and costly because it forces me to scramble and often results in over-promising on inventory, leading to bad client experiences and strained relationships with my growers.
+
+---
+
+### Structural Issue: Inaccurate Real-Time Inventory Syncing
+
+The inventory data in my shared Google Sheet is only updated once a day, usually by me in the morning. If I receive a large, unscheduled delivery of 20 cases of specialty citrus in the afternoon, I have to wait until the next day to update the sheet, meaning chefs placing orders in the evening are working off stale, inaccurate data. This forces me to maintain a physical ledger book at the warehouse entrance to track incoming goods manually, which is prone to human error and requires staff time that should be spent on fulfillment.
+
+---
+
+### Structural Issue: Dynamic Pricing and Specialty Item Costing
+
+My cost structure changes constantly based on farm yields, fuel prices, and the season. For example, during peak tomato season, my cost per pound might drop from $4.00 to $2.50, but if a sudden frost hits, it could jump to $7.00 immediately. I cannot simply use a fixed wholesale price in my current invoicing system; I have to manually calculate the current cost of goods sold (COGS) for every specialty item, often requiring me to cross-reference three different pricing sheets and sending a revised, complex PDF invoice to the client, causing significant administrative overhead and potential miscommunication.
+
+---
+
+### Structural Issue: Multi-Stage Booking and Deposit Tracking
+
+Client bookings are rarely simple. A chef might book a $3,000 event for 75 guests in October, but the deposits arrive in three tranches: $500 in January (initial booking), $1,000 in April (menu confirmation), and $1,500 in September (final payment). My current system relies on a spreadsheet that I manually update, and if a client pays via Venmo or a local bank transfer, I have to track it by reference number and physically mark the spot in the sheet. If the payment method is unclear, the entire booking status is stalled, delaying my ability to confirm the required sourcing from the farm.
+
+---
+
+### Structural Issue: Compliance and Origin Documentation
+
+Because I deal with highly specialized, local, and often organic produce, I am responsible for maintaining strict documentation regarding sourcing—where the item came from, when it was picked, and its organic certification status. When a client asks for a Certificate of Origin or proof of local sourcing for a large event, I currently have to physically locate and file a stack of paper invoices and farm inspection reports. This archive is growing and is impossible to search quickly, creating a compliance risk if I cannot immediately prove the provenance of the food sold.
+
+---
+
+### Structural Issue: Handling Large-Scale Menu Adjustments
+
+When a chef needs to scale an event from 50 people to 150 people, the required ingredient quantities don't scale linearly. For instance, the ratio of artisanal microgreens to bulk lettuce is fixed, but the number of specialty dipping sauces needed per guest changes based on the event format. I receive these complex, adjusted menus via a Word document attachment, which I then have to translate into a physical order sheet, requiring me to manually calculate 80-100 different line items and confirm the total yield needed across multiple different product codes.
+
+---
+
+### Psychological Model
+
+I optimize for: **Uncompromising Quality and Freshness.** The flavor and appearance of the product must be flawless, period.
+I refuse to compromise on: **The integrity of the local supply chain.** If it's not local, sustainable, and traceable, I won't sell it, regardless of the price difference.
+I avoid: **Generic, one-size-fits-all systems.** I hate any platform that doesn't allow for deep customization of sourcing rules or complex variable pricing.
+I evaluate tools by: **How accurately they can model variable, perishable inventory.** If the system can't handle "if X fails, then Y is the substitute," it's useless to me.
+
+I am highly reactive and my decision-making process is driven by the physical state of the goods. If I see a surplus of beautiful root vegetables, my entire week's sourcing plan shifts to accommodate that opportunity, even if it means ignoring the original scheduled order. I trust my own eye and my long-standing relationships with the farmers far more than I trust any automated system.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must allow me to input dynamic, variable pricing and calculate COGS based on real-time, fluctuating wholesale costs for specialty ingredients.
+2. The system must accept and track complex, multi-stage client deposits and link those payments directly to the specific event booking and corresponding inventory commitment.
+3. The system must facilitate quick, documented adjustments to required ingredient quantities and automatically re-calculate the total order cost when a client scales an event up or down.
+4. The system must track and display detailed, time-stamped sourcing documentation (e.g., date picked, farm location, organic certification) for every line item sold to a client.
+5. The system must allow me to manage and view variable inventory levels that are contingent on seasonal availability and external factors (e.g., weather-related yield estimates).
+6. The system must allow me to communicate immediate, required changes in inventory availability (e.g., "Asparagus reduced by 40% due to weather") to multiple clients simultaneously, with an audit trail of who received the notification and when.
+7. The system must generate compliance reports detailing the geographical origin and sustainable sourcing methods for all ingredients used in a given event order.

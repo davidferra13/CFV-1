@@ -1,0 +1,50 @@
+**Chef Profile: "Noah Bennett" - Commis Chef (Archivist)**
+
+I’m six months into my first Michelin-starred kitchen, and I treat every shift like a test I can’t afford to fail. I carry everything I need on me at all times—thermometer, pen, marker, notebook—because if I’m not ready in the moment, I fall behind. I write everything down, constantly, because if I don’t capture it, it’s gone.
+
+### Business Reality
+
+Right now:
+
+* 5–6 services per week (lunch + dinner rotation)
+* 70–100 covers per service depending on season
+* Brigade of 10–16 chefs
+* Assigned to 1 primary station with rotating responsibilities
+* Carrying 4–6 essential tools at all times (thermometer, 2 pens, marker, notebook, tweezers)
+* Taking 40–100 notes per shift (techniques, corrections, plating, timing)
+* Maintaining 6+ active notebooks with ~1,500–3,000 total handwritten entries
+
+### Primary Failure: Fragmented Note System
+
+I write everything down, but it’s scattered across notebooks, pages, and margins. One correction from chef is on page 12 of one notebook, a plating tweak is on page 47 of another, and a timing note is scribbled somewhere in between. When I need something, I can’t find it fast enough. The information exists, but it’s buried. My workaround is trying to remember where I wrote things or rewriting notes later, but that duplicates effort and still leaves gaps.
+
+### Structural Issue: Capture vs Retrieval Imbalance
+
+Capturing notes is easy—I do it constantly. Retrieving them is the problem. During service or prep, I don’t have time to flip through pages. I need instant recall, but my system is linear and manual. The more I write, the harder it becomes to access anything. My workaround is memorizing the most critical things, but that defeats the purpose of documenting everything.
+
+### Structural Issue: Tool Dependence & Readiness
+
+If I don’t have my tools on me, I’m immediately at a disadvantage. I’ve had moments where I needed to check a temperature or write something down and couldn’t, and that delay matters. I overcompensate by carrying backups—multiple pens, extra pages—but it adds clutter and still isn’t foolproof. My workaround is checking my setup constantly before service, but it’s one more thing to think about.
+
+### Structural Issue: No Structured Learning Loop
+
+I’m collecting a massive amount of information, but it’s not organized into a system that helps me improve efficiently. Notes don’t naturally turn into repetition, drills, or refinement. I have the raw data of my mistakes and corrections, but no clean way to track progress or revisit key lessons. My workaround is rereading notebooks at night, but it’s time-consuming and inconsistent.
+
+### Psychological Model
+
+I optimize for: preparedness, retention, and rapid improvement
+I refuse to compromise on: capturing every correction and detail
+I avoid: missing information or being unprepared in the moment
+I evaluate tools by: how quickly they let me capture and recall information without friction
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. Allow instant note capture in any situation without disrupting my workflow.
+2. Organize notes automatically by station, dish, technique, or context without manual sorting.
+3. Provide immediate retrieval of past notes through search or quick access during service.
+4. Reduce reliance on physical tools by consolidating capture and reference into one system.
+5. Surface important or repeated corrections so I can focus on improving them.
+6. Maintain a continuous, structured archive of everything I’ve learned.
+7. Help convert raw notes into actionable improvement without requiring extra time after shifts.

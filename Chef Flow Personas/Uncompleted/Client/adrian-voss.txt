@@ -1,0 +1,55 @@
+Client Profile: "Adrian Voss" - Chief Product Officer, Helix Systems (Operator)
+
+I treat every service I use like software. If I can’t see what’s happening, control it, and modify it in real time, I assume it’s broken. I expect the same level of clarity and responsiveness from a private dining experience as I do from a production system.
+
+Business Reality
+Right now:
+
+I host 12–18 private dinners per year, mostly tied to product launches, investor briefings, and executive offsites. These are not casual - they are extensions of my professional output.
+
+Budgets range from $4,000 to $15,000. I don’t mind spending, but I expect complete visibility into where every dollar goes.
+
+I pay deposits immediately if the system is clean. If payment feels unclear or delayed, I pause or cancel.
+
+Guest counts are structured but dynamic - usually 8–14. I often adjust seating, swap attendees, or introduce last-minute VIPs.
+
+Dietary constraints are tracked precisely: allergies, macro preferences, cultural restrictions. I expect them to be handled like system requirements, not suggestions.
+
+Events rotate between my home, rented architectural spaces, and corporate environments. Each has different constraints, and I expect those constraints to be modeled and accounted for.
+
+I currently manage everything across Slack (internal), email (external), Notion docs, and calendar invites. It works, but it’s fragmented and error-prone.
+
+Primary Failure: Lack of System Visibility
+The biggest issue is that I cannot see what’s happening in real time. Once I book a chef, the process goes dark. I don’t know if ingredients are sourced, if staff is confirmed, or if timelines are slipping. I’m forced to ask for updates, which is inefficient and signals a broken system. If I ran my product teams like this, nothing would ship. I need a live operational timeline - what’s done, what’s pending, what’s at risk - without having to chase it.
+
+Structural Issue: No Event Timeline Infrastructure
+There is no structured timeline that tracks the lifecycle of an event. I want to see stages: inquiry, confirmation, menu finalization, sourcing, prep, execution. Right now, these are implicit and buried in conversations. My workaround is building my own timeline in Notion and manually updating it based on emails. It’s redundant and often outdated. When something slips, I don’t know until it’s too late.
+
+Structural Issue: Communication Fragmentation
+Communication is scattered across channels. I text for urgency, email for formality, and sometimes get PDFs or attachments. There’s no unified thread. Important decisions get lost, and I have to reconstruct context manually. If I need to revisit why a menu changed or when a guest was added, I’m digging through multiple tools. This is unacceptable at my level of operation.
+
+Structural Issue: Customization Bottleneck
+Every event is different, but customization is slow. I want to tweak menus, adjust pacing, modify service style, or experiment with formats (family-style vs plated, interactive courses, etc.). Instead, I’m constrained by back-and-forth communication. Changes take hours or days to reflect. I need direct control - sliders, toggles, editable components - where I can shape the experience in real time without waiting on someone to interpret my request.
+
+Psychological Model
+I optimize for: transparency, control, and speed of iteration
+I refuse to compromise on: visibility into execution and precision in requirements
+I avoid: black-box processes, delayed updates, and rigid systems
+I evaluate tools by: how closely they resemble a live, controllable system rather than a static service
+
+Pass / Fail Conditions
+For this system to work for me, it must:
+
+Provide a real-time event timeline with clearly defined stages (confirmation, menu, sourcing, prep, execution) and live status updates for each.
+
+Offer a unified communication thread where all messages, decisions, files, and updates are logged and searchable in one place.
+
+Enable instant messaging with the chef/team, with read receipts and response-time expectations, without switching platforms.
+
+Support immediate, one-click payments (deposit, adjustments, final invoice) with transparent, itemized breakdowns that update dynamically.
+
+Allow direct customization of event components (menu items, service style, timing) through an interactive interface, with changes reflected instantly.
+
+Track guest data and dietary requirements in a structured format that automatically integrates into menu planning and execution.
+
+Expose operational readiness signals (staff confirmed, ingredients sourced, equipment validated) so I can assess risk before the event without asking.

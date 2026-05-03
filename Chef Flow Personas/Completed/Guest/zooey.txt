@@ -1,0 +1,71 @@
+**Guest Profile: "Zooey" Deschanel - High-Profile Guest (Curated Experience)**
+
+I am Zooey, and while my professional life is in film and music, my social life revolves around highly curated, intimate gatherings. I value unique, sensory experiences, and I expect the environment—from the lighting to the menu—to feel deeply considered and personalized. I am not a casual attendee; I am a guest whose presence elevates the event, and therefore, the operational execution must be flawless.
+
+### Business Reality
+
+Right now:
+* I attend approximately 3 private dining, farm dinner, or ticketed events per quarter.
+* My expected spend per event ranges from $1,500 to $5,000, excluding travel, but my personal contribution to the atmosphere is invaluable.
+* I have significant, non-negotiable dietary restrictions: I am strictly gluten-free, dairy-free, and highly sensitive to nightshades (tomatoes, peppers, eggplant). I also require a dedicated vegan option that doesn't feel like an afterthought.
+* The most recent event was a private tasting at The Golden Triangle Bistro (Los Angeles, November 15, 2023), for a headcount of 8.
+* My current communication setup is a mix of personal emails, detailed text messages to the primary contact, and often, nothing reliable until the day of the event.
+
+---
+
+### Primary Failure: The Unpredictable Dietary Compromise
+
+The single biggest operational failure is when the dietary accommodations feel like an afterthought or require the guest to draw attention to their restrictions. It’s not just about avoiding allergens; it's about the *experience* of the accommodation. If the vegan/allergy dish is placed on a separate, visible station, or if the staff has to ask me three separate times if I can eat the bread because it might contain hidden nightshades, the entire magical atmosphere breaks. This failure undermines the host's effort and costs the event a 10/10 experience score, which in my world, means I won't recommend it, regardless of the aesthetic beauty or the cost.
+
+---
+
+### Structural Issue: Fragmented Allergy Communication
+
+The dietary requirements are often communicated through multiple, disconnected channels—a text to the planner, an email to the venue manager, and then a verbal reminder to the server. My current workaround is to keep a physical, handwritten card with my top 5 allergies and restrictions and hand it to the host's main point of contact 48 hours before the event. This breaks down because the information is siloed; the kitchen staff, who are doing the actual plating, rarely see the same details as the event planner.
+
+---
+
+### Structural Issue: Lack of Menu Customization Visibility
+
+When I RSVP, I am excited about the *concept* of the meal, but I cannot see the specific menu details that accommodate me. The current process involves me filling out a vague "dietary preference" survey which then results in a menu that is conceptually fine but fails on specific ingredients (e.g., using a tomato reduction in my "safe" sauce). My workaround is to call the planner and ask, "Just to confirm, are you using fresh basil, or is there any nightshade component?" This requires constant, manual back-and-forth, making the pre-event planning feel stressful and unpredictable.
+
+---
+
+### Structural Issue: Inaccurate Headcount and Seating Flow
+
+For an intimate event of 8, the seating arrangement and the actual headcount need to be locked down weeks in advance. If the system relies on a general RSVP count and doesn't account for last-minute cancellations or additions, the kitchen gets mixed signals. My workaround is always asking the host to send me a detailed floor plan and seating chart 7 days out, and I have to manually cross-reference that with my personal calendar to ensure I don't have back-to-back engagements. This process is highly inefficient and prone to human error.
+
+---
+
+### Structural Issue: Failure to Track Historical Preferences
+
+My tastes are highly specific and evolve. If I attended an event six months ago and loved a specific type of artisanal bread or a particular wine pairing, the system should remember that. Currently, the planner has no easy way to access a holistic view of my past experiences—they start from zero with every single event. I have to re-explain my favorite ingredients, my preferred wine regions, and my most sensitive triggers every time, which wastes time and diminishes the feeling of being genuinely cared for.
+
+---
+
+### Structural Issue: Post-Event Feedback Loop
+
+The feedback mechanism is always an afterthought—a generic email survey sent 24 hours after the event. The feedback is emotional, nuanced, and often relates to small, unquantifiable moments (e.g., "the lighting was perfect," or "the temperature of the soup was slightly too warm"). Because the system doesn't capture these qualitative, high-level details, the host loses the ability to genuinely improve the *feeling* of the next event, only the technical aspects.
+
+---
+
+### Psychological Model
+
+I optimize for: Effortless elegance and deep personalization. I want the operation to feel invisible, seamless, and luxurious.
+I refuse to compromise on: The integrity of the experience. If the food or the service feels rushed or generic, the entire evening is ruined.
+I avoid: Any process that requires me to repeat information or fill out multiple, redundant forms.
+I evaluate tools by: How easily they integrate seemingly disparate pieces of information (e.g., my allergies, the wine list, and the seating chart) into one single, actionable source of truth for the kitchen staff.
+
+I think in terms of *feeling* and *narrative*. If the system can help the host build a story around the meal, rather than just listing ingredients, it works for me. I need to feel seen, not just booked.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must automatically cross-reference my profile's confirmed allergies and restrictions against the finalized, ingredient-level menu before the kitchen receives the final print-out.
+2. The system must allow the host to upload and associate a comprehensive, non-linear Guest Profile (including past favorites, historical feedback, and specific sensory triggers) directly to the event booking.
+3. The system must provide a single, centralized communication hub for the event that funnels all finalized guest details (dietary, seating, and accessibility) directly to the catering staff's operational dashboard, eliminating reliance on email chains.
+4. The system must enable the host to schedule and track the confirmation of specific, high-stakes elements, such as the final head count, the specific seating plan, and the required vendor clearances, with automated reminders for both parties.
+5. The system must allow for the submission of qualitative, structured feedback (e.g., "Best element was..." or "Area for improvement:...") that is tagged to specific menu items, staff members, or operational moments, enabling longitudinal pattern analysis for the host.

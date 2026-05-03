@@ -1,0 +1,65 @@
+**Partner Profile: "Erin French" - Farm Dinner Co-host (Experiential Collaborator)**
+
+I co-host, promote, and support approximately 8–12 distinct, high-end, multi-day events, dinners, or pop-ups every quarter, often involving three or more collaborating brands. My revenue streams are complex, involving ticket sales (80%), brand sponsorship/vendor fees (15%), and referral commissions (5%). My collaborations span local farms, specific restaurant venues (e.g., The Inn at Barnsley House), and external brands (e.g., specialized wine pairings, artisanal bakeries). The key constraint is that every event is highly seasonal and requires custom, limited-run menus, meaning my availability is dictated by farm harvests and key holidays. My current coordination setup is a chaotic mix of dedicated WhatsApp groups, Google Sheets shared across multiple partners, and physical whiteboard planners in my kitchen.
+
+### Business Reality
+
+Right now:
+* I co-host, promote, or support **8 to 12** events, referrals, or partnerships per **quarter**.
+* **Revenue share and payment details:** I manage varied revenue splits, ranging from a 15% commission on ticket sales to flat $500 vendor fees, requiring manual invoice reconciliation against differing booking platforms.
+* **Venue, farm, brand, broadcast, joint offer, or collaboration details:** My events are highly location-specific, requiring coordination between the primary venue (e.g., a rented barn or restaurant kitchen), the contributing farm (e.g., local herb supplier), and the key featured brand (e.g., a specific cheese maker).
+* **Shared event location, calendar, guest list, or availability constraints:** My calendar is constantly shifting based on seasonal availability; if the local farm has a poor harvest, an entire menu and event must be scrapped or radically altered, requiring immediate communication to 50+ pre-sold guests.
+* **Current coordination setup - email, texts, shared docs, contracts, or no single source of truth:** There is no single source of truth. Guest RSVPs are in Eventbrite, vendor agreements are in Dropbox, menu costing is in Google Sheets, and marketing collateral approval is handled via email chains, leading to constant version control issues.
+
+---
+
+### Primary Failure: Loss of Margin Due to Manual Cross-Platform Reconciliation
+
+My biggest operational problem is the sheer inefficiency of managing revenue across multiple, disconnected platforms. I process payments through Eventbrite for ticketing, Stripe for vendor deposits, and occasionally a direct bank transfer for high-level sponsorships. Because these systems don't talk to each other, I spend 10–15 hours per event cycle manually cross-referencing booking confirmations, tracking which partner paid which fee, and reconciling the final payout to ensure I haven't accidentally lost a commission or over-paid a vendor. This manual process is prone to human error and significantly delays payments, which strains my cash flow and damages partner trust.
+
+---
+
+### Structural Issue: Disconnected Guest Experience and Booking Flow
+
+The booking process is fragmented and highly manual. Guests discover the event through Instagram (requiring a manual link generation), then are redirected to Eventbrite for ticketing, but if they need to ask a specific question about dietary accommodations or parking, they must email me directly. This means the guest experience is disjointed, and I have no centralized view of the guest profile, their specific dietary needs, or their communication history. This failure point costs me goodwill, as I spend valuable time answering repetitive logistical questions instead of focusing on content creation and promotion.
+
+---
+
+### Structural Issue: Dynamic Menu and Inventory Management
+
+My core product is the seasonal, collaborative menu, but the sourcing process is highly variable. If the local farm calls me on Tuesday saying the heirloom carrots are delayed, I cannot simply adjust the menu—I have to recalculate the entire ingredient cost, adjust the prep list for the kitchen staff, and potentially change the portioning for the entire service. My current workaround is maintaining a massive, complex spreadsheet that requires constant, manual updating of ingredient availability, which is impossible to maintain in real-time and frequently leads to outdated costings being shared with the kitchen staff.
+
+---
+
+### Structural Issue: Partner Collaboration and Asset Management
+
+Managing the assets and commitments of multiple partners is a logistical nightmare. For a single dinner, I need the cheese vendor to provide 10 different SKU labels, the wine vendor to provide 3 tasting notes, and the farm to provide a list of 5 ingredients and their story. These assets are currently collected via a shared Google Drive folder, leading to versioning conflicts ("Is this the final logo?"). If a partner misses a deadline, I have to chase them down with multiple reminder emails, which detracts from my ability to focus on the culinary experience.
+
+---
+
+### Structural Issue: Limited Scope of Event Communication
+
+Once the event is booked, the communication flow is siloed. I manage marketing communication (pre-event excitement) via email, but I have no way of communicating crucial, time-sensitive operational details (e.g., "Please arrive 30 minutes early for the welcome cocktail," or "The farm tour starts 15 minutes late today") directly to the confirmed guest list *within* the context of the booking. I have to rely on generic mass emails, which are easily missed, leading to last-minute operational chaos on the day of the event.
+
+---
+
+### Psychological Model
+
+I optimize for: The perceived exclusivity and emotional resonance of the experience.
+I refuse to compromise on: The quality of the ingredient story and the seamless, elevated guest journey.
+I avoid: Anything that feels corporate, automated, or impersonal. I hate having to spend time on administrative back-and-forth that doesn't contribute to the creative narrative.
+I evaluate tools by: How they make the operational flow feel invisible, allowing me to focus 100% on the creative and guest-facing aspects of the business.
+
+I think in terms of "narrative flow." Every touchpoint—from the initial Instagram swipe to the final checkout—must feel intentional and curated. If I have to stop and fix a logistics gap, it breaks the magic. I need a system that manages the mechanics so I can focus on the art.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must centralize the guest profile, capturing dietary restrictions and communication history immediately upon booking, so I never have to ask for the same information twice.
+2. The system must allow me to dynamically adjust the menu and instantly recalculate the ingredient cost and prep list based on real-time sourcing changes, updating the necessary documentation for the kitchen staff immediately.
+3. The system must provide a single, automated platform to manage and reconcile all revenue streams (Eventbrite, Stripe, and partner deposits) and generate clean, auditable reports for payment reconciliation.
+4. The system must host a dedicated, structured space for collaborating partners to upload, version control, and approve all necessary marketing assets (logos, ingredient stories, menus) before the event date.
+5. The system must allow me to send targeted, segmented, and time-sensitive communication updates to specific groups of confirmed guests (e.g., "Vegan Guests Only") that are directly tied to their booking record.

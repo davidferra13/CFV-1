@@ -1,0 +1,73 @@
+**Staff Profile: "Tom Colicchio" - Event Service Captain (High-End Service)**
+
+I am the one responsible for the seamless execution of the guest experience, from the initial table setup to the final plate clearing. My job is to ensure that every single touchpoint—the temperature of the wine, the timing of the courses, the presentation of the bread—is impeccable and perfectly synchronized. I don't just manage staff; I manage the *tempo* of the meal. My reputation is built on perfection, and if the service falters, the entire reputation of the venue and the client suffers.
+
+### Business Reality
+
+Right now:
+* I work an average of **4-5** shifts per week, with **2-3** of those being large-scale catered events (over 100 guests).
+* My pay rate is $35/hour, but my actual compensation is tied to the success and smooth execution of the event, making me a critical, high-value resource. I require specialized certifications in advanced service techniques (e.g., silver service, wine pairing knowledge) and must maintain a flawless appearance, meaning the uniform standard is non-negotiable.
+* I am the Captain for a team of **8-12** service staff, including multiple runners, bussers, and junior captains. I am responsible for the entire flow, from the pre-shift briefing to the post-service cleanup handoff.
+* My scope is highly varied, ranging from small, intimate private dinners (20 guests) held in the main kitchen to massive banquets in external ballrooms (200+ guests) that require coordination with external vendors and specialized equipment.
+* My current briefing and scheduling setup is a chaotic mix: the main schedule is a shared Google Sheet, prep details are communicated via group texts (WhatsApp), and specific guest dietary restrictions or VIP notes are scribbled onto printed, physical planner sheets that often get lost or misplaced.
+
+---
+
+### Primary Failure: Coordination Chaos During Peak Service
+
+The single biggest operational problem is the lack of a single source of truth for real-time service adjustments. Because we rely on scattered communications (texts, sticky notes, physical plans), a change in the guest count, a last-minute VIP arrival, or a menu substitution often means that some members of my team are operating on outdated information. This leads to significant service delays, mismatched staff assignments, and wasted time. For instance, if the kitchen sends a rush order for 50 additional plates, but the bussers weren't informed via the primary scheduling channel, the receiving point becomes a bottleneck, costing us valuable minutes of service time and severely impacting the perceived quality of the experience.
+
+---
+
+### Structural Issue: Decentralized Guest Information
+
+The guest details are hopelessly fragmented. Client contracts list the main dietary restrictions (e.g., 3 vegan, 5 gluten-free), but the actual, real-time notes—like "Mr. Smith is allergic to nuts and must be seated away from the main entrance," or "The Ambassador table requires a private, dedicated service flow"—are scattered across printouts and emails. When I get a sheet, it only covers half the guest list, forcing me to manually cross-reference multiple documents, which is highly error-prone and slows down the critical pre-service briefing process by at least 30 minutes.
+
+---
+
+### Structural Issue: Manual Staff Assignment and Skill Tracking
+
+Assigning staff is a nightmare of guesswork and manual scheduling. I have a pool of 15 staff, each with varying levels of experience (from junior runners to veteran captains), and specific certifications (e.g., oyster service, specialized liquor handling). Right now, I use a spreadsheet that I have to manually update every time someone calls out sick, or when a specific skill set is needed for a particular event. This system fails immediately when an event requires a specific combination of skills (e.g., 4 staff with advanced wine service *and* 2 staff trained in high-volume plate clearing), forcing me to either overstaff or accept a suboptimal team.
+
+---
+
+### Structural Issue: Inefficient Handoff Between Phases
+
+The transition between prep, service, and cleanup is where the most organizational friction occurs. Prep requires coordination of specific equipment (e.g., 12 extra carafes, 8 full stacks of china, 4 specialized wine openers) and physical inventory counts. Cleanup requires logging damaged goods, inventorying remaining linens, and assigning deep cleaning tasks to specific individuals. Currently, these handoffs are done via verbal instructions or a quick, disorganized walk-through, leading to lost items, unlogged inventory discrepancies (e.g., missing 15 napkins), and staff who are unclear about who is responsible for which end-of-night deep clean tasks.
+
+---
+
+### Structural Issue: Lack of Dynamic Event Timeline Management
+
+Our current scheduling tools are static; they just tell me who is working and when. They do not manage the *flow* of the event itself. For a 4-hour dinner service, the timeline needs to track the transition from appetizers to main course to dessert, coordinating kitchen readiness, service station stocking, and staff rotation. If the main course runs 15 minutes late, I have no way to instantly communicate a revised, coordinated timeline to my team members, nor can I track how that delay impacts the beverage service flow or the subsequent dessert setup.
+
+---
+
+### Structural Issue: Difficulty Managing Multi-Venue Logistics
+
+When we handle multi-location events (e.g., a cocktail reception followed by dinner at a separate ballroom), the logistics are a disaster. We need to track the movement of specialized equipment (e.g., 2 portable bar setups, 10 portable lighting units, 6 extra beverage tubs) and ensure the right staff are assigned to the correct location at the correct time. Our current system only tracks staff hours, completely failing to manage the physical inventory movement and the associated setup/teardown checklist for multiple, distinct locations.
+
+---
+
+### Psychological Model
+
+I optimize for: Flawless execution and predictable workflow.
+I refuse to compromise on: The quality and timing of the guest experience.
+I avoid: Clutter, ambiguity, and reliance on fragmented, non-centralized communication channels.
+I evaluate tools by: How efficiently they reduce human error and increase operational predictability.
+
+I am a highly demanding leader who needs information presented to me in a clear, actionable, and centralized format. My decision-making process is immediate and reactive; if I can't see the full picture (staff, inventory, timeline, client needs) on one screen, I slow down and become frustrated.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must centralize all client-specific notes (allergies, VIP status, seating arrangements) and display them instantly to the service team members assigned to that specific event.
+2. The system must allow me to build and dynamically adjust a granular, minute-by-minute service timeline that can be immediately pushed to all relevant staff members.
+3. The system must provide a single, verifiable dashboard for tracking physical inventory and specialized equipment movement across multiple event locations.
+4. The system must allow me to view staff availability, specialized certifications, and historical performance data and use that data to assign optimal teams for specific events.
+5. The system must automatically generate a comprehensive, digitized handoff checklist for cleanup, logging all inventory counts (linens, glassware, etc.) and assigning responsibility for deep-cleaning tasks.
+6. The system must communicate real-time changes in event status (e.g., "Kitchen delayed main course by 15 minutes") and automatically recalculate the affected service timeline and staff roles.
+7. The system must integrate the booking and reservation system with the staffing scheduler to ensure I am never assigned to an event without the necessary minimum required staff count, based on the guest count and menu complexity.

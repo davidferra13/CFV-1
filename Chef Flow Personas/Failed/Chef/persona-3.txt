@@ -1,0 +1,46 @@
+If I were to create a system where every single statistic on the Chef portal was readily, but I don't know what the word is, constantly being monitored 24/7 and giving you simple information back, like showing you which ingredient you used the most over time, or like, which menu was picked the most over time, or which recipe was used the most over time. We need, we need to create an entire system where every single statistic like this is tracked automatically, and that information is also readily, readily available.
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, business_reality, primary_failure, structural_issues, psychological_model, pass_fail
+Word count too low: 91 (minimum 500)
+Flags: none
+Rejected: 2026-04-28T04:17:44.107Z
+-->
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, business_reality, primary_failure, structural_issues, psychological_model, pass_fail
+Word count too low: 118 (minimum 500)
+Flags: none
+Rejected: 2026-04-28T09:01:52.698Z
+-->
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, business_reality, primary_failure, structural_issues, psychological_model, pass_fail
+Word count too low: 145 (minimum 500)
+Flags: none
+Rejected: 2026-04-28T16:53:31.163Z
+-->
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, business_reality, primary_failure, structural_issues, psychological_model, pass_fail
+Word count too low: 172 (minimum 500)
+Flags: none
+Rejected: 2026-05-01T17:48:22.224Z
+-->
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, business_reality, primary_failure, structural_issues, psychological_model, pass_fail
+Word count too low: 199 (minimum 500)
+Flags: none
+Rejected: 2026-05-01T19:09:52.567Z
+-->

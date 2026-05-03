@@ -1,0 +1,62 @@
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+File not found
+Flags: none
+Rejected: 2026-04-29T04:05:20.612Z
+-->
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, business_reality, primary_failure, structural_issues, psychological_model, pass_fail
+Word count too low: 15 (minimum 500)
+Flags: none
+Rejected: 2026-04-30T06:46:06.186Z
+-->
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, business_reality, primary_failure, structural_issues, psychological_model, pass_fail
+Word count too low: 42 (minimum 500)
+Flags: none
+Rejected: 2026-04-30T10:46:06.134Z
+-->
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, business_reality, primary_failure, structural_issues, psychological_model, pass_fail
+Word count too low: 69 (minimum 500)
+Flags: none
+Rejected: 2026-04-30T14:46:06.282Z
+-->
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, business_reality, primary_failure, structural_issues, psychological_model, pass_fail
+Word count too low: 96 (minimum 500)
+Flags: none
+Rejected: 2026-04-30T20:51:14.980Z
+-->
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, business_reality, primary_failure, structural_issues, psychological_model, pass_fail
+Word count too low: 123 (minimum 500)
+Flags: none
+Rejected: 2026-05-01T04:56:37.902Z
+-->
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, business_reality, primary_failure, structural_issues, psychological_model, pass_fail
+Word count too low: 150 (minimum 500)
+Flags: none
+Rejected: 2026-05-01T19:09:51.505Z
+-->

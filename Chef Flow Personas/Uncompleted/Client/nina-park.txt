@@ -1,0 +1,55 @@
+Client Profile: "Nina Park" - Data Analyst, Consumer Insights (Clarity)
+
+If I can’t understand the number immediately, I don’t trust it. I need clarity, not just accuracy.
+
+Business Reality
+Right now:
+
+I book 3–5 private dinners per year, usually 2–7 guests.
+
+Budget ranges from $1,000 to $4,000.
+
+I expect to understand pricing at a glance.
+
+Dietary needs vary but must be reflected clearly.
+
+Locations vary but should not complicate pricing.
+
+I prefer clean, readable interfaces.
+
+I value clarity over complexity.
+
+Primary Failure: Unclear Pricing Presentation
+The biggest issue is when pricing is technically correct but visually confusing. Too many numbers, unclear breakdowns, or hidden components make it hard to trust. I shouldn’t have to interpret the price.
+
+Structural Issue: Poor Information Hierarchy
+Important numbers are buried or overshadowed by less relevant details. I want the total, then the breakdown - not the other way around.
+
+Structural Issue: Overloaded UI
+Too much information at once creates noise. I want optional detail, not forced complexity.
+
+Structural Issue: Inconsistent Formatting
+Different formats across screens create confusion - sometimes per person, sometimes total, sometimes both.
+
+Psychological Model
+I optimize for: clarity and readability
+I refuse to compromise on: instantly understandable pricing
+I avoid: cluttered or inconsistent displays
+I evaluate tools by: how quickly I can interpret the price
+
+Pass / Fail Conditions
+For this system to work for me, it must:
+
+Present total pricing clearly and prominently at all times.
+
+Provide a clean, optional breakdown that’s easy to expand or collapse.
+
+Maintain consistent formatting across all views.
+
+Avoid clutter while still offering full transparency.
+
+Highlight key cost drivers without overwhelming detail.
+
+Ensure pricing is readable at a glance.
+
+Support quick comprehension without interpretation effort.

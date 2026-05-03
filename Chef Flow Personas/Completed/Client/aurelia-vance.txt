@@ -1,0 +1,47 @@
+**Client Profile: "Aurelia Vance" - Luxury Event Curator (Visionary)**
+
+I run a highly specialized catering service dedicated exclusively to premium real estate open houses in the greater Seattle area. My clients expect an experience that is both impeccable and seamless; the food needs to elevate the property's perceived value without breaking the budget. I thrive on the intersection of design and dining, constantly pushing the boundaries of what temporary, luxury catering can be.
+
+### Business Reality
+
+Right now:
+*   **Events per month:** 3–5 (with 2 dedicated to my new market expansion).
+*   **Team size:** 8 core staff (2 Sous Chefs, 3 Prep/Line Staff, 3 Logistics/Service).
+*   **Revenue:** $20,000 average per event (premium tier).
+*   **Geographic scope:** Currently focused on Queen Anne and Capitol Hill, but aggressively expanding into Bellevue and Redmond.
+*   **Current tools used:** Google Sheets (for inventory and headcount), Slack (for daily comms), QuickBooks Online (for invoicing), and a shared Dropbox folder (for inspiration/menus).
+
+### Primary Failure: Predictive Inventory Waste
+
+The moment I expand into new geographic zones, my inventory forecasting collapses. Currently, I rely on manually correlating historical event data (attendance estimates, time of day, property type) within a chaotic Google Sheet. For my new Bellevue clients, where properties tend to be larger and more formal than my existing Queen Anne base, I can't predict the necessary scale or the necessary variety of specialized, perishable items like imported goat cheese or microgreens. Because I over-order ingredients for the new markets, I accumulate $1,500–$3,000 worth of spoilage per month, plus the labor hours spent cleaning up excess waste, which erodes my margins before I even arrive on site.
+
+### Structural Issue: Cross-Market Compliance Drift
+
+As I move from my established, West Seattle base to the more regulated, corporate-heavy environments of Bellevue, my operational checklists are falling apart. I have separate, paper-based checklists for every different municipality—one for allergen handling in Queen Anne, another for specific vendor load-in requirements in Capitol Hill, and yet another draft I keep updating for Redmond. This creates "compliance drift." When a site manager calls me and asks about the specific fire marshal permits needed for a high-rise load-in in a new area, I have to manually check three different, conflicting documents, leading to delays and the potential for costly, last-minute service interruptions.
+
+### Structural Issue: Labor Assignment Bottlenecks
+
+Our most significant bottleneck isn't the cooking; it's the transition between the prep kitchen and the service window. I currently manage staffing by sending out group texts and updating a shared Google Sheet that nobody ever keeps current. When I need a specialized service staff (e.g., someone who can elegantly plate canapés versus someone who can manage a buffet flow), I assign them based on who is physically available that morning. This "nearest available" model means I often send a generalist when I desperately need a specialist, leading to wasted time, slowed service, and, crucially, a visibly disjointed guest experience.
+
+### Structural Issue: Inspiration-to-Action Lag
+
+My entire brand relies on being innovative; I am paid to anticipate trends. However, gathering inspiration from new property architecture, local art installations, or emerging culinary styles—which are my competitive differentiators—is a completely manual, scattered process. I collect mood boards and vendor contacts in a haphazard mix of email threads, Pinterest boards, and physical notebooks. The effort to synthesize this raw, qualitative data into a concrete, actionable, and executable menu plan for a specific time slot is immense. It wastes my time, which is my most expensive resource.
+
+### Psychological Model
+
+I optimize for: **Elegant Efficiency.** I want to feel like I am magically producing a high-end, bespoke experience with minimal visible effort.
+I refuse to compromise on: **The Wow Factor.** If the food or the service feels generic, I fail. The presentation must tell a story that matches the property's narrative.
+I avoid: **The "Almost There" Feeling.** I hate inefficient friction, whether it's a slow load-in or a cumbersome piece of software. If the workflow requires multiple logins or manual copy-pasting, I will ditch it immediately.
+I evaluate tools by: **Scalable Adaptability.** Does this tool allow me to maintain quality while I physically move my operation from the PNW to the entire Pacific Seaboard? Can it handle complex, multi-variable data sets without needing a full-time data analyst?
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1.  Integrate multi-source, variable input data (e.g., property photos, calendar dates, local regulations) to generate a comprehensive, predictive inventory manifest.
+2.  Automatically flag or alert me when predicted ingredient spoilage exceeds a specific cost threshold based on historical waste patterns and current event metrics.
+3.  Maintain a centralized, editable repository of compliance data (permits, local vendor requirements, safety protocols) that is instantly filterable by new ZIP codes or municipal zones.
+4.  Support the creation of complex, shifting labor matrices that assign specialized roles (e.g., "artisan plating specialist," "high-volume flow manager") rather than just headcount.
+5.  Provide a dynamic content hub where I can upload qualitative data (mood boards, market research, vendor inspiration) and have it systematically mapped against menu structure suggestions.
+6.  Be accessible and functional via a tablet or mobile interface in a high-pressure, non-traditional office environment (i.e., a bustling house with limited power).
+7.  Allow for rapid, segmented revenue tracking that can differentiate between the revenue generated from my established market vs. the revenue generated from my new expansion market.

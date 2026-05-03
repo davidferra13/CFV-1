@@ -1,0 +1,67 @@
+**Partner Profile: "Jim Denevan" - Farm Dinner Co-host (Experiential Collaborator)**
+
+I co-host, promote, or support an average of 6 major events or partnerships per quarter, which generates between $8,000 and $15,000 in gross revenue per event through ticket sales and joint promotions. My operations involve coordinating detailed seasonal menus, securing venue permits, managing complex vendor billing, and tracking referral commissions. I collaborate with multiple high-end farms (e.g., local organic producers, specialized butchers), small-batch beverage brands, and established local restaurants. My core challenge is coordinating the logistics between these diverse partners, ensuring the guest experience remains flawless, and accurately tracking revenue streams that are split across multiple billing channels. My current coordination setup is a chaotic mix of shared Google Sheets, WhatsApp group chats, and handwritten notes, with no single source of truth for who owes what, who is providing what, or when the venue permits expire.
+
+### Business Reality
+
+Right now:
+* I co-host, promote, or support **6** major events, referrals, or partnerships per **quarter**
+* Revenue share details involve complex splits: 60% to the main venue/chef, 25% to the farm/supplier (variable based on goods cost), and 15% allocated to marketing/staffing.
+* My venues are typically high-end farm settings or historic community locations, requiring detailed site walkthroughs and specific vendor access points.
+* My constraints involve seasonality (menus must adapt within 4 weeks of the event), limited farm availability (e.g., specific harvests), and strict local noise/permit regulations.
+* My current coordination setup is a disaster: I maintain a master Google Sheet for all RSVPs and payments, but the menu details, vendor invoices, and staffing schedules are siloed across email threads, texts, and physical planners.
+
+---
+
+### Primary Failure: Revenue Reconciliation Black Hole
+
+The single biggest operational problem is tracking the true cost and revenue of a multi-partner event. Because I am coordinating 3-4 distinct revenue streams (tickets, direct farm donations/in-kind, brand sponsorships, and ticketed add-ons), I spend an estimated 10-15 hours after every major event reconciling the financials. I am manually cross-referencing vendor invoices (e.g., the farm bill, the wine distributor invoice) against the original ticket sales sheet and the sponsorship agreement. This process is prone to human error—I once accidentally double-counted a specific artisanal bread order, costing me three hours of painful correction and a minor dispute with the farm. This manual reconciliation process delays payment to my partners and significantly increases my administrative overhead, preventing me from focusing on creative menu development or securing new collaborations.
+
+---
+
+### Structural Issue: Vendor/Ingredient Flow Mapping
+
+I have multiple specialized vendors (the baker, the local butcher, the specialty tea supplier) who all deliver different components on different days. My current workaround is a heavily annotated Gantt chart in Google Sheets that I update manually every time a vendor changes their delivery time or quantity. What breaks is the lack of a single, authoritative system for tracking *inventory* and *delivery status*. If the butcher calls saying his delivery is delayed by two hours, I have to manually notify the kitchen staff, the wine vendor, and the ticketing team via text, creating multiple points of failure and massive communication overhead.
+
+---
+
+### Structural Issue: Dynamic Menu/Costing Synchronization
+
+My menus are seasonal and designed to highlight hyper-local ingredients, meaning the recipes and their associated costs change weekly. I currently manage this by keeping a separate, massive Recipe Costing spreadsheet where I have to manually update ingredient prices (e.g., if the asparagus harvest price jumps from $12/lb to $18/lb). This process is incredibly fragile; if I forget to update the cost for a specific seasonal item, the entire profitability model for that event is skewed. There is no way to link the real-time, changing cost of a raw ingredient to the finalized menu item and the overall ticket price simultaneously.
+
+---
+
+### Structural Issue: Joint Promotion and Asset Tracking
+
+When I collaborate with a brand (e.g., a specialized charcuterie company), the promotion involves joint assets: a specific flyer design, a unique discount code, and a specific social media post. I manage these assets using a shared Dropbox folder, but I have no visibility into whether the partners have actually used the assets correctly, or if the tracking code is being implemented properly at the point of sale. I have to chase partners via email "Did you upload the correct flyer?" or "Did you use the unique code?" This slows down pre-event marketing and creates friction because I can't guarantee brand compliance or accurate promotional tracking without constant manual follow-up.
+
+---
+
+### Structural Issue: Permit and Compliance Tracking
+
+Because I am operating on private land or historic venues, every single event requires a distinct set of permits (fire marshal clearance, alcohol service permits, temporary power access). I maintain a physical binder for each venue, which is cumbersome and easily lost. What breaks is the ability to track the *expiration date* of these permits in a centralized, actionable system. I rely on sticky notes and calendar reminders, and if I miss one date, the entire event is illegal and canceled, resulting in immediate, catastrophic financial losses and damage to my reputation.
+
+---
+
+### Psychological Model
+
+I optimize for: **Flawless guest experience and high-quality, creative storytelling.**
+I refuse to compromise on: **The authenticity of the sourcing and the elegance of the presentation.**
+I avoid: **Generic, cookie-cutter software or anything that feels overly corporate or restrictive.**
+I evaluate tools by: **How quickly they integrate with existing, established physical workflows (like kitchen prep or vendor drop-offs) and how much manual data entry they eliminate.**
+
+I think about process flow—how a concept moves from a fleeting idea on a farm visit to a tangible, profitable, and compliant dinner. Technology must be invisible, supporting the craft rather than demanding attention. If it adds friction to the kitchen or the front-of-house experience, it's useless to me.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must allow me to link real-time ingredient cost changes (e.g., $18/lb asparagus) directly to a menu item and automatically update the cost of goods sold (COGS) for that specific event.
+2. The system must generate a single, comprehensive event financial report that automatically reconciles ticket sales, tracked vendor invoices, and revenue-share percentages across all collaborating partners.
+3. The system must maintain a central, auditable database of all venue permits, clearly displaying the expiration date and required renewal documentation for each location.
+4. The system must provide a collaborative, multi-user scheduling view that can integrate vendor delivery times (e.g., Butcher delivers 2 PM) and flag conflicts against staff scheduling or kitchen capacity.
+5. The system must generate a unique, trackable link or code for each joint promotion, allowing me to track which partner's marketing efforts are generating the most qualified leads/tickets.
+6. The system must allow me to define and track multiple revenue streams (e.g., ticket sales, sponsorship, add-on retail sales) and calculate the overall profit margin per guest, even if those funds are paid out to different partners.
+7. The system must allow me to digitally sign and store vendor contracts and agreements, linking the terms (e.g., "5% commission") directly to the event's financial reconciliation model.

@@ -1,0 +1,67 @@
+**Chef Profile: "David" Chang - Multi-Unit Operator (Creative Scale)**
+
+I don't run a restaurant; I run a collection of culinary experiences. I'm the conceptual engine behind multiple concepts, from the high-volume, casual bar concept to the highly curated, reservation-only dining room. My job is to maintain the integrity of the food, the service, and the brand across all of them, which means I’m spending 80% of my time managing complexity and 20% actually cooking.
+
+### Business Reality
+
+Right now:
+* I manage **3** distinct restaurant locations/concepts (a high-volume bar, a fine dining room, and a pop-up commissary kitchen) and approximately **12** recurring private events per month.
+* My revenue model is diversified: 60% from walk-in/reservation dining, 30% from private event bookings, and 10% from wholesale commissary product sales. Annual revenue exceeds **$5.5 million**.
+* I oversee a core management team of **15** salaried managers (FOH and BOH leads), and a variable staff of **70-90** hourly kitchen and service staff.
+* My geographic scope is concentrated in the dense, high-overhead urban core of [Major Metropolitan City].
+* My current tech setup is a patchwork: OpenTable for bookings, dedicated POS system for sales, QuickBooks for accounting, Google Sheets for inventory tracking, and a dedicated WhatsApp group for last-minute staffing changes.
+
+---
+
+### Primary Failure: Recipe-to-Costing Drift
+
+My biggest operational headache is the massive gap between a chef’s creative impulse and the financial reality of executing that dish 70 times a night. When I want to introduce a seasonal ingredient—say, a specific heirloom tomato—I draft a new recipe and it feels amazing. But because I don't have a centralized system that links the ingredient sourcing, the current bulk pricing from three different vendors, the specific portion weight required by the station, and the actual labor time *before* I send it to the menu board, I have to manually calculate the Cost of Goods Sold (COGS) using an old spreadsheet. This process is slow, prone to human error (I often forget to update a vendor price), and means that sometimes, we launch a brilliant dish that is actually hemorrhaging money, simply because the costing was inaccurate. This costing failure forces me to pull back on creative menu changes, which is the one thing I actually want to do.
+
+---
+
+### Structural Issue: Menu Development & Inventory Synchronization
+
+When I develop a new, seasonal menu item, I write it down and send the ingredient list to the Purchasing Manager. They then take that list and try to fit it into the existing weekly inventory sheets. The problem is that the Purchasing Manager is optimizing for the *entire restaurant's* inventory (which includes items from the fine dining room, the bar, and the commissary). They don't know which dishes are currently high-volume or which ingredients are needed in what quantity for a specific event next month. The result is that we either over-order highly perishable, niche ingredients that spoil, or we realize we are critically low on a core commodity because the new menu item didn't factor into the bulk order.
+
+---
+
+### Structural Issue: Staffing Skill-Gap and Delegation
+
+My managers are excellent at execution, but they are terrible at predicting resource needs. When we have a large private event booked (say, 80 guests needing plated service), the required staff skillset changes dramatically—we need specialized plating station support, not just general prep cooks. My current workaround is calling a department lead and having them manually check the booking sheet and then sending a group text message to the kitchen manager with a list of "required roles." This breaks down instantly because the text doesn't account for cross-training, specific certification needs (e.g., someone who can operate the specialized pastry station), or if the required staff member is already booked at another location.
+
+---
+
+### Structural Issue: Ingredient Receiving and Usage Tracking
+
+When a large, multi-vendor delivery arrives—say, a case of seafood from one vendor, produce from another, and dry goods from a third—the receiving process is a nightmare. The kitchen manager has to physically check every item against a purchase order and then manually input the received quantities into a spreadsheet. This means that if we receive a partial shipment or if a vendor accidentally sends the wrong cut of meat, we don't get a clean, immediate record of the discrepancy tied to the specific recipe that will use it. We are forced to operate on "best effort" until the end of the day, and we often lose track of small, high-cost perishables because they are immediately put into storage, not into a system that tracks usage against the initial receiving manifest.
+
+---
+
+### Structural Issue: Event-Specific Ingredient Allocation
+
+Private events are high revenue, but they are operational black holes. The booking system handles the guest count and the menu package, but the inventory system has zero visibility into the necessary ingredient drawdown. When an event is booked for 80 people, the kitchen needs to know not just "80 people," but "80 people, 4 courses, with Course 2 requiring 12 lbs of specific salmon and 15 quarts of specific sauce base." We currently have to create a separate, dedicated event sheet that manually subtracts the required ingredients from the main restaurant inventory sheet. This process is tedious, and if I forget to subtract the event ingredients from the main inventory, we risk running out of core stock for the regular dining room service.
+
+---
+
+### Psychological Model
+
+I optimize for: **Creative freedom and speed of execution.** If a system adds friction or requires me to spend time filling out forms that don't directly improve the plate, I will fight it.
+I refuse to compromise on: **The integrity of the final product and the efficiency of the back-of-house flow.** If the system slows down the cooks or makes the product cost higher, it's useless.
+I avoid: **Overly bureaucratic, SaaS-heavy dashboards that require dedicated administrative staff time.** If I have to train three different people on three different modules just to get the basic ingredient cost, I will find a paper solution.
+I evaluate tools by: **How fast they can connect a concept (the menu) to the operational reality (the cost and the ingredients).** If I can’t see the financial impact of a new dish in under five minutes, I’m not interested.
+
+I think like an engineer who is also an artist. I see the ideal, perfect flow—the perfect plate—but I also see the massive, fragile infrastructure required to deliver it consistently, every single time, across three different physical buildings.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must allow me to input a draft recipe and instantly calculate the COGS using real-time, vendor-updated ingredient pricing, generating a suggested menu price range.
+2. The system must automatically generate an ingredient usage forecast for all three locations based on the consolidated booking calendar and the current menu structure, highlighting potential stockouts 7 days out.
+3. The system must link an incoming vendor invoice and physical delivery manifest directly to the specific recipes and future event bookings that will consume those goods, creating a usage ledger.
+4. The system must allow me to define cross-functional staff roles (e.g., "Pastry Prep Cook" who is also "Server for Event XYZ") and dynamically adjust staffing schedules based on the specific service needs of a booked event.
+5. The system must track ingredients at a granular level (e.g., by weight or volume) and allow me to flag discrepancies between the initial received quantity and the final usage, generating a waste/shrink report tied to the responsible station/employee.
+6. The system must facilitate quick, centralized menu iteration, allowing me to swap out core ingredients (e.g., switching from tomatoes to peppers) and immediately recalculate the cost and portion size across every associated recipe across all locations.
+7. The system must provide a dedicated, unified view that shows the required staffing skills and the available staff skills, allowing managers to efficiently assign cross-trained staff for complex, multi-day private events.

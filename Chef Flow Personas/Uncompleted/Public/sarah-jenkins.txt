@@ -1,0 +1,67 @@
+**Public Profile: "Sarah Jenkins" - Culinary Critic (Experience Curator)**
+
+I am a food editor for a major national publication, specializing in high-end dining, emerging culinary trends, and the narrative behind great food. My job isn't just to write reviews; it's to source and experience the most compelling and unique culinary moments for our readers. I deal with dozens of restaurants and pop-ups every month, constantly needing to find the next big story that justifies a booking, and I need that process to be efficient and reliable.
+
+### Business Reality
+
+Right now:
+* I search for or compare **10 to 15** chefs, events, cuisines, or menus per **week**.
+* My budget is highly variable, ranging from **$75** for an appetizer tasting to **$450** for a multi-course private dinner, depending on the narrative I need to build.
+* I need high-quality **availability**, verifiable **review** mentions, a sophisticated **rating**, specific **cuisine** specialties (e.g., molecular gastronomy, regional Peruvian), and a detailed **menu** or portfolio.
+* My inquiry context is almost always a journalistic one—I need to book a private, controlled experience for a small group of **4 to 8** people, often with a specific narrative hook (e.g., "the chef who uses forgotten grains").
+* My current discovery setup is a highly scattered mix: direct referrals from restaurant PR contacts, private LinkedIn messages, Google Maps searches, and manual link scraping from industry blogs.
+
+---
+
+### Primary Failure: The "Narrative Gap"
+
+The single biggest operational problem is that finding a chef or restaurant that not only has availability but also has a *story* that aligns with a current editorial angle is nearly impossible. I spend 40% of my time sifting through beautiful photos and generic descriptions only to discover the chef is fantastic but has no documented history of the specific technique or ingredient I am researching. This forces me to rely on vague phone calls or email chains with no centralized record, which significantly increases my sourcing time and, critically, risks me missing a unique story that could become a major feature article.
+
+---
+
+### Structural Issue: Disjointed Availability and Portfolio Viewing
+
+I find chefs through a search engine or a referral, which leads me to a basic website. I then have to open a separate calendar link (Google Calendar, etc.) to check their availability, and if that fails, I have to send an email asking for a calendar link. This fragmented process means I cannot compare three potential dinner experiences—say, a Thai pop-up, a Californian tasting, and a Nordic dinner—side-by-side on a single screen to judge their operational viability against my editorial needs.
+
+---
+
+### Structural Issue: Lack of Granular Menu/Ingredient Depth
+
+Most booking platforms only show a generic "Prix Fixe Menu" or a photo of the final plate. As a critic, I need to know the *ingredients* and the *technique* behind the dishes to write an informed review. I waste time asking the chef or restaurant group for a detailed, multi-page PDF menu that lists sourcing, specific cuts of meat, and the preparation method. If I can't access this deep operational detail upfront, I treat the experience as a potential story and discard it, regardless of the chef's overall reputation.
+
+---
+
+### Structural Issue: Inconsistent Booking/Inquiry Flow for Non-Standard Events
+
+When I need to book a custom event—say, a private dinner for 6 people focused entirely on heirloom corn varieties—the inquiry process is a mess. Some chefs use a simple contact form, some require a call, and some redirect me to a third-party booking manager. There is no standardized way to submit a complex, multi-variable request (date, group size, specific theme, budget range, desired operational parameters) and get a consistent, actionable quote back that includes preliminary costing for staffing and beverage pairings.
+
+---
+
+### Structural Issue: Review Credibility and Contextualization
+
+I receive hundreds of reviews, but they are often too generic ("Amazing!") or, worse, are clearly from PR-coordinated bookings. I need to filter reviews not just by star rating, but by *context*—for example, "Highly rated for intimate groups of 4," or "Best for high-volume corporate events." If I can't immediately see that a chef's profile has been reviewed by multiple, recognized culinary publications, or if the reviews lack operational detail (e.g., "great for small groups with dietary restrictions"), I assume the experience is too polished or too unverified to write about.
+
+---
+
+### Psychological Model
+
+I optimize for: **Verifiability of the Story.** I need to know the operational details—the specific techniques, the source of the ingredients, and the history of the chef—before I commit to a booking.
+I refuse to compromise on: **The ability to cross-reference multiple, disparate operational data points** (menu details, staff capacity, ingredient sourcing) in one place.
+I avoid: **Manual email chains or phone calls** that require me to repeat information or wait for multiple parties to confirm a single detail.
+I evaluate tools by: **The depth of the underlying data.** If the platform can handle complex variables like seasonal availability and ingredient sourcing, I trust it.
+
+I think like a researcher, not a consumer. I am constantly looking for the intersection of high quality, unique story, and operational feasibility. If the platform feels like a glossy brochure instead of a detailed, interconnected database, I will abandon it immediately.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1.  The system must allow me to filter chef profiles by **specific, documented sourcing methods** (e.g., "foraged," "single-origin," "heirloom").
+2.  The system must provide a **side-by-side comparison view** of up to five different menus, showing itemization, suggested wine pairings, and preliminary per-person costing.
+3.  The system must integrate a **centralized, structured inquiry form** that accepts complex variables (e.g., "10 guests, 7 PM, Mediterranean theme, budget $250/person") and returns a standardized quote structure.
+4.  The system must display **verified editorial endorsements** or specific, granular review metrics (e.g., "Best for private groups of 4-6," or "Excellent for tasting menus with a focus on fermentation").
+5.  The system must allow me to save and categorize my research into **private, editable "Editorial Boards,"** grouping chefs and menus that fit a single, developing article narrative.
+6.  The system must provide **real-time, integrated calendar views** that show not just "available," but *which days* have capacity for a group size of 4 to 8, mitigating the need for manual back-and-forth.
+7.  The system must allow me to **download a single, comprehensive PDF** containing the final booking confirmation, the full menu, the cost breakdown, and the required cancellation policies.

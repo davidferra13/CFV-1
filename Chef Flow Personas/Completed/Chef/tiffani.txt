@@ -1,0 +1,67 @@
+**Chef Profile: "Tiffani" Thiessen - Founder (Boutique Meal Prep)**
+
+I founded this company because I saw a gap in the market: people who want gourmet, clean eating shouldn't have to sacrifice flavor for nutrition. I specialize in high-end, week-long meal prep subscriptions tailored for busy, professional women—the kind who value presentation and taste as much as caloric deficit. My process is highly curated, focusing on seasonal ingredients and sophisticated flavor profiles that elevate the typical "diet meal."
+
+### Business Reality
+
+Right now:
+* I manage **350** recurring clients across **1** centralized kitchen location, serving an average of 15 meal boxes per client per week.
+* Our revenue model is based on tiered weekly subscriptions, averaging $450 per client, yielding approximately $157,500 in recurring gross monthly revenue.
+* My core team consists of **4** full-time employees: one Sous Chef, two Prep Cooks, and one Dispatch/Logistics Coordinator. I handle menu design, client relations, and financial oversight.
+* My geographic scope is strictly limited to the **Silver Lake/Echo Park** area of Los Angeles, which dictates my delivery radius.
+* My current tech setup is a mix of a Shopify storefront for billing, Google Sheets for inventory tracking, and a combination of WhatsApp groups and printed physical manifests for daily delivery routing.
+
+---
+
+### Primary Failure: Managing Ingredient Variability and Wastage
+
+The single biggest operational headache is the unpredictable nature of fresh, high-quality seasonal produce combined with our fixed, high-volume weekly commitment. Because I refuse to use subpar ingredients, I often over-order specialty items (e.g., heirloom tomatoes, specific cuts of protein) to guarantee quality, resulting in significant spoilage and write-offs. Last month alone, excess produce and non-usable protein cuts accounted for a $3,200 loss in inventory write-downs, which directly erodes our profit margin and makes accurate weekly costing nearly impossible to predict.
+
+---
+
+### Structural Issue: Inventory Reconciliation and Forecasting
+
+The inventory process is a guessing game that happens entirely in Google Sheets. I manually input estimated usage based on last week’s sales data, but I have no mechanism to reconcile actual usage against the initial order or to automatically flag incoming vendor discrepancies. This means if the butcher delivers a box of chicken that is 5 lbs short of the manifest, I only discover it hours into the prep cycle when the Sous Chef realizes we can't fulfill the entire protein requirement, causing an immediate operational slowdown and forcing a costly, last-minute phone call to a backup vendor.
+
+---
+
+### Structural Issue: Client Meal Customization and Fulfillment Tracking
+
+Our clients frequently request minor adjustments—a swap from quinoa to brown rice, or an extra vinaigrette packet. We currently track these personalized changes via a highly fragmented system: clients email changes to me, I update a specific row in a shared Google Sheet, and then the Dispatch Coordinator has to cross-reference that sheet with the physical order ticket and the final packing manifest. This manual, three-step cross-referencing process frequently leads to errors, such as missing a "no nuts" restriction on a single client’s box, which is not just an error, but a critical safety and reputation failure.
+
+---
+
+### Structural Issue: Cross-Functional Recipe Scaling and Costing
+
+Scaling recipes from a small test batch (for my menu design) to a full production week is a deeply inefficient, non-systemized process. I track the initial recipe costs in a separate spreadsheet from the actual production cost. When the Sous Chef needs to scale a recipe for 350 servings, they have to manually cross-reference the base recipe yield with the total client count, multiplying ingredients and then adjusting for inevitable prep waste factors (e.g., trimming fat, peeling skins). This process is prone to human error in calculation, meaning our reported Cost of Goods Sold (COGS) can be inaccurate by as much as 8%, severely compromising my ability to set profitable pricing.
+
+---
+
+### Structural Issue: Scheduling and Staff Task Allocation
+
+Our prep schedule is managed by a shared physical whiteboard and a WhatsApp group, which is completely inadequate for coordinating the complexity of our workflow. If I need the Prep Cooks to shift from chopping vegetables (Task A) to assembling salad components (Task B) at 11:00 AM, I must send a general text message, which often results in confusion and bottlenecks. There is no system to visually map the required tasks, assign them to specific staff members, and track their progress in real-time, leading to periods of underutilized labor followed by sudden, stressful bottlenecks right before the delivery window closes.
+
+---
+
+### Psychological Model
+
+I optimize for: Predictability, aesthetic quality, and high customer experience.
+I refuse to compromise on: The freshness and presentation of the final meal.
+I avoid: Anything that requires me to spend time debugging spreadsheets or answering repetitive logistical questions.
+I evaluate tools by: How seamlessly they integrate the kitchen workflow (prep to pack) with the client billing system.
+
+I am intensely detail-oriented and thrive on processes that feel elegant and precise. I view technology not as a set of features, but as an invisible layer of efficiency that allows the core product—the food—to shine without being compromised by logistical chaos.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must automatically generate and update a master ingredient manifest based on the confirmed weekly client order count and the approved menu, flagging any ingredient that falls below a pre-set safety stock threshold.
+2. The system must allow me to define and store multi-step recipes that automatically adjust ingredient quantities and calculate the true COGS based on the final serving count.
+3. The system must provide a centralized, visual dashboard to track staff assignments, task completion status (e.g., "Chopping: 70% complete"), and required shift times for the day.
+4. The system must integrate the client's dietary restrictions and customization requests directly into the fulfillment manifest, making it impossible for the system to generate a packing list that omits a critical allergen note.
+5. The system must generate optimized, geographically clustered delivery routes daily, factoring in the volume of boxes and the specific delivery window for each client location.
+6. The system must allow me to upload and categorize vendor manifests (e.g., a PDF from the produce supplier) and automatically reconcile received items against the initial purchase order and the kitchen's required inventory levels.
+7. The system must track the profitability of specific menu items, calculating the yield and waste percentage for every key ingredient used in the finished dish.

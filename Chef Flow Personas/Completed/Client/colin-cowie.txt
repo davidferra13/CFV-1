@@ -1,0 +1,67 @@
+**Client Profile: "Colin Cowie" - Corporate Event Planner (High-End Logistics)**
+
+I manage the entire culinary experience for major corporate events, ranging from executive board dinners to large-scale annual galas. My role is to ensure the food service execution is seamless, highly branded, and completely flawless, allowing the client to focus entirely on their networking and objectives. I am the point person who deals with the high stakes of corporate reputation, meaning every detail—from the canapé temperature to the final invoice reconciliation—must be perfect.
+
+### Business Reality
+
+Right now:
+* I book or manage **12-15** private dining, catering, or meal prep events per **quarter** (meaning 3-4 per month).
+* My average event budget starts at **$25,000** and can scale up to **$150,000** per single event.
+* The group involved is typically the **Corporate Marketing/HR department** of large, multi-national companies (e.g., tech firms, finance institutions).
+* The complexity involves **300-500+** guests, multiple vendor coordination points (florists, AV, rentals, chefs), highly specific dietary restrictions (Celiac, severe allergies, vegan), and a constantly changing headcount as last-minute RSVPs come in.
+* My current booking and communication setup is a mix of **email chains** (for initial quotes), **shared Google Sheets** (for headcount and dietary tracking), **Slack messages** (for rapid vendor updates), and **physical binders** (for final day-of logistics and vendor contracts).
+
+---
+
+### Primary Failure: Headcount and Dietary Drift
+
+The single biggest operational problem is maintaining a single source of truth for guest data. We are dealing with high-stakes corporate dinners where a mistake isn't just an inconvenience; it's a PR nightmare. If the spreadsheet I use for dietary restrictions is not updated immediately when the client’s internal HR team changes a guest’s RSVP, we risk serving the wrong meal—or worse, serving an allergen to someone with a severe allergy. This leads to massive stress on the day of the event, requiring manual cross-referencing and often forcing me to dedicate an entire staff member just to checking names against the meal tickets, which is incredibly inefficient and costs me billable time that should be spent selling or planning.
+
+---
+
+### Structural Issue: Fragmented Contract and Payment Tracking
+
+My contracts, invoices, and vendor agreements are scattered across five different platforms: the client’s procurement portal (for the main contract), my accounting software (for tracking payments), email attachments (for signed addendums), and the venue's proprietary system (for venue access). When the client needs to audit the final spend, I spend hours manually collating line items, matching the deposit paid on the cheque stub to the specific menu items billed in the invoice, and ensuring the final invoice reflects every single change order approved via email. This process is prone to human error and makes month-end reconciliation agonizingly slow.
+
+---
+
+### Structural Issue: Menu and Ingredient Version Control
+
+Every time a client changes their corporate branding or the event concept, the menu changes, and therefore, the ingredient list changes. I currently manage this by creating a master document (a Google Sheet) that contains the primary menu, the associated costing sheets, and the required ingredient sourcing list. The problem is that when a chef suggests a substitution (e.g., swapping truffle oil for regular olive oil due to cost or availability), I have to manually update the menu, the associated cost-per-plate, and then notify the purchasing team, which can lead to purchasing the wrong ingredients or billing the client for a substitute they didn't approve.
+
+---
+
+### Structural Issue: Stakeholder Communication Waterfall
+
+The communication flow is always a "waterfall." It starts with the client (HR/Marketing) who sends a vague request via email, which then gets approved by the internal budget manager (Finance), who then sends the finalized scope via a different email, which I then have to translate into actionable steps for the kitchen and the venue. There is no single place where the approved scope, the budget constraints, the headcount, and the final menu details all live simultaneously. I spend excessive time playing the role of an internal project manager, synthesizing dozens of emails into a coherent plan, instead of focusing on the creative and operational details of the food itself.
+
+---
+
+### Structural Issue: Post-Event Feedback and Upsell Documentation
+
+After an event, the client often sends me a massive, unstructured email full of feedback ("The salmon was amazing, but the breadsticks were too dry, and next time, maybe something with more local flair"). I have to manually sift through this feedback and categorize it (Operational Feedback, Menu Improvement, Future Idea). This process is tedious, and if I don't log it immediately and formally link it to the client's profile, it's lost. This means I am losing opportunities to proactively suggest improvements or upsell premium services (like a specialized dessert bar) for the *next* quarter because I can't easily recall the specific details of the previous interaction.
+
+---
+
+### Psychological Model
+
+I optimize for: **Operational certainty and flawless execution.** My reputation hinges on nothing going wrong, which means the process must be predictable and repeatable, regardless of the human chaos involved.
+I refuse to compromise on: **The accuracy of the final invoice and the consistency of the guest experience.** I will not accept a system where I cannot prove exactly what was ordered, what was paid, and what was delivered, down to the cent.
+I avoid: **Generic, overwhelming software that requires extensive training.** If the platform adds complexity just to manage data, I will abandon it. I need intuitive, specialized tools that solve my immediate, high-volume problems.
+I evaluate tools by: **How quickly they reduce the number of different communication channels I have to monitor.** If it consolidates data, it earns my trust.
+
+I think in terms of workflows and critical paths. I need to see the entire journey—from the initial napkin sketch idea to the final bill—on one screen. My decision-making is always driven by risk mitigation; if the system can prove that a potential point of failure (like an allergen mistake or a billing discrepancy) is eliminated, I will adopt it immediately.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must **automatically reconcile** incoming RSVP data (name, attendance, dietary notes) against the Master Guest List and flag any discrepancies or missing required fields.
+2. The system must **generate a single, auditable document** that links the initial quote, the approved scope changes, the final headcount, and the final costed menu, accessible to both me and the client's procurement manager.
+3. The system must **host all event-specific documents** (contracts, floor plans, menus, vendor agreements) and allow me to assign required sign-offs before the event date.
+4. The system must **manage the entire costing lifecycle** for a given menu item, allowing me to adjust the ingredient source, see the resulting cost-per-plate change, and automatically update the client-facing menu price estimate.
+5. The system must **provide a centralized communication log** that automatically archives and structures all critical correspondence (emails, notes, approvals) and links them directly to the relevant event booking.
+6. The system must **allow me to generate a full, itemized, multi-stage invoice** that tracks deposits, change orders, and final payments, and generate a clean PDF for accounting purposes.
+7. The system must **store and categorize post-event feedback** and automatically link that qualitative data back to the client's profile history for future planning and sales recommendations.

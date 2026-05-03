@@ -1,0 +1,73 @@
+**Guest Profile: "Charli D'Amelio" - VIP Private Dining Guest (High Visibility)**
+
+I am Charli D'Amelio. I live a life where every detail, from my outfit to the lighting in a room, is highly curated and scrutinized. While my career is in social media, my private life and social engagements are equally high-profile, meaning I expect the same level of flawless execution in every setting. When I attend a private dining event, I view the entire experience—from the RSVP to the dessert—as part of my public image, and therefore, it must be perfect and effortless for me.
+
+### Business Reality
+
+Right now:
+* I attend approximately 4-6 private dining or high-profile ticketed events per quarter.
+* I expect to spend $1,500 to $4,000 per event, covering specialized dietary accommodations, premium beverage pairings, and private entertainment elements.
+* I require stringent dietary accommodations (e.g., severe gluten and dairy allergies, plus specific vegan/plant-based requirements) and must have a dedicated, quiet seating area that is not near the main foot traffic flow.
+* My current event context is usually a specialized, high-end venue (e.g., a private room at a major metropolitan restaurant or a pop-up at a luxury hotel), with a headcount of 8 to 15 people, including myself and my close circle.
+* My current communication setup is a mix: a dedicated event coordinator's personal text message thread for urgent logistics, a formal email chain for billing/contracts, and sometimes a physical, printed "Welcome Packet" that often contains conflicting information.
+
+---
+
+### Primary Failure: Lack of Unified Guest Journey Visibility
+
+The biggest operational problem is the handoff between departments. I am the guest, but I am also the person whose experience is being managed by reservations, the kitchen, the bar, and the floor staff. When I encounter a gap—for instance, when the dietary restrictions I mentioned in the initial email are not visible to the server when I arrive—the entire evening feels disorganized and stressful. This isn't just an inconvenience; it represents a failure of luxury service, which costs the venue brand reputation and, for me, a completely ruined night.
+
+---
+
+### Structural Issue: Fragmented Booking and Dietary Intake
+
+The initial booking process is clunky and fails to capture complex needs. I have to fill out a generic online form, and then I have to follow up with a separate email to the event planner to list my severe allergies and specific preferences. This means the initial data is siloed. I often have to manually repeat my restrictions (e.g., "I cannot eat cross-contaminated nuts") via text message to a different person (the chef's assistant) than the one who processed my RSVP.
+
+---
+
+### Structural Issue: Pre-Event Communication Overload
+
+I receive too many communications, and they are not consolidated. I get a link to a seating chart via email, a "reminder" text message 48 hours out, and then a physical printed menu that contradicts the beverage pairings I discussed with the event planner. I spend time cross-referencing multiple channels just to confirm the simple details of arrival time, dress code, and what I am allowed to consume.
+
+---
+
+### Structural Issue: Post-Event Feedback and Payment Disconnect
+
+The feedback loop is terrible. After the night, I might receive a generic survey link, but I also might receive a separate, complex invoice that references specific items or charges that I didn't realize were part of the package. If I need to dispute a charge or offer detailed, actionable feedback about the service, I have to use a separate system (like a dedicated email address) that isn't tied back to my initial reservation or the event's core data.
+
+---
+
+### Structural Issue: Dynamic Guest Needs Management
+
+My needs are not static; they change based on my mood, my group's activity, or even a last-minute celebrity guest. If the group needs to extend the reservation by 90 minutes, or if I need to swap my designated seating area to accommodate a better view for a photo, the venue has no single place to record and communicate this real-time change. It’s handled via verbal communication with the Maître D', which means nothing is written into the master reservation file.
+
+---
+
+### Structural Issue: Lack of Digital Event Timeline
+
+I want a single source of truth for the entire evening. Instead of receiving printed schedules that might be outdated (e.g., "Live Music Starts at 8 PM"), I want a digital, easily accessible timeline that updates in real-time, showing when the next course is arriving, when the entertainment is beginning, and what the next action item is for the staff (e.g., "Staff: Bring wine list to table 7").
+
+---
+
+### Psychological Model
+
+I optimize for: Flawless, invisible execution and seamless luxury.
+I refuse to compromise on: Personalized attention and the ability to control my narrative/image.
+I avoid: Anything that requires me to repeat information or interact with multiple confusing sign-up forms/links.
+I evaluate tools by: How few steps I have to take to get the perfect, predictable experience.
+
+I think in terms of efficiency and aesthetic perfection. If something requires me to spend mental energy figuring out *how* the event works, I assume the event itself is subpar.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must allow me to input complex, multi-layered dietary restrictions (e.g., "vegan, no nightshades, no cross-contamination with peanuts") and automatically flag these restrictions to the kitchen and front-of-house staff for every touchpoint.
+2. The system must provide a single, unified digital dashboard that displays my entire event timeline, including real-time updates on course timing, required staff actions, and my group's current seating location.
+3. The system must allow my personal event coordinator to manage and update my seating preferences and dynamic group changes (e.g., "moved to table 3 for better lighting") in a centralized, visible record that all staff can access instantly.
+4. The system must enable a frictionless, post-event digital feedback submission process that is directly linked to my reservation and can be used to dispute specific line items on the final invoice, rather than requiring a separate email.
+5. The system must provide a single, persistent digital link (e.g., a QR code) that, when scanned, accesses all necessary pre-event information (menu, dress code, allergies, timeline) and never becomes outdated.
+6. The system must allow the venue to track and confirm specific, customized items ordered for my group (e.g., a bespoke dessert or a unique beverage pairing) against the initial booking to ensure nothing is missed.
+7. The system must provide clear, visible confirmation that all my initial preferences (seating, dietary, ambiance) have been received, acknowledged, and actioned by the appropriate department head (Kitchen Manager, Head Waiter, etc.).

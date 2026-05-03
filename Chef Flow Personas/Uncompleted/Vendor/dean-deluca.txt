@@ -1,0 +1,67 @@
+**Vendor Profile: "Dean DeLuca" - Specialty Ingredient Distributor (Artisan Goods)**
+
+I operate out of a small, dedicated section in the local farmers' market and a small back warehouse. My business is curating and distributing ultra-premium, specialized ingredients—think single-origin spices, rare artisanal flours, specific heirloom produce, and specialty oils—that local chefs and high-end restaurants can't get in bulk from the major distributors. I pride myself on the quality and story behind every product.
+
+### Business Reality
+
+Right now:
+* I fulfill approximately 45 chef orders, 15 daily market deliveries, and 8 specialized event rentals per week.
+* My wholesale pricing starts at $15.00 per pound and can exceed $450.00 for custom bulk spice blends, often requiring a 25% deposit before sourcing and a final payment upon delivery.
+* My catalog is volatile; it includes over 120 SKUs, many of which are seasonal (heirloom squash, wild mushrooms) or limited-run micro-batches. Freshness and provenance are critical constraints.
+* My primary service geography is the downtown core and the surrounding 10-mile radius, with scheduled deliveries every Tuesday and Friday, and market presence Saturday.
+* Current ordering and communication setup is a messy mix: chefs often call me directly for availability checks, send texts with photo attachments of required substitutions, and then follow up with a detailed Excel spreadsheet that I have to manually convert into an invoice and place a handwritten note on for pickup.
+
+---
+
+### Primary Failure: Managing Volatile Inventory & Substitution Requirements
+
+The biggest operational pain point is the discrepancy between the ingredient I *promised* and the ingredient I *actually have* at the moment of fulfillment. Because my inventory is highly seasonal and often sourced from small, unpredictable farms (e.g., "If the Thai basil crop is bad this week, I use the Vietnamese variety instead"), I frequently have to substitute items. When I have to substitute, the chef needs to know immediately if the substitute changes the cost, the flavor profile, or the required preparation method. If I rely on a phone call, I risk miscommunicating the difference, which leads to the chef either rejecting the entire order or, worse, ordering the wrong amount, leading to wasted product and damaged reputation. This process costs me at least 3-4 hours of administrative time per week just handling follow-up confirmations and correcting miscommunication.
+
+---
+
+### Structural Issue: Non-Standardized Ordering and Communication
+
+Chefs do not order using standardized SKUs and quantities. They order based on recipes and concepts, which means they communicate requirements via free-form text messages ("We need enough of that smoky paprika, and maybe some of those pickled cherry tomatoes, and check if the purple finger limes are back?"). I have to manually interpret these requests, cross-reference them with my current inventory list (which is often printed and pinned to a corkboard), and then build the order into a separate spreadsheet. If I miss a single qualifier (like "must be organic" or "only if available"), the entire order is incorrect and delayed, costing me time and potentially missing a crucial service window.
+
+---
+
+### Structural Issue: Complex, Variable Costing and Pricing
+
+My pricing is not static. It depends on sourcing complexity, minimum purchase tiers, and the ingredient's scarcity. For example, the price of a specific Peruvian chili blend might be $25/lb if I source it directly from the farm, but only $35/lb if I buy it in a bulk container from a distributor who processes it. When I create the invoice, I must manually apply the correct cost basis and ensure the client understands *why* the price is what it is. This lack of automated cost tracking means I often undercharge or overcharge, leading to disputes and significant time spent justifying the final invoice totals.
+
+---
+
+### Structural Issue: Fragmented Proof of Fulfillment and Compliance
+
+Because I operate in a small, local capacity, I am constantly dealing with unique, small-batch sourcing constraints. If a chef orders 5 lbs of heritage flour, I need to prove that the flour was milled on a specific date and stored at a specific temperature. My current workaround is taking photos and writing notes on paper planners, which are easily lost or illegible. If I need to recall a specific batch due to a contamination concern, I have no centralized, searchable record linking the ingredient batch ID, the date, the source farm, and the specific client who received it. This creates a massive liability and compliance risk.
+
+---
+
+### Structural Issue: Handling of Substitutions and Allergens
+
+When a chef needs a substitute, it's never just "another similar item." It has to meet strict culinary and dietary requirements (e.g., "Must be gluten-free, must be smoky, and must pair with seafood"). My current process is to manually compare the requested ingredient against my available stock, cross-referencing multiple internal notes about flavor profiles, allergens, and preparation methods. This manual comparison process is slow, prone to human error, and makes it nearly impossible to scale up the number of clients I can service without burning out my small team of two.
+
+---
+
+### Psychological Model
+
+I optimize for: Provenance and the story behind the ingredients. I need to prove the quality and scarcity of every item.
+I refuse to compromise on: The ability to communicate the *why* behind a price or an ingredient substitution.
+I avoid: Large, faceless corporate systems and mandatory digital forms that strip away the human element of the transaction.
+I evaluate tools by: How quickly they allow me to move from a conversation (phone call/text) to a final, accurate, and justifiable invoice.
+
+I am meticulous and highly detail-oriented, but I am also deeply protective of my personal relationships with the chefs. I view the ordering process not as a transaction, but as a consultation. Therefore, any technology must feel intuitive, flexible, and capable of handling exceptions rather than forcing me into a rigid, standardized workflow.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must allow me to link a specific ingredient SKU directly to a unique batch ID and its corresponding sourcing date and farm location.
+2. The system must support multi-tiered, non-linear pricing models where the unit cost can be justified by the source and the quantity purchased.
+3. The system must allow me to track and apply temporary "limited availability" flags that automatically trigger alternative suggestions and cost adjustments for the client.
+4. The system must facilitate communication threads that allow me to document the reasoning for any substitution (e.g., "Substituted Peruvian chili for Thai basil because of seasonal crop failure, cost adjustment: +$2.50/lb").
+5. The system must allow me to manage multiple, simultaneous, and highly variable deposit/payment structures (e.g., 25% deposit due upon order confirmation, 75% balance due upon delivery).
+6. The system must allow me to manage physical inventory that is measured by volume (e.g., "cubic feet of spice blend") as well as weight (lbs) or count.
+7. The system must support asynchronous communication that allows me to attach photos of the physical product or the specific packaging batch to the order record.

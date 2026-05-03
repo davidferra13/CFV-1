@@ -1,0 +1,67 @@
+**Client Profile: "Mindy Weiss" - Corporate Event Planner (High-End Catering)**
+
+I specialize in transforming corporate function spaces—from law firm galas to tech company team-building lunches—into seamless, memorable dining experiences. I handle the entire spectrum, from the initial concept meeting and menu development to the final plating and invoice reconciliation. My reputation is built on reliability, which means I have to juggle dozens of moving parts: fluctuating budgets, changing tastes, massive guest lists, and strict venue timelines.
+
+### Business Reality
+
+Right now:
+* I book or manage **18-25** private dining, catering, or meal prep events per **month**
+* My average event value ranges from **$4,500** (small meeting) to **$28,000** (large corporate gala), with typical deposits starting at **25%** and final invoicing totaling over **$30,000**.
+* My primary stakeholders are corporate HR departments, executive assistants, and the CMOs of mid-to-large sized firms (tech, law, finance).
+* Events are highly varied: 50-person cocktail receptions requiring passed hors d'oeuvres; 200-person seated dinners with three courses; and 150-person buffet lunches with specific dietary needs (gluten-free, vegan, nut allergies).
+* My current booking and communication setup is a chaotic mix of dedicated Gmail accounts, shared Google Sheets for guest lists, physical color-coded planner binders, and frantic follow-up via text messages to my most reliable contacts.
+
+---
+
+### Primary Failure: The Headcount Volatility Tax
+
+The biggest operational headache is managing guaranteed guest counts that fluctuate wildly and often late in the process. A client might provide a list of 150 people on Monday, but by Thursday, they call and say 15 people are canceling, and 20 more are adding. Because my costing model is based on guaranteed numbers, these last-minute changes—whether up or down—create immediate, unbilled administrative debt. I have to manually track the difference between the initial quote, the guaranteed number, the final confirmed number, and the required deposit adjustments, which often leads to miscommunication and a loss of **$500 to $1,500** per event in lost revenue or client dissatisfaction because the final invoice doesn't match the reality of the service delivered.
+
+---
+
+### Structural Issue: Fragmented Booking & Quote Generation
+
+I have to jump between my calendar, a separate spreadsheet for capacity checks, and a word document for the actual menu details. There is no single source of truth for the scope of work. If a client asks me to swap out the salmon dish for a vegetarian option, I have to manually update the master spreadsheet, then remember to adjust the cost sheet, and then draft a revised quote that references the specific change. This process takes an average of **45 minutes per major revision**, and because I am doing this for 3-4 clients simultaneously, I frequently lose track of which version of the quote I am sending, leading to awkward back-and-forth emails asking, "Wait, were we talking about the Thursday or Friday event?"
+
+---
+
+### Structural Issue: Payment Tracking and Invoice Reconciliation
+
+My payments come from three different sources: the initial retainer (via check or bank transfer), the final invoice (via ACH or physical check), and sometimes a separate venue deposit (paid by the client to the venue directly). I keep all these amounts tracked in a master Excel sheet that is prone to human error. When a client pays the final invoice but the deposit was paid 30 days prior, I have to cross-reference three dates, three amounts, and two different invoicing methods just to confirm I haven't over-billed or under-billed them. This manual reconciliation process is why I spend an entire day every week just doing bookkeeping, instead of actually designing menus.
+
+---
+
+### Structural Issue: Communication and Guest List Management
+
+The client rarely gives me a clean, finalized list. They give me a mix of names, email addresses, and dietary restrictions that are entered into a messy Excel sheet that has been edited by five different people. The required dietary restrictions (e.g., "Mildly allergic to pine nuts," "Vegan, but loves cheese," "Gluten-free, only if served with rice") are written in free text, making them impossible to filter or track systematically. I end up having to manually review the entire list *and* the accompanying notes for every single guest, and if I miss one restriction, I risk a major incident, which is a huge reputational risk.
+
+---
+
+### Structural Issue: Operational Scope Creep and Change Orders
+
+The corporate client always has a "small tweak" they want to add, which is never accounted for in the original quote. It might be, "Can we add a late-night dessert station?" or "Can we source artisanal bread from that new bakery?" These requests are almost always communicated via a quick, informal phone call or a text message ("Hey, btw, can we do this?"). Because these requests are informal and outside the documented scope, I have no standardized way to quote them, confirm their cost, or adjust the contractually agreed-upon price, leading to perpetual scope creep and requiring me to chase down approval emails for every single extra item.
+
+---
+
+### Psychological Model
+
+I optimize for: **Seamless, high-touch client experience.** My clients pay me for my professionalism and ability to make the invisible happen.
+I refuse to compromise on: **Accuracy and reliability.** A single mistake—a wrong menu, a miscounted headcount, a late invoice—can ruin my reputation and cost me future business.
+I avoid: **Administrative friction.** I hate spending time on spreadsheets, chasing payments, or manually updating documents.
+I evaluate tools by: **How quickly they save me time on the back end.** If it helps me look polished and professional while simultaneously reducing my manual data entry, I will use it.
+
+I am constantly juggling the creative, front-of-house vision with the meticulous, spreadsheet-driven reality of the back office. I need the system to feel like an extension of my personal assistant—one that handles all the tedious, repetitive data transfers and calculations so I can focus on the creative, revenue-generating aspects of the job.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. **Allow me to build and save multiple, complex menu versions** (e.g., "Initial Draft," "Client Revision 1," "Final Confirmed") and associate a unique cost sheet with each version.
+2. **Automatically adjust the total estimated cost and required deposit** whenever I modify the guaranteed headcount or change the number of required menu components (e.g., removing the dessert station).
+3. **Centralize all guest data, allowing me to upload a messy list and systematically tag specific, mandatory restrictions** (e.g., "Vegan," "Severe Peanut Allergy") so they are visible and flagged next to the name.
+4. **Generate a clear, auditable record of every change order**, documenting the date, the change requested, the cost impact, and the client's explicit approval (digital signature or confirmation email).
+5. **Provide a unified dashboard that shows the status of every event:** which deposits are pending, which invoices are overdue, and the final confirmed headcount versus the initial booking.
+6. **Allow me to create and send professional, branded invoices** that automatically pull the correct itemized costs, guaranteed count, and payment terms directly from the associated event booking.
+7. **Support multiple currencies and tax structures** because I sometimes work with corporate clients whose main office is located outside the state.

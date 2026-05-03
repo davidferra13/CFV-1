@@ -1,0 +1,55 @@
+Client Profile: "Priya Nandakumar" - Staff Software Engineer, Marketplace Infrastructure (Systems Thinker)
+
+I don’t separate “browsing” from “buying.” The moment I start configuring something, I’m already in a checkout flow in my head. If the system doesn’t reflect that - if pricing isn’t continuously visible and accurate - I assume the backend is either incomplete or intentionally obscured.
+
+Business Reality
+Right now:
+
+I book 5–9 private dining experiences per year - small groups, usually 3–10 guests, a mix of personal and hosted events.
+
+Budget ranges from $1,200 to $6,000. I’m flexible, but I need to understand cost structure instantly.
+
+I expect to lock in with a deposit within minutes of configuring the experience. If I hesitate, it’s because the system failed, not me.
+
+Dietary needs are structured - multiple preferences and at least one strict allergy per group. These must integrate cleanly into the system.
+
+Locations vary - my home, friends’ homes, short-term rentals - but I expect location-based cost adjustments to be handled automatically.
+
+I interact entirely through web or mobile interfaces. I don’t want to talk to anyone unless something breaks.
+
+I think in terms of state transitions and data integrity. If I can’t follow the state, I don’t trust the system.
+
+Primary Failure: Broken Pricing State
+The biggest issue is when pricing is not treated as a first-class state in the system. It’s often bolted on at the end, which creates inconsistencies. I’ll configure a dinner, see a vague estimate, and then get a different number later. That tells me pricing is not derived from the same state as the configuration. That’s a fundamental architectural flaw. If pricing isn’t tightly coupled to every input, the system is unreliable.
+
+Structural Issue: No Incremental Cost Feedback
+I expect incremental feedback. If I increase guest count from 6 to 8, I want to see exactly how much that adds - immediately. If I switch from 3 courses to 4, I want to see the delta, not just a new total. Most systems only show the end result, which hides the mechanics. Without incremental visibility, I can’t reason about tradeoffs.
+
+Structural Issue: Implicit Logic Instead of Explicit Models
+There’s too much hidden logic. Staffing costs, travel fees, ingredient tiers - these are applied somewhere, but not exposed. I want to see the model: what’s fixed, what’s variable, what scales with guests. Right now, I get a number without a model. That’s not acceptable for something I’m expected to trust financially.
+
+Structural Issue: No Pre-Checkout Validation
+Systems often let me build something that later gets rejected or adjusted - “that combination doesn’t work,” “we need to change this,” etc. That means validation is happening too late. Constraints should be enforced during configuration, not after. If I can select it, it should be valid and priced correctly in real time.
+
+Psychological Model
+I optimize for: consistency, predictability, and system integrity
+I refuse to compromise on: pricing being derived directly from inputs at all times
+I avoid: systems where totals appear late or change unexpectedly
+I evaluate tools by: whether pricing behaves like a deterministic function of configuration
+
+Pass / Fail Conditions
+For this system to work for me, it must:
+
+Maintain pricing as a live system state that updates continuously with every input change.
+
+Show both total price and incremental deltas for each modification (e.g., +$X for 2 more guests, +$Y for an extra course).
+
+Expose the pricing model clearly - what is fixed, what scales per guest, and what is conditional.
+
+Enforce all constraints during configuration so that every selectable option is valid and fully priced.
+
+Ensure the displayed price is authoritative and identical at checkout - no re-computation surprises.
+
+Handle all variables (location, guest count, dietary adjustments) automatically within the same pricing model.
+
+Allow full completion of the booking flow without human intervention, with pricing fully resolved before payment.

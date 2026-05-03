@@ -1,0 +1,58 @@
+**Chef Profile: Aaron Sanchez - Street Food Rockstar**
+
+I'm Aaron Sanchez, renowned chef and owner of two street food trucks that are constantly on the move across the vibrant cityscape. My mission is to bring the authentic flavors of my Mexican roots right to the streets where people live, work, and play. Each day, we serve up delicious tacos, elotes, and other street food delights at various locations, festivals, and events. With a revenue model that keeps us in the black by consistently serving around 500-700 customers per truck daily at $6-$8 per meal, my team of 15 dedicated crew members ensures our two trucks are always ready to roll out.
+
+Right now:
+* I manage 50+ events per month across the city
+* Our revenue targets hover around $2M annually per truck
+* My team is split into kitchen crews and street-side sales teams
+* We primarily operate in urban hotspots like parks, festivals, and busy streets
+
+---
+
+### Primary Failure: The Permit Paper Trail 
+
+With our trucks constantly on the move, keeping up with the ever-changing permit requirements for each new location is a nightmare. We often find ourselves in sticky situations where we've parked up without realizing there's an unexpected road closure or event cancellation that leaves us sitting idle and losing out on potential revenue. This happens at least once every two weeks, costing us around $500-$1000 per incident as crew members' wages eat into our profits.
+
+---
+
+### Structural Issue: Ingredient Sourcing 
+
+Our mobile nature means we have to source ingredients from multiple suppliers daily just to keep the trucks stocked. The current workaround is my lead chef and I manually plan out each day's menu based on what produce and proteins are freshest and cheapest at various markets that morning. This process takes a good 2 hours but ensures we're always serving top-quality food. However, if one of our go-to suppliers suddenly raises prices or goes out of business, it throws off the whole operation for that day.
+
+---
+
+### Structural Issue: Weather Chaos 
+
+Living in a city with unpredictable weather means we often have to pivot on a dime when sudden storms roll in. Our current workaround is having an "A-team" and "B-team" menu ready so we can quickly switch gears from grilling outside to huddling up indoors with the grill if the skies open up unexpectedly. This usually costs us around 20% of our daily revenue for that truck, as people tend to seek shelter from the rain.
+
+---
+
+### Structural Issue: Cashflow Frustration 
+
+Our cash-heavy operations mean we're always at risk of running out of money mid-event when we get an unexpected surge in customers. We've had to start limiting menu options halfway through peak lunch hours to conserve cash flow. This leaves customers feeling disappointed and us scrambling to find more banknotes for the next rush.
+
+---
+
+### Structural Issue: Staffing Shortfalls 
+
+With our high-volume, low-margin business model, finding experienced crew members who are willing to work long shifts in unpredictable conditions is challenging. We often have to train up new hires on the job, which slows down service and leads to mistakes that cost us in customer satisfaction ratings.
+
+---
+
+### Psychological Model
+
+I optimize for: Consistent quality and authentic flavors
+I refuse to compromise on: Using fresh ingredients and paying my crew a living wage
+I avoid: Overcomplicated tech solutions that don't deliver tangible results
+I evaluate tools by: How easily they can be adopted by my team and integrated into our existing workflows
+
+For this system to work for me, it must:
+
+1. Seamlessly integrate with my existing supplier network 
+2. Provide real-time weather updates and suggest menu pivots when needed
+3. Offer an all-in-one cash management solution that tracks sales across multiple events
+4. Include a built-in staff scheduling tool that helps us balance out shifts based on crew availability
+5. Integrate with our existing CRM to help us manage customer relationships better
+6. Provide analytics and insights into menu performance so we can make data-driven decisions about what to serve where
+7. Allow me to set up geofenced alerts for permit requirements at new locations without needing to manually input each one

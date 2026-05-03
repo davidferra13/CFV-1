@@ -1,0 +1,73 @@
+**Staff Profile: "Jacques" - Prep Kitchen Assistant (The Machine)**
+
+I am here to move things. My job is to ensure that when the Head Chef needs 15 pounds of perfectly brunoiseed shallots or 40 liters of finely diced mirepoix, I have it, ready to go. I don't think about the menu; I think about the volume. I work relentlessly, cutting, peeling, and organizing ingredients so the service staff can focus on the plating. My primary goal is throughput and consistency, no matter how chaotic the kitchen gets.
+
+### Business Reality
+
+Right now:
+* I work **5** shifts per week, often including 1 major weekend event, sometimes requiring 10-12 hours of prep time.
+* My pay is **$16.00/hour**, and I am typically assigned to prep for 2-3 distinct services (e.g., lunch buffet, dinner service, catering station) within a single day.
+* I report to the Sous Chef, but I also take direction from the Lead Garde Manger and the Banquet Coordinator, meaning I have three different sets of expectations. I am not certified in anything beyond basic knife skills, but I am expected to be self-sufficient in high-volume prep.
+* My scope is limited to the main prep kitchen in the restaurant's basement and the satellite prep station in the dedicated catering annex, which is a 15-minute walk away.
+* Our current briefing and scheduling setup is a mix of a shared Google Sheet that gets updated manually by the Sous Chef, and then crucial, last-minute changes are communicated via a group text message to the 5 prep assistants.
+
+---
+
+### Primary Failure: Ingredient Handoff Inconsistency
+
+The biggest problem is the chaotic handoff between prep and service. I spend hours prepping 10-15 different components—sauces, vegetable cuts, pre-portioned proteins—all labeled and organized for service. However, because the service team is often working on multiple stations (garde manger, saucier, grill), they frequently pull the wrong component, or they pull it before I've finished the final batch. This leads to significant waste—we often have to discard entire batches of prepped product because the wrong day's product is mixed with the current day's, or because the component was pulled and forgotten, spoiling the usable amount. This waste directly increases our cost of goods sold (COGS) and requires the Sous Chef to spend 1-2 hours every evening manually auditing what was used and what needs to be repacked or discarded.
+
+---
+
+### Structural Issue: Ambiguous Prep List Ownership
+
+I receive a large, often sprawling prep list (sometimes 3-5 pages) that lists components needed for 3-4 different services (e.g., "Salad Station: 8 lbs cucumber," "Dinner: 12 lbs shallot," "Catering: 20 lbs celery"). This list is usually a printed, static document that I have to manually check off. The problem is that the list doesn't assign ownership or volume to specific shifts or stations. If the Salad Station only needs 6 lbs of cucumber, but the list says 8 lbs, I waste time prepping 2 extra pounds, or I waste the entire batch because the next station needs a different cut entirely.
+
+---
+
+### Structural Issue: Dynamic Volume Changes Not Communicated
+
+Our prep lists are frequently outdated. For example, we might prep 50 portions of roasted root vegetable hash, but 30 minutes before service, the Banquet Coordinator texts that the client reduced their headcount from 100 to 70. The prep list remains unchanged, and I continue to prep the full 50 portions, wasting time and ingredients. My current workaround is having to stop, wait for the Sous Chef to see the text, and then manually cross-reference the new guest count against the massive printed prep list to figure out the new target volume.
+
+---
+
+### Structural Issue: Lack of Centralized Component Inventory Tracking
+
+Once I finish prep, I move the ingredients to a central holding area. Because we have 15+ different components ready for service (e.g., diced tomatoes, blanched beans, mixed herbs, various sauces), there is no systematic way to know exactly how much of each component is left, or which specific service it was meant for. I rely on the Lead Garde Manger to visually check the containers and verbally confirm the remaining quantity ("We have enough for 150 plates"). If they forget to mention a container that is half empty, the service runs out 20 minutes into service, causing a massive bottleneck and forcing a frantic, last-minute scramble.
+
+---
+
+### Structural Issue: Scheduling Overlap and Assignment Conflicts
+
+The Google Sheet schedule is a nightmare when roles overlap. If I am assigned to prep for both the Saturday Brunch buffet (which requires 10 large trays of pre-cut fruit) and the Saturday Night Dinner (which requires 8 lbs of specific, pre-blanched greens), I often get conflicting directions. The Brunch station lead might tell me to prioritize the fruit prep, while the Sous Chef might yell that the greens are the absolute priority. I end up spending the first hour of my shift juggling two entirely different, equally important tasks, slowing down both operations and risking quality control on both ends.
+
+---
+
+### Structural Issue: Tracking Ingredient Hand-off Accountability
+
+When I prep a component (e.g., a specialized vinaigrette for a specific client menu), I label it with the client name and the prep date. However, when the service team pulls it, there is no way for me, or the kitchen manager, to log *when* it was taken or *who* took it. This is critical for inventory and waste tracking. If we run out of a specific client component, I cannot prove if the error was due to insufficient prep volume, or if the service team simply misplaced or misused the component.
+
+---
+
+### Psychological Model
+
+I optimize for: **Efficiency and measurable output.** If I can see the goal, the resources, and the required timeline, I can execute the prep in the most logical, fastest sequence.
+I refuse to compromise on: **Component integrity and volume accuracy.** A half-empty container of product that was supposed to last until midnight is unacceptable; it means wasted effort and wasted ingredients.
+I avoid: **Verbal communication and paper trails.** If I have to listen to someone describe a change or transcribe a list from a whiteboard, I lose time and accuracy.
+I evaluate tools by: **How quickly they get me from raw ingredient to actionable service component.** If a system adds more steps or requires data I don't need in the moment, it's useless clutter.
+
+I think like a machine: if the input variables are clear, the output is predictable. I am physically capable of handling high volume, but I am bottlenecked by disorganized information flow. I need a system that acts as a single source of truth for ingredients and assignments, allowing me to operate at peak capacity without needing constant human intervention or manual reconciliation.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must automatically calculate the total required volume of every ingredient component based on the aggregated guest count and the combined menu needs for all scheduled services.
+2. The system must allow me to digitally 'check off' prep tasks, simultaneously updating a live inventory count and linking that component to the specific service or client it belongs to.
+3. The system must send real-time, actionable alerts to the Sous Chef and Lead Garde Manger when a component's inventory count drops below a pre-set minimum threshold (e.g., 20% remaining).
+4. The system must allow me to view a single, consolidated prep schedule that aggregates all assigned services, eliminating conflicting priorities and showing required preparation time blocks sequentially.
+5. The system must generate a clear, printable, and digital "Prep Manifest" that automatically breaks down the total volume requirement for each ingredient by specific, measurable unit (e.g., "Shallot: 12 lbs," not just "Shallot: Prep").
+6. The system must integrate the final ingredient handoff to the service team, allowing them to digitally record the component they pulled and the time it was removed, thereby preventing inventory discrepancies and waste claims.
+7. The system must generate a cost report based on the ingredients prepped and the ingredients confirmed as unused or wasted, allowing the kitchen to track prep efficiency and COGS accurately.

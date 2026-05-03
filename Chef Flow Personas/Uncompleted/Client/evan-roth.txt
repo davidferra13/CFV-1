@@ -1,0 +1,55 @@
+Client Profile: "Evan Roth" - Principal Frontend Engineer, E-Commerce Platforms (Cart Purist)
+
+I’ve spent years building carts, checkout flows, and pricing engines. There is no excuse for not showing a live total. If I can add items to a cart anywhere on the internet and see the number update instantly, I expect the same here. If I don’t see that, I assume the system is broken or hiding something.
+
+Business Reality
+Right now:
+
+I book 6–8 private dining experiences per year, typically 2–6 guests. Occasionally up to 10 for group events.
+
+Budget ranges from $1,000 to $4,500. I’m not trying to minimize cost - I’m trying to understand it instantly.
+
+I expect to complete a booking in one continuous flow: configure → review → pay.
+
+Dietary needs are lightweight but must be captured correctly - usually one restriction per event.
+
+Locations are predictable - my apartment or a friend’s place. I expect location to be just another variable in the system.
+
+I operate entirely through web/mobile UI. I do not want to message a human to complete a transaction.
+
+I think in UI states. If something isn’t visible, it doesn’t exist.
+
+Primary Failure: No Cart Mental Model
+The biggest issue is that there’s no cart. I should be able to “add” a dinner configuration the same way I add items to any product cart. Instead, I’m forced into a fragmented flow where I configure something without seeing its cost, then get a quote later. That breaks the mental model completely. If I can’t see a running total, I don’t feel like I’m buying anything - I feel like I’m requesting something. I don’t request. I purchase.
+
+Structural Issue: Missing Line Items
+There’s no concept of line items. A dinner is treated as one opaque block instead of a composition of parts - courses, guests, add-ons, staffing, travel. I want to see each component as a line item with its own cost. Right now, I get a single number with no breakdown, which makes it impossible to understand or adjust.
+
+Structural Issue: No Persistent State
+If I navigate away or refresh, my configuration is gone or resets. That’s unacceptable. A cart should persist. I should be able to build a dinner, come back later, and see the same configuration with the same pricing. Without persistence, the system feels fragile and untrustworthy.
+
+Structural Issue: UI Lag on Pricing
+Even when pricing exists, it often lags or requires a manual refresh. That’s a failure. Pricing updates should be instantaneous - sub-100ms. If I change guest count and wait even a second for the total to update, it feels broken. That hesitation creates doubt.
+
+Psychological Model
+I optimize for: immediate visual feedback and continuous state
+I refuse to compromise on: a live, persistent cart with accurate pricing
+I avoid: any flow that separates configuration from cost visibility
+I evaluate tools by: whether they behave like a modern e-commerce checkout
+
+Pass / Fail Conditions
+For this system to work for me, it must:
+
+Provide a persistent cart where my dinner configuration lives and updates in real time.
+
+Display a continuously updating total price as I add, remove, or modify components.
+
+Break down pricing into clear line items (per guest, per course, add-ons, fees).
+
+Update pricing instantly with no perceptible lag when inputs change.
+
+Preserve my configuration and pricing state across sessions and devices.
+
+Allow me to move directly from cart to payment without reconfiguration or revalidation.
+
+Eliminate any “request quote” step - everything must function as a direct purchase flow.

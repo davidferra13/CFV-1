@@ -1,0 +1,46 @@
+**Chef Profile: Roy Choi - Mobile Street Food Innovator**
+
+I am Roy Choi, a Los Angeles-based chef and restaurateur known for pioneering the modern food truck movement. My operation consists of 15 mobile street food units that I manage across Southern California, serving up innovative Asian fusion cuisine at various events, pop-ups, and permanent locations.
+
+Currently:
+* I oversee an average of 100 unique client bookings per month, including weddings, corporate events, film premieres, and neighborhood block parties.
+* My gross revenue for the year is projected to be around $2.5 million, with each food truck generating approximately $200,000 in annual sales.
+* My team comprises a crew of 25, including chefs, cooks, dishwashers, servers, and event coordinators, organized into two separate units that rotate on six-day workweeks.
+* I operate in major metropolitan areas like Los Angeles, Santa Monica, and Long Beach, with a focus on high-traffic locations such as the Hollywood Walk of Fame and the Venice Beach Boardwalk.
+
+My current tech setup includes:
+* A mix of Google Sheets for inventory tracking and Microsoft Excel spreadsheets for scheduling and payroll.
+* An array of smartphones and personal calendars for inter-team communication and coordination.
+* Custom-printed paper tickets for on-site orders and cash management systems.
+
+### Primary Failure: Permit Chaos
+
+The biggest operational problem I face is the constant chaos surrounding food permits. Each location requires its own set of permits, which can be costly and time-consuming to obtain. Last month alone, I spent over $10,000 on permits for just 30 events. The current workaround involves a dedicated event coordinator who spends hours researching and applying for permits, but this process often leads to last-minute cancellations or rescheduling due to permit denials or delays.
+
+### Structural Issue: Limited Inventory Visibility
+
+Another issue I face is limited visibility into my inventory across multiple units. I currently use Google Sheets to track inventory levels, which works well on paper but becomes cumbersome when trying to monitor stock levels in real-time across all trucks simultaneously. This lack of visibility often results in food waste and the need for emergency restocks at a cost of around $500 per incident.
+
+### Structural Issue: Real-Time Staff Scheduling
+
+I also struggle with real-time staff scheduling, especially during peak season when we have multiple events every day. Our current workaround involves using Microsoft Excel spreadsheets to plan our staffing weeks in advance, but this process doesn't account for last-minute changes or unexpected absences. On average, I spend about 3 hours per week manually updating and redistributing these schedules, leading to potential coverage gaps that negatively impact event quality.
+
+### Structural Issue: Inefficient Cash Management
+
+Another problem is our inefficient cash management system. We rely on custom-printed paper tickets for orders and have a separate cash handling system in each truck. This setup makes it difficult to track cash flow across all units and leads to significant discrepancies when reconciling at the end of each day. The inconsistencies cost us an average of $1,000 per week due to miscalculated deposits and lost revenue.
+
+### Structural Issue: Client Communication Challenges
+
+Finally, I face challenges with client communication, especially during the booking process. With 100+ unique clients per month, managing RSVPs, ticket sales, and event details through personal calendars and text messages is inefficient and prone to errors. This setup leads to missed bookings, incorrect billing information, and poor overall client experience.
+
+For this system to work for me, it must:
+
+1. Streamline the permit management process by providing a centralized platform where I can easily research, apply for, and track permits across all locations.
+2. Offer real-time inventory tracking and monitoring capabilities that allow me to maintain optimal stock levels while minimizing food waste.
+3. Provide an efficient staff scheduling tool that enables me to plan shifts weeks in advance and quickly adjust schedules on the fly without sacrificing coverage or quality.
+4. Implement a unified cash management system that integrates ticket sales, deposit calculations, and reconciliations across all trucks seamlessly.
+5. Introduce a centralized client communication portal where I can manage bookings, event details, and guest interactions efficiently from one platform.
+6. Offer advanced analytics tools to help me analyze my operations data and make informed decisions about pricing, staffing levels, inventory management, and more.
+7. Ensure robust security measures that protect sensitive information like employee records and customer data while maintaining the platform's user-friendliness.
+
+In conclusion, as I continue to grow my street food empire in Southern California, it is essential for me to have a reliable technology partner that understands the unique challenges faced by mobile street food operators. A comprehensive operations management system will undoubtedly help me overcome these obstacles and allow me to focus on what truly matters: creating unforgettable culinary experiences for my customers.

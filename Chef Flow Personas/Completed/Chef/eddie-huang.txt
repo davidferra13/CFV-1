@@ -1,0 +1,67 @@
+**Chef Profile: "Eddie Huang" - Pop-Up Culinary Disruptor (Hyper-Niche Operator)**
+
+I’m Eddie. My whole thing is that I don't do restaurant business. I don't want the four walls, the overhead, the corporate bullshit. I do the pop-ups, the supper clubs—the high-stakes, one-night events where we take a totally unexpected space, like a warehouse corner or a back room in a dive bar, and we make something unforgettable. I'm selling an experience, a vibe, and a meal that feels illegal.
+
+### Business Reality
+
+Right now:
+* I manage **4 to 6** distinct pop-up events per month, ranging from 10 to 40 seats.
+* My revenue model is highly variable, averaging **$7,000 to $12,000** per event, with 70% coming from ticket sales and 30% from private catering/add-ons.
+* I run a core team of **4** people: myself, a sous chef, a prep cook, and a dedicated front-of-house runner. We are highly skilled but operate under intense, temporary pressure.
+* My geographic scope is hyper-local, primarily within the **Midtown/Lower East Side** area of a major city, requiring me to scout and book multiple non-commercial venues weekly.
+* My current tech setup is a chaotic mix of **Google Sheets** (for inventory and costing), **Eventbrite** (for ticketing and waitlists), and **WhatsApp/Textbook** (for last-minute staffing and communication).
+
+---
+
+### Primary Failure: The Pre-Event Costing Black Hole
+
+The single biggest operational pain point is that my costing process is utterly disconnected from the actual event booking and menu finalization. I can’t reliably know the true cost of goods until the day after the event because the menu often changes based on ingredient availability or the venue's immediate sourcing capabilities. This means my profit margins for *next* month’s booking are always guesswork, forcing me to pad my ticket prices just to account for potential waste or unexpected ingredient price spikes. It costs me at least 5-10 hours of manual spreadsheet reconciliation after every event, time that should be spent developing the next concept.
+
+---
+
+### Structural Issue: Guest Flow and Capacity Tracking
+
+My current system for managing guest capacity is ridiculously manual. When I book a venue, I get a physical floor plan and a maximum capacity, but when we hit the waitlist via Eventbrite, I have no real-time visibility into how many people are confirmed vs. how many are likely to show up, and how that impacts the optimal seating arrangement or service speed. I use a combination of **physical paper planners** and **spreadsheet formulas** to manually subtract the confirmed count from the venue's total capacity, which breaks down immediately if I have to accommodate a last-minute VIP booking or a sudden cancellation that needs to be filled.
+
+---
+
+### Structural Issue: Dynamic Menu & Ingredient Reconciliation
+
+Because my menus are designed to be hyper-seasonal and sometimes dictated by what a specific, small-scale vendor can provide that week (e.g., "we only got these specific heirloom tomatoes today"), I cannot maintain a stable, standardized recipe library. I write up temporary **PDF documents** and send them via email to my sous chef, and I then create a separate, often incomplete **Google Sheet** for the ingredient list and cost. When the ingredient list changes, I have to manually update 3-4 different documents, which inevitably leads to me forgetting to update the cost of a major item like a specific type of olive oil, causing my final P&L sheet to be wrong.
+
+---
+
+### Structural Issue: Vendor Communication and Fulfillment
+
+I source everything from a small network of hyper-local, often non-digital vendors (a specific fishmonger, a specialty produce guy, a local bakery). My communication with them—confirming quantities, delivery times, and specific quality requirements—is done through a patchwork of **text messages** and **phone calls**. There is no single place where the confirmed menu translates into a single, comprehensive order sheet. If I forget to confirm the delivery time for the artisanal bread or if the fishmonger sends me the wrong cut, I don't find out until I'm standing in the kitchen at 4 PM, causing a 30-minute delay in service prep.
+
+---
+
+### Structural Issue: Staffing for Ephemeral Events
+
+Since my events are sporadic, I don't have a permanent, dedicated staff. I rely on a roster of highly skilled, freelance workers who are booked per event. Managing their availability, ensuring they know the specific menu, and paying them accurately is a nightmare. I use a mix of **email threads** and a **shared Trello board** that is always out of date. If I need to cancel a shift last minute, or if I need to confirm a shift change, I have to chase down 3-4 people individually, which eats up valuable operational time and increases the chance of miscommunication.
+
+---
+
+### Psychological Model
+
+I optimize for: **Experience quality and perceived scarcity.** The guests have to feel like they are part of something exclusive and unexpected.
+I refuse to compromise on: **Ingredient integrity.** If the ingredients aren't perfect, the whole thing is garbage, no matter how good the marketing is.
+I avoid: **Any system that requires me to sit down and "manage" data.** I want to be in the kitchen, moving, smelling, tasting. Spreadsheets are for accountants, not artists.
+I evaluate tools by: **How quickly they can handle rapid, high-stakes changes without me having to rebuild the process.**
+
+I think in terms of flow state—the entire process must be seamless, from the initial booking to the final plate being served. Any friction point, any moment I have to stop and think about a spreadsheet or a text message, is a catastrophic failure of the experience, and therefore a failure of the business.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must allow me to input a temporary, variable menu and instantly generate a comprehensive, accurate ingredient manifest and associated COGS report for the specific number of expected guests.
+2. The system must allow me to connect a booked event's ticket count to a specific venue's physical capacity, tracking real-time guest confirmations and waitlist status against the hard limit.
+3. The system must centralize and manage multiple, non-standard vendor orders (e.g., a specific cut of meat, 3 gallons of oil, 1 dozen specialty bread) and generate a consolidated, actionable delivery manifest that I can share and track.
+4. The system must provide a dedicated event booking module that allows me to define the required staff roles, track their availability, and generate an automated, centralized roster for the specific event date.
+5. The system must integrate my primary booking channel (Eventbrite) and automatically update the guest list, which then feeds into the specific menu costings and inventory requirements for that single night.
+6. The system must handle the creation of multiple, version-controlled menus (e.g., "NYC Pop-Up V1," "Brooklyn Pop-Up V2") and ensure that every change to a recipe or ingredient immediately flags the impact on the total cost for that specific event.
+7. The system must allow me to upload and associate the physical venue layout and capacity constraints directly to the event booking, so I don't have to manually cross-reference the two data points.

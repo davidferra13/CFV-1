@@ -1,0 +1,50 @@
+**Chef Profile: "Dominic Reyes" - Chef-Owner (Displaced)**
+
+I built my reputation on cooking, not managing a business. Now that I’ve started my own operation, I barely touch the stove. My days are filled with logistics, emails, pricing, scheduling, and problem-solving—everything except the thing I’m actually good at.
+
+### Business Reality
+
+Right now:
+
+* 10–15 events per month (private dinners, small events, occasional corporate work)
+* $35,000–$75,000 monthly revenue
+* Team of 3–5 (prep cooks, servers, part-time help)
+* 60–80% of my time spent on admin, coordination, and client management
+* 100+ emails/messages per week across text, email, and social platforms
+* Menus, pricing, sourcing, and staffing all managed manually
+* Cooking personally at only 30–40% of events
+
+### Primary Failure: Operator Overload
+
+I became the bottleneck for everything. Every inquiry, decision, change, and issue flows through me. I write menus, respond to clients, calculate pricing, order ingredients, coordinate staff, and troubleshoot problems. By the time I get to the kitchen, I’m already drained. The business is growing, but my role has shifted from chef to full-time operator. The cost is that my core skill—cooking—is being diluted. My workaround is working longer hours, but that just spreads me thinner.
+
+### Structural Issue: No Delegation Framework
+
+I have help, but I don’t have systems. Tasks live in my head or scattered across messages, so I can’t hand them off cleanly. If I delegate, I still have to explain everything in detail and double-check it afterward. It’s faster to just do it myself, which defeats the purpose. My workaround is partial delegation, but it creates inconsistency and still keeps me overloaded.
+
+### Structural Issue: Fragmented Workflow
+
+Client communication, menu creation, sourcing, scheduling, and execution all happen in different places. Nothing flows together. I’ll get an inquiry via text, build a menu in a document, calculate pricing in my head or a spreadsheet, then order ingredients manually. Every step is disconnected, and I have to carry context between them. My workaround is managing it mentally, but that doesn’t scale.
+
+### Structural Issue: Loss of Craft Time
+
+Cooking is no longer the default—it’s the exception. Even when I’m in the kitchen, I’m thinking about emails I haven’t answered or problems I need to solve. There’s no protected space for the actual craft. My workaround is blocking off time to cook, but it’s constantly interrupted by business demands.
+
+### Psychological Model
+
+I optimize for: getting things done quickly and keeping the business moving
+I refuse to compromise on: the quality of the food and client experience
+I avoid: unnecessary complexity and systems that require heavy setup
+I evaluate tools by: whether they give me back time to actually cook
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. Automatically capture and structure client inquiries so I don’t have to manage them manually.
+2. Turn inquiries into menus, pricing, and plans without requiring me to rebuild everything from scratch.
+3. Allow me to delegate tasks clearly with full context so my team can execute without constant oversight.
+4. Connect all parts of the workflow (clients, menus, sourcing, scheduling) into a single system.
+5. Reduce the volume of manual communication I have to handle daily.
+6. Give me clear visibility into operations without requiring me to be involved in every step.
+7. Return a significant portion of my time back to cooking without sacrificing control.

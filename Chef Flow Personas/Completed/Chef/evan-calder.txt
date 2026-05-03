@@ -1,0 +1,50 @@
+**Chef Profile: "Evan Calder" - Solo Private Chef & High-Pressure Operator (Responder)**
+
+I run a solo private chef business across New England, coordinating with another chef primarily for overflow and emergency situations. The collaboration works best under pressure—but that’s also where it breaks the most.
+
+### Business Reality
+
+Right now:
+
+* 20–26 events per month (high volume, frequent last-minute bookings)
+* Average booking: $2,000; monthly revenue: $45,000–$65,000
+* Solo operator; pulls in freelancers on short notice
+* Geographic scope: Connecticut, Massachusetts, Rhode Island, frequent travel north
+* Counterpart chef: northern region, similar volume, used for overflow/emergency support
+* Current tools: Instagram + SMS (leads), Calendar (scheduling), Notes app (prep), Venmo/Square (payments)
+* Coordination: reactive—calls and texts during urgent situations
+
+### Primary Failure: No System for Time-Critical Coordination
+
+When something breaks—last-minute booking, cancellation, ingredient failure—we rely on each other, but there’s no system to support that. Everything is handled through urgent texts or calls. There’s no structured way to signal availability, request help, or coordinate quickly. The workaround is direct communication, which fails if someone is busy, driving, or mid-service.
+
+### Structural Issue: No Real-Time Availability Signal
+
+I don’t know if the other chef can help in a moment of urgency without contacting them directly. There’s no passive signal of availability or capacity. The workaround is calling or texting, which adds delay.
+
+### Structural Issue: No Emergency Task Routing
+
+There’s no way to assign or request urgent tasks in a structured way. Everything is verbal or text-based, which leads to miscommunication. The workaround is repetition and confirmation, which slows response time.
+
+### Structural Issue: No Post-Incident Tracking
+
+After an emergency, nothing is recorded. We don’t track what happened, how it was resolved, or how to improve. The workaround is memory, which doesn’t lead to system improvement.
+
+### Psychological Model
+
+I optimize for: speed, reliability, and damage control
+I refuse to compromise on: delivering under pressure and maintaining reputation
+I avoid: delays, uncertainty, and missed communication
+I evaluate tools by: whether they perform under worst-case scenarios
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. Provide real-time signals of availability without requiring direct contact.
+2. Enable structured urgent requests that can be accepted or declined quickly.
+3. Surface the fastest viable option for resolving a time-critical issue.
+4. Work reliably under high-pressure conditions with minimal input.
+5. Log emergency interactions for later review and improvement.
+6. Require no setup time during urgent scenarios.
+7. Never introduce delays or friction in critical moments.

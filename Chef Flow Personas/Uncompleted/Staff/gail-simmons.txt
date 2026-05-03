@@ -1,0 +1,67 @@
+**Staff Profile: "Gail Simmons" - Event Service Captain (High-Volume Logistics)**
+
+I am a captain, which means I’m the person who makes sure the entire service runs like clockwork, from the first cocktail to the final plate. My job isn't just serving; it’s coordinating the flow of 12-15 people across a large, unfamiliar venue, making sure that every detail—from the wine pairing to the dessert plating—is executed perfectly for high-end, high-stakes clientele. My reputation is on the line with every single event.
+
+### Business Reality
+
+Right now:
+* I work an average of **4** shifts and **6** distinct events per month, often spanning 10-14 hours across prep, service, and cleanup.
+* My pay is structured hourly, averaging **$28-$32/hour**, but my bonus structure (which is critical) depends on the flawless execution of the event, sometimes tied to a $10,000+ client bill.
+* I am the designated lead for a team of **12 to 18** service staff (servers, bussers, bar staff). I require specialized training in high-volume fine dining service protocols and am responsible for managing the cleanup handoff to the next team.
+* My scope is large: I manage the entire event lifecycle, from the initial site walk-through at a venue like the Plaza Hotel or a private mansion, through the full service, and until the final inventory count of remaining assets (linens, specialty equipment).
+* My current briefing and scheduling setup is a chaotic mix: I receive initial booking details via a dedicated email thread, the preliminary roster is shared on a Google Sheet, and all critical, last-minute changes (like a venue fire code change or a vendor delay) are communicated via panicked group texts.
+
+---
+
+### Primary Failure: Fragmented Operational State of Mind
+
+My biggest pain point is that I never have a single, consolidated view of the entire event's status. I have the menu details in one place, the staffing roster in another, the venue logistics in a third (usually a PDF), and the payment/billing details in a fourth. This fragmentation means that if a key vendor is delayed, or if we realize we are short 3 servers, I have to spend precious, non-billable time cross-referencing four different sources of truth. This slows down my decision-making, increases my stress, and, worst of all, risks service failure. When I am forced to guess at the status of resources or personnel, it directly impacts the client experience, which is my primary metric for success.
+
+---
+
+### Structural Issue: Staff Roster Volatility and Communication Overload
+
+The staff roster is always unstable. I get the initial list of **15** people from the client or the agency, but then I have to manage substitutions, last-minute no-shows, and specialized skill gaps (e.g., "We need two people who know how to run the specialized ice bath station"). I track these changes manually on a Google Sheet, and then I have to send out follow-up texts to confirm shifts, which leads to "confirmation fatigue." If I rely solely on texts, I inevitably miss the one person who read the message late, leaving me unprepared for the gap in my team of 15.
+
+---
+
+### Structural Issue: Inefficient Pre-Event Logistics Handoff
+
+The handoff from the sales/booking team to the operational service team is a nightmare. The booking sheet has the client's name, the date, and the final headcount (**120 guests**), but it rarely has the crucial operational details I need, such as the precise floor plan layout, specific vendor load-in times, or the specialized equipment required (e.g., "We need 8 industrial warming trays"). I have to chase these details via email, which means I don't have the full operational picture until 48 hours before the event, forcing me to cram critical prep work into the service day.
+
+---
+
+### Structural Issue: Post-Service Accounting and Inventory Reconciliation
+
+The cleanup and wrap-up process is a massive operational drain. We use a manual checklist (printed on paper) to account for everything: specialty linens, rented china, liquor inventory, and even branded items. We are responsible for reconciling the total usage against the initial inventory list, which is a time-consuming, highly detail-oriented task that takes up at least **90 minutes** of my time after a 12-hour shift. This manual reconciliation process is prone to human error and is not easily auditable or transferable to the next month's costing reports.
+
+---
+
+### Structural Issue: Menu and Ingredient Variability Tracking
+
+Every single event has a slightly different menu, sometimes with last-minute modifications (e.g., "The vegetarian option needs to be gluten-free *and* nut-free"). I have to manage these variations and ensure my team knows the precise ingredient substitutions and service protocols (e.g., "Use the alternative sauce only for the specific table in the West Wing"). I keep a binder of these bespoke menus and modification notes, which is impossible to search, update, or share quickly with the team on the day of service.
+
+---
+
+### Psychological Model
+
+I optimize for: Predictability and control over chaos.
+I refuse to compromise on: Timeliness and the accuracy of the final service execution.
+I avoid: Anything that requires me to switch between more than three different screens or tools to find one piece of information.
+I evaluate tools by: How quickly and reliably they can consolidate disparate information streams into one actionable dashboard view.
+
+I think in terms of operational flow and risk mitigation. My decisions are always weighed by: "If this piece of information is missing, what is the immediate operational failure?" I need a system that doesn't just store data, but guides the user through a sequential, checklist-driven process that mimics the natural flow of a high-stakes event.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must consolidate the client's booking, the venue's floor plan, and the service menu into one single, easily viewable operational dashboard.
+2. The system must allow me to assign and track specific, non-negotiable tasks (e.g., "Set up 12 charging stations in the ballroom") and assign them to specific team members, tracking their completion status in real-time.
+3. The system must provide a centralized, auditable log of all operational changes—be it a menu modification, a staff substitution, or a vendor delay—linked directly to the specific event instance.
+4. The system must manage and track inventory discrepancies (e.g., linens, specialty equipment, alcohol usage) using digital checklists that can be signed off by multiple team leads and immediately feed into a cost report.
+5. The system must allow me to quickly pull up the complete, authorized service protocol for any single guest or table, detailing dietary restrictions, special requests, and specific seating arrangements, without having to search through historical emails.
+6. The system must generate a comprehensive, multi-stakeholder briefing packet (for staff, vendors, and management) 72 hours in advance, containing the full run-of-show, roles, and emergency contacts.
+7. The system must integrate staff scheduling directly with the client's expected headcount, automatically flagging potential staffing deficits based on the complexity and size of the booked event.

@@ -1,0 +1,73 @@
+**Vendor Profile: "Todd English" - Specialty Ingredient Distributor (Niche Supplier)**
+
+I specialize in sourcing and distributing highly specialized, premium, and often hyper-local ingredients—things you can't get at a standard wholesale club. My focus isn't on volume; it's on quality, provenance, and meeting the precise, sometimes esoteric, needs of top-tier culinary talent. I act as a critical bridge between unique global sources (like specific heritage grains or rare spices) and the demanding back-of-house kitchen.
+
+### Business Reality
+
+Right now:
+* I fulfill **150-200** chef orders, deliveries, or event rentals per **week**.
+* My average order value is $1,800, but I deal with complex pricing structures: bulk orders use tiered pricing (e.g., 5-10 lbs vs. 10-20 lbs), specific seasonal items require minimum purchase commitments (e.g., must buy 2 cases of heirloom tomatoes), and I require a 50% deposit for any order exceeding $5,000.
+* My catalog contains over **400** distinct SKUs, ranging from dried spices and specialty oils to fresh, perishable produce and cured meats. Inventory availability is highly seasonal and dependent on small, often single-source farms.
+* I operate out of a small, refrigerated warehouse located in the **Downtown Culinary District**, but I frequently source directly from farms in the surrounding county (within a 50-mile radius) and occasionally handle fulfillment for events in the broader metropolitan area.
+* Our current ordering and communication setup is a chaotic mix: Chefs send initial inquiries via **text message** or email, confirming details with a **PDF quote** I manually generate, and then submitting the final order via a **shared Google Sheet** that requires constant updates and cross-referencing.
+
+---
+
+### Primary Failure: Managing Perishability and Substitutions
+
+My biggest headache is that my business model relies on extreme freshness and niche sourcing. When a chef orders a specific item—say, a limited-run varietal of Italian truffle—and that item is unexpectedly unavailable due to weather or harvest failure, I have to find a perfect substitution *and* explain why it's a suitable replacement, all while maintaining the chef’s trust. If I simply send a cheaper, similar item without proper communication, the kitchen workflow stalls, the dish fails, and I lose credibility. This requires significant manual oversight and negotiation, costing me valuable time that should be spent sourcing new products, not resolving logistical failures.
+
+---
+
+### Structural Issue: The Quote-to-Order Gap
+
+When a chef first contacts me, they need a quote for a multi-item menu concept (e.g., "We need 10 lbs of this spice, 3 cases of these heirloom tomatoes, and 2 racks of this specific pork"). I spend 1-2 hours manually pulling pricing and availability data from multiple spreadsheets, generating a PDF quote, and then sending it. If the chef agrees, they take that PDF, manually transfer the items and quantities into a Google Sheet, and then I have to manually cross-check the final order against the original quote, often resulting in miscounts or incorrect pricing tiers.
+
+---
+
+### Structural Issue: Complex Inventory Status and Forecasting
+
+Because I deal with specialty ingredients, standard "in stock" isn't enough. I need to know if an ingredient is "available for pre-order next week," "requires a minimum 7-day lead time," or "is only available if the farm delivers by Tuesday." My current system is a patchwork of physical whiteboard notes, emails to my farm contacts, and a few outdated Excel sheets. When I try to forecast inventory for 3-4 weeks out, the manual data reconciliation is error-prone and takes half a day, meaning I can't proactively advise clients on what will be available for their menu planning.
+
+---
+
+### Structural Issue: Tiered Bulk Pricing and Minimums
+
+My pricing isn't linear. If a chef orders 1-5 lbs of olive oil, the price is X. If they order 6-10 lbs, the price is X minus 15%. If they order 11+ lbs, the price drops to Y. This complexity is terrible for the client and the invoicing process. Currently, I have to use a separate pricing calculator sheet and manually apply the correct tier discount to the final invoice, which means if the client adds an item that shifts them from a 5-lb tier to a 6-lb tier, I have to manually recalculate the entire cost structure and issue a revised quote.
+
+---
+
+### Structural Issue: Documentation of Provenance and Substitutions
+
+Chefs don't just pay for an ingredient; they pay for the story and the quality guarantee. If I substitute a varietal of rice, I need to document *why* I chose it, *what* the difference is in flavor/texture, and *how* the chef should adjust the recipe. Currently, this information lives in a mix of handwritten notes, email threads, and verbal conversations. If I have to manually communicate a substitution, I risk losing the crucial context, which damages my reputation as a reliable, knowledgeable partner.
+
+---
+
+### Structural Issue: Invoicing for Mixed Fulfillment Models
+
+Because I source from multiple locations (my warehouse, the farm, a specialized importer), the fulfillment model is always complex. Sometimes a single order requires items shipped via refrigerated courier from the farm, and other items (like spices) are hand-delivered from my warehouse. When I generate the invoice, I have to manually itemize the cost of *each fulfillment leg*—the refrigerated delivery fee, the standard dry goods handling fee, the specialized packaging cost—and make sure the chef understands that these costs are tied to the complexity of the order, not just the weight.
+
+---
+
+### Psychological Model
+
+I optimize for: **Trust and Reliability of Supply.** If I can guarantee the quality and availability of a unique ingredient, I am invaluable.
+I refuse to compromise on: **Ingredient Integrity and Provenance.** If the sourcing or handling process compromises the quality story, I won't sell it.
+I avoid: **Generic, "one-size-fits-all" systems.** Anything that forces me to simplify my inventory or pricing model feels restrictive and inaccurate.
+I evaluate tools by: **How well they handle complexity and customization.** If the platform can manage non-standard pricing and variable sourcing rules, I'll use it.
+
+I spend most of my time acting as a highly knowledgeable consultant, not just a vendor. My decisions are driven by maintaining my reputation as a specialist who can solve the most difficult sourcing problems for top chefs.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1.  The system must allow me to create and manage complex, multi-tiered pricing structures (e.g., 1-5 lbs = $X, 6-10 lbs = $Y, 11+ lbs = $Z) that automatically adjust the final invoice total based on the quantity entered.
+2.  The system must allow me to track and flag ingredients based on specific lead times and seasonality (e.g., "Requires 7-day pre-order," "Peak season only," or "Available after harvest date X").
+3.  The system must facilitate the generation of a formal, traceable substitution record, linking the original requested SKU, the replacement SKU, and a mandatory text field for the *reason* for the substitution (e.g., "Taste profile is similar, but texture is softer").
+4.  The system must support multiple, distinct fulfillment cost centers that can be itemized on a single invoice (e.g., "Refrigerated Courier Fee," "Dry Goods Handling," "Local Farm Pick-up Fee").
+5.  The system must allow me to maintain a detailed, searchable record of the ingredient's provenance (e.g., "Farm Name," "Harvest Date," "Region") that is visible to the chef during the ordering process.
+6.  The system must enable me to generate a complete historical record showing all previous quotes, the final order placed, and any subsequent manual adjustments or substitutions made, all tied to a single client/chef account.
+7.  The system must allow me to upload and link detailed sourcing documents (e.g., a Certificate of Origin or a specific harvest report) directly to the SKU profile for auditing purposes.

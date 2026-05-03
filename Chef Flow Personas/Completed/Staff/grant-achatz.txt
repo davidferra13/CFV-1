@@ -1,0 +1,67 @@
+**Staff Profile: "Grant Achatz" - Prep Kitchen Assistant (High Intensity)**
+
+I am a Prep Kitchen Assistant, and my job is to make sure the foundation for every single service is perfect. I handle the bulk of the labor—the chopping, the trimming, the portioning, and the mise en place for every station. I am the person who ensures that when the stoves fire up, the chefs don't have to stop and look for an ingredient or a piece of equipment. I work fast, I work hard, and I thrive in chaos, but I need absolute clarity on what needs to be done and when.
+
+### Business Reality
+
+Right now:
+* I work **6-7** shifts per week, often covering **3** different kitchen stations (garde manger, saucier, pantry) during both prep and service roles.
+* I am paid a minimum of $17/hour, and I am required to pass a basic food handling certification (ServSafe) every **2** years.
+* The team structure is a rigid brigade system: I report directly to the Sous Chef, who reports to the Head Chef. My primary role is assisting the Station Lead, but I must also manage my own prep checklist independently. I wear a standard black chef coat and apron, and I am required to be on site by **9:00 AM** sharp.
+* My scope is the entire main kitchen and attached walk-in coolers, serving a high-end dining room of **80-120** guests per shift.
+* My current briefing and scheduling setup is a mix of a shared Google Sheet (for general availability), rapid-fire texts (for immediate changes), and a physical, printed prep list that gets updated by hand every single day.
+
+---
+
+### Primary Failure: Uncoordinated Prep Handoffs
+
+The biggest operational problem is the chaotic handoff between the prep day and the service day, especially when multiple stations are involved. Because the prep list is often printed and passed around, ingredients are frequently double-counted, or worse, ingredients are prepped but then not marked as "ready" or assigned to a specific station. This leads to critical bottlenecks—for example, the saucier might find the main vegetable purée is missing or that the allocated portion size is incorrect because the garde manger thought they were pre-portioning it for the charcuterie board. This lack of digital accountability costs us valuable time, forcing us to delay service by 15-20 minutes while we scramble to find or remake components, which directly impacts our ability to hit our high revenue targets.
+
+---
+
+### Structural Issue: Dispersed Task Assignment
+
+The prep list is physically printed and often managed by a rotating supervisor. If the Sous Chef is pulled to the dining room, the prep list for the next day can sit on a clipboard, getting wet, getting lost, or simply being updated with a sharpie marker and illegibly. We rely on verbal updates or a frantic text message to tell us that the task has changed (e.g., "Don't chop the fennel, just slice it"), meaning the person who actually does the work doesn't have a reliable, centralized record of the *current* assignment, leading to wasted labor and incorrect ingredient usage.
+
+---
+
+### Structural Issue: Real-Time Ingredient Inventory Gaps
+
+When I am doing bulk prep, I am constantly pulling ingredients from the walk-in. If I prep 20 lbs of potatoes for the mash, I need to mark that down immediately so the Inventory Manager doesn't accidentally order it again, or worse, so the Head Chef knows exactly how much is available for costing. Currently, I have to manually write it on a notepad, which is then manually reconciled against the digital inventory spreadsheet later, creating a massive lag and a high risk of over-ordering or under-stocking, which impacts our margins on every single service.
+
+---
+
+### Structural Issue: Cross-Functional Schedule Conflicts
+
+My prep schedule often overlaps with other staff members' needs, particularly when a new piece of equipment needs to be used, or when a station requires a large volume of ingredients that are currently being processed. If the grill chef needs the industrial slicer for 3 hours, and I need it for 4 hours to process the weekly cured meats, we are forced into a messy negotiation, usually involving the Kitchen Manager shouting over the noise. There is no system that visually maps out equipment usage and staff dependency across the entire day, leading to significant workflow friction and delays.
+
+---
+
+### Structural Issue: Role-Specific Prep Documentation
+
+Different stations have vastly different prep needs (e.g., the pastry station needs temperature-controlled recipes; the fish station needs specific filleting techniques). Right now, the recipes and prep guides are stored across three different locations: a physical binder, a cloud-based PDF, and sometimes, a handwritten note from the previous night's closing shift. When I am training or covering a new station, I waste critical time trying to locate the most current, official version of the prep documentation, slowing down my ability to become fully productive.
+
+---
+
+### Psychological Model
+
+I optimize for: Efficiency and physical flow. I need to know exactly what I need, where it is, and what the next step is, so I can keep my hands moving and my focus tight.
+I refuse to compromise on: Precision. If the measurements or the required component count is wrong, the entire service fails, and I will be the one who gets blamed.
+I avoid: Anything that requires me to stop my physical work to input data, or any process that forces me to rely on vague, generalized instructions.
+I evaluate tools by: How quickly they allow me to transition from a physical task (chopping) to a digital confirmation (task complete) without adding friction or extra steps.
+
+I think in terms of sequential workflow: Step A requires Ingredient B, which must be pre-approved by Station Lead C. If any single step in that chain is broken, the entire process stalls. I am hyper-aware of bottlenecks, and my focus is always on minimizing wasted motion, both human and ingredient.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1.  **Map** my assigned daily prep tasks (e.g., "Process 20 lbs of potatoes") directly to the required ingredients and the exact starting quantity available in the walk-in inventory.
+2.  **Generate** a dynamic, role-specific checklist that updates in real-time, allowing me to mark ingredients as "Used for Station A" or "Awaiting Quality Check," thereby updating the central inventory count.
+3.  **Display** a visual schedule of shared equipment usage (e.g., "Slicer booked by Garde Manger 9:00 AM - 1:00 PM") so I can plan my prep flow without conflict.
+4.  **Allow** the Sous Chef to push immediate, mandatory prep list changes (e.g., "Replace fennel with celery root") to my device, automatically flagging the change and updating the required ingredient count.
+5.  **Provide** immediate access to the current, official version of the recipe and prep guide for any station I am assigned to, including mandatory portion sizing and yield expectations.
+6.  **Alert** me automatically when the predicted usage of a core ingredient (e.g., "Low on smoked paprika") drops below the minimum threshold needed for the next service, allowing me to flag the need for an immediate restock order.
+7.  **Show** a clear, aggregated log of all required staff certifications (ServSafe, Allergen Handling) relevant to my current station and service area, ensuring I am only assigned tasks I am legally and operationally cleared for.

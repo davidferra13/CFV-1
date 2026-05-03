@@ -1,0 +1,67 @@
+**Partner Profile: "Ashley Christensen" - Farm Dinner Co-host (Curated Collaborator)**
+
+I co-host dinners and curated experiences that blend high-end dining with local farm sourcing. My primary job is bridging the gap between a beautiful, seasonal farm experience and a polished, high-quality dinner service. I manage the promotion, guest list curation, and overall brand visibility for these limited-run, high-ticket events.
+
+### Business Reality
+
+Right now:
+* I co-host, promote, or support **4 to 6** events, referrals, or partnerships per **quarter**.
+* We typically operate on a **15% revenue share** of the gross ticket price, plus a mandatory $500 minimum booking fee per event, which is paid out 30 days after the event completion.
+* My venue/brand is tied to a rotating list of **8–12 specific local farms** (e.g., Willow Creek Dairy, Evergreen Orchard). The promotion often involves a joint offer: "Ticket includes a gift box of produce from Farm X."
+* We have shared event locations (the farms) and must manage highly variable calendar availability, requiring us to book at least **18 months** in advance for prime seasonal spots.
+* Our current coordination setup is a chaotic mix of **WhatsApp texts** for immediate updates, **Google Sheets** for preliminary guest lists, and a single shared **Dropbox folder** for vendor contracts and photos. There is no single source of truth for ticket sales, attendance, or payments.
+
+---
+
+### Primary Failure: Fragmented Revenue Tracking and Payout Management
+
+The biggest operational problem is the lack of a unified system for tracking revenue streams and managing payouts. Because tickets are sold through multiple channels—sometimes via my personal website, sometimes through the farm’s ticketing system, and sometimes through a dedicated third-party booking link—I cannot generate a single, accurate, real-time report of the total gross revenue per event. This means calculating my 15% share and ensuring the $500 minimum is met is a manual, time-consuming nightmare that often leads to disputes with the farm or the culinary team, delaying my payment cycle by weeks. It costs me valuable time and puts strain on my relationships with the farms, which is my most critical asset.
+
+---
+
+### Structural Issue: Disconnected Booking and Guest Manifests
+
+The problem is that the booking mechanism is completely decoupled from the guest list management. Guests often book through a simple external form (like Typeform or a dedicated ticketing site) which feeds a CSV file, but that file is not automatically updated when dietary restrictions, special notes, or payment failures occur. We currently have to manually cross-reference the raw booking CSV against a separate "Confirmed Attendance" Google Sheet, which means if a guest changes their status or adds a critical allergy note, it can be missed entirely, leading to significant kitchen operational delays and potential health and safety risks.
+
+---
+
+### Structural Issue: Non-Standardized Inventory and Menu Costing
+
+Since I work with 8–12 different farms, the inventory and ingredient sourcing details are highly variable and lack standardization. When I design a menu, I have to manually contact the farm coordinator (often via email) to confirm the exact yield, availability, and unit cost of the featured ingredient for that specific date. I cannot reliably build a cohesive menu costing model (plate cost vs. total event revenue) because the source data for the ingredients is housed in disparate emails, handwritten notes, or highly variable Excel templates provided by the farm’s own bookkeeper.
+
+---
+
+### Structural Issue: Cross-Platform Promotional Asset Management
+
+My brand relies heavily on high-quality, seasonal visual content (photos, videos, recipes, ambiance shots) that must be shared across multiple platforms (Instagram Stories, Email Newsletters, the farm's website, and the event program). Currently, all these assets are stored in a shared Dropbox folder, but they are never cataloged by event, date, or usage rights. When I need a specific photo from last fall’s event for next spring’s promotion, I spend hours sifting through thousands of files, often resulting in using slightly outdated or improperly licensed images, which damages my professional presentation.
+
+---
+
+### Structural Issue: Multi-Stakeholder Communication and Task Tracking
+
+The workflow involves at least 5 key stakeholders: me, the farm manager, the head chef, the wine vendor, and the booking assistant. Every task—from "confirming the linens are delivered" to "finalizing the bread service order"—is communicated via scattered group texts or follow-up emails. There is no centralized place to track who is responsible for what, by when, or if that task has actually been completed. This leads to critical tasks falling through the cracks, such as the necessary final count for linens or the required permit check, putting the entire event timeline at risk.
+
+---
+
+### Psychological Model
+
+I optimize for: **Curated exclusivity and seamless, elevated guest experience.** My reputation is built on the feeling that this event is unique and deeply connected to the source.
+I refuse to compromise on: **The narrative integrity of the farm-to-table story.** Any technical glitch or operational mistake that diminishes the perceived quality of the ingredients or the presentation is unacceptable.
+I avoid: **Complex, time-consuming data entry or manually reconciling numbers from different systems.** I need visibility without the administrative overhead.
+I evaluate tools by: **How quickly they can integrate my existing, non-digital workflows (like farm contacts and seasonal timelines) into a beautiful, simple interface.**
+
+I think in terms of "story arcs" and "seasonal rhythm." If a process feels clunky, overly technical, or doesn't feel *organic* to the dining experience, I will abandon it. I need a system that supports the magic, not one that dictates the process.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must **automatically reconcile** ticket sales from three different external sources (my site, farm site, vendor site) into one consolidated, real-time revenue report.
+2. The system must **allow me to track and calculate** the 15% revenue share and the $500 minimum payment, automatically generating a clear, auditable ledger for payout reconciliation.
+3. The system must **host a unified event manifest** that integrates bookings, confirms dietary restrictions, and allows for real-time status updates from multiple co-hosts (e.g., chef updates ingredient count).
+4. The system must **maintain a dynamic, searchable library of event assets** (photos, menus, recipes) indexed by farm, season, and event date, ensuring proper usage rights are tracked.
+5. The system must **provide a clear, shared task board** that maps out event timelines across all co-hosts and vendors, showing clear ownership (who is responsible) and deadlines for every single operational step.
+6. The system must **manage and document the sourcing details** for all ingredients linked to a specific menu item, including farm name, unit cost, and historical availability.
+7. The system must **generate printable, standardized vendor packets** for each event, including final guest counts, required setup maps, and vendor payment details, reducing reliance on physical paper planners.

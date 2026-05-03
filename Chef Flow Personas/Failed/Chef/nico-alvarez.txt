@@ -1,0 +1,82 @@
+Chef Profile: "Nico Alvarez" - Private Chef (Waste Controller)
+
+I don’t lose money on pricing - I lose it on waste. Trim, spoilage, over-ordering, under-utilized product - it adds up fast, and I don’t have a clean way to see it. I know I’m leaving margin on the table, but I can’t quantify where or why.
+
+Business Reality
+Right now:
+
+8–12 events per month (multi-course private dinners)
+
+$18,000–$40,000 monthly revenue
+
+Solo operator with occasional prep help
+
+10–20% estimated ingredient waste per event
+
+6–10 vendors used per week with varying pack sizes
+
+No standardized yield tracking or leftover utilization system
+
+2–4 last-minute re-orders per month due to miscalculations
+
+Primary Failure: Invisible Yield Loss
+I buy for dishes, not for yield. I don’t track trim percentages, usable portions, or how leftovers roll into future menus. I end up over-ordering to be safe, then discarding or underusing product. My workaround is intuition based on past events, but it’s inconsistent across ingredients and vendors.
+
+Structural Issue: No Yield Database
+I don’t have a reference for how much usable product I get from what I buy (whole fish, primal cuts, bulk produce). Each purchase is a fresh guess. My workaround is memory, which varies with seasonality and vendor quality.
+
+Structural Issue: No Leftover Routing
+Extra product has no assigned future. I might have herbs, stock, or partial components, but there’s no system telling me how to convert them into the next event’s menu. My workaround is ad hoc specials, which don’t always fit.
+
+Structural Issue: Pack Size Mismatch
+Vendors sell in fixed units that don’t align with my event sizes. I buy a case for a small dinner and eat the cost. My workaround is splitting across events mentally, which breaks when schedules shift.
+
+Psychological Model
+I optimize for: minimizing waste without risking shortages
+I refuse to compromise on: product quality and freshness
+I avoid: under-ordering that jeopardizes service
+I evaluate tools by: whether they turn purchasing into precise, repeatable decisions
+
+Pass / Fail Conditions
+For this system to work for me, it must:
+
+Track yield by ingredient and vendor (usable % from purchased unit).
+
+Convert menus into exact purchasing quantities using yield data.
+
+Route leftovers into future menus automatically.
+
+Flag pack size inefficiencies before ordering.
+
+Learn from past events to improve future purchasing accuracy.
+
+Integrate with vendor catalogs to standardize units.
+
+Reduce waste without increasing risk of running out.
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Word count too low: 395 (minimum 500)
+Flags: none
+Rejected: 2026-04-30T21:30:49.554Z
+-->
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Word count too low: 421 (minimum 500)
+Flags: none
+Rejected: 2026-05-01T05:31:25.242Z
+-->
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Word count too low: 447 (minimum 500)
+Flags: none
+Rejected: 2026-05-01T19:09:52.533Z
+-->

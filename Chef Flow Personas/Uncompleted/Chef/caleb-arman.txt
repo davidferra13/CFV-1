@@ -1,0 +1,55 @@
+Chef Profile: "Caleb Arman" - Private Chef & Confidential Operator (Guarded)
+
+I tried to modernize my workflow with tools that promised organization and automation. Instead, I exposed everything - client names, private addresses, phone numbers, even financial details - and it nearly destroyed my business. Now I operate with one priority above all: nothing leaves my control unless I know exactly where it’s going.
+
+Business Reality
+Right now:
+
+6–10 events per month (high-end private clients)
+
+$25,000–$60,000 monthly revenue
+
+Solo operator with occasional trusted assistant
+
+Handling 3–5 active client households at any given time
+
+Managing sensitive data daily (addresses, access instructions, dietary restrictions, payment details)
+
+Previously used 2–3 SaaS tools for notes, CRM, and scheduling - now reduced to minimal external tools
+
+Majority of records now stored locally or in isolated, manual systems
+
+Primary Failure: Loss of Data Control
+The breach didn’t happen because I was careless - it happened because I trusted systems I didn’t fully understand. Data I entered - client notes, conversations, even payment-related details - ended up exposed. Clients found out before I did. I had to explain how their private information was compromised through my workflow. The damage wasn’t just technical - it was reputational. My workaround now is extreme caution: I avoid storing anything sensitive in external platforms unless absolutely necessary, but that slows everything down.
+
+Structural Issue: Invisible Data Handling
+Most tools don’t clearly show what happens to my data after I input it. Where is it stored? Who has access? Is it being used for training or shared with third parties? I don’t get clear answers. That lack of transparency is what caused the problem in the first place. My workaround is assuming worst-case scenarios and limiting what I input, but that reduces the usefulness of any system I use.
+
+Structural Issue: Trust vs Functionality Tradeoff
+The more powerful a system is, the more data it requires. But the more data I give it, the more risk I take on. I’m constantly balancing efficiency against exposure. If I go fully manual, I’m safe but inefficient. If I use advanced tools, I’m efficient but exposed. There’s no system that gives me both control and capability. My workaround is partial usage - only using tools for non-sensitive data - but that fragments my workflow.
+
+Structural Issue: No Audit or Accountability
+When something went wrong, I had no clear audit trail. I couldn’t see exactly what was accessed, when, or by whom. That made it impossible to respond quickly or confidently. I was reacting instead of controlling the situation. My workaround now is keeping redundant records and limiting access, but it’s reactive, not preventative.
+
+Psychological Model
+I optimize for: control, security, and client trust
+I refuse to compromise on: protecting client data under any circumstance
+I avoid: black-box systems, unclear data policies, and unnecessary data exposure
+I evaluate tools by: how much control and visibility they give me over my own data
+
+Pass / Fail Conditions
+For this system to work for me, it must:
+
+Store all sensitive data in a way that I fully control (local or explicitly defined storage), with no hidden access.
+
+Provide complete transparency on where data is stored, how it’s used, and who can access it.
+
+Allow me to restrict or segment data so only necessary information is exposed in any given context.
+
+Maintain a detailed audit log of all data access and actions, including timestamps and actors.
+
+Ensure that no data is used for training, sharing, or external processing without explicit permission.
+
+Enable secure handling of highly sensitive information (addresses, payment details) without forcing me into unsafe workarounds.
+
+Give me confidence that a breach cannot happen silently - I need immediate visibility and control if anything changes.

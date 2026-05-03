@@ -1,0 +1,73 @@
+**Public Profile: "Charlotte Vance" - High-End Culinary Explorer (Event Booker)**
+
+I live in a city where the dining scene is constantly shifting, and I view food as an experience, not just a meal. My job requires me to host clients who expect unique, memorable, and highly curated dining moments—everything from a private tasting menu for 8 people to a themed dinner event for 20. I don't just search for a restaurant; I search for a *story* and a *culinary narrative*.
+
+### Business Reality
+
+Right now:
+* I search for or compare **10 to 15** chefs, events, cuisines, or menus per **month** when planning client experiences.
+* My typical budget for these curated events ranges from **$150 to $500 per person**, but I am willing to pay up to **$1,000+ per person** for truly exclusive, highly rated, or unique experiences.
+* I need strong filters for **availability**, **review scores** (especially for group bookings), **unique cuisine focus** (e.g., molecular gastronomy, regional Peruvian), and **private booking capacity** (minimum 6 guests).
+* My booking context is usually a **referral** from a trusted industry contact or a direct search for a specific, high-end experience in a metropolitan area like NYC or LA.
+* My current discovery setup is a mix of **Instagram feeds**, **Google Maps searches** (followed by manual website deep dives), and **word-of-mouth recommendations** from my network of 5 other event planners.
+
+---
+
+### Primary Failure: Discovery Overload and Trust Decay
+
+The biggest operational problem is the overwhelming signal-to-noise ratio when I am looking for a specific, high-quality event. When I search, I am presented with 50 options, but 45 of them are either too generic, too far out of my price range, or lack sufficient detail about their actual *experience*. I waste hours sifting through glossy but shallow profiles, only to find out later that the chef specializes in a cuisine I don't want, or that their availability for my specific group size is nonexistent. This process significantly increases my planning time and, more importantly, increases my risk of booking a mediocre experience, which reflects poorly on me and my clients.
+
+---
+
+### Structural Issue: Fragmented Availability and Capacity Checking
+
+I have to check availability across 3 to 5 different platforms (the chef’s website, OpenTable, Instagram DMs, and Google Business Profile) just to know if a venue can handle my group of 8 on a Friday night. If I find a chef I like, I often have to send a separate email inquiry asking about group capacity, which forces me to wait 24 to 48 hours for a simple "yes" or "no." This manual cross-referencing of availability across multiple silos is incredibly inefficient and makes spontaneous booking impossible.
+
+---
+
+### Structural Issue: The Menu/Experience Detail Gap
+
+Most public profiles give a general description ("Modern Italian"). They fail to provide the critical detail I need: the *menu structure* and the *costing breakdown*. I cannot tell if the $300 per person includes wine pairings, a three-course tasting menu, or if it's just a placeholder price. I end up emailing the venue repeatedly, asking, "What does the final cost include?" This back-and-forth slows down my client pitches and forces me to manage complex cost projections using my personal spreadsheet, which is a massive headache.
+
+---
+
+### Structural Issue: Lack of Contextual Filtering
+
+I need to filter not just by "Italian" or "Mexican," but by *style* or *theme*. For example, I might need "Italian, but with a focus on coastal Sicily, and requiring a wine pairing element." Current search tools are too broad. I have to use general search engines and manually adjust keywords until I find a chef who might fit, wasting time on irrelevant results and never seeing the full spectrum of options that truly match my niche criteria.
+
+---
+
+### Structural Issue: Poor Inquiry and Follow-Up Tracking
+
+After I find 5 potential venues, I have to track the status of 5 separate inquiries: Did Chef A respond to my email? Did Chef B require a deposit? Did Chef C need me to fill out a separate form? I have to maintain a separate, manual spreadsheet (Google Sheets) with columns for 'Venue,' 'Date Sent,' 'Required Deposit,' 'Follow-Up Date,' and 'Notes.' This is prone to human error, and I frequently forget to follow up on the best leads simply because they are buried in my personal email inbox.
+
+---
+
+### Structural Issue: Trust Signal Verification
+
+When I find a great-sounding event, I need to know if the positive reviews are about the *food* or about the *service*. Is the restaurant consistently rated highly for managing large, complex, private group bookings (e.g., 20 people needing 4 private tables)? Generic 4.5-star ratings are meaningless if they are based on small, casual, walk-in parties. I need a dedicated public signal that verifies their capacity and success rate with large, high-end group events.
+
+---
+
+### Psychological Model
+
+I optimize for: **Trustworthiness and Curated Exclusivity.** I need to feel confident that the experience I book is not only high quality but also genuinely unique and vetted by the platform.
+I refuse to compromise on: **Seamless Information Flow.** If I have to leave the booking process to check a third-party source (Google, Yelp, a separate website), I will abandon the option.
+I avoid: **Ambiguity and Manual Data Entry.** I hate systems that require me to copy/paste data, or that require me to wait multiple days for simple confirmation.
+I evaluate tools by: **The Speed and Completeness of the Booking Path.** If it takes more than 5 minutes to get a comprehensive understanding of the event's cost, capacity, and availability, I assume it's too complicated.
+
+I think in terms of efficiency multipliers. If a tool saves me 3 hours of manual searching and cross-referencing, it is worth the subscription fee. I am constantly juggling multiple potential bookings for my clients, so the system must be the single source of truth for all potential options and their associated logistics.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1.  The system must **aggregate** real-time availability and capacity for group sizes (6-25 people) across multiple booking channels into a single, unified calendar view.
+2.  The system must **allow me to filter** search results not just by cuisine, but by specific operational parameters like "Private Dining Capacity," "Minimum Group Size," and "Event Type (Tasting Menu vs. Buffet)."
+3.  The system must **provide transparent, structured costing estimates** immediately upon initial profile review, detailing the base cost per person, and listing included items (e.g., "Includes 3 courses, tax, and basic service fee").
+4.  The system must **act as a single booking funnel**, allowing me to submit a detailed inquiry (including group count, date range, and specific dietary needs) and track the status, required deposits, and responses from the chef/venue within my dashboard.
+5.  The system must **validate and display specific trust signals** related to group event management, such as "Successfully hosted 50+ private bookings" or "Average group rating for 10+ people."
+6.  The system must **enable me to save and compare** up to 15 potential event profiles and their associated logistical data (dates, prices, notes) in one place, eliminating the need for external spreadsheets.
+7.  The system must **support multiple forms of inquiry** (e.g., email, dedicated booking form, or phone call scheduling) while maintaining a comprehensive audit log of all communications.

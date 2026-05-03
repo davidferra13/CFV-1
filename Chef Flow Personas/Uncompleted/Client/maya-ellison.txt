@@ -1,0 +1,55 @@
+Client Profile: "Maya Ellison" - Brand Strategist & Social Host (Curator)
+
+I don’t want to pick from three prebuilt menus. That feels lazy and boxed in. I want to build something that fits my group exactly, even if that means making a hundred small decisions.
+
+Business Reality
+Right now:
+
+I host 6–10 group dinners per year, usually 6–12 guests. These are social, aesthetic, and very intentional - people expect a certain vibe.
+
+Budgets range from $2,500 to $7,500. I’m willing to spend more if the experience feels tailored.
+
+Payments are usually split, but I’ll front the deposit ($800–$2,000) to lock things in.
+
+My groups are opinionated. Some want lighter food, some want indulgent, some care about presentation more than taste, some are picky but won’t say it directly.
+
+Dietary restrictions vary every time - vegetarian, gluten-free, no pork, etc. - and I need flexibility without sacrificing the overall menu.
+
+Locations are mostly Airbnbs or apartments with decent kitchens, but I don’t want to think about limitations unless they actually matter.
+
+I coordinate everything through group chats, saved Instagram posts, and notes. It’s messy but visual.
+
+Primary Failure: Forced Menu Boxes
+The biggest issue is being forced to choose from fixed menus. I’ll get three options - Menu A, B, or C - and none of them fully work. One has a great starter but a boring main. Another has a good dessert but doesn’t fit dietary needs. I end up compromising instead of curating. It feels like I’m buying a preset package instead of creating something for my group. That kills the whole point of hiring a private chef.
+
+Structural Issue: No Modular Menu System
+There’s no system that lets me mix and match. I want to see a range of options - starters, mains, desserts - and build my own flow. Right now, if I ask to swap one dish, it turns into a custom request that slows everything down. I don’t understand why this isn’t standard. It should be as simple as selecting components.
+
+Structural Issue: Group Input Chaos
+When I involve my friends, it gets messy. I send menu options, people respond in different formats - “I like this,” “not that,” “anything but mushrooms.” There’s no clean way to gather preferences and turn them into a decision. I end up interpreting everything manually, which leads to second-guessing and sometimes complaints after the fact.
+
+Structural Issue: No Constraint Awareness
+I understand chefs need constraints - cost, prep time, kitchen limitations - but I can’t see them. So I suggest combinations that might not work, and then I get pushback later. It makes the process feel like trial and error. I want to explore options within real boundaries, not guess blindly.
+
+Psychological Model
+I optimize for: flexibility, personalization, and group satisfaction
+I refuse to compromise on: having control over the final menu composition
+I avoid: preset packages and rigid choices
+I evaluate tools by: how freely I can explore options without breaking the system
+
+Pass / Fail Conditions
+For this system to work for me, it must:
+
+Present a wide range of individual dish options (e.g., 15–25 items) organized by course, not just fixed menus.
+
+Allow me to build a custom multi-course menu by selecting individual dishes, with instant feedback on compatibility and flow.
+
+Show real-time constraints (pricing, prep complexity, dietary conflicts) as I build, so I don’t choose combinations that won’t work.
+
+Enable my group to view options and submit preferences or votes in a structured way, without messy chat responses.
+
+Automatically adapt the menu to accommodate dietary restrictions while preserving the overall concept.
+
+Update total pricing dynamically as I add or swap dishes, so I always know where I stand.
+
+Let the chef review and approve the constructed menu with minimal back-and-forth, rather than restarting the process.

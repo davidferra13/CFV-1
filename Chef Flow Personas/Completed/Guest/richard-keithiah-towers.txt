@@ -1,0 +1,67 @@
+**Guest Profile: "Richard Keithiah Towers" - High-Profile Investor (Executive Guest)**
+
+I am a highly active investor, content creator, and entrepreneur. My professional life requires me to maintain impeccable connections across entertainment, business, and media sectors. When I attend a private dinner or event, I am not just a guest; I am a representative of my own brand, and the execution of the event reflects directly on my perception of the host and the venue. I expect a seamless, luxury experience that requires zero effort on my part.
+
+### Business Reality
+
+Right now:
+* I attend approximately 8-12 high-profile private dinners, launch events, or ticketed networking receptions per quarter.
+* My total event and networking spend is highly variable, but I typically allocate $15,000 - $30,000 per event for my personal and accompanying guests, not counting the primary booking costs.
+* My dietary requirements are complex: I am severely allergic to peanuts and gluten, and I require a minimum of 500 calories of protein at all times, necessitating specialized menu modifications.
+* My current event context is often highly exclusive, taking place at prestigious venues (e.g., private loft spaces, high-end restaurant sections) with headcounts ranging from 20 to 50 people.
+* My current communication setup is a chaotic mix: my assistant manages initial RSVPs via dedicated WhatsApp groups, final dietary details are communicated via a separate Google Form, and seating arrangements are often handled by the host sending a poorly formatted PDF attachment.
+
+---
+
+### Primary Failure: Operational Ambiguity in RSVP and Guest Manifesting
+
+The single biggest operational problem is the lack of a single, authoritative source of truth for my attendance and my group's details. Because the RSVP process is fragmented (WhatsApp for invites, Google Forms for allergies, email for payment confirmations), there is a massive risk of conflicting or missing data points. If my attendance is confirmed via one channel but my dietary restriction is only captured in another, the catering team will be operating on bad data, leading to wasted food, incorrect service, and, worst of all, a major health risk for me or my party. This operational ambiguity costs me—and by extension, the host—precious time, reputation, and potentially, significant liability.
+
+---
+
+### Structural Issue: Fragmented Initial Invitation and RSVP Flow
+
+The process of being invited is scattered across multiple platforms. Sometimes I receive a physical invitation, sometimes a link via a corporate network, and sometimes a text message. My assistant has to manually cross-reference these disparate invites to determine if I need to RSVP, if a ticket is required, and if any associated payment is due. This manual coordination process creates a significant delay and increases the chance of me missing a critical deadline or misunderstanding the required next steps, forcing my team to spend hours consolidating information that should be automated.
+
+---
+
+### Structural Issue: Inefficient and Unconsolidated Dietary and Restriction Capture
+
+Collecting dietary information is a nightmare. Currently, the host sends a link to a generic form that asks for "restrictions." This is too vague. My assistant must then manually read through the responses and flag specific items (e.g., "Peanut allergy," "Vegan," "Shellfish intolerance"). This data must then be physically transferred to a spreadsheet, and then manually handed off to the kitchen manager. This manual data transfer is prone to human error, especially when dealing with multiple, complex, and conflicting allergies that require specific ingredient sourcing and prep protocols.
+
+---
+
+### Structural Issue: Lack of Integrated Event Communication and Pre-Arrival Checklists
+
+Between the initial RSVP and the day of the event, there is a massive information vacuum. I am never sure about the final run-of-show, the exact timeline for seating, or if there are changes to the menu structure. My team relies on ad-hoc texts from the host ("See you at 7!"). If there is a change—say, the seating shifts from the main room to a smaller annex—this critical information is usually communicated through a single text message, which is easily lost, misinterpreted, or forgotten, creating immediate confusion and poor first impressions upon arrival.
+
+---
+
+### Structural Issue: Disconnected Billing and Feedback Loops
+
+The experience ends with a chaotic mix of interactions. I receive a physical bill at the table, but any associated event details (like a follow-up survey, a thank-you note, or a final check on dietary compliance) come through a separate email link or physical card. There is no single, cohesive post-event journey. This makes it impossible for me to give comprehensive feedback that ties the entire experience together—from the initial booking to the final bill—because the data points are never linked in the system.
+
+---
+
+### Psychological Model
+
+I optimize for: Flawless, frictionless, and highly personalized experiences. Time efficiency is my highest currency.
+I refuse to compromise on: Safety (especially regarding allergies) and the perceived level of luxury and exclusivity.
+I avoid: Any process that requires me, my assistant, or my associates to repeat information or spend time manually reconciling data across different platforms.
+I evaluate tools by: How quickly they can prove they eliminate manual data transfer and centralized communication points.
+
+I think in terms of reputation management and efficiency. If a process is complex, it is perceived as poorly managed, which reflects poorly on everyone involved. I expect the technology to handle the complexity so that the human interaction feels effortless.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must automatically trigger a comprehensive event manifest that links the confirmed RSVP, the specified ticket type, and all recorded dietary restrictions (including severity level) into a single, non-editable kitchen manifest for the event date.
+2. The system must allow the host to send mandatory, multi-channel communication (email, SMS, and in-app notification) to my group 7 days, 48 hours, and 1 hour before the event, detailing the run-of-show and expected changes.
+3. The system must provide a centralized, single-page dashboard for my assistant to view the full event lifecycle, showing booking status, paid tickets, and confirmed guest details without leaving the platform.
+4. The system must allow me to submit and track feedback related to specific components of the event (e.g., "The salmon course" or "The seating arrangement") and link that feedback directly to the operational department responsible for that component.
+5. The system must integrate real-time capacity tracking, allowing the host to instantly see how many seats are allocated versus the total capacity, preventing overbooking conflicts before the event is even finalized.
+6. The system must manage and track the payment status for all attending guests (including ticket purchases and associated minimum spend) against the final bill, generating a detailed, itemized breakdown that is accessible post-event.
+7. The system must provide a clear, immediate confirmation of the event's operational requirements (e.g., "High-alert allergy protocol initiated for 3 guests") to the assigned staff and vendors the moment the booking is confirmed.

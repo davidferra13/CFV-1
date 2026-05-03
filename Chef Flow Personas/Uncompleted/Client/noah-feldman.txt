@@ -1,0 +1,55 @@
+Client Profile: "Noah Feldman" - Product Manager, Fintech Startup (Conversion-Focused)
+
+If I can’t convert immediately, I churn. It’s that simple. Pricing is the gateway to conversion - if it’s not there, the funnel is broken.
+
+Business Reality
+Right now:
+
+I book 4–7 private dinners per year, typically 2–8 guests.
+
+Budget ranges from $1,000 to $5,000. I’m flexible but decisive.
+
+I expect to go from discovery to payment in under 5 minutes.
+
+Dietary needs are minimal but must be captured cleanly.
+
+Locations vary but should not complicate the flow.
+
+I operate entirely through product interfaces - no calls, no emails.
+
+I think in funnels and drop-off points.
+
+Primary Failure: Broken Conversion Funnel
+The biggest issue is that pricing is not part of the initial experience. I land on a page, see options, but no numbers. That’s an immediate drop-off. I’m not entering a funnel without knowing the price. Every additional step before pricing increases friction and reduces conversion. If I have to “request a quote,” I’m gone.
+
+Structural Issue: Delayed Value Delivery
+The system asks for input before delivering value. I’m entering details without knowing if the offering fits my budget. That’s backwards. Pricing is the first piece of value I need.
+
+Structural Issue: No Instant Commitment Path
+Even when pricing appears, there’s often no immediate way to commit. I see a number, but then I have to wait for confirmation or follow another process. That breaks momentum. I want to act while intent is high.
+
+Structural Issue: Inconsistent Pricing Surfaces
+Pricing appears in different formats - sometimes per person, sometimes total, sometimes hidden. That inconsistency creates confusion and hesitation.
+
+Psychological Model
+I optimize for: speed to decision and frictionless conversion
+I refuse to compromise on: seeing price before any commitment
+I avoid: multi-step flows that delay pricing visibility
+I evaluate tools by: how quickly they move me from interest to payment
+
+Pass / Fail Conditions
+For this system to work for me, it must:
+
+Display pricing immediately upon interaction - no gated steps before seeing numbers.
+
+Provide a clear, consistent pricing format (per person + total) at all times.
+
+Allow instant progression from pricing to payment without additional steps.
+
+Maintain pricing consistency across all surfaces - no discrepancies.
+
+Update pricing in real time as inputs change.
+
+Minimize steps between configuration and checkout to reduce drop-off.
+
+Eliminate “request quote” flows entirely in favor of direct conversion.

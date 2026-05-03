@@ -1,0 +1,62 @@
+**Chef Profile: "Nobu Matsuhisa" - Hotel / Resort Executive Chef (World-Renowned Innovator)**
+
+I am Nobu Matsuhisa, a world-renowned chef known for my innovative Japanese-Cuisine fusion. I currently manage 12 high-end restaurants worldwide, including locations in New York City, Las Vegas, London, and Tokyo. My revenue model is based on a mix of fixed venue rents and percentage sales split from each location, with an average annual revenue per restaurant hovering around $15 million. I oversee a team of approximately 350 employees across all outlets, handling everything from kitchen operations to front-of-house service. My restaurants operate within major hotels and resorts, catering to both hotel guests and the general public.
+
+### Primary Failure: Inconsistent Menu Quality
+
+Despite my best efforts, maintaining consistent menu quality across all locations is an ongoing struggle. Even with my executive chefs overseeing each restaurant, I've noticed that some dishes taste slightly different depending on the location. This inconsistency leads to dissatisfied customers and tarnishes my brand's reputation. On average, this problem costs me around $600,000 per year in lost revenue due to customer complaints and lower ratings.
+
+### Structural Issue: Inefficient Inventory Management
+
+Currently, each restaurant manages its own inventory using a combination of spreadsheets and supplier invoices. While this works to some extent, it becomes chaotic during peak seasons when we source ingredients from multiple locations. The lack of centralized control often leads to overstocking at one location while another faces shortages, causing significant waste and increased costs. This inefficient system forces me to dedicate time away from creative pursuits or operational improvements to resolve inventory issues.
+
+### Structural Issue: Outdated Recipe Documentation
+
+Our recipe documentation is outdated and lacks consistency across locations. Some restaurants have adapted the recipes to suit local tastes or preferences, while others stick strictly to the originals. This inconsistency not only leads to variations in menu quality but also makes it difficult for new staff to learn and adapt quickly. We often hire chefs from other cultures with different cooking styles, making it challenging to ensure uniformity across all restaurants.
+
+### Structural Issue: Ineffective Staff Scheduling
+
+Our staff scheduling process is outdated and inefficient. Each restaurant uses a mix of spreadsheets and physical schedules posted in the break rooms. This system makes it hard to manage staffing levels effectively across multiple locations, especially during peak seasons or unexpected events like sudden spikes in customer reservations. We've experienced situations where we had too many staff on standby, leading to idle manpower costs, or not enough staff, causing burnout and poor service.
+
+### Structural Issue: Limited Vendor Collaboration
+
+Our current system limits our ability to collaborate effectively with vendors. We have a mix of long-term contracts and ad-hoc supplier agreements, making it difficult to negotiate bulk discounts or develop custom sourcing strategies. This fragmentation hinders our ability to source unique ingredients at competitive prices, limiting the creative freedom I need to innovate new dishes.
+
+### Psychological Model
+
+I optimize for:
+- Consistency in menu quality across all locations
+- Innovation and uniqueness in my dishes
+- Efficient operations that allow me time for creativity
+- High staff satisfaction and low turnover rates
+- Strong vendor relationships for unique ingredient sourcing
+
+I refuse to compromise on:
+- The integrity of my culinary vision
+- My standards for food quality and presentation
+- Providing a memorable dining experience for customers
+- Maintaining a positive work environment for my team
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. Centralize and streamline inventory management across all locations.
+2. Provide real-time recipe updates and ensure consistency in cooking methods.
+3. Offer an integrated staffing schedule that adapts to customer demand fluctuations.
+4. Facilitate effective vendor collaboration for improved ingredient sourcing.
+5. Integrate with our current POS systems for seamless data flow.
+6. Provide detailed analytics on menu performance, staff efficiency, and inventory usage.
+7. Allow me to create custom recipes easily while maintaining quality standards across all locations.
+
+---
+
+CRITICAL RULES:
+- Write in first person
+- Use SPECIFIC numbers everywhere (client count, revenue, team size, event frequency)
+- Describe REAL workarounds for every gap (paper planners, text messages, spreadsheets, nothing)
+- Minimum 3 structural issues with distinct titles
+- Minimum 5 testable pass/fail conditions written as "The system must [verb] [specific thing]"
+- Do NOT write generic pain points. Every gap must be specific to this food service operator
+- Do NOT write software feature requests. Write business problems with real consequences
+- The identity header MUST start with **Chef Profile:

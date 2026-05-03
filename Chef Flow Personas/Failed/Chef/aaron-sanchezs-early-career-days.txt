@@ -1,0 +1,69 @@
+Chef Profile: Aaron Sanchez - Street Food Rockstar
+
+I'm Aaron Sanchez, a street food rockstar running a fleet of three food trucks in LA. I've been at this for five years now, serving up my signature fusion tacos to hungry crowds across the city. My trucks are constantly on the move, hitting festivals, concerts, and other high-traffic events. Last year alone, we did over $1.2M in sales, with each truck averaging 200+ events.
+
+Business Reality
+
+Right now:
+* I manage 12 key clients/locations/events [details]
+* Revenue model: Each of my three trucks does about $400K a year [details]
+* Team size and structure: I have a crew of 15 - 5 drivers, 7 cooks, 2 assistants
+* Geographic scope: My trucks cover all the major hotspots in LA - the beach, downtown, the valley, the hills
+
+Primary Failure: Event Scheduling Chaos
+
+The biggest pain point is event scheduling. We're constantly getting last-minute cancellations or changes from clients. It's a nightmare trying to juggle everyone's demands while keeping my team informed and our trucks in the right place at the right time. This chaos costs us big time - we've had trucks sit idle for hours waiting on an event that got postponed, or worse, got canceled last minute. We're losing out on $5-10K of revenue per incident.
+
+Structural Issue: Permit Mayhem
+
+Permits are a huge headache. Each truck needs permits for each location, and the rules vary wildly by neighborhood. My team spends hours every week tracking down permits, only to find they got denied or expired. We've had trucks impounded for operating without proper permits, costing us thousands in fines and lost revenue. 
+
+Structural Issue: Cash Flow Nightmares
+
+Cash flow is a constant struggle. We deal almost exclusively in cash, so we're always short on working capital. My team has to make multiple bank runs every day just to break even. And when events get canceled or slow down, it's a real challenge making sure we have enough cash on hand to cover payroll and expenses.
+
+Structural Issue: Weather Woes
+
+Weather is unpredictable and can really throw a wrench in our plans. We've had trucks stuck in traffic for hours due to flash floods, or had to cancel entire days of events when a storm rolled through. There's no way to fully prepare or mitigate the risk - we just have to cross our fingers and hope for the best.
+
+Psychological Model
+
+I optimize for:
+* Revenue per truck/event 
+* Team happiness and retention
+* Consistently high food quality
+* Impressive client rosters
+
+I refuse to compromise on:  
+* The quality of my ingredients
+* My creative freedom with menu items
+* Taking care of my team
+* Maintaining a fun, positive work culture
+
+I avoid:
+* Over-relying on any one client or event type
+* Sacrificing food quality for speed
+* Micromanaging my team too much
+* Getting stuck in the same old routines
+
+For this system to work for me, it must:
+
+1. Seamlessly integrate with my existing scheduling and dispatch systems 
+2. Provide real-time alerts on permit issues and status
+3. Offer cash flow forecasting tools based on historical event data
+4. Help me diversify into new revenue streams like catering and pop-up shops
+5. Integrate with my CRM to automate client communications
+6. Provide weather insights and contingency planning tools for major events
+7. Offer a mobile app for customers to track truck locations and place orders ahead of time
+
+I'm all about efficiency, creativity, and taking care of my team. I need a system that can keep up with the chaos of street food while still letting me be the culinary innovator I am. If ChefFlow can help me optimize my scheduling, cash flow, permits, and weather risks, it'll be a game changer for my business. But if it's just another clunky system to work around, it won't make the cut.
+
+---
+<!-- GENERATION VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Flags: none
+Generated: 2026-05-01T03:21:22.920Z
+Model: hermes3:8b
+Category: street-food-truck
+Seed: Aaron Sanchez's early career days
+-->

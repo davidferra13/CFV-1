@@ -1,0 +1,67 @@
+**Partner Profile: "Danny Meyer" - Culinary Visionary (Early Collaborator)**
+
+I started by running pop-ups and shared dining experiences in other people's kitchens, often just to test a concept or tap into a new neighborhood crowd. My focus was always on the guest experience first, and the profitability second—though those two things eventually had to align. I built my reputation on unique, highly curated collaborations, meaning I constantly needed access to different kitchens, different vendors, and different local suppliers, all in a highly flexible, ad-hoc manner.
+
+### Business Reality
+
+Right now:
+* I co-host, promote, or support **7 to 12** events, referrals, or partnerships per **month**.
+* We operate on a complex structure: a minimum of **15%** revenue share from the ticket sales, plus a guaranteed minimum booking fee of **$500** per event, plus separate vendor commissions ranging from **8% to 15%** depending on the type of partnership.
+* My collaborations involve local farms (e.g., sourcing 100+ lbs of specific produce), specialized breweries (for beer pairings), and other small, high-end restaurants (for cross-promotion/venue use).
+* Our shared event location, calendar, and availability constraints are incredibly tight; we often need to book a space that only opens up 48 hours before the event, and the guest list is fluid, changing by 10-20% week-to-week.
+* Our current coordination setup is a nightmare: it’s a mix of shared Google Sheets for RSVPs and costing, dedicated email threads for vendor confirmations, and texts from my sous chef for real-time operational changes. There is no single source of truth.
+
+---
+
+### Primary Failure: Lack of Real-Time, Multi-Stakeholder Operational Visibility
+
+The biggest problem is that I am constantly playing calendar detective. If a local farm calls with a sudden crop failure, or if the brewery cancels their beer shipment due to equipment failure, or if the kitchen prep team realizes they are overbooked, I don't know until I get a frantic text message, often hours before the event starts. This lack of unified, real-time visibility means I cannot dynamically adjust the menu, the staffing levels, or the marketing messaging instantly. It costs us reputation and, more tangibly, we lose sales because we have to "soft-cancel" components of the event last minute, which damages the perceived value of the collaboration and frustrates the participating vendors who rely on my promise of a minimum guest count.
+
+---
+
+### Structural Issue: Fragmented Revenue and Commission Tracking
+
+When we run a pop-up, the money comes from at least four different sources: the ticket sales (which I collect), the farm vendor payments (which they process), the brewery payments (via their POS), and any ancillary sales (like merchandise). We track this using a mix of spreadsheets and manual receipts. Because the revenue share calculations are so complex—15% of ticket sales minus the cost of the specific ingredients (tracked separately)—it takes my bookkeeper three full days *after* the event to reconcile the final profit margin. This delay means I can’t accurately forecast the profitability of the next collaboration until days later, crippling my ability to book new, profitable partnerships quickly.
+
+---
+
+### Structural Issue: Venue and Resource Negotiation Friction
+
+Securing a kitchen for an event is never straightforward. I have to negotiate the use of the space, the available equipment (do they have a specific oven, or just a range?), the staffing requirements (do they provide dishwashing or just prep space?), and the cost of utility usage (gas, electricity). This process requires emailing three different people (the owner, the manager, and the head chef) across multiple time zones, often over several weeks. I have no standardized way to log what was promised versus what was actually delivered, leading to disputes on the day of the event over access or required resources.
+
+---
+
+### Structural Issue: Guest Journey Hand-Off and Cross-Promotion Management
+
+I am responsible for the entire guest experience, from the initial "discovery" (a social media ad) to the final payment. When I partner with a local winery, I need to drive traffic to their location, and they need to drive traffic back to the event. We currently manage this through separate booking links and printed flyers. There is no unified system that allows us to track which initial touchpoint—the wine promotion, the Instagram ad, or the local paper—actually resulted in the final ticket sale. This makes calculating the true marketing ROI for any single collaboration practically impossible and means I often overspend on promotion channels that aren't working.
+
+---
+
+### Structural Issue: Dynamic Menu and Ingredient Costing
+
+Because I am constantly adapting my menu based on hyper-local availability (e.g., "We have a huge surplus of heirloom tomatoes today, so the dish changes"), I have to manually recalculate the entire ingredient cost sheet and update the menu descriptions and pricing in a shared document. This is incredibly time-consuming and error-prone. If the price of one key ingredient (say, local heritage pork) spikes by 20% mid-week, I have to manually adjust the entire event's costing, which then forces me to adjust the promotional pricing, creating massive logistical drag just to maintain margin integrity.
+
+---
+
+### Psychological Model
+
+I optimize for: The purity of the guest experience and the narrative behind the meal.
+I refuse to compromise on: Ingredient sourcing transparency and the relationship with the local vendor.
+I avoid: Corporate rigidity, large overheads, and any process that feels impersonal or bureaucratic.
+I evaluate tools by: How seamlessly they integrate into the *flow* of a chaotic, high-pressure kitchen environment.
+
+I think in terms of storytelling and community value. The tech has to support the human element—the unexpected collaboration, the local flavor, the serendipitous moment. If a tool makes the process feel cold or overly structured, I will reject it, no matter how functional it seems on paper.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1.  The system must automatically adjust the event's projected COGS and final ticket price when a core ingredient's sourced cost changes.
+2.  The system must allow me to set up and track complex, tiered revenue splits and commission payments across 3+ collaborating vendors and one core entity.
+3.  The system must provide a single dashboard view of all scheduled resources (kitchen capacity, required equipment, necessary staff headcount) for an event, visible to all collaborating partners.
+4.  The system must track the initial marketing touchpoint (e.g., the winery promotion, the local paper ad) that led to a confirmed guest booking, tying the booking directly to the partner who generated the lead.
+5.  The system must handle the fluid nature of the guest list, allowing real-time capacity adjustments and automatic communication to all involved parties (vendors, staff, and the guest) when a component of the event is compromised.
+6.  The system must support the creation of dynamic, multi-day menus where ingredients and associated costs are tied to specific local vendors and sourcing locations.
+7.  The system must provide standardized, legally compliant contract templates and digital signing workflows for temporary venue use agreements with external kitchens.

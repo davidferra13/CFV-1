@@ -1,0 +1,72 @@
+**Partner Profile: "Keith McNally" - Venue Collaboration Partner (High-End Promoter)**
+
+I am the guy who knows how to throw a memorable night. My job isn't just promoting; it's curating an experience—a specific blend of atmosphere, cuisine, and entertainment that justifies a premium price point. I manage relationships with some of the most talented chefs and venues in the city, ensuring that every collaboration is visually stunning and profitable. I need a system that treats my partnership status as crucial as the menu itself.
+
+### Business Reality
+
+Right now:
+* I co-host, promote, or support **15–20** events, referrals, or partnerships per **month**.
+* My revenue share structure is complex: I take a minimum **25%** of the gross ticket sales, plus a flat **$5,000** booking fee for any partnership that requires three or more nights of promotion.
+* My collaborations involve high-end venues (e.g., *The Carlyle*, *The Algonquin*), specific celebrity chefs, and exclusive liquor brands.
+* We have highly variable shared event locations, requiring coordination across multiple physical venues, shared calendars, and a master guest list that changes daily.
+* Current coordination setup is a chaotic mix: shared Google Sheets for guest lists, text threads for last-minute vendor changes, physical contracts stored in binders, and my personal email inbox acting as the single source of truth for all revenue splits.
+
+---
+
+### Primary Failure: The "Last Call" Coordination Collapse
+
+The biggest operational problem is the lack of a single, real-time source of truth for who is doing what, when, and where, especially when a show or event is under pressure. If a venue needs to swap a booked vendor (e.g., the DJ is sick, or the bar needs to close an hour early), the communication fragments across texts and emails. This doesn't just delay the event; it threatens the entire *experience*. I can't afford to manage logistics via a phone call when I should be selling the vision. A last-minute, undocumented change in the event flow means we risk alienating the high-roller clientele who expect flawless, seamless service, which directly impacts my commission and my reputation.
+
+---
+
+### Structural Issue: Revenue Split Visibility and Reconciliation
+
+The payment tracking is a nightmare. When we have a three-party collaboration (Venue A, Chef B, and me), the initial booking agreement might specify a 25% split, but the actual revenue flow comes from three different points of sale (pre-sale tickets, door sales, and bottle service). We use multiple Point-of-Sale (POS) systems, and reconciling the final revenue against the original contract requires downloading raw transaction reports, manually comparing them to the shared Google Sheet, and then emailing the accounting team—a process that costs me 8–10 hours of my time every month, and introduces a 10–15% risk of human error or missed revenue.
+
+---
+
+### Structural Issue: Dynamic Venue Resource Management
+
+I need to schedule multiple, high-stakes events in venues that have limited, bookable resources (e.g., a specific private dining room, a specific performance stage, or a dedicated back-of-house kitchen space). Right now, I rely on the venue manager’s calendar, which is always manually updated and rarely visible to the other collaborating parties. If I book a collaboration using the private room, and another partner accidentally schedules a prep session using the same room without consulting the central booking system, it results in a costly delay, requiring last-minute, expensive vendor rerouting or, worse, forcing a cancellation.
+
+---
+
+### Structural Issue: Multi-Platform Guest Handoff and Experience Continuity
+
+My collaboration involves funneling guests through multiple touchpoints: the initial reservation (online), the pre-event promotion (social media/email), the venue entry (physical check-in), and the final billing/RSVP confirmation. Currently, the guest data is siloed. The initial reservation sheet (Spreadsheet A) doesn't connect to the vendor booking list (Spreadsheet B), and neither connects to the final guest check-in system (POS C). This means I cannot guarantee that the specific VIP bottle service negotiated for a guest on the initial booking is correctly flagged, paid for, and communicated to the floor staff who are running the show.
+
+---
+
+### Structural Issue: Contractual Promotion and Inventory Tracking
+
+When I promote a joint offering—say, "The McNally Signature Cocktail Pairing"—the contract specifies a certain inventory cost and a minimum promotional effort (e.g., 5 mentions on the venue's Instagram). Tracking the fulfillment of these non-monetary deliverables is impossible. We use a shared "Checklist" document, but it's easily ignored, and there is no way to link the successful completion of a promotional deliverable (e.g., "Chef posted photo on 10/15") directly to the final billing or revenue share calculation.
+
+---
+
+### Structural Issue: Ingredient and Menu Costing for Shared Events
+
+For any joint event, the menu is a bespoke, temporary creation. I need to ensure the profitability of the entire experience, not just the ticket sales. If the venue supplies the liquor, the chef supplies the main course, and I coordinate the plating, the final menu cost needs to be calculated instantly, factoring in different vendor pricing and negotiated bulk rates, and then compared against the projected revenue per head. This requires combining three separate vendor cost sheets into one cohesive, accurate cost-per-plate model that changes with every menu tweak.
+
+---
+
+### Psychological Model
+
+I optimize for: **Exclusivity and Seamless Execution.** If the process feels messy, the product feels messy. My reputation is built on flawless, high-status experiences.
+I refuse to compromise on: **Profit visibility and brand control.** I will never accept a revenue split that is opaque or requires more than 15 minutes of manual reconciliation.
+I avoid: **Unstructured communication and tribal knowledge.** I hate having to ask three different people, "Where is the final version of the guest list?"
+
+I think in terms of *flow* and *friction*. If the platform adds a step, it's a failure. If it automates a complex, multi-party handoff and makes the money clear, it's a godsend. My decisions are based on whether the tool saves me time *and* makes me look better to my partners and my clients.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1.  The system must **create** a single, immutable "Event Master Timeline" that automatically updates all associated vendors, resources (rooms/stages), and personnel when any single component is changed.
+2.  The system must **generate** a real-time, auditable financial ledger for every joint event, allowing me to input multiple POS streams and automatically calculate my specific revenue share deduction against the total gross ticket sales, visible to all parties.
+3.  The system must **manage** a central, shared inventory of event resources (e.g., "The Carlyle Private Room," "Chef B's Station") that prevents double-booking across different collaborating partners.
+4.  The system must **track** the fulfillment of contractual promotional deliverables (e.g., "Instagram mention," "Press release inclusion") and link the successful completion of that task to the final payment release schedule.
+5.  The system must **allow** me to build and track temporary, multi-vendor menus, automatically calculating the weighted cost-of-goods-sold (COGS) per plate based on multiple vendor-supplied ingredient pricing and negotiated bulk rates.
+6.  The system must **handle** guest data aggregation, linking the initial reservation source (e.g., my personal booking link) to the final paid ticket, and flagging any negotiated VIP service (e.g., "Bottle Service: Dom Perignon") that needs staff attention upon arrival.
+7.  The system must **provide** a dedicated partner portal where I can review the status of all my active contracts, revenue splits, and scheduled events across all collaborating venues in one dashboard, without needing to email anyone.

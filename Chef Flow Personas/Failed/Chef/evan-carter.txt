@@ -1,0 +1,111 @@
+Chef Profile: "Evan Carter" - Commis Chef in Michelin-Starred Kitchen (Converter)
+
+I was trained in the U.S., and everything I know lives in cups, ounces, and Fahrenheit. Now I’m in a Michelin-starred kitchen in France where everything is grams, liters, and Celsius - and speed matters. I understand metric, but I don’t think in it yet, and that gap shows up every day.
+
+Business Reality
+Right now:
+
+5–6 services per week (lunch + dinner in a Michelin-starred kitchen)
+
+60–90 covers per service depending on season
+
+Brigade of 12–18 chefs on the line
+
+Responsible for 2–3 stations rotating weekly
+
+100% of recipes, prep lists, and ordering in metric units
+
+Personal notes and mental math still in imperial
+
+10–20 on-the-fly conversions per shift under time pressure
+
+Primary Failure: Real-Time Conversion Lag
+Service doesn’t wait for me to convert. When I see 225g, my brain still wants ounces. When I hear 180°C, I translate to Fahrenheit before I act. That extra step costs seconds - and seconds matter here. I’ve over- or under-shot quantities because I rushed a conversion. It’s not a knowledge problem; it’s a reflex problem. My workaround is memorizing common conversions and writing cheat notes, but anything outside those patterns slows me down.
+
+Structural Issue: Recipe Internalization Gap
+Recipes are written in metric, but my intuition is imperial. I can follow instructions, but I don’t feel the quantities. In the U.S., I could eyeball and adjust. Here, I hesitate unless I measure precisely. That affects consistency and confidence. My workaround is over-measuring and double-checking, which adds friction during prep.
+
+Structural Issue: Temperature & Timing Mismatch
+Heat is where I feel it most. I think in Fahrenheit for searing, roasting, and baking cues. In Celsius, I need to translate or rely on learned equivalents. That slows decision-making when I need to adjust on the fly. My workaround is memorizing anchor points (e.g., 180°C ≈ 350°F), but anything in between requires thought.
+
+Structural Issue: Procurement & Ordering Precision
+Ordering and prep sheets are strictly metric. Small errors compound - ordering 2 kg vs 2.5 kg affects yield and cost. I’ve had near-misses because I converted incorrectly under pressure. My workaround is re-checking everything twice, which costs time and still isn’t foolproof.
+
+Psychological Model
+I optimize for: speed, precision, and not breaking flow during service
+I refuse to compromise on: accuracy of quantities and consistency of output
+I avoid: mental math during critical moments
+I evaluate tools by: whether they eliminate conversion thinking entirely
+
+Pass / Fail Conditions
+For this system to work for me, it must:
+
+Display quantities in metric with optional inline imperial equivalents so I can act without converting.
+
+Provide real-time, context-aware conversions (weights, volumes, temperatures) without leaving the workflow.
+
+Let me input or think in imperial while automatically storing and executing in metric.
+
+Offer station-specific quick references for common quantities and temperatures used during service.
+
+Normalize recipes so I can internalize proportions (ratios, percentages) independent of unit system.
+
+Integrate with prep and ordering sheets to prevent quantity errors at the source.
+
+Reduce conversion steps to zero during active service so I never have to pause to translate units.
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Flags: none
+Rejected: 2026-04-29T19:27:46.522Z
+-->
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Flags: none
+Rejected: 2026-04-30T08:05:36.043Z
+-->
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Flags: none
+Rejected: 2026-04-30T11:16:07.072Z
+-->
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Flags: none
+Rejected: 2026-04-30T15:16:04.601Z
+-->
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Flags: none
+Rejected: 2026-04-30T21:21:15.624Z
+-->
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Flags: none
+Rejected: 2026-05-01T05:31:25.147Z
+-->
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Flags: none
+Rejected: 2026-05-01T19:09:52.416Z
+-->

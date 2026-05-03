@@ -1,0 +1,65 @@
+**Chef Profile: "Eleanor" Graham - Proprietor (Farm-to-Table Purist)**
+
+I run a small restaurant and host private dinners, focused entirely on what the local land and sea have to offer that week. My ethos is that the ingredient should dictate the menu, not the other way around. It’s a labor of love, a commitment to the purity of flavor and the health of the local ecosystem. I don't follow trends; I follow the calendar and the bounty.
+
+### Business Reality
+
+Right now:
+* I manage **1** brick-and-mortar location and host an average of **5** private dinner events per month.
+* Our revenue model is primarily based on ticket sales and catering minimums, averaging around **$15,000** to **$20,000** in gross revenue per month.
+* My core team is **6** people: a sous chef, two prep cooks, a front-of-house manager, and myself.
+* Our geographic scope is strictly limited to the **Northeast Valley region**—a 25-mile radius from the restaurant, as that's where the reliable farms are.
+* My current tech setup is a mix of an outdated POS system, a complex Google Sheet for inventory and costing, and countless text message threads for vendor communication.
+
+---
+
+### Primary Failure: Ingredient-Driven Menu Volatility
+
+My biggest pain point is the sheer unpredictability of my sourcing, which directly threatens my ability to cost and staff effectively. Because my menu is dictated by the harvest—if the tomatoes are perfect one week, and the asparagus is out the next—I cannot build stable, predictable prep lists or inventory counts. This means I spend an enormous amount of time every Sunday morning doing frantic, manual recipe adjustments, recalculating ingredient costs based on volatile wholesale pricing, and rewriting the entire prep list just because a key vegetable failed to arrive. This unpredictable labor costs me, and the risk of miscalculating a single, expensive seasonal item can wipe out my profit margin for the day.
+
+---
+
+### Structural Issue: Vendor Communication and Ingredient Confirmation
+
+The core problem is that my suppliers—the ones I trust—rely on phone calls and email chains, which are incredibly inefficient for tracking fluctuating availability. I currently use a mix of texts and a shared Google Sheet that I have to manually update every day. What breaks is the lack of a single source of truth. If a vendor texts me that they have 10 lbs of heirloom carrots, but the prep cook assumes the supplier meant 50 lbs because of a previous conversation, I either over-prep and waste labor, or I under-prep and disappoint a paying guest.
+
+---
+
+### Structural Issue: Dynamic Menu Costing and Recipe Documentation
+
+Since my recipes change weekly, I cannot use static recipe cards for costing. I have to manually adjust the cost sheet in a massive, sprawling Google Sheet every single time I change one ingredient's supplier or when the market price shifts dramatically. My current workaround is having a master binder filled with printed, highly annotated paper recipes that I physically update with handwritten cost adjustments. This process is slow, prone to human error, and means that if I need to scale a recipe for a sudden 20-person event, I have to recalculate the entire cost and yield by hand, which is a massive bottleneck.
+
+---
+
+### Structural Issue: Staffing and Prep List Synchronization
+
+Because the menu changes so often, the prep list is never static; it’s a living document that requires constant re-synchronization between the kitchen office, the sous chef, and the prep cooks. I currently rely on printing out a massive, color-coded, laminated prep sheet every morning and then physically marking items off as they are completed. This is incredibly labor-intensive, and what breaks is the handoff. If the sheet gets wet, or if one cook completes their task but doesn't cross it off until the end of the day, the next shift starts with an inaccurate understanding of what work has been accomplished, leading to wasted labor and unnecessary panic calls.
+
+---
+
+### Structural Issue: Inventory Tracking of Unique/Seasonal Items
+
+Tracking perishable, hyper-local ingredients that only appear for a short window is almost impossible with standard inventory tools. I am currently managing this by physically logging every delivery onto a clipboard and cross-referencing it against the prep list. This system fails when I have multiple, unique batches of the same item (e.g., three different types of squash, each with a different yield rate and cost). I cannot accurately track the remaining usable quantity of specific, limited-time ingredients, leading to either over-ordering (and spoilage) or, worse, running out of a key component mid-service and having to scramble for a substitute that compromises the integrity of the dish.
+
+---
+
+### Psychological Model
+
+I optimize for: Ingredient integrity and the narrative connection between the dish and the source.
+I refuse to compromise on: The seasonality and transparency of the menu.
+I avoid: Over-engineered, corporate systems that force me to treat ingredients like interchangeable commodities, or digital processes that require me to spend more time on data entry than I do cooking.
+I evaluate tools by: How much time they save me *in the kitchen* or *in the sourcing process*, without requiring a massive, upfront administrative overhaul of my existing workflow.
+
+I am deeply suspicious of anything that promises "total integration" because it implies a loss of human oversight or reliance on rigid, standardized processes. My decision-making is driven by the physical reality of the day—the quality of the produce, the availability of the labor, and the integrity of the ingredient chain.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must allow me to build a menu using a drag-and-drop interface where I can assign a specific ingredient (e.g., 'Heirloom Purple Tomatoes, Batch 1') and automatically pull the current cost and available quantity from the linked vendor inventory.
+2. The system must allow me to create and manage multiple, dynamic recipe versions for the same dish, automatically calculating new ingredient costs and required yields whenever I update the source price for a single item (e.g., if the local egg price changes, all dishes using eggs must update instantly).
+3. The system must facilitate communication with my trusted vendors via a dedicated portal where they can confirm weekly harvest availability (quantity and quality notes) and upload photos, which then automatically update the available inventory pool for that week's menu planning.
+4. The system must manage a complex, multi-stage prep list that can be digitally assigned to specific staff members, track completion status in real-time (e.g., a cook checks off 'Wash Greens'), and automatically flag necessary adjustments or missing items for the sous chef.
+5. The system must handle flexible event bookings, allowing me to input a guest count and automatically generate a tailored, fully costed, and scheduled menu that can be shared with the guest while simultaneously generating a unique, time-sensitive prep list for the kitchen staff.

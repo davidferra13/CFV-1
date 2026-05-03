@@ -1,0 +1,67 @@
+**Vendor Profile: "Mario" - Specialty Ingredient Distributor (The Diva Supplier)**
+
+I am the lifeline. I don't just sell ingredients; I sell *drama*. I am the primary supplier for high-end, exotic, and irreplaceable specialty goods—things you cannot find at a regular wholesaler. My inventory ranges from rare Italian heirloom tomatoes and hand-foraged coastal delicacies to specific cuts of highly marbled Wagyu beef. I am the gatekeeper of flavor, and I demand perfection in every single delivery.
+
+### Business Reality
+
+Right now:
+* I fulfill **45-60** chef orders, deliveries, or event rentals per week, averaging 15-20 items per order.
+* My average invoice value is **$4,500 - $8,000** per order, with a required 50% deposit due upon booking confirmation and the remaining balance due 7 days post-delivery.
+* My catalog contains over **1,200 SKUs**, spanning dry goods, fresh produce, frozen items, and specialty oils. Availability is highly seasonal (e.g., specific seafood or tomatoes) and requires pre-ordering 72 hours in advance.
+* My operation spans a refrigerated warehouse in Manhattan, but I also manage sourcing from three separate regional farms in New Jersey and specialized importers arriving via JFK.
+* My current ordering and communication setup is a chaotic mix of text messages (for urgent substitutions), shared Google Sheets (for weekly bulk projections), and hand-written order tickets (for last-minute, bespoke requests).
+
+---
+
+### Primary Failure: The Substitution Nightmare
+
+The single biggest operational headache is managing ingredient substitutions when the premium, perfect item is unavailable. Because my clients demand absolute perfection and often require specific, rare items (e.g., a specific cultivar of Italian eggplant), a simple out-of-stock notice isn't enough. If I send a substitute, I have to manually call the head chef, explain *why* the substitute works, calculate the difference in cost, and adjust the invoice—all within minutes, or the entire menu falls apart. This process is slow, highly inefficient, and causes massive administrative overhead because every substitution requires a bespoke communication loop that has no central record.
+
+---
+
+### Structural Issue: Non-Standard Pricing and Costing
+
+My pricing structure is never simple. It involves variable bulk discounts, tiered pricing based on total order volume, and highly variable sourcing costs (e.g., "Price fluctuates based on current market catch"). Because of this complexity, I cannot rely on simple SKU pricing. When I generate a quote, I often have to build a custom spreadsheet using a mix of fixed rates and formulaic variable multipliers, which means that if a chef needs to adjust a single quantity, I must manually recalculate the entire cost structure and re-send a PDF, risking human error and frustrating the client.
+
+---
+
+### Structural Issue: Managing Perishable Inventory and Minimums
+
+I deal with highly perishable, ultra-high-value items (like specific seafood or rare charcuterie) that require strict Minimum Order Quantities (MOQs) and immediate scheduling. Currently, we manage MOQs and expiry dates using a combination of physical inventory tags and a shared, manually updated Google Sheet. This system breaks down immediately when I have multiple clients needing similar items on different days. I waste hours cross-referencing who needs what, when, and if the remaining stock meets the minimum buy-back requirement for the next delivery run, leading to overstocking or, worse, costly waste.
+
+---
+
+### Structural Issue: The Communication Black Hole for Modifications
+
+My clients frequently make last-minute, complex modifications—"Can you swap the local DOP olive oil for the Tuscan batch?" or "We need three extra cases of the Italian pasta, but only the bronze-die cut, not the gold-die cut." These are critical changes that are usually communicated via a frantic text message or an email buried in a thread of 50 messages. These ad-hoc changes bypass my formal order sheets and invoicing system entirely. I end up having to manually track these textual modifications and then retroactively apply them to the final invoice, creating a massive reconciliation risk and guaranteeing discrepancies in the final billing cycle.
+
+---
+
+### Structural Issue: Multi-Source Fulfillment Tracking
+
+My ingredients come from a wildly diverse ecosystem: the warehouse, the local farm pickup, the refrigerated cold storage, and the imported goods. There is no single system that tracks the journey of a single SKU from source to client. For example, if a chef orders a specific heirloom tomato variety, I have to check the farm’s daily manifest, update the warehouse inventory, and then schedule the delivery. This manual process means that if a source changes its collection schedule (e.g., the farm is rained out), I cannot instantly update all affected clients and the central fulfillment schedule without sending out mass, fragmented communications.
+
+---
+
+### Psychological Model
+
+I optimize for: **Exclusivity and Quality Control.** If it's rare, it must be available, and the pricing must reflect its unmatched status.
+I refuse to compromise on: **The final presentation of the invoice.** It must be flawless, highly detailed, and perfectly reflect the bespoke nature of the goods and services provided.
+I avoid: **Any system that forces me to input data in a linear, predictable way.** I hate rigid forms and anything that suggests I am merely a commodity reseller.
+I evaluate tools by: **How quickly they allow me to handle bespoke, non-standard requests without disrupting the flow of my core operation.**
+
+I think in terms of scarcity and high variability. My decisions are always weighted toward maintaining the prestige of the product and the service. If a tool slows down my ability to react to a spontaneous, high-value, last-minute request, it is useless to me.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must allow me to build complex, multi-tiered pricing structures and automatically generate accurate quotes that integrate variable multipliers and bulk discounts.
+2. The system must centralize all ingredient sourcing and inventory, allowing me to flag items as seasonal or restricted to specific sourcing locations.
+3. The system must provide a clear, unified timeline that tracks an ingredient’s journey from its initial source (farm/importer) through my warehouse to the client's receiving dock.
+4. The system must integrate ad-hoc communication (like text messages or email) into the active order record, ensuring that every last-minute substitution or modification is logged and triggers an automatic, visible change to the final invoice cost.
+5. The system must generate a consolidated, professional invoice that accurately accounts for both standard SKUs and custom, non-standard fee charges (e.g., specialized handling, urgent sourcing fees).
+6. The system must allow me to manage and track minimum order quantities and remaining stock levels across multiple, disparate source locations (farm, warehouse, importer).
+7. The system must allow me to allocate specific inventory items to multiple, concurrent client orders to prevent double-booking and manage remaining stock accurately.

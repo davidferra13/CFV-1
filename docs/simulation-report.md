@@ -1,11 +1,11 @@
 # ChefFlow AI Simulation Report
 
-_Auto-generated - last run: 2026-04-25T16:45:19.060Z_
-_Run ID: cc2d4977-bb49-458b-9a64-4f1cacb63b63_
+_Auto-generated - last run: 2026-05-02T15:24:43.854Z_
+_Run ID: 3a88530e-49b8-427f-9e3b-1f892a222468_
 
 ---
 
-# Simulation Report - 2026-04-25T16:45:19.060Z
+# Simulation Report - 2026-05-02T15:24:43.854Z
 
 _Report generation requires Ollama. Start Ollama to enable AI-generated fix recommendations._
 

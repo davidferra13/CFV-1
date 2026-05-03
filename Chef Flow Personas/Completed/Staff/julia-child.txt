@@ -1,0 +1,67 @@
+**Staff Profile: "Julia Child" - Prep Kitchen Assistant (Enthusiastic Prep)**
+
+I've been working in professional kitchens for about 3 years now, mostly doing the heavy lifting and the detailed prep work. I love the chaos of a big service, and I thrive when I'm surrounded by fresh ingredients and the smell of roasting things. My job is to get everything ready—chopping, peeling, measuring, and sometimes doing basic component assembly—so the cooks can focus on the actual cooking and plating. I take direction well, especially when I'm given a clear, tangible task, like prepping 50 pounds of mirepoix for tomorrow's banquet service.
+
+### Business Reality
+
+Right now:
+* I work an average of **4** shifts per week, which can spike to **6** shifts during major holiday events or large client bookings.
+* My pay is **$16.50/hour**, and I typically work **8-hour** shifts, though overtime is common during peak service times. I don't require specific certifications beyond basic food handling, but I am trained on three specific prep lists (vegetables, starches, and basic sauces).
+* I report to a Head Prep Cook (usually a senior line cook) and a Kitchen Manager. We are a team of **8-12** staff members, and I am considered reliable but highly task-dependent, meaning I need constant, clear assignments.
+* I work in a commercial prep kitchen facility located in the **Mid-Town Culinary Center**, which serves several different external clients (bakeries, caterers, and restaurants).
+* My current briefing and scheduling setup is a chaotic mix: I get my preliminary schedule via **text message** from the Kitchen Manager, I get the detailed prep list printed out on **single-sheet paper** the night before, and any last-minute changes are communicated verbally or via a **WhatsApp group chat**.
+
+---
+
+### Primary Failure: Disconnected Prep Lists and Service Timelines
+
+The biggest operational problem is that my prep list is completely disconnected from the actual service schedule. I might receive a prep list that calls for 20 pounds of diced potatoes, but the schedule I received via text message for that day's event only serves 50 guests, and the event is cancelled an hour before service starts. This means I waste time and energy prepping massive amounts of ingredients that are never used, or worse, I prep the wrong quantity for the *actual* number of guests that show up. It costs the kitchen time, labor hours, and significant food waste, which eats directly into our profit margin.
+
+---
+
+### Structural Issue: Prep List Version Control
+
+I receive the prep list printed on paper, and these lists are often updated multiple times throughout the week. For example, if the banquet menu changes from salmon to cod, the prep list needs to change from prepping lemon zest for salmon to prepping caper berries for cod. I rely on the printed sheet given to me on my shift, but if the Kitchen Manager prints a new list and only sticks it near the prep station, I might accidentally follow the old, discarded list that is still sitting on the whiteboard. I have no way of knowing which physical list is the most current, forcing me to constantly interrupt my work to ask a senior cook, "Which version are we using?"
+
+---
+
+### Structural Issue: Dynamic Ingredient Handoff Tracking
+
+Ingredients are constantly being moved, used, and restocked between different stations or even different kitchens within the Mid-Town center. If I prep 10 quarts of chopped herbs for the morning service, and the Sous Chef needs 4 quarts for an urgent special order, there is no centralized way to track that. I have to physically walk over to the Sous Chef, count the remaining containers, and then manually write down how much is left on a notepad. If I leave the station for a bathroom break, I forget exactly how much was taken, leading to potential over-prepping or, conversely, a critical shortage mid-service.
+
+---
+
+### Structural Issue: Assignment Visibility and Cross-Kitchen Coordination
+
+Because I work at the Mid-Town center, I often have to move between different client kitchens (e.g., prepping for the bakery first, then moving to the catering kitchen). When I arrive at a new location, I have no clear, digital overview of what tasks the other staff members in that specific kitchen have already completed. I might arrive and find that another assistant has already prepped the bulk of the root vegetables, and I waste 45 minutes doing redundant work because there was no shared, real-time task board showing who was assigned to which specific component of the overall prep list.
+
+---
+
+### Structural Issue: Inventory Depletion Alerting
+
+I am responsible for prepping components using ingredients that need to be returned or used up. For instance, I might use up the last of the specialized smoked paprika, or the container of specialty flour. Currently, I have to manually notify the Head Cook, and they have to physically go check the shelf and update the inventory count on a paper sheet. If the ingredient is critical for the next day's service, this manual process is slow and prone to human error, sometimes leading to us realizing we ran out of a key item only 30 minutes before the delivery window closes.
+
+---
+
+### Psychological Model
+
+I optimize for: Clear, immediate, physical tasks with defined start and end points (e.g., "Prep 100 units of item X").
+I refuse to compromise on: Having a fully stocked, well-organized workspace before I start my shift; I cannot work effectively if my tools or ingredients are disorganized or missing.
+I avoid: Having to stop what I am doing to look up basic information (like how much of an ingredient we have left, or what the current recipe version is).
+I evaluate tools by: How quickly they allow me to get back to chopping, peeling, or measuring. If the system slows down my physical workflow, I will find a paper workaround.
+
+I think very visually and spatially. I need to see the entire workflow—from the ingredient arriving on the loading dock, to the moment it's prepped, to the final moment it's used in service. I am detail-oriented, but I get frustrated by bureaucratic processes that require clicking through too many screens just to confirm a simple task status.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must allow me to view a single, consolidated, and time-stamped prep list that automatically adjusts ingredient quantities based on the final confirmed guest count for that service.
+2. The system must provide a clear, real-time dashboard showing the current inventory count of critical prep ingredients, allowing me to submit a depletion alert instantly.
+3. The system must allow the Head Cook to assign me to a specific, time-bound task (e.g., "Prep 10 lbs of carrots") and automatically mark that task as complete once the required quantity is logged as done.
+4. The system must integrate the service schedule and the prep list so that I can see exactly which items I am prepping and which menu item they will be used for.
+5. The system must automatically notify me via my preferred channel (e.g., a dedicated mobile notification) when a prep list version changes, forcing me to acknowledge the update before I can start work.
+6. The system must provide a visual, map-like view of the Mid-Town kitchen floor plan, showing which prep stations are currently occupied and what tasks are completed by other staff members.
+7. The system must allow me to photograph and log the ingredient handoff (e.g., "4 quarts of herbs transferred to Sous Chef") and assign a digital timestamp and user to that transaction.

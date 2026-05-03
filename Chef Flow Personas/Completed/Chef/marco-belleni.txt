@@ -1,0 +1,50 @@
+**Chef Profile: "Marco Belleni" - Private Chef (Platform-Dependent)**
+
+I run my entire business through Take a Chef. I don’t have a website, I don’t market independently, and I don’t manage my own pipeline. Every booking, every client interaction, and every payment starts and ends inside that platform.
+
+### Business Reality
+
+Right now:
+
+* 6–10 bookings per month (mostly couples and small groups of 2–6 guests)
+* $9,000–$18,000 monthly revenue depending on season
+* Solo operator — no staff, occasional dishwasher hire per event
+* Operating within a 40-mile radius (travel included in pricing)
+* 100% of leads and bookings through Take a Chef
+* Communication happens entirely inside the platform messaging system
+* Menus templated in platform editor, costing done mentally or with rough estimates
+
+### Primary Failure: No Ownership of Pipeline
+
+I don’t own my clients. Every inquiry comes through Take a Chef, and I’m required to respond quickly or risk losing the booking. But I can’t take those clients off-platform easily, and I don’t retain meaningful data beyond each event. If someone wants to rebook me later, they often go back through the platform instead of contacting me directly, which means I pay fees again. I’m effectively renting my business pipeline. My workaround is trying to build rapport during events and subtly encourage direct contact, but that’s inconsistent and sometimes against platform rules.
+
+### Structural Issue: Slow, Manual Response Pressure
+
+The platform prioritizes response speed heavily. If I don’t reply quickly, my ranking drops and I lose visibility. But I’m often cooking, shopping, or driving when inquiries come in. I end up writing rushed, repetitive messages just to maintain response metrics. There’s no automation or smart templating that adapts to the inquiry details. My workaround is saving generic responses in my notes app and pasting them in, but that still requires manual effort and doesn’t feel tailored.
+
+### Structural Issue: Pricing Rigidity
+
+I have pricing, but every inquiry is slightly different—guest count, location, dietary needs, expectations. The platform forces me into a semi-fixed pricing structure that doesn’t adapt cleanly to real-world variability. I end up manually recalculating pricing for every inquiry, often under time pressure. Sometimes I underprice just to secure the booking quickly. There’s no system helping me understand margin or adjust pricing dynamically based on inputs. My workaround is instinct, which works until it doesn’t.
+
+### Structural Issue: No Operational Backbone
+
+Once a booking is confirmed, the platform essentially disappears as a tool. It got me the client, but it doesn’t help me execute the event. I still need to track ingredients, prep lists, timing, and dietary notes manually. Guest preferences live buried in message threads instead of structured data. I’ve missed details before because I had to scroll through conversations to find them. My workaround is copying key info into my phone notes, which is unreliable and fragmented.
+
+### Psychological Model
+
+I optimize for: booking consistency and low friction client acquisition
+I refuse to compromise on: delivering a clean, professional experience during the event
+I avoid: complicated systems, upfront setup, and anything that takes time away from cooking
+I evaluate tools by: whether they make me more money without adding operational overhead
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. Automatically capture and structure all inquiry data (guest count, location, preferences) from Take a Chef messages into a usable format.
+2. Generate fast, context-aware response drafts that I can send immediately without rewriting everything.
+3. Allow me to define flexible pricing rules that adjust automatically based on guest count, distance, and menu complexity.
+4. Store client history outside of the platform so repeat bookings don’t require starting from scratch.
+5. Convert confirmed bookings into a structured event workflow (menu, prep, shopping list) without manual copying.
+6. Surface critical details (allergies, timing, special requests) in one place without requiring me to search message threads.
+7. Operate independently of the platform so I can gradually reduce reliance without losing current business.

@@ -1,0 +1,55 @@
+Client Profile: "Elena Petrova" - International Business Consultant (Multi-Currency)
+
+I operate across countries constantly. If pricing isn’t clear in my currency and adaptable globally, I don’t engage.
+
+Business Reality
+Right now:
+
+I book 5–10 private dining experiences per year across different countries.
+
+Budgets range from €2,000 to €15,000 depending on location.
+
+I expect pricing in local currency and my preferred currency simultaneously.
+
+Payment methods vary by region.
+
+Dietary needs vary by culture and must be respected.
+
+Locations are international - homes, villas, hotels.
+
+I expect systems to adapt globally without friction.
+
+Primary Failure: Currency Ambiguity
+If I see pricing in a currency I don’t use without conversion, I hesitate. I need immediate clarity. I shouldn’t have to calculate exchange rates.
+
+Structural Issue: No Multi-Currency Support
+Systems often lock into one currency. That’s not acceptable. I need flexibility and transparency across currencies.
+
+Structural Issue: Payment Method Mismatch
+Different regions prefer different payment methods. If my preferred method isn’t supported, I won’t proceed.
+
+Structural Issue: Hidden Conversion Fees
+If conversion fees aren’t visible, I assume the worst. Transparency is mandatory.
+
+Psychological Model
+I optimize for: global clarity and adaptability
+I refuse to compromise on: clear currency representation
+I avoid: systems that feel region-locked
+I evaluate tools by: how well they handle international use
+
+Pass / Fail Conditions
+For this system to work for me, it must:
+
+Display pricing in both local and preferred currencies simultaneously.
+
+Update conversions in real time.
+
+Show any fees or exchange costs clearly.
+
+Support region-appropriate payment methods.
+
+Maintain consistent pricing logic across currencies.
+
+Allow seamless booking regardless of location.
+
+Eliminate ambiguity in international transactions.

@@ -1,0 +1,67 @@
+**Chef Profile: "Gordon" Ramsay - Culinary Entrepreneur (High-End Market Pop-ups)**
+
+I run a brand that is built on reputation, precision, and delivering an absolute show. I don't just cook food; I curate experiences. My name is a guarantee of quality, and I treat every single plate like it’s the most expensive thing on the planet. Everything I do must be immaculate, from the sourcing of the herbs to the final plating.
+
+### Business Reality
+
+Right now:
+* I manage **7** distinct locations/events, ranging from permanent pop-up stalls in the main market square to private booking dinners in local venues.
+* My revenue model is highly variable, averaging between **$15,000 and $35,000** per weekend, heavily reliant on premium ticket sales and high-margin beverage pairings.
+* I run a core team of **12** employees, structured into three distinct groups: the Sous Chefs (3), the Prep Cooks (4), and the Front-of-House Service Staff (5).
+* My geographic scope is confined to the small, high-traffic metropolitan area of Portland, Oregon, requiring rapid, localized logistics.
+* My current tech setup is a patchwork: a combination of Google Sheets for inventory and costing, dedicated WhatsApp group chats for immediate staff scheduling changes, and paper reservation planners that get soaked if it rains.
+
+---
+
+### Primary Failure: Cross-Market Ingredient Wastage and Misallocation
+
+The biggest operational headache is coordinating perishable inventory across 7 different, often non-contiguous locations. I source specialized, expensive ingredients—think Japanese sea salt, specific micro-greens, or rare cuts of Wagyu—in bulk for the week. Because I don't have a real-time system that tracks usage against the specific menu of each location, I often over-order or, worse, realize I have 5 lbs of specialty truffle oil sitting in the storage room in Location A, while Location C is running low and needs it for their signature dish. This misallocation leads to unnecessary waste, costing me an estimated **$800 to $1,200** in lost goods or rush shipping fees every month, all because the data lives in separate people's heads and spreadsheets.
+
+---
+
+### Structural Issue: Dynamic Staff Scheduling and Availability
+
+My staff is highly skilled, but their availability is volatile. I deal with last-minute cancellations and unexpected sickness frequently. My current workaround is relying entirely on a combination of text message chains and a physical whiteboard in the back office. If three people call out on a Friday afternoon, I have no single, authoritative view of who is available, who is trained on what station, or what the cost implications of calling in emergency temps are. I waste at least **2-3 hours** every week simply trying to patch together a compliant, cost-effective schedule that meets the required skillset for the day’s menu.
+
+---
+
+### Structural Issue: Event-Specific Menu Costing and Ingredient Depletion
+
+Every pop-up market day or private dinner has a slightly different menu, which means my ingredient costing is never static. I calculate menu costs in a separate Google Sheet, manually inputting the yield and price for every item. When a major event changes the menu—for example, switching from a salmon main to a scallop main—I have to halt the entire costing process, manually adjust the spreadsheet, and then email the updated pricing to the finance team. This process is slow, error-prone, and often leads to my Sous Chefs using outdated ingredient costs, meaning my profit margins are constantly under review and sometimes wildly inaccurate.
+
+---
+
+### Structural Issue: Vendor Compliance and Booking Management
+
+My vendors are numerous and specialized—from local artisanal bread suppliers to specialty liquor distributors. When I book a new vendor or a new event, I have to chase down compliance paperwork (insurance certificates, food handler permits, tax IDs) through a series of emails and calls. I maintain a physical binder for each vendor's file, which is cumbersome, and I have no centralized way to know if a vendor’s insurance lapsed last month, or if their necessary local permit for the market square is still current. This lack of centralized compliance tracking risks me having to shut down an entire operation on short notice due to a bureaucratic failure.
+
+---
+
+### Structural Issue: Recipe Standardization and Knowledge Transfer
+
+My recipes are my intellectual property, but they are stored across multiple formats: some are handwritten notes in my personal notebook, some are complex, poorly formatted PDFs, and some are only known by the memory of my most senior Sous Chef. If that key person is sick, the recipe for the signature truffle risotto—which is the backbone of my upscale market experience—is at risk. I spend far too much time re-documenting, re-photographing, and re-testing recipes, wasting valuable prep time and risking inconsistency across my 7 locations.
+
+---
+
+### Psychological Model
+
+I optimize for: Absolute quality control and immediate operational efficiency.
+I refuse to compromise on: The guest experience. The food must be flawless, the service impeccable, and the flow seamless.
+I avoid: Anything that requires me to spend time inputting data or chasing down paperwork. I hate anything that feels manual or retroactive.
+I evaluate tools by: How quickly they reduce friction and allow me to focus on the kitchen. If it complicates the flow, I ignore it.
+
+I think in terms of maximum output with minimum wasted effort. I don't care about "features"; I care about the single point of failure that will cost me money or, worse, cost me my reputation. Everything has a clear, traceable line from the initial order to the final plate, and I need to see that line on a screen.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1.  **Centralize and track** all ingredient inventory usage across all 7 locations in real-time, flagging depletion before a shortage occurs.
+2.  **Allow me to adjust** the menu and instantly recalculate the profit margin and required ingredients for every single item, feeding the data directly to the prep team.
+3.  **Integrate staff scheduling** with required skill sets and location-specific labor costs, allowing me to instantly generate optimized shifts for the next week.
+4.  **Maintain a comprehensive, searchable database** of all vendor compliance documents and renewal dates, flagging any expired permits before an event starts.
+5.  **House and manage** standardized recipes and portioning guides, allowing me to assign them digitally to specific locations and staff members for use.
+6.  **Handle booking and event management** by linking confirmed client RSVPs directly to the required menu, necessary ingredients, and associated staffing level.
+7.  **Generate granular, end-of-day reports** that reconcile actual ingredient usage against projected costs, highlighting any significant variance immediately.

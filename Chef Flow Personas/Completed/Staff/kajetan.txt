@@ -1,0 +1,73 @@
+**Staff Profile: "Kajetan" - Prep Kitchen Assistant (Wild Ingredient Specialist)**
+
+I am Kajetan, and my job is fundamentally about the ingredients—the parts of the plate that come from the earth or the sea, not the pantry. I handle the wild sourcing, the initial prep, and the highly specialized component builds that make the menu unique. I don't just chop; I identify, clean, cure, and process things that require a specific, almost artisanal level of attention.
+
+### Business Reality
+
+Right now:
+* I work an average of **4** shifts per week, spanning 2 prep kitchens (the main commissary and the pop-up event kitchen), and sometimes assisting with 1-2 special weekend events.
+* My pay is $18/hour, but my value is tied to the specialized nature of my work, which means I am often assigned to the most complex, time-sensitive prep tasks, usually requiring 6-8 hours of focused work.
+* I have a high degree of trust from the Head Chef, but I am not certified in institutional food handling beyond basic sanitation, and I am considered the "wild ingredients expert," which means my role is highly critical and non-transferable.
+* My scope is primarily the sourcing, washing, curing, and initial prep of hyper-local, foraged, or specialized ingredients, which often means operating between the main kitchen facility and various local foraging points or specialized vendor pick-ups.
+* My current briefing and scheduling setup is a chaotic mix: the Head Chef sends critical updates via WhatsApp text messages, prep lists are usually printed on single sheets of paper that get lost, and any major shift change requires a phone call to the Kitchen Manager.
+
+---
+
+### Primary Failure: Ingredient Handoff Gap
+
+The biggest operational problem is the handoff of specialized ingredients from prep to service. Because I am handling unique, hyper-seasonal items (like specific mushroom varieties or wild coastal greens), the moment they leave my station, their status, required temperature, and specific usage instructions are often lost or misinterpreted. This leads to massive waste. For example, if the prep list says "2kg wild ramps," but the Expo Chef assumes they are for a garnish and not for a main course reduction, I might spend 4 hours prepping them for a specialized cure that the service team then rejects because they are meant for something else. This waste of time, specialty ingredients (which cost 3-5x the commodity price), and labor costs us an estimated $800-$1,200 in lost product and labor per major service gap.
+
+---
+
+### Structural Issue: Fragmented Prep List Communication
+
+I receive ingredient lists, but they are never consolidated or digitized. They come from three sources: the seasonal menu PDF, the Banquet/Event spreadsheet, and the verbal instruction from the Head Chef. I currently have to cross-reference these three documents to build a coherent prep schedule. If the menu changes mid-week—say, the wild fennel is removed—I have no way of knowing that without a direct, immediate communication, meaning I might spend 6 hours prepping ingredients that are scrapped 24 hours later.
+
+---
+
+### Structural Issue: Real-Time Inventory Status
+
+My prep tasks are highly specific and perishable. If I prep 15 dozen wild berries for a specific jam component, and then the event booking for that day gets reduced by 50%, I have no way of updating the inventory status *before* I start working. I currently have to physically count and write down the remaining inventory on a whiteboard, which is immediately wiped clean by the next person and is not accessible to the scheduling team or the purchasing team.
+
+---
+
+### Structural Issue: Multi-Location Assignment Tracking
+
+My work frequently requires me to move between the main commissary, a small pop-up site downtown, and sometimes a local farm pick-up point. When a shift change happens, the scheduling team only knows my primary location (the main commissary). They don't know which specific ingredients or equipment I am currently responsible for, or if I have already checked out the specialized equipment (like the vacuum sealer or the immersion circulator) that was needed for the next station. This creates bottlenecks and potential for double-booking critical assets.
+
+---
+
+### Structural Issue: Ingredient Source Documentation
+
+When I prep a unique ingredient, I need to document not just the *quantity* used, but the *source* and *condition* (e.g., "2kg of ramps, sourced from Smith Farm, 10/25/2024, washed and lightly pickled"). If the ingredient fails or if the Head Chef needs to track the provenance for compliance or costing, I currently have to keep a physical ledger, which is prone to loss, damage, and illegibility. This makes accurate cost tracking for specialized menu items nearly impossible.
+
+---
+
+### Structural Issue: Cross-Functional Prep Dependency
+
+My prep tasks are often dependent on the output of another station. For instance, I prep the cured fish, but the sauce station needs the fish to be sliced and held at a specific temperature 3 hours before service. Currently, I rely on a sticky note passed to a line cook, which is easily lost or overlooked during the chaos of service. There is no system to signal when a component is ready for the next stage of the workflow.
+
+---
+
+### Psychological Model
+
+I optimize for: Ingredient integrity and the seamless flow of high-quality, specialized components.
+I refuse to compromise on: The traceability of a raw ingredient from its source to the final plate.
+I avoid: Generic digital interfaces that require excessive clicking or forcing me to input data about physical, organic processes.
+I evaluate tools by: How quickly and reliably they can document a physical workflow (e.g., "15 lbs of dried chanterelles are now available, stored in Unit B, at 4°C").
+
+I think linearly: Input (raw material) -> Process (my expertise) -> Output (ready component). Any disruption to this chain—a missed temperature check, a lost prep list, a scheduling conflict—causes immediate, measurable waste. I am detail-oriented and highly reliant on accurate, real-time data about physical goods and people.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1.  **Track ingredient status:** Allow me to log the specific quantity, source, and optimal storage conditions (temp, location) of a finished prep item, and automatically flag when that item is due for use or disposal.
+2.  **Manage dependency handoffs:** Provide a clear, digital workflow signal that alerts the next station (e.g., "Sauce Station: Fish Cure 2kg ready for slicing at 10:00 AM").
+3.  **Consolidate scheduling and inventory:** Allow the scheduler to view my assigned tasks and the required ingredients, and then automatically update the inventory count upon task completion or cancellation.
+4.  **Support multi-site operations:** Enable the logging of my time and assigned tasks across different, geographically disparate locations (commissary, pop-up, farm).
+5.  **Document provenance and costing:** Allow me to photograph or input the source details of specialty ingredients directly into the prep list, linking that data point to the final cost sheet and the menu item.
+6.  **Handle last-minute cancellations:** Allow the system to immediately flag and calculate the salvage value or required reprocessing steps for high-cost ingredients when a service or event is cancelled or scaled down.
+7.  **Generate digital prep checklists:** Generate a single, consolidated checklist that merges the menu PDF, the event spreadsheet, and the Head Chef's updates, ensuring nothing is missed and nothing is redundant.

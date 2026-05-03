@@ -1,0 +1,54 @@
+**Chef Profile: "Leon Arquette" - Private Chef & Network Orchestrator (Linker)**
+
+I don’t just know people—I *operate with them*. The problem is, every collaboration still starts from zero. I’m sending texts, forwarding emails, attaching Google Docs, explaining the same context over and over. It’s inefficient. At my level, the people I work with should already be synced into what I’m doing—selectively, precisely, and in real time.
+
+### Business Reality
+
+Right now:
+
+* 10–16 events per month (private dinners, collaborations, pop-ups)
+* $50,000–$120,000 monthly revenue
+* 150–250 active contacts across chefs, vendors, and operators
+* 25–60 weekly interactions tied to active work (not casual)
+* 3–6 collaborators per event on average (chef, server, vendor, assistant)
+* 10–30 shared documents/messages per event (menus, notes, logistics)
+* 5–10 repeated context explanations per event due to lack of shared state
+
+### Primary Failure: No Shared Operational Layer
+
+Every time I bring someone into an event, I have to *rebuild context*. I send them menus, timelines, expectations, notes—piecemeal. They don’t have direct access to the live state of the event. They’re working off snapshots, not the source. That creates misalignment, delays, and repeated questions. My workaround is over-communicating, but it’s redundant and still incomplete.
+
+### Structural Issue: Static Document Sharing
+
+Google Docs, PDFs, emails—they’re static. I send something, and it’s already outdated the moment something changes. There’s no persistent, living connection between me and the collaborator. My workaround is sending updates repeatedly, but that creates version confusion and message overload.
+
+### Structural Issue: No Selective Data Access
+
+Not everyone should see everything. A server doesn’t need full financials. A collaborating chef might need menu structure and timing, but not client history. Right now, sharing is all-or-nothing. I either send too much or not enough. My workaround is manually filtering information, which is slow and inconsistent.
+
+### Structural Issue: No Live Sync Between People
+
+When I update something—menu tweak, timing shift, guest count—it doesn’t automatically reflect for everyone involved. I have to push that update manually across channels. That creates lag and mistakes. My workaround is group chats, but they’re noisy and unstructured.
+
+### Structural Issue: Repeated Onboarding Friction
+
+Even with people I’ve worked with before, I have to re-explain how I operate for each event. There’s no persistent shared understanding or profile that evolves over time. My workaround is assuming familiarity, which leads to gaps when details change.
+
+### Psychological Model
+
+I optimize for: seamless collaboration without redundant communication
+I refuse to compromise on: everyone having the exact information they need, no more, no less
+I avoid: sending the same context multiple times or managing outdated documents
+I evaluate tools by: whether they create a shared, live layer between me and collaborators
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. Allow me to grant selective, real-time access to specific parts of an event (menu, timing, tasks) per collaborator.
+2. Maintain a live, shared operational layer where updates sync instantly for all relevant people.
+3. Replace static documents with dynamic, always-current views tied to the source data.
+4. Let me control exactly what each person can see or interact with, without manual filtering each time.
+5. Preserve collaboration history so returning collaborators don’t need to be re-onboarded from scratch.
+6. Eliminate the need for repeated context-sharing across messages, emails, and documents.
+7. Function as a direct extension of my workflow, not an additional layer I have to maintain.

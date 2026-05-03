@@ -1,0 +1,67 @@
+**Vendor Profile: "Todd English" - Specialty Ingredient Distributor (Curated Exotic Goods)**
+
+I specialize in sourcing and distributing highly unique, often rare, and high-cost ingredients—think saffron from Iran, unique Peruvian peppers, or specialized Indonesian spices. My clients are typically Michelin-star caliber restaurants and high-end catering operations that require ingredients you can't find in a standard wholesaler. I don't just sell spices; I sell provenance and flavor profiles.
+
+### Business Reality
+
+Right now:
+* I fulfill approximately 45 distinct chef orders, 8-12 large-scale deliveries, and 3 major event bookings per week.
+* My standard wholesale pricing ranges from $150 per pound (for rare goods like vanilla beans) down to $12 per pound (for common, high-volume items like specialty salt). Invoice totals usually range from $1,500 to $8,000, and I require a 30% non-refundable deposit for any order over $5,000.
+* My catalog contains over 600 unique SKUs, many of which are seasonal, highly perishable (some require cold chain), or require specialized handling notes (e.g., "store in dark, cool place"). Availability is dictated by international harvests and shipping times, meaning inventory can shift drastically with little notice.
+* My primary delivery geography is within a 15-mile radius of my warehouse in the industrial district, but I also service remote private venues across the county, requiring specialized transport manifests.
+* My current ordering and communication setup is a mix: repeat clients use a shared Google Sheet for initial estimates, but final confirmation, invoicing, and delivery manifest adjustments are handled via texts, follow-up emails, and sometimes even phone calls to confirm the *exact* quantity and substitution notes.
+
+---
+
+### Primary Failure: Inconsistent Ingredient Substitution and Sourcing Communication
+
+My biggest pain point is managing ingredient substitutions that happen *after* the order is placed. When a rare item is out of stock—say, the Peruvian Aji Amarillo peppers are delayed by customs—I have to communicate a precise, quality-matched substitute (e.g., "use this slightly sweeter, less acidic Ecuadorian variety"). If I don't communicate this substitution, or if the chef misinterprets the replacement, the entire menu item fails. This leads to wasted prep time for the restaurant, potential revenue loss for them, and a massive amount of back-and-forth communication for me that has no centralized record, costing me 5-7 hours of administrative time per week just reconciling these changes.
+
+---
+
+### Structural Issue: Managing Complex, Variable Pricing and Deposits
+
+When a chef places a large, multi-item order, the price isn't static. It depends on volume tiers, whether the ingredient is seasonal (and thus priced differently), and if a special deposit or freight fee is attached. I currently calculate these using a combination of Excel formulas and manual overrides. If the chef calls to change a quantity, I have to manually recalculate the cost, adjust the invoice, and then send a revised PDF. This process is highly error-prone, and it means the chef often receives multiple conflicting versions of the invoice, leading to payment delays of 3-5 days while they wait for the "final" number.
+
+---
+
+### Structural Issue: Tracking Perishable and Seasonal Inventory Status
+
+My catalog complexity is immense because I deal in hyper-seasonal, perishable goods. A chef might order "fresh Thai lime zest" one week, and the next week, the availability shifts to "dried lime powder" because of a harvest delay. I have to maintain a separate, highly detailed internal spreadsheet (the "Sourcing Status Tracker") that cross-references current global harvest yields, customs delays, and physical inventory counts. If this status isn't immediately visible to the chef during the ordering process, they might commit to a menu item that requires an ingredient I know is unavailable for the next two weeks, forcing a last-minute panic call and scrambling.
+
+---
+
+### Structural Issue: Linking Finalized Orders to Delivery Manifests and Invoicing
+
+The handoff between "What the Chef Ordered" and "What I Actually Deliver" is messy. The chef confirms the order via email, but then I might call them to adjust the quantities, and then the delivery driver uses a separate, printed manifest that hasn't been reconciled against the final, adjusted invoice. I spend at least two hours every Friday reconciling the final delivery sheet against the payment records. If a chef receives 10 lbs of saffron but the invoice only reflects 8 lbs (because I needed to adjust the quantity mid-week), the billing department gets confused and the payment cycle stalls until I manually explain the variance via a follow-up email.
+
+---
+
+### Structural Issue: Handling Multi-Stage, Multi-Client Deliveries
+
+I often service multiple high-end venues in one day (e.g., a hotel kitchen, a private event catering setup, and a pop-up restaurant). Each location requires a unique, itemized manifest, and sometimes the ingredients are split across different billing codes (e.g., the wine pairing ingredients go to the event manager, but the spices go to the head chef). Because I'm not using a centralized platform, I have to print and manually cross-reference 3-4 different paper checklists and manifests before the driver leaves, which takes valuable time and increases the risk of delivering the wrong quantity or the wrong item to the wrong location.
+
+---
+
+### Psychological Model
+
+I optimize for: Precision, Provenance, and Seamless Communication. If the ingredient is unique, the process must be equally unique and detailed.
+I refuse to compromise on: Accurate, real-time inventory status and the ability to communicate substitution logic clearly.
+I avoid: Generic, inflexible portals that force me into rigid workflows, or systems that treat all ingredients as fungible commodities.
+I evaluate tools by: How quickly they can ingest highly variable data (seasonal pricing, weight units, complex substitutions) and generate a single, unified source of truth that I can trust for billing.
+
+I think like a curator, not a commodity dealer. My clients pay a premium because I solve the sourcing problem, and any system must reflect that high level of bespoke service. I need the system to handle the complexity so I can focus on the quality and relationships.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must allow me to create and manage substitute ingredient rules linked directly to the original SKU, ensuring the chef is alerted to the change, the cost adjustment, and the functional difference (e.g., "Substitute: lower acid, higher sweetness").
+2. The system must generate a single, dynamic, multi-stage invoice that automatically updates the total cost, deposit required, and final payment balance whenever a quantity or substitution is made, and this invoice must be instantly available for download and email.
+3. The system must allow me to define and track multiple physical delivery manifests per single order/invoice, linking specific SKUs and quantities to specific physical drop-off locations and client contacts, and these manifests must reconcile against the final invoice totals.
+4. The system must provide a centralized, visible 'Sourcing Status' for every SKU that flags ingredients as seasonal, perishable, or subject to international sourcing delays, and this status must impact the estimated delivery date automatically.
+5. The system must allow me to group services/items under a single master order but assign unique billing codes and payment terms to different internal departments or clients (e.g., billing the spices to the Head Chef, but the specialty oils to the Event Manager).
+6. The system must handle complex unit conversions and pricing tiers (e.g., price per pound for bulk, but price per ounce for small orders, with a visible tier change in the cart).
+7. The system must allow me to save and retrieve templates for complex, recurring high-volume orders (like "The Quarterly Brunch Kit") that include pre-set pricing, minimum quantities, and standard substitution fallback options.

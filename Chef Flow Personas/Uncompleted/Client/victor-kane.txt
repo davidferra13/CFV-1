@@ -1,0 +1,55 @@
+Client Profile: "Victor Kane" - Procurement Director, National Restaurant Group (No-Nonsense)
+
+If I can’t get a number immediately, I’m gone. I deal with pricing all day - materials, labor, contracts - and there’s always a way to estimate. When I see “contact for pricing,” I assume either you don’t know your numbers or you’re hiding them. Both are unacceptable.
+
+Business Reality
+Right now:
+
+I book 6–10 private dining experiences per year - executive dinners, vendor negotiations, and internal leadership events (6–14 guests).
+
+Budgets range from $3,000 to $12,000. I don’t need the cheapest option; I need a clear, defensible price.
+
+I expect deposits to be immediate and tied to a defined scope. No vague commitments.
+
+Guest constraints are straightforward but must be precise - 1–2 allergies, occasional dietary preferences. Errors are not tolerated.
+
+Venues rotate between my home, corporate apartments, and rented spaces. I expect the chef to factor constraints into the quote.
+
+I operate in email and text, but I prefer systems that show numbers upfront so I don’t have to ask.
+
+I routinely compare vendors. If one gives me a number and another doesn’t, the one with the number wins.
+
+Primary Failure: No Instant Pricing
+The biggest issue is the lack of immediate quotes. I don’t understand why I have to ask for pricing in 2026. You have menus, you have guest counts, you have historical data - there is no reason you can’t generate a number. When I see “pricing available upon request,” I close the tab. I’m not waiting hours or days to find out if something fits my budget. That delay kills momentum and signals disorganization.
+
+Structural Issue: Opaque Custom Pricing
+I understand that some things are custom. That’s fine. But “custom” doesn’t mean “unknowable.” There should still be a base range, a per-person estimate, or a pricing model I can evaluate instantly. Right now, custom pricing feels like a black box. I don’t know if I’m looking at $4,000 or $10,000, so I can’t make a decision. That ambiguity is what drives me away.
+
+Structural Issue: No Market Price Transparency
+When ingredients drive cost - like seafood, specialty cuts, or seasonal items - I want to see that. If a dish is expensive because of market pricing, show me the source. Link to the fishery, the butcher, the distributor. I’m used to seeing commodity fluctuations. Hiding that information makes it feel like markup is arbitrary. Transparency builds trust; opacity kills it.
+
+Structural Issue: Delayed Price Impact on Changes
+Even when I get an initial quote, any change - adding guests, swapping dishes - requires recalculation. That lag is unnecessary. Pricing should update instantly. If I add two guests, I should see the new total immediately. If I upgrade a dish, I should see the delta. Waiting for someone to “get back to me” is friction I won’t tolerate.
+
+Psychological Model
+I optimize for: speed, clarity, and defensible pricing
+I refuse to compromise on: seeing numbers before committing time
+I avoid: opaque pricing, delayed quotes, and “contact us” flows
+I evaluate tools by: how quickly and accurately they give me a price I can act on
+
+Pass / Fail Conditions
+For this system to work for me, it must:
+
+Provide instant, real-time pricing based on inputs (guest count, menu selection, location) without requiring manual follow-up.
+
+Display clear pricing structures (per-person, base fees, add-ons) so I understand how the total is calculated.
+
+Offer transparent ranges or baseline estimates even for custom experiences, so I’m never operating in the dark.
+
+Update total pricing immediately as I make changes (guest count, dishes, upgrades) with no delay.
+
+Show ingredient-driven cost factors where relevant, including optional links or references to market pricing sources.
+
+Eliminate “contact for pricing” scenarios - every offering must have a visible, actionable price or range.
+
+Allow me to move directly from quote to booking and payment without restarting the process or re-entering information.

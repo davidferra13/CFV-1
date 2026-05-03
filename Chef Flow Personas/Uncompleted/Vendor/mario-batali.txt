@@ -1,0 +1,67 @@
+**Vendor Profile: "Mario Batali" - Specialty Ingredient Distributor (High-Volume Supplier)**
+
+I am the go-to source for everything—the obscure, the seasonal, the perfect last-minute touch—for high-end, high-volume restaurants in this little town. I don't just deliver ingredients; I deliver the *experience* of the ingredient. My reputation means that every chef—from the tiny bistro to the big hotel—calls me directly, often in a panic, needing something specific, something *now*. I manage relationships with dozens of niche regional farms and purveyors, making me the central hub for quality goods.
+
+### Business Reality
+
+Right now:
+* I fulfill approximately 50-70 unique chef orders, deliveries, and custom sourcing requests per week.
+* My average wholesale invoice is around $4,500, but due to custom sourcing and emergency rush fees, invoices frequently exceed $7,000. I require a 50% deposit for any custom or bulk order over $3,000, with the remaining balance due upon delivery.
+* My catalog is massive—over 3,000 SKUs—and constantly changing due to seasonality (e.g., specific heirloom tomatoes, regional seafood catches). Freshness is non-negotiable, and I often deal with 'near-perfect' substitutions that require immediate, expert approval.
+* I operate out of a central warehouse, but my sourcing and delivery geography covers the entire immediate metropolitan area, plus specialized trips to three regional farm markets (45 minutes away).
+* My current ordering and communication setup is a chaotic mix: chefs call me directly (often interrupting my phone calls with my purveyors), I manage the bulk of the inventory via a shared Google Sheet, and I confirm final details and substitutions via quick, often confusing, text messages.
+
+---
+
+### Primary Failure: Managing the High-Stakes Substitution Workflow
+
+The biggest problem is that my current system doesn't handle the necessary chaos of high-end ingredient substitution. When a chef orders 50 lbs of a specific type of Italian mushroom, and I arrive to find that only 40 lbs of a slightly different, but equally high-quality, regional mushroom is available, I cannot simply swap it out. I must communicate the difference, the impact on the dish, and get the chef's explicit, immediate approval via a documented channel. If I rely on a text message confirmation, and the chef is busy running the line, I lose the thread, leading to incorrect billing or, worse, delivering the wrong item that ruins a menu item. This leads to massive time sinks spent chasing confirmations and an increased risk of over-billing or under-delivery, costing me an estimated 5-8 hours of administrative time per week.
+
+---
+
+### Structural Issue: Non-Standardized Ingredient Sourcing and Inventory Tracking
+
+I receive ingredients from dozens of small, non-integrated purveyors (local fishermen, small farms). They don't use standardized batch codes or consistent SKU naming conventions. I have to manually input the incoming inventory (e.g., "catch of the day," "Tomatoes, small box") into my spreadsheet, cross-referencing it against my master catalog. This manual process means my inventory counts are always slightly delayed or inaccurate, especially for perishable goods. If I don't update the sheet instantly when a small, unscheduled delivery arrives, I risk promising availability that doesn't exist, leading to canceled orders and damaged reputation.
+
+---
+
+### Structural Issue: Dynamic Pricing and Rush Fee Documentation
+
+My pricing structure is highly dynamic. A chef might place a standard order for 20 lbs of flour, but then immediately text me at 9 PM requesting 5 lbs of imported saffron for an emergency risotto. This requires a manual "Rush Fee" calculation, which is based on time, sourcing effort, and distance. I calculate this fee on a napkin, confirm it via text, and then manually add it to the final invoice. Because the calculation is ad-hoc and non-standard, it is incredibly difficult to track, audit, and justify to the client or my accounting department, creating potential revenue leakage and confusion during payment reconciliation.
+
+---
+
+### Structural Issue: Conflicting Order Channels and Confirmation Trail
+
+My clients use at least four different channels to place and modify orders: a phone call, an email, a shared spreadsheet entry, and a text message. If a chef calls me and verbally modifies an order (e.g., "Actually, cut the amount of basil in half"), and then I send a confirmation text, and finally, I generate a PDF invoice based on the initial email, the changes are easily lost. I spend too much time cross-referencing these conflicting inputs to ensure the final invoice accurately reflects the *actual* negotiated order quantity, leading to frequent disputes over final costs.
+
+---
+
+### Structural Issue: Perishable Goods Manifesting and Delivery Proof
+
+When I deliver a complex order—say, a mix of delicate raw seafood, specialty imported oils, and seasonal produce—I need the chef to sign off on the *condition* of the goods, not just the count. My current process involves me physically writing a detailed condition report on a clipboard (e.g., "Scallops: excellent, 3/4 cup liquid remaining," "Tomatoes: minor bruising on the bottom"). This paper manifest is easily lost, difficult to digitize, and if the chef is overwhelmed, they might sign off on the count without reviewing the condition, leaving me exposed to liability disputes.
+
+---
+
+### Psychological Model
+
+I optimize for: Speed, quality, and the ability to handle extreme complexity with grace.
+I refuse to compromise on: Ingredient authenticity and the ability to source something rare *right now*.
+I avoid: Anything that feels rigid, automated, or requires me to spend time on basic data entry instead of sourcing.
+I evaluate tools by: How quickly they can integrate the chaos of my physical, real-time inventory with a professional billing structure.
+
+I think in terms of ingredients and their journey—from the source to the plate. If a process adds unnecessary steps or forces me to leave my sourcing phone to click buttons, I will bypass it immediately. I need the system to be as flexible and resilient as a perfect, unexpected catch of local fish.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1.  **Allow me to dynamically adjust SKUs and pricing on an invoice in real-time** while also tracking the initial, conflicting order source (e.g., "Changed from phone call input to text message modification").
+2.  **Support a multi-step, documented substitution approval workflow** that requires the client to explicitly approve the alternative ingredient and the potential cost/impact before the order is finalized.
+3.  **Accept manual, non-standardized inventory inputs** from multiple third-party sources (e.g., a fishing boat listing the "catch of the day") and map them to a clean, searchable master catalog without requiring me to pre-define every single possible item.
+4.  **Generate a comprehensive, digital delivery manifest** that requires the chef to sign off on both the *quantity* and the *physical condition* of each high-value, perishable item upon arrival.
+5.  **Handle complex, ad-hoc service fees** (like rush fees or specialized handling charges) by allowing me to input the calculation logic and the justification (e.g., "9 PM delivery, 30-mile radius, custom ice bath") and have it itemized clearly on the final invoice.
+6.  **Allow me to track the history of a single ingredient** across multiple orders (e.g., if I source a specific local farm's heirloom tomato, the system must track that farm's batch ID and the associated quality reports).
+7.  **Provide an integrated communication log** that automatically captures and links text message confirmations, email changes, and phone call notes to the corresponding line item on the invoice, eliminating conflicting records.

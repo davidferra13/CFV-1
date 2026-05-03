@@ -1,0 +1,55 @@
+Client Profile: "Marcus Ilyanov" - Senior Software Engineer, Payments & Checkout Systems (Determinist)
+
+I’ve built checkout systems. I know exactly what’s possible. If I can’t see a running total in real time as I configure something, I assume the system is either poorly designed or intentionally hiding something. Either way, I’m out.
+
+Business Reality
+Right now:
+
+I book 4–7 private dining experiences per year, usually 2–8 guests. Sometimes it’s just me and my partner, sometimes small groups.
+
+Budget ranges from $800 to $5,000 depending on the setup. I’m flexible, but I need to see the number evolve as I build.
+
+I expect to pay immediately once I’ve configured what I want - no intermediate steps, no hidden recalculations.
+
+Dietary needs are simple but precise - one allergy or preference that must be handled correctly.
+
+Locations are standard apartments or short-term rentals. I expect constraints to be factored automatically.
+
+I interact through web or mobile. I don’t want to talk to anyone just to complete a transaction.
+
+I think in systems - inputs, outputs, deterministic behavior. If I can’t model it mentally, I don’t trust it.
+
+Primary Failure: Non-Deterministic Pricing
+The biggest failure is when pricing is not directly tied to inputs in real time. If I select a 4-course dinner and input 6 guests, I should immediately see the computed total. If I add a wine pairing or upgrade a dish, I should see the delta instantly. When pricing is delayed, hidden, or requires manual follow-up, the system breaks its contract. It’s no longer deterministic - it’s opaque. That’s unacceptable in any checkout flow.
+
+Structural Issue: No Live Pricing Engine
+Most systems treat configuration and pricing as separate steps. You “build” something, then request a quote. That’s fundamentally wrong. Pricing is part of the configuration. Every selectable option should have a defined cost or formula attached. If I can click it, I should see its financial impact immediately. Otherwise, it’s not a real system - it’s a placeholder.
+
+Structural Issue: Hidden Multipliers
+Guest count, course count, staffing, travel - these are all multipliers. But they’re rarely exposed. I want to see the formula: base price × guests, plus fixed fees, plus add-ons. Right now, I get a total number with no visibility into how it was derived. That makes it impossible to reason about changes or trust the output.
+
+Structural Issue: Checkout Discontinuity
+Even when pricing is shown, it often resets or changes at checkout. I’ve seen totals shift between “estimate” and “final invoice.” That’s a critical failure. The number I see while configuring should be the number I pay, within clearly defined bounds. Any discrepancy breaks trust immediately.
+
+Psychological Model
+I optimize for: determinism, transparency, and immediate feedback
+I refuse to compromise on: real-time, input-driven pricing
+I avoid: any system that separates configuration from cost
+I evaluate tools by: whether I can predict the total before the system shows it
+
+Pass / Fail Conditions
+For this system to work for me, it must:
+
+Display a live, continuously updating total price as I configure the service (course count, guest count, add-ons).
+
+Tie every selectable option to a visible cost or formula so its impact is immediately clear.
+
+Show the full pricing breakdown (base cost, per-person multiplier, fixed fees, add-ons) in real time.
+
+Update totals instantly with zero latency when any input changes - no “recalculate” step.
+
+Maintain price consistency from configuration through checkout, with no unexpected changes.
+
+Allow me to complete the entire flow - from selection to payment - without requiring human interaction.
+
+Eliminate any “request quote” or delayed pricing mechanisms entirely; everything must be computable on the spot.

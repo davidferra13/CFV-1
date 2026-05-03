@@ -1,0 +1,67 @@
+**Chef Profile: "Julian" Thorne - Head Chef (Purist Operator)**
+
+I run a restaurant that is less a business and more a conversation with the land. We don't just serve food; we tell the story of the place we are in, right now. My entire operation hinges on the quality and variability of ingredients sourced within a 10-mile radius. Everything—from the salinity of the salt to the depth of the root vegetables—has to be perfect, or the entire meal is flawed.
+
+### Business Reality
+
+Right now:
+* I manage **3** dinner services and **1** small pop-up event per month, serving approximately **30 to 40** covers per sitting.
+* My revenue model is highly variable, averaging between **$18,000 and $22,000** in weekly gross revenue, with a tight focus on maintaining a Cost of Goods Sold (COGS) under 30%.
+* My team is small but intensely specialized: **1 Sous Chef, 2 Line Cooks, 1 Prep Cook, and 1 FOH Manager.**
+* My geographic scope is hyper-localized, centered within the historic district, with most of my critical suppliers located at the Saturday morning farmer's market.
+* My current tech setup is a chaotic mix: **Google Sheets** for costing and inventory, **physical reservation books/notebooks** for reservations, **WhatsApp groups** for last-minute supplier communication, and **dedicated email chains** for vendor invoices.
+
+---
+
+### Primary Failure: The Ingredient Gap
+
+My biggest operational failure isn't in scheduling or booking; it’s the gap between *availability* and *menu design*. If a farmer calls me—or better yet, shows up at the market—with a phenomenal haul of purple heirloom tomatoes that I didn't know I could use, I have to fundamentally redesign the menu, adjust the entire prep list, and recalculate the costing *immediately*. Because my current system is structured around static menus and predictable inventory, I cannot dynamically model the impact of a spontaneous, perfect ingredient arrival. This forces me to either pass up the best product of the season or spend valuable hours manually cross-referencing recipes and costs, which costs me time, reputation, and ultimately, money I could spend on the next perfect haul.
+
+---
+
+### Structural Issue: Variable Sourcing Integration
+
+My suppliers operate on a biological schedule, not a business one. I don't order "20 pounds of carrots"; I order "whatever is ripe and beautiful from Farmer John’s patch this week." My current workaround is a mix of **personal phone calls and handwritten notes** that I must track manually. When the sheet is updated, I have to remember to cross-reference that change against the menu board, the prep list, *and* the allocated labor cost. This is where things break: if I forget to update the menu board after a last-minute ingredient swap, I risk confusing my staff and, worse, over-committing to a portion size I don't have the ingredients for, leading to waste and disappointing my diners.
+
+---
+
+### Structural Issue: Dynamic Recipe Adaptation
+
+My recipes are not fixed; they are *guidelines*. When a key ingredient changes (e.g., the local fish catch changes from cod to rockfish), I have to manually draft a completely new recipe card, update the component costing (which is based on the day's market price, not a wholesale average), and then ensure the prep cook understands the new technique. I use **a mix of printed recipe binders and cloud-synced Google Docs**, which are useless for this. The moment I have to adjust a recipe based on a variable, high-quality ingredient, the system breaks because it cannot model the *directional* cost impact (e.g., "if we use this $15/lb local cheese, the cost per plate increases by 8%, but the perceived value increases by 20%").
+
+---
+
+### Structural Issue: Labor Allocation to Hyper-Local Prep
+
+My prep staff's tasks are dictated by what the farmers bring in that day, not by a standard weekly schedule. For example, if I get 50 pounds of specialty peppers, the prep cook has to dedicate an unexpected, high-labor block to cleaning, sorting, and prepping those specific peppers, which then affects who is available to tackle the standard tasks. My workaround is a **whiteboard and a chaotic series of texts** to the Sous Chef. This is a massive bottleneck. I cannot accurately track the labor hours required for specialized, unpredictable, high-volume prep tasks and assign them correctly against the day's projected revenue, leading to poor labor forecasting and wasted staff time waiting for the next ingredient drop.
+
+---
+
+### Structural Issue: Non-Standard Inventory Tracking
+
+I don't buy ingredients in standard wholesale units. I buy "a basket of green beans" or "a crate of heirloom tomatoes." These units are subjective and highly variable in weight and volume. My inventory system is **a messy spreadsheet that requires manual input every time a delivery arrives**. When I calculate my theoretical inventory usage, I have to estimate the weight of a "basket," which is always inaccurate. This means I constantly over-order or under-order, and I have no central, auditable record of the actual physical usage of my most valuable, unique, non-standardized ingredients, making waste tracking nearly impossible.
+
+---
+
+### Psychological Model
+
+I optimize for: **Culinary integrity and the narrative connection between the plate and the place.**
+I refuse to compromise on: **The provenance of every single ingredient.**
+I avoid: **Anything that feels like it's optimized for scale or generic efficiency; I hate the feeling of being managed by a number.**
+I evaluate tools by: **How flexible they are when a beautiful, spontaneous ingredient disrupts the entire plan.**
+
+I operate on gut feeling and deep, personal relationships. My processes are messy because the best ingredients are messy. If a system forces me into rigid predictability, I will abandon it. I need a tool that acts as a smart assistant, not a manager.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must allow me to define and prioritize ingredient sourcing based on hyper-local supplier profiles, not just commodity pricing.
+2. The system must support dynamic menu generation that automatically flags and recalculates COGS and prep labor when a key ingredient is swapped out or added spontaneously.
+3. The system must handle inventory units that are qualitative and variable (e.g., "bunch," "basket," "handful") and track their estimated weight/yield upon receipt.
+4. The system must centralize communication and resource allocation for specialized, non-standard prep tasks, linking ingredient arrival directly to necessary labor hours.
+5. The system must allow me to create and track bespoke, small-group bookings (e.g., a party of 8 for a private tasting) that require a unique, non-standard menu build and specialized staffing.
+6. The system must provide a transparent audit trail that shows which specific supplier provided which unique ingredient, linking it directly to the final dish's story and plate costing.
+7. The system must allow me to model ingredient cost fluctuations based on negotiated, non-standard pricing (e.g., "Supplier X charges $12/lb today, but $15/lb next week").

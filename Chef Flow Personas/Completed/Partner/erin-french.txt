@@ -1,0 +1,67 @@
+**Partner Profile: Erin French - Farm Dinner Co-host (High-End Collaborator)**
+
+I co-host, promote, or support an average of 5 major events, 10-15 referral bookings, and 3 small pop-ups per month. My revenue streams are complex, involving a base ticket fee of $150 per person, plus a variable commission of 10% on all bookings referred through my personal channels, and separate negotiated revenue share agreements with the farm and the collaborating restaurant, sometimes amounting to $500-$1,000 per joint event. My venues are highly varied: a specific farm location (e.g., local barn), a collaborating restaurant kitchen, and sometimes a temporary pop-up site. My guest list, calendar, and inventory constraints are a constant nightmare, requiring coordination across my personal calendar, the farm manager's email, the restaurant's booking system, and a separate shared Google Sheet that nobody updates consistently.
+
+### Business Reality
+
+Right now:
+* I co-host, promote, or support **5-6** events, **10-15** referrals, or partnerships per **month**.
+* I manage revenue share contracts and commission payments, averaging **$500 - $1,500** per joint event, paid out 30-60 days post-event.
+* My primary collaboration involves a **local farm**, a **high-end restaurant kitchen**, and **my personal brand/media platform** (which generates broadcast promotion).
+* My shared event location, calendar, guest list, and availability constraints are dictated by the **seasonal availability of the farm's harvest**, which is non-negotiable.
+* My current coordination setup is a chaotic mix of **email chains** (for logistics), **WhatsApp texts** (for immediate staff changes), **Google Docs** (for menu drafts), and **physical contracts** (for financials), with no single source of truth.
+
+---
+
+### Primary Failure: Cross-Channel Revenue Visibility
+
+The single biggest operational pain point is reconciling the true profit and commission from a single guest booking. When a guest books through the restaurant's system (Event Revenue), and I refer them later through my personal booking link (Referral Commission), and the farm charges a separate vendor fee (Vendor Cost), I cannot pull a single, real-time report showing the net profit per person. I have to manually cross-reference three separate booking logs, three different billing departments, and three different commission sheets, which takes 8-10 hours of administrative time after every major event. This manual reconciliation process is prone to human error, delays payment to my team, and prevents me from accurately calculating which collaboration model (e.g., focusing more on the restaurant side vs. the farm side) is most financially sustainable for my time.
+
+---
+
+### Structural Issue: Booking Reconciliation and Overbooking
+
+My booking system is broken because it relies on siloed platforms. The restaurant uses OpenTable, the farm uses a simple Mailchimp signup form, and I use my own dedicated ticketing link (Eventbrite/Squarespace). When a guest books via the farm's form, it bypasses the main ticketing system, leading to duplicate RSVPs and manual confirmations. I spend 3-4 hours per week fielding "Did we get your booking?" questions because there is no single, authoritative source that shows which platform the booking came from, the original reservation date, or the payment status.
+
+---
+
+### Structural Issue: Dynamic Menu and Inventory Syncing
+
+The menu is entirely dependent on the farm's real-time harvest, which changes weekly. Currently, I have to manually update three different documents—the marketing flyer, the kitchen prep sheet, and the printed table card—every time the menu changes. This process is slow, and I frequently send out promotional material that references ingredients that are either unavailable or already sold out, leading to guest disappointment and damaging the perceived professionalism of the partnership.
+
+---
+
+### Structural Issue: Multi-Party Financial Tracking and Commission Waterfall
+
+Tracking the money is a bureaucratic nightmare. When a booking comes in, the ticket payment hits the restaurant's account, but my commission is paid out by *me* (or my bookkeeper) after reviewing a manual statement from the restaurant's accounting system. There is no automated way to track the commission structure—the 10% I earn, the 15% the farm requires for their staff, and the base ticket price—against the actual booking data. This manual tracking creates friction and delays my ability to reconcile my monthly earnings accurately.
+
+---
+
+### Structural Issue: Cross-Promotion Asset Management
+
+When we partner with a brand (e.g., a local winery), I need a specific, high-quality asset (a photo, a short video clip, a quote) for my Instagram, the restaurant's website, and the farm's newsletter. Currently, I send a detailed email request to the collaborating partner, and then I have to chase them up with follow-up texts and emails, often receiving assets in various formats (bad resolution photos, unedited videos). This constant chasing and reformatting wastes valuable time that should be spent on the culinary experience itself.
+
+---
+
+### Psychological Model
+
+I optimize for: **Authenticity and elevated guest experience.** The entire brand experience—from the initial booking to the final bite—must feel seamless, intentional, and deeply rooted in the seasonal product.
+I refuse to compromise on: **The integrity of the ingredient sourcing or the quality of the guest service.** If the logistics are messy, the experience feels inauthentic and cheapens the entire collaboration.
+I avoid: **Any process that requires me to spend time on administrative, repetitive, or non-creative tasks.** I will pay extra for efficiency if it buys me back my time.
+I evaluate tools by: **How quickly they integrate multi-party data streams (bookings, payments, inventory) into a single, beautiful dashboard.**
+
+I think in terms of the *narrative* of the meal. Every operational gap I encounter doesn't just feel like a technical problem; it feels like a failure of the story. If the booking system is confusing, the story is broken. If the menu is inconsistent, the story is compromised. I need a tool that feels as polished and seamless as the dining experience itself.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must **create a single, unified booking record** that accurately tracks the origin (e.g., *Farm Referral*, *OpenTable Direct*, *My Promo Link*) for every guest reservation.
+2. The system must **automatically generate a net revenue dashboard** that reconciles ticket sales, my commission percentage, and agreed-upon vendor fees against every booking.
+3. The system must **allow for multi-location inventory syncing**, meaning I can update the "unavailable" status of an ingredient on the farm side, and the menu/prep sheet must instantly reflect that change.
+4. The system must **support collaborative content asset management**, allowing me to assign assets (photos, copy) to different partners and track their upload status within the event timeline.
+5. The system must **handle complex, multi-stage ticket sales**, supporting initial deposits, final payments, and subsequent booking adjustments for groups of 20+ guests.
+6. The system must **integrate a dedicated vendor/partner module** that tracks specific partner agreements, revenue splits, and corresponding payment schedules.
+7. The system must **provide a dedicated communication channel** for each specific event instance, ensuring that all logistical conversations (staffing, dietary restrictions, setup notes) are tied to the correct booking and never lost in a general email thread.

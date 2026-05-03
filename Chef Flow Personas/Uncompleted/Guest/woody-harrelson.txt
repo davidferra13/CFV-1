@@ -1,0 +1,67 @@
+**Guest Profile: "Woody Harrelson" - Highly Variable Performer (Adaptable Talent)**
+
+I've spent my entire career hopping between radically different projects, from small, intimate theater gigs in smoky clubs to large, varied film sets. I don't have a single brand or reliable income stream; I'm constantly moving, constantly adapting, and I've learned that the most unpredictable part of any gig is the logistics—the food, the schedule, the people. When I RSVP for an event, I'm not just booking a seat; I'm booking a functional experience that must accommodate my specific needs, whether that's a severe allergy or just a preference for something simple and reliable.
+
+### Business Reality
+
+Right now:
+* I attend an average of **4 to 6** private dinners, small-scale industry networking events, or ticketed showcases per month.
+* My event spend is highly variable, but I budget approximately **$500 to $1,200** per event for tickets, travel (local radius, max 2 hours drive), and associated accommodation (usually a single night near the venue).
+* My dietary needs are complex: I have a severe, life-threatening allergy to all nuts (peanuts, tree nuts, etc.), and I must be kept strictly vegan. I also have a sensitivity to excessive gluten, so a gluten-free option is always preferred if the main menu isn't specified.
+* My current event context is a specialized, invitation-only film industry showcase (e.g., a workshop or private screening) at a temporary, unique location like a renovated loft or a specific restaurant private room, typically involving a head count of **15 to 30** people.
+* My current communication setup is a chaotic mix: initial invites are often physical emails or LinkedIn messages; confirmation is usually a quick, unreliable text message; and detailed dietary/allergy needs are often collected via a hastily built Google Form that I only see the link to, but never the data from.
+
+---
+
+### Primary Failure: Allergy Communication Cascades
+
+The biggest operational problem is the failure point between the initial RSVP and the final kitchen execution regarding severe allergies. I am not asking for a menu change; I am asking for a guarantee of safety. When a kitchen or catering team only receives a general "vegan" note, and the allergy note (e.g., "Severe Nut Allergy") is buried in a separate, non-mandatory field or is missed entirely, the entire event is jeopardized. This doesn't just cost me comfort; it costs me trust and potentially my life. The resulting anxiety means I spend the entire event worrying about the food, distracting me from the purpose of the gathering, and forcing me to spend valuable time asking repetitive questions that the host should have already solved.
+
+---
+
+### Structural Issue: Fragmented RSVP and Dietary Data Collection
+
+The process of confirming my attendance and my dietary needs is always fragmented. I receive an invite via email, click a link to a sign-up form (Google Forms, Eventbrite, etc.), input my details, and then that data lives in a spreadsheet that the host (and often the caterer) must manually access and interpret. If the host is managing 30+ people, the chance of a critical data point—like the specific "No Nuts, Vegan, GF Preferred" combination—being overlooked or incorrectly transferred to the kitchen manifest is extremely high. I usually end up having to call the host 24 hours beforehand just to confirm the safety protocol.
+
+---
+
+### Structural Issue: Lack of Real-Time Menu Visibility for Restrictions
+
+I cannot rely on a static, printed menu. The menu needs to be dynamically filtered and presented to me *before* I arrive, specifically showing which dishes are safe. If the platform only shows the general, mixed menu (e.g., "Roasted Root Vegetable Medley"), I have to assume the worst. The workaround is often asking the host, "What are the three safest things I can eat?" which forces the host to curate a mini-menu for me. The system breaks down because the platform doesn't translate my specific, complex restriction (Vegan, Nut-Free, Gluten-Sensitive) into actionable, pre-vetted options that are immediately visible to me and the kitchen staff.
+
+---
+
+### Structural Issue: Inconsistent Event Logistics Confirmation
+
+The confirmation process is a nightmare because the operational details are scattered across multiple channels. The RSVP is via the event platform; the dietary list is in a spreadsheet; the seating chart is often a physical printout; and the final payment/ticket details are via a separate email. I have no single source of truth. For instance, if the event moves from the loft to the restaurant ballroom, I might get a text from the organizer, an email from the venue coordinator, and a reminder from the booking link, all contradicting or missing key information like the new check-in process or the revised meal service timing. This forces me to keep a physical notepad and cross-reference three different sources just to know where I need to be and what I need to bring.
+
+---
+
+### Structural Issue: Confusing Vendor/Staff Roles and Responsibilities
+
+When an event is complex—like a catered film showcase—there are often multiple vendors: the venue manager, the caterer, the bar service, and the event coordinator. When I arrive, I don't know who I should speak to about my dietary needs. Is it the person at the reception desk? The person on the floor? The person wearing the apron? If the kitchen team and the front-of-house staff are not seamlessly communicating my critical allergy information, I am left in a blind spot. The current workaround is identifying the most senior-looking staff member and cornering them, which disrupts the flow and signals to everyone that the system has failed.
+
+---
+
+### Psychological Model
+
+I optimize for: **Reliability and Predictability**. If I know exactly what I can eat and when, I can focus on the creative experience.
+I refuse to compromise on: **Safety and Clarity**. My health and my ability to enjoy the event are non-negotiable.
+I avoid: **Ambiguity, Spreadsheets, and Manual Data Entry**. If I have to manage logistics or cross-reference multiple documents, I will get frustrated and leave early.
+I evaluate tools by: **How efficiently they consolidate complex, high-stakes information into one verified source.**
+
+I think about the entire flow of the experience—from the initial booking to the final plate. I need assurance that the people running the event have solved the problems *before* I arrive. I am a professional who operates on trust, and trust is built on flawless execution of the mundane details.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must **aggregate** all confirmed RSVPs, dietary restrictions, and critical allergies into one single, standardized, and accessible manifest view for all operational staff (kitchen, front-of-house, management).
+2. The system must **allow** the host to pre-load a verified, restricted menu option (e.g., "Vegan, Nut-Free, GF") that is visible to the guest *before* the event, confirming its inclusion in the final costing and inventory.
+3. The system must **trigger** automated, multi-channel confirmations (email, text, event dashboard) that confirm the status of the dietary restrictions and the specific allergy handling protocol (e.g., "Kitchen confirmed: Nut-free zone established").
+4. The system must **provide** a centralized "Event Logistics Hub" that houses the single source of truth for the location, timing, key staff contacts, and vendor responsibilities, minimizing reliance on scattered texts or emails.
+5. The system must **integrate** vendor/staff communication so that the person receiving the booking knows exactly who (vendor, staff member) is responsible for managing the food service aspect of the event.
+6. The system must **manage** the entire lifecycle of the guest's communication, from initial interest to confirmed attendance, ensuring that the dietary requirements are mandatory fields and cannot be skipped or lost in translation.
+7. The system must **generate** a real-time, printable, and digital checklist for the staff that highlights the key dietary restrictions and allergies for each guest who is attending, ensuring zero chance of human error on the night.

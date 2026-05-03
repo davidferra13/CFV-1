@@ -1,0 +1,55 @@
+Client Profile: "Rachel Adler" - UX Designer, Consumer Apps (Friction Killer)
+
+I design flows for a living. Every extra field, every unnecessary tap - I see it immediately. If your payment experience isn’t effortless, I assume the rest of the product is just as sloppy.
+
+Business Reality
+Right now:
+
+I book 4–8 private dining experiences per year, usually 2–8 guests.
+
+Budget ranges from $1,200 to $5,500. I’m not cost-sensitive, but I am friction-sensitive.
+
+I expect to go from decision to confirmation in under 2 minutes.
+
+Dietary needs are simple but should be remembered across events.
+
+Locations vary, but I expect that to be abstracted away in the system.
+
+I use both mobile and desktop, but mobile is primary for final actions.
+
+I rely heavily on saved payment methods and autofill ecosystems.
+
+Primary Failure: Payment Friction Overload
+The biggest issue is when payment feels like work. Typing information, confirming multiple times, dealing with unclear states - it’s exhausting. I’ve abandoned bookings at the payment step more than anywhere else. If I’m ready to pay and you slow me down, you lose me.
+
+Structural Issue: No Progressive Disclosure
+Payment flows often dump everything at once - billing address, card info, confirmation screens. That’s bad design. I want progressive disclosure: show me only what’s necessary, when it’s necessary. Wallets solve this by abstracting everything into one action. If you’re not using that, you’re forcing unnecessary cognitive load.
+
+Structural Issue: Lack of Trust Signals
+Manual forms feel less secure than wallet-based payments. I trust Apple Pay and Google Pay because they’re standardized and tokenized. When I see a custom form, I question its security. That hesitation is enough to stop me.
+
+Structural Issue: Redundant Confirmation Steps
+I don’t need three confirmation screens. If I tap “Pay” and authenticate, that should be it. Extra confirmations feel like the system doesn’t trust itself. That’s a bad signal.
+
+Psychological Model
+I optimize for: minimal interaction and maximum confidence
+I refuse to compromise on: effortless, intuitive payment flows
+I avoid: redundant steps, manual input, and unclear states
+I evaluate tools by: how invisible the payment process feels
+
+Pass / Fail Conditions
+For this system to work for me, it must:
+
+Default to wallet-based payments with zero manual entry as the primary flow.
+
+Minimize the number of steps from pricing to payment - ideally one action plus authentication.
+
+Use progressive disclosure to only show necessary information at each step.
+
+Eliminate redundant confirmation screens - payment should complete after a single verified action.
+
+Maintain clear, consistent UI states so I always know where I am in the process.
+
+Reinforce trust with secure, recognizable payment methods rather than custom forms.
+
+Allow me to complete the entire booking without friction or hesitation at the payment stage.

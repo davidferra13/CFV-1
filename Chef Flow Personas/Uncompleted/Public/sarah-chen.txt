@@ -1,0 +1,73 @@
+**Public Profile: "Sarah Chen" - Experienced Home Entertainer (Event Planner)**
+
+I am an avid home cook and regular reader of *NYT Cooking*. I host medium-to-large gatherings—typically 15 to 30 people—for everything from dinner parties to small holiday celebrations. While I enjoy cooking myself, I am constantly looking to elevate my entertaining game, which means I often need to hire professional help, whether that's a specialized caterer, a private chef, or a specific skill demonstration. My goal is always to create a memorable, high-quality, and seamless experience without the stress of managing complex logistics myself.
+
+### Business Reality
+
+Right now:
+* I search for or compare **8 to 12** chefs, event services, and specialized menus per **quarter**.
+* My budget is generally **$1,500 to $4,000** per event, depending on the scope (e.g., full meal vs. dessert station).
+* I require availability for **Friday or Saturday evenings**, with a strong preference for specialized cuisine (e.g., authentic regional Italian, modern Nordic) and high-quality reviews.
+* I am often coordinating with a specific venue (my own home, or a rented space like a private dining room) and need to book a chef who can handle complex menu execution and vendor coordination.
+* My current discovery setup is a mix of specific Google searches ("private chef for 20 people NYC"), referrals from friends, Instagram, and occasionally browsing through high-end local vendor websites.
+
+---
+
+### Primary Failure: Managing the Discovery-to-Booking Gap
+
+The biggest operational problem is the sheer friction between finding a chef I like and actually confirming their availability and suitability for a specific, complex event. I spend hours cross-referencing menus and pricing across 4 to 6 different websites and sending 10+ individual emails just to confirm if a chef is available on a specific Saturday evening and if their rates include staffing, equipment, and necessary permits. This process is incredibly time-consuming, and the lack of a centralized, real-time booking status means I frequently miss out on ideal candidates or waste time negotiating with chefs who are already fully booked for my target window. This uncertainty costs me not just money, but the priceless time I would rather spend planning the rest of the event details, like floral arrangements or wine pairings.
+
+---
+
+### Structural Issue: Fragmented Availability and Booking Status
+
+I have to check multiple, disconnected sources (a chef’s personal website, a third-party booking site, and sometimes a phone call) just to determine if they are free on a given date. I maintain a sprawling Google Sheet that tracks chef name, website link, best contact email, last confirmed availability, and the initial quote. When a chef updates their availability, I have no way of knowing it unless they proactively tell me, meaning my entire planning process is based on outdated information.
+
+---
+
+### Structural Issue: Translating Cuisine Interest into Operational Capacity
+
+I love a specific style of cuisine—say, Peruvian Nikkei—but I don't know which chefs *actually specialize* in that, or if they have the capacity to cater to my guest count of 25. Instead, I have to start with a broad search and then manually filter through their entire portfolio to see if they have relevant experience. This means I'm doing the deep vetting work for them, and I often end up talking to chefs who are excellent but simply outside the niche I need.
+
+---
+
+### Structural Issue: Inconsistent Quoting and Scope Creep
+
+When I finally book a preliminary consultation, I usually receive an initial quote via email. However, when we speak further, the quote is almost always modified or incomplete. One chef quotes for food only, another quotes for staff only, and a third forgets to include the cost of specialized equipment (like a wood-fired oven). I end up having to play the role of the project manager, constantly asking, "Does this include tax? Does this include service staff? Is this for 25 people or 20?" This forces me to manage a confusing collection of line-item emails and attachments.
+
+---
+
+### Structural Issue: Difficulty Comparing Operational Details
+
+When comparing two chefs, Chef A and Chef B, I might find that Chef A is slightly cheaper, but Chef B offers significantly better logistical support—like providing necessary serving ware or having established vendor relationships with local florists. These crucial operational differences (e.g., "Does this chef require a commercial kitchen space?" or "Do they provide all necessary linens?") are buried in their website FAQs or mentioned only vaguely in their booking forms, making a true apples-to-apples comparison nearly impossible.
+
+---
+
+### Structural Issue: Trust and Credibility Verification
+
+Since I am dealing with expensive, high-stakes experiences, I need to verify not just the chef's talent, but their reliability. I rely heavily on reviews, but these are often generic (e.g., "Amazing food!") and don't speak to operational details (e.g., "Did they show up on time?" or "Did they handle a last-minute dietary restriction for 5 guests?"). I waste time chasing down references and trying to verify past client experiences manually.
+
+---
+
+### Psychological Model
+
+I optimize for: **Confidence and Predictability.** I want the process to feel effortless and reliable, so I can focus on the fun parts of entertaining.
+I refuse to compromise on: **The quality of the core experience.** If the food or the presentation is mediocre, the whole event fails, no matter how easy the booking process was.
+I avoid: **Spreadsheets, manual cross-referencing, and fragmented communication.** Anything that requires me to track information across multiple tabs or email chains gives me immediate anxiety.
+I evaluate tools by: **The depth of the data they provide.** If the system can give me a holistic view of a chef's operational capacity and pricing structure, I trust it.
+
+I think in terms of *experience flow*. I don't want to be a researcher; I want to be a curator. I need a system that acts like a highly knowledgeable personal assistant, narrowing down the options and confirming the logistics so I can simply say "yes" and move on with my life.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must **display real-time availability** for specific dates and party sizes (e.g., "Available: Sept 15th - Sept 20th").
+2. The system must **allow me to filter chefs based on required operational logistics** (e.g., "Must require a commercial kitchen," or "Can handle 30+ guests").
+3. The system must **provide standardized, itemized cost estimates** that clearly break down food cost, labor cost, equipment rental cost, and service fee, preventing scope creep.
+4. The system must **aggregate reviews around specific operational competencies** (e.g., "Reliability on time," "Handling dietary restrictions," "Scale of service").
+5. The system must **allow me to save and compare operational profiles** of multiple chefs side-by-side, including their standard menus and minimum booking requirements.
+6. The system must **manage the initial inquiry flow by automating scheduling and sending standardized follow-up questions** to the chef to gather all necessary logistical data in one place.
+7. The system must **provide a single, comprehensive communication thread** that captures all conversations, quotes, and contract details, eliminating the need for cross-checking emails.

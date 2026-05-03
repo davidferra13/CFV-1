@@ -1,0 +1,49 @@
+**Chef Profile: Alice Waters - Small Town Market Chef**
+
+I run "The Harvest Table," a farm-to-table restaurant and small market located in the heart of Millfield, CA. Our mission is to serve locally sourced, seasonal fare to our community while supporting local farmers and producers. We have three main dining locations and a grab-and-go market that caters to both locals and tourists.
+
+Currently:
+* I manage 6 full-time chefs, 15 part-time staff, and 3 market employees across our restaurant locations and market.
+* Our annual revenue is around $1.8 million, with an average check size of $35 per guest and a customer base of about 45% locals and 55% tourists.
+* Our team consists of head chef, sous chefs for each location, kitchen staff, market staff, and support personnel for sourcing and inventory management.
+
+The current tech setup includes:
+* Paper-based recipe cards and kitchen logs
+* Google Sheets for inventory tracking and orders
+* Microsoft Excel spreadsheets for cost analysis and menu planning
+* A mix of personal phones and work-issued devices for communication
+* Pen and paper for scheduling and staff management
+
+### Primary Failure: Sourcing Reliability
+
+Our biggest operational problem lies in the inconsistency of sourcing. Despite our best efforts, we often struggle to secure enough high-quality ingredients from local farmers during peak seasons, especially when there's a sudden increase in demand or unforeseen circumstances like poor weather. This leads to last-minute scrambling for alternatives and sometimes even having to replace certain menu items altogether, which can be quite costly due to the need for expedited shipping or less desirable options.
+
+### Structural Issue: Inventory Precision
+
+Our current inventory tracking relies heavily on Google Sheets, which requires manual input by multiple team members. While this has worked to a degree, we often find ourselves short on essential ingredients or overstocked with others that don't sell as expected. This not only affects our menu flexibility but also leads to significant waste and increased costs due to spoilage.
+
+### Structural Issue: Menu Agility
+
+Creating and updating menus based on seasonal availability and customer preferences is another challenge. We use Microsoft Excel for cost analysis and planning, which while effective, doesn't always reflect real-time changes in demand or ingredient costs. This often results in underpricing certain dishes or overpricing others, leading to dissatisfaction among both customers and staff.
+
+### Structural Issue: Communication Clarity
+
+With a scattered team across multiple locations and roles, communication has become a significant issue. Our mix of personal devices and work-issued equipment makes it hard to keep everyone informed about changes, updates, and important decisions. This often leads to misunderstandings or missed information, causing delays in service or even clashes between shifts.
+
+### Structural Issue: Staff Management
+
+Scheduling and managing our team effectively is another challenge. With a mix of full-time, part-time, and seasonal staff across various roles and locations, finding the right balance has been difficult. Our current method of pen-and-paper scheduling often leads to conflicts and overworking during peak times or understaffing during slower periods.
+
+For this system to work for me, it must:
+
+1. Integrate seamlessly with our existing tech stack, especially Google Sheets and Microsoft Excel, to avoid disrupting our workflow.
+2. Offer robust inventory management features that allow us to track ingredients accurately in real-time across all locations.
+3. Provide dynamic menu planning tools that can adapt quickly to changes in ingredient availability and customer preferences without compromising cost analysis accuracy.
+4. Include a comprehensive communication platform that works across all devices used by our team, ensuring everyone is always up-to-date with the latest information.
+5. Offer flexible scheduling options that take into account full-time, part-time, and seasonal staff needs while also considering peak times and slow periods for each location.
+6. Have a strong focus on sourcing reliability, providing insights into local supplier networks and predicting potential shortages based on weather patterns or other factors.
+7. Prioritize sustainability and quality in ingredient selection to ensure our commitment to farm-to-table dining is maintained without compromising on taste or presentation.
+
+In terms of priorities, I optimize for sustainable growth that supports the local community and maintains the integrity of our farm-to-table philosophy. I refuse to compromise on ingredient quality or customer experience but avoid processes that don't add value, such as unnecessary tech overhauls or excessive paperwork. I evaluate tools by their ability to streamline operations while enhancing communication and collaboration among team members.
+
+[End]

@@ -1,0 +1,73 @@
+**Chef Profile: "Jose Andres" - Humanitarian Chef (Global Relief Operations)**
+
+I am Jose. My life, and the life of my organization, is built on showing up where people are starving. We don't run a restaurant; we run a logistical operation designed to feed tens of thousands of people in the most volatile, under-resourced environments on Earth. Our priority is always nutrition, dignity, and speed.
+
+### Business Reality
+
+Right now:
+* I manage **8 to 12** active global operational zones (from Haiti to Ukraine to Puerto Rico) and maintain relationships with over **300** local partner organizations.
+* Our revenue model is highly variable, generally comprising $1.5 million to $4 million in annual grants and donations, plus in-kind donations valued at over $5 million.
+* My core team consists of 5 permanent full-time staff (logistics, finance, medical coordination), supported by an average of 20-50 contracted local staff members, and fluctuating volunteer pools of 500 to 10,000 people per major event.
+* Our geographic scope is truly global, requiring rapid deployment capability into areas with zero infrastructure (e.g., rural Haiti, war zones).
+* Our current tech setup is a chaotic mix: Google Sheets (for everything from inventory to volunteer sign-ups), WhatsApp (for real-time staff communication), basic cloud accounting software (for grant reporting), and often, nothing at all—just paper and memory.
+
+---
+
+### Primary Failure: Scalable, Real-Time Nutritional Inventory Tracking
+
+My biggest pain point is the disconnect between what we *receive* and what we *can actually serve* to the people who need it most. In a disaster zone, supplies arrive in waves, often damaged or miscounted. I cannot accurately track the real-time nutritional content and remaining inventory of thousands of disparate ingredients (rice, beans, specialized supplements, canned goods) across multiple kitchens, which means we frequently over-order or, worse, send out meals that are nutritionally deficient because we failed to account for the last 15% of a key ingredient. This inefficiency costs us not just money, but critically, human health.
+
+---
+
+### Structural Issue: Volunteer Onboarding and Skill Matching
+
+When we deploy, we often receive hundreds of volunteers who have zero experience in high-volume, regulated food service operations. We currently manage this by having local partners (the "first responders") conduct manual, paper-based orientations, and then assigning tasks based on the person's physical availability that day. This system is completely unscalable; if we suddenly get 500 volunteers, the paper sign-up sheets become unreadable, and we have no reliable way to match their skills (e.g., "can lift 40 lbs," "fluent in Haitian Creole," "basic plumbing knowledge") to specific, immediate operational needs, leading to wasted labor hours.
+
+---
+
+### Structural Issue: Cross-Border Regulatory Compliance Documentation
+
+Every time we move a single shipment of goods—whether it's 500 lbs of rice or 20 cases of canned beans—across a border, we face a nightmare of rapidly changing local regulations, customs forms, and specialized food safety certifications. We currently rely on dedicated field staff to manually compile and track these physical documents, which are easily lost, damaged, or delayed. A single missing Certificate of Origin can halt a multi-million dollar shipment for weeks, putting immediate lives at risk because we have no centralized, digital, and instantly updateable compliance ledger that accounts for the specific, temporary nature of disaster relief.
+
+---
+
+### Structural Issue: Local Partner Coordination and Resource Allocation
+
+We operate by empowering local organizations, but coordinating resources among them is a logistical nightmare. I need to know, in real-time, which local partner in a specific district has excess functional cooking equipment (e.g., 5 large industrial stoves, 3 commercial dehydrators) and which one has available storage space for a sudden influx of supplies. We currently communicate this using a combination of WhatsApp group messages and phone calls. This is purely reactive, fragmented, and impossible to query systematically. We waste time confirming availability and creating redundant infrastructure instead of focusing on cooking and distribution.
+
+---
+
+### Structural Issue: Dynamic Menu and Recipe Scaling Against Variable Ingredients
+
+Our menu must be highly nutritious, culturally appropriate, and utilize ingredients that are available *right now* and *in bulk*. Because our supply chain is so unpredictable (a shipment might contain more sweet potatoes and less rice than anticipated), we cannot rely on static recipes. I need a system that can take a variable inventory input (e.g., 80% rice, 20% beans; 60% sweet potatoes, 40% tomatoes) and automatically generate 3-5 viable, nutritionally balanced, and scaled recipes that meet minimum macro requirements for 5,000 people, rather than having to manually calculate ratios and nutritional values in a spreadsheet.
+
+---
+
+### Structural Issue: Volunteer and Staff Credentialing and Tracking
+
+In crisis zones, staff and volunteers come and go rapidly. We need to maintain a single source of truth for every person involved in the operation. This includes their current contact info, their specialized training (e.g., first aid, food handling certification, local language fluency), and their shift schedule. We currently use a combination of paper rosters and a shared Google Sheet that constantly suffers from people adding duplicates, deleting records, or simply failing to update their status, meaning we frequently assign tasks to people who are technically unavailable or who have lost their certification.
+
+---
+
+### Psychological Model
+
+I optimize for: **Impact per unit of effort.** I need systems that remove friction and maximize the time I can spend on the ground, making decisions, and interacting with people.
+I refuse to compromise on: **Accuracy and speed.** If the data is wrong, or if the system slows down the process, it is useless.
+I avoid: **Bureaucratic complexity or overly polished interfaces.** I need something that is brutally functional, works offline, and can be taught to someone who has only used a pencil and paper before.
+I evaluate tools by: **Robustness and adaptability to zero-infrastructure environments.** If it needs constant power or a perfect internet connection, it fails before it starts.
+
+I think like a general—everything is a resource, and logistics is life. My decisions are always weighed against the immediate impact on human life, not against quarterly profit reports. I need the system to be as resilient and adaptable as the people I serve.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. **[Inventory]** Allow me to input incoming supplies via a mobile app, automatically calculating the remaining usable quantities and flagging ingredients that are nearing spoilage based on local environmental data.
+2. **[Menu/Recipe]** Accept a variable, multi-ingredient inventory list and generate a menu and scaled recipe list that meets pre-set nutritional minimums (e.g., 15% protein, 30% carbs) for a specified number of people.
+3. **[Staffing/Volunteer]** Maintain a single, centralized roster that allows filtering by real-time availability, specific skills, and required compliance certifications, updating automatically when a shift is logged or a certification expires.
+4. **[Compliance]** Function as a digital ledger for all cross-border shipments, requiring the input of specific regulatory documents and flagging discrepancies against a constantly updated database of international customs requirements.
+5. **[Coordination]** Provide a map-based view of all local partner organizations, showing their current operational status, available excess resources (e.g., equipment, storage capacity), and contact person, all queryable in real-time.
+6. **[Operations]** Handle offline data entry and synchronization seamlessly, ensuring that when connectivity is restored, all logged data (inventory counts, shift sign-ups, etc.) is accurately merged without duplication or data loss.
+7. **[Client/Guest]** Allow me to track the basic dietary restrictions and medical needs of large groups of people (e.g., 500 people with specific allergies) and cross-reference those needs against the planned menu to flag potential conflicts before meal preparation begins.

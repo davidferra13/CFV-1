@@ -1,0 +1,67 @@
+**Partner Profile: "Danny Meyer" - Culinary Group Founder (Experience Curator)**
+
+I run a small group of restaurants and seasonal pop-ups in the market. My job isn't just cooking; it's curating the entire experience—from the wine pairing to the local baker's bread. I constantly collaborate with other small, incredible vendors, local farms, and artisanal brands to make every single meal feel unique to the season and the community.
+
+### Business Reality
+
+Right now:
+* I co-host, promote, or support **8-12** events, referrals, or partnerships per **month** (roughly 2-3 major events and 6-9 smaller pop-ups).
+* We handle a revenue share agreement structure involving at least **4** different vendors and **3** separate booking/payment systems, leading to variable commission payments ranging from **15% to 30%** of the gross sales for shared events.
+* My partnerships involve local farms (e.g., sourcing seasonal produce from *Sunny Valley Farm*), specialized beverage brands, and local artisans (e.g., *The Biscuit Co.*).
+* The shared event location is often the physical market space or my restaurant's private dining room; the calendar is a mess of shared Google Calendars, and the guest list is a patchwork of mailed invitations, reservation platform data (Tock/Resy), and physical sign-up sheets.
+* Our current coordination setup is a chaotic mix of Slack threads for immediate comms, Google Sheets for tracking inventory and costs, physical binder planners for the overall schedule, and email chains for contracts and payment confirmations—there is absolutely no single source of truth.
+
+---
+
+### Primary Failure: Coordination Collapse During Peak Events
+
+My biggest operational pain point is the lack of a single, real-time operational view when multiple partners are involved. When a pop-up event hits full capacity, I can't instantly verify if the wine vendor's inventory count matches the projected guest count, if the farm's delivery manifest has been logged against the specific event day's menu, or if the revenue share tracking spreadsheet has been updated with the final sales count from the POS. This forces me to manually chase down data from three or four different people—the kitchen lead, the front-of-house manager, the vendor contact—which wastes valuable time, increases the risk of over-selling, and makes accurate, timely financial reconciliation impossible. It costs me at least 8-10 hours of administrative time per large event just cleaning up the data.
+
+---
+
+### Structural Issue: Inconsistent Vendor Inventory and Sourcing Tracking
+
+When I plan a menu, I need to know exactly which ingredients are available from which specific local vendor *that day*. I currently manage this by sending out a standardized Google Sheet template to each vendor (the farm, the bakery, the cheese maker) a week before the event, asking them to manually fill in their available inventory and pricing. This process is incredibly prone to human error. If a vendor forgets to update the sheet, or if their actual harvest yield changes last minute, the menu I designed becomes unworkable, forcing expensive, last-minute substitutions or outright menu cuts.
+
+---
+
+### Structural Issue: Fragmented Guest Experience and Booking Data
+
+My guests interact with multiple services during an event—they might book a table through my platform, but the beverage pairing might be managed through the wine vendor's separate website, and the artisan goods might require a separate on-site purchase. This means my core reservation data (who is coming, for how many people) is siloed. I have to manually cross-reference Tock bookings with my own POS data, and then *again* cross-reference that with the vendor's required guest count. If the data doesn't match, I either under-prepare or over-prepare, leading to wasted product and staff inefficiency.
+
+---
+
+### Structural Issue: Complex, Manual Revenue Reconciliation
+
+Tracking the revenue share across multiple collaborating parties is a massive headache. For a single Saturday market event, I have to reconcile sales from my POS, the vendor's POS, the dedicated ticket sales platform, and then manually calculate the commission splits (e.g., "Wine vendor gets 25% of ticket sales over $100"). I use a massive, shared Excel sheet that requires constant updates and multiple people with different access levels. When one number is missed, the entire month's financial report is inaccurate, and the inevitable disputes over commission payments consume significant time and damage trust.
+
+---
+
+### Structural Issue: Event-Specific Menu Costing and Ingredient Reconciliation
+
+Because my menus are so seasonal and collaborative, the ingredient cost changes weekly. I cannot simply use a standard recipe cost sheet. I need to track the specific cost of *Sunny Valley Farm's* tomatoes for *this week's* event versus *next week's* event, and also account for the bulk pricing negotiated with the local butcher. I currently have to create a new, bespoke cost sheet in Excel for almost every single pop-up, linking the recipe directly to the temporary vendor invoice, which is tedious and impossible to audit efficiently.
+
+---
+
+### Psychological Model
+
+I optimize for: **The guest experience and the integrity of the local story.** Nothing is more important than making sure every touchpoint—the reservation, the welcome, the meal, the payment—feels seamless and authentically connected to the local community.
+I refuse to compromise on: **The quality of the ingredients and the transparency of the partnership.** If I feel like I'm taking the easy route or using generic, non-local products, the whole concept falls apart.
+I avoid: **Any process that requires me to chase down data from five different people.** If I have to send more than two reminder emails about a spreadsheet, I assume the system is broken.
+I evaluate tools by: **How quickly they consolidate data from disparate sources (POS, booking, inventory) into one clean, actionable dashboard.**
+
+I think in terms of interconnected ecosystems. I don't see a restaurant, a farm, and a wine cellar; I see a single, cohesive *experience*. Any tool I use must treat the entire partnership as one unified operation, not as a collection of separate entities.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must allow me to input a specific ingredient (e.g., 'Heirloom Tomato') and instantly show me the cost and available inventory from multiple collaborating vendors (Farm A, Farm B) for a specific date.
+2. The system must automatically calculate and track revenue share payouts based on multiple connected POS systems (Mine, Vendor A's, Vendor B's) and allow me to generate a legally sound reconciliation report.
+3. The system must manage a master event calendar that tracks not just bookings, but also required resources (staff roles, specific equipment needs, vendor delivery slots) and flag conflicts automatically.
+4. The system must allow me to build a menu and automatically calculate the precise cost of goods sold (COGS) by pulling real-time, vendor-specific pricing and inventory data.
+5. The system must provide a single dashboard view that shows the guest count, the booked services, and the required operational checklist for all partners involved in a given event, allowing me to track the status of the handoff from booking to service.
+6. The system must handle the creation of temporary, event-specific contracts and performance agreements (e.g., revenue share percentage) and attach them directly to the corresponding event bookings.
+7. The system must allow me to publish a "Partner Profile" page on the platform that details the story of the collaborating vendors and their specific products, which then links directly to the menu items that use them.

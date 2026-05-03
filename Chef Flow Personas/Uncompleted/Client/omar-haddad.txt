@@ -1,0 +1,55 @@
+Client Profile: "Omar Haddad" - Security Engineer, Fintech Infrastructure (Zero-Trust)
+
+I don’t enter sensitive data unless I absolutely have to. Wallets exist for a reason. If your system doesn’t use them, I assume your security model is weak.
+
+Business Reality
+Right now:
+
+I book 3–6 private dining experiences per year, usually 2–5 guests.
+
+Budget ranges from $1,500 to $6,500. I’m not constrained by price, only by trust.
+
+I expect secure, tokenized transactions with minimal exposure of raw data.
+
+Dietary needs are minimal but must be handled correctly.
+
+Locations vary, but that’s irrelevant to payment security.
+
+I operate primarily on mobile, occasionally desktop.
+
+I avoid entering card details unless there is no alternative.
+
+Primary Failure: Exposure of Sensitive Data
+The biggest issue is being asked to input raw card data. That’s unnecessary exposure. Modern systems should rely on tokenization through trusted wallets. If I’m typing my card number, your system is increasing my risk surface. I won’t do it.
+
+Structural Issue: Lack of Tokenization
+Without wallet integration, payments rely on raw data entry. That’s outdated. Tokenization should abstract sensitive details entirely. If your system doesn’t support it, it’s not meeting current security standards.
+
+Structural Issue: Poor Authentication Flow
+Some systems require weak authentication - just a card number and CVV. That’s not sufficient. I expect strong authentication via biometrics or device-level security. Wallets handle this elegantly. Anything less is a downgrade.
+
+Structural Issue: Inconsistent Security Experience
+If part of the flow feels secure and another part doesn’t, I lose trust. Security should be consistent from start to finish. A secure pricing flow followed by an insecure payment form is a failure.
+
+Psychological Model
+I optimize for: minimal data exposure and strong authentication
+I refuse to compromise on: tokenized, secure payment methods
+I avoid: entering raw card data and weak authentication flows
+I evaluate tools by: how well they minimize risk surface
+
+Pass / Fail Conditions
+For this system to work for me, it must:
+
+Use tokenized payment methods (Apple Pay, Google Pay, etc.) exclusively or as the default.
+
+Avoid any requirement to enter raw card data manually.
+
+Leverage strong authentication (biometrics, device-level security) for payment approval.
+
+Maintain consistent security standards across the entire payment flow.
+
+Ensure that sensitive data is never exposed or stored unnecessarily.
+
+Provide clear indicators of secure payment handling at every step.
+
+Allow completion of transactions without increasing my risk surface at any point.

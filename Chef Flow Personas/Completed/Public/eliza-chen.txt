@@ -1,0 +1,67 @@
+**Public Profile: "Eliza Chen" - Dedicated Home Culinary Enthusiast (Event Planner)**
+
+I am a marketing consultant who loves hosting. My friends and family often treat my home as a secondary venue for celebrations—anniversaries, milestone birthdays, or just a fun Sunday dinner for 12 people. I am constantly searching for elevated dining experiences that feel professional but are comfortable in a non-commercial setting. While I cook often, when I want to impress people or handle a large group, I need the expertise of a professional chef, and I rely on my deep knowledge of high-quality ingredients and culinary techniques to guide that search.
+
+### Business Reality
+
+Right now:
+* I search for or compare **5 to 8** chefs, event packages, and menu concepts per **month**
+* My budget is typically **$1,500 - $3,500** per event, excluding beverages, and I need transparency on minimum guest counts (usually 8-12 people).
+* I need high availability for specific weekend dates, especially in major metropolitan areas like NYC, Chicago, and LA, with a focus on Italian, Mediterranean, or elevated American cuisine.
+* My inquiry context is usually a private dinner party or a small, booked venue (like a rented loft or a private restaurant space), meaning I need chefs who are flexible and experienced in non-commercial kitchen setups.
+* My current discovery setup is a mix of scrolling through Instagram hashtags, reading recommendations from friends (who usually just send me a random website link), and checking out high-end restaurant websites that sometimes have 'private dining' forms.
+
+---
+
+### Primary Failure: Lack of Contextualized Trust Signals
+
+The biggest operational problem is that I cannot easily differentiate between a professional chef running a side gig and a genuinely established, reliable service provider. When I find a chef on a listing, the profile is often glossy but lacks granular, operational details: Do they require a specific minimum kitchen setup? How many staff are included in the quoted price? If I need a specific dietary accommodation (e.g., gluten-free *and* nut-free), is that a specialty, or are they just vague about it? Because of this ambiguity, I waste time having to send **3 to 4** follow-up emails just to nail down the logistical details—the minimum staffing, the specific equipment they need, or the true cost breakdown. This constant back-and-forth erodes my trust and makes the booking process feel high-friction and risky.
+
+---
+
+### Structural Issue: Fragmented Menu and Pricing Visibility
+
+I have to jump through too many hoops just to understand the cost. A chef's profile might showcase a beautiful menu, but the pricing model is always buried in a PDF or requires me to ask, "What does the labor cost?" I don't know if the listed menu price is per person, per plate, or if it includes the staffing overhead. I have seen professional packages that are gorgeous but also confusingly priced, leading me to spend an average of **20 minutes** just trying to calculate the total cost for 10 people, which is exhausting and often leads me to abandon the listing entirely and try a competitor.
+
+---
+
+### Structural Issue: Inconsistent Operational Availability Mapping
+
+Availability isn't just "Booked" or "Open." I need to know *why* a chef is unavailable. Is it because they are fully booked for the entire month, or are they only booked for other high-end events at competing venues? When I find a chef I love, I often have to manually cross-reference their stated availability with my preferred date range, and if they are out, I have no easy way of knowing if they are simply too busy, or if they are only available in a specific geographic quadrant of the city. This forces me to rely on word-of-mouth, which severely limits my options to only the people my friends know.
+
+---
+
+### Structural Issue: Difficulty Comparing Logistical Requirements
+
+When I am comparing three different chefs for a single event, I don't have a single, standardized way to compare their logistical needs. Chef A needs a commercial oven and 4 staff; Chef B needs only prep space and 2 staff; Chef C needs nothing but electricity. I am forced to take screenshots, save PDFs, and manually create a comparison spreadsheet that lists "Kitchen Requirements," "Staffing Minimum," and "Setup Time." This process is tedious, requires multiple platforms (Notes app, Email drafts, Google Docs), and is a massive time sink that makes the entire selection process feel more like project management than culinary discovery.
+
+---
+
+### Structural Issue: Review Scope and Reliability
+
+The reviews I see are too general. They often say, "The food was amazing!" but they never specify the operational context. Did the chef handle 12 people in a residential kitchen, or 150 people in a hotel ballroom? When I see a 5-star review, I want to know if the praise was for the *menu execution* or for the *ability to manage a complicated dietary restriction* or *the ease of the setup*. Because the operational context is missing from the reviews, I cannot use them to vet the chef's true capability for my specific, complex event.
+
+---
+
+### Psychological Model
+
+I optimize for: **Trustworthiness and Operational Transparency.** I need to feel like I am speaking to a highly organized, professional system, not just a portfolio.
+I refuse to compromise on: **The seamless flow from inspiration to confirmed booking.** If the process is clunky, I will quit and use a manual system.
+I avoid: **Any process that requires me to switch between more than three different apps or documents.** I hate manual data entry and cross-referencing.
+I evaluate tools by: **How quickly they consolidate complex, varied data points (menu, price, logistics, availability) into one clean, comparable view.**
+
+I think like a researcher: I gather data, I compare variables, and I need immediate answers to complex logistical questions. My decision-making is heavily weighted toward efficiency and minimizing potential failure points. If the system makes me feel overwhelmed, I assume the service will be overwhelming too.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1.  **Provide a standardized, filterable interface** that allows me to filter chefs by specific logistical requirements (e.g., "Requires Commercial Oven," "Staffing Capacity: 8+," "Specializes in Mediterranean Cuisine").
+2.  **Display a dynamic, integrated cost calculator** that allows me to input guest count and desired service duration, immediately yielding a transparent, all-inclusive price range (including labor, materials, and setup fees).
+3.  **Show a clear, structured timeline for the booking process** that outlines the expected steps after inquiry (e.g., "Initial Quote -> Menu Finalization -> Deposit Paid -> Event Day").
+4.  **Integrate review context** by requiring users to specify the event type, guest count, and complexity of the meal when leaving a review (e.g., "Review written for 12 people, 4-course, GF/Vegan").
+5.  **Allow me to save and compare multiple chefs and their associated logistics** (e.g., a "Comparison Sheet" view) so I don't have to manually copy/paste data.
+6.  **Provide a centralized, real-time calendar view** that shows not just availability, but also the chef's typical capacity/bandwidth for that date (e.g., "Booked 70%," "Limited Slots").
+7.  **Offer a structured inquiry form** that guides me to provide all necessary operational details upfront (e.g., "Venue Type," "Max Staffing," "Dietary Needs") so I don't have to follow up with simple questions.

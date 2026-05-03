@@ -1,0 +1,67 @@
+**Staff Profile: "Julia Child" - Prep Kitchen Assistant (High Volume Prep)**
+
+I am a prep kitchen assistant, and my job is essentially keeping the machinery of the kitchen running smoothly before the guests arrive. I start my day by receiving the manifest, which details every ingredient and component needed for the service. My primary focus is efficiency and volume; I need to get hundreds of pounds of product cut, cleaned, or pre-portioned to meet the demands of the service line. I work with the chefs, but I am the one who executes the bulk of the physical labor and ensures that the ingredients are ready for the next phase of cooking.
+
+### Business Reality
+
+Right now:
+* I work an average of **4** shifts per week, often including **2** weekend shifts, sometimes requiring last-minute changes to **5** days in a row.
+* I am paid an hourly rate of **$16.50** and am expected to be fully trained on **3** different station setups (salad, sauté, and pantry) and must maintain a basic food handler certification.
+* I report to the Sous Chef, who delegates tasks but doesn't manage my physical workflow. I am expected to work autonomously, but I need constant guidance on ingredient handoff points.
+* I am based primarily at the main commissary kitchen in Chelsea, but I frequently have to move to the pop-up event site in Midtown when the menu changes.
+* My current briefing and scheduling setup is a mix of group texts (for general shifts), a shared Google Sheet (for prep lists and inventory counts), and printed, handwritten prep manifests that get marked up with Sharpie markers.
+
+---
+
+### Primary Failure: Inaccurate, Siloed Ingredient Handoffs
+
+The biggest operational nightmare is the handoff of prepped ingredients from the prep station to the line cooks, especially during rush service. Because the prep list (on the Google Sheet) is separate from the physical inventory count (on the printed manifest), line cooks often grab components that are either already finished or that were incorrectly counted. This leads to critical delays—sometimes costing us an estimated **$300–$500** in wasted ingredients and labor hours per major service—because the chefs have to stop, track down the correct component, and manually correct the miscount. This breakdown costs us time, money, and, most critically, it stresses the entire service flow.
+
+---
+
+### Structural Issue: Lack of Centralized, Dynamic Prep Manifests
+
+We receive prep lists via a shared Google Sheet, but these lists are static and cannot dynamically adjust based on ingredient usage or spoilage. If the Sous Chef realizes that we are running low on, say, the heirloom tomatoes, they have to manually cross-reference the list, call me, and write a correction on a separate, printed sheet. This means the paper manifest is often outdated before I even start chopping, leading me to waste time prepping components that are no longer needed or that were already completed.
+
+---
+
+### Structural Issue: Scheduling Overlap and Resource Contention
+
+My schedule is managed through a mix of texts and the shared Google Sheet, but these systems don't account for resource contention. If the commissary needs **4** assistants for a massive dry-run prep day (a 10-hour shift), and the pop-up event needs **3** assistants for the next day, the scheduling coordinator assigns me to both without flagging the physical overlap or the equipment limitations (e.g., only **2** industrial mixers available). I end up arriving at the commissary knowing I am over-allocated and having to waste the first hour asking for necessary equipment or shifting my entire prep schedule.
+
+---
+
+### Structural Issue: Unlinked Inventory Tracking to Prep Tasks
+
+The ingredient tracking is completely disconnected from the actual prep task execution. The prep list tells me to "prep 20 lbs of asparagus," but there is no system to log when the 20 lbs were physically pulled, cut, and stored, nor is there a mechanism to track the yield (e.g., if 20 lbs of asparagus yielded 18 lbs of usable product). We only log the *starting* inventory, not the *usage* or *completion*, forcing the morning inventory check to be a chaotic, manual recount that takes 45 minutes and delays the start of prep.
+
+---
+
+### Structural Issue: Communication Gap Between Prep and Service Line
+
+The final prep components (e.g., marinated proteins, dressed salads, sauces) are often stored in different coolers or refrigerators across the kitchen. There is no single, digital "completion status" that tells me when a component is finished and ready for the line cook. Instead, I rely on the line cook shouting "It's ready!" or physically going over to check, which disrupts my workflow and causes bottlenecks. This ad-hoc communication is highly inefficient and unreliable, especially when multiple stations are running simultaneously.
+
+---
+
+### Psychological Model
+
+I optimize for: Physical flow and predictability. I need to know exactly where everything is and in what order I need to use it.
+I refuse to compromise on: Following the established recipe documentation. If the recipe says 3 oz, I don't use 3.5 oz, no matter how "better" it tastes.
+I avoid: Abstract digital interfaces or anything that requires me to stop chopping to input data. I need tactile, visible confirmations.
+I evaluate tools by: How quickly they allow me to process high volumes of physical items and minimize trips to different storage areas.
+
+I think spatially. I visualize the entire workflow—from the receiving dock, through the prep station, to the final plate. If the system forces me to jump between a digital screen and a physical bin, I lose my rhythm. I need the technology to disappear and just make the process feel like a continuous, logical flow.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1.  The system must generate a dynamic, digital prep manifest that automatically updates ingredient counts and removes items once they are marked as 'completed' by the line cook.
+2.  The system must allow me to log the starting weight, the processed yield weight, and the final storage location of every bulk ingredient component in real-time.
+3.  The system must integrate the current service schedule with the ingredient manifest, automatically flagging necessary prep tasks that are only required for the specific clients/events scheduled for that day.
+4.  The system must provide a single, map-based view of the kitchen showing the real-time status (Prep, Ready, In Use) of all major finished components and their corresponding storage unit/cooler number.
+5.  The system must allow the Sous Chef to drag-and-drop resource assignments (e.g., "Need 1 extra mixer," or "Prep Station A is staffed") onto a master schedule view, making resource contention immediately visible.
+6.  The system must generate automated, prioritized checklists for the prep assistant, grouping tasks logically by physical location (e.g., "Complete all tasks in the walk-in chiller first, then move to the main prep tables").
+7.  The system must allow me to view and confirm the final, approved recipe version, ensuring I am always prepping ingredients according to the most current menu pricing and portion specifications.

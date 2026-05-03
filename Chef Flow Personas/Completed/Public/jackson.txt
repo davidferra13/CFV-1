@@ -1,0 +1,67 @@
+**Public Profile: "Jackson" - Local Food Explorer (Authenticity Seeker)**
+
+I don't come to a place looking for a "good meal"; I come looking for a story—a connection to the people and the place. I've spent the better part of my life tracking down the best, most honest grub in the most unexpected corners of the world, and that process is often messy, analog, and deeply rewarding. When I land in a new town, my goal isn't to hit the tourist traps; it’s to find the kitchen that hasn't been gentrified, the family recipe that hasn't been polished for Instagram, and the chef who is doing genuinely honest work.
+
+### Business Reality
+
+Right now:
+* I search for or compare **4 to 6** chefs, events, cuisines, or menus per **3-day period** of my trip.
+* I operate on a variable budget, typically spending **$50–$150** per person per meal, but I am far more concerned with the *value* of the experience than the sticker price.
+* I need to filter by **local provenance, specific ethnic cuisine (e.g., Eritrean, Vietnamese street food), and a clear indication of the chef's personal background or story**.
+* My inquiry context is usually a spontaneous, last-minute booking or a referral from a local contact—I often need to book a small, intimate, pop-up experience for **4 to 8 people** that day or the next.
+* My current discovery setup is a chaotic mix: local word-of-mouth, reading through physical classifieds, asking bartenders, and cross-referencing 2-3 highly specific, often outdated, blog posts.
+
+---
+
+### Primary Failure: The Cost of False Positives
+
+The biggest operational problem is the massive time sink caused by false positives. I spend hours wading through polished, overly curated profiles that promise "authentic flavors" but deliver predictable, overpriced, tourist-bait experiences. I am constantly misled by slick marketing photos that don't reflect the actual grit or the reality of the kitchen. This wastes my time, ruins my itinerary flow, and, frankly, diminishes my trust in the entire discovery process. When I waste 3 hours looking at a restaurant that is fundamentally dishonest about its roots, it costs me valuable investigative time that I could have spent finding the actual gem.
+
+---
+
+### Structural Issue: Inconsistent Provenance Storytelling
+
+I find that chefs often list a cuisine they *are* influenced by, but they rarely detail the lineage or specific regional focus of their ingredients or techniques. I currently have to ask follow-up questions via email or call ("Where exactly is this recipe from? What specific tool do you use?") which adds 30 minutes of back-and-forth communication per chef. This manual vetting process means I can only realistically vet about 1 chef per day, severely limiting my ability to compare diverse options in a single town.
+
+---
+
+### Structural Issue: Poor Event/Pop-Up Transparency
+
+When a chef hosts a pop-up or a one-off event, the information is always siloed. I might find the date on an Instagram story, the menu on a mailing list, and the booking link on a separate ticketing site. I have to manually piece together if the reservation includes drinks, if the price is per person or per plate, and if the capacity is truly limited to 6 people. If I miss one piece of information, I either overbook, or I assume the cost is wrong, leading to immediate frustration and wasted effort.
+
+---
+
+### Structural Issue: Difficulty Vetting Operational Scale
+
+I need to know if a chef is running a professional, consistent operation, or if they are a hobbyist. The current listings often fail to differentiate. One chef might be running a full, permitted restaurant, while another might be operating out of a shared kitchen space on a limited basis. I have to manually dig into their licensing or visible operational capacity. If I don't know the scale, I don't know if the experience is reliable, which makes booking a high-stakes, spontaneous meal extremely risky.
+
+---
+
+### Structural Issue: Non-Integrated Costing and Booking
+
+The pricing is always a mess of estimates. Sometimes the menu preview gives a per-plate price, and sometimes the booking system requires a deposit amount, and sometimes the final invoice adds a mandatory "sourcing tax" or "local materials fee." I cannot get a single, clear, final cost estimate for a group of 6 people that includes everything—from the base menu price to the mandatory service charge. I am forced to use a separate calculator and cross-reference multiple documents, which is slow and prone to error.
+
+---
+
+### Psychological Model
+
+I optimize for: **Authenticity and Story Depth**. I prioritize chefs whose personal narrative and local sourcing practices are immediately apparent, even before I see the final dish.
+I refuse to compromise on: **Transparency of Process**. If the sourcing, preparation, or labor of the food is vague, I assume the food is mediocre or manufactured.
+I avoid: **High-polish, generic, or overly corporate-feeling digital experiences**. I prefer the feel of a well-organized but slightly worn-down notebook.
+I evaluate tools by: **The quality of the underlying data and the ease of cross-referencing disparate information.**
+
+I think like an investigator. I am skeptical by nature, and my trust level is earned through granular detail. I don't trust a beautiful photo; I trust the verifiable details—the permit numbers, the supplier names, the specific techniques listed.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must **provide a clear, categorized map filter** that allows me to narrow results by specific *provenance* (e.g., "Chef trained in Sichuan cooking" or "Uses ingredients sourced within 5 miles").
+2. The system must **display a unified, real-time cost breakdown** for a group booking, showing the per-person base cost, mandatory taxes, and any variable service fees in one place.
+3. The system must **integrate the chef's operational status and capacity** (e.g., "Pop-up only, limited to 8 guests," or "Permanent, fully licensed restaurant") directly on the profile page.
+4. The system must **allow me to cross-reference the chef's story with their menu items**, explaining *why* a specific dish reflects a specific geographic origin or technique.
+5. The system must **provide a centralized booking funnel** that collects all necessary booking information (deposit, headcount, menu choices) and confirms a single, comprehensive booking reference number.
+6. The system must **categorize the level of "polish" or "curation"** of the experience (e.g., "Homestyle/Rustic," "Fine Dining/Formal," "Street Food/Casual") so I can gauge the expected atmosphere.
+7. The system must **show a chronological feed of past events and successful pop-ups** for a given chef, allowing me to gauge consistency and reliability of their operation.

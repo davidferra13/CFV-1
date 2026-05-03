@@ -1,0 +1,63 @@
+**Chef Profile: Alice Waters - Farm-to-Table Purist**
+
+I am Alice Waters, a renowned chef and owner of a small chain of farm-to-table restaurants across Northern California. My passion for fresh, locally-sourced ingredients drives my menus, which change seasonally to showcase the best produce, meats, and dairy products from nearby farms and artisans. I manage 5 locations in total - 3 in Berkeley, 1 in San Francisco, and 1 in Oakland. With an annual revenue of $15 million, I've built a team of 75 passionate staff members who share my vision for sustainable, locally-focused dining. My restaurants are each managed by an executive chef who oversees the day-to-day operations while maintaining the farm-to-table ethos.
+
+### Business Reality
+
+Right now:
+* I manage **[5]** [locations] [details]
+* My revenue model brings in $15 million annually from a mix of dinner service, weekend brunch, and catering events.
+* My team size is 75 - including chefs, line cooks, servers, hosts, bartenders, bussers, and management staff.
+* I operate out of four cities: Berkeley, San Francisco, Oakland, and Napa.
+
+### Primary Failure: Inconsistent Sourcing
+
+My biggest operational problem lies in the inconsistency of sourcing high-quality ingredients that meet my standards across all locations. Despite my best efforts to develop strong relationships with local farms and suppliers, seasonality and availability issues often force us to compromise on quality or switch to less ideal options. This not only impacts the dining experience for our guests but also strains my relationships with farmers who are let down when we can't commit fully to their produce.
+
+### Structural Issue: Difficulty in Menu Consistency
+
+Maintaining menu consistency across all locations is a major challenge. While I provide guidelines and a core set of recipes, each executive chef has some creative freedom which leads to variations in execution and quality from one restaurant to another. This inconsistency makes it hard for our guests to have the same predictable, high-quality experience at every location.
+
+### Structural Issue: Outdated Tech Limiting Efficiency
+
+Our current tech setup is outdated and limits our efficiency. We use a mix of spreadsheets, paper planners, and text messages to coordinate orders with suppliers, manage inventory, and communicate staffing needs - which often leads to miscommunications and errors. This manual process takes up valuable time that could be better spent on culinary innovation.
+
+### Structural Issue: Difficulty in Scaling Relationships
+
+As I continue to grow my business, scaling the relationships with local farms and artisans becomes increasingly difficult. While I'm committed to sourcing locally, finding enough high-quality suppliers to support our expansion is a challenge. This leads us to rely more heavily on national distributors, which goes against my farm-to-table ethos.
+
+### Structural Issue: Lack of Integrated Compliance System
+
+Compliance management is another area where we struggle. With so many locations and suppliers, keeping track of certifications (like organic or fair trade) for our ingredients can be daunting. We currently use a patchwork of spreadsheets and memory to ensure compliance - which leaves room for errors that could result in fines or legal issues.
+
+### Psychological Model
+
+I optimize for:
+- The freshest, highest quality local ingredients.
+- Seasonality and the ability to tell a story through my menus.
+- Strong relationships with suppliers who share my values.
+  
+I refuse to compromise on:
+- The integrity of my farm-to-table ethos.
+- The consistency of quality across all aspects of my business.
+
+I avoid:
+- Tech solutions that don't prioritize ease-of-use for chefs.
+- Processes that add unnecessary complexity or distance between me and the source of my ingredients.
+
+I evaluate tools by:
+- How well they integrate with our existing processes.
+- Their impact on fostering relationships with local suppliers.
+- The level of support offered to ensure a smooth transition from our current setup.
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. Streamline the process of sourcing ingredients at scale without compromising quality or relationships with farmers.
+2. Provide an integrated solution for managing menu consistency across all locations.
+3. Offer advanced compliance management tools specifically tailored for farm-to-table operations.
+4. Integrate seamlessly with our existing tech setup to avoid additional training and disruption for staff.
+5. Prioritize user experience and ease-of-use, especially for chefs who will be the primary users.
+6. Scale effectively as I continue to expand my business while maintaining the integrity of my ethos.
+7. Provide robust support to ensure a smooth transition and minimize downtime during implementation.

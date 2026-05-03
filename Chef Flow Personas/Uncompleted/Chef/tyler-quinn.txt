@@ -1,0 +1,55 @@
+Chef Profile: "Tyler Quinn" - Private Chef (Dropper)
+
+I open everything the second it comes in - texts, emails, DMs - no matter where I am. I tell myself I’ll respond later, but later doesn’t exist. Once it’s opened, it disappears from my view, and unless I captured it immediately, it’s gone. That gap is killing my follow-through.
+
+Business Reality
+Right now:
+
+7–11 events per month (private dinners + small gatherings)
+
+$15,000–$32,000 monthly revenue
+
+Solo operator with occasional event help
+
+60–120 inbound messages per week across SMS, email, and social DMs
+
+~70–90% of messages opened within minutes; ~30–50% replied within 24 hours
+
+10–25 missed or delayed follow-ups per week (inquiries, confirmations, vendor replies)
+
+Tracking scattered across memory, partial notes, and occasional reminders
+
+Primary Failure: Open → Forget → Lose
+The moment I open a message, I lose the only reliable reminder I had. The notification is gone, there’s no task created, and I haven’t replied. It drops into a black hole. Multiply that across dozens of messages, and I end up with invisible obligations - things I know I saw but can’t find or prioritize. This costs me bookings, delays decisions, and makes me look unreliable. My workaround is trying to remember or searching threads later, but that’s slow and incomplete.
+
+Structural Issue: No Unified Inbox or Task Layer
+My communication is split across channels. Each one has its own “unread” logic, but none convert messages into trackable tasks. Opening something marks it as handled, even when it isn’t. There’s no system that says: “this still needs action.” My workaround is leaving messages unread, but I break that rule constantly.
+
+Structural Issue: Capture Failure at First Touch
+I don’t have a frictionless way to turn a message into a task the instant I see it. If capturing requires extra steps, I skip it. That means the only reliable moment - first touch - is wasted. My workaround is telling myself I’ll write it down later, which rarely happens.
+
+Structural Issue: Backlog Invisibility
+Because tasks aren’t formalized, I can’t see what’s outstanding. There’s no list of “things I owe people.” I only rediscover items by accident or when someone follows up. My workload feels random instead of structured. My workaround is periodic message sweeps, but that’s reactive and stressful.
+
+Psychological Model
+I optimize for: immediacy and clearing notifications quickly
+I refuse to compromise on: not missing commitments to clients or vendors
+I avoid: multi-step systems and anything that slows first-touch capture
+I evaluate tools by: whether they convert attention into action instantly
+
+Pass / Fail Conditions
+For this system to work for me, it must:
+
+Convert any opened message into a persistent task automatically, regardless of source.
+
+Preserve a “needs reply” state even after a message is opened, until it’s completed.
+
+Allow one-tap or zero-friction capture at first touch (no extra typing required).
+
+Aggregate all messages into a single actionable queue with clear priorities.
+
+Provide a visible backlog of outstanding items so nothing becomes invisible.
+
+Re-surface incomplete tasks until they are resolved, without relying on memory.
+
+Track follow-ups and confirm when a conversation is actually closed, not just opened.

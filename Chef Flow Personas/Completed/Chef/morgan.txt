@@ -1,0 +1,67 @@
+**Chef Profile: "Morgan" - Chef (Coastal Purist)**
+
+I run a small, hyper-seasonal operation focusing on the freshest ingredients sourced within a 50-mile radius. My philosophy is that the menu is dictated by the catch of the day or the harvest, not by a preconceived concept. I don't cook the same meal twice, and I certainly don't use the same recipe twice in a month.
+
+### Business Reality
+
+Right now:
+* I manage **18-22** pop-ups and private dinner events per month, ranging from 20 to 60 guests.
+* My revenue model is highly variable, averaging between **$4,000 and $7,500** in gross revenue per event, with an unpredictable day-to-day flow.
+* My team consists of **3** full-time cooks and **4** part-time prep hands, plus a rotating roster of specialized labor (e.g., oyster shuckers, local foragers).
+* My geographic scope is strictly limited to the Gulf Coast region, specifically the area between Mobile and Alabama's coastal communities.
+* My current tech setup is a chaotic mix: Google Sheets for initial costing, physical clipboards and handwritten prep lists, WhatsApp chains for vendor communication, and a basic Square POS for payments.
+
+---
+
+### Primary Failure: Inventory Instability and Waste Prediction
+
+My biggest operational nightmare is that the core components of my menu—the proteins and vegetables—are inherently unstable. I cannot forecast inventory because I don't know what the local fishing fleet will bring in on Thursday, or if the farmer's heirloom tomatoes will ripen before the weekend. Because my menu is built around peak availability, I often over-order or, more commonly, have massive amounts of high-quality, perishable ingredients that I cannot use because the supporting component (the starch, the spice, the complementary protein) didn't materialize. This leads to significant spoilage, unpredictable cost-of-goods-sold (COGS) calculations, and a massive amount of time spent on last-minute, reactive menu adjustments rather than proactive cooking.
+
+---
+
+### Structural Issue: Dynamic Menu Costing
+
+Because the menu changes daily based on what’s available—say, a run of local crab one day, and a bounty of wild mushrooms the next—I cannot use standard static recipe cards for costing. I have to build a custom cost sheet from scratch every single morning using fluctuating market prices and weight estimates from multiple, disparate vendors. My current workaround is creating a master "ingredient price sheet" in Excel that I update by hand every 24 hours, cross-referencing it with text messages and phone calls from suppliers. This breaks instantly when a supplier changes their pricing or when I forget to update a single, critical variable like the cost of local firewood for smoking.
+
+---
+
+### Structural Issue: Vendor Communication & Confirmation
+
+My entire sourcing model relies on direct, non-digital relationships with small-scale producers (fishermen, backyard growers). I need to know, 24-48 hours out, exactly what quantity and type of product is available. I currently manage this through a chaotic system of text message threads, email chains, and phone calls that require me to manually compile a consolidated list of available ingredients, their estimated weight, and their agreed-upon price. This breaks down immediately when one supplier is delayed, forcing me to manually contact three or four other suppliers to fill the gap, losing critical time and increasing the chance of conflicting information.
+
+---
+
+### Structural Issue: Staffing Based on Unpredictable Ingredients
+
+My labor needs are directly tied to the ingredients I receive. If I get a massive haul of oysters, I need three prep hands for shucking and cleaning. If the market yields a huge volume of root vegetables, I need dedicated staff for washing, peeling, and prepping large batches. Since the ingredient volume is unpredictable, I cannot staff efficiently. My workaround is maintaining a massive, disorganized spreadsheet of "potential labor tasks" that I have to manually assign and then scramble to re-allocate when the morning's haul changes, often resulting in cooks being paid for idle time or, worse, critical tasks being neglected entirely.
+
+---
+
+### Structural Issue: Event Logistics and Ingredient Tracing
+
+When I execute an event, the ingredients come from 3-5 different micro-suppliers (the goat cheese from the farm, the bread from the bakery, the local seafood from the boat). I need to track the provenance and the precise quantity of *every single ingredient* used for costing, dietary compliance, and waste reporting. Currently, I am reliant on physical invoices and handwritten notes that are filed into three different binders. If a guest has a severe allergy, I have to manually cross-reference the ingredient list against the supplier's name and the day's invoice, which is a massive liability risk and a huge time drain during service.
+
+---
+
+### Psychological Model
+
+I optimize for: Provenance and ingredient quality. The story of the food—where it came from and who grew it—is as important as the taste.
+I refuse to compromise on: The integrity of the ingredient. If it’s processed, mass-sourced, or flown in, it’s a last resort.
+I avoid: Standardized processes, bulk supply chains, and any software that assumes a stable, predictable supply of goods.
+I evaluate tools by: How quickly and accurately they can integrate the real-time, fluctuating cost and availability of hyper-local, perishable goods.
+
+I think in terms of *networks*—the relationship between the farmer, the fisher, and the kitchen. My decision-making is based on maximizing the utilization of the best available resources that day, which means the system must be fluid, not rigid.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must allow me to dynamically model ingredient costs and resulting menu costs using real-time, fluctuating pricing data inputs from multiple, named vendors.
+2. The system must generate event menus and automatically adjust the required ingredient sourcing list when I change a primary component (e.g., swapping farmed fish for wild-caught).
+3. The system must act as a centralized communication hub that consolidates ingredient availability reports and pricing updates from multiple independent suppliers (vendors) into a single, actionable daily manifest.
+4. The system must track and report the specific provenance and quantity of every single ingredient used in an event, linking it directly to the supplier's name and invoice for compliance and waste reporting.
+5. The system must allow me to quickly adjust staffing needs and associated labor costs based on the final, confirmed ingredient volume received for the day.
+6. The system must handle recipe structures that require multiple, non-standardized components (e.g., "up to 3 lbs of seasonal greens," not "3 lbs of kale").
+7. The system must facilitate the creation of cost sheets that track usage and waste for ingredients that are inherently perishable and unpredictable.

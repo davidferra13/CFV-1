@@ -1,0 +1,73 @@
+**Public Profile: "The Enthusiast" - Local Food Explorer (Experience Curator)**
+
+I am a devoted food lover and a perpetual seeker of the next great local culinary gem. I don't just eat; I research the story behind the plate. My mission is to build a comprehensive, highly personalized guide to the best, most authentic, and most novel dining experiences in a given city. I treat every meal as a discovery, and I have a habit of leaving a trail of highly specific, actionable recommendations for my friends and my social following.
+
+### Business Reality
+
+Right now:
+* I search for or compare **15-20** chefs, events, cuisines, or menus per **month** (at least 3-5 major searches in a single week).
+* I am comfortable spending **$80-$150** per person per experience, but the *story* and the *authenticity* are more valuable than the absolute price point.
+* I need highly rated, unique, and niche experiences that are easy to find by location, specific cuisine (e.g., Peruvian-Japanese fusion, Sichuan street food), and concept (e.g., family-run, pop-up, historic venue).
+* My primary context is **discovery and planning** for an upcoming weekend trip or a friend's special occasion. I am constantly cross-referencing multiple sources to build a perfect itinerary.
+* My current discovery setup is a chaotic mix: Instagram geotags, Reddit threads, hyper-specific Google searches, and old print magazine clippings that I manually cross-reference.
+
+---
+
+### Primary Failure: The Friction of Narrative Integration
+
+The biggest operational problem is that I am forced to piece together a compelling narrative about a restaurant or chef from 4 or 5 completely separate data points. I find a great chef on Instagram, find the menu on their basic website, find the location hours on Google Maps, and find the booking link on a third-party ticketing site. Because this process is so manual and fragmented, I often abandon promising leads simply because the effort of gathering the basic facts—hours, reservation links, full menu—exceeds the perceived value of the potential meal. This wastes my time, which I bill at an internal rate of about $50/hour for my personal projects, and it severely limits my ability to recommend genuinely unique, non-mainstream spots.
+
+---
+
+### Structural Issue: Disconnected Discovery Signals
+
+I find the chef’s *story* (e.g., "My family has been making this bread for 5 generations") on one platform, but the *operational details* (e.g., "They are closed Tuesdays and accept reservations only via phone") on a completely different, outdated platform. I spend 10 minutes on Instagram building excitement, only to hit a dead end of unconfirmable operational details. This forces me to manually track which operational data points are trustworthy and current, often relying on calling the venue just to confirm something simple, which adds friction and frustration to the entire discovery process.
+
+---
+
+### Structural Issue: The "Vibe" vs. The "Logistics" Gap
+
+I can browse 20 pages of incredible, mouth-watering photos and read glowing reviews that paint a perfect "vibe." However, when I finally get to the booking process, the system fails to translate that beautiful narrative into actionable logistics. I might find a perfect pop-up event, but the platform doesn't immediately tell me: 1) Is this limited to 8 people or 30? 2) What is the specific time slot window? 3) Does this booking require a pre-paid tasting ticket, and if so, what is the exact cost? I am forced to follow external links and guess at the operational constraints.
+
+---
+
+### Structural Issue: Inconsistent Menu and Offering Context
+
+I am looking for a specific culinary experience—say, a late-night Venezuelan arepa tasting. I find a listing that mentions "Tasting Menu" and "Latin American." I click through, and the menu is a generic PDF that lists 30 items, but I have no way of knowing which items are *actually* available for a tasting format, or what the associated cost is. I end up having to email the restaurant and ask, "Which 5 items make up your signature tasting menu?" This back-and-forth takes 30 minutes of my time and introduces a high risk of miscommunication about the final cost or composition of the experience.
+
+---
+
+### Structural Issue: Difficulty Comparing Novelty and Scale
+
+When I am planning a large group outing (say, for 6 to 12 people), I want to compare several options. I can find three amazing places, but the platform doesn't give me a clear, standardized way to compare their operational model. For example, I want to compare a small, intimate, 6-seat chef's table experience with a larger, 50-seat private dining room. I have to manually check the capacity, the booking minimums (e.g., "Minimum spend of $500"), and the required lead time for all three locations, turning a simple comparison into a tedious spreadsheet exercise.
+
+---
+
+### Structural Issue: Post-Visit Recommendation Context
+
+After I visit a spot and love it, I want to recommend it to a friend who has specific dietary needs (e.g., vegan, gluten-free, nut allergies). The system only allows me to leave a generic 5-star review. I cannot tag the specific *aspect* of the experience that worked for my friend—like "amazing gluten-free pasta" or "excellent vegan starter." I have to write a long paragraph describing the menu items, which is inefficient and doesn't help the next user who is searching for those specific needs.
+
+---
+
+### Psychological Model
+
+I optimize for: **Narrative Depth and Authenticity.** I want to feel like I've stumbled upon a secret, genuine gem, not a corporate chain.
+I refuse to compromise on: **Operational Clarity.** The moment I encounter vague hours, unclear pricing, or confusing booking steps, my enthusiasm drops to zero, and I leave the platform.
+I avoid: **Wasting Time on Ambiguity.** I hate having to make assumptions or send follow-up emails just to confirm basic facts.
+I evaluate tools by: **The seamless flow from inspiration to confirmation.** The ideal tool should feel like a curated, highly efficient digital concierge.
+
+I think like a journalist curating a feature story: I need the emotional hook (the story) combined with the hard facts (the booking details). If the platform makes me feel like I'm doing the investigative work, I'm going to leave.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1.  The system must **display** the chef's personal story and background directly alongside the operational details (hours, booking link) to maintain narrative integrity.
+2.  The system must **allow me to filter** search results by specific, nuanced dietary restrictions (e.g., "dairy-free AND low-FODMAP") and immediately show the dishes or menu sections that cater to those needs.
+3.  The system must **provide a clear, integrated booking flow** that instantly confirms capacity limits, minimum spend requirements, and any required deposits *before* I click an external link.
+4.  The system must **aggregate and standardize** diverse menu formats (PDFs, online menus, single-page listings) into a readable, searchable structure that highlights available tasting formats and costs.
+5.  The system must **enable me to save and compare** 3-5 potential experiences side-by-side, showing the logistical differences (e.g., "Capacity: 12 seats" vs. "Capacity: 50 seats") and the associated cost per person for the same date range.
+6.  The system must **support highly detailed reviews** that allow users to tag specific menu items, dietary accommodations, or specific operational successes/failures (e.g., "Perfect for large groups," "Best vegan options").
+7.  The system must **flag and display** the source and last update date of critical operational data (hours, contact numbers, booking links) to build trust and minimize the need for me to call the venue.

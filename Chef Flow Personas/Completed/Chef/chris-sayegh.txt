@@ -1,0 +1,53 @@
+**Chef Profile: Chris Sayegh - High-End Catering Chef**
+
+I am the owner and head chef of a high-end catering company based in Los Angeles, California. My team caters events ranging from intimate dinner parties to large-scale corporate functions for clients across Southern California. Revenue-wise, we're on track to hit $2.5 million this year, with a tight-knit team of 15 people managing everything from menu planning and ingredient sourcing to event execution.
+
+### Primary Failure: Accuracy in Cannabis Dosing
+
+Our primary failure lies in the accuracy of cannabis dosing for our infused dishes. Despite having detailed recipes, we often struggle to hit the exact THC/CBD levels required, especially when scaling up for larger events. This results in inconsistent experiences for our guests and potential legal issues due to mislabeling. The cost implications are significant; incorrect dosages lead to wasted ingredients, unhappy clients, and lost business opportunities.
+
+### Structural Issue: Compliance Documentation
+
+While we maintain meticulous handwritten records of all our ingredient sourcing and usage, transferring this information into a digital format is cumbersome and time-consuming. This creates gaps in our compliance documentation, especially regarding cannabis laws which vary by state. We often find ourselves scrambling to provide the required paperwork at short notice, risking penalties or event cancellations.
+
+### Structural Issue: Ingredient Sourcing Variability
+
+The variability in ingredient sourcing can significantly impact our operations. While we have a network of trusted suppliers, securing high-quality cannabis and other specialty ingredients on-demand is challenging. This forces us to frequently adjust our menus and recipes based on availability rather than creativity or client preferences. The workarounds—texting vendors directly and using spreadsheets to track inventory—leave room for errors and don't scale well.
+
+### Structural Issue: Menu Planning Constraints
+
+Our current tech setup limits our ability to experiment with new menu ideas or offer customized dishes for specific events. We can only plan so much in advance due to the short lead times we work within, making it difficult to accommodate special dietary requirements or preferences without significant manual effort. This often leads to missed opportunities and frustrated clients.
+
+### Structural Issue: Real-Time Event Management
+
+During live events, real-time management is challenging. Our current system doesn't allow for easy communication between team members on-site, leading to misunderstandings about task priorities or ingredient status. We frequently use personal phones for coordinating last-minute changes, which can lead to confusion and inefficiency.
+
+### Psychological Model
+
+I optimize for precision in both my culinary creations and business operations. I refuse to compromise on quality and consistency in our dishes, as well as guest safety regarding cannabis dosing. I avoid tech that doesn't streamline processes or integrate seamlessly with our existing workflows. I evaluate tools by how they enhance our ability to deliver exceptional experiences while ensuring compliance and efficiency.
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+1. Integrate seamlessly with our current tech setup without requiring significant training.
+2. Streamline ingredient sourcing processes, allowing us to plan menus further in advance with confidence.
+3. Provide real-time communication tools that enhance team coordination during events, reducing misunderstandings and improving efficiency.
+4. Offer robust compliance documentation features that adapt to varying state laws automatically.
+5. Enable precise cannabis dosing calculations across all dishes for consistent guest experiences.
+6. Allow us to customize menu options easily on short notice without sacrificing quality or creativity.
+7. Scale with our business growth, supporting an increasing number of events and clients seamlessly.
+
+---
+
+CRITICAL RULES:
+- Write in first person
+- Use SPECIFIC numbers everywhere (client count, revenue, team size, event frequency)
+- Describe REAL workarounds for every gap (paper planners, text messages, spreadsheets, nothing)
+- Minimum 3 structural issues with distinct titles
+- Minimum 5 testable pass/fail conditions written as "The system must [verb] [specific thing]"
+- Do NOT write generic pain points. Every gap must be specific to this food service operator
+- Do NOT write software feature requests. Write business problems with real consequences
+
+PRODUCT DRIFT RULES (MANDATORY):
+ChefFlow is a food service operations platform: events, clients, guests, recipes, menus, ingredients, pricing, costing, sourcing, scheduling, staff, vendors, compliance, tickets, RSVPs, bookings, public discovery, and partner collaboration.
+ChefFlow is NOT: an LMS, a marketplace, a warehouse system, a social network, a generic CRM, or project management software.

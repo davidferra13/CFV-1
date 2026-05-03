@@ -1,0 +1,49 @@
+**Chef Profile: "Persona" - Private Chef Operator (Private Chef Ops Edge Case)**
+
+I run mobile kitchens everywhere. Power is never guaranteed. One bad circuit and I lose service.
+
+### Business Reality
+
+Right now:
+
+* I manage 7 active private clients or recurring event accounts.
+* I run 6 paid dinners, pop-ups, retainers, or special projects per month.
+* My monthly revenue usually lands between $9,000 and $32,000, depending on deposits, reimbursements, and event size.
+* I work solo most weeks with 2 subcontractors when events get complex, and the team changes by event.
+* Most work happens within 25 miles of my home base, but the details still change by venue, client, vendor, and household.
+* My current system is a mix of text messages, email, screenshots, Notes, spreadsheets, platform dashboards, and memory.
+* I am willing to use software, but only if it reduces duplicated work inside the week I start using it.
+
+### Primary Failure
+
+The workaround depends on memory, scattered messages, and after-the-fact cleanup. The consequence is not abstract disorganization. It creates missed follow-up, unclear ownership, weak proof, lower margins, or reputational risk while I am also trying to cook and execute service. My workaround is to manually reconcile the problem after the event, which means the correction happens after the moment when it would have protected the client experience.
+
+### Structural Issue: Fragmented Source Of Truth
+
+The workaround depends on memory, scattered messages, and after-the-fact cleanup. Today I compensate by searching old threads, reopening screenshots, checking platform dashboards, and asking people to resend information. That works only when volume is low. Once I have multiple events in flight, the same fact can exist in 3 places with 3 slightly different meanings. What breaks is confidence: I stop knowing whether I am acting on the latest version, the approved version, or just the version I happened to find first.
+
+### Structural Issue: Manual Workaround Tax
+
+The workaround depends on memory, scattered messages, and after-the-fact cleanup. The workaround is not a clean process. It is extra admin at night, during shopping, or between prep tasks. I copy details from one system into another, write reminders after I already opened the message, and try to remember why a decision changed. What breaks is margin and attention. The more successful the business becomes, the more the workaround steals the time that clients actually hired me for.
+
+### Structural Issue: Accountability And Proof Gap
+
+The hardest part is proving what happened without making the workflow feel legalistic. I need to know who requested a change, who approved it, what source it came from, and whether it affected money, timing, safety, staffing, or client expectations. My workaround is to preserve entire threads or folders as evidence. What breaks is usability. Evidence exists, but it is too slow to use when I need a decision in the middle of an active event.
+
+### Structural Issue: Adoption Risk Under Real Load
+
+I do not have a calm implementation window. New tools get tested while messages are arriving, clients are changing details, and vendors are asking for answers. My workaround is to use the new tool for one event while keeping the old system alive in parallel. What breaks is trust. If the software makes me enter the same detail twice, loses context, hides failure, or cannot explain where a number came from, I abandon it and return to the messy system I already understand.
+
+### Psychological Model
+
+I optimize for control, proof, and reduced rework. I refuse to compromise on client trust, operational accuracy, and the parts of my work that protect the actual food and service. I avoid tools that require a clean-room workflow, force me to retype information that already exists somewhere else, or make confident claims without showing the source. I evaluate software by whether it catches one real mistake, saves one real admin block, or gives me one cleaner client conversation in the first week. I do not need a toy dashboard. I need a system that respects the pressure of private chef work and survives contact with messy real inputs.
+
+### Pass / Fail Conditions
+
+* The system must keep source evidence attached to every derived task, note, or decision.
+* The system must keep source evidence attached to every derived task, note, or decision.
+* The system must keep source evidence attached to every derived task, note, or decision.
+* The system must keep source evidence attached to every derived task, event update, money movement, or client-visible decision.
+* The system must show a clear error or review state when data cannot be trusted, instead of displaying empty values as if nothing is wrong.
+* The system must separate private operational notes from anything client-facing or collaborator-facing.
+* The system must let me recover unresolved work from messages, notes, receipts, calls, uploads, or platform activity without rebuilding the whole event by hand.

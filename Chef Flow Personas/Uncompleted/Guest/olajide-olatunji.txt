@@ -1,0 +1,67 @@
+**Guest Profile: "Olajide Olatunji" - High-Profile Entertainment Guest (Elite)**
+
+I am a global content creator, entrepreneur, and former professional athlete. My life revolves around high-stakes visibility and maintaining a brand that requires constant, flawless presentation. When I attend a private dining event, I don't just see it as a meal; I see it as an extension of my brand—it has to be perfect, impressive, and completely frictionless from the moment I walk in until I leave.
+
+### Business Reality
+
+Right now:
+* I attend an average of **3 to 5** private dining, farm dinner, or ticketed events per **month**.
+* My personal spending on premium, private event experiences (including venue buyouts, special menu development, and ticketed entry) easily exceeds **$15,000 - $30,000** per single event.
+* My dietary needs are complex—I require a highly customized menu that must accommodate specific allergen protocols (e.g., severe gluten and dairy intolerance) while also providing high-protein, performance-fueling options. I also require a premium, semi-private booth seating arrangement that allows for discreet conversation and photo opportunities.
+* The most recent event was a highly publicized, ticketed celebration at a boutique waterfront venue in London, involving a core group of **12** people, plus an additional **4** people who arrived later.
+* My current communication setup is a chaotic mix: I receive initial invites via personalized email links, confirmation changes are messaged via WhatsApp groups, and any pre-event dietary or seating feedback has to be manually entered into a shared Google Sheet by my manager.
+
+---
+
+### Primary Failure: Inconsistent Guest Experience Flow
+
+The single biggest operational pain point is the lack of a single, authoritative source of truth for my entire group's status. If my manager and I arrive and the restaurant staff are relying on different, uncoordinated channels—some info in the email, some in the WhatsApp, some on a paper planner—the whole event risks being compromised. This isn't just about a misplaced reservation; it's about the *feeling* of being disorganized, which directly impacts my brand and my ability to network and enjoy the experience. When the flow is messy, the cost is lost time, wasted staff effort, and, worst of all, a tarnished memory of the venue that I might mention publicly.
+
+---
+
+### Structural Issue: Fragmented Pre-Event Communication
+
+I receive initial invitations via generic ticketing platforms, but then all critical, last-minute changes—like the shift from a main dining room to a specific semi-private annex, or a sudden change in the required RSVP headcount—are communicated via disjointed text threads. This forces my team to constantly cross-reference three or four different channels (email, WhatsApp, text, physical printout) just to confirm who is coming, what they need, and when they are expected. The lack of a centralized, mandatory communication portal means my team spends 2-3 hours pre-event just aggregating these disparate data points, which is a massive operational drag.
+
+---
+
+### Structural Issue: Lack of Unified Dietary & Allergy Management
+
+Managing my complex dietary requirements for a group of 12+ is a constant headache. I currently have to email a separate, detailed list of allergies and restrictions (e.g., "Jake needs nut-free, Emma needs low-FODMAP, me, Olajide, need gluten-free and dairy-free"). This list is often handled by a single point person, who then has to physically hand it to the kitchen staff and the floor manager. If the venue changes staff, or if the system doesn't clearly link the specific guest profile (my name) to the specific, critical restriction (severe gluten allergy), the risk of cross-contamination or a simple menu error is extremely high. This is a liability risk, not just a menu inconvenience.
+
+---
+
+### Structural Issue: Manual Seating and Logistics Coordination
+
+My group's seating is never simply "a table for 12." It requires strategic placement—a specific booth away from the main traffic flow, with optimal lighting for photos, and enough space for my manager's equipment. Right now, the venue manager handles this on a paper floor plan, and my team has to follow up via phone calls days before to confirm the placement. If the venue is unexpectedly booked for another large group, or if the staff hasn't digitally confirmed the original layout, we have no immediate way to verify the integrity of the planned experience. This creates unnecessary friction and uncertainty minutes before the event starts.
+
+---
+
+### Structural Issue: Post-Event Feedback Loop Failure
+
+After a high-stakes event, my brand requires me to give detailed, actionable feedback (e.g., "The appetizers were fantastic, but the wine pairing recommendations were too aggressive for the main course"). Currently, this feedback is usually delivered via a generic, anonymous online survey link that gets buried in spam, or it's given verbally to the host, which is unreliable. I need the platform to capture this qualitative data (both positive and negative) and automatically link it back to the specific elements of the event (e.g., which dish, which vendor, which staff member) so that the venue can immediately improve and prove its value to me.
+
+---
+
+### Psychological Model
+
+I optimize for: **Flawless, effortless, and high-quality experiences.**
+I refuse to compromise on: **Privacy, customization, and efficiency.**
+I avoid: **Any process that requires me or my staff to repeat information or cross-reference multiple documents.**
+I evaluate tools by: **How quickly and reliably they can eliminate friction points and provide a single source of truth.**
+
+I operate on the principle that my time and my brand's perception are my most valuable assets. If a process feels clunky, redundant, or requires too much effort from my end, I will assume the quality of the underlying product is also low. I expect technology to be predictive and proactive, managing the complexity before I even have to ask for it.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must allow me to view a single, consolidated event timeline that integrates my booking, my group's confirmed headcount, and the specific menu details, all on one dashboard.
+2. The system must allow me to input and manage multiple, complex dietary restrictions (e.g., "No gluten, no dairy, no nuts, and must be prepared using separate equipment") and automatically push this critical information to the kitchen staff and floor manager's digital tablets.
+3. The system must provide a dedicated, non-email communication channel (like an event portal) for all confirmed guests to receive mandatory, time-sensitive updates (e.g., "The event has moved to Annex B; check-in is now 7:30 PM").
+4. The system must allow me to upload and visually map my required seating layout (e.g., "Booth 3, corner placement") and have that map confirmed and logged against the booking record.
+5. The system must generate a structured, post-event feedback loop that automatically assigns positive and negative feedback comments to specific, trackable elements of the event (e.g., "The dessert wine pairing was too acidic").
+6. The system must handle the ticketing and RSVP process by linking the initial ticket purchase directly to the specific guest profile, ensuring that dietary and seating preferences are captured at the point of sale, not weeks later.
+7. The system must provide a clear, immediate digital confirmation of the event's total cost, including all taxes, service charges, and any custom menu upcharges, which I can access at any time.

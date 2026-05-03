@@ -1,0 +1,61 @@
+**Chef Profile: "Thomas Keller" - Culinary Educator (Pop-up Specialist)**
+
+I am a culinary artist and educational operator. I specialize in translating the discipline and rigor of fine dining into curated, highly experiential events. My business model is built around teaching mastery, not just serving food. Every single element—the ingredient, the technique, the plating—is a lesson.
+
+### Business Reality
+
+Right now:
+* I manage **15-20** private events and pop-up classes per month, ranging from small, intimate dinners (6-10 guests) to semi-large group workshops (18-25 guests).
+* My revenue model is highly variable but averages $100,000 to $250,000 per month, derived from a mix of premium class fees ($400-$800 per person) and private dining bookings.
+* I maintain a core team of **4-5** highly skilled staff members (Sous Chef, Pastry Lead, Prep Cook, and 2-3 rotating servers/assistants).
+* My geographic scope is concentrated in the Manhattan area, specifically utilizing high-end, temporary venues like private gallery spaces or exclusive restaurant kitchens.
+* My current tech setup is a patchwork: Google Sheets for all costing and inventory, a combination of email and WhatsApp for bookings/communication, and a basic third-party booking widget (like Acuity) for the initial client intake.
+
+---
+
+### Primary Failure: Costing Complexity for Variable Events
+
+My biggest operational pain point is the manual, fragmented process of calculating profitability for each unique event. Because every pop-up is a bespoke experience—a specific menu for a specific group size, using unique, often high-cost ingredients—I cannot rely on simple per-plate costing. I have to account for specialized labor hours (e.g., 4 hours of dedicated prep by a sous chef *just* for the demo), unique equipment rentals (e.g., a specific steamer or smoker used only for that class), and fluctuating ingredient costs that change weekly. When I have to manually reconcile the labor logs, the specialized vendor invoices, and the initial recipe costs in separate spreadsheets, I lose hours of time and, more critically, I cannot reliably determine if the *total* event is truly profitable until hours after the fact. This lack of real-time cost accountability forces me to over-price my initial quotes, risking the loss of potential clients who might otherwise book with me.
+
+---
+
+### Structural Issue: Recipe-to-Event-Costing Sync
+
+When I finalize a class menu, the recipes exist in a separate documentation system (a master Google Drive folder). When the bookings are confirmed, I have to manually transfer the ingredients and associated prep time from the recipe sheet into a separate "Event Budget" spreadsheet. If the recipe is updated—say, I switch from fresh thyme to dried thyme—I have to remember to update the cost in three different places: the master recipe card, the demo inventory sheet, and the final P&L sheet. This constant manual synchronization guarantees errors, forcing my sous chef to spend valuable pre-event time cross-referencing sheets instead of prepping, which delays my setup and introduces human error into my most critical cost center: labor.
+
+---
+
+### Structural Issue: Dynamic Staffing and Labor Tracking
+
+My staffing needs are wildly dynamic. A private dinner of 8 requires a different labor allocation (e.g., 2 servers, 1 sous chef for the whole duration) than a hands-on class of 20 (e.g., 1 lead chef, 2 assistants for 3 hours). I currently use a combination of physical planners and text messages to assign roles and track hours. The problem is that when a chef or server calls out last minute, I have no centralized way to quickly assess who is available, who is cross-trained for the specific station (e.g., pastry vs. garde manger), and how the shift change will impact the overall labor cost and quality. This forces me to build a costly buffer into every event's budget, assuming the worst-case scenario for staffing, which significantly reduces my net margin.
+
+---
+
+### Structural Issue: Booking Capacity vs. Operational Flow
+
+My booking system is currently decoupled from my operational capacity. My booking widget allows clients to book any time slot, but it doesn't factor in the real-world operational constraints of the venue or my team. For example, I may have a class booked for Saturday afternoon, but the venue requires a deep clean that only happens Sunday morning, or my primary sous chef is committed to a separate private booking that morning. I have to manually check a shared calendar (Google Calendar) against the venue's maintenance schedule and my team's personal availability, and then manually block out time slots in the booking widget. This manual gatekeeping is slow, prone to double-bookings, and creates a frustrating friction point for high-value clients who expect seamless, real-time booking confirmation.
+
+---
+
+### Psychological Model
+
+I optimize for: Predictability and perfection in execution. If the process is messy, the product fails.
+I refuse to compromise on: The integrity of the culinary experience. The food must taste exactly as intended, regardless of how many times the recipe is scaled up or down.
+I avoid: Any system that requires me to input data more than once, or that forces me to interact with a generic CRM view instead of a specific operational view.
+I evaluate tools by: How quickly they reduce the friction between the kitchen's reality and the accounting ledger.
+
+I think in terms of flow and yield. If a process creates a bottleneck or requires a chef to stop cooking and start *administrating*, the process is fundamentally broken. I need a system that feels invisible, allowing me to focus entirely on the craft, not the spreadsheets.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must allow me to create a central event file that automatically ingests all necessary recipes and ingredient quantities for that specific booking, reducing manual data entry.
+2. The system must instantly calculate the total cost of goods sold (COGS) for an event by combining ingredients, specific allocated labor hours, and necessary equipment rentals, all on one dashboard.
+3. The system must allow me to adjust staffing levels *after* a booking is made, and immediately recalculate the total labor cost and updated projected profitability for that event.
+4. The system must integrate my core booking calendar with real-time operational constraints (e.g., "This venue is booked for deep cleaning on this day," or "My main oven is reserved for another event until 9 AM"), preventing me from selling impossible bookings.
+5. The system must allow me to generate a comprehensive, single-source financial report per event, detailing revenue, COGS, labor, and net profit margin, usable for tax and accounting purposes within 24 hours of the event ending.
+6. The system must allow me to modify a core recipe (e.g., changing the brand of olive oil) and instantly update the associated cost across all past and future events that utilize that ingredient.
+7. The system must manage the communication flow for a specific event, consolidating all client RSVPs, payment records, and pre-event questions into one dedicated event dashboard, eliminating the need to check WhatsApp or email.

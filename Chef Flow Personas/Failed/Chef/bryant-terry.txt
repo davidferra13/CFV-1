@@ -1,0 +1,50 @@
+Chef Profile: Bryant Terry - Creative Culinary Maverick
+
+I am a renowned chef and author known for my innovative pop-up events and supper clubs that blend plant-based cuisine with social activism. My operations are focused on creating immersive dining experiences that challenge diners to think critically about the food they eat and its impact on people and the planet.
+
+Right now:
+* I manage 12 unique [clients/locations/events] across the Bay Area, each with its own theme and menu
+* [Revenue model: $250k annually] from ticket sales, sponsorships, and merchandise
+* [Team size: 8 full-time staff + 15 part-time event staff]
+* [Geographic scope: San Francisco Bay Area, CA]
+* [Current tech setup: Google Calendar for scheduling, Airtable for inventory management, WhatsApp groups for team comms]
+
+Primary Failure: Scaling Events Without Overwhelming My Team
+
+My biggest operational problem is scaling my pop-up events and supper clubs without overwhelming my small team. As my business grows, the complexity of coordinating ingredients, staff, and logistics across multiple venues increases exponentially. This leads to mistakes, missed details, and a subpar experience for guests. The cost of this problem is lost revenue from dissatisfied customers and increased stress on my already stretched team.
+
+Structural Issue: Venue Scouting Breaks My Calendar
+
+I spend countless hours scouting new venues for my events, only to have my calendar become unmanageable. I use Google Calendar, but it's not designed for the complex scheduling needs of a chef running multiple pop-ups. This leads to double-booked dates and missed opportunities.
+
+Structural Issue: Inventory Management Breaks My Budget
+
+I rely on Airtable to manage our inventory, but it's not robust enough to handle the complexities of sourcing organic, local ingredients for each event. This often leads to last-minute scrambling to find items at premium prices, blowing my budget and compromising my values around sustainable food systems.
+
+Structural Issue: Team Communication Breaks My Peace
+
+Our WhatsApp groups are constantly buzzing with messages about venue changes, ingredient updates, and staffing issues. It's hard to keep track of everything and ensure everyone is on the same page without dedicating a lot of time to comms. This breaks my peace of mind and makes it harder for me to focus on creating great food.
+
+Structural Issue: Menu Planning Breaks My Creativity
+
+I struggle with finding ways to create new, exciting menus that align with my values while also being feasible from an ingredient sourcing perspective. I often find myself compromising either my creativity or my commitment to using local, organic ingredients.
+
+For this system to work for me, it must:
+
+1. Integrate seamlessly with Google Calendar to help me scout and schedule venues more efficiently
+2. Offer robust inventory management features that can handle the complexities of sourcing organic, local ingredients for each event
+3. Provide a centralized communication platform that allows me to keep my team informed without dedicating too much time to comms
+4. Include menu planning tools that allow me to get creative while still being feasible from an ingredient sourcing perspective
+5. Integrate with my existing tech stack (Google Calendar, Airtable) so I don't have to switch platforms and learn new systems
+6. Offer a user-friendly interface that doesn't require me to be tech-savvy to use effectively
+7. Provide customer support that can help me troubleshoot issues as they arise without taking too much time away from my business operations
+
+---
+<!-- GENERATION VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Flags: none
+Generated: 2026-04-28T06:15:05.060Z
+Model: hermes3:8b
+Category: popup-supper-club
+Seed: Bryant Terry
+-->

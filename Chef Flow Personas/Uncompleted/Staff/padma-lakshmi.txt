@@ -1,0 +1,67 @@
+**Staff Profile: "Padma Lakshmi" - Event Service Captain (Pop-Up Lead)**
+
+I am the service captain for the pop-ups, which means I manage the flow of the dining room, coordinate the plating team, and ensure the guest experience matches the brand promise, even when we are operating out of a temporary space. I am responsible for everything from the initial guest check-in to the final cleanup handoff, making sure the entire operation runs seamlessly for a high-profile, temporary experience.
+
+### Business Reality
+
+Right now:
+* I work **3-5** shifts, events, kitchens, or service roles per **week**
+* My pay is a guaranteed base rate of $25/hour, plus a $150 per-event bonus if we hit our minimum revenue goal of $3,000 for the day.
+* I am the lead for a team of **8-12** staff members, requiring me to manage multiple roles (service, plating, bussing). I received basic event service training, but the day-to-day management is entirely ad-hoc. I am required to wear the branded ChefFlow uniform, which must be spotless.
+* Our scope is entirely localized to a single pop-up venue (e.g., a temporary storefront or gallery space) but involves prep work in a separate, shared commercial kitchen located 15 minutes away.
+* Current briefing and scheduling setup is a chaotic mix: I get initial schedule updates via a team WhatsApp group, but shift assignments, specific role changes, and prep notes are then passed out as physical, handwritten whiteboard notes at the start of the shift, which are easily lost or overwritten.
+
+---
+
+### Primary Failure: Communication Lag During High-Volume Transitions
+
+The single biggest operational pain point is the lack of real-time, consolidated communication during shift changes or unexpected volume spikes. Because my team relies on a mix of WhatsApp messages, physical whiteboards, and verbal handoffs, critical details about specific guests (e.g., "Table 7 needs a vegan substitution due to an allergy," or "The special wine pairing ran out") are often missed or delayed. This results in service slowdowns—we've lost an estimated 15 minutes of peak service time per busy night because staff are scrambling to cross-reference notes, which directly impacts our ability to hit the $3,000 revenue goal and diminishes the high-touch guest experience I am supposed to deliver.
+
+---
+
+### Structural Issue: Fragmented Shift Handoffs
+
+The problem is that shift handoffs are currently entirely manual, relying on a designated "senior" staff member to verbally relay all information—including specific inventory counts, outstanding maintenance issues, and complex guest notes—to the incoming team. This means that if the senior staff member is delayed, ill, or preoccupied, the entire operational handoff fails, forcing the new team to restart key processes (like checking the POS for specific reservations or confirming ingredient par levels) which wastes 10-15 minutes of crucial setup time before the first guest even arrives.
+
+---
+
+### Structural Issue: Inflexible Dynamic Resource Allocation
+
+We have no central system for managing our staff's real-time availability or role assignment based on fluctuating demand. If, for example, the waiting list suddenly jumps from 5 to 30 people, I have to manually triage my team using paper manifests, assigning roles (e.g., "You are now taking the bar," "You are managing the overflow seating") based on who is available and who is trained for that specific task. This manual process is slow and highly prone to human error, especially when the total number of staff members exceeds 12.
+
+---
+
+### Structural Issue: Disconnected Inventory Tracking
+
+Our prep kitchen and our pop-up venue operate with completely disconnected inventory tracking systems. Ingredients used during the pop-up (e.g., 3 lbs of heirloom tomatoes, 4 dozen microgreens) must be manually tracked on a paper sheet and then relayed to the prep kitchen lead, who then has to physically adjust the stock count in their own spreadsheet. This delay and manual transfer process means that by the end of a long shift, we often realize we are 20-30% short on a key, expensive ingredient, leading to menu changes that are difficult to communicate to the front-of-house staff in a timely manner.
+
+---
+
+### Structural Issue: Lack of Centralized Daily Operational Briefing
+
+There is no single, authoritative source for the day's operational requirements, which forces me to juggle multiple inputs. I receive the finalized menu from the culinary team via email, the reservation list from the booking agent via Google Sheets, and the staffing requirements via WhatsApp. I then have to manually compile these into a cohesive, single briefing document before the team arrives, which is a massive administrative burden that takes up 45 minutes of my time every single morning, time that should be spent on team motivation or proactive problem-solving.
+
+---
+
+### Psychological Model
+
+I optimize for: **Flawless, visible guest flow and execution.** I need to look organized, efficient, and elegant, regardless of the chaos happening in the back.
+I refuse to compromise on: **The seamlessness of the guest journey.** If the guest experiences friction, the pop-up fails, no matter how good the food is.
+I avoid: **Unpredictable manual data transfer.** Anything that involves passing information physically or through multiple, unconnected messaging platforms (text, email, paper).
+I evaluate tools by: **How quickly they consolidate disparate, real-time operational data into one actionable dashboard.**
+
+I make decisions based on immediate resource availability and the desired guest experience. My focus is always on preemptive problem-solving—if I can solve a potential bottleneck (like a limited printer, or a slow server station) before the guest arrives, the entire shift is successful. I need systems that reduce cognitive load so I can focus on people, not paperwork.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must **provide a single, chronological, and editable briefing document** that consolidates menus, reservation counts, and staff assignments for the specific date and location.
+2. The system must **allow real-time, role-based shift handoffs** that automatically flag outstanding tasks, required cleaning checklists, and critical inventory shortages to the incoming staff.
+3. The system must **link reservations and guest notes directly to the staff member's assigned station** and make those notes visible to the entire team (e.g., a "VIP" or "Allergy Alert" flag).
+4. The system must **automatically decrement core ingredients** from the available stock count (the prep kitchen side) when a specific order is marked as completed and served at the pop-up.
+5. The system must **provide a dynamic scheduling board** that allows me to drag-and-drop staff members into specific roles (e.g., "Bar," "Plating," "Service") and instantly see if the required certification or role training is assigned to that person.
+6. The system must **allow immediate creation of a daily incident report** (e.g., "Broken chair," "Missing POS terminal," "Power outage") that is automatically routed to the venue manager and recorded against the day's revenue total.
+7. The system must **provide an integrated, localized mapping feature** that guides staff to the correct prep station or service area within the temporary pop-up venue.

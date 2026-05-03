@@ -1,0 +1,62 @@
+Chef Profile: "Riley Thornton" - Private Chef (Timing Controller)
+
+I don’t struggle with cooking - I struggle with timing everything perfectly. Courses drift, prep overlaps, and service pacing breaks. I need a system that treats time as strictly as ingredients.
+
+Business Reality
+Right now:
+
+7–11 events per month
+
+5–10 courses per event
+
+2–4 timing slips per service (courses late or early)
+
+30–60 prep tasks per event
+
+Timing tracked mentally or with rough notes
+
+Frequent last-minute adjustments during service
+
+Primary Failure: No Precise Timing Model
+I know how long things take individually, but not how they interact. Prep, rest, plating, service - all overlap. Without a structured timeline, I’m constantly reacting. My workaround is building rough timelines, but they break with any change.
+
+Structural Issue: No Dependency Mapping
+Tasks depend on each other (you can’t plate before resting, can’t reduce before prep). I don’t have a system mapping these dependencies. My workaround is experience, which fails under complexity.
+
+Structural Issue: No Real-Time Adjustment
+When something slips, I don’t have a system recalculating the rest of the service. My workaround is improvisation.
+
+Structural Issue: No Pacing Feedback Loop
+I don’t track how pacing actually went vs. planned. My workaround is memory.
+
+Psychological Model
+I optimize for: smooth, consistent service flow
+I refuse to compromise on: proper pacing between courses
+I avoid: reactive timing adjustments
+I evaluate tools by: whether they make timing predictable and adjustable
+
+Pass / Fail Conditions
+For this system to work for me, it must:
+
+Build a full event timeline with task dependencies.
+
+Adjust the timeline dynamically when something changes.
+
+Provide real-time cues during service.
+
+Track actual vs. planned timing for improvement.
+
+Integrate prep, cook, and service phases into one flow.
+
+Allow quick adjustments without rebuilding the timeline.
+
+Ensure consistent pacing across events.
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Word count too low: 294 (minimum 500)
+Flags: none
+Rejected: 2026-05-01T21:16:16.399Z
+-->

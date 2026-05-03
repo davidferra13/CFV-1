@@ -1,0 +1,67 @@
+**Public Profile: "Samin Nosrat" - Local Food Explorer (Discerning Diner)**
+
+I am a writer, educator, and guide who lives to explore the intersection of place and plate. My passion is not just for the final dish, but for the *process*—how the environment, the ingredients, and the technique converge to create something truly memorable. I spend my time researching local culinary traditions, documenting exceptional dining experiences, and recommending genuine gems to my network. I don't just eat out; I conduct deep, sensory research.
+
+### Business Reality
+
+Right now:
+* I search for or compare **8 to 12** chefs, events, cuisines, or menus per **month**.
+* I am typically looking for experiences in the **$150 to $400** per person range, excluding drinks, as I am often recommending experiences for small groups of **4 to 6** people.
+* I prioritize **high-rated** experiences (4.5 stars+) that feature **hyper-local** ingredients and **non-standard** or regional cuisines, regardless of the general star rating.
+* I am usually inquiring about **private dining events** or **small, intimate cooking workshops** in specific, trendy, or historically significant neighborhoods (e.g., West Village, Outer Richmond).
+* My current discovery setup is a messy mix of **Instagram feeds** (for visual inspiration), **local food blogger recommendations** (via direct text/email), and **Google Maps searches** (for initial location filtering).
+
+---
+
+### Primary Failure: The Vetting Black Hole
+
+My biggest operational problem is the immense time sink required to accurately vet a chef's actual *style* versus their *marketing*. A chef might have a beautiful, polished website, but if I can't quickly see evidence of their process—their ingredient sourcing, their menu flexibility, or a detailed look at their past event concepts—I have to assume the worst. This lack of transparency means I often have to send out **3 to 5 emails** to a chef just to confirm basic logistics (e.g., "Are you flexible on the menu if we focus on seasonal Italian ingredients?") which wastes my time and, more importantly, wastes the chef's time and potential booking. It makes me feel like I'm doing the investigative work of a booking agent, not just a diner.
+
+---
+
+### Structural Issue: Disconnected Concept Review
+
+I find that chefs often present a beautiful, generalized menu preview, but when I am interested in a specific *concept* (e.g., "A Pacific Northwest foraging experience"), I have no way to see if the chef has executed that concept before. I have to assume they are only good at the broad, safe dishes they list on their main menu. I waste time asking, "What else can you do?" when I really need to see a portfolio of past, themed events that prove their creative range.
+
+---
+
+### Structural Issue: Ingredient/Sourcing Visibility
+
+The platform currently treats ingredients as invisible variables. I need to know *where* the food is coming from. If I am interested in a specific regional dish, I need to see if the chef has a documented relationship with a local farmer or purveyor. I have to manually cross-reference the chef's stated cuisine with local food blogs and Google searches to see if their ingredients are genuinely local, which is a major source of friction and doubt in my research process.
+
+---
+
+### Structural Issue: Dynamic Menu Customization Gap
+
+Most platforms show a fixed menu with a fixed price. This assumes the experience is rigid. My interest lies in *customization*—I might want to take a chef's core concept and adapt it to accommodate dietary restrictions for **2 out of 6** people, or scale it up for a group of **12** instead of 6. I have to email and negotiate these changes, which is cumbersome and makes the platform feel static and unadaptable to real-world group needs.
+
+---
+
+### Structural Issue: Trust and Credibility Overload
+
+I deal with hundreds of reviews, but they are often too vague ("Great food!"). I need to know *why* the experience was great, specifically related to the operation. Did the chef manage the dietary restrictions seamlessly? Was the service staff briefed on the menu nuances? If the reviews don't address the operational details—the sourcing, the complexity, the flow of the experience—I cannot use them to build trust in the chef's ability to execute a high-level, customized event.
+
+---
+
+### Psychological Model
+
+I optimize for: **Authenticity and Process.** I want to know the "how" as much as the "what."
+I refuse to compromise on: **The narrative of the food.** The story behind the ingredients and the chef must be compelling and verifiable.
+I avoid: **Generic, polished, "safe" experiences.** I hate finding something that feels like it could be anywhere.
+I evaluate tools by: **Depth of documentation and transparency of sourcing.** If I can't see the details, I assume they don't exist.
+
+I think like an anthropologist: I am investigating a culture (the cuisine) through a specific lens (the chef's execution). My decisions are driven by the intellectual satisfaction of finding a true, rare gem, not just the enjoyment of a meal.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1.  The system must allow me to filter chefs not just by cuisine, but by **specific ingredient sourcing methods** (e.g., "Foraged," "Heirloom," "Sustainable").
+2.  The system must provide a dedicated, searchable **"Concept Portfolio"** for each chef, detailing past event themes and associated menus, rather than just their standard restaurant menu.
+3.  The system must allow me to initiate a **multi-variable inquiry** that simultaneously addresses group size, specific dietary needs (e.g., gluten-free, nut-allergy), and date range, generating a preliminary, estimated cost breakdown.
+4.  The system must provide a **verified sourcing map** for key menu items, linking the ingredient category (e.g., "local pork") directly to the local vendor or farming region the chef typically uses.
+5.  The system must facilitate **direct, structured Q&A sessions** between me and the chef, allowing me to upload my specific group parameters and receive a detailed, operational response (not just a "yes/no").
+6.  The system must allow me to save and compare **"Culinary Journeys"**—collections of 3 to 5 chefs/restaurants/events across different geographical locations that fit a single, overarching theme (e.g., "The History of Coastal Italian Cuisine").
+7.  The system must display the **logistical complexity** of an event (e.g., "Requires specialized equipment," "Staffing minimum of 8," "Requires 3 hours of prep") alongside the menu to manage my expectations.

@@ -1,0 +1,73 @@
+**Chef Profile: "Alice" Waters - Farm-to-Table Purist (Sourcing Obsession)**
+
+I built my career on the philosophy that the best food is the simplest, most honest food—the food that tastes like the place it came from. My kitchen is not a factory; it is a conversation with the land. I run a small but highly respected restaurant and manage several pop-ups and special events that revolve entirely around the seasonal availability of ingredients. My entire business model hinges on the integrity of the supply chain, and the ability to adapt daily based on what the local farmers are actually harvesting that week.
+
+### Business Reality
+
+Right now:
+* I manage **3** primary locations (the main restaurant, a small tasting room, and a weekly farmers market stand) and about **8** high-end pop-up events per quarter.
+* My revenue model is roughly $1.2 million annually, with 60% coming from the main dining room and 40% from specialized pop-ups and catering events.
+* I have a core team of **15** employees (including sous chefs, prep cooks, and front-of-house staff), plus **2** part-time administrative assistants.
+* My geographic scope is limited to a 15-mile radius within the coastal valley, which dictates my entire menu structure.
+* My current tech setup is fragmented: we use Square for POS and bookings, Google Sheets for inventory and cost tracking, and physical spiral planners and sticky notes for daily prep and sourcing changes.
+
+---
+
+### Primary Failure: Ingredient Availability Discrepancy
+
+The single biggest operational killer is the gap between when I commit to a menu and when the ingredient actually becomes available. Because my entire operation is dictated by the hyper-local, minute-to-minute bounty of the valley, I cannot operate on predictable inventory cycles. If a key supplier, say the peach orchard, has a bumper crop one week and nothing the next, my entire menu concept for that week collapses. This forces me to over-rely on my sous chefs’ intuition and physical communication, leading to massive amounts of wasted time, missed prep deadlines, and, most critically, the inability to accurately cost out menus until the day of service. This unpredictability costs us an estimated 10-15 hours of administrative time per week, just reconciling supply chain changes, and risks damaging our reputation for reliability.
+
+---
+
+### Structural Issue: Cross-Referencing Recipes to Seasonal Availability
+
+I have hundreds of recipes, but they are not modular. They are written for *a* season, not for *a* variable ingredient. When a core ingredient, like a specific varietal of tomato, is unavailable, I cannot quickly pull up five different, equally viable replacement recipes that use a different, available fruit or vegetable. Instead, I have my sous chef manually cross-reference multiple physical recipe binders, cross-checking flavor profiles and cooking methods against a separate, constantly updated sheet of available produce. This manual process is slow, prone to human error, and prevents us from rapidly innovating the menu when opportunity strikes.
+
+---
+
+### Structural Issue: Tracking Supplier Yield and Quality
+
+My sourcing is obsessed with provenance, meaning I don't just buy "tomatoes"; I buy "Brandywine tomatoes from Farmer Jones's lot 3." The volume and quality are variable. I need to track not just the *quantity* I order, but the *yield* and *specific quality grade* of what I receive from each distinct supplier, and map that directly to the recipes that can utilize it. Currently, I use a dedicated notebook and a shared folder of photos, which makes it impossible to scale or analyze. If I want to know which recipe was most profitable based on the specific yield of heirloom beans from Farmer Smith last month, I cannot calculate it.
+
+---
+
+### Structural Issue: Managing Pop-Up Menu Costing Complexity
+
+My pop-ups often involve unique, highly specialized ingredient purchases that are completely separate from the main restaurant's regular vendor accounts. When I plan an event, I need to build a comprehensive, standalone cost sheet that aggregates ingredients from 3-4 different, temporary suppliers (e.g., a mushroom grower, a niche spice importer, and a specific fishmonger). I currently build these cost sheets in a separate Google Sheet every single time, and the formulas break or require manual adjustments when the event date changes or a single ingredient price fluctuates by even $0.50. This is a massive administrative drag and introduces significant risk of over- or under-pricing the event.
+
+---
+
+### Structural Issue: Coordinating Staff Prep based on Daily Sourcing Changes
+
+Because my menu changes daily, the prep list for the entire kitchen changes daily. I cannot rely on static, week-ahead prep lists. If the morning delivery from the local dairy is delayed, or if the fishmonger calls and says the halibut shipment was cancelled, the entire prep list for the afternoon shifts (sauces, pickles, specific starches) must be manually rewritten and then communicated to 15 people via a combination of text messages, whiteboard updates, and shouted instructions. This fragmentation of communication is inefficient, leads to wasted labor, and increases the risk of staff forgetting crucial, last-minute prep tasks.
+
+---
+
+### Structural Issue: Ingredient-to-Menu Flow Documentation
+
+I need a clear, digital way to document the *journey* of an ingredient. It must track: (1) the supplier, (2) the date of harvest/arrival, (3) the specific quantity purchased, (4) the optimal use (the type of dish/prep), and (5) the corresponding recipe slot. Right now, this information is scattered across the supplier notes, the inventory sheet, and the physical prep list. There is no single source of truth that connects the raw ingredient, the vendor, and the final dish that used it.
+
+---
+
+### Psychological Model
+
+I optimize for: **Provenance and ingredient integrity.** The story of the food—the farmer, the method, the harvest—is as important as the taste.
+I refuse to compromise on: **Seasonal purity and the integrity of the recipe foundation.** If a recipe is forced to use a non-seasonal, inferior ingredient, it is scrapped.
+I avoid: **Any system that requires me to input data manually multiple times.** I hate repeating the same sourcing or costing information across different documents.
+I evaluate tools by: **How quickly they allow me to pivot the menu based on real-time supply changes.** If it slows down the chef or the sourcing process, it is useless.
+
+I think like a systems biologist: everything is connected, and a change in one variable affects the entire ecosystem. My decision-making is highly reactive, based on the physical reality of the ingredients I have in my hands that morning. I trust my gut and the local experts more than any algorithm.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must allow me to build a full menu and associated costing by selecting ingredients and then automatically pulling the appropriate, proven recipes that utilize that specific, high-quality ingredient.
+2. The system must integrate a dynamic sourcing module that allows me to input variable supplier yield data (e.g., "30 lbs of tomatoes, Grade A, from Jones Farm") and instantly update the inventory and cost sheets for all relevant recipes.
+3. The system must provide a centralized, auditable record that links a specific batch of raw ingredient (by supplier/date/lot) to every single recipe, pop-up, and event where it was used, generating a usage report.
+4. The system must allow me to create modular, variable recipes where I can swap out core ingredients (e.g., "Tomato") with alternatives (e.g., "Plum," "Roasted Pepper") and instantly recalculate the associated cost and preparation time for the replacement.
+5. The system must handle multi-location inventory tracking, allowing me to allocate a specific sourced batch of ingredients from a single vendor to multiple, distinct operational locations (restaurant, pop-up, market stand) simultaneously.
+6. The system must provide a clear, digital communication channel to my prep staff that dynamically updates the daily prep list and labor allocation based on the finalized, real-time menu changes.
+7. The system must allow me to easily generate comprehensive, temporary vendor contracts and cost sheets for one-off events, separate from my main vendor accounts, without requiring manual data transfer or formula adjustment.

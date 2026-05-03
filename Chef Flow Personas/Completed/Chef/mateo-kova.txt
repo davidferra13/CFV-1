@@ -1,0 +1,50 @@
+**Chef Profile: "Mateo Kovač" - Private Chef & Community Builder (Bridger)**
+
+I work and live in the U.S., and I speak English well enough to operate—but not well enough to feel effortless. People tell me I’m fluent, but I still translate in my head constantly. I want everything around me—websites, messages, systems—to meet me halfway without making me feel like I’m the one struggling.
+
+### Business Reality
+
+Right now:
+
+* 8–12 events per month (private dinners, small community events)
+* $14,000–$28,000 monthly revenue
+* Solo operator with occasional event help (1–2 assistants)
+* Based in the U.S., sourcing locally but communicating with international vendors occasionally
+* Using Google Translate daily (10–30 times per day)
+* Booking through a mix of referrals, direct messages, and Take a Chef
+* Browsing menus, vendor sites, and legal docs often requires manual translation
+
+### Primary Failure: Constant Micro-Translation Fatigue
+
+Everything works—but nothing is smooth. I read something in English, partially understand it, then double-check it in Google Translate to be sure. I do this all day—menus, contracts, supplier emails, event details. It slows me down and breaks my focus. The worst part is that I don’t need full translation—I just need clarity where I’m unsure. My workaround is copying and pasting constantly, but it adds friction to everything I do.
+
+### Structural Issue: Non-Native UX Friction
+
+Most systems assume perfect fluency. Buttons, instructions, legal language—it’s all written for native speakers. I understand most of it, but I hesitate on important details because I don’t want to misunderstand something critical. There’s no adaptive layer that simplifies or clarifies language without fully translating everything. My workaround is re-reading multiple times or translating sections, which wastes time and adds mental load.
+
+### Structural Issue: Communication Confidence Gaps
+
+When I write messages to clients, I second-guess tone and phrasing. I want to sound natural and professional, not robotic or overly formal. Even if my English is technically correct, I worry about how it reads. This slows down responses and sometimes makes me avoid saying things I should say. My workaround is rewriting messages multiple times or translating from my native language, which doesn’t always sound right.
+
+### Structural Issue: Community Access Barrier
+
+I want to be more involved—local events, chef communities, collaborations—but most of that happens through fast, informal communication (social media, group chats, event pages). That’s the hardest type of language to follow. Slang, shorthand, fast updates—I can keep up, but it takes effort. There’s no system helping me stay in the loop naturally. My workaround is observing more than participating, which limits my growth and visibility.
+
+### Psychological Model
+
+I optimize for: clarity, confidence, and smooth communication
+I refuse to compromise on: understanding important details fully
+I avoid: situations where I might misunderstand or miscommunicate
+I evaluate tools by: how naturally they reduce language friction without making it obvious
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. Provide seamless, inline translation for any text (websites, messages, documents) without requiring copy-paste into Google Translate.
+2. Allow partial clarification—highlighting or simplifying specific phrases instead of translating everything.
+3. Help me write messages in natural, fluent English while preserving my intent and tone.
+4. Adapt interface language dynamically based on context, not just static full-language switching.
+5. Make legal, financial, and operational text easier to understand without removing accuracy.
+6. Integrate across all tools I use so translation and clarity follow me everywhere.
+7. Reduce hesitation in communication by giving me confidence that I’m being understood correctly.

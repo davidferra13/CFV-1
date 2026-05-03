@@ -1,0 +1,50 @@
+**Chef Profile: "Julien Marchand" - Chef de Partie (Balancer)**
+
+I’m not here for white tablecloth theater—I’m here for structure. Every plate has a job. Texture, temperature, acidity, fat, aroma—nothing is accidental. I care about progression across a full menu, not just individual dishes. If a course doesn’t move the arc forward, it doesn’t belong.
+
+### Business Reality
+
+Right now:
+
+* 5–6 services per week in a Michelin-starred kitchen
+* 70–110 covers per service (tasting menu only, 8–14 courses)
+* Brigade of 12–20 chefs; I run 1 station with 2–3 components per service
+* 120–180 plates executed per service on my station
+* 8–12 active components per shift (purees, gels, crisps, pickles, broths)
+* Menu revisions weekly; micro-adjustments daily based on product
+* Personal logs: 30–60 notes per shift on balance (acid/salt/texture/temperature)
+
+### Primary Failure: Loss of Menu Cohesion
+
+Dishes can be perfect in isolation and still fail the menu. The problem is sequence. Two rich courses back-to-back dull the palate. Acid shows up too late. Crunch disappears for three courses. Temperature drifts into a lukewarm middle. Without a strict system, the menu loses rhythm. My workaround is intuition plus end-of-night notes, but that’s reactive and inconsistent.
+
+### Structural Issue: Texture Distribution Gaps
+
+Texture must be distributed across the entire progression—crisp, tender, creamy, airy—on purpose. In practice, components get optimized per dish, and macro texture balance gets lost. I’ve seen menus where crunch clusters early and vanishes later. My workaround is manually mapping textures per course, but it’s static and easy to break when dishes change.
+
+### Structural Issue: Acid/Fat Timing Drift
+
+Acidity resets the palate; fat carries flavor. Their timing matters more than their presence. If acid arrives late or in the wrong form, guests fatigue. If fat stacks without relief, everything tastes heavier than it is. Right now, adjustments happen dish by dish, not as a timed sequence. My workaround is adding last-minute pickles or citrus, but it’s patchwork.
+
+### Structural Issue: Temperature & Contrast Control
+
+Hot/cold contrast sharpens perception. Too many same-temperature courses flatten the experience. Service realities—holding, passes, timing—push dishes toward a uniform temp band. My workaround is forcing cold elements into hot dishes (or vice versa), but without a system it becomes inconsistent.
+
+### Psychological Model
+
+I optimize for: progression, contrast, and precision across the entire menu
+I refuse to compromise on: balance at both dish and sequence level
+I avoid: redundant sensations and back-to-back similarity
+I evaluate tools by: whether they make menu structure visible and enforceable
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. Map every course against key axes (acid, fat, salt, sweetness, bitterness, umami, texture, temperature) and visualize gaps or clustering across the full sequence.
+2. Enforce progression rules (no consecutive redundancy in dominant traits; required resets at defined intervals).
+3. Track texture distribution per course (crunch, gel, foam, crisp, tender) and prevent multi-course texture deserts.
+4. Model temperature contrast per dish and across the menu, flagging flat zones during service conditions.
+5. Allow rapid iteration: swap components and instantly see impact on the overall balance map.
+6. Integrate with prep lists so structural changes propagate to components without manual reconciliation.
+7. Provide service-time cues (plating notes, finishing acid, garnish timing) to preserve intended balance on the pass.

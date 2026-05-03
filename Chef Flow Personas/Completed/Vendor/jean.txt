@@ -1,0 +1,67 @@
+**Vendor Profile: "Jean-Martin Fortier" - Local Farm Supplier (Seasonal Produce)**
+
+I am a small, hyper-local farm supplier, focusing on the highest quality seasonal produce harvested within a 20-mile radius. My business model is built on unpredictable nature cycles and direct relationships with chefs who value provenance and taste over convenience. I manage the entire cycle from planting to delivery, meaning my inventory is inherently volatile and my supply chain is entirely dependent on the weather and the peak of the season. I pride myself on being the source of unique, irreplaceable ingredients for high-end dining experiences.
+
+### Business Reality
+
+Right now:
+* I fulfill approximately 15-20 chef orders, plus 3-5 small, specialized event bookings, per week.
+* My wholesale pricing is highly variable, ranging from $4.50 to $12.00 per pound, depending on the commodity (e.g., heirloom tomatoes vs. specialty herbs). We operate on a net 7 payment cycle, and I typically require a 30% deposit for large, custom-requested event orders over $1,500.
+* My inventory is constrained by extreme seasonality (e.g., certain varieties of squash or greens are only available for 4-6 weeks of the year) and the unpredictable nature of the harvest. Quality is non-negotiable, meaning I cannot scale production on demand.
+* My delivery geography is highly restricted to the city center and immediate surrounding restaurant district, requiring a refrigerated van and limiting my ability to service large, distant venues.
+* My current ordering and communication setup is a chaotic mix of WhatsApp texts from chefs, emailed PDF invoices, and a shared Google Sheet that I update manually every morning for the week’s estimated availability.
+
+---
+
+### Primary Failure: Managing Volatile, Unpredictable Inventory
+
+The single biggest operational headache is the mismatch between the chef's demand planning and the farm's physical reality. I cannot promise 50 pounds of perfect snap peas in October because the frost might hit early, or the weather might delay the harvest by a week. When I have to call a chef and say, "No, we don't have that much," it damages trust and forces them to scramble and potentially switch suppliers last minute. This constant negotiation and communication overhead costs me at least 4 hours of administrative time per week, time that should be spent in the field.
+
+---
+
+### Structural Issue: Order Modification Chaos
+
+Chefs frequently need to modify their orders—say, "We need 10% more chard and 5% less zucchini because we ran out yesterday." Because I don't have a centralized system, these changes come in via a mix of texts and phone calls. I have to manually track every single change against the original Google Sheet and then update the PDF invoice, which is a massive risk for human error, especially when combining multiple changes across 15 different accounts.
+
+---
+
+### Structural Issue: Multi-Commodity Yield Forecasting
+
+My harvest isn't a standardized, single product. It's a mix of dozens of unique, high-variability crops. If the day's yield is better than expected for microgreens, I have to manually calculate how that surplus impacts the entire week’s availability for other, related items (like specialty lettuce). I use a physical chalkboard and a complex spreadsheet model, but combining the real-time, physical yield data with the financial order data is nearly impossible without significant manual data entry.
+
+---
+
+### Structural Issue: Temperature-Sensitive Delivery Logistics
+
+The timing and temperature of delivery are mission-critical. If I deliver the herbs at 10:00 AM, but the chef only gets the kitchen open and available for receiving at 1:00 PM, the product degrades rapidly. I currently have to call the chef the morning of the delivery to confirm their exact receiving window, which adds friction and risk. There is no way to schedule the ingredient delivery based on the *client's operational availability* at the destination, only the start of my route.
+
+---
+
+### Structural Issue: Invoice Reconciliation of Swaps
+
+When a chef calls and says, "We'll take this beautiful crate of radishes instead of the fennel," I have to manually adjust the original order's itemized list, calculate the new price differential, and then generate a revised invoice that clearly shows the substitution and the associated financial adjustment. This process is prone to miscalculation, and I spend valuable time ensuring that the final invoice accurately reflects the negotiated physical swap, not just the original order.
+
+---
+
+### Psychological Model
+
+I optimize for: Provenance and ingredient integrity. The relationship with the chef is more valuable than the transaction itself.
+I refuse to compromise on: The quality of the product, regardless of the volume or the payment terms.
+I avoid: Large corporate distributors and any system that forces me to prioritize volume over quality or seasonality.
+I evaluate tools by: How seamlessly they integrate real-time, volatile supply data into a clear, reliable ordering mechanism.
+
+I think in terms of biological cycles and resource constraints. My business is an art form that happens to involve commerce. Any tool must respect the natural flow of the product and the limited window of perfection.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must allow me to input a predicted *yield range* (e.g., 80-120 lbs of tomatoes) rather than a fixed quantity, and dynamically flag potential conflicts with existing committed orders.
+2. The system must facilitate real-time, item-level substitutions and generate a revised, auditable invoice that clearly itemizes the original item, the substitute item, and the calculated price differential.
+3. The system must allow me to link delivery scheduling directly to the client's confirmed operational receiving window (e.g., 1:00 PM - 3:00 PM) and notify me if the delivery window conflicts with other scheduled drops.
+4. The system must allow me to manage and track ingredient-specific pricing tiers and variable wholesale rates that change weekly based on market harvest quality and volume.
+5. The system must provide a clear, centralized communication channel that prioritizes harvest updates and availability changes, rather than relying on fragmented texts or emails.
+6. The system must handle complex, multi-leg orders where a single invoice covers items sourced from multiple physical locations (e.g., greens from the farm, specialty oils from a local mill, and bread from a baker).
+7. The system must automatically calculate the optimal cost-of-goods-sold (COGS) for a given menu based on my fluctuating, per-pound harvest yield, allowing me to quickly adjust wholesale pricing recommendations.

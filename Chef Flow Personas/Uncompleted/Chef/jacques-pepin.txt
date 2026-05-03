@@ -1,0 +1,55 @@
+**Chef Profile: Jacques Pepin - Culinary Educator**
+
+I am Jacques Pepin, a renowned French-American chef and culinary educator. My career has spanned decades, with my second restaurant era being particularly influential. Right now, I manage 15 cooking schools across the United States, each hosting an average of 200 classes per month. The revenue model for these schools is primarily based on class bookings, with an average price point of $125 per person. My team consists of 75 staff members, including chefs, instructors, and support personnel. The geographic scope covers major cities like New York, Los Angeles, Chicago, and Miami.
+
+Currently, I rely heavily on a combination of paper planners, text messages, and basic spreadsheets to manage my operations. This setup has been working to some extent but leaves room for improvement in terms of efficiency and scalability. For example, tracking ingredient sourcing for each demo class is done manually, which can lead to errors or omissions.
+
+### Primary Failure: Recipe Documentation
+
+The lack of a centralized recipe documentation system leads to inconsistencies across classes. Instructors often rely on their own versions of recipes, leading to variations in the final dish. This not only affects the quality of the teaching sessions but also poses challenges when it comes to replicating dishes for guests during demos. The cost associated with this issue is significant, as mistakes can lead to wasted ingredients and additional expenses.
+
+### Structural Issue: Class Scheduling
+
+Our current class scheduling system involves manually updating each school's calendar and ensuring that instructors are aware of their commitments. While we have a general overview of our events, there is no real-time visibility or easy way to make last-minute changes without causing confusion. This setup breaks down when trying to accommodate sudden requests or cancellations, leading to potential revenue loss.
+
+### Structural Issue: Menu Planning
+
+Creating and maintaining a cohesive menu for teaching sessions across all schools is challenging due to the lack of a unified platform. Each school tends to have its own preferences and local ingredient availability, making it difficult to ensure consistency in the learning experience. Additionally, sourcing ingredients for demos requires coordinating with multiple vendors and tracking orders manually.
+
+### Structural Issue: Costing
+
+COST PER CLASS
+Our current costing system is fragmented, with each school handling pricing differently based on local market conditions and operational costs. This lack of standardization makes it difficult to track overall profitability across the network and adjust prices strategically when needed.
+
+### Structural Issue: Managing Bookings
+
+RSVPs and bookings are managed through a combination of phone calls and emails, which can lead to double-bookings or missed reservations. We have experienced instances where classes were overbooked due to miscommunication, resulting in disappointed guests and lost revenue.
+
+I optimize for:
+- Providing an immersive learning experience that combines practical skills with theoretical knowledge.
+- Ensuring consistency in the quality of our dishes across all teaching sessions.
+- Offering a seamless booking process for our students.
+
+I refuse to compromise on:
+- The authenticity of the French culinary techniques taught at my schools.
+- Maintaining high standards for ingredient quality and sourcing.
+- Providing personalized attention to each student during classes.
+
+I avoid:
+- Tech solutions that are overly complex or require extensive training to use.
+- Processes that do not align with our core values of simplicity and elegance in cooking.
+
+I evaluate tools by:
+- How easily they can be integrated into our existing workflows without disrupting operations.
+- The level of support provided by the software vendor, especially for troubleshooting and updates.
+- The scalability of the solution to accommodate future growth.
+
+For this system to work for me, it must:
+
+1. Centralize recipe documentation across all schools, ensuring consistency in dish preparation and quality.
+2. Streamline class scheduling, providing real-time visibility and easy adjustments for last-minute changes or requests.
+3. Standardize menu planning and ingredient sourcing, maintaining a cohesive learning experience while accommodating local preferences and availability.
+4. Implement an automated costing system that tracks profitability across all classes and allows for strategic pricing decisions.
+5. Offer a unified booking platform that reduces the risk of double-bookings and ensures a smooth process for our students.
+6. Integrate seamlessly with our existing tech setup, minimizing disruption to our operations during implementation.
+7. Provide comprehensive support and resources for training staff on new systems, ensuring quick adoption and minimal downtime.

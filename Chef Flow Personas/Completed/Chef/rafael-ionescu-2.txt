@@ -1,0 +1,54 @@
+**Chef Profile: "Rafael Ionescu" - Chef de Partie & Systems Engineer (Integrator)**
+
+I split my week between a high-end kitchen and a startup doing real revenue. In both places, the same rule applies: if the system isn’t wired to reality, it’s dead on arrival. My reality is communication—SMS, email, DMs. That’s the event stream. Everything else is a derived view.
+
+### Business Reality
+
+Right now:
+
+* 20 hours/week in a Michelin-level kitchen (5 services, 60–100 covers)
+* 40+ hours/week at a growth-stage startup (payments/logistics; multi-million ARR)
+* 120–200 inbound messages/week (SMS, email, social) tied to dinners, vendors, ops
+* 10–18 events/month managed off message threads (dates, counts, menus, changes)
+* 6–12 active vendor conversations/week (availability, pricing, timing)
+* Zero tolerance for duplicate entry; anything I type twice is a bug
+* Personal stack: messaging apps + calendar + ad hoc notes (everything else is suspect)
+
+### Primary Failure: Systems That Ignore the Event Stream
+
+If your product doesn’t ingest my messages, it doesn’t know my life. Period. The ground truth is in threads: who asked for what, when, and what changed. Tools that require me to re-enter that data are asking me to fork reality. I’m not doing that. I’m not going to re-digitize my life when it can be atomized from the source stream—that’s duplicative work, and duplicative work is failure. My workaround is building lightweight scripts and using search, but it’s brittle and incomplete.
+
+### Structural Issue: No Ingestion → No Truth
+
+No SMS/email ingestion means no canonical dataset. Without that, your “tasks,” “clients,” and “events” are guesses. I need a system that treats messages as append-only logs—an immutable event stream—and builds state from there. My workaround is mental joins across apps, which doesn’t scale.
+
+### Structural Issue: Missing Identity Resolution
+
+Contacts fragment across channels—same person via SMS, email, and a handle. If you can’t resolve identity across those edges, your graph is wrong. Wrong graph → wrong decisions. My workaround is manual tagging and memory, which is error-prone.
+
+### Structural Issue: No State Machine for Conversations
+
+A thread isn’t “read/unread.” It has state: new → in-progress → waiting → confirmed → closed. Without a state machine, I can’t reason about what’s actually pending. My workaround is ad hoc reminders, which decay.
+
+### Structural Issue: Write-Heavy, Read-Poor Interfaces
+
+Most tools are optimized for input, not inference. I don’t want to type—I want the system to parse, normalize, and project views: events, menus, counts, deadlines. If I have to author the structure, the system is backwards. My workaround is copying snippets into notes, which is wasted motion.
+
+### Psychological Model
+
+I optimize for: single-source-of-truth, low write amplification, deterministic outputs
+I refuse to compromise on: integrating the real event stream (messages)
+I avoid: duplicate entry, manual syncing, and any “secondary system of record”
+I evaluate tools by: whether they compile my life from communications without me typing it twice
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. Ingest SMS and email as first-class inputs (near real-time), treating them as the canonical event stream.
+2. Perform identity resolution across channels (merge phone/email/handles into a single entity graph).
+3. Parse threads into structured objects (events, dates, guest counts, menus, locations) without manual entry.
+4. Maintain a conversation state machine (new, in-progress, waiting, confirmed, closed) with explicit transitions.
+5. Generate tasks and next actions automatically from message content and state changes.
+6. Provide deterministic views (calendar, prep lists, vendor orders) compiled from the message graph.
+7. Guarantee zero duplicate entry—if I have to type it again, the system has already failed.

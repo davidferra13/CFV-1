@@ -1,0 +1,67 @@
+**Guest Profile: "Woody" - High-Profile Entertainment Guest (Curated Experience)**
+
+I live a life where the experience—the atmosphere, the quality of the food, the authenticity of the setting—is the main draw. When I commit to an event, it’s usually a significant, curated occasion, whether it’s a private dinner for a film crew, a small gathering with collaborators, or a charity fundraiser. I expect the entire operation to be flawless because my reputation depends on it. I don't just show up; I am part of the overall cultural experience, and frankly, I expect the host to handle every detail, especially the dietary ones, without me having to chase down information.
+
+### Business Reality
+
+Right now:
+* I attend 4-6 private dining, farm dinner, or ticketed events per quarter.
+* My typical event spend is $1,500–$5,000 per person, excluding travel, and I often have an associated booking or ticket spend of $50–$250 per head.
+* I have multiple, complex allergies (gluten, nuts, specific spices) and often have a very specific, non-negotiable dietary preference (e.g., low-acid, high-protein, etc.). I also require clear, accessible seating away from high-traffic areas.
+* My event context is often a semi-private, high-end venue (like a historic estate or a boutique farm) in a major metropolitan area, involving 15–30 people. The planning window is usually 4–8 weeks out.
+* My current communication setup is a messy combination of follow-up texts from the event planner, a vague email from the venue coordinator, and a link to a general Google Form that feels like it was created in 2008. Nothing is centralized or actionable.
+
+---
+
+### Primary Failure: Allergy and Restriction Confirmation Gap
+
+The biggest operational failure is the lack of a single source of truth for my dietary needs. If the kitchen or the front-of-house staff are using outdated or incomplete allergy information, it doesn't just mean a bad meal; it's a major safety risk and a potential PR disaster. When I have to remind the host or the kitchen manager about my allergies, it shifts the burden of care onto me, which is unacceptable. The cost of this failure isn't just a poor meal—it’s the loss of trust, which means I won't recommend the venue or the host to my network, costing them significant future revenue and reputation.
+
+---
+
+### Structural Issue: Fragmented RSVP and Dietary Data Capture
+
+The current process forces the host to collect my dietary needs via a general RSVP form, which is often detached from the actual menu or the booking contract. This means that the person who inputs my gluten-free restriction into the Google Form is not the same person who is finalizing the menu costing, and certainly not the chef who is executing the dish. I spend time correcting these data silos, which wastes my time and increases the risk of data entry error, leading to potential menu mismatch.
+
+---
+
+### Structural Issue: Lack of Dynamic Menu Visibility Based on Restrictions
+
+I rarely receive a final, detailed menu that explicitly confirms how my restrictions have been accommodated. Instead, I get a vague description ("Seasonal farm fare"). If I can't see the actual ingredients or the preparation methods, I have to assume the worst. The current system forces me to trust the host's verbal confirmation, which is unreliable. I need to see a personalized, restricted version of the menu *before* I arrive, confirming that every component meets my needs.
+
+---
+
+### Structural Issue: Inconsistent Communication of Changes and Confirmation
+
+When something changes—say, the venue changes the wine pairing, or the reservation time shifts by 30 minutes—the communication is scattered across multiple people (planner, vendor, host) via different channels (text, email, printed card). If I have to track down the single, official source for changes, the event feels disorganized and stressful. I need one central, reliable platform that serves as the single source of truth for all logistical and menu updates.
+
+---
+
+### Structural Issue: Limited Event-Specific Preference Input
+
+The current system treats me as a generic attendee until the moment I arrive. It doesn't allow the host to capture sophisticated, non-mandatory preferences (e.g., "I prefer seating near the fireplace," or "I am most interested in the wine pairings from the Oregon region"). These preferences are critical for maximizing my enjoyment and connecting me with the right parts of the experience, and they are currently lost in the shuffle of the RSVP process.
+
+---
+
+### Psychological Model
+
+I optimize for: seamless, invisible execution of details. I want the entire process to feel effortless, as if the host anticipated my needs before I even knew them.
+I refuse to compromise on: the absolute certainty of my dietary accommodations. This is non-negotiable; if the allergen information is not crystal clear and confirmed by the chef, I will decline attendance.
+I avoid: having to ask clarifying questions about logistics or food preparation. I hate feeling like I am managing the event planning for others.
+I evaluate tools by: how quickly they can consolidate disparate pieces of information (allergies, seating, menu, schedule) into one clean, reliable view for the operations team.
+
+I think in terms of experience quality and risk mitigation. If a system introduces friction or requires me to manually verify information, I assume the overall quality of the event will be low. I expect the platform to handle the complexity of logistics so that the human interaction can be pure and enjoyable.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must automatically flag and prevent the booking or menu finalization if a critical allergy constraint (e.g., Gluten, Nuts) is entered but not explicitly confirmed by a chef-level sign-off.
+2. The system must provide a single, comprehensive guest portal where I can view my personalized menu, including ingredient breakdowns and allergy cross-reference confirmations, 72 hours before the event.
+3. The system must allow the host to input and track complex, non-mandatory guest preferences (seating, interest areas, dietary nuances) which are then directly visible to the assigned server and kitchen staff.
+4. The system must automatically push all critical logistical updates (time changes, menu revisions, vendor cancellations) to a central, dedicated communication channel for the event, requiring a mandatory acknowledgement from the host.
+5. The system must integrate my dietary profile directly into the event costing and inventory management module, ensuring that ingredient sourcing and waste planning accounts for my restricted needs.
+6. The system must provide a dedicated dashboard view for the kitchen manager that displays a real-time, aggregated list of all guest allergies and dietary restrictions for the service period, sortable by severity.
+7. The system must allow the host to link my specific RSVP to a detailed booking record that includes both the menu and the associated required ticket/payment amounts for transparent invoicing.

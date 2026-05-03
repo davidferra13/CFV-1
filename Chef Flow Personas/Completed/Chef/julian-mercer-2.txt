@@ -1,0 +1,50 @@
+**Chef Profile: "Julian Mercer" - Solo Private Chef & Regional Collaborator (Dependence)**
+
+I run a solo private chef business across southern New England, and I coordinate closely with another chef who covers the northern region. Over time, I’ve become partially dependent on that relationship—not by design, but because it’s efficient. The problem is that this dependency has no structure, and it creates hidden risk.
+
+### Business Reality
+
+Right now:
+
+* 16–22 events per month (heavy weekend density, frequent repeat clients)
+* Average booking: $2,400; monthly revenue: $39,000–$54,000
+* Solo operator; hires 1–2 freelancers as needed
+* Geographic scope: Connecticut, Rhode Island, Massachusetts, occasional travel north
+* Counterpart chef: northern-focused, similar scale, sends overflow work
+* Current tools: Instagram + SMS (leads), Google Calendar (scheduling), Notes app (event prep), Square/Venmo (payments)
+* Coordination: regular lead sharing, sourcing coordination, occasional staffing overlap
+
+### Primary Failure: Unstructured Dependency Risk
+
+I’ve started to rely on the other chef for overflow leads, sourcing coordination, and occasional support—but none of that is formalized. If they stop sharing, get busier, or shift priorities, I feel it immediately. There’s no visibility into how much of my pipeline is influenced by them, and no way to stabilize that relationship operationally. The workaround is maintaining the relationship socially and staying top-of-mind, which is unreliable and not a system.
+
+### Structural Issue: No Dependency Tracking
+
+I don’t know how much of my business is actually tied to shared activity. Leads come in, some get passed, some don’t—but there’s no record of origin or dependency. The workaround is memory, which doesn’t scale and hides risk.
+
+### Structural Issue: No Stability Layer
+
+There’s no system that ensures continuity if one side changes behavior. If they stop sharing or collaborating, there’s no fallback structure—everything just disappears. The workaround is diversification of leads, but that doesn’t solve coordination.
+
+### Structural Issue: No Contribution Balance
+
+We don’t track who is contributing what. Over time, that can drift—one person might be sharing more leads or resources without realizing it. The workaround is trust, but there’s no visibility into imbalance.
+
+### Psychological Model
+
+I optimize for: stable income and consistent flow of work
+I refuse to compromise on: independence and control over my business
+I avoid: reliance without visibility and fragile systems
+I evaluate tools by: whether they expose risk and stabilize relationships
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. Track the origin of leads and shared activity across both chefs.
+2. Provide visibility into how much business is influenced by collaboration.
+3. Surface dependency risk if one side becomes a primary source of work.
+4. Track contribution balance without enforcing quotas.
+5. Maintain independence of both businesses at all times.
+6. Require no additional manual tracking beyond existing workflows.
+7. Provide historical data to evaluate long-term collaboration impact.

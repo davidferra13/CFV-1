@@ -1,0 +1,55 @@
+Client Profile: "Aaron Blake" - DevOps Engineer, Cloud Infrastructure (Uptime)
+
+If the system isn’t reliable 24/7, I won’t use it. Pricing needs to be available anytime, anywhere.
+
+Business Reality
+Right now:
+
+I book 4–6 private dinners per year, often at odd hours.
+
+Budget ranges from $1,200 to $4,500.
+
+I expect to configure and pay regardless of time or load.
+
+Dietary needs are minimal but must persist.
+
+Locations vary but should not affect availability.
+
+I operate across time zones.
+
+I expect systems to be resilient.
+
+Primary Failure: Pricing Downtime
+The biggest issue is when pricing isn’t available - errors, timeouts, or maintenance windows. If I can’t see a price, I can’t proceed. That’s immediate abandonment.
+
+Structural Issue: Dependency Failures
+Pricing relies on external services that fail - APIs, databases, etc. That creates cascading issues. Core pricing should not depend on fragile systems.
+
+Structural Issue: No Fallback Mechanism
+When something fails, there’s no fallback. The system just breaks. I expect degraded modes that still allow pricing and booking.
+
+Structural Issue: Rate Limiting or Throttling
+If I interact too quickly and get blocked, that’s unacceptable. Pricing should scale with usage.
+
+Psychological Model
+I optimize for: reliability and continuous availability
+I refuse to compromise on: always-accessible pricing
+I avoid: systems that fail under load or at odd times
+I evaluate tools by: uptime and resilience
+
+Pass / Fail Conditions
+For this system to work for me, it must:
+
+Provide pricing availability 24/7 with no downtime.
+
+Minimize dependencies that can cause pricing failures.
+
+Offer fallback pricing mechanisms if primary systems fail.
+
+Handle high interaction rates without throttling.
+
+Maintain consistent performance across time zones.
+
+Ensure booking can proceed even in degraded conditions.
+
+Deliver a resilient, fault-tolerant pricing system.

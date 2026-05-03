@@ -1,0 +1,55 @@
+Client Profile: "Eleanor Whitcombe" - Founder & Managing Partner, Whitcombe Advisory Group (Orchestrator)
+
+I host private dinners as an extension of my business. It’s where deals soften, relationships deepen, and decisions actually get made. If the experience breaks, I don’t just lose money - I lose leverage.
+
+Business Reality
+Right now:
+
+I host or co-host 18–24 private dinners per year, ranging from 6 to 18 guests. Roughly 6 are high-stakes investor dinners, 10 are relationship-maintenance dinners, and the rest are personal or hybrid events.
+
+My per-event budget ranges from $2,500 to $12,000 depending on guest profile. I typically pay a 30–50% deposit upfront, but final invoices often get messy - add-ons, staff hours, rentals, alcohol, and travel inflate costs unpredictably.
+
+Guest count is volatile. I plan for 10, confirm 12, and 8 show up. Or the opposite. I need flexibility without being penalized heavily.
+
+Dietary restrictions are constant: gluten-free, shellfish allergies, kosher-style preferences, and increasing plant-based expectations. I also have two repeat guests who are extremely sensitive to cannabis exposure - cross-contamination is a concern.
+
+Decision-making is split. I approve the chef and final menu, but my assistant handles logistics, and sometimes a client stakeholder inserts last-minute changes. This creates version conflicts constantly.
+
+Events happen across multiple environments: my home (limited kitchen), client homes (unknown setups), rented properties, and occasionally outdoor farm venues where power and water are inconsistent.
+
+I coordinate everything through a mix of Gmail threads, iMessage, Google Docs for menus, PDFs for invoices, and a shared Google Calendar with my assistant. Nothing is unified.
+
+Primary Failure: Version Chaos
+My biggest issue is that there is no single source of truth. Menus exist in three versions: the chef’s draft, my edited Google Doc, and a PDF someone downloaded two days ago. Guest counts live in text messages. Dietary restrictions are buried in email threads. When something changes - which it always does - there’s no guarantee everyone is looking at the same version. I’ve had chefs show up with outdated menus, missing key restrictions, or misaligned timelines. The cost isn’t just financial - it’s reputational. If a guest feels overlooked or unsafe, I don’t get a second chance.
+
+Structural Issue: Payment Fragmentation
+Every chef handles payments differently. Some send Stripe links, others send PDFs with wire instructions, and some just text me Venmo requests for staff. There’s no standardized breakdown. I can’t easily see what I’m paying for - ingredients, labor, rentals, travel - until after the fact. My assistant spends hours reconciling invoices against what was verbally agreed upon. Refunds or adjustments are awkward and slow. If I cancel or reschedule, terms vary wildly and are often buried in emails. I need predictable, transparent payment structures.
+
+Structural Issue: Guest Data Black Hole
+I repeatedly collect the same information: dietary restrictions, preferences, allergies, even seating dynamics. None of it persists. Every event starts from zero. I’ve had guests attend five dinners and still get asked if they eat dairy. It makes me look disorganized. Worse, when I forward this information to chefs, it’s unstructured - bullet points in an email. There’s no guarantee it’s interpreted correctly. I need a persistent, structured guest profile system that evolves over time.
+
+Structural Issue: Venue Uncertainty
+Many events happen in non-standard kitchens. I’ve had chefs arrive expecting a full setup and find a two-burner stove and no prep space. Or outdoor events where power drops mid-service. I try to communicate constraints, but it’s always incomplete. Photos, descriptions, and last-minute clarifications don’t translate into operational readiness. This leads to delays, compromised menus, or emergency rentals. I need a way to clearly define and validate venue capabilities before the chef commits.
+
+Psychological Model
+I optimize for: control without micromanagement, predictable outcomes, and guest experience quality
+I refuse to compromise on: dietary safety, timing, and overall presentation
+I avoid: back-and-forth email chains, unclear pricing, and last-minute surprises
+I evaluate tools by: how much they reduce coordination overhead and whether they prevent mistakes before they happen
+
+Pass / Fail Conditions
+For this system to work for me, it must:
+
+Maintain a single, real-time, version-controlled event record where menus, guest lists, dietary restrictions, and timelines are always synchronized across all participants.
+
+Allow role-based access so my assistant, the chef, and any client stakeholders can view or edit only what they need, without creating duplicate versions.
+
+Provide structured guest profiles that persist across events, including dietary restrictions, preferences, and notes, and automatically apply them to new bookings.
+
+Enforce standardized, itemized pricing with clear breakdowns (ingredients, labor, rentals, travel) and support deposits, staged payments, and automated final reconciliation.
+
+Handle guest count variability with predefined pricing rules (e.g., per-person adjustments, minimum guarantees) that update totals instantly when counts change.
+
+Include a venue profiling system where I can document kitchen capabilities, utilities, and constraints, and require chef acknowledgment before confirmation.
+
+Generate a final, locked “day-of-service” snapshot that all parties agree on, eliminating ambiguity and preventing outdated information from being used during execution.

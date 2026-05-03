@@ -1,0 +1,60 @@
+Chef Profile: Aaron Sanchez - Street Food Master
+
+I am Aaron Sanchez, a renowned street food chef with a thriving mobile catering business in Los Angeles. My team and I operate multiple food trucks that serve up delicious, authentic Mexican cuisine to hungry customers across the city. We handle an average of 150 events per month, ranging from small office lunches to large music festivals. Our revenue model is straightforward - we charge $45 per person for our signature dishes, with a minimum order of 50 people. My team consists of 12 dedicated staff members, including chefs, servers, and support crew. We primarily operate in the Los Angeles area, but have recently expanded to nearby cities like Santa Monica and Long Beach.
+
+Right now:
+* I manage 150 events per month
+* Our revenue is $6,750 per event (150 x $45)
+* My team consists of 12 staff members
+
+Primary Failure: Inconsistent Food Quality
+
+Our biggest operational problem lies in maintaining consistent food quality across all our trucks. Despite having experienced chefs on board, we often face challenges when ingredients don't arrive as expected or when the trucks' ovens and grills malfunction. This leads to a hit-or-miss experience for our customers, with some events receiving rave reviews while others fall short of expectations. The inconsistency in food quality not only affects our reputation but also results in an average loss of $1,125 per event due to unsatisfied customers and wasted ingredients.
+
+Structural Issue: Inefficient Inventory Management
+
+Our current inventory management system is outdated and inefficient. We rely on a combination of spreadsheets and text messages to track ingredient quantities, leading to frequent stockouts and overordering. This not only wastes time and money but also puts us at risk of running out of essential items during peak hours. The lack of a centralized system makes it difficult for our team to monitor inventory levels across all trucks, resulting in an average loss of $1,125 per event due to ingredient shortages.
+
+Structural Issue: Poor Communication with Vendors
+
+Communication with our vendors is another area where we struggle. We often find ourselves caught off guard by unexpected ingredient delays or price hikes, which can throw our entire operation into disarray. Our current system of relying on text messages and phone calls makes it challenging to keep track of all the moving parts, leading to an average loss of $1,125 per event due to vendor-related issues.
+
+Structural Issue: Difficulty in Scheduling Staff
+
+Scheduling staff for each event is a constant challenge. With 12 team members to manage, we often find ourselves short-staffed or overstaffed depending on the size and location of the event. This leads to inefficiencies in our operation, with some events requiring additional support from management while others could have been handled by fewer staff members. The lack of a centralized scheduling system results in an average loss of $1,125 per event due to staffing issues.
+
+Structural Issue: Compliance with Permits and Licenses
+
+Navigating the permit chaos for each event is another major headache. We often find ourselves scrambling at the last minute to secure the necessary permits and licenses for our trucks, which can result in fines or even being forced to leave an event prematurely. The lack of a centralized system to track all our permits leads to an average loss of $1,125 per event due to compliance issues.
+
+I optimize for:
+- Consistent food quality across all events
+- Efficient inventory management and vendor communication
+- Effective staff scheduling and compliance with permits and licenses
+
+I refuse to compromise on:
+- The authenticity and flavor profile of my dishes
+- The safety and well-being of my team members
+- Maintaining a strong reputation in the street food community
+
+For this system to work for me, it must:
+
+1. Provide real-time inventory tracking across all trucks and events.
+2. Offer centralized communication with vendors to ensure timely ingredient deliveries and transparent pricing.
+3. Allow easy scheduling and management of staff based on event size and location.
+4. Streamline the process of securing permits and licenses for each event, reducing the risk of fines or disruptions.
+5. Integrate seamlessly with our existing tech setup, including recipe management and customer booking systems.
+6. Offer robust reporting features to help us analyze our performance and identify areas for improvement.
+7. Be user-friendly and intuitive, allowing my team to quickly adapt to using the new system without extensive training.
+
+The system must provide real-time inventory tracking across all trucks and events.
+
+---
+<!-- GENERATION VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Flags: Possible duplicate: existing persona 'aaron-sanchez'
+Generated: 2026-04-28T03:16:20.780Z
+Model: hermes3:8b
+Category: street-food-truck
+Seed: Aaron Sanchez
+-->

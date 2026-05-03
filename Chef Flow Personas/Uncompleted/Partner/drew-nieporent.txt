@@ -1,0 +1,67 @@
+**Partner Profile: "Drew Nieporent" - Market Experience Curator (Event Coordinator)**
+
+I am the person who helps small-town markets become destinations—the buzz. I don't just show up; I curate the experience. I bring together the best local talent—the chefs, the breweries, the artisanal vendors—and package them into high-energy, themed pop-up events. My job is to make sure the market isn't just a place to buy groceries, but a must-visit weekend destination that people talk about for months.
+
+### Business Reality
+
+Right now:
+* I co-host, promote, or support **4 to 6** major market events (e.g., "Taste of Town," "Harvest Pop-Up") per **quarter**.
+* My revenue share is structured as a **15% vendor commission** on all ticketed activities and a minimum guarantee of **$500** per event, paid out 7 days post-event.
+* My collaborations involve the main **Market Hall**, at least **3 distinct local chef pop-ups** (requiring dedicated cooking space and power), and **2 local craft breweries** providing beer and tasting tickets.
+* Our shared event location is the Market Hall, which has strict capacity limits (max 1,500 guests). Our calendar is highly volatile, changing based on weather and vendor availability.
+* Current coordination setup is a chaotic mix of shared **Google Drive folders** (for vendor contracts and floor plans), **WhatsApp groups** (for immediate scheduling changes), and **email chains** (for financial reconciliation and vendor agreements). There is no single source of truth for who is booked, who paid, or what the final layout is.
+
+---
+
+### Primary Failure: Vendor Scheduling and Resource Overlap
+
+My biggest operational headache is the inability to accurately predict and manage vendor resource overlap. Because I have 3+ chefs, each needing specialized equipment (induction stations, sinks, power drops) and limited space, if one vendor changes their setup or arrives late, it immediately impacts the layout and the flow for everyone else. This leads to bottlenecks, safety concerns, and, worst of all, a poor guest experience. Last month, during a rain delay, two chefs mistakenly tried to set up their premium stations in the same corner, forcing us to hastily move one setup and losing valuable selling square footage. This cost us an estimated $1,200 in potential sales and required two hours of my time just to physically resolve the layout crisis, pulling me away from promotional duties.
+
+---
+
+### Structural Issue: Conflicting Booking and Capacity Management
+
+I manually track venue capacity and vendor bookings across multiple spreadsheets (one for the Market Hall, one for the kitchen access, and one for the breweries). When a chef requests a change—say, needing an extra 4 feet of space—I have to manually check the master floor plan sheet, cross-reference it with the list of active bookings, and then email approval to the Market Manager. This process is prone to human error; I frequently double-book a specific, high-demand resource (like the main power drop or the primary prep sink) because I don't know if the update I received via text was integrated into the master plan.
+
+---
+
+### Structural Issue: Disjointed Financial Reconciliation
+
+The revenue flow is highly complex: ticket sales (paid to me), vendor commissions (paid to me), and raw ingredient purchases (paid by the vendor, but often requiring my confirmation). I receive payments via three different methods (Square, Venmo, and direct wire) and track the associated costs and commission rates in a master Google Sheet. When the market managers run their end-of-event reports, I have to spend half a day cross-referencing their numbers against my own physical cash counts and the digital booking confirmations. This manual reconciliation is slow, expensive, and often leads to disputes over who paid for what, delaying my commission payout by days.
+
+---
+
+### Structural Issue: Communication and Contract Version Control
+
+I deal with dozens of vendors, each requiring a unique contract outlining their setup, insurance needs, menu pricing, and payment terms. These contracts are stored in a shared drive, but there are always multiple versions circulating. A vendor might be working off a 2023 floor plan PDF while I am using the 2024 version, leading to physical setup disagreements on the day of the event. I spend valuable time on-site mediating disputes over "what the contract says" versus "what the latest email says," which destroys the professional, seamless atmosphere I am trying to create.
+
+---
+
+### Structural Issue: Ingredient and Menu Costing Visibility
+
+When a chef commits to a pop-up, they often provide a preliminary menu and a rough cost estimate. However, if the market's preferred local butcher or bakery changes their pricing or if a specific ingredient becomes seasonally unavailable (e.g., heirloom tomatoes are suddenly $1.50 higher), I have no immediate way to notify the chef or recalculate their projected cost of goods sold (COGS). This forces me to hold calls with the chef every time a major ingredient price shifts, dramatically slowing down the planning cycle and making the final event menu unpredictable.
+
+---
+
+### Psychological Model
+
+I optimize for: *Seamless, high-energy guest experience* and *Operational reliability*.
+I refuse to compromise on: *The brand aesthetic* and *The timely payout of commissions*.
+I avoid: *Manual data entry*, *Spreadsheets that require merging*, and *Having to chase down missing paperwork*.
+I evaluate tools by: *How quickly they can centralize diverse operational data* and *If they reduce my on-site conflict resolution time.*
+
+I think in terms of flow and throughput. Every piece of information—from a booking to a payment to a required piece of equipment—must pass through a central, authoritative system that I can trust instantly. I am the conductor; I need a perfect, visible score.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must **automatically generate** a single, consolidated floor plan view that shows all booked vendor footprints and required resources (power, sinks) for a specific date, preventing resource overlap.
+2. The system must **track and calculate** the complex revenue waterfall—ticket sales, vendor commissions, and my minimum guarantee—and generate an auditable payout report 24 hours after the event ends.
+3. The system must **host and version control** the master contract repository, linking specific signed agreements directly to the associated booking and resource requirements for that event date.
+4. The system must **allow real-time menu costing updates** based on changing vendor-sourced ingredient pricing, generating alerts when a proposed dish exceeds a set COGS threshold.
+5. The system must **manage the guest booking lifecycle** from initial ticket purchase through vendor-specific meal reservations, providing a single source of truth for expected attendance and handoff points between vendors.
+6. The system must **integrate vendor payment processing** (Square, etc.) directly to automatically reconcile daily revenue totals against the booked vendor list, minimizing manual financial reconciliation.
+7. The system must **provide a multi-role dashboard** that allows me to instantly see the status of every vendor (Confirmed, Pending Contract, Equipment Required, Paid) for the next 90 days.

@@ -1,0 +1,55 @@
+Chef Profile: "Evan Morales" - Private Chef (Overloader)
+
+I don’t just forget things - I overload myself the second I see them. Every message turns into five mental tasks: reply, plan, source, confirm, follow up. I don’t write any of it down because I think I’ll handle it “in a second.” Then I move on, stack more on top, and everything collapses.
+
+Business Reality
+Right now:
+
+8–13 events per month (private dinners + repeat clients)
+
+$18,000–$38,000 monthly revenue
+
+Solo operator with occasional server/prep help
+
+70–140 inbound messages per week across SMS, email, and social
+
+Average response delay: 6–36 hours depending on backlog
+
+15–30 active “in-progress” conversations at any given time
+
+8–20 dropped or mishandled details per week (timing, counts, dietary notes, follow-ups)
+
+Primary Failure: Mental Task Explosion
+Every message becomes a mini project in my head. A simple inquiry turns into menu ideas, pricing calculations, ingredient sourcing, scheduling conflicts, and staffing - all at once. I try to hold it mentally instead of externalizing it. By the time I circle back, I’ve either forgotten key details or I’m too overwhelmed to start. My workaround is jumping back into the thread and reconstructing everything, but that’s slow and often incomplete.
+
+Structural Issue: No Decomposition of Work
+I treat everything as a single blob instead of breaking it into steps. “Respond to client” actually means: confirm details, propose menu, price it, check availability, and follow up. Because it’s not broken down, I procrastinate the entire thing. My workaround is waiting for a block of time to “handle it all,” which rarely exists.
+
+Structural Issue: Context Switching Penalty
+I’m constantly switching between conversations, each with different requirements. One client needs a quote, another needs a menu revision, another needs confirmation. There’s no system preserving context, so every time I return to a thread, I have to reload everything mentally. My workaround is rereading entire conversations, which wastes time and drains focus.
+
+Structural Issue: No “Done” State
+Even when I reply, I’m not actually done. There’s always a next step - waiting on confirmation, sending a revision, following up. But once I’ve sent a message, I mentally check it off. There’s no persistent state tracking what’s still pending. My workaround is relying on the other person to reply, which means I lose control of the timeline.
+
+Psychological Model
+I optimize for: clearing things quickly and reducing immediate pressure
+I refuse to compromise on: delivering accurate, thoughtful responses
+I avoid: partially completed work and unclear next steps
+I evaluate tools by: whether they reduce mental load and break work into manageable pieces
+
+Pass / Fail Conditions
+For this system to work for me, it must:
+
+Automatically break incoming requests into discrete, actionable steps (reply, quote, confirm, follow-up).
+
+Preserve full context for each conversation so I never have to reconstruct it manually.
+
+Track the state of every interaction (new, in progress, waiting, completed) beyond just “replied.”
+
+Surface the exact next action required for each item so I don’t have to think about it.
+
+Allow me to act on individual steps without needing to complete the entire workflow at once.
+
+Maintain visibility into all active work so nothing gets buried under new messages.
+
+Prompt follow-ups proactively when a conversation stalls, instead of waiting for the other person.

@@ -1,0 +1,55 @@
+Client Profile: "Daniel Mercer" - Senior Accountant, Mid-Size Firm (Conspirator)
+
+I’m trying to pull off a surprise dinner for my wife without her finding out, which is harder than it sounds. She notices everything - notifications, calendar entries, random charges. If there’s any leak, the surprise is ruined.
+
+Business Reality
+Right now:
+
+I plan 1–2 meaningful dinners per year - anniversary, birthday, or a big personal milestone. This one matters a lot.
+
+Budget is $1,500–$4,000. I’m flexible if it guarantees a smooth, discreet experience.
+
+I’ll pay whatever deposit is needed upfront, but I need to control how it appears - bank statements, emails, everything.
+
+Guest count is usually just the two of us, occasionally 4 if I involve close friends, but secrecy is the priority.
+
+My wife has specific preferences - no shellfish, prefers lighter dishes - but I can’t ask her directly without raising suspicion.
+
+The dinner will be at our home. She’s around most of the time, so coordination has to be invisible.
+
+I currently use my phone for everything - texts, email - but she has access to shared devices and sometimes sees notifications.
+
+Primary Failure: Exposure Risk
+The biggest problem is that every normal step in booking a chef creates a trail. Emails, texts, payment confirmations, calendar invites - they all risk exposing the plan. I’ve had surprises ruined before because a notification popped up or a charge looked unfamiliar. Even something small, like a chef texting at the wrong time, can give it away. I need complete control over visibility. If I can’t trust the system to stay quiet, I won’t use it.
+
+Structural Issue: No Discreet Communication Channel
+All communication methods are too visible. Texts show up on lock screens, emails sync across devices, and calls can be overheard. There’s no dedicated, private channel where I can coordinate without leaving traces in shared spaces. My workaround is using awkward timing - replying late at night or stepping away - but it’s unreliable.
+
+Structural Issue: Payment Traceability
+Payments are too obvious. Charges show up with recognizable names, receipts hit my inbox, and sometimes even SMS confirmations come through. I’ve tried using gift cards or alternate accounts, but it complicates things and feels sketchy. I need a clean way to pay that doesn’t immediately expose what I’m doing.
+
+Structural Issue: Day-of Coordination Risk
+Even if I manage to book everything secretly, the day-of execution is risky. The chef arriving, setup, timing - it all has to be perfectly aligned so my wife doesn’t notice. If the chef calls, texts, or shows up at the wrong time, it’s over. I need coordination that happens quietly and predictably without me constantly managing it.
+
+Psychological Model
+I optimize for: secrecy, control, and a flawless reveal
+I refuse to compromise on: the surprise element being preserved completely
+I avoid: any system that creates visible notifications or obvious records
+I evaluate tools by: how invisible they are during planning and execution
+
+Pass / Fail Conditions
+For this system to work for me, it must:
+
+Provide a discreet communication channel that does not generate standard phone notifications, emails, or visible message previews.
+
+Allow me to control when and how I receive updates (e.g., silent mode, scheduled summaries) so nothing appears unexpectedly.
+
+Support payment methods that minimize recognizable transaction details and avoid automatic receipts or notifications to shared accounts.
+
+Avoid creating calendar events, emails, or external artifacts unless I explicitly choose to generate them.
+
+Enable the chef to receive all necessary details without needing to contact me through normal visible channels on the day of the event.
+
+Offer a “stealth mode” where all interactions are contained within a private, access-controlled space that I can hide or secure.
+
+Provide a clear, private execution plan so I know exactly when things will happen without needing last-minute communication that could expose the surprise.

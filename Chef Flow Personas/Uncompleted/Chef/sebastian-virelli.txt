@@ -1,0 +1,54 @@
+**Chef Profile: "Sebastian Virelli" - Executive Culinary Director & Private Chef (Orchestrator)**
+
+I don’t run one kitchen anymore—I move through systems. Restaurants, pop-ups, private estates, large-scale events—I’m expected to step in, assess instantly, and correct course without slowing anything down. My value is judgment under pressure, but my time is fragmented across too many moving parts.
+
+### Business Reality
+
+Right now:
+
+* Oversight of 4–7 restaurant concepts (menus, standards, periodic audits)
+* 6–10 private dinners per month (high-profile clients, 2–20 guests)
+* 2–5 large events per month (corporate, festivals, multi-chef collaborations)
+* $150,000–$400,000 monthly revenue influence across all operations
+* 60–100 weekly communications (calls, texts, emails) requiring decisions
+* Travel between 3–6 locations per week (cities, venues, client sites)
+* 10–20 simultaneous operational threads (menus, staffing, sourcing, corrections)
+
+### Primary Failure: Distributed Attention Collapse
+
+Everything depends on me being present at the right moment. I’m constantly being pulled—review a sauce here, fix a service there, confirm a menu elsewhere. There’s no central control layer; I’m the control layer. That means decisions bottleneck around my availability. When I’m not there, standards drift. When I am there, I’m rushed. My workaround is rapid triage—prioritizing the loudest issues—but it’s reactive and leaves gaps.
+
+### Structural Issue: No Unified Operational View
+
+Each restaurant, event, and client operates in its own silo. Different teams, different tools, different standards. I don’t have a single surface where I can see what’s happening everywhere in real time. I rely on updates, photos, and quick reports, which are incomplete. My workaround is frequent check-ins and site visits, but that doesn’t scale.
+
+### Structural Issue: Standard Drift Across Teams
+
+I’ve built systems, but they degrade without constant reinforcement. Recipes get interpreted differently, plating shifts, execution softens. Even small deviations compound across locations. I can correct it in person, but it doesn’t persist without structure. My workaround is documentation and periodic audits, but adherence varies.
+
+### Structural Issue: Travel & Timing Inefficiency
+
+I lose hours moving between places—time that could be used for higher-level decisions or refinement. Scheduling is reactive, based on who needs me most urgently, not where I create the most value. My workaround is stacking visits geographically, but last-minute issues disrupt everything.
+
+### Structural Issue: High-Stakes Client Management
+
+Private clients and large events require immediate, precise responses. Menus, preferences, changes—all need fast decisions. These threads compete with restaurant operations for attention. My workaround is prioritizing high-visibility clients, but that can leave internal teams unsupported.
+
+### Psychological Model
+
+I optimize for: impact per minute and maintaining standards across systems
+I refuse to compromise on: consistency and quality regardless of location
+I avoid: redundant communication and being the sole point of failure
+I evaluate tools by: whether they extend my presence without requiring me physically
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. Provide a unified, real-time view of all operations (restaurants, events, private clients) in one place.
+2. Surface critical issues that require my input, filtering out noise.
+3. Maintain and enforce standardized recipes, plating, and execution across all teams.
+4. Allow remote validation (photos, metrics, feedback) so I can approve or correct without being onsite.
+5. Coordinate scheduling and travel based on priority and impact, not just urgency.
+6. Consolidate all communication into a structured system so nothing competes invisibly.
+7. Extend my decision-making capability across teams without requiring constant physical presence.

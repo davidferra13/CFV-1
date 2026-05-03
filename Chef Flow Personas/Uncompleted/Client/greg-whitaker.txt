@@ -1,0 +1,51 @@
+Client Profile: "Greg Whitaker" - Regional Sales Manager, Medical Devices (Drop-Off)
+
+I don’t want to browse, compare, or think. I want to drop in a request and have a professional take it from there. If I have to stay involved past that, I lose interest.
+
+Business Reality
+Right now:
+
+I book 3–6 private dinners per year, mostly for client entertainment or small family gatherings (4–8 people).
+
+Budget is $1,500–$4,000. I’m not optimizing for price - I’m optimizing for not having to deal with it.
+
+I expect to pay a deposit quickly to lock it in, then settle the rest without hassle.
+
+Guest details are basic - one or two dietary notes at most. I’ll provide them once and expect them handled.
+
+Events are at my house or a short-term rental. I don’t inspect kitchens or manage logistics.
+
+My schedule is tight. I’ll send a request between meetings and won’t revisit it unless someone reaches out clearly.
+
+I use email and text. I won’t log into anything or manage a dashboard.
+
+Primary Failure: Incomplete Handoff
+The biggest problem is that after I submit a request, nothing really takes over. I still have to answer questions, clarify details, or pick options. That’s not a handoff - that’s just the start of more work. I want a true transfer of responsibility where someone else owns the process after I initiate it. When that doesn’t happen, the request stalls or I abandon it.
+
+Structural Issue: Multi-Step Intake
+Most systems pretend to be simple but aren’t. You submit something, then immediately get asked for more - menu preferences, style, timing details. It’s just a delayed form. I don’t want a staged intake. I want one submission that’s enough for someone to act on.
+
+Structural Issue: Option Overload
+I don’t want to see five chefs or compare menus. That turns it into a decision process I don’t have time for. If I’m presented with options, I either pick randomly or don’t pick at all. I’d rather the system decide who’s right and send me one solid proposal.
+
+Structural Issue: Follow-Up Friction
+Even when a chef reaches out, the next steps are unclear. Do I reply? Do I confirm somewhere else? Is there a link? It’s inconsistent. I want a single, obvious path forward - review, accept, pay. Anything else creates hesitation.
+
+Psychological Model
+I optimize for: speed and zero involvement after initiation
+I refuse to compromise on: not being pulled into a process
+I avoid: comparisons, forms, and repeated inputs
+I evaluate tools by: whether they actually remove me from the workflow
+
+Pass / Fail Conditions
+For this system to work for me, it must:
+
+Accept a minimal, one-time submission that contains enough information for a chef to act without follow-up questions.
+
+Automatically match me with a single qualified chef instead of presenting multiple options.
+
+Ensure that the chef reaches out with a complete, ready-to-review proposal (menu direction, price, availability).
+
+Eliminate multi-step intake - no additional forms or repeated data entry after the initial request.
+
+Provide a single, clear action path (approve → pay) without redirecting me across tools or links.

@@ -1,0 +1,116 @@
+Chef Profile: "Elijah Park" - Private Chef (Menu Versioner)
+
+My menus are constantly evolving, but I don’t have version control. I tweak dishes, swap components, adjust plating - but I can’t track what changed, what worked, and what didn’t. I’m iterating blindly.
+
+Business Reality
+Right now:
+
+9–14 events per month
+
+$20,000–$45,000 monthly revenue
+
+3–6 menu revisions per event before finalization
+
+20–50 historical menu variants with no structured archive
+
+Feedback stored in messages, not tied to specific versions
+
+Frequent reuse of dishes without knowing their last “state”
+
+Primary Failure: No Version History
+I don’t know which version of a dish performed best. I change things based on memory or recent feedback, but I can’t compare iterations. My workaround is keeping separate docs, but they drift and duplicate.
+
+Structural Issue: Feedback Not Linked to Versions
+Client or guest feedback isn’t tied to the exact version served. I get “loved the dessert,” but which version? My workaround is guessing based on date.
+
+Structural Issue: Component Drift
+A dish’s components evolve independently - sauce changes, garnish changes - but I don’t track dependencies. My workaround is rewriting recipes, which loses lineage.
+
+Structural Issue: Reuse Without Context
+I reuse dishes across events, but I don’t know the last adjustments made. My workaround is rebuilding from scratch, wasting time.
+
+Psychological Model
+I optimize for: controlled iteration and continuous improvement
+I refuse to compromise on: knowing what actually worked
+I avoid: repeating past mistakes due to lack of history
+I evaluate tools by: whether they give me clear lineage and comparisons
+
+Pass / Fail Conditions
+For this system to work for me, it must:
+
+Version every menu and dish automatically with change tracking.
+
+Attach feedback to specific versions and components.
+
+Allow side-by-side comparison of iterations.
+
+Track component dependencies within dishes.
+
+Enable reuse of past versions with full context.
+
+Maintain a clean, searchable history of all menus.
+
+Surface best-performing versions based on outcomes.
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Word count too low: 315 (minimum 500)
+Flags: none
+Rejected: 2026-04-29T16:36:07.009Z
+-->
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Word count too low: 341 (minimum 500)
+Flags: none
+Rejected: 2026-04-30T08:05:36.020Z
+-->
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Word count too low: 367 (minimum 500)
+Flags: none
+Rejected: 2026-04-30T11:16:07.049Z
+-->
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Word count too low: 393 (minimum 500)
+Flags: none
+Rejected: 2026-04-30T15:16:04.577Z
+-->
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Word count too low: 419 (minimum 500)
+Flags: none
+Rejected: 2026-04-30T21:21:15.591Z
+-->
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Word count too low: 445 (minimum 500)
+Flags: none
+Rejected: 2026-05-01T05:31:25.123Z
+-->
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Word count too low: 471 (minimum 500)
+Flags: none
+Rejected: 2026-05-01T19:09:52.397Z
+-->

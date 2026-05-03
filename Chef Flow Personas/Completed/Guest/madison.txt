@@ -1,0 +1,67 @@
+**Guest Profile: "Madison" Stone - High-Profile Guest (Dietary Navigator)**
+
+I’m Madison, and I’ve spent years managing the logistics and dietary needs for high-profile, multi-act events. I don't just attend parties; I coordinate the *experience* for my circle. When I RSVP to an event, I am essentially signing up to be the chief compliance officer for the entire guest list. My role requires me to be hyper-aware of food allergies, cross-contamination risks, and specific dietary requirements—whether it's a vegan mandate, a celiac concern, or just a general aversion to cilantro. My attendance is never just about the entertainment; it's about the flawless execution of the meal and the smooth flow of the evening.
+
+### Business Reality
+
+Right now:
+* I attend **4** private dining, farm dinner, or ticketed events per **month**.
+* My annual event spend, including private booking fees, travel, and dedicated dietary sourcing, is around **$45,000 - $60,000**.
+* I manage dietary needs for groups ranging from **12 to 35** people, which includes severe allergies (e.g., peanuts, gluten, shellfish), specific restrictions (e.g., low FODMAP, kosher), and general preferences.
+* My most recent event was a 3-day, ticketed bohemian festival/dinner series at the Laurel Canyon Ranch in late October, with a head count of 85 guests across three distinct dining experiences.
+* My current communication setup is a patchwork: a master Google Sheet for RSVPs, text messages for immediate changes, and a dedicated email thread managed by the event coordinator, which often leads to conflicting instructions.
+
+---
+
+### Primary Failure: The Single Point of Failure Menu
+
+The biggest operational problem is the lack of a single, definitive, and easily accessible menu that accounts for *every* restriction for *every* guest. When a guest with a severe allergy arrives, I have to trust that the kitchen staff, the front-of-house staff, and the catering coordinator are all working from the same, up-to-date ingredient manifest. Because the menu constantly shifts based on availability or last-minute guest swaps, the risk of cross-contamination or simply serving the wrong dish is massive. This doesn't just disappoint the guest; it creates an immediate, high-stakes liability risk for the entire event, potentially leading to a PR crisis or, worse, a medical emergency, which is the absolute worst thing that can happen to the brand reputation.
+
+---
+
+### Structural Issue: Disconnected RSVP-to-Kitchen Flow
+
+The RSVP system is completely decoupled from the operational kitchen workflow. I submit dietary needs via a lengthy online survey, which then gets dumped into a shared spreadsheet. The kitchen receives a separate, often handwritten, printed list of "Allergy Guests" that is manually cross-referenced against the assigned seating chart. This manual transfer is guaranteed to fail. If a guest changes their restriction (e.g., from just gluten-free to also nut-free), the update only gets logged in the Google Sheet, and the kitchen staff has no way of knowing that the physical printout needs immediate correction, forcing me to physically chase down a manager hours before the event.
+
+---
+
+### Structural Issue: Menu Visibility vs. Ingredient Sourcing
+
+The menu presented to the guest is beautiful and poetic, but it is functionally useless for anyone with serious restrictions. The menu simply says "Seasonal root vegetables." It does not list the specific ingredients used, which is critical for identifying hidden allergens like starches or nuts. To compensate, I spend hours on the event day cross-referencing the menu against the vendor's ingredient sheets and the chef's personal notes. This is unsustainable and means that if the vendor changes a supplier (e.g., switching from butter to ghee), the menu and the guest's safety profile become instantly inaccurate.
+
+---
+
+### Structural Issue: Accommodation and Event Coordination Overlap
+
+Because many of my events are multi-day festivals or retreats, the booking system for the accommodations, the ticketed event structure, and the dietary requirements are all handled by different third-party systems (e.g., Eventbrite for tickets, Airbnb for lodging, and a separate email chain for diet). There is no centralized source of truth. If the lodging coordinator updates the event date by two hours, I have to manually update the catering manifest, the seating chart, and the communications plan. This forces me to maintain a dozen separate digital documents that must all be kept in sync, leading to inevitable errors in timing or headcounts.
+
+---
+
+### Structural Issue: Post-Event Feedback and Compliance Logging
+
+The feedback mechanism is purely qualitative and often forgotten. After an event, the feedback is collected via a general "How was everything?" survey. There is no structured way to log specific dietary compliance failures or near-misses. If a guest reports that their vegan meal was served with a non-vegan oil, that information is lost in the general feedback stream. I have to manually track these compliance failures in a separate database, making it impossible for the operations team to identify systemic issues—like "We failed 3 times this month on gluten-free bread sourcing"—until I do it myself.
+
+---
+
+### Psychological Model
+
+I optimize for: **Seamless, invisible execution.** I want the operational complexities to disappear so the guest just has a perfect, relaxing experience.
+I refuse to compromise on: **Health and Safety Compliance.** If the food isn't safe, nothing else matters, regardless of how beautiful the venue or how good the music is.
+I avoid: **Fragmented communication channels.** I hate having to check three different apps, two emails, and a physical whiteboard just to confirm one piece of information.
+I evaluate tools by: **The integrity of the data flow.** If I have to manually correct or reconcile data from one point to the next, the tool fails.
+
+I think like a project manager who is also a health inspector. Every detail—from the linens to the ingredients—is a point of potential failure. My decisions are based on risk mitigation, not convenience. I need to see the entire operational timeline laid out and validated against the dietary needs.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1.  **Centralize all guest information** (RSVPs, dietary restrictions, and allergies) into a single, immutable guest profile that is immediately accessible to FOH and BOH staff.
+2.  **Generate automated, restricted-ingredient menus** that are linked directly to the guest profile and the specific event booking, eliminating manual menu creation.
+3.  **Provide a real-time, integrated communication channel** that sends compliance updates (e.g., "The vegan dish was adjusted to remove cashews") to all relevant parties (guests, staff, and management) immediately.
+4.  **Allow the system to map and track ingredient sourcing and vendor changes** against the active menu to ensure compliance is maintained, even if ingredients are swapped.
+5.  **Automatically generate a comprehensive post-event compliance report** that logs all reported dietary failures, near-misses, and staff training gaps for continuous operational improvement.
+6.  **Integrate the booking and event management modules** so that changes to the event date, headcount, or venue automatically trigger mandatory updates across the catering and staffing schedules.
+7.  **Provide a dedicated, printable, and digitally accessible "Allergy & Restriction Manifest"** that is the single source of truth for kitchen staff, available at the point of service.

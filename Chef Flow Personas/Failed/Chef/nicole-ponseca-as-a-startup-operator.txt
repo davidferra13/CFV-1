@@ -1,0 +1,65 @@
+Chef Profile: Nicole Ponseca - Startup Operator (Pop-Up / Supper Club)
+
+I am Nicole Ponseca, a startup operator running a series of pop-up events and supper clubs in New York City. My business focuses on creating unique dining experiences for food enthusiasts through ephemeral events that showcase one-night-only menus.
+
+Right now:
+* I manage 12 clients [details]
+* My revenue model brings in $500,000 annually [details]
+* I lead a team of 5 [team size and structure], including event coordinators, chefs, and marketing staff
+* My geographic scope covers the New York City area, with events held in various venues across the city [specific location]
+* Currently, I rely on a mix of Google Calendar for scheduling, spreadsheets for inventory management, and text messages for internal communication [Current tech setup]
+
+---
+
+Primary Failure: Venue Scouting
+
+The biggest challenge in my business is finding suitable venues for each event. The limited availability of unique spaces that can accommodate our needs, along with the high competition from other event planners, makes it difficult to secure locations on short notice. This problem leads to canceled events and lost revenue, costing me up to $10,000 per incident.
+
+---
+
+Structural Issue: Inventory Management
+
+While I have a basic understanding of ingredients needed for each menu, tracking inventory across multiple events becomes overwhelming. Currently, I use spreadsheets to jot down requirements, but it's not efficient when scaling up. This leads to last-minute ingredient sourcing and potential recipe adjustments, which can impact the quality of the dining experience.
+
+---
+
+Structural Issue: Guest Communication
+
+Managing guest RSVPs and waitlists manually is time-consuming and prone to errors. With a high demand for my events, I often have more than 200 people on each waitlist. This process takes hours every week and leaves room for miscommunications, leading to disappointed guests and missed opportunities.
+
+---
+
+Structural Issue: Staff Scheduling
+
+As my business grows, managing the schedules of my team members becomes increasingly challenging. With five staff members working across multiple events, ensuring everyone is where they need to be at the right time is a daily struggle. This issue results in last-minute changes and gaps in coverage during events.
+
+---
+
+Structural Issue: Compliance and Licensing
+
+Keeping track of all the necessary permits, licenses, and insurance for each event venue is a tedious process. I often miss important deadlines or fail to obtain required documents, leading to fines or even event cancellations. This problem costs me an average of $5,000 per incident in penalties and lost revenue.
+
+I optimize for creating unique and memorable dining experiences that keep my clients engaged and satisfied.
+I refuse to compromise on the quality of ingredients and the uniqueness of each menu.
+I avoid using software that lacks user-friendly interfaces or requires extensive training.
+I evaluate tools by their ability to streamline processes, save time, and improve communication within my team.
+
+For this system to work for me, it must:
+
+1. Seamlessly integrate with Google Calendar for scheduling events and tracking staff availability
+2. Offer a centralized inventory management system that can handle multiple events and accommodate last-minute changes
+3. Provide an efficient guest communication platform that allows me to manage waitlists, RSVPs, and ticketing seamlessly
+4. Streamline the process of obtaining permits, licenses, and insurance for each event venue
+5. Integrate with my current tech setup without requiring extensive training or additional costs
+6. Improve overall team collaboration and reduce time spent on administrative tasks
+7. Offer a user-friendly interface that allows me to focus on creating unique dining experiences rather than managing logistics
+
+---
+<!-- GENERATION VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Flags: none
+Generated: 2026-04-30T19:08:54.498Z
+Model: hermes3:8b
+Category: popup-supper-club
+Seed: Nicole Ponseca as a startup operator
+-->

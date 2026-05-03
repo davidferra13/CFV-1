@@ -1,0 +1,68 @@
+**Public Profile: "Andrew Zimmern" - Local Food Explorer (Global Palate)**
+
+I spend my life chasing the deepest, most authentic flavors of the world, often finding the best meals in the most unassuming, tiny market stalls or hidden neighborhood eateries. My job isn't just travel writing; it's deep culinary sourcing. I need to know where the truly exceptional, hyper-local food experiences are—the ones that haven't been packaged or optimized for tourists. I am always on the hunt for the next great, unsung culinary gem that deserves international attention, and that means I have to verify the quality, the sourcing, and the authenticity of the experience, often with zero online presence.
+
+### Business Reality
+
+Right now:
+* I search for or compare **10 to 15** unique, highly specialized culinary experiences (from street food stalls to small pop-up restaurants) per **week**.
+* I budget between **$15 and $50** per tasting/experience, but I am often willing to spend up to **$200** for a unique, booked dinner event if the provenance is exceptional.
+* I need **location filters** based on specific, non-tourist neighborhoods, **ratings** that prioritize "authenticity" over "polish," **cuisine** deep dives (e.g., specific regional Ethiopian, Haitian, or Sichuan), and **menu previews** that highlight hyper-local ingredients.
+* My inquiry context is always "Is this experience reliable, and how can I book it without appearing to be a tourist?" I often need to book a private tasting or an exclusive, small-group dinner for **4-8 people** in a specific city like Oaxaca, Delhi, or Saigon.
+* My current discovery setup is a chaotic mix: local contacts (text messages), obscure blogs (scattered links), Instagram geotags (for visual cues), and finally, physical recommendations from hotel concierges or university contacts.
+
+---
+
+### Primary Failure: The Authenticity Gap
+
+The single biggest operational problem is the inability to distinguish between an experience that is *truly* local and authentic versus one that is merely *curated* for the international traveler. When I arrive in a new city, I am dealing with a massive volume of highly polished, commercially viable listings that are often overpriced and dilute the true local flavor. This forces me to rely on my network, which is inefficient and geographically limited. If I can’t quickly vet if a highly-rated spot is actually catering to the local palate or just the "exotic tourist dollar," I risk recommending a mediocre experience, which damages my professional credibility and my brand’s reputation.
+
+---
+
+### Structural Issue: Vetting Local Sourcing Claims
+
+I find listings that claim "local sourcing" or "hyper-regional ingredients," but I have no way to verify the claim's depth. The current workaround is asking the venue to send me a list of their primary vendors or ingredients, which they often send in a non-standard PDF or a vague text message. This breaks the moment I need to cross-reference that ingredient (e.g., a specific type of chili or grain) with the local market or supply chain, forcing me to waste time on cold calls to unrelated suppliers.
+
+---
+
+### Structural Issue: Multi-Layered Booking Complexity
+
+The process of booking an authentic, small-scale event is rarely simple. Some spots require a WhatsApp message, others require a phone call during limited business hours, and a third requires a direct email to a specific person who might be off-duty. I currently manage this using a combination of Google Calendar entries and personal text threads, which makes it impossible to track required deposits, specific menu requirements, or alternative dates simultaneously.
+
+---
+
+### Structural Issue: Comparative Menu Deep-Dive
+
+When I am comparing three different potential meals—say, a traditional market tasting, a booked pop-up dinner, and a small neighborhood restaurant—I have to open three different websites or PDFs. I have to manually compare the core ingredients, the price per person, and the overall cultural significance of the dishes. I cannot quickly compare the *culinary narrative* across multiple venues, which is essential for writing a comprehensive, comparative piece.
+
+---
+
+### Structural Issue: Post-Visit Logistics Documentation
+
+After I visit a place that is perfect, I need to document everything immediately: the exact price structure (e.g., $8 per tasting, $15 for the drink pairing), the name of the chef/cook, the unique selling point (e.g., "Grandma Elena's recipe from 1955"), and the operational notes (e.g., "Only open Thursday 4-7 PM"). Currently, I am taking dozens of photos and transcribing notes into a separate Notion database, which is disconnected from the booking or menu data, making the entire process fragmented and prone to loss.
+
+---
+
+### Psychological Model
+
+I optimize for: **Authenticity and Provenance.** The deeper the connection between the ingredient, the cook, and the history, the higher my interest.
+I refuse to compromise on: **Transparency of process and pricing.** If the cost structure is vague, or if the process seems overly complicated, I assume the experience is designed for profit, not passion.
+I avoid: **Any platform that requires me to "sell" the experience** or that aggregates listings without providing deep, verifiable context.
+
+I evaluate tools by: **How efficiently they allow me to gather verifiable, disparate data points.** I need the tool to act as a sophisticated research assistant, not just a reservation system.
+
+I am inherently skeptical of polished interfaces because they often mask a lack of genuine operational complexity. I trust systems that feel robust and functional, even if they look slightly unconventional, because those systems are built for real-world operations.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must allow me to filter experiences not just by cuisine, but by **source of ingredients** (e.g., "uses ingredients only from the central market," or "family recipe for 3+ generations").
+2. The system must provide a single, consolidated view where I can compare **three or more potential menus** side-by-side, comparing dish ingredients, associated costs, and cultural notes.
+3. The system must allow me to save a structured **"Sourcing Profile"** for a location, including contact information, the exact operating hours, and a dedicated space to document specific, unique notes (e.g., "Chef is only available if I arrive before 4 PM").
+4. The system must integrate a **multi-stage booking workflow** that handles complex requirements, such as mandatory deposit payments, specific group size limits (e.g., max 8), and required pre-event questionnaires.
+5. The system must allow me to upload and categorize **multiple types of media** (e.g., vendor photos, local market maps, and recipe excerpts) directly into a single "Experience Dossier" for later writing.
+6. The system must provide a clear, verifiable cost breakdown that separates the **base experience cost** from **optional add-ons** (like wine pairings or specific market transport fees).
+7. The system must allow me to save and track the **status of my investigation** for multiple locations simultaneously (e.g., "Contacted," "Pending Quote," "Site Visit Scheduled," "Vetted - Ready for Article").

@@ -1,0 +1,55 @@
+Chef Profile: "Dorian Hale" - Private Chef & Event Operator (Compliant)
+
+I run events that live or die on whether they’re legally sound. Before I think about menus, I’m thinking about permits, inspectors, and whether I’m even allowed to operate in a space that day. I don’t get the luxury of improvising - if I miss one requirement, the entire event can be shut down.
+
+Business Reality
+Right now:
+
+10–14 events per month (private dinners, pop-ups, and occasional markets)
+
+$28,000–$55,000 monthly revenue
+
+Core team of 2 (myself + 1 operations assistant) + temporary event staff
+
+Operating across 4–7 different venues per month (private homes, farms, public spaces)
+
+3–6 active permits/licenses per event depending on format (food, temporary event, liquor, fire safety)
+
+Compliance tracking spread across email threads, PDFs, and calendar reminders
+
+Frequent coordination with local health departments, town offices, and liquor authorities
+
+Primary Failure: Fragmented Compliance Management
+Every event is a legal puzzle, and there is no single place where everything lives. I have permits in email attachments, inspection schedules in my calendar, and requirements buried in municipal websites. Each town has different rules, different timelines, and different expectations. I spend hours verifying that I’m compliant, and I still don’t fully trust it. If I miss a deadline or misinterpret a requirement, I risk fines, shutdowns, or reputational damage. My workaround is over-documenting everything manually, but it’s slow and still leaves room for error.
+
+Structural Issue: Jurisdiction Variability
+Every location operates differently. One town requires a temporary food permit submitted 10 days in advance. Another allows same-day approval but requires an in-person inspection. Liquor laws vary even more - some require a licensed caterer partner, others allow one-day permits under strict conditions. There is no standardized rule set. I have to re-learn the system every time I enter a new jurisdiction. My workaround is building my own notes per location, but it’s incomplete and constantly outdated.
+
+Structural Issue: Inspection Uncertainty
+Health inspections are unpredictable. Sometimes I know the window; sometimes I don’t. I need to be fully compliant at all times during service, but I also need to know when to expect oversight. Right now, I rely on rough estimates, prior experience, and occasional communication with inspectors. There’s no reliable system that tells me when inspections are likely or what specifically will be checked. My workaround is over-preparing every time, which increases cost and operational load.
+
+Structural Issue: Permit Lifecycle Chaos
+Permits are not one-time tasks - they have lifecycles. Applications, approvals, expirations, renewals, and conditions all exist on different timelines. I might have overlapping permits for multiple events, each with different requirements. Tracking this manually is error-prone. I’ve had close calls where something nearly expired without me realizing it. My workaround is setting calendar reminders, but that only works if I input everything perfectly, which I don’t.
+
+Psychological Model
+I optimize for: certainty, compliance, and zero-risk execution
+I refuse to compromise on: operating legally in every scenario, no exceptions
+I avoid: ambiguity in rules, last-minute surprises, and relying on memory
+I evaluate tools by: how confidently they eliminate legal risk without adding complexity
+
+Pass / Fail Conditions
+For this system to work for me, it must:
+
+Automatically determine all required permits and licenses based on event type, location, and guest count.
+
+Track application deadlines, approval status, and expiration dates for every permit in a centralized timeline.
+
+Provide jurisdiction-specific requirements that are accurate and up to date without me having to research manually.
+
+Surface inspection expectations and likely timing based on location and event type.
+
+Store all compliance documents (permits, approvals, certificates) in a structured, easily accessible format.
+
+Alert me proactively to any missing, incomplete, or at-risk compliance items before they become problems.
+
+Maintain a full audit trail of compliance actions so I can prove adherence if challenged.

@@ -1,0 +1,67 @@
+**Chef Profile: "Elias Vance" - Executive Chef (Purist Purveyor)**
+
+I run a small, hyper-local culinary operation dedicated to showcasing the absolute peak of what the land and the season can offer. My philosophy is simple: the ingredients dictate the menu, and the menu dictates the story. We don't cook food; we curate experiences around peak harvest. I believe that true cuisine must be a direct, unadulterated conversation between the kitchen and the farmer.
+
+### Business Reality
+
+Right now:
+* I manage **3** permanent locations (my flagship restaurant, a seasonal pop-up kitchen, and a small wholesale commissary kitchen) and host an average of **6** booked pop-up events per month.
+* My revenue model is highly variable, ranging from $12,000 to $25,000 per week, depending entirely on ingredient availability and the season. Our COGS (Cost of Goods Sold) is often 35-40% of revenue because we pay a premium for hyper-local, specialty items.
+* I manage a team of **14** people: 2 Sous Chefs, 4 Line Cooks, 2 Prep Staff, and 6 part-time, highly skilled seasonal hands.
+* My geographic scope is limited to a **30-mile radius** surrounding the city center, which is crucial because I only work with the farms and ranches within that specific area.
+* My current tech setup is a Frankenstein mix: We use Square for POS, QuickBooks for accounting, Google Sheets for inventory tracking, and a shared Slack channel for emergency scheduling changes.
+
+---
+
+### Primary Failure: Ingredient Variability Costing
+
+The single biggest operational pain point is that our menu cost is not static; it changes daily, sometimes hourly, based on the harvest. If a batch of heirloom tomatoes is perfect and sold to us at $1.50/lb instead of the quoted $2.00/lb, I need to know immediately how that single price fluctuation impacts the entire week's projected menu cost and profit margin. Because I track everything in separate Google Sheets, combining the real-time pricing from three different suppliers (dairy, produce, meat) with the recipe costing and the predicted volume for three different locations takes me at least 4 hours every Monday morning, and if I miss it, I can't accurately predict our week's profitability, forcing me to guess on menu pricing and risking massive waste.
+
+---
+
+### Structural Issue: Supplier Communication and Inventory Drift
+
+I communicate sourcing needs primarily through personalized phone calls and text messages with my dedicated farmers and purveyors. This is unreliable. If I text Farmer Joe that I need 40 pounds of zucchini, and then the Sous Chef texts him later that I need 60 pounds for a special event, I have no centralized record of the total required volume, leading to massive over-ordering or, worse, disappointment when the promised quantity isn't available. My workaround is keeping a physical, bound ledger in the office, which is prone to human error and doesn't integrate with my actual inventory counts.
+
+---
+
+### Structural Issue: Recipe Standardization and Ingredient Usage
+
+Because our menu is seasonal and highly variable, I cannot write static recipes. I write *recipes frameworks*—e.g., "The seasonal vegetable medley should use 1 part celery root, 2 parts local squash, and 0.5 parts radish, cooked until tender." When I train my cooks, we use handwritten prep lists and physical recipe cards. If the recipe calls for "celery root," I have no way of tracking whether the commissary kitchen used the specific type I sourced that morning, or if the main kitchen used a different, less suitable root. This lack of documented standardization leads to inconsistent quality and excessive waste because ingredients are used differently across locations.
+
+---
+
+### Structural Issue: Dynamic Event Capacity and Staff Allocation
+
+We run pop-ups and small private dining events that vary wildly in expected guest count (from 18 to 75 people). Right now, if a pop-up booking is confirmed, I have to manually calculate not only the required ingredients (based on the menu) but also the required labor hours, which means calling the right staff members (e.g., "I need two prep cooks who specialize in butchery for 6 hours, and one line cook for 8 hours"). I track this on a whiteboard and then email the staff the schedule, which is constantly updated with follow-up emails and texts when cancellations or changes happen, making the entire process chaotic and inefficient.
+
+---
+
+### Structural Issue: Ingredient Quality Tracing and Allergen Risk
+
+Since I source everything hyper-locally, I need to know the provenance of every single item—which farm, which lot, and when it was harvested. If a diner has a severe allergy, I cannot simply rely on a generic ingredient label. I need the specific source documentation for the raw product (e.g., "This dairy was sourced from Willow Creek Farm, Lot 3, harvested 7/15/2024"). My current workaround is keeping a folder of physical invoices and handwritten notes for each week's sourcing, which is impossible to cross-reference instantly during a service or an audit.
+
+---
+
+### Psychological Model
+
+I optimize for: **The integrity of the ingredient.** Nothing, absolutely nothing, should compromise the quality or story of the raw material.
+I refuse to compromise on: **The direct relationship with the purveyor.** If the system suggests a substitute vendor that I haven't personally vetted and worked with, I will reject it instantly.
+I avoid: **Any "optimization" that feels like it sacrifices craft for speed.** I hate systems that make me feel like I'm running a factory line instead of a kitchen.
+I evaluate tools by: **How seamlessly they manage variable input costs and inventory flow.** If the system makes me input data that I don't physically track on paper, it's useless to me.
+
+I think like a steward. I don't think like an accountant or an IT manager. My focus is always on the plate and the source. I need a system that acts like an extension of my memory and my supplier relationships, not a corporate oversight committee.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. **[The system must]** allow me to model menu cost changes in real-time when I manually input variable wholesale ingredient prices (e.g., changing the price of local eggs from $4.00/dozen to $4.50/dozen) and instantly see the ripple effect on all related recipes and projected weekly profit margins.
+2. **[The system must]** serve as the single source of truth for ingredient provenance, allowing me to link a specific recipe ingredient (e.g., "Sweet Corn") to a specific, dated vendor lot (e.g., "Riverbend Farms, Lot 2, 7/15/2024") and track its usage across all active menus and events.
+3. **[The system must]** facilitate a centralized, structured communication channel with my vetted suppliers, allowing me to submit a detailed, aggregated sourcing request (e.g., "Need 150 lbs of mixed root vegetables, 40% celery root, 60% parsnip") and receive confirmation and inventory tracking directly within the platform.
+4. **[The system must]** handle complex, multi-location, and multi-day event scheduling, ensuring that when I assign staff to a specific pop-up, the system automatically calculates the required total hours for prep, line, and service, and deducts that labor from my available staff pool.
+5. **[The system must]** allow me to build and manage "recipe frameworks" rather than fixed recipes, enabling me to define ingredient ratios and cooking methods that adapt based on the specific seasonal availability and quantity of sourced ingredients.
+6. **[The system must]** generate comprehensive, auditable reports that track ingredient usage and waste across all three locations, allowing me to cross-reference the physical inventory count against the theoretical usage logged in the system to pinpoint where my cost leaks are happening.
+7. **[The system must]** manage and price menus based on dynamic input costs, allowing me to easily adjust the final selling price of a dish if the cost of a key, high-premium ingredient suddenly rises by more than 15%.

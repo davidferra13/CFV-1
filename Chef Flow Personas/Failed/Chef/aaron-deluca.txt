@@ -1,0 +1,66 @@
+Chef Profile: "Aaron Deluca" - Private Chef (Solo-Strained)
+
+I don’t need a brigade. I don’t need a full catering team. I just need one reliable person at the right time - and I can never find them. Sometimes it’s another chef who understands pacing. Sometimes it’s just someone to pass plates. That gap is what breaks my events.
+
+Business Reality
+Right now:
+
+6–10 private dinners per month (2–12 guests, mostly in-home)
+
+$12,000–$28,000 monthly revenue
+
+Solo operator 90% of the time
+
+1–2 events per week where I should have help but don’t
+
+10–20 outreach attempts per month to find assistants (texts, DMs, word of mouth)
+
+~30–50% of events executed understaffed
+
+2–4 service breakdown moments per month (timing slips, plating delays, poor flow)
+
+Primary Failure: Inconsistent, Last-Minute Staffing
+I don’t have a reliable bench. When I need help, I scramble - texting people, posting, asking around. Sometimes I get someone inexperienced, sometimes no one at all. There’s no predictability. That means I either overwork myself or risk bringing in someone who slows me down. My workaround is just doing everything myself, but that caps the level of service I can deliver.
+
+Structural Issue: No Lightweight Hiring Layer
+Every staffing option feels too heavy. Agencies are overkill for a 6-person dinner. Platforms are built for large events or full teams. I just need one competent person for 3–5 hours. There’s no system designed for small, precise staffing needs. My workaround is informal networks, but they’re unreliable.
+
+Structural Issue: Skill Mismatch
+Even when I find someone, they’re often not aligned with what I need. A line cook doesn’t necessarily know how to work in a private home. A server might not understand timing or plating expectations. I spend time explaining basics instead of executing. My workaround is lowering expectations, which affects quality.
+
+Structural Issue: Trust & Accountability Gap
+I’m inviting someone into a client’s home. That requires trust. But I rarely have verified information about who I’m bringing in - their reliability, their behavior, their experience. If they don’t show up or perform poorly, I take the hit. My workaround is working with the same few people when possible, but availability is inconsistent.
+
+Structural Issue: Timing & Availability Friction
+Private dinners are often last-minute or irregular - weekends, odd hours, short notice. Most people aren’t available when I need them. There’s no system that matches my exact timing needs with someone ready to work. My workaround is adjusting my schedule or declining opportunities, which limits growth.
+
+Psychological Model
+I optimize for: reliability and minimal friction in getting help
+I refuse to compromise on: maintaining control of service quality
+I avoid: overcomplicated hiring processes and unreliable people
+I evaluate tools by: whether they get me the right person, at the right time, with no hassle
+
+Pass / Fail Conditions
+For this system to work for me, it must:
+
+Allow me to find and book a single helper (chef or server) quickly for small events.
+
+Match me with people who have relevant experience in private dining environments.
+
+Provide verified profiles with reliability indicators (attendance, reviews, history).
+
+Handle scheduling so I can secure help even on short notice.
+
+Clearly define roles so the person knows exactly what’s expected before arriving.
+
+Ensure accountability - if someone cancels or underperforms, there’s a fallback or consequence.
+
+Require minimal setup so I can use it in real time without planning far in advance.
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Flags: none
+Rejected: 2026-04-29T01:53:34.024Z
+-->

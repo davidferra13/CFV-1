@@ -1,0 +1,67 @@
+**Public Profile: "Eleanor Vance" - Culinary Explorer (Discerning Guest)**
+
+I am a highly engaged food writer and cultural enthusiast who lives in the major metropolitan areas. I don't just eat out; I research the story behind the plate, the chef's journey, and the sourcing of the ingredients. I view dining experiences as cultural events, and my time is my most valuable commodity. I am looking for a truly unique, curated experience, not just a reservation.
+
+### Business Reality
+
+Right now:
+* I search for or compare **5 to 8** chefs, events, cuisines, or menus per **month**.
+* My typical budget is **$150 to $400** per person, depending on the exclusivity and length of the experience (usually 2 to 3 hours).
+* I prioritize **high-concept storytelling, verifiable quality, and unique venue settings** (e.g., repurposed warehouses, private estates, or specific neighborhood spots).
+* My inquiry context is almost always **event-based bookings**—I am looking for a specific, limited-time experience or a private group booking for 10-20 people.
+* My current discovery setup is a messy mix: I start with Bon Appetit articles or Eater features, then move to Instagram hashtags, cross-reference Google Maps for venue types, and finally, the last mile is a disparate, often outdated, booking form on the chef’s personal website.
+
+---
+
+### Primary Failure: The "Information Fragmentation Tax"
+
+The biggest operational problem is that the journey from discovery to booking is fragmented across 4 or 5 different digital touchpoints, each with different levels of information depth and consistency. I spend hours aggregating basic data points—like confirming the date range, the actual menu structure, and the precise ticket cost—just to determine if an event is worth my time. This inefficiency costs me time, and more importantly, it causes booking fatigue, making me highly likely to abandon a potentially perfect event because the effort required to vet it is too high.
+
+---
+
+### Structural Issue: Disconnected Profile Depth
+
+I have to jump between a chef's personal website (for their philosophy), a ticketing platform (for the price), and an external blog (for reviews) just to build a cohesive picture of the experience. There is no single, authoritative profile that integrates the chef’s narrative, their core culinary philosophy, their current operational capacity, and a detailed, multi-course sample menu with transparent ingredient sourcing. I currently rely on reading scattered, unstructured blog posts and press releases to piece together who the chef actually is and what the experience entails.
+
+---
+
+### Structural Issue: Ambiguous Logistics and Availability
+
+Availability is never simple. A chef might list a general "window" of availability, but the actual capacity, minimum group size, and required deposit structure are only revealed after a tedious email back-and-forth. I end up maintaining a complex spreadsheet that tracks "Potential Event X" vs. "Chef Y" vs. "Venue Z," cross-referencing multiple email threads that confirm a vague date range, making the entire process feel like coordinating a small band rather than booking a meal.
+
+---
+
+### Structural Issue: Non-Standardized Menu and Pricing Clarity
+
+The menu details are almost always presented in a conceptual, aspirational way, rather than a concrete, itemized format. I often have to inquire about substitutions, dietary accommodations (e.g., gluten-free options, specific allergies), and the exact breakdown of the ticket price. Is the $250 ticket price for the food only, or does it include beverage pairings, tax, service charges, and mandatory staffing fees? The lack of a single, clear, itemized cost sheet is a major friction point that forces me to guess and adds suspicion to the overall value.
+
+---
+
+### Structural Issue: Trust Verification and Review Integration
+
+I cannot easily verify the quality or consistency of the experience across multiple bookings. While I can read stellar reviews on Yelp, those reviews are generic and don't help me understand the *operational* details—Did the chef handle a group of 18 people smoothly? Was the pacing of the 3-hour meal appropriate? Is the stated menu actually what was served? I waste time searching for niche, deep-dive reviews that validate the *operational execution* of the event, rather than just the food itself.
+
+---
+
+### Psychological Model
+
+I optimize for: **Narrative quality and curated scarcity.** I want to feel like I am accessing something exclusive and deeply meaningful.
+I refuse to compromise on: **Transparent, itemized costing and logistical clarity.** If I can't confirm the price per person, the dietary options, and the exact duration in one place, I assume the process will be overly complicated.
+I avoid: **Generic booking forms and text message coordination.** I hate having to manage multiple communication channels and copy-pasting information between different platforms.
+I evaluate tools by: **How quickly they synthesize complex, disparate information into a single, trustworthy source of truth.**
+
+I think like an editor: I am constantly cross-referencing sources for consistency and depth. My decision to book is not based on enthusiasm alone, but on the perceived efficiency and the verifiable quality of the entire presentation.
+
+---
+
+### Pass / Fail Conditions
+
+For this system to work for me, it must:
+
+1. The system must **provide a unified "Experience Dossier"** that combines the chef's biography, the full menu, and the required deposit/cancellation policy in a single, scrolling page.
+2. The system must **allow me to filter events by operational constraints** such as "Maximum group size (10-20)," "Cuisine Focus (Hyper-local)," and "Time commitment (Under 3 hours)."
+3. The system must **display an integrated, transparent cost breakdown** that clearly separates the food cost, beverage pairings cost, service charge, and tax for the ticket price.
+4. The system must **showcase verifiable operational reviews** that specifically mention group size, pacing, and logistical execution, not just the taste of the food.
+5. The system must **integrate a real-time availability calendar** that shows not just "open" but "open for private bookings between X and Y dates," allowing me to immediately check my own calendar against the chef’s capacity.
+6. The system must **provide a detailed vendor and sourcing map** that allows me to see the provenance of the key ingredients used in the featured menu items (e.g., "Local farm sourcing from XYZ Ranch").
+7. The system must **support a multi-stage inquiry flow** that guides me from "Initial Interest" to "Capacity Check" to "Custom Proposal," eliminating the need for scattered email threads.

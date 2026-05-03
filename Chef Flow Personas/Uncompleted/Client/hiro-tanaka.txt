@@ -1,0 +1,55 @@
+Client Profile: "Hiro Tanaka" - Staff iOS Engineer, Wallet & Identity Systems (Native-First)
+
+If your payment flow feels like a web form, you’ve already lost me. I expect native OS-level integrations - wallets, autofill, identity - everything handled by the device.
+
+Business Reality
+Right now:
+
+I book 4–6 private dining experiences per year, usually 2–6 guests.
+
+Budget ranges from $1,200 to $5,500.
+
+I expect native interactions - Face ID, Apple Pay, saved identity - no friction.
+
+Dietary needs are minimal but should sync automatically.
+
+Locations vary but should not change UX quality.
+
+I operate almost entirely on iPhone.
+
+I expect platform-native behavior everywhere.
+
+Primary Failure: Non-Native Checkout
+The biggest issue is when payment feels like a generic web experience. I don’t want to type, scroll, or fill forms. The OS already solved identity and payments - use it. If you don’t, your system feels outdated.
+
+Structural Issue: Ignoring Device Capabilities
+Modern devices offer identity, payment, and autofill APIs. Not using them is a design failure. I shouldn’t have to input information the device already knows.
+
+Structural Issue: Fragmented Identity
+I enter my name, email, address repeatedly. That’s unnecessary. Identity should be pulled from the device or account automatically.
+
+Structural Issue: Inconsistent Platform Behavior
+If the experience differs across iOS, Android, and desktop in quality, I lose trust. It should feel native everywhere.
+
+Psychological Model
+I optimize for: native integration and zero input
+I refuse to compromise on: device-level payment and identity
+I avoid: generic, non-native flows
+I evaluate tools by: how well they leverage platform capabilities
+
+Pass / Fail Conditions
+For this system to work for me, it must:
+
+Use native wallet integrations as the default payment method.
+
+Pull identity data (name, email, address) from the device or account automatically.
+
+Support biometric authentication for all payment actions.
+
+Eliminate manual form entry wherever possible.
+
+Maintain consistent native-quality UX across platforms.
+
+Avoid fallback to generic web forms unless absolutely necessary.
+
+Complete the booking flow with minimal taps using device capabilities.

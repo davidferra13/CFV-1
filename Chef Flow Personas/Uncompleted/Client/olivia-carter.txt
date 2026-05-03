@@ -1,0 +1,55 @@
+Client Profile: "Olivia Carter" - Marketing Manager & Social Host (Novice)
+
+I want to do something different for my friends - a cooking class at my house - but I have no idea how this actually works. I don’t know what I’m supposed to provide, what the chef brings, or how pricing is even calculated. I just know I want it to happen.
+
+Business Reality
+Right now:
+
+I’m planning 1–2 cooking class-style events per year, usually 5–8 people. This is more about the experience than just eating.
+
+Budget is loosely $1,000–$3,000, but I don’t know if that’s realistic because I’ve never done this before.
+
+I assume I need to pay a deposit, but I don’t know what’s standard or what I’m paying for - ingredients, instruction, time, cleanup?
+
+Guest expectations vary - some want to actually cook, others just want to watch and drink wine. I don’t know how to balance that.
+
+Dietary restrictions exist but are simple - one vegetarian, maybe one gluten-free. I don’t know how that affects what we can cook.
+
+The event is at my house. I have a normal kitchen, but I don’t know if it’s “good enough” or if I need extra equipment.
+
+I currently just Google things, maybe message a chef on Instagram, and hope for the best. There’s no structure.
+
+Primary Failure: Total Uncertainty
+The biggest problem is that I don’t even know what questions to ask. I don’t know what a cooking class setup requires, so I can’t give good information, and I can’t evaluate what a chef tells me. I’ve had conversations where chefs ask me things like “what equipment do you have?” or “what format do you want?” and I freeze. I don’t want to guess wrong and mess up the event. That uncertainty makes me hesitate to even book.
+
+Structural Issue: No Guided Setup
+There’s no step-by-step guidance for someone doing this for the first time. I’m expected to define the experience - hands-on vs demo, menu complexity, timing - without knowing what those choices actually mean. My workaround is asking vague questions and hoping the chef interprets them correctly, which isn’t reliable.
+
+Structural Issue: Equipment Blind Spots
+I don’t know what equipment is required. Do I need extra cutting boards? Knives? Portable burners? Enough space for everyone to participate? I don’t want to overbuy or underprepare. Right now, I either assume my kitchen is fine or stress about everything that could go wrong.
+
+Structural Issue: Pricing Confusion
+I don’t understand how pricing works for a cooking class. Is it per person? Per hour? Based on the menu? What costs extra? When I get a quote, I can’t tell if it’s fair or if I’m missing something. That makes me hesitant to commit, even if I like the chef.
+
+Psychological Model
+I optimize for: clarity and confidence in what I’m booking
+I refuse to compromise on: not feeling confused or unprepared
+I avoid: guessing, vague answers, and unclear pricing
+I evaluate tools by: how well they guide me through something I’ve never done before
+
+Pass / Fail Conditions
+For this system to work for me, it must:
+
+Provide a guided setup flow that explains each decision (class format, menu style, participation level) in simple terms as I go.
+
+Ask me about my kitchen and automatically assess whether it’s sufficient, including identifying any missing equipment.
+
+Clearly define what the chef will bring versus what I need to provide, without me having to guess.
+
+Offer sample class formats (e.g., hands-on, demo, hybrid) with clear explanations so I can choose confidently.
+
+Generate transparent pricing that shows exactly what I’m paying for (instruction time, ingredients, equipment, cleanup).
+
+Adjust recommendations based on my guest count, dietary needs, and space limitations automatically.
+
+Give me a final, simple plan that confirms everything - what’s happening, what’s needed, and what’s covered - so I feel fully prepared going into the event.

@@ -1,0 +1,49 @@
+Chef Profile: Preeti Mistry - Culinary Maverick
+
+I am Preeti Mistry, a London-based chef known for my pop-up events and supper clubs. My culinary style is a fusion of Indian flavors with a modern twist, drawing inspiration from my heritage and love for experimentation. I manage a thriving operation that includes [50] unique pop-up events and supper club nights annually across [5] different locations in the city. My revenue model focuses on ticket sales, averaging £[10,000] per event, with a team of [8] dedicated staff members supporting me in the kitchen and front-of-house.
+
+My current tech setup consists of a mix of tools, including Google Sheets for menu planning and inventory tracking, WhatsApp groups for communication among my team, and a basic website for bookings. However, I face significant challenges in managing the ephemeral nature of my events, venue scouting, and maintaining controlled access to my experiences while scaling.
+
+Primary Failure: Venue Scouting and Scheduling
+
+The biggest operational problem I face is finding suitable venues that align with my culinary vision and can accommodate the unique requirements of my pop-up events. The process is time-consuming and often leads to last-minute changes or compromises, affecting the overall guest experience. This issue costs me in terms of reputation and potential revenue as I struggle to find the perfect balance between creative freedom and logistical feasibility.
+
+Structural Issue: Inventory Management
+
+While I use Google Sheets for tracking ingredients, it becomes cumbersome when scaling up. The current workaround involves manual calculations and cross-referencing with my recipes, which is prone to errors and takes away valuable time from creativity. This system breaks down during peak seasons when I need to be more agile in sourcing and managing inventory.
+
+Structural Issue: Guest Communication
+
+Managing guest expectations and communication for each event is a challenge. My current workaround involves a combination of text messages and email updates, which can be overwhelming and lead to missed information or confusion. This setup often results in last-minute changes or no-shows, impacting my revenue and reputation.
+
+Structural Issue: Staff Scheduling
+
+As I scale, managing the schedules of my team becomes increasingly complex. My current workaround involves a mix of personal reminders and manual tracking on paper, which is not scalable and can lead to misunderstandings or gaps in coverage during critical events.
+
+Structural Issue: Vendor Relationships
+
+Building and maintaining relationships with vendors is crucial for the success of my pop-up events but managing these relationships manually is time-consuming. My current workaround involves a mix of personal phone calls and emails, which can be inefficient and leave room for miscommunication or missed orders.
+
+I optimize for creating unique dining experiences that reflect my cultural heritage and culinary passion while maintaining a strong connection with my guests. I refuse to compromise on the quality of ingredients and the authenticity of flavors in my dishes. I avoid tech solutions that are too complex or do not directly support my core operations, preferring simplicity and ease of use. I evaluate tools by their ability to streamline my processes, save me time, and enhance the guest experience without compromising on the essence of what I do.
+
+For this system to work for me, it must:
+
+1. Streamline venue scouting with a platform that understands the unique needs of pop-up events.
+2. Integrate inventory management seamlessly with real-time tracking and alerts for critical ingredients.
+3. Provide an efficient communication tool for guest updates that reduces confusion and no-shows.
+4. Offer robust staff scheduling features that allow me to manage my team's availability and workload effectively.
+5. Facilitate easy vendor relationship management, ensuring timely orders and clear communication.
+6. Enhance the overall guest experience without adding unnecessary complexity or compromising on the quality of my dishes.
+7. Be user-friendly and integrate well with my existing tech setup to avoid overwhelming me with new learning curves.
+
+In essence, I need a system that supports the ephemeral nature of my events while providing the tools needed for scaling up successfully. The platform must understand the unique challenges of pop-up chefs like myself and offer solutions that are tailored to our needs without disrupting the creative process or the guest experience.
+
+---
+<!-- GENERATION VALIDATION FAILED (score: 0)
+Missing sections: identity, primary_failure, structural_issues, psychological_model, pass_fail
+Flags: none
+Generated: 2026-04-29T20:15:15.034Z
+Model: hermes3:8b
+Category: popup-supper-club
+Seed: Preeti Mistry
+-->

@@ -1,0 +1,54 @@
+**Chef Profile: Sean Brock - Farm-to-Table Purist (Chef Innovator)**
+I am Sean Brock, renowned chef and founder of a successful farm-to-table pop-up event series. My mission is to bring the freshest, most authentic Southern cuisine directly from farm to table while pushing the boundaries of traditional flavors and ingredients.
+
+Right now:
+I manage 12 farm partnerships and 5 exclusive pop-up events across the Southeast [details]. Revenue model: $400K annual revenue, scaling 15% year-over-year. Team size: 10 full-time chefs, farmers, and event coordinators. Geographic scope: Georgia to Florida to North Carolina.
+
+---
+
+### Primary Failure: Sourcing Consistency
+
+Our entire culinary philosophy revolves around using the freshest, most locally-sourced ingredients available in season. The biggest operational problem we face is inconsistent sourcing from our farm partners. We rely heavily on their yields and quality, but Mother Nature doesn't always cooperate. Last year alone, we lost $50K worth of events due to ingredient shortages that couldn't be replaced on time or at the same quality level. This puts a huge strain on our team to find alternative solutions at the last minute while maintaining the integrity of our menus.
+
+---
+
+### Structural Issue: Event Menu Scaling
+
+Scaling up our event menus across different locations is a major challenge. While we have a digital recipe database, it doesn't account for the varying ingredient availability and quality in each region. Currently, we manually adjust our menus on spreadsheets 2 weeks before each event, but this process takes 20+ hours of work per event and still results in some last-minute changes that disappoint guests. 
+
+---
+
+### Structural Issue: Vendor Relationship Management
+
+We have cultivated deep relationships with 12 farm partners, relying on their expertise to source unique ingredients for our events. However, managing these relationships through a mix of phone calls, emails, and personal visits is time-consuming. We've lost track of communication multiple times, leading to missed harvests or misaligned expectations. A more centralized system would help streamline this process but we haven't found the right fit yet.
+
+---
+
+### Structural Issue: Compliance Tracking
+
+With 5 events across different states and counties, keeping track of local food safety laws and compliance requirements is overwhelming. We currently use a mix of Google Sheets and printed checklists to ensure our chefs are prepared for each event location. This setup leaves room for human error and doesn't guarantee we're covering all legal bases in every region.
+
+---
+
+### Structural Issue: Guest Communication
+
+Our guest communication relies heavily on text messages and emails sent directly from team members' phones. While this keeps things personal, it's not scalable as we grow our events. We need a more efficient way to track RSVPs, manage dietary restrictions, and provide updates without inundating people with too many messages.
+
+### Psychological Model
+
+I optimize for: Sourcing quality ingredients, maintaining menu integrity, minimizing event disruptions.
+I refuse to compromise on: Using locally-sourced ingredients, offering farm-to-table experience, supporting small farmers.
+I avoid: Relying on imported or frozen ingredients, compromising flavor profiles, sacrificing sustainability.
+I evaluate tools by: Ease of use, integration with existing processes, ability to scale.
+
+For this system to work for me, it must:
+
+1. Integrate seamlessly with our digital recipe database
+2. Streamline communication and compliance tracking across all event locations 
+3. Automate menu adjustments based on real-time sourcing data and regional differences
+4. Provide centralized vendor management tools that keep us organized and aligned
+5. Offer guest engagement features to manage RSVPs, dietary restrictions, and updates efficiently
+6. Ensure food safety laws are consistently met in every location
+7. Scale our farm partnerships module without losing the personal touch and deep relationships we've built
+
+The system must also be easy-to-use for my team of chefs who may not be tech-savvy, maintain the integrity of our brand's culinary philosophy, and integrate seamlessly into our existing operational workflows to avoid adding unnecessary complexity.

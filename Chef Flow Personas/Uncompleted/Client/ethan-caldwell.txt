@@ -1,0 +1,55 @@
+Client Profile: "Ethan Caldwell" - Real Estate Developer & Host (Expander)
+
+I understand structure. If it’s a four-course menu, it’s four courses. That’s fine. But I also know what I want, and if I want to add something, I expect to be able to - cleanly, transparently, and without friction. I don’t want to break the system; I want to extend it.
+
+Business Reality
+Right now:
+
+I host 5–8 private dinners per year, typically 6–12 guests. These are polished but relaxed - friends, clients, sometimes both.
+
+Budgets range from $3,000 to $9,000. I’m comfortable going higher if the experience justifies it.
+
+I expect to pay a deposit upfront ($1,000–$3,000), then finalize after details are locked. I’m fine with add-ons increasing the total.
+
+Guest expectations vary - some want a classic progression, others want something memorable or unexpected. I try to balance both.
+
+Dietary restrictions are manageable but important - usually 1–2 per group. I expect them handled without disrupting the overall menu.
+
+Events are mostly at my home or rented properties. Kitchens are solid, but I assume the chef will adapt as needed.
+
+I communicate via text and email. I don’t mind a little back-and-forth, but I don’t want it to drag.
+
+Primary Failure: All-or-Nothing Menus
+The biggest issue is that menus are treated as fixed packages. I’ll get a solid four-course option, but then I’ll want to add something - a canapé, an extra dessert, maybe a mid-course. Instead of that being a simple add-on, it turns into a custom request that slows everything down or gets discouraged entirely. I’m not trying to change the structure - I just want to layer on top of it. When that flexibility isn’t there, the experience feels limited.
+
+Structural Issue: No Add-On Layer
+There’s no clear system for expanding a menu. It’s either “choose this menu” or “request a full custom.” That gap is where I operate. I want to start with a defined structure - three or four courses - and then selectively add elements. Right now, I have to negotiate each addition manually, which creates friction and uncertainty around pricing and feasibility.
+
+Structural Issue: Pricing Ambiguity on Changes
+I’m willing to pay more, but I need to know what “more” means immediately. If I add a course or upgrade a dish, I don’t want to wait hours to find out the new total. That delay kills momentum. Sometimes I hold back on making improvements because I don’t want to trigger a pricing back-and-forth.
+
+Structural Issue: Menu Balance Risk
+When I add items, I don’t always know how it affects the overall flow. Does adding a heavier course make the menu too dense? Does an extra dessert feel excessive? The chef usually knows, but that knowledge isn’t visible to me. So I either overbuild or second-guess good ideas. I need guidance without losing control.
+
+Psychological Model
+I optimize for: structured flexibility and controlled upgrades
+I refuse to compromise on: knowing exactly what I’m getting and what I’m paying for
+I avoid: rigid packages and unclear pricing changes
+I evaluate tools by: how easily I can expand a base plan without breaking it
+
+Pass / Fail Conditions
+For this system to work for me, it must:
+
+Allow me to select a base menu structure (e.g., 3-course, 4-course) and clearly define what that includes.
+
+Provide an “add-on” layer where I can easily include extra dishes, upgrades, or supplemental courses without restarting the process.
+
+Update total pricing instantly as I add or modify items, with clear cost breakdowns for each addition.
+
+Show how changes affect the overall menu flow (e.g., pacing, balance, portioning) so I don’t unintentionally overload the experience.
+
+Preserve dietary accommodations automatically as I expand the menu, ensuring no conflicts are introduced.
+
+Let the chef validate or adjust my additions quickly within the same system, without reverting to manual negotiation.
+
+Produce a final, clear summary that distinguishes between the base menu and all added elements, so there’s no confusion during execution.

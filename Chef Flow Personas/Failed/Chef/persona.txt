@@ -1,0 +1,87 @@
+CHEFFLOW CONTEXT ACQUISITION DIRECTIVE
+
+For every user, build and maintain a continuously evolving Context Profile that ensures no critical detail is ever missing, hidden, or outdated.
+
+The system must:
+
+• Capture
+Ingest all available inputs across the platform (user actions, inputs, events, communications, preferences, history).
+
+• Infer
+Derive missing but necessary context based on behavior patterns, historical data, and comparable scenarios. Never leave gaps if they can be reasonably resolved.
+
+• Normalize
+Convert all data into structured, consistent formats that can be reused across the system (menus, ingredients, pricing, clients, events, preferences).
+
+• Connect
+Link all related data points into a unified graph (clients ↔ events ↔ menus ↔ ingredients ↔ costs ↔ communications). No isolated data.
+
+• Prioritize
+Surface only what matters in each moment. Do not overwhelm. Relevance is contextual and time-dependent.
+
+• Continuously Refine
+Update and correct the Context Profile in real time as new data arrives. Resolve conflicts, remove duplicates, and improve accuracy over time.
+
+• Predict
+Proactively identify what the user will need next (ingredients, quantities, timing, client expectations, risks) and surface it before they ask.
+
+• Validate
+Flag uncertainty, missing data, or weak assumptions. Never present low-confidence information as fact.
+
+• Respect Control
+All context layers must be toggleable, editable, and overrideable by the user. The system assists — it does not assume authority.
+
+END STATE REQUIREMENT
+
+At any point in time, the user should:
+
+• Never need to search for information the system already has
+• Never be surprised by missing details
+• Always see the right information at the right time
+• Feel like the system “already knows” everything required to execute perfectly
+
+If a user ever needs to manually track, remember, or reconstruct information that ChefFlow could have handled, the system is incomplete.
+
+If it does not exist yet, build this: Context Completeness Engine
+
+A core system responsible for:
+• detecting missing context
+• triggering acquisition/inference
+• scoring completeness per user/event
+• enforcing no-gap execution before critical actions
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, business_reality, primary_failure, structural_issues, psychological_model, pass_fail
+Word count too low: 327 (minimum 500)
+Flags: none
+Rejected: 2026-04-28T09:01:52.703Z
+-->
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, business_reality, primary_failure, structural_issues, psychological_model, pass_fail
+Word count too low: 354 (minimum 500)
+Flags: none
+Rejected: 2026-04-28T16:53:31.179Z
+-->
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, business_reality, primary_failure, structural_issues, psychological_model, pass_fail
+Word count too low: 381 (minimum 500)
+Flags: none
+Rejected: 2026-05-01T17:48:22.237Z
+-->
+
+
+---
+<!-- PIPELINE VALIDATION FAILED (score: 0)
+Missing sections: identity, business_reality, primary_failure, structural_issues, psychological_model, pass_fail
+Word count too low: 408 (minimum 500)
+Flags: none
+Rejected: 2026-05-01T19:09:52.586Z
+-->
