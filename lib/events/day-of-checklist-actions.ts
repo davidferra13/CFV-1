@@ -49,17 +49,50 @@ const DEFAULT_FARM_DINNER_CHECKLIST: Omit<ChecklistItem, 'id' | 'event_id' | 'so
 ]
 
 /**
+ * Verify event access (owner or collaborator). Returns owner tenant_id.
+ */
+async function getEventOwnerTenant(
+  db: any,
+  eventId: string,
+  userId: string
+): Promise<string | null> {
+  const { data: ownedEvent } = await db
+    .from('events')
+    .select('tenant_id')
+    .eq('id', eventId)
+    .eq('tenant_id', userId)
+    .maybeSingle()
+
+  if (ownedEvent) return ownedEvent.tenant_id
+
+  const { data: collab } = await db
+    .from('event_collaborators')
+    .select('id, events!inner(tenant_id)')
+    .eq('event_id', eventId)
+    .eq('chef_id', userId)
+    .eq('status', 'accepted')
+    .maybeSingle()
+
+  if (collab) return (collab as any).events?.tenant_id ?? null
+  return null
+}
+
+/**
  * Get the day-of checklist for an event.
+ * Accessible by owner and collaborators.
  */
 export async function getDayOfChecklist(eventId: string): Promise<ChecklistItem[]> {
   const user = await requireChef()
   const db: any = createServerClient()
 
+  const ownerTenantId = await getEventOwnerTenant(db, eventId, user.entityId!)
+  if (!ownerTenantId) return []
+
   const { data } = await db
     .from('event_day_of_checklist')
     .select('*')
     .eq('event_id', eventId)
-    .eq('tenant_id', user.entityId)
+    .eq('tenant_id', ownerTenantId)
     .order('sort_order', { ascending: true })
 
   return data || []
@@ -105,7 +138,7 @@ export async function initializeFarmDinnerChecklist(eventId: string): Promise<{
 }
 
 /**
- * Toggle a checklist item.
+ * Toggle a checklist item. Owner and collaborators can toggle.
  */
 export async function toggleChecklistItem(input: {
   itemId: string
@@ -115,11 +148,14 @@ export async function toggleChecklistItem(input: {
   const user = await requireChef()
   const db: any = createServerClient()
 
+  const ownerTenantId = await getEventOwnerTenant(db, input.eventId, user.entityId!)
+  if (!ownerTenantId) return { success: false }
+
   await db
     .from('event_day_of_checklist')
     .update({ checked: input.checked })
     .eq('id', input.itemId)
-    .eq('tenant_id', user.entityId)
+    .eq('tenant_id', ownerTenantId)
 
   revalidatePath(`/events/${input.eventId}`)
   return { success: true }

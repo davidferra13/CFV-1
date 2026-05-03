@@ -28,24 +28,55 @@ export interface PrepTimeline {
 }
 
 /**
+ * Verify user has access to event (owner or accepted collaborator).
+ * Returns the event's tenant_id (owner) if authorized, null otherwise.
+ */
+async function verifyEventAccess(db: any, eventId: string, userId: string): Promise<string | null> {
+  // Check if owner
+  const { data: ownedEvent } = await db
+    .from('events')
+    .select('tenant_id')
+    .eq('id', eventId)
+    .eq('tenant_id', userId)
+    .maybeSingle()
+
+  if (ownedEvent) return ownedEvent.tenant_id
+
+  // Check if collaborator
+  const { data: collab } = await db
+    .from('event_collaborators')
+    .select('id, events!inner(tenant_id)')
+    .eq('event_id', eventId)
+    .eq('chef_id', userId)
+    .eq('status', 'accepted')
+    .maybeSingle()
+
+  if (collab) return (collab as any).events?.tenant_id ?? null
+  return null
+}
+
+/**
  * Get the prep timeline for an event.
+ * Accessible by event owner and accepted collaborators.
  */
 export async function getPrepTimeline(eventId: string): Promise<PrepTimeline> {
   const user = await requireChef()
   const db: any = createServerClient()
 
+  const ownerTenantId = await verifyEventAccess(db, eventId, user.entityId!)
+  if (!ownerTenantId) return { items: [], serveTime: null, eventDate: null }
+
   const { data: event } = await db
     .from('events')
     .select('serve_time, event_date')
     .eq('id', eventId)
-    .eq('tenant_id', user.entityId)
     .single()
 
   const { data: items } = await db
     .from('event_prep_timeline')
     .select('*')
     .eq('event_id', eventId)
-    .eq('tenant_id', user.entityId)
+    .eq('tenant_id', ownerTenantId)
     .order('minutes_before', { ascending: false })
 
   return {
@@ -89,6 +120,7 @@ export async function addPrepTimelineItem(input: {
 
 /**
  * Toggle completion of a prep timeline item.
+ * Owner and collaborators can toggle items.
  */
 export async function togglePrepItem(input: {
   itemId: string
@@ -98,11 +130,14 @@ export async function togglePrepItem(input: {
   const user = await requireChef()
   const db: any = createServerClient()
 
+  const ownerTenantId = await verifyEventAccess(db, input.eventId, user.entityId!)
+  if (!ownerTenantId) return { success: false, error: 'Access denied' }
+
   const { error } = await db
     .from('event_prep_timeline')
     .update({ completed: input.completed })
     .eq('id', input.itemId)
-    .eq('tenant_id', user.entityId)
+    .eq('tenant_id', ownerTenantId)
 
   if (error) return { success: false, error: 'Failed to update item' }
 
@@ -111,7 +146,7 @@ export async function togglePrepItem(input: {
 }
 
 /**
- * Remove a prep timeline item.
+ * Remove a prep timeline item. Only owner can remove.
  */
 export async function removePrepItem(input: {
   itemId: string

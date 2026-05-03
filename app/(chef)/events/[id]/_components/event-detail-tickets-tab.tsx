@@ -28,6 +28,7 @@ import { CoHostDashboard } from '@/components/tickets/cohost-dashboard'
 import { WeatherAlertPanel } from '@/components/events/weather-alert-panel'
 import { DayOfChecklistPanel } from '@/components/events/day-of-checklist-panel'
 import { PrepTimelinePanel } from '@/components/events/prep-timeline-panel'
+import { broadcastToTicketHolders } from '@/lib/tickets/broadcast-actions'
 
 type Props = {
   activeTab: EventDetailTab
@@ -79,6 +80,12 @@ export function EventDetailTicketsTab({
   const [pastGuestCount, setPastGuestCount] = useState<number | null>(null)
   const [notifySent, setNotifySent] = useState<number | null>(null)
   const [thankYouSent, setThankYouSent] = useState<number | null>(null)
+
+  // Broadcast state
+  const [showBroadcast, setShowBroadcast] = useState(false)
+  const [broadcastSubject, setBroadcastSubject] = useState('')
+  const [broadcastMessage, setBroadcastMessage] = useState('')
+  const [broadcastSent, setBroadcastSent] = useState<number | null>(null)
 
   useEffect(() => {
     getPastGuestCount(eventId)
@@ -314,6 +321,30 @@ export function EventDetailTicketsTab({
         }
       } catch (err: any) {
         setError(err.message || 'Failed to mark no-shows')
+      }
+    })
+  }
+
+  function handleBroadcast() {
+    if (!broadcastSubject.trim() || !broadcastMessage.trim()) return
+    setError(null)
+    startTransition(async () => {
+      try {
+        const result = await broadcastToTicketHolders({
+          eventId,
+          subject: broadcastSubject.trim(),
+          message: broadcastMessage.trim(),
+        })
+        if (!result.success) {
+          setError(result.error || 'Failed to send broadcast')
+        } else {
+          setBroadcastSent(result.sent)
+          setShowBroadcast(false)
+          setBroadcastSubject('')
+          setBroadcastMessage('')
+        }
+      } catch (err: any) {
+        setError(err.message || 'Failed to send broadcast')
       }
     })
   }
@@ -885,6 +916,66 @@ export function EventDetailTicketsTab({
             </div>
           </Card>
         )}
+        {/* Broadcast to Ticket Holders */}
+        {tickets.filter((t) => t.payment_status === 'paid').length > 0 && (
+          <Card className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-white">Message All Guests</p>
+                <p className="text-xs text-stone-400 mt-0.5">
+                  {broadcastSent !== null
+                    ? `Sent to ${broadcastSent} guest${broadcastSent !== 1 ? 's' : ''}`
+                    : 'Send an update to all paid ticket holders'}
+                </p>
+              </div>
+              <Button
+                variant="primary"
+                onClick={() => setShowBroadcast(!showBroadcast)}
+                disabled={isPending || broadcastSent !== null}
+                className="text-xs shrink-0"
+              >
+                {broadcastSent !== null ? 'Sent' : 'Compose'}
+              </Button>
+            </div>
+            {showBroadcast && (
+              <div className="mt-4 space-y-3">
+                <div>
+                  <label className="block text-xs text-stone-400 mb-1">Subject</label>
+                  <input
+                    type="text"
+                    value={broadcastSubject}
+                    onChange={(e) => setBroadcastSubject(e.target.value)}
+                    placeholder="Menu update for Saturday"
+                    className="w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-white placeholder:text-stone-600"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-stone-400 mb-1">Message</label>
+                  <textarea
+                    value={broadcastMessage}
+                    onChange={(e) => setBroadcastMessage(e.target.value)}
+                    placeholder="Quick update for our guests..."
+                    rows={3}
+                    className="w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-white placeholder:text-stone-600 resize-none"
+                  />
+                </div>
+                <div className="flex justify-end gap-2">
+                  <Button variant="ghost" onClick={() => setShowBroadcast(false)}>
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="primary"
+                    onClick={handleBroadcast}
+                    disabled={isPending || !broadcastSubject.trim() || !broadcastMessage.trim()}
+                  >
+                    {isPending ? 'Sending...' : 'Send to All'}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </Card>
+        )}
+
         {/* Past Guest Notifications */}
         {pastGuestCount !== null && pastGuestCount > 0 && (
           <Card className="p-4">
