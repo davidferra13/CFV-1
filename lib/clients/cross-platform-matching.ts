@@ -138,26 +138,54 @@ export async function mergeClients(
     return { success: false, error: 'Client not found' }
   }
 
-  // Move inquiries to kept client
-  await db
-    .from('inquiries')
-    .update({ client_id: keepClientId })
-    .eq('client_id', mergeClientId)
-    .eq('tenant_id', tenantId)
+  // Reassign all client-linked tables to the kept client
+  const tablesToReassign = [
+    'inquiries',
+    'events',
+    'messages',
+    'client_notes',
+    'client_tags',
+    'client_allergy_records',
+    'client_preferences',
+    'loyalty_transactions',
+    'client_referrals',
+    'quotes',
+    'conversations',
+    'follow_up_sends',
+    'client_touchpoint_rules',
+    'ledger_entries',
+  ]
 
-  // Move events to kept client
-  await db
-    .from('events')
-    .update({ client_id: keepClientId })
-    .eq('client_id', mergeClientId)
-    .eq('tenant_id', tenantId)
+  for (const table of tablesToReassign) {
+    try {
+      await db
+        .from(table as any)
+        .update({ client_id: keepClientId })
+        .eq('client_id', mergeClientId)
+        .eq('tenant_id', tenantId)
+    } catch (err) {
+      // Some tables may not exist or may not have tenant_id; try without tenant filter
+      try {
+        await db
+          .from(table as any)
+          .update({ client_id: keepClientId })
+          .eq('client_id', mergeClientId)
+      } catch {
+        console.error(`[mergeClients] Failed to reassign ${table} (non-blocking)`, err)
+      }
+    }
+  }
 
-  // Move messages to kept client
-  await db
-    .from('messages')
-    .update({ client_id: keepClientId })
-    .eq('client_id', mergeClientId)
-    .eq('tenant_id', tenantId)
+  // Also reassign referrer references (where merged client was the referrer)
+  try {
+    await db
+      .from('client_referrals' as any)
+      .update({ referrer_client_id: keepClientId })
+      .eq('referrer_client_id', mergeClientId)
+      .eq('tenant_id', tenantId)
+  } catch {
+    /* non-blocking */
+  }
 
   // Soft-delete the merged client
   await db

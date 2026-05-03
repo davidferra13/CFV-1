@@ -7,6 +7,7 @@ export type TakeoutCategoryId =
   | 'clients'
   | 'events'
   | 'financials'
+  | 'commerce'
   | 'menus'
   | 'documents'
   | 'conversations'
@@ -105,10 +106,31 @@ export const TAKEOUT_CATEGORIES: TakeoutCategory[] = [
     heavyCategory: true,
   },
   {
+    id: 'commerce',
+    label: 'Commerce & POS',
+    description: 'Sales, refunds, register sessions, orders, and dining checks',
+    tables: [
+      { name: 'sales' },
+      { name: 'commerce_refunds' },
+      { name: 'register_sessions' },
+      { name: 'order_queue' },
+      { name: 'commerce_promotions' },
+      { name: 'commerce_dining_checks' },
+      { name: 'sales_tax_remittances' },
+    ],
+    formats: ['json', 'csv'],
+    folder: 'commerce',
+  },
+  {
     id: 'conversations',
     label: 'Conversations',
-    description: 'Client conversation threads and messages',
-    tables: [{ name: 'conversations' }, { name: 'chat_messages' }],
+    description: 'Client conversation threads, messages, and AI chat history',
+    tables: [
+      { name: 'conversations' },
+      { name: 'chat_messages' },
+      { name: 'remy_conversations' },
+      { name: 'remy_messages' },
+    ],
     formats: ['json'],
     folder: 'conversations',
   },

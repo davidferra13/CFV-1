@@ -185,7 +185,12 @@ export async function getClientCommunicationStats(clientId: string): Promise<Com
 
 // ── Note Actions (delegates to existing lib/notes/actions.ts) ────────────────
 
-export async function addCommunicationNote(clientId: string, content: string, pinned = false) {
+export async function addCommunicationNote(
+  clientId: string,
+  content: string,
+  pinned = false,
+  visibility: 'chef_only' | 'shared' = 'chef_only'
+) {
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -197,6 +202,7 @@ export async function addCommunicationNote(clientId: string, content: string, pi
       note_text: content,
       category: 'general',
       pinned,
+      visibility,
       source: 'manual',
     })
     .select()

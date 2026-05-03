@@ -77,6 +77,22 @@ export async function addReferral(data: {
   const db: any = createServerClient()
   const tenantId = user.tenantId!
 
+  // Prevent circular referral: check if referred already refers the referrer
+  if (data.referredClientId) {
+    const { data: reverseRef } = await db
+      .from('client_referrals' as any)
+      .select('id')
+      .eq('tenant_id', tenantId)
+      .eq('referrer_client_id', data.referredClientId)
+      .eq('referred_client_id', data.referringClientId)
+      .limit(1)
+      .maybeSingle()
+
+    if (reverseRef) {
+      throw new Error('Cannot create referral: this would form a circular reference')
+    }
+  }
+
   // Generate a simple referral code
   const code = `REF-${Date.now().toString(36).toUpperCase()}`
 

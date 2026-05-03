@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useEffect } from 'react'
 import { ARCHETYPES } from '@/lib/archetypes/presets'
 import type { ArchetypeId } from '@/lib/archetypes/presets'
 import {
@@ -17,6 +17,34 @@ import {
 } from '@/lib/onboarding/configuration-inputs'
 import { configureWorkspace } from '@/lib/onboarding/apply-configuration'
 
+const STORAGE_KEY = 'chefflow-interview-state'
+
+function loadSavedState(): { screenIndex: number; inputs: Partial<ConfigurationInputs> } | null {
+  try {
+    const raw = sessionStorage.getItem(STORAGE_KEY)
+    if (!raw) return null
+    return JSON.parse(raw)
+  } catch {
+    return null
+  }
+}
+
+function saveState(screenIndex: number, inputs: Partial<ConfigurationInputs>) {
+  try {
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ screenIndex, inputs }))
+  } catch {
+    /* sessionStorage may be unavailable */
+  }
+}
+
+function clearSavedState() {
+  try {
+    sessionStorage.removeItem(STORAGE_KEY)
+  } catch {
+    /* noop */
+  }
+}
+
 type InterviewProps = {
   onComplete: (
     inputs: ConfigurationInputs,
@@ -28,10 +56,16 @@ type InterviewProps = {
 type PartialInputs = Partial<ConfigurationInputs>
 
 export function OnboardingInterview({ onComplete, onSkip }: InterviewProps) {
-  const [screenIndex, setScreenIndex] = useState(0)
-  const [inputs, setInputs] = useState<PartialInputs>({})
+  const saved = loadSavedState()
+  const [screenIndex, setScreenIndex] = useState(saved?.screenIndex ?? 0)
+  const [inputs, setInputs] = useState<PartialInputs>(saved?.inputs ?? {})
   const [isPending, startTransition] = useTransition()
   const [applyError, setApplyError] = useState<string | null>(null)
+
+  // Persist state on change
+  useEffect(() => {
+    saveState(screenIndex, inputs)
+  }, [screenIndex, inputs])
 
   const screen = INTERVIEW_SCREENS[screenIndex]
   const isLastScreen = screenIndex === INTERVIEW_SCREENS.length - 1
@@ -55,6 +89,7 @@ export function OnboardingInterview({ onComplete, onSkip }: InterviewProps) {
     startTransition(async () => {
       try {
         const result = await configureWorkspace(finalInputs)
+        clearSavedState()
         onComplete(finalInputs, result.hints as any)
       } catch (err) {
         console.error('[interview] Failed to configure workspace:', err)
@@ -168,10 +203,19 @@ export function OnboardingInterview({ onComplete, onSkip }: InterviewProps) {
     <div className="min-h-screen flex items-center justify-center bg-stone-950 p-4">
       <div className="w-full max-w-3xl">
         {/* Progress dots */}
-        <div className="flex justify-center gap-2 mb-8">
+        <div
+          role="progressbar"
+          aria-label="Interview progress"
+          aria-valuemin={1}
+          aria-valuemax={INTERVIEW_SCREENS.length}
+          aria-valuenow={screenIndex + 1}
+          aria-valuetext={`Step ${screenIndex + 1} of ${INTERVIEW_SCREENS.length}: ${screen.title}`}
+          className="flex justify-center gap-2 mb-8"
+        >
           {INTERVIEW_SCREENS.map((s, i) => (
             <div
               key={s.key}
+              aria-hidden="true"
               className={`h-2 rounded-full transition-all duration-300 ${
                 i < screenIndex
                   ? 'w-8 bg-amber-500'
@@ -262,6 +306,8 @@ function OptionCard({
   return (
     <button
       type="button"
+      aria-pressed={selected ? 'true' : 'false'}
+      aria-label={label}
       onClick={onClick}
       disabled={disabled}
       className={`
