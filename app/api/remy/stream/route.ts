@@ -550,6 +550,50 @@ export async function POST(req: NextRequest) {
     // we're streaming a response. Released in the finally block.
     acquireInteractiveLock()
 
+    //  COMMAND FAST-PATH: skip Ollama for regex-matched write commands
+    // Formula > AI: if runCommand's regex overrides can handle this message,
+    // execute it directly without waiting for Ollama to classify.
+    // This avoids the 18s model cold-start for obvious commands like
+    // "create a task", "hire Marco", "car is packed", etc.
+    const COMMAND_FAST_REGEX =
+      /^(?:remind me to|add a task|create a task|new task|todo:?|i need to|don't let me forget|note:?|remember (?:that|this)|save (?:this|that)|jot down|write down|log|add|record|track|hire|bring on|onboard|assign|schedule prep|prep block|prep (?:is )?(?:done|finished)|car (?:is )?packed|loaded the car|everything'?s? packed|quote|create (?:a )?quote|add (?:a )?(?:equipment|gear|staff)|spent \$|mark.*done|complete (?:the )?task|make (?:a )?menu|create menu)\b/i
+    if (COMMAND_FAST_REGEX.test(message.trim())) {
+      try {
+        const commandRun = await runCommand(message)
+        if (commandRun.results && commandRun.results.length > 0 && !commandRun.ollamaOffline) {
+          const tasks: RemyTaskResult[] = commandRun.results.map((r) => ({
+            taskId: r.taskId,
+            taskType: r.taskType,
+            tier: r.tier,
+            name: r.name ?? getTaskName(r.taskType),
+            status: r.status === 'running' ? 'done' : (r.status as RemyTaskResult['status']),
+            data: r.data,
+            error: r.error,
+            holdReason: r.holdReason,
+            preview: r.preview,
+          }))
+
+          const text = summarizeTaskResults(tasks)
+          const encoder = new TextEncoder()
+          const stream = new ReadableStream({
+            start(controller) {
+              controller.enqueue(encoder.encode(encodeSSE({ type: 'intent', data: 'command' })))
+              controller.enqueue(encoder.encode(encodeSSE({ type: 'token', data: text })))
+              controller.enqueue(encoder.encode(encodeSSE({ type: 'tasks', data: tasks })))
+              controller.enqueue(encoder.encode(encodeSSE({ type: 'done', data: null })))
+              controller.close()
+            },
+          })
+          releaseInteractiveLock()
+          recordRemyMetric({ category: 'general' } as any).catch(() => {})
+          return new Response(stream, { headers: sseHeaders() })
+        }
+        // If runCommand returned ollamaOffline or empty results, fall through to main path
+      } catch {
+        // Regex matched but runCommand failed; fall through to main path
+      }
+    }
+
     //  MAIN PATH: classify + load context
     // Early scope hint: determine context scope from message text BEFORE classification.
     // For minimal scope (greetings, how-to, short questions), skip 31 Tier 2 DB queries.
@@ -721,8 +765,70 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    //  BRAIN DUMP path
+    if ((classification.intent as string) === 'brain_dump') {
+      try {
+        const { processBrainDump, executePlan } = await import('@/lib/ai/remy-brain-dump-pipeline')
+        const pipelineResult = await processBrainDump(message)
+
+        // Build task results for UI
+        const bdTasks: RemyTaskResult[] = pipelineResult.plan.actions.map((a) => ({
+          taskId: a.id,
+          taskType: a.command,
+          tier: a.tier,
+          name: a.description,
+          status: (a.tier === 1 ? 'done' : 'pending') as RemyTaskResult['status'],
+          data: {
+            inputs: a.inputs,
+            warnings: a.warnings,
+            resolvedEntities: a.resolvedEntities.map((e) => ({
+              type: e.type,
+              name: e.name,
+              confidence: e.confidence,
+            })),
+          },
+        }))
+
+        // Auto-execute Tier 1 actions
+        if (!pipelineResult.needsClarification) {
+          const tier1Actions = pipelineResult.plan.actions.filter((a) => a.tier === 1)
+          for (const a of tier1Actions) a.status = 'approved'
+          if (tier1Actions.length > 0) {
+            const results = await executePlan(pipelineResult.plan)
+            for (const r of results) {
+              const task = bdTasks.find((t) => t.taskId === r.actionId)
+              if (task) {
+                task.status = r.result.success ? 'done' : 'error'
+                if (r.result.error) task.error = r.result.error
+              }
+            }
+          }
+        }
+
+        const encoder = new TextEncoder()
+        const stream = new ReadableStream({
+          start(controller) {
+            controller.enqueue(encoder.encode(encodeSSE({ type: 'intent', data: 'command' })))
+            controller.enqueue(
+              encoder.encode(encodeSSE({ type: 'token', data: pipelineResult.remySummary }))
+            )
+            controller.enqueue(encoder.encode(encodeSSE({ type: 'tasks', data: bdTasks })))
+            controller.enqueue(encoder.encode(encodeSSE({ type: 'done', data: null })))
+            controller.close()
+          },
+        })
+        releaseInteractiveLock()
+        recordRemyMetric({ category: 'general' } as any).catch(() => {})
+        return new Response(stream, { headers: sseHeaders() })
+      } catch (err) {
+        // Fallback: treat as regular command if pipeline fails
+        console.error('[Remy] Brain dump pipeline error, falling back to command:', err)
+        // Fall through to command path
+      }
+    }
+
     //  COMMAND path
-    if (classification.intent === 'command') {
+    if (classification.intent === 'command' || (classification.intent as string) === 'brain_dump') {
       // Multi-step chain detection: split compound commands
       const chainSteps = looksLikeChain(message) ? parseTaskChain(message) : null
 

@@ -61,6 +61,207 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     tierNote: 'ALWAYS tier 2 - chef must review and confirm before saving.',
   },
 
+  // ─── Remy Write Commands (agent-first operating layer) ─────────────────────
+
+  {
+    type: 'event.update',
+    tier: 2,
+    name: 'Update Event',
+    description: 'Update an existing event (date, guest count, location, occasion, notes).',
+    inputSchema:
+      '{ "eventId": "string", "updates": { "event_date?": "string", "guest_count?": "number", "occasion?": "string", "notes?": "string", "location_address?": "string" } }',
+    tierNote: 'ALWAYS tier 2 - chef must confirm changes.',
+  },
+  {
+    type: 'event.transition',
+    tier: 3,
+    name: 'Change Event Status',
+    description:
+      'Transition an event to a new status (draft, proposed, accepted, paid, confirmed, in_progress, completed, cancelled).',
+    inputSchema: '{ "eventId": "string", "toStatus": "string", "notes?": "string" }',
+    tierNote: 'ALWAYS tier 3 - state transitions are significant and affect financial records.',
+  },
+  {
+    type: 'client.create',
+    tier: 2,
+    name: 'Create Client',
+    description:
+      'Create a new client record with name, contact info, dietary restrictions, and allergies.',
+    inputSchema:
+      '{ "fullName": "string", "email?": "string", "phone?": "string", "dietaryRestrictions?": "string[]", "allergies?": "string[]", "vibeNotes?": "string" }',
+    tierNote: 'ALWAYS tier 2 - chef reviews before saving.',
+  },
+  {
+    type: 'client.update',
+    tier: 2,
+    name: 'Update Client',
+    description:
+      'Update an existing client (dietary restrictions, allergies, contact info, notes).',
+    inputSchema:
+      '{ "clientId": "string", "updates": { "dietary_restrictions?": "string[]", "allergies?": "string[]", "vibe_notes?": "string", "phone?": "string", "email?": "string" } }',
+    tierNote: 'ALWAYS tier 2 - allergy updates are safety-critical, always flag them.',
+  },
+  {
+    type: 'todo.create',
+    tier: 1,
+    name: 'Create Task',
+    description: 'Create a new task/todo item.',
+    inputSchema:
+      '{ "title": "string", "dueDate?": "string", "priority?": "high|medium|low", "eventId?": "string", "clientId?": "string" }',
+  },
+  {
+    type: 'todo.complete',
+    tier: 1,
+    name: 'Complete Task',
+    description: 'Mark a task as completed.',
+    inputSchema: '{ "taskId": "string" }',
+  },
+  {
+    type: 'menu.create',
+    tier: 2,
+    name: 'Create Menu',
+    description: 'Create a new menu for an event.',
+    inputSchema: '{ "eventId": "string", "name?": "string", "notes?": "string" }',
+    tierNote: 'ALWAYS tier 2 - chef reviews menu creation.',
+  },
+  {
+    type: 'menu.add_dish',
+    tier: 2,
+    name: 'Add Dish to Menu',
+    description: 'Add a dish to an existing menu. Searches chef recipe book for matches.',
+    inputSchema:
+      '{ "menuId": "string", "dishName": "string", "course?": "string", "recipeId?": "string" }',
+    tierNote: 'ALWAYS tier 2 - menu content is creative work, chef approves.',
+  },
+  {
+    type: 'memory.save',
+    tier: 1,
+    name: 'Save Note',
+    description: 'Save a note or memory for future reference.',
+    inputSchema:
+      '{ "content": "string", "category?": "string", "eventId?": "string", "clientId?": "string" }',
+  },
+  {
+    type: 'expense.create',
+    tier: 2,
+    name: 'Log Expense',
+    description: 'Log a business expense.',
+    inputSchema:
+      '{ "description": "string", "amountCents": "number", "category?": "string", "eventId?": "string", "vendor?": "string" }',
+    tierNote: 'ALWAYS tier 2 - financial records need chef confirmation.',
+  },
+
+  // ─── Staff Write Commands ──────────────────────────────────────────────────
+  {
+    type: 'staff.create',
+    tier: 2,
+    name: 'Add Staff Member',
+    description: 'Add a new staff member to the roster with name, role, and rate.',
+    inputSchema:
+      '{ "name": "string", "role": "sous_chef|kitchen_assistant|service_staff|server|bartender|dishwasher|other", "hourlyRateCents?": "number", "phone?": "string", "email?": "string" }',
+    tierNote: 'ALWAYS tier 2 - chef reviews new team members.',
+  },
+  {
+    type: 'staff.assign',
+    tier: 2,
+    name: 'Assign Staff to Event',
+    description: 'Assign an existing staff member to work an event.',
+    inputSchema:
+      '{ "eventId": "string", "staffMemberId": "string", "roleOverride?": "string", "scheduledHours?": "number", "notes?": "string" }',
+    tierNote: 'ALWAYS tier 2 - staff assignments need chef confirmation.',
+  },
+  {
+    type: 'staff.record_hours',
+    tier: 2,
+    name: 'Record Staff Hours',
+    description: 'Record actual hours worked by a staff member for an event assignment.',
+    inputSchema: '{ "assignmentId": "string", "actualHours": "number" }',
+    tierNote: 'ALWAYS tier 2 - affects payroll calculations.',
+  },
+
+  // ─── Quote Write Commands ────────────────────────────────────────────────
+  {
+    type: 'quote.create',
+    tier: 3,
+    name: 'Create Quote',
+    description: 'Create a new price quote for a client. Requires pricing model and total.',
+    inputSchema:
+      '{ "clientId": "string", "pricingModel": "per_person|flat_rate|custom", "totalQuotedCents": "number", "eventId?": "string", "pricePerPersonCents?": "number", "guestCount?": "number", "depositRequired?": "boolean", "depositPercentage?": "number", "pricingNotes?": "string" }',
+    tierNote: 'ALWAYS tier 3 - financial commitments require explicit approval.',
+  },
+  {
+    type: 'quote.transition',
+    tier: 3,
+    name: 'Send/Accept/Reject Quote',
+    description: 'Change quote status: send to client, mark as accepted, rejected, or expired.',
+    inputSchema: '{ "quoteId": "string", "newStatus": "sent|accepted|rejected|expired" }',
+    tierNote: 'ALWAYS tier 3 - quote transitions are client-facing actions.',
+  },
+
+  // ─── Contract Write Commands ─────────────────────────────────────────────
+  {
+    type: 'contract.generate',
+    tier: 3,
+    name: 'Generate Contract',
+    description:
+      'Generate an event contract from template with auto-filled client and pricing details.',
+    inputSchema: '{ "eventId": "string", "templateId?": "string" }',
+    tierNote: 'ALWAYS tier 3 - contracts are legal documents.',
+  },
+
+  // ─── Prep Write Commands ─────────────────────────────────────────────────
+  {
+    type: 'prep.create_block',
+    tier: 2,
+    name: 'Schedule Prep Block',
+    description:
+      'Block time on the calendar for prep work (shopping, mise en place, cooking, pickup).',
+    inputSchema:
+      '{ "title": "string", "blockDate": "string YYYY-MM-DD", "blockType": "shopping|mise_en_place|cooking|delivery|pickup|other", "eventId?": "string", "startTime?": "string HH:MM", "endTime?": "string HH:MM", "storeName?": "string", "estimatedDurationMinutes?": "number" }',
+    tierNote: 'ALWAYS tier 2 - schedule changes need chef review.',
+  },
+  {
+    type: 'prep.complete_block',
+    tier: 1,
+    name: 'Complete Prep Block',
+    description: 'Mark a scheduled prep block as completed.',
+    inputSchema: '{ "blockId": "string" }',
+  },
+  {
+    type: 'prep.toggle_item',
+    tier: 1,
+    name: 'Check Off Prep Item',
+    description: 'Mark a specific prep item as completed or uncompleted for an event.',
+    inputSchema: '{ "eventId": "string", "itemKey": "string", "completed": "boolean" }',
+  },
+
+  // ─── Packing Write Commands ──────────────────────────────────────────────
+  {
+    type: 'packing.mark_packed',
+    tier: 1,
+    name: 'Mark Car Packed',
+    description: 'Mark that the car is fully packed and ready for an event.',
+    inputSchema: '{ "eventId": "string" }',
+  },
+
+  // ─── Equipment Write Commands ────────────────────────────────────────────
+  {
+    type: 'equipment.create',
+    tier: 2,
+    name: 'Add Equipment',
+    description: 'Add a piece of equipment to the inventory (tools, appliances, cookware).',
+    inputSchema:
+      '{ "name": "string", "category?": "cookware|knives|smallwares|appliances|serving|transport|linen|other", "purchasePriceCents?": "number", "notes?": "string" }',
+    tierNote: 'ALWAYS tier 2 - inventory changes need chef review.',
+  },
+  {
+    type: 'equipment.log_maintenance',
+    tier: 1,
+    name: 'Log Maintenance',
+    description: 'Record that equipment was maintained/serviced today.',
+    inputSchema: '{ "equipmentId": "string", "notes?": "string" }',
+  },
+
   // ─── Remy-expanded tasks ────────────────────────────────────────────────────
 
   {

@@ -232,8 +232,57 @@ const QUESTION_SHAPED_COMMANDS: RegExp[] = [
   /^who('?s| has| is) (the )?(primary|event) contact/i, // "Who's the primary contact for..."
 ]
 
+// ─── Brain Dump Detection ──────────────────────────────────────────────────
+// Detects multi-intent "wall of text" brain dumps that need the pipeline.
+// Triggers when: long message + multiple topic signals present.
+
+const BRAIN_DUMP_TOPIC_SIGNALS = {
+  dateTime:
+    /\b(monday|tuesday|wednesday|thursday|friday|saturday|sunday|tomorrow|tonight|morning|afternoon|evening|january|february|march|april|may|june|july|august|september|october|november|december|\d{1,2}\/\d{1,2}|\d{1,2}(st|nd|rd|th))\b/i,
+  food: /\b(cook|recipe|dish|menu|course|appetizer|main|dessert|salad|soup|steak|chicken|fish|lobster|risotto|pasta|cake|bread|sauce|braise|roast|grill|prep|sear|bake|fry)\b/i,
+  people: /\b(guest|client|wife|husband|daughter|son|family|they|she|he|them|mr|mrs|ms)\b/i,
+  money: /\$\d+|\b(budget|cost|charge|price|per head|per person|deposit|payment|invoice)\b/i,
+  location: /\b(house|estate|venue|kitchen|farm|restaurant|home|address|drive to|travel)\b/i,
+  action:
+    /\b(buy|shop|pick up|order|call|email|send|follow up|prep|pack|schedule|book|confirm|cancel|need to|gotta|gonna|have to|want to|should)\b/i,
+  shopping: /\b(whole foods|trader joe|costco|market|store|grocery|ingredients?)\b/i,
+}
+
+function detectBrainDump(message: string): boolean {
+  const trimmed = message.trim()
+
+  // Must be reasonably long (300+ chars = ~50+ words)
+  if (trimmed.length < 300) return false
+
+  // Count how many distinct topic signals are present
+  let topicCount = 0
+  for (const pattern of Object.values(BRAIN_DUMP_TOPIC_SIGNALS)) {
+    if (pattern.test(trimmed)) topicCount++
+  }
+
+  // 3+ different topic types = brain dump
+  if (topicCount >= 3) return true
+
+  // Explicit brain dump language
+  if (
+    /\b(brain dump|dump everything|here's everything|let me dump|everything about)\b/i.test(trimmed)
+  ) {
+    return true
+  }
+
+  // Very long message (800+ chars) with at least 2 topics
+  if (trimmed.length >= 800 && topicCount >= 2) return true
+
+  return false
+}
+
 function tryDeterministicClassify(message: string): ClassificationResult | null {
   const trimmed = message.trim()
+
+  // Brain dump detection (before command/question - catches multi-intent walls of text)
+  if (detectBrainDump(trimmed)) {
+    return { intent: 'brain_dump' as any, confidence: 0.9 }
+  }
 
   // Question-shaped commands get caught first (they'd false-positive as questions)
   for (const pattern of QUESTION_SHAPED_COMMANDS) {

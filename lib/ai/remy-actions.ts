@@ -1247,6 +1247,72 @@ export async function sendRemyMessage(
       return { text, intent: 'command', tasks }
     }
 
+    // ─── BRAIN DUMP path ──────────────────────────────────────────────
+    if (classification.intent === 'brain_dump') {
+      const { processBrainDump } = await import('@/lib/ai/remy-brain-dump-pipeline')
+
+      try {
+        const pipelineResult = await processBrainDump(userMessage)
+
+        // Build task results for UI display
+        const tasks: RemyTaskResult[] = pipelineResult.plan.actions.map((a) => ({
+          taskId: a.id,
+          taskType: a.command,
+          tier: a.tier,
+          name: a.description,
+          status: a.tier === 1 ? 'done' : 'pending',
+          data: {
+            inputs: a.inputs,
+            warnings: a.warnings,
+            resolvedEntities: a.resolvedEntities.map((e) => ({
+              type: e.type,
+              name: e.name,
+              confidence: e.confidence,
+            })),
+          },
+        }))
+
+        // Auto-execute Tier 1 actions (safe, reversible)
+        if (!pipelineResult.needsClarification) {
+          const { executePlan } = await import('@/lib/ai/remy-brain-dump-pipeline')
+          const tier1Actions = pipelineResult.plan.actions.filter((a) => a.tier === 1)
+          for (const a of tier1Actions) a.status = 'approved'
+
+          if (tier1Actions.length > 0) {
+            const results = await executePlan(pipelineResult.plan)
+            // Update task statuses based on execution
+            for (const r of results) {
+              const task = tasks.find((t) => t.taskId === r.actionId)
+              if (task) {
+                task.status = r.result.success ? 'done' : 'error'
+                if (r.result.error) task.error = r.result.error
+              }
+            }
+          }
+        }
+
+        return {
+          text: pipelineResult.remySummary,
+          intent: 'brain_dump' as any,
+          tasks,
+        }
+      } catch (err) {
+        if (err instanceof OllamaOfflineError) throw err
+        // Fallback: treat as regular command
+        const commandRun = await runCommand(userMessage)
+        const tasks: RemyTaskResult[] = commandRun.results.map((r) => ({
+          taskId: r.taskId,
+          taskType: r.taskType,
+          tier: r.tier,
+          name: r.name ?? getTaskName(r.taskType),
+          status: r.status === 'running' ? 'done' : (r.status as RemyTaskResult['status']),
+          data: r.data,
+          error: r.error,
+        }))
+        return { text: summarizeTaskResults(tasks), intent: 'command', tasks }
+      }
+    }
+
     // ─── MIXED path ───────────────────────────────────────────────────
     if (classification.intent === 'mixed') {
       // Run both paths in parallel

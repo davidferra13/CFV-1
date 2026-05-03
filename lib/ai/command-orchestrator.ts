@@ -2100,6 +2100,42 @@ async function executeSingleTask(
         data = await executeWaitlistStatus()
         break
 
+      // ─── Remy Write Commands (agent-first operating layer) ────────────
+      case 'event.update':
+      case 'event.transition':
+      case 'client.create':
+      case 'client.update':
+      case 'todo.create':
+      case 'todo.complete':
+      case 'menu.create':
+      case 'menu.add_dish':
+      case 'memory.save':
+      case 'expense.create':
+      case 'staff.create':
+      case 'staff.assign':
+      case 'staff.record_hours':
+      case 'quote.create':
+      case 'quote.transition':
+      case 'contract.generate':
+      case 'prep.create_block':
+      case 'prep.complete_block':
+      case 'prep.toggle_item':
+      case 'packing.mark_packed':
+      case 'equipment.create':
+      case 'equipment.log_maintenance': {
+        const { REMY_WRITE_REGISTRY } = await import('@/lib/ai/remy-write-registry')
+        const writeHandler = REMY_WRITE_REGISTRY[task.taskType]
+        if (writeHandler) {
+          const writeResult = await writeHandler.fn(task.inputs)
+          data = writeResult.success
+            ? { ...writeResult.data, _writeAction: true, _tier: writeHandler.tier }
+            : { error: writeResult.error, _writeAction: true, _failed: true }
+        } else {
+          data = { error: `Write command "${task.taskType}" not found in registry` }
+        }
+        break
+      }
+
       default:
         return {
           taskId: task.id,
@@ -2803,6 +2839,440 @@ function tryDeterministicCommandPlan(input: string): CommandPlan | null {
           },
         ],
       }
+    }
+  }
+
+  // 30. Update event: "update the dinner", "change guest count to 10", "move event to Sunday"
+  if (
+    /^(?:update|change|modify|edit|move)\s+(?:the\s+|my\s+)?(?:event|dinner|booking|party)\b/i.test(
+      trimmed
+    ) ||
+    /^(?:change|update|set)\s+(?:the\s+)?(?:guest count|date|time|location|venue)\b/i.test(trimmed)
+  ) {
+    const name = extractName(trimmed)
+    return {
+      rawInput: input,
+      overallConfidence: 0.85,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'event.update',
+          tier: 2,
+          confidence: 0.85,
+          inputs: { text: trimmed, ...(name ? { clientName: name } : {}) },
+          dependsOn: [],
+        },
+      ],
+    }
+  }
+
+  // 31. Create client: "add a client named Sarah", "new client John Smith"
+  if (/^(?:add|create|new)\s+(?:a\s+)?client\b/i.test(trimmed)) {
+    const name = extractName(trimmed)
+    return {
+      rawInput: input,
+      overallConfidence: 0.9,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'client.create',
+          tier: 2,
+          confidence: 0.9,
+          inputs: { text: trimmed, ...(name ? { fullName: name } : {}) },
+          dependsOn: [],
+        },
+      ],
+    }
+  }
+
+  // 32. Update client: "update Sarah's allergies", "add allergy for Johnson"
+  if (
+    /^(?:update|change|modify|edit|add)\b.*\b(?:client|allerg|dietar|restriction|preference|contact)\b/i.test(
+      trimmed
+    ) &&
+    !/^(?:update|change)\s+(?:the\s+|my\s+)?(?:event|dinner|booking)\b/i.test(trimmed)
+  ) {
+    const name = extractName(trimmed)
+    return {
+      rawInput: input,
+      overallConfidence: 0.85,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'client.update',
+          tier: 2,
+          confidence: 0.85,
+          inputs: { text: trimmed, ...(name ? { clientName: name } : {}) },
+          dependsOn: [],
+        },
+      ],
+    }
+  }
+
+  // 33. Create task: "remind me to", "add a task", "todo:", "I need to"
+  if (
+    /^(?:remind me to|add a task|create a task|new task|todo:?|i need to|don't let me forget)\b/i.test(
+      trimmed
+    )
+  ) {
+    return {
+      rawInput: input,
+      overallConfidence: 0.9,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'todo.create',
+          tier: 1,
+          confidence: 0.9,
+          inputs: {
+            title:
+              trimmed
+                .replace(
+                  /^(?:remind me to|add a task|create a task|new task|todo:?|i need to|don't let me forget)\s*:?\s*/i,
+                  ''
+                )
+                .trim() || trimmed,
+          },
+          dependsOn: [],
+        },
+      ],
+    }
+  }
+
+  // 34. Complete task: "mark X done", "complete the task", "finished X"
+  if (
+    /^(?:mark|complete|finish|done with|check off)\b/i.test(trimmed) &&
+    /\b(?:done|complete|finished)\b/i.test(trimmed)
+  ) {
+    return {
+      rawInput: input,
+      overallConfidence: 0.85,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'todo.complete',
+          tier: 1,
+          confidence: 0.85,
+          inputs: { text: trimmed },
+          dependsOn: [],
+        },
+      ],
+    }
+  }
+
+  // 35. Log expense: "log expense", "spent $50 at Whole Foods", "add expense"
+  if (
+    /^(?:log|add|record|track)\s+(?:an?\s+)?expense\b/i.test(trimmed) ||
+    /^spent\s+\$/i.test(trimmed)
+  ) {
+    const dollarMatch = trimmed.match(/\$(\d+(?:\.\d+)?)/i)
+    const amountCents = dollarMatch ? Math.round(parseFloat(dollarMatch[1]) * 100) : 0
+    const vendorMatch = trimmed.match(/\b(?:at|from)\s+(.+?)(?:\s+(?:for|on)\s+|$)/i)
+    const descMatch = trimmed.match(/\b(?:for|on)\s+(.+)$/i)
+    const description =
+      descMatch?.[1] ||
+      trimmed
+        .replace(/^(?:log|add|record|track)\s+(?:an?\s+)?expense\s*:?\s*/i, '')
+        .replace(/^spent\s+\$[\d.]+\s*/i, '')
+        .trim() ||
+      trimmed
+    return {
+      rawInput: input,
+      overallConfidence: 0.9,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'expense.create',
+          tier: 2,
+          confidence: 0.9,
+          inputs: {
+            description,
+            amountCents,
+            ...(vendorMatch?.[1] ? { vendor: vendorMatch[1].trim() } : {}),
+          },
+          dependsOn: [],
+        },
+      ],
+    }
+  }
+
+  // 36. Create menu: "make a menu", "create menu for Saturday dinner"
+  if (/^(?:make|create|build|draft|start)\s+(?:a\s+)?menu\b/i.test(trimmed)) {
+    return {
+      rawInput: input,
+      overallConfidence: 0.9,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'menu.create',
+          tier: 2,
+          confidence: 0.9,
+          inputs: { text: trimmed },
+          dependsOn: [],
+        },
+      ],
+    }
+  }
+
+  // 37. Add dish to menu: "add risotto to the menu", "put Caesar on the menu"
+  if (/\b(?:add|put)\b.*\b(?:to|on)\s+(?:the\s+)?menu\b/i.test(trimmed)) {
+    return {
+      rawInput: input,
+      overallConfidence: 0.9,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'menu.add_dish',
+          tier: 2,
+          confidence: 0.9,
+          inputs: { text: trimmed },
+          dependsOn: [],
+        },
+      ],
+    }
+  }
+
+  // 38. Add staff: "add staff member", "hire Marco as sous chef"
+  if (
+    /^(?:add|hire|bring on|onboard)\s+(?:a\s+)?(?:staff|team|cook|sous|server|bartender|helper)\b/i.test(
+      trimmed
+    ) ||
+    /^(?:add|hire|bring on)\s+[A-Z][a-z]+\s+(?:as|for)\b/i.test(trimmed)
+  ) {
+    const nameMatch = trimmed.match(
+      /(?:add|hire|bring on|onboard)\s+(?:a\s+)?(?:staff\s+(?:member\s+)?)?([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)(?:\s+(?:as|for)\b|$)/
+    )
+    const roleMatch = trimmed.match(/\b(?:as|for)\s+(?:a\s+)?(\w+(?:\s+\w+)?)\s*$/i)
+    return {
+      rawInput: input,
+      overallConfidence: 0.9,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'staff.create',
+          tier: 2,
+          confidence: 0.9,
+          inputs: {
+            name: nameMatch?.[1] || trimmed,
+            role: roleMatch?.[1] || 'other',
+          },
+          dependsOn: [],
+        },
+      ],
+    }
+  }
+
+  // 39. Assign staff: "assign Marco to the Vance dinner", "put Sarah on Saturday's event"
+  if (/^(?:assign|put|add|schedule)\s+[A-Z][a-z]+\s+(?:to|on|for)\b/i.test(trimmed)) {
+    const nameMatch = trimmed.match(
+      /^(?:assign|put|add|schedule)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/i
+    )
+    return {
+      rawInput: input,
+      overallConfidence: 0.85,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'staff.assign',
+          tier: 2,
+          confidence: 0.85,
+          inputs: { text: trimmed, staffName: nameMatch?.[1] },
+          dependsOn: [],
+        },
+      ],
+    }
+  }
+
+  // 40. Record hours: "log 5 hours for Marco", "Marco worked 8 hours"
+  if (
+    /^(?:log|record)\s+\d+\s*(?:hours?|hrs?)\b/i.test(trimmed) ||
+    /\bworked\s+\d+\s*(?:hours?|hrs?)\b/i.test(trimmed)
+  ) {
+    const hoursMatch = trimmed.match(/(\d+(?:\.\d+)?)\s*(?:hours?|hrs?)/i)
+    const nameMatch =
+      trimmed.match(/(?:for|by)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/i) ||
+      trimmed.match(/^([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s+worked/i)
+    return {
+      rawInput: input,
+      overallConfidence: 0.9,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'staff.record_hours',
+          tier: 2,
+          confidence: 0.9,
+          inputs: {
+            text: trimmed,
+            staffName: nameMatch?.[1],
+            actualHours: hoursMatch ? parseFloat(hoursMatch[1]) : undefined,
+          },
+          dependsOn: [],
+        },
+      ],
+    }
+  }
+
+  // 41. Create quote: "quote $150/person for the Vance dinner", "create quote for Johnson"
+  if (
+    /^(?:quote|create\s+(?:a\s+)?quote|send\s+(?:a\s+)?quote|draft\s+(?:a\s+)?quote|proposal)\b/i.test(
+      trimmed
+    )
+  ) {
+    const perPersonMatch = trimmed.match(
+      /\$(\d+(?:\.\d+)?)\s*(?:\/|\s*per\s*)(?:person|head|guest|pp)/i
+    )
+    const flatMatch = !perPersonMatch && trimmed.match(/\$(\d+(?:,\d{3})*(?:\.\d+)?)/i)
+    const nameMatch = trimmed.match(/(?:for)\s+(?:the\s+)?([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/i)
+    return {
+      rawInput: input,
+      overallConfidence: 0.9,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'quote.create',
+          tier: 3,
+          confidence: 0.9,
+          inputs: {
+            text: trimmed,
+            clientName: nameMatch?.[1],
+            ...(perPersonMatch ? { perPersonDollars: parseFloat(perPersonMatch[1]) } : {}),
+            ...(flatMatch ? { totalDollars: parseFloat(flatMatch[1].replace(/,/g, '')) } : {}),
+          },
+          dependsOn: [],
+        },
+      ],
+    }
+  }
+
+  // 42. Prep block: "schedule prep for Thursday", "prep block Thursday 2pm-6pm"
+  if (
+    /^(?:schedule|create|add|plan)\s+(?:a\s+)?prep\b/i.test(trimmed) ||
+    /^prep\s+(?:block|session|time)\b/i.test(trimmed)
+  ) {
+    return {
+      rawInput: input,
+      overallConfidence: 0.9,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'prep.create_block',
+          tier: 2,
+          confidence: 0.9,
+          inputs: { text: trimmed },
+          dependsOn: [],
+        },
+      ],
+    }
+  }
+
+  // 43. Complete prep / check off: "prep done", "finished prep", "check off the braise"
+  if (
+    /^(?:prep|prepping)\s+(?:is\s+)?(?:done|finished|complete)/i.test(trimmed) ||
+    /^(?:finished|completed|done with)\s+(?:the\s+)?prep/i.test(trimmed)
+  ) {
+    return {
+      rawInput: input,
+      overallConfidence: 0.85,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'prep.complete_block',
+          tier: 1,
+          confidence: 0.85,
+          inputs: { text: trimmed },
+          dependsOn: [],
+        },
+      ],
+    }
+  }
+
+  // 44. Car packed: "car is packed", "loaded the car", "everything's packed"
+  if (
+    /\b(?:car|van|truck|vehicle)\s+(?:is\s+)?(?:packed|loaded)\b/i.test(trimmed) ||
+    /^(?:packed|loaded)\s+(?:the\s+)?(?:car|van|truck)\b/i.test(trimmed) ||
+    /^everything(?:'s| is) packed\b/i.test(trimmed)
+  ) {
+    return {
+      rawInput: input,
+      overallConfidence: 0.95,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'packing.mark_packed',
+          tier: 1,
+          confidence: 0.95,
+          inputs: { text: trimmed },
+          dependsOn: [],
+        },
+      ],
+    }
+  }
+
+  // 45. Add equipment: "add equipment", "new equipment: 12qt stockpot"
+  if (/^(?:add|new|log|register)\s+(?:a\s+)?(?:equipment|gear|tool)\b/i.test(trimmed)) {
+    const nameMatch = trimmed.match(/(?:equipment|gear|tool)[:\s]+(.+)/i)
+    return {
+      rawInput: input,
+      overallConfidence: 0.9,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'equipment.create',
+          tier: 2,
+          confidence: 0.9,
+          inputs: { name: nameMatch?.[1]?.trim() || trimmed, text: trimmed },
+          dependsOn: [],
+        },
+      ],
+    }
+  }
+
+  // 46. Log maintenance: "sharpen the knives", "maintenance on the immersion blender"
+  if (
+    /^(?:maintenance|service|sharpen|clean|repair|fix)\b.*\b(?:the|my|on)\b/i.test(trimmed) &&
+    /\b(?:knife|knives|blender|oven|grill|fryer|mixer|smoker|pan|pot|equipment)\b/i.test(trimmed)
+  ) {
+    return {
+      rawInput: input,
+      overallConfidence: 0.85,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'equipment.log_maintenance',
+          tier: 1,
+          confidence: 0.85,
+          inputs: { text: trimmed },
+          dependsOn: [],
+        },
+      ],
+    }
+  }
+
+  // 48. Save note: "note:", "remember that", "save this"
+  if (
+    /^(?:note:?|remember (?:that|this)|save (?:this|that)|jot down|write down)\b/i.test(trimmed)
+  ) {
+    return {
+      rawInput: input,
+      overallConfidence: 0.9,
+      tasks: [
+        {
+          id: 't1',
+          taskType: 'memory.save',
+          tier: 1,
+          confidence: 0.9,
+          inputs: {
+            content:
+              trimmed
+                .replace(
+                  /^(?:note:?\s*|remember (?:that|this)\s+|save (?:this|that)\s+|jot down\s+|write down\s+)/i,
+                  ''
+                )
+                .trim() || trimmed,
+          },
+          dependsOn: [],
+        },
+      ],
     }
   }
 

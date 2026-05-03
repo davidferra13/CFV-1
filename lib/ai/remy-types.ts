@@ -86,7 +86,7 @@ export interface RemyTaskResult {
 
 // ─── Server Response ────────────────────────────────────────────────────────
 
-export type MessageIntent = 'question' | 'command' | 'mixed' | 'memory'
+export type MessageIntent = 'question' | 'command' | 'mixed' | 'memory' | 'brain_dump'
 
 export interface RemyMemoryItem {
   id: string
