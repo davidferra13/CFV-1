@@ -1,6 +1,28 @@
 // Client-side local AI provider abstraction.
-// Runs in the browser, connects directly to user's local Ollama instance.
+// Runs in the browser, connects to Ollama or on-device AICore bridge.
+// On HTTPS: auto-proxies through /api/ollama-proxy to avoid mixed content.
+// On Android (Tauri): GemmaBridge serves Ollama-compatible API on :11435.
 // Future providers: Chrome Prompt API, AI Edge Gallery, WebGPU inference.
+
+/** Port used by GemmaBridge (AICore) on Android Tauri builds */
+export const AICORE_BRIDGE_PORT = 11435
+/** Default Ollama port */
+export const OLLAMA_DEFAULT_PORT = 11434
+
+/**
+ * Resolves the effective Ollama URL for the current environment.
+ * - On HTTP pages: use the configured URL directly (no mixed content issue)
+ * - On HTTPS pages with localhost Ollama: proxy through /api/ollama-proxy
+ * - On HTTPS pages with remote Ollama: proxy through /api/ollama-proxy
+ */
+export function resolveEffectiveOllamaUrl(configuredUrl: string): string {
+  if (typeof window === 'undefined') return configuredUrl
+  const isSecure = window.location.protocol === 'https:'
+  if (!isSecure) return configuredUrl
+  // On HTTPS, all HTTP Ollama calls get blocked by mixed content.
+  // Route through our same-origin proxy instead.
+  return `${window.location.origin}/api/ollama-proxy`
+}
 
 export interface LocalAIProvider {
   name: string
@@ -105,12 +127,15 @@ class ThinkingBlockFilter {
 
 export class OllamaLocalProvider implements LocalAIProvider {
   name = 'ollama'
+  private effectiveUrl: string
 
-  constructor(private url: string) {}
+  constructor(private url: string) {
+    this.effectiveUrl = resolveEffectiveOllamaUrl(url)
+  }
 
   private async resolveModel(model: string, signal?: AbortSignal): Promise<string> {
     try {
-      const res = await fetch(resolveOllamaApiUrl(this.url, 'tags'), { signal })
+      const res = await fetch(resolveOllamaApiUrl(this.effectiveUrl, 'tags'), { signal })
       if (!res.ok) return model
 
       const data = await res.json()
@@ -126,7 +151,7 @@ export class OllamaLocalProvider implements LocalAIProvider {
 
   async detect(): Promise<boolean> {
     try {
-      const res = await fetch(resolveOllamaApiUrl(this.url, 'tags'), {
+      const res = await fetch(resolveOllamaApiUrl(this.effectiveUrl, 'tags'), {
         signal: AbortSignal.timeout(3000),
       })
       return res.ok
@@ -144,7 +169,7 @@ export class OllamaLocalProvider implements LocalAIProvider {
     signal?: AbortSignal
   ): Promise<void> {
     const resolvedModel = await this.resolveModel(model, signal)
-    const res = await fetch(resolveOllamaApiUrl(this.url, 'chat'), {
+    const res = await fetch(resolveOllamaApiUrl(this.effectiveUrl, 'chat'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -197,6 +222,31 @@ export class OllamaLocalProvider implements LocalAIProvider {
       reader.releaseLock()
     }
   }
+}
+
+/**
+ * Auto-detect the best available local AI provider.
+ * Cascade: AICore bridge (Android) -> configured Ollama -> fallback to null.
+ * Returns a ready-to-use provider or null if nothing is available.
+ */
+export async function detectBestProvider(
+  configuredUrl: string
+): Promise<OllamaLocalProvider | null> {
+  if (typeof window === 'undefined') return null
+
+  // 1. Check AICore bridge (Android Tauri app, port 11435)
+  const aicoreBridge = new OllamaLocalProvider(`http://localhost:${AICORE_BRIDGE_PORT}`)
+  if (await aicoreBridge.detect()) {
+    return aicoreBridge
+  }
+
+  // 2. Check configured Ollama (user's setting, handles proxy automatically)
+  const configuredProvider = new OllamaLocalProvider(configuredUrl)
+  if (await configuredProvider.detect()) {
+    return configuredProvider
+  }
+
+  return null
 }
 
 // Future: Chrome Prompt API provider

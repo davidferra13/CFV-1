@@ -40,7 +40,7 @@ import {
   shouldGenerateSummary,
 } from '@/lib/ai/remy-conversation-summary'
 import { saveSummary, getRecentSummaries } from '@/lib/ai/remy-local-storage'
-import { OllamaLocalProvider } from '@/lib/ai/local-ai-provider'
+import { OllamaLocalProvider, detectBestProvider } from '@/lib/ai/local-ai-provider'
 import type {
   RemyMessage,
   RemyTaskResult,
@@ -135,14 +135,13 @@ export function useRemySend(config: UseRemySendConfig) {
   const abortControllerRef = useRef<AbortController | null>(null)
   const router = useRouter()
 
-  // Proactive detect: check local Ollama on mount when enabled (Q28 fix)
+  // Proactive detect: check local AI on mount when enabled (Q28 fix)
+  // Cascade: AICore bridge (Android :11435) -> configured Ollama -> fallback
   useEffect(() => {
     if (!localAi?.enabled) return
-    const provider = new OllamaLocalProvider(localAi.url)
-    provider
-      .detect()
-      .then((ok) => {
-        setLocalAiMode(ok ? 'local' : 'fallback')
+    detectBestProvider(localAi.url)
+      .then((provider) => {
+        setLocalAiMode(provider ? 'local' : 'fallback')
       })
       .catch(() => {
         setLocalAiMode('fallback')
@@ -332,11 +331,11 @@ export function useRemySend(config: UseRemySendConfig) {
           return { handled: true, content: ctx.commandResult, tasks: ctx.tasks }
         }
 
-        // Question or mixed intent with system prompt - stream from local Ollama
+        // Question or mixed intent with system prompt - stream from local AI
+        // Cascade: AICore bridge (Android) -> Ollama -> fallback to server
         if (ctx.systemPrompt && ctx.userMessage) {
-          const provider = new OllamaLocalProvider(localAi.url)
-          const available = await provider.detect()
-          if (!available) {
+          const provider = await detectBestProvider(localAi.url)
+          if (!provider) {
             setLocalAiMode('fallback')
             return { handled: false, fallback: true }
           }
