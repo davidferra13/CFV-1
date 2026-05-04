@@ -1,3 +1,4 @@
+import { unstable_cache } from 'next/cache'
 import { z } from 'zod'
 import {
   getActiveMicroWindows,
@@ -403,6 +404,19 @@ type BuildPublicSeasonalMarketPulseOptions = {
 }
 
 export async function getPublicSeasonalMarketPulse(
+  options: BuildPublicSeasonalMarketPulseOptions = {}
+): Promise<PublicSeasonalMarketPulse> {
+  const scope = options.scope ?? resolvePublicMarketScope()
+  const cacheKey = `seasonal-pulse-${scope.label || 'default'}`
+  const cached = unstable_cache(
+    () => getPublicSeasonalMarketPulseUncached({ ...options, scope }),
+    [cacheKey],
+    { revalidate: 3600, tags: ['seasonal-market-pulse'] }
+  )
+  return cached()
+}
+
+async function getPublicSeasonalMarketPulseUncached(
   options: BuildPublicSeasonalMarketPulseOptions = {}
 ): Promise<PublicSeasonalMarketPulse> {
   const date = options.date ?? new Date()

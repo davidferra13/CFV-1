@@ -328,6 +328,11 @@ const nextConfig = {
         destination: '/privacy',
         permanent: true,
       },
+      {
+        source: '/ingredient',
+        destination: '/',
+        permanent: false,
+      },
     ]
   },
 }

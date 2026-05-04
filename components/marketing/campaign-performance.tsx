@@ -94,8 +94,8 @@ export function CampaignPerformance({ campaigns }: CampaignPerformanceProps) {
                   tick={{ fontSize: 11, fill: '#78716c' }}
                 />
                 <Tooltip
-                  formatter={(value, name) => {
-                    const v = typeof value === 'number' ? value : 0
+                  formatter={(value: unknown, name: unknown) => {
+                    const v = typeof value === 'number' ? value : Number(value ?? 0) || 0
                     const n = typeof name === 'string' ? name : ''
                     if (n === 'Revenue') return [`$${v.toFixed(2)}`, n]
                     return [v, n]

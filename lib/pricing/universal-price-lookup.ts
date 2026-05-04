@@ -18,6 +18,11 @@
 import { db } from '@/lib/db'
 import { sql } from 'drizzle-orm'
 import { WEIGHT_CONVERSIONS, VOLUME_CONVERSIONS } from '@/lib/costing/knowledge'
+import {
+  buildBuyablePriceContract,
+  freshnessDaysFromIso,
+  type BuyablePriceContract,
+} from '@/lib/pricing/buyable-price-contract'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -118,6 +123,9 @@ export interface PriceLookupResult {
 
   /** Product image URL (from Instacart/scraper, if available) */
   image_url: string | null
+
+  /** Trust contract that controls whether this price is safe to treat as buyable locally. */
+  buyable_price: BuyablePriceContract
 }
 
 // ---------------------------------------------------------------------------
@@ -975,6 +983,43 @@ function scopeConfidenceMultiplier(scope: 'local' | 'regional' | 'national'): nu
   return 0.55 // national: 150K stores mapped, price data still expanding
 }
 
+function packageSizeFor(row: ProductPriceRow | undefined): string | null {
+  if (!row) return null
+  if (row.size) return row.size
+  if (row.size_value && row.size_unit) return `${row.size_value} ${row.size_unit}`
+  return null
+}
+
+function contractForLookup(input: {
+  priceCents: number | null
+  confidenceScore: number
+  resolutionTier: LookupResolutionTier
+  dataPoints: number
+  lastUpdated: string | null
+  unit: string | null
+  zipRequested: string | null
+  nearestStoreMiles: number | null
+  sourceLabels: string[]
+  productRow?: ProductPriceRow
+}): BuyablePriceContract {
+  const isLocal = input.resolutionTier === 'zip_local'
+  return buildBuyablePriceContract({
+    priceCents: input.priceCents,
+    confidenceScore: input.confidenceScore,
+    resolutionTier: input.resolutionTier,
+    freshnessDays: freshnessDaysFromIso(input.lastUpdated),
+    dataPoints: input.dataPoints,
+    storeName: isLocal ? (input.productRow?.store_name ?? null) : null,
+    productName: input.productRow?.product_name ?? null,
+    zipRequested: input.zipRequested,
+    distanceMiles: isLocal ? input.nearestStoreMiles : null,
+    observedAt: input.lastUpdated,
+    unit: input.unit,
+    packageSize: packageSizeFor(input.productRow),
+    sourceLabels: input.sourceLabels,
+  })
+}
+
 // ---------------------------------------------------------------------------
 // Main: lookupPrice
 // ---------------------------------------------------------------------------
@@ -1015,6 +1060,17 @@ export async function lookupPrice(query: PriceLookupQuery): Promise<PriceLookupR
     yield: defaultYield,
     source_types: [],
     image_url: null,
+    buyable_price: contractForLookup({
+      priceCents: null,
+      confidenceScore: 0,
+      resolutionTier: 'none',
+      dataPoints: 0,
+      lastUpdated: null,
+      unit: 'each',
+      zipRequested: zipCode || null,
+      nearestStoreMiles: null,
+      sourceLabels: [],
+    }),
   }
 
   /** Map location scope + ZIP presence to an honest resolution tier. */
@@ -1148,6 +1204,8 @@ export async function lookupPrice(query: PriceLookupQuery): Promise<PriceLookupR
       const overallConfidence =
         Math.round(matchConf * locationMultiplier * (Math.min(agg.data_points, 20) / 20) * 100) /
         100
+      const resolutionTier = tierFromScope(locationScope, !!zipCode)
+      const nearestStoreMiles = nearbyStores[0]?.distance_miles ?? null
 
       return {
         matched: true,
@@ -1155,7 +1213,7 @@ export async function lookupPrice(query: PriceLookupQuery): Promise<PriceLookupR
         ingredient_id: match?.id || null,
         match_method: match?.method || 'product_search',
         match_confidence: matchConf,
-        resolution_tier: tierFromScope(locationScope, !!zipCode),
+        resolution_tier: resolutionTier,
         suggestion,
         price_cents: agg.median_cents,
         price_per_unit_cents: agg.median_cents,
@@ -1167,12 +1225,12 @@ export async function lookupPrice(query: PriceLookupQuery): Promise<PriceLookupR
         location: {
           zip_requested: zipCode || null,
           stores_in_area: nearbyStores.length,
-          nearest_store_miles: nearbyStores[0]?.distance_miles ?? null,
+          nearest_store_miles: nearestStoreMiles,
           scope: locationScope,
           coverage_note: buildCoverageNote(
             locationScope,
             nearbyStores.length,
-            nearbyStores[0]?.distance_miles ?? null,
+            nearestStoreMiles,
             zipCode || null
           ),
         },
@@ -1181,6 +1239,18 @@ export async function lookupPrice(query: PriceLookupQuery): Promise<PriceLookupR
         yield: await computeYield(match?.id || null, agg.median_cents),
         source_types: agg.source_types,
         image_url: productPrices.find((p) => p.image_url)?.image_url || null,
+        buyable_price: contractForLookup({
+          priceCents: agg.median_cents,
+          confidenceScore: overallConfidence,
+          resolutionTier,
+          dataPoints: agg.data_points,
+          lastUpdated: agg.last_updated,
+          unit: agg.unit,
+          zipRequested: zipCode || null,
+          nearestStoreMiles,
+          sourceLabels: agg.sources,
+          productRow: productPrices[0],
+        }),
       }
     }
   }
@@ -1254,6 +1324,18 @@ export async function lookupPrice(query: PriceLookupQuery): Promise<PriceLookupR
           yield: await computeYield(match?.id || null, agg.median_cents),
           source_types: agg.source_types,
           image_url: nationalPrices.find((p) => p.image_url)?.image_url || null,
+          buyable_price: contractForLookup({
+            priceCents: agg.median_cents,
+            confidenceScore: overallConfidence,
+            resolutionTier: 'national_median',
+            dataPoints: agg.data_points,
+            lastUpdated: agg.last_updated,
+            unit: agg.unit,
+            zipRequested: zipCode || null,
+            nearestStoreMiles: null,
+            sourceLabels: agg.sources,
+            productRow: nationalPrices[0],
+          }),
         }
       }
     }
@@ -1328,6 +1410,18 @@ export async function lookupPrice(query: PriceLookupQuery): Promise<PriceLookupR
           yield: await computeYield(match?.id || null, agg.median_cents),
           source_types: agg.source_types,
           image_url: nationwidePrices.find((p) => p.image_url)?.image_url || null,
+          buyable_price: contractForLookup({
+            priceCents: agg.median_cents,
+            confidenceScore: overallConfidence,
+            resolutionTier: 'national_median',
+            dataPoints: agg.data_points,
+            lastUpdated: agg.last_updated,
+            unit: agg.unit,
+            zipRequested: null,
+            nearestStoreMiles: null,
+            sourceLabels: agg.sources,
+            productRow: nationwidePrices[0],
+          }),
         }
       }
     }
@@ -1417,6 +1511,17 @@ export async function lookupPrice(query: PriceLookupQuery): Promise<PriceLookupR
       yield: await computeYield(match?.id || null, estimatedCents),
       source_types: [estimationType],
       image_url: null,
+      buyable_price: contractForLookup({
+        priceCents: estimatedCents,
+        confidenceScore: overallConfidence,
+        resolutionTier: 'estimated',
+        dataPoints: 1,
+        lastUpdated: usda.observation_date,
+        unit: usda.unit,
+        zipRequested: zipCode || null,
+        nearestStoreMiles: null,
+        sourceLabels: [estimationSource],
+      }),
     }
   }
 

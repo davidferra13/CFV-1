@@ -37,9 +37,10 @@ export function ForecastChart({ historical, forecast }: ForecastChartProps) {
         <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#78716c' }} />
         <YAxis tickFormatter={formatDollars} tick={{ fontSize: 11, fill: '#78716c' }} />
         <Tooltip
-          formatter={(v) =>
-            typeof v === 'number' && v > 0 ? [`$${(v / 100).toLocaleString()}`, ''] : ['', '']
-          }
+          formatter={(v: unknown) => {
+            const value = typeof v === 'number' ? v : Number(v ?? 0) || 0
+            return value > 0 ? [`$${(value / 100).toLocaleString()}`, ''] : ['', '']
+          }}
         />
         <Legend />
         <Bar dataKey="actual" name="Actual Revenue" fill="#d47530" radius={[4, 4, 0, 0]} />

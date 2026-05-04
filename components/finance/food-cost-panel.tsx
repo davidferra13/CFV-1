@@ -367,7 +367,14 @@ function DishRow({
                   <td className="py-0.5">
                     {ing.name}
                     {!ing.hasCostData && (
-                      <span className="text-amber-500 ml-1" title="No cost data">
+                      <span
+                        className="text-amber-500 ml-1"
+                        title={
+                          ing.costStatus === 'unit_mismatch'
+                            ? 'Price exists, but recipe and price units cannot be converted'
+                            : 'No cost data'
+                        }
+                      >
                         *
                       </span>
                     )}
@@ -385,7 +392,8 @@ function DishRow({
           </table>
           {dish.ingredients.some((i) => !i.hasCostData) && (
             <p className="text-xs text-amber-500/70 mt-1">
-              * Missing cost data. Update ingredient prices for accurate estimates.
+              * Missing usable cost data. Update prices, units, or density values for accurate
+              estimates.
             </p>
           )}
         </div>

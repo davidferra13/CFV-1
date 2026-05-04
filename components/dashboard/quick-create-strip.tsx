@@ -21,7 +21,7 @@ const QUICK_ACTIONS = [
   },
   {
     label: 'Expense',
-    href: '/finance/expenses/new',
+    href: '/expenses/new',
     icon: Receipt,
     color: 'bg-emerald-600 hover:bg-emerald-700',
   },

@@ -51,7 +51,7 @@ export function SourcingWidget() {
   if (totalEntries === 0) {
     return (
       <Link
-        href="/culinary/sourcing"
+        href="/inventory/procurement"
         className="block rounded-lg border border-dashed border-zinc-300 bg-white p-4 text-center transition hover:border-green-400 dark:border-zinc-600 dark:bg-zinc-800"
       >
         <div className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Quality Sourcing</div>
@@ -64,7 +64,7 @@ export function SourcingWidget() {
 
   return (
     <Link
-      href="/culinary/sourcing"
+      href="/inventory/procurement"
       className="block rounded-lg border border-zinc-200 bg-white p-4 transition hover:shadow-sm dark:border-zinc-700 dark:bg-zinc-800"
     >
       <div className="flex items-center justify-between">

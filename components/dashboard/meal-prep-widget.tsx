@@ -46,10 +46,7 @@ export function MealPrepWidget() {
     <div className="rounded-lg border p-4">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-medium text-gray-700">Meal Prep Store</h3>
-        <Link
-          href="/store"
-          className="text-xs text-amber-600 hover:underline"
-        >
+        <Link href="/commerce/storefront" className="text-xs text-amber-600 hover:underline">
           Manage Store
         </Link>
       </div>
