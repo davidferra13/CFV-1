@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { Clock } from '@/components/ui/icons'
-import { SNOOZE_OPTIONS, type SnoozeDuration } from '@/hooks/use-queue-snooze'
+import { SNOOZE_OPTIONS, type SnoozeDuration } from '@/lib/hooks/use-queue-snooze'
 
 interface SnoozePopoverProps {
   onSnooze: (duration: SnoozeDuration) => void
@@ -45,7 +45,7 @@ export function SnoozePopover({ onSnooze }: SnoozePopoverProps) {
 
       {open && (
         <div
-          className="absolute right-0 top-full mt-1 w-44 border border-white/[0.08] rounded-lg shadow-2xl z-50 py-1 animate-[dialog-enter_0.15s_cubic-bezier(0.22,1,0.36,1)]"
+          className="absolute right-0 top-full mt-1 w-44 border border-white/[0.08] rounded-lg shadow-2xl z-float py-1 animate-[dialog-enter_0.15s_cubic-bezier(0.22,1,0.36,1)]"
           style={{
             background: 'rgba(28, 25, 23, 0.9)',
             WebkitBackdropFilter: 'blur(16px) saturate(1.2)',

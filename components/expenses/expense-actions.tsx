@@ -8,7 +8,7 @@ import { Card } from '@/components/ui/card'
 import { Alert } from '@/components/ui/alert'
 import { toast } from 'sonner'
 import { deleteExpense } from '@/lib/expenses/actions'
-import { useDeferredAction } from '@/hooks/use-deferred-action'
+import { useDeferredAction } from '@/lib/hooks/use-deferred-action'
 
 type Props = {
   expenseId: string

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { ConfirmModal } from '@/components/ui/confirm-modal'
 import { toast } from 'sonner'
 import { deleteCampaignTemplate } from '@/lib/marketing/actions'
-import { useDeferredAction } from '@/hooks/use-deferred-action'
+import { useDeferredAction } from '@/lib/hooks/use-deferred-action'
 
 export function TemplateActionsClient({ templateId }: { templateId: string }) {
   const router = useRouter()

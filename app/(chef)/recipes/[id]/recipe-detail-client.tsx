@@ -29,7 +29,7 @@ import { RecipeUsagePanel } from '@/components/recipes/recipe-usage-panel'
 import { RecipeTrackRecordPanel } from '@/components/recipes/recipe-track-record'
 import { PurchaseFeedbackPanel } from '@/components/recipes/purchase-feedback-panel'
 import { trackAction } from '@/lib/ai/remy-activity-tracker'
-import { useDeferredAction } from '@/hooks/use-deferred-action'
+import { useDeferredAction } from '@/lib/hooks/use-deferred-action'
 import { toast } from 'sonner'
 import {
   logProduction,

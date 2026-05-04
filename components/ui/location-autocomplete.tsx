@@ -5,8 +5,8 @@
 
 import React, { useRef, useCallback, useEffect, useState } from 'react'
 import { useJsApiLoader, Autocomplete } from '@react-google-maps/api'
-import { useDeferredGoogleMapsLoader } from '@/hooks/use-deferred-google-maps-loader'
-import { useGoogleMapsAuthFailure } from '@/hooks/use-google-maps-auth-failure'
+import { useDeferredGoogleMapsLoader } from '@/lib/hooks/use-deferred-google-maps-loader'
+import { useGoogleMapsAuthFailure } from '@/lib/hooks/use-google-maps-auth-failure'
 
 const LIBRARIES: ['places'] = ['places']
 

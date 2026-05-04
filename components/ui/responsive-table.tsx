@@ -1,6 +1,6 @@
 'use client'
 
-import { useMediaQuery } from '@/hooks/use-media-query'
+import { useMediaQuery } from '@/lib/hooks/use-media-query'
 
 interface ResponsiveTableProps<T> {
   /** The data array (needed for mobile card rendering) */

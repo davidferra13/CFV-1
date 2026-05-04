@@ -2,7 +2,7 @@ import {
   NEARBY_COLLECTIONS,
   type NearbyCollectionDefinition,
   type NearbyCollectionFilters,
-} from '@/config/nearby-collections'
+} from '@/lib/config/nearby-collections'
 import {
   getBusinessTypeLabel,
   getCuisineLabel,

@@ -8,7 +8,7 @@ import { useJsApiLoader, GoogleMap, MarkerF } from '@react-google-maps/api'
 import {
   useGoogleMapsAuthFailure,
   useGoogleMapsRuntimeFailure,
-} from '@/hooks/use-google-maps-auth-failure'
+} from '@/lib/hooks/use-google-maps-auth-failure'
 
 type LocationMapProps = {
   lat: number

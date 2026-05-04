@@ -11,7 +11,7 @@ import { LocationForm } from '@/components/partners/location-form'
 import { deletePartnerLocation } from '@/lib/partners/actions'
 import { MapPin, ExternalLink, Users, Inbox, CalendarCheck } from '@/components/ui/icons'
 import { toast } from 'sonner'
-import { useDeferredAction } from '@/hooks/use-deferred-action'
+import { useDeferredAction } from '@/lib/hooks/use-deferred-action'
 import {
   CHEF_LOCATION_RELATIONSHIP_LABELS,
   LOCATION_BEST_FOR_LABELS,

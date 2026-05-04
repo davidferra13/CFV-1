@@ -39,7 +39,7 @@ import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ConfirmModal } from '@/components/ui/confirm-modal'
 import { toast } from 'sonner'
-import { useDeferredAction } from '@/hooks/use-deferred-action'
+import { useDeferredAction } from '@/lib/hooks/use-deferred-action'
 
 // ── Reaction config ──────────────────────────────────────────
 export const REACTIONS: Array<{ type: ReactionType; emoji: string; label: string }> = [

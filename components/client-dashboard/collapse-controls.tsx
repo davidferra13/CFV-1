@@ -2,7 +2,7 @@
 
 import { createContext, useContext } from 'react'
 import { ChevronsDownUp, ChevronsUpDown } from '@/components/ui/icons'
-import { useCollapsedWidgets } from '@/hooks/use-collapsed-widgets'
+import { useCollapsedWidgets } from '@/lib/hooks/use-collapsed-widgets'
 import { CLIENT_DASHBOARD_WIDGET_IDS } from '@/lib/client-dashboard/types'
 import { Button } from '@/components/ui/button'
 

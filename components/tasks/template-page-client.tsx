@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button'
 import { ConfirmModal } from '@/components/ui/confirm-modal'
 import { toast } from 'sonner'
 import { TaskTemplateForm } from './task-template-form'
-import { useDeferredAction } from '@/hooks/use-deferred-action'
+import { useDeferredAction } from '@/lib/hooks/use-deferred-action'
 import {
   deleteTemplate,
   generateTasksFromTemplate,

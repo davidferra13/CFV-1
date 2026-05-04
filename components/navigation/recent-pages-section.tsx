@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { ChevronDown, ChevronUp, Clock, X } from '@/components/ui/icons'
-import { useRecentPages, type RecentPage } from '@/hooks/use-recent-pages'
+import { useRecentPages, type RecentPage } from '@/lib/hooks/use-recent-pages'
 import {
   CHEF_RECENT_PAGES_COLLAPSED_STORAGE_KEY,
   CHEF_SHELL_RESET_EVENT,
