@@ -62,7 +62,17 @@ const config: Config = {
         sm: ['0.9375rem', { lineHeight: '1.375rem' }],
       },
       fontFamily: {
-        sans: ['var(--font-inter)', 'system-ui', '-apple-system', 'sans-serif'],
+        sans: [
+          '-apple-system',
+          'BlinkMacSystemFont',
+          '"Segoe UI"',
+          'Roboto',
+          '"Helvetica Neue"',
+          'Arial',
+          'sans-serif',
+          '"Apple Color Emoji"',
+          '"Segoe UI Emoji"',
+        ],
       },
       maxWidth: {
         content: '72rem',

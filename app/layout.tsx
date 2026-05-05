@@ -1,6 +1,5 @@
 ﻿import type { Metadata, Viewport } from 'next'
 import dynamic from 'next/dynamic'
-import { DM_Sans, DM_Serif_Display } from 'next/font/google'
 import { IconProvider } from '@/components/ui/icon-provider'
 import { ColorPaletteProvider, PaletteScript } from '@/components/ui/color-palette-provider'
 import { AppThemeProvider } from '@/components/ui/app-theme-provider'
@@ -11,20 +10,6 @@ const DeferredRootRuntime = dynamic(
   () => import('@/components/runtime/deferred-root-runtime').then((m) => m.DeferredRootRuntime),
   { ssr: false }
 )
-
-// Legacy variable name (was Inter, migrated to DM Sans). Keep as-is to avoid diff noise.
-const dmSans = DM_Sans({
-  subsets: ['latin'],
-  variable: '--font-inter',
-  display: 'swap',
-})
-
-const dmSerif = DM_Serif_Display({
-  subsets: ['latin'],
-  weight: '400',
-  variable: '--font-display',
-  display: 'swap',
-})
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -108,7 +93,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${dmSans.variable} ${dmSerif.variable}`} suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head>
         <PaletteScript />
         {/* Resource hints: preconnect to origins used on first paint */}
@@ -121,7 +106,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {/* Skip to main content link - WCAG 2.1 Level AAA requirement */}
           <a
             href="#main-content"
-            className="sr-only focus:not-sr-only focus:fixed focus:top-0 focus:left-0 focus:z-50 focus:bg-brand-700 focus:text-white focus:px-4 focus:py-2 focus:text-sm focus:font-medium"
+            className="sr-only focus:not-sr-only focus:fixed focus:top-0 focus:left-0 focus:z-chrome focus:bg-brand-700 focus:text-white focus:px-4 focus:py-2 focus:text-sm focus:font-medium"
           >
             Skip to main content
           </a>

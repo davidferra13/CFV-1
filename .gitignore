@@ -56,6 +56,16 @@ scripts/scratch/
 .tsc-dirty
 .hallucination-scan-results.md
 docs/.session-briefing.md
+docs/hermes/health-pulse.jsonl
+docs/hermes/openclaw-freshness.jsonl
+docs/hermes/backup-watchdog.jsonl
+docs/hermes/db-health.jsonl
+docs/hermes/disk-resources.jsonl
+docs/hermes/ALERTS.md
+docs/hermes/alerts-archive-*.md
+docs/hermes/watchdog.log
+docs/hermes/error-scan.md
+docs/hermes/build-state-check.md
 
 # Local file storage
 /storage/

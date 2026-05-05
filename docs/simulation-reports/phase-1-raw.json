@@ -1,0 +1,645 @@
+{
+  "phase": "Phase 1: SELL",
+  "timestamp": "2026-05-03T17:17:58.760Z",
+  "environment": {
+    "server": "http://localhost:3000",
+    "headless": true
+  },
+  "steps": {
+    "createInquiry": {
+      "success": false
+    },
+    "edgeCases": {
+      "tests": [
+        {
+          "name": "direct-event-creation",
+          "pass": false
+        },
+        {
+          "name": "inquiries-list",
+          "pass": false
+        },
+        {
+          "name": "quotes-list",
+          "pass": false
+        },
+        {
+          "name": "rate-card",
+          "pass": false
+        }
+      ]
+    },
+    "pipelineIntegrity": {
+      "checks": [
+        {
+          "name": "inquiry-persisted",
+          "pass": false
+        },
+        {
+          "name": "event-persisted",
+          "pass": false
+        },
+        {
+          "name": "quote-persisted",
+          "pass": false
+        }
+      ]
+    }
+  },
+  "findings": [
+    {
+      "type": "SLOW",
+      "id": "SLOW-inquiries-new-load",
+      "desc": "inquiries-new-load took 4870ms (>3s threshold)",
+      "details": "",
+      "timestamp": "2026-05-03T17:18:03.755Z"
+    },
+    {
+      "type": "BUG",
+      "id": "BUG-INQ-1",
+      "desc": "No channel select found on /inquiries/new",
+      "details": "",
+      "timestamp": "2026-05-03T17:18:03.794Z"
+    },
+    {
+      "type": "BUG",
+      "id": "BUG-FLOW-0",
+      "desc": "Inquiry creation failed, cannot continue pipeline",
+      "details": "",
+      "timestamp": "2026-05-03T17:18:03.794Z"
+    },
+    {
+      "type": "SLOW",
+      "id": "SLOW-edge-inquiry-new",
+      "desc": "edge-inquiry-new took 4849ms (>3s threshold)",
+      "details": "",
+      "timestamp": "2026-05-03T17:18:08.644Z"
+    },
+    {
+      "type": "SLOW",
+      "id": "SLOW-edge-event-new",
+      "desc": "edge-event-new took 4841ms (>3s threshold)",
+      "details": "",
+      "timestamp": "2026-05-03T17:18:18.517Z"
+    },
+    {
+      "type": "DEAD",
+      "id": "DEAD-EDGE-2",
+      "desc": "/events/new has no form elements",
+      "details": "",
+      "timestamp": "2026-05-03T17:18:18.554Z"
+    },
+    {
+      "type": "SLOW",
+      "id": "SLOW-edge-inquiries-list",
+      "desc": "edge-inquiries-list took 4836ms (>3s threshold)",
+      "details": "",
+      "timestamp": "2026-05-03T17:18:23.390Z"
+    },
+    {
+      "type": "DEAD",
+      "id": "DEAD-EDGE-3",
+      "desc": "Inquiries list appears empty or broken",
+      "details": "",
+      "timestamp": "2026-05-03T17:18:53.412Z"
+    },
+    {
+      "type": "SLOW",
+      "id": "SLOW-edge-quotes-list",
+      "desc": "edge-quotes-list took 4835ms (>3s threshold)",
+      "details": "",
+      "timestamp": "2026-05-03T17:18:58.247Z"
+    },
+    {
+      "type": "DEAD",
+      "id": "DEAD-EDGE-4",
+      "desc": "Quotes list appears empty or broken",
+      "details": "",
+      "timestamp": "2026-05-03T17:19:28.273Z"
+    },
+    {
+      "type": "SLOW",
+      "id": "SLOW-edge-rate-card",
+      "desc": "edge-rate-card took 4842ms (>3s threshold)",
+      "details": "",
+      "timestamp": "2026-05-03T17:19:33.115Z"
+    },
+    {
+      "type": "DEAD",
+      "id": "DEAD-EDGE-5",
+      "desc": "Rate card empty or broken",
+      "details": "",
+      "timestamp": "2026-05-03T17:20:03.143Z"
+    },
+    {
+      "type": "SLOW",
+      "id": "SLOW-integrity-inquiries",
+      "desc": "integrity-inquiries took 4842ms (>3s threshold)",
+      "details": "",
+      "timestamp": "2026-05-03T17:20:07.986Z"
+    },
+    {
+      "type": "BUG",
+      "id": "BUG-INTEG-1",
+      "desc": "Test inquiry not found in pipeline list",
+      "details": "",
+      "timestamp": "2026-05-03T17:20:37.988Z"
+    },
+    {
+      "type": "SLOW",
+      "id": "SLOW-integrity-events",
+      "desc": "integrity-events took 8584ms (>3s threshold)",
+      "details": "",
+      "timestamp": "2026-05-03T17:20:46.572Z"
+    },
+    {
+      "type": "CONFUSING",
+      "id": "CONF-INTEG-2",
+      "desc": "Test event not visible in events list (filter issue?)",
+      "details": "",
+      "timestamp": "2026-05-03T17:20:46.576Z"
+    },
+    {
+      "type": "SLOW",
+      "id": "SLOW-integrity-quotes",
+      "desc": "integrity-quotes took 4839ms (>3s threshold)",
+      "details": "",
+      "timestamp": "2026-05-03T17:20:51.415Z"
+    },
+    {
+      "type": "CONFUSING",
+      "id": "CONF-INTEG-3",
+      "desc": "Test quote not visible (may be filtered)",
+      "details": "",
+      "timestamp": "2026-05-03T17:21:21.416Z"
+    }
+  ],
+  "timings": [
+    {
+      "action": "inquiries-new-load",
+      "ms": 4870,
+      "timestamp": "2026-05-03T17:18:03.755Z"
+    },
+    {
+      "action": "edge-inquiry-new",
+      "ms": 4849,
+      "timestamp": "2026-05-03T17:18:08.644Z"
+    },
+    {
+      "action": "edge-event-new",
+      "ms": 4841,
+      "timestamp": "2026-05-03T17:18:18.517Z"
+    },
+    {
+      "action": "edge-inquiries-list",
+      "ms": 4836,
+      "timestamp": "2026-05-03T17:18:23.390Z"
+    },
+    {
+      "action": "edge-quotes-list",
+      "ms": 4835,
+      "timestamp": "2026-05-03T17:18:58.247Z"
+    },
+    {
+      "action": "edge-rate-card",
+      "ms": 4842,
+      "timestamp": "2026-05-03T17:19:33.115Z"
+    },
+    {
+      "action": "integrity-inquiries",
+      "ms": 4842,
+      "timestamp": "2026-05-03T17:20:07.986Z"
+    },
+    {
+      "action": "integrity-events",
+      "ms": 8584,
+      "timestamp": "2026-05-03T17:20:46.572Z"
+    },
+    {
+      "action": "integrity-quotes",
+      "ms": 4839,
+      "timestamp": "2026-05-03T17:20:51.415Z"
+    }
+  ],
+  "consoleErrors": [
+    {
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "url": "http://localhost:3000/inquiries/new"
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "url": "http://localhost:3000/inquiries/new"
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "url": "http://localhost:3000/events/new"
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "url": "http://localhost:3000/inquiries"
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "url": "http://localhost:3000/quotes"
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "url": "http://localhost:3000/rate-card"
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "url": "http://localhost:3000/inquiries"
+    },
+    {
+      "text": "Refused to apply style from 'http://localhost:3000/_next/static/css/d03f2bce0d6e0049.css' because its MIME type ('text/html') is not a supported stylesheet MIME type, and strict MIME checking is enabled.",
+      "url": "http://localhost:3000/events"
+    },
+    {
+      "text": "Refused to apply style from 'http://localhost:3000/_next/static/css/95d23848609af31c.css' because its MIME type ('text/html') is not a supported stylesheet MIME type, and strict MIME checking is enabled.",
+      "url": "http://localhost:3000/events"
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "url": "http://localhost:3000/events"
+    },
+    {
+      "text": "Refused to execute script from 'http://localhost:3000/_next/static/chunks/fd9d1056-88a1015b840e427e.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled.",
+      "url": "http://localhost:3000/events"
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "url": "http://localhost:3000/events"
+    },
+    {
+      "text": "Refused to execute script from 'http://localhost:3000/_next/static/chunks/webpack-5774dd894ba06655.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled.",
+      "url": "http://localhost:3000/events"
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "url": "http://localhost:3000/events"
+    },
+    {
+      "text": "Refused to execute script from 'http://localhost:3000/_next/static/chunks/17537-b2ac7c6cbdcb6ae1.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled.",
+      "url": "http://localhost:3000/events"
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "url": "http://localhost:3000/events"
+    },
+    {
+      "text": "Refused to execute script from 'http://localhost:3000/_next/static/chunks/main-app-c20f29d752752982.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled.",
+      "url": "http://localhost:3000/events"
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "url": "http://localhost:3000/events"
+    },
+    {
+      "text": "Refused to execute script from 'http://localhost:3000/_next/static/chunks/25650-dc86199abea5c0aa.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled.",
+      "url": "http://localhost:3000/events"
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "url": "http://localhost:3000/events"
+    },
+    {
+      "text": "Refused to execute script from 'http://localhost:3000/_next/static/chunks/48512-a7829d8de97062c6.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled.",
+      "url": "http://localhost:3000/events"
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "url": "http://localhost:3000/events"
+    },
+    {
+      "text": "Refused to execute script from 'http://localhost:3000/_next/static/chunks/app/(chef)/events/error-b1bc56e764ac8687.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled.",
+      "url": "http://localhost:3000/events"
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "url": "http://localhost:3000/events"
+    },
+    {
+      "text": "Refused to execute script from 'http://localhost:3000/_next/static/chunks/65878-720d9a2635bd3fe5.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled.",
+      "url": "http://localhost:3000/events"
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "url": "http://localhost:3000/events"
+    },
+    {
+      "text": "Refused to execute script from 'http://localhost:3000/_next/static/chunks/8202-e94161e0ceeca55b.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled.",
+      "url": "http://localhost:3000/events"
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "url": "http://localhost:3000/events"
+    },
+    {
+      "text": "Refused to execute script from 'http://localhost:3000/_next/static/chunks/app/(chef)/events/loading-81d9e802c2fc2b19.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled.",
+      "url": "http://localhost:3000/events"
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "url": "http://localhost:3000/events"
+    },
+    {
+      "text": "Refused to execute script from 'http://localhost:3000/_next/static/chunks/27600-dd01718a796c2e8a.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled.",
+      "url": "http://localhost:3000/events"
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "url": "http://localhost:3000/events"
+    },
+    {
+      "text": "Refused to execute script from 'http://localhost:3000/_next/static/chunks/72972-2adf447b60e44cac.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled.",
+      "url": "http://localhost:3000/events"
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "url": "http://localhost:3000/events"
+    },
+    {
+      "text": "Refused to execute script from 'http://localhost:3000/_next/static/chunks/app/layout-8e19787836f07bbf.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled.",
+      "url": "http://localhost:3000/events"
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "url": "http://localhost:3000/events"
+    },
+    {
+      "text": "Refused to execute script from 'http://localhost:3000/_next/static/chunks/app/error-bc0c2cf2187936cb.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled.",
+      "url": "http://localhost:3000/events"
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "url": "http://localhost:3000/events"
+    },
+    {
+      "text": "Refused to execute script from 'http://localhost:3000/_next/static/chunks/14438-95f054d8fe72ea2c.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled.",
+      "url": "http://localhost:3000/events"
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "url": "http://localhost:3000/events"
+    },
+    {
+      "text": "Refused to execute script from 'http://localhost:3000/_next/static/chunks/58074-dbcbdeb88ef43a47.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled.",
+      "url": "http://localhost:3000/events"
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "url": "http://localhost:3000/events"
+    },
+    {
+      "text": "Refused to execute script from 'http://localhost:3000/_next/static/chunks/60133-8d5c157c6fcdcc39.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled.",
+      "url": "http://localhost:3000/events"
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "url": "http://localhost:3000/events"
+    },
+    {
+      "text": "Refused to execute script from 'http://localhost:3000/_next/static/chunks/app/(chef)/events/page-8abc4cc94dd97e6e.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled.",
+      "url": "http://localhost:3000/events"
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "url": "http://localhost:3000/events"
+    },
+    {
+      "text": "Refused to execute script from 'http://localhost:3000/_next/static/chunks/35924-ca28c50319295c38.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled.",
+      "url": "http://localhost:3000/events"
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "url": "http://localhost:3000/events"
+    },
+    {
+      "text": "Refused to execute script from 'http://localhost:3000/_next/static/chunks/57183-c237f1d3e045eba8.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled.",
+      "url": "http://localhost:3000/events"
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "url": "http://localhost:3000/events"
+    }
+  ],
+  "failedRequests": [
+    {
+      "url": "http://localhost:3000/_next/static/css/d03f2bce0d6e0049.css",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/css/95d23848609af31c.css",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/fd9d1056-88a1015b840e427e.js",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/webpack-5774dd894ba06655.js",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/17537-b2ac7c6cbdcb6ae1.js",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/main-app-c20f29d752752982.js",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/25650-dc86199abea5c0aa.js",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/48512-a7829d8de97062c6.js",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/app/(chef)/events/error-b1bc56e764ac8687.js",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/65878-720d9a2635bd3fe5.js",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/8202-e94161e0ceeca55b.js",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/app/(chef)/events/loading-81d9e802c2fc2b19.js",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/27600-dd01718a796c2e8a.js",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/72972-2adf447b60e44cac.js",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/app/layout-8e19787836f07bbf.js",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/app/error-bc0c2cf2187936cb.js",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/14438-95f054d8fe72ea2c.js",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/58074-dbcbdeb88ef43a47.js",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/60133-8d5c157c6fcdcc39.js",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/app/(chef)/events/page-8abc4cc94dd97e6e.js",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/35924-ca28c50319295c38.js",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/57183-c237f1d3e045eba8.js",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/64493-ba4e90639c6ef66d.js",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/25502-f67ff83c201f5da6.js",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/41102-30e1bfcffdf7a4d1.js",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/70003-2f9a5ffbbeb90c22.js",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/38325-a2695e109d76b26b.js",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/68391-278c660d5175c618.js",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/47764-d77fbc022c3306b2.js",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/72091-8e43953618291827.js",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/58915-9c09421687c3410c.js",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/80377-bddff1c2c1087373.js",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/17356-9d746af1338cc354.js",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/10834-e8321f47226267c4.js",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/6127-bdd063034b1dc5b3.js",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/32109-372297c313733dc4.js",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/app/(admin)/layout-d754387b6b2ed3fe.js",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/app/global-error-cbaefc8dc77b63fe.js",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/57070-acb26a2ed6aedb32.js",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/72372-0ddc1e135d0b8e40.js",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/1479-f45da96c2ca9327f.js",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/56232-48ffda8647faeb0a.js",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/app/(chef)/layout-cc3c1ab0219c641d.js",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/86321-416ea3bf2e570fc5.js",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/99290-7dd2e3304bfc2762.js",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/app/(staff)/layout-3e2c0ebd94f524ab.js",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/app/(chef)/error-3914b0314354805c.js",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/27502-50d250b644f680e7.js",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/chunks/app/(client)/layout-e2816411248dafc8.js",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/_next/static/css/d03f2bce0d6e0049.css",
+      "failure": "net::ERR_ABORTED"
+    }
+  ],
+  "summary": {
+    "total": 18,
+    "OK": 0,
+    "BUG": 3,
+    "SLOW": 9,
+    "DEAD": 4,
+    "CONFUSING": 2,
+    "MISSING": 0,
+    "avgTiming": 5260,
+    "slowest": {
+      "action": "integrity-events",
+      "ms": 8584,
+      "timestamp": "2026-05-03T17:20:46.572Z"
+    },
+    "consoleErrorCount": 202,
+    "failedRequestCount": 100
+  }
+}

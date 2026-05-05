@@ -3,16 +3,34 @@
 @tailwind utilities;
 
 /* ============================================
+   CUSTOM CURSOR - Chef's Knife
+   ============================================ */
+
+* {
+  cursor:
+    url('/cursor-knife.svg') 5 2,
+    default;
+}
+
+/* ============================================
    GLOBAL INTERACTIVE ELEMENT DEFAULTS
    ============================================ */
 
-/* All clickable elements get pointer cursor by default.
-   Browsers set cursor:default on buttons which feels broken to users. */
+/* All clickable elements get knife-pointer cursor by default. */
 button:not(:disabled),
 [role='button']:not(:disabled),
 summary,
-label[for] {
-  cursor: pointer;
+label[for],
+a[href],
+[onclick],
+input[type='submit'],
+input[type='button'],
+input[type='checkbox'],
+input[type='radio'],
+select {
+  cursor:
+    url('/cursor-knife-pointer.svg') 5 2,
+    pointer;
 }
 
 /* ============================================
@@ -209,7 +227,7 @@ html {
   /* Display typeface for page headings - editorial culinary feel */
   h1,
   h2 {
-    font-family: var(--font-display), Georgia, 'Times New Roman', serif;
+    font-family: inherit;
   }
 
   input[type='text'],
@@ -414,7 +432,7 @@ html {
   /* ── Metric Display Typography ── */
   /* Large numbers that should command attention */
   .metric-display {
-    font-family: var(--font-display), Georgia, 'Times New Roman', serif;
+    font-family: inherit;
     font-size: clamp(1.75rem, 3vw, 2.5rem);
     font-weight: 700;
     line-height: 1;
@@ -424,7 +442,7 @@ html {
     font-feature-settings: 'tnum';
   }
   .metric-display-sm {
-    font-family: var(--font-display), Georgia, 'Times New Roman', serif;
+    font-family: inherit;
     font-size: 1.5rem;
     font-weight: 700;
     line-height: 1;
@@ -503,11 +521,7 @@ html {
   --fc-page-bg-color: var(--surface-1);
   --fc-now-indicator-color: rgb(var(--brand-500));
   --fc-list-event-hover-bg-color: var(--surface-2);
-  font-family:
-    var(--font-inter),
-    system-ui,
-    -apple-system,
-    sans-serif;
+  font-family: inherit;
 }
 
 /* Remove default FullCalendar borders that compete with our container */
