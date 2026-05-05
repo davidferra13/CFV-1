@@ -999,7 +999,7 @@ export default async function SettingsPage() {
             description="Email, password, devices, and account management."
             icon="Lock"
             tone="slate"
-            summary={['Account settings', 'System health', 'Incidents']}
+            summary={['Account settings', 'Security', 'System health', 'Incidents']}
           >
             <div className="space-y-3">
               <Link
@@ -1009,6 +1009,15 @@ export default async function SettingsPage() {
                 <p className="font-semibold text-brand-200">Account Settings</p>
                 <p className="text-sm text-brand-400 mt-1">
                   Manage your email, password, devices, and account-level controls.
+                </p>
+              </Link>
+              <Link
+                href="/settings/security"
+                className="block border border-brand-700 rounded-lg p-4 hover:bg-brand-950/50 transition-colors"
+              >
+                <p className="font-medium text-stone-100">Security</p>
+                <p className="text-sm text-stone-500 mt-1">
+                  Multi-factor authentication, session management, and security events.
                 </p>
               </Link>
               <Link

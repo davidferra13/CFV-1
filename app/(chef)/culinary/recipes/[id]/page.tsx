@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { getRecipeById } from '@/lib/recipes/actions'
 import { getPlaceholderImage } from '@/lib/images/placeholder-actions'
 import { formatCurrency } from '@/lib/utils/currency'
+import { PriceBadgeFromFlat } from '@/components/pricing/price-badge'
 import { NutritionLookupPanel } from '@/components/recipes/nutrition-lookup-panel'
 import { FoodPlaceholderImage } from '@/components/ui/food-placeholder-image'
 import { Badge } from '@/components/ui/badge'
@@ -262,10 +263,20 @@ export default async function ChefRecipeDetailPage({ params }: { params: { id: s
                         )}
                       </div>
                       {hasPriceUnit ? (
-                        <span className="text-xs text-stone-400 whitespace-nowrap">
-                          {formatCurrency(ri.ingredient.average_price_cents)}/
-                          {ri.ingredient.default_unit ?? 'unit'}
-                        </span>
+                        <PriceBadgeFromFlat
+                          priceCents={ri.ingredient.average_price_cents}
+                          priceUnit={ri.ingredient.default_unit ?? 'unit'}
+                          store={ri.ingredient.last_price_store}
+                          confidence={
+                            ri.ingredient.last_price_confidence
+                              ? Number(ri.ingredient.last_price_confidence)
+                              : null
+                          }
+                          source={ri.ingredient.last_price_source ?? null}
+                          lastPriceDate={ri.ingredient.last_price_date}
+                          ingredientId={ri.ingredient.id}
+                          compact
+                        />
                       ) : (
                         iName && <IngredientSourcingToggle ingredientName={iName} />
                       )}

@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/table'
 import { formatCurrency } from '@/lib/utils/currency'
 import { PriceAttribution } from '@/components/pricing/price-attribution'
+import { PriceBadgeFromFlat } from '@/components/pricing/price-badge'
 import { PriceFlagBanner } from '@/components/pricing/price-flag-banner'
 import { AddIngredientForm } from '@/components/culinary/add-ingredient-form'
 import { PriceWatchList } from '@/components/pricing/price-watch-list'
@@ -171,7 +172,7 @@ export default async function IngredientsPage() {
                   </TableCell>
                   <TableCell className="text-stone-400 text-sm">
                     {ing.average_price_cents != null || ing.last_price_cents != null ? (
-                      <PriceAttribution
+                      <PriceBadgeFromFlat
                         priceCents={ing.average_price_cents ?? ing.last_price_cents}
                         priceUnit={ing.price_unit ?? ing.default_unit}
                         store={ing.last_price_store}
@@ -182,6 +183,7 @@ export default async function IngredientsPage() {
                         trendPct={ing.price_trend_pct ? Number(ing.price_trend_pct) : null}
                         lastPriceDate={ing.last_price_date}
                         source={ing.last_price_source ?? null}
+                        ingredientId={ing.id}
                         compact
                       />
                     ) : (

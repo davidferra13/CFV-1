@@ -7,7 +7,10 @@ import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getEvents } from '@/lib/events/actions'
-import { EventStatusBadge } from '@/components/events/event-status-badge'
+import {
+  EventStatusBadge,
+  type EventStatus as BadgeEventStatus,
+} from '@/components/events/event-status-badge'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -34,6 +37,8 @@ export const metadata: Metadata = { title: 'Events' }
 const hubSections = [
   {
     heading: 'Planning',
+    accent: 'border-l-sky-500/60',
+    iconTint: 'text-sky-400',
     items: [
       {
         href: '/events/new',
@@ -57,6 +62,8 @@ const hubSections = [
   },
   {
     heading: 'Pipeline',
+    accent: 'border-l-amber-500/60',
+    iconTint: 'text-amber-400',
     items: [
       {
         href: '/inquiries',
@@ -80,6 +87,8 @@ const hubSections = [
   },
   {
     heading: 'Review',
+    accent: 'border-l-emerald-500/60',
+    iconTint: 'text-emerald-400',
     items: [
       {
         href: '/feedback',
@@ -230,37 +239,45 @@ async function EventsList({ status }: { status: EventStatus }) {
             <TableHead>Client</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Next Step</TableHead>
-            <TableHead>Quoted Price</TableHead>
-            <TableHead>Actions</TableHead>
+            <TableHead className="text-right">Quoted</TableHead>
+            <TableHead></TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {events.map((event: any) => {
+          {events.map((event: any, idx: number) => {
             const _td = new Date()
             const isToday =
               event.event_date ===
               `${_td.getFullYear()}-${String(_td.getMonth() + 1).padStart(2, '0')}-${String(_td.getDate()).padStart(2, '0')}`
+            const eventDate = new Date(event.event_date)
+            const rowStripe = idx % 2 === 1 ? 'bg-stone-800/20' : ''
             return (
               <TableRow
                 key={event.id}
-                className={isToday ? 'bg-amber-950/20 border-l-2 border-l-amber-600' : ''}
+                className={`transition-colors hover:bg-stone-800/40 ${
+                  isToday ? 'bg-amber-950/20 border-l-2 border-l-amber-600' : rowStripe
+                }`}
               >
                 <TableCell className="w-14 p-1">
-                  {eventPhotoMap[event.id] && (
+                  {eventPhotoMap[event.id] ? (
                     <Link href={`/events/${event.id}`}>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={eventPhotoMap[event.id]}
                         alt=""
-                        className="h-12 w-12 rounded object-cover"
+                        className="h-12 w-12 rounded-lg object-cover ring-1 ring-stone-700/50"
                       />
                     </Link>
+                  ) : (
+                    <div className="h-12 w-12 rounded-lg bg-stone-800/60 flex items-center justify-center text-stone-600 text-lg">
+                      🍽️
+                    </div>
                   )}
                 </TableCell>
-                <TableCell className="font-medium">
+                <TableCell>
                   <Link
                     href={`/events/${event.id}`}
-                    className="text-brand-600 hover:text-brand-800 hover:underline"
+                    className="text-stone-100 font-semibold hover:text-brand-400 transition-colors"
                   >
                     {event.occasion || 'Untitled Event'}
                   </Link>
@@ -274,9 +291,28 @@ async function EventsList({ status }: { status: EventStatus }) {
                       Sample
                     </Badge>
                   )}
+                  {event.guest_count > 0 && (
+                    <span className="block text-xs text-stone-500 mt-0.5">
+                      {event.guest_count} guest{event.guest_count !== 1 ? 's' : ''}
+                    </span>
+                  )}
                 </TableCell>
-                <TableCell>{format(new Date(event.event_date), 'MMM d, yyyy')}</TableCell>
-                <TableCell>{event.client?.full_name || 'Unknown'}</TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex flex-col items-center justify-center w-10 h-10 rounded-lg bg-stone-800/80 border border-stone-700/50 text-center leading-tight">
+                      <span className="text-[10px] font-semibold uppercase text-stone-500">
+                        {format(eventDate, 'MMM')}
+                      </span>
+                      <span className="text-sm font-bold text-stone-200 -mt-0.5">
+                        {format(eventDate, 'd')}
+                      </span>
+                    </span>
+                    <span className="text-xs text-stone-500">{format(eventDate, 'yyyy')}</span>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <span className="text-stone-300">{event.client?.full_name || 'Unknown'}</span>
+                </TableCell>
                 <TableCell>
                   <EventStatusBadge status={event.status} />
                 </TableCell>
@@ -284,38 +320,40 @@ async function EventsList({ status }: { status: EventStatus }) {
                   {(() => {
                     const next = getEventNextStep(event.status)
                     const staleness = getEventStaleness(event.updated_at, event.status)
-                    if (next.owner === 'done') return null
-                    const dotColor =
+                    if (next.owner === 'done') {
+                      return <span className="text-xs text-stone-600 italic">{next.text}</span>
+                    }
+                    const urgencyClasses =
                       staleness === 'hot'
-                        ? 'bg-red-500 animate-pulse'
+                        ? 'bg-red-950/50 text-red-300 border-red-800/50 animate-pulse'
                         : staleness === 'warm'
-                          ? 'bg-amber-500'
-                          : 'bg-emerald-500'
+                          ? 'bg-amber-950/40 text-amber-300 border-amber-800/40'
+                          : 'bg-stone-800/60 text-stone-300 border-stone-700/40'
                     return (
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={`inline-block h-2 w-2 rounded-full flex-shrink-0 ${dotColor}`}
-                        />
-                        <span className="text-xs text-stone-400">
-                          {next.text}
-                          {next.owner === 'client' && (
-                            <span className="text-stone-600 ml-1">(client)</span>
-                          )}
-                        </span>
-                      </div>
+                      <span
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border text-xs font-medium ${urgencyClasses}`}
+                      >
+                        {staleness === 'hot' && (
+                          <span className="inline-block h-1.5 w-1.5 rounded-full bg-red-400 animate-pulse" />
+                        )}
+                        {next.text}
+                        {next.owner === 'client' && (
+                          <span className="text-stone-500 font-normal ml-0.5">(client)</span>
+                        )}
+                      </span>
                     )
                   })()}
                 </TableCell>
-                <TableCell>
+                <TableCell className="text-right font-medium text-stone-200 tabular-nums">
                   {formatCurrency(event.quoted_price_cents ?? 0, {
                     locale: 'en-US',
                     currency: 'USD',
                   })}
                 </TableCell>
                 <TableCell>
-                  <div className="flex gap-2">
+                  <div className="flex gap-1.5">
                     <Link href={`/events/${event.id}`}>
-                      <Button size="sm" variant="secondary">
+                      <Button size="sm" variant="ghost">
                         View
                       </Button>
                     </Link>
@@ -455,10 +493,12 @@ export default async function EventsPage({
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 stagger-grid">
             {section.items.map((tile) => (
               <Link key={tile.href} href={tile.href} className="group block">
-                <Card className="h-full transition-colors group-hover:border-brand-700/60 group-hover:bg-stone-800/60">
+                <Card interactive className={`h-full border-l-2 ${section.accent}`}>
                   <CardContent className="pt-5 pb-5">
                     <div className="flex items-start gap-3">
-                      <span className="text-2xl leading-none mt-0.5 flex-shrink-0">
+                      <span
+                        className={`text-2xl leading-none mt-0.5 flex-shrink-0 group-hover:scale-110 transition-transform duration-200`}
+                      >
                         {tile.icon}
                       </span>
                       <div>
@@ -483,33 +523,41 @@ export default async function EventsPage({
         </h2>
 
         {/* Status Filter */}
-        <Card className="p-4 mb-4">
-          <div className="flex gap-2 flex-wrap">
-            {(
-              [
-                'all',
-                'draft',
-                'proposed',
-                'accepted',
-                'paid',
-                'confirmed',
-                'in_progress',
-                'completed',
-                'cancelled',
-              ] as EventStatus[]
-            ).map((s) => (
-              <Link key={s} href={`/events?status=${s}`}>
-                <Button size="sm" variant={status === s ? 'primary' : 'secondary'}>
-                  {s === 'all'
-                    ? 'All'
-                    : s === 'in_progress'
-                      ? 'In Progress'
-                      : s.charAt(0).toUpperCase() + s.slice(1)}
-                </Button>
-              </Link>
-            ))}
-          </div>
-        </Card>
+        <div className="flex gap-2 flex-wrap mb-4 px-1">
+          <Link href="/events?status=all">
+            <Button
+              size="sm"
+              variant={status === 'all' ? 'primary' : 'ghost'}
+              className="rounded-full"
+            >
+              All
+            </Button>
+          </Link>
+          {(
+            [
+              'draft',
+              'proposed',
+              'accepted',
+              'paid',
+              'confirmed',
+              'in_progress',
+              'completed',
+              'cancelled',
+            ] as BadgeEventStatus[]
+          ).map((s) => (
+            <Link key={s} href={`/events?status=${s}`}>
+              <span
+                className={`cursor-pointer transition-all duration-150 ${
+                  status === s
+                    ? 'ring-2 ring-brand-500/50 ring-offset-1 ring-offset-stone-900 rounded-full'
+                    : 'opacity-60 hover:opacity-100'
+                }`}
+              >
+                <EventStatusBadge status={s} size="sm" />
+              </span>
+            </Link>
+          ))}
+        </div>
 
         <WidgetErrorBoundary name="Events List">
           <Suspense

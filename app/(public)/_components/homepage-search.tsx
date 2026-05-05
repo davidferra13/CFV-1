@@ -35,7 +35,6 @@ export function HomepageSearch() {
     const params = new URLSearchParams()
     if (location.trim()) params.set('location', location.trim())
     if (serviceType) params.set('serviceType', serviceType)
-    // Pass pre-geocoded coordinates when available (skips server-side geocoding)
     if (locationGeo) {
       params.set('lat', String(locationGeo.lat))
       params.set('lng', String(locationGeo.lng))
@@ -45,14 +44,15 @@ export function HomepageSearch() {
   }
 
   return (
-    <form onSubmit={handleSearch} className="flex flex-col gap-3">
-      <div className="flex flex-1 flex-col overflow-hidden rounded-[1.5rem] border border-stone-700/80 bg-stone-900/90 shadow-[0_20px_40px_rgba(0,0,0,0.22)] backdrop-blur-sm transition-colors focus-within:border-brand-600/60 sm:flex-row">
-        <div className="flex min-h-[54px] flex-1 items-center border-b border-stone-700/60 sm:min-h-0 sm:border-b-0 sm:border-r">
+    <form onSubmit={handleSearch} className="flex flex-col gap-4">
+      <div className="search-premium flex flex-1 flex-col overflow-hidden rounded-2xl border border-stone-700/60 bg-stone-900/70 shadow-[0_24px_48px_rgba(0,0,0,0.2)] backdrop-blur-xl sm:flex-row sm:rounded-[1.5rem]">
+        {/* Location input */}
+        <div className="flex min-h-[56px] flex-1 items-center border-b border-stone-700/40 sm:min-h-[60px] sm:border-b-0 sm:border-r">
           <label htmlFor="homepage-location" className="sr-only">
             Location
           </label>
           <svg
-            className="ml-4 h-5 w-5 shrink-0 text-stone-500"
+            className="ml-5 h-5 w-5 shrink-0 text-brand-400/70"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -77,18 +77,20 @@ export function HomepageSearch() {
             onSelect={handleLocationSelect}
             onChange={(text) => {
               setLocation(text)
-              setLocationGeo(null) // Clear geo when user types manually
+              setLocationGeo(null)
             }}
             placeholder={NEUTRAL_LOCATION_PLACEHOLDER}
-            className="w-full bg-transparent px-3 py-3.5 text-[15px] text-stone-100 placeholder:text-stone-500 focus:outline-none sm:py-4 sm:text-sm"
+            className="w-full bg-transparent px-3 py-4 text-base text-stone-100 placeholder:text-stone-500 focus:outline-none sm:py-5 sm:text-[15px]"
           />
         </div>
-        <div className="flex min-h-[54px] flex-1 items-center sm:min-h-0">
+
+        {/* Service type select */}
+        <div className="flex min-h-[56px] flex-1 items-center sm:min-h-[60px]">
           <label htmlFor="homepage-service" className="sr-only">
             Service type
           </label>
           <svg
-            className="ml-4 h-5 w-5 shrink-0 text-stone-500"
+            className="ml-5 h-5 w-5 shrink-0 text-brand-400/70"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -112,7 +114,7 @@ export function HomepageSearch() {
             aria-label="Service type"
             value={serviceType}
             onChange={(e) => setServiceType(e.target.value)}
-            className="w-full cursor-pointer appearance-none bg-transparent px-3 py-3.5 text-[15px] text-stone-100 focus:outline-none sm:py-4 sm:text-sm"
+            className="w-full cursor-pointer appearance-none bg-transparent px-3 py-4 text-base text-stone-100 focus:outline-none sm:py-5 sm:text-[15px]"
           >
             {SERVICE_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value} className="bg-stone-900 text-stone-100">
@@ -121,7 +123,7 @@ export function HomepageSearch() {
             ))}
           </select>
           <svg
-            className="mr-3 h-4 w-4 text-stone-500 flex-shrink-0 pointer-events-none"
+            className="mr-4 h-4 w-4 flex-shrink-0 pointer-events-none text-stone-500"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -130,15 +132,17 @@ export function HomepageSearch() {
           </svg>
         </div>
       </div>
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+
+      {/* Search button - full width on mobile, aligned right on desktop */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-xs leading-5 text-stone-500">
-          Search by place and service first, then compare live profiles in the directory.
+          Search by place and service, then compare live profiles in the directory.
         </p>
         <button
           type="submit"
-          className="inline-flex h-[52px] items-center justify-center rounded-[1.25rem] border border-stone-700 bg-stone-900/80 px-6 text-sm font-semibold text-stone-100 shadow-lg transition-colors active:scale-[0.97] touch-manipulation hover:border-stone-600 hover:bg-stone-800 sm:h-[52px] sm:min-w-[188px]"
+          className="inline-flex h-14 items-center justify-center rounded-2xl gradient-accent px-8 text-base font-semibold text-white shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl active:scale-[0.97] touch-manipulation sm:min-w-[200px]"
         >
-          <svg className="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="mr-2.5 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"

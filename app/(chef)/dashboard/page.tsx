@@ -67,16 +67,22 @@ import { IntelligenceCards } from './_sections/intelligence-cards'
 import { HeroMetrics } from './_sections/hero-metrics'
 import { getWeeklyPriceBriefing } from '@/lib/openclaw/weekly-briefing-actions'
 import { WeeklyBriefingCard } from '@/components/pricing/weekly-briefing-card'
+import { PriceTrendAlerts } from '@/components/pricing/price-trend-alerts'
+import { getTrendAlerts } from '@/lib/pricing/trend-alerts-actions'
 import { isAdmin } from '@/lib/auth/admin'
 import { CoverageHealthWidget } from '@/components/pricing/coverage-health-widget'
 import { DinnerCirclesSection } from './_sections/dinner-circles-cards'
 import { DashboardSecondaryInsights } from '@/components/dashboard/dashboard-secondary-insights'
 import { QuickNotesSection } from '@/components/dashboard/quick-notes-section'
 import { SeasonalCalendarWidget } from '@/components/dashboard/seasonal-calendar-widget'
+import { DashboardHero, type HeroData } from '@/components/dashboard/dashboard-hero'
+import { DashboardPriorityActions } from '@/components/dashboard/dashboard-priority-actions'
+import { DashboardSection } from '@/components/dashboard/dashboard-section'
 import { getQuickNotes } from '@/lib/quick-notes/actions'
 import { SmartSuggestions, SmartSuggestionsSkeleton } from './_sections/smart-suggestions'
 import { MetricsStrip } from './_sections/metrics-strip'
 import { PulseSummary } from './_sections/pulse-summary'
+import { CurrentFeed } from '@/components/current/current-feed'
 import { OpenClawLiveAlerts } from '@/components/pricing/openclaw-live-alerts'
 import { PipelineStatusBadge } from '@/components/pricing/pipeline-status-badge'
 import { DashboardHeartbeat } from '@/components/dashboard/dashboard-heartbeat'
@@ -1476,6 +1482,55 @@ async function WeeklyBriefingSection() {
   return <WeeklyBriefingCard briefing={briefing} />
 }
 
+async function PriceTrendAlertsSection() {
+  const alerts = await safe('trendAlerts', getTrendAlerts, [])
+  if (alerts.length === 0) return null
+  return <PriceTrendAlerts alerts={alerts} />
+}
+
+/** Compact pricing glance for the Focus section (always visible, not collapsed). */
+async function PriceGlanceSection() {
+  const alerts = await safe('trendAlerts', getTrendAlerts, [])
+  if (alerts.length === 0) return null
+
+  const rising = alerts.filter((a: any) => a.direction === 'rising')
+  const falling = alerts.filter((a: any) => a.direction === 'falling')
+
+  // Show top threat and top opportunity only
+  const topThreat = rising[0]
+  const topOpp = falling[0]
+
+  if (!topThreat && !topOpp) return null
+
+  return (
+    <div className="flex flex-wrap items-center gap-3 text-xs">
+      <span className="text-stone-500 font-medium uppercase tracking-wide">Prices</span>
+      {topThreat && (
+        <span className="inline-flex items-center gap-1 bg-red-950/30 border border-red-900/30 rounded-full px-2.5 py-1">
+          <span className="text-red-400">{'\u2191'}</span>
+          <span className="text-stone-300">{topThreat.ingredientName}</span>
+          <span className="text-red-400">+{topThreat.changePct.toFixed(0)}%</span>
+        </span>
+      )}
+      {topOpp && (
+        <span className="inline-flex items-center gap-1 bg-emerald-950/30 border border-emerald-900/30 rounded-full px-2.5 py-1">
+          <span className="text-emerald-400">{'\u2193'}</span>
+          <span className="text-stone-300">{topOpp.ingredientName}</span>
+          <span className="text-emerald-400">{topOpp.changePct.toFixed(0)}%</span>
+        </span>
+      )}
+      {rising.length > 1 && (
+        <a
+          href="/culinary/costing"
+          className="text-stone-500 hover:text-stone-300 transition-colors"
+        >
+          +{rising.length - 1} more rising
+        </a>
+      )}
+    </div>
+  )
+}
+
 async function CoverageHealthSection() {
   const admin = await safe('isAdmin', isAdmin, false)
   if (!admin) return null
@@ -1504,6 +1559,103 @@ async function PipelineStatusSection() {
 async function QuickNotesLoader() {
   const notes = await safe('quickNotes', () => getQuickNotes({ limit: 20 }), [])
   return <QuickNotesSection initialNotes={notes} />
+}
+
+// Streamed priority actions (deferred behind Suspense so it doesn't block TTFB)
+async function PriorityActionsSection({ queuePromise }: { queuePromise: Promise<PriorityQueue> }) {
+  const queue = await queuePromise
+  return <DashboardPriorityActions queue={queue} />
+}
+
+function PriorityActionsSkeleton() {
+  return (
+    <div className="space-y-3">
+      <div className="h-4 w-32 loading-bone loading-bone-muted rounded" />
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="h-24 rounded-xl loading-bone loading-bone-muted" />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// Hero data fetcher for the glance zone
+async function getHeroData(
+  user: Awaited<ReturnType<typeof requireChef>>,
+  timeOfDay: string,
+  firstName: string,
+  supportBadge: string | null | undefined
+): Promise<HeroData> {
+  const db: any = createServerClient()
+  const tenantId = user.tenantId!
+  const now = new Date()
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+  const weekEnd = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate() + 7).padStart(2, '0')}`
+
+  const greeting =
+    timeOfDay === 'morning'
+      ? "Here's your day at a glance."
+      : timeOfDay === 'afternoon'
+        ? 'Your afternoon overview.'
+        : 'End-of-day summary.'
+
+  const [eventsResult, inquiriesResult, outstandingResult, nextEventResult] = await Promise.all([
+    db
+      .from('events')
+      .select('id', { count: 'exact', head: true })
+      .eq('tenant_id', tenantId)
+      .gte('event_date', today)
+      .lte('event_date', weekEnd)
+      .not('status', 'eq', 'cancelled'),
+    db
+      .from('inquiries')
+      .select('id', { count: 'exact', head: true })
+      .eq('tenant_id', tenantId)
+      .not('status', 'in', '("converted","declined")'),
+    db
+      .from('event_financial_summary')
+      .select('outstanding_balance_cents')
+      .eq('tenant_id', tenantId)
+      .gt('outstanding_balance_cents', 0)
+      .then(({ data }: any) =>
+        (data ?? []).reduce((sum: number, r: any) => sum + (r.outstanding_balance_cents || 0), 0)
+      ),
+    db
+      .from('events')
+      .select('id, occasion, event_date, client:clients(full_name)')
+      .eq('tenant_id', tenantId)
+      .gte('event_date', today)
+      .not('status', 'in', '("cancelled","completed")')
+      .order('event_date', { ascending: true })
+      .limit(1)
+      .then(({ data }: any) => (data && data.length > 0 ? data[0] : null)),
+  ])
+
+  let nextEvent: HeroData['nextEvent'] = null
+  if (nextEventResult) {
+    const target = new Date(`${nextEventResult.event_date}T00:00:00`)
+    const todayDate = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+    const daysUntil = Math.ceil((target.getTime() - todayDate.getTime()) / 86400000)
+    nextEvent = {
+      occasion: nextEventResult.occasion ?? '',
+      clientName: (nextEventResult.client as any)?.full_name ?? '',
+      daysUntil,
+      href: `/events/${nextEventResult.id}`,
+    }
+  }
+
+  return {
+    greeting,
+    timeOfDay,
+    firstName,
+    tenantId,
+    eventsThisWeek: eventsResult?.count ?? 0,
+    openInquiries: inquiriesResult?.count ?? 0,
+    outstandingCents: typeof outstandingResult === 'number' ? outstandingResult : 0,
+    nextEvent,
+    supportBadge: supportBadge ?? null,
+  }
 }
 
 export default async function ChefDashboard() {
@@ -1556,46 +1708,42 @@ export default async function ChefDashboard() {
   const isMinimalDensity = workspaceDensity === 'minimal'
   const primaryAction = getDashboardPrimaryAction(archetype)
 
-  // Time-aware greeting
-  const greeting =
-    timeOfDay === 'morning'
-      ? "Here's your day at a glance."
-      : timeOfDay === 'afternoon'
-        ? 'Your afternoon overview.'
-        : 'End-of-day summary.'
+  // Hero data for the glance zone
+  const heroData = await safe(
+    'heroData',
+    () => getHeroData(user, timeOfDay, firstName, supportStatus?.badgeLabel),
+    {
+      greeting: "Here's your day at a glance.",
+      timeOfDay,
+      firstName,
+      tenantId: user.tenantId!,
+      eventsThisWeek: 0,
+      openInquiries: 0,
+      outstandingCents: 0,
+      nextEvent: null,
+      supportBadge: null,
+    }
+  )
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
       {/* OpenClaw SSE listeners (admin-only, no visible UI, just toast alerts) */}
       <Suspense fallback={null}>
         <OpenClawLiveAlertsSection />
       </Suspense>
 
       {/* ============================================ */}
-      {/* GREETING + ACTIONS                          */}
+      {/* HERO ZONE - The glance zone (~400px)        */}
+      {/* Glass card: greeting + 4 key metrics        */}
       {/* ============================================ */}
-      <header className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4">
-        <div>
-          <div className="flex items-center gap-3">
-            <p className="text-sm text-stone-500 font-medium">
-              Good {timeOfDay}
-              {firstName ? `, ${firstName}` : ''}
-            </p>
-            <DashboardHeartbeat tenantId={user.tenantId!} />
-            {supportStatus?.badgeLabel && (
-              <span className="inline-flex items-center rounded-full border border-emerald-800 bg-emerald-950/60 px-2.5 py-1 text-xs font-medium text-emerald-300">
-                {supportStatus.badgeLabel}
-              </span>
-            )}
-          </div>
-          <h1 className="text-3xl sm:text-4xl font-display text-stone-100 mt-1 tracking-tight">
-            {greeting}
-          </h1>
-        </div>
-        <div className="flex gap-2 items-center flex-wrap shrink-0">
+      <div className="space-y-4">
+        <DashboardHero data={heroData} />
+
+        {/* Quick action bar */}
+        <div className="flex gap-2 items-center flex-wrap">
           <Link
             href="/briefing"
-            className="inline-flex items-center justify-center px-4 py-2.5 border border-stone-700 text-stone-300 rounded-xl hover:bg-stone-800 hover:border-stone-600 transition-all font-medium text-sm"
+            className="inline-flex items-center justify-center px-4 py-2 border border-stone-700/60 text-stone-400 rounded-xl hover:bg-stone-800 hover:border-stone-600 hover:text-stone-200 transition-all font-medium text-sm"
           >
             Briefing
           </Link>
@@ -1603,14 +1751,14 @@ export default async function ChefDashboard() {
             <>
               <Link
                 href="/menus/new"
-                className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 border border-stone-700 text-stone-300 rounded-xl hover:bg-stone-800 hover:border-stone-600 transition-all font-medium text-sm"
+                className="inline-flex items-center justify-center gap-1.5 px-4 py-2 border border-stone-700/60 text-stone-400 rounded-xl hover:bg-stone-800 hover:border-stone-600 hover:text-stone-200 transition-all font-medium text-sm"
               >
                 <UtensilsCrossed className="h-4 w-4" />
                 Create Menu
               </Link>
               <Link
                 href="/commerce/storefront"
-                className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 border border-stone-700 text-stone-300 rounded-xl hover:bg-stone-800 hover:border-stone-600 transition-all font-medium text-sm"
+                className="inline-flex items-center justify-center gap-1.5 px-4 py-2 border border-stone-700/60 text-stone-400 rounded-xl hover:bg-stone-800 hover:border-stone-600 hover:text-stone-200 transition-all font-medium text-sm"
               >
                 <Store className="h-4 w-4" />
                 Storefront
@@ -1620,62 +1768,28 @@ export default async function ChefDashboard() {
           <Link
             href={primaryAction.href}
             data-tour="chef-dashboard-home"
-            className="inline-flex items-center justify-center gap-1.5 px-5 py-2.5 gradient-accent text-white rounded-xl font-medium text-sm glow-hover"
+            className="inline-flex items-center justify-center gap-1.5 px-5 py-2 gradient-accent text-white rounded-xl font-medium text-sm glow-hover"
           >
             <Plus className="h-4 w-4" />
             {primaryAction.label}
           </Link>
         </div>
-      </header>
+      </div>
 
-      {!isMinimalDensity && (
-        <WidgetErrorBoundary name="Client Pulse" compact>
-          <Suspense fallback={null}>
-            <PulseSummary />
-          </Suspense>
-        </WidgetErrorBoundary>
-      )}
-
-      {!isMinimalDensity && (
-        <WidgetErrorBoundary name="Decision Queue" compact>
-          <Suspense fallback={<WidgetCardSkeleton size="md" />}>
-            <DecisionQueueSection decisionQueuePromise={decisionQueuePromise} />
-          </Suspense>
-        </WidgetErrorBoundary>
-      )}
-
-      {!isMinimalDensity && (
-        <WidgetErrorBoundary name="Resolve Next" compact>
-          <Suspense fallback={<ResolveNextSkeleton />}>
-            <ResolveNextSection
-              queuePromise={queuePromise}
-              onboardingProgress={onboardingProgress}
-              profileGated={profileGated}
-            />
-          </Suspense>
-        </WidgetErrorBoundary>
-      )}
-
-      {!isMinimalDensity && (
-        <WidgetErrorBoundary name="Lifecycle Actions" compact>
-          <Suspense fallback={null}>
-            <LifecycleActionLayerSection />
-          </Suspense>
-        </WidgetErrorBoundary>
-      )}
-
-      {!isMinimalDensity && (
-        <WidgetErrorBoundary name="Relationship Actions" compact>
-          <Suspense fallback={null}>
-            <RelationshipActionLayerSection />
-          </Suspense>
-        </WidgetErrorBoundary>
-      )}
+      {/* ============================================ */}
+      {/* PRIORITY ACTIONS - Max 3 urgent items       */}
+      {/* Red = NOW, Amber = this week                */}
+      {/* ============================================ */}
+      <WidgetErrorBoundary name="Priority Actions" compact>
+        <Suspense fallback={<PriorityActionsSkeleton />}>
+          <PriorityActionsSection queuePromise={queuePromise} />
+        </Suspense>
+      </WidgetErrorBoundary>
 
       {/* Onboarding banner - shows for ALL density levels until setup is complete */}
       <OnboardingBanner />
 
-      {/* Profile gated warning - public profile hidden because bio/tagline missing */}
+      {/* Profile gated warning */}
       {!isMinimalDensity && profileGated && (
         <div className="rounded-xl border border-amber-800/40 bg-amber-950/30 px-5 py-3 flex items-center justify-between gap-4">
           <p className="text-sm text-amber-300">
@@ -1690,17 +1804,157 @@ export default async function ChefDashboard() {
         </div>
       )}
 
-      {/* Onboarding checklist widget - shows setup progress until all phases complete */}
+      {/* Onboarding checklist + Getting Started for new chefs */}
       {!isMinimalDensity && onboardingProgress && (
         <OnboardingChecklistWidget progress={onboardingProgress} />
       )}
-
-      {/* Getting Started - shown for brand-new chefs, auto-hides as they add data */}
       {!isMinimalDensity && presence && simplifyForNewChef && (
         <GettingStartedSection presence={presence} />
       )}
 
-      {/* Remy proactive alerts - urgent/high priority items needing attention */}
+      {/* ============================================ */}
+      {/* THE CURRENT - Unified Operational Feed       */}
+      {/* ============================================ */}
+      <WidgetErrorBoundary name="The Current" compact>
+        <Suspense fallback={<div className="h-40 rounded-lg loading-bone loading-bone-muted" />}>
+          <CurrentFeed />
+        </Suspense>
+      </WidgetErrorBoundary>
+
+      {/* ============================================ */}
+      {/* THIS WEEK - Schedule, Prep, Saturation      */}
+      {/* Collapsible, expanded by default            */}
+      {/* ============================================ */}
+      <DashboardSection id="this-week" title="This Week">
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 stagger-grid">
+            <WidgetErrorBoundary name="Schedule" compact>
+              <Suspense fallback={<ScheduleCardsSkeleton />}>
+                <ScheduleCards />
+              </Suspense>
+            </WidgetErrorBoundary>
+            <Suspense fallback={null}>
+              <WidgetErrorBoundary name="Prep Pressure">
+                <div className="col-span-full">
+                  <PrepPressureCard />
+                </div>
+              </WidgetErrorBoundary>
+            </Suspense>
+            <WidgetErrorBoundary name="Saturation" compact>
+              <Suspense fallback={<SaturationCardsSkeleton />}>
+                <SaturationCards />
+              </Suspense>
+            </WidgetErrorBoundary>
+          </div>
+
+          {/* Seasonal Calendar */}
+          <WidgetErrorBoundary name="Seasonal Calendar" compact>
+            <Suspense fallback={<WidgetCardSkeleton size="lg" />}>
+              <SeasonalCalendarWidget />
+            </Suspense>
+          </WidgetErrorBoundary>
+
+          {/* Client Attention */}
+          <WidgetErrorBoundary name="Client Attention" compact>
+            <Suspense fallback={null}>
+              <ClientAttentionSection />
+            </Suspense>
+          </WidgetErrorBoundary>
+
+          {/* Event Readiness */}
+          {!isMinimalDensity &&
+            (bypassProgressiveDisclosure || !presence || presence.hasEvents) && (
+              <WidgetErrorBoundary name="Event Readiness" compact>
+                <Suspense fallback={null}>
+                  <CompletionSummaryWidgetServer />
+                </Suspense>
+              </WidgetErrorBoundary>
+            )}
+        </div>
+      </DashboardSection>
+
+      {/* ============================================ */}
+      {/* FOCUS - Actions, decisions, queue            */}
+      {/* Collapsible, expanded by default            */}
+      {/* ============================================ */}
+      {!isMinimalDensity && (
+        <DashboardSection id="focus" title="Focus">
+          <div className="space-y-6">
+            {/* Client Pulse */}
+            <WidgetErrorBoundary name="Client Pulse" compact>
+              <Suspense fallback={null}>
+                <PulseSummary />
+              </Suspense>
+            </WidgetErrorBoundary>
+
+            {/* Price Glance (compact top threat + opportunity, always visible) */}
+            <WidgetErrorBoundary name="Price Glance" compact>
+              <Suspense fallback={null}>
+                <PriceGlanceSection />
+              </Suspense>
+            </WidgetErrorBoundary>
+
+            {/* Decision Queue */}
+            <WidgetErrorBoundary name="Decision Queue" compact>
+              <Suspense fallback={<WidgetCardSkeleton size="md" />}>
+                <DecisionQueueSection decisionQueuePromise={decisionQueuePromise} />
+              </Suspense>
+            </WidgetErrorBoundary>
+
+            {/* Resolve Next */}
+            <WidgetErrorBoundary name="Resolve Next" compact>
+              <Suspense fallback={<ResolveNextSkeleton />}>
+                <ResolveNextSection
+                  queuePromise={queuePromise}
+                  onboardingProgress={onboardingProgress}
+                  profileGated={profileGated}
+                />
+              </Suspense>
+            </WidgetErrorBoundary>
+
+            {/* Lifecycle Actions */}
+            <WidgetErrorBoundary name="Lifecycle Actions" compact>
+              <Suspense fallback={null}>
+                <LifecycleActionLayerSection />
+              </Suspense>
+            </WidgetErrorBoundary>
+
+            {/* Relationship Actions */}
+            <WidgetErrorBoundary name="Relationship Actions" compact>
+              <Suspense fallback={null}>
+                <RelationshipActionLayerSection />
+              </Suspense>
+            </WidgetErrorBoundary>
+
+            {/* Post-Event, Queue, Touchpoints */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 stagger-grid">
+              <WidgetErrorBoundary name="Priority Queue" compact>
+                <Suspense fallback={<PriorityQueueSkeleton />}>
+                  <PriorityQueueSection queuePromise={queuePromise} />
+                </Suspense>
+              </WidgetErrorBoundary>
+
+              <div className="col-span-1 sm:col-span-2 lg:col-span-4">
+                <WidgetErrorBoundary name="Post-Event Actions" compact>
+                  <Suspense fallback={null}>
+                    <PostEventActionLayerSection />
+                  </Suspense>
+                </WidgetErrorBoundary>
+              </div>
+
+              <WidgetErrorBoundary name="Upcoming Touchpoints" compact>
+                <Suspense fallback={<TouchpointsSkeleton />}>
+                  <TouchpointsSection />
+                </Suspense>
+              </WidgetErrorBoundary>
+            </div>
+          </div>
+        </DashboardSection>
+      )}
+
+      {/* ============================================ */}
+      {/* REMY + CHEFTIPS - alerts & learning          */}
+      {/* ============================================ */}
       {!isMinimalDensity && remyAlerts.length > 0 && (
         <div>
           <div className="section-label mb-3">Alerts</div>
@@ -1708,10 +1962,13 @@ export default async function ChefDashboard() {
         </div>
       )}
 
-      {/* ============================================ */}
-      {/* RESTAURANT DAILY OPS - prime cost, labor %  */}
-      {/* Shows for restaurant/food-truck/bakery only */}
-      {/* ============================================ */}
+      <WidgetErrorBoundary name="ChefTips" compact>
+        <Suspense fallback={null}>
+          <ChefTipsSection />
+        </Suspense>
+      </WidgetErrorBoundary>
+
+      {/* Restaurant/Multi-Location (archetype-specific) */}
       {!isMinimalDensity &&
         archetype &&
         ['restaurant', 'food-truck', 'bakery'].includes(archetype) && (
@@ -1721,11 +1978,6 @@ export default async function ChefDashboard() {
             </Suspense>
           </WidgetErrorBoundary>
         )}
-
-      {/* ============================================ */}
-      {/* MULTI-LOCATION OVERVIEW                      */}
-      {/* Shows for operators with 2+ business locations */}
-      {/* ============================================ */}
       {!isMinimalDensity && (
         <WidgetErrorBoundary name="Multi-Location Summary" compact>
           <Suspense fallback={<MultiLocationSummarySkeleton />}>
@@ -1734,64 +1986,7 @@ export default async function ChefDashboard() {
         </WidgetErrorBoundary>
       )}
 
-      {/* ============================================ */}
-      {/* TODAY & THIS WEEK - first thing a chef needs */}
-      {/* ============================================ */}
-      <section>
-        <div className="section-label mb-4">Today &amp; This Week</div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 stagger-grid">
-          <WidgetErrorBoundary name="Schedule" compact>
-            <Suspense fallback={<ScheduleCardsSkeleton />}>
-              <ScheduleCards />
-            </Suspense>
-          </WidgetErrorBoundary>
-          <Suspense fallback={null}>
-            <WidgetErrorBoundary name="Prep Pressure">
-              <div className="col-span-full">
-                <PrepPressureCard />
-              </div>
-            </WidgetErrorBoundary>
-          </Suspense>
-          <WidgetErrorBoundary name="Saturation" compact>
-            <Suspense fallback={<SaturationCardsSkeleton />}>
-              <SaturationCards />
-            </Suspense>
-          </WidgetErrorBoundary>
-        </div>
-      </section>
-
-      {/* ============================================ */}
-      {/* SEASONAL CALENDAR - what's peaking/ending    */}
-      {/* ============================================ */}
-      <WidgetErrorBoundary name="Seasonal Calendar" compact>
-        <Suspense fallback={<WidgetCardSkeleton size="lg" />}>
-          <SeasonalCalendarWidget />
-        </Suspense>
-      </WidgetErrorBoundary>
-
-      {/* ============================================ */}
-      {/* CHEFTIPS - daily learning prompt              */}
-      {/* Default widget, always visible               */}
-      {/* ============================================ */}
-      <WidgetErrorBoundary name="ChefTips" compact>
-        <Suspense fallback={null}>
-          <ChefTipsSection />
-        </Suspense>
-      </WidgetErrorBoundary>
-
-      {/* ============================================ */}
-      {/* EVENT READINESS - completion scores           */}
-      {/* Hidden until the chef has created events     */}
-      {/* ============================================ */}
-      {!isMinimalDensity && (bypassProgressiveDisclosure || !presence || presence.hasEvents) && (
-        <WidgetErrorBoundary name="Event Readiness" compact>
-          <Suspense fallback={null}>
-            <CompletionSummaryWidgetServer />
-          </Suspense>
-        </WidgetErrorBoundary>
-      )}
-
-      {/* Network Activity - hidden until network use */}
+      {/* Network + Dinner Circles (progressive disclosure) */}
       {!isMinimalDensity && (bypassProgressiveDisclosure || !presence || presence.hasNetwork) && (
         <WidgetErrorBoundary name="Network Activity" compact>
           <Suspense fallback={null}>
@@ -1799,8 +1994,6 @@ export default async function ChefDashboard() {
           </Suspense>
         </WidgetErrorBoundary>
       )}
-
-      {/* Dinner Circles - hidden until circles exist */}
       {!isMinimalDensity && (bypassProgressiveDisclosure || !presence || presence.hasCircles) && (
         <WidgetErrorBoundary name="Dinner Circles" compact>
           <Suspense fallback={null}>
@@ -1810,68 +2003,29 @@ export default async function ChefDashboard() {
       )}
 
       {/* ============================================ */}
-      {/* CLIENT ATTENTION - who's waiting on you?    */}
-      {/* ============================================ */}
-      <WidgetErrorBoundary name="Client Attention" compact>
-        <Suspense fallback={null}>
-          <ClientAttentionSection />
-        </Suspense>
-      </WidgetErrorBoundary>
-
-      {/* ============================================ */}
-      {/* FOCUS: What needs attention now              */}
+      {/* INTELLIGENCE - Suggestions, notes            */}
+      {/* Collapsible, expanded by default            */}
       {/* ============================================ */}
       {!isMinimalDensity && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 stagger-grid">
-          {/* PRIORITY QUEUE (streamed, non-blocking) */}
-          <WidgetErrorBoundary name="Priority Queue" compact>
-            <Suspense fallback={<PriorityQueueSkeleton />}>
-              <PriorityQueueSection queuePromise={queuePromise} />
-            </Suspense>
-          </WidgetErrorBoundary>
-
-          {/* POST-EVENT ACTIONS (internal close-out + client trust loop) */}
-          <div className="col-span-1 sm:col-span-2 lg:col-span-4">
-            <WidgetErrorBoundary name="Post-Event Actions" compact>
+        <DashboardSection id="intelligence" title="Intelligence">
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
               <Suspense fallback={null}>
-                <PostEventActionLayerSection />
+                <MetricsStrip />
               </Suspense>
-            </WidgetErrorBoundary>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 stagger-grid">
+              <WidgetErrorBoundary name="Smart Suggestions" compact>
+                <Suspense fallback={<SmartSuggestionsSkeleton />}>
+                  <SmartSuggestions />
+                </Suspense>
+              </WidgetErrorBoundary>
+            </div>
           </div>
-
-          {/* UPCOMING TOUCHPOINTS (streamed, non-blocking) */}
-          <WidgetErrorBoundary name="Upcoming Touchpoints" compact>
-            <Suspense fallback={<TouchpointsSkeleton />}>
-              <TouchpointsSection />
-            </Suspense>
-          </WidgetErrorBoundary>
-        </div>
+        </DashboardSection>
       )}
 
-      {/* ============================================ */}
-      {/* SMART SUGGESTIONS - actionable data gaps     */}
-      {/* ============================================ */}
-      {!isMinimalDensity && (
-        <section>
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
-            <div className="section-label">Suggestions</div>
-            <Suspense fallback={null}>
-              <MetricsStrip />
-            </Suspense>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 stagger-grid">
-            <WidgetErrorBoundary name="Smart Suggestions" compact>
-              <Suspense fallback={<SmartSuggestionsSkeleton />}>
-                <SmartSuggestions />
-              </Suspense>
-            </WidgetErrorBoundary>
-          </div>
-        </section>
-      )}
-
-      {/* ============================================ */}
-      {/* QUICK NOTES - capture pad, below the fold   */}
-      {/* ============================================ */}
+      {/* Quick Notes */}
       <WidgetErrorBoundary name="Quick Notes" compact>
         <Suspense fallback={<WidgetCardSkeleton size="md" />}>
           <QuickNotesLoader />
@@ -1879,72 +2033,67 @@ export default async function ChefDashboard() {
       </WidgetErrorBoundary>
 
       {/* ============================================ */}
-      {/* SECONDARY INSIGHTS (collapsed by default)   */}
-      {/* Hidden entirely for brand-new chefs          */}
+      {/* BUSINESS - Full metrics, pricing, health    */}
+      {/* Collapsed by default                        */}
       {/* ============================================ */}
       {!simplifyForNewChef && !isMinimalDensity && (
-        <DashboardSecondaryInsights>
-          {/* BUSINESS OVERVIEW - metrics moved here, not above-fold */}
-          <section className="px-4 pt-4">
-            <div className="section-label mb-4">Business Overview</div>
+        <DashboardSection
+          id="business"
+          title="Business Health, Pricing, and Intelligence"
+          defaultCollapsed
+        >
+          <div className="space-y-8">
+            {/* Business Overview with sparklines */}
             <WidgetErrorBoundary name="Hero Metrics" compact>
               <Suspense fallback={<HeroMetricsSkeleton />}>
                 <HeroMetrics archetype={archetype} />
               </Suspense>
             </WidgetErrorBoundary>
-          </section>
 
-          {/* COMMAND CENTER - feature directory, accessible but not daily-driver */}
-          <section className="px-4">
+            {/* Command Center */}
             <WidgetErrorBoundary name="Command Center" compact>
               <Suspense fallback={<CommandCenterSkeleton />}>
                 <CommandCenterSection />
               </Suspense>
             </WidgetErrorBoundary>
-          </section>
 
-          {/* WEEKLY PRICE BRIEFING */}
-          <section className="px-4">
+            {/* Weekly Price Briefing */}
             <WidgetErrorBoundary name="WeeklyBriefing" compact>
               <Suspense fallback={null}>
                 <WeeklyBriefingSection />
               </Suspense>
             </WidgetErrorBoundary>
-          </section>
 
-          {/* PRICE COVERAGE HEALTH + PIPELINE STATUS (admin only) */}
-          <section className="px-4">
+            {/* Price Trend Alerts */}
+            <WidgetErrorBoundary name="PriceTrendAlerts" compact>
+              <Suspense fallback={null}>
+                <PriceTrendAlertsSection />
+              </Suspense>
+            </WidgetErrorBoundary>
+
+            {/* Price Coverage + Pipeline (admin only) */}
             <Suspense fallback={null}>
               <CoverageHealthSection />
             </Suspense>
-            <div className="mt-2">
-              <Suspense fallback={null}>
-                <PipelineStatusSection />
-              </Suspense>
-            </div>
-          </section>
+            <Suspense fallback={null}>
+              <PipelineStatusSection />
+            </Suspense>
 
-          {/* ALERTS + INTELLIGENCE */}
-          <section className="px-4">
-            <div className="section-label mb-4">Alerts &amp; Health</div>
+            {/* Alerts & Health */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 stagger-grid">
               <WidgetErrorBoundary name="Alerts" compact>
                 <Suspense fallback={<AlertCardsSkeleton />}>
                   <AlertCards />
                 </Suspense>
               </WidgetErrorBoundary>
-
               <WidgetErrorBoundary name="Intelligence" compact>
                 <Suspense fallback={<IntelligenceCardsSkeleton />}>
                   <IntelligenceCards />
                 </Suspense>
               </WidgetErrorBoundary>
             </div>
-          </section>
 
-          {/* BUSINESS METRICS */}
-          <section className="px-4">
-            <div className="section-label mb-4">Business</div>
+            {/* Business Metrics */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 stagger-grid">
               <WidgetErrorBoundary name="Business" compact>
                 <Suspense fallback={<BusinessCardsSkeleton />}>
@@ -1952,8 +2101,8 @@ export default async function ChefDashboard() {
                 </Suspense>
               </WidgetErrorBoundary>
             </div>
-          </section>
-        </DashboardSecondaryInsights>
+          </div>
+        </DashboardSection>
       )}
     </div>
   )

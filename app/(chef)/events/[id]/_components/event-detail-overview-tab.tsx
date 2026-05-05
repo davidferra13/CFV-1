@@ -79,6 +79,15 @@ type EventDetailOverviewTabProps = {
   collaborators: EventCollaborator[]
   eventMenuData?: ServiceViewMenu[]
   constraintRadarData?: ConstraintRadarData | null
+  clientPhones?: Array<{
+    id: string
+    phoneE164: string
+    phoneDisplay: string
+    label: string | null
+    type: string | null
+    canText: boolean | null
+    verified: boolean | null
+  }>
 }
 
 export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
@@ -107,6 +116,7 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
     collaborators,
     eventMenuData,
     constraintRadarData,
+    clientPhones,
   } = props
 
   return (
@@ -298,19 +308,60 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
                   </a>
                 </dd>
               </div>
-              {event.client?.phone && (
-                <div>
-                  <dt className="text-sm font-medium text-stone-500">Phone</dt>
-                  <dd className="text-sm text-stone-100 mt-1">
-                    <a
-                      href={`tel:${event.client.phone}`}
-                      className="text-brand-600 hover:underline"
-                    >
-                      {event.client.phone}
-                    </a>
-                  </dd>
-                </div>
-              )}
+              {(() => {
+                // New phone_numbers system (primary first, then others)
+                const phones = (clientPhones ?? []).slice().sort((a, b) => {
+                  if (a.type === 'primary' && b.type !== 'primary') return -1
+                  if (b.type === 'primary' && a.type !== 'primary') return 1
+                  return 0
+                })
+                if (phones.length > 0) {
+                  return (
+                    <div>
+                      <dt className="text-sm font-medium text-stone-500">Phone</dt>
+                      <dd className="text-sm text-stone-100 mt-1 space-y-1.5">
+                        {phones.map((p) => (
+                          <div key={p.id} className="flex items-center gap-2">
+                            <a
+                              href={`tel:${p.phoneE164}`}
+                              className="text-brand-600 hover:underline"
+                            >
+                              {p.phoneDisplay}
+                            </a>
+                            {p.label && (
+                              <span className="inline-flex items-center rounded-full bg-stone-800 px-1.5 py-0.5 text-[10px] font-medium text-stone-400 capitalize">
+                                {p.label}
+                              </span>
+                            )}
+                            {p.verified && (
+                              <span className="text-emerald-500 text-xs" title="Verified">
+                                &#10003;
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                      </dd>
+                    </div>
+                  )
+                }
+                // Legacy fallback
+                if (event.client?.phone) {
+                  return (
+                    <div>
+                      <dt className="text-sm font-medium text-stone-500">Phone</dt>
+                      <dd className="text-sm text-stone-100 mt-1">
+                        <a
+                          href={`tel:${event.client.phone}`}
+                          className="text-brand-600 hover:underline"
+                        >
+                          {event.client.phone}
+                        </a>
+                      </dd>
+                    </div>
+                  )
+                }
+                return null
+              })()}
               {eventLoyaltyImpact && (
                 <div className="pt-2 border-t border-stone-800">
                   <dt className="text-sm font-medium text-stone-500">Loyalty</dt>

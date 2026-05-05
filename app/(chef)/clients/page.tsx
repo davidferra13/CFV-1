@@ -18,48 +18,95 @@ import { SkeletonTable } from '@/components/ui/skeleton'
 import { ClientInvitationForm } from './client-invitation-form'
 import { ClientsTable } from './clients-table'
 import { PendingInvitationsTable } from './pending-invitations-table'
+import { ClientInvitationPanel } from './client-invitation-panel'
 import { RebookingBar } from '@/components/intelligence/rebooking-bar'
 import { safeFetch } from '@/lib/utils/safe-fetch'
 import { ErrorState } from '@/components/ui/error-state'
+import { ChartLineUp, Gift, Bell, Leaf, Repeat, Handshake } from '@/components/ui/icons'
 
 const hubTiles = [
   {
     href: '/clients/insights/top-clients',
     label: 'Client Insights',
-    description: 'Top clients, at-risk clients, and most frequent bookers',
-    icon: '💡',
+    description: 'Top clients, at-risk, frequent bookers',
+    icon: ChartLineUp,
+    accent: 'emerald',
   },
   {
     href: '/clients/loyalty',
     label: 'Loyalty and Rewards',
-    description: 'Loyalty overview, rewards, and referral tracking',
-    icon: '🎁',
+    description: 'Rewards, referral tracking, retention',
+    icon: Gift,
+    accent: 'amber',
   },
   {
     href: '/clients/communication/follow-ups',
     label: 'Follow-Ups',
-    description: 'Scheduled touchpoints and pending follow-up actions',
-    icon: '📬',
+    description: 'Pending touchpoints and actions',
+    icon: Bell,
+    accent: 'sky',
   },
   {
     href: '/clients/preferences/dietary-restrictions',
     label: 'Dietary Preferences',
-    description: 'Allergies, restrictions, dislikes, and favorite dishes',
-    icon: '🥗',
+    description: 'Allergies, restrictions, favorites',
+    icon: Leaf,
+    accent: 'rose',
   },
   {
     href: '/clients/recurring',
     label: 'Recurring Board',
-    description: 'Clients on recurring service schedules',
-    icon: '🔄',
+    description: 'Clients on service schedules',
+    icon: Repeat,
+    accent: 'violet',
   },
   {
     href: '/partners',
     label: 'Partners and Referrals',
-    description: 'Referral partners and the events they generate',
-    icon: '🤝',
+    description: 'Referral partners, generated events',
+    icon: Handshake,
+    accent: 'brand',
   },
-]
+] as const
+
+const accentStyles = {
+  emerald: {
+    border: 'border-l-emerald-500',
+    iconBg: 'bg-emerald-950/80',
+    iconText: 'text-emerald-400',
+    hoverBorder: 'group-hover:border-emerald-600/40',
+  },
+  amber: {
+    border: 'border-l-amber-500',
+    iconBg: 'bg-amber-950/80',
+    iconText: 'text-amber-400',
+    hoverBorder: 'group-hover:border-amber-600/40',
+  },
+  sky: {
+    border: 'border-l-sky-500',
+    iconBg: 'bg-sky-950/80',
+    iconText: 'text-sky-400',
+    hoverBorder: 'group-hover:border-sky-600/40',
+  },
+  rose: {
+    border: 'border-l-rose-500',
+    iconBg: 'bg-rose-950/80',
+    iconText: 'text-rose-400',
+    hoverBorder: 'group-hover:border-rose-600/40',
+  },
+  violet: {
+    border: 'border-l-violet-500',
+    iconBg: 'bg-violet-950/80',
+    iconText: 'text-violet-400',
+    hoverBorder: 'group-hover:border-violet-600/40',
+  },
+  brand: {
+    border: 'border-l-brand-500',
+    iconBg: 'bg-brand-950/80',
+    iconText: 'text-brand-400',
+    hoverBorder: 'group-hover:border-brand-600/40',
+  },
+} as const
 
 export default async function ClientsPage() {
   await requireChef()
@@ -89,23 +136,34 @@ export default async function ClientsPage() {
 
       {/* Hub tiles */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 stagger-grid">
-        {hubTiles.map((tile) => (
-          <Link key={tile.href} href={tile.href} className="group block">
-            <Card className="h-full transition-colors group-hover:border-brand-700/60 group-hover:bg-stone-800/60">
-              <CardContent className="pt-5 pb-5">
-                <div className="flex items-start gap-3">
-                  <span className="text-2xl leading-none mt-0.5 flex-shrink-0">{tile.icon}</span>
-                  <div>
-                    <p className="font-semibold text-stone-100 group-hover:text-brand-400 transition-colors">
-                      {tile.label}
-                    </p>
-                    <p className="text-sm text-stone-500 mt-0.5">{tile.description}</p>
+        {hubTiles.map((tile) => {
+          const colors = accentStyles[tile.accent]
+          const Icon = tile.icon
+          return (
+            <Link key={tile.href} href={tile.href} className="group block">
+              <Card
+                variant="glass"
+                className={`h-full border-l-2 ${colors.border} ${colors.hoverBorder} transition-all duration-200 group-hover:bg-stone-800/60`}
+              >
+                <CardContent className="pt-5 pb-5">
+                  <div className="flex items-start gap-3">
+                    <div
+                      className={`rounded-lg ${colors.iconBg} p-2.5 transition-transform duration-200 group-hover:scale-110`}
+                    >
+                      <Icon className={`h-5 w-5 ${colors.iconText}`} weight="duotone" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-stone-100 group-hover:text-stone-50 transition-colors">
+                        {tile.label}
+                      </p>
+                      <p className="text-sm text-stone-500 mt-0.5">{tile.description}</p>
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
-        ))}
+                </CardContent>
+              </Card>
+            </Link>
+          )
+        })}
       </div>
 
       {/* Rebooking Intelligence */}
@@ -115,28 +173,21 @@ export default async function ClientsPage() {
         </Suspense>
       </WidgetErrorBoundary>
 
-      {/* Invitation Section */}
-      <Card id="invite">
-        <CardHeader>
-          <CardTitle>Send Client Invitation</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <WidgetErrorBoundary name="Client Invitation Form">
-            <Suspense fallback={<div className="text-sm text-stone-500">Loading...</div>}>
+      {/* Invitation Section (collapsible) */}
+      <div id="invite">
+        <WidgetErrorBoundary name="Client Invitation">
+          <Suspense fallback={null}>
+            <ClientInvitationPanel>
               <ClientInvitationForm />
-            </Suspense>
-          </WidgetErrorBoundary>
-
-          <div className="border-t pt-6">
-            <h3 className="text-sm font-medium text-stone-100 mb-4">Pending Invitations</h3>
-            <Suspense
-              fallback={<div className="text-sm text-stone-500">Loading invitations...</div>}
-            >
-              <PendingInvitationsContent />
-            </Suspense>
-          </div>
-        </CardContent>
-      </Card>
+              <Suspense
+                fallback={<div className="text-sm text-stone-500 mt-4">Loading invitations...</div>}
+              >
+                <PendingInvitationsContent />
+              </Suspense>
+            </ClientInvitationPanel>
+          </Suspense>
+        </WidgetErrorBoundary>
+      </div>
 
       {/* Clients List */}
       <Card data-info="client-table">

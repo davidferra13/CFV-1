@@ -1,6 +1,7 @@
 // Auth Layout - Provides metadata template for auth pages
 
 import type { Metadata } from 'next'
+export const dynamic = 'force-dynamic'
 export const metadata: Metadata = {
   title: {
     template: '%s',

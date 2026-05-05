@@ -835,6 +835,7 @@ export default async function EventDetailPage({
     eventHasAllergyData,
     eventChatConversationId,
     parAlerts,
+    clientPhoneNumbers,
   ] = await Promise.all([
     // Refund recommendation â€” only for cancelled events with payments
     event.status === 'cancelled' && totalPaid > 0
@@ -934,6 +935,36 @@ export default async function EventDetailPage({
     // Par level alerts - only for upcoming confirmed/in_progress events
     ['confirmed', 'in_progress'].includes(event.status) && isEventWithinDays(event.event_date, 7)
       ? getParAlerts().catch(() => [])
+      : Promise.resolve([]),
+    // Client phone numbers from new phone_numbers table
+    event.client_id
+      ? (async () => {
+          try {
+            const { db: drizzleDb } = await import('@/lib/db')
+            const { phoneNumbers: phoneNumbersTable } = await import('@/lib/db/schema/schema')
+            const { and: andOp, eq: eqOp } = await import('drizzle-orm')
+            const rows = await drizzleDb
+              .select({
+                id: phoneNumbersTable.id,
+                phoneE164: phoneNumbersTable.phoneE164,
+                phoneDisplay: phoneNumbersTable.phoneDisplay,
+                label: phoneNumbersTable.label,
+                type: phoneNumbersTable.type,
+                canText: phoneNumbersTable.canText,
+                verified: phoneNumbersTable.verified,
+              })
+              .from(phoneNumbersTable)
+              .where(
+                andOp(
+                  eqOp(phoneNumbersTable.entityType, 'client'),
+                  eqOp(phoneNumbersTable.entityId, event.client_id)
+                )
+              )
+            return rows
+          } catch {
+            return []
+          }
+        })()
       : Promise.resolve([]),
   ])
   const eventMenuData = (menuLibraryData?.menus ?? []).filter((m: any) =>
@@ -1494,6 +1525,7 @@ export default async function EventDetailPage({
         collaborators={eventCollaborators as any[]}
         eventMenuData={eventMenuData}
         constraintRadarData={constraintRadarData}
+        clientPhones={clientPhoneNumbers as any[]}
       />
 
       {/* TAB: MONEY â€” Financials, payments, expenses  */}
