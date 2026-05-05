@@ -24,6 +24,43 @@ import {
   type BuyablePriceContract,
 } from '@/lib/pricing/buyable-price-contract'
 
+// --- Category + subcategory price floors (PIE Law 9: NEVER return null) ---
+// Uses shared subcategory floors from subcategory-floors.ts for granular estimates.
+import {
+  inferSubcategory,
+  SUBCATEGORY_FLOOR_CENTS,
+  CATEGORY_FLOOR_CENTS,
+  DEFAULT_FLOOR_CENTS,
+} from './subcategory-floors'
+
+/** Best-effort category inference from raw ingredient text for synthetic floor. */
+function inferCategoryFromText(text: string): string {
+  const t = text.toLowerCase()
+  if (/chicken|beef|pork|lamb|turkey|veal|duck|bison|venison|sausage|bacon/i.test(t))
+    return 'protein'
+  if (/salmon|shrimp|tuna|cod|halibut|crab|lobster|scallop|mussel|clam|oyster|fish/i.test(t))
+    return 'seafood'
+  if (/milk|cream|butter|cheese|yogurt|egg/i.test(t)) return 'dairy'
+  if (/basil|cilantro|parsley|thyme|rosemary|mint|dill|chive|oregano|sage/i.test(t)) return 'herb'
+  if (/rice|pasta|flour|bread|oat|quinoa|couscous|barley|wheat|noodle/i.test(t)) return 'grain'
+  if (/cumin|paprika|cinnamon|turmeric|pepper|nutmeg|cardamom|clove|saffron/i.test(t))
+    return 'spice'
+  if (/olive oil|vegetable oil|canola|sesame oil|avocado oil|coconut oil/i.test(t)) return 'oil'
+  if (/almond|walnut|pecan|cashew|pistachio|peanut|hazelnut|macadamia/i.test(t)) return 'nut'
+  if (/bean|lentil|chickpea|pea|edamame/i.test(t)) return 'legume'
+  if (/juice|wine|beer|coffee|tea|soda|water|kombucha/i.test(t)) return 'beverage'
+  if (/sugar|honey|chocolate|maple|vanilla|caramel/i.test(t)) return 'sweet'
+  if (/ketchup|mustard|mayo|sriracha|soy sauce|vinegar|hot sauce|salsa/i.test(t)) return 'condiment'
+  // Default: most ingredients are produce or pantry
+  if (
+    /lettuce|tomato|onion|garlic|potato|carrot|celery|pepper|cucumber|spinach|kale|avocado|lemon|lime|apple|banana|berry|mushroom|corn|broccoli|cauliflower|zucchini|squash/i.test(
+      t
+    )
+  )
+    return 'produce'
+  return 'pantry'
+}
+
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
@@ -74,10 +111,10 @@ export interface PriceLookupResult {
    */
   suggestion: string | null
 
-  /** Best price estimate in cents */
-  price_cents: number | null
-  /** Price per normalized unit in cents */
-  price_per_unit_cents: number | null
+  /** Best price estimate in cents. PIE Law 9: ALWAYS a number, never null. */
+  price_cents: number
+  /** Price per normalized unit in cents. PIE Law 9: ALWAYS a number, never null. */
+  price_per_unit_cents: number
   /** Normalized unit (lb, oz, each, etc.) */
   unit: string
 
@@ -1033,19 +1070,32 @@ export async function lookupPrice(query: PriceLookupQuery): Promise<PriceLookupR
     applied: false,
   }
 
+  // PIE Law 9: even the "no result" path gets a synthetic floor price
+  // Use subcategory inference for granular floors (e.g., saffron != cumin)
+  const earlyFloorCategory = inferCategoryFromText(ingredient)
+  const earlySubcategory = inferSubcategory(ingredient, earlyFloorCategory)
+  const earlyFloorCents = earlySubcategory
+    ? SUBCATEGORY_FLOOR_CENTS[earlySubcategory] ||
+      CATEGORY_FLOOR_CENTS[earlyFloorCategory] ||
+      DEFAULT_FLOOR_CENTS
+    : CATEGORY_FLOOR_CENTS[earlyFloorCategory] || DEFAULT_FLOOR_CENTS
+
   const noResult: PriceLookupResult = {
     matched: false,
     ingredient_name: ingredient,
     ingredient_id: null,
     match_method: 'none',
     match_confidence: 0,
-    resolution_tier: 'none',
+    resolution_tier: 'estimated',
     suggestion: null,
-    price_cents: null,
-    price_per_unit_cents: null,
+    price_cents: earlyFloorCents,
+    price_per_unit_cents: earlyFloorCents,
     unit: 'each',
-    range: null,
-    confidence_score: 0,
+    range: {
+      min_cents: Math.round(earlyFloorCents * 0.7),
+      max_cents: Math.round(earlyFloorCents * 1.5),
+    },
+    confidence_score: 0.05,
     data_points: 0,
     last_updated: null,
     location: {
@@ -1053,23 +1103,23 @@ export async function lookupPrice(query: PriceLookupQuery): Promise<PriceLookupR
       stores_in_area: 0,
       nearest_store_miles: null,
       scope: 'national',
-      coverage_note: buildCoverageNote('national', 0, null, zipCode || null),
+      coverage_note: `Synthetic estimate (${earlySubcategory || earlyFloorCategory} floor). No observed prices available.`,
     },
-    sources: [],
+    sources: ['synthetic_floor'],
     price_type: 'retail',
     yield: defaultYield,
-    source_types: [],
+    source_types: ['synthetic'],
     image_url: null,
     buyable_price: contractForLookup({
-      priceCents: null,
-      confidenceScore: 0,
-      resolutionTier: 'none',
+      priceCents: earlyFloorCents,
+      confidenceScore: 0.05,
+      resolutionTier: 'estimated',
       dataPoints: 0,
       lastUpdated: null,
       unit: 'each',
       zipRequested: zipCode || null,
       nearestStoreMiles: null,
-      sourceLabels: [],
+      sourceLabels: ['synthetic_floor'],
     }),
   }
 
@@ -1273,7 +1323,8 @@ export async function lookupPrice(query: PriceLookupQuery): Promise<PriceLookupR
         const norm = normalizeProductPrice(
           pp.sale_price_cents || pp.price_cents,
           pp.size_value ? Number(pp.size_value) : null,
-          pp.size_unit
+          pp.size_unit,
+          pp.size || null
         )
         return {
           cents: norm.price_per_unit_cents,
@@ -1525,17 +1576,55 @@ export async function lookupPrice(query: PriceLookupQuery): Promise<PriceLookupR
     }
   }
 
-  // --- No data at all ---
-  // Still return a total, typed, honest result. If the matcher surfaced a
-  // trigram candidate we include it as a suggestion so the caller can render
-  // "Did you mean {suggestion}?" instead of silently showing nothing.
+  // --- PIE Law 9: NEVER return null. Synthetic floor as absolute last resort. ---
+  // Use subcategory inference for granular floors (saffron != cumin, wagyu != chicken)
+  const inferredCategory = inferCategoryFromText(ingredient)
+  const inferredSubcat = inferSubcategory(ingredient, inferredCategory)
+  const floorCents = inferredSubcat
+    ? SUBCATEGORY_FLOOR_CENTS[inferredSubcat] ||
+      CATEGORY_FLOOR_CENTS[inferredCategory] ||
+      DEFAULT_FLOOR_CENTS
+    : CATEGORY_FLOOR_CENTS[inferredCategory] || DEFAULT_FLOOR_CENTS
+  const floorLabel = inferredSubcat || inferredCategory
+
   return {
-    ...noResult,
+    matched: !!match,
     ingredient_name: match?.name || ingredient,
     ingredient_id: match?.id || null,
     match_method: match?.method || 'none',
     match_confidence: match?.confidence || 0,
+    resolution_tier: 'estimated' as LookupResolutionTier,
     suggestion,
+    price_cents: floorCents,
+    price_per_unit_cents: floorCents,
+    unit: 'each',
+    range: { min_cents: Math.round(floorCents * 0.7), max_cents: Math.round(floorCents * 1.5) },
+    confidence_score: 0.05,
+    data_points: 0,
+    last_updated: null,
+    location: {
+      zip_requested: zipCode || null,
+      stores_in_area: 0,
+      nearest_store_miles: null,
+      scope: 'national',
+      coverage_note: `Synthetic estimate (${floorLabel} floor). No observed prices available.`,
+    },
+    sources: ['synthetic_floor'],
+    price_type: 'retail',
+    yield: defaultYield,
+    source_types: ['synthetic'],
+    image_url: null,
+    buyable_price: contractForLookup({
+      priceCents: floorCents,
+      confidenceScore: 0.05,
+      resolutionTier: 'estimated',
+      dataPoints: 0,
+      lastUpdated: null,
+      unit: 'each',
+      zipRequested: zipCode || null,
+      nearestStoreMiles: null,
+      sourceLabels: ['synthetic_floor'],
+    }),
   }
 }
 

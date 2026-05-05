@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { lookupPricesBatch, type PriceLookupQuery } from '@/lib/pricing/universal-price-lookup'
+import { checkPieRateLimit, rateLimitHeaders } from '@/lib/pricing/pie-rate-limiter'
 
 export const dynamic = 'force-dynamic'
 
@@ -9,8 +10,17 @@ export const dynamic = 'force-dynamic'
  * Batch price lookup. Body: { ingredients: string[], zip?: string, radius?: number }
  * Returns array of price results in same order as input.
  * Max 50 ingredients per request.
+ * Each batch request counts as 1 request toward rate limit.
  */
 export async function POST(request: NextRequest) {
+  const rateLimit = await checkPieRateLimit()
+  if (!rateLimit.allowed) {
+    return NextResponse.json(
+      { error: 'Rate limit exceeded', retry_after_ms: rateLimit.resetAt - Date.now() },
+      { status: 429, headers: rateLimitHeaders(rateLimit) }
+    )
+  }
+
   const start = Date.now()
 
   let body: { ingredients?: string[]; zip?: string; radius?: number }
@@ -59,11 +69,11 @@ export async function POST(request: NextRequest) {
       latency_ms: Date.now() - start,
     }
 
-    return NextResponse.json(response)
+    return NextResponse.json(response, { headers: rateLimitHeaders(rateLimit) })
   } catch (e: unknown) {
     return NextResponse.json(
       { error: 'Internal error', detail: e instanceof Error ? e.message : 'unknown' },
-      { status: 500 }
+      { status: 500, headers: rateLimitHeaders(rateLimit) }
     )
   }
 }

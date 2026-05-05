@@ -686,7 +686,7 @@ export function summarizeTaskResults(results: RemyTaskResult[]): string {
         message?: string
         prices?: Array<{
           ingredient: string
-          cents: number | null
+          cents: number
           unit: string
           store: string | null
           source: string
@@ -697,18 +697,13 @@ export function summarizeTaskResults(results: RemyTaskResult[]): string {
       }
       if (d.prices && d.prices.length > 0) {
         const lines = d.prices.map((p) => {
-          if (p.cents === null && !p.piCents) return `- **${p.ingredient}**: no price data`
           const parts: string[] = [`- **${p.ingredient}**:`]
-          if (p.cents !== null) {
-            const store = p.store ? ` at ${p.store}` : ''
-            parts.push(`$${(p.cents / 100).toFixed(2)}/${p.unit}${store}`)
-          }
+          const store = p.store ? ` at ${p.store}` : ''
+          parts.push(`$${(p.cents / 100).toFixed(2)}/${p.unit}${store}`)
           // Show Pi market price if different from DB price
           if (p.piCents && p.piStore) {
-            if (p.cents === null) {
-              parts.push(`$${(p.piCents / 100).toFixed(2)} at ${p.piStore} (market)`)
-            } else if (Math.abs(p.piCents - (p.cents || 0)) > 10) {
-              const cheaper = p.piCents < (p.cents || 0)
+            if (Math.abs(p.piCents - p.cents) > 10) {
+              const cheaper = p.piCents < p.cents
               parts.push(
                 `| ${cheaper ? 'better deal' : 'also'} $${(p.piCents / 100).toFixed(2)} at ${p.piStore}`
               )

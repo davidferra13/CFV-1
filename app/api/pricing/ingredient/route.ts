@@ -32,13 +32,9 @@ export async function GET(request: NextRequest) {
       radiusMiles: 50,
     })
 
-    // If amount/unit provided, compute line cost
-    let lineCostCents: number | null = null
-    if (result.price_per_unit_cents && amount > 0) {
-      // Simple: multiply price_per_unit by amount
-      // TODO: handle unit conversion (e.g., recipe says "cups", price is per lb)
-      lineCostCents = Math.round(result.price_per_unit_cents * amount)
-    }
+    // PIE Law 9: price_per_unit_cents is ALWAYS a number
+    const lineCostCents =
+      amount > 0 ? Math.round(result.price_per_unit_cents * amount) : result.price_per_unit_cents
 
     return NextResponse.json({
       ...result,

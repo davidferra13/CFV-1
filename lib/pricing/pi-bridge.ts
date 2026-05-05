@@ -14,6 +14,61 @@
 const PI_BRIDGE_URL = process.env.PI_BRIDGE_URL || 'http://10.0.0.177:7700'
 const TIMEOUT_MS = 2000 // 2s max - if Pi doesn't respond, skip it
 
+// --- Circuit Breaker ---
+// States: CLOSED (normal) -> OPEN (failing, skip requests) -> HALF_OPEN (probe one request)
+// Prevents wasting 2s per request when Pi is known-dead.
+
+type CircuitState = 'closed' | 'open' | 'half_open'
+
+const circuit = {
+  state: 'closed' as CircuitState,
+  failures: 0,
+  lastFailure: 0,
+  lastSuccess: 0,
+  // After 3 consecutive failures, open the circuit
+  failureThreshold: 3,
+  // Wait 5 minutes before probing again
+  resetTimeoutMs: 5 * 60 * 1000,
+}
+
+function shouldAllowRequest(): boolean {
+  if (circuit.state === 'closed') return true
+  if (circuit.state === 'open') {
+    // Check if enough time has passed to try again
+    if (Date.now() - circuit.lastFailure >= circuit.resetTimeoutMs) {
+      circuit.state = 'half_open'
+      return true
+    }
+    return false
+  }
+  // half_open: allow one probe request
+  return true
+}
+
+function recordSuccess(): void {
+  circuit.failures = 0
+  circuit.state = 'closed'
+  circuit.lastSuccess = Date.now()
+}
+
+function recordFailure(): void {
+  circuit.failures++
+  circuit.lastFailure = Date.now()
+  if (circuit.failures >= circuit.failureThreshold) {
+    circuit.state = 'open'
+  }
+}
+
+/** Get current circuit breaker state (for diagnostics/alerts) */
+export function getCircuitState(): {
+  state: CircuitState
+  failures: number
+  lastFailure: number
+  lastSuccess: number
+} {
+  return { ...circuit }
+}
+
 // --- Types ---
 
 export interface PiBridgeIngredient {
@@ -75,6 +130,9 @@ export interface PiBridgeHealth {
 // --- Internal fetch helper ---
 
 async function piFetch<T>(path: string, options?: RequestInit): Promise<T | null> {
+  // Circuit breaker: skip request entirely if Pi is known-dead
+  if (!shouldAllowRequest()) return null
+
   try {
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS)
@@ -86,10 +144,16 @@ async function piFetch<T>(path: string, options?: RequestInit): Promise<T | null
 
     clearTimeout(timeout)
 
-    if (!response.ok) return null
+    if (!response.ok) {
+      recordFailure()
+      return null
+    }
+
+    recordSuccess()
     return (await response.json()) as T
   } catch {
-    // Pi unreachable, timeout, or parse error - graceful degradation
+    // Pi unreachable, timeout, or parse error - circuit breaker tracks it
+    recordFailure()
     return null
   }
 }
@@ -130,7 +194,7 @@ export async function lookupPrice(
 /**
  * Batch lookup prices for multiple ingredients.
  * Returns aggregated stats (avg, min, max, observation count) per ingredient.
- * Max 100 ingredients per call.
+ * Auto-chunks requests larger than 100 items.
  *
  * @param names - Array of ingredient names to look up
  * @param state - Optional state filter for regional pricing
@@ -140,11 +204,38 @@ export async function lookupPricesBatch(
   state?: string
 ): Promise<PiBridgeBatchResult | null> {
   if (names.length === 0) return null
-  return piFetch<PiBridgeBatchResult>('/prices', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ names: names.slice(0, 100), state }),
-  })
+
+  const CHUNK_SIZE = 100
+
+  // Small batch: single request
+  if (names.length <= CHUNK_SIZE) {
+    return piFetch<PiBridgeBatchResult>('/prices', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ names, state }),
+    })
+  }
+
+  // Large batch: chunk and merge results
+  const merged: Record<string, PiBridgeBatchItem | null> = {}
+  let totalMs = 0
+  let totalCount = 0
+
+  for (let i = 0; i < names.length; i += CHUNK_SIZE) {
+    const chunk = names.slice(i, i + CHUNK_SIZE)
+    const result = await piFetch<PiBridgeBatchResult>('/prices', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ names: chunk, state }),
+    })
+    if (!result) continue
+    Object.assign(merged, result.results)
+    totalMs += result.query_ms
+    totalCount += result.count
+  }
+
+  if (totalCount === 0) return null
+  return { results: merged, query_ms: totalMs, count: totalCount }
 }
 
 /**

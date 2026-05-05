@@ -76,16 +76,13 @@ export async function GET(request: NextRequest) {
     const prices = await lookupPricesBatch(queries)
 
     // Build per-ingredient breakdown
+    // PIE Law 9: price_per_unit_cents is ALWAYS a number (synthetic floor guarantees this)
     const breakdown = ingredients.map((ing, idx) => {
       const price = prices[idx]
       const amount = Number(ing.quantity) || 1
       const yieldPct = ing.yield_pct ? Number(ing.yield_pct) / 100 : 1.0
       const adjustedAmount = yieldPct > 0 ? amount / yieldPct : amount
-
-      let lineCostCents: number | null = null
-      if (price.price_per_unit_cents) {
-        lineCostCents = Math.round(price.price_per_unit_cents * adjustedAmount)
-      }
+      const lineCostCents = Math.round(price.price_per_unit_cents * adjustedAmount)
 
       return {
         ingredient: ing.ingredient_name,
@@ -103,8 +100,8 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    const totalCost = breakdown.reduce((sum, item) => sum + (item.line_cost || 0), 0)
-    const pricedCount = breakdown.filter((item) => item.line_cost !== null).length
+    const totalCost = breakdown.reduce((sum, item) => sum + item.line_cost, 0)
+    const pricedCount = breakdown.length // PIE Law 9: all ingredients always have a price
     const avgConfidence =
       breakdown.length > 0
         ? Math.round(
@@ -114,11 +111,10 @@ export async function GET(request: NextRequest) {
 
     const servings = Number(recipe?.yield_quantity) || 1
     const warnings = breakdown
-      .filter((item) => item.confidence < 0.3 || item.line_cost === null)
+      .filter((item) => item.confidence < 0.3)
       .map((item) => ({
         ingredient: item.ingredient,
-        message:
-          item.line_cost === null ? 'Price unavailable' : 'Rough estimate, limited local data',
+        message: 'Rough estimate, limited local data',
       }))
 
     // Resolve region name for the ZIP
@@ -195,11 +191,7 @@ export async function POST(request: NextRequest) {
     const breakdown = ingredients.map((ing, idx) => {
       const price = prices[idx]
       const amount = ing.amount || 1
-
-      let lineCostCents: number | null = null
-      if (price.price_per_unit_cents) {
-        lineCostCents = Math.round(price.price_per_unit_cents * amount)
-      }
+      const lineCostCents = Math.round(price.price_per_unit_cents * amount)
 
       return {
         ingredient: ing.name,
@@ -214,8 +206,8 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    const totalCost = breakdown.reduce((sum, item) => sum + (item.line_cost || 0), 0)
-    const pricedCount = breakdown.filter((item) => item.line_cost !== null).length
+    const totalCost = breakdown.reduce((sum, item) => sum + item.line_cost, 0)
+    const pricedCount = breakdown.length
     const avgConfidence =
       breakdown.length > 0
         ? Math.round(

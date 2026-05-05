@@ -162,6 +162,8 @@ export const PUBLIC_UNAUTHENTICATED_PATHS = [
   '/for-operators',
   '/gift-cards',
   '/how-it-works',
+  '/ingredient',
+  '/ingredients',
   '/services',
 ] as const
 

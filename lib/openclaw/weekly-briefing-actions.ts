@@ -95,14 +95,12 @@ export async function getWeeklyPriceBriefing(): Promise<WeeklyBriefing | null> {
   // 2. Resolve current prices
   const currentPrices = await resolvePricesBatch(ingredientIds, tenantId)
 
-  // 3. Compute current basket total
+  // 3. Compute current basket total (PIE Law 9: cents always non-null)
   let totalBasketCents = 0
   let pricedCount = 0
   for (const [, price] of currentPrices) {
-    if (price.cents !== null) {
-      totalBasketCents += price.cents
-      pricedCount++
-    }
+    totalBasketCents += price.cents
+    pricedCount++
   }
 
   // 4. Get previous week's basket from ingredient_price_history

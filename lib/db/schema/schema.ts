@@ -25556,3 +25556,66 @@ export const hubHouseholdMembers = pgTable(
     ),
   ]
 )
+
+// ---------------------------------------------------------------------------
+// Phone Numbers
+// ---------------------------------------------------------------------------
+
+export const phoneNumbers = pgTable("phone_numbers", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	entityType: text("entity_type").notNull(),
+	entityId: uuid("entity_id").notNull(),
+	phoneE164: text("phone_e164").notNull(),
+	phoneDisplay: text("phone_display").notNull(),
+	label: text().default('mobile'),
+	type: text().default('primary'),
+	canText: boolean("can_text").default(true),
+	verified: boolean().default(false),
+	verifiedAt: timestamp("verified_at", { withTimezone: true, mode: 'string' }),
+	verificationCodeHash: text("verification_code_hash"),
+	verificationExpiresAt: timestamp("verification_expires_at", { withTimezone: true, mode: 'string' }),
+	verificationAttempts: integer("verification_attempts").default(0),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_phone_numbers_entity").using("btree", table.entityType.asc().nullsLast(), table.entityId.asc().nullsLast()),
+	index("idx_phone_numbers_e164").using("btree", table.phoneE164.asc().nullsLast()),
+	unique("phone_numbers_entity_type_entity_id_phone_e164_key").on(table.entityType, table.entityId, table.phoneE164),
+	check("phone_numbers_entity_type_check", sql`entity_type = ANY (ARRAY['chef'::text, 'client'::text, 'staff'::text, 'vendor'::text, 'venue'::text])`),
+	check("phone_numbers_type_check", sql`type = ANY (ARRAY['primary'::text, 'secondary'::text, 'emergency'::text])`),
+])
+
+// ---------------------------------------------------------------------------
+// Rate Limits (Durable, PostgreSQL-backed)
+// ---------------------------------------------------------------------------
+
+export const rateLimits = pgTable("rate_limits", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	key: text().notNull(),
+	windowStart: timestamp("window_start", { withTimezone: true, mode: 'string' }).notNull(),
+	windowSeconds: integer("window_seconds").notNull(),
+	count: integer().default(1),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_rate_limits_key").using("btree", table.key.asc().nullsLast()),
+	index("idx_rate_limits_cleanup").using("btree", table.createdAt.asc().nullsLast()),
+	unique("rate_limits_key_window_start_key").on(table.key, table.windowStart),
+])
+
+// ---------------------------------------------------------------------------
+// Security Events (Audit Log)
+// ---------------------------------------------------------------------------
+
+export const securityEvents = pgTable("security_events", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	authUserId: uuid("auth_user_id"),
+	eventType: text("event_type").notNull(),
+	ipAddress: text("ip_address"),
+	userAgent: text("user_agent"),
+	metadata: jsonb().default({}),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_security_events_user").using("btree", table.authUserId.asc().nullsLast(), table.createdAt.desc().nullsLast()),
+	index("idx_security_events_type").using("btree", table.eventType.asc().nullsLast(), table.createdAt.desc().nullsLast()),
+	index("idx_security_events_ip").using("btree", table.ipAddress.asc().nullsLast(), table.createdAt.desc().nullsLast()),
+])

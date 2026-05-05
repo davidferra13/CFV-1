@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { lookupPrice } from '@/lib/pricing/universal-price-lookup'
+import { checkPieRateLimit, rateLimitHeaders } from '@/lib/pricing/pie-rate-limiter'
 
 export const dynamic = 'force-dynamic'
 
@@ -8,8 +9,20 @@ export const dynamic = 'force-dynamic'
  *
  * Public PIE price lookup. Returns best price for any ingredient,
  * optionally localized to a ZIP code.
+ *
+ * Rate limits: anonymous 60/min, authenticated 600/min, pro 6000/min.
+ * Auth: Bearer token or x-api-key header.
  */
 export async function GET(request: NextRequest) {
+  // Rate limiting
+  const rateLimit = await checkPieRateLimit()
+  if (!rateLimit.allowed) {
+    return NextResponse.json(
+      { error: 'Rate limit exceeded', retry_after_ms: rateLimit.resetAt - Date.now() },
+      { status: 429, headers: rateLimitHeaders(rateLimit) }
+    )
+  }
+
   const start = Date.now()
   const { searchParams } = request.nextUrl
 
@@ -58,15 +71,14 @@ export async function GET(request: NextRequest) {
       latency_ms: Date.now() - start,
     }
 
-    if (!result.matched) {
-      return NextResponse.json(response, { status: 404 })
-    }
-
-    return NextResponse.json(response)
+    // PIE Law 9: ALWAYS return a price, even if match confidence is low.
+    // Callers use confidence_score and resolution_tier to judge quality.
+    // Never 404 a price request - synthetic floor guarantees a number.
+    return NextResponse.json(response, { headers: rateLimitHeaders(rateLimit) })
   } catch (e: unknown) {
     return NextResponse.json(
       { error: 'Internal error', detail: e instanceof Error ? e.message : 'unknown' },
-      { status: 500 }
+      { status: 500, headers: rateLimitHeaders(rateLimit) }
     )
   }
 }

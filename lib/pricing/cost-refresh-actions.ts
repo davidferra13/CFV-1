@@ -246,7 +246,7 @@ async function refreshIngredientCostsForTenantInternal(
     for (const ingredientId of ids) {
       const resolved = resolvedMap.get(ingredientId)
 
-      if (!resolved || resolved.cents === null || resolved.cents === undefined) {
+      if (!resolved) {
         unmatched++
         continue
       }

@@ -156,6 +156,29 @@ export async function importReceiptPrices(params: {
       }
     }
 
+    // Feed PIE ground truth + accuracy signals (non-blocking)
+    try {
+      const { processReceiptSignals } = await import('@/lib/pricing/receipt-price-bridge')
+      const signals = params.items
+        .filter((item) => item.ingredientId && item.priceCents)
+        .map((item) => ({
+          ingredientId: item.ingredientId,
+          ingredientName: item.productName,
+          priceCents:
+            item.quantity > 0 ? Math.round(item.priceCents / item.quantity) : item.priceCents,
+          unit: item.unit || 'each',
+          quantity: item.quantity || 1,
+          storeName: params.storeName,
+          storeState: null as string | null,
+          storeZip: null as string | null,
+          purchaseDate: params.purchaseDate,
+          tenantId,
+        }))
+      await processReceiptSignals(signals)
+    } catch (err) {
+      console.error('[non-blocking] PIE receipt bridge failed:', err)
+    }
+
     revalidatePath('/ingredients')
     revalidatePath('/recipes')
     revalidateTag('ingredient-prices')

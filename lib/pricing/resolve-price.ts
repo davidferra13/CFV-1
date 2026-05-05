@@ -20,7 +20,8 @@
  *   7. GOVERNMENT         - BLS/USDA NE regional average (openclaw_government)
  *   8. HISTORICAL         - Chef's own average from past purchases
  *   9. CATEGORY BASELINE  - Category-level median (e.g., average spice price per oz)
- *  10. NONE               - No price data available
+ * 9.5. SYNTHETIC (DB)     - Pre-computed synthetic price from synthetic engine cron
+ *  10. SYNTHETIC (INLINE)  - Category floor + RPP (absolute last resort, NEVER null)
  */
 
 import { db } from '@/lib/db'
@@ -29,6 +30,59 @@ import { getRegionalAverage, getRegionalAveragesBatch } from './cross-store-aver
 import { getCategoryBaseline, getCategoryBaselinesBatch } from './category-baseline'
 import { lookupPrice, lookupPricesBatch } from './pi-bridge'
 import { normalizeIngredientName } from './name-normalizer'
+
+// --- LRU Price Cache ---
+// In-memory TTL cache to avoid repeated DB hits for the same ingredient+tenant
+// within a short window. Especially valuable during menu/event costing where
+// the same ingredient appears in multiple recipes.
+
+interface CacheEntry {
+  price: ResolvedPrice
+  expiry: number
+}
+
+const PRICE_CACHE_TTL_MS = 60_000 // 60 seconds (single lookups)
+const PRICE_CACHE_BATCH_TTL_MS = 300_000 // 5 minutes (batch operations, recipe/event costing)
+const PRICE_CACHE_MAX_SIZE = 4000 // Max entries before eviction (raised for batch pre-warming)
+
+const priceCache = new Map<string, CacheEntry>()
+
+function priceCacheKey(ingredientId: string, tenantId: string, state?: string): string {
+  return `${tenantId}:${ingredientId}:${state || ''}`
+}
+
+function getCachedPrice(key: string): ResolvedPrice | null {
+  const entry = priceCache.get(key)
+  if (!entry) return null
+  if (Date.now() > entry.expiry) {
+    priceCache.delete(key)
+    return null
+  }
+  return entry.price
+}
+
+function setCachedPrice(key: string, price: ResolvedPrice, ttlMs?: number): void {
+  // Simple size eviction: if over max, clear oldest 25%
+  if (priceCache.size >= PRICE_CACHE_MAX_SIZE) {
+    const keys = Array.from(priceCache.keys())
+    const evictCount = Math.floor(PRICE_CACHE_MAX_SIZE * 0.25)
+    for (let i = 0; i < evictCount; i++) {
+      priceCache.delete(keys[i])
+    }
+  }
+  priceCache.set(key, { price, expiry: Date.now() + (ttlMs || PRICE_CACHE_TTL_MS) })
+}
+
+/** Clear all cached prices. Call after mutations (cost refresh, chef override update). */
+export function invalidatePriceCache(tenantId?: string): void {
+  if (!tenantId) {
+    priceCache.clear()
+    return
+  }
+  for (const key of priceCache.keys()) {
+    if (key.startsWith(`${tenantId}:`)) priceCache.delete(key)
+  }
+}
 
 // --- Chef State Lookup (cached per request) ---
 
@@ -60,6 +114,7 @@ export type PriceSource =
   | 'government'
   | 'historical'
   | 'category_baseline'
+  | 'synthetic'
   | 'none'
 
 export type PriceFreshness = 'current' | 'recent' | 'stale' | 'none'
@@ -91,6 +146,7 @@ export type ResolutionTier =
   | 'government'
   | 'historical'
   | 'category_baseline'
+  | 'synthetic'
   | 'none'
 
 /**
@@ -102,7 +158,8 @@ export type ResolutionTier =
 export type CoverageLevel = 'direct' | 'regional' | 'estimated'
 
 export interface ResolvedPrice {
-  cents: number | null
+  /** Price in cents. PIE Law 9: ALWAYS a number, never null. Synthetic floor guarantees this. */
+  cents: number
   unit: string
   source: PriceSource
   sourceTier: string | null
@@ -265,6 +322,41 @@ function applyRpp(cents: number, state: string | null): number {
   return Math.round(cents * (factor / 100))
 }
 
+// --- Subcategory price floors (absolute last resort, cents per standard unit) ---
+// Granular USDA/BLS-anchored floors replace the old 15-category system.
+// Each subcategory reflects real retail averages (2024-2025 USDA ERS data).
+// The old system returned $4.99 for wagyu AND chicken. That is over.
+//
+// Format: subcategory keyword -> cents per standard unit (lb, oz, each, etc.)
+// Resolution: ingredient name is checked against subcategory keywords FIRST,
+// then falls back to the broad category floor.
+
+import {
+  inferSubcategory,
+  SUBCATEGORY_FLOOR_CENTS,
+  CATEGORY_FLOOR_CENTS,
+  DEFAULT_FLOOR_CENTS,
+} from './subcategory-floors'
+
+/** Generate an inline synthetic price from subcategory floor + RPP. Never returns null. */
+function generateInlineSynthetic(
+  category: string | null,
+  state: string | null,
+  ingredientName?: string | null
+): { cents: number; reason: string } {
+  const cat = category?.toLowerCase() || 'pantry'
+  const subcat = ingredientName ? inferSubcategory(ingredientName, cat) : null
+  const floor = subcat
+    ? SUBCATEGORY_FLOOR_CENTS[subcat] || CATEGORY_FLOOR_CENTS[cat] || DEFAULT_FLOOR_CENTS
+    : CATEGORY_FLOOR_CENTS[cat] || DEFAULT_FLOOR_CENTS
+  const cents = applyRpp(floor, state)
+  const label = subcat || cat
+  const reason = state
+    ? `Synthetic estimate: ${label} floor ($${(floor / 100).toFixed(2)}), adjusted for ${state}`
+    : `Synthetic estimate: ${label} floor ($${(floor / 100).toFixed(2)})`
+  return { cents, reason }
+}
+
 /** Derive coverageLevel from resolutionTier */
 function coverageLevelForTier(tier: ResolutionTier): CoverageLevel {
   switch (tier) {
@@ -280,6 +372,7 @@ function coverageLevelForTier(tier: ResolutionTier): CoverageLevel {
     case 'government':
     case 'historical':
     case 'category_baseline':
+    case 'synthetic':
     case 'none':
       return 'estimated'
   }
@@ -348,6 +441,8 @@ function sourceDisplayStore(source: PriceSource, storeName: string | null): stri
       return 'Your avg'
     case 'category_baseline':
       return storeName || 'Category estimate'
+    case 'synthetic':
+      return storeName || 'Synthetic estimate'
     case 'none':
       return ''
   }
@@ -360,22 +455,23 @@ export async function resolvePrice(
   tenantId: string,
   options?: { preferredStore?: string; state?: string }
 ): Promise<ResolvedPrice> {
+  // LRU cache check
+  const cacheKey = priceCacheKey(ingredientId, tenantId, options?.state)
+  const cached = getCachedPrice(cacheKey)
+  if (cached) return cached
+
+  const result = await resolvePriceUncached(ingredientId, tenantId, options)
+  setCachedPrice(cacheKey, result)
+  return result
+}
+
+async function resolvePriceUncached(
+  ingredientId: string,
+  tenantId: string,
+  options?: { preferredStore?: string; state?: string }
+): Promise<ResolvedPrice> {
   const preferredStore = options?.preferredStore || null
   const preferredState = options?.state || (await getChefHomeState(tenantId))
-  const noPrice: ResolvedPrice = {
-    cents: null,
-    unit: 'each',
-    source: 'none',
-    sourceTier: null,
-    resolutionTier: 'none',
-    coverageLevel: 'estimated',
-    store: null,
-    confidence: 0,
-    effectiveConfidence: 0,
-    freshness: 'none',
-    confirmedAt: null,
-    reason: 'No price data. Log a receipt to set the price.',
-  }
 
   // Tier 0: CHEF OVERRIDE (standing override from chef_ingredient_prices, within 90 days)
   const chefOverride = (await db.execute(sql`
@@ -490,7 +586,7 @@ export async function resolvePrice(
     SELECT price_per_unit_cents, unit, store_name, purchase_date
     FROM ingredient_price_history
     WHERE ingredient_id = ${ingredientId}
-      AND (tenant_id = ${tenantId} OR (tenant_id IS NULL AND source = 'openclaw_wholesale'))
+      AND (tenant_id = ${tenantId} OR tenant_id IS NULL)
       AND source = 'openclaw_wholesale'
       AND purchase_date > CURRENT_DATE - INTERVAL '30 days'
     ORDER BY purchase_date DESC
@@ -550,12 +646,12 @@ export async function resolvePrice(
   }
 
   // Tier 3: DIRECT SCRAPE (openclaw_scrape) within 14 days [PostgreSQL fallback]
-  // When preferredStore or state is set, prefer rows from that store/region
+  // OpenClaw data is system-wide: visible to ALL tenants (a price is a price).
   const scrape = (await db.execute(sql`
     SELECT price_per_unit_cents, unit, store_name, purchase_date
     FROM ingredient_price_history
     WHERE ingredient_id = ${ingredientId}
-      AND tenant_id = ${tenantId}
+      AND (tenant_id = ${tenantId} OR tenant_id IS NULL)
       AND source = 'openclaw_scrape'
       AND purchase_date > CURRENT_DATE - INTERVAL '14 days'
     ORDER BY
@@ -584,11 +680,12 @@ export async function resolvePrice(
   }
 
   // Tier 4: FLYER (openclaw_flyer) within 14 days
+  // OpenClaw data is system-wide: visible to ALL tenants.
   const flyer = (await db.execute(sql`
     SELECT price_per_unit_cents, unit, store_name, purchase_date
     FROM ingredient_price_history
     WHERE ingredient_id = ${ingredientId}
-      AND tenant_id = ${tenantId}
+      AND (tenant_id = ${tenantId} OR tenant_id IS NULL)
       AND source = 'openclaw_flyer'
       AND purchase_date > CURRENT_DATE - INTERVAL '14 days'
     ORDER BY
@@ -617,11 +714,12 @@ export async function resolvePrice(
   }
 
   // Tier 5: INSTACART (openclaw_instacart) within 30 days
+  // OpenClaw data is system-wide: visible to ALL tenants.
   const instacart = (await db.execute(sql`
     SELECT price_per_unit_cents, unit, store_name, purchase_date
     FROM ingredient_price_history
     WHERE ingredient_id = ${ingredientId}
-      AND tenant_id = ${tenantId}
+      AND (tenant_id = ${tenantId} OR tenant_id IS NULL)
       AND source = 'openclaw_instacart'
       AND purchase_date > CURRENT_DATE - INTERVAL '30 days'
     ORDER BY
@@ -689,7 +787,7 @@ export async function resolvePrice(
       FROM ingredient_aliases ia
       JOIN system_ingredients si ON si.id = ia.system_ingredient_id
       JOIN openclaw.resolved_prices rp
-        ON rp.canonical_ingredient_id = COALESCE(si.slug, LOWER(REPLACE(si.name, ' ', '-')))
+        ON rp.canonical_ingredient_id = si.id::text
       JOIN openclaw.pricing_regions pr ON pr.id = rp.pricing_region_id
       JOIN openclaw.zip_centroids zc ON zc.pricing_region_id = pr.id
       JOIN chefs ch ON ch.id = ${tenantId}
@@ -807,7 +905,7 @@ export async function resolvePrice(
     SELECT price_per_unit_cents, unit, purchase_date
     FROM ingredient_price_history
     WHERE ingredient_id = ${ingredientId}
-      AND tenant_id = ${tenantId}
+      AND (tenant_id = ${tenantId} OR tenant_id IS NULL)
       AND source = 'openclaw_government'
     ORDER BY purchase_date DESC
     LIMIT 1
@@ -890,8 +988,78 @@ export async function resolvePrice(
     }
   }
 
-  // Tier 10: NONE
-  return noPrice
+  // Tier 9.5: SYNTHETIC (pre-computed by synthetic engine, stored in openclaw.synthetic_prices)
+  // Bridge: ingredient name -> canonical_ingredient_id (slug) -> synthetic_prices
+  try {
+    const lookupName = ingredientName || ingredientNameRow[0]?.name
+    if (lookupName) {
+      const normalizedSlug = normalizeIngredientName(lookupName).toLowerCase().replace(/\s+/g, '-')
+      const syntheticRows = (await db.execute(sql`
+        SELECT sp.price_cents, sp.price_unit, sp.confidence,
+               sp.derivation_method, pr.slug AS region_slug,
+               sp.updated_at::text AS updated_at
+        FROM openclaw.synthetic_prices sp
+        JOIN openclaw.pricing_regions pr ON pr.id = sp.pricing_region_id
+        WHERE sp.canonical_ingredient_id = ${normalizedSlug}
+          AND (
+            pr.slug = ${preferredState?.toLowerCase() || ''}
+            OR sp.pricing_region_id IN (
+              SELECT zc.pricing_region_id FROM openclaw.zip_centroids zc
+              JOIN chefs ch ON ch.zip_code = zc.zip
+              WHERE ch.id = ${tenantId}
+            )
+          )
+        ORDER BY sp.confidence DESC
+        LIMIT 1
+      `)) as unknown as Array<{
+        price_cents: number
+        price_unit: string
+        confidence: number
+        derivation_method: string
+        region_slug: string
+        updated_at: string | null
+      }>
+
+      if (syntheticRows.length > 0 && syntheticRows[0].price_cents > 0) {
+        const row = syntheticRows[0]
+        return withDecay({
+          cents: row.price_cents,
+          unit: row.price_unit?.replace('per_', '') || 'each',
+          source: 'synthetic',
+          sourceTier: row.derivation_method,
+          resolutionTier: 'synthetic',
+          store: `Synthetic (${row.derivation_method}, ${row.region_slug})`,
+          confidence: Math.min(Number(row.confidence), 0.15),
+          freshness: computeFreshness(row.updated_at),
+          confirmedAt: row.updated_at,
+          reason: `Synthetic price via ${row.derivation_method}`,
+        })
+      }
+    }
+  } catch {
+    // synthetic_prices table may not exist yet; fall through to inline synthetic
+  }
+
+  // Tier 10: INLINE SYNTHETIC (absolute last resort, PIE Law 9: NEVER return null)
+  // Category floor + RPP adjustment. Every ingredient gets a price. Always.
+  const categoryForFloor = ingredientCat[0]?.category || null
+  const { cents: syntheticCents, reason: syntheticReason } = generateInlineSynthetic(
+    categoryForFloor,
+    preferredState,
+    ingredientName
+  )
+  return withDecay({
+    cents: syntheticCents,
+    unit: 'each',
+    source: 'synthetic',
+    sourceTier: 'category_floor_inline',
+    resolutionTier: 'synthetic',
+    store: 'Synthetic estimate',
+    confidence: 0.1,
+    freshness: 'stale' as PriceFreshness,
+    confirmedAt: null,
+    reason: syntheticReason,
+  })
 }
 
 // --- Batch resolution (N+1 avoidance) ---
@@ -979,7 +1147,7 @@ export async function resolvePricesBatch(
     SELECT ingredient_id, price_per_unit_cents, unit, store_name, purchase_date, source
     FROM ingredient_price_history
     WHERE ingredient_id = ANY(${ingredientIds})
-      AND (tenant_id = ${tenantId} OR (tenant_id IS NULL AND source = 'openclaw_wholesale'))
+      AND (tenant_id = ${tenantId} OR tenant_id IS NULL)
       AND source IN ('openclaw_scrape', 'openclaw_flyer', 'openclaw_instacart', 'openclaw_government', 'openclaw_wholesale')
     ORDER BY ingredient_id, source, purchase_date DESC
   `)) as unknown as BatchRow[]
@@ -1083,7 +1251,7 @@ export async function resolvePricesBatch(
       FROM ingredient_aliases ia
       JOIN system_ingredients si ON si.id = ia.system_ingredient_id
       JOIN openclaw.resolved_prices rp
-        ON rp.canonical_ingredient_id = COALESCE(si.slug, LOWER(REPLACE(si.name, ' ', '-')))
+        ON rp.canonical_ingredient_id = si.id::text
       JOIN openclaw.pricing_regions pr ON pr.id = rp.pricing_region_id
       WHERE ia.ingredient_id = ANY(${ingredientIds})
         AND ia.tenant_id = ${tenantId}
@@ -1109,6 +1277,59 @@ export async function resolvePricesBatch(
     }
   } catch {
     // resolved_prices table may not exist yet; gracefully skip
+  }
+
+  // Query 7: Batch synthetic_prices lookup (Tier 9.5)
+  // Bridge: ingredient name -> normalized slug -> synthetic_prices
+  type SyntheticRow = {
+    slug: string
+    price_cents: number
+    price_unit: string
+    confidence: number
+    derivation_method: string
+    region_slug: string
+    updated_at: string | null
+  }
+  const syntheticBySlug = new Map<string, SyntheticRow>()
+  const slugById = new Map<string, string>()
+  for (const id of ingredientIds) {
+    const raw = nameById.get(id)
+    if (raw) {
+      const slug = normalizeIngredientName(raw).toLowerCase().replace(/\s+/g, '-')
+      slugById.set(id, slug)
+    }
+  }
+  const uniqueSlugs = [...new Set([...slugById.values()])]
+  if (uniqueSlugs.length > 0) {
+    try {
+      const synRows = (await db.execute(sql`
+        SELECT DISTINCT ON (sp.canonical_ingredient_id)
+          sp.canonical_ingredient_id AS slug,
+          sp.price_cents, sp.price_unit, sp.confidence,
+          sp.derivation_method, pr.slug AS region_slug,
+          sp.updated_at::text AS updated_at
+        FROM openclaw.synthetic_prices sp
+        JOIN openclaw.pricing_regions pr ON pr.id = sp.pricing_region_id
+        WHERE sp.canonical_ingredient_id = ANY(${uniqueSlugs})
+          AND (
+            pr.slug = ${preferredState?.toLowerCase() || ''}
+            OR sp.pricing_region_id IN (
+              SELECT zc.pricing_region_id FROM openclaw.zip_centroids zc
+              JOIN chefs ch ON ch.zip_code = zc.zip
+              WHERE ch.id = ${tenantId}
+            )
+          )
+        ORDER BY sp.canonical_ingredient_id, sp.confidence DESC
+      `)) as unknown as SyntheticRow[]
+
+      for (const row of synRows) {
+        if (row.price_cents > 0) {
+          syntheticBySlug.set(row.slug, row)
+        }
+      }
+    } catch {
+      // synthetic_prices table may not exist yet; skip
+    }
   }
 
   // Resolve each ingredient
@@ -1444,21 +1665,58 @@ export async function resolvePricesBatch(
       }
     }
 
-    // Tier 10: None
-    result.set(id, {
-      cents: null,
-      unit: 'each',
-      source: 'none',
-      sourceTier: null,
-      resolutionTier: 'none',
-      coverageLevel: 'estimated',
-      store: null,
-      confidence: 0,
-      effectiveConfidence: 0,
-      freshness: 'none',
-      confirmedAt: null,
-      reason: 'No price data. Log a receipt to set the price.',
-    })
+    // Tier 9.5: Pre-computed synthetic price from synthetic engine
+    const slug = slugById.get(id)
+    const synRow = slug ? syntheticBySlug.get(slug) : undefined
+    if (synRow) {
+      result.set(
+        id,
+        withDecay({
+          cents: synRow.price_cents,
+          unit: synRow.price_unit?.replace('per_', '') || 'each',
+          source: 'synthetic',
+          sourceTier: synRow.derivation_method,
+          resolutionTier: 'synthetic',
+          store: `Synthetic (${synRow.derivation_method}, ${synRow.region_slug})`,
+          confidence: Math.min(Number(synRow.confidence), 0.15),
+          freshness: computeFreshness(synRow.updated_at),
+          confirmedAt: synRow.updated_at,
+          reason: `Synthetic price via ${synRow.derivation_method}`,
+        })
+      )
+      continue
+    }
+
+    // Tier 10: INLINE SYNTHETIC (PIE Law 9: NEVER return null)
+    // Category floor + RPP. Every ingredient gets a price. Always.
+    const catForFloor = categoryById.get(id) || null
+    const { cents: synCents, reason: synReason } = generateInlineSynthetic(
+      catForFloor,
+      preferredState,
+      nameById.get(id) || null
+    )
+    result.set(
+      id,
+      withDecay({
+        cents: synCents,
+        unit: 'each',
+        source: 'synthetic',
+        sourceTier: 'category_floor_inline',
+        resolutionTier: 'synthetic',
+        store: 'Synthetic estimate',
+        confidence: 0.1,
+        freshness: 'stale',
+        confirmedAt: null,
+        reason: synReason,
+      })
+    )
+  }
+
+  // Pre-warm LRU cache with batch results (5min TTL) so subsequent single
+  // lookups (e.g. ingredient detail pages) hit memory instead of DB
+  for (const [id, price] of result) {
+    const key = priceCacheKey(id, tenantId, preferredState || undefined)
+    setCachedPrice(key, price, PRICE_CACHE_BATCH_TTL_MS)
   }
 
   return result

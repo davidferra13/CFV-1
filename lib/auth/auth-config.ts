@@ -19,6 +19,9 @@ import { userRoles, clients, staffMembers, referralPartners } from '@/lib/db/sch
 import { eq } from 'drizzle-orm'
 import { getSessionControlRow, recordSuccessfulAccountAccess } from './account-access'
 import { shouldInvalidateJwtSession } from './account-access-core'
+import { userHasMfaEnabled, getMfaMethodType, createMfaChallenge } from '@/lib/mfa/challenge'
+import { checkLoginAttempts, recordFailedAttempt, clearAttempts } from '@/lib/security/brute-force'
+import { logSecurityEvent } from '@/lib/security/audit'
 
 // Extend the Auth.js types to include our custom JWT/session fields
 declare module 'next-auth' {
@@ -26,6 +29,8 @@ declare module 'next-auth' {
     role?: string
     entityId?: string
     tenantId?: string | null
+    mfaPending?: boolean
+    mfaChallengeId?: string
   }
   interface Session {
     user: {
@@ -34,6 +39,8 @@ declare module 'next-auth' {
       role: string
       entityId: string
       tenantId: string | null
+      mfaPending?: boolean
+      mfaChallengeId?: string
     }
   }
 }
@@ -46,6 +53,8 @@ type AuthJwtToken = {
   tenantId?: string | null
   sessionVersion?: number
   sessionAuthenticatedAt?: number
+  mfaPending?: boolean
+  mfaChallengeId?: string
   iat?: number
 }
 
@@ -120,6 +129,23 @@ export const authConfig: NextAuthConfig = {
 
         if (!email || !password) return null
 
+        // Brute-force check: block locked-out accounts before any DB work
+        try {
+          const loginCheck = await checkLoginAttempts(email)
+          if (!loginCheck.allowed) {
+            const lockoutMinutes = loginCheck.lockoutUntil
+              ? Math.ceil((loginCheck.lockoutUntil.getTime() - Date.now()) / 60000)
+              : 15
+            logSecurityEvent({
+              eventType: 'login_failed',
+              metadata: { email, reason: 'account_locked', lockoutMinutes },
+            })
+            return null
+          }
+        } catch (err) {
+          console.error('[auth] Brute-force check failed, allowing attempt:', err)
+        }
+
         // Look up user in auth.users by email
         const [user] = await db
           .select({
@@ -133,20 +159,63 @@ export const authConfig: NextAuthConfig = {
           .where(eq(authUsers.email, email))
           .limit(1)
 
-        if (!user || !user.encryptedPassword) return null
+        if (!user || !user.encryptedPassword) {
+          logSecurityEvent({
+            eventType: 'login_failed',
+            metadata: { email, reason: 'user_not_found' },
+          })
+          return null
+        }
 
         // Check email confirmation
-        if (!user.emailConfirmedAt) return null
+        if (!user.emailConfirmedAt) {
+          logSecurityEvent({
+            eventType: 'login_failed',
+            metadata: { email, reason: 'email_not_confirmed' },
+          })
+          return null
+        }
 
         // Check ban status
-        if (user.bannedUntil && new Date(user.bannedUntil) > new Date()) return null
+        if (user.bannedUntil && new Date(user.bannedUntil) > new Date()) {
+          logSecurityEvent({
+            eventType: 'login_failed',
+            metadata: { email, reason: 'user_banned' },
+          })
+          return null
+        }
 
         // Verify bcrypt password (compatible with the database-stored hashes)
         const valid = await bcrypt.compare(password, user.encryptedPassword)
-        if (!valid) return null
+        if (!valid) {
+          try {
+            await recordFailedAttempt(email)
+          } catch (err) {
+            console.error('[auth] Failed to record brute-force attempt:', err)
+          }
+          logSecurityEvent({
+            eventType: 'login_failed',
+            metadata: { email, reason: 'invalid_password' },
+          })
+          return null
+        }
+
+        // Successful credential login: clear brute-force counters
+        try {
+          await clearAttempts(email)
+        } catch (err) {
+          console.error('[auth] Failed to clear brute-force attempts:', err)
+        }
 
         // Resolve role and tenant
         const roleInfo = await resolveRoleAndTenant(user.id)
+
+        // Audit: credential login success
+        logSecurityEvent({
+          authUserId: user.id,
+          eventType: 'login_success',
+          metadata: { provider: 'credentials' },
+        })
 
         return {
           id: user.id,
@@ -200,6 +269,10 @@ export const authConfig: NextAuthConfig = {
 
         // Block banned users from Google OAuth login
         if (existing?.bannedUntil && new Date(existing.bannedUntil) > new Date()) {
+          logSecurityEvent({
+            eventType: 'login_failed',
+            metadata: { email, reason: 'user_banned', provider: 'google' },
+          })
           return false
         }
 
@@ -214,6 +287,12 @@ export const authConfig: NextAuthConfig = {
             user.tenantId = roleInfo.tenantId
             trackedTenantId = roleInfo.tenantId
           }
+          // Audit: Google OAuth login success
+          logSecurityEvent({
+            authUserId: existing.id,
+            eventType: 'login_success',
+            metadata: { provider: 'google' },
+          })
         }
         // If no existing user, they'll go to role-selection page
         // The role-selection page will create auth.users + profile records
