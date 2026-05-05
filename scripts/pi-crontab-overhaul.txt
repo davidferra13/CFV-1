@@ -1,0 +1,140 @@
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+OPENCLAW_DIR=/home/davidferra/openclaw-prices
+
+# ============================================================
+# OPENCLAW PI CRONTAB - OVERHAULED 2026-05-03
+# Target: 85% utilization. Parallel where possible.
+# Pi 5 8GB: 4 cores, can handle 2-3 concurrent scrapers.
+# ============================================================
+
+# === S8: Non-food filter (daily 1am, must run first) ===
+0 1 * * *    cd ~/openclaw-prices && node synthesizers/s8-nonfood-filter.mjs >> logs/s8.log 2>&1
+
+# === Government & Wholesale Data (Monday 2am) ===
+0 2 * * 1 cd $OPENCLAW_DIR && node services/scraper-government.mjs >> logs/scraper-government.log 2>&1
+
+# === S2: Seasonal intelligence (daily 2:30am) ===
+30 2 * * *   cd ~/openclaw-prices && node synthesizers/s2-seasonal-engine.mjs >> logs/s2.log 2>&1
+
+# === Flipp + Whole Foods PARALLEL (3am) ===
+0 3 * * * cd $OPENCLAW_DIR && node services/scraper-flipp.mjs >> logs/scraper-flipp.log 2>&1 & node services/scraper-wholefoodsapfresh.mjs >> logs/scraper-wholefoods.log 2>&1 & wait
+
+# S3: Store comparison (daily 3:30am)
+30 3 * * *   cd ~/openclaw-prices && node synthesizers/s3-store-comparison.mjs >> logs/s3.log 2>&1
+
+# Target + Walmart PARALLEL (4am)
+0 4 * * * cd $OPENCLAW_DIR && node services/scraper-target.mjs >> logs/scraper-target.log 2>&1 & node services/scraper-walmart.mjs >> logs/scraper-walmart.log 2>&1 & wait
+
+# === Cross-match Round 1 (4:30am) ===
+30 4 * * * cd $OPENCLAW_DIR && node services/cross-match.mjs >> logs/cross-match.log 2>&1
+
+# S7: Category benchmarks (daily 5am)
+0 5 * * *    cd ~/openclaw-prices && node synthesizers/s7-category-benchmarks.mjs >> logs/s7.log 2>&1
+
+# Stop & Shop (Tue/Thu/Sat 5am)
+0 5 * * 2,4,6 cd $OPENCLAW_DIR && node services/scraper-stopsandshop.mjs >> logs/scraper-stopsandshop.log 2>&1
+
+# === Instacart AM Slot: 2 CHAINS PARALLEL (6am) ===
+0 6 * * 1 cd $OPENCLAW_DIR && bash run-full-catalog.sh market-basket >> logs/instacart-walker-1.log 2>&1 & bash run-full-catalog.sh shaws >> logs/instacart-walker-2.log 2>&1 & wait
+0 6 * * 2 cd $OPENCLAW_DIR && bash run-full-catalog.sh hannaford >> logs/instacart-walker-1.log 2>&1 & bash run-full-catalog.sh brothers-marketplace >> logs/instacart-walker-2.log 2>&1 & wait
+0 6 * * 3 cd $OPENCLAW_DIR && bash run-full-catalog.sh aldi >> logs/instacart-walker-1.log 2>&1 & bash run-full-catalog.sh roche-bros >> logs/instacart-walker-2.log 2>&1 & wait
+0 6 * * 4 cd $OPENCLAW_DIR && bash run-full-catalog.sh stop-and-shop >> logs/instacart-walker-1.log 2>&1 & bash run-full-catalog.sh the-fresh-market >> logs/instacart-walker-2.log 2>&1 & wait
+0 6 * * 5 cd $OPENCLAW_DIR && bash run-full-catalog.sh costco >> logs/instacart-walker-1.log 2>&1 & bash run-full-catalog.sh star-markets >> logs/instacart-walker-2.log 2>&1 & wait
+0 6 * * 6 cd $OPENCLAW_DIR && bash run-full-catalog.sh bjs-wholesale-club >> logs/instacart-walker-1.log 2>&1 & bash run-full-catalog.sh pricerite >> logs/instacart-walker-2.log 2>&1 & wait
+0 6 * * 0 cd $OPENCLAW_DIR && bash run-full-catalog.sh wegmans >> logs/instacart-walker-1.log 2>&1 & bash run-full-catalog.sh eataly >> logs/instacart-walker-2.log 2>&1 & wait
+
+# === ChefFlow Morning Sync (8am) ===
+0 8 * * * cd $OPENCLAW_DIR && node services/sync-to-chefflow.mjs >> logs/sync-chefflow.log 2>&1
+
+# === Cross-match Round 2 (9am) ===
+0 9 * * * cd $OPENCLAW_DIR && node services/cross-match.mjs >> logs/cross-match.log 2>&1
+
+# === USDA Nutrition Enricher (daily 10am) ===
+0 10 * * * cd $OPENCLAW_DIR && node services/enricher-usda-fdc.mjs >> logs/enricher-usda-fdc.log 2>&1
+
+# === S1: Anomaly classifier (every 2 hours) ===
+0 */2 * * *  cd ~/openclaw-prices && node synthesizers/s1-anomaly-classifier.mjs >> logs/s1.log 2>&1
+
+# === S4: Price velocity (every 4 hours) ===
+0 */4 * * *  cd ~/openclaw-prices && node synthesizers/s4-price-velocity.mjs >> logs/s4.log 2>&1
+
+# === S5: Recall scanner (every 6 hours) ===
+30 */6 * * *  cd ~/openclaw-prices && node synthesizers/s5-recall-scanner.mjs >> logs/s5.log 2>&1
+
+# === Instacart Noon Slot: 2 CHAINS PARALLEL (12pm) ===
+0 12 * * 1 cd $OPENCLAW_DIR && bash run-full-catalog.sh target >> logs/instacart-walker-1.log 2>&1 & bash run-full-catalog.sh cvs >> logs/instacart-walker-2.log 2>&1 & wait
+0 12 * * 2 cd $OPENCLAW_DIR && bash run-full-catalog.sh price-chopper >> logs/instacart-walker-1.log 2>&1 & bash run-full-catalog.sh 711 >> logs/instacart-walker-2.log 2>&1 & wait
+0 12 * * 3 cd $OPENCLAW_DIR && bash run-full-catalog.sh big-y >> logs/instacart-walker-1.log 2>&1 & bash run-full-catalog.sh jetro-restaurant-depot >> logs/instacart-walker-2.log 2>&1 & wait
+0 12 * * 4 cd $OPENCLAW_DIR && bash run-full-catalog.sh walmart >> logs/instacart-walker-1.log 2>&1 & bash run-full-catalog.sh star-markets >> logs/instacart-walker-2.log 2>&1 & wait
+0 12 * * 5 cd $OPENCLAW_DIR && bash run-full-catalog.sh market-basket >> logs/instacart-walker-1.log 2>&1 & bash run-full-catalog.sh pricerite >> logs/instacart-walker-2.log 2>&1 & wait
+0 12 * * 6 cd $OPENCLAW_DIR && bash run-full-catalog.sh hannaford >> logs/instacart-walker-1.log 2>&1 & bash run-full-catalog.sh eataly >> logs/instacart-walker-2.log 2>&1 & wait
+0 12 * * 0 cd $OPENCLAW_DIR && bash run-full-catalog.sh stop-and-shop >> logs/instacart-walker-1.log 2>&1 & bash run-full-catalog.sh roche-bros >> logs/instacart-walker-2.log 2>&1 & wait
+
+# === Open Food Facts Enricher (Sunday 2pm) ===
+0 14 * * 0 cd $OPENCLAW_DIR && node services/enricher-openfoodfacts.mjs >> logs/enricher-off.log 2>&1
+
+# === Wholesale Catalog (Wednesday 3pm) ===
+0 15 * * 3 cd $OPENCLAW_DIR && node services/scraper-wholesale.mjs >> logs/scraper-wholesale.log 2>&1
+
+# === Instacart PM Slot: 2 CHAINS PARALLEL (5pm) ===
+0 17 * * 1 cd $OPENCLAW_DIR && bash run-full-catalog.sh shaws >> logs/instacart-walker-1.log 2>&1 & bash run-full-catalog.sh brothers-marketplace >> logs/instacart-walker-2.log 2>&1 & wait
+0 17 * * 2 cd $OPENCLAW_DIR && bash run-full-catalog.sh aldi >> logs/instacart-walker-1.log 2>&1 & bash run-full-catalog.sh the-fresh-market >> logs/instacart-walker-2.log 2>&1 & wait
+0 17 * * 3 cd $OPENCLAW_DIR && bash run-full-catalog.sh costco >> logs/instacart-walker-1.log 2>&1 & bash run-full-catalog.sh star-markets >> logs/instacart-walker-2.log 2>&1 & wait
+0 17 * * 4 cd $OPENCLAW_DIR && bash run-full-catalog.sh bjs-wholesale-club >> logs/instacart-walker-1.log 2>&1 & bash run-full-catalog.sh pricerite >> logs/instacart-walker-2.log 2>&1 & wait
+0 17 * * 5 cd $OPENCLAW_DIR && bash run-full-catalog.sh wegmans >> logs/instacart-walker-1.log 2>&1 & bash run-full-catalog.sh eataly >> logs/instacart-walker-2.log 2>&1 & wait
+0 17 * * 6 cd $OPENCLAW_DIR && bash run-full-catalog.sh market-basket >> logs/instacart-walker-1.log 2>&1 & bash run-full-catalog.sh hannaford >> logs/instacart-walker-2.log 2>&1 & wait
+0 17 * * 0 cd $OPENCLAW_DIR && bash run-full-catalog.sh stop-and-shop >> logs/instacart-walker-1.log 2>&1 & bash run-full-catalog.sh big-y >> logs/instacart-walker-2.log 2>&1 & wait
+
+# === Cross-match Round 3 (8pm) ===
+0 20 * * * cd $OPENCLAW_DIR && node services/cross-match.mjs >> logs/cross-match.log 2>&1
+
+# === Aggregator (trends, aging, anomaly detection) ===
+0 21 * * * cd $OPENCLAW_DIR && node services/aggregator.mjs >> logs/aggregator.log 2>&1
+
+# === Instacart Late Slot: 2 CHAINS PARALLEL (10pm) ===
+0 22 * * 1 cd $OPENCLAW_DIR && bash run-full-catalog.sh cvs >> logs/instacart-walker-1.log 2>&1 & bash run-full-catalog.sh 711 >> logs/instacart-walker-2.log 2>&1 & wait
+0 22 * * 2 cd $OPENCLAW_DIR && bash run-full-catalog.sh jetro-restaurant-depot >> logs/instacart-walker-1.log 2>&1 & bash run-full-catalog.sh target >> logs/instacart-walker-2.log 2>&1 & wait
+0 22 * * 3 cd $OPENCLAW_DIR && bash run-full-catalog.sh walmart >> logs/instacart-walker-1.log 2>&1 & bash run-full-catalog.sh price-chopper >> logs/instacart-walker-2.log 2>&1 & wait
+0 22 * * 4 cd $OPENCLAW_DIR && bash run-full-catalog.sh hannaford >> logs/instacart-walker-1.log 2>&1 & bash run-full-catalog.sh big-y >> logs/instacart-walker-2.log 2>&1 & wait
+0 22 * * 5 cd $OPENCLAW_DIR && bash run-full-catalog.sh shaws >> logs/instacart-walker-1.log 2>&1 & bash run-full-catalog.sh brothers-marketplace >> logs/instacart-walker-2.log 2>&1 & wait
+0 22 * * 6 cd $OPENCLAW_DIR && bash run-full-catalog.sh roche-bros >> logs/instacart-walker-1.log 2>&1 & bash run-full-catalog.sh the-fresh-market >> logs/instacart-walker-2.log 2>&1 & wait
+0 22 * * 0 cd $OPENCLAW_DIR && bash run-full-catalog.sh costco >> logs/instacart-walker-1.log 2>&1 & bash run-full-catalog.sh bjs-wholesale-club >> logs/instacart-walker-2.log 2>&1 & wait
+
+# === Cross-match Round 4 (10:30pm) ===
+30 22 * * * cd $OPENCLAW_DIR && node services/cross-match.mjs >> logs/cross-match.log 2>&1
+
+# === ChefFlow Nightly Sync (11pm) ===
+0 23 * * * cd $OPENCLAW_DIR && node services/sync-to-chefflow.mjs >> logs/sync-chefflow.log 2>&1
+
+# === Walmart Nationwide (Sunday overnight) ===
+0 0 * * 0 cd $OPENCLAW_DIR && node services/scraper-walmart-nationwide.mjs >> logs/scraper-walmart-nationwide.log 2>&1
+
+# === Target Nationwide (Saturday overnight) ===
+0 0 * * 6 cd $OPENCLAW_DIR && node services/scraper-target-nationwide.mjs >> logs/scraper-target-nationwide.log 2>&1
+
+# === S6: Yield factor populator (weekly Sunday 4am) ===
+0 4 * * 0    cd ~/openclaw-prices && node synthesizers/s6-yield-populator.mjs >> logs/s6.log 2>&1
+
+# === S10: Substitution suggester (weekly Wednesday 5:30am) ===
+30 5 * * 3   cd ~/openclaw-prices && node synthesizers/s10-substitutions.mjs >> logs/s10.log 2>&1
+
+# === S11: Farmers market intelligence (weekly Monday 5:30am) ===
+30 5 * * 1   cd ~/openclaw-prices && node synthesizers/s11-farmers-markets.mjs >> logs/s11.log 2>&1
+
+# === Monitoring ===
+*/15 * * * * cd $OPENCLAW_DIR && node services/watchdog.mjs >> logs/watchdog.log 2>&1
+*/30 * * * * cd $OPENCLAW_DIR && node services/receipt-processor.mjs batch >> logs/receipt-batch.log 2>&1
+
+# === Log Rotation (Sunday midnight) ===
+0 0 * * 0 find $OPENCLAW_DIR/logs -name "*.log" -size +10M -exec truncate -s 0 {} \;
+
+# === WAL checkpoint (weekly Sunday 12:30am) ===
+30 0 * * 0   cd ~/openclaw-prices && node -e "const D=require('better-sqlite3');const d=new D('data/prices.db');d.pragma('wal_checkpoint(TRUNCATE)');d.close();console.log('WAL checkpointed')" >> logs/wal-checkpoint.log 2>&1
+
+# === ChefFlow Nightly Pipeline ===
+0 5 * * * cd /home/davidferra/chefflow-mirror && bash scripts/telemetry-analyze.sh >> /home/davidferra/chefflow-mirror/logs/telemetry-analyze.log 2>&1
+0 6 * * * cd /home/davidferra/chefflow-mirror && bash scripts/auto-merge.sh >> /home/davidferra/chefflow-mirror/logs/auto-merge.log 2>&1
+30 6 * * * cd /home/davidferra/chefflow-mirror && bash scripts/nightly-digest.sh >> /home/davidferra/chefflow-mirror/logs/nightly-digest.log 2>&1
+0 4 * * 0 cd /home/davidferra/chefflow-mirror && node devtools/persona-pipeline-cli.mjs validate >> /home/davidferra/chefflow-mirror/logs/persona-validate.log 2>&1
+0 * * * * curl -s -H "Authorization: Bearer SaltyPhish7!" "http://10.0.0.1:3000/api/cron/circle-digest" >> /home/davidferra/logs/circle-digest.log 2>&1

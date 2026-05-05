@@ -145,6 +145,35 @@ fi
 SPEC_COUNT=$(ls "$PROJECT_ROOT/docs/specs/"*interrogation*.md 2>/dev/null | wc -l | tr -d ' ')
 TOTAL_QUESTIONS=$(grep -c '^### [A-Z]' "$PROJECT_ROOT/docs/specs/"*interrogation*.md 2>/dev/null | awk -F: '{s+=$NF} END{print s}' || echo "?")
 
+# ── Hermes Overnight Report ─────────────────────────────────────
+
+HERMES_REPORT="$PROJECT_ROOT/docs/hermes/morning-report.md"
+HERMES_ALERTS="$PROJECT_ROOT/docs/hermes/ALERTS.md"
+HERMES_SUMMARY=""
+if [ -f "$HERMES_REPORT" ]; then
+  HERMES_COMPILED=$(grep "Compiled:" "$HERMES_REPORT" | head -1 | sed 's/.*\*\* //')
+  HERMES_HEALTH=$(grep -A1 "## Health Pulse" "$HERMES_REPORT" | tail -1)
+  HERMES_OC=$(grep -A1 "## OpenClaw" "$HERMES_REPORT" | tail -1)
+  HERMES_BUILD=$(grep -A1 "## Build State" "$HERMES_REPORT" | tail -1)
+  HERMES_BACKUP=$(grep -A1 "## Backups" "$HERMES_REPORT" | tail -1)
+  HERMES_SUMMARY="Compiled: $HERMES_COMPILED
+- Health: $HERMES_HEALTH
+- OpenClaw: $HERMES_OC
+- Build: $HERMES_BUILD
+- Backups: $HERMES_BACKUP"
+else
+  HERMES_SUMMARY="No Hermes report found (is Hermes running in WSL?)"
+fi
+
+# Recent alerts (last 5)
+HERMES_ALERT_LINES=""
+if [ -f "$HERMES_ALERTS" ]; then
+  HERMES_ALERT_LINES=$(tail -5 "$HERMES_ALERTS")
+fi
+if [ -z "$HERMES_ALERT_LINES" ]; then
+  HERMES_ALERT_LINES="No recent alerts"
+fi
+
 # ── Generate Briefing ────────────────────────────────────────────
 
 cat > "$OUTPUT" << BRIEFING
@@ -175,6 +204,12 @@ $PRIORITIES
 
 ## Database Backups
 $BACKUP_STATUS
+
+## Hermes Night Shift (24/7 monitoring)
+$HERMES_SUMMARY
+
+### Recent Alerts
+$HERMES_ALERT_LINES
 
 ## Interrogation Specs
 - $SPEC_COUNT specs, ~$TOTAL_QUESTIONS questions total

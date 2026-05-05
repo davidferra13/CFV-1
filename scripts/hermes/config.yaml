@@ -1,0 +1,99 @@
+model:
+  default: "gemma4:e4b"
+  provider: "custom"
+  base_url: "http://172.25.176.1:11434/v1"
+  api_key: "ollama"
+  context_length: 131072
+
+auxiliary:
+  compression:
+    model: "gemma4:e4b"
+    base_url: "http://172.25.176.1:11434/v1"
+
+delegation:
+  model: "gemma4:e4b"
+  base_url: "http://172.25.176.1:11434/v1"
+  max_concurrent_children: 2
+
+terminal:
+  backend: local
+  allowed_commands:
+    # File reading
+    - cat
+    - ls
+    - head
+    - tail
+    - stat
+    - find
+    - wc
+    # Text processing
+    - echo
+    - grep
+    - rg
+    - jq
+    - sort
+    - uniq
+    - tee
+    - awk
+    - sed
+    # Network (read-only)
+    - curl
+    # Filesystem (safe)
+    - mkdir
+    - touch
+    - pwd
+    - date
+    - basename
+    - dirname
+    # Git (read-only)
+    - git
+    # Build check (Job 4)
+    - npx
+  blocked_commands:
+    - rm
+    - rmdir
+    - dd
+    - mkfs
+    - sudo
+    - apt
+    - pip
+    - npm
+    - node
+    - pnpm
+    - yarn
+    - python
+    - python3
+    - powershell.exe
+    - pwsh
+    - cmd.exe
+    - docker
+    - kill
+    - killall
+    - reboot
+    - shutdown
+
+tools:
+  platform_toolsets:
+    cli:
+      - web
+      - terminal
+      - skills
+      - memory
+      - todo
+      - session_search
+
+memory:
+  memory_enabled: true
+  user_profile_enabled: true
+  memory_char_limit: 12000
+  user_char_limit: 4000
+  nudge_interval: 0
+  flush_min_turns: 0
+
+safety:
+  confirm_dangerous: true
+  max_file_size: 10485760
+
+logging:
+  level: info
+  redact_secrets: true

@@ -388,11 +388,8 @@ async function main() {
   // Step 3: Promote canonical food items into system_ingredients
   const promoteOk = runScript(
     'Promote canonical foods to system ingredients',
-    resolve(rootDir, 'scripts/openclaw-promote-foods.ts'),
-    3600000,
-    {
-      nodeArgs: ['--import', 'tsx'],
-    }
+    resolve(rootDir, 'scripts/openclaw-promote-foods.mts'),
+    3600000
   )
   if (!promoteOk) {
     log('Food promotion failed. Continuing...')
