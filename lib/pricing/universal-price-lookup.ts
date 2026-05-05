@@ -1633,10 +1633,17 @@ export async function lookupPrice(query: PriceLookupQuery): Promise<PriceLookupR
 // ---------------------------------------------------------------------------
 
 export async function lookupPricesBatch(queries: PriceLookupQuery[]): Promise<PriceLookupResult[]> {
-  // Run sequentially to avoid connection pool exhaustion
-  const results: PriceLookupResult[] = []
-  for (const q of queries) {
-    results.push(await lookupPrice(q))
+  // Parallel with bounded concurrency (5) to balance speed vs connection pool
+  const CONCURRENCY = 5
+  const results: PriceLookupResult[] = new Array(queries.length)
+
+  for (let i = 0; i < queries.length; i += CONCURRENCY) {
+    const chunk = queries.slice(i, i + CONCURRENCY)
+    const chunkResults = await Promise.all(chunk.map((q) => lookupPrice(q)))
+    for (let j = 0; j < chunkResults.length; j++) {
+      results[i + j] = chunkResults[j]
+    }
   }
+
   return results
 }
