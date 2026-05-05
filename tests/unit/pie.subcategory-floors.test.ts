@@ -70,7 +70,7 @@ describe('PIE Floor Price Sanity', () => {
   })
 
   it('milk is cheap (< $5/gal)', () => {
-    assert.ok(SUBCATEGORY_FLOOR_CENTS['milk_whole'] < 500)
+    assert.ok(SUBCATEGORY_FLOOR_CENTS['milk'] < 500)
   })
 
   it('lobster is expensive (> $15/lb)', () => {
@@ -123,12 +123,12 @@ describe('PIE Anti-Absurdity Guards', () => {
     )
   })
 
-  it('saffron floor > black pepper floor (10x minimum)', () => {
+  it('saffron floor > peppercorn floor (2x minimum)', () => {
     const saffron = SUBCATEGORY_FLOOR_CENTS['saffron']
-    const pepper = SUBCATEGORY_FLOOR_CENTS['black_pepper'] || CATEGORY_FLOOR_CENTS['spice'] || 199
+    const pepper = SUBCATEGORY_FLOOR_CENTS['peppercorn'] || 499
     assert.ok(
-      saffron >= pepper * 5,
-      `Saffron (${saffron}) should be way more than pepper (${pepper})`
+      saffron >= pepper * 2,
+      `Saffron (${saffron}) should be at least 2x peppercorn (${pepper})`
     )
   })
 

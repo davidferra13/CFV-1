@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "timestamp": "2026-05-05T16:51:38.145Z",
+  "timestamp": "2026-05-05T16:54:05.295Z",
   "source": "auto-postool",
   "partial": false,
   "phase": null,
@@ -18,85 +18,17 @@
   "uncommitted_files": [
     {
       "status": "M",
-      "path": ".claude/hooks/compliance-guard.sh"
-    },
-    {
-      "status": "M",
-      "path": ".claude/mcp-servers/chefflow/server.mjs"
-    },
-    {
-      "status": "M",
-      "path": ".claude/skills/pie/SKILL.md"
-    },
-    {
-      "status": "M",
-      "path": ".gitignore"
-    },
-    {
-      "status": "M",
-      "path": ".openclaw-deploy/captured-responses.json"
-    },
-    {
-      "status": "M",
-      "path": ".openclaw-deploy/captured-session.json"
-    },
-    {
-      "status": "M",
       "path": ".planning/HANDOFF.json"
     },
     {
       "status": "M",
-      "path": "lib/pricing/universal-price-lookup.ts"
+      "path": "tests/unit/pie.name-normalizer.test.ts"
     },
     {
       "status": "M",
-      "path": "package-lock.json"
-    },
-    {
-      "status": "M",
-      "path": "package.json"
-    },
-    {
-      "status": "M",
-      "path": "public/sw.js"
-    },
-    {
-      "status": "??",
-      "path": ".claude/audit/"
-    },
-    {
-      "status": "??",
-      "path": ".claude/skills/21st-magic/"
-    },
-    {
-      "status": "??",
-      "path": ".claude/skills/pie-simulate/"
-    },
-    {
-      "status": "??",
-      "path": ".playwright-mcp/"
-    },
-    {
-      "status": "??",
-      "path": "docs/agent-orchestration-pipeline.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/codex-build-queue.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/codex-tasks/"
-    },
-    {
-      "status": "??",
-      "path": "docs/pie-accuracy-log.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/superpowers/"
+      "path": "tests/unit/pie.subcategory-floors.test.ts"
     }
   ],
   "next_action": null,
-  "context_notes": "Recent commits:\n164b639e2 chore(scripts+tests): add PIE scripts, pricing tests, and trend alerts\ncd3fba331 feat(security): MFA, phone verification, security settings, and dashboard components\n10d76d1f2 feat(api+pricing): PIE endpoints, pricing engine, auth, and schema updates\nb5a77d0a1 refactor(pages): update chef, public, and auth page components\nd4217554b refactor(ui): update UI components, navigation, and styling"
+  "context_notes": "Recent commits:\n30e5833c7 style(pricing): format universal-price-lookup\n03274ff6c chore: config, docs, skills, codex build queue, and package updates\n164b639e2 chore(scripts+tests): add PIE scripts, pricing tests, and trend alerts\ncd3fba331 feat(security): MFA, phone verification, security settings, and dashboard components\n10d76d1f2 feat(api+pricing): PIE endpoints, pricing engine, auth, and schema updates"
 }
