@@ -16,7 +16,7 @@
       "args": [
         "-y",
         "@modelcontextprotocol/server-postgres",
-        "postgresql://postgres:CHEF.jdgyuegf9924092.FLOW@127.0.0.1:54322/postgres"
+        "postgresql://postgres:postgres@127.0.0.1:54322/postgres"
       ]
     },
     "ollama-delegate": {
@@ -27,6 +27,16 @@
         "OLLAMA_DELEGATE_URL": "http://localhost:11434",
         "OLLAMA_DELEGATE_MODEL": "gemma4:e4b",
         "OLLAMA_DELEGATE_TIMEOUT": "120000"
+      }
+    },
+    "chefflow": {
+      "type": "stdio",
+      "command": "node",
+      "args": [".claude/mcp-servers/chefflow/server.mjs"],
+      "env": {
+        "CHEFFLOW_URL": "http://localhost:3100",
+        "CHEFFLOW_API_KEY": "cf_live_24a448b65bb9935a81efeab7b130c75bdc5b3fde2e0e890fcbf13cb829eda881",
+        "CHEFFLOW_TIMEOUT": "15000"
       }
     },
     "mempalace": {

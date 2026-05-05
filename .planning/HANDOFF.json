@@ -1,0 +1,1302 @@
+{
+  "version": "1.0",
+  "timestamp": "2026-05-05T00:49:22.506Z",
+  "source": "auto-postool",
+  "partial": false,
+  "phase": null,
+  "phase_name": null,
+  "phase_dir": null,
+  "plan": null,
+  "task": null,
+  "total_tasks": null,
+  "status": "auto-checkpoint",
+  "completed_tasks": [],
+  "remaining_tasks": [],
+  "blockers": [],
+  "human_actions_pending": [],
+  "decisions": [],
+  "uncommitted_files": [
+    {
+      "status": "M",
+      "path": ".claude/mcp.json"
+    },
+    {
+      "status": "M",
+      "path": ".gitignore"
+    },
+    {
+      "status": "M",
+      "path": ".openclaw-deploy/captured-responses.json"
+    },
+    {
+      "status": "M",
+      "path": ".openclaw-deploy/captured-session.json"
+    },
+    {
+      "status": "M",
+      "path": "CONTEXT.md"
+    },
+    {
+      "status": "M",
+      "path": "app/(admin)/admin/price-catalog/catalog-tab.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/calendar/week/week-planner-client.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/cannabis/rsvps/rsvps-dashboard-client.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/circles/[id]/circle-detail-client.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/clients/gift-cards/gift-cards-client-shell.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/culinary/dish-index/[id]/dish-detail-client.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/culinary/dish-index/dish-index-client.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/culinary/price-catalog/catalog-browser.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/dashboard/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/events/[id]/_components/event-detail-tickets-tab.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/events/[id]/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/events/[id]/procurement/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/layout.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/menus/menus-client-wrapper.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/network/collab-inbox.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/network/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/staff/labor/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/staff/permissions/permission-matrix-client.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(client)/layout.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(client)/my-rewards/raffle-game-modal.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(public)/e/[shareToken]/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(public)/e/[shareToken]/public-event-view.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(public)/ingredient/[id]/_components/ingredient-search.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(public)/ingredient/[id]/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(staff)/layout.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/api/cron/morning-briefing/route.ts"
+    },
+    {
+      "status": "M",
+      "path": "app/api/cron/pre-event-reminders/route.ts"
+    },
+    {
+      "status": "M",
+      "path": "app/api/ingredients/[id]/route.ts"
+    },
+    {
+      "status": "M",
+      "path": "app/api/openclaw/status/route.ts"
+    },
+    {
+      "status": "M",
+      "path": "app/api/sentinel/health/route.ts"
+    },
+    {
+      "status": "M",
+      "path": "app/api/v2/clients/[id]/route.ts"
+    },
+    {
+      "status": "M",
+      "path": "app/api/v2/clients/route.ts"
+    },
+    {
+      "status": "M",
+      "path": "app/api/v2/inquiries/[id]/route.ts"
+    },
+    {
+      "status": "M",
+      "path": "app/api/v2/inquiries/route.ts"
+    },
+    {
+      "status": "M",
+      "path": "app/api/v2/inventory/[id]/route.ts"
+    },
+    {
+      "status": "M",
+      "path": "app/api/v2/inventory/route.ts"
+    },
+    {
+      "status": "M",
+      "path": "app/api/v2/recipes/[id]/route.ts"
+    },
+    {
+      "status": "M",
+      "path": "app/api/v2/recipes/route.ts"
+    },
+    {
+      "status": "M",
+      "path": "app/api/v2/staff/[id]/route.ts"
+    },
+    {
+      "status": "M",
+      "path": "app/api/v2/staff/route.ts"
+    },
+    {
+      "status": "M",
+      "path": "app/api/v2/vendors/[id]/route.ts"
+    },
+    {
+      "status": "M",
+      "path": "app/api/v2/vendors/route.ts"
+    },
+    {
+      "status": "M",
+      "path": "app/globals.css"
+    },
+    {
+      "status": "M",
+      "path": "app/layout.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/aar/file-aar-button.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/activity/activity-dot.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/admin/admin-preview-toggle.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/admin/admin-sidebar.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/ai/remy-client-chat.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/ai/remy-conversation-list.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/ai/remy-drawer.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/ai/remy-mascot-button.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/ai/remy-mascot-chat.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/ai/remy-wrapper.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/analytics/booking-score-badge.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/calendar/calendar-entry-modal.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/calling/chef-live-alerts.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/calling/ingredient-resolution-view.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/chat/chat-message-bubble.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/chat/message-chef-button.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/chat/new-conversation-button.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/clients/client-photo-gallery.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/commerce/pos-register.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/communication/communication-inbox-client.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/communication/inbox-calendar-peek.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/communication/schedule-message-dialog.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/costing/costing-help-popover.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/culinary/MenuEditor.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/dashboard/ollama-status-badge.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/devices/create-device-modal.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/devices/pairing-display.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/documents/pdf-viewer-modal.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/events/client-event-photo-gallery.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/events/conflict-badge.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/events/dietary-complexity-badge.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/events/event-detail-mobile-nav.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/events/event-photo-gallery.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/events/event-risk-badge.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/events/initiate-refund-modal.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/events/menu-library-picker.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/events/production-report-button.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/events/quick-proposal-button.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/events/record-payment-modal.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/events/shopping-substitutions.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/expenses/quick-expense-modal.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/expenses/quick-expense-trigger.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/feedback/feedback-nudge-card.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/feedback/global-report-button.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/goals/goal-check-in-modal.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/grocery/grocery-list-button.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/grocery/store-split-view.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/guests/guest-search.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/hub/circle-chef-proof.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/hub/circle-share-card.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/hub/hub-member-list.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/hub/hub-photo-gallery.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/hub/meal-comments.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/hub/meal-time-settings.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/hub/prep-assignment-badge.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/inquiries/decline-with-reason-modal.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/inquiries/inquiry-notes.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/inquiries/quick-log-button.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/inquiries/readiness-score-badge.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/inquiries/tac-transcript-paste.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/keyboard/shortcut-help.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/kiosk/heartbeat-provider.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/kiosk/kiosk-order-register.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/kitchen/kitchen-mode.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/knowledge/knowledge-link-picker.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/loyalty/loyalty-celebration-toast.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/menus/dish-index-card.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/menus/menu-pdf-button.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/menus/menuGeneratorUI.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/menus/showcase-menu-preview.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/mobile/quick-capture.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/navigation/admin-shell.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/navigation/chef-mobile-nav.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/navigation/chef-nav.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/navigation/client-nav.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/navigation/create-menu-dropdown.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/navigation/nav-config.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/navigation/partner-nav.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/navigation/public-header.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/notifications/notification-panel.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/offline/offline-status-bar.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/onboarding/tour-checklist.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/onboarding/tour-spotlight.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/onboarding/welcome-modal.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/operations/eighty-six-modal.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/operations/kds-view.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/operations/voice-mode-toggle.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/photos/portfolio-gallery.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/portfolio/portfolio-gallery.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/portfolio/portfolio-showcase.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/pricing/cart-summary-bar.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/pricing/ingredient-match-review.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/pricing/price-badge.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/pricing/shopping-cart-sidebar.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/professional/growth-checkin-modal.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/public/remy-concierge-widget.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/quotes/proposal-live-preview.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/recipes/recipe-batch-import.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/recipes/recipe-csv-import.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/recipes/recipe-import-dialog.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/recipes/recipe-photo-batch-import.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/recipes/step-photo-gallery.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/recipes/sub-recipe-search-modal.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/reviews/import-platform-review.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/reviews/log-feedback-button.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/scheduling/calendar-view.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/scheduling/event-detail-popover.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/search/command-palette.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/search/global-search.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/sharing/guest-photo-gallery.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/sharing/recap-photo-grid.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/social/disclosure-preflight-panel.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/social/social-post-editor.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/social/social-queue-settings-form.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/social/social-story-bar.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/social/social-vault-browser.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/tasks/quick-assign.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/ui/accessible-dialog.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/ui/bulk-select-table.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/ui/combobox-input.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/ui/cookie-consent.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/ui/environment-badge.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/ui/global-tooltip-provider.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/ui/page-info.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/ui/route-progress.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/ui/scroll-to-top-button.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/ui/select.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/ui/shortcuts-help-panel.tsx"
+    },
+    {
+      "status": "M",
+      "path": "docs/simulation-history.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/simulation-report.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/sync-status.json"
+    },
+    {
+      "status": "M",
+      "path": "docs/uptime-history.json"
+    },
+    {
+      "status": "M",
+      "path": "lib/ai/ace-ollama.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/ai/agent-actions/inquiry-response-actions.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/ai/correspondence.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/ai/queue/actions.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/ai/queue/index.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/ai/reactive/handlers.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/ai/reactive/hooks.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/ai/remy-public-context.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/ai/scheduled/jobs.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/ai/scheduled/scheduler.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/auth/auth-config.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/auth/route-policy.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/beta/actions.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/chat/system-messages.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/client-work-graph/actions.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/clients/cross-platform-matching.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/cron/definitions.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/email/notifications.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/events/photo-actions.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/events/transitions.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/feedback/surveys-actions.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/feedback/surveys.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/finance/food-cost-actions.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/hub/inquiry-circle-first-message.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/ingredients/image-actions.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/interface/action-layer.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/inventory/vendor-invoice-actions.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/menus/actions.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/menus/dish-index-constants.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/menus/index.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/openclaw/catalog-actions.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/openclaw/catalog-detail-contract.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/openclaw/pi-stats.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/openclaw/region-config.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/openclaw/sync.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/pricing/resolve-price.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/public/chef-profile-readiness.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/quotes/client-actions.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/scheduling/types.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/sharing/actions.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/surveys/actions.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/templates/inquiry-first-response.ts"
+    },
+    {
+      "status": "M",
+      "path": "middleware.ts"
+    },
+    {
+      "status": "M",
+      "path": "public/sw.js"
+    },
+    {
+      "status": "D",
+      "path": "scripts/openclaw-promote-foods.ts"
+    },
+    {
+      "status": "M",
+      "path": "tailwind.config.ts"
+    },
+    {
+      "status": "M",
+      "path": "tsconfig.next.json"
+    },
+    {
+      "status": "??",
+      "path": ".claude/hooks/regression-block.sh"
+    },
+    {
+      "status": "??",
+      "path": ".claude/hooks/scope-guard.sh"
+    },
+    {
+      "status": "??",
+      "path": ".claude/mcp-servers/chefflow/"
+    },
+    {
+      "status": "??",
+      "path": ".claude/skills/pie-accuracy/"
+    },
+    {
+      "status": "??",
+      "path": ".claude/skills/pie-alert/"
+    },
+    {
+      "status": "??",
+      "path": ".claude/skills/pie-census/"
+    },
+    {
+      "status": "??",
+      "path": ".claude/skills/pie-fix/"
+    },
+    {
+      "status": "??",
+      "path": ".claude/skills/pie-forecast/"
+    },
+    {
+      "status": "??",
+      "path": ".claude/skills/pie-measure/"
+    },
+    {
+      "status": "??",
+      "path": ".claude/skills/pie-ratchet/"
+    },
+    {
+      "status": "??",
+      "path": ".claude/skills/pie/"
+    },
+    {
+      "status": "??",
+      "path": ".context-loaded"
+    },
+    {
+      "status": "??",
+      "path": ".planning/"
+    },
+    {
+      "status": "??",
+      "path": "app/(admin)/admin/pricing-coverage/"
+    },
+    {
+      "status": "??",
+      "path": "app/(admin)/admin/pricing-health/"
+    },
+    {
+      "status": "??",
+      "path": "app/(chef)/culinary/seasonal-calendar/"
+    },
+    {
+      "status": "??",
+      "path": "app/(chef)/menus/selections/"
+    },
+    {
+      "status": "??",
+      "path": "app/(public)/catalog-pick/"
+    },
+    {
+      "status": "??",
+      "path": "app/api/client-portal/"
+    },
+    {
+      "status": "??",
+      "path": "app/api/cron/pie-census/"
+    },
+    {
+      "status": "??",
+      "path": "app/api/cron/resolve-prices/"
+    },
+    {
+      "status": "??",
+      "path": "app/api/cron/source-health/"
+    },
+    {
+      "status": "??",
+      "path": "app/api/llm-txt/"
+    },
+    {
+      "status": "??",
+      "path": "app/api/pie/"
+    },
+    {
+      "status": "??",
+      "path": "app/api/pricing/"
+    },
+    {
+      "status": "??",
+      "path": "app/api/scheduled/follow-up-sends/"
+    },
+    {
+      "status": "??",
+      "path": "components/collaboration/cohost-event-archive.tsx"
+    },
+    {
+      "status": "??",
+      "path": "components/collaboration/cohost-revenue-dashboard.tsx"
+    },
+    {
+      "status": "??",
+      "path": "components/dashboard/seasonal-calendar-widget.tsx"
+    },
+    {
+      "status": "??",
+      "path": "components/events/venue-details-panel.tsx"
+    },
+    {
+      "status": "??",
+      "path": "components/menus/catalog-curate-panel.tsx"
+    },
+    {
+      "status": "??",
+      "path": "components/menus/catalog-selections-list.tsx"
+    },
+    {
+      "status": "??",
+      "path": "components/pricing/event-pricing-vertical.tsx"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260503000007_venue_details.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260503000008_farm_showcase.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260503000009_pricing_regions.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260503000010_pricing_feedback_loop.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260503000011_pricing_supplier_health.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260503000012_margin_snapshots.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260503000013_pie_census_and_fallback.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260503000014_compound_learning.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260503000015_course_catalog_selections.sql"
+    },
+    {
+      "status": "??",
+      "path": "docs/adr/"
+    },
+    {
+      "status": "??",
+      "path": "docs/agent-brain/"
+    },
+    {
+      "status": "??",
+      "path": "docs/dashboard-diagnostic-2026-05-04.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/hermes/"
+    },
+    {
+      "status": "??",
+      "path": "docs/pie-ratchet-log.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/simulation-reports/phase-1-raw.json"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/chefflow-mcp-server.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/hermes-night-shift-spec.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/pie-laws.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/pie-national-vision.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/pie-operational-runbook.md"
+    },
+    {
+      "status": "??",
+      "path": "lib/ai/agent-actions/chefnotes-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ai/inquiry-scenario.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ai/scenario-prompt.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/billing/require-pro.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/chef-services/"
+    },
+    {
+      "status": "??",
+      "path": "lib/cheftips/"
+    },
+    {
+      "status": "??",
+      "path": "lib/collaboration/event-archive-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/collaboration/revenue-dashboard-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/email/client-visit-alert-delivery.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/email/ics-attachment.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/email/templates/morning-briefing.tsx"
+    },
+    {
+      "status": "??",
+      "path": "lib/events/venue-details-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/knowledge/"
+    },
+    {
+      "status": "??",
+      "path": "lib/menus/catalog-selection-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/openclaw/resolve-prices-worker.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/openclaw/seasonal-calendar-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/openclaw/synthesis-client.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/pricing/anomaly-detector.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/pricing/census.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/pricing/chef-price-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/pricing/compound-learning.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/pricing/freshness-enforcer.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/pricing/hermes-normalizer.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/pricing/margin-feedback.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/pricing/margin-snapshot-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/pricing/pie-categories.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/pricing/pie-compliance.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/pricing/region-coverage-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/pricing/source-health-worker.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/pricing/synthetic-engine.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/tickets/arrival-info-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "memory/project_pie_identity.md"
+    },
+    {
+      "status": "??",
+      "path": "public/cursor-knife-pointer.svg"
+    },
+    {
+      "status": "??",
+      "path": "public/cursor-knife.svg"
+    },
+    {
+      "status": "??",
+      "path": "scripts/pie-accuracy-check.mts"
+    },
+    {
+      "status": "??",
+      "path": "scripts/pie-alert-check.mts"
+    },
+    {
+      "status": "??",
+      "path": "scripts/pie-census-expand.mts"
+    },
+    {
+      "status": "??",
+      "path": "scripts/pie-measure.mts"
+    },
+    {
+      "status": "??",
+      "path": "scripts/seed-pricing-regions.ts"
+    }
+  ],
+  "next_action": null,
+  "context_notes": "Recent commits:\n0eb242ea9 feat(ops): add Hermes night-shift scripts and ops tooling\nd79048dd6 fix: cache /chefs seasonal pulse (33s -> cached) and redirect /ingredient 404\n62224f677 refactor: move stray files into proper module directories\n1f0115664 feat(farm-dinner): collaborator access, settlement, guest broadcast\n47d267b91 feat(farm-dinner): collaborator access, notifications, and prep assignment"
+}
