@@ -1,15 +1,18 @@
 /**
  * Unified Price Resolution Chain
  * Single function that resolves the best price for any ingredient
- * using a 10-tier fallback chain. ALL data comes from local PostgreSQL.
+ * using a 10-tier fallback chain.
  *
  * This is NOT a 'use server' file. It's internal logic called by
  * server actions and server components.
  *
  * Resolution order (by trust):
+ *   0. CHEF OVERRIDE      - Standing override from chef_ingredient_prices
  *   1. RECEIPT            - Chef's own purchase (manual, grocery_entry, po_receipt, vendor_invoice)
  *   2. API QUOTE          - Live API price from Kroger/Spoonacular/MealMe
- *   3. DIRECT SCRAPE      - Real store website price (openclaw_scrape)
+ *  2.5 WHOLESALE          - Wholesale distributor pricing (openclaw_wholesale)
+ *  2.7 PI BRIDGE (LIVE)   - Real-time query to Pi's 1.1M prices over direct ethernet
+ *   3. DIRECT SCRAPE      - Real store website price (openclaw_scrape) [PostgreSQL fallback]
  *   4. FLYER              - Weekly circular (openclaw_flyer)
  *   5. INSTACART          - Markup-adjusted proxy (openclaw_instacart)
  *   6. REGIONAL AVERAGE   - Cross-store average from all OpenClaw sources (2+ stores)
@@ -24,6 +27,7 @@ import { db } from '@/lib/db'
 import { sql } from 'drizzle-orm'
 import { getRegionalAverage, getRegionalAveragesBatch } from './cross-store-average'
 import { getCategoryBaseline, getCategoryBaselinesBatch } from './category-baseline'
+import { lookupPrice, lookupPricesBatch } from './pi-bridge'
 
 // --- Chef State Lookup (cached per request) ---
 
@@ -405,7 +409,40 @@ export async function resolvePrice(
     }
   }
 
-  // Tier 3: DIRECT SCRAPE (openclaw_scrape) within 14 days
+  // Tier 2.7: PI BRIDGE (LIVE) - Real-time query to Pi's 1.1M prices over direct ethernet
+  // Falls back gracefully if Pi is unreachable (returns null, continues to PostgreSQL tiers)
+  const ingredientNameRow = (await db.execute(sql`
+    SELECT name FROM ingredients WHERE id = ${ingredientId} LIMIT 1
+  `)) as unknown as Array<{ name: string }>
+  const ingredientName = ingredientNameRow[0]?.name
+
+  if (ingredientName) {
+    const piResult = await lookupPrice(ingredientName, preferredState || undefined)
+    if (piResult && piResult.prices.length > 0) {
+      // Use the freshest in-stock price from Pi
+      const best = piResult.prices[0]
+      const priceCents = best.price_per_standard_unit_cents ?? best.price_cents
+      if (priceCents && priceCents > 0) {
+        return withDecay({
+          cents: priceCents,
+          unit: best.standard_unit || best.price_unit || 'each',
+          source: 'direct_scrape',
+          sourceTier: 'pi_bridge_live',
+          resolutionTier:
+            preferredState && best.state === preferredState?.toUpperCase()
+              ? 'zip_local'
+              : 'regional',
+          store: sourceDisplayStore('direct_scrape', best.store || best.product_name),
+          confidence: 0.82,
+          freshness: computeFreshness(best.last_confirmed_at),
+          confirmedAt: best.last_confirmed_at,
+          reason: null,
+        })
+      }
+    }
+  }
+
+  // Tier 3: DIRECT SCRAPE (openclaw_scrape) within 14 days [PostgreSQL fallback]
   // When preferredStore or state is set, prefer rows from that store/region
   const scrape = (await db.execute(sql`
     SELECT price_per_unit_cents, unit, store_name, purchase_date
@@ -853,13 +890,37 @@ export async function resolvePricesBatch(
   // Query 4: Regional averages for all ingredients (batch)
   const regionalAverages = await getRegionalAveragesBatch(ingredientIds, preferredState)
 
-  // Query 5: Get categories for all ingredients (needed for category baseline fallback)
+  // Query 5: Get names and categories for all ingredients
   const categoryRows = (await db.execute(sql`
-    SELECT id, category FROM ingredients WHERE id = ANY(${ingredientIds})
-  `)) as unknown as Array<{ id: string; category: string | null }>
+    SELECT id, name, category FROM ingredients WHERE id = ANY(${ingredientIds})
+  `)) as unknown as Array<{ id: string; name: string; category: string | null }>
   const categoryById = new Map<string, string | null>()
+  const nameById = new Map<string, string>()
   for (const row of categoryRows) {
     categoryById.set(row.id, row.category)
+    nameById.set(row.id, row.name)
+  }
+
+  // Query 5.5: Pi Bridge batch lookup (real-time, 1.1M prices over direct ethernet)
+  // Fires in parallel with other queries; gracefully returns empty on failure
+  const piNames = ingredientIds.map((id) => nameById.get(id)).filter(Boolean) as string[]
+  const piBridgeResults = await lookupPricesBatch(piNames, preferredState || undefined)
+  // Build reverse map: canonical name -> pi result (for matching back to ingredient IDs)
+  const piBridgeByName = new Map<
+    string,
+    { avg_cents: number; unit: string; freshest: string | null; observation_count: number }
+  >()
+  if (piBridgeResults?.results) {
+    for (const [name, data] of Object.entries(piBridgeResults.results)) {
+      if (data && data.avg_cents && data.avg_cents > 0) {
+        piBridgeByName.set(name.toLowerCase(), {
+          avg_cents: data.avg_cents,
+          unit: data.unit,
+          freshest: data.freshest,
+          observation_count: data.observation_count,
+        })
+      }
+    }
   }
 
   // Query 6: Category baselines for all unique categories
@@ -1031,7 +1092,29 @@ export async function resolvePricesBatch(
       continue
     }
 
-    // Tier 3: Direct scrape (within 14 days)
+    // Tier 2.7: Pi Bridge (live, real-time from 1.1M prices)
+    const ingredientNameForPi = nameById.get(id)?.toLowerCase()
+    const piData = ingredientNameForPi ? piBridgeByName.get(ingredientNameForPi) : undefined
+    if (piData) {
+      result.set(
+        id,
+        withDecay({
+          cents: piData.avg_cents,
+          unit: piData.unit || 'each',
+          source: 'direct_scrape',
+          sourceTier: 'pi_bridge_live',
+          resolutionTier: 'regional',
+          store: `Live Price (${piData.observation_count} observations)`,
+          confidence: 0.82,
+          freshness: computeFreshness(piData.freshest),
+          confirmedAt: piData.freshest,
+          reason: null,
+        })
+      )
+      continue
+    }
+
+    // Tier 3: Direct scrape (within 14 days) [PostgreSQL fallback]
     const scrapeRow = findBestRow(openclaw, 'openclaw_scrape', 14)
     if (scrapeRow && scrapeRow.price_per_unit_cents !== null) {
       result.set(
