@@ -15,6 +15,7 @@ import type {
   PriceFreshness,
   PriceSource,
   ResolutionTier,
+  CoverageLevel,
 } from '@/lib/pricing/resolve-price'
 import { submitPriceFeedback, setChefIngredientPrice } from '@/lib/pricing/chef-price-actions'
 
@@ -147,6 +148,8 @@ function tierLabel(tier: ResolutionTier): string {
       return 'your history'
     case 'category_baseline':
       return 'category est.'
+    case 'synthetic':
+      return 'synthetic est.'
     case 'none':
       return ''
   }
@@ -172,6 +175,7 @@ function tierColor(tier: ResolutionTier): string {
       return 'text-amber-400'
     case 'historical':
     case 'category_baseline':
+    case 'synthetic':
       return 'text-stone-500'
     case 'none':
       return 'text-red-400'
@@ -220,14 +224,12 @@ function PriceFeedbackButtons({
   const [overrideValue, setOverrideValue] = useState('')
   const [confirmed, setConfirmed] = useState(false)
 
-  if (price.cents === null) return null
-
   const handleConfirm = () => {
     startTransition(async () => {
       try {
         await submitPriceFeedback({
           ingredientId,
-          shownPriceCents: price.cents!,
+          shownPriceCents: price.cents,
           shownConfidence: price.confidence,
           shownSource: price.source,
           feedback: 'confirmed',
@@ -250,7 +252,7 @@ function PriceFeedbackButtons({
           priceCents: cents,
           priceUnit: price.unit || 'each',
           source: 'manual',
-          marketPriceCents: price.cents ?? undefined,
+          marketPriceCents: price.cents,
           marketConfidence: price.confidence,
         })
         setShowOverride(false)
@@ -338,20 +340,64 @@ export function PriceBadge({
   ingredientId,
   onFeedback,
 }: PriceBadgeProps) {
-  // No price state
-  if (price.cents === null) {
+  // Low confidence gate: any price below 0.40 effective confidence gets
+  // visually flagged as unreliable. This catches synthetic floors, category
+  // baselines, stale government data, and any other tier that shouldn't
+  // be trusted for menu costing. The old gate only triggered for
+  // source=synthetic && confidence<=0.1, letting $4.99 "protein" estimates
+  // through looking authoritative.
+  const isLowConfidence = price.effectiveConfidence < 0.4
+  const isVeryLowConfidence = price.effectiveConfidence < 0.15
+
+  if (isVeryLowConfidence) {
     return (
-      <span className={`text-sm text-stone-500 ${className}`}>
-        No price data
+      <span className={`text-sm ${className}`}>
+        <span className="text-stone-500 line-through decoration-stone-600/50">
+          ~{formatCents(price.cents)}/{price.unit}
+        </span>
+        {ingredientId ? (
+          <span className="ml-1.5">
+            <PriceFeedbackButtons
+              ingredientId={ingredientId}
+              price={price}
+              onFeedback={onFeedback}
+            />
+          </span>
+        ) : !compact ? (
+          <span className="text-xs text-amber-500/80 ml-1.5">rough estimate, enter your price</span>
+        ) : null}
+      </span>
+    )
+  }
+
+  if (isLowConfidence) {
+    return (
+      <span className={`text-sm ${className}`}>
+        <span className="text-stone-400">
+          ~{formatCents(price.cents)}/{price.unit}
+        </span>
         {!compact && (
-          <span className="text-xs text-stone-600 ml-1"> - Log a receipt to set price</span>
+          <span
+            className={`ml-1.5 text-[0.65rem] uppercase tracking-wide ${tierColor(price.resolutionTier)}`}
+          >
+            {tierLabel(price.resolutionTier)}
+          </span>
+        )}
+        <span
+          className="ml-1.5 text-xs text-stone-500"
+          title={confidenceTooltipText(price.confidence, price.confirmedAt)}
+        >
+          {confidenceDots(price.confidence)}
+        </span>
+        {ingredientId && (
+          <PriceFeedbackButtons ingredientId={ingredientId} price={price} onFeedback={onFeedback} />
         )}
       </span>
     )
   }
 
   // Legacy price state (source unknown)
-  if (price.source === 'none' && price.cents !== null) {
+  if (price.source === 'none') {
     return (
       <span className={`text-sm text-stone-400 ${className}`}>
         {formatCents(price.cents)}
@@ -454,6 +500,8 @@ function tierTooltipText(tier: ResolutionTier, store: string | null): string {
       return 'Your own long-tail receipt average. May be stale.'
     case 'category_baseline':
       return 'Category-level median estimate. No ingredient-specific data available.'
+    case 'synthetic':
+      return 'Synthetic estimate generated from category averages and regional cost adjustments. Log a receipt for a real price.'
     case 'none':
       return 'No price data available.'
   }
@@ -468,5 +516,152 @@ export function NoPriceBadge({ className = '' }: { className?: string }) {
     <span className={`text-sm text-stone-500 ${className}`}>
       No price data <span className="text-xs text-stone-600">- Log a receipt to set price</span>
     </span>
+  )
+}
+
+/**
+ * PriceBadgeFromFlat - Adapter that builds a ResolvedPrice from flat ingredient
+ * table columns so PriceBadge can render with full confidence dots, tier labels,
+ * and feedback buttons. Use this anywhere you have flattened price columns
+ * (ingredients table, recipe_ingredients join) instead of PriceAttribution.
+ */
+export interface PriceBadgeFromFlatProps {
+  priceCents: number | null
+  priceUnit?: string | null
+  store?: string | null
+  confidence?: number | null
+  source?: string | null
+  lastPriceDate?: string | null
+  trendDirection?: 'up' | 'down' | 'flat' | null
+  trendPct?: number | null
+  ingredientId?: string
+  compact?: boolean
+  className?: string
+  onFeedback?: () => void
+}
+
+function sourceToResolutionTier(source: string | null | undefined): ResolutionTier {
+  switch (source) {
+    case 'chef_override':
+      return 'chef_override'
+    case 'receipt':
+    case 'manual':
+    case 'grocery_entry':
+    case 'po_receipt':
+    case 'vendor_invoice':
+      return 'chef_receipt'
+    case 'api_quote':
+      return 'zip_local'
+    case 'wholesale':
+    case 'openclaw_wholesale':
+      return 'wholesale'
+    case 'direct_scrape':
+    case 'openclaw_scrape':
+      return 'zip_local'
+    case 'flyer':
+    case 'openclaw_flyer':
+      return 'regional'
+    case 'instacart':
+    case 'openclaw_instacart':
+      return 'regional'
+    case 'regional_average':
+      return 'regional'
+    case 'resolved_national':
+      return 'market_national'
+    case 'market_aggregate':
+      return 'market_state'
+    case 'government':
+    case 'openclaw_government':
+      return 'government'
+    case 'historical':
+      return 'historical'
+    case 'category_baseline':
+      return 'category_baseline'
+    case 'synthetic':
+      return 'synthetic'
+    default:
+      return 'none'
+  }
+}
+
+function sourceToCoverageLevel(source: string | null | undefined): CoverageLevel {
+  switch (source) {
+    case 'chef_override':
+    case 'receipt':
+    case 'manual':
+    case 'grocery_entry':
+    case 'po_receipt':
+    case 'vendor_invoice':
+    case 'api_quote':
+    case 'wholesale':
+    case 'openclaw_wholesale':
+    case 'direct_scrape':
+    case 'openclaw_scrape':
+    case 'flyer':
+    case 'openclaw_flyer':
+    case 'instacart':
+    case 'openclaw_instacart':
+    case 'regional_average':
+      return 'direct'
+    case 'market_aggregate':
+    case 'resolved_national':
+      return 'regional'
+    default:
+      return 'estimated'
+  }
+}
+
+function computeFreshnessFromDate(dateStr: string | null): PriceFreshness {
+  if (!dateStr) return 'none'
+  const days = Math.floor((Date.now() - new Date(dateStr).getTime()) / (1000 * 60 * 60 * 24))
+  if (days <= 3) return 'current'
+  if (days <= 14) return 'recent'
+  if (days <= 90) return 'stale'
+  return 'none'
+}
+
+export function PriceBadgeFromFlat({
+  priceCents,
+  priceUnit,
+  store,
+  confidence,
+  source,
+  lastPriceDate,
+  trendDirection,
+  trendPct,
+  ingredientId,
+  compact = false,
+  className,
+  onFeedback,
+}: PriceBadgeFromFlatProps) {
+  if (priceCents == null) return <NoPriceBadge className={className} />
+
+  const conf = confidence ?? 0
+  const freshness = computeFreshnessFromDate(lastPriceDate ?? null)
+  const resolvedPrice: ResolvedPrice = {
+    cents: priceCents,
+    unit: priceUnit || 'each',
+    source: (source as PriceSource) || 'none',
+    sourceTier: source || null,
+    resolutionTier: sourceToResolutionTier(source),
+    coverageLevel: sourceToCoverageLevel(source),
+    store: store || null,
+    confidence: conf,
+    effectiveConfidence: conf,
+    freshness,
+    confirmedAt: lastPriceDate || null,
+    reason: null,
+  }
+
+  return (
+    <PriceBadge
+      price={resolvedPrice}
+      compact={compact}
+      className={className}
+      trendDirection={trendDirection}
+      trendPct={trendPct}
+      ingredientId={ingredientId}
+      onFeedback={onFeedback}
+    />
   )
 }

@@ -72,7 +72,9 @@ export function ErrorState({
       role="alert"
     >
       {/* Error icon */}
-      <div className={cn(s.icon, 'text-red-400/80')}>
+      <div
+        className={cn(s.icon, 'rounded-full bg-red-500/10 p-2 flex items-center justify-center')}
+      >
         <svg
           viewBox="0 0 24 24"
           fill="none"
@@ -80,7 +82,7 @@ export function ErrorState({
           strokeWidth="1.5"
           strokeLinecap="round"
           strokeLinejoin="round"
-          className="w-full h-full"
+          className="w-5 h-5 text-red-400/90"
         >
           <circle cx="12" cy="12" r="10" />
           <line x1="12" y1="8" x2="12" y2="12" />
@@ -89,16 +91,16 @@ export function ErrorState({
       </div>
 
       {/* Title */}
-      <h3 className={cn(s.title, 'font-semibold text-stone-200')}>{title}</h3>
+      <h3 className={cn(s.title, 'font-semibold text-stone-200 tracking-tight')}>{title}</h3>
 
       {/* Description */}
-      <p className={cn(s.desc, 'text-stone-400 max-w-sm')}>{description}</p>
+      <p className={cn(s.desc, 'text-stone-400 max-w-sm leading-relaxed')}>{description}</p>
 
       {/* Retry button */}
       {onRetry && (
         <button
           onClick={onRetry}
-          className="mt-1 px-4 py-1.5 text-sm font-medium text-brand-400 hover:text-brand-300 bg-brand-500/10 hover:bg-brand-500/20 rounded-lg transition-colors"
+          className="mt-2 px-4 py-1.5 text-sm font-medium text-brand-400 hover:text-brand-300 bg-brand-500/10 hover:bg-brand-500/20 rounded-lg transition-all duration-200 active:scale-[0.97]"
         >
           {retryLabel}
         </button>
@@ -127,7 +129,7 @@ export function InlineError({ contextId, message, className }: InlineErrorProps)
   const text = message ?? contextError?.title ?? 'Error'
 
   return (
-    <span className={cn('inline-flex items-center gap-1.5 text-red-400', className)}>
+    <span className={cn('inline-flex items-center gap-1.5 text-red-400/90', className)}>
       <svg
         className="w-3.5 h-3.5 shrink-0"
         viewBox="0 0 24 24"

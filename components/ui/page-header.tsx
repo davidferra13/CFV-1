@@ -27,14 +27,16 @@ export function PageHeader({
   return (
     <div className={`animate-fade-slide-up ${className}`}>
       {breadcrumb && <div className="mb-2">{breadcrumb}</div>}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="min-w-0">
-          <h1 className="text-2xl sm:text-3xl font-bold text-stone-100 tracking-tight truncate">
+          <h1 className="text-2xl sm:text-3xl font-bold text-stone-50 tracking-tight truncate">
             {title}
           </h1>
-          {subtitle && <p className="mt-1 text-sm text-stone-400 leading-relaxed">{subtitle}</p>}
+          {subtitle && (
+            <p className="mt-1.5 text-sm text-stone-400 leading-relaxed max-w-2xl">{subtitle}</p>
+          )}
         </div>
-        {actions && <div className="flex items-center gap-2 shrink-0">{actions}</div>}
+        {actions && <div className="flex items-center gap-2.5 shrink-0">{actions}</div>}
       </div>
     </div>
   )

@@ -74,6 +74,10 @@ const config: Config = {
           '"Segoe UI Emoji"',
         ],
       },
+      spacing: {
+        section: '3rem',
+        'card-grid': '1.25rem',
+      },
       maxWidth: {
         content: '72rem',
       },

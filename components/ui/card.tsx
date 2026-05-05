@@ -2,17 +2,31 @@
 
 import { HTMLAttributes, forwardRef } from 'react'
 
+export type CardVariant = 'default' | 'elevated' | 'glass' | 'highlight'
+
 export interface CardProps extends HTMLAttributes<HTMLDivElement> {
+  /** Visual variant controlling surface depth, shadow, and border treatment */
+  variant?: CardVariant
   /** Adds hover lift + shadow for clickable cards */
   interactive?: boolean
 }
 
+const variantStyles: Record<CardVariant, string> = {
+  default:
+    'bg-[var(--surface-2)] border-stone-700/40 shadow-[var(--shadow-card)] bg-[image:var(--card-gradient)]',
+  elevated:
+    'bg-[var(--surface-3)] border-stone-600/50 shadow-[var(--shadow-card-hover)] bg-[image:var(--card-gradient)]',
+  glass: 'bg-[var(--glass-bg)] border-stone-600/30 shadow-[var(--shadow-card)] backdrop-blur-xl',
+  highlight:
+    'bg-[var(--surface-2)] border-brand-600/30 shadow-[var(--shadow-card),0_0_20px_rgb(var(--brand-500)/0.08)] bg-[image:var(--card-gradient)]',
+}
+
 export const Card = forwardRef<HTMLDivElement, CardProps>(
-  ({ className = '', interactive, children, ...props }, ref) => {
+  ({ className = '', variant = 'default', interactive, children, ...props }, ref) => {
     return (
       <div
         ref={ref}
-        className={`bg-[var(--surface-2)] rounded-xl border border-stone-700/40 shadow-[var(--shadow-card)] bg-[image:var(--card-gradient)] ${interactive ? 'card-lift hover:border-[rgba(232,143,71,0.25)] hover:bg-stone-800/80 hover:shadow-[0_12px_32px_rgba(0,0,0,0.4),0_0_0_1px_rgba(232,143,71,0.08),0_0_20px_rgba(232,143,71,0.06)] cursor-pointer' : 'transition-all duration-200'} ${className}`}
+        className={`rounded-xl border card-transition ${variantStyles[variant]} ${interactive ? 'card-lift hover:border-[rgba(232,143,71,0.25)] hover:bg-stone-800/80 hover:shadow-[0_12px_32px_rgba(0,0,0,0.4),0_0_0_1px_rgba(232,143,71,0.08),0_0_20px_rgba(232,143,71,0.06)] cursor-pointer' : ''} ${className}`}
         {...props}
       >
         {children}

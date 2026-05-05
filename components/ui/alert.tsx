@@ -10,13 +10,13 @@ export interface AlertProps extends HTMLAttributes<HTMLDivElement> {
 
 export function Alert({ variant = 'info', title, children, className = '', ...props }: AlertProps) {
   const variants = {
-    info: 'bg-brand-100 border-brand-200 text-brand-900 dark:bg-brand-950 dark:border-brand-800 dark:text-brand-100',
+    info: 'bg-brand-100 border-brand-200 text-brand-900 dark:bg-brand-950/60 dark:border-brand-800/60 dark:text-brand-100 dark:border-l-brand-500',
     success:
-      'bg-emerald-100 border-emerald-200 text-emerald-900 dark:bg-emerald-950 dark:border-emerald-800 dark:text-emerald-100',
+      'bg-emerald-100 border-emerald-200 text-emerald-900 dark:bg-emerald-950/60 dark:border-emerald-800/60 dark:text-emerald-100 dark:border-l-emerald-500',
     warning:
-      'bg-amber-100 border-amber-200 text-amber-900 dark:bg-amber-950 dark:border-amber-800 dark:text-amber-100',
+      'bg-amber-100 border-amber-200 text-amber-900 dark:bg-amber-950/60 dark:border-amber-800/60 dark:text-amber-100 dark:border-l-amber-500',
     error:
-      'bg-red-100 border-red-200 text-red-900 dark:bg-red-950 dark:border-red-800 dark:text-red-100',
+      'bg-red-100 border-red-200 text-red-900 dark:bg-red-950/60 dark:border-red-800/60 dark:text-red-100 dark:border-l-red-500',
   }
 
   const iconColors = {
@@ -28,7 +28,7 @@ export function Alert({ variant = 'info', title, children, className = '', ...pr
 
   return (
     <div
-      className={`rounded-lg border p-4 animate-fade-slide-up ${variants[variant]} ${className}`}
+      className={`rounded-lg border border-l-[3px] p-4 animate-fade-slide-up ${variants[variant]} ${className}`}
       {...props}
     >
       <div className="flex">

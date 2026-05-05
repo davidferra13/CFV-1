@@ -149,29 +149,36 @@ export function BreadcrumbBar() {
   return (
     <nav
       aria-label="Breadcrumb"
-      className="py-1.5 px-4 sm:px-6 lg:px-8 flex items-center justify-between"
+      className="py-2 px-4 sm:px-6 lg:px-8 flex items-center justify-between"
     >
       {/* Crumbs */}
       <div className="min-w-0 flex-1">
         {/* Desktop: show all crumbs */}
-        <ol className="hidden sm:flex items-center gap-1 text-xs">
+        <ol className="hidden sm:flex items-center gap-1.5 text-sm">
           {crumbs.map((crumb, i) => {
             const isLast = i === crumbs.length - 1
             return (
-              <li key={crumb.href} className="flex items-center gap-1">
+              <li key={crumb.href} className="flex items-center gap-1.5">
                 {i > 0 && (
-                  <span className="text-stone-500 select-none" aria-hidden="true">
-                    /
-                  </span>
+                  <svg
+                    className="w-3 h-3 text-stone-600 flex-shrink-0"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    aria-hidden="true"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
                 )}
                 {isLast ? (
-                  <span className="text-stone-200 font-medium" aria-current="page">
+                  <span className="text-stone-100 font-medium" aria-current="page">
                     {crumb.label}
                   </span>
                 ) : (
                   <Link
                     href={crumb.href}
-                    className="text-stone-400 hover:text-stone-200 transition-colors"
+                    className="text-stone-400 hover:text-stone-200 transition-colors duration-150"
                   >
                     {crumb.label}
                   </Link>
@@ -182,7 +189,7 @@ export function BreadcrumbBar() {
         </ol>
 
         {/* Mobile: show ellipsis + last 2 segments */}
-        <ol className="flex sm:hidden items-center gap-1 text-xs min-h-[44px]">
+        <ol className="flex sm:hidden items-center gap-1 text-sm min-h-[44px]">
           {crumbs.length > 2 && (
             <li className="text-stone-500 select-none" aria-hidden="true">
               ...
@@ -191,20 +198,27 @@ export function BreadcrumbBar() {
           {crumbs.slice(-2).map((crumb, i, arr) => {
             const isLast = i === arr.length - 1
             return (
-              <li key={crumb.href} className="flex items-center gap-1">
+              <li key={crumb.href} className="flex items-center gap-1.5">
                 {(i > 0 || crumbs.length > 2) && (
-                  <span className="text-stone-500 select-none" aria-hidden="true">
-                    /
-                  </span>
+                  <svg
+                    className="w-3 h-3 text-stone-600 flex-shrink-0"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    aria-hidden="true"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
                 )}
                 {isLast ? (
-                  <span className="text-stone-200 font-medium" aria-current="page">
+                  <span className="text-stone-100 font-medium" aria-current="page">
                     {crumb.label}
                   </span>
                 ) : (
                   <Link
                     href={crumb.href}
-                    className="text-stone-400 hover:text-stone-200 transition-colors inline-flex items-center min-h-[44px] touch-manipulation"
+                    className="text-stone-400 hover:text-stone-200 transition-colors duration-150 inline-flex items-center min-h-[44px] touch-manipulation"
                   >
                     {crumb.label}
                   </Link>
@@ -215,17 +229,23 @@ export function BreadcrumbBar() {
         </ol>
       </div>
 
-      {/* Refresh button - always accessible on every page */}
-      <button
-        type="button"
-        onClick={handleRefresh}
-        disabled={refreshing}
-        title="Refresh page data"
-        aria-label="Refresh"
-        className="ml-3 flex-shrink-0 flex items-center justify-center w-7 h-7 rounded-md text-stone-500 hover:text-stone-300 hover:bg-stone-800 transition-colors disabled:opacity-40"
-      >
-        <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} />
-      </button>
+      {/* Right side: Cmd+K hint + refresh */}
+      <div className="flex items-center gap-2 flex-shrink-0">
+        <span className="kbd-badge hidden sm:inline-flex" aria-hidden="true">
+          <span>&#8984;</span>
+          <span>K</span>
+        </span>
+        <button
+          type="button"
+          onClick={handleRefresh}
+          disabled={refreshing}
+          title="Refresh page data"
+          aria-label="Refresh"
+          className="flex items-center justify-center w-7 h-7 rounded-md text-stone-500 hover:text-stone-300 hover:bg-stone-800/60 transition-colors duration-150 disabled:opacity-40"
+        >
+          <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} />
+        </button>
+      </div>
     </nav>
   )
 }

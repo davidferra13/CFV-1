@@ -62,7 +62,6 @@ export const PUBLIC_NAV: PublicNavEntry[] = [
   },
   PUBLIC_OPERATOR_ENTRY,
   { href: '/pricing', label: 'Pricing' },
-  { href: '/ingredients', label: 'Ingredients' },
 ]
 
 // ---------------------------------------------------------------------------
@@ -91,7 +90,6 @@ export const FOOTER_SECTIONS = {
   resources: {
     heading: 'Resources',
     links: [
-      { href: '/ingredients', label: 'Ingredient Guide' },
       { href: '/pricing', label: 'Pricing' },
       { href: '/faq', label: 'FAQ' },
       { href: '/how-it-works', label: 'How It Works' },

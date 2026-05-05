@@ -415,18 +415,16 @@ const NavGroupSection = memo(function NavGroupSection({
         type="button"
         onClick={onToggle}
         aria-expanded={isOpen}
-        className={`flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+        className={`nav-item-hover flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium ${
           active && !isOpen
-            ? 'text-brand-400'
-            : 'text-stone-300 hover:bg-stone-800/40 hover:text-stone-100'
+            ? 'text-brand-400 bg-brand-950/30'
+            : 'text-stone-300 hover:text-stone-100'
         }`}
       >
         <GroupIcon
-          className={`w-4.5 h-4.5 flex-shrink-0 ${active ? 'text-brand-500' : 'text-stone-600'}`}
+          className={`w-4.5 h-4.5 flex-shrink-0 transition-colors duration-150 ${active ? 'text-brand-500' : 'text-stone-500'}`}
         />
-        <span
-          className={`flex-1 text-left tracking-tight transition-opacity ${active ? 'opacity-100' : 'opacity-80'}`}
-        >
+        <span className={`flex-1 text-left tracking-tight ${active ? 'text-brand-400' : ''}`}>
           {group.label}
         </span>
         {badgeCount && badgeCount > 0 ? (
@@ -435,7 +433,7 @@ const NavGroupSection = memo(function NavGroupSection({
           </span>
         ) : null}
         <ChevronDown
-          className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${
+          className={`w-3.5 h-3.5 text-stone-500 transition-transform duration-200 ${
             isOpen ? 'rotate-0' : '-rotate-90'
           }`}
         />
@@ -446,7 +444,7 @@ const NavGroupSection = memo(function NavGroupSection({
           isOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
         }`}
       >
-        <div className="ml-3 pl-3 border-l border-stone-800/60 mt-1 space-y-0.5">
+        <div className="ml-3 pl-3 border-l border-stone-800/40 mt-1 space-y-0.5">
           {group.items.map((item) => {
             const Icon = item.icon
             const itemActive = isCollapsibleItemActive(pathname, item, searchParams)
@@ -460,10 +458,8 @@ const NavGroupSection = memo(function NavGroupSection({
                     type="button"
                     onClick={() => onToggleItem(item.href)}
                     aria-expanded={itemOpen}
-                    className={`flex items-center gap-2 w-full px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                      itemActive
-                        ? 'text-brand-400'
-                        : 'text-stone-300 hover:bg-stone-800 hover:text-brand-400'
+                    className={`nav-item-hover flex items-center gap-2 w-full px-3 py-1.5 rounded-lg text-sm font-medium ${
+                      itemActive ? 'text-brand-400' : 'text-stone-300 hover:text-brand-400'
                     }`}
                   >
                     <Icon
@@ -488,36 +484,40 @@ const NavGroupSection = memo(function NavGroupSection({
                           <Link
                             key={child.href}
                             href={child.href}
-                            className={`flex items-center gap-2 px-3 py-1.5 rounded text-sm font-normal transition-colors ${
+                            className={`nav-item-hover flex items-center gap-2 px-3 py-1.5 rounded text-sm font-normal ${
                               childActive
-                                ? 'bg-brand-950 text-brand-400'
-                                : 'text-stone-300 hover:bg-stone-800 hover:text-brand-400'
+                                ? 'bg-brand-950/80 text-brand-400'
+                                : 'text-stone-400 hover:text-stone-200'
                             }`}
                           >
-                            <span className="w-1.5 h-1.5 rounded-full bg-stone-300" />
+                            <span
+                              className={`w-1 h-1 rounded-full flex-shrink-0 ${childActive ? 'bg-brand-500' : 'bg-stone-600'}`}
+                            />
                             {child.label}
                           </Link>
                         )
                       })}
                       {advanced.length > 0 && (
                         <details className="pt-1">
-                          <summary className="cursor-pointer px-3 py-1 text-xs font-semibold uppercase tracking-wider text-stone-300 hover:text-stone-200">
+                          <summary className="cursor-pointer px-3 py-1 text-[0.625rem] font-semibold uppercase tracking-wider text-stone-500 hover:text-stone-300 transition-colors duration-150">
                             Advanced
                           </summary>
-                          <div className="space-y-0.5">
+                          <div className="space-y-0.5 mt-0.5">
                             {advanced.map((child) => {
                               const childActive = isItemActive(pathname, child.href, searchParams)
                               return (
                                 <Link
                                   key={child.href}
                                   href={child.href}
-                                  className={`flex items-center gap-2 px-3 py-1.5 rounded text-sm font-normal transition-colors ${
+                                  className={`nav-item-hover flex items-center gap-2 px-3 py-1.5 rounded text-sm font-normal ${
                                     childActive
-                                      ? 'bg-brand-950 text-brand-400'
-                                      : 'text-stone-300 hover:bg-stone-800 hover:text-brand-400'
+                                      ? 'bg-brand-950/80 text-brand-400'
+                                      : 'text-stone-400 hover:text-stone-200'
                                   }`}
                                 >
-                                  <span className="w-1.5 h-1.5 rounded-full bg-stone-300" />
+                                  <span
+                                    className={`w-1 h-1 rounded-full flex-shrink-0 ${childActive ? 'bg-brand-500' : 'bg-stone-600'}`}
+                                  />
                                   {child.label}
                                 </Link>
                               )
@@ -535,12 +535,10 @@ const NavGroupSection = memo(function NavGroupSection({
               <PendingNavLink
                 key={item.href}
                 href={item.href}
-                className={`flex items-center gap-3 pl-2 pr-3 py-1.5 rounded-lg text-sm font-medium transition-colors border-l-2 ${
-                  !itemActive
-                    ? 'text-stone-300 hover:bg-stone-800 hover:text-brand-400 border-transparent'
-                    : ''
+                className={`nav-item-hover flex items-center gap-3 pl-2 pr-3 py-1.5 rounded-lg text-sm font-medium border-l-2 ${
+                  !itemActive ? 'text-stone-300 hover:text-brand-400 border-transparent' : ''
                 }`}
-                activeClassName="bg-brand-950 text-brand-400 border-brand-500"
+                activeClassName="bg-brand-950/80 text-brand-400 border-brand-500 nav-active-glow"
                 pendingClassName="bg-brand-950/50 text-brand-400/70 border-brand-500/50"
                 isActive={itemActive}
               >
@@ -1077,7 +1075,7 @@ export function ChefSidebar({
             {/* ─── Nav Groups (always visible, collapse individually) ─── */}
             {filteredGroupEntries.length > 0 && (
               <>
-                <div className="mx-0 my-1 border-t border-stone-700/40" />
+                <div className="mx-2 my-2 border-t border-stone-800/50" />
                 <div className="space-y-0.5">
                   {filteredGroupEntries.map(({ group, isLocked }) => (
                     <NavGroupSection
@@ -1121,7 +1119,7 @@ export function ChefSidebar({
 
             <RecentPagesSection />
 
-            <div className="divider-brand h-px my-2 mx-3 opacity-40" />
+            <div className="h-px my-3 mx-3 bg-stone-800/40" />
 
             {/* Settings */}
             {(() => {

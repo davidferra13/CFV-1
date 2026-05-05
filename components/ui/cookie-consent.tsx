@@ -56,14 +56,26 @@ export function CookieConsent() {
   if (!visible) return null
 
   return (
-    <div className="fixed bottom-2 left-2 right-2 z-chrome overflow-hidden animate-slide-up-fade rounded-xl border border-stone-700/60 bg-stone-900/92 px-3 py-2.5 shadow-[0_18px_45px_rgba(0,0,0,0.32)] backdrop-blur-md sm:bottom-4 sm:left-1/2 sm:right-auto sm:w-[min(42rem,calc(100vw-2rem))] sm:max-w-none sm:-translate-x-1/2 sm:rounded-2xl sm:px-6 sm:py-4">
+    <div className="fixed bottom-2 left-2 right-2 z-chrome overflow-hidden animate-slide-up-fade rounded-xl border border-stone-700/40 bg-stone-900/95 px-3 py-2.5 shadow-[0_18px_45px_rgba(0,0,0,0.4)] backdrop-blur-xl sm:bottom-4 sm:left-1/2 sm:right-auto sm:w-[min(42rem,calc(100vw-2rem))] sm:max-w-none sm:-translate-x-1/2 sm:rounded-2xl sm:px-6 sm:py-4">
       <button
         type="button"
-        className="absolute right-2 top-2 hidden rounded-md p-1 text-stone-500 transition-colors hover:text-stone-200 sm:block"
+        className="absolute right-2.5 top-2.5 hidden rounded-md p-1 text-stone-500 transition-colors duration-150 hover:text-stone-200 sm:block"
         onClick={handleDismiss}
         aria-label="Dismiss cookie banner"
       >
-        <span aria-hidden>x</span>
+        <svg
+          aria-hidden="true"
+          className="h-3.5 w-3.5"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
+        </svg>
       </button>
 
       <div className="sm:hidden">

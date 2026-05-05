@@ -20,9 +20,10 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       block w-full rounded-lg border bg-stone-900 px-3 py-2 text-sm text-stone-100
       placeholder:text-stone-400
       transition-[border-color,box-shadow,background-color] duration-200 ease-out
+      hover:border-stone-500
       focus:outline-none focus:ring-2
-      disabled:cursor-not-allowed disabled:bg-stone-800 disabled:text-stone-500
-      ${error ? 'border-red-400 focus:border-red-400 focus:ring-red-500/20' : 'border-stone-600 focus:border-brand-500 focus:ring-brand-500/20'}
+      disabled:cursor-not-allowed disabled:bg-stone-800 disabled:text-stone-500 disabled:hover:border-stone-600
+      ${error ? 'border-red-400 hover:border-red-400 focus:border-red-400 focus:ring-red-500/20' : 'border-stone-600 focus:border-brand-500 focus:ring-brand-500/20'}
       ${isPassword ? 'pr-10' : ''}
       ${className}
     `.trim()
@@ -58,7 +59,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
                 e.preventDefault()
                 setShowPassword(!showPassword)
               }}
-              className="absolute inset-y-0 right-0 flex items-center pr-3 text-stone-400 hover:text-stone-400"
+              className="absolute inset-y-0 right-0 flex items-center pr-3 text-stone-500 hover:text-stone-200 transition-colors duration-150"
               tabIndex={-1}
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >

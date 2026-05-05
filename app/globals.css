@@ -3,35 +3,8 @@
 @tailwind utilities;
 
 /* ============================================
-   CUSTOM CURSOR - Chef's Knife
-   ============================================ */
-
-* {
-  cursor:
-    url('/cursor-knife.svg') 5 2,
-    default;
-}
-
-/* ============================================
    GLOBAL INTERACTIVE ELEMENT DEFAULTS
    ============================================ */
-
-/* All clickable elements get knife-pointer cursor by default. */
-button:not(:disabled),
-[role='button']:not(:disabled),
-summary,
-label[for],
-a[href],
-[onclick],
-input[type='submit'],
-input[type='button'],
-input[type='checkbox'],
-input[type='radio'],
-select {
-  cursor:
-    url('/cursor-knife-pointer.svg') 5 2,
-    pointer;
-}
 
 /* ============================================
    DESIGN TOKENS - CSS Custom Properties
@@ -914,6 +887,52 @@ html {
   animation: fade-slide-up 300ms var(--ease-spring) both;
 }
 
+/* ── Scroll-reveal entrance animations (homepage) ── */
+@keyframes reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(32px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(32px);
+}
+
+.scroll-reveal.revealed {
+  animation: reveal-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.scroll-reveal-delay-1.revealed {
+  animation-delay: 0.1s;
+}
+.scroll-reveal-delay-2.revealed {
+  animation-delay: 0.2s;
+}
+.scroll-reveal-delay-3.revealed {
+  animation-delay: 0.3s;
+}
+
+/* ── Premium search glow (homepage hero) ── */
+.search-premium {
+  transition:
+    box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.search-premium:focus-within {
+  border-color: rgb(var(--brand-500) / 0.5);
+  box-shadow:
+    0 0 0 1px rgb(var(--brand-500) / 0.15),
+    0 8px 40px rgb(var(--brand-500) / 0.08),
+    0 20px 60px rgba(0, 0, 0, 0.25);
+}
+
 /* Sidebar warm gradient - barely visible terracotta tint at top */
 .sidebar-gradient {
   background-image: linear-gradient(180deg, rgb(var(--brand-500) / 0.03) 0%, transparent 30%);
@@ -1555,6 +1574,51 @@ select:focus {
     0 0 16px rgb(var(--brand-500) / 0.2);
 }
 
+/* ── Nav group section header ── */
+.nav-group-header {
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgb(var(--stone-500));
+  padding: 0.5rem 0.75rem 0.25rem;
+  user-select: none;
+}
+
+/* ── Nav item hover transition (smooth fade) ── */
+.nav-item-hover {
+  transition:
+    background-color 150ms ease,
+    color 150ms ease,
+    border-color 150ms ease;
+}
+.nav-item-hover:hover {
+  background-color: rgb(var(--stone-800) / 0.5);
+}
+
+/* ── Breadcrumb separator chevron ── */
+.breadcrumb-separator {
+  color: rgb(var(--stone-600));
+  font-size: 0.625rem;
+  margin: 0 0.125rem;
+}
+
+/* ── Kbd badge (Cmd+K hint) ── */
+.kbd-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  border: 1px solid rgb(var(--stone-700));
+  background: rgb(var(--stone-800) / 0.6);
+  color: rgb(var(--stone-400));
+  font-size: 0.625rem;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
 /* ── Input focus glow ── */
 input:focus,
 textarea:focus,
@@ -1739,4 +1803,61 @@ select:focus {
 }
 .collapsible > * {
   overflow: hidden;
+}
+
+/* ============================================
+   TYPOGRAPHY HIERARCHY
+   ============================================ */
+
+/* Large display text for page heroes and splash areas */
+.text-display {
+  font-size: 2.25rem;
+  line-height: 2.5rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: var(--text-primary);
+}
+
+/* Section headers within pages */
+.text-headline {
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+
+/* Small caps label for card headers and metadata */
+.text-label {
+  font-size: 0.6875rem;
+  line-height: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* Large metric numbers for stat cards and dashboards */
+.text-metric {
+  font-size: 1.875rem;
+  line-height: 2.25rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+/* ============================================
+   CARD TRANSITION (default smooth transition for all card elements)
+   ============================================ */
+.card-transition {
+  transition:
+    transform var(--duration-normal) var(--ease-spring),
+    box-shadow var(--duration-normal) var(--ease-spring),
+    border-color var(--duration-normal),
+    background-color var(--duration-normal);
+}
+
+.card-transition:hover {
+  border-color: var(--border-default);
 }
