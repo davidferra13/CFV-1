@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+  <!-- Blade - subtle, thin, slightly curved -->
+  <path d="M4 2 L6 2 Q7 8 6.5 14 L5 14 Q4.5 8 4 2 Z" fill="#1a1a1a" fill-opacity="0.7"/>
+  <!-- Edge highlight -->
+  <path d="M4 2 Q4.5 8 5 14" stroke="#ffffff" stroke-width="0.3" stroke-opacity="0.4"/>
+  <!-- Bolster -->
+  <rect x="4.2" y="14" width="2.6" height="1.2" rx="0.3" fill="#555" fill-opacity="0.8"/>
+  <!-- Handle -->
+  <rect x="4.5" y="15.2" width="2" height="6" rx="0.8" fill="#2a2a2a" fill-opacity="0.65"/>
+  <!-- Handle rivets -->
+  <circle cx="5.5" cy="16.5" r="0.3" fill="#888" fill-opacity="0.5"/>
+  <circle cx="5.5" cy="19" r="0.3" fill="#888" fill-opacity="0.5"/>
+</svg>
