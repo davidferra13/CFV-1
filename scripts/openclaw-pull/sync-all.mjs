@@ -379,6 +379,17 @@ async function main() {
     log('Pull failed. Continuing with existing data...')
   }
 
+  // Step 1b: Push stores from PostgreSQL back to Pi (OSM + SNAP + USDA stores)
+  // Pi only has ~37K from its own scrapers; PG has 477K+ from OSM nationwide ingestion.
+  const pushStoresOk = runScript(
+    'Push stores to Pi',
+    resolve(rootDir, 'scripts/push-stores-to-pi.mjs'),
+    1800000 // 30 min - large dataset over SSH
+  )
+  if (!pushStoresOk) {
+    log('Store push to Pi failed. Continuing...')
+  }
+
   // Step 2: Sync normalization map + auto-link aliases
   const normOk = runScript('Sync normalization + aliases', resolve(__dirname, 'sync-normalization.mjs'))
   if (!normOk) {

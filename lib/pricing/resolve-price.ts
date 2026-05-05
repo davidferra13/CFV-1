@@ -30,6 +30,11 @@ import { getRegionalAverage, getRegionalAveragesBatch } from './cross-store-aver
 import { getCategoryBaseline, getCategoryBaselinesBatch } from './category-baseline'
 import { lookupPrice, lookupPricesBatch } from './pi-bridge'
 import { normalizeIngredientName } from './name-normalizer'
+import {
+  getMarketSeasonStatus,
+  seasonalConfidenceMultiplier,
+  shouldExcludeForSeason,
+} from './farmers-market-seasonal'
 
 // --- LRU Price Cache ---
 // In-memory TTL cache to avoid repeated DB hits for the same ingredient+tenant
@@ -658,21 +663,28 @@ async function resolvePriceUncached(
       const best = piResult.prices[0]
       const priceCents = best.price_per_standard_unit_cents ?? best.price_cents
       if (priceCents && priceCents > 0) {
-        return withDecay({
-          cents: priceCents,
-          unit: best.standard_unit || best.price_unit || 'each',
-          source: 'direct_scrape',
-          sourceTier: 'pi_bridge_live',
-          resolutionTier:
-            preferredState && best.state === preferredState?.toUpperCase()
-              ? 'zip_local'
-              : 'regional',
-          store: sourceDisplayStore('direct_scrape', best.store || best.product_name),
-          confidence: 0.82,
-          freshness: computeFreshness(best.last_confirmed_at),
-          confirmedAt: best.last_confirmed_at,
-          reason: null,
-        })
+        // Farmers market seasonal check: exclude out-of-season, boost in-season
+        const marketStatus = await getMarketSeasonStatus(best.store, best.state || preferredState)
+        if (!shouldExcludeForSeason(marketStatus)) {
+          const seasonalMult = seasonalConfidenceMultiplier(marketStatus)
+          return withDecay({
+            cents: priceCents,
+            unit: best.standard_unit || best.price_unit || 'each',
+            source: 'direct_scrape',
+            sourceTier: 'pi_bridge_live',
+            resolutionTier:
+              preferredState && best.state === preferredState?.toUpperCase()
+                ? 'zip_local'
+                : 'regional',
+            store: sourceDisplayStore('direct_scrape', best.store || best.product_name),
+            confidence: Math.min(0.82 * seasonalMult, 1.0),
+            freshness: computeFreshness(best.last_confirmed_at),
+            confirmedAt: best.last_confirmed_at,
+            reason:
+              marketStatus === 'in_season' ? 'Farmers market in-season (freshness boost)' : null,
+          })
+        }
+        // out_of_season: fall through to next tier
       }
     }
   }
@@ -696,18 +708,25 @@ async function resolvePriceUncached(
   if (scrape.length > 0) {
     const row = scrape[0]
     if (row.price_per_unit_cents !== null) {
-      return withDecay({
-        cents: row.price_per_unit_cents,
-        unit: row.unit || 'each',
-        source: 'direct_scrape',
-        sourceTier: 'openclaw_scrape',
-        resolutionTier: tierForReceiptSource('openclaw_scrape', row.store_name, preferredState),
-        store: sourceDisplayStore('direct_scrape', row.store_name),
-        confidence: 0.85,
-        freshness: computeFreshness(row.purchase_date),
-        confirmedAt: row.purchase_date,
-        reason: null,
-      })
+      const scrapeMarketStatus = await getMarketSeasonStatus(row.store_name, preferredState)
+      if (!shouldExcludeForSeason(scrapeMarketStatus)) {
+        const scrapeSeasonalMult = seasonalConfidenceMultiplier(scrapeMarketStatus)
+        return withDecay({
+          cents: row.price_per_unit_cents,
+          unit: row.unit || 'each',
+          source: 'direct_scrape',
+          sourceTier: 'openclaw_scrape',
+          resolutionTier: tierForReceiptSource('openclaw_scrape', row.store_name, preferredState),
+          store: sourceDisplayStore('direct_scrape', row.store_name),
+          confidence: Math.min(0.85 * scrapeSeasonalMult, 1.0),
+          freshness: computeFreshness(row.purchase_date),
+          confirmedAt: row.purchase_date,
+          reason:
+            scrapeMarketStatus === 'in_season'
+              ? 'Farmers market in-season (freshness boost)'
+              : null,
+        })
+      }
     }
   }
 
@@ -730,18 +749,23 @@ async function resolvePriceUncached(
   if (flyer.length > 0) {
     const row = flyer[0]
     if (row.price_per_unit_cents !== null) {
-      return withDecay({
-        cents: row.price_per_unit_cents,
-        unit: row.unit || 'each',
-        source: 'flyer',
-        sourceTier: 'openclaw_flyer',
-        resolutionTier: tierForReceiptSource('openclaw_flyer', row.store_name, preferredState),
-        store: sourceDisplayStore('flyer', row.store_name),
-        confidence: 0.7,
-        freshness: computeFreshness(row.purchase_date),
-        confirmedAt: row.purchase_date,
-        reason: null,
-      })
+      const flyerMarketStatus = await getMarketSeasonStatus(row.store_name, preferredState)
+      if (!shouldExcludeForSeason(flyerMarketStatus)) {
+        const flyerSeasonalMult = seasonalConfidenceMultiplier(flyerMarketStatus)
+        return withDecay({
+          cents: row.price_per_unit_cents,
+          unit: row.unit || 'each',
+          source: 'flyer',
+          sourceTier: 'openclaw_flyer',
+          resolutionTier: tierForReceiptSource('openclaw_flyer', row.store_name, preferredState),
+          store: sourceDisplayStore('flyer', row.store_name),
+          confidence: Math.min(0.7 * flyerSeasonalMult, 1.0),
+          freshness: computeFreshness(row.purchase_date),
+          confirmedAt: row.purchase_date,
+          reason:
+            flyerMarketStatus === 'in_season' ? 'Farmers market in-season (freshness boost)' : null,
+        })
+      }
     }
   }
 
@@ -764,18 +788,27 @@ async function resolvePriceUncached(
   if (instacart.length > 0) {
     const row = instacart[0]
     if (row.price_per_unit_cents !== null) {
-      return withDecay({
-        cents: row.price_per_unit_cents,
-        unit: row.unit || 'each',
-        source: 'instacart',
-        sourceTier: 'openclaw_instacart',
-        resolutionTier: tierForReceiptSource('openclaw_instacart', row.store_name, preferredState),
-        store: sourceDisplayStore('instacart', row.store_name),
-        confidence: 0.6,
-        freshness: computeFreshness(row.purchase_date),
-        confirmedAt: row.purchase_date,
-        reason: null,
-      })
+      const icMarketStatus = await getMarketSeasonStatus(row.store_name, preferredState)
+      if (!shouldExcludeForSeason(icMarketStatus)) {
+        const icSeasonalMult = seasonalConfidenceMultiplier(icMarketStatus)
+        return withDecay({
+          cents: row.price_per_unit_cents,
+          unit: row.unit || 'each',
+          source: 'instacart',
+          sourceTier: 'openclaw_instacart',
+          resolutionTier: tierForReceiptSource(
+            'openclaw_instacart',
+            row.store_name,
+            preferredState
+          ),
+          store: sourceDisplayStore('instacart', row.store_name),
+          confidence: Math.min(0.6 * icSeasonalMult, 1.0),
+          freshness: computeFreshness(row.purchase_date),
+          confirmedAt: row.purchase_date,
+          reason:
+            icMarketStatus === 'in_season' ? 'Farmers market in-season (freshness boost)' : null,
+        })
+      }
     }
   }
 
@@ -1508,76 +1541,95 @@ export async function resolvePricesBatch(
     // Tier 3: Direct scrape (within 14 days) [PostgreSQL fallback]
     const scrapeRow = findBestRow(openclaw, 'openclaw_scrape', 14)
     if (scrapeRow && scrapeRow.price_per_unit_cents !== null) {
-      result.set(
-        id,
-        withDecay({
-          cents: scrapeRow.price_per_unit_cents,
-          unit: scrapeRow.unit || 'each',
-          source: 'direct_scrape',
-          sourceTier: 'openclaw_scrape',
-          resolutionTier: tierForReceiptSource(
-            'openclaw_scrape',
-            scrapeRow.store_name,
-            preferredState
-          ),
-          store: sourceDisplayStore('direct_scrape', scrapeRow.store_name),
-          confidence: 0.85,
-          freshness: computeFreshness(scrapeRow.purchase_date),
-          confirmedAt: scrapeRow.purchase_date,
-          reason: null,
-        })
-      )
-      continue
+      const batchScrapeStatus = await getMarketSeasonStatus(scrapeRow.store_name, preferredState)
+      if (!shouldExcludeForSeason(batchScrapeStatus)) {
+        const batchScrapeMult = seasonalConfidenceMultiplier(batchScrapeStatus)
+        result.set(
+          id,
+          withDecay({
+            cents: scrapeRow.price_per_unit_cents,
+            unit: scrapeRow.unit || 'each',
+            source: 'direct_scrape',
+            sourceTier: 'openclaw_scrape',
+            resolutionTier: tierForReceiptSource(
+              'openclaw_scrape',
+              scrapeRow.store_name,
+              preferredState
+            ),
+            store: sourceDisplayStore('direct_scrape', scrapeRow.store_name),
+            confidence: Math.min(0.85 * batchScrapeMult, 1.0),
+            freshness: computeFreshness(scrapeRow.purchase_date),
+            confirmedAt: scrapeRow.purchase_date,
+            reason:
+              batchScrapeStatus === 'in_season'
+                ? 'Farmers market in-season (freshness boost)'
+                : null,
+          })
+        )
+        continue
+      }
     }
 
     // Tier 4: Flyer (within 14 days)
     const flyerRow = findBestRow(openclaw, 'openclaw_flyer', 14)
     if (flyerRow && flyerRow.price_per_unit_cents !== null) {
-      result.set(
-        id,
-        withDecay({
-          cents: flyerRow.price_per_unit_cents,
-          unit: flyerRow.unit || 'each',
-          source: 'flyer',
-          sourceTier: 'openclaw_flyer',
-          resolutionTier: tierForReceiptSource(
-            'openclaw_flyer',
-            flyerRow.store_name,
-            preferredState
-          ),
-          store: sourceDisplayStore('flyer', flyerRow.store_name),
-          confidence: 0.7,
-          freshness: computeFreshness(flyerRow.purchase_date),
-          confirmedAt: flyerRow.purchase_date,
-          reason: null,
-        })
-      )
-      continue
+      const batchFlyerStatus = await getMarketSeasonStatus(flyerRow.store_name, preferredState)
+      if (!shouldExcludeForSeason(batchFlyerStatus)) {
+        const batchFlyerMult = seasonalConfidenceMultiplier(batchFlyerStatus)
+        result.set(
+          id,
+          withDecay({
+            cents: flyerRow.price_per_unit_cents,
+            unit: flyerRow.unit || 'each',
+            source: 'flyer',
+            sourceTier: 'openclaw_flyer',
+            resolutionTier: tierForReceiptSource(
+              'openclaw_flyer',
+              flyerRow.store_name,
+              preferredState
+            ),
+            store: sourceDisplayStore('flyer', flyerRow.store_name),
+            confidence: Math.min(0.7 * batchFlyerMult, 1.0),
+            freshness: computeFreshness(flyerRow.purchase_date),
+            confirmedAt: flyerRow.purchase_date,
+            reason:
+              batchFlyerStatus === 'in_season'
+                ? 'Farmers market in-season (freshness boost)'
+                : null,
+          })
+        )
+        continue
+      }
     }
 
     // Tier 5: Instacart (within 30 days)
     const instacartRow = findBestRow(openclaw, 'openclaw_instacart', 30)
     if (instacartRow && instacartRow.price_per_unit_cents !== null) {
-      result.set(
-        id,
-        withDecay({
-          cents: instacartRow.price_per_unit_cents,
-          unit: instacartRow.unit || 'each',
-          source: 'instacart',
-          sourceTier: 'openclaw_instacart',
-          resolutionTier: tierForReceiptSource(
-            'openclaw_instacart',
-            instacartRow.store_name,
-            preferredState
-          ),
-          store: sourceDisplayStore('instacart', instacartRow.store_name),
-          confidence: 0.6,
-          freshness: computeFreshness(instacartRow.purchase_date),
-          confirmedAt: instacartRow.purchase_date,
-          reason: null,
-        })
-      )
-      continue
+      const batchIcStatus = await getMarketSeasonStatus(instacartRow.store_name, preferredState)
+      if (!shouldExcludeForSeason(batchIcStatus)) {
+        const batchIcMult = seasonalConfidenceMultiplier(batchIcStatus)
+        result.set(
+          id,
+          withDecay({
+            cents: instacartRow.price_per_unit_cents,
+            unit: instacartRow.unit || 'each',
+            source: 'instacart',
+            sourceTier: 'openclaw_instacart',
+            resolutionTier: tierForReceiptSource(
+              'openclaw_instacart',
+              instacartRow.store_name,
+              preferredState
+            ),
+            store: sourceDisplayStore('instacart', instacartRow.store_name),
+            confidence: Math.min(0.6 * batchIcMult, 1.0),
+            freshness: computeFreshness(instacartRow.purchase_date),
+            confirmedAt: instacartRow.purchase_date,
+            reason:
+              batchIcStatus === 'in_season' ? 'Farmers market in-season (freshness boost)' : null,
+          })
+        )
+        continue
+      }
     }
 
     // Tier 6: Regional average (cross-store)

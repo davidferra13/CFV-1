@@ -5,7 +5,7 @@
  * Sub-5ms latency for real-time pricing against 1.1M+ live prices.
  *
  * The Pi API exposes prices.db (2.8GB SQLite) with 143K canonical ingredients,
- * 1.1M current prices, and 37K store locations.
+ * 1.1M current prices, and 477K+ store locations (synced nightly from PostgreSQL).
  *
  * Falls back gracefully when Pi is unreachable (returns null, caller uses
  * existing PostgreSQL resolution chain).

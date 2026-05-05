@@ -25,9 +25,9 @@ This file is read by Claude Code at the start of every conversation. These rules
 | **Executor** | Opus 4.6      | (main session)    | Standard  | All normal work. Default                             |
 | **Advisor**  | Opus 4.6      | `opus-advisor`    | Expensive | Hard decisions only                                  |
 
-### SONNET BAN (ABSOLUTE)
+### MODEL SELECTION
 
-**EVERY `Agent` tool call MUST include `model: "haiku"` or `model: "opus"`.** Omitting it defaults to Sonnet, which drains a separate token bucket. Prefer direct Grep/Glob/Read over spawning agents.
+Agent tool calls can use `model: "haiku"` (cheap/mechanical), `model: "sonnet"` (balanced), or `model: "opus"` (complex). Prefer direct Grep/Glob/Read over spawning agents for simple lookups.
 
 ### LOCAL DELEGATION
 
