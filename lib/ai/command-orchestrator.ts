@@ -1774,8 +1774,45 @@ async function executeSingleTask(
           )
         }
 
+        // If ingredient not in library, fall back to public PIE lookup by name.
+        // This lets Remy answer "how much does saffron cost?" even if the chef
+        // never added saffron to their library.
         if (matchedRows.length === 0) {
-          data = { message: 'No matching ingredients found in your library.' }
+          const { lookupPrice } = await import('@/lib/pricing/universal-price-lookup')
+          const pieFallbackPrices = await Promise.all(
+            ingredientNames.map(async (name: string) => {
+              try {
+                const result = await lookupPrice({ ingredient: name.trim() })
+                return {
+                  ingredient: name,
+                  cents: result.price_per_unit_cents ?? result.price_cents ?? null,
+                  unit: result.unit || 'each',
+                  store: result.sources?.[0] || null,
+                  source: result.resolution_tier || 'pie_public',
+                  confidence: result.confidence_score ?? 0,
+                  piCents: null,
+                  piStore: null,
+                  fromLibrary: false,
+                }
+              } catch {
+                return {
+                  ingredient: name,
+                  cents: null,
+                  unit: 'each',
+                  store: null,
+                  source: 'none',
+                  confidence: 0,
+                  piCents: null,
+                  piStore: null,
+                  fromLibrary: false,
+                }
+              }
+            })
+          )
+          data = {
+            prices: pieFallbackPrices,
+            note: 'Prices from PIE market data (not in your ingredient library).',
+          }
           break
         }
 
@@ -1821,6 +1858,7 @@ async function executeSingleTask(
               confidence: price?.confidence || 0,
               piCents: piMatch?.cents || null,
               piStore: piMatch?.store || null,
+              fromLibrary: true,
             }
           }),
         }
