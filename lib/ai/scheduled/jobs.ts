@@ -1,6 +1,5 @@
-'use server'
-
 // Scheduled Intelligence Layer - Job Implementations
+// NOT a server action file. Called by queue worker, not by client.
 // PRIVACY: All jobs handle tenant business data → local Ollama only.
 //
 // Each job is called by the queue worker on a schedule.
@@ -10,7 +9,7 @@ import { createAdminClient } from '@/lib/db/admin'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { dateToDateString } from '@/lib/utils/format'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
-import { enqueueTask } from '@/lib/ai/queue/actions'
+import { enqueueTaskInternal } from '@/lib/ai/queue/actions'
 import { AI_PRIORITY } from '@/lib/ai/queue/types'
 import { z } from 'zod'
 
@@ -639,7 +638,7 @@ export async function handleStaleInquiryScanner(
   let enqueued = 0
   for (const inq of staleInquiries) {
     try {
-      await enqueueTask({
+      await enqueueTaskInternal({
         tenantId,
         taskType: 'reactive.inquiry_stale',
         payload: {
@@ -695,7 +694,7 @@ export async function handlePaymentOverdueScanner(
   let enqueued = 0
   for (const evt of overdueEvents) {
     try {
-      await enqueueTask({
+      await enqueueTaskInternal({
         tenantId,
         taskType: 'reactive.payment_overdue',
         payload: {

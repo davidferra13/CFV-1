@@ -1234,7 +1234,7 @@ export function CommunicationInboxClient({
 
       {/* Bulk actions bar */}
       {selectedCount > 0 && (
-        <div className="fixed bottom-4 inset-x-0 z-50 flex justify-center px-4 pointer-events-none">
+        <div className="fixed bottom-4 inset-x-0 z-toast flex justify-center px-4 pointer-events-none">
           <div className="pointer-events-auto w-full max-w-3xl rounded-xl border border-stone-700 bg-stone-900/95 backdrop-blur p-3 shadow-2xl">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="text-sm text-stone-100">{selectedCount} selected</div>
@@ -1315,7 +1315,7 @@ export function CommunicationInboxClient({
 
       {/* Manual log modal */}
       {manualOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+        <div className="fixed inset-0 z-dialog flex items-center justify-center bg-black/60 p-4">
           <div className="w-full max-w-lg rounded-xl border border-stone-700 bg-stone-900 text-stone-100 p-4 space-y-3">
             <h3 className="text-lg font-semibold">+ Log New Message</h3>
             <input
@@ -1379,7 +1379,7 @@ export function CommunicationInboxClient({
 
       {/* Note modal */}
       {noteOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+        <div className="fixed inset-0 z-dialog flex items-center justify-center bg-black/60 p-4">
           <div className="w-full max-w-lg rounded-xl border border-stone-700 bg-stone-900 text-stone-100 p-4 space-y-3">
             <h3 className="text-lg font-semibold">Add Note</h3>
             <div className="space-y-1">

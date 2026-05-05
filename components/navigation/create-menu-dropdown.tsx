@@ -48,7 +48,7 @@ export function CreateMenuDropdown({
         side={side}
         align={align}
         sideOffset={8}
-        className="z-50 min-w-[220px] max-h-[80vh] overflow-y-auto rounded-lg border border-stone-700 bg-stone-900 p-1 shadow-xl"
+        className="z-float min-w-[220px] max-h-[80vh] overflow-y-auto rounded-lg border border-stone-700 bg-stone-900 p-1 shadow-xl"
       >
         {createDropdownItems.map((item, i) => {
           const showSeparator = lastGroup !== null && lastGroup !== item.group

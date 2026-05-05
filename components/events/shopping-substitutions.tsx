@@ -1,11 +1,15 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
-import { logSubstitution, deleteSubstitution } from '@/lib/shopping/substitutions'
+import {
+  logSubstitution,
+  deleteSubstitution,
+  getSubstitutionHistory,
+} from '@/lib/shopping/substitutions'
 
 const SUBSTITUTION_REASONS = [
   { value: 'unavailable', label: 'Unavailable' },
@@ -41,6 +45,28 @@ export function ShoppingSubstitutions({
   const [reason, setReason] = useState<string>('unavailable')
   const [store, setStore] = useState('')
   const [notes, setNotes] = useState('')
+  const [suggestions, setSuggestions] = useState<{ ingredient: string; count: number }[]>([])
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Fetch substitution history when planned ingredient changes
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    if (!planned || planned.length < 2) {
+      setSuggestions([])
+      return
+    }
+    debounceRef.current = setTimeout(async () => {
+      try {
+        const history = await getSubstitutionHistory(planned)
+        setSuggestions(history)
+      } catch {
+        setSuggestions([])
+      }
+    }, 400)
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+    }
+  }, [planned])
 
   async function handleAdd() {
     if (!planned || !actual) return
@@ -157,6 +183,21 @@ export function ShoppingSubstitutions({
                   value={actual}
                   onChange={(e) => setActual(e.target.value)}
                 />
+                {suggestions.length > 0 && !actual && (
+                  <div className="mt-1 space-y-0.5">
+                    <p className="text-xs text-stone-500">Past swaps:</p>
+                    {suggestions.slice(0, 3).map((s) => (
+                      <button
+                        key={s.ingredient}
+                        type="button"
+                        className="block text-xs text-amber-400 hover:text-amber-300"
+                        onClick={() => setActual(s.ingredient)}
+                      >
+                        {s.ingredient} ({s.count}x)
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">

@@ -351,7 +351,7 @@ export function CommandPalette({ userId, tenantId }: { userId: string; tenantId:
   let flatIndex = -1
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-start justify-center pt-[15vh] px-4">
+    <div className="fixed inset-0 z-command flex items-start justify-center pt-[15vh] px-4">
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/50 backdrop-blur-md"

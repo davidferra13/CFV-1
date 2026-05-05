@@ -8,7 +8,7 @@ import {
   getPostEventSurveyPageData,
   sendChefManagedPostEventSurvey,
   submitPostEventSurveyResponse,
-} from '@/lib/post-event/trust-loop-actions'
+} from '@/lib/events/post-event-trust-loop-actions'
 
 // Compatibility wrapper for the legacy event_surveys API surface.
 // Canonical post-event trust flow now lives in post_event_surveys and /feedback/[token].

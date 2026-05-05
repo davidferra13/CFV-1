@@ -103,7 +103,7 @@ export function AccessibleDialog({
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-[90] flex items-center justify-center px-4">
+    <div className="fixed inset-0 z-dialog flex items-center justify-center px-4">
       <div
         className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-[dialog-backdrop_0.2s_ease-out]"
         aria-hidden="true"

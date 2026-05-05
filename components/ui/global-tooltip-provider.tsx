@@ -550,7 +550,7 @@ export function GlobalTooltipProvider({ children }: { children?: React.ReactNode
     <>
       {children}
       <div
-        className="pointer-events-none fixed inset-0 z-[140]"
+        className="pointer-events-none fixed inset-0 z-context-menu"
         aria-hidden={renderedTooltip ? undefined : true}
       >
         {renderedTooltip ? (

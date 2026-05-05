@@ -1,6 +1,5 @@
-'use server'
-
 // Reactive Event Layer - Handler Implementations
+// NOT a server action file. Called by queue worker, not by client.
 // PRIVACY: All handlers deal with client PII → local Ollama only.
 //
 // Each handler is called by the queue worker when a reactive task is processed.

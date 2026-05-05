@@ -159,7 +159,7 @@ export function VoiceModeToggle({ onCommand, className = '' }: VoiceModeTogglePr
 
       {/* Help overlay */}
       {showHelp && (
-        <div className="absolute top-full left-0 mt-2 w-80 rounded-lg border border-stone-700 bg-stone-800 shadow-xl z-50 p-3">
+        <div className="absolute top-full left-0 mt-2 w-80 rounded-lg border border-stone-700 bg-stone-800 shadow-xl z-fab p-3">
           <h4 className="text-xs font-medium text-stone-200 mb-2 uppercase tracking-wider">
             Voice Commands
           </h4>

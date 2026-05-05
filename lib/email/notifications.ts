@@ -47,6 +47,7 @@ import { EventMidpointCheckinEmail } from './templates/event-midpoint-checkin'
 import { InstantBookingClientEmail } from './templates/instant-booking-client'
 import { ReviewSubmittedChefEmail } from './templates/review-submitted-chef'
 import { PostEventThankYouEmail } from './templates/post-event-thank-you'
+import { buildIcsAttachment } from './ics-attachment'
 import { PostEventReviewRequestEmail } from './templates/post-event-review-request'
 import { PostEventReferralAskEmail } from './templates/post-event-referral-ask'
 import { PostEventTipPromptEmail } from './templates/post-event-tip-prompt'
@@ -406,6 +407,16 @@ export async function sendEventConfirmedEmail(params: {
   circleUrl?: string
   coHostNames?: string[]
 }) {
+  const icsAttachment = buildIcsAttachment({
+    id: params.eventId,
+    title: params.occasion || 'Private Chef Dinner',
+    eventDate: params.eventDate,
+    startTime: params.serveTime ?? undefined,
+    location: params.location ?? undefined,
+    guestCount: params.guestCount ?? undefined,
+    timezone: 'America/New_York',
+  })
+
   await sendEmail({
     to: params.clientEmail,
     subject: `Your ${params.occasion} event is confirmed!`,
@@ -421,6 +432,7 @@ export async function sendEventConfirmedEmail(params: {
       circleUrl: params.circleUrl,
       coHostNames: params.coHostNames,
     }),
+    attachments: [icsAttachment],
   })
 }
 

@@ -708,7 +708,32 @@ export async function attachMenuToEvent(eventId: string, menuId: string) {
   revalidatePath('/culinary')
   revalidatePath('/dashboard')
   invalidateRemyContextCache(user.tenantId!)
-  return { success: true }
+
+  // Auto-check allergens when menu is attached to event
+  let allergenWarnings: {
+    dishName: string
+    ingredientName: string
+    allergen: string
+    severity: string
+  }[] = []
+  try {
+    const { validateMenuAllergens } = await import('@/lib/menus/menu-intelligence-actions')
+    const allergenResult = await validateMenuAllergens(menuId)
+    allergenWarnings = allergenResult.warnings
+    if (allergenWarnings.length > 0) {
+      const critical = allergenWarnings.filter((w: any) => w.severity === 'critical')
+      if (critical.length > 0) {
+        console.warn(
+          `[attachMenuToEvent] CRITICAL ALLERGEN CONFLICT: ${critical.length} critical warnings for menu ${menuId} on event ${eventId}:`,
+          critical.map((w: any) => `${w.dishName}: ${w.ingredientName} (${w.allergen})`).join(', ')
+        )
+      }
+    }
+  } catch (allergenErr) {
+    console.error('[attachMenuToEvent] Allergen check failed (non-blocking):', allergenErr)
+  }
+
+  return { success: true, allergenWarnings }
 }
 
 /**
@@ -1714,8 +1739,13 @@ export async function applyMenuToEvent(menuId: string, eventId: string) {
     console.error('[applyMenuToEvent] Non-blocking times_used increment failed:', err)
   }
 
-  await attachMenuToEvent(eventId, targetMenuId)
-  return { success: true, menuId: targetMenuId, wasDuplicated }
+  const attachResult = await attachMenuToEvent(eventId, targetMenuId)
+  return {
+    success: true,
+    menuId: targetMenuId,
+    wasDuplicated,
+    allergenWarnings: attachResult.allergenWarnings,
+  }
 }
 
 // ============================================

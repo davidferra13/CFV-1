@@ -2363,7 +2363,7 @@ export function PosRegister({
       </div>
 
       {showQuickItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+        <div className="fixed inset-0 z-dialog flex items-center justify-center bg-black/60">
           <Card className="w-full max-w-md mx-4">
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -2442,7 +2442,7 @@ export function PosRegister({
       )}
 
       {showQuickSandwich && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+        <div className="fixed inset-0 z-dialog flex items-center justify-center bg-black/60">
           <Card className="w-full max-w-lg mx-4">
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -2607,7 +2607,7 @@ export function PosRegister({
 
       {/* Modifier selection popup */}
       {modifierProduct && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+        <div className="fixed inset-0 z-dialog flex items-center justify-center bg-black/60">
           <Card className="w-full max-w-md mx-4">
             <CardHeader>
               <div className="flex items-center justify-between">

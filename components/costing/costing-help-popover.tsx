@@ -71,7 +71,7 @@ export function CostingHelpPopover({
       {open && (
         <span
           role="tooltip"
-          className="absolute left-6 top-0 z-50 block w-72 rounded-lg border border-stone-700 bg-stone-800 p-3 shadow-lg text-sm"
+          className="absolute left-6 top-0 z-float block w-72 rounded-lg border border-stone-700 bg-stone-800 p-3 shadow-lg text-sm"
         >
           <span className="mb-1 block font-semibold text-stone-100">{content.title}</span>
 

@@ -18,7 +18,7 @@ export function CartSummaryBar({ itemCount, totalCents, onOpen }: CartSummaryBar
   return (
     <button
       onClick={onOpen}
-      className="fixed bottom-4 right-4 z-30 flex items-center gap-3 px-4 py-3 bg-brand-600 hover:bg-brand-500 text-white rounded-full shadow-lg shadow-black/30 transition-colors"
+      className="fixed bottom-4 right-4 z-page-bar flex items-center gap-3 px-4 py-3 bg-brand-600 hover:bg-brand-500 text-white rounded-full shadow-lg shadow-black/30 transition-colors"
     >
       <div className="relative">
         <ShoppingCart className="w-5 h-5" />

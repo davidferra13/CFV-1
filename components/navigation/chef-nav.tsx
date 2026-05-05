@@ -273,7 +273,7 @@ const RailFlyout = memo(function RailFlyout({
       </button>
 
       {open && (
-        <div className="absolute left-full top-0 ml-2 z-50 min-w-[180px] max-h-[80vh] overflow-y-auto custom-scrollbar bg-stone-900 rounded-lg shadow-lg border border-stone-700 py-1.5">
+        <div className="absolute left-full top-0 ml-2 z-float min-w-[180px] max-h-[80vh] overflow-y-auto custom-scrollbar bg-stone-900 rounded-lg shadow-lg border border-stone-700 py-1.5">
           <p className="px-3 py-1.5 text-xs font-semibold text-stone-400 uppercase tracking-wider">
             {group.label}
           </p>
@@ -897,7 +897,7 @@ export function ChefSidebar({
 
   return (
     <aside
-      className={`hidden md:flex md:flex-col md:fixed md:inset-y-0 glass-subtle sidebar-gradient border-r border-stone-800/40 transition-all duration-200 z-30 md:w-16 ${
+      className={`hidden md:flex md:flex-col md:fixed md:inset-y-0 glass-subtle sidebar-gradient border-r border-stone-800/40 transition-all duration-200 z-subnav md:w-16 ${
         collapsed ? 'lg:w-16' : 'lg:w-60'
       }`}
     >

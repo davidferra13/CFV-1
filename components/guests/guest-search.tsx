@@ -94,7 +94,7 @@ export function GuestSearch() {
       )}
 
       {showDropdown && results.length > 0 && (
-        <div className="absolute z-50 mt-1 w-full rounded-lg border border-stone-700 bg-stone-900 shadow-lg overflow-hidden">
+        <div className="absolute z-float mt-1 w-full rounded-lg border border-stone-700 bg-stone-900 shadow-lg overflow-hidden">
           {results.map((guest) => {
             const activeCompCount = guest.guest_comps?.filter((c) => !c.redeemed_at).length ?? 0
 
@@ -132,7 +132,7 @@ export function GuestSearch() {
       )}
 
       {showDropdown && query.trim() && results.length === 0 && !loading && (
-        <div className="absolute z-50 mt-1 w-full rounded-lg border border-stone-700 bg-stone-900 shadow-lg px-4 py-3">
+        <div className="absolute z-float mt-1 w-full rounded-lg border border-stone-700 bg-stone-900 shadow-lg px-4 py-3">
           <p className="text-sm text-stone-500">No guests found.</p>
         </div>
       )}

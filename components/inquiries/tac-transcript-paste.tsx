@@ -153,7 +153,7 @@ export function TacTranscriptPaste({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+    <div className="fixed inset-0 z-dialog flex items-center justify-center bg-black/50 p-4">
       <Card className="w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col">
         <div className="p-4 border-b border-stone-700 flex items-center justify-between">
           <div>

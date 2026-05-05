@@ -15,18 +15,23 @@ export type {
 
 export { AI_PRIORITY, OLLAMA_GUARD } from './types'
 
-// Actions (server actions)
+// Actions - server actions (chef-facing, auth-gated)
 export {
   enqueueTask,
-  claimNextTask,
-  claimNextTaskForEndpoint,
-  completeTask,
-  failTask,
   approveTask,
   rejectTask,
   getTasksAwaitingApproval,
   getTaskHistory,
   getQueueStats,
+} from './actions'
+
+// Actions - internal only (NOT server actions, for system/worker callers)
+export {
+  enqueueTaskInternal,
+  claimNextTask,
+  claimNextTaskForEndpoint,
+  completeTask,
+  failTask,
 } from './actions'
 
 // Registry

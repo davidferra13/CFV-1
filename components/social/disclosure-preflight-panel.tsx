@@ -47,7 +47,7 @@ export function DisclosurePreflightPanel({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+    <div className="fixed inset-0 z-float flex items-center justify-center bg-black/40 p-4">
       <Card className="w-full max-w-lg">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-stone-100">

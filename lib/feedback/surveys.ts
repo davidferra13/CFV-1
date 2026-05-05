@@ -2,7 +2,7 @@ import {
   getEventPostEventSurvey,
   getPostEventSurveyPageData,
   getRecentPostEventSurveys,
-} from '@/lib/post-event/trust-loop-actions'
+} from '@/lib/events/post-event-trust-loop-actions'
 
 export async function getSurveyData(token: string) {
   return getPostEventSurveyPageData(token)

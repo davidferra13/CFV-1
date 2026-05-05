@@ -112,6 +112,19 @@ export async function GET(request: Request) {
             }
 
             sent.push(`${event.id}/${window.label}`)
+
+            // At T-2d, also send dietary summary to the CHEF (food safety)
+            if (window.daysOut === 2) {
+              try {
+                const { sendPreEventDietarySummary } = await import('@/lib/beta/email-triggers')
+                await sendPreEventDietarySummary(event.id)
+              } catch (dietaryErr) {
+                console.error(
+                  `[pre-event-reminders] Dietary summary failed for event ${event.id} (non-blocking):`,
+                  dietaryErr
+                )
+              }
+            }
           } catch (sendErr) {
             console.error(
               `[pre-event-reminders] Failed to send ${window.label} for event ${event.id}`,

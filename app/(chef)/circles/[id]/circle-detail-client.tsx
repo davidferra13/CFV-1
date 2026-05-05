@@ -99,7 +99,7 @@ export function CircleDetailClient({ circle }: { circle: CircleDetail }) {
       {tab === 'events' && <EventsTab circle={circle} />}
       {tab === 'sourcing' && <CircleSourcingBoard circleId={circle.id} />}
       {tab === 'ingredients' && (
-        <IngredientAvailabilityBoard groupId={circle.id} eventId={circle.events[0]?.id} />
+        <IngredientAvailabilityBoard groupId={circle.id} eventId={circle.events[0]?.event_id} />
       )}
       {tab === 'messages' && <MessagesTab circle={circle} />}
       {tab === 'private' && <PrivateMessagesTabWrapper circle={circle} />}

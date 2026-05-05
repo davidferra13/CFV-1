@@ -162,7 +162,7 @@ export function SelectContent({
   if (!ctx?.open) return null
   return (
     <div
-      className={`absolute z-50 mt-1 w-full rounded-lg border border-white/[0.08] shadow-2xl animate-[dialog-enter_0.15s_cubic-bezier(0.22,1,0.36,1)] ${className}`}
+      className={`absolute z-float mt-1 w-full rounded-lg border border-white/[0.08] shadow-2xl animate-[dialog-enter_0.15s_cubic-bezier(0.22,1,0.36,1)] ${className}`}
       style={{
         background: 'rgba(28, 25, 23, 0.9)',
         WebkitBackdropFilter: 'blur(16px) saturate(1.2)',

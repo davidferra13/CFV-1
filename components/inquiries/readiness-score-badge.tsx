@@ -32,7 +32,7 @@ export function ReadinessScoreBadge({ score }: { score: ReadinessScore }) {
 
       {showPopover && (
         <div
-          className="absolute left-0 top-full z-50 mt-1 w-56 rounded-lg border border-border bg-card p-3 shadow-lg"
+          className="absolute left-0 top-full z-float mt-1 w-56 rounded-lg border border-border bg-card p-3 shadow-lg"
           onMouseEnter={() => setShowPopover(true)}
           onMouseLeave={() => setShowPopover(false)}
         >

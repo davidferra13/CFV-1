@@ -31,7 +31,7 @@ export const GET = withApiAuth(
     const { data, error } = await ctx.db
       .from('clients')
       .select(
-        'id, chef_id, tenant_id, full_name, email, phone, status, dietary_restrictions, allergies, notes, address, city, state, zip, source, tags, created_at, updated_at'
+        'id, tenant_id, full_name, email, phone, status, dietary_restrictions, allergies, notes, address, city, state, zip, source, tags, created_at, updated_at'
       )
       .eq('id', id)
       .eq('tenant_id', ctx.tenantId)
@@ -74,7 +74,7 @@ export const PATCH = withApiAuth(
       .eq('id', id)
       .eq('tenant_id', ctx.tenantId)
       .select(
-        'id, chef_id, tenant_id, full_name, email, phone, status, dietary_restrictions, allergies, notes, address, city, state, zip, source, tags, created_at, updated_at'
+        'id, tenant_id, full_name, email, phone, status, dietary_restrictions, allergies, notes, address, city, state, zip, source, tags, created_at, updated_at'
       )
       .single()
 

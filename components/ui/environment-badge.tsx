@@ -20,7 +20,7 @@ export function EnvironmentBadge() {
   if (isDemo) return null
   const environment = getAppEnvironment()
   return (
-    <div className="fixed right-3 top-3 z-[100] pointer-events-none" aria-live="polite">
+    <div className="fixed right-3 top-3 z-command pointer-events-none" aria-live="polite">
       <span
         className={`inline-flex items-center rounded-md border px-2.5 py-1 text-xs-tight font-semibold tracking-wide ${ENV_CLASS[environment]}`}
       >

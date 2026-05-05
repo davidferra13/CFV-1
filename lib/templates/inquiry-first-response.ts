@@ -112,7 +112,7 @@ export function generateFirstResponse(input: FirstResponseInput): FirstResponseO
 function buildWhatsIncluded(config: ChefServiceConfig): string {
   // Use chef's own words if available
   if (config.custom_whats_included) {
-    return config.custom_whats_included
+    return config.custom_whats_included as string
   }
 
   // Build from toggles

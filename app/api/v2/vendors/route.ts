@@ -22,8 +22,8 @@ const CreateVendorBody = z.object({
   email: z.string().email().optional(),
   address: z.string().optional(),
   website: z.string().optional(),
-  account_number: z.string().optional(),
-  payment_terms: z.string().optional(),
+  category: z.string().optional(),
+  minimum_order_cents: z.number().int().nonnegative().optional(),
   notes: z.string().optional(),
   is_preferred: z.boolean().optional(),
 })

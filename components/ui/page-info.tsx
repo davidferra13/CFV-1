@@ -182,7 +182,7 @@ function SchematicOverlay({ entry, onClose }: { entry: PageInfoEntry; onClose: (
   return createPortal(
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-[60] overflow-y-auto"
+      className="fixed inset-0 z-island overflow-y-auto"
       onClick={(e) => {
         if (e.target === overlayRef.current || (e.target as HTMLElement).dataset.backdrop) {
           onClose()
@@ -199,14 +199,14 @@ function SchematicOverlay({ entry, onClose }: { entry: PageInfoEntry; onClose: (
       {/* Close button */}
       <button
         onClick={onClose}
-        className="fixed top-4 right-4 z-50 w-10 h-10 rounded-full bg-stone-900 dark:bg-stone-900 text-white dark:text-stone-100 flex items-center justify-center shadow-lg hover:bg-stone-800 dark:hover:bg-stone-700 transition-colors"
+        className="fixed top-4 right-4 z-float w-10 h-10 rounded-full bg-stone-900 dark:bg-stone-900 text-white dark:text-stone-100 flex items-center justify-center shadow-lg hover:bg-stone-800 dark:hover:bg-stone-700 transition-colors"
         aria-label="Close page info"
       >
         <X className="h-5 w-5" />
       </button>
 
       {/* Page title banner */}
-      <div className="fixed top-4 left-4 z-50 bg-stone-900 dark:bg-stone-900 text-white dark:text-stone-100 rounded-xl px-4 py-2.5 shadow-lg max-w-xs">
+      <div className="fixed top-4 left-4 z-float bg-stone-900 dark:bg-stone-900 text-white dark:text-stone-100 rounded-xl px-4 py-2.5 shadow-lg max-w-xs">
         <p className="text-xs font-medium uppercase tracking-wider text-stone-300 dark:text-stone-500">
           Page Guide
         </p>
@@ -313,7 +313,7 @@ function FallbackSummary({
     <div
       ref={ref}
       className={`${
-        inline ? 'fixed top-10 right-4 z-[60]' : 'fixed top-10 right-4 z-[60]'
+        inline ? 'fixed top-10 right-4 z-island' : 'fixed top-10 right-4 z-island'
       } w-80 max-w-[calc(100vw-2rem)] bg-stone-900 dark:bg-stone-900 rounded-xl shadow-2xl border border-stone-700 dark:border-stone-700 overflow-hidden animate-scale-in`}
     >
       {/* Header */}
@@ -415,7 +415,7 @@ export function PageInfoButton() {
       {/* The info button - top of page, small and transparent */}
       <button
         onClick={handleToggle}
-        className={`fixed top-1.5 right-14 z-50 w-6 h-6 rounded-full flex items-center justify-center transition-all duration-150 ${
+        className={`fixed top-1.5 right-14 z-float w-6 h-6 rounded-full flex items-center justify-center transition-all duration-150 ${
           isOpen
             ? 'bg-stone-700/60 text-stone-200'
             : 'bg-transparent text-stone-500/50 hover:text-stone-400 hover:bg-stone-700/30'

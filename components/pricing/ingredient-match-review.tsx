@@ -186,7 +186,7 @@ export function IngredientMatchReview({ initialUnmatched }: IngredientMatchRevie
 
       {/* Batch Confirmation Modal */}
       {showBatchModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+        <div className="fixed inset-0 z-float flex items-center justify-center bg-black/60">
           <div className="bg-stone-900 border border-stone-700 rounded-lg shadow-xl max-w-lg w-full mx-4 max-h-[80vh] flex flex-col">
             <div className="px-4 py-3 border-b border-stone-700">
               <h3 className="text-sm font-medium text-stone-200">

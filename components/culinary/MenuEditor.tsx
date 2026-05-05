@@ -249,7 +249,7 @@ function ComponentForm({
         </div>
         {searching && <p className="text-xs text-stone-500 mt-1">Searching...</p>}
         {showDropdown && recipeResults.length > 0 && (
-          <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-stone-800 border border-stone-600 rounded-lg shadow-xl overflow-hidden max-h-52 overflow-y-auto">
+          <div className="absolute z-float top-full left-0 right-0 mt-1 bg-stone-800 border border-stone-600 rounded-lg shadow-xl overflow-hidden max-h-52 overflow-y-auto">
             {recipeResults.map((recipe) => (
               <button
                 key={recipe.id}

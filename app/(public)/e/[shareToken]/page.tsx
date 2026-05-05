@@ -3,6 +3,7 @@ import { headers } from 'next/headers'
 import { getPublicEventByShareToken } from '@/lib/tickets/purchase-actions'
 import { checkRateLimit } from '@/lib/rateLimit'
 import { createServerClient } from '@/lib/db/server'
+import { getPublicVenueDetails } from '@/lib/events/venue-details-actions'
 import { PublicEventView } from './public-event-view'
 
 interface Props {
@@ -142,6 +143,14 @@ export default async function PublicEventPage({ params, searchParams }: Props) {
     }
   }
 
+  // Fetch venue details (farm profile, showcase, parking)
+  let venueDetails: Awaited<ReturnType<typeof getPublicVenueDetails>> = null
+  try {
+    venueDetails = await getPublicVenueDetails(event.eventId)
+  } catch {
+    // Non-blocking
+  }
+
   // Fetch circle URL for purchase preview and post-purchase confirmation screen
   let circleUrl: string | null = null
   try {
@@ -175,6 +184,7 @@ export default async function PublicEventPage({ params, searchParams }: Props) {
         ticketId={search.ticket}
         ticketGuestToken={ticketGuestToken}
         circleUrl={circleUrl}
+        venueDetails={venueDetails}
       />
     </>
   )

@@ -338,7 +338,7 @@ export function HubMemberList({
                   </button>
 
                   {menuOpen === member.id && (
-                    <div className="absolute right-0 top-full z-30 mt-1 w-48 rounded-lg border border-stone-700 bg-stone-800 py-1 shadow-xl">
+                    <div className="absolute right-0 top-full z-page-bar mt-1 w-48 rounded-lg border border-stone-700 bg-stone-800 py-1 shadow-xl">
                       {/* Role options */}
                       {ASSIGNABLE_ROLES.filter((r) => r.value !== member.role).map((r) => (
                         <button

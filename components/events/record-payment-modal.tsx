@@ -97,7 +97,7 @@ export function RecordPaymentModal({
 
   if (success) {
     return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-dialog p-4">
         <Card className="p-8 max-w-sm w-full text-center">
           <div className="text-5xl mb-4">✓</div>
           <p className="text-lg font-semibold text-stone-100">Payment recorded</p>
@@ -108,7 +108,7 @@ export function RecordPaymentModal({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-dialog p-4">
       <Card className="p-6 max-w-md w-full">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-semibold text-stone-100">{label}</h2>

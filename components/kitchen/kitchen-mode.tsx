@@ -130,7 +130,7 @@ export function KitchenMode({
 
   return (
     <div
-      className="fixed inset-0 z-[9999] bg-zinc-950 text-white flex flex-col overflow-hidden"
+      className="fixed inset-0 z-system-overlay bg-zinc-950 text-white flex flex-col overflow-hidden"
       style={{ fontSize: '24px' }}
     >
       {/* Top bar */}

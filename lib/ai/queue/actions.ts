@@ -1,9 +1,12 @@
-'use server'
-
-// AI Task Queue - Server Actions
+// AI Task Queue - Actions
 // Enqueue, claim, complete, fail, approve, reject tasks.
 // Uses admin client for worker operations (no user session needed).
 // Uses server client for chef-facing operations (RLS enforced).
+//
+// NOTE: File-level 'use server' removed intentionally. Only chef-facing
+// functions have inline 'use server' directives. Worker functions
+// (claimNextTask, completeTask, failTask, claimNextTaskForEndpoint)
+// are NOT server actions and cannot be called from the client.
 
 import { createAdminClient } from '@/lib/db/admin'
 import { createServerClient } from '@/lib/db/server'
@@ -108,15 +111,35 @@ function resolveApprovalTierByConfidence(
  * Validates the task type exists in the registry.
  * Enforces per-tenant queue depth limits.
  */
+/**
+ * Internal enqueue for system callers (cron, scheduler, reactive hooks).
+ * NOT a server action. Cannot be called from the client.
+ */
+export async function enqueueTaskInternal(
+  input: EnqueueInput
+): Promise<{ id: string } | { error: string }> {
+  return _enqueueTaskImpl(input)
+}
+
+/**
+ * Enqueue an AI task from the client. Requires authentication.
+ */
 export async function enqueueTask(
   input: EnqueueInput
 ): Promise<{ id: string } | { error: string }> {
-  // Tenant isolation: if called from a user session, verify tenantId matches
+  'use server'
+  // Tenant isolation: require authenticated user, verify tenantId matches
   const sessionUser = await getCurrentUser()
-  if (sessionUser && input.tenantId !== sessionUser.tenantId) {
+  if (!sessionUser) {
+    throw new Error('Unauthorized: authentication required')
+  }
+  if (input.tenantId !== sessionUser.tenantId) {
     throw new Error('Unauthorized: tenant mismatch')
   }
+  return _enqueueTaskImpl(input)
+}
 
+async function _enqueueTaskImpl(input: EnqueueInput): Promise<{ id: string } | { error: string }> {
   const definition = getTaskDefinition(input.taskType)
   if (!definition) {
     return { error: `Unknown task type: ${input.taskType}` }
@@ -537,6 +560,7 @@ export async function failTask(taskId: string, errorMessage: string): Promise<vo
  * Chef approves a draft result. Moves to 'approved' status.
  */
 export async function approveTask(taskId: string): Promise<void> {
+  'use server'
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -562,6 +586,7 @@ export async function approveTask(taskId: string): Promise<void> {
  * Chef rejects a draft result. Moves to 'rejected' status.
  */
 export async function rejectTask(taskId: string, reason?: string): Promise<void> {
+  'use server'
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -591,6 +616,7 @@ export async function rejectTask(taskId: string, reason?: string): Promise<void>
  * List tasks awaiting chef approval.
  */
 export async function getTasksAwaitingApproval(): Promise<AiQueueItem[]> {
+  'use server'
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -612,6 +638,7 @@ export async function getTaskHistory(
   limit: number = 50,
   statusFilter?: AiTaskStatus
 ): Promise<AiQueueItem[]> {
+  'use server'
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -640,9 +667,13 @@ export async function getQueueStats(tenantId: string): Promise<{
   failed: number
   completedToday: number
 }> {
-  // Tenant isolation: if called from a user session, verify tenantId matches
+  'use server'
+  // Tenant isolation: require authenticated user, verify tenantId matches
   const sessionUser = await getCurrentUser()
-  if (sessionUser && tenantId !== sessionUser.tenantId) {
+  if (!sessionUser) {
+    throw new Error('Unauthorized: authentication required')
+  }
+  if (tenantId !== sessionUser.tenantId) {
     throw new Error('Unauthorized: tenant mismatch')
   }
   const db: any = createAdminClient()

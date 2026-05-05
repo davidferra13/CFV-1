@@ -176,7 +176,7 @@ export function CalendarEntryModal({ defaultDate, defaultStartTime, onClose, onC
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-dialog flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
       <div className="bg-stone-900 rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-stone-800">

@@ -97,7 +97,7 @@ export function MealCommentsThread({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 sm:items-center">
+    <div className="fixed inset-0 z-float flex items-end justify-center bg-black/60 sm:items-center">
       <div className="flex max-h-[80vh] w-full max-w-md flex-col rounded-t-2xl border border-stone-700 bg-stone-900 sm:rounded-2xl">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-stone-800 p-3">

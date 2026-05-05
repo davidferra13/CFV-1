@@ -217,6 +217,7 @@ export async function submitBetaSignup(
 export async function markBetaSignupOnboardedByEmail(
   input: BetaOnboardingLinkInput
 ): Promise<boolean> {
+  await requireAdmin()
   const email = input.email?.trim().toLowerCase()
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return false
@@ -296,6 +297,7 @@ export async function markBetaSignupOnboardedByEmail(
  * Get all beta signups for the admin view.
  */
 export async function getBetaSignups() {
+  await requireAdmin()
   const db: any = createAdminClient()
 
   const { data, error } = await db
@@ -319,6 +321,7 @@ export async function updateBetaSignupStatus(
   status: 'pending' | 'invited' | 'onboarded' | 'declined',
   notes?: string
 ): Promise<{ success: boolean; error?: string }> {
+  await requireAdmin()
   const db: any = createAdminClient()
 
   const updates: Record<string, unknown> = { status }
@@ -380,6 +383,7 @@ export async function getBetaSignupCount(): Promise<number> {
  * Export beta signups as CSV string (admin action).
  */
 export async function exportBetaSignupsCsv(): Promise<string> {
+  await requireAdmin()
   const db: any = createAdminClient()
 
   const { data, error } = await db

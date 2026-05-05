@@ -29,7 +29,7 @@ export function ProductionReportButton({ eventId, hasMenu }: ProductionReportBut
 
       {/* Slide-over panel */}
       {open && (
-        <div className="fixed inset-0 z-50 print:static print:z-auto">
+        <div className="fixed inset-0 z-float print:static print:z-auto">
           {/* Backdrop */}
           <div
             className="absolute inset-0 bg-black/40 print:hidden"

@@ -610,7 +610,7 @@ function GuestDrawer({
   }
 
   return (
-    <div className="fixed inset-0 z-50 pointer-events-none">
+    <div className="fixed inset-0 z-dialog pointer-events-none">
       <button
         type="button"
         onClick={onClose}

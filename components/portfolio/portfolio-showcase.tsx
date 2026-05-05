@@ -119,7 +119,7 @@ export function PortfolioShowcase({ photos, chefName }: Props) {
       {/* Lightbox */}
       {lightboxIndex !== null && photos[lightboxIndex] && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/95"
+          className="fixed inset-0 z-dialog flex items-center justify-center bg-black/95"
           onClick={() => setLightboxIndex(null)}
         >
           {/* Close */}

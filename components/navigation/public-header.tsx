@@ -63,7 +63,7 @@ function NavDropdown({ group, pathname }: { group: PublicNavGroup; pathname: str
         <ChevronDown className={`h-3.5 w-3.5 transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
       {open && (
-        <div className="absolute left-0 top-full z-50 mt-1 min-w-[180px] rounded-xl border border-stone-700 bg-stone-900/95 py-1.5 shadow-xl backdrop-blur-xl">
+        <div className="absolute left-0 top-full z-float mt-1 min-w-[180px] rounded-xl border border-stone-700 bg-stone-900/95 py-1.5 shadow-xl backdrop-blur-xl">
           {group.items.map((item) => {
             const active = isPublicNavActive(pathname, item.href)
             return (
@@ -112,7 +112,7 @@ export function PublicHeader() {
 
   return (
     <header
-      className={`sticky top-0 z-50 border-b transition-all ${
+      className={`sticky top-0 z-chrome border-b transition-all ${
         isScrolled
           ? 'border-stone-700 bg-stone-900/90 shadow-sm backdrop-blur-xl'
           : 'border-transparent bg-transparent'

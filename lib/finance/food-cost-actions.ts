@@ -23,6 +23,7 @@ export interface IngredientBreakdown {
   unitCostCents: number
   totalCostCents: number
   hasCostData: boolean
+  costStatus?: 'unit_mismatch' | 'no_data' | 'ok'
 }
 
 export interface DishBreakdown {
@@ -158,7 +159,26 @@ export async function getEventFoodCost(eventId: string): Promise<EventFoodCost> 
 
           const costPerUnit = ing.cost_per_unit_cents ?? ing.last_price_cents ?? 0
           const hasCostData = !!(ing.cost_per_unit_cents || ing.last_price_cents)
-          const totalCost = Math.round(ri.quantity * costPerUnit)
+
+          // Use unit conversion engine for accurate cross-unit cost calculation
+          let totalCost: number
+          try {
+            const { computeIngredientCost, lookupDensity } =
+              await import('@/lib/units/conversion-engine')
+            const recipeUnit = ri.unit || ing.default_unit || 'ea'
+            const costUnit = ing.default_unit || 'ea'
+            const density = lookupDensity(ing.name)
+            const convertedCost = computeIngredientCost(
+              ri.quantity,
+              recipeUnit,
+              costPerUnit,
+              costUnit,
+              density ?? undefined
+            )
+            totalCost = convertedCost ?? Math.round(ri.quantity * costPerUnit)
+          } catch {
+            totalCost = Math.round(ri.quantity * costPerUnit)
+          }
 
           const entry: IngredientBreakdown = {
             name: ing.name,

@@ -36,7 +36,7 @@ export function TourChecklist() {
   if (!mounted || !tour.showChecklist || !visible) return null
 
   return (
-    <div className="fixed bottom-24 left-4 right-4 z-50 max-h-[65vh] overflow-hidden rounded-xl border border-stone-700 bg-stone-900 shadow-2xl animate-in slide-in-from-bottom-4 fade-in duration-300 sm:bottom-20 sm:left-auto sm:right-4 sm:w-80 sm:max-h-[80vh]">
+    <div className="fixed bottom-24 left-4 right-4 z-float max-h-[65vh] overflow-hidden rounded-xl border border-stone-700 bg-stone-900 shadow-2xl animate-in slide-in-from-bottom-4 fade-in duration-300 sm:bottom-20 sm:left-auto sm:right-4 sm:w-80 sm:max-h-[80vh]">
       {/* Header */}
       <div className="px-4 py-3 bg-stone-800 border-b border-stone-700 flex items-center justify-between">
         <div className="flex items-center gap-2">

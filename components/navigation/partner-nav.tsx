@@ -119,7 +119,7 @@ export function PartnerMobileNav() {
 
   return (
     <>
-      <nav className="lg:hidden fixed top-0 left-0 right-0 bg-stone-900 border-b border-stone-700 z-40 flex pt-safe">
+      <nav className="lg:hidden fixed top-0 left-0 right-0 bg-stone-900 border-b border-stone-700 z-mobile-header flex pt-safe">
         {NAV_ITEMS.slice(0, 4).map(({ href, label, icon: Icon }) => {
           const isActive = pathname === href || pathname.startsWith(href + '/')
           return (
@@ -150,7 +150,7 @@ export function PartnerMobileNav() {
       </nav>
 
       {menuOpen && (
-        <div className="lg:hidden fixed inset-0 z-50">
+        <div className="lg:hidden fixed inset-0 z-ai">
           <div className="absolute inset-0 bg-black/50" onClick={closeMenu} />
           <div className="absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col bg-stone-900 border-r border-stone-800 shadow-xl">
             <div className="flex h-14 items-center justify-between px-4 border-b border-stone-800">

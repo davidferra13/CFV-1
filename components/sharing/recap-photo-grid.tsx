@@ -54,7 +54,7 @@ export function RecapPhotoGrid({ photos, maskNames }: { photos: Photo[]; maskNam
       {/* Lightbox */}
       {selectedPhoto && (
         <div
-          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+          className="fixed inset-0 z-dialog bg-black/90 flex items-center justify-center p-4"
           onClick={() => setSelectedPhoto(null)}
         >
           <div className="max-w-3xl max-h-[90vh] relative" onClick={(e) => e.stopPropagation()}>

@@ -24,7 +24,7 @@ export function OfflineStatusBar() {
       <div
         role="status"
         aria-live="polite"
-        className="fixed top-0 left-0 right-0 z-[60] bg-brand-500/40 backdrop-blur-md text-brand-100"
+        className="fixed top-0 left-0 right-0 z-offline bg-brand-500/40 backdrop-blur-md text-brand-100"
       >
         <div className="py-2 px-4 text-center text-sm font-medium">
           <span className="flex items-center justify-center gap-2">
@@ -49,7 +49,7 @@ export function OfflineStatusBar() {
       <div
         role="status"
         aria-live="polite"
-        className="fixed top-0 left-0 right-0 z-[60] py-2 px-4 text-center text-sm font-medium bg-green-500/40 backdrop-blur-md text-green-100 animate-in slide-in-from-top duration-300"
+        className="fixed top-0 left-0 right-0 z-offline py-2 px-4 text-center text-sm font-medium bg-green-500/40 backdrop-blur-md text-green-100 animate-in slide-in-from-top duration-300"
       >
         <span className="flex items-center justify-center gap-2">
           <Wifi className="h-4 w-4" />
@@ -65,7 +65,7 @@ export function OfflineStatusBar() {
       <div
         role="status"
         aria-live="polite"
-        className="fixed top-0 left-0 right-0 z-[60] py-2 px-4 text-center text-sm font-medium bg-red-500/40 backdrop-blur-md text-red-100 animate-in slide-in-from-top duration-300"
+        className="fixed top-0 left-0 right-0 z-offline py-2 px-4 text-center text-sm font-medium bg-red-500/40 backdrop-blur-md text-red-100 animate-in slide-in-from-top duration-300"
       >
         <span className="flex items-center justify-center gap-2">
           <WifiOff className="h-4 w-4" />

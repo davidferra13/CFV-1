@@ -610,6 +610,11 @@ export const navGroups: NavGroup[] = [
         ],
       },
       {
+        href: '/culinary/seasonal-calendar',
+        label: 'Seasonal Calendar',
+        icon: CalendarDays,
+      },
+      {
         href: '/settings/repertoire',
         label: 'Seasonal Palettes',
         icon: Flower,

@@ -148,13 +148,46 @@ export async function enrichIngredientImages(): Promise<{
 
 /**
  * Look up a catalog image by ingredient name.
- * Uses the OpenClaw Pi API to search for the ingredient and extract imageUrl.
+ * Queries local PG openclaw.products directly (fast, no Pi roundtrip).
+ * Falls back to Pi API if local lookup finds nothing.
  */
 async function lookupCatalogImage(name: string): Promise<string | null> {
   try {
+    // Try local PG first (9M+ products have images)
+    const { pgClient } = await import('@/lib/db')
+    const searchName = name.toLowerCase().trim()
+
+    // Strategy 1: exact match via normalization_map -> products
+    const exactRows = await pgClient`
+      SELECT COALESCE(
+        MAX(NULLIF(p.image_url, '')),
+        MAX(NULLIF(ci.off_image_url, 'none'))
+      ) AS image_url
+      FROM openclaw.canonical_ingredients ci
+      JOIN openclaw.normalization_map nm ON nm.canonical_ingredient_id = ci.ingredient_id
+      LEFT JOIN openclaw.products p
+        ON LOWER(TRIM(p.name)) = LOWER(TRIM(nm.raw_name))
+        AND p.is_food = true
+        AND p.image_url IS NOT NULL AND p.image_url != ''
+      WHERE LOWER(ci.name) = ${searchName}
+      LIMIT 1
+    `
+    if (exactRows[0]?.image_url) return exactRows[0].image_url
+
+    // Strategy 2: direct product name search with image
+    const productRows = await pgClient`
+      SELECT image_url FROM openclaw.products
+      WHERE LOWER(TRIM(name)) LIKE ${`%${searchName}%`}
+        AND is_food = true
+        AND image_url IS NOT NULL AND image_url != ''
+      ORDER BY LENGTH(name) ASC
+      LIMIT 1
+    `
+    if (productRows[0]?.image_url) return productRows[0].image_url
+
+    // Strategy 3: fall back to Pi API
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), 10000)
-
     const params = new URLSearchParams({ search: name, limit: '1' })
     const res = await fetch(`${OPENCLAW_API}/api/ingredients?${params}`, {
       signal: controller.signal,
@@ -163,22 +196,13 @@ async function lookupCatalogImage(name: string): Promise<string | null> {
     clearTimeout(timeout)
 
     if (!res.ok) return null
-
     const data = await res.json()
     const items = data.ingredients || data.items || []
-
     if (items.length === 0) return null
 
-    // Use the first match's image if the name is a close enough match
     const item = items[0]
     const itemName = (item.name || '').toLowerCase().trim()
-    const searchName = name.toLowerCase().trim()
-
-    // Only accept if the catalog name contains our ingredient name or vice versa
-    if (!itemName.includes(searchName) && !searchName.includes(itemName)) {
-      return null
-    }
-
+    if (!itemName.includes(searchName) && !searchName.includes(itemName)) return null
     return item.image_url || null
   } catch {
     return null

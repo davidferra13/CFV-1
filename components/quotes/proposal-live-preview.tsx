@@ -293,7 +293,7 @@ export function ProposalLivePreview({ sections, branding, mode, onClose }: Previ
 
   const containerClass =
     mode === 'fullscreen'
-      ? 'fixed inset-0 z-50 bg-white overflow-y-auto print:static print:z-auto'
+      ? 'fixed inset-0 z-dialog bg-white overflow-y-auto print:static print:z-auto'
       : 'bg-white rounded-lg shadow-sm border border-gray-200 overflow-y-auto max-h-[calc(100vh-200px)]'
 
   return (

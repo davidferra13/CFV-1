@@ -68,7 +68,7 @@ export async function postFirstCircleMessage(input: {
     dietaryRestrictions: inquiryRecord.confirmed_dietary_restrictions || [],
     occasion: inquiryRecord.confirmed_occasion || inquiryRecord.occasion || null,
     chefFirstName,
-    serviceConfig,
+    serviceConfig: serviceConfig!,
     pricingConfig,
   })
 

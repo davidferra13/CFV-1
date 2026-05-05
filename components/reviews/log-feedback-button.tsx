@@ -114,7 +114,7 @@ export function LogFeedbackButton() {
       <Button onClick={() => setOpen(true)}>+ Log Feedback</Button>
 
       {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 z-float flex items-center justify-center">
           {/* Backdrop */}
           <div className="fixed inset-0 bg-black/50" onClick={handleClose} />
 

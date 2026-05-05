@@ -1,6 +1,5 @@
-'use server'
-
 // Reactive Event Layer - Non-Blocking AI Hooks
+// NOT a server action file. Called by server-side event handlers, not by client.
 // PRIVACY: All hooks deal with client PII → enqueue to local Ollama only.
 //
 // These are NON-BLOCKING side effects. They MUST:
@@ -11,7 +10,7 @@
 // Each hook enqueues a task into the AI task queue. The worker
 // processes it asynchronously via Ollama.
 
-import { enqueueTask } from '@/lib/ai/queue/actions'
+import { enqueueTaskInternal } from '@/lib/ai/queue/actions'
 import { AI_PRIORITY } from '@/lib/ai/queue/types'
 import { recordSideEffectFailure, type Severity } from '@/lib/monitoring/non-blocking'
 
@@ -28,7 +27,7 @@ async function enqueueReactiveTask(input: {
   severity?: Severity
 }) {
   try {
-    const result = await enqueueTask({
+    const result = await enqueueTaskInternal({
       tenantId: input.scopeTenantId,
       taskType: input.taskType,
       payload: input.payload,

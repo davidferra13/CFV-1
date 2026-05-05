@@ -126,7 +126,7 @@ export function KDSView({ courses: initialCourses, eventId }: KDSViewProps) {
   return (
     <div
       ref={containerRef}
-      className={`space-y-4 ${isFullscreen ? 'fixed inset-0 z-50 bg-stone-950 p-4 overflow-auto' : ''}`}
+      className={`space-y-4 ${isFullscreen ? 'fixed inset-0 z-dialog bg-stone-950 p-4 overflow-auto' : ''}`}
     >
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-2">

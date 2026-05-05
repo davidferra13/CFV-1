@@ -594,7 +594,7 @@ export function RemyDrawer() {
       {open && collapsed && (
         <div
           data-remy-root
-          className="fixed bottom-4 right-4 z-50 w-12 bg-brand-600 shadow-2xl flex flex-col items-center py-3 gap-2 rounded-2xl border border-brand-700"
+          className="fixed bottom-4 right-4 z-ai w-12 bg-brand-600 shadow-2xl flex flex-col items-center py-3 gap-2 rounded-2xl border border-brand-700"
           style={{ height: '180px' }}
         >
           <button
@@ -634,7 +634,7 @@ export function RemyDrawer() {
           role="dialog"
           aria-modal="true"
           aria-label="Remy AI assistant"
-          className="fixed bottom-4 right-4 z-50 bg-stone-900 shadow-2xl flex flex-col rounded-2xl border border-stone-700 overflow-hidden"
+          className="fixed bottom-4 right-4 z-ai bg-stone-900 shadow-2xl flex flex-col rounded-2xl border border-stone-700 overflow-hidden"
           style={{
             width: `min(${drawerWidth}px, calc(100vw - 2rem))`,
             height: 'min(680px, calc(100vh - 2rem))',

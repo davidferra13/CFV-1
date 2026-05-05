@@ -5,6 +5,7 @@ import {
   getOpenClawHealthContract,
   getOpenClawRuntimeHealth,
 } from '@/lib/openclaw/health-contract'
+import { getCurrentUser } from '@/lib/auth/get-user'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -28,11 +29,14 @@ function buildCanonicalFailureContract(err: unknown) {
 /**
  * GET /api/openclaw/status
  *
- * Public status endpoint for OpenClaw-backed pricing intelligence.
- * Coverage and sync health now come from the shared runtime contract so
- * this route no longer invents a separate health story.
+ * Chef-only status endpoint for OpenClaw-backed pricing intelligence.
+ * Coverage and sync health come from the shared runtime contract.
  */
 export async function GET() {
+  const user = await getCurrentUser()
+  if (!user || user.role !== 'chef') {
+    return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+  }
   try {
     const [healthResult, canonicalResult] = await Promise.allSettled([
       getOpenClawRuntimeHealth(),

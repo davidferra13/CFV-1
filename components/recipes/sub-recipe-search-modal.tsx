@@ -159,7 +159,7 @@ export function SubRecipeSearchModal({
 
   return (
     <div
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-dialog p-4"
       onClick={(e) => {
         // Close on backdrop click
         if (e.target === e.currentTarget) onClose()

@@ -164,15 +164,7 @@ export async function mergeClients(
         .eq('client_id', mergeClientId)
         .eq('tenant_id', tenantId)
     } catch (err) {
-      // Some tables may not exist or may not have tenant_id; try without tenant filter
-      try {
-        await db
-          .from(table as any)
-          .update({ client_id: keepClientId })
-          .eq('client_id', mergeClientId)
-      } catch {
-        console.error(`[mergeClients] Failed to reassign ${table} (non-blocking)`, err)
-      }
+      console.error(`[mergeClients] Failed to reassign ${table} (non-blocking)`, err)
     }
   }
 

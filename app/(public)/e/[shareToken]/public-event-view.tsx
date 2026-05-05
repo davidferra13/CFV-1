@@ -10,6 +10,22 @@ import type { PublicEventInfo } from '@/lib/tickets/purchase-actions'
 import type { EventTicketType } from '@/lib/tickets/types'
 import { submitDinnerCircleVendorInterest } from '@/lib/dinner-circles/actions'
 import { buildEventDefaultLayer } from '@/lib/events/default-behaviors'
+import type { FarmShowcaseItem, FarmCropItem } from '@/lib/events/venue-details-actions'
+
+type VenueDetailsPublic = {
+  farm_name: string | null
+  farm_bio: string | null
+  farm_photo_url: string | null
+  farm_website: string | null
+  farm_logo_url: string | null
+  parking_instructions: string | null
+  directions_from_road: string | null
+  welcome_message: string | null
+  property_rules: string[]
+  restroom_info: string | null
+  farm_animals: FarmShowcaseItem[]
+  farm_crops: FarmCropItem[]
+} | null
 
 type Props = {
   event: PublicEventInfo
@@ -19,6 +35,7 @@ type Props = {
   ticketId?: string
   ticketGuestToken?: string | null
   circleUrl: string | null
+  venueDetails?: VenueDetailsPublic
 }
 
 type ViewMode = 'purchase' | 'confirmation' | 'cancelled'
@@ -140,6 +157,7 @@ export function PublicEventView({
   ticketId,
   ticketGuestToken,
   circleUrl,
+  venueDetails,
 }: Props) {
   const initialMode: ViewMode = justPurchased
     ? 'confirmation'
@@ -418,7 +436,7 @@ export function PublicEventView({
 
   if (mode === 'confirmation') {
     return (
-      <main className="min-h-screen bg-stone-950 px-4 py-10 text-stone-100">
+      <div className="min-h-screen bg-stone-950 px-4 py-10 text-stone-100">
         <div className="mx-auto flex min-h-[calc(100vh-5rem)] max-w-2xl items-center">
           <section className="w-full rounded-lg border border-stone-700 bg-stone-900 p-6 text-center sm:p-8">
             <p className="mb-3 text-sm font-medium text-emerald-400">Confirmed</p>
@@ -511,13 +529,13 @@ export function PublicEventView({
             </div>
           </section>
         </div>
-      </main>
+      </div>
     )
   }
 
   if (mode === 'cancelled') {
     return (
-      <main className="min-h-screen bg-stone-950 px-4 py-10 text-stone-100">
+      <div className="min-h-screen bg-stone-950 px-4 py-10 text-stone-100">
         <div className="mx-auto flex min-h-[calc(100vh-5rem)] max-w-2xl items-center">
           <section className="w-full rounded-lg border border-stone-700 bg-stone-900 p-6 text-center sm:p-8">
             <p className="text-sm font-medium text-red-300">Checkout stopped</p>
@@ -537,12 +555,12 @@ export function PublicEventView({
             </button>
           </section>
         </div>
-      </main>
+      </div>
     )
   }
 
   return (
-    <main className="min-h-screen bg-stone-950 px-4 py-8 text-stone-100 sm:py-12">
+    <div className="min-h-screen bg-stone-950 px-4 py-8 text-stone-100 sm:py-12">
       <div className="mx-auto max-w-4xl space-y-8">
         <header className="space-y-5">
           <div className="space-y-3">
@@ -947,6 +965,120 @@ export function PublicEventView({
             ))}
           </section>
         )}
+
+        {/* Venue-based Farm Showcase (animals & crops from venue details) */}
+        {venueDetails &&
+          (venueDetails.farm_name ||
+            venueDetails.farm_animals.length > 0 ||
+            venueDetails.farm_crops.length > 0) && (
+            <section className="rounded-lg border border-stone-700 bg-stone-900 p-5">
+              {venueDetails.farm_name && (
+                <div className="flex items-center gap-3 mb-4">
+                  {venueDetails.farm_logo_url && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={venueDetails.farm_logo_url}
+                      alt={venueDetails.farm_name}
+                      className="h-10 w-10 rounded-full object-cover"
+                    />
+                  )}
+                  <div>
+                    <h2 className="text-lg font-semibold text-stone-100">
+                      {venueDetails.farm_name}
+                    </h2>
+                    {venueDetails.farm_website && (
+                      <a
+                        href={venueDetails.farm_website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-emerald-400 hover:text-emerald-300"
+                      >
+                        Visit website
+                      </a>
+                    )}
+                  </div>
+                </div>
+              )}
+              {venueDetails.farm_bio && (
+                <p className="text-sm text-stone-300 mb-4 leading-relaxed">
+                  {venueDetails.farm_bio}
+                </p>
+              )}
+              {venueDetails.farm_photo_url && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={venueDetails.farm_photo_url}
+                  alt={venueDetails.farm_name || 'Farm'}
+                  className="w-full h-48 object-cover rounded-lg mb-4"
+                />
+              )}
+              {venueDetails.farm_animals.length > 0 && (
+                <div className="mb-4">
+                  <h3 className="text-sm font-semibold uppercase tracking-wide text-stone-400 mb-3">
+                    Meet Our Animals
+                  </h3>
+                  <div className="grid gap-3 grid-cols-2 md:grid-cols-3">
+                    {venueDetails.farm_animals.map((animal, i) => (
+                      <div
+                        key={i}
+                        className="rounded-lg border border-stone-700 bg-stone-950 overflow-hidden"
+                      >
+                        {animal.photo_url && (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={animal.photo_url}
+                            alt={animal.name}
+                            loading="lazy"
+                            className="h-24 w-full object-cover"
+                          />
+                        )}
+                        <div className="p-3">
+                          <p className="font-medium text-stone-100 text-sm">{animal.name}</p>
+                          {animal.description && (
+                            <p className="mt-0.5 text-xs text-stone-400">{animal.description}</p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {venueDetails.farm_crops.length > 0 && (
+                <div>
+                  <h3 className="text-sm font-semibold uppercase tracking-wide text-stone-400 mb-3">
+                    What We Grow
+                  </h3>
+                  <div className="grid gap-3 grid-cols-2 md:grid-cols-3">
+                    {venueDetails.farm_crops.map((crop, i) => (
+                      <div
+                        key={i}
+                        className="rounded-lg border border-stone-700 bg-stone-950 overflow-hidden"
+                      >
+                        {crop.photo_url && (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={crop.photo_url}
+                            alt={crop.name}
+                            loading="lazy"
+                            className="h-24 w-full object-cover"
+                          />
+                        )}
+                        <div className="p-3">
+                          <p className="font-medium text-stone-100 text-sm">{crop.name}</p>
+                          {crop.variety && (
+                            <span className="text-xs text-emerald-400">{crop.variety}</span>
+                          )}
+                          {crop.description && (
+                            <p className="mt-0.5 text-xs text-stone-400">{crop.description}</p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </section>
+          )}
 
         <section className="space-y-4">
           <div>
@@ -1409,6 +1541,6 @@ export function PublicEventView({
           </form>
         </section>
       </div>
-    </main>
+    </div>
   )
 }

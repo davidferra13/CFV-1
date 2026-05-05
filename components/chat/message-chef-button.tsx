@@ -48,7 +48,7 @@ export function MessageChefButton({
       <button
         onClick={handleClick}
         disabled={loading}
-        className={`fixed bottom-6 right-6 z-40 flex items-center gap-2 bg-brand-600 text-white px-5 py-3 rounded-full shadow-lg hover:bg-brand-700 disabled:opacity-50 transition-all hover:shadow-xl ${className}`}
+        className={`fixed bottom-6 right-20 z-fab flex items-center gap-2 bg-brand-600 text-white px-5 py-3 rounded-full shadow-lg hover:bg-brand-700 disabled:opacity-50 transition-all hover:shadow-xl ${className}`}
       >
         {loading ? (
           <Loader2 className="w-5 h-5 animate-spin" />

@@ -6,7 +6,7 @@ import {
   ensurePostEventSurveyForEvent,
   sendPostEventSurveyForEvent,
   submitPostEventSurveyResponse as submitCanonicalPostEventSurveyResponse,
-} from '@/lib/post-event/trust-loop-actions'
+} from '@/lib/events/post-event-trust-loop-actions'
 
 export async function createPostEventSurvey(
   eventId: string

@@ -167,7 +167,7 @@ function StoryViewer({
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black flex items-center justify-center"
+      className="fixed inset-0 z-chrome bg-black flex items-center justify-center"
       role="dialog"
       aria-label="Story viewer"
       onClick={onClose}

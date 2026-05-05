@@ -240,13 +240,25 @@ async function acceptQuoteForContext(quoteId: string, context: QuoteResponseCont
     idempotency_key: `approve_quote:${quoteId}:${context.clientId}`,
   })
 
-  if (hadLinkedEvent && quote.event_id) {
+  if (quote.event_id) {
     try {
       const { transitionEvent } = await import('@/lib/events/transitions')
+      // Inquiry-created events start in 'draft'; must go draft->proposed->accepted
+      if (!hadLinkedEvent) {
+        await transitionEvent({
+          eventId: quote.event_id,
+          toStatus: 'proposed',
+          metadata: { triggered_by: 'quote_acceptance', quote_id: quoteId, auto_advance: true },
+        })
+      }
       await transitionEvent({
         eventId: quote.event_id,
         toStatus: 'accepted',
-        metadata: { triggered_by: 'quote_acceptance', quote_id: quoteId },
+        metadata: {
+          triggered_by: 'quote_acceptance',
+          quote_id: quoteId,
+          was_inquiry_conversion: !hadLinkedEvent,
+        },
       })
     } catch (transitionErr) {
       console.error('[acceptQuote] Event auto-transition failed (non-blocking):', transitionErr)

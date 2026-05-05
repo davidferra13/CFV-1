@@ -1,7 +1,6 @@
 // System Messages -- Auto-posted into chat conversations on key events
-// Uses admin client (service role) because webhooks may trigger these
-
-'use server'
+// Uses admin client (service role) because webhooks may trigger these.
+// NOT a server action file. Called by webhooks/system events, not by client.
 
 import { createServerClient } from '@/lib/db/server'
 

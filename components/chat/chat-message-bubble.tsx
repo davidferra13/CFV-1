@@ -160,7 +160,7 @@ function ImageContent({ message }: { message: ChatMessage }) {
           {/* Lightbox */}
           {expanded && (
             <div
-              className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
+              className="fixed inset-0 z-float bg-black/80 flex items-center justify-center p-4"
               onClick={() => setExpanded(false)}
             >
               <NextImage

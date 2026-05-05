@@ -323,7 +323,7 @@ export function SocialQueueSettingsForm({ settings, postCount }: Props) {
 
       {/* Regenerate confirm dialog */}
       {confirmRegenerate && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-float flex items-center justify-center p-4">
           <div className="fixed inset-0 bg-black/40" onClick={() => setConfirmRegenerate(false)} />
           <div className="relative bg-stone-900 rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4">
             <div className="flex items-center gap-3 text-amber-700">

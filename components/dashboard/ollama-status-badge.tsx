@@ -273,7 +273,7 @@ export function OllamaStatusBadge() {
 
       {popoverOpen && (
         <div
-          className="fixed w-80 rounded-xl border border-stone-700 bg-stone-900 shadow-2xl z-[100] overflow-hidden"
+          className="fixed w-80 rounded-xl border border-stone-700 bg-stone-900 shadow-2xl z-command overflow-hidden"
           style={popoverStyle ?? undefined}
         >
           <div className="flex items-center justify-between px-4 py-3 border-b border-stone-700">

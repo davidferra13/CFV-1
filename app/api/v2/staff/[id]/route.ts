@@ -36,7 +36,7 @@ const UpdateStaffBody = z
     email: z.string().email().optional(),
     hourly_rate_cents: z.number().int().min(0).optional(),
     notes: z.string().optional(),
-    is_active: z.boolean().optional(),
+    status: z.enum(['active', 'inactive']).optional(),
   })
   .strict()
 
@@ -108,7 +108,7 @@ export const DELETE = withApiAuth(
     // Soft deactivate (not hard delete)
     const { error } = await (ctx.db as any)
       .from('staff_members')
-      .update({ is_active: false, updated_at: new Date().toISOString() })
+      .update({ status: 'inactive', updated_at: new Date().toISOString() })
       .eq('id', id)
       .eq('chef_id', ctx.tenantId)
 

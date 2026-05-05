@@ -150,7 +150,7 @@ export function RemyMascotButton({
         data-remy-mascot
         onClick={onClick}
         className={[
-          'fixed z-40 inline-flex items-center gap-2 rounded-full border px-3 py-2',
+          'fixed z-fab inline-flex items-center gap-2 rounded-full border px-3 py-2',
           'border-stone-700 bg-stone-900/95 text-stone-100 shadow-lg backdrop-blur-sm',
           'hover:bg-stone-800 transition-colors',
           'focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400',
@@ -185,7 +185,7 @@ export function RemyMascotButton({
   return (
     <div
       data-remy-mascot
-      className={['fixed bottom-4 left-4 lg:left-64 z-40', className ?? '']
+      className={['fixed bottom-4 left-4 lg:left-64 z-fab', className ?? '']
         .filter(Boolean)
         .join(' ')}
       onMouseEnter={handleMouseEnter}

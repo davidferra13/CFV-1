@@ -66,7 +66,7 @@ export function DietaryComplexityBadge({
       </button>
 
       {expanded && !compact && (
-        <div className="absolute z-50 top-full left-0 mt-1 w-64 rounded-lg border border-stone-700 bg-stone-900 shadow-xl p-3 text-xs">
+        <div className="absolute z-float top-full left-0 mt-1 w-64 rounded-lg border border-stone-700 bg-stone-900 shadow-xl p-3 text-xs">
           <div className="flex items-center justify-between mb-2">
             <span className="font-semibold text-stone-300">Dietary Complexity</span>
             <span className={`font-bold ${config.badgeClass.split(' ')[1]}`}>
@@ -108,7 +108,7 @@ export function DietaryComplexityBadge({
 
       {/* Click-away overlay to close expanded view */}
       {expanded && !compact && (
-        <div className="fixed inset-0 z-40" onClick={() => setExpanded(false)} />
+        <div className="fixed inset-0 z-status" onClick={() => setExpanded(false)} />
       )}
     </div>
   )

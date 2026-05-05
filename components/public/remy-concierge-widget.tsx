@@ -280,7 +280,7 @@ export function RemyConciergeWidget() {
   return (
     <div
       ref={widgetRef}
-      className={`fixed z-50 ${isMobile ? 'inset-x-2 bottom-2 top-20' : isMaximized ? 'inset-4' : 'bottom-6 right-6'}`}
+      className={`fixed z-ai ${isMobile ? 'inset-x-2 bottom-2 top-20' : isMaximized ? 'inset-4' : 'bottom-6 right-6'}`}
       style={
         isMobile || isMaximized
           ? undefined

@@ -520,7 +520,7 @@ export function RaffleGameModal({ roundId, onClose, onEntryEarned }: Props) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-3"
+      className="fixed inset-0 z-dialog flex items-center justify-center bg-black/80 p-3"
       style={{ overscrollBehavior: 'contain' }}
     >
       <div className="relative w-full max-w-md rounded-2xl border border-stone-700 bg-stone-900 p-3 shadow-2xl sm:p-4">

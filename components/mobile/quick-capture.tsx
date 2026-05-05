@@ -90,7 +90,7 @@ export function QuickCapture() {
       {/* FAB - only shown on mobile */}
       <button
         onClick={() => setOpen(!open)}
-        className="fixed bottom-6 right-4 z-40 w-14 h-14 bg-stone-900 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-stone-700 transition-all active:scale-95 sm:hidden"
+        className="fixed bottom-6 right-4 z-fab w-14 h-14 bg-stone-900 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-stone-700 transition-all active:scale-95 sm:hidden"
         aria-label="Quick capture"
       >
         {open ? <X className="h-6 w-6" /> : <Plus className="h-6 w-6" />}
@@ -101,11 +101,11 @@ export function QuickCapture() {
         <>
           {/* Backdrop */}
           <div
-            className="fixed inset-0 z-30 sm:hidden"
+            className="fixed inset-0 z-page-bar sm:hidden"
             onClick={() => setOpen(false)}
             aria-hidden
           />
-          <div className="fixed bottom-24 right-4 z-40 flex flex-col gap-3 sm:hidden">
+          <div className="fixed bottom-24 right-4 z-fab flex flex-col gap-3 sm:hidden">
             <div className="flex items-center gap-2 justify-end">
               <span className="bg-stone-900 text-stone-300 text-sm font-medium px-3 py-1 rounded-full shadow-md">
                 Capture Receipt
@@ -137,7 +137,7 @@ export function QuickCapture() {
       {/* Quick expense modal */}
       {showExpenseForm && (
         <div
-          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40"
+          className="fixed inset-0 z-dialog flex items-end sm:items-center justify-center bg-black/40"
           onClick={(e) => {
             if (e.target === e.currentTarget) setShowExpenseForm(false)
           }}

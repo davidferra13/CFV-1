@@ -28,7 +28,9 @@ import { CoHostDashboard } from '@/components/tickets/cohost-dashboard'
 import { WeatherAlertPanel } from '@/components/events/weather-alert-panel'
 import { DayOfChecklistPanel } from '@/components/events/day-of-checklist-panel'
 import { PrepTimelinePanel } from '@/components/events/prep-timeline-panel'
+import { VenueDetailsPanel } from '@/components/events/venue-details-panel'
 import { broadcastToTicketHolders } from '@/lib/tickets/broadcast-actions'
+import { sendArrivalInfo } from '@/lib/tickets/arrival-info-actions'
 
 type Props = {
   activeTab: EventDetailTab
@@ -86,6 +88,7 @@ export function EventDetailTicketsTab({
   const [broadcastSubject, setBroadcastSubject] = useState('')
   const [broadcastMessage, setBroadcastMessage] = useState('')
   const [broadcastSent, setBroadcastSent] = useState<number | null>(null)
+  const [arrivalSent, setArrivalSent] = useState<number | null>(null)
 
   useEffect(() => {
     getPastGuestCount(eventId)
@@ -345,6 +348,22 @@ export function EventDetailTicketsTab({
         }
       } catch (err: any) {
         setError(err.message || 'Failed to send broadcast')
+      }
+    })
+  }
+
+  function handleSendArrivalInfo() {
+    setError(null)
+    startTransition(async () => {
+      try {
+        const result = await sendArrivalInfo({ eventId })
+        if (!result.success) {
+          setError(result.error || 'Failed to send arrival info')
+        } else {
+          setArrivalSent(result.sent)
+        }
+      } catch (err: any) {
+        setError(err.message || 'Failed to send arrival info')
       }
     })
   }
@@ -1005,6 +1024,33 @@ export function EventDetailTicketsTab({
 
         {/* Revenue Split - for co-hosted events */}
         {hasCollaborators && <RevenueSplitPanel eventId={eventId} />}
+
+        {/* Venue Details - parking, access, setup, farm profile */}
+        <VenueDetailsPanel eventId={eventId} />
+
+        {/* Send Arrival Info to Guests */}
+        {tickets.filter((t) => t.payment_status === 'paid').length > 0 && (
+          <Card className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-white">Send Arrival Info</p>
+                <p className="text-xs text-stone-400 mt-0.5">
+                  {arrivalSent !== null
+                    ? `Sent directions and gate code to ${arrivalSent} guest${arrivalSent !== 1 ? 's' : ''}`
+                    : 'Email guests with directions, parking, and gate code from venue details'}
+                </p>
+              </div>
+              <Button
+                variant="primary"
+                onClick={handleSendArrivalInfo}
+                disabled={isPending || arrivalSent !== null}
+                className="text-xs shrink-0"
+              >
+                {isPending ? 'Sending...' : arrivalSent !== null ? 'Sent' : 'Send Directions'}
+              </Button>
+            </div>
+          </Card>
+        )}
 
         {/* Weather Alert - outdoor event forecast */}
         <WeatherAlertPanel

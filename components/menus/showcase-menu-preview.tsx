@@ -37,7 +37,7 @@ export function ShowcaseMenuPreview({
   const sorted = [...menu.dishes].sort((a, b) => a.courseNumber - b.courseNumber)
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
+    <div className="fixed inset-0 z-dialog flex items-center justify-center p-4 bg-black/60">
       <div className="bg-stone-900 border border-stone-700 rounded-2xl max-w-lg w-full max-h-[85vh] flex flex-col">
         {/* Header */}
         <div className="p-5 border-b border-stone-800">

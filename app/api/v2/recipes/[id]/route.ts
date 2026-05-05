@@ -6,20 +6,26 @@ import { NextRequest } from 'next/server'
 import { z } from 'zod'
 import { withApiAuth, apiSuccess, apiNotFound, apiValidationError, apiError } from '@/lib/api/v2'
 
+const RECIPE_SELECT =
+  'id, tenant_id, name, description, cuisine, meal_type, prep_time_minutes, cook_time_minutes, total_time_minutes, servings, difficulty, method, method_detailed, notes, dietary_tags, occasion_tags, season, archived, yield_description, yield_quantity, yield_unit, total_cost_cents, cost_per_serving_cents, photo_url, created_at, updated_at'
+
 const UpdateRecipeBody = z
   .object({
-    title: z.string().min(1).optional(),
+    name: z.string().min(1).optional(),
     description: z.string().optional(),
-    cuisine_type: z.string().optional(),
-    course: z.string().optional(),
+    cuisine: z.string().optional(),
+    meal_type: z.string().optional(),
     prep_time_minutes: z.number().int().nonnegative().optional(),
     cook_time_minutes: z.number().int().nonnegative().optional(),
     servings: z.number().int().positive().optional(),
     difficulty: z.enum(['easy', 'medium', 'hard', 'expert']).optional(),
-    instructions: z.string().optional(),
+    method: z.string().optional(),
+    method_detailed: z.string().optional(),
     notes: z.string().optional(),
-    tags: z.array(z.string()).optional(),
-    is_archived: z.boolean().optional(),
+    dietary_tags: z.array(z.string()).optional(),
+    occasion_tags: z.array(z.string()).optional(),
+    season: z.string().optional(),
+    archived: z.boolean().optional(),
   })
   .strict()
 
@@ -30,9 +36,7 @@ export const GET = withApiAuth(
 
     const { data, error } = await ctx.db
       .from('recipes')
-      .select(
-        'id, tenant_id, title, description, cuisine_type, course, prep_time_minutes, cook_time_minutes, servings, difficulty, instructions, notes, tags, is_archived, created_at, updated_at'
-      )
+      .select(RECIPE_SELECT)
       .eq('id', id)
       .eq('tenant_id', ctx.tenantId)
       .single()
@@ -73,9 +77,7 @@ export const PATCH = withApiAuth(
       .update({ ...parsed.data, updated_at: new Date().toISOString() } as any)
       .eq('id', id)
       .eq('tenant_id', ctx.tenantId)
-      .select(
-        'id, tenant_id, title, description, cuisine_type, course, prep_time_minutes, cook_time_minutes, servings, difficulty, instructions, notes, tags, is_archived, created_at, updated_at'
-      )
+      .select(RECIPE_SELECT)
       .single()
 
     if (error) {

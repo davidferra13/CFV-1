@@ -174,7 +174,7 @@ export function RemyMascotChat() {
   return (
     <div
       ref={panelRef}
-      className="fixed bottom-[120px] left-4 lg:left-64 z-40 w-[340px] max-w-[calc(100vw-2rem)] flex flex-col overflow-hidden rounded-2xl border border-stone-700 bg-stone-900 shadow-2xl animate-scale-in"
+      className="fixed bottom-[120px] left-4 lg:left-64 z-ai w-[340px] max-w-[calc(100vw-2rem)] flex flex-col overflow-hidden rounded-2xl border border-stone-700 bg-stone-900 shadow-2xl animate-scale-in"
     >
       {/* Header */}
       <div className="flex items-center justify-between border-b border-stone-700 bg-brand-950 px-3 py-2.5">

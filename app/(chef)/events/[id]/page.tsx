@@ -134,6 +134,8 @@ import {
   getOrCreateChefHubProfileToken,
 } from '@/lib/hub/chef-circle-actions'
 import { getEventTicketTypes, getEventTickets, getEventTicketSummary } from '@/lib/tickets/actions'
+import { EventPricingVertical } from '@/components/pricing/event-pricing-vertical'
+import { saveMarginSnapshot } from '@/lib/pricing/margin-snapshot-actions'
 import { EventDetailOverviewTab } from './_components/event-detail-overview-tab'
 import { EventDetailMoneyTab } from './_components/event-detail-money-tab'
 import { EventDetailTicketsTab } from './_components/event-detail-tickets-tab'
@@ -976,6 +978,11 @@ export default async function EventDetailPage({
   const completionResult = await getCompletionForEntity('event', params.id).catch(() => null)
   const completionScore = completionResult?.score ?? null
 
+  // Persist margin snapshot for trend tracking (fire-and-forget, non-blocking)
+  if (pricingIntelligence) {
+    saveMarginSnapshot(pricingIntelligence, 'page_view').catch(() => {})
+  }
+
   // Cost forecast for future events with menus
   let costForecast: CostForecast | null = null
   if (eventMenus && eventMenus.length > 0 && event.event_date) {
@@ -1104,6 +1111,9 @@ export default async function EventDetailPage({
         eventId={params.id}
         costNeedsRefresh={(event as any).cost_needs_refresh === true}
       />
+
+      {/* Pricing Pulse: compact at-a-glance cost/margin/warning card */}
+      {pricingIntelligence && <EventPricingVertical data={pricingIntelligence} />}
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">

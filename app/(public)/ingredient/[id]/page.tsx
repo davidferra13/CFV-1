@@ -32,6 +32,7 @@ import { AvailabilityDetail, AvailabilityBadge } from '@/components/pricing/avai
 import { formatCurrency } from '@/lib/utils/currency'
 import { CopyLinkButton } from './_components/copy-link-button'
 import { IngredientSearch } from './_components/ingredient-search'
+import { getCurrentUser } from '@/lib/auth/get-user'
 import type { CatalogDetailResult } from '@/lib/openclaw/catalog-types'
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
@@ -158,7 +159,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
     if (know?.wikiSummary) descParts.push(know.wikiSummary)
     else descParts.push(`${sourceability.label}: ${sourceability.description}`)
     if (detail.summary.storeCount > 0)
-      descParts.push(`Real prices from ${detail.summary.storeCount} stores.`)
+      descParts.push(`Pricing data available from ${detail.summary.storeCount} stores.`)
     if (know?.originCountries?.length)
       descParts.push(`Origin: ${know.originCountries.slice(0, 2).join(', ')}.`)
     const description = descParts.join(' ').slice(0, 160)
@@ -224,11 +225,14 @@ export default function IngredientPage({ params }: Params) {
 }
 
 async function IngredientPageContent({ id }: { id: string }) {
+  const user = await getCurrentUser().catch(() => null)
+  const isChef = user?.role === 'chef'
+
   // --- Full mode: canonical ingredient with price data ---
   const detail = await getPublicIngredientDetail(id).catch(() => null)
 
   if (detail) {
-    return <FullIngredientPage id={id} detail={detail} />
+    return <FullIngredientPage id={id} detail={detail} isChef={isChef} />
   }
 
   // --- Knowledge-only mode: system_ingredient slug ---
@@ -254,7 +258,15 @@ async function IngredientPageContent({ id }: { id: string }) {
 // Full page (price data + knowledge)
 // ---------------------------------------------------------------------------
 
-async function FullIngredientPage({ id, detail }: { id: string; detail: CatalogDetailResult }) {
+async function FullIngredientPage({
+  id,
+  detail,
+  isChef,
+}: {
+  id: string
+  detail: CatalogDetailResult
+  isChef: boolean
+}) {
   const sourceability = classifyFromCatalogDetail(detail)
 
   const categorySlug = detail.ingredient.category ?? null
@@ -284,10 +296,17 @@ async function FullIngredientPage({ id, detail }: { id: string; detail: CatalogD
   return (
     <>
       <JsonLd
-        data={buildIngredientJsonLd(detail.ingredient.name, id, knowledge, {
-          avgCents: detail.summary.avgCents,
-          standardUnit: detail.ingredient.standardUnit,
-        })}
+        data={buildIngredientJsonLd(
+          detail.ingredient.name,
+          id,
+          knowledge,
+          isChef
+            ? {
+                avgCents: detail.summary.avgCents,
+                standardUnit: detail.ingredient.standardUnit,
+              }
+            : null
+        )}
       />
       <JsonLd data={buildBreadcrumbJsonLd(detail.ingredient.name, id, categorySlug)} />
       <div className="mx-auto max-w-2xl px-4 py-10">
@@ -339,81 +358,103 @@ async function FullIngredientPage({ id, detail }: { id: string; detail: CatalogD
             </div>
           </div>
 
-          {/* Pricing summary */}
-          <div className="px-6 py-5 grid grid-cols-2 gap-4 border-b border-stone-800">
-            <PricingCell
-              label="Lowest price"
-              value={
-                detail.summary.cheapestCents
-                  ? `${formatCurrency(detail.summary.cheapestCents)} / ${detail.ingredient.standardUnit}`
-                  : 'N/A'
-              }
-              sub={detail.summary.cheapestStore ?? undefined}
-            />
-            <PricingCell
-              label="Average price"
-              value={
-                detail.summary.avgCents
-                  ? `${formatCurrency(detail.summary.avgCents)} / ${detail.ingredient.standardUnit}`
-                  : 'N/A'
-              }
-              sub={`across ${detail.summary.storeCount} ${detail.summary.storeCount === 1 ? 'store' : 'stores'}`}
-            />
-          </div>
-
-          {/* Availability detail */}
-          <div className="px-6 py-5 border-b border-stone-800">
-            <h2 className="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-3">
-              Sourcing Analysis
-            </h2>
-            <AvailabilityDetail report={sourceability} />
-            {mostRecentDate && (
-              <p className="mt-2 text-xs text-stone-600">
-                Data last updated:{' '}
-                {new Date(mostRecentDate).toLocaleDateString('en-US', {
-                  month: 'short',
-                  day: 'numeric',
-                  year: 'numeric',
-                })}
-              </p>
-            )}
-          </div>
-
-          {/* Store prices */}
-          {detail.prices.length > 0 && (
-            <div className="px-6 py-5 border-b border-stone-800">
-              <h2 className="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-3">
-                Price by Store
-              </h2>
-              <div className="space-y-2">
-                {detail.prices.slice(0, 5).map((price, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center justify-between gap-3 rounded-lg bg-stone-800/50 px-3 py-2"
-                  >
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-stone-200 truncate">{price.store}</p>
-                      {(price.storeCity || price.storeState) && (
-                        <p className="text-xs text-stone-500">
-                          {[price.storeCity, price.storeState].filter(Boolean).join(', ')}
-                        </p>
-                      )}
-                    </div>
-                    <div className="text-right shrink-0">
-                      <p className="text-sm font-semibold text-stone-100">
-                        {formatCurrency(price.priceCents)}
-                      </p>
-                      <p className="text-xs text-stone-500">per {price.priceUnit}</p>
-                    </div>
-                    <InStockDot inStock={price.inStock} />
-                  </div>
-                ))}
+          {/* Pricing sections: chef-only */}
+          {isChef ? (
+            <>
+              {/* Pricing summary */}
+              <div className="px-6 py-5 grid grid-cols-2 gap-4 border-b border-stone-800">
+                <PricingCell
+                  label="Lowest price"
+                  value={
+                    detail.summary.cheapestCents
+                      ? `${formatCurrency(detail.summary.cheapestCents)} / ${detail.ingredient.standardUnit}`
+                      : 'N/A'
+                  }
+                  sub={detail.summary.cheapestStore ?? undefined}
+                />
+                <PricingCell
+                  label="Average price"
+                  value={
+                    detail.summary.avgCents
+                      ? `${formatCurrency(detail.summary.avgCents)} / ${detail.ingredient.standardUnit}`
+                      : 'N/A'
+                  }
+                  sub={`across ${detail.summary.storeCount} ${detail.summary.storeCount === 1 ? 'store' : 'stores'}`}
+                />
               </div>
-              {detail.prices.length > 5 && (
-                <p className="mt-2 text-xs text-stone-600">
-                  + {detail.prices.length - 5} more stores
-                </p>
+
+              {/* Availability detail */}
+              <div className="px-6 py-5 border-b border-stone-800">
+                <h2 className="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-3">
+                  Sourcing Analysis
+                </h2>
+                <AvailabilityDetail report={sourceability} />
+                {mostRecentDate && (
+                  <p className="mt-2 text-xs text-stone-600">
+                    Data last updated:{' '}
+                    {new Date(mostRecentDate).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric',
+                    })}
+                  </p>
+                )}
+              </div>
+
+              {/* Store prices */}
+              {detail.prices.length > 0 && (
+                <div className="px-6 py-5 border-b border-stone-800">
+                  <h2 className="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-3">
+                    Price by Store
+                  </h2>
+                  <div className="space-y-2">
+                    {detail.prices.slice(0, 5).map((price, i) => (
+                      <div
+                        key={i}
+                        className="flex items-center justify-between gap-3 rounded-lg bg-stone-800/50 px-3 py-2"
+                      >
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-stone-200 truncate">
+                            {price.store}
+                          </p>
+                          {(price.storeCity || price.storeState) && (
+                            <p className="text-xs text-stone-500">
+                              {[price.storeCity, price.storeState].filter(Boolean).join(', ')}
+                            </p>
+                          )}
+                        </div>
+                        <div className="text-right shrink-0">
+                          <p className="text-sm font-semibold text-stone-100">
+                            {formatCurrency(price.priceCents)}
+                          </p>
+                          <p className="text-xs text-stone-500">per {price.priceUnit}</p>
+                        </div>
+                        <InStockDot inStock={price.inStock} />
+                      </div>
+                    ))}
+                  </div>
+                  {detail.prices.length > 5 && (
+                    <p className="mt-2 text-xs text-stone-600">
+                      + {detail.prices.length - 5} more stores
+                    </p>
+                  )}
+                </div>
               )}
+            </>
+          ) : (
+            <div className="px-6 py-5 border-b border-stone-800 bg-stone-950/40">
+              <p className="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-2">
+                Pricing Data
+              </p>
+              <p className="text-sm text-stone-400 mb-3">
+                Live pricing from {detail.summary.storeCount} stores is available to ChefFlow chefs.
+              </p>
+              <Link
+                href="/auth/signin"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-stone-100 px-4 py-2 text-xs font-semibold text-stone-900 hover:bg-white transition-colors"
+              >
+                Sign in to view prices
+              </Link>
             </div>
           )}
 
@@ -480,7 +521,7 @@ async function FullIngredientPage({ id, detail }: { id: string; detail: CatalogD
                       {alt.name}
                     </span>
                     <div className="flex items-center gap-2 shrink-0">
-                      {alt.bestPriceCents && (
+                      {isChef && alt.bestPriceCents && (
                         <span className="text-xs text-stone-400">
                           {formatCurrency(alt.bestPriceCents)}/{alt.bestPriceUnit}
                         </span>
@@ -502,17 +543,19 @@ async function FullIngredientPage({ id, detail }: { id: string; detail: CatalogD
               Share This Ingredient
             </h2>
             <p className="text-xs text-stone-500 mb-3 leading-relaxed">
-              This link shows the same ingredient data to anyone who opens it. Share it with a
-              client, another chef, or a supplier.
+              Share this ingredient page with a client, another chef, or a supplier.
+              {!isChef && ' Sign in as a chef to see live pricing data.'}
             </p>
             <CopyLinkButton path={pageUrl} />
           </div>
         </div>
 
-        <p className="mt-6 text-center text-xs text-stone-700">
-          Prices are scraped from local grocery stores and updated periodically. Not affiliated with
-          any retailer.
-        </p>
+        {isChef && (
+          <p className="mt-6 text-center text-xs text-stone-700">
+            Prices are sourced from local grocery stores and updated periodically. Not affiliated
+            with any retailer.
+          </p>
+        )}
       </div>
     </>
   )

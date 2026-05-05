@@ -56,7 +56,7 @@ export function CookieConsent() {
   if (!visible) return null
 
   return (
-    <div className="fixed bottom-2 left-2 right-2 z-50 overflow-hidden animate-slide-up-fade rounded-xl border border-stone-700/60 bg-stone-900/92 px-3 py-2.5 shadow-[0_18px_45px_rgba(0,0,0,0.32)] backdrop-blur-md sm:bottom-4 sm:left-1/2 sm:right-auto sm:w-[min(42rem,calc(100vw-2rem))] sm:max-w-none sm:-translate-x-1/2 sm:rounded-2xl sm:px-6 sm:py-4">
+    <div className="fixed bottom-2 left-2 right-2 z-chrome overflow-hidden animate-slide-up-fade rounded-xl border border-stone-700/60 bg-stone-900/92 px-3 py-2.5 shadow-[0_18px_45px_rgba(0,0,0,0.32)] backdrop-blur-md sm:bottom-4 sm:left-1/2 sm:right-auto sm:w-[min(42rem,calc(100vw-2rem))] sm:max-w-none sm:-translate-x-1/2 sm:rounded-2xl sm:px-6 sm:py-4">
       <button
         type="button"
         className="absolute right-2 top-2 hidden rounded-md p-1 text-stone-500 transition-colors hover:text-stone-200 sm:block"

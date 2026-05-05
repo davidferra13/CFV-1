@@ -186,7 +186,7 @@ export function GlobalSearch({ userId, tenantId }: { userId: string; tenantId: s
 
   return (
     <div className="relative flex-shrink-0">
-      <div className="relative z-50 flex items-center">
+      <div className="relative z-float flex items-center">
         <button
           onClick={openAndFocus}
           className="flex items-center justify-center w-11 h-11 hover:bg-stone-700 rounded-lg transition-colors touch-manipulation"
@@ -225,7 +225,7 @@ export function GlobalSearch({ userId, tenantId }: { userId: string; tenantId: s
       {open && (
         <div
           id={listboxId}
-          className="absolute top-[calc(100%+2.75rem)] right-0 w-[320px] max-w-[90vw] bg-stone-900 shadow-xl border border-stone-700 rounded-xl z-50 p-2"
+          className="absolute top-[calc(100%+2.75rem)] right-0 w-[320px] max-w-[90vw] bg-stone-900 shadow-xl border border-stone-700 rounded-xl z-float p-2"
           role="listbox"
         >
           {loading && (
@@ -436,7 +436,7 @@ export function GlobalSearch({ userId, tenantId }: { userId: string; tenantId: s
         </div>
       )}
 
-      {open && <div className="fixed inset-0 z-30" onClick={() => setOpen(false)} />}
+      {open && <div className="fixed inset-0 z-page-bar" onClick={() => setOpen(false)} />}
     </div>
   )
 }

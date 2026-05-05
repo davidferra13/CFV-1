@@ -9,12 +9,14 @@
  *   <PriceBadge price={resolvedPrice} compact />
  */
 
+import { useState, useTransition } from 'react'
 import type {
   ResolvedPrice,
   PriceFreshness,
   PriceSource,
   ResolutionTier,
 } from '@/lib/pricing/resolve-price'
+import { submitPriceFeedback, setChefIngredientPrice } from '@/lib/pricing/chef-price-actions'
 
 interface PriceBadgeProps {
   price: ResolvedPrice
@@ -22,6 +24,10 @@ interface PriceBadgeProps {
   className?: string
   trendDirection?: 'up' | 'down' | 'flat' | null
   trendPct?: number | null
+  /** Pass ingredientId to enable confirm/override buttons */
+  ingredientId?: string
+  /** Called after successful feedback submission */
+  onFeedback?: () => void
 }
 
 function formatCents(cents: number): string {
@@ -82,6 +88,8 @@ function confidenceTooltipText(confidence: number, confirmedAt?: string | null):
 
 function sourceLabel(source: PriceSource): string {
   switch (source) {
+    case 'chef_override':
+      return 'Your price'
     case 'receipt':
       return 'Receipt'
     case 'api_quote':
@@ -119,6 +127,8 @@ function sourceLabel(source: PriceSource): string {
  */
 function tierLabel(tier: ResolutionTier): string {
   switch (tier) {
+    case 'chef_override':
+      return 'your price'
     case 'chef_receipt':
       return 'your data'
     case 'wholesale':
@@ -149,6 +159,7 @@ function tierLabel(tier: ResolutionTier): string {
  */
 function tierColor(tier: ResolutionTier): string {
   switch (tier) {
+    case 'chef_override':
     case 'chef_receipt':
     case 'wholesale':
     case 'zip_local':
@@ -191,12 +202,141 @@ function TrendIndicator({
   )
 }
 
+/**
+ * Inline feedback buttons: confirm (thumbs up) and override (pencil).
+ * Only rendered when ingredientId is provided.
+ */
+function PriceFeedbackButtons({
+  ingredientId,
+  price,
+  onFeedback,
+}: {
+  ingredientId: string
+  price: ResolvedPrice
+  onFeedback?: () => void
+}) {
+  const [isPending, startTransition] = useTransition()
+  const [showOverride, setShowOverride] = useState(false)
+  const [overrideValue, setOverrideValue] = useState('')
+  const [confirmed, setConfirmed] = useState(false)
+
+  if (price.cents === null) return null
+
+  const handleConfirm = () => {
+    startTransition(async () => {
+      try {
+        await submitPriceFeedback({
+          ingredientId,
+          shownPriceCents: price.cents!,
+          shownConfidence: price.confidence,
+          shownSource: price.source,
+          feedback: 'confirmed',
+        })
+        setConfirmed(true)
+        onFeedback?.()
+      } catch {
+        // Silently fail; toast would be better but keeping deps minimal
+      }
+    })
+  }
+
+  const handleOverrideSubmit = () => {
+    const cents = Math.round(parseFloat(overrideValue) * 100)
+    if (Number.isNaN(cents) || cents <= 0) return
+    startTransition(async () => {
+      try {
+        await setChefIngredientPrice({
+          ingredientId,
+          priceCents: cents,
+          priceUnit: price.unit || 'each',
+          source: 'manual',
+          marketPriceCents: price.cents ?? undefined,
+          marketConfidence: price.confidence,
+        })
+        setShowOverride(false)
+        setOverrideValue('')
+        onFeedback?.()
+      } catch {
+        // Silently fail
+      }
+    })
+  }
+
+  if (confirmed) {
+    return <span className="text-xs text-emerald-500 ml-1">{'\u2713'}</span>
+  }
+
+  if (showOverride) {
+    return (
+      <span className="inline-flex items-center gap-1 ml-1.5">
+        <input
+          type="number"
+          step="0.01"
+          min="0.01"
+          placeholder="$"
+          value={overrideValue}
+          onChange={(e) => setOverrideValue(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && handleOverrideSubmit()}
+          className="w-16 h-5 text-xs bg-stone-800 border border-stone-600 rounded px-1 text-stone-200"
+          autoFocus
+          disabled={isPending}
+        />
+        <button
+          type="button"
+          onClick={handleOverrideSubmit}
+          disabled={isPending || !overrideValue}
+          className="text-xs text-emerald-400 hover:text-emerald-300 disabled:text-stone-600"
+          title="Save your price"
+        >
+          {'\u2713'}
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setShowOverride(false)
+            setOverrideValue('')
+          }}
+          className="text-xs text-stone-500 hover:text-stone-400"
+          title="Cancel"
+        >
+          {'\u2717'}
+        </button>
+      </span>
+    )
+  }
+
+  return (
+    <span className="inline-flex items-center gap-0.5 ml-1">
+      <button
+        type="button"
+        onClick={handleConfirm}
+        disabled={isPending}
+        className="text-[0.65rem] text-stone-600 hover:text-emerald-400 transition-colors disabled:opacity-50"
+        title="Confirm this price is accurate"
+      >
+        {'\u{1F44D}'}
+      </button>
+      <button
+        type="button"
+        onClick={() => setShowOverride(true)}
+        disabled={isPending}
+        className="text-[0.65rem] text-stone-600 hover:text-sky-400 transition-colors disabled:opacity-50"
+        title="Set your own price"
+      >
+        {'\u270E'}
+      </button>
+    </span>
+  )
+}
+
 export function PriceBadge({
   price,
   compact = false,
   className = '',
   trendDirection,
   trendPct,
+  ingredientId,
+  onFeedback,
 }: PriceBadgeProps) {
   // No price state
   if (price.cents === null) {
@@ -249,6 +389,9 @@ export function PriceBadge({
         >
           {dots}
         </span>
+        {ingredientId && (
+          <PriceFeedbackButtons ingredientId={ingredientId} price={price} onFeedback={onFeedback} />
+        )}
       </span>
     )
   }
@@ -280,6 +423,9 @@ export function PriceBadge({
       >
         {dots}
       </span>
+      {ingredientId && (
+        <PriceFeedbackButtons ingredientId={ingredientId} price={price} onFeedback={onFeedback} />
+      )}
     </span>
   )
 }
@@ -288,6 +434,8 @@ export function PriceBadge({
  *  where the price came from so callers never need to guess. */
 function tierTooltipText(tier: ResolutionTier, store: string | null): string {
   switch (tier) {
+    case 'chef_override':
+      return 'Your saved price for this ingredient. Updates when you confirm or change it.'
     case 'chef_receipt':
       return `Your own receipt${store ? ` from ${store}` : ''}`
     case 'wholesale':

@@ -75,7 +75,7 @@ export const GET = withApiAuth(
     let query = ctx.db
       .from('inquiries')
       .select(
-        'id, tenant_id, contact_name, contact_email, contact_phone, confirmed_date, confirmed_guest_count, confirmed_occasion, confirmed_location, confirmed_budget_cents, channel, source_message, confirmed_dietary_restrictions, location_city, location_state, status, created_at, updated_at',
+        'id, tenant_id, contact_name, contact_email, contact_phone, confirmed_date, confirmed_guest_count, confirmed_occasion, confirmed_location, confirmed_budget_cents, channel, source_message, confirmed_dietary_restrictions, status, created_at, updated_at',
         { count: 'exact' }
       )
       .eq('tenant_id', ctx.tenantId)
@@ -144,11 +144,7 @@ export const POST = withApiAuth(
         confirmed_dietary_restrictions: input.confirmed_dietary_restrictions,
         confirmed_service_expectations: input.confirmed_service_expectations,
         source_message: input.source_message,
-        notes: input.notes,
         referral_source: input.referral_source,
-        location_city: input.location_city,
-        location_state: input.location_state,
-        idempotency_key: input.idempotency_key,
         status: 'new',
       } as any)
       .select()

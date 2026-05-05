@@ -60,9 +60,9 @@ export function QuickAssign({ taskId, currentAssignee, staff, onDone }: Props) {
       {isOpen && (
         <>
           {/* Backdrop */}
-          <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
+          <div className="fixed inset-0 z-float" onClick={() => setIsOpen(false)} />
           {/* Dropdown */}
-          <div className="absolute right-0 top-full mt-1 z-50 w-48 rounded-lg border border-stone-700 bg-stone-900 shadow-xl overflow-hidden">
+          <div className="absolute right-0 top-full mt-1 z-float w-48 rounded-lg border border-stone-700 bg-stone-900 shadow-xl overflow-hidden">
             {/* Unassign option */}
             {currentAssignee && (
               <button

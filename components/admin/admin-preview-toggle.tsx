@@ -35,7 +35,7 @@ export function AdminPreviewToggle({ initialPreview }: Props) {
     <button
       onClick={handleToggle}
       disabled={isPending}
-      className={`fixed bottom-20 right-4 z-50 flex items-center gap-2 px-3 py-2 rounded-full shadow-lg text-xs font-medium transition-all disabled:opacity-50 ${
+      className={`fixed bottom-20 right-4 z-fab-secondary flex items-center gap-2 px-3 py-2 rounded-full shadow-lg text-xs font-medium transition-all disabled:opacity-50 ${
         preview
           ? 'bg-amber-500 text-stone-900 hover:bg-amber-400'
           : 'bg-stone-800 text-stone-300 hover:bg-stone-700 border border-stone-600'

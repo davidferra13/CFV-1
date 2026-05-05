@@ -17,7 +17,7 @@ export function GlobalReportButton() {
         onClick={() => setOpen(true)}
         aria-label="Report an issue"
         title="Report an issue"
-        className="fixed bottom-4 left-4 z-40 flex h-10 w-10 items-center justify-center rounded-full border border-stone-700 bg-stone-900/90 text-stone-400 shadow-lg backdrop-blur-sm transition-colors hover:border-amber-600 hover:text-amber-400 hover:bg-stone-800/90 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-stone-900 md:h-9 md:w-auto md:rounded-lg md:px-3 md:gap-2"
+        className="fixed bottom-14 left-4 z-fab flex h-10 w-10 items-center justify-center rounded-full border border-stone-700 bg-stone-900/90 text-stone-400 shadow-lg backdrop-blur-sm transition-colors hover:border-amber-600 hover:text-amber-400 hover:bg-stone-800/90 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-stone-900 md:h-9 md:w-auto md:rounded-lg md:px-3 md:gap-2"
       >
         {/* Flag icon */}
         <svg

@@ -252,6 +252,36 @@ export async function uploadEventPhoto(
       } catch {
         // Non-fatal
       }
+
+      // Email client that photos are ready (first photo only, non-blocking)
+      try {
+        const { data: client } = await db
+          .from('clients')
+          .select('email, full_name')
+          .eq('id', event.client_id)
+          .single()
+        const { data: chef } = await db
+          .from('chefs')
+          .select('display_name, business_name')
+          .eq('id', user.tenantId!)
+          .single()
+        if (client?.email) {
+          const { sendPhotosReadyEmail } = await import('@/lib/email/notifications')
+          sendPhotosReadyEmail({
+            clientEmail: client.email,
+            clientName: client.full_name || 'there',
+            chefName: chef?.display_name || chef?.business_name || 'Your Chef',
+            occasion: event.occasion || 'your event',
+            eventDate: event.event_date,
+            photoCount: 1,
+            eventId,
+          }).catch((err) => {
+            console.error('[uploadEventPhoto] Photos-ready email failed (non-blocking):', err)
+          })
+        }
+      } catch {
+        // Non-fatal
+      }
     }
   }
 

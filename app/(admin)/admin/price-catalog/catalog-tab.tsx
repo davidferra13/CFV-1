@@ -508,7 +508,7 @@ export function CatalogTab() {
             <ChevronDown className="w-3 h-3" />
           </button>
           {showStoreDropdown && (
-            <div className="absolute z-50 mt-1 w-72 bg-stone-900 border border-stone-700 rounded-lg shadow-xl max-h-80 overflow-hidden">
+            <div className="absolute z-float mt-1 w-72 bg-stone-900 border border-stone-700 rounded-lg shadow-xl max-h-80 overflow-hidden">
               <div className="p-2 border-b border-stone-700">
                 <Input
                   placeholder="Search stores..."
@@ -570,7 +570,7 @@ export function CatalogTab() {
             <ArrowUpDown className="w-3 h-3" />
             {SORT_OPTIONS.find((s) => s.value === sort)?.label}
           </button>
-          <div className="absolute z-40 mt-1 w-44 bg-stone-900 border border-stone-700 rounded-lg shadow-xl hidden group-hover:block">
+          <div className="absolute z-page-bar mt-1 w-44 bg-stone-900 border border-stone-700 rounded-lg shadow-xl hidden group-hover:block">
             {SORT_OPTIONS.map((opt) => (
               <button
                 key={opt.value}

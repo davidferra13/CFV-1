@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Alert } from '@/components/ui/alert'
 import { applyMenuToEvent } from '@/lib/menus/actions'
 import { markPreferencesViewed } from '@/lib/menus/preference-actions'
+import { toast } from 'sonner'
 import Link from 'next/link'
 
 type MenuSummary = {
@@ -99,7 +100,27 @@ export function MenuLibraryPicker({ eventId, menus, preferences }: Props) {
     setLoading(true)
     setError(null)
     try {
-      await applyMenuToEvent(menuId, eventId)
+      const result = await applyMenuToEvent(menuId, eventId)
+      if (result?.allergenWarnings?.length) {
+        const critical = result.allergenWarnings.filter((w: any) => w.severity === 'critical')
+        const warnings = result.allergenWarnings.filter((w: any) => w.severity !== 'critical')
+        if (critical.length > 0) {
+          toast.error(`${critical.length} critical allergen conflict(s) detected`, {
+            description: critical
+              .map((w: any) => `${w.dishName}: ${w.ingredientName} (${w.allergen})`)
+              .join('; '),
+            duration: 10000,
+          })
+        }
+        if (warnings.length > 0) {
+          toast.warning(`${warnings.length} allergen warning(s)`, {
+            description: warnings
+              .map((w: any) => `${w.dishName}: ${w.ingredientName} (${w.allergen})`)
+              .join('; '),
+            duration: 8000,
+          })
+        }
+      }
       router.refresh()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to apply menu')

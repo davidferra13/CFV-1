@@ -33,7 +33,7 @@ export async function loadRemyPublicContext(tenantId: string): Promise<RemyPubli
       .select('display_name, business_name, tagline, bio')
       .eq('id', tenantId)
       .single(),
-    getServiceConfigForTenant(tenantId).catch(() => null),
+    getServiceConfigForTenant(tenantId).catch(() => null as any),
     db
       .from('chef_directory_listings')
       .select('cuisines, service_types, dietary_specialties, city, state')

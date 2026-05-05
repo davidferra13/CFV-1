@@ -250,7 +250,7 @@ function RemyInner() {
       {!isMobile && mode !== 'hidden' && !isDrawerOpen && (
         <div
           data-remy-root
-          className={`group/remy-dock fixed z-40 flex items-center gap-2 ${DOCK_CORNER_CLASS[dockCorner]}`}
+          className={`group/remy-dock fixed z-fab flex items-center gap-2 ${DOCK_CORNER_CLASS[dockCorner]}`}
         >
           {mode === 'docked' && (
             <button

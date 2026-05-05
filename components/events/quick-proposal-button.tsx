@@ -100,12 +100,9 @@ export function QuickProposalButton({
 
       {/* Slide-over panel */}
       {isOpen && proposal && (
-        <div className="fixed inset-0 z-50 overflow-hidden">
+        <div className="fixed inset-0 z-float overflow-hidden">
           {/* Backdrop */}
-          <div
-            className="absolute inset-0 bg-black/30 transition-opacity"
-            onClick={handleClose}
-          />
+          <div className="absolute inset-0 bg-black/30 transition-opacity" onClick={handleClose} />
 
           {/* Panel */}
           <div className="absolute inset-y-0 right-0 flex max-w-full pl-10">
@@ -113,9 +110,7 @@ export function QuickProposalButton({
               <div className="flex h-full flex-col overflow-y-auto bg-white shadow-xl">
                 {/* Panel header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b bg-gray-50">
-                  <h2 className="text-lg font-semibold text-gray-900">
-                    Quick Proposal
-                  </h2>
+                  <h2 className="text-lg font-semibold text-gray-900">Quick Proposal</h2>
                   <button
                     type="button"
                     onClick={handleClose}
@@ -129,11 +124,7 @@ export function QuickProposalButton({
                       strokeWidth="1.5"
                       stroke="currentColor"
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M6 18L18 6M6 6l12 12"
-                      />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                   </button>
                 </div>

@@ -127,7 +127,7 @@ export function FeedbackNudgeCard({ daysSinceCreation }: { daysSinceCreation: nu
   if (!visible) return null
 
   return (
-    <div className="fixed bottom-4 right-4 z-40 w-80 animate-in slide-in-from-right-4 fade-in duration-300">
+    <div className="fixed bottom-20 right-20 z-fab w-80 animate-in slide-in-from-right-4 fade-in duration-300">
       <div className="rounded-xl border border-stone-700 bg-stone-900 shadow-lg overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-stone-800">

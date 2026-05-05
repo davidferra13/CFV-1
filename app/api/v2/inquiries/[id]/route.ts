@@ -37,10 +37,16 @@ const VALID_TRANSITIONS: Record<string, readonly string[]> = {
 const UpdateInquiryBody = z
   .object({
     status: z.enum(VALID_STATUSES).optional(),
-    notes: z.string().optional(),
-    assigned_to: z.string().uuid().optional(),
-    priority: z.enum(['low', 'medium', 'high', 'urgent']).optional(),
-    tags: z.array(z.string()).optional(),
+    confirmed_date: z.string().optional(),
+    confirmed_guest_count: z.number().int().positive().optional(),
+    confirmed_occasion: z.string().optional(),
+    confirmed_location: z.string().optional(),
+    confirmed_budget_cents: z.number().int().nonnegative().optional(),
+    confirmed_dietary_restrictions: z.array(z.string()).optional(),
+    confirmed_service_expectations: z.string().optional(),
+    source_message: z.string().optional(),
+    decline_reason: z.string().optional(),
+    chef_likelihood: z.number().min(0).max(100).optional(),
   })
   .strict()
 

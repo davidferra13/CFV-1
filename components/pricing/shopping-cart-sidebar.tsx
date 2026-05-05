@@ -256,10 +256,10 @@ export function ShoppingCartSidebar({
   return (
     <>
       {/* Backdrop */}
-      <div className="fixed inset-0 bg-black/50 z-40" onClick={onClose} />
+      <div className="fixed inset-0 bg-black/50 z-float" onClick={onClose} />
 
       {/* Sidebar */}
-      <div className="fixed right-0 top-0 bottom-0 w-full max-w-md bg-stone-950 border-l border-stone-800 z-50 flex flex-col">
+      <div className="fixed right-0 top-0 bottom-0 w-full max-w-md bg-stone-950 border-l border-stone-800 z-float flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-stone-800">
           <div className="flex items-center gap-2">

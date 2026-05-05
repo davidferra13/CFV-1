@@ -193,7 +193,11 @@ export function TourSpotlight() {
   return (
     <>
       {/* Backdrop overlay - click to dismiss */}
-      <div className="fixed inset-0 z-[90] cursor-pointer" aria-hidden="true" onClick={handleSkip}>
+      <div
+        className="fixed inset-0 z-spotlight cursor-pointer"
+        aria-hidden="true"
+        onClick={handleSkip}
+      >
         {/* Semi-transparent overlay with cutout for target */}
         <svg
           className="absolute inset-0 w-full h-full"
@@ -239,7 +243,7 @@ export function TourSpotlight() {
       </div>
 
       {/* Tooltip card */}
-      <div className="fixed inset-0 z-[91] pointer-events-none">
+      <div className="fixed inset-0 z-[97] pointer-events-none">
         <div
           className="pointer-events-auto bg-stone-900 border border-stone-700 rounded-xl shadow-2xl p-4 animate-in fade-in duration-200"
           style={tooltipStyle}

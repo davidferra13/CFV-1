@@ -328,7 +328,7 @@ export function PortfolioGallery({ initialPhotos }: Props) {
       {/* Lightbox */}
       {previewIndex !== null && filtered[previewIndex] && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90"
+          className="fixed inset-0 z-dialog flex items-center justify-center bg-black/90"
           onClick={() => setPreviewIndex(null)}
         >
           <button

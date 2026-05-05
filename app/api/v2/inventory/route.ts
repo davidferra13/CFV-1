@@ -55,7 +55,7 @@ export const GET = withApiAuth(
       let txQuery = (ctx.db as any)
         .from('inventory_transactions')
         .select(
-          'id, chef_id, ingredient_id, ingredient_name, transaction_type, quantity, unit, cost_cents, location_id, event_id, notes, created_at, updated_at',
+          'id, chef_id, ingredient_id, ingredient_name, transaction_type, quantity, unit, cost_cents, location_id, event_id, notes, created_at',
           { count: 'exact' }
         )
         .eq('chef_id', ctx.tenantId)
@@ -90,7 +90,7 @@ export const GET = withApiAuth(
       let fallbackQuery = (ctx.db as any)
         .from('inventory_transactions')
         .select(
-          'id, chef_id, ingredient_id, ingredient_name, transaction_type, quantity, unit, cost_cents, location_id, event_id, notes, created_at, updated_at',
+          'id, chef_id, ingredient_id, ingredient_name, transaction_type, quantity, unit, cost_cents, location_id, event_id, notes, created_at',
           { count: 'exact' }
         )
         .eq('chef_id', ctx.tenantId)

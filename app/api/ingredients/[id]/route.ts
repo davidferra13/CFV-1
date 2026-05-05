@@ -1,11 +1,9 @@
 /**
  * GET /api/ingredients/[id]
  *
- * Public ingredient detail endpoint. No authentication required.
- * Returns the resolved ingredient object with availability classification
- * and alternative suggestions when applicable.
- *
- * This is the data contract that backs the shareable /ingredient/[id] page.
+ * Chef-only ingredient detail endpoint. Requires authenticated chef session.
+ * Returns the resolved ingredient object with availability classification,
+ * pricing data, and alternative suggestions when applicable.
  */
 
 import { NextRequest, NextResponse } from 'next/server'
@@ -16,12 +14,18 @@ import {
 import { isKnowledgeIngredientPubliclyIndexable } from '@/lib/openclaw/public-ingredient-publish'
 import { classifyFromCatalogDetail } from '@/lib/pricing/sourceability'
 import { formatCurrency } from '@/lib/utils/currency'
+import { getCurrentUser } from '@/lib/auth/get-user'
 
 export const dynamic = 'force-dynamic'
 
 type Params = { params: Promise<{ id: string }> }
 
 export async function GET(_req: NextRequest, { params }: Params) {
+  const user = await getCurrentUser()
+  if (!user || user.role !== 'chef') {
+    return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+  }
+
   const { id } = await params
 
   if (!id || typeof id !== 'string') {

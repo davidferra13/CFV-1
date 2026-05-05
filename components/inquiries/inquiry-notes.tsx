@@ -339,7 +339,7 @@ export function InquiryNotes({ inquiryId, initialNotes }: InquiryNotesProps) {
       {/* Lightbox */}
       {lightboxUrl && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80"
+          className="fixed inset-0 z-float flex items-center justify-center bg-black/80"
           onClick={() => setLightboxUrl(null)}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}

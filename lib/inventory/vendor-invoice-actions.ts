@@ -180,6 +180,50 @@ export async function matchInvoiceItems(
     if (error) throw new Error(`Failed to match item ${match.itemId}: ${(error as any).message}`)
   }
 
+  // Write matched items into ingredient_price_history as confirmed observations.
+  // This closes the feedback loop: every matched invoice line becomes a price signal.
+  for (const match of parsed.matches) {
+    // Fetch the item details for price history
+    const { data: matchedItem } = await (db.from('vendor_invoice_items') as any)
+      .select('item_name, unit_price_cents, quantity, vendor_invoice_id')
+      .eq('id', match.itemId)
+      .single()
+
+    if (matchedItem && (matchedItem as any).unit_price_cents > 0) {
+      // Get invoice date and vendor name for the history record
+      const { data: inv } = await (db.from('vendor_invoices') as any)
+        .select('invoice_date, vendor_id')
+        .eq('id', parsed.invoiceId)
+        .single()
+
+      let vendorName = 'Vendor invoice'
+      if (inv && (inv as any).vendor_id) {
+        const { data: vendor } = await (db.from('vendors') as any)
+          .select('name')
+          .eq('id', (inv as any).vendor_id)
+          .single()
+        if (vendor) vendorName = (vendor as any).name
+      }
+
+      // Insert into ingredient_price_history (dedup via ON CONFLICT not available,
+      // so use a simple insert; duplicates are acceptable as multiple observations)
+      await (db.from('ingredient_price_history') as any).insert({
+        tenant_id: user.tenantId!,
+        ingredient_id: match.ingredientId,
+        price_cents: (matchedItem as any).unit_price_cents,
+        price_per_unit_cents: (matchedItem as any).unit_price_cents,
+        unit: 'each',
+        store_name: vendorName,
+        quantity: (matchedItem as any).quantity,
+        purchase_date: inv ? (inv as any).invoice_date : new Date().toISOString().slice(0, 10),
+        source: 'vendor_invoice',
+        source_id: match.itemId,
+        vendor_id: inv ? (inv as any).vendor_id : null,
+        notes: `Auto-captured from invoice item: ${(matchedItem as any).item_name}`,
+      })
+    }
+  }
+
   // Check if all items on the invoice are now matched
   const { data: allItems } = await (db.from('vendor_invoice_items') as any)
     .select('matched_ingredient_id')

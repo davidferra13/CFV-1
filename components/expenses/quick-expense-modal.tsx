@@ -94,10 +94,10 @@ export function QuickExpenseModal({ open, onClose }: QuickExpenseModalProps) {
   return (
     <>
       {/* Backdrop */}
-      <div className="fixed inset-0 bg-black/50 z-50" onClick={onClose} />
+      <div className="fixed inset-0 bg-black/50 z-dialog" onClick={onClose} />
 
       {/* Modal */}
-      <div className="fixed inset-x-4 top-[15%] md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-[420px] bg-stone-900 border border-stone-700 rounded-xl shadow-2xl z-50 p-5">
+      <div className="fixed inset-x-4 top-[15%] md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-[420px] bg-stone-900 border border-stone-700 rounded-xl shadow-2xl z-dialog p-5">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-stone-100">Quick Expense</h2>

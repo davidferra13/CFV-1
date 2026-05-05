@@ -127,6 +127,7 @@ export const authConfig: NextAuthConfig = {
             email: authUsers.email,
             encryptedPassword: authUsers.encryptedPassword,
             emailConfirmedAt: authUsers.emailConfirmedAt,
+            bannedUntil: authUsers.bannedUntil,
           })
           .from(authUsers)
           .where(eq(authUsers.email, email))
@@ -136,6 +137,9 @@ export const authConfig: NextAuthConfig = {
 
         // Check email confirmation
         if (!user.emailConfirmedAt) return null
+
+        // Check ban status
+        if (user.bannedUntil && new Date(user.bannedUntil) > new Date()) return null
 
         // Verify bcrypt password (compatible with the database-stored hashes)
         const valid = await bcrypt.compare(password, user.encryptedPassword)
@@ -189,10 +193,15 @@ export const authConfig: NextAuthConfig = {
 
         // Check if auth.users record exists for this email
         const [existing] = await db
-          .select({ id: authUsers.id })
+          .select({ id: authUsers.id, bannedUntil: authUsers.bannedUntil })
           .from(authUsers)
           .where(eq(authUsers.email, email))
           .limit(1)
+
+        // Block banned users from Google OAuth login
+        if (existing?.bannedUntil && new Date(existing.bannedUntil) > new Date()) {
+          return false
+        }
 
         if (existing) {
           // Link to existing auth user - use their ID
@@ -256,6 +265,20 @@ export const authConfig: NextAuthConfig = {
 
       if (!authToken.userId) {
         return authToken
+      }
+
+      // Enforce ban status on every token refresh (not just login)
+      try {
+        const [bannedCheck] = await db
+          .select({ bannedUntil: authUsers.bannedUntil })
+          .from(authUsers)
+          .where(eq(authUsers.id, authToken.userId))
+          .limit(1)
+        if (bannedCheck?.bannedUntil && new Date(bannedCheck.bannedUntil) > new Date()) {
+          return null // Invalidate session for banned users
+        }
+      } catch (error) {
+        console.error('[auth] Failed to check ban status:', error)
       }
 
       let sessionControl = null

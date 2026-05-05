@@ -72,6 +72,7 @@ import { CoverageHealthWidget } from '@/components/pricing/coverage-health-widge
 import { DinnerCirclesSection } from './_sections/dinner-circles-cards'
 import { DashboardSecondaryInsights } from '@/components/dashboard/dashboard-secondary-insights'
 import { QuickNotesSection } from '@/components/dashboard/quick-notes-section'
+import { SeasonalCalendarWidget } from '@/components/dashboard/seasonal-calendar-widget'
 import { getQuickNotes } from '@/lib/quick-notes/actions'
 import { SmartSuggestions, SmartSuggestionsSkeleton } from './_sections/smart-suggestions'
 import { MetricsStrip } from './_sections/metrics-strip'
@@ -1671,8 +1672,8 @@ export default async function ChefDashboard() {
         </WidgetErrorBoundary>
       )}
 
-      {/* Onboarding banner - shows until setup is complete, then auto-hides */}
-      {!isMinimalDensity && <OnboardingBanner />}
+      {/* Onboarding banner - shows for ALL density levels until setup is complete */}
+      <OnboardingBanner />
 
       {/* Profile gated warning - public profile hidden because bio/tagline missing */}
       {!isMinimalDensity && profileGated && (
@@ -1758,6 +1759,15 @@ export default async function ChefDashboard() {
           </WidgetErrorBoundary>
         </div>
       </section>
+
+      {/* ============================================ */}
+      {/* SEASONAL CALENDAR - what's peaking/ending    */}
+      {/* ============================================ */}
+      <WidgetErrorBoundary name="Seasonal Calendar" compact>
+        <Suspense fallback={<WidgetCardSkeleton size="lg" />}>
+          <SeasonalCalendarWidget />
+        </Suspense>
+      </WidgetErrorBoundary>
 
       {/* ============================================ */}
       {/* CHEFTIPS - daily learning prompt              */}

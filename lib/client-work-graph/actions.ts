@@ -5,7 +5,7 @@ import { getClientHubGroups, getClientProfileToken } from '@/lib/hub/client-hub-
 import { getMyFriends, getPendingFriendRequests } from '@/lib/hub/friend-actions'
 import { getHubTotalUnreadCount } from '@/lib/hub/notification-actions'
 import { getNotifications, getUnreadCount } from '@/lib/notifications/actions'
-import { getProfileEventStubs } from '@/lib/event-stubs/actions'
+import { getProfileEventStubs } from '@/lib/events/stub-actions'
 import { buildClientWorkGraph } from './build'
 import type {
   ClientEventStubSummary,

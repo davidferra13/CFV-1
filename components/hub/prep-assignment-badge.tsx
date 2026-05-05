@@ -98,8 +98,8 @@ export function PrepAssignmentBadge({
 
         {showDropdown && (
           <>
-            <div className="fixed inset-0 z-40" onClick={() => setShowDropdown(false)} />
-            <div className="absolute left-0 top-full z-50 mt-1 w-56 rounded-lg border border-stone-700 bg-stone-900 p-2 shadow-xl">
+            <div className="fixed inset-0 z-status" onClick={() => setShowDropdown(false)} />
+            <div className="absolute left-0 top-full z-float mt-1 w-56 rounded-lg border border-stone-700 bg-stone-900 p-2 shadow-xl">
               <p className="mb-1.5 text-[10px] font-medium text-stone-400">Assign to:</p>
               <div className="max-h-32 space-y-0.5 overflow-y-auto">
                 {members.map((m) => (

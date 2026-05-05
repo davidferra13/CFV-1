@@ -298,16 +298,20 @@ function buildCatalogAggregateContext(params: CatalogQueryParams) {
       ) AS out_of_stock_count,
       BOOL_OR(COALESCE(c.website_url, c.store_locator_url) IS NOT NULL) AS has_source_url,
       MAX(sp.last_seen_at) AS last_updated,
-      MIN(COALESCE(sp.sale_price_cents, sp.price_cents)) FILTER (
-        WHERE sp.id IS NOT NULL
+      COALESCE(
+        MIN(COALESCE(sp.sale_price_cents, sp.price_cents)) FILTER (WHERE sp.id IS NOT NULL),
+        MAX(sip.avg_price_cents)
       ) AS best_price_cents,
-      (
-        ARRAY_AGG(
-          s.name
-          ORDER BY COALESCE(sp.sale_price_cents, sp.price_cents) ASC NULLS LAST,
-                   sp.last_seen_at DESC NULLS LAST
-        ) FILTER (WHERE sp.id IS NOT NULL)
-      )[1] AS best_price_store,
+      COALESCE(
+        (
+          ARRAY_AGG(
+            s.name
+            ORDER BY COALESCE(sp.sale_price_cents, sp.price_cents) ASC NULLS LAST,
+                     sp.last_seen_at DESC NULLS LAST
+          ) FILTER (WHERE sp.id IS NOT NULL)
+        )[1],
+        CASE WHEN MAX(sip.avg_price_cents) IS NOT NULL THEN 'Market Estimate' ELSE NULL END
+      ) AS best_price_store,
       COALESCE(NULLIF(ci.standard_unit, ''), 'each') AS best_price_unit
     FROM openclaw.canonical_ingredients ci
     LEFT JOIN openclaw.normalization_map nm
@@ -319,8 +323,16 @@ function buildCatalogAggregateContext(params: CatalogQueryParams) {
       ON ${priceJoinConditions.join(' AND ')}
     LEFT JOIN openclaw.stores s
       ON ${storeJoinConditions.join(' AND ')}
+      AND s.chain_id NOT IN (
+        SELECT id FROM openclaw.chains WHERE source_type IN ('convenience', 'dollar')
+      )
     LEFT JOIN openclaw.chains c
       ON c.id = s.chain_id
+    LEFT JOIN system_ingredients si
+      ON LOWER(TRIM(si.name)) = LOWER(TRIM(ci.name))
+    LEFT JOIN openclaw.system_ingredient_prices sip
+      ON sip.system_ingredient_id = si.id
+      AND sip.avg_price_cents > 0
     WHERE ${where.join(' AND ')}
     GROUP BY
       ci.ingredient_id,
@@ -446,6 +458,9 @@ async function getCategoryCoverageInternal(): Promise<CategoryCoverage[]> {
       JOIN openclaw.stores s
         ON s.id = sp.store_id
        AND s.is_active = true
+      JOIN openclaw.chains c
+        ON c.id = s.chain_id
+       AND c.source_type NOT IN ('convenience', 'dollar')
     )
     SELECT
       COALESCE(NULLIF(ci.category, ''), 'uncategorized') AS category,
@@ -486,6 +501,7 @@ async function getCatalogStoresInternal(): Promise<CatalogStore[]> {
     JOIN openclaw.chains c
       ON c.id = s.chain_id
     WHERE s.is_active = true
+      AND c.source_type NOT IN ('convenience', 'dollar')
     ORDER BY c.name ASC, s.name ASC
   `
 

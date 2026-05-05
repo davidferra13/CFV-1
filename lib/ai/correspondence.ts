@@ -13,6 +13,8 @@ import {
 } from './agent-brain'
 import { getPricingConfig } from '@/lib/pricing/config-actions'
 import { dateToDateString } from '@/lib/utils/format'
+import { classifyInquiryScenario, type ClientHistoryData } from './inquiry-scenario'
+import { buildScenarioContext } from './scenario-prompt'
 
 // ─── ACE Draft for Inquiry ──────────────────────────────────────────────────
 
@@ -98,6 +100,94 @@ export async function draftResponseForInquiry(inquiryId: string) {
         clientContext += `\nRepeat client: ${count} prior event(s).`
       }
     }
+  }
+
+  // ── 4b. Fetch rich client history for scenario classification ──────────────
+
+  let clientHistoryData: ClientHistoryData = {}
+  let journeyStage: string | null = null
+  let referrerIsKnownClient = false
+
+  if (inquiry.client_id && clientHasPriorEvents) {
+    // Get last completed event with menu info
+    const { data: lastEvent } = await db
+      .from('events')
+      .select('id, event_date, title, status, confirmed_guest_count, location_address')
+      .eq('client_id', inquiry.client_id)
+      .eq('tenant_id', chef.tenantId!)
+      .in('status', ['completed', 'confirmed'])
+      .order('event_date', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    if (lastEvent) {
+      clientHistoryData.lastEventDate = lastEvent.event_date
+      clientHistoryData.knownLocation = lastEvent.location_address || null
+      clientHistoryData.typicalGuestCount = lastEvent.confirmed_guest_count || null
+    }
+
+    // Get last menu summary (dish names from the most recent event's menu)
+    if (lastEvent?.id) {
+      const { data: menuItems } = await db
+        .from('menu_items')
+        .select('name, course_type')
+        .eq('event_id', lastEvent.id)
+        .eq('tenant_id', chef.tenantId!)
+        .order('sort_order', { ascending: true })
+        .limit(8)
+
+      if (menuItems && menuItems.length > 0) {
+        clientHistoryData.lastMenuSummary = menuItems.map((m: any) => m.name).join(', ')
+      }
+    }
+
+    // Get client record for dietary and preferences
+    const { data: clientRecord } = await db
+      .from('clients')
+      .select('dietary_restrictions, allergies, notes, loyalty_tier')
+      .eq('id', inquiry.client_id)
+      .eq('tenant_id', chef.tenantId!)
+      .single()
+
+    if (clientRecord) {
+      clientHistoryData.knownDietary =
+        clientRecord.dietary_restrictions || clientRecord.allergies
+          ? [
+              ...(clientRecord.dietary_restrictions || []),
+              ...(clientRecord.allergies ? [clientRecord.allergies] : []),
+            ]
+          : null
+      clientHistoryData.loyaltyTier = clientRecord.loyalty_tier || null
+      clientHistoryData.preferences = clientRecord.notes || null
+    }
+
+    // Determine journey stage from event count
+    const { count: totalEvents } = await db
+      .from('events')
+      .select('id', { count: 'exact', head: true })
+      .eq('client_id', inquiry.client_id)
+      .eq('tenant_id', chef.tenantId!)
+      .in('status', ['completed', 'confirmed', 'in_progress'])
+
+    const eventCountNum = totalEvents || 0
+    if (eventCountNum === 0) journeyStage = 'prospect'
+    else if (eventCountNum === 1) journeyStage = 'first_timer'
+    else if (eventCountNum <= 5) journeyStage = 'returning'
+    else journeyStage = 'loyal'
+  }
+
+  // Check if referral source is a known client
+  if (inquiry.referral_source && !clientHasPriorEvents) {
+    // Simple heuristic: check if referral_source matches any client name
+    const { data: referrerMatch } = await db
+      .from('clients')
+      .select('id')
+      .eq('tenant_id', chef.tenantId!)
+      .ilike('full_name', `%${inquiry.referral_source}%`)
+      .limit(1)
+      .maybeSingle()
+
+    if (referrerMatch) referrerIsKnownClient = true
   }
 
   // ── 5. Fetch conversation thread (message count + recent messages) ────────
@@ -222,6 +312,47 @@ export async function draftResponseForInquiry(inquiryId: string) {
     }
   }
 
+  // ── 10b. Classify inquiry scenario ──────────────────────────────────────────
+
+  const { count: eventCountForScenario } = await db
+    .from('events')
+    .select('id', { count: 'exact', head: true })
+    .eq('client_id', inquiry.client_id || '00000000-0000-0000-0000-000000000000')
+    .eq('tenant_id', chef.tenantId!)
+    .in('status', ['completed', 'confirmed', 'in_progress'])
+
+  const scenarioClassification = classifyInquiryScenario({
+    channel: inquiry.channel || null,
+    referralSource: inquiry.referral_source || null,
+    sourceMessage: inquiry.source_message || null,
+    confirmedDate: inquiry.confirmed_date || null,
+    confirmedGuestCount: inquiry.confirmed_guest_count || null,
+    confirmedDietary: inquiry.confirmed_dietary_restrictions || null,
+    confirmedLocation: inquiry.confirmed_location || null,
+    confirmedOccasion: inquiry.confirmed_occasion || null,
+    clientId: inquiry.client_id || null,
+    eventCount: eventCountForScenario || 0,
+    journeyStage,
+    referrerIsKnownClient,
+    clientHistory: clientHistoryData,
+  })
+
+  const scenarioContext = buildScenarioContext(scenarioClassification)
+
+  // Enrich client context with history for repeat clients
+  if (clientHasPriorEvents && clientHistoryData.lastMenuSummary) {
+    clientContext += `\nLast menu: ${clientHistoryData.lastMenuSummary}`
+  }
+  if (clientHasPriorEvents && clientHistoryData.lastEventDate) {
+    clientContext += `\nLast event: ${clientHistoryData.lastEventDate}`
+  }
+  if (clientHistoryData.knownLocation) {
+    clientContext += `\nKnown location: ${clientHistoryData.knownLocation}`
+  }
+  if (clientHistoryData.loyaltyTier) {
+    clientContext += `\nLoyalty tier: ${clientHistoryData.loyaltyTier}`
+  }
+
   // ── 11. Generate draft ────────────────────────────────────────────────────
 
   const draft = await generateACEDraft({
@@ -240,6 +371,7 @@ export async function draftResponseForInquiry(inquiryId: string) {
     pricingAllowed: detection.pricingAllowed,
     isRepeatClient: clientHasPriorEvents,
     chefName: chefIdentity,
+    scenarioContext,
   })
 
   // ── 12. Post-generation validation ────────────────────────────────────────
@@ -287,6 +419,8 @@ export async function draftResponseForInquiry(inquiryId: string) {
     pricingAllowed: detection.pricingAllowed,
     conversationDepth: depth,
     confidence: detection.confidence,
+    scenario: scenarioClassification.scenario,
+    scenarioReason: scenarioClassification.reason,
   }
 }
 

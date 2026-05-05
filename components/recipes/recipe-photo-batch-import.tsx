@@ -221,7 +221,7 @@ export function RecipePhotoBatchImport({ open, onClose }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-dialog flex items-center justify-center p-4">
       <div className="fixed inset-0 bg-black/40" onClick={handleClose} />
 
       <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col">

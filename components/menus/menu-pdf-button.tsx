@@ -101,7 +101,7 @@ export function MenuPdfButton({ menuId, menuName }: MenuPdfButtonProps) {
       </div>
 
       {showOptions && (
-        <div className="absolute right-0 top-full mt-1 z-50 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-lg p-3 min-w-[200px]">
+        <div className="absolute right-0 top-full mt-1 z-float bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-lg p-3 min-w-[200px]">
           <p className="text-xs font-semibold text-zinc-500 mb-2 uppercase tracking-wide">
             PDF Options
           </p>

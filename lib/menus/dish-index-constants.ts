@@ -33,6 +33,101 @@ export const DISH_COURSE_LABELS: Record<DishCourse, string> = {
   other: 'Other',
 }
 
+/** Course-specific colors for visual distinction across the dish index */
+export const DISH_COURSE_COLORS: Record<
+  DishCourse,
+  { bg: string; text: string; border: string; stripe: string }
+> = {
+  amuse: {
+    bg: 'bg-fuchsia-900/20',
+    text: 'text-fuchsia-400',
+    border: 'border-fuchsia-700/40',
+    stripe: 'bg-fuchsia-500',
+  },
+  canapé: {
+    bg: 'bg-pink-900/20',
+    text: 'text-pink-400',
+    border: 'border-pink-700/40',
+    stripe: 'bg-pink-500',
+  },
+  appetizer: {
+    bg: 'bg-orange-900/20',
+    text: 'text-orange-400',
+    border: 'border-orange-700/40',
+    stripe: 'bg-orange-500',
+  },
+  soup: {
+    bg: 'bg-amber-900/20',
+    text: 'text-amber-400',
+    border: 'border-amber-700/40',
+    stripe: 'bg-amber-500',
+  },
+  salad: {
+    bg: 'bg-lime-900/20',
+    text: 'text-lime-400',
+    border: 'border-lime-700/40',
+    stripe: 'bg-lime-500',
+  },
+  fish: {
+    bg: 'bg-cyan-900/20',
+    text: 'text-cyan-400',
+    border: 'border-cyan-700/40',
+    stripe: 'bg-cyan-500',
+  },
+  entrée: {
+    bg: 'bg-red-900/20',
+    text: 'text-red-400',
+    border: 'border-red-700/40',
+    stripe: 'bg-red-500',
+  },
+  cheese: {
+    bg: 'bg-yellow-900/20',
+    text: 'text-yellow-400',
+    border: 'border-yellow-700/40',
+    stripe: 'bg-yellow-500',
+  },
+  dessert: {
+    bg: 'bg-violet-900/20',
+    text: 'text-violet-400',
+    border: 'border-violet-700/40',
+    stripe: 'bg-violet-500',
+  },
+  side: {
+    bg: 'bg-teal-900/20',
+    text: 'text-teal-400',
+    border: 'border-teal-700/40',
+    stripe: 'bg-teal-500',
+  },
+  beverage: {
+    bg: 'bg-sky-900/20',
+    text: 'text-sky-400',
+    border: 'border-sky-700/40',
+    stripe: 'bg-sky-500',
+  },
+  other: {
+    bg: 'bg-stone-800/40',
+    text: 'text-stone-400',
+    border: 'border-stone-700/40',
+    stripe: 'bg-stone-500',
+  },
+}
+
+/** Emoji icons per course for visual scanning */
+export const DISH_COURSE_ICONS: Record<DishCourse, string> = {
+  amuse: '🥄',
+  canapé: '🍢',
+  appetizer: '🥗',
+  soup: '🍲',
+  salad: '🥬',
+  fish: '🐟',
+  entrée: '🥩',
+  cheese: '🧀',
+  dessert: '🍰',
+  side: '🥕',
+  beverage: '🍷',
+  other: '📋',
+}
+
 export const ROTATION_STATUSES = ['active', 'resting', 'retired', 'testing'] as const
 export type RotationStatus = (typeof ROTATION_STATUSES)[number]
 

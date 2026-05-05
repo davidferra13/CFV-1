@@ -559,7 +559,7 @@ export function CatalogBrowser({ initialSearch = '' }: { initialSearch?: string 
         store: selectedStore || undefined,
         city: locationCity.trim() || undefined,
         state: locationState.trim() || undefined,
-        pricedOnly: true,
+        pricedOnly: false,
         inStockOnly: inStockOnly || undefined,
         sort,
         limit: 50,
@@ -1081,7 +1081,7 @@ export function CatalogBrowser({ initialSearch = '' }: { initialSearch?: string 
                   <ChevronDown className="w-3.5 h-3.5" />
                 </button>
                 {showCategoryDropdown && (
-                  <div className="absolute z-40 mt-1 w-64 bg-stone-800 border border-stone-700 rounded-md shadow-xl overflow-hidden">
+                  <div className="absolute z-page-bar mt-1 w-64 bg-stone-800 border border-stone-700 rounded-md shadow-xl overflow-hidden">
                     <div className="p-2 border-b border-stone-700">
                       <input
                         type="text"

@@ -85,17 +85,13 @@ export function EventRiskBadge({ result, expandable = true, className = '' }: Ev
       {expanded && result.factors.length > 0 && (
         <div
           className={`
-            absolute z-50 top-full left-0 mt-1 w-72 rounded-lg border
+            absolute z-float top-full left-0 mt-1 w-72 rounded-lg border
             border-stone-700 bg-stone-900 shadow-xl p-3
           `}
         >
           <div className="flex items-center justify-between mb-2">
-            <span className={`text-xs font-semibold ${style.text}`}>
-              Risk Breakdown
-            </span>
-            <span className="text-xs text-stone-500">
-              {result.score}/100
-            </span>
+            <span className={`text-xs font-semibold ${style.text}`}>Risk Breakdown</span>
+            <span className="text-xs text-stone-500">{result.score}/100</span>
           </div>
           <div className="space-y-1.5">
             {result.factors.map((factor) => (
@@ -105,13 +101,9 @@ export function EventRiskBadge({ result, expandable = true, className = '' }: Ev
                     <span className="text-xs font-medium text-stone-300 truncate">
                       {factor.name}
                     </span>
-                    <span className="text-xs text-stone-500 ml-2 shrink-0">
-                      +{factor.impact}
-                    </span>
+                    <span className="text-xs text-stone-500 ml-2 shrink-0">+{factor.impact}</span>
                   </div>
-                  <p className="text-[10px] text-stone-500 truncate">
-                    {factor.detail}
-                  </p>
+                  <p className="text-[10px] text-stone-500 truncate">{factor.detail}</p>
                 </div>
               </div>
             ))}

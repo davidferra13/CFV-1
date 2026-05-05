@@ -70,7 +70,7 @@ export const PATCH = withApiAuth(
 
     const { data, error } = await (ctx.db as any)
       .from('inventory_transactions')
-      .update({ ...parsed.data, updated_at: new Date().toISOString() })
+      .update({ ...parsed.data })
       .eq('id', id)
       .eq('chef_id', ctx.tenantId)
       .select()

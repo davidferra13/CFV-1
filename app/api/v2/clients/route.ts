@@ -45,7 +45,7 @@ export const GET = withApiAuth(
           count: 'exact',
         }
       )
-      .eq('chef_id', ctx.tenantId)
+      .eq('tenant_id', ctx.tenantId)
       .order('created_at', { ascending: false })
 
     if (status) query = query.eq('status', status as any)
@@ -80,7 +80,6 @@ export const POST = withApiAuth(
     const { data: client, error } = await ctx.db
       .from('clients')
       .insert({
-        chef_id: ctx.tenantId,
         tenant_id: ctx.tenantId,
         full_name: input.full_name,
         email: input.email,
@@ -97,7 +96,7 @@ export const POST = withApiAuth(
         tags: input.tags,
       } as any)
       .select(
-        'id, chef_id, full_name, email, phone, status, dietary_restrictions, allergies, notes, address, city, state, zip, source, tags, created_at, updated_at'
+        'id, tenant_id, full_name, email, phone, status, dietary_restrictions, allergies, notes, address, city, state, zip, source, tags, created_at, updated_at'
       )
       .single()
 

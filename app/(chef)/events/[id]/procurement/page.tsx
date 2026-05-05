@@ -5,6 +5,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getEventById } from '@/lib/events/actions'
 import { generateGroceryList } from '@/lib/grocery/generate-grocery-list'
 import { getLatestGroceryQuote } from '@/lib/grocery/pricing-actions'
+import { getShortageAlerts } from '@/lib/inventory/demand-forecast-actions'
 import { GroceryQuotePanel } from '@/components/events/grocery-quote-panel'
 import { GroceryListView } from '@/components/grocery/grocery-list-view'
 import { Button } from '@/components/ui/button'
@@ -15,9 +16,10 @@ export default async function EventProcurementPage({ params }: { params: { id: s
   const event = await getEventById(params.id)
   if (!event) notFound()
 
-  const [groceryList, latestQuote] = await Promise.all([
+  const [groceryList, latestQuote, shortageAlerts] = await Promise.all([
     generateGroceryList(params.id).catch(() => null),
     getLatestGroceryQuote(params.id).catch(() => null),
+    getShortageAlerts(params.id).catch(() => []),
   ])
 
   const eventLabel = [
@@ -46,6 +48,29 @@ export default async function EventProcurementPage({ params }: { params: { id: s
         Procurement stays focused on the real next grocery move: finalize the list, refresh live
         prices, or review grocery variance against what you actually spent.
       </div>
+
+      {shortageAlerts.length > 0 && (
+        <div className="rounded-lg border border-amber-700/50 bg-amber-950/30 px-4 py-3 space-y-2">
+          <p className="text-sm font-semibold text-amber-400">
+            {shortageAlerts.length} ingredient shortage{shortageAlerts.length > 1 ? 's' : ''}{' '}
+            detected
+          </p>
+          <ul className="space-y-1">
+            {shortageAlerts.map((alert: any) => (
+              <li key={alert.ingredientId} className="text-sm text-stone-300">
+                <span className="font-medium text-amber-300">{alert.ingredientName}</span> needs{' '}
+                {alert.needed} {alert.unit}, only {alert.onHand} on hand
+                {alert.costImpactCents > 0 && (
+                  <span className="text-stone-500">
+                    {' '}
+                    (est. ${(alert.costImpactCents / 100).toFixed(2)} to restock)
+                  </span>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <section className="space-y-4">
         <div>

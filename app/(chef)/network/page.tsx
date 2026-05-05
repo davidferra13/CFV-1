@@ -59,6 +59,8 @@ import {
 import { Suspense } from 'react'
 import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
 import { NetworkReferralBar } from '@/components/intelligence/network-referral-bar'
+import { CoHostRevenueDashboardPanel } from '@/components/collaboration/cohost-revenue-dashboard'
+import { CoHostEventArchivePanel } from '@/components/collaboration/cohost-event-archive'
 
 export const metadata: Metadata = { title: 'Chef Community' }
 
@@ -502,6 +504,12 @@ async function CollabTab({ focusHandoffId }: { focusHandoffId: string | null }) 
           </div>
         </div>
       )}
+
+      {/* Co-Hosting Revenue & Archive */}
+      <div className="mt-6 pt-6 border-t border-stone-700 space-y-4">
+        <CoHostRevenueDashboardPanel />
+        <CoHostEventArchivePanel />
+      </div>
 
       {/* Private Spaces section */}
       <div className="mt-6 pt-6 border-t border-stone-700">

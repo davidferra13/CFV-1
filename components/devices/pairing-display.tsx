@@ -68,7 +68,7 @@ export function PairingDisplay({ pairingCode, expiresAt, onClose }: PairingDispl
   }, [pairingUrl])
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+    <div className="fixed inset-0 z-dialog flex items-center justify-center bg-black/50">
       <div className="w-full max-w-md rounded-2xl bg-stone-900 p-8">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold text-stone-100">Pairing Code</h3>

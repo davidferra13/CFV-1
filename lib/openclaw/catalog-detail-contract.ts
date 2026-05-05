@@ -216,6 +216,7 @@ export async function getCatalogDetailFromContract(params: {
         AND pic.entity_store_id IS NOT NULL
         AND COALESCE(pic.normalized_price_cents, pic.price_cents) > 0
         AND COALESCE(pic.entity_product_is_food, true) = true
+        AND COALESCE(c.source_type, 'retail') NOT IN ('convenience', 'dollar')
         AND (
           (${params.visibility} = 'public' AND pic.surface_eligible = true)
           OR (

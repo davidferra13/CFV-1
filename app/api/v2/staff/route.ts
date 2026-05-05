@@ -42,10 +42,9 @@ export const GET = withApiAuth(
 
     let query = (ctx.db as any)
       .from('staff_members')
-      .select(
-        'id, chef_id, name, role, phone, email, notes, is_active, status, created_at, updated_at',
-        { count: 'exact' }
-      )
+      .select('id, chef_id, name, role, phone, email, notes, status, created_at, updated_at', {
+        count: 'exact',
+      })
       .eq('chef_id', ctx.tenantId)
       .order('name', { ascending: true })
 
@@ -53,7 +52,7 @@ export const GET = withApiAuth(
     if (status) {
       query = query.eq('status', status)
     } else if (activeOnly) {
-      query = query.eq('is_active', true)
+      query = query.eq('status', 'active')
     }
     if (role) query = query.eq('role', role)
     if (q) query = query.ilike('name', `%${q}%`)

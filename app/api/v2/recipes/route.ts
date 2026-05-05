@@ -17,18 +17,18 @@ export const GET = withApiAuth(
     let query = ctx.db
       .from('recipes')
       .select(
-        'id, recipe_name, category, cuisine, meal_type, prep_time_minutes, cook_time_minutes, difficulty, dietary_tags, seasonal, created_at, updated_at',
+        'id, name, category, cuisine, meal_type, prep_time_minutes, cook_time_minutes, difficulty, dietary_tags, season, created_at, updated_at',
         {
           count: 'exact',
         }
       )
       .eq('tenant_id', ctx.tenantId)
       .eq('archived', false)
-      .order('recipe_name', { ascending: true })
+      .order('name', { ascending: true })
 
     if (category) query = query.eq('category', category as any)
     if (cuisine) query = query.eq('cuisine', cuisine as any)
-    if (q) query = query.ilike('recipe_name', `%${q}%`)
+    if (q) query = query.ilike('name', `%${q}%`)
 
     const from = (pagination.page - 1) * pagination.per_page
     const to = from + pagination.per_page - 1

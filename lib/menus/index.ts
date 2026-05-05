@@ -51,15 +51,7 @@ export {
   getMenuRevisions,
 } from './approval-portal'
 
-// bulk-actions.ts ('use server')
-export {
-  archiveMenu,
-  restoreMenu as restoreMenuBulk,
-  bulkArchiveMenus,
-  bulkRestoreMenus,
-  bulkDeleteDraftMenus,
-} from './bulk-actions'
-export type { BulkResult } from './bulk-actions'
+// bulk-actions.ts - removed (file deleted, no consumers)
 
 // canonical-dish-menu-core.ts
 export { materializeCanonicalDishIntoMenu } from './canonical-dish-menu-core'

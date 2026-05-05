@@ -67,19 +67,15 @@ export function StoreSplitView({
           s.store.id === fromStoreId
             ? { ...s, items: s.items.filter((i) => i.name !== item.name) }
             : s.store.id === toStoreId
-            ? { ...s, items: [...s.items, item] }
-            : s
+              ? { ...s, items: [...s.items, item] }
+              : s
         )
       )
     } else {
       // From unassigned
       setUnassigned((prev) => prev.filter((i) => i.name !== item.name))
       setSplits((prev) =>
-        prev.map((s) =>
-          s.store.id === toStoreId
-            ? { ...s, items: [...s.items, item] }
-            : s
-        )
+        prev.map((s) => (s.store.id === toStoreId ? { ...s, items: [...s.items, item] } : s))
       )
       // If toStore not in splits yet, add it
       const targetExists = splits.some((s) => s.store.id === toStoreId)
@@ -100,9 +96,7 @@ export function StoreSplitView({
         } catch (err) {
           setSplits(previousSplits)
           setUnassigned(previousUnassigned)
-          setError(
-            err instanceof Error ? err.message : 'Failed to save assignment'
-          )
+          setError(err instanceof Error ? err.message : 'Failed to save assignment')
         }
       })
     }
@@ -136,9 +130,7 @@ export function StoreSplitView({
       </div>
 
       {error && (
-        <div className="rounded-md bg-red-50 p-3 text-sm text-red-700 print:hidden">
-          {error}
-        </div>
+        <div className="rounded-md bg-red-50 p-3 text-sm text-red-700 print:hidden">{error}</div>
       )}
 
       {/* Remember assignment toggle */}
@@ -164,16 +156,11 @@ export function StoreSplitView({
             className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-gray-50 print:hover:bg-white"
           >
             <div className="flex items-center gap-2">
-              <span
-                className="text-gray-400 text-xs print:hidden"
-                aria-hidden="true"
-              >
+              <span className="text-gray-400 text-xs print:hidden" aria-hidden="true">
                 {collapsedStores.has(split.store.id) ? '&#9654;' : '&#9660;'}
               </span>
               <span className="font-medium">{split.store.store_name}</span>
-              {split.store.is_default && (
-                <span className="text-xs text-orange-600">(default)</span>
-              )}
+              {split.store.is_default && <span className="text-xs text-orange-600">(default)</span>}
             </div>
             <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600">
               {split.items.length} item{split.items.length !== 1 ? 's' : ''}
@@ -251,18 +238,14 @@ export function StoreSplitView({
       )}
 
       {splits.length === 0 && unassigned.length === 0 && (
-        <p className="text-sm text-gray-500">
-          No items in this shopping list.
-        </p>
+        <p className="text-sm text-gray-500">No items in this shopping list.</p>
       )}
 
       {/* Reassign dropdown */}
       {reassigning && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 print:hidden">
+        <div className="fixed inset-0 z-float flex items-center justify-center bg-black/30 print:hidden">
           <div className="w-80 rounded-lg bg-white p-4 shadow-xl">
-            <h4 className="font-medium text-sm mb-2">
-              Move "{reassigning.item.name}" to:
-            </h4>
+            <h4 className="font-medium text-sm mb-2">Move "{reassigning.item.name}" to:</h4>
             <div className="space-y-1 max-h-60 overflow-y-auto">
               {allStores
                 .filter((s) => s.id !== reassigning.fromStoreId)

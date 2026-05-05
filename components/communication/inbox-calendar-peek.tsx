@@ -27,7 +27,7 @@ export function InboxCalendarPeek({ events }: { events: CalendarEvent[] }) {
       </button>
 
       {open && (
-        <div className="fixed inset-0 z-50 flex justify-end bg-black/45">
+        <div className="fixed inset-0 z-float flex justify-end bg-black/45">
           <div className="h-full w-full max-w-md border-l border-stone-700 bg-stone-950 text-stone-100 p-4 overflow-auto">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">Calendar Peek</h3>

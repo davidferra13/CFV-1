@@ -93,7 +93,7 @@ const draftInquiryFirstResponse: AgentActionDefinition = {
     const response = generateFirstResponse({
       ...inquiryData,
       chefFirstName,
-      serviceConfig,
+      serviceConfig: serviceConfig!,
       pricingConfig,
     })
 

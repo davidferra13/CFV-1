@@ -86,7 +86,7 @@ export function IngredientSearch({ currentId }: IngredientSearchProps) {
       </div>
 
       {open && results.length > 0 && (
-        <div className="absolute left-0 right-0 top-full z-50 mt-1 rounded-xl border border-stone-700 bg-stone-900 shadow-2xl overflow-hidden">
+        <div className="absolute left-0 right-0 top-full z-float mt-1 rounded-xl border border-stone-700 bg-stone-900 shadow-2xl overflow-hidden">
           {results.map((hit) => (
             <button
               key={hit.id}
@@ -103,7 +103,7 @@ export function IngredientSearch({ currentId }: IngredientSearchProps) {
       )}
 
       {open && results.length === 0 && !isSearching && query.length >= 2 && (
-        <div className="absolute left-0 right-0 top-full z-50 mt-1 rounded-xl border border-stone-700 bg-stone-900 shadow-2xl px-4 py-3">
+        <div className="absolute left-0 right-0 top-full z-float mt-1 rounded-xl border border-stone-700 bg-stone-900 shadow-2xl px-4 py-3">
           <p className="text-sm text-stone-500">No ingredients found for &ldquo;{query}&rdquo;</p>
         </div>
       )}

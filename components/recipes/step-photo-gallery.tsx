@@ -140,7 +140,7 @@ export function StepPhotoGallery({ recipeId, stepNumber, photos: initialPhotos }
         <div
           role="dialog"
           aria-modal="true"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+          className="fixed inset-0 z-dialog flex items-center justify-center bg-black/80 p-4"
           onClick={() => setSelectedIndex(null)}
           onKeyDown={(e) => {
             if (e.key === 'Escape') setSelectedIndex(null)

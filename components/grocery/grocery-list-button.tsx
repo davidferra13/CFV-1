@@ -98,7 +98,7 @@ export function GroceryListButton({ eventId, hasMenu }: GroceryListButtonProps) 
 
       {/* Grocery List Panel */}
       {isOpen && groceryData && (
-        <div className="fixed inset-0 z-50 overflow-hidden print:static print:overflow-visible">
+        <div className="fixed inset-0 z-float overflow-hidden print:static print:overflow-visible">
           {/* Backdrop */}
           <div
             className="absolute inset-0 bg-black/30 transition-opacity print:hidden"

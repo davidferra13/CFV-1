@@ -143,7 +143,7 @@ export function BulkSelectTable<T extends { id: string }>({
 
       {/* Floating bulk-action bar */}
       {selectedIds.size > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 rounded-xl border border-stone-700 bg-stone-900 px-5 py-3 shadow-xl">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-chrome flex items-center gap-3 rounded-xl border border-stone-700 bg-stone-900 px-5 py-3 shadow-xl">
           <span className="text-sm font-medium text-stone-300 mr-1">
             {selectedIds.size} selected
           </span>

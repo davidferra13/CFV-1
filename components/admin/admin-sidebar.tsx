@@ -85,7 +85,7 @@ function NavLink({
 
 export function AdminSidebar({ adminEmail }: { adminEmail: string }) {
   return (
-    <div className="fixed inset-y-0 left-0 w-52 bg-slate-900 border-r border-slate-700 flex flex-col z-40">
+    <div className="fixed inset-y-0 left-0 w-52 bg-slate-900 border-r border-slate-700 flex flex-col z-mobile-header">
       {/* Header */}
       <div className="px-4 py-4 border-b border-slate-700">
         <div className="flex items-center gap-2 mb-1">

@@ -58,7 +58,7 @@ export function ShortcutsHelpPanel({ isOpen, onClose }: ShortcutsHelpPanelProps)
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
+      className="fixed inset-0 z-float flex items-center justify-center"
       style={{ backdropFilter: 'blur(4px)', backgroundColor: 'rgba(0,0,0,0.4)' }}
       onClick={onClose}
     >

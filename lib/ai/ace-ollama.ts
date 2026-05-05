@@ -163,6 +163,7 @@ export async function generateACEDraft(params: {
   pricingAllowed: boolean
   isRepeatClient: boolean
   chefName?: { fullName: string; firstName: string }
+  scenarioContext?: string // Scenario classification + skeleton instructions
 }) {
   const name = params.chefName ?? { fullName: 'Chef', firstName: 'Chef' }
   const temperature = params.emailStage === 'discovery' ? 0.7 : 0.5
@@ -208,6 +209,10 @@ Write the email from scratch. Do not copy, paste, summarize, or compress from th
     ? 'NOTE: This is a REPEAT CLIENT. Do not reset to formal first-contact tone. Reference past context naturally. Skip discovery questions for data already on file.'
     : ''
 
+  const scenarioSection = params.scenarioContext
+    ? `\nSCENARIO CLASSIFICATION:\n${params.scenarioContext}\n`
+    : ''
+
   const pricingDirective = params.pricingAllowed
     ? 'PRICING: Allowed at this stage. Use rate card values. Present in paragraph form, conversational. Include grocery model and deposit info.'
     : 'PRICING: FORBIDDEN at this stage. Do not include any dollar amounts, cost references, or pricing language.'
@@ -223,7 +228,7 @@ ${params.inquirySummary}
 CLIENT CONTEXT:
 ${params.clientContext}
 ${repeatClientNote}
-
+${scenarioSection}
 CALENDAR:
 ${params.calendarContext}
 
@@ -232,7 +237,7 @@ ${threadSection}
 ${pricingDirective}
 ${missingDataDirective}
 
-Draft a response email for this ${params.emailStage} stage inquiry. Follow all system rules exactly.`
+Draft a response email for this ${params.emailStage} stage inquiry. Follow all system rules exactly. Match the scenario skeleton structure while keeping the voice natural.`
 
   return generateText(systemPrompt, userPrompt, temperature)
 }

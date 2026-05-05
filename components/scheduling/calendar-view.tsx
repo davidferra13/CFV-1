@@ -735,7 +735,7 @@ export function CalendarView({
 
       {/* Reschedule Toast */}
       {rescheduleToast && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 bg-stone-900 text-white text-sm font-medium rounded-lg shadow-lg animate-in">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-toast px-4 py-2.5 bg-stone-900 text-white text-sm font-medium rounded-lg shadow-lg animate-in">
           {rescheduleToast}
         </div>
       )}

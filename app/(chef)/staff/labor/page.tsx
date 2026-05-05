@@ -4,6 +4,8 @@ import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
 import { PayrollReport } from '@/components/staffing/PayrollReport'
 import { getPayrollReportForPeriod } from '@/lib/staff/staffing-actions'
+import { getLaborRevenueRatio } from '@/lib/staff/labor-dashboard-actions'
+import { Card, CardContent } from '@/components/ui/card'
 
 export const metadata: Metadata = { title: 'Labor Dashboard' }
 
@@ -21,14 +23,17 @@ export default async function StaffLaborPage() {
   await requirePro('staff-management')
 
   const period = getCurrentMonthWindow()
-  const report = await getPayrollReportForPeriod(period.startDate, period.endDate).catch(() => ({
-    startDate: period.startDate,
-    endDate: period.endDate,
-    rows: [],
-    totalHours: 0,
-    totalMinutes: 0,
-    totalLaborCostCents: 0,
-  }))
+  const [report, laborRatio] = await Promise.all([
+    getPayrollReportForPeriod(period.startDate, period.endDate).catch(() => ({
+      startDate: period.startDate,
+      endDate: period.endDate,
+      rows: [],
+      totalHours: 0,
+      totalMinutes: 0,
+      totalLaborCostCents: 0,
+    })),
+    getLaborRevenueRatio(period.startDate, period.endDate).catch(() => null),
+  ])
 
   return (
     <div className="space-y-6">
@@ -41,6 +46,41 @@ export default async function StaffLaborPage() {
           Payroll-period labor totals from clocked entries and staff hourly rates.
         </p>
       </div>
+
+      {laborRatio && laborRatio.totalRevenueCents > 0 && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <Card>
+            <CardContent className="py-4 text-center">
+              <p className="text-2xl font-bold text-stone-100">
+                {laborRatio.ratioPercent.toFixed(1)}%
+              </p>
+              <p className="text-xs text-stone-500 mt-1">Labor-to-Revenue Ratio</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="py-4 text-center">
+              <p className="text-2xl font-bold text-stone-100">
+                ${(laborRatio.totalLaborCostCents / 100).toFixed(0)}
+              </p>
+              <p className="text-xs text-stone-500 mt-1">Total Labor Cost</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="py-4 text-center">
+              <p className="text-2xl font-bold text-stone-100">
+                ${(laborRatio.totalRevenueCents / 100).toFixed(0)}
+              </p>
+              <p className="text-xs text-stone-500 mt-1">Event Revenue</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="py-4 text-center">
+              <p className="text-2xl font-bold text-stone-100">{laborRatio.eventCount}</p>
+              <p className="text-xs text-stone-500 mt-1">Events This Period</p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       <PayrollReport initialData={report} />
     </div>

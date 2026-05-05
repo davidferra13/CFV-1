@@ -143,7 +143,7 @@ export function AdminSidebar({ userId }: { userId: string }) {
 
   return (
     <aside
-      className={`fixed inset-y-0 left-0 z-30 hidden lg:flex flex-col border-r border-stone-800 bg-stone-900 transition-all duration-200 ${
+      className={`fixed inset-y-0 left-0 z-subnav hidden lg:flex flex-col border-r border-stone-800 bg-stone-900 transition-all duration-200 ${
         collapsed ? 'w-16' : 'w-60'
       }`}
     >
@@ -244,7 +244,7 @@ export function AdminMobileNav({ userId }: { userId: string }) {
   return (
     <>
       {/* Top bar */}
-      <div className="fixed inset-x-0 top-0 z-30 flex h-14 items-center justify-between border-b border-stone-800 bg-stone-900 px-4 lg:hidden">
+      <div className="fixed inset-x-0 top-0 z-subnav flex h-14 items-center justify-between border-b border-stone-800 bg-stone-900 px-4 lg:hidden">
         <div className="flex items-center gap-2">
           <AppLogo className="h-6 w-6" />
           <span className="text-sm font-semibold text-amber-400">Admin</span>
@@ -264,7 +264,7 @@ export function AdminMobileNav({ userId }: { userId: string }) {
 
       {/* Slide-out menu */}
       {open && (
-        <div className="fixed inset-0 z-40 lg:hidden">
+        <div className="fixed inset-0 z-mobile-header lg:hidden">
           <div className="absolute inset-0 bg-black/50" onClick={() => setOpen(false)} />
           <div className="absolute inset-y-0 left-0 w-72 bg-stone-900 border-r border-stone-800 overflow-y-auto">
             <div className="flex h-14 items-center justify-between px-4 border-b border-stone-800">

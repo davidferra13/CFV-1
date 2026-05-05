@@ -2,11 +2,15 @@
 
 import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import {
+  DISH_COURSES,
   DISH_COURSE_LABELS,
+  DISH_COURSE_COLORS,
+  DISH_COURSE_ICONS,
   ROTATION_STATUSES,
   ROTATION_STATUS_LABELS,
   ROTATION_STATUS_COLORS,
@@ -47,6 +51,7 @@ export function DishDetailClient({
 
   // Edit state
   const [editData, setEditData] = useState({
+    course: dish.course as string,
     rotation_status: dish.rotation_status as string,
     prep_complexity: (dish.prep_complexity as string) || '',
     plating_difficulty: (dish.plating_difficulty as string) || '',
@@ -65,16 +70,21 @@ export function DishDetailClient({
   })
 
   const handleSave = useCallback(async () => {
-    await updateDishIndexEntry(
-      dish.id as string,
-      {
-        ...editData,
-        prep_complexity: editData.prep_complexity || null,
-        plating_difficulty: editData.plating_difficulty || null,
-      } as any
-    )
-    setEditing(false)
-    router.refresh()
+    try {
+      await updateDishIndexEntry(
+        dish.id as string,
+        {
+          ...editData,
+          course: editData.course,
+          prep_complexity: editData.prep_complexity || null,
+          plating_difficulty: editData.plating_difficulty || null,
+        } as any
+      )
+      setEditing(false)
+      router.refresh()
+    } catch {
+      toast.error('Failed to save changes')
+    }
   }, [dish.id, editData, router])
 
   const handleLinkRecipe = useCallback(
@@ -115,8 +125,10 @@ export function DishDetailClient({
     (r) => !recipeSearch || r.name.toLowerCase().includes(recipeSearch.toLowerCase())
   )
 
-  const courseLabel =
-    DISH_COURSE_LABELS[dish.course as string as DishCourse] || (dish.course as string)
+  const activeCourse = (editing ? editData.course : (dish.course as string)) as DishCourse
+  const courseLabel = DISH_COURSE_LABELS[activeCourse] || (dish.course as string)
+  const courseColors = DISH_COURSE_COLORS[activeCourse] || DISH_COURSE_COLORS.other
+  const courseIcon = DISH_COURSE_ICONS[activeCourse] || '📋'
   const rotationColor =
     ROTATION_STATUS_COLORS[dish.rotation_status as string as RotationStatus] || ''
   const avgRating =
@@ -144,8 +156,10 @@ export function DishDetailClient({
               <p className="text-stone-400 mt-1">{String(dish.description)}</p>
             )}
             <div className="flex items-center gap-2 mt-2">
-              <span className="text-xs font-medium bg-stone-800 text-stone-400 px-2 py-0.5 rounded-full">
-                {courseLabel}
+              <span
+                className={`text-xs font-medium px-2 py-0.5 rounded-full ${courseColors.bg} ${courseColors.text}`}
+              >
+                {courseIcon} {courseLabel}
               </span>
               <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${rotationColor}`}>
                 {ROTATION_STATUS_LABELS[dish.rotation_status as string as RotationStatus]}
@@ -201,11 +215,40 @@ export function DishDetailClient({
       {editing && (
         <Card className="p-4 space-y-4">
           <h3 className="text-sm font-semibold text-stone-300">Edit Dish Properties</h3>
+
+          {/* Course picker: visual button grid */}
+          <div>
+            <label className="block text-xs text-stone-500 mb-2">Course</label>
+            <div className="flex flex-wrap gap-1.5">
+              {DISH_COURSES.map((c) => {
+                const colors = DISH_COURSE_COLORS[c]
+                const isActive = editData.course === c
+                return (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => setEditData({ ...editData, course: c })}
+                    className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all
+                      ${
+                        isActive
+                          ? `${colors.bg} ${colors.text} ring-1 ring-current`
+                          : 'bg-stone-800/60 text-stone-500 hover:text-stone-300 hover:bg-stone-800'
+                      }`}
+                  >
+                    <span>{DISH_COURSE_ICONS[c]}</span>
+                    <span>{DISH_COURSE_LABELS[c]}</span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-xs text-stone-500 mb-1">Rotation Status</label>
               <select
                 value={editData.rotation_status}
+                aria-label="Rotation status"
                 onChange={(e) => setEditData({ ...editData, rotation_status: e.target.value })}
                 className="w-full bg-stone-900 border border-stone-700 rounded px-2 py-1.5 text-sm text-stone-300"
               >
@@ -220,6 +263,7 @@ export function DishDetailClient({
               <label className="block text-xs text-stone-500 mb-1">Prep Complexity</label>
               <select
                 value={editData.prep_complexity}
+                aria-label="Prep complexity"
                 onChange={(e) => setEditData({ ...editData, prep_complexity: e.target.value })}
                 className="w-full bg-stone-900 border border-stone-700 rounded px-2 py-1.5 text-sm text-stone-300"
               >
@@ -235,6 +279,7 @@ export function DishDetailClient({
               <label className="block text-xs text-stone-500 mb-1">Plating Difficulty</label>
               <select
                 value={editData.plating_difficulty}
+                aria-label="Plating difficulty"
                 onChange={(e) => setEditData({ ...editData, plating_difficulty: e.target.value })}
                 className="w-full bg-stone-900 border border-stone-700 rounded px-2 py-1.5 text-sm text-stone-300"
               >
@@ -358,6 +403,7 @@ export function DishDetailClient({
                   value={recipeSearch}
                   onChange={(e) => setRecipeSearch(e.target.value)}
                   placeholder="Search recipes..."
+                  aria-label="Search recipes"
                   className="w-full bg-stone-900 border border-stone-700 rounded px-2 py-1.5 text-sm text-stone-200"
                   autoFocus
                 />

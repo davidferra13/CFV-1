@@ -19,8 +19,7 @@ const TARGET_TYPES: { value: KnowledgeLinkTargetType; label: string }[] = [
   { value: 'event', label: 'Event' },
   { value: 'recipe', label: 'Recipe' },
   { value: 'ingredient', label: 'Ingredient' },
-  { value: 'tip', label: 'Tip' },
-  { value: 'note', label: 'Note' },
+  { value: 'client', label: 'Client' },
 ]
 
 type Props = {
@@ -52,10 +51,10 @@ export function KnowledgeLinkPicker({ sourceType, sourceId, onClose }: Props) {
   function handleSearch() {
     if (!query.trim()) return
     startTransition(async () => {
-      const data = await searchLinkableEntities(targetType, query)
+      const data = await searchLinkableEntities(query, targetType)
       // Filter out already-linked items
       const linkedIds = new Set(
-        existingLinks.filter((l) => l.target_type === targetType).map((l) => l.target_id)
+        existingLinks.filter((l) => l.targetType === targetType).map((l) => l.targetId)
       )
       setResults(data.filter((r) => !linkedIds.has(r.id)))
     })
@@ -69,19 +68,18 @@ export function KnowledgeLinkPicker({ sourceType, sourceId, onClose }: Props) {
         setExistingLinks((prev) => [
           ...prev,
           {
-            id: result.id!,
-            source_type: sourceType,
-            source_id: sourceId,
-            target_type: targetType,
-            target_id: targetId,
-            chef_id: '',
-            created_at: new Date().toISOString(),
-            target_label: label,
+            id: crypto.randomUUID(),
+            sourceType,
+            sourceId,
+            targetType,
+            targetId: targetId,
+            targetLabel: label,
+            createdAt: new Date().toISOString(),
           },
         ])
         setResults((prev) => prev.filter((r) => r.id !== targetId))
       } else {
-        toast.error(result.error || 'Failed to link')
+        toast.error('Failed to link')
       }
     })
   }
@@ -98,7 +96,7 @@ export function KnowledgeLinkPicker({ sourceType, sourceId, onClose }: Props) {
     })
   }
 
-  const targetIcon = (type: KnowledgeLinkTargetType) => {
+  const targetIcon = (type: string) => {
     switch (type) {
       case 'event':
         return <Calendar className="h-3 w-3 text-blue-400" />
@@ -134,9 +132,9 @@ export function KnowledgeLinkPicker({ sourceType, sourceId, onClose }: Props) {
               className="flex items-center justify-between rounded bg-stone-700/50 px-2 py-1.5"
             >
               <span className="flex items-center gap-1.5 text-xs text-stone-300">
-                {targetIcon(link.target_type)}
-                <span className="capitalize text-stone-500">{link.target_type}:</span>
-                {link.target_label || link.target_id.slice(0, 8)}
+                {targetIcon(link.targetType)}
+                <span className="capitalize text-stone-500">{link.targetType}:</span>
+                {link.targetLabel || link.targetId.slice(0, 8)}
               </span>
               <button
                 type="button"
@@ -153,7 +151,7 @@ export function KnowledgeLinkPicker({ sourceType, sourceId, onClose }: Props) {
 
       {/* Target type selector */}
       <div className="flex gap-1 flex-wrap">
-        {TARGET_TYPES.filter((t) => !(t.value === sourceType)).map((t) => (
+        {TARGET_TYPES.filter((t) => t.value !== (sourceType as string)).map((t) => (
           <button
             key={t.value}
             type="button"

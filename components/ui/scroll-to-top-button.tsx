@@ -18,7 +18,7 @@ export function ScrollToTopButton({ threshold = 400 }: { threshold?: number }) {
   return (
     <button
       onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-      className="fixed bottom-6 right-6 z-40 flex h-10 w-10 items-center justify-center rounded-full bg-stone-700 text-stone-200 shadow-lg transition-opacity hover:bg-stone-600 focus:outline-none focus:ring-2 focus:ring-stone-500"
+      className="fixed bottom-20 right-6 z-fab-secondary flex h-10 w-10 items-center justify-center rounded-full bg-stone-700 text-stone-200 shadow-lg transition-opacity hover:bg-stone-600 focus:outline-none focus:ring-2 focus:ring-stone-500"
       aria-label="Scroll to top"
     >
       <svg

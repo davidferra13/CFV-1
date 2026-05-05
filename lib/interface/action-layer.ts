@@ -8,7 +8,7 @@ import { getClientInteractionSignalShortLabel } from '@/lib/clients/interaction-
 import type { NextBestAction } from '@/lib/clients/next-best-action'
 import type { GoogleConnectionStatus } from '@/lib/google/types'
 import type { OnboardingProgress } from '@/lib/onboarding/progress-actions'
-import { getReviewRequestGate } from '@/lib/post-event/trust-loop-helpers'
+import { getReviewRequestGate } from '@/lib/events/post-event-trust-loop-helpers'
 import type { PriorityQueue, QueueItem } from '@/lib/queue/types'
 import type { PrepPrompt } from '@/lib/scheduling/types'
 import type { DashboardWorkSurface, WorkItem, WorkStage } from '@/lib/workflow/types'

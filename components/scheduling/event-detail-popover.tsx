@@ -112,7 +112,7 @@ export function EventDetailPopover({
   return (
     <div
       ref={popoverRef}
-      className="event-popover fixed z-50 w-[calc(100vw-2rem)] sm:w-80 max-w-80 bg-stone-900 rounded-xl shadow-xl border border-stone-700 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200"
+      className="event-popover fixed z-float w-[calc(100vw-2rem)] sm:w-80 max-w-80 bg-stone-900 rounded-xl shadow-xl border border-stone-700 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200"
       style={{
         left: adjustedPos.x,
         top: adjustedPos.y,

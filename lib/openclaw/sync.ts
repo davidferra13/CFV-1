@@ -23,11 +23,13 @@ import { revalidatePath, revalidateTag } from 'next/cache'
 import {
   getOpenClawStatsInternal,
   OPENCLAW_API,
+  resolveOpenClawApi,
   piHeaders,
   type OpenClawStats,
 } from '@/lib/openclaw/pi-stats'
 import { buildOpenClawQuarantineRawData } from '@/lib/openclaw/quarantine-review'
 import { normalizeIngredientName } from '@/lib/pricing/name-normalizer'
+import { normalizeIngredientNames } from '@/lib/pricing/hermes-normalizer'
 import { refreshPriceViews } from '@/lib/pricing/cross-store-average'
 import { validatePrice, validatePriceChange } from '@/lib/openclaw/price-validator'
 
@@ -107,7 +109,7 @@ export async function getOpenClawPrices(params?: {
 
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), 30000)
-    const res = await fetch(`${OPENCLAW_API}/api/prices?${searchParams}`, {
+    const res = await fetch(`${resolveOpenClawApi()}/api/prices?${searchParams}`, {
       signal: controller.signal,
       cache: 'no-store',
       headers: piHeaders(),
@@ -126,7 +128,7 @@ export async function getOpenClawSources(): Promise<any[]> {
   try {
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), 10000)
-    const res = await fetch(`${OPENCLAW_API}/api/sources`, {
+    const res = await fetch(`${resolveOpenClawApi()}/api/sources`, {
       signal: controller.signal,
       cache: 'no-store',
       headers: piHeaders(),
@@ -145,7 +147,7 @@ export async function getOpenClawChanges(limit = 50): Promise<any[]> {
   try {
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), 10000)
-    const res = await fetch(`${OPENCLAW_API}/api/changes?limit=${limit}`, {
+    const res = await fetch(`${resolveOpenClawApi()}/api/changes?limit=${limit}`, {
       signal: controller.signal,
       cache: 'no-store',
       headers: piHeaders(),
@@ -166,10 +168,12 @@ export async function getOpenClawChanges(limit = 50): Promise<any[]> {
 async function fetchEnriched(
   names: string[]
 ): Promise<{ results: Record<string, EnrichedResult | null> } | null> {
+  const apiUrl = resolveOpenClawApi()
+  const endpoint = `${apiUrl}/api/prices/enriched`
   try {
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), 60000)
-    const res = await fetch(`${OPENCLAW_API}/api/prices/enriched`, {
+    const res = await fetch(endpoint, {
       method: 'POST',
       headers: piHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ items: names }),
@@ -178,13 +182,13 @@ async function fetchEnriched(
     })
     clearTimeout(timeout)
     if (!res.ok) {
-      console.warn(`[sync] Enriched endpoint returned ${res.status}`)
+      console.warn(`[sync] Enriched endpoint ${endpoint} returned ${res.status}`)
       return null
     }
     return await res.json()
   } catch (err) {
     console.warn(
-      `[sync] Enriched endpoint unreachable: ${err instanceof Error ? err.message : 'unknown'}`
+      `[sync] Enriched endpoint ${endpoint} unreachable: ${err instanceof Error ? err.message : 'unknown'}`
     )
     return null
   }
@@ -197,7 +201,7 @@ async function fetchEnriched(
 async function suggestCatalogItems(names: string[]): Promise<void> {
   if (names.length === 0) return
   try {
-    await fetch(`${OPENCLAW_API}/api/catalog/suggest`, {
+    await fetch(`${resolveOpenClawApi()}/api/catalog/suggest`, {
       method: 'POST',
       headers: piHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ items: names.slice(0, 500) }),
@@ -641,6 +645,57 @@ async function syncCore(
       }
     }
 
+    // Step 6c: Batch image enrichment for ingredients missing images (non-blocking)
+    // Queries local PG openclaw.products directly (fast, no Pi roundtrip)
+    if (updated > 0 && !dryRun) {
+      try {
+        const allUpdatedIds = [...updatedIngredientIdsByTenant.values()].flatMap((set) => [...set])
+        if (allUpdatedIds.length > 0) {
+          const missingImageRows = await db.execute(sql`
+            SELECT id, name FROM ingredients
+            WHERE id = ANY(${allUpdatedIds})
+              AND (image_url IS NULL OR image_url = '' OR image_url = 'none')
+          `)
+          const missingCount = (missingImageRows as any[]).length
+          if (missingCount > 0) {
+            let enriched = 0
+            for (const row of missingImageRows as any[]) {
+              const searchName = (row.name as string).toLowerCase().trim()
+              // Try product image via normalization map
+              const imgRows = await db.execute(sql`
+                SELECT COALESCE(
+                  MAX(NULLIF(p.image_url, '')),
+                  MAX(NULLIF(ci.off_image_url, 'none'))
+                ) AS image_url
+                FROM openclaw.canonical_ingredients ci
+                JOIN openclaw.normalization_map nm ON nm.canonical_ingredient_id = ci.ingredient_id
+                LEFT JOIN openclaw.products p
+                  ON LOWER(TRIM(p.name)) = LOWER(TRIM(nm.raw_name))
+                  AND p.is_food = true
+                  AND p.image_url IS NOT NULL AND p.image_url != ''
+                WHERE LOWER(ci.name) = ${searchName}
+                LIMIT 1
+              `)
+              const imgUrl = (imgRows as any[])[0]?.image_url
+              if (imgUrl) {
+                await db.execute(sql`
+                  UPDATE ingredients SET image_url = ${imgUrl} WHERE id = ${row.id}
+                `)
+                enriched++
+              }
+            }
+            if (enriched > 0) {
+              console.log(
+                `[syncPrices] Enriched ${enriched}/${missingCount} ingredient images from local catalog`
+              )
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('[syncPrices] Image enrichment failed (non-blocking):', err)
+      }
+    }
+
     // Step 7: Refresh materialized views for cross-store averaging
     if (updated > 0 && !dryRun) {
       const viewResult = await refreshPriceViews()
@@ -652,6 +707,62 @@ async function syncCore(
     // Step 8: Feed unmatched names back to Pi for catalog growth (Phase 3.5)
     if (!dryRun) {
       await suggestCatalogItems(notFoundNames)
+    }
+
+    // Step 8.5: Hermes AI normalization for unmatched names (non-blocking)
+    // Uses Hermes 3 8B to fuzzy-match product names that regex couldn't handle.
+    // Stores successful mappings in openclaw.normalization_map for future syncs.
+    if (!dryRun && notFoundNames.length > 0 && notFoundNames.length <= 200) {
+      try {
+        // Get canonical ingredient names from the census
+        const canonicalRows = await db.execute(sql`
+          SELECT DISTINCT name FROM openclaw.canonical_ingredients
+          WHERE name IS NOT NULL
+          ORDER BY name
+          LIMIT 5000
+        `)
+        const canonicalNames = (canonicalRows as any[]).map((r) => r.name as string)
+
+        if (canonicalNames.length > 0) {
+          const hermesResult = await normalizeIngredientNames(notFoundNames, canonicalNames)
+          let hermesMatched = 0
+
+          for (const [productName, result] of hermesResult.results) {
+            if (result.method === 'hermes' && result.confidence >= 0.6) {
+              // Store the Hermes mapping for future syncs
+              try {
+                await db.execute(sql`
+                  INSERT INTO openclaw.normalization_map
+                    (raw_name, canonical_name, confidence, method, created_at)
+                  VALUES (
+                    ${productName}, ${result.canonicalName},
+                    ${result.confidence}, ${'hermes3'},
+                    now()
+                  )
+                  ON CONFLICT (raw_name) DO UPDATE SET
+                    canonical_name = EXCLUDED.canonical_name,
+                    confidence = EXCLUDED.confidence,
+                    method = EXCLUDED.method,
+                    created_at = now()
+                  WHERE openclaw.normalization_map.confidence < EXCLUDED.confidence
+                `)
+                hermesMatched++
+              } catch {
+                // normalization_map schema may differ; skip
+              }
+            }
+          }
+
+          if (hermesMatched > 0) {
+            console.log(
+              `[sync] Hermes normalized ${hermesMatched}/${notFoundNames.length} unmatched names ` +
+                `(${hermesResult.hermesCallCount} AI calls, ${hermesResult.durationMs}ms)`
+            )
+          }
+        }
+      } catch (err) {
+        console.error('[sync] Hermes normalization failed (non-blocking):', err)
+      }
     }
 
     // Step 9: Trigger data polish job (non-blocking)

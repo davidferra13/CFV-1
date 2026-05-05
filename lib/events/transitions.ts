@@ -1364,6 +1364,22 @@ export async function transitionEvent({
       log.events.warn('Inventory auto-deduction failed (non-blocking)', { error: deductErr })
     }
 
+    // Alert chef to review auto-reorder after inventory deduction (non-blocking)
+    try {
+      await db.from('remy_alerts').insert({
+        tenant_id: event.tenant_id,
+        alert_type: 'inventory_reorder_check',
+        entity_type: 'event',
+        entity_id: eventId,
+        title: 'Review inventory reorder',
+        body: `Inventory was deducted after "${event.occasion || 'event'}" completed. Check if any ingredients need reordering.`,
+        priority: 'low',
+        action_url: '/culinary/ingredients?tab=reorder',
+      })
+    } catch (reorderAlertErr) {
+      log.events.warn('Reorder alert insert failed (non-blocking)', { error: reorderAlertErr })
+    }
+
     // Auto-log menu history for continuity tracking (non-blocking)
     // Records what was served to this client so repeat detection and menu progression work.
     try {
@@ -1374,6 +1390,14 @@ export async function transitionEvent({
     }
 
     await runCompletedEventPostProcessing(eventId, event.tenant_id)
+
+    // Send circle thank-you emails to all participants (non-blocking)
+    try {
+      const { sendPostEventCircleThanks } = await import('@/lib/beta/email-triggers')
+      await sendPostEventCircleThanks(eventId)
+    } catch (err) {
+      log.events.warn('Post-event circle thank-you failed (non-blocking)', { error: err })
+    }
 
     // Q30: Update client's last_event_date so analytics/proactive alerts stay current
     if (event.client_id) {
@@ -1433,6 +1457,17 @@ export async function transitionEvent({
       await autoPlacePrepBlocks(eventId)
     } catch (err) {
       log.events.warn('Auto-place prep blocks failed (non-blocking)', { error: err })
+    }
+  }
+
+  // Auto-generate grocery/shopping list when confirmed (non-blocking, idempotent).
+  // Chef no longer has to manually navigate to procurement tab.
+  if (toStatus === 'confirmed') {
+    try {
+      const { generateGroceryList } = await import('@/lib/grocery/generate-grocery-list')
+      await generateGroceryList(eventId)
+    } catch (err) {
+      log.events.warn('Grocery list auto-generation failed (non-blocking)', { error: err })
     }
   }
 

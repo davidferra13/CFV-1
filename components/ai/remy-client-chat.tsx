@@ -193,7 +193,7 @@ export function RemyClientChat() {
 
   return (
     <div
-      className={`fixed z-50 flex flex-col overflow-hidden rounded-2xl border border-stone-700 bg-stone-900 shadow-2xl ${
+      className={`fixed z-ai flex flex-col overflow-hidden rounded-2xl border border-stone-700 bg-stone-900 shadow-2xl ${
         isMobile
           ? 'inset-x-2 bottom-2 top-20'
           : 'bottom-6 right-6 w-[400px] max-w-[calc(100vw-2rem)]'

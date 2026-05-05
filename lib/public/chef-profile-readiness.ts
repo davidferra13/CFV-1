@@ -489,23 +489,37 @@ export async function getPublicChefBuyerSignals(
         typeof serviceConfig?.grocery_cost_included === 'boolean'
           ? serviceConfig.grocery_cost_included
           : null,
-      gratuityPolicy: serviceConfig?.gratuity_policy ?? null,
+      gratuityPolicy:
+        (serviceConfig?.gratuity_policy as 'not_expected' | 'appreciated' | 'included' | null) ??
+        null,
       hasCancellationPolicy:
         typeof serviceConfig?.has_cancellation_policy === 'boolean'
           ? serviceConfig.has_cancellation_policy
           : null,
-      cancellationTerms: serviceConfig?.cancellation_terms ?? null,
+      cancellationTerms: (serviceConfig?.cancellation_terms as string | null) ?? null,
       hasReschedulePolicy:
         typeof serviceConfig?.has_reschedule_policy === 'boolean'
           ? serviceConfig.has_reschedule_policy
           : null,
-      rescheduleTerms: serviceConfig?.reschedule_terms ?? null,
-      customWhatsIncluded: normalizePublicNote(serviceConfig?.custom_whats_included),
-      customCleanupNote: normalizePublicNote(serviceConfig?.custom_cleanup_note),
-      customTravelNote: normalizePublicNote(serviceConfig?.custom_travel_note),
-      customDietaryNote: normalizePublicNote(serviceConfig?.custom_dietary_note),
-      customGratuityNote: normalizePublicNote(serviceConfig?.custom_gratuity_note),
-      customIntroPitch: normalizePublicNote(serviceConfig?.custom_intro_pitch),
+      rescheduleTerms: (serviceConfig?.reschedule_terms as string | null) ?? null,
+      customWhatsIncluded: normalizePublicNote(
+        serviceConfig?.custom_whats_included as string | null | undefined
+      ),
+      customCleanupNote: normalizePublicNote(
+        serviceConfig?.custom_cleanup_note as string | null | undefined
+      ),
+      customTravelNote: normalizePublicNote(
+        serviceConfig?.custom_travel_note as string | null | undefined
+      ),
+      customDietaryNote: normalizePublicNote(
+        serviceConfig?.custom_dietary_note as string | null | undefined
+      ),
+      customGratuityNote: normalizePublicNote(
+        serviceConfig?.custom_gratuity_note as string | null | undefined
+      ),
+      customIntroPitch: normalizePublicNote(
+        serviceConfig?.custom_intro_pitch as string | null | undefined
+      ),
       selfReportedInsurance: Boolean(serviceConfig?.is_insured),
     },
     operations: {

@@ -1529,7 +1529,7 @@ export function CollabInboxPanel({
 
       {/* Introduction Bridge Modal */}
       {introModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+        <div className="fixed inset-0 z-dialog flex items-center justify-center bg-black/60">
           <div className="w-full max-w-md rounded-xl border border-stone-700 bg-stone-900 p-5 shadow-xl">
             <h3 className="text-base font-semibold text-stone-100 mb-1">Start Introduction</h3>
             <p className="text-xs text-stone-400 mb-4">

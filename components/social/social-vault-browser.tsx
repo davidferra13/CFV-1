@@ -313,7 +313,7 @@ export function SocialVaultBrowser({ assets: initialAssets, usageCounts }: Props
 
       {/* Edit drawer */}
       {editingAsset && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4">
+        <div className="fixed inset-0 z-dialog flex items-end sm:items-center justify-center p-4">
           <div className="fixed inset-0 bg-black/40" onClick={() => setEditingAsset(null)} />
           <div className="relative bg-stone-900 rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4">
             <div className="flex items-center justify-between">

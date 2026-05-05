@@ -1,6 +1,5 @@
-'use server'
-
 // Scheduled Intelligence Layer - Scheduler
+// NOT a server action file. Called by cron/startup, not by client.
 // Seeds the AI task queue with recurring jobs.
 // Called on server start (or on-demand) to ensure scheduled tasks exist.
 //
@@ -11,7 +10,7 @@
 // 4. If the server restarts, scheduler catches up on anything missed
 
 import { createAdminClient } from '@/lib/db/admin'
-import { enqueueTask } from '@/lib/ai/queue/actions'
+import { enqueueTaskInternal } from '@/lib/ai/queue/actions'
 import { SCHEDULED_JOBS } from './job-definitions'
 import { recordSideEffectFailure } from '@/lib/monitoring/non-blocking'
 export type { ScheduledJob } from './job-definitions'
@@ -58,7 +57,7 @@ export async function seedScheduledTasks(): Promise<{ seeded: number; skipped: n
   for (const tenant of tenants) {
     for (const job of SCHEDULED_JOBS) {
       try {
-        const result = await enqueueTask({
+        const result = await enqueueTaskInternal({
           tenantId: tenant.id,
           taskType: job.taskType,
           priority: job.priority,
@@ -115,7 +114,7 @@ export async function rescheduleTask(taskType: string, tenantId: string): Promis
   if (!job) return // Not a recurring task
 
   try {
-    const result = await enqueueTask({
+    const result = await enqueueTaskInternal({
       tenantId,
       taskType: job.taskType,
       priority: job.priority,

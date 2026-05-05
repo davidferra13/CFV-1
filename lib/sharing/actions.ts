@@ -31,7 +31,7 @@ import {
 import {
   getEventDishFeedbackChoicesByTenant,
   refreshEventOutcomeLearningByTenant,
-} from '@/lib/post-event/learning-actions'
+} from '@/lib/events/post-event-learning-actions'
 
 // ============================================================
 // SCHEMAS
@@ -3518,7 +3518,7 @@ export async function getGuestFeedbackByToken(token: string) {
   if (tenantId && (data as any).event_id) {
     try {
       const choices = await getEventDishFeedbackChoicesByTenant((data as any).event_id, tenantId)
-      dishes = choices.map((dish) => ({
+      dishes = choices.map((dish: any) => ({
         id: dish.id,
         name: dish.name,
         course_name: dish.courseName,

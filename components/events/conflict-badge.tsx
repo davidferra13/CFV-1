@@ -58,7 +58,7 @@ export function ConflictBadge({ conflicts, className = '' }: ConflictBadgeProps)
       {open && (
         <div
           className={`
-            absolute z-50 top-full right-0 mt-1.5 w-80 rounded-lg border
+            absolute z-float top-full right-0 mt-1.5 w-80 rounded-lg border
             border-stone-700 bg-stone-900 shadow-xl p-3
           `}
         >

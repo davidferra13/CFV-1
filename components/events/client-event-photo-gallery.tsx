@@ -90,7 +90,7 @@ export function ClientEventPhotoGallery({ photos }: Props) {
       {/* Lightbox */}
       {lightboxIndex !== null && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90"
+          className="fixed inset-0 z-dialog flex items-center justify-center bg-black/90"
           onClick={closeLightbox}
         >
           {/* Close button */}

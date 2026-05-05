@@ -3,10 +3,13 @@
 // Called by scheduled cron daily at 7 AM EST. Deterministic - no LLM.
 
 import { NextResponse } from 'next/server'
+import { createElement } from 'react'
 import { createAdminClient } from '@/lib/db/admin'
 import { generateMorningBriefing } from '@/lib/ai/remy-morning-briefing'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
 import { runMonitoredCronJob } from '@/lib/cron/monitor'
+import { sendEmail } from '@/lib/email/send'
+import { MorningBriefingEmail } from '@/lib/email/templates/morning-briefing'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -40,7 +43,36 @@ export async function GET(request: Request) {
             priority: 'info',
           })
 
-          if (!error) created++
+          if (!error) {
+            created++
+            // Deliver briefing via email too
+            try {
+              const { data: chef } = await dbAdmin
+                .from('chefs')
+                .select('email, display_name')
+                .eq('id', tenant.id)
+                .single()
+              if (chef?.email) {
+                sendEmail({
+                  to: chef.email,
+                  subject: 'Your Morning Briefing',
+                  react: createElement(MorningBriefingEmail, {
+                    chefName: chef.display_name || 'Chef',
+                    briefingText: briefingText,
+                    briefingUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'}/dashboard`,
+                  }),
+                }).catch((emailErr) => {
+                  console.error(`[cron/morning-briefing] Email failed for ${tenant.id}:`, emailErr)
+                })
+              }
+            } catch (emailErr) {
+              // Non-blocking: alert was still created
+              console.error(
+                `[cron/morning-briefing] Email lookup failed for ${tenant.id}:`,
+                emailErr
+              )
+            }
+          }
         } catch (err) {
           console.error(`[cron/morning-briefing] Briefing failed for tenant ${tenant.id}:`, err)
           errors.push(`${tenant.id}: briefing generation failed`)

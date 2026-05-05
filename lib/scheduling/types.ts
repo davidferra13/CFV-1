@@ -118,6 +118,7 @@ export const DASHBOARD_WIDGET_IDS = [
   'inline_aar',
   'quick_create',
   'cheftips',
+  'seasonal_calendar',
 ] as const
 
 export type DashboardWidgetId = (typeof DASHBOARD_WIDGET_IDS)[number]
@@ -274,6 +275,7 @@ export const DASHBOARD_WIDGET_META: Record<DashboardWidgetId, WidgetMeta> = {
   todo_list: { category: 'system', size: 'sm', defaultEnabled: false },
   career_growth: { category: 'system', size: 'sm', defaultEnabled: false },
   cheftips: { category: 'today', size: 'sm', defaultEnabled: true },
+  seasonal_calendar: { category: 'prep', size: 'lg', defaultEnabled: true },
   beta_program: { category: 'system', size: 'sm', defaultEnabled: false },
   prospecting_hub: { category: 'system', size: 'sm', defaultEnabled: false },
   remy_status: { category: 'system', size: 'sm', defaultEnabled: false },
@@ -465,6 +467,7 @@ export const WIDGET_ICONS: Partial<Record<DashboardWidgetId, string>> = {
   client_growth_signals: '\u{1F4C8}',
   active_clients_now: '\u{1F7E2}',
   cheftips: '\u{1F4A1}',
+  seasonal_calendar: '\u{1F33F}',
 }
 
 /** Get icon for a specific widget (falls back to category icon) */
@@ -633,6 +636,7 @@ export const DASHBOARD_WIDGET_LABELS: Record<DashboardWidgetId, string> = {
   inline_aar: 'Quick Debrief',
   quick_create: 'Quick Create',
   cheftips: 'ChefTips',
+  seasonal_calendar: 'Seasonal Calendar',
 }
 
 // Legacy alias kept for compatibility with older code paths.
