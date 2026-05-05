@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "timestamp": "2026-05-05T17:22:01.760Z",
+  "timestamp": "2026-05-05T21:54:43.105Z",
   "source": "auto-postool",
   "partial": false,
   "phase": null,
@@ -22,89 +22,125 @@
     },
     {
       "status": "M",
-      "path": "app/(chef)/culinary/ingredients/page.tsx"
+      "path": "CLAUDE.md"
     },
     {
       "status": "M",
-      "path": "app/(public)/layout.tsx"
-    },
-    {
-      "status": "M",
-      "path": "app/(public)/page.tsx"
-    },
-    {
-      "status": "M",
-      "path": "app/api/remy/stream/route-prompt-utils.ts"
-    },
-    {
-      "status": "M",
-      "path": "app/globals.css"
-    },
-    {
-      "status": "M",
-      "path": "app/layout.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/navigation/public-footer.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/navigation/public-header.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/onboarding/onboarding-steps/pricing-step.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/pricing/price-badge.tsx"
-    },
-    {
-      "status": "M",
-      "path": "lib/ai/remy-context.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/ai/remy-types.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/pricing/chef-price-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/pricing/resolve-price.ts"
-    },
-    {
-      "status": "M",
-      "path": "scripts/codex-dispatch-wave.mjs"
+      "path": "docs/codex-build-queue.md"
     },
     {
       "status": "??",
-      "path": "app/api/pricing/bridge-health/"
+      "path": "docs/PIE-EXPLAINED.md"
     },
     {
       "status": "??",
-      "path": "components/pricing/bridge-health-dot.tsx"
+      "path": "docs/specs/codex-pie-compliance-admin-dashboard.md"
     },
     {
       "status": "??",
-      "path": "components/pricing/coverage-scorecard.tsx"
+      "path": "docs/specs/codex-pie-compliance-morning-report.md"
     },
     {
       "status": "??",
-      "path": "database/migrations/20260505000003_pie_reliability_suite.sql"
+      "path": "docs/specs/codex-pie-coverage-cron-activation.md"
     },
     {
       "status": "??",
-      "path": "database/migrations/20260505000003_pricing_config_overhead_labor.sql"
+      "path": "docs/specs/codex-pie-geographic-census-expansion.md"
     },
     {
       "status": "??",
-      "path": "lib/pricing/chef-coverage-score.ts"
+      "path": "docs/specs/codex-pie-osm-nationwide-run.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/codex-pie-resolve-price-decomposition.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/codex-pie-seasonal-calendar.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/codex-pie-substitution-suggestions.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/codex-pie-test-anomaly-detector.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/codex-pie-test-auto-expansion.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/codex-pie-test-compound-learning.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/codex-pie-test-coverage-gap-detector.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/codex-pie-test-freshness-enforcer.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/codex-pie-test-pi-bridge.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/codex-pie-test-predictive-supply.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/codex-pie-test-synthetic-engine.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/codex-pie-test-trend-intelligence.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/codex-pie-test-wholesale-intelligence.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/codex-pie-trend-price-card.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/codex-pie-volatility-alerts-ui.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/codex-pie-wholesale-comparison-view.md"
+    },
+    {
+      "status": "??",
+      "path": "memory/feedback_delegate_to_codex.md"
+    },
+    {
+      "status": "??",
+      "path": "scripts/ai-batch-processor.mjs"
+    },
+    {
+      "status": "??",
+      "path": "scripts/pi-crontab-mega.txt"
+    },
+    {
+      "status": "??",
+      "path": "scripts/pi-crontab-optimized.txt"
+    },
+    {
+      "status": "??",
+      "path": "scripts/scrapers/"
+    },
+    {
+      "status": "??",
+      "path": "tests/unit/pie.synthetic-engine.test.ts"
     }
   ],
   "next_action": null,
-  "context_notes": "Recent commits:\n2eb37fdb7 style: lint-staged formatting fixes\n30e5833c7 style(pricing): format universal-price-lookup\n03274ff6c chore: config, docs, skills, codex build queue, and package updates\n164b639e2 chore(scripts+tests): add PIE scripts, pricing tests, and trend alerts\ncd3fba331 feat(security): MFA, phone verification, security settings, and dashboard components"
+  "context_notes": "Recent commits:\n586a517e3 feat(pie): expand store ingestion - OSM tags, farmers markets, User-Agent fix\n0d8cd2c6b feat(openclaw): bridge 1.1M Pi prices into PostgreSQL\na7730704b feat(codex-wave-1): 8 bug fixes and quick wins via Codex dispatch\n2eb37fdb7 style: lint-staged formatting fixes\n30e5833c7 style(pricing): format universal-price-lookup"
 }

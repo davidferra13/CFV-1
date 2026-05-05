@@ -12,6 +12,7 @@ This file is read by Claude Code at the start of every conversation. These rules
 > 4. **Start dead things, don't kill live things.** Dead server? Start it. Running server? Don't kill it.
 > 5. **FIX IT, DON'T REPORT IT.** Broken/dirty/unhealthy = fix it silently. Never report without fixing.
 > 6. **Act, don't ask.** If you can determine the answer from context, code, memory, or prior conversations, act. Only ask about irreversible actions, ambiguous product decisions, or unspecified scope.
+> 7. **DELEGATE BUILDS.** Main session = architect/coordinator. Build work goes to parallel agents (Agent tool, `model: "haiku"` for mechanical, `model: "opus"` for complex). Only build directly for tiny fixes (< 20 lines) or debugging requiring conversation context. Dispatch multiple agents in parallel when tasks are independent. NEVER single-handedly build an entire feature in main session.
 
 ---
 
