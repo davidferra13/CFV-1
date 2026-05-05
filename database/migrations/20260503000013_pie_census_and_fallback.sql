@@ -1,0 +1,200 @@
+-- PIE Laws Infrastructure: Census, Fallback Chain, Synthetic Pricing, Freshness
+-- Implements Laws 4, 8, 9, 10 from docs/specs/pie-laws.md
+
+-- ==========================================================================
+-- LAW 8: THE CENSUS
+-- Master manifest of every food ingredient in American commerce.
+-- Coverage is measured against this, not against "what we happen to have."
+-- ==========================================================================
+
+CREATE TABLE IF NOT EXISTS openclaw.ingredient_census (
+  ingredient_id     TEXT PRIMARY KEY REFERENCES openclaw.canonical_ingredients(ingredient_id),
+  census_category   TEXT NOT NULL,          -- protein, produce, dairy, grain, seafood, spice, pantry, oil, herb, beverage, nut, legume, baked, sweet, condiment
+  census_tier       TEXT NOT NULL DEFAULT 'core',  -- core (must-have), extended (common), specialty (niche but real)
+  standard_unit     TEXT NOT NULL,          -- lb, oz, each, bunch, dozen, gallon, etc.
+  is_active         BOOLEAN NOT NULL DEFAULT true,
+  is_seasonal       BOOLEAN NOT NULL DEFAULT false,
+  seasonal_months   INT[],                 -- months available (1-12), null = year-round
+  regional_tags     TEXT[],                -- e.g. {'southeast','southwest'} for regional specialties
+  expected_price_floor_cents  INT,         -- lowest reasonable US price in cents
+  expected_price_ceiling_cents INT,        -- highest reasonable US price in cents
+  usda_fdc_id       INT,                   -- link to USDA FoodData Central
+  usda_sr_code      TEXT,                  -- USDA SR Legacy code (e.g. '05062')
+  data_sources      TEXT[] NOT NULL DEFAULT '{}',  -- which sources can provide this: {scrape,usda,wholesale,government,synthetic}
+  created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at        TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_census_category ON openclaw.ingredient_census(census_category);
+CREATE INDEX IF NOT EXISTS idx_census_tier ON openclaw.ingredient_census(census_tier);
+CREATE INDEX IF NOT EXISTS idx_census_active ON openclaw.ingredient_census(is_active) WHERE is_active = true;
+CREATE INDEX IF NOT EXISTS idx_census_seasonal ON openclaw.ingredient_census(is_seasonal) WHERE is_seasonal = true;
+
+COMMENT ON TABLE openclaw.ingredient_census IS 'PIE Law 8: The Census. Master manifest of every food ingredient in American commerce. Coverage measured against this.';
+
+-- Census summary view: the one number that matters
+CREATE OR REPLACE VIEW openclaw.census_coverage AS
+SELECT
+  -- Total census
+  (SELECT count(*) FROM openclaw.ingredient_census WHERE is_active = true) AS total_census_ingredients,
+  -- By tier
+  (SELECT count(*) FROM openclaw.ingredient_census WHERE is_active = true AND census_tier = 'core') AS core_count,
+  (SELECT count(*) FROM openclaw.ingredient_census WHERE is_active = true AND census_tier = 'extended') AS extended_count,
+  (SELECT count(*) FROM openclaw.ingredient_census WHERE is_active = true AND census_tier = 'specialty') AS specialty_count,
+  -- Total pricing regions
+  (SELECT count(*) FROM openclaw.pricing_regions WHERE is_active = true) AS total_regions,
+  -- Total price cells needed (ingredients x regions)
+  (SELECT count(*) FROM openclaw.ingredient_census WHERE is_active = true)
+    * (SELECT count(*) FROM openclaw.pricing_regions WHERE is_active = true) AS total_price_cells_needed,
+  -- Filled cells (real + synthetic)
+  (SELECT count(*) FROM openclaw.resolved_prices) AS filled_price_cells,
+  -- Coverage percentage
+  CASE
+    WHEN (SELECT count(*) FROM openclaw.ingredient_census WHERE is_active = true) = 0
+      OR (SELECT count(*) FROM openclaw.pricing_regions WHERE is_active = true) = 0
+    THEN 0
+    ELSE ROUND(
+      (SELECT count(*) FROM openclaw.resolved_prices)::numeric
+      / ((SELECT count(*) FROM openclaw.ingredient_census WHERE is_active = true)
+         * (SELECT count(*) FROM openclaw.pricing_regions WHERE is_active = true))
+      * 100, 2
+    )
+  END AS coverage_pct;
+
+-- ==========================================================================
+-- LAW 10: FALLBACK CHAIN
+-- Every price must have a documented fallback path.
+-- Track which tier of the waterfall produced each price.
+-- ==========================================================================
+
+-- Extend resolved_prices with fallback tracking
+ALTER TABLE openclaw.resolved_prices
+  ADD COLUMN IF NOT EXISTS fallback_tier INT NOT NULL DEFAULT 1,
+  ADD COLUMN IF NOT EXISTS fallback_chain JSONB,
+  ADD COLUMN IF NOT EXISTS is_synthetic BOOLEAN NOT NULL DEFAULT false;
+
+COMMENT ON COLUMN openclaw.resolved_prices.fallback_tier IS 'Which tier in the 11-tier waterfall produced this price (1=best, 11=synthetic)';
+COMMENT ON COLUMN openclaw.resolved_prices.fallback_chain IS 'JSON array documenting which tiers were attempted and their results';
+COMMENT ON COLUMN openclaw.resolved_prices.is_synthetic IS 'True if price was generated by synthetic estimation, not observed';
+
+-- ==========================================================================
+-- LAW 9: SYNTHETIC PRICING
+-- When real prices cannot be found, generate best possible estimates.
+-- ==========================================================================
+
+CREATE TABLE IF NOT EXISTS openclaw.synthetic_prices (
+  id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  canonical_ingredient_id TEXT NOT NULL REFERENCES openclaw.canonical_ingredients(ingredient_id),
+  pricing_region_id     UUID NOT NULL REFERENCES openclaw.pricing_regions(id),
+  price_cents           INT NOT NULL,
+  price_unit            TEXT NOT NULL,
+  confidence            NUMERIC(4,3) NOT NULL,
+  derivation_method     TEXT NOT NULL,       -- category_baseline, regional_interpolation, usda_adjusted, weight_extrapolation, brand_tier, seasonal_projection, nearby_state, historical_trend, commodity_correlation
+  derivation_inputs     JSONB NOT NULL,      -- what signals went into this estimate
+  superseded_by_real    BOOLEAN NOT NULL DEFAULT false,
+  created_at            TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at            TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE(canonical_ingredient_id, pricing_region_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_synthetic_method ON openclaw.synthetic_prices(derivation_method);
+CREATE INDEX IF NOT EXISTS idx_synthetic_not_superseded ON openclaw.synthetic_prices(superseded_by_real) WHERE superseded_by_real = false;
+
+COMMENT ON TABLE openclaw.synthetic_prices IS 'PIE Law 9: Synthetic prices generated when no real observation exists. Every census ingredient gets a price.';
+
+-- ==========================================================================
+-- LAW 4: FRESHNESS GUARANTEE
+-- Track freshness tiers and enforce re-estimation when stale.
+-- ==========================================================================
+
+CREATE TABLE IF NOT EXISTS openclaw.freshness_policy (
+  category        TEXT PRIMARY KEY,         -- maps to census_category
+  tier            TEXT NOT NULL,            -- volatile, moderate, stable
+  max_age_days    INT NOT NULL,             -- price expires after this many days
+  recheck_days    INT NOT NULL,             -- re-estimate after this many days
+  description     TEXT
+);
+
+-- Seed freshness tiers per PIE Law 4
+INSERT INTO openclaw.freshness_policy (category, tier, max_age_days, recheck_days, description) VALUES
+  ('produce',   'volatile',  7,  3, 'Fresh produce prices change weekly'),
+  ('dairy',     'volatile',  7,  3, 'Dairy prices fluctuate frequently'),
+  ('protein',   'volatile',  7,  5, 'Meat and poultry prices shift weekly'),
+  ('seafood',   'volatile',  7,  3, 'Seafood is highly volatile, seasonal'),
+  ('herb',      'volatile',  7,  5, 'Fresh herbs are seasonal and volatile'),
+  ('baked',     'moderate', 14,  7, 'Bakery items shift biweekly'),
+  ('condiment', 'moderate', 14,  7, 'Condiments are moderately stable'),
+  ('beverage',  'moderate', 14, 10, 'Beverage prices shift with promotions'),
+  ('grain',     'stable',   30, 14, 'Grains and pasta are price-stable'),
+  ('pantry',    'stable',   30, 14, 'Pantry staples hold prices well'),
+  ('spice',     'stable',   30, 14, 'Dried spices are very price-stable'),
+  ('oil',       'stable',   30, 14, 'Cooking oils are commodity-linked but stable'),
+  ('nut',       'stable',   30, 14, 'Nuts hold prices for weeks'),
+  ('legume',    'stable',   30, 14, 'Dried legumes are very stable'),
+  ('sweet',     'stable',   30, 14, 'Sugar and sweets are price-stable')
+ON CONFLICT (category) DO NOTHING;
+
+COMMENT ON TABLE openclaw.freshness_policy IS 'PIE Law 4: Freshness tiers. Prices past max_age_days must be re-estimated.';
+
+-- ==========================================================================
+-- LAW 5: SELF-HEALING
+-- Track pipeline health incidents and recovery
+-- ==========================================================================
+
+CREATE TABLE IF NOT EXISTS openclaw.pipeline_incidents (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  incident_type   TEXT NOT NULL,            -- scraper_down, source_stale, anomaly_spike, sync_failure
+  source_name     TEXT,                     -- which scraper/source
+  detected_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
+  resolved_at     TIMESTAMPTZ,
+  auto_recovered  BOOLEAN NOT NULL DEFAULT false,
+  fallback_activated BOOLEAN NOT NULL DEFAULT false,
+  description     TEXT,
+  resolution      TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_incidents_unresolved ON openclaw.pipeline_incidents(resolved_at) WHERE resolved_at IS NULL;
+
+COMMENT ON TABLE openclaw.pipeline_incidents IS 'PIE Law 5: Self-healing incident tracking. Every pipeline failure logged and tracked to resolution.';
+
+-- ==========================================================================
+-- COMPLIANCE VIEW: One query to check all 10 laws
+-- ==========================================================================
+
+CREATE OR REPLACE VIEW openclaw.pie_compliance AS
+SELECT
+  -- Law 1: Total Autonomy (human inputs = 0 target)
+  0 AS law1_human_inputs_today,
+  -- Law 2: Universal Coverage (ingredients with zero price = 0 target)
+  (SELECT count(*) FROM openclaw.ingredient_census ic
+   WHERE ic.is_active = true
+   AND NOT EXISTS (
+     SELECT 1 FROM openclaw.resolved_prices rp
+     WHERE rp.canonical_ingredient_id = ic.ingredient_id
+   )) AS law2_ingredients_with_zero_price,
+  -- Law 3: Honesty (prices without confidence = 0 target)
+  (SELECT count(*) FROM openclaw.resolved_prices WHERE confidence IS NULL OR confidence = 0) AS law3_prices_without_confidence,
+  -- Law 4: Freshness (stale prices = 0 target)
+  (SELECT count(*) FROM openclaw.resolved_prices rp
+   JOIN openclaw.ingredient_census ic ON ic.ingredient_id = rp.canonical_ingredient_id
+   JOIN openclaw.freshness_policy fp ON fp.category = ic.census_category
+   WHERE rp.updated_at < now() - (fp.max_age_days || ' days')::interval
+  ) AS law4_stale_prices,
+  -- Law 5: Self-healing (unresolved incidents = 0 target)
+  (SELECT count(*) FROM openclaw.pipeline_incidents WHERE resolved_at IS NULL) AS law5_unresolved_incidents,
+  -- Law 8: Census size
+  (SELECT count(*) FROM openclaw.ingredient_census WHERE is_active = true) AS law8_census_size,
+  -- Law 9: Synthetic prices active
+  (SELECT count(*) FROM openclaw.synthetic_prices WHERE superseded_by_real = false) AS law9_active_synthetics,
+  -- Law 10: Unprotected prices (no fallback = 0 target)
+  (SELECT count(*) FROM openclaw.ingredient_census ic
+   WHERE ic.is_active = true
+   AND NOT EXISTS (
+     SELECT 1 FROM openclaw.resolved_prices rp
+     WHERE rp.canonical_ingredient_id = ic.ingredient_id
+   )
+   AND NOT EXISTS (
+     SELECT 1 FROM openclaw.synthetic_prices sp
+     WHERE sp.canonical_ingredient_id = ic.ingredient_id
+       AND sp.superseded_by_real = false
+   )) AS law10_unprotected_ingredients;
