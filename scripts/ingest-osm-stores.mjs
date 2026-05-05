@@ -26,6 +26,7 @@ const OVERPASS_URLS = [
 let currentOverpassIdx = 0
 const OVERPASS_TIMEOUT = 180 // seconds per query
 const DELAY_BETWEEN_QUERIES_MS = 15000 // be polite to Overpass
+const AGGRESSIVE = process.argv.includes('--aggressive') // shorter delays, more retries
 
 // US state bounding boxes [south, west, north, east]
 const STATE_BBOXES = {
@@ -82,6 +83,86 @@ const STATE_BBOXES = {
   WY: [40.99, -111.06, 45.00, -104.05],
 }
 
+// Large states get subdivided into smaller bboxes to avoid Overpass timeouts
+// Format: array of [south, west, north, east] sub-regions
+function subdivideBbox([south, west, north, east], rows = 2, cols = 2) {
+  const latStep = (north - south) / rows
+  const lonStep = (east - west) / cols
+  const subs = []
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      subs.push([
+        south + r * latStep,
+        west + c * lonStep,
+        south + (r + 1) * latStep,
+        west + (c + 1) * lonStep,
+      ])
+    }
+  }
+  return subs
+}
+
+// States that need bbox subdivision (area too large for single Overpass query)
+const STATE_SUBDIVISIONS = {
+  TX: 4, // 2x2 grid
+  CA: 4,
+  FL: 4,
+  AK: 4,
+  MT: 4,
+  NM: 4,
+  AZ: 4,
+  NV: 4,
+  CO: 4,
+  OR: 4,
+  WY: 4,
+  MI: 4,
+  MN: 4,
+  MO: 4,
+  VA: 4,
+  NY: 4,
+  GA: 4,
+  NC: 4,
+  PA: 4,
+  IL: 4,
+  OH: 4,
+  TN: 4,
+  WI: 4,
+  AL: 4,
+  SC: 4,
+  LA: 4,
+  MS: 4,
+  OK: 4,
+  KY: 4,
+  IN: 4,
+  WA: 4,
+  ID: 4,
+  UT: 4,
+  KS: 4,
+  AR: 4,
+  IA: 4,
+  NE: 4,
+  WV: 4,
+  ME: 4,
+  NH: 2, // 1x2
+  MA: 2,
+}
+
+// Minimum expected store counts per state (for completeness validation)
+const MIN_EXPECTED = {
+  CA: 20000, TX: 15000, FL: 12000, NY: 14000, PA: 8000, IL: 8000,
+  OH: 7000, GA: 6000, NC: 7000, MI: 10000, NJ: 8000, VA: 5000,
+  WA: 5000, AZ: 3500, MA: 3500, TN: 4000, IN: 3500, MO: 4000,
+  MD: 4000, WI: 3500, CO: 3000, MN: 3000, SC: 3000, AL: 3000,
+  LA: 3000, KY: 2000, OR: 2500, OK: 2500, CT: 2000, IA: 2000,
+  UT: 1500, AR: 1500, KS: 1500, NV: 1500, NE: 800, MS: 2000,
+  NM: 1500, WV: 1000, ID: 1000, HI: 600, NH: 800, ME: 800,
+  DE: 500, MT: 500, RI: 400, SD: 500, AK: 400, ND: 400,
+  VT: 400, DC: 400, WY: 300,
+}
+
+// Valid US state codes for data cleaning
+const VALID_STATES = new Set(Object.keys(STATE_BBOXES))
+
 // OSM shop/amenity tags -> our store_type classification
 const TAG_TO_TYPE = {
   // Retail grocery
@@ -89,8 +170,12 @@ const TAG_TO_TYPE = {
   'shop=grocery': 'retail',
   'shop=general': 'retail',
   'shop=wholesale': 'wholesale',
+  'shop=department_store': 'retail',
+  'shop=food': 'retail',
   // Convenience
   'shop=convenience': 'convenience',
+  'shop=gas': 'convenience',
+  'amenity=fuel': 'convenience',
   // Specialty
   'shop=greengrocer': 'specialty',
   'shop=butcher': 'specialty',
@@ -108,6 +193,19 @@ const TAG_TO_TYPE = {
   'shop=confectionery': 'specialty',
   'shop=wine': 'specialty',
   'shop=beverages': 'specialty',
+  'shop=alcohol': 'specialty',
+  'shop=frozen_food': 'specialty',
+  'shop=ice_cream': 'specialty',
+  'shop=honey': 'specialty',
+  'shop=nuts': 'specialty',
+  'shop=dairy': 'specialty',
+  'shop=rice': 'specialty',
+  'shop=herbs': 'specialty',
+  'shop=brewing_supplies': 'specialty',
+  'shop=agrarian': 'specialty',
+  'shop=pet_food': 'specialty',
+  'shop=nutrition_supplements': 'specialty',
+  'shop=water': 'specialty',
   // Farm
   'shop=farm': 'farm',
   'amenity=marketplace': 'farm',
@@ -290,7 +388,10 @@ async function queryOverpass(queryStr) {
     try {
       const resp = await fetch(url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'User-Agent': 'ChefFlow-PIE-StoreIngestion/1.0 (contact: davidferra13@gmail.com)',
+        },
         body: 'data=' + encodeURIComponent(queryStr),
         signal: AbortSignal.timeout(OVERPASS_TIMEOUT * 1000 + 30000),
       })
@@ -367,6 +468,13 @@ function extractStoreData(element) {
                     BRAND_TO_CHAIN_SLUG[tags.operator] ||
                     null
 
+  // Normalize state code from OSM tags
+  let rawState = tags['addr:state'] || null
+  if (rawState) {
+    rawState = rawState.toUpperCase().trim().slice(0, 2)
+    if (!VALID_STATES.has(rawState)) rawState = null // reject non-US states
+  }
+
   return {
     osmId: String(element.id),
     osmType: element.type,
@@ -378,7 +486,7 @@ function extractStoreData(element) {
     street: tags['addr:street'] || null,
     houseNumber: tags['addr:housenumber'] || null,
     city: tags['addr:city'] || null,
-    state: tags['addr:state'] || null,
+    state: rawState,
     zip: tags['addr:postcode'] || null,
     phone: tags.phone || tags['contact:phone'] || null,
     website: tags.website || tags['contact:website'] || null,
@@ -535,55 +643,68 @@ const ALL_FOOD_TAGS = [
   'amenity=marketplace',
 ]
 
+async function queryWithRetry(bbox, tags, label, stateCode) {
+  const maxRetries = AGGRESSIVE ? 8 : 5
+  let retries = 0
+  while (retries < maxRetries) {
+    const result = await queryOverpass(buildQuery(bbox, tags))
+    if (result === null) {
+      retries++
+      const waitSec = AGGRESSIVE ? 15 + retries * 10 : 30 + retries * 15
+      console.log(`  [${stateCode}] ${label} mirrors busy, retry ${retries}/${maxRetries} in ${waitSec}s...`)
+      await sleep(waitSec * 1000)
+      continue
+    }
+    return result.elements || []
+  }
+  console.log(`  [${stateCode}] FAILED ${label} after ${maxRetries} retries`)
+  return null
+}
+
 async function ingestState(stateCode) {
   const bbox = STATE_BBOXES[stateCode]
   if (!bbox) throw new Error(`Unknown state: ${stateCode}`)
 
-  // Split into two queries to avoid Overpass timeouts on big states
   const retailTags = ALL_FOOD_TAGS.slice(0, 12)
   const otherTags = ALL_FOOD_TAGS.slice(12)
 
   let allElements = []
+  const subdivisions = STATE_SUBDIVISIONS[stateCode]
 
-  // Query 1: retail/grocery/convenience/specialty
-  console.log(`  [${stateCode}] Query 1/2: retail + specialty...`)
-  let retries = 0
-  while (retries < 5) {
-    const result = await queryOverpass(buildQuery(bbox, retailTags))
-    if (result === null) {
-      retries++
-      const waitSec = 30 + retries * 15
-      console.log(`  [${stateCode}] All mirrors busy, retry ${retries}/5 in ${waitSec}s...`)
-      await sleep(waitSec * 1000)
-      continue
+  // Get bboxes to query (subdivided for large states)
+  const bboxes = subdivisions
+    ? subdivideBbox(bbox, subdivisions === 2 ? 1 : 2, 2)
+    : [bbox]
+
+  console.log(`  [${stateCode}] Using ${bboxes.length} bbox region(s)`)
+
+  for (let i = 0; i < bboxes.length; i++) {
+    const regionBbox = bboxes[i]
+    const regionLabel = bboxes.length > 1 ? ` region ${i + 1}/${bboxes.length}` : ''
+
+    // Query 1: retail/grocery/convenience/specialty
+    console.log(`  [${stateCode}]${regionLabel} Query 1/2: retail + specialty...`)
+    const q1 = await queryWithRetry(regionBbox, retailTags, `Q1${regionLabel}`, stateCode)
+    if (q1 === null) {
+      console.log(`  [${stateCode}]${regionLabel} FAILED query 1, continuing with other regions...`)
+    } else {
+      allElements.push(...q1)
     }
-    allElements.push(...(result.elements || []))
-    break
-  }
-  if (retries >= 5) {
-    console.log(`  [${stateCode}] FAILED query 1 after 5 retries, skipping`)
-    return { state: stateCode, stores: 0, error: 'overpass_busy' }
-  }
 
-  await sleep(DELAY_BETWEEN_QUERIES_MS)
+    const delayMs = AGGRESSIVE ? 5000 : DELAY_BETWEEN_QUERIES_MS
+    await sleep(delayMs)
 
-  // Query 2: other tags
-  console.log(`  [${stateCode}] Query 2/2: other food tags...`)
-  retries = 0
-  while (retries < 5) {
-    const result = await queryOverpass(buildQuery(bbox, otherTags))
-    if (result === null) {
-      retries++
-      const waitSec = 30 + retries * 15
-      console.log(`  [${stateCode}] All mirrors busy, retry ${retries}/5 in ${waitSec}s...`)
-      await sleep(waitSec * 1000)
-      continue
+    // Query 2: other tags
+    console.log(`  [${stateCode}]${regionLabel} Query 2/2: other food tags...`)
+    const q2 = await queryWithRetry(regionBbox, otherTags, `Q2${regionLabel}`, stateCode)
+    if (q2 === null) {
+      console.log(`  [${stateCode}]${regionLabel} FAILED query 2`)
+    } else {
+      allElements.push(...q2)
     }
-    allElements.push(...(result.elements || []))
-    break
-  }
-  if (retries >= 5) {
-    console.log(`  [${stateCode}] FAILED query 2 after 5 retries`)
+
+    // Delay between regions
+    if (i < bboxes.length - 1) await sleep(delayMs)
   }
 
   // Deduplicate by OSM ID
@@ -596,6 +717,12 @@ async function ingestState(stateCode) {
   })
 
   console.log(`  [${stateCode}] ${uniqueElements.length} unique elements from OSM`)
+
+  // Completeness validation
+  const minExpected = MIN_EXPECTED[stateCode] || 0
+  if (minExpected > 0 && uniqueElements.length < minExpected * 0.5) {
+    console.warn(`  [${stateCode}] WARNING: Only ${uniqueElements.length} elements, expected ${minExpected}+. Possible partial result!`)
+  }
 
   // Extract structured data
   const stores = uniqueElements.map(extractStoreData).filter(Boolean)
@@ -629,16 +756,24 @@ async function main() {
 
   await loadExistingChains()
 
-  // If resuming, check which states already have OSM data
+  // If resuming, check which states already meet minimum coverage
   let completedStates = new Set()
   if (resume) {
     const existing = await sql`
-      SELECT DISTINCT state FROM openclaw.stores
+      SELECT state, COUNT(*) as cnt FROM openclaw.stores
       WHERE external_store_id LIKE 'osm-%'
-      GROUP BY state HAVING COUNT(*) > 50
+      GROUP BY state
     `
-    completedStates = new Set(existing.map(r => r.state))
-    console.log(`Resuming - skipping ${completedStates.size} already-ingested states: ${[...completedStates].join(', ')}`)
+    for (const r of existing) {
+      const min = MIN_EXPECTED[r.state] || 300
+      // State is "complete" only if it meets 70% of expected minimum
+      if (Number(r.cnt) >= min * 0.7) {
+        completedStates.add(r.state)
+      } else {
+        console.log(`  ${r.state}: ${r.cnt} stores (need ${min}), WILL RE-INGEST`)
+      }
+    }
+    console.log(`Resuming - skipping ${completedStates.size} complete states, re-ingesting ${Object.keys(STATE_BBOXES).length - completedStates.size}`)
   }
 
   const states = singleState ? [singleState] : Object.keys(STATE_BBOXES)
@@ -663,7 +798,7 @@ async function main() {
 
     // Rate limit between states
     if (states.indexOf(state) < states.length - 1) {
-      await sleep(DELAY_BETWEEN_QUERIES_MS)
+      await sleep(AGGRESSIVE ? 5000 : DELAY_BETWEEN_QUERIES_MS)
     }
   }
 
@@ -684,9 +819,26 @@ async function main() {
   console.log('\nBy type:')
   for (const r of typeCounts) console.log(`  ${r.store_type}: ${r.cnt}`)
 
-  const stateCounts = await sql`SELECT state, COUNT(*) as cnt FROM openclaw.stores GROUP BY state ORDER BY cnt DESC LIMIT 10`
+  const stateCounts = await sql`SELECT state, COUNT(*) as cnt FROM openclaw.stores GROUP BY state ORDER BY cnt DESC`
   console.log('\nTop 10 states:')
-  for (const r of stateCounts) console.log(`  ${r.state}: ${r.cnt}`)
+  for (const r of stateCounts.slice(0, 10)) console.log(`  ${r.state}: ${r.cnt}`)
+
+  // Coverage warnings
+  const underCoveredStates = []
+  for (const r of stateCounts) {
+    const min = MIN_EXPECTED[r.state]
+    if (min && Number(r.cnt) < min * 0.7) {
+      underCoveredStates.push({ state: r.state, have: Number(r.cnt), need: min })
+    }
+  }
+  if (underCoveredStates.length > 0) {
+    console.log(`\nWARNING: ${underCoveredStates.length} states below 70% coverage:`)
+    for (const s of underCoveredStates) {
+      console.log(`  ${s.state}: ${s.have}/${s.need} (${Math.round(s.have / s.need * 100)}%)`)
+    }
+  } else {
+    console.log('\nAll states meet minimum coverage thresholds.')
+  }
 
   await sql.end()
 }
