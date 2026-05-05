@@ -68,19 +68,6 @@ const MONTH_NAMES = [
   'December',
 ]
 
-export { MONTH_NAMES }
-
-/**
- * Format peak months into a human-readable availability window.
- * e.g. [6,7,8,9] -> "June - September"
- */
-export function formatAvailabilityWindow(peakMonths: number[]): string {
-  if (!peakMonths.length) return 'Availability varies'
-  const sorted = [...peakMonths].sort((a, b) => a - b)
-  if (sorted.length >= 10) return 'Almost Year Round'
-  return `${MONTH_NAMES[sorted[0]]} - ${MONTH_NAMES[sorted[sorted.length - 1]]}`
-}
-
 // Cached query: seasonal calendar items with images and knowledge
 const getSeasonalCalendarItemsCached = unstable_cache(
   async (region: string) => {

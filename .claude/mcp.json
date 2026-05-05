@@ -39,6 +39,14 @@
         "CHEFFLOW_TIMEOUT": "15000"
       }
     },
+    "21st-magic": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@21st-dev/magic@latest"],
+      "env": {
+        "API_KEY": "b2d2738d2bbf60934fc9c76de4192138fd6473caaad17fd25ad25549e2a91d81"
+      }
+    },
     "mempalace": {
       "type": "stdio",
       "command": "py",

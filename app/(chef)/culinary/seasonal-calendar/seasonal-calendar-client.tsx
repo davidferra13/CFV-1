@@ -6,12 +6,33 @@ import {
   type IngredientInspirationDetail,
   type SeasonalCalendarData,
   type SeasonalCalendarItem,
-  formatAvailabilityWindow,
   getIngredientInspirationDetail,
   getSeasonalCalendarForMonth,
-  MONTH_NAMES,
 } from '@/lib/openclaw/seasonal-calendar-actions'
 import { cn } from '@/lib/utils'
+
+const MONTH_NAMES = [
+  '',
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+]
+
+function formatAvailabilityWindow(peakMonths: number[]): string {
+  if (!peakMonths.length) return 'Availability varies'
+  const sorted = [...peakMonths].sort((a, b) => a - b)
+  if (sorted.length >= 10) return 'Almost Year Round'
+  return `${MONTH_NAMES[sorted[0]]} - ${MONTH_NAMES[sorted[sorted.length - 1]]}`
+}
 
 // --- Search + Filter Bar ---
 

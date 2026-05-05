@@ -7,7 +7,8 @@
       "Bash(npx drizzle-kit push:*)",
       "Bash(npx drizzle-kit migrate:*)",
       "Bash(grep:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(git add:*)"
     ]
   }
 }
