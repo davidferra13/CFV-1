@@ -11,7 +11,7 @@
 import pg from 'postgres'
 
 const DATABASE_URL = process.env.DATABASE_URL || 'postgresql://postgres:postgres@127.0.0.1:54322/postgres'
-const sql = pg(DATABASE_URL, { max: 3, idle_timeout: 20 })
+const sql = pg(DATABASE_URL, { max: 3, idle_timeout: 20, transform: pg.camel })
 
 function divider(title) {
   console.log('\n' + '='.repeat(70))

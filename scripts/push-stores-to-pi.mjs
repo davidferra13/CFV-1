@@ -54,7 +54,8 @@ function escapeSql(val) {
 }
 
 function piExec(cmd, timeoutMs = 30000) {
-  return execSync(`ssh -o ConnectTimeout=10 -o BatchMode=yes ${PI_HOST} "${cmd}"`, {
+  const escaped = cmd.replace(/"/g, '\\"')
+  return execSync(`ssh -o ConnectTimeout=10 -o BatchMode=yes ${PI_HOST} "${escaped}"`, {
     encoding: 'utf8',
     timeout: timeoutMs,
     stdio: ['pipe', 'pipe', 'pipe'],
