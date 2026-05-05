@@ -42,6 +42,7 @@ async function getChefHomeState(tenantId: string): Promise<string | null> {
 // --- Types ---
 
 export type PriceSource =
+  | 'chef_override'
   | 'receipt'
   | 'api_quote'
   | 'wholesale'
@@ -49,6 +50,7 @@ export type PriceSource =
   | 'flyer'
   | 'instacart'
   | 'regional_average'
+  | 'resolved_national'
   | 'market_aggregate'
   | 'government'
   | 'historical'
@@ -74,6 +76,7 @@ export type PriceFreshness = 'current' | 'recent' | 'stale' | 'none'
  *   none             - no data available (trust: none)
  */
 export type ResolutionTier =
+  | 'chef_override'
   | 'chef_receipt'
   | 'wholesale'
   | 'zip_local'
@@ -210,6 +213,8 @@ function tierForReceiptSource(
 
 function sourceDisplayStore(source: PriceSource, storeName: string | null): string {
   switch (source) {
+    case 'chef_override':
+      return 'Your price'
     case 'receipt':
       return storeName || 'Your receipt'
     case 'api_quote':
@@ -224,6 +229,8 @@ function sourceDisplayStore(source: PriceSource, storeName: string | null): stri
       return storeName ? `${storeName} (Instacart)` : 'Instacart'
     case 'regional_average':
       return storeName || 'Regional Average'
+    case 'resolved_national':
+      return storeName || 'National Price Index'
     case 'market_aggregate':
       return storeName || 'Market Average'
     case 'government':
@@ -258,6 +265,38 @@ export async function resolvePrice(
     freshness: 'none',
     confirmedAt: null,
     reason: 'No price data. Log a receipt to set the price.',
+  }
+
+  // Tier 0: CHEF OVERRIDE (standing override from chef_ingredient_prices, within 90 days)
+  const chefOverride = (await db.execute(sql`
+    SELECT price_cents, price_unit, source, confirmed_at::text AS confirmed_at, notes
+    FROM chef_ingredient_prices
+    WHERE ingredient_id = ${ingredientId}
+      AND chef_id = ${tenantId}
+      AND confirmed_at > NOW() - INTERVAL '90 days'
+    LIMIT 1
+  `)) as unknown as Array<{
+    price_cents: number
+    price_unit: string
+    source: string
+    confirmed_at: string
+    notes: string | null
+  }>
+
+  if (chefOverride.length > 0) {
+    const row = chefOverride[0]
+    return withDecay({
+      cents: row.price_cents,
+      unit: row.price_unit || 'each',
+      source: 'chef_override',
+      sourceTier: row.source,
+      resolutionTier: 'chef_override',
+      store: sourceDisplayStore('chef_override', null),
+      confidence: 0.98,
+      freshness: computeFreshness(row.confirmed_at),
+      confirmedAt: row.confirmed_at,
+      reason: row.notes,
+    })
   }
 
   // Tier 1: RECEIPT (manual, receipt, grocery_entry, po_receipt, vendor_invoice) within 90 days
@@ -492,6 +531,73 @@ export async function resolvePrice(
     }
   }
 
+  // Tier 6.25: RESOLVED NATIONAL (pre-computed regional price from openclaw.resolved_prices)
+  // If the ingredient is aliased to a system_ingredient, and that links to a canonical
+  // ingredient, check the pre-computed resolved_prices table for the chef's region.
+  try {
+    const resolvedNational = (await db.execute(sql`
+      SELECT rp.price_cents, rp.price_unit, rp.confidence,
+             rp.price_low_cents, rp.price_high_cents,
+             rp.observation_count, rp.source_count,
+             rp.freshest_observation::text AS freshest,
+             rp.computation_method,
+             pr.name AS region_name
+      FROM ingredient_aliases ia
+      JOIN system_ingredients si ON si.id = ia.system_ingredient_id
+      JOIN openclaw.resolved_prices rp
+        ON rp.canonical_ingredient_id = COALESCE(si.slug, LOWER(REPLACE(si.name, ' ', '-')))
+      JOIN openclaw.pricing_regions pr ON pr.id = rp.pricing_region_id
+      JOIN openclaw.zip_centroids zc ON zc.pricing_region_id = pr.id
+      JOIN chefs ch ON ch.id = ${tenantId}
+      WHERE ia.ingredient_id = ${ingredientId}
+        AND ia.tenant_id = ${tenantId}
+        AND ia.system_ingredient_id IS NOT NULL
+        AND ia.match_method != 'dismissed'
+        AND rp.price_type = 'retail'
+        AND rp.confidence > 0.2
+        AND (
+          zc.zip = ch.zip_code
+          OR zc.state = ${preferredState || ''}
+        )
+      ORDER BY
+        CASE WHEN zc.zip = ch.zip_code THEN 0 ELSE 1 END,
+        rp.confidence DESC
+      LIMIT 1
+    `)) as unknown as Array<{
+      price_cents: number
+      price_unit: string
+      confidence: number
+      price_low_cents: number
+      price_high_cents: number
+      observation_count: number
+      source_count: number
+      freshest: string | null
+      computation_method: string
+      region_name: string
+    }>
+
+    if (resolvedNational.length > 0) {
+      const row = resolvedNational[0]
+      if (row.price_cents > 0) {
+        const isLocal = row.computation_method !== 'cost_index_estimate'
+        return withDecay({
+          cents: row.price_cents,
+          unit: row.price_unit?.replace('per_', '') || 'each',
+          source: 'resolved_national',
+          sourceTier: row.computation_method,
+          resolutionTier: isLocal ? 'regional' : 'market_national',
+          store: `${row.region_name} (${row.source_count} sources)`,
+          confidence: Math.min(Number(row.confidence), 0.7),
+          freshness: computeFreshness(row.freshest),
+          confirmedAt: row.freshest,
+          reason: null,
+        })
+      }
+    }
+  } catch {
+    // resolved_prices table may not exist yet; gracefully skip
+  }
+
   // Tier 6.5: MARKET AGGREGATE (system-level price via ingredient alias)
   // If this ingredient is aliased to a system_ingredient, check the pre-computed
   // market price from openclaw.system_ingredient_prices (aggregated from FTS-matched products).
@@ -655,6 +761,28 @@ export async function resolvePricesBatch(
 
   if (ingredientIds.length === 0) return result
 
+  // Query 0: Chef standing overrides (Tier 0)
+  const overrideRows = (await db.execute(sql`
+    SELECT ingredient_id, price_cents, price_unit, source,
+           confirmed_at::text AS confirmed_at, notes
+    FROM chef_ingredient_prices
+    WHERE ingredient_id = ANY(${ingredientIds})
+      AND chef_id = ${tenantId}
+      AND confirmed_at > NOW() - INTERVAL '90 days'
+  `)) as unknown as Array<{
+    ingredient_id: string
+    price_cents: number
+    price_unit: string
+    source: string
+    confirmed_at: string
+    notes: string | null
+  }>
+
+  const overrideByIngredient = new Map<string, (typeof overrideRows)[0]>()
+  for (const row of overrideRows) {
+    overrideByIngredient.set(row.ingredient_id, row)
+  }
+
   // Query 1: All receipt history rows for these ingredients
   const receiptRows = (await db.execute(sql`
     SELECT ingredient_id, price_per_unit_cents, unit, store_name, purchase_date, source
@@ -738,12 +866,85 @@ export async function resolvePricesBatch(
   const uniqueCategories = [...new Set([...categoryById.values()].filter(Boolean))] as string[]
   const categoryBaselines = await getCategoryBaselinesBatch(uniqueCategories)
 
+  // Query 6.25: Batch resolved_prices lookup via ingredient alias bridge
+  type ResolvedNationalRow = {
+    ingredient_id: string
+    price_cents: number
+    price_unit: string
+    confidence: number
+    source_count: number
+    freshest: string | null
+    computation_method: string
+    region_name: string
+  }
+  const resolvedNationalByIngredient = new Map<string, ResolvedNationalRow>()
+  try {
+    const rnRows = (await db.execute(sql`
+      SELECT DISTINCT ON (ia.ingredient_id)
+        ia.ingredient_id,
+        rp.price_cents, rp.price_unit, rp.confidence,
+        rp.source_count,
+        rp.freshest_observation::text AS freshest,
+        rp.computation_method,
+        pr.name AS region_name
+      FROM ingredient_aliases ia
+      JOIN system_ingredients si ON si.id = ia.system_ingredient_id
+      JOIN openclaw.resolved_prices rp
+        ON rp.canonical_ingredient_id = COALESCE(si.slug, LOWER(REPLACE(si.name, ' ', '-')))
+      JOIN openclaw.pricing_regions pr ON pr.id = rp.pricing_region_id
+      WHERE ia.ingredient_id = ANY(${ingredientIds})
+        AND ia.tenant_id = ${tenantId}
+        AND ia.system_ingredient_id IS NOT NULL
+        AND ia.match_method != 'dismissed'
+        AND rp.price_type = 'retail'
+        AND rp.confidence > 0.2
+        AND (
+          pr.slug = ${preferredState?.toLowerCase() || ''}
+          OR rp.pricing_region_id IN (
+            SELECT zc.pricing_region_id FROM openclaw.zip_centroids zc
+            JOIN chefs ch ON ch.zip_code = zc.zip
+            WHERE ch.id = ${tenantId}
+          )
+        )
+      ORDER BY ia.ingredient_id, rp.confidence DESC
+    `)) as unknown as ResolvedNationalRow[]
+
+    for (const row of rnRows) {
+      if (!resolvedNationalByIngredient.has(row.ingredient_id)) {
+        resolvedNationalByIngredient.set(row.ingredient_id, row)
+      }
+    }
+  } catch {
+    // resolved_prices table may not exist yet; gracefully skip
+  }
+
   // Resolve each ingredient
   const now = new Date()
   const daysAgo = (d: string) =>
     Math.floor((now.getTime() - new Date(d).getTime()) / (1000 * 60 * 60 * 24))
 
   for (const id of ingredientIds) {
+    // Tier 0: Chef standing override
+    const override = overrideByIngredient.get(id)
+    if (override) {
+      result.set(
+        id,
+        withDecay({
+          cents: override.price_cents,
+          unit: override.price_unit || 'each',
+          source: 'chef_override',
+          sourceTier: override.source,
+          resolutionTier: 'chef_override',
+          store: sourceDisplayStore('chef_override', null),
+          confidence: 0.98,
+          freshness: computeFreshness(override.confirmed_at),
+          confirmedAt: override.confirmed_at,
+          reason: override.notes,
+        })
+      )
+      continue
+    }
+
     const receipts = receiptByIngredient.get(id) || []
     const quote = quoteByIngredient.get(id)
     const openclaw = openclawByIngredient.get(id) || []
@@ -927,6 +1128,28 @@ export async function resolvePricesBatch(
         )
         continue
       }
+    }
+
+    // Tier 6.25: Resolved national (pre-computed per-region price via alias bridge)
+    const resolvedNational = resolvedNationalByIngredient.get(id)
+    if (resolvedNational && resolvedNational.price_cents > 0) {
+      const isLocal = resolvedNational.computation_method !== 'cost_index_estimate'
+      result.set(
+        id,
+        withDecay({
+          cents: resolvedNational.price_cents,
+          unit: resolvedNational.price_unit?.replace('per_', '') || 'each',
+          source: 'resolved_national',
+          sourceTier: resolvedNational.computation_method,
+          resolutionTier: isLocal ? 'regional' : 'market_national',
+          store: `${resolvedNational.region_name} (${resolvedNational.source_count} sources)`,
+          confidence: Math.min(Number(resolvedNational.confidence), 0.7),
+          freshness: computeFreshness(resolvedNational.freshest),
+          confirmedAt: resolvedNational.freshest,
+          reason: null,
+        })
+      )
+      continue
     }
 
     // Tier 7: Government (no age limit)
