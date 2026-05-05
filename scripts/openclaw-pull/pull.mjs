@@ -504,8 +504,23 @@ async function main() {
 
   mkdirSync(config.tempDir, { recursive: true })
 
+  // ── Step 0.5: Checkpoint WAL on Pi ──────────────────────────────────────
+  // The Pi's SQLite is in WAL mode. If scrapers are writing, the served file
+  // will be corrupt (WAL pages not merged). Force a checkpoint before download.
+  try {
+    const { execSync } = await import('child_process')
+    const checkpointCmd = `ssh -o ConnectTimeout=5 -o BatchMode=yes davidferra@${config.pi.host} "python3 -c \\"import sqlite3; c=sqlite3.connect('/home/davidferra/openclaw-prices/data/prices.db'); c.execute('PRAGMA wal_checkpoint(TRUNCATE)'); c.close()\\""`
+    execSync(checkpointCmd, { timeout: 15000, stdio: 'pipe' })
+    log('Pi WAL checkpointed successfully')
+  } catch (err) {
+    log(`WARN: Could not checkpoint Pi WAL (${err.message}). Download may be corrupt.`)
+  }
+
   // ── Step 1: Download SQLite ────────────────────────────────────────────
+  // Download to a unique temp file to avoid EBUSY when a prior run left
+  // the db open (WAL/SHM locks on Windows survive process crashes).
   const dbPath = `${config.tempDir}/openclaw-latest.db`
+  const downloadPath = `${config.tempDir}/openclaw-download-${Date.now()}.db`
   log(`Fetching SQLite from http://${config.pi.host}:${config.pi.port}${config.pi.dbEndpoint}`)
   try {
     const headers = {}
@@ -515,18 +530,36 @@ async function main() {
       { signal: AbortSignal.timeout(config.pi.timeoutMs), headers }
     )
     if (!res.ok) throw new Error(`Pi returned ${res.status}: ${res.statusText}`)
-    // Stream to disk instead of buffering entire DB in memory
-    await pipeline(Readable.fromWeb(res.body), createWriteStream(dbPath))
+    // Stream to a unique temp file (never collides with locked handles)
+    await pipeline(Readable.fromWeb(res.body), createWriteStream(downloadPath))
   } catch (err) {
+    // Clean up partial download
+    try { unlinkSync(downloadPath) } catch {}
     log(`ERROR: Pi unreachable - ${err.message}`)
     process.exit(1)
   }
 
-  const fileSize = statSync(dbPath).size
+  // Replace the canonical path. If the old file is locked, just leave
+  // the stale copy and work from the fresh download directly.
+  try {
+    // Remove stale WAL/SHM locks from prior crashes
+    try { unlinkSync(`${dbPath}-wal`) } catch {}
+    try { unlinkSync(`${dbPath}-shm`) } catch {}
+    try { unlinkSync(dbPath) } catch {}
+    copyFileSync(downloadPath, dbPath)
+    unlinkSync(downloadPath)
+  } catch {
+    // Old file locked; work directly from the download
+    log('WARN: Could not replace cached db (locked). Using fresh download directly.')
+  }
+
+  const actualDbPath = statSync(dbPath, { throwIfNoEntry: false }) ? dbPath : downloadPath
+
+  const fileSize = statSync(actualDbPath).size
   log(`Downloaded ${(fileSize / 1024 / 1024).toFixed(1)}MB SQLite database`)
 
   // Validate SQLite magic bytes from disk (not memory)
-  const fd = openSync(dbPath, 'r')
+  const fd = openSync(actualDbPath, 'r')
   const header = Buffer.alloc(16)
   readSync(fd, header, 0, 16, 0)
   closeSync(fd)
@@ -536,7 +569,7 @@ async function main() {
   }
 
   // ── Step 2: Open SQLite ────────────────────────────────────────────────
-  const sqlite = new Database(dbPath, { readonly: true })
+  const sqlite = new Database(actualDbPath, { readonly: true })
   const tables = sqlite
     .prepare("SELECT name FROM sqlite_master WHERE type='table'")
     .all()
@@ -1240,6 +1273,14 @@ async function main() {
 
   await sql.end()
   sqlite.close()
+
+  // Clean up: if we worked from a unique download file, remove it now
+  if (actualDbPath !== dbPath) {
+    try { unlinkSync(actualDbPath) } catch {}
+  }
+  // Also clean any stale WAL/SHM from our session
+  try { unlinkSync(`${actualDbPath}-wal`) } catch {}
+  try { unlinkSync(`${actualDbPath}-shm`) } catch {}
 }
 
 main().catch((err) => {

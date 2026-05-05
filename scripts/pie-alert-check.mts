@@ -10,7 +10,7 @@
 
 import postgres from 'postgres'
 import { execSync } from 'child_process'
-import { readFileSync, existsSync } from 'fs'
+import { readFileSync, writeFileSync, appendFileSync, existsSync } from 'fs'
 import { resolve } from 'path'
 
 const DB_URL = process.env.DATABASE_URL || 'postgresql://postgres:postgres@127.0.0.1:54322/postgres'
@@ -159,5 +159,33 @@ if (alerts.length === 0) {
     process.stderr.write(`  [${a.severity.toUpperCase()}] ${a.category}: ${a.message}\n`)
   })
 }
+
+// --- Persist to docs/pie-alert-log.md ---
+const logPath = resolve(import.meta.dirname || '.', '../docs/pie-alert-log.md')
+const now = new Date().toISOString().slice(0, 19).replace('T', ' ')
+const dateLine = now.slice(0, 10)
+
+let logEntry = ''
+if (alerts.length === 0) {
+  logEntry = `\n## ${now}\n\nAll clear. No issues detected.\n`
+} else {
+  logEntry = `\n## ${now}\n\n`
+  logEntry += `**Summary:** ${criticals.length} critical, ${highs.length} high, ${alerts.length - criticals.length - highs.length} other\n\n`
+  for (const a of alerts) {
+    const icon = a.severity === 'critical' ? 'X' : a.severity === 'high' ? '!' : '-'
+    logEntry += `- [${icon}] **${a.severity.toUpperCase()}** (${a.category}): ${a.message}\n`
+    if (a.details) logEntry += `  - ${a.details}\n`
+    if (a.auto_action) logEntry += `  - Action: ${a.auto_action}\n`
+  }
+  logEntry += '\n'
+}
+
+// Create file with header if it doesn't exist
+if (!existsSync(logPath)) {
+  writeFileSync(logPath, `# PIE Alert Log\n\nPersisted by \`scripts/pie-alert-check.mts\`. Newest entries at bottom.\n`)
+}
+
+appendFileSync(logPath, logEntry)
+process.stderr.write(`Alert log appended to docs/pie-alert-log.md\n`)
 
 process.exit(criticals.length > 0 ? 1 : 0)

@@ -15,7 +15,15 @@
  * Safe to run multiple times (upserts on slug).
  */
 
-import { pgClient } from '../lib/db'
+import dotenv from 'dotenv'
+dotenv.config({ path: '.env.local' })
+import pg from 'postgres'
+
+const pgClient = pg(
+  process.env.DATABASE_URL ||
+    process.env.NEXT_PUBLIC_DB_URL ||
+    'postgresql://postgres:postgres@127.0.0.1:54322/postgres'
+)
 
 // ---------------------------------------------------------------------------
 // BLS Regional Price Parities (2024 data, food-at-home category)
