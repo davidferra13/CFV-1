@@ -18,6 +18,7 @@ dashboard. With qualifiers, dispatches to the appropriate sub-skill.
 /pie forecast     -> /pie-forecast (Layer 2)
 /pie alert        -> /pie-alert (check for problems)
 /pie census       -> /pie-census (expand manifest)
+/pie simulate     -> /pie-simulate (full nationwide regeneration)
 /pie fix          -> /pie-fix (repair worst violation)
 /pie status       -> One-line summary for other skills to consume
 /pie roadmap      -> Where we are on the national vision phases

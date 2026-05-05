@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "timestamp": "2026-05-05T00:55:52.797Z",
+  "timestamp": "2026-05-05T16:51:38.145Z",
   "source": "auto-postool",
   "partial": false,
   "phase": null,
@@ -18,11 +18,27 @@
   "uncommitted_files": [
     {
       "status": "M",
-      "path": ".claude/mcp.json"
+      "path": ".claude/hooks/compliance-guard.sh"
     },
     {
       "status": "M",
-      "path": ".claude/settings.local.json"
+      "path": ".claude/mcp-servers/chefflow/server.mjs"
+    },
+    {
+      "status": "M",
+      "path": ".claude/skills/pie/SKILL.md"
+    },
+    {
+      "status": "M",
+      "path": ".gitignore"
+    },
+    {
+      "status": "M",
+      "path": ".openclaw-deploy/captured-responses.json"
+    },
+    {
+      "status": "M",
+      "path": ".openclaw-deploy/captured-session.json"
     },
     {
       "status": "M",
@@ -30,21 +46,57 @@
     },
     {
       "status": "M",
-      "path": "app/(chef)/culinary/seasonal-calendar/seasonal-calendar-client.tsx"
+      "path": "lib/pricing/universal-price-lookup.ts"
     },
     {
       "status": "M",
-      "path": "lib/openclaw/seasonal-calendar-actions.ts"
+      "path": "package-lock.json"
     },
     {
-      "status": "D",
-      "path": "scripts/openclaw-promote-foods.ts"
+      "status": "M",
+      "path": "package.json"
+    },
+    {
+      "status": "M",
+      "path": "public/sw.js"
     },
     {
       "status": "??",
-      "path": ".history/"
+      "path": ".claude/audit/"
+    },
+    {
+      "status": "??",
+      "path": ".claude/skills/21st-magic/"
+    },
+    {
+      "status": "??",
+      "path": ".claude/skills/pie-simulate/"
+    },
+    {
+      "status": "??",
+      "path": ".playwright-mcp/"
+    },
+    {
+      "status": "??",
+      "path": "docs/agent-orchestration-pipeline.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/codex-build-queue.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/codex-tasks/"
+    },
+    {
+      "status": "??",
+      "path": "docs/pie-accuracy-log.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/superpowers/"
     }
   ],
   "next_action": null,
-  "context_notes": "Recent commits:\n80440de41 refactor: update 200+ source files across app, components, and lib\na7ee90edb docs: update CONTEXT, specs, agent-brain, Hermes reports, configs\ndf2d910b0 feat(db): add 18 additive migrations (venue, PIE, farm, catalog)\nc19d2f536 feat: seasonal calendar, catalog pick, co-host dashboards, knowledge module\n4d3ea4760 feat(infra): add ChefFlow MCP server, PIE skills, and hooks"
+  "context_notes": "Recent commits:\n164b639e2 chore(scripts+tests): add PIE scripts, pricing tests, and trend alerts\ncd3fba331 feat(security): MFA, phone verification, security settings, and dashboard components\n10d76d1f2 feat(api+pricing): PIE endpoints, pricing engine, auth, and schema updates\nb5a77d0a1 refactor(pages): update chef, public, and auth page components\nd4217554b refactor(ui): update UI components, navigation, and styling"
 }

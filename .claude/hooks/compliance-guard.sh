@@ -53,6 +53,17 @@ if [ "$SKIP_OPENCLAW" = "false" ]; then
   fi
 fi
 
+# Check for internal-only routes leaking into public navigation surfaces
+if echo "$FILE_PATH" | grep -qE '(public-nav-config|public-surface-config|public-footer|\(public\)/page)'; then
+  # Routes that MUST NOT appear in public navigation (internal chef tools, require account)
+  BANNED_PUBLIC_ROUTES='/ingredients|/culinary|/recipes|/clients|/events|/settings|/finance|/grocery|/shopping'
+  LEAKED=$(grep -nE "href:[[:space:]]*['\"]($BANNED_PUBLIC_ROUTES)" "$CHECK_FILE" 2>/dev/null | head -5)
+  if [ -n "$LEAKED" ]; then
+    LEAK_LINES=$(echo "$LEAKED" | tr '\n' '; ')
+    VIOLATIONS="${VIOLATIONS}INTERNAL ROUTE IN PUBLIC NAV found in $FILE_PATH: $LEAK_LINES. These routes require sign-in and MUST NOT appear in public navigation, footer, or homepage. Remove them. "
+  fi
+fi
+
 if [ -n "$VIOLATIONS" ]; then
   # Escape for JSON
   VIOLATIONS=$(echo "$VIOLATIONS" | sed 's/"/\\"/g' | tr '\n' ' ')

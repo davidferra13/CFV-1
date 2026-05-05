@@ -1,0 +1,185 @@
+- generic [active] [ref=e1]:
+  - link "Skip to main content" [ref=e2]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - navigation [ref=e5]:
+        - generic [ref=e6]:
+          - link "ChefFlow logo ChefFlow" [ref=e7]:
+            - /url: /
+            - img "ChefFlow logo" [ref=e8]
+            - generic [ref=e9]: ChefFlow
+          - generic [ref=e10]:
+            - button "Hire a Chef" [ref=e12]:
+              - text: Hire a Chef
+              - img [ref=e13]
+            - link "For Operators" [ref=e15]:
+              - /url: /for-operators
+            - link "Pricing" [ref=e16]:
+              - /url: /pricing
+            - link "Ingredients" [ref=e17]:
+              - /url: /ingredients
+        - generic [ref=e18]:
+          - link "Sign In" [ref=e19]:
+            - /url: /auth/signin
+          - link "Book Now" [ref=e20]:
+            - /url: /book
+    - main [ref=e21]:
+      - main [ref=e22]:
+        - generic [ref=e24]:
+          - generic [ref=e25]:
+            - heading "Find a private chef near you" [level=1] [ref=e26]
+            - paragraph [ref=e27]: Browse vetted chefs by location and service type, compare profiles, and book directly. From intimate dinners to weekly meal prep, ChefFlow connects you with the right fit.
+          - generic [ref=e29]:
+            - generic [ref=e30]:
+              - generic [ref=e31]:
+                - generic [ref=e32]: Location
+                - img [ref=e33]
+                - textbox "Location" [ref=e36]:
+                  - /placeholder: City, state, or ZIP code
+              - generic [ref=e37]:
+                - generic [ref=e38]: Service type
+                - img [ref=e39]
+                - combobox "Service type" [ref=e42] [cursor=pointer]:
+                  - option "Any service" [selected]
+                  - option "Private dinner"
+                  - option "Catering"
+                  - option "Meal prep"
+                  - option "Wedding"
+                  - option "Corporate dining"
+                  - option "Cooking class"
+                  - option "Event chef"
+                  - option "Personal chef"
+                - img
+            - generic [ref=e43]:
+              - paragraph [ref=e44]: Search by place and service first, then compare live profiles in the directory.
+              - button "Browse chefs" [ref=e45]:
+                - img [ref=e46]
+                - text: Browse chefs
+          - generic [ref=e48]:
+            - link "Find food now" [ref=e49]:
+              - /url: /eat
+            - link "Or describe your event" [ref=e50]:
+              - /url: /book
+        - paragraph [ref=e54]: Are you a chef-operator?
+        - generic [ref=e57]:
+          - generic [ref=e58]:
+            - generic [ref=e59]: ChefFlow for chef-led operators
+            - heading "Run private chef, catering, and meal prep work without spreadsheet patchwork." [level=2] [ref=e60]
+            - paragraph [ref=e61]: ChefFlow keeps inquiries, events, menus, payments, and finance attached in one operator workspace. Start with real product proof, then use the walkthrough lane when you want the system mapped to your current workflow.
+            - generic [ref=e62]:
+              - link "See operator proof" [ref=e63]:
+                - /url: /for-operators?source_page=home&source_cta=hero_operator_proof
+              - link "Request walkthrough" [ref=e64]:
+                - /url: /for-operators/walkthrough?source_page=home&source_cta=hero_operator_walkthrough
+          - complementary [ref=e65]:
+            - generic [ref=e66]:
+              - generic [ref=e67]:
+                - paragraph [ref=e68]: Real product proof
+                - heading "Live operator workspace" [level=3] [ref=e69]
+              - generic [ref=e70]: Current screen
+            - img "ChefFlow operator dashboard with inquiries, events, finance, and command center modules" [ref=e72]
+            - generic [ref=e73]:
+              - generic [ref=e74]:
+                - paragraph [ref=e75]: 64-second demo
+                - paragraph [ref=e76]: See the operator workflow before you create an account or request access.
+              - generic [ref=e77]:
+                - paragraph [ref=e78]: Real workspace screens
+                - paragraph [ref=e79]: Dashboard, inquiry, event, and finance views are already public on the proof page.
+              - generic [ref=e80]:
+                - paragraph [ref=e81]: Founder-led walkthrough
+                - paragraph [ref=e82]: Qualified operators can request a live review against their actual intake and ops flow.
+    - contentinfo [ref=e83]:
+      - generic [ref=e84]:
+        - generic [ref=e85]:
+          - link "ChefFlow logo ChefFlow" [ref=e86]:
+            - /url: /
+            - img "ChefFlow logo" [ref=e87]
+            - generic [ref=e88]: ChefFlow
+          - paragraph [ref=e89]: Discover private chefs and chef-led dining experiences. ChefFlow also powers the operator back office.
+        - generic [ref=e90]:
+          - paragraph [ref=e91]: Hire a Chef
+          - list [ref=e92]:
+            - listitem [ref=e93]:
+              - link "Find Food" [ref=e94]:
+                - /url: /eat
+            - listitem [ref=e95]:
+              - link "Book Now" [ref=e96]:
+                - /url: /book
+            - listitem [ref=e97]:
+              - link "Browse Chefs" [ref=e98]:
+                - /url: /chefs
+            - listitem [ref=e99]:
+              - link "Dinner Circles" [ref=e100]:
+                - /url: /hub
+            - listitem [ref=e101]:
+              - link "Services" [ref=e102]:
+                - /url: /services
+            - listitem [ref=e103]:
+              - link "Gift Cards" [ref=e104]:
+                - /url: /gift-cards
+            - listitem [ref=e105]:
+              - link "How It Works" [ref=e106]:
+                - /url: /how-it-works
+            - listitem [ref=e107]:
+              - link "FAQ" [ref=e108]:
+                - /url: /faq
+            - listitem [ref=e109]:
+              - link "Food Directory" [ref=e110]:
+                - /url: /nearby
+        - generic [ref=e111]:
+          - paragraph [ref=e112]: For Operators
+          - list [ref=e113]:
+            - listitem [ref=e114]:
+              - link "For Operators" [ref=e115]:
+                - /url: /for-operators
+            - listitem [ref=e116]:
+              - link "Marketplace Chefs" [ref=e117]:
+                - /url: /marketplace-chefs
+            - listitem [ref=e118]:
+              - link "Operator sign up" [ref=e119]:
+                - /url: /auth/signup?source_page=footer&source_cta=operator_signup
+        - generic [ref=e120]:
+          - paragraph [ref=e121]: Resources
+          - list [ref=e122]:
+            - listitem [ref=e123]:
+              - link "Ingredient Guide" [ref=e124]:
+                - /url: /ingredients
+            - listitem [ref=e125]:
+              - link "Pricing" [ref=e126]:
+                - /url: /pricing
+            - listitem [ref=e127]:
+              - link "FAQ" [ref=e128]:
+                - /url: /faq
+            - listitem [ref=e129]:
+              - link "How It Works" [ref=e130]:
+                - /url: /how-it-works
+        - generic [ref=e131]:
+          - paragraph [ref=e132]: Company
+          - list [ref=e133]:
+            - listitem [ref=e134]:
+              - link "About" [ref=e135]:
+                - /url: /about
+            - listitem [ref=e136]:
+              - link "Pricing" [ref=e137]:
+                - /url: /pricing
+            - listitem [ref=e138]:
+              - link "Trust Center" [ref=e139]:
+                - /url: /trust
+            - listitem [ref=e140]:
+              - link "Contact" [ref=e141]:
+                - /url: /contact
+          - paragraph [ref=e142]: Legal
+          - list [ref=e143]:
+            - listitem [ref=e144]:
+              - link "Privacy Policy" [ref=e145]:
+                - /url: /privacy
+            - listitem [ref=e146]:
+              - link "Terms of Service" [ref=e147]:
+                - /url: /terms
+        - generic [ref=e148]:
+          - paragraph [ref=e149]: Stay Updated
+          - paragraph [ref=e150]: Short guides for modern food-business operations.
+      - generic [ref=e153]:
+        - paragraph [ref=e154]: © 2026 ChefFlow. All rights reserved.
+        - paragraph [ref=e155]: Discover private chefs and chef-led dining experiences.

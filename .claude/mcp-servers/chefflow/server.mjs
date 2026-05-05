@@ -85,7 +85,7 @@ const TOOLS = [
       properties: {
         domain: {
           type: 'string',
-          enum: ['events', 'clients', 'menus', 'quotes', 'finance', 'invoices', 'inquiries', 'recipes', 'staff', 'inventory', 'vendors', 'notes', 'documents', 'search', 'partners', 'goals', 'notifications', 'ledger', 'settings', 'remy', 'taxonomy', 'safety', 'queue', 'workflows'],
+          enum: ['events', 'clients', 'menus', 'quotes', 'finance', 'invoices', 'inquiries', 'recipes', 'staff', 'inventory', 'vendors', 'notes', 'documents', 'search', 'partners', 'goals', 'notifications', 'ledger', 'settings', 'remy', 'taxonomy', 'safety', 'queue', 'pricing', 'workflows'],
           description: 'Domain to get detailed help for',
         },
       },
@@ -1485,6 +1485,34 @@ const TOOLS = [
       required: ['event_id'],
     },
   },
+
+  // ── PIE (Pricing Intelligence Engine) ──────────────────────────────
+  {
+    name: 'chefflow_pricing_lookup',
+    description:
+      'Look up the current price of any ingredient using PIE (Pricing Intelligence Engine). Returns price, confidence, resolution tier, store, and data sources. Works for ANY ingredient, even ones not in the chef\'s library. Pass optional zip for local prices.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        ingredient: { type: 'string', description: 'Ingredient name (e.g. "saffron", "chicken breast", "wagyu")' },
+        zip: { type: 'string', description: 'Optional ZIP code for local pricing' },
+      },
+      required: ['ingredient'],
+    },
+  },
+  {
+    name: 'chefflow_pricing_batch',
+    description:
+      'Batch price lookup for multiple ingredients at once (up to 50). Returns price, confidence, and tier for each.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        ingredients: { type: 'array', items: { type: 'string' }, description: 'Ingredient names (max 50)' },
+        zip: { type: 'string', description: 'Optional ZIP code for local pricing' },
+      },
+      required: ['ingredients'],
+    },
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -1516,6 +1544,7 @@ function domainHelp(domain) {
     taxonomy: TOOLS.filter((t) => t.name.startsWith('chefflow_taxonomy')),
     safety: TOOLS.filter((t) => t.name.startsWith('chefflow_safety')),
     queue: TOOLS.filter((t) => t.name === 'chefflow_queue'),
+    pricing: TOOLS.filter((t) => t.name.startsWith('chefflow_pricing')),
     workflows: TOOLS.filter((t) => ['chefflow_morning_briefing', 'chefflow_client_prep', 'chefflow_event_deep_dive', 'chefflow_weekly_pipeline', 'chefflow_event_profitability'].includes(t.name)),
   };
 
@@ -2091,6 +2120,22 @@ async function handleTool(name, args) {
     // ── Queue ──
     case 'chefflow_queue':
       return json(await api('GET', '/queue', null, { limit: args.limit }));
+
+    // ── PIE (Pricing Intelligence Engine) ──
+    case 'chefflow_pricing_lookup': {
+      const params = { ingredient: args.ingredient };
+      if (args.zip) params.zip = args.zip;
+      const res = await api('GET', '/pie/v1/price', null, params);
+      return json(res);
+    }
+
+    case 'chefflow_pricing_batch': {
+      const ingredients = (args.ingredients || []).slice(0, 50);
+      const body = { ingredients };
+      if (args.zip) body.zip = args.zip;
+      const res = await api('POST', '/pie/v1/price/batch', body);
+      return json(res);
+    }
 
     default:
       return `Unknown tool: ${name}. Call chefflow_help to see available tools.`;

@@ -1,5 +1,6 @@
 # dependencies
 /node_modules
+.history/
 **/node_modules
 chroma.sqlite3
 /.pnp

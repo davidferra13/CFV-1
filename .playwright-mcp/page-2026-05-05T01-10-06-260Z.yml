@@ -1,0 +1,1929 @@
+- generic [active] [ref=e1]:
+  - link "Skip to main content" [ref=e2]:
+    - /url: "#main-content"
+  - region "Notifications alt+T"
+  - generic [ref=e3]:
+    - link "Skip to main content" [ref=e4]:
+      - /url: "#main-content"
+    - generic:
+      - generic: DEVELOPMENT
+    - complementary [ref=e5]:
+      - generic [ref=e6]:
+        - link "ChefFlow logo ChefFlow" [ref=e7]:
+          - /url: /dashboard
+          - img "ChefFlow logo" [ref=e9]
+          - generic [ref=e10]: ChefFlow
+        - generic [ref=e11]:
+          - generic "System slow" [ref=e12]
+          - button "Recent activity" [ref=e17]
+          - button "Open search" [ref=e22]:
+            - img [ref=e23]
+          - button "Open Remy" [ref=e26]:
+            - img [ref=e27]
+          - button "Notifications" [ref=e30]:
+            - img [ref=e31]
+          - button "Collapse sidebar" [ref=e33]:
+            - img [ref=e34]
+      - navigation [ref=e36]:
+        - generic [ref=e37]:
+          - generic [ref=e38]:
+            - img
+            - textbox [ref=e39]:
+              - /placeholder: Search or ⌘K to jump...
+          - generic [ref=e40]:
+            - button "Create" [ref=e41]:
+              - img [ref=e42]
+              - generic [ref=e44]: Create
+            - generic [ref=e45]:
+              - link "Today" [ref=e46]:
+                - /url: /dashboard
+                - img [ref=e47]
+                - generic [ref=e49]: Today
+              - link "Inbox" [ref=e50]:
+                - /url: /inbox
+                - img [ref=e51]
+                - generic [ref=e53]: Inbox
+              - link "Events" [ref=e54]:
+                - /url: /events
+                - img [ref=e55]
+                - generic [ref=e57]: Events
+              - link "Clients" [ref=e58]:
+                - /url: /clients
+                - img [ref=e59]
+                - generic [ref=e61]: Clients
+              - link "Culinary" [ref=e62]:
+                - /url: /culinary
+                - img [ref=e63]
+                - generic [ref=e65]: Culinary
+              - link "Finance" [ref=e66]:
+                - /url: /finance
+                - img [ref=e67]
+                - generic [ref=e69]: Finance
+          - generic [ref=e71]:
+            - generic [ref=e72]:
+              - button "Clients" [ref=e73]:
+                - img [ref=e74]
+                - generic [ref=e76]: Clients
+                - img [ref=e77]
+              - generic [ref=e79]:
+                - generic [ref=e80]:
+                  - button "Client Directory" [ref=e81]:
+                    - img [ref=e82]
+                    - generic [ref=e84]: Client Directory
+                    - img [ref=e85]
+                  - generic [ref=e87]:
+                    - link "Active" [ref=e88]:
+                      - /url: /clients/active
+                      - text: Active
+                    - link "Add Client" [ref=e90]:
+                      - /url: /clients/new
+                      - text: Add Client
+                    - link "Duplicates" [ref=e92]:
+                      - /url: /clients/duplicates
+                      - text: Duplicates
+                    - link "Gift Cards" [ref=e94]:
+                      - /url: /clients/gift-cards
+                      - text: Gift Cards
+                    - link "Inactive" [ref=e96]:
+                      - /url: /clients/inactive
+                      - text: Inactive
+                    - link "Segments" [ref=e98]:
+                      - /url: /clients/segments
+                      - text: Segments
+                    - link "VIP" [ref=e100]:
+                      - /url: /clients/vip
+                      - text: VIP
+                - generic [ref=e102]:
+                  - button "Client History" [ref=e103]:
+                    - img [ref=e104]
+                    - generic [ref=e106]: Client History
+                    - img [ref=e107]
+                  - generic [ref=e109]:
+                    - link "Event History" [ref=e110]:
+                      - /url: /clients/history/event-history
+                      - text: Event History
+                    - link "Past Menus" [ref=e112]:
+                      - /url: /clients/history/past-menus
+                      - text: Past Menus
+                    - link "Payment History" [ref=e114]:
+                      - /url: /clients/history/spending-history
+                      - text: Payment History
+                - generic [ref=e116]:
+                  - button "Client Insights" [ref=e117]:
+                    - img [ref=e118]
+                    - generic [ref=e120]: Client Insights
+                    - img [ref=e121]
+                  - generic [ref=e123]:
+                    - link "At Risk" [ref=e124]:
+                      - /url: /clients/insights/at-risk
+                      - text: At Risk
+                    - link "Most Frequent" [ref=e126]:
+                      - /url: /clients/insights/most-frequent
+                      - text: Most Frequent
+                    - link "Top Clients" [ref=e128]:
+                      - /url: /clients/insights/top-clients
+                      - text: Top Clients
+                - link "Client Intake" [ref=e130]:
+                  - /url: /clients/intake
+                  - img [ref=e131]
+                  - text: Client Intake
+                - link "Client Presence" [ref=e133]:
+                  - /url: /clients/presence
+                  - img [ref=e134]
+                  - text: Client Presence
+                - generic [ref=e136]:
+                  - button "Communication" [ref=e137]:
+                    - img [ref=e138]
+                    - generic [ref=e140]: Communication
+                    - img [ref=e141]
+                  - generic [ref=e143]:
+                    - link "Client Notes" [ref=e144]:
+                      - /url: /clients/communication/notes
+                      - text: Client Notes
+                    - link "Follow-Ups" [ref=e146]:
+                      - /url: /clients/communication/follow-ups
+                      - text: Follow-Ups
+                    - link "Upcoming Touchpoints" [ref=e148]:
+                      - /url: /clients/communication/upcoming-touchpoints
+                      - text: Upcoming Touchpoints
+                - generic [ref=e150]:
+                  - button "Guest Directory" [ref=e151]:
+                    - img [ref=e152]
+                    - generic [ref=e154]: Guest Directory
+                    - img [ref=e155]
+                  - generic [ref=e157]:
+                    - link "Guest Insights" [ref=e158]:
+                      - /url: /guest-analytics
+                      - text: Guest Insights
+                    - link "Guest Pipeline" [ref=e160]:
+                      - /url: /guest-leads
+                      - text: Guest Pipeline
+                    - link "Reservations" [ref=e162]:
+                      - /url: /guests/reservations
+                      - text: Reservations
+                - generic [ref=e164]:
+                  - button "Loyalty & Rewards" [ref=e165]:
+                    - img [ref=e166]
+                    - generic [ref=e168]: Loyalty & Rewards
+                    - img [ref=e169]
+                  - generic [ref=e171]:
+                    - link "Create Reward" [ref=e172]:
+                      - /url: /loyalty/rewards/new
+                      - text: Create Reward
+                    - link "Learn About Loyalty" [ref=e174]:
+                      - /url: /loyalty/learn
+                      - text: Learn About Loyalty
+                    - link "Loyalty Overview" [ref=e176]:
+                      - /url: /clients/loyalty
+                      - text: Loyalty Overview
+                    - link "Points" [ref=e178]:
+                      - /url: /clients/loyalty/points
+                      - text: Points
+                    - link "Program Settings" [ref=e180]:
+                      - /url: /loyalty/settings
+                      - text: Program Settings
+                    - link "Raffle" [ref=e182]:
+                      - /url: /loyalty/raffle
+                      - text: Raffle
+                    - link "Referrals" [ref=e184]:
+                      - /url: /clients/loyalty/referrals
+                      - text: Referrals
+                    - link "Rewards" [ref=e186]:
+                      - /url: /clients/loyalty/rewards
+                      - text: Rewards
+                - generic [ref=e188]:
+                  - button "Partners & Referrals" [ref=e189]:
+                    - img [ref=e190]
+                    - generic [ref=e192]: Partners & Referrals
+                    - img [ref=e193]
+                  - generic [ref=e195]:
+                    - link "Active" [ref=e196]:
+                      - /url: /partners/active
+                      - text: Active
+                    - link "Add Partner" [ref=e198]:
+                      - /url: /partners/new
+                      - text: Add Partner
+                    - link "Events Generated" [ref=e200]:
+                      - /url: /partners/events-generated
+                      - text: Events Generated
+                    - link "Inactive" [ref=e202]:
+                      - /url: /partners/inactive
+                      - text: Inactive
+                    - link "Referral Performance" [ref=e204]:
+                      - /url: /partners/referral-performance
+                      - text: Referral Performance
+                - generic [ref=e206]:
+                  - button "Preferences & Dietary" [ref=e207]:
+                    - img [ref=e208]
+                    - generic [ref=e210]: Preferences & Dietary
+                    - img [ref=e211]
+                  - generic [ref=e213]:
+                    - link "Allergies" [ref=e214]:
+                      - /url: /clients/preferences/allergies
+                      - text: Allergies
+                    - link "Dietary Restrictions" [ref=e216]:
+                      - /url: /clients/preferences/dietary-restrictions
+                      - text: Dietary Restrictions
+                    - link "Dislikes" [ref=e218]:
+                      - /url: /clients/preferences/dislikes
+                      - text: Dislikes
+                    - link "Favorite Dishes" [ref=e220]:
+                      - /url: /clients/preferences/favorite-dishes
+                      - text: Favorite Dishes
+                - link "Recurring Clients" [ref=e222]:
+                  - /url: /clients/recurring
+                  - img [ref=e223]
+                  - text: Recurring Clients
+                - link "Who's Waiting" [ref=e225]:
+                  - /url: /pulse
+                  - img [ref=e226]
+                  - text: Who's Waiting
+            - generic [ref=e228]:
+              - button "Culinary" [ref=e229]:
+                - img [ref=e230]
+                - generic [ref=e232]: Culinary
+                - img [ref=e233]
+              - generic [ref=e235]:
+                - link "ChefTips" [ref=e236]:
+                  - /url: /culinary/cheftips
+                  - img [ref=e237]
+                  - text: ChefTips
+                - generic [ref=e239]:
+                  - button "Components" [ref=e240]:
+                    - img [ref=e241]
+                    - generic [ref=e243]: Components
+                    - img [ref=e244]
+                  - generic [ref=e246]:
+                    - link "Ferments" [ref=e247]:
+                      - /url: /culinary/components/ferments
+                      - text: Ferments
+                    - link "Garnishes" [ref=e249]:
+                      - /url: /culinary/components/garnishes
+                      - text: Garnishes
+                    - link "Sauces" [ref=e251]:
+                      - /url: /culinary/components/sauces
+                      - text: Sauces
+                    - link "Shared Elements" [ref=e253]:
+                      - /url: /culinary/components/shared-elements
+                      - text: Shared Elements
+                    - link "Stocks" [ref=e255]:
+                      - /url: /culinary/components/stocks
+                      - text: Stocks
+                - generic [ref=e257]:
+                  - button "Costing" [ref=e258]:
+                    - img [ref=e259]
+                    - generic [ref=e261]: Costing
+                    - img [ref=e262]
+                  - generic [ref=e264]:
+                    - link "Food Cost Analysis" [ref=e265]:
+                      - /url: /culinary/costing/food-cost
+                      - text: Food Cost Analysis
+                    - link "Menu Costs" [ref=e267]:
+                      - /url: /culinary/costing/menu
+                      - text: Menu Costs
+                    - link "On Sale This Week" [ref=e269]:
+                      - /url: /culinary/costing/sales
+                      - text: On Sale This Week
+                    - link "Recipe Costs" [ref=e271]:
+                      - /url: /culinary/costing/recipe
+                      - text: Recipe Costs
+                - link "Culinary Board" [ref=e273]:
+                  - /url: /culinary-board
+                  - img [ref=e274]
+                  - text: Culinary Board
+                - link "Culinary Hub" [ref=e276]:
+                  - /url: /culinary
+                  - img [ref=e277]
+                  - text: Culinary Hub
+                - link "Food Catalog" [ref=e279]:
+                  - /url: /culinary/price-catalog
+                  - img [ref=e280]
+                  - text: Food Catalog
+                - generic [ref=e282]:
+                  - button "Ingredients" [ref=e283]:
+                    - img [ref=e284]
+                    - generic [ref=e286]: Ingredients
+                    - img [ref=e287]
+                  - generic [ref=e289]:
+                    - link "Ingredients Database" [ref=e290]:
+                      - /url: /culinary/ingredients
+                      - text: Ingredients Database
+                    - link "Receipt Scanner" [ref=e292]:
+                      - /url: /culinary/ingredients/receipt-scan
+                      - text: Receipt Scanner
+                    - link "Seasonal Availability" [ref=e294]:
+                      - /url: /culinary/ingredients/seasonal-availability
+                      - text: Seasonal Availability
+                    - link "Vendor Notes" [ref=e296]:
+                      - /url: /culinary/ingredients/vendor-notes
+                      - text: Vendor Notes
+                - link "Menu Engine Settings" [ref=e298]:
+                  - /url: /settings/menu-engine
+                  - img [ref=e299]
+                  - text: Menu Engine Settings
+                - generic [ref=e301]:
+                  - button "Menus" [ref=e302]:
+                    - img [ref=e303]
+                    - generic [ref=e305]: Menus
+                    - img [ref=e306]
+                  - generic [ref=e308]:
+                    - link "All Menus" [ref=e309]:
+                      - /url: /culinary/menus
+                      - text: All Menus
+                    - link "Approved" [ref=e311]:
+                      - /url: /culinary/menus/approved
+                      - text: Approved
+                    - link "Dish Index" [ref=e313]:
+                      - /url: /culinary/dish-index
+                      - text: Dish Index
+                    - link "Dish Insights" [ref=e315]:
+                      - /url: /culinary/dish-index/insights
+                      - text: Dish Insights
+                    - link "Dishes" [ref=e317]:
+                      - /url: /menus/dishes
+                      - text: Dishes
+                    - link "Drafts" [ref=e319]:
+                      - /url: /culinary/menus/drafts
+                      - text: Drafts
+                    - link "Estimate" [ref=e321]:
+                      - /url: /menus/estimate
+                      - text: Estimate
+                    - link "Menu Engineering" [ref=e323]:
+                      - /url: /culinary/menus/engineering
+                      - text: Menu Engineering
+                    - link "Menu Upload" [ref=e325]:
+                      - /url: /menus/upload
+                      - text: Menu Upload
+                    - link "New Menu" [ref=e327]:
+                      - /url: /menus/new
+                      - text: New Menu
+                    - link "Scaling" [ref=e329]:
+                      - /url: /culinary/menus/scaling
+                      - text: Scaling
+                    - link "Substitutions" [ref=e331]:
+                      - /url: /culinary/menus/substitutions
+                      - text: Substitutions
+                    - link "Tasting Menus" [ref=e333]:
+                      - /url: /menus/tasting
+                      - text: Tasting Menus
+                    - link "Templates" [ref=e335]:
+                      - /url: /culinary/menus/templates
+                      - text: Templates
+                - link "My Kitchen" [ref=e337]:
+                  - /url: /culinary/my-kitchen
+                  - img [ref=e338]
+                  - text: My Kitchen
+                - generic [ref=e340]:
+                  - button "Prep Workspace" [ref=e341]:
+                    - img [ref=e342]
+                    - generic [ref=e344]: Prep Workspace
+                    - img [ref=e345]
+                  - generic [ref=e347]:
+                    - link "Prep Timeline" [ref=e348]:
+                      - /url: /culinary/prep/timeline
+                      - text: Prep Timeline
+                    - link "Shopping Lists" [ref=e350]:
+                      - /url: /culinary/prep/shopping
+                      - text: Shopping Lists
+                - link "Recipe Import Hub" [ref=e352]:
+                  - /url: /recipes/import
+                  - img [ref=e353]
+                  - text: Recipe Import Hub
+                - link "Recipe Sprint" [ref=e355]:
+                  - /url: /recipes/sprint
+                  - img [ref=e356]
+                  - text: Recipe Sprint
+                - generic [ref=e358]:
+                  - button "Recipes" [ref=e359]:
+                    - img [ref=e360]
+                    - generic [ref=e362]: Recipes
+                    - img [ref=e363]
+                  - generic [ref=e365]:
+                    - link "Brain Dump" [ref=e366]:
+                      - /url: /recipes/dump
+                      - text: Brain Dump
+                    - link "By Dietary Flags" [ref=e368]:
+                      - /url: /culinary/recipes/dietary-flags
+                      - text: By Dietary Flags
+                    - link "Drafts" [ref=e370]:
+                      - /url: /culinary/recipes/drafts
+                      - text: Drafts
+                    - link "New Recipe" [ref=e372]:
+                      - /url: /recipes/new
+                      - text: New Recipe
+                    - link "Production Log" [ref=e374]:
+                      - /url: /recipes/production-log
+                      - text: Production Log
+                    - link "Recipe Library" [ref=e376]:
+                      - /url: /culinary/recipes
+                      - text: Recipe Library
+                    - link "Seasonal Notes" [ref=e378]:
+                      - /url: /culinary/recipes/seasonal-notes
+                      - text: Seasonal Notes
+                    - link "Step Photos" [ref=e380]:
+                      - /url: /recipes/photos
+                      - text: Step Photos
+                    - link "Tags" [ref=e382]:
+                      - /url: /culinary/recipes/tags
+                      - text: Tags
+                - link "Seasonal Calendar" [ref=e384]:
+                  - /url: /culinary/seasonal-calendar
+                  - img [ref=e385]
+                  - text: Seasonal Calendar
+                - link "Seasonal Palettes" [ref=e387]:
+                  - /url: /settings/repertoire
+                  - img [ref=e388]
+                  - text: Seasonal Palettes
+                - link "Substitutions" [ref=e390]:
+                  - /url: /culinary/substitutions
+                  - img [ref=e391]
+                  - text: Substitutions
+                - link "Voice Hub" [ref=e393]:
+                  - /url: /culinary/call-sheet
+                  - img [ref=e394]
+                  - text: Voice Hub
+            - generic [ref=e396]:
+              - button "Events" [ref=e397]:
+                - img [ref=e398]
+                - generic [ref=e400]: Events
+                - img [ref=e401]
+              - generic [ref=e403]:
+                - generic [ref=e404]:
+                  - button "Calendar" [ref=e405]:
+                    - img [ref=e406]
+                    - generic [ref=e408]: Calendar
+                    - img [ref=e409]
+                  - generic [ref=e411]:
+                    - link "Day View" [ref=e412]:
+                      - /url: /calendar/day
+                      - text: Day View
+                    - link "Share Calendar" [ref=e414]:
+                      - /url: /calendar/share
+                      - text: Share Calendar
+                    - link "Waitlist" [ref=e416]:
+                      - /url: /waitlist
+                      - text: Waitlist
+                    - link "Week Planner" [ref=e418]:
+                      - /url: /calendar/week
+                      - text: Week Planner
+                    - link "Year View" [ref=e420]:
+                      - /url: /calendar/year
+                      - text: Year View
+                - generic [ref=e422]:
+                  - button "Client Feedback" [ref=e423]:
+                    - img [ref=e424]
+                    - generic [ref=e426]: Client Feedback
+                    - img [ref=e427]
+                  - generic [ref=e429]:
+                    - link "Feedback Dashboard" [ref=e430]:
+                      - /url: /feedback/dashboard
+                      - text: Feedback Dashboard
+                    - link "Send Requests" [ref=e432]:
+                      - /url: /feedback/requests
+                      - text: Send Requests
+                - link "Event Calendar" [ref=e434]:
+                  - /url: /production
+                  - img [ref=e435]
+                  - text: Event Calendar
+                - generic [ref=e437]:
+                  - button "Event Reviews" [ref=e438]:
+                    - img [ref=e439]
+                    - generic [ref=e441]: Event Reviews
+                    - img [ref=e442]
+                  - generic [ref=e444]:
+                    - link "Reviews" [ref=e445]:
+                      - /url: /reviews
+                      - text: Reviews
+                    - link "Smart Import" [ref=e447]:
+                      - /url: /import
+                      - text: Smart Import
+                - generic [ref=e449]:
+                  - button "Event Status" [ref=e450]:
+                    - img [ref=e451]
+                    - generic [ref=e453]: Event Status
+                    - img [ref=e454]
+                  - generic [ref=e456]:
+                    - link "Awaiting Deposit" [ref=e457]:
+                      - /url: /events/awaiting-deposit
+                      - text: Awaiting Deposit
+                    - link "Cancelled" [ref=e459]:
+                      - /url: /events/cancelled
+                      - text: Cancelled
+                    - link "Completed" [ref=e461]:
+                      - /url: /events/completed
+                      - text: Completed
+                    - link "Confirmed" [ref=e463]:
+                      - /url: /events/confirmed
+                      - text: Confirmed
+                    - link "Create Event" [ref=e465]:
+                      - /url: /events/new
+                      - text: Create Event
+                    - link "Create from Text" [ref=e467]:
+                      - /url: /events/new/from-text
+                      - text: Create from Text
+                    - link "Event Wizard" [ref=e469]:
+                      - /url: /events/new/wizard
+                      - text: Event Wizard
+                    - link "Kanban Board" [ref=e471]:
+                      - /url: /events/board
+                      - text: Kanban Board
+                    - link "Timeline" [ref=e473]:
+                      - /url: /events/timeline
+                      - text: Timeline
+            - generic [ref=e475]:
+              - button "Finance" [ref=e476]:
+                - img [ref=e477]
+                - generic [ref=e479]: Finance
+                - img [ref=e480]
+              - generic [ref=e482]:
+                - link "1099 Contractors" [ref=e483]:
+                  - /url: /finance/contractors
+                  - img [ref=e484]
+                  - text: 1099 Contractors
+                - link "Break-Even Analysis" [ref=e486]:
+                  - /url: /finance/planning/break-even
+                  - img [ref=e487]
+                  - text: Break-Even Analysis
+                - generic [ref=e489]:
+                  - button "Expenses" [ref=e490]:
+                    - img [ref=e491]
+                    - generic [ref=e493]: Expenses
+                    - img [ref=e494]
+                  - generic [ref=e496]:
+                    - link "Add Expense" [ref=e497]:
+                      - /url: /expenses/new
+                      - text: Add Expense
+                    - link "By Category" [ref=e499]:
+                      - /url: /finance/expenses
+                      - text: By Category
+                    - link "Food & Ingredients" [ref=e501]:
+                      - /url: /finance/expenses/food-ingredients
+                      - text: Food & Ingredients
+                    - link "Labor" [ref=e503]:
+                      - /url: /finance/expenses/labor
+                      - text: Labor
+                    - link "Marketing" [ref=e505]:
+                      - /url: /finance/expenses/marketing
+                      - text: Marketing
+                    - link "Miscellaneous" [ref=e507]:
+                      - /url: /finance/expenses/miscellaneous
+                      - text: Miscellaneous
+                    - link "Plate Costs" [ref=e509]:
+                      - /url: /finance/plate-costs
+                      - text: Plate Costs
+                    - link "Receipt Library" [ref=e511]:
+                      - /url: /receipts
+                      - text: Receipt Library
+                    - link "Rentals & Equipment" [ref=e513]:
+                      - /url: /finance/expenses/rentals-equipment
+                      - text: Rentals & Equipment
+                    - link "Software" [ref=e515]:
+                      - /url: /finance/expenses/software
+                      - text: Software
+                    - link "Travel" [ref=e517]:
+                      - /url: /finance/expenses/travel
+                      - text: Travel
+                - link "Financial Goals" [ref=e519]:
+                  - /url: /finance/goals
+                  - img [ref=e520]
+                  - text: Financial Goals
+                - generic [ref=e522]:
+                  - button "Financial Hub" [ref=e523]:
+                    - img [ref=e524]
+                    - generic [ref=e526]: Financial Hub
+                    - img [ref=e527]
+                  - generic [ref=e529]:
+                    - link "Finance Home" [ref=e530]:
+                      - /url: /finance
+                      - text: Finance Home
+                    - link "Outstanding Payments" [ref=e532]:
+                      - /url: /finance/overview/outstanding-payments
+                      - text: Outstanding Payments
+                    - link "Overview" [ref=e534]:
+                      - /url: /finance/overview
+                      - text: Overview
+                    - link "Revenue Summary" [ref=e536]:
+                      - /url: /finance/overview/revenue-summary
+                      - text: Revenue Summary
+                - link "Forecasting" [ref=e538]:
+                  - /url: /finance/forecast
+                  - img [ref=e539]
+                  - text: Forecasting
+                - generic [ref=e541]:
+                  - button "Invoices" [ref=e542]:
+                    - img [ref=e543]
+                    - generic [ref=e545]: Invoices
+                    - img [ref=e546]
+                  - generic [ref=e548]:
+                    - link "Cancelled" [ref=e549]:
+                      - /url: /finance/invoices/cancelled
+                      - text: Cancelled
+                    - link "Draft" [ref=e551]:
+                      - /url: /finance/invoices/draft
+                      - text: Draft
+                    - link "Overdue" [ref=e553]:
+                      - /url: /finance/invoices/overdue
+                      - text: Overdue
+                    - link "Paid" [ref=e555]:
+                      - /url: /finance/invoices/paid
+                      - text: Paid
+                    - link "Recurring Invoices" [ref=e557]:
+                      - /url: /finance/recurring
+                      - text: Recurring Invoices
+                    - link "Refunded" [ref=e559]:
+                      - /url: /finance/invoices/refunded
+                      - text: Refunded
+                    - link "Sent" [ref=e561]:
+                      - /url: /finance/invoices/sent
+                      - text: Sent
+                - generic [ref=e563]:
+                  - button "Ledger" [ref=e564]:
+                    - img [ref=e565]
+                    - generic [ref=e567]: Ledger
+                    - img [ref=e568]
+                  - generic [ref=e570]:
+                    - link "Adjustments" [ref=e571]:
+                      - /url: /finance/ledger/adjustments
+                      - text: Adjustments
+                    - link "Transaction Log" [ref=e573]:
+                      - /url: /finance/ledger/transaction-log
+                      - text: Transaction Log
+                - link "Payment Splitting" [ref=e575]:
+                  - /url: /payments/splitting
+                  - img [ref=e576]
+                  - text: Payment Splitting
+                - generic [ref=e578]:
+                  - button "Payments" [ref=e579]:
+                    - img [ref=e580]
+                    - generic [ref=e582]: Payments
+                    - img [ref=e583]
+                  - generic [ref=e585]:
+                    - link "Deposits" [ref=e586]:
+                      - /url: /finance/payments/deposits
+                      - text: Deposits
+                    - link "Disputes" [ref=e588]:
+                      - /url: /finance/disputes
+                      - text: Disputes
+                    - link "Failed Payments" [ref=e590]:
+                      - /url: /finance/payments/failed
+                      - text: Failed Payments
+                    - link "Installments" [ref=e592]:
+                      - /url: /finance/payments/installments
+                      - text: Installments
+                    - link "New Retainer" [ref=e594]:
+                      - /url: /finance/retainers/new
+                      - text: New Retainer
+                    - link "Refunds" [ref=e596]:
+                      - /url: /finance/payments/refunds
+                      - text: Refunds
+                    - link "Retainers" [ref=e598]:
+                      - /url: /finance/retainers
+                      - text: Retainers
+                - generic [ref=e600]:
+                  - button "Payouts" [ref=e601]:
+                    - img [ref=e602]
+                    - generic [ref=e604]: Payouts
+                    - img [ref=e605]
+                  - generic [ref=e607]:
+                    - link "Manual Payments" [ref=e608]:
+                      - /url: /finance/payouts/manual-payments
+                      - text: Manual Payments
+                    - link "Reconciliation" [ref=e610]:
+                      - /url: /finance/payouts/reconciliation
+                      - text: Reconciliation
+                    - link "Stripe Payouts" [ref=e612]:
+                      - /url: /finance/payouts/stripe-payouts
+                      - text: Stripe Payouts
+                - generic [ref=e614]:
+                  - button "Payroll" [ref=e615]:
+                    - img [ref=e616]
+                    - generic [ref=e618]: Payroll
+                    - img [ref=e619]
+                  - generic [ref=e621]:
+                    - link "941 Filing" [ref=e622]:
+                      - /url: /finance/payroll/941
+                      - text: 941 Filing
+                    - link "Employees" [ref=e624]:
+                      - /url: /finance/payroll/employees
+                      - text: Employees
+                    - link "Run Payroll" [ref=e626]:
+                      - /url: /finance/payroll/run
+                      - text: Run Payroll
+                    - link "W-2 Forms" [ref=e628]:
+                      - /url: /finance/payroll/w2
+                      - text: W-2 Forms
+                - generic [ref=e630]:
+                  - button "Reports" [ref=e631]:
+                    - img [ref=e632]
+                    - generic [ref=e634]: Reports
+                    - img [ref=e635]
+                  - generic [ref=e637]:
+                    - link "Expense by Category" [ref=e638]:
+                      - /url: /finance/reporting/expense-by-category
+                      - text: Expense by Category
+                    - link "Profit & Loss" [ref=e640]:
+                      - /url: /finance/reporting/profit-loss
+                      - text: Profit & Loss
+                    - link "Profit by Event" [ref=e642]:
+                      - /url: /finance/reporting/profit-by-event
+                      - text: Profit by Event
+                    - link "Revenue by Client" [ref=e644]:
+                      - /url: /finance/reporting/revenue-by-client
+                      - text: Revenue by Client
+                    - link "Revenue by Event" [ref=e646]:
+                      - /url: /finance/reporting/revenue-by-event
+                      - text: Revenue by Event
+                    - link "Revenue by Month" [ref=e648]:
+                      - /url: /finance/reporting/revenue-by-month
+                      - text: Revenue by Month
+                    - link "Year-over-Year Comparison" [ref=e650]:
+                      - /url: /finance/reporting/yoy-comparison
+                      - text: Year-over-Year Comparison
+                    - link "Year-to-Date Summary" [ref=e652]:
+                      - /url: /finance/reporting/year-to-date-summary
+                      - text: Year-to-Date Summary
+                - generic [ref=e654]:
+                  - button "Sales Tax" [ref=e655]:
+                    - img [ref=e656]
+                    - generic [ref=e658]: Sales Tax
+                    - img [ref=e659]
+                  - generic [ref=e661]:
+                    - link "Remittances" [ref=e662]:
+                      - /url: /finance/sales-tax/remittances
+                      - text: Remittances
+                    - link "Tax Settings" [ref=e664]:
+                      - /url: /finance/sales-tax/settings
+                      - text: Tax Settings
+                - generic [ref=e666]:
+                  - button "Tax Center" [ref=e667]:
+                    - img [ref=e668]
+                    - generic [ref=e670]: Tax Center
+                    - img [ref=e671]
+                  - generic [ref=e673]:
+                    - link "1099-NEC" [ref=e674]:
+                      - /url: /finance/tax/1099-nec
+                      - text: 1099-NEC
+                    - link "Depreciation" [ref=e676]:
+                      - /url: /finance/tax/depreciation
+                      - text: Depreciation
+                    - link "Home Office" [ref=e678]:
+                      - /url: /finance/tax/home-office
+                      - text: Home Office
+                    - link "Quarterly Estimates" [ref=e680]:
+                      - /url: /finance/tax/quarterly
+                      - text: Quarterly Estimates
+                    - link "Retirement" [ref=e682]:
+                      - /url: /finance/tax/retirement
+                      - text: Retirement
+                    - link "Tax Summary" [ref=e684]:
+                      - /url: /finance/reporting/tax-summary
+                      - text: Tax Summary
+                    - link "Year-End Package" [ref=e686]:
+                      - /url: /finance/tax/year-end
+                      - text: Year-End Package
+                - link "Year-End Close" [ref=e688]:
+                  - /url: /finance/year-end
+                  - img [ref=e689]
+                  - text: Year-End Close
+            - generic [ref=e691]:
+              - button "Pipeline" [ref=e692]:
+                - img [ref=e693]
+                - generic [ref=e695]: Pipeline
+                - img [ref=e696]
+              - generic [ref=e698]:
+                - generic [ref=e699]:
+                  - button "Calls & Meetings" [ref=e700]:
+                    - img [ref=e701]
+                    - generic [ref=e703]: Calls & Meetings
+                    - img [ref=e704]
+                  - generic [ref=e706]:
+                    - link "Completed" [ref=e707]:
+                      - /url: /calls?status=completed
+                      - text: Completed
+                    - link "Schedule Call" [ref=e709]:
+                      - /url: /calls/new
+                      - text: Schedule Call
+                    - link "Upcoming" [ref=e711]:
+                      - /url: /calls?status=scheduled
+                      - text: Upcoming
+                - link "Consulting Hub" [ref=e713]:
+                  - /url: /consulting
+                  - img [ref=e714]
+                  - text: Consulting Hub
+                - generic [ref=e716]:
+                  - button "Contracts" [ref=e717]:
+                    - img [ref=e718]
+                    - generic [ref=e720]: Contracts
+                    - img [ref=e721]
+                  - link "Templates" [ref=e724]:
+                    - /url: /settings/contracts
+                    - text: Templates
+                - generic [ref=e726]:
+                  - button "Inquiries" [ref=e727]:
+                    - img [ref=e728]
+                    - generic [ref=e730]: Inquiries
+                    - img [ref=e731]
+                  - generic [ref=e733]:
+                    - link "Awaiting Response" [ref=e734]:
+                      - /url: /inquiries/awaiting-response
+                      - text: Awaiting Response
+                    - link "Client Reply" [ref=e736]:
+                      - /url: /inquiries/awaiting-client-reply
+                      - text: Client Reply
+                    - link "Declined" [ref=e738]:
+                      - /url: /inquiries/declined
+                      - text: Declined
+                    - link "Menu Drafting" [ref=e740]:
+                      - /url: /inquiries/menu-drafting
+                      - text: Menu Drafting
+                    - link "New Inquiry" [ref=e742]:
+                      - /url: /inquiries/new
+                      - text: New Inquiry
+                    - link "Sent to Client" [ref=e744]:
+                      - /url: /inquiries/sent-to-client
+                      - text: Sent to Client
+                - generic [ref=e746]:
+                  - button "Leads" [ref=e747]:
+                    - img [ref=e748]
+                    - generic [ref=e750]: Leads
+                    - img [ref=e751]
+                  - generic [ref=e753]:
+                    - link "Archived" [ref=e754]:
+                      - /url: /leads/archived
+                      - text: Archived
+                    - link "Contacted" [ref=e756]:
+                      - /url: /leads/contacted
+                      - text: Contacted
+                    - link "Converted" [ref=e758]:
+                      - /url: /leads/converted
+                      - text: Converted
+                    - link "New" [ref=e760]:
+                      - /url: /leads/new
+                      - text: New
+                    - link "Qualified" [ref=e762]:
+                      - /url: /leads/qualified
+                      - text: Qualified
+                - generic [ref=e764]:
+                  - button "Marketplace" [ref=e765]:
+                    - img [ref=e766]
+                    - generic [ref=e768]: Marketplace
+                    - img [ref=e769]
+                  - generic [ref=e771]:
+                    - link "Availability Broadcaster" [ref=e772]:
+                      - /url: /availability
+                      - text: Availability Broadcaster
+                    - link "Capture Live Page" [ref=e774]:
+                      - /url: /marketplace/capture
+                      - text: Capture Live Page
+                    - link "Command Center" [ref=e776]:
+                      - /url: /marketplace
+                      - text: Command Center
+                - generic [ref=e778]:
+                  - button "Proposals" [ref=e779]:
+                    - img [ref=e780]
+                    - generic [ref=e782]: Proposals
+                    - img [ref=e783]
+                  - generic [ref=e785]:
+                    - link "Add-Ons" [ref=e786]:
+                      - /url: /proposals/addons
+                      - text: Add-Ons
+                    - link "Proposal Builder" [ref=e788]:
+                      - /url: /proposals/builder
+                      - text: Proposal Builder
+                    - link "Templates" [ref=e790]:
+                      - /url: /proposals/templates
+                      - text: Templates
+                - generic [ref=e792]:
+                  - button "Prospecting" [ref=e793]:
+                    - img [ref=e794]
+                    - generic [ref=e796]: Prospecting
+                    - img [ref=e797]
+                  - generic [ref=e799]:
+                    - link "AI Scrub" [ref=e800]:
+                      - /url: /prospecting/scrub
+                      - text: AI Scrub
+                    - link "Call Queue" [ref=e802]:
+                      - /url: /prospecting/queue
+                      - text: Call Queue
+                    - link "Call Scripts" [ref=e804]:
+                      - /url: /prospecting/scripts
+                      - text: Call Scripts
+                    - link "Clusters" [ref=e806]:
+                      - /url: /prospecting/clusters
+                      - text: Clusters
+                    - link "Import Leads" [ref=e808]:
+                      - /url: /prospecting/import
+                      - text: Import Leads
+                    - link "Pipeline" [ref=e810]:
+                      - /url: /prospecting/pipeline
+                      - text: Pipeline
+                - generic [ref=e812]:
+                  - button "Quotes" [ref=e813]:
+                    - img [ref=e814]
+                    - generic [ref=e816]: Quotes
+                    - img [ref=e817]
+                  - generic [ref=e819]:
+                    - link "Accepted" [ref=e820]:
+                      - /url: /quotes/accepted
+                      - text: Accepted
+                    - link "Draft" [ref=e822]:
+                      - /url: /quotes/draft
+                      - text: Draft
+                    - link "Expired" [ref=e824]:
+                      - /url: /quotes/expired
+                      - text: Expired
+                    - link "New Quote" [ref=e826]:
+                      - /url: /quotes/new
+                      - text: New Quote
+                    - link "Rejected" [ref=e828]:
+                      - /url: /quotes/rejected
+                      - text: Rejected
+                    - link "Sent" [ref=e830]:
+                      - /url: /quotes/sent
+                      - text: Sent
+                    - link "Viewed" [ref=e832]:
+                      - /url: /quotes/viewed
+                      - text: Viewed
+                - link "Rate Card" [ref=e834]:
+                  - /url: /rate-card
+                  - img [ref=e835]
+                  - text: Rate Card
+                - link "Testimonials" [ref=e837]:
+                  - /url: /testimonials
+                  - img [ref=e838]
+                  - text: Testimonials
+                - link "Wix Forms" [ref=e840]:
+                  - /url: /wix-submissions
+                  - img [ref=e841]
+                  - text: Wix Forms
+          - link "All Features" [ref=e844]:
+            - /url: /features
+            - img [ref=e845]
+            - text: All Features
+          - link "Settings" [ref=e847]:
+            - /url: /settings
+            - img [ref=e848]
+            - text: Settings
+      - button "Sign Out" [ref=e851]:
+        - img [ref=e852]
+        - text: Sign Out
+    - main [ref=e854]:
+      - generic [ref=e855]:
+        - generic [ref=e858]:
+          - img [ref=e859]
+          - paragraph [ref=e861]:
+            - strong [ref=e862]: Food Operator Survey - Wave 1
+            - text: ": Help us build a better ChefFlow. Takes about 3 minutes."
+          - link "Take Survey" [ref=e863]:
+            - /url: /beta-survey/public/food-operator-wave-1?source=owned_surface&channel=chef_portal&launch=in_app_banner&respondent_role=food_operator
+          - button "Dismiss survey banner" [ref=e864]:
+            - img [ref=e865]
+        - generic [ref=e867]:
+          - generic [ref=e868]:
+            - generic [ref=e869]:
+              - generic [ref=e870]:
+                - paragraph [ref=e871]: Good evening, agent
+                - generic "Live dashboard" [ref=e872]:
+                  - generic [ref=e874]: Live
+              - heading "End-of-day summary." [level=1] [ref=e875]
+            - generic [ref=e876]:
+              - link "Briefing" [ref=e877]:
+                - /url: /briefing
+              - link "Create Menu" [ref=e878]:
+                - /url: /menus/new
+                - img [ref=e879]
+                - text: Create Menu
+              - link "Storefront" [ref=e881]:
+                - /url: /commerce/storefront
+                - img [ref=e882]
+                - text: Storefront
+              - link "New Event" [ref=e884]:
+                - /url: /events/new
+                - img [ref=e885]
+                - text: New Event
+          - generic [ref=e888]:
+            - generic [ref=e889]:
+              - generic [ref=e890]:
+                - paragraph [ref=e891]: 2 people waiting on you
+                - paragraph [ref=e892]: Most urgent client responses first.
+              - link "See all" [ref=e893]:
+                - /url: /pulse
+            - generic [ref=e894]:
+              - link "Gunjan Gupta 15th Anniversary, 35 days waiting Reply to client" [ref=e895]:
+                - /url: /inquiries/846fced1-7163-44b4-89b1-a57a43543f35
+                - generic [ref=e896]:
+                  - generic [ref=e897]: Gunjan Gupta
+                  - generic [ref=e898]: 15th Anniversary, 35 days waiting
+                - generic [ref=e899]: Reply to client
+              - link "Agent Inquiry Flow Test Anniversary dinner, 32 days waiting Respond to inquiry" [ref=e900]:
+                - /url: /inquiries/b5bb1ef0-84b8-44c1-8116-acac13c1eaf4
+                - generic [ref=e901]:
+                  - generic [ref=e902]: Agent Inquiry Flow Test
+                  - generic [ref=e903]: Anniversary dinner, 32 days waiting
+                - generic [ref=e904]: Respond to inquiry
+          - generic [ref=e905]:
+            - generic [ref=e907]:
+              - generic [ref=e908]: 📌
+              - generic [ref=e909]: Decide Now
+            - generic [ref=e910]:
+              - generic:
+                - generic: 1 critical
+              - generic [ref=e911]:
+                - generic [ref=e912]:
+                  - generic [ref=e914]:
+                    - paragraph [ref=e915]: Collect remaining balance
+                    - paragraph [ref=e916]: "Event: Dinner Party - Chain Test"
+                  - link "Open Collect remaining balance" [ref=e917]:
+                    - /url: /events/1375c682-0e1c-46f6-9412-d94c8f7ec573
+                    - img [ref=e918]
+                - generic [ref=e920]:
+                  - generic [ref=e922]:
+                    - paragraph [ref=e923]: Send invoice
+                    - paragraph [ref=e924]: $750 unpaid - Dinner Party - Chain Test
+                  - link "Open Send invoice" [ref=e925]:
+                    - /url: /events/1375c682-0e1c-46f6-9412-d94c8f7ec573
+                    - img [ref=e926]
+                - generic [ref=e928]:
+                  - generic [ref=e930]:
+                    - paragraph [ref=e931]: Attach a menu to this event
+                    - paragraph [ref=e932]: "Event: Private Dinner"
+                  - link "Open Attach a menu to this event" [ref=e933]:
+                    - /url: /events/e1111111-1111-4111-8111-111111111199
+                    - img [ref=e934]
+                - generic [ref=e936]:
+                  - generic [ref=e938]:
+                    - paragraph [ref=e939]: Attach a menu to this event
+                    - paragraph [ref=e940]: "Event: Dinner Party - Chain Test"
+                  - link "Open Attach a menu to this event" [ref=e941]:
+                    - /url: /events/0c271e6e-b56e-48e2-ae25-341a0b119fbe
+                    - img [ref=e942]
+                - generic [ref=e944]:
+                  - generic [ref=e946]:
+                    - paragraph [ref=e947]: Attach a menu to this event
+                    - paragraph [ref=e948]: "Event: Dinner Party - Chain Test"
+                  - link "Open Attach a menu to this event" [ref=e949]:
+                    - /url: /events/987f745e-ff2b-430a-b3b2-ad2909ad279b
+                    - img [ref=e950]
+                - generic [ref=e952]:
+                  - generic [ref=e954]:
+                    - paragraph [ref=e955]: Attach a menu to this event
+                    - paragraph [ref=e956]: "Event: Dinner Party - Chain Test"
+                  - link "Open Attach a menu to this event" [ref=e957]:
+                    - /url: /events/43998d73-40de-4a57-9690-6588acfe3a34
+                    - img [ref=e958]
+                - generic [ref=e960]:
+                  - generic [ref=e962]:
+                    - paragraph [ref=e963]: Attach a menu to this event
+                    - paragraph [ref=e964]: "Event: Dinner Party - Chain Test"
+                  - link "Open Attach a menu to this event" [ref=e965]:
+                    - /url: /events/839503a8-fae6-4933-b084-fe0648e8e053
+                    - img [ref=e966]
+              - button "Show all (13)" [ref=e968]
+          - generic [ref=e970]:
+            - generic [ref=e971]:
+              - generic [ref=e972]:
+                - generic [ref=e973]: Resolve now
+                - generic [ref=e974]: 49 more waiting after this
+              - generic [ref=e975]:
+                - generic [ref=e976]: Resolve Next
+                - heading "Collect outstanding balance" [level=2] [ref=e977]
+                - paragraph [ref=e978]: Chain Test 795478 owes a balance for Dinner Party - Chain Test.
+              - generic [ref=e980]: Chain Test 795478
+            - link "Resolve Next" [ref=e981]:
+              - /url: /events/1375c682-0e1c-46f6-9412-d94c8f7ec573
+              - generic [ref=e982]: Resolve Next
+              - img [ref=e983]
+          - generic [ref=e985]:
+            - generic [ref=e987]:
+              - generic [ref=e988]:
+                - generic [ref=e989]:
+                  - generic [ref=e990]: Prep ready
+                  - generic [ref=e991]: 14 more prep moves after this
+                - generic [ref=e992]:
+                  - generic [ref=e993]: Prepare Next
+                  - heading "Attach a menu to this event" [level=2] [ref=e994]
+                  - paragraph [ref=e995]: Menu direction unlocks component breakdown, grocery skeleton, and equipment planning.
+                - generic [ref=e996]:
+                  - generic [ref=e997]: Private Dinner
+                  - generic [ref=e998]: Gunjan Gupta
+                  - generic [ref=e999]: Qualification
+              - link "Attach Menu" [ref=e1000]:
+                - /url: /events/e1111111-1111-4111-8111-111111111199?tab=money
+                - generic [ref=e1001]: Attach Menu
+                - img [ref=e1002]
+            - generic [ref=e1005]:
+              - generic [ref=e1006]:
+                - generic [ref=e1008]: Procurement quote missing
+                - generic [ref=e1009]:
+                  - generic [ref=e1010]: Procurement Next
+                  - heading "Get a grocery quote for CP Engine Verification Dinner" [level=2] [ref=e1011]
+                  - paragraph [ref=e1012]: The grocery list is active, but there is no live market quote attached to the event yet. Pull the quote from the focused procurement surface before you lock the list or head out to shop.
+                - generic [ref=e1013]:
+                  - generic [ref=e1014]: Chain Test 795478
+                  - generic [ref=e1015]: In 6 days
+                  - generic [ref=e1016]: No completed grocery quote yet
+              - link "Get Grocery Quote" [ref=e1017]:
+                - /url: /events/1f2235d4-3627-400f-a93d-01810ef99db1/procurement
+                - generic [ref=e1018]: Get Grocery Quote
+                - img [ref=e1019]
+            - generic [ref=e1022]:
+              - generic [ref=e1023]:
+                - generic [ref=e1025]: Suggested prep ready
+                - generic [ref=e1026]:
+                  - generic [ref=e1027]: Prep Flow
+                  - heading "Confirm suggested blocks for CP Engine Verification Dinner" [level=2] [ref=e1028]
+                  - paragraph [ref=e1029]: ChefFlow has event-specific prep block suggestions ready, but none are on the schedule yet. Confirm the suggested blocks from the focused prep-plan route so prep work becomes real calendar truth.
+                - generic [ref=e1030]:
+                  - generic [ref=e1031]: Chain Test 795478
+                  - generic [ref=e1032]: In 6 days
+                  - generic [ref=e1033]: 5 suggested prep blocks
+              - link "Confirm Suggested Blocks" [ref=e1034]:
+                - /url: /events/1f2235d4-3627-400f-a93d-01810ef99db1/prep-plan
+                - generic [ref=e1035]: Confirm Suggested Blocks
+                - img [ref=e1036]
+            - generic [ref=e1039]:
+              - generic [ref=e1040]:
+                - generic [ref=e1041]:
+                  - generic [ref=e1042]: Quote step ready
+                  - generic [ref=e1043]: 8 more commitment moves after this
+                - generic [ref=e1044]:
+                  - generic [ref=e1045]: Commit Next
+                  - heading "Set event pricing" [level=2] [ref=e1046]
+                  - paragraph [ref=e1047]: Pricing unlocks financial projection and revenue forecast.
+                - generic [ref=e1048]:
+                  - generic [ref=e1049]: Private Dinner
+                  - generic [ref=e1050]: Gunjan Gupta
+                  - generic [ref=e1051]: Quote
+              - link "Set Pricing" [ref=e1052]:
+                - /url: /events/e1111111-1111-4111-8111-111111111199/edit
+                - generic [ref=e1053]: Set Pricing
+                - img [ref=e1054]
+            - generic [ref=e1057]:
+              - generic [ref=e1058]:
+                - generic [ref=e1060]: Protocol still open
+                - generic [ref=e1061]:
+                  - generic [ref=e1062]: Safety Check
+                  - heading "Complete cross-contamination protocol for CP Engine Verification Dinner" [level=2] [ref=e1063]
+                  - paragraph [ref=e1064]: Allergen handling is in play for this event, but the dedicated prevention checklist is not complete yet. Finish that protocol in the safety surface before service.
+                - generic [ref=e1065]:
+                  - generic [ref=e1066]: Chain Test 795478
+                  - generic [ref=e1067]: 4 guests
+                  - generic [ref=e1068]: In 6 days
+                  - generic [ref=e1069]: 0/8 protocol items complete
+              - link "Complete Cross-Contamination Checklist" [ref=e1070]:
+                - /url: /events/1f2235d4-3627-400f-a93d-01810ef99db1/safety
+                - generic [ref=e1071]: Complete Cross-Contamination Checklist
+                - img [ref=e1072]
+            - generic [ref=e1075]:
+              - generic [ref=e1076]:
+                - generic [ref=e1077]:
+                  - generic [ref=e1078]: Balance still open
+                  - generic [ref=e1079]: 1 more balance actions after this
+                - generic [ref=e1080]:
+                  - generic [ref=e1081]: Collect Balance
+                  - heading "Record payment for Dinner Party - Chain Test" [level=2] [ref=e1082]
+                  - paragraph [ref=e1083]: An event-specific balance is still outstanding. Use the focused billing route to record the payment instead of dropping back into the broad money tab.
+                - generic [ref=e1084]:
+                  - generic [ref=e1085]: Chain Test 795478
+                  - generic [ref=e1086]: 6 guests
+                  - generic [ref=e1087]: 10 days ago
+                  - generic [ref=e1088]: Outstanding balance remains
+              - link "Record Payment" [ref=e1089]:
+                - /url: /events/1375c682-0e1c-46f6-9412-d94c8f7ec573/billing
+                - generic [ref=e1090]: Record Payment
+                - img [ref=e1091]
+            - generic [ref=e1094]:
+              - generic [ref=e1095]:
+                - generic [ref=e1097]: Receipt intake open
+                - generic [ref=e1098]:
+                  - generic [ref=e1099]: Receipt Capture
+                  - heading "Upload a receipt for Dinner Party - Chain Test" [level=2] [ref=e1100]
+                  - paragraph [ref=e1101]: This event still has an unresolved receipt-upload requirement and no recorded receipt photos. Start intake from the focused receipts route instead of the broad money shell.
+                - generic [ref=e1102]:
+                  - generic [ref=e1103]: Chain Test 795478
+                  - generic [ref=e1104]: 6 guests
+                  - generic [ref=e1105]: 10 days ago
+                  - generic [ref=e1106]: No receipt uploads recorded
+              - link "Upload Receipt" [ref=e1107]:
+                - /url: /events/1375c682-0e1c-46f6-9412-d94c8f7ec573/receipts
+                - generic [ref=e1108]: Upload Receipt
+                - img [ref=e1109]
+            - generic [ref=e1112]:
+              - generic [ref=e1113]:
+                - generic [ref=e1115]: Team still missing
+                - generic [ref=e1116]:
+                  - generic [ref=e1117]: Team Ready
+                  - heading "Assign staff for CP Engine Verification Dinner" [level=2] [ref=e1118]
+                  - paragraph [ref=e1119]: Execution support is still unassigned for this event. Open the focused staffing route and put named people on the event instead of scanning the broader ops shell.
+                - generic [ref=e1120]:
+                  - generic [ref=e1121]: Chain Test 795478
+                  - generic [ref=e1122]: 4 guests
+                  - generic [ref=e1123]: In 6 days
+                  - generic [ref=e1124]: No staff assigned yet
+              - link "Assign Staff" [ref=e1125]:
+                - /url: /events/1f2235d4-3627-400f-a93d-01810ef99db1/staff
+                - generic [ref=e1126]: Assign Staff
+                - img [ref=e1127]
+          - generic [ref=e1129]:
+            - generic [ref=e1131]:
+              - heading "First Booking Loop" [level=2] [ref=e1132]
+              - generic [ref=e1133]: 4/6 complete
+            - generic [ref=e1136]:
+              - paragraph [ref=e1137]: "Prove ChefFlow with one paid workflow: lead, quote, event, prep, and invoice."
+              - list [ref=e1138]:
+                - listitem [ref=e1139]:
+                  - generic [ref=e1140]:
+                    - img [ref=e1141]
+                    - generic [ref=e1143]:
+                      - paragraph [ref=e1144]: Finish profile and service setup
+                      - paragraph [ref=e1145]: Profile and service setup ready
+                - listitem [ref=e1146]:
+                  - generic [ref=e1147]:
+                    - img [ref=e1148]
+                    - generic [ref=e1150]:
+                      - paragraph [ref=e1151]: Capture the first lead
+                      - paragraph [ref=e1152]: 2 inquiries captured
+                - listitem [ref=e1153]:
+                  - link "Send the first quote No sent quote yet" [ref=e1154]:
+                    - /url: /quotes/new
+                    - img [ref=e1155]
+                    - generic [ref=e1157]:
+                      - paragraph [ref=e1158]: Send the first quote
+                      - paragraph [ref=e1159]: No sent quote yet
+                    - img [ref=e1160]
+                - listitem [ref=e1162]:
+                  - generic [ref=e1163]:
+                    - img [ref=e1164]
+                    - generic [ref=e1166]:
+                      - paragraph [ref=e1167]: Create the first event
+                      - paragraph [ref=e1168]: 12 events created
+                - listitem [ref=e1169]:
+                  - generic [ref=e1170]:
+                    - img [ref=e1171]
+                    - generic [ref=e1173]:
+                      - paragraph [ref=e1174]: Start prep planning
+                      - paragraph [ref=e1175]: 1 prep signal found
+                - listitem [ref=e1176]:
+                  - link "Issue the invoice No invoice artifact yet" [ref=e1177]:
+                    - /url: /finance/invoices
+                    - img [ref=e1178]
+                    - generic [ref=e1180]:
+                      - paragraph [ref=e1181]: Issue the invoice
+                      - paragraph [ref=e1182]: No invoice artifact yet
+                    - img [ref=e1183]
+              - link "Send the first quote" [ref=e1186]:
+                - /url: /quotes/new
+                - text: Send the first quote
+                - img [ref=e1187]
+          - generic [ref=e1189]:
+            - generic [ref=e1190]: Alerts
+            - generic [ref=e1192]:
+              - generic [ref=e1194]:
+                - paragraph [ref=e1195]: How did Dinner Party - Chain Test go?
+                - paragraph [ref=e1196]: Dinner Party - Chain Test for Chain Test 795478 just wrapped up. Quick capture while it's fresh - notes, wins, lessons learned.
+              - generic [ref=e1197]:
+                - link "View" [ref=e1198]:
+                  - /url: /events/1375c682-0e1c-46f6-9412-d94c8f7ec573
+                - button "Dismiss alert" [ref=e1199]: Dismiss
+          - generic [ref=e1200]:
+            - img [ref=e1201]
+            - generic [ref=e1203]: Multi-Location Summary failed to load
+            - button "Retry" [ref=e1204]
+          - generic [ref=e1205]:
+            - generic [ref=e1206]: Today & This Week
+            - generic [ref=e1207]:
+              - generic [ref=e1208]:
+                - generic [ref=e1209]:
+                  - generic [ref=e1210]:
+                    - generic [ref=e1211]: 📅
+                    - generic [ref=e1212]: Today's Schedule
+                  - link "View →" [ref=e1213]:
+                    - /url: /calendar
+                - generic [ref=e1215]:
+                  - paragraph [ref=e1216]: "No events today. Next: CP Engine Verification Dinner on May 9"
+                  - link "View Calendar →" [ref=e1217]:
+                    - /url: /calendar
+              - generic [ref=e1218]:
+                - generic [ref=e1219]:
+                  - generic [ref=e1220]:
+                    - generic [ref=e1221]: 📆
+                    - generic [ref=e1222]: This Week
+                  - link "View →" [ref=e1223]:
+                    - /url: /calendar/week
+                - generic [ref=e1225]:
+                  - generic [ref=e1227]:
+                    - generic [ref=e1228]:
+                      - heading "This Week" [level=2] [ref=e1229]
+                      - generic [ref=e1230]: 1 event · 4 guests
+                    - link "Full Schedule" [ref=e1232]:
+                      - /url: /schedule
+                      - text: Full Schedule
+                      - img [ref=e1233]
+                  - generic [ref=e1235]:
+                    - generic [ref=e1236]:
+                      - generic [ref=e1237]:
+                        - generic [ref=e1238]: Mon
+                        - generic [ref=e1239]: "4"
+                        - generic [ref=e1240]: Free
+                      - generic [ref=e1241]:
+                        - generic [ref=e1242]: Tue
+                        - generic [ref=e1243]: "5"
+                        - generic [ref=e1244]: Free
+                      - generic [ref=e1245]:
+                        - generic [ref=e1246]: Wed
+                        - generic [ref=e1247]: "6"
+                        - generic [ref=e1248]: Free
+                      - generic [ref=e1249]:
+                        - generic [ref=e1250]: Thu
+                        - generic [ref=e1251]: "7"
+                        - generic [ref=e1252]: Free
+                      - generic [ref=e1253]:
+                        - generic [ref=e1254]: Fri
+                        - generic [ref=e1255]: "8"
+                        - generic [ref=e1256]: Free
+                      - generic [ref=e1257]:
+                        - generic [ref=e1258]: Sat
+                        - generic [ref=e1259]: "9"
+                        - generic [ref=e1260]: light
+                        - generic "light day, 1d before event" [ref=e1261]:
+                          - img [ref=e1262]
+                        - generic [ref=e1264]: Prep
+                      - generic [ref=e1265]:
+                        - generic [ref=e1266]: Sun
+                        - generic [ref=e1267]: "10"
+                        - generic [ref=e1268]: moderate
+                        - generic [ref=e1269]:
+                          - generic [ref=e1272]: Chain
+                          - generic [ref=e1273]: 4g · 18:30:00
+                    - generic [ref=e1274]:
+                      - generic [ref=e1275]: Ready
+                      - generic [ref=e1277]: Partial
+                      - generic [ref=e1279]: Not started
+                      - generic [ref=e1281]:
+                        - img [ref=e1282]
+                        - text: Shop day
+              - generic [ref=e1284]:
+                - generic [ref=e1285]:
+                  - generic [ref=e1286]:
+                    - generic [ref=e1287]: 📌
+                    - generic [ref=e1288]: This Week
+                  - link "View →" [ref=e1289]:
+                    - /url: /calendar/week
+                - generic [ref=e1292]:
+                  - paragraph [ref=e1293]: 1 event
+                  - paragraph [ref=e1294]: 4 guests · 1 prep day
+                  - paragraph [ref=e1295]: ▲On track
+              - generic [ref=e1296]:
+                - generic [ref=e1297]:
+                  - generic [ref=e1298]:
+                    - generic [ref=e1299]: ✅
+                    - generic [ref=e1300]: Tasks
+                  - link "View →" [ref=e1301]:
+                    - /url: /daily-ops
+                - generic [ref=e1304]:
+                  - paragraph [ref=e1305]: "26"
+                  - paragraph [ref=e1306]: 0 due today
+                  - paragraph [ref=e1307]: ▲On track
+              - generic [ref=e1308]:
+                - generic [ref=e1309]:
+                  - generic [ref=e1310]:
+                    - generic [ref=e1311]: 📌
+                    - generic [ref=e1312]: Workload
+                  - link "View →" [ref=e1313]:
+                    - /url: /scheduling
+                - generic [ref=e1316]:
+                  - paragraph [ref=e1317]: 11%
+                  - paragraph [ref=e1318]: May 4 - May 10
+                  - paragraph [ref=e1319]: ▲Light
+              - generic [ref=e1320]:
+                - generic [ref=e1322]:
+                  - generic [ref=e1323]: 📌
+                  - generic [ref=e1324]: Capacity
+                - generic [ref=e1326]:
+                  - generic [ref=e1327]:
+                    - generic [ref=e1328]: Schedule
+                    - generic [ref=e1331]: 1/7
+                  - generic [ref=e1332]:
+                    - generic [ref=e1333]: Events
+                    - generic [ref=e1336]: 1/8
+                  - generic [ref=e1337]:
+                    - generic [ref=e1338]: Guests
+                    - generic [ref=e1341]: 4/96
+          - generic [ref=e1342]:
+            - generic [ref=e1343]:
+              - generic [ref=e1344]:
+                - generic [ref=e1345]: 🌿
+                - generic [ref=e1346]: Seasonal Calendar
+              - link "View →" [ref=e1347]:
+                - /url: /culinary/seasonal-calendar
+            - paragraph [ref=e1349]: No seasonal data yet. Accumulating price history.
+          - generic [ref=e1350]:
+            - generic [ref=e1352]:
+              - heading "What did you learn today?" [level=2] [ref=e1353]:
+                - img [ref=e1354]
+                - text: What did you learn today?
+              - generic [ref=e1356]:
+                - link "ChefNotes" [ref=e1357]:
+                  - /url: /culinary/chefnotes
+                  - img [ref=e1358]
+                - link [ref=e1360]:
+                  - /url: /culinary/cheftips
+                  - img [ref=e1361]
+            - button "Add a lesson" [ref=e1364]:
+              - img [ref=e1365]
+              - text: Add a lesson
+          - generic [ref=e1367]:
+            - heading "Event Readiness" [level=3] [ref=e1368]
+            - paragraph [ref=e1369]: Could not evaluate upcoming events
+          - generic [ref=e1370]:
+            - generic [ref=e1371]:
+              - generic [ref=e1372]: Circles
+              - generic [ref=e1373]:
+                - link "New Circle" [ref=e1374]:
+                  - /url: /circles
+                  - img [ref=e1375]
+                  - text: New Circle
+                - link "View All" [ref=e1377]:
+                  - /url: /circles
+            - generic [ref=e1378]:
+              - link "🍽️ Anniversary dinner with Agent Inquiry Flow Test 2 members 4/2/2026 Hi Agent, Thanks for reaching out! A Anniversary dinner for 4 on 2026-06-15 00:00:00+00 sounds grea" [ref=e1379]:
+                - /url: /hub/g/f6008386-396b-4a29-960a-7ac2be3667d2
+                - generic [ref=e1381]:
+                  - generic [ref=e1382]: 🍽️
+                  - heading "Anniversary dinner with Agent Inquiry Flow Test" [level=3] [ref=e1383]
+                - generic [ref=e1384]:
+                  - generic [ref=e1385]: 2 members
+                  - generic [ref=e1386]: 4/2/2026
+                - paragraph [ref=e1387]: Hi Agent, Thanks for reaching out! A Anniversary dinner for 4 on 2026-06-15 00:00:00+00 sounds grea
+              - link "🍽️ Gunjan Anniversary Dinner 2 members" [ref=e1388]:
+                - /url: /hub/g/0001cdd9-e90c-6008-b829-4c4f7543a670
+                - generic [ref=e1390]:
+                  - generic [ref=e1391]: 🍽️
+                  - heading "Gunjan Anniversary Dinner" [level=3] [ref=e1392]
+                - generic [ref=e1394]: 2 members
+              - link "Gunjan Anniversary Dinner 0 members" [ref=e1395]:
+                - /url: /hub/g/8a0dd2be-8f0b-4517-9ca9-5dfce3c7767c
+                - heading "Gunjan Anniversary Dinner" [level=3] [ref=e1398]
+                - generic [ref=e1400]: 0 members
+          - generic [ref=e1401]:
+            - generic [ref=e1402]:
+              - generic [ref=e1403]:
+                - generic [ref=e1404]:
+                  - generic [ref=e1405]: 📥
+                  - generic [ref=e1406]: After This
+                - link "View →" [ref=e1407]:
+                  - /url: /queue
+              - generic [ref=e1408]:
+                - paragraph [ref=e1409]: 49items
+                - generic [ref=e1410]:
+                  - 'link "Reply to Gunjan Gupta: 15th Anniversary · May 15 · Haverhill, MA · 6 guests Gunjan Gupta - Awaiting your reply" [ref=e1411]':
+                    - /url: /inquiries/846fced1-7163-44b4-89b1-a57a43543f35
+                    - generic [ref=e1414]:
+                      - paragraph [ref=e1415]: "Reply to Gunjan Gupta: 15th Anniversary · May 15 · Haverhill, MA · 6 guests"
+                      - paragraph [ref=e1416]: Gunjan Gupta - Awaiting your reply
+                  - 'link "Agent Inquiry Flow Test: Anniversary dinner · Jun 14 · 123 Test Street, Brooklyn, NY 11201 · 4 guests Agent Inquiry Flow Test - via website" [ref=e1417]':
+                    - /url: /inquiries/b5bb1ef0-84b8-44c1-8116-acac13c1eaf4
+                    - generic [ref=e1420]:
+                      - paragraph [ref=e1421]: "Agent Inquiry Flow Test: Anniversary dinner · Jun 14 · 123 Test Street, Brooklyn, NY 11201 · 4 guests"
+                      - paragraph [ref=e1422]: Agent Inquiry Flow Test - via website
+                  - link "Send client follow-up Chain Test 795478 - Dinner Party - Chain Test" [ref=e1423]:
+                    - /url: /events/1375c682-0e1c-46f6-9412-d94c8f7ec573
+                    - generic [ref=e1426]:
+                      - paragraph [ref=e1427]: Send client follow-up
+                      - paragraph [ref=e1428]: Chain Test 795478 - Dinner Party - Chain Test
+                  - link "File Event Review Chain Test 795478 - Dinner Party - Chain Test" [ref=e1429]:
+                    - /url: /events/1375c682-0e1c-46f6-9412-d94c8f7ec573
+                    - generic [ref=e1432]:
+                      - paragraph [ref=e1433]: File Event Review
+                      - paragraph [ref=e1434]: Chain Test 795478 - Dinner Party - Chain Test
+                  - link "Complete post-service reset Chain Test 795478" [ref=e1435]:
+                    - /url: /events/1375c682-0e1c-46f6-9412-d94c8f7ec573
+                    - generic [ref=e1438]:
+                      - paragraph [ref=e1439]: Complete post-service reset
+                      - paragraph [ref=e1440]: Chain Test 795478
+            - generic [ref=e1442]:
+              - generic [ref=e1444]:
+                - generic [ref=e1445]:
+                  - generic [ref=e1447]: Reset overdue
+                  - generic [ref=e1448]:
+                    - generic [ref=e1449]: Reset Next
+                    - heading "Open the reset checklist for Dinner Party - Chain Test" [level=2] [ref=e1450]
+                    - paragraph [ref=e1451]: Service is complete, but the operational reset is still unfinished. Use the focused reset route to work the checklist and mark completion on the actual event record.
+                  - generic [ref=e1452]:
+                    - generic [ref=e1453]: Chain Test 795478
+                    - generic [ref=e1454]: 6 guests
+                    - generic [ref=e1455]: 10 days ago
+                    - generic [ref=e1456]: Reset still incomplete
+                - link "Open Reset Checklist" [ref=e1457]:
+                  - /url: /events/1375c682-0e1c-46f6-9412-d94c8f7ec573/reset
+                  - generic [ref=e1458]: Open Reset Checklist
+                  - img [ref=e1459]
+              - generic [ref=e1462]:
+                - generic [ref=e1463]:
+                  - generic [ref=e1465]: Post-event work open
+                  - generic [ref=e1466]:
+                    - generic [ref=e1467]: Close Out Next
+                    - heading "Close out Dinner Party - Chain Test" [level=2] [ref=e1468]
+                    - paragraph [ref=e1469]: The post-event pass is still open. Finish the close-out flow so the review, receipts, and final margin resolve on the actual event instead of drifting into history.
+                  - generic [ref=e1470]:
+                    - generic [ref=e1471]: Chain Test 795478
+                    - generic [ref=e1472]: 6 guests
+                    - generic [ref=e1473]: Financial close pending
+                    - generic [ref=e1474]: Event review pending
+                    - generic [ref=e1475]: Client follow-up pending
+                - link "Open Close-Out" [ref=e1476]:
+                  - /url: /events/1375c682-0e1c-46f6-9412-d94c8f7ec573/close-out
+                  - generic [ref=e1477]: Open Close-Out
+                  - img [ref=e1478]
+          - generic [ref=e1480]:
+            - generic [ref=e1481]:
+              - generic [ref=e1482]: Suggestions
+              - generic [ref=e1483]:
+                - link "18 Recipes" [ref=e1484]:
+                  - /url: /culinary/recipes
+                  - generic [ref=e1485]: "18"
+                  - generic [ref=e1486]: Recipes
+                - link "15 Clients" [ref=e1487]:
+                  - /url: /clients
+                  - generic [ref=e1488]: "15"
+                  - generic [ref=e1489]: Clients
+                - link "5 Menus" [ref=e1490]:
+                  - /url: /culinary/menus
+                  - generic [ref=e1491]: "5"
+                  - generic [ref=e1492]: Menus
+                - link "20004 Ingredients" [ref=e1493]:
+                  - /url: /culinary/ingredients
+                  - generic [ref=e1494]: "20004"
+                  - generic [ref=e1495]: Ingredients
+                - link "98% Priced" [ref=e1496]:
+                  - /url: /culinary/price-catalog
+                  - generic [ref=e1497]: 98%
+                  - generic [ref=e1498]: Priced
+            - generic [ref=e1500]:
+              - generic [ref=e1501]:
+                - generic [ref=e1502]:
+                  - generic [ref=e1503]: 📌
+                  - generic [ref=e1504]: Menus Incomplete
+                - link "View →" [ref=e1505]:
+                  - /url: /culinary/menus
+              - generic [ref=e1506]:
+                - paragraph [ref=e1507]: 5items
+                - generic [ref=e1508]:
+                  - link "CP Engine Verification Menu No dishes added" [ref=e1509]:
+                    - /url: /culinary/menus/43071d0d-0793-4496-bd31-4506daf76193
+                    - generic [ref=e1512]:
+                      - paragraph [ref=e1513]: CP Engine Verification Menu
+                      - paragraph [ref=e1514]: No dishes added
+                  - link "Dinner Party Menu 5881 No dishes added" [ref=e1515]:
+                    - /url: /culinary/menus/18dbb871-1989-449b-9c1c-15aec548dcb1
+                    - generic [ref=e1518]:
+                      - paragraph [ref=e1519]: Dinner Party Menu 5881
+                      - paragraph [ref=e1520]: No dishes added
+                  - link "Dinner Party Menu 2219 No dishes added" [ref=e1521]:
+                    - /url: /culinary/menus/5fbddc4b-c385-4f70-a1a5-31248dbc9a67
+                    - generic [ref=e1524]:
+                      - paragraph [ref=e1525]: Dinner Party Menu 2219
+                      - paragraph [ref=e1526]: No dishes added
+                  - link "Dinner Party Menu 0816 No dishes added" [ref=e1527]:
+                    - /url: /culinary/menus/7a3e8dc9-ac70-4fd3-8d4e-ec68eb653414
+                    - generic [ref=e1530]:
+                      - paragraph [ref=e1531]: Dinner Party Menu 0816
+                      - paragraph [ref=e1532]: No dishes added
+                  - link "QA Spring Dinner Menu 20260401-A No dishes added" [ref=e1533]:
+                    - /url: /culinary/menus/3e2f0f9f-4012-4646-87b8-4d41bfd63ca6
+                    - generic [ref=e1536]:
+                      - paragraph [ref=e1537]: QA Spring Dinner Menu 20260401-A
+                      - paragraph [ref=e1538]: No dishes added
+          - generic [ref=e1539]:
+            - generic [ref=e1541]: Quick Notes
+            - generic [ref=e1542]:
+              - generic [ref=e1543]:
+                - textbox "Type a quick note..." [ref=e1545]
+                - button "Add note" [disabled] [ref=e1546]:
+                  - img [ref=e1547]
+              - paragraph [ref=e1549]: No notes yet. Jot something down.
+          - generic [ref=e1550]:
+            - button "Business Health, Pricing, and Intelligence" [ref=e1551]:
+              - generic [ref=e1552]: Business Health, Pricing, and Intelligence
+              - img [ref=e1553]
+            - generic [ref=e1555]:
+              - generic [ref=e1556]:
+                - generic [ref=e1557]: Business Overview
+                - generic [ref=e1558]:
+                  - generic [ref=e1559]:
+                    - link "Events this week 1" [ref=e1560]:
+                      - /url: /schedule
+                      - paragraph [ref=e1561]: Events this week
+                      - generic [ref=e1562]:
+                        - paragraph [ref=e1563]: "1"
+                        - img [ref=e1564]
+                    - link "Open inquiries 0" [ref=e1569]:
+                      - /url: /inquiries
+                      - paragraph [ref=e1570]: Open inquiries
+                      - paragraph [ref=e1572]: "0"
+                  - generic [ref=e1574]:
+                    - link "Revenue (all time) $0" [ref=e1575]:
+                      - /url: /finance
+                      - generic [ref=e1576]: Revenue (all time)
+                      - generic [ref=e1577]: $0
+                    - link "Outstanding $0" [ref=e1578]:
+                      - /url: /finance/payments
+                      - generic [ref=e1579]: Outstanding
+                      - generic [ref=e1580]: $0
+              - generic [ref=e1582]:
+                - paragraph [ref=e1583]: Some counts could not be loaded. Counts may be incomplete.
+                - generic [ref=e1584]:
+                  - generic [ref=e1585]: Core Areas
+                  - generic [ref=e1586]:
+                    - generic [ref=e1587]:
+                      - link "Inbox Messages and communication" [ref=e1588]:
+                        - /url: /inbox
+                        - img [ref=e1591]
+                        - heading "Inbox" [level=3] [ref=e1593]
+                        - paragraph [ref=e1594]: Messages and communication
+                      - generic [ref=e1595]:
+                        - link "All messages" [ref=e1596]:
+                          - /url: /inbox
+                        - link "Notifications" [ref=e1597]:
+                          - /url: /notifications
+                    - generic [ref=e1598]:
+                      - link "Inquiries Incoming requests and booking pipeline" [ref=e1599]:
+                        - /url: /inquiries
+                        - img [ref=e1602]
+                        - heading "Inquiries" [level=3] [ref=e1604]
+                        - paragraph [ref=e1605]: Incoming requests and booking pipeline
+                      - generic [ref=e1606]:
+                        - link "New inquiry" [ref=e1607]:
+                          - /url: /inquiries/new
+                        - link "Awaiting response" [ref=e1608]:
+                          - /url: /inquiries/awaiting-response
+                    - generic [ref=e1609]:
+                      - link "11 active Events Plan and manage every event" [ref=e1610]:
+                        - /url: /events
+                        - generic [ref=e1611]:
+                          - img [ref=e1613]
+                          - generic [ref=e1615]:
+                            - generic [ref=e1616]: "11"
+                            - paragraph [ref=e1617]: active
+                        - heading "Events" [level=3] [ref=e1618]
+                        - paragraph [ref=e1619]: Plan and manage every event
+                      - generic [ref=e1620]:
+                        - link "New event" [ref=e1621]:
+                          - /url: /events/new
+                        - link "Calendar" [ref=e1622]:
+                          - /url: /calendar
+                    - generic [ref=e1623]:
+                      - link "15 total Clients Directory, history, and communication" [ref=e1624]:
+                        - /url: /clients
+                        - generic [ref=e1625]:
+                          - img [ref=e1627]
+                          - generic [ref=e1629]:
+                            - generic [ref=e1630]: "15"
+                            - paragraph [ref=e1631]: total
+                        - heading "Clients" [level=3] [ref=e1632]
+                        - paragraph [ref=e1633]: Directory, history, and communication
+                      - generic [ref=e1634]:
+                        - link "Add client" [ref=e1635]:
+                          - /url: /clients/new
+                        - link "Follow-ups" [ref=e1636]:
+                          - /url: /clients/communication/follow-ups
+                    - generic [ref=e1637]:
+                      - link "5 menus Menus Menus, recipes, and costing" [ref=e1638]:
+                        - /url: /menus
+                        - generic [ref=e1639]:
+                          - img [ref=e1641]
+                          - generic [ref=e1643]:
+                            - generic [ref=e1644]: "5"
+                            - paragraph [ref=e1645]: menus
+                        - heading "Menus" [level=3] [ref=e1646]
+                        - paragraph [ref=e1647]: Menus, recipes, and costing
+                      - generic [ref=e1648]:
+                        - link "New menu" [ref=e1649]:
+                          - /url: /menus/new
+                        - link "Costing" [ref=e1650]:
+                          - /url: /culinary/costing
+                    - generic [ref=e1651]:
+                      - link "Money Finance, quotes, and expenses" [ref=e1652]:
+                        - /url: /finance
+                        - img [ref=e1655]
+                        - heading "Money" [level=3] [ref=e1657]
+                        - paragraph [ref=e1658]: Finance, quotes, and expenses
+                      - generic [ref=e1659]:
+                        - link "New quote" [ref=e1660]:
+                          - /url: /quotes/new
+                        - link "Expenses" [ref=e1661]:
+                          - /url: /expenses
+              - generic [ref=e1662]:
+                - generic [ref=e1664]: Price Coverage
+                - generic [ref=e1679]: No sync data
+              - generic [ref=e1680]:
+                - generic [ref=e1681]: Alerts & Health
+                - generic [ref=e1682]:
+                  - generic [ref=e1683]:
+                    - generic [ref=e1684]:
+                      - generic [ref=e1685]:
+                        - generic [ref=e1686]: ⏱️
+                        - generic [ref=e1687]: Response Time
+                      - link "View →" [ref=e1688]:
+                        - /url: /inquiries
+                    - generic [ref=e1691]:
+                      - paragraph [ref=e1692]: "2"
+                      - paragraph [ref=e1693]: inquiries awaiting response
+                      - paragraph [ref=e1694]: ▼2 overdue (>24h)
+                  - generic [ref=e1695]:
+                    - generic [ref=e1696]:
+                      - generic [ref=e1697]:
+                        - generic [ref=e1698]: 💳
+                        - generic [ref=e1699]: Payments Due
+                      - link "View →" [ref=e1700]:
+                        - /url: /finance/reporting
+                    - generic [ref=e1703]:
+                      - paragraph [ref=e1704]: $750,007,500,075,000,700,000,000.00
+                      - paragraph [ref=e1705]: 5 outstanding invoices
+                      - paragraph [ref=e1706]: All current
+                  - generic [ref=e1707]:
+                    - generic [ref=e1708]:
+                      - generic [ref=e1709]:
+                        - generic [ref=e1710]: ⚠️
+                        - generic [ref=e1711]: Scheduling Gaps
+                      - link "View →" [ref=e1712]:
+                        - /url: /calendar/week
+                    - generic [ref=e1715]:
+                      - paragraph [ref=e1716]: "2"
+                      - paragraph [ref=e1717]: events missing prep blocks
+                      - paragraph [ref=e1718]: ▼Upcoming events
+                  - generic [ref=e1719]:
+                    - generic [ref=e1720]:
+                      - generic [ref=e1721]:
+                        - generic [ref=e1722]: ❄️
+                        - generic [ref=e1723]: Cooling Clients
+                      - link "View →" [ref=e1724]:
+                        - /url: /clients
+                    - generic [ref=e1727]:
+                      - paragraph [ref=e1728]: "14"
+                      - paragraph [ref=e1729]: relationships need attention
+                      - paragraph [ref=e1730]: ▼Reach out soon
+                  - generic [ref=e1731]:
+                    - generic [ref=e1732]:
+                      - generic [ref=e1733]:
+                        - generic [ref=e1734]: ✅
+                        - generic [ref=e1735]: First Booking Loop
+                      - link "View →" [ref=e1736]:
+                        - /url: /settings
+                    - generic [ref=e1739]:
+                      - paragraph [ref=e1740]: 4/6
+                      - paragraph [ref=e1741]: activation steps complete
+                      - paragraph [ref=e1742]: ▲67% done
+                  - generic [ref=e1743]:
+                    - generic [ref=e1744]:
+                      - generic [ref=e1745]:
+                        - generic [ref=e1746]: 💪
+                        - generic [ref=e1747]: Business Health
+                      - link "View →" [ref=e1748]:
+                        - /url: /intelligence
+                    - generic [ref=e1750]:
+                      - generic [ref=e1751]:
+                        - generic [ref=e1752]: "35"
+                        - generic [ref=e1753]:
+                          - generic [ref=e1754]:
+                            - generic [ref=e1755]: Revenue
+                            - generic [ref=e1756]: "0"
+                          - generic [ref=e1758]:
+                            - generic [ref=e1759]: Clients
+                            - generic [ref=e1760]: "50"
+                          - generic [ref=e1763]:
+                            - generic [ref=e1764]: Ops
+                            - generic [ref=e1765]: "50"
+                          - generic [ref=e1768]:
+                            - generic [ref=e1769]: Growth
+                            - generic [ref=e1770]: "50"
+                      - link "⚠️ $750 unpaid - Dinner Party - Chain Test Send invoice →" [ref=e1774]:
+                        - /url: /events/1375c682-0e1c-46f6-9412-d94c8f7ec573
+                        - generic [ref=e1775]: ⚠️
+                        - generic [ref=e1776]: $750 unpaid - Dinner Party - Chain Test
+                        - generic [ref=e1777]: Send invoice →
+              - generic [ref=e1778]:
+                - generic [ref=e1779]: Business
+                - generic [ref=e1780]:
+                  - generic [ref=e1781]:
+                    - generic [ref=e1782]:
+                      - img [ref=e1783]
+                      - generic [ref=e1785]: 7 event drafts have been sitting untouched
+                      - generic [ref=e1786]: for 7+ days
+                    - generic [ref=e1787]:
+                      - link "Private Dinner Gunjan Gupta · 32d old · 2026-04-16" [ref=e1788]:
+                        - /url: /events/e1111111-1111-4111-8111-111111111199
+                        - generic [ref=e1790]:
+                          - generic [ref=e1791]: Private Dinner
+                          - generic [ref=e1792]: Gunjan Gupta · 32d old · 2026-04-16
+                        - img [ref=e1793]
+                      - link "Anniversary dinner Agent Inquiry Flow Test · 32d old · 2026-06-15" [ref=e1795]:
+                        - /url: /events/1c47f359-cf7b-4b0c-ac84-882e36995e87
+                        - generic [ref=e1797]:
+                          - generic [ref=e1798]: Anniversary dinner
+                          - generic [ref=e1799]: Agent Inquiry Flow Test · 32d old · 2026-06-15
+                        - img [ref=e1800]
+                      - link "Dinner Party - Chain Test Chain Test 141800 · 17d old · 2026-04-25" [ref=e1802]:
+                        - /url: /events/bdb6f0bb-5476-4ef6-890c-fb0525037b9e
+                        - generic [ref=e1804]:
+                          - generic [ref=e1805]: Dinner Party - Chain Test
+                          - generic [ref=e1806]: Chain Test 141800 · 17d old · 2026-04-25
+                        - img [ref=e1807]
+                      - link "Dinner Party - Chain Test Chain Test 702392 · 17d old · 2026-04-24" [ref=e1809]:
+                        - /url: /events/ceb514db-eaba-47fd-9b2d-e2e9ee517a5f
+                        - generic [ref=e1811]:
+                          - generic [ref=e1812]: Dinner Party - Chain Test
+                          - generic [ref=e1813]: Chain Test 702392 · 17d old · 2026-04-24
+                        - img [ref=e1814]
+                      - link "Dinner Party - Chain Test Chain Test 791082 · 17d old · 2026-04-24" [ref=e1816]:
+                        - /url: /events/709255ca-7e32-46aa-8e22-5741aeb75bee
+                        - generic [ref=e1818]:
+                          - generic [ref=e1819]: Dinner Party - Chain Test
+                          - generic [ref=e1820]: Chain Test 791082 · 17d old · 2026-04-24
+                        - img [ref=e1821]
+                      - link "Dinner Party - Chain Test Chain Test 292261 · 17d old · 2026-04-24" [ref=e1823]:
+                        - /url: /events/8106d7d3-a4a0-4c28-8223-b5cc98539957
+                        - generic [ref=e1825]:
+                          - generic [ref=e1826]: Dinner Party - Chain Test
+                          - generic [ref=e1827]: Chain Test 292261 · 17d old · 2026-04-24
+                        - img [ref=e1828]
+                      - link "Dinner Party - Chain Test Chain Test 351716 · 17d old · 2026-04-24" [ref=e1830]:
+                        - /url: /events/43998d73-40de-4a57-9690-6588acfe3a34
+                        - generic [ref=e1832]:
+                          - generic [ref=e1833]: Dinner Party - Chain Test
+                          - generic [ref=e1834]: Chain Test 351716 · 17d old · 2026-04-24
+                        - img [ref=e1835]
+                    - paragraph [ref=e1837]: Send a quote or cancel these to keep your pipeline clean.
+                  - generic [ref=e1838]:
+                    - generic [ref=e1839]:
+                      - generic [ref=e1840]:
+                        - generic [ref=e1841]: 📸
+                        - generic [ref=e1842]: May Revenue
+                      - link "View →" [ref=e1843]:
+                        - /url: /finance/reporting
+                    - generic [ref=e1846]:
+                      - paragraph [ref=e1847]: $0.00
+                      - paragraph [ref=e1848]: "Expenses: $45.00"
+                      - paragraph [ref=e1849]: Same as last month
+                  - generic [ref=e1850]:
+                    - generic [ref=e1851]:
+                      - generic [ref=e1852]:
+                        - generic [ref=e1853]: 🔥
+                        - generic [ref=e1854]: Lead Funnel
+                      - link "View →" [ref=e1855]:
+                        - /url: /inquiries
+                    - generic [ref=e1858]:
+                      - paragraph [ref=e1859]: "1"
+                      - paragraph [ref=e1860]: open inquiries
+                      - paragraph [ref=e1861]: ▲0 total prospects
+                  - generic [ref=e1862]:
+                    - generic [ref=e1863]:
+                      - generic [ref=e1864]:
+                        - generic [ref=e1865]: 📊
+                        - generic [ref=e1866]: Invoices
+                      - link "View →" [ref=e1867]:
+                        - /url: /invoices
+                    - generic [ref=e1870]:
+                      - paragraph [ref=e1871]: 0.0%
+                      - paragraph [ref=e1872]: collection rate this month
+                      - paragraph [ref=e1873]: ▼$0.00 collected
+                  - generic [ref=e1874]:
+                    - generic [ref=e1875]:
+                      - generic [ref=e1876]:
+                        - generic [ref=e1877]: 📌
+                        - generic [ref=e1878]: Upcoming Events
+                      - link "View →" [ref=e1879]:
+                        - /url: /events
+                    - generic [ref=e1882]:
+                      - paragraph [ref=e1883]: "2"
+                      - paragraph [ref=e1884]: this month (12 YTD)
+                      - paragraph [ref=e1885]: 0 quotes pending
+                  - generic [ref=e1886]:
+                    - generic [ref=e1887]:
+                      - generic [ref=e1888]:
+                        - generic [ref=e1889]: 📌
+                        - generic [ref=e1890]: Direct Bookings
+                      - link "View →" [ref=e1891]:
+                        - /url: /analytics/referral-sources
+                    - generic [ref=e1894]:
+                      - paragraph [ref=e1895]: 100%
+                      - paragraph [ref=e1896]: 0% via platforms
+                      - paragraph [ref=e1897]: ▲Majority direct
+    - generic [ref=e1898]:
+      - button "Move Remy launcher":
+        - img
+      - button "Show Remy character":
+        - img
+      - button "Hide Remy launcher":
+        - img
+      - button "Open Remy chat window" [ref=e1899]:
+        - img [ref=e1900]
+    - button "Report an issue" [ref=e1902]:
+      - img [ref=e1903]
+      - generic [ref=e1905]: Report Issue
+  - alert [ref=e1906]
+  - generic [ref=e1909] [cursor=pointer]:
+    - img [ref=e1910]
+    - generic [ref=e1912]: 2 errors
+    - button "Hide Errors" [ref=e1913]:
+      - img [ref=e1914]
