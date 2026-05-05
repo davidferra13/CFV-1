@@ -1,0 +1,194 @@
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+OPENCLAW_DIR=/home/davidferra/openclaw-prices
+CHEFFLOW_DIR=/home/davidferra/chefflow-mirror
+HERMES_DIR=/home/davidferra/chefflow-mirror/scripts/hermes
+
+# ===========================================================================
+# OPENCLAW MEGA CRONTAB - 2026-05-05
+# Target: 85% CPU, 85% memory utilization
+# 130+ jobs: scrapers, synthesizers, enrichers, cleaners, Hermes, SNAP, OSM
+# 4 parallel walkers, 5 windows/day, all daytime gaps filled
+# ===========================================================================
+
+# --- WATCHDOG & HOUSEKEEPING ---
+*/15 * * * * cd $OPENCLAW_DIR && node services/watchdog.mjs >> logs/watchdog.log 2>&1
+*/30 * * * * cd $OPENCLAW_DIR && node services/receipt-processor.mjs batch >> logs/receipt-batch.log 2>&1
+0 0 * * 0 find $OPENCLAW_DIR/logs -name "*.log" -size +10M -exec truncate -s 0 {} \;
+30 0 * * 0 cd ~/openclaw-prices && node -e "const D=require('better-sqlite3');const d=new D('data/prices.db');d.pragma('wal_checkpoint(TRUNCATE)');d.close();console.log('WAL checkpointed')" >> logs/wal-checkpoint.log 2>&1
+
+# --- SYNTHESIZERS (doubled frequency) ---
+0 * * * *    cd ~/openclaw-prices && node synthesizers/s1-anomaly-classifier.mjs >> logs/s1.log 2>&1
+0 1,13 * * * cd ~/openclaw-prices && node synthesizers/s8-nonfood-filter.mjs >> logs/s8.log 2>&1
+30 2,14 * * * cd ~/openclaw-prices && node synthesizers/s2-seasonal-engine.mjs >> logs/s2.log 2>&1
+30 3,15 * * * cd ~/openclaw-prices && node synthesizers/s3-store-comparison.mjs >> logs/s3.log 2>&1
+0 */3 * * *  cd ~/openclaw-prices && node synthesizers/s4-price-velocity.mjs >> logs/s4.log 2>&1
+0 5,17 * * * cd ~/openclaw-prices && node synthesizers/s7-category-benchmarks.mjs >> logs/s7.log 2>&1
+30 */4 * * * cd ~/openclaw-prices && node synthesizers/s5-recall-scanner.mjs >> logs/s5.log 2>&1
+0 4,16 * * 0 cd ~/openclaw-prices && node synthesizers/s6-yield-populator.mjs >> logs/s6.log 2>&1
+30 5 * * 1,4 cd ~/openclaw-prices && node synthesizers/s10-substitutions.mjs >> logs/s10.log 2>&1
+30 5 * * 1,3,5 cd ~/openclaw-prices && node synthesizers/s11-farmers-markets.mjs >> logs/s11.log 2>&1
+
+# --- SCRAPERS (morning + evening runs) ---
+0 2 * * 1 cd $OPENCLAW_DIR && node services/scraper-government.mjs >> logs/scraper-government.log 2>&1
+0 3 * * * cd $OPENCLAW_DIR && node services/scraper-flipp.mjs >> logs/scraper-flipp.log 2>&1 & node services/scraper-wholefoodsapfresh.mjs >> logs/scraper-wholefoods.log 2>&1 & wait
+0 4 * * * cd $OPENCLAW_DIR && node services/scraper-target.mjs >> logs/scraper-target.log 2>&1 & node services/scraper-walmart.mjs >> logs/scraper-walmart.log 2>&1 & wait
+0 15 * * * cd $OPENCLAW_DIR && node services/scraper-flipp.mjs >> logs/scraper-flipp-pm.log 2>&1 & node services/scraper-wholefoodsapfresh.mjs >> logs/scraper-wholefoods-pm.log 2>&1 & wait
+0 16 * * * cd $OPENCLAW_DIR && node services/scraper-target.mjs >> logs/scraper-target-pm.log 2>&1 & node services/scraper-walmart.mjs >> logs/scraper-walmart-pm.log 2>&1 & wait
+0 5 * * * cd $OPENCLAW_DIR && node services/scraper-stopsandshop.mjs >> logs/scraper-stopsandshop.log 2>&1
+0 17 * * * cd $OPENCLAW_DIR && node services/scraper-stopsandshop.mjs >> logs/scraper-stopsandshop-pm.log 2>&1
+0 0 * * 0 cd $OPENCLAW_DIR && node services/scraper-walmart-nationwide.mjs >> logs/scraper-walmart-nationwide.log 2>&1
+0 0 * * 6 cd $OPENCLAW_DIR && node services/scraper-target-nationwide.mjs >> logs/scraper-target-nationwide.log 2>&1
+
+# [NEW] --- WHOLESALE + FLYERS (alternating days, 3x/week each) ---
+0 9 * * 1,3,5 cd $OPENCLAW_DIR && node services/scraper-flyers.mjs >> logs/scraper-flyers.log 2>&1
+0 15 * * 2,4,6 cd $OPENCLAW_DIR && node services/scraper-wholesale.mjs >> logs/scraper-wholesale.log 2>&1
+
+# [NEW] --- USDA BULK (Tue/Fri 11am) ---
+0 11 * * 2,5 cd $OPENCLAW_DIR && node services/scraper-usda-bulk.mjs >> logs/scraper-usda-bulk.log 2>&1
+
+# [NEW] --- FDA RECALLS (daily 11am) ---
+0 11 * * * cd $OPENCLAW_DIR && node services/fda-recalls.mjs >> logs/fda-recalls.log 2>&1
+
+# [NEW] --- COMMODITY TRACKER (daily 10:30am) ---
+30 10 * * * cd $OPENCLAW_DIR && node services/commodity-tracker.mjs >> logs/commodity-tracker.log 2>&1
+
+# --- CROSS-MATCH (6x daily) ---
+0 4 * * *  cd $OPENCLAW_DIR && node services/cross-match.mjs >> logs/cross-match.log 2>&1
+0 8 * * *  cd $OPENCLAW_DIR && node services/cross-match.mjs >> logs/cross-match.log 2>&1
+0 12 * * * cd $OPENCLAW_DIR && node services/cross-match.mjs >> logs/cross-match.log 2>&1
+0 16 * * * cd $OPENCLAW_DIR && node services/cross-match.mjs >> logs/cross-match.log 2>&1
+0 20 * * * cd $OPENCLAW_DIR && node services/cross-match.mjs >> logs/cross-match.log 2>&1
+30 22 * * * cd $OPENCLAW_DIR && node services/cross-match.mjs >> logs/cross-match.log 2>&1
+
+# --- ENRICHERS ---
+0 10 * * * cd $OPENCLAW_DIR && node services/enricher-usda-fdc.mjs >> logs/enricher-usda-fdc.log 2>&1
+0 14 * * 0,3 cd $OPENCLAW_DIR && node services/enricher-openfoodfacts.mjs >> logs/enricher-off.log 2>&1
+
+# [NEW] --- NORM EXPANDER (daily 11:30am) ---
+30 11 * * * cd $OPENCLAW_DIR && node services/norm-expander.mjs >> logs/norm-expander.log 2>&1
+
+# [NEW] --- OPERATOR ENRICHMENT (daily 2:30pm) ---
+30 14 * * * cd $OPENCLAW_DIR && node services/operator-enrichment.mjs >> logs/operator-enrichment.log 2>&1
+
+# [NEW] --- INGREDIENT IMAGES (daily 3:30pm) ---
+30 15 * * * cd $OPENCLAW_DIR && node services/ingredient-images.mjs >> logs/ingredient-images.log 2>&1
+
+# [NEW] --- CATALOG CLEANING PIPELINE (after scraper batches) ---
+30 12 * * * cd $OPENCLAW_DIR && node services/clean-catalog.mjs >> logs/clean-catalog.log 2>&1
+0 13 * * *  cd $OPENCLAW_DIR && node services/clean-catalog-pass2.mjs >> logs/clean-catalog-pass2.log 2>&1
+30 13 * * * cd $OPENCLAW_DIR && node services/clean-nonfood-v2.mjs >> logs/clean-nonfood-v2.log 2>&1
+# Evening cleaning pass
+30 20 * * * cd $OPENCLAW_DIR && node services/clean-catalog.mjs >> logs/clean-catalog-evening.log 2>&1
+
+# --- AGGREGATOR + SYNC ---
+0 8 * * *  cd $OPENCLAW_DIR && node services/sync-to-chefflow.mjs >> logs/sync-chefflow.log 2>&1
+0 14 * * * cd $OPENCLAW_DIR && node services/sync-to-chefflow.mjs >> logs/sync-chefflow.log 2>&1
+0 21 * * * cd $OPENCLAW_DIR && node services/aggregator.mjs >> logs/aggregator.log 2>&1
+0 23 * * * cd $OPENCLAW_DIR && node services/sync-to-chefflow.mjs >> logs/sync-chefflow.log 2>&1
+
+# [NEW] --- AGGREGATOR + SYNTHESIS SYNC (afternoon + evening) ---
+0 16 * * *  cd $OPENCLAW_DIR && node services/aggregator.mjs >> logs/aggregator-afternoon.log 2>&1
+30 16 * * * cd ~/openclaw-prices && node synthesizers/sync-synthesis-to-chefflow.mjs >> logs/sync-synthesis-chefflow.log 2>&1
+30 21 * * * cd ~/openclaw-prices && node synthesizers/sync-synthesis-to-chefflow.mjs >> logs/sync-synthesis-chefflow-evening.log 2>&1
+
+# --- INSTACART WALKERS: 4 PARALLEL x 5 WINDOWS/DAY ---
+# Window 1: 3am
+0 3 * * 1 cd $OPENCLAW_DIR && bash run-full-catalog.sh market-basket >> logs/ic-w1-1.log 2>&1 & bash run-full-catalog.sh shaws >> logs/ic-w1-2.log 2>&1 & bash run-full-catalog.sh cvs >> logs/ic-w1-3.log 2>&1 & bash run-full-catalog.sh 711 >> logs/ic-w1-4.log 2>&1 & wait
+0 3 * * 2 cd $OPENCLAW_DIR && bash run-full-catalog.sh hannaford >> logs/ic-w1-1.log 2>&1 & bash run-full-catalog.sh brothers-marketplace >> logs/ic-w1-2.log 2>&1 & bash run-full-catalog.sh target >> logs/ic-w1-3.log 2>&1 & bash run-full-catalog.sh price-chopper >> logs/ic-w1-4.log 2>&1 & wait
+0 3 * * 3 cd $OPENCLAW_DIR && bash run-full-catalog.sh aldi >> logs/ic-w1-1.log 2>&1 & bash run-full-catalog.sh roche-bros >> logs/ic-w1-2.log 2>&1 & bash run-full-catalog.sh big-y >> logs/ic-w1-3.log 2>&1 & bash run-full-catalog.sh jetro-restaurant-depot >> logs/ic-w1-4.log 2>&1 & wait
+0 3 * * 4 cd $OPENCLAW_DIR && bash run-full-catalog.sh stop-and-shop >> logs/ic-w1-1.log 2>&1 & bash run-full-catalog.sh the-fresh-market >> logs/ic-w1-2.log 2>&1 & bash run-full-catalog.sh walmart >> logs/ic-w1-3.log 2>&1 & bash run-full-catalog.sh star-markets >> logs/ic-w1-4.log 2>&1 & wait
+0 3 * * 5 cd $OPENCLAW_DIR && bash run-full-catalog.sh costco >> logs/ic-w1-1.log 2>&1 & bash run-full-catalog.sh star-markets >> logs/ic-w1-2.log 2>&1 & bash run-full-catalog.sh pricerite >> logs/ic-w1-3.log 2>&1 & bash run-full-catalog.sh eataly >> logs/ic-w1-4.log 2>&1 & wait
+0 3 * * 6 cd $OPENCLAW_DIR && bash run-full-catalog.sh bjs-wholesale-club >> logs/ic-w1-1.log 2>&1 & bash run-full-catalog.sh pricerite >> logs/ic-w1-2.log 2>&1 & bash run-full-catalog.sh market-basket >> logs/ic-w1-3.log 2>&1 & bash run-full-catalog.sh shaws >> logs/ic-w1-4.log 2>&1 & wait
+0 3 * * 0 cd $OPENCLAW_DIR && bash run-full-catalog.sh wegmans >> logs/ic-w1-1.log 2>&1 & bash run-full-catalog.sh eataly >> logs/ic-w1-2.log 2>&1 & bash run-full-catalog.sh hannaford >> logs/ic-w1-3.log 2>&1 & bash run-full-catalog.sh brothers-marketplace >> logs/ic-w1-4.log 2>&1 & wait
+
+# Window 2: 6am
+0 6 * * 1 cd $OPENCLAW_DIR && bash run-full-catalog.sh market-basket >> logs/ic-w2-1.log 2>&1 & bash run-full-catalog.sh shaws >> logs/ic-w2-2.log 2>&1 & bash run-full-catalog.sh target >> logs/ic-w2-3.log 2>&1 & bash run-full-catalog.sh cvs >> logs/ic-w2-4.log 2>&1 & wait
+0 6 * * 2 cd $OPENCLAW_DIR && bash run-full-catalog.sh hannaford >> logs/ic-w2-1.log 2>&1 & bash run-full-catalog.sh brothers-marketplace >> logs/ic-w2-2.log 2>&1 & bash run-full-catalog.sh price-chopper >> logs/ic-w2-3.log 2>&1 & bash run-full-catalog.sh 711 >> logs/ic-w2-4.log 2>&1 & wait
+0 6 * * 3 cd $OPENCLAW_DIR && bash run-full-catalog.sh aldi >> logs/ic-w2-1.log 2>&1 & bash run-full-catalog.sh roche-bros >> logs/ic-w2-2.log 2>&1 & bash run-full-catalog.sh jetro-restaurant-depot >> logs/ic-w2-3.log 2>&1 & bash run-full-catalog.sh big-y >> logs/ic-w2-4.log 2>&1 & wait
+0 6 * * 4 cd $OPENCLAW_DIR && bash run-full-catalog.sh stop-and-shop >> logs/ic-w2-1.log 2>&1 & bash run-full-catalog.sh the-fresh-market >> logs/ic-w2-2.log 2>&1 & bash run-full-catalog.sh walmart >> logs/ic-w2-3.log 2>&1 & bash run-full-catalog.sh star-markets >> logs/ic-w2-4.log 2>&1 & wait
+0 6 * * 5 cd $OPENCLAW_DIR && bash run-full-catalog.sh costco >> logs/ic-w2-1.log 2>&1 & bash run-full-catalog.sh star-markets >> logs/ic-w2-2.log 2>&1 & bash run-full-catalog.sh pricerite >> logs/ic-w2-3.log 2>&1 & bash run-full-catalog.sh eataly >> logs/ic-w2-4.log 2>&1 & wait
+0 6 * * 6 cd $OPENCLAW_DIR && bash run-full-catalog.sh bjs-wholesale-club >> logs/ic-w2-1.log 2>&1 & bash run-full-catalog.sh pricerite >> logs/ic-w2-2.log 2>&1 & bash run-full-catalog.sh market-basket >> logs/ic-w2-3.log 2>&1 & bash run-full-catalog.sh shaws >> logs/ic-w2-4.log 2>&1 & wait
+0 6 * * 0 cd $OPENCLAW_DIR && bash run-full-catalog.sh wegmans >> logs/ic-w2-1.log 2>&1 & bash run-full-catalog.sh eataly >> logs/ic-w2-2.log 2>&1 & bash run-full-catalog.sh hannaford >> logs/ic-w2-3.log 2>&1 & bash run-full-catalog.sh stop-and-shop >> logs/ic-w2-4.log 2>&1 & wait
+
+# Window 3: 12pm
+0 12 * * 1 cd $OPENCLAW_DIR && bash run-full-catalog.sh target >> logs/ic-w3-1.log 2>&1 & bash run-full-catalog.sh cvs >> logs/ic-w3-2.log 2>&1 & bash run-full-catalog.sh aldi >> logs/ic-w3-3.log 2>&1 & bash run-full-catalog.sh roche-bros >> logs/ic-w3-4.log 2>&1 & wait
+0 12 * * 2 cd $OPENCLAW_DIR && bash run-full-catalog.sh price-chopper >> logs/ic-w3-1.log 2>&1 & bash run-full-catalog.sh 711 >> logs/ic-w3-2.log 2>&1 & bash run-full-catalog.sh stop-and-shop >> logs/ic-w3-3.log 2>&1 & bash run-full-catalog.sh the-fresh-market >> logs/ic-w3-4.log 2>&1 & wait
+0 12 * * 3 cd $OPENCLAW_DIR && bash run-full-catalog.sh big-y >> logs/ic-w3-1.log 2>&1 & bash run-full-catalog.sh jetro-restaurant-depot >> logs/ic-w3-2.log 2>&1 & bash run-full-catalog.sh walmart >> logs/ic-w3-3.log 2>&1 & bash run-full-catalog.sh star-markets >> logs/ic-w3-4.log 2>&1 & wait
+0 12 * * 4 cd $OPENCLAW_DIR && bash run-full-catalog.sh walmart >> logs/ic-w3-1.log 2>&1 & bash run-full-catalog.sh star-markets >> logs/ic-w3-2.log 2>&1 & bash run-full-catalog.sh costco >> logs/ic-w3-3.log 2>&1 & bash run-full-catalog.sh bjs-wholesale-club >> logs/ic-w3-4.log 2>&1 & wait
+0 12 * * 5 cd $OPENCLAW_DIR && bash run-full-catalog.sh market-basket >> logs/ic-w3-1.log 2>&1 & bash run-full-catalog.sh pricerite >> logs/ic-w3-2.log 2>&1 & bash run-full-catalog.sh hannaford >> logs/ic-w3-3.log 2>&1 & bash run-full-catalog.sh brothers-marketplace >> logs/ic-w3-4.log 2>&1 & wait
+0 12 * * 6 cd $OPENCLAW_DIR && bash run-full-catalog.sh hannaford >> logs/ic-w3-1.log 2>&1 & bash run-full-catalog.sh eataly >> logs/ic-w3-2.log 2>&1 & bash run-full-catalog.sh shaws >> logs/ic-w3-3.log 2>&1 & bash run-full-catalog.sh wegmans >> logs/ic-w3-4.log 2>&1 & wait
+0 12 * * 0 cd $OPENCLAW_DIR && bash run-full-catalog.sh stop-and-shop >> logs/ic-w3-1.log 2>&1 & bash run-full-catalog.sh roche-bros >> logs/ic-w3-2.log 2>&1 & bash run-full-catalog.sh target >> logs/ic-w3-3.log 2>&1 & bash run-full-catalog.sh cvs >> logs/ic-w3-4.log 2>&1 & wait
+
+# Window 4: 6pm
+0 18 * * 1 cd $OPENCLAW_DIR && bash run-full-catalog.sh shaws >> logs/ic-w4-1.log 2>&1 & bash run-full-catalog.sh brothers-marketplace >> logs/ic-w4-2.log 2>&1 & bash run-full-catalog.sh price-chopper >> logs/ic-w4-3.log 2>&1 & bash run-full-catalog.sh 711 >> logs/ic-w4-4.log 2>&1 & wait
+0 18 * * 2 cd $OPENCLAW_DIR && bash run-full-catalog.sh aldi >> logs/ic-w4-1.log 2>&1 & bash run-full-catalog.sh the-fresh-market >> logs/ic-w4-2.log 2>&1 & bash run-full-catalog.sh big-y >> logs/ic-w4-3.log 2>&1 & bash run-full-catalog.sh jetro-restaurant-depot >> logs/ic-w4-4.log 2>&1 & wait
+0 18 * * 3 cd $OPENCLAW_DIR && bash run-full-catalog.sh costco >> logs/ic-w4-1.log 2>&1 & bash run-full-catalog.sh star-markets >> logs/ic-w4-2.log 2>&1 & bash run-full-catalog.sh pricerite >> logs/ic-w4-3.log 2>&1 & bash run-full-catalog.sh eataly >> logs/ic-w4-4.log 2>&1 & wait
+0 18 * * 4 cd $OPENCLAW_DIR && bash run-full-catalog.sh bjs-wholesale-club >> logs/ic-w4-1.log 2>&1 & bash run-full-catalog.sh pricerite >> logs/ic-w4-2.log 2>&1 & bash run-full-catalog.sh market-basket >> logs/ic-w4-3.log 2>&1 & bash run-full-catalog.sh shaws >> logs/ic-w4-4.log 2>&1 & wait
+0 18 * * 5 cd $OPENCLAW_DIR && bash run-full-catalog.sh wegmans >> logs/ic-w4-1.log 2>&1 & bash run-full-catalog.sh eataly >> logs/ic-w4-2.log 2>&1 & bash run-full-catalog.sh stop-and-shop >> logs/ic-w4-3.log 2>&1 & bash run-full-catalog.sh big-y >> logs/ic-w4-4.log 2>&1 & wait
+0 18 * * 6 cd $OPENCLAW_DIR && bash run-full-catalog.sh market-basket >> logs/ic-w4-1.log 2>&1 & bash run-full-catalog.sh hannaford >> logs/ic-w4-2.log 2>&1 & bash run-full-catalog.sh target >> logs/ic-w4-3.log 2>&1 & bash run-full-catalog.sh cvs >> logs/ic-w4-4.log 2>&1 & wait
+0 18 * * 0 cd $OPENCLAW_DIR && bash run-full-catalog.sh stop-and-shop >> logs/ic-w4-1.log 2>&1 & bash run-full-catalog.sh big-y >> logs/ic-w4-2.log 2>&1 & bash run-full-catalog.sh walmart >> logs/ic-w4-3.log 2>&1 & bash run-full-catalog.sh costco >> logs/ic-w4-4.log 2>&1 & wait
+
+# Window 5: 10pm
+0 22 * * 1 cd $OPENCLAW_DIR && bash run-full-catalog.sh cvs >> logs/ic-w5-1.log 2>&1 & bash run-full-catalog.sh 711 >> logs/ic-w5-2.log 2>&1 & bash run-full-catalog.sh target >> logs/ic-w5-3.log 2>&1 & bash run-full-catalog.sh walmart >> logs/ic-w5-4.log 2>&1 & wait
+0 22 * * 2 cd $OPENCLAW_DIR && bash run-full-catalog.sh jetro-restaurant-depot >> logs/ic-w5-1.log 2>&1 & bash run-full-catalog.sh target >> logs/ic-w5-2.log 2>&1 & bash run-full-catalog.sh market-basket >> logs/ic-w5-3.log 2>&1 & bash run-full-catalog.sh shaws >> logs/ic-w5-4.log 2>&1 & wait
+0 22 * * 3 cd $OPENCLAW_DIR && bash run-full-catalog.sh walmart >> logs/ic-w5-1.log 2>&1 & bash run-full-catalog.sh price-chopper >> logs/ic-w5-2.log 2>&1 & bash run-full-catalog.sh hannaford >> logs/ic-w5-3.log 2>&1 & bash run-full-catalog.sh brothers-marketplace >> logs/ic-w5-4.log 2>&1 & wait
+0 22 * * 4 cd $OPENCLAW_DIR && bash run-full-catalog.sh hannaford >> logs/ic-w5-1.log 2>&1 & bash run-full-catalog.sh big-y >> logs/ic-w5-2.log 2>&1 & bash run-full-catalog.sh aldi >> logs/ic-w5-3.log 2>&1 & bash run-full-catalog.sh roche-bros >> logs/ic-w5-4.log 2>&1 & wait
+0 22 * * 5 cd $OPENCLAW_DIR && bash run-full-catalog.sh shaws >> logs/ic-w5-1.log 2>&1 & bash run-full-catalog.sh brothers-marketplace >> logs/ic-w5-2.log 2>&1 & bash run-full-catalog.sh stop-and-shop >> logs/ic-w5-3.log 2>&1 & bash run-full-catalog.sh the-fresh-market >> logs/ic-w5-4.log 2>&1 & wait
+0 22 * * 6 cd $OPENCLAW_DIR && bash run-full-catalog.sh roche-bros >> logs/ic-w5-1.log 2>&1 & bash run-full-catalog.sh the-fresh-market >> logs/ic-w5-2.log 2>&1 & bash run-full-catalog.sh costco >> logs/ic-w5-3.log 2>&1 & bash run-full-catalog.sh bjs-wholesale-club >> logs/ic-w5-4.log 2>&1 & wait
+0 22 * * 0 cd $OPENCLAW_DIR && bash run-full-catalog.sh costco >> logs/ic-w5-1.log 2>&1 & bash run-full-catalog.sh bjs-wholesale-club >> logs/ic-w5-2.log 2>&1 & bash run-full-catalog.sh wegmans >> logs/ic-w5-3.log 2>&1 & bash run-full-catalog.sh eataly >> logs/ic-w5-4.log 2>&1 & wait
+
+# --- OSM STORE BACKFILL (6x/week: morning + evening) ---
+0 2 * * 2,4,6 cd $OPENCLAW_DIR && bash services/osm-store-backfill.sh >> logs/store-ingest.log 2>&1
+# [NEW] Evening OSM runs
+0 19 * * 1,3,5 cd $OPENCLAW_DIR && bash services/osm-store-backfill.sh >> logs/store-ingest-pm.log 2>&1
+
+# [NEW] --- SNAP RETAILER INGEST (weekly Sunday 7pm, 250K+ stores) ---
+0 19 * * 0 cd $OPENCLAW_DIR && node scripts/ingest-snap-retailers.mjs >> logs/snap-retailers.log 2>&1
+
+# --- CHEFFLOW MIRROR ---
+0 5 * * * cd $CHEFFLOW_DIR && bash scripts/telemetry-analyze.sh >> $CHEFFLOW_DIR/logs/telemetry-analyze.log 2>&1
+0 6 * * * cd $CHEFFLOW_DIR && bash scripts/auto-merge.sh >> $CHEFFLOW_DIR/logs/auto-merge.log 2>&1
+30 6 * * * cd $CHEFFLOW_DIR && bash scripts/nightly-digest.sh >> $CHEFFLOW_DIR/logs/nightly-digest.log 2>&1
+0 4 * * 0 cd $CHEFFLOW_DIR && node devtools/persona-pipeline-cli.mjs validate >> $CHEFFLOW_DIR/logs/persona-validate.log 2>&1
+0 * * * * curl -s -H "Authorization: Bearer SaltyPhish7!" "http://10.0.0.1:3000/api/cron/circle-digest" >> /home/davidferra/logs/circle-digest.log 2>&1
+
+# ===========================================================================
+# HERMES NIGHT SHIFT (migrated from dead WSL2 to Pi, 2026-05-05)
+# 11 jobs: health-pulse, openclaw-freshness, db-health, git-changelog,
+#          disk-resources, error-scanner, build-state, backup-watchdog,
+#          openclaw-sync, morning-report, weekly-digest
+# ===========================================================================
+
+# Hermes: Health Pulse (every 15 min - checks ChefFlow routes via 10.0.0.1:3100)
+*/15 * * * * bash $HERMES_DIR/health-pulse.sh >> $CHEFFLOW_DIR/logs/hermes-health.log 2>&1
+
+# Hermes: OpenClaw Freshness (every 2 hours)
+0 */2 * * * bash $HERMES_DIR/openclaw-freshness.sh >> $CHEFFLOW_DIR/logs/hermes-openclaw.log 2>&1
+
+# Hermes: DB Health (every 2 hours, offset from freshness)
+30 */2 * * * bash $HERMES_DIR/db-health.sh >> $CHEFFLOW_DIR/logs/hermes-db.log 2>&1
+
+# Hermes: Git Changelog (every 4 hours)
+0 */4 * * * bash $HERMES_DIR/git-changelog.sh >> $CHEFFLOW_DIR/logs/hermes-git.log 2>&1
+
+# Hermes: Disk & Resources (every 4 hours, offset)
+30 */4 * * * bash $HERMES_DIR/disk-resources.sh >> $CHEFFLOW_DIR/logs/hermes-disk.log 2>&1
+
+# Hermes: Error Scanner (hourly)
+15 * * * * bash $HERMES_DIR/error-scanner.sh >> $CHEFFLOW_DIR/logs/hermes-errors.log 2>&1
+
+# Hermes: Build State (every 6 hours)
+0 */6 * * * bash $HERMES_DIR/build-state.sh >> $CHEFFLOW_DIR/logs/hermes-build.log 2>&1
+
+# Hermes: Backup Watchdog (every 12 hours)
+0 0,12 * * * bash $HERMES_DIR/backup-watchdog.sh >> $CHEFFLOW_DIR/logs/hermes-backup.log 2>&1
+
+# Hermes: OpenClaw Sync check (every 6 hours)
+30 */6 * * * bash $HERMES_DIR/openclaw-sync.sh >> $CHEFFLOW_DIR/logs/hermes-sync.log 2>&1
+
+# Hermes: Morning Report (daily 5:30am)
+30 5 * * * bash $HERMES_DIR/morning-report.sh >> $CHEFFLOW_DIR/logs/hermes-morning.log 2>&1
+
+# Hermes: Weekly Digest (Sunday 6am)
+0 6 * * 0 bash $HERMES_DIR/weekly-digest.sh >> $CHEFFLOW_DIR/logs/hermes-weekly.log 2>&1

@@ -131,6 +131,80 @@ These are ALREADY BUILT. Just need Playwright verification to mark as "verified.
 
 ---
 
+## WAVE 7: PIE Test Coverage (test-only, parallel-safe, no prod changes)
+
+53 of 62 PIE modules have zero tests. Test:code ratio is 0.07. These are all test-only specs.
+
+| #   | Spec                                       | What                                 | Lines | Priority |
+| --- | ------------------------------------------ | ------------------------------------ | ----- | -------- |
+| 45  | `codex-pie-test-synthetic-engine.md`       | Synthetic engine tests (tier 9.5/10) | ~200  | P0       |
+| 46  | `codex-pie-test-freshness-enforcer.md`     | Freshness enforcer tests (Law 4)     | ~180  | P0       |
+| 47  | `codex-pie-test-anomaly-detector.md`       | Anomaly detector tests               | ~180  | P0       |
+| 48  | `codex-pie-test-pi-bridge.md`              | Pi bridge circuit breaker tests      | ~200  | P0       |
+| 49  | `codex-pie-test-coverage-gap-detector.md`  | Coverage gap detector tests          | ~200  | P1       |
+| 50  | `codex-pie-test-auto-expansion.md`         | Auto-expansion engine tests (Law 5)  | ~200  | P1       |
+| 51  | `codex-pie-test-compound-learning.md`      | Compound learning tests (Law 7)      | ~180  | P1       |
+| 52  | `codex-pie-test-predictive-supply.md`      | Predictive supply chain tests        | ~220  | P1       |
+| 53  | `codex-pie-test-trend-intelligence.md`     | Trend intelligence tests (6 exports) | ~250  | P1       |
+| 54  | `codex-pie-test-wholesale-intelligence.md` | Wholesale intelligence tests         | ~200  | P1       |
+
+**Codex instructions:** All 10 run in parallel. Test-only, zero production code changes. Each creates one test file.
+
+---
+
+## WAVE 8: PIE Geographic Expansion (data + cron activation)
+
+Real price data covers ~3 states. Scripts exist for 50 states but need orchestration and cron wiring.
+
+| #   | Spec                                       | What                                    | Lines | Priority |
+| --- | ------------------------------------------ | --------------------------------------- | ----- | -------- |
+| 55  | `codex-pie-osm-nationwide-run.md`          | Nationwide ingestion orchestrator       | ~150  | P0       |
+| 56  | `codex-pie-coverage-cron-activation.md`    | Wire coverage gap + auto-expansion cron | ~120  | P0       |
+| 57  | `codex-pie-geographic-census-expansion.md` | Expand census to all 50 states          | ~100  | P1       |
+
+**Codex instructions:** 55 first (creates orchestrator). 56-57 parallel after.
+
+---
+
+## WAVE 9: PIE Compliance & Observability
+
+Compliance checks exist in code but nobody sees results.
+
+| #   | Spec                                      | What                              | Lines | Priority |
+| --- | ----------------------------------------- | --------------------------------- | ----- | -------- |
+| 58  | `codex-pie-compliance-morning-report.md`  | PIE compliance in Hermes reports  | ~100  | P1       |
+| 59  | `codex-pie-compliance-admin-dashboard.md` | Admin page for PIE law compliance | ~200  | P2       |
+
+**Codex instructions:** 58 first (script). 59 after (UI).
+
+---
+
+## WAVE 10: PIE Intelligence Wiring (backend data -> chef-visible UI)
+
+Smart modules live in isolation. Law 11: "actionable intelligence, not data."
+
+| #   | Spec                                     | What                                   | Lines | Priority |
+| --- | ---------------------------------------- | -------------------------------------- | ----- | -------- |
+| 60  | `codex-pie-trend-price-card.md`          | Trend arrows on price display          | ~150  | P1       |
+| 61  | `codex-pie-substitution-suggestions.md`  | Smart substitutions on high-risk items | ~180  | P1       |
+| 62  | `codex-pie-wholesale-comparison-view.md` | Wholesale vs retail comparison         | ~200  | P2       |
+| 63  | `codex-pie-volatility-alerts-ui.md`      | Volatility alerts on chef surfaces     | ~150  | P2       |
+| 64  | `codex-pie-seasonal-calendar.md`         | Seasonal price calendar page           | ~200  | P2       |
+
+**Codex instructions:** 60-61 parallel (P1). 62-64 parallel after (P2).
+
+---
+
+## WAVE 11: PIE Architecture (resolve-price decomposition)
+
+| #   | Spec                                       | What                                       | Lines | Priority |
+| --- | ------------------------------------------ | ------------------------------------------ | ----- | -------- |
+| 65  | `codex-pie-resolve-price-decomposition.md` | Extract 13 tiers into individual resolvers | ~300  | P2       |
+
+**Codex instructions:** Run AFTER Wave 7 tests pass (tests are the safety net for this refactor). Serial, not parallel.
+
+---
+
 ## EXCLUDED (Not Codex-appropriate)
 
 These need Claude Code, human decisions, or are blocked:
@@ -151,16 +225,21 @@ These need Claude Code, human decisions, or are blocked:
 ## Execution Order Summary
 
 ```
-PARALLEL WAVE 1  (9 tasks)   Bug fixes, quick wins        ~2-3 hours Codex time
-PARALLEL WAVE 2a (2 tasks)   Circle P0s                   ~1-2 hours
-PARALLEL WAVE 2b (5 tasks)   Circle P1s                   ~3-4 hours
-PARALLEL WAVE 3  (2 tasks)   Costing P1s                  ~2-3 hours
-PARALLEL WAVE 4  (4 tasks)   Ops P1s                      ~3-4 hours
+PARALLEL WAVE 1  (9 tasks)   Bug fixes, quick wins             ~2-3 hours Codex time
+PARALLEL WAVE 2a (2 tasks)   Circle P0s                        ~1-2 hours
+PARALLEL WAVE 2b (5 tasks)   Circle P1s                        ~3-4 hours
+PARALLEL WAVE 3  (2 tasks)   Costing P1s                       ~2-3 hours
+PARALLEL WAVE 4  (4 tasks)   Ops P1s                           ~3-4 hours
 PARALLEL WAVE V  (14 tasks)  Verification (can run anytime)
-SERIAL   WAVE 5  (6 tasks)   Growth features              ~6-8 hours
-SERIAL   WAVE 6  (6 tasks)   Infrastructure               ~4-6 hours
-                                                           ─────────
-                                              TOTAL: ~48 specs/tasks
+SERIAL   WAVE 5  (6 tasks)   Growth features                   ~6-8 hours
+SERIAL   WAVE 6  (6 tasks)   Infrastructure                    ~4-6 hours
+PARALLEL WAVE 7  (10 tasks)  PIE test coverage (all parallel)  ~2-3 hours
+SERIAL   WAVE 8  (3 tasks)   PIE geographic expansion          ~1-2 hours
+SERIAL   WAVE 9  (2 tasks)   PIE compliance/observability      ~1-2 hours
+PARALLEL WAVE 10 (5 tasks)   PIE intelligence wiring           ~3-4 hours
+SERIAL   WAVE 11 (1 task)    PIE resolve-price decomposition   ~2-3 hours
+                                                                ──────────
+                                                 TOTAL: ~69 specs/tasks
 ```
 
-**Expected outcome:** Moves build completeness from 95% to ~99%. Moves overall V1 from 71% to ~80%. The remaining 20% is validation, launch, and human-only tasks.
+**Expected outcome:** Waves 1-6 move build completeness from 95% to ~99%. Waves 7-11 turn PIE from "architecturally complete" into "operationally verified" with test coverage, nationwide data, visible compliance, and chef-facing intelligence. The remaining gap is validation, launch, and human-only tasks.
