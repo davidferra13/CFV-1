@@ -28,6 +28,7 @@ import { sql } from 'drizzle-orm'
 import { getRegionalAverage, getRegionalAveragesBatch } from './cross-store-average'
 import { getCategoryBaseline, getCategoryBaselinesBatch } from './category-baseline'
 import { lookupPrice, lookupPricesBatch } from './pi-bridge'
+import { normalizeIngredientName } from './name-normalizer'
 
 // --- Chef State Lookup (cached per request) ---
 
@@ -92,6 +93,14 @@ export type ResolutionTier =
   | 'category_baseline'
   | 'none'
 
+/**
+ * How geographically reliable this price is for the requesting chef.
+ *   direct   - price observed in the chef's state/zip (tiers 0-5, regional avg)
+ *   regional - price adjusted for chef's region via RPP (tiers 6-6.5 with state match)
+ *   estimated - national data adjusted by state RPP factor (government, category baseline)
+ */
+export type CoverageLevel = 'direct' | 'regional' | 'estimated'
+
 export interface ResolvedPrice {
   cents: number | null
   unit: string
@@ -103,6 +112,8 @@ export interface ResolvedPrice {
    * they were local. Always set by resolvePrice / resolvePricesBatch.
    */
   resolutionTier: ResolutionTier
+  /** How geographically reliable this price is for the requesting chef. */
+  coverageLevel: CoverageLevel
   store: string | null
   confidence: number
   /** Confidence adjusted for age. Decays over time. Use this for ranking. */
@@ -171,12 +182,106 @@ function decayConfidence(baseConfidence: number, dateStr: string | null): number
   return baseConfidence * 0.15
 }
 
-/** Add effectiveConfidence to a resolved price */
-function withDecay(price: Omit<ResolvedPrice, 'effectiveConfidence'>): ResolvedPrice {
+/** Add effectiveConfidence and coverageLevel to a resolved price */
+function withDecay(
+  price: Omit<ResolvedPrice, 'effectiveConfidence' | 'coverageLevel'>
+): ResolvedPrice {
   return {
     ...price,
+    coverageLevel: coverageLevelForTier(price.resolutionTier),
     effectiveConfidence:
       Math.round(decayConfidence(price.confidence, price.confirmedAt) * 100) / 100,
+  }
+}
+
+// --- Regional Price Parity (BLS/BEA state-level food-at-home index) ---
+// 100 = national average. A state at 93.5 means food costs 6.5% less than national.
+// Applied to national-level prices (government, category baseline, market_national)
+// so every chef gets a locally-adjusted estimate rather than a raw national number.
+
+const STATE_RPP: Record<string, number> = {
+  AL: 88.2,
+  AK: 108.5,
+  AZ: 97.2,
+  AR: 87.5,
+  CA: 112.5,
+  CO: 102.8,
+  CT: 108.2,
+  DE: 101.5,
+  FL: 99.2,
+  GA: 92.5,
+  HI: 118.0,
+  ID: 93.8,
+  IL: 95.2,
+  IN: 90.8,
+  IA: 89.5,
+  KS: 89.2,
+  KY: 89.0,
+  LA: 91.5,
+  ME: 98.2,
+  MD: 103.5,
+  MA: 108.5,
+  MI: 92.2,
+  MN: 94.8,
+  MS: 86.2,
+  MO: 89.5,
+  MT: 93.8,
+  NE: 89.8,
+  NV: 97.5,
+  NH: 104.2,
+  NJ: 112.8,
+  NM: 93.2,
+  NY: 108.2,
+  NC: 92.8,
+  ND: 90.2,
+  OH: 90.5,
+  OK: 89.2,
+  OR: 100.8,
+  PA: 95.5,
+  RI: 101.5,
+  SC: 91.2,
+  SD: 89.5,
+  TN: 91.8,
+  TX: 93.5,
+  UT: 96.8,
+  VT: 102.5,
+  VA: 96.8,
+  WA: 104.5,
+  WV: 88.5,
+  WI: 93.8,
+  WY: 93.2,
+  DC: 115.8,
+  PR: 92.0,
+}
+
+/**
+ * Adjust a national-average price by the chef's state RPP factor.
+ * Returns the adjusted cents value. If no state is provided, returns raw cents.
+ */
+function applyRpp(cents: number, state: string | null): number {
+  if (!state) return cents
+  const factor = STATE_RPP[state.toUpperCase()]
+  if (!factor) return cents
+  return Math.round(cents * (factor / 100))
+}
+
+/** Derive coverageLevel from resolutionTier */
+function coverageLevelForTier(tier: ResolutionTier): CoverageLevel {
+  switch (tier) {
+    case 'chef_override':
+    case 'chef_receipt':
+    case 'wholesale':
+    case 'zip_local':
+      return 'direct'
+    case 'regional':
+    case 'market_state':
+      return 'regional'
+    case 'market_national':
+    case 'government':
+    case 'historical':
+    case 'category_baseline':
+    case 'none':
+      return 'estimated'
   }
 }
 
@@ -263,6 +368,7 @@ export async function resolvePrice(
     source: 'none',
     sourceTier: null,
     resolutionTier: 'none',
+    coverageLevel: 'estimated',
     store: null,
     confidence: 0,
     effectiveConfidence: 0,
@@ -417,7 +523,8 @@ export async function resolvePrice(
   const ingredientName = ingredientNameRow[0]?.name
 
   if (ingredientName) {
-    const piResult = await lookupPrice(ingredientName, preferredState || undefined)
+    const normalizedName = normalizeIngredientName(ingredientName)
+    const piResult = await lookupPrice(normalizedName, preferredState || undefined)
     if (piResult && piResult.prices.length > 0) {
       // Use the freshest in-stock price from Pi
       const best = piResult.prices[0]
@@ -672,8 +779,11 @@ export async function resolvePrice(
       const baseConf = Math.min(parseFloat(String(row.confidence)) || 0.55, 0.65)
       const adjustedConf = coversRequestedState ? Math.min(baseConf + 0.1, 0.75) : baseConf
 
+      // RPP-adjust when the market data does NOT cover the chef's state
+      const adjustedCents = coversRequestedState ? priceCents : applyRpp(priceCents, preferredState)
+
       return withDecay({
-        cents: priceCents,
+        cents: adjustedCents,
         unit: row.price_unit || 'each',
         source: 'market_aggregate',
         sourceTier: 'system_ingredient_market',
@@ -682,12 +792,17 @@ export async function resolvePrice(
         confidence: adjustedConf,
         freshness: computeFreshness(row.newest_date),
         confirmedAt: row.newest_date,
-        reason: null,
+        reason: coversRequestedState
+          ? null
+          : preferredState
+            ? `National avg adjusted for ${preferredState}`
+            : null,
       })
     }
   }
 
   // Tier 7: GOVERNMENT (openclaw_government) - no age limit
+  // RPP-adjusted: government data is national/NE regional, adjust for chef's state
   const gov = (await db.execute(sql`
     SELECT price_per_unit_cents, unit, purchase_date
     FROM ingredient_price_history
@@ -702,7 +817,7 @@ export async function resolvePrice(
     const row = gov[0]
     if (row.price_per_unit_cents !== null) {
       return withDecay({
-        cents: row.price_per_unit_cents,
+        cents: applyRpp(row.price_per_unit_cents, preferredState),
         unit: row.unit || 'each',
         source: 'government',
         sourceTier: 'openclaw_government',
@@ -711,7 +826,9 @@ export async function resolvePrice(
         confidence: 0.4,
         freshness: computeFreshness(row.purchase_date),
         confirmedAt: row.purchase_date,
-        reason: null,
+        reason: preferredState
+          ? `USDA avg adjusted for ${preferredState} (RPP ${STATE_RPP[preferredState] || 100})`
+          : null,
       })
     }
   }
@@ -757,7 +874,7 @@ export async function resolvePrice(
     const baseline = await getCategoryBaseline(ingredientCat[0].category)
     if (baseline) {
       return withDecay({
-        cents: baseline.medianCentsPerUnit,
+        cents: applyRpp(baseline.medianCentsPerUnit, preferredState),
         unit: baseline.mostCommonUnit,
         source: 'category_baseline',
         sourceTier: 'category_baseline',
@@ -766,7 +883,9 @@ export async function resolvePrice(
         confidence: 0.2,
         freshness: 'stale' as PriceFreshness,
         confirmedAt: null,
-        reason: `Based on median of ${baseline.ingredientCount} ${baseline.category} ingredients`,
+        reason: preferredState
+          ? `Median of ${baseline.ingredientCount} ${baseline.category} items, adjusted for ${preferredState}`
+          : `Based on median of ${baseline.ingredientCount} ${baseline.category} ingredients`,
       })
     }
   }
@@ -903,22 +1022,35 @@ export async function resolvePricesBatch(
 
   // Query 5.5: Pi Bridge batch lookup (real-time, 1.1M prices over direct ethernet)
   // Fires in parallel with other queries; gracefully returns empty on failure
-  const piNames = ingredientIds.map((id) => nameById.get(id)).filter(Boolean) as string[]
+  // Normalize names before sending to Pi for better match rates
+  const piNameMap = new Map<string, string>() // normalized -> original
+  for (const id of ingredientIds) {
+    const raw = nameById.get(id)
+    if (raw) {
+      const normalized = normalizeIngredientName(raw)
+      piNameMap.set(normalized, raw)
+    }
+  }
+  const piNames = [...piNameMap.keys()]
   const piBridgeResults = await lookupPricesBatch(piNames, preferredState || undefined)
-  // Build reverse map: canonical name -> pi result (for matching back to ingredient IDs)
+  // Build reverse map: normalized name -> pi result (for matching back to ingredient IDs)
   const piBridgeByName = new Map<
     string,
     { avg_cents: number; unit: string; freshest: string | null; observation_count: number }
   >()
   if (piBridgeResults?.results) {
     for (const [name, data] of Object.entries(piBridgeResults.results)) {
-      if (data && data.avg_cents && data.avg_cents > 0) {
-        piBridgeByName.set(name.toLowerCase(), {
-          avg_cents: data.avg_cents,
-          unit: data.unit,
-          freshest: data.freshest,
-          observation_count: data.observation_count,
-        })
+      if (data && (data.median_cents || data.avg_cents)) {
+        // Prefer median (robust to outliers from mixed units)
+        const cents = data.median_cents ?? data.avg_cents
+        if (cents && cents > 0) {
+          piBridgeByName.set(name.toLowerCase(), {
+            avg_cents: cents,
+            unit: data.unit,
+            freshest: data.freshest,
+            observation_count: data.observation_count,
+          })
+        }
       }
     }
   }
@@ -1093,8 +1225,11 @@ export async function resolvePricesBatch(
     }
 
     // Tier 2.7: Pi Bridge (live, real-time from 1.1M prices)
-    const ingredientNameForPi = nameById.get(id)?.toLowerCase()
-    const piData = ingredientNameForPi ? piBridgeByName.get(ingredientNameForPi) : undefined
+    const rawNameForPi = nameById.get(id)
+    const normalizedNameForPi = rawNameForPi
+      ? normalizeIngredientName(rawNameForPi).toLowerCase()
+      : undefined
+    const piData = normalizedNameForPi ? piBridgeByName.get(normalizedNameForPi) : undefined
     if (piData) {
       result.set(
         id,
@@ -1235,13 +1370,13 @@ export async function resolvePricesBatch(
       continue
     }
 
-    // Tier 7: Government (no age limit)
+    // Tier 7: Government (no age limit, RPP-adjusted)
     const govRow = findBestRow(openclaw, 'openclaw_government', null)
     if (govRow && govRow.price_per_unit_cents !== null) {
       result.set(
         id,
         withDecay({
-          cents: govRow.price_per_unit_cents,
+          cents: applyRpp(govRow.price_per_unit_cents, preferredState),
           unit: govRow.unit || 'each',
           source: 'government',
           sourceTier: 'openclaw_government',
@@ -1250,7 +1385,9 @@ export async function resolvePricesBatch(
           confidence: 0.4,
           freshness: computeFreshness(govRow.purchase_date),
           confirmedAt: govRow.purchase_date,
-          reason: null,
+          reason: preferredState
+            ? `USDA avg adjusted for ${preferredState} (RPP ${STATE_RPP[preferredState] || 100})`
+            : null,
         })
       )
       continue
@@ -1281,7 +1418,7 @@ export async function resolvePricesBatch(
       continue
     }
 
-    // Tier 9: Category baseline
+    // Tier 9: Category baseline (RPP-adjusted)
     const category = categoryById.get(id)
     if (category) {
       const baseline = categoryBaselines.get(category)
@@ -1289,7 +1426,7 @@ export async function resolvePricesBatch(
         result.set(
           id,
           withDecay({
-            cents: baseline.medianCentsPerUnit,
+            cents: applyRpp(baseline.medianCentsPerUnit, preferredState),
             unit: baseline.mostCommonUnit,
             source: 'category_baseline',
             sourceTier: 'category_baseline',
@@ -1298,7 +1435,9 @@ export async function resolvePricesBatch(
             confidence: 0.2,
             freshness: 'stale',
             confirmedAt: null,
-            reason: `Based on median of ${baseline.ingredientCount} ${baseline.category} ingredients`,
+            reason: preferredState
+              ? `Median of ${baseline.ingredientCount} ${baseline.category} items, adjusted for ${preferredState}`
+              : `Based on median of ${baseline.ingredientCount} ${baseline.category} ingredients`,
           })
         )
         continue
@@ -1312,6 +1451,7 @@ export async function resolvePricesBatch(
       source: 'none',
       sourceTier: null,
       resolutionTier: 'none',
+      coverageLevel: 'estimated',
       store: null,
       confidence: 0,
       effectiveConfidence: 0,

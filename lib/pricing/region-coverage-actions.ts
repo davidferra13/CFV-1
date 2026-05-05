@@ -3,6 +3,7 @@
 import { db } from '@/lib/db'
 import { sql } from 'drizzle-orm'
 import { requireChefAdmin } from '@/lib/auth/get-user'
+import { getCoverage, type PiBridgeStateCoverage, type PiBridgeNationalCoverage } from './pi-bridge'
 
 // ======================================================================
 // Region Coverage Health (Admin)
@@ -233,4 +234,15 @@ export async function getPricingEngineCoverage(): Promise<CoverageSummary> {
     feedbackSummary,
     regionCoverage,
   }
+}
+
+/**
+ * Get live Pi Bridge coverage for a specific state.
+ * Returns real-time stats from the 1.1M price database.
+ */
+export async function getPiBridgeCoverage(
+  state?: string
+): Promise<PiBridgeStateCoverage | PiBridgeNationalCoverage | null> {
+  await requireChefAdmin()
+  return getCoverage(state)
 }

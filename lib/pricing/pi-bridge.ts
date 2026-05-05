@@ -50,11 +50,13 @@ export interface PiBridgeBatchItem {
   canonical_name: string
   category: string | null
   avg_cents: number | null
+  median_cents: number | null
   min_cents: number | null
   max_cents: number | null
   observation_count: number
   freshest: string | null
   unit: string
+  normalized: boolean
 }
 
 export interface PiBridgeBatchResult {
@@ -163,14 +165,56 @@ export async function searchIngredients(
   return result?.ingredients ?? null
 }
 
+// --- Coverage Stats ---
+
+export interface PiBridgeCoverageByState {
+  state: string
+  coverage_pct: number
+  sources: number
+}
+
+export interface PiBridgeStateCoverage {
+  state: string
+  total_ingredients: number
+  ingredients_with_price: number
+  coverage_pct: number
+  store_count: number
+  sources: Array<{
+    source_id: string
+    ingredients: number
+    prices: number
+    freshest: string | null
+  }>
+  query_ms: number
+}
+
+export interface PiBridgeNationalCoverage {
+  total_ingredients: number
+  total_prices: number
+  total_stores: number
+  states_covered: number
+  by_state: PiBridgeCoverageByState[]
+  query_ms: number
+}
+
+/**
+ * Get coverage stats for a specific state or national summary.
+ *
+ * @param state - Optional two-letter state code. Omit for national summary.
+ */
+export async function getCoverage(
+  state?: string
+): Promise<PiBridgeStateCoverage | PiBridgeNationalCoverage | null> {
+  const params = state ? `?state=${encodeURIComponent(state)}` : ''
+  return piFetch<PiBridgeStateCoverage | PiBridgeNationalCoverage>(`/coverage${params}`)
+}
+
 /**
  * Get stores in a state.
  *
  * @param state - Two-letter state code (e.g., "MA")
  */
-export async function getStoresByState(
-  state: string
-): Promise<Array<{
+export async function getStoresByState(state: string): Promise<Array<{
   name: string
   brand: string
   city: string
