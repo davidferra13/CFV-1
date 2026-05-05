@@ -891,31 +891,51 @@ html {
 @keyframes reveal-up {
   from {
     opacity: 0;
-    transform: translateY(32px);
+    transform: translateY(32px) scale(0.98);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes reveal-scale {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
   }
 }
 
 .scroll-reveal {
   opacity: 0;
-  transform: translateY(32px);
+  transform: translateY(32px) scale(0.98);
 }
 
 .scroll-reveal.revealed {
-  animation: reveal-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: reveal-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.scroll-reveal-scale {
+  opacity: 0;
+  transform: scale(0.92);
+}
+
+.scroll-reveal-scale.revealed {
+  animation: reveal-scale 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .scroll-reveal-delay-1.revealed {
-  animation-delay: 0.1s;
+  animation-delay: 0.12s;
 }
 .scroll-reveal-delay-2.revealed {
-  animation-delay: 0.2s;
+  animation-delay: 0.24s;
 }
 .scroll-reveal-delay-3.revealed {
-  animation-delay: 0.3s;
+  animation-delay: 0.36s;
 }
 
 /* ── Premium search glow (homepage hero) ── */
@@ -1443,6 +1463,53 @@ html {
   box-shadow:
     0 0 10px rgb(var(--brand-500) / 0.2),
     0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* ── Serif display font for hero headlines ── */
+.font-display-serif {
+  font-family: var(--font-playfair), Georgia, 'Times New Roman', serif;
+}
+
+/* ── Warm glass card (for premium public surfaces) ── */
+.glass-warm {
+  background: linear-gradient(
+    145deg,
+    rgba(120, 60, 20, 0.12) 0%,
+    rgba(28, 25, 23, 0.85) 50%,
+    rgba(40, 30, 22, 0.75) 100%
+  );
+  border: 1px solid rgba(180, 120, 60, 0.15);
+  backdrop-filter: blur(16px);
+}
+.glass-warm:hover {
+  border-color: rgba(180, 120, 60, 0.28);
+  background: linear-gradient(
+    145deg,
+    rgba(120, 60, 20, 0.18) 0%,
+    rgba(28, 25, 23, 0.9) 50%,
+    rgba(40, 30, 22, 0.8) 100%
+  );
+}
+
+/* ── Warm divider line ── */
+.divider-warm {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(180, 120, 60, 0.3) 30%,
+    rgba(237, 168, 107, 0.4) 50%,
+    rgba(180, 120, 60, 0.3) 70%,
+    transparent 100%
+  );
+}
+
+/* ── Shimmer text (for accents and labels) ── */
+.text-warm-gradient {
+  background: linear-gradient(135deg, #e8a96b, #d4945a, #c4824a);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 /* ── Brand Gradient Accent (for CTAs and hero elements) ── */

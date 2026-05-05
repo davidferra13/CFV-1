@@ -54,7 +54,7 @@ function NavDropdown({ group, pathname }: { group: PublicNavGroup; pathname: str
         className={`flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
           groupActive
             ? 'bg-brand-950 text-brand-400'
-            : 'text-muted-soft hover:bg-stone-700 hover:text-stone-100'
+            : 'text-stone-400 hover:bg-[#2a1a10]/60 hover:text-stone-200'
         }`}
         aria-expanded={open}
         aria-haspopup="true"
@@ -63,7 +63,7 @@ function NavDropdown({ group, pathname }: { group: PublicNavGroup; pathname: str
         <ChevronDown className={`h-3.5 w-3.5 transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
       {open && (
-        <div className="absolute left-0 top-full z-float mt-1 min-w-[180px] rounded-xl border border-stone-700 bg-stone-900/95 py-1.5 shadow-xl backdrop-blur-xl">
+        <div className="absolute left-0 top-full z-float mt-1 min-w-[180px] rounded-xl border border-[#4a3020]/40 bg-[#1a110c]/95 py-1.5 shadow-[0_12px_40px_rgba(0,0,0,0.5)] backdrop-blur-2xl">
           {group.items.map((item) => {
             const active = isPublicNavActive(pathname, item.href)
             return (
@@ -75,7 +75,7 @@ function NavDropdown({ group, pathname }: { group: PublicNavGroup; pathname: str
                 className={`block px-4 py-2 text-sm transition-colors ${
                   active
                     ? 'bg-brand-950/60 text-brand-400'
-                    : 'text-stone-300 hover:bg-stone-800 hover:text-stone-100'
+                    : 'text-stone-300 hover:bg-[#2a1a10]/60 hover:text-stone-100'
                 }`}
                 onClick={() => setOpen(false)}
               >
@@ -112,9 +112,9 @@ export function PublicHeader() {
 
   return (
     <header
-      className={`sticky top-0 z-chrome border-b transition-all ${
+      className={`sticky top-0 z-chrome border-b transition-all duration-300 ${
         isScrolled
-          ? 'border-stone-700 bg-stone-900/90 shadow-sm backdrop-blur-xl'
+          ? 'border-[#4a3020]/40 bg-[#1a110c]/85 shadow-[0_4px_24px_rgba(0,0,0,0.3)] backdrop-blur-2xl'
           : 'border-transparent bg-transparent'
       }`}
     >
@@ -142,7 +142,7 @@ export function PublicHeader() {
                   className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                     active
                       ? 'bg-brand-950 text-brand-400'
-                      : 'text-muted-soft hover:bg-stone-700 hover:text-stone-100'
+                      : 'text-stone-400 hover:bg-[#2a1a10]/60 hover:text-stone-200'
                   }`}
                 >
                   {item.label}
@@ -158,7 +158,7 @@ export function PublicHeader() {
             href="/auth/signin"
             analyticsName="header_signin"
             analyticsProps={{ section: 'public_header' }}
-            className="inline-flex h-10 items-center justify-center rounded-lg bg-transparent px-3 text-sm font-medium text-stone-300 transition-colors hover:bg-stone-800 hover:text-stone-100"
+            className="inline-flex h-10 items-center justify-center rounded-lg bg-transparent px-3 text-sm font-medium text-stone-300 transition-colors hover:bg-[#2a1a10]/50 hover:text-stone-100"
           >
             Sign In
           </TrackedLink>
@@ -195,7 +195,7 @@ export function PublicHeader() {
 
       {/* Mobile menu */}
       {mobileMenuOpen && (
-        <div className="border-t border-stone-700 bg-stone-900 md:hidden">
+        <div className="border-t border-[#4a3020]/30 bg-[#1a110c]/95 backdrop-blur-2xl md:hidden">
           <div className="mx-auto max-w-6xl space-y-1 px-4 py-3 sm:px-6 lg:px-8">
             {PUBLIC_NAV.map((entry) => {
               if (isGroup(entry)) {
@@ -215,7 +215,7 @@ export function PublicHeader() {
                           className={`block rounded-lg px-3 py-2 text-sm font-medium ${
                             active
                               ? 'bg-brand-950 text-brand-400'
-                              : 'text-stone-300 hover:bg-stone-700'
+                              : 'text-stone-300 hover:bg-[#2a1a10]/60'
                           }`}
                           onClick={() => setMobileMenuOpen(false)}
                         >
@@ -235,7 +235,7 @@ export function PublicHeader() {
                   analyticsName={`header_mobile_nav_${item.label.toLowerCase().replace(/\s+/g, '_')}`}
                   analyticsProps={{ section: 'public_header_mobile' }}
                   className={`block rounded-lg px-3 py-2 text-sm font-medium ${
-                    active ? 'bg-brand-950 text-brand-400' : 'text-stone-300 hover:bg-stone-700'
+                    active ? 'bg-brand-950 text-brand-400' : 'text-stone-300 hover:bg-[#2a1a10]/60'
                   }`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
@@ -247,7 +247,7 @@ export function PublicHeader() {
           <div className="mx-auto flex max-w-6xl gap-2 px-4 pb-4 sm:px-6 lg:px-8">
             <TrackedLink
               href="/auth/signin"
-              className="inline-flex h-10 flex-1 items-center justify-center rounded-lg border border-stone-600 bg-stone-900 px-3 text-sm font-medium text-stone-300 transition-colors hover:bg-stone-700 hover:text-stone-100"
+              className="inline-flex h-10 flex-1 items-center justify-center rounded-lg border border-[#4a3020]/40 bg-[#1a110c] px-3 text-sm font-medium text-stone-300 transition-colors hover:bg-[#2a1a10]/60 hover:text-stone-100"
               analyticsName="header_mobile_signin"
               analyticsProps={{ section: 'public_header_mobile' }}
               onClick={() => setMobileMenuOpen(false)}

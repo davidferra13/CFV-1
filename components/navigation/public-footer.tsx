@@ -19,8 +19,14 @@ export function PublicFooter() {
   const isBeta = LAUNCH_MODE === 'beta'
 
   return (
-    <footer className="border-t border-stone-800/40">
-      <div className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+    <footer className="relative overflow-hidden">
+      {/* Warm top border */}
+      <div className="divider-warm" />
+
+      {/* Subtle warm glow */}
+      <div className="pointer-events-none absolute top-0 left-1/2 h-[300px] w-[600px] -translate-x-1/2 rounded-full bg-[radial-gradient(ellipse,_rgba(142,74,36,0.06),_transparent_70%)]" />
+
+      <div className="relative mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
         <div className="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1.2fr] lg:gap-16">
           {/* Brand column */}
           <div>
@@ -33,20 +39,20 @@ export function PublicFooter() {
             <p className="mt-5 max-w-xs text-sm leading-relaxed text-stone-400">
               {PLATFORM_SHORT_DESCRIPTION}
             </p>
-            <p className="mt-4 text-sm leading-relaxed text-stone-500">
+            <p className="mt-4 text-sm leading-relaxed text-[#8b7355]">
               The workspace for chef-led food businesses.
             </p>
           </div>
 
           {/* Product links */}
           <div>
-            <p className="text-sm font-semibold text-stone-100">Product</p>
+            <p className="text-sm font-semibold text-warm-gradient">Product</p>
             <ul className="mt-5 space-y-3">
               {FOOTER_SECTIONS.discover.links.slice(0, 5).map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-stone-400 transition-colors hover:text-stone-200"
+                    className="text-sm text-stone-400 transition-colors duration-200 hover:text-[#e8a96b]"
                   >
                     {link.label}
                   </Link>
@@ -58,7 +64,7 @@ export function PublicFooter() {
                     sourcePage: 'footer',
                     sourceCta: 'operator_signup',
                   })}
-                  className="text-sm text-brand-400 transition-colors hover:text-brand-300"
+                  className="text-sm text-[#e8a96b] transition-colors duration-200 hover:text-[#f0c090]"
                 >
                   {isBeta ? 'Request operator access' : 'Operator sign up'}
                 </Link>
@@ -68,13 +74,13 @@ export function PublicFooter() {
 
           {/* Company links */}
           <div>
-            <p className="text-sm font-semibold text-stone-100">Company</p>
+            <p className="text-sm font-semibold text-warm-gradient">Company</p>
             <ul className="mt-5 space-y-3">
               {FOOTER_SECTIONS.company.links.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-stone-400 transition-colors hover:text-stone-200"
+                    className="text-sm text-stone-400 transition-colors duration-200 hover:text-[#e8a96b]"
                   >
                     {link.label}
                   </Link>
@@ -84,7 +90,7 @@ export function PublicFooter() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-stone-400 transition-colors hover:text-stone-200"
+                    className="text-sm text-stone-400 transition-colors duration-200 hover:text-[#e8a96b]"
                   >
                     {link.label}
                   </Link>
@@ -95,7 +101,7 @@ export function PublicFooter() {
 
           {/* Newsletter */}
           <div>
-            <p className="text-sm font-semibold text-stone-100">Stay in the loop</p>
+            <p className="text-sm font-semibold text-warm-gradient">Stay in the loop</p>
             <p className="mt-5 text-sm leading-relaxed text-stone-400">
               Short guides for modern food-business operations.
             </p>
@@ -107,10 +113,11 @@ export function PublicFooter() {
       </div>
 
       {/* Bottom bar */}
-      <div className="border-t border-stone-800/30 px-4 py-5 sm:px-6 lg:px-8">
+      <div className="divider-warm" />
+      <div className="px-4 py-5 sm:px-6 lg:px-8">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 sm:flex-row">
-          <p className="text-xs text-stone-500">&copy; {year} ChefFlow. All rights reserved.</p>
-          <p className="text-xs text-stone-600">{PLATFORM_SHORT_DESCRIPTION}</p>
+          <p className="text-xs text-[#6b5c4a]">&copy; {year} ChefFlow. All rights reserved.</p>
+          <p className="text-xs text-[#5a4d3e]">{PLATFORM_SHORT_DESCRIPTION}</p>
         </div>
       </div>
     </footer>

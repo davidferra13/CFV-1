@@ -69,19 +69,19 @@ function confidenceDots(confidence: number): string {
   return '\u25CB\u25CB\u25CB\u25CB' // ○○○○
 }
 
-function confidenceTooltipText(confidence: number, confirmedAt?: string | null): string {
+function freshnessDaysFromIso(iso: string | null | undefined): number | null {
+  if (!iso) return null
+  const confirmedTime = new Date(iso).getTime()
+  if (Number.isNaN(confirmedTime)) return null
+  return Math.max(0, Math.floor((Date.now() - confirmedTime) / (1000 * 60 * 60 * 24)))
+}
+
+function confidenceTooltipText(confidence: number, freshnessDays?: number | null): string {
   const pct = Math.round(confidence * 100)
   const schedule = 'Decay: 0-3d=100%, 3-14d=90%, 14-30d=75%, 30-60d=50%, 60-90d=30%, 90d+=15%'
 
-  if (confirmedAt) {
-    const confirmedTime = new Date(confirmedAt).getTime()
-    if (!Number.isNaN(confirmedTime)) {
-      const freshnessDays = Math.max(
-        0,
-        Math.floor((Date.now() - confirmedTime) / (1000 * 60 * 60 * 24))
-      )
-      return `${pct}% confidence (price is ${freshnessDays}d old). ${schedule}`
-    }
+  if (freshnessDays != null) {
+    return `${pct}% confidence (price is ${freshnessDays}d old). ${schedule}`
   }
 
   return `${pct}% confidence. ${schedule}`
@@ -214,13 +214,16 @@ function PriceFeedbackButtons({
   ingredientId,
   price,
   onFeedback,
+  autoExpand = false,
 }: {
   ingredientId: string
   price: ResolvedPrice
   onFeedback?: () => void
+  /** Start with override input open (for synthetic/no-data prices) */
+  autoExpand?: boolean
 }) {
   const [isPending, startTransition] = useTransition()
-  const [showOverride, setShowOverride] = useState(false)
+  const [showOverride, setShowOverride] = useState(autoExpand)
   const [overrideValue, setOverrideValue] = useState('')
   const [confirmed, setConfirmed] = useState(false)
 
@@ -352,25 +355,28 @@ export function PriceBadge({
   if (isVeryLowConfidence) {
     return (
       <span className={`text-sm ${className}`}>
-        <span className="text-stone-500 line-through decoration-stone-600/50">
-          ~{formatCents(price.cents)}/{price.unit}
-        </span>
         {ingredientId ? (
-          <span className="ml-1.5">
+          <span className="inline-flex items-center gap-1.5">
+            <span className="text-amber-500/80 text-xs font-medium">No reliable price</span>
             <PriceFeedbackButtons
               ingredientId={ingredientId}
               price={price}
               onFeedback={onFeedback}
+              autoExpand
             />
           </span>
         ) : !compact ? (
-          <span className="text-xs text-amber-500/80 ml-1.5">rough estimate, enter your price</span>
-        ) : null}
+          <span className="text-amber-500/80 text-xs">No local price data</span>
+        ) : (
+          <span className="text-stone-500 text-xs">--</span>
+        )}
       </span>
     )
   }
 
   if (isLowConfidence) {
+    const freshnessDays = freshnessDaysFromIso(price.confirmedAt)
+
     return (
       <span className={`text-sm ${className}`}>
         <span className="text-stone-400">
@@ -385,7 +391,7 @@ export function PriceBadge({
         )}
         <span
           className="ml-1.5 text-xs text-stone-500"
-          title={confidenceTooltipText(price.confidence, price.confirmedAt)}
+          title={confidenceTooltipText(price.confidence, freshnessDays)}
         >
           {confidenceDots(price.confidence)}
         </span>
@@ -407,6 +413,7 @@ export function PriceBadge({
   }
 
   const dots = confidenceDots(price.confidence)
+  const freshnessDays = freshnessDaysFromIso(price.confirmedAt)
   const fresh = freshnessLabel(price.confirmedAt)
   const freshColor = freshnessColor(price.freshness)
   const tier = tierLabel(price.resolutionTier)
@@ -431,7 +438,7 @@ export function PriceBadge({
         <span className={`ml-1.5 text-xs ${freshColor}`}>{fresh}</span>
         <span
           className="ml-1 text-xs text-stone-500"
-          title={confidenceTooltipText(price.confidence, price.confirmedAt)}
+          title={confidenceTooltipText(price.confidence, freshnessDays)}
         >
           {dots}
         </span>
@@ -462,10 +469,7 @@ export function PriceBadge({
       <span className={`text-xs ${freshColor}`}>{fresh}</span>
       <span
         className="text-xs text-stone-500 tracking-tight"
-        title={`${sourceLabel(price.source)} - ${confidenceTooltipText(
-          price.confidence,
-          price.confirmedAt
-        )}`}
+        title={`${sourceLabel(price.source)} - ${confidenceTooltipText(price.confidence, freshnessDays)}`}
       >
         {dots}
       </span>

@@ -118,22 +118,24 @@ export default function Home() {
 
       {/* ── Consumer Hero ── */}
       <section className="relative overflow-hidden">
-        {/* Warm gradient background */}
-        <div className="pointer-events-none absolute inset-0">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,_rgba(237,168,107,0.18),_transparent)]" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_40%_at_80%_60%,_rgba(177,92,38,0.06),_transparent)]" />
+        {/* Deep warm brown gradient background */}
+        <div className="pointer-events-none absolute inset-0 bg-[#1a0e08]">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_90%_60%_at_50%_40%,_rgba(120,60,20,0.55),_transparent)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_50%_at_30%_20%,_rgba(80,35,10,0.4),_transparent)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_50%_40%_at_70%_70%,_rgba(60,25,5,0.3),_transparent)]" />
         </div>
 
         <div className="relative mx-auto w-full max-w-4xl px-4 pb-16 pt-20 sm:px-6 sm:pb-24 sm:pt-28 lg:px-8 lg:pb-28 lg:pt-32">
           <div className="text-center">
-            <h1 className="mx-auto max-w-3xl text-5xl font-extrabold tracking-tight text-white sm:text-6xl lg:text-7xl">
+            <h1 className="font-display-serif mx-auto max-w-3xl text-5xl font-bold tracking-tight text-white sm:text-6xl lg:text-7xl">
               Find a private chef
-              <span className="block bg-gradient-to-r from-brand-400 via-brand-300 to-brand-500 bg-clip-text text-transparent">
-                near you
+              <span className="block bg-gradient-to-r from-[#e8a96b] via-[#d4945a] to-[#c4824a] bg-clip-text text-transparent">
+                near you.
               </span>
             </h1>
-            <p className="mx-auto mt-6 max-w-xl text-lg font-light leading-relaxed text-stone-300/90 sm:text-xl">
-              Browse vetted chefs by location and service type, compare profiles, and book directly.
+            <p className="mx-auto mt-6 max-w-xl text-lg font-light leading-relaxed text-stone-300 sm:text-xl">
+              Browse by cuisine, location, or occasion. Connect directly with vetted chefs for
+              private dinners, catering, meal prep, and more.
             </p>
           </div>
 
@@ -147,12 +149,12 @@ export default function Home() {
               {[1, 2, 3, 4, 5].map((i) => (
                 <div
                   key={i}
-                  className="h-9 w-9 rounded-full border-2 border-stone-900 bg-gradient-to-br from-brand-600/60 to-brand-800/60"
+                  className="h-9 w-9 rounded-full border-2 border-[#1a0e08] bg-gradient-to-br from-[#8b5e3c]/70 to-[#5c3520]/70"
                   aria-hidden="true"
                 />
               ))}
             </div>
-            <p className="text-sm font-medium text-stone-400">
+            <p className="text-sm font-medium text-[#a08672]">
               Trusted by private chefs, caterers, and meal prep professionals nationwide
             </p>
           </div>
@@ -176,7 +178,7 @@ export default function Home() {
                 section: 'consumer_hero',
                 destination: PUBLIC_PRIMARY_CONSUMER_CTA.href,
               }}
-              className="inline-flex min-h-14 items-center justify-center rounded-2xl border border-stone-700/80 bg-stone-900/50 px-8 text-base font-medium text-stone-200 backdrop-blur-sm transition-all hover:border-stone-600 hover:bg-stone-800/60"
+              className="inline-flex min-h-14 items-center justify-center rounded-2xl border border-[#5c3520]/60 bg-[#2a1610]/50 px-8 text-base font-medium text-stone-200 backdrop-blur-sm transition-all hover:border-[#8b5e3c]/60 hover:bg-[#3a2218]/60"
             >
               Or describe your event
             </TrackedLink>
@@ -185,23 +187,28 @@ export default function Home() {
       </section>
 
       {/* ── Audience divider ── */}
-      <div className="relative py-12 sm:py-16">
-        <div className="absolute inset-x-0 top-1/2 h-px bg-gradient-to-r from-transparent via-stone-700/60 to-transparent" />
+      <div className="relative py-14 sm:py-20">
+        <div className="divider-warm absolute inset-x-0 top-1/2" />
         <div className="relative mx-auto flex max-w-6xl items-center justify-center px-4">
-          <span className="bg-stone-950 px-6 text-xs font-semibold uppercase tracking-[0.2em] text-stone-500">
+          <span className="bg-[#0c0a09] px-8 text-xs font-semibold uppercase tracking-[0.25em] text-warm-gradient">
             Are you a chef-operator?
           </span>
         </div>
       </div>
 
       {/* ── Operator Section ── */}
-      <section className="relative overflow-hidden pb-20 sm:pb-28">
+      <section className="relative overflow-hidden pb-24 sm:pb-32">
+        {/* Subtle warm glow behind section */}
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute top-1/3 left-1/2 h-[500px] w-[800px] -translate-x-1/2 rounded-full bg-[radial-gradient(ellipse,_rgba(142,74,36,0.08),_transparent_70%)]" />
+        </div>
+
         <div className="relative mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
           <ScrollReveal className="text-center">
-            <span className="inline-flex rounded-full border border-brand-700/40 bg-brand-950/30 px-5 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-200">
+            <span className="inline-flex rounded-full border border-[#8b5e3c]/30 bg-[#1a110c]/80 px-5 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#e8a96b] shadow-[0_0_20px_rgba(142,74,36,0.1)]">
               ChefFlow for chef-led operators
             </span>
-            <h2 className="mx-auto mt-8 max-w-3xl text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-[3.5rem]">
+            <h2 className="font-display-serif mx-auto mt-8 max-w-3xl text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-[3.5rem]">
               Run private chef, catering, and meal prep work without spreadsheet patchwork.
             </h2>
             <p className="mx-auto mt-6 max-w-2xl text-lg font-light leading-relaxed text-stone-300/90">
@@ -211,9 +218,9 @@ export default function Home() {
             </p>
           </ScrollReveal>
 
-          {/* Product screenshot - prominent */}
-          <ScrollReveal className="mt-12 sm:mt-16" delay={1}>
-            <div className="mx-auto max-w-4xl overflow-hidden rounded-2xl border border-stone-700/60 bg-stone-950/60 p-2 shadow-[0_32px_80px_rgba(0,0,0,0.35)] backdrop-blur-sm sm:rounded-3xl sm:p-3">
+          {/* Product screenshot - prominent with warm frame */}
+          <ScrollReveal className="mt-14 sm:mt-20" delay={1}>
+            <div className="mx-auto max-w-4xl overflow-hidden rounded-2xl border border-[#4a3020]/40 bg-[#1a110c]/80 p-2 shadow-[0_32px_80px_rgba(0,0,0,0.5),_0_0_60px_rgba(142,74,36,0.08)] backdrop-blur-sm sm:rounded-3xl sm:p-3">
               <div className="overflow-hidden rounded-xl sm:rounded-2xl">
                 <Image
                   src="/proof/operator-dashboard.png"
@@ -228,11 +235,11 @@ export default function Home() {
           </ScrollReveal>
 
           {/* Feature cards grid */}
-          <div className="mt-14 grid gap-4 sm:mt-16 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-16 grid gap-5 sm:mt-20 sm:grid-cols-2 lg:grid-cols-4">
             {FEATURE_CARDS.map((card, i) => (
               <ScrollReveal key={card.title} delay={i < 4 ? (i as 0 | 1 | 2 | 3) : 0}>
-                <div className="group rounded-2xl border border-stone-800/60 bg-stone-900/30 p-6 backdrop-blur-sm transition-all hover:border-stone-700/80 hover:bg-stone-900/50">
-                  <div className="mb-4 inline-flex rounded-xl bg-brand-950/50 p-2.5 text-brand-400">
+                <div className="glass-warm group rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(0,0,0,0.3),_0_0_20px_rgba(142,74,36,0.06)]">
+                  <div className="mb-4 inline-flex rounded-xl bg-gradient-to-br from-[#3a2218] to-[#2a1610] p-3 text-[#e8a96b] shadow-[inset_0_1px_0_rgba(232,169,107,0.1)]">
                     {card.icon}
                   </div>
                   <h3 className="text-base font-semibold text-stone-100">{card.title}</h3>
@@ -243,7 +250,7 @@ export default function Home() {
           </div>
 
           {/* CTA buttons */}
-          <ScrollReveal className="mt-12 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+          <ScrollReveal className="mt-14 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <TrackedLink
               href={buildMarketingSourceHref({
                 pathname: '/for-operators',
@@ -255,7 +262,7 @@ export default function Home() {
                 section: 'operator',
                 destination: '/for-operators',
               }}
-              className="inline-flex min-h-14 items-center justify-center rounded-2xl gradient-accent px-8 text-base font-semibold text-white shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl active:scale-[0.98]"
+              className="inline-flex min-h-14 items-center justify-center rounded-2xl gradient-accent px-8 text-base font-semibold text-white shadow-[0_4px_16px_rgba(177,92,38,0.3)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(177,92,38,0.4)] active:scale-[0.98]"
             >
               See operator proof
             </TrackedLink>
@@ -266,7 +273,7 @@ export default function Home() {
               })}
               analyticsName="home_hero_operator_walkthrough"
               analyticsProps={{ section: 'operator' }}
-              className="inline-flex min-h-14 items-center justify-center rounded-2xl border border-stone-700/80 bg-stone-900/50 px-8 text-base font-medium text-stone-200 backdrop-blur-sm transition-all hover:border-stone-600 hover:bg-stone-800/60"
+              className="inline-flex min-h-14 items-center justify-center rounded-2xl border border-[#4a3020]/50 bg-[#1a110c]/60 px-8 text-base font-medium text-stone-200 backdrop-blur-sm transition-all duration-300 hover:border-[#8b5e3c]/50 hover:bg-[#2a1a10]/60"
             >
               Request walkthrough
             </TrackedLink>

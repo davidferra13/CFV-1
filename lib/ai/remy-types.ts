@@ -393,6 +393,8 @@ export interface RemyContext {
     spikes: Array<{ name: string; priceCents: number; spikePct: number; store: string }>
     stockAlerts: number
     freshnessPct: number
+    /** Spikes that match chef's own ingredients (for proactive Remy alerts) */
+    urgentPriceAlerts?: Array<{ ingredient: string; spikePct: number; store: string }>
   }
   /** Internal prompt-only signal when non-critical context loaders degraded this request. */
   contextHealth?: {

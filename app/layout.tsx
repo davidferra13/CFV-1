@@ -1,10 +1,18 @@
 ﻿import type { Metadata, Viewport } from 'next'
 import dynamic from 'next/dynamic'
+import { Playfair_Display } from 'next/font/google'
 import { IconProvider } from '@/components/ui/icon-provider'
 import { ColorPaletteProvider, PaletteScript } from '@/components/ui/color-palette-provider'
 import { AppThemeProvider } from '@/components/ui/app-theme-provider'
 import { COMPANY_NAME, PUBLIC_SITE_URL, absoluteUrl } from '@/lib/site/public-site'
 import './globals.css'
+
+const playfairDisplay = Playfair_Display({
+  subsets: ['latin'],
+  weight: ['400', '700'],
+  display: 'swap',
+  variable: '--font-playfair',
+})
 
 const DeferredRootRuntime = dynamic(
   () => import('@/components/runtime/deferred-root-runtime').then((m) => m.DeferredRootRuntime),
@@ -93,7 +101,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className={playfairDisplay.variable}>
       <head>
         <PaletteScript />
         {/* Resource hints: preconnect to origins used on first paint */}

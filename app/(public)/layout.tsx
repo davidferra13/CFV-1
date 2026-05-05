@@ -24,9 +24,9 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
       {/* Skip link removed - root layout.tsx already provides one */}
       {/* Ambient glow - warm brand radiance behind the page */}
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
-        <div className="absolute -top-20 left-1/2 h-[400px] w-[700px] -translate-x-1/2 rounded-full bg-brand-800/30 blur-[80px]" />
-        <div className="absolute top-[50%] -left-20 h-[300px] w-[300px] rounded-full bg-brand-900/35 blur-[60px]" />
-        <div className="absolute top-[75%] -right-20 h-[250px] w-[250px] rounded-full bg-brand-800/20 blur-[60px]" />
+        <div className="absolute -top-32 left-1/2 h-[600px] w-[900px] -translate-x-1/2 rounded-full bg-[radial-gradient(ellipse,_rgba(142,74,36,0.25),_transparent_70%)] blur-[60px]" />
+        <div className="absolute top-[40%] -left-32 h-[500px] w-[500px] rounded-full bg-[radial-gradient(ellipse,_rgba(116,64,33,0.2),_transparent_70%)] blur-[50px]" />
+        <div className="absolute top-[70%] -right-32 h-[400px] w-[400px] rounded-full bg-[radial-gradient(ellipse,_rgba(142,74,36,0.15),_transparent_70%)] blur-[50px]" />
       </div>
       <PresenceBeacon role="anonymous" />
       <PublicHeader />

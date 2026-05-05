@@ -66,6 +66,15 @@ export async function setChefIngredientPrice(input: SetChefPriceInput) {
     )
   `)
 
+  // Contribute anonymized price to shared pool (non-blocking)
+  contributeAnonymousPrice(
+    chefId,
+    parsed.ingredientId,
+    parsed.priceCents,
+    parsed.priceUnit,
+    'override'
+  )
+
   revalidateTag('pricing')
   revalidatePath('/menus', 'layout')
   revalidatePath('/events', 'layout')
@@ -175,6 +184,14 @@ export async function submitPriceFeedback(input: PriceFeedbackInput) {
         'Chef confirmed price'
       )
     `)
+    // Contribute anonymized confirmation to shared pool (non-blocking)
+    contributeAnonymousPrice(
+      chefId,
+      parsed.ingredientId,
+      parsed.shownPriceCents,
+      'each',
+      'confirmed'
+    )
   }
 
   // If they provided a correction, write that as an observation too
@@ -197,6 +214,42 @@ export async function submitPriceFeedback(input: PriceFeedbackInput) {
 
   revalidateTag('pricing')
   return { success: true }
+}
+
+// ======================================================================
+// ANONYMOUS PRICE CONTRIBUTIONS (crowd-sourced pricing)
+// ======================================================================
+
+/**
+ * Write an anonymized price observation to the shared pool.
+ * No tenant_id is stored. State is derived from the chef's profile.
+ * Called automatically after confirmations and overrides.
+ */
+async function contributeAnonymousPrice(
+  chefId: string,
+  ingredientId: string,
+  priceCents: number,
+  unit: string,
+  feedbackType: 'confirmed' | 'override'
+): Promise<void> {
+  try {
+    // Get chef's state for regional bucketing
+    const stateRows = (await db.execute(
+      sql`SELECT home_state FROM chefs WHERE id = ${chefId} LIMIT 1`
+    )) as unknown as { home_state: string | null }[]
+    const state = stateRows[0]?.home_state
+    if (!state) return // Can't contribute without geographic context
+
+    await db.execute(sql`
+      INSERT INTO anonymous_price_contributions (
+        ingredient_id, state, price_cents, unit, feedback_type, contributed_at
+      ) VALUES (
+        ${ingredientId}, ${state}, ${priceCents}, ${unit}, ${feedbackType}, NOW()
+      )
+    `)
+  } catch {
+    // Non-critical; silently degrade. Never block the primary action.
+  }
 }
 
 // ======================================================================

@@ -98,6 +98,35 @@ async function getChefHomeState(tenantId: string): Promise<string | null> {
   return state
 }
 
+// --- Grocery Spend Tier (cached per request) ---
+// Adjusts synthetic price estimates based on chef's market positioning.
+// budget=0.8x, mid=1.0x, premium=1.3x, luxury=1.6x
+
+const SPEND_TIER_FACTORS: Record<string, number> = {
+  budget: 0.8,
+  mid: 1.0,
+  premium: 1.3,
+  luxury: 1.6,
+}
+
+const spendTierCache = new Map<string, number>()
+
+async function getSpendTierFactor(tenantId: string): Promise<number> {
+  if (spendTierCache.has(tenantId)) return spendTierCache.get(tenantId)!
+  try {
+    const rows = (await db.execute(
+      sql`SELECT grocery_spend_tier FROM chef_pricing_config WHERE chef_id = ${tenantId} LIMIT 1`
+    )) as unknown as { grocery_spend_tier: string | null }[]
+    const tier = rows[0]?.grocery_spend_tier || 'mid'
+    const factor = SPEND_TIER_FACTORS[tier] || 1.0
+    spendTierCache.set(tenantId, factor)
+    return factor
+  } catch {
+    spendTierCache.set(tenantId, 1.0)
+    return 1.0
+  }
+}
+
 // --- Types ---
 
 export type PriceSource =
@@ -338,22 +367,25 @@ import {
   DEFAULT_FLOOR_CENTS,
 } from './subcategory-floors'
 
-/** Generate an inline synthetic price from subcategory floor + RPP. Never returns null. */
+/** Generate an inline synthetic price from subcategory floor + RPP + spend tier. Never returns null. */
 function generateInlineSynthetic(
   category: string | null,
   state: string | null,
-  ingredientName?: string | null
+  ingredientName?: string | null,
+  spendTierFactor: number = 1.0
 ): { cents: number; reason: string } {
   const cat = category?.toLowerCase() || 'pantry'
   const subcat = ingredientName ? inferSubcategory(ingredientName, cat) : null
   const floor = subcat
     ? SUBCATEGORY_FLOOR_CENTS[subcat] || CATEGORY_FLOOR_CENTS[cat] || DEFAULT_FLOOR_CENTS
     : CATEGORY_FLOOR_CENTS[cat] || DEFAULT_FLOOR_CENTS
-  const cents = applyRpp(floor, state)
+  const adjusted = Math.round(floor * spendTierFactor)
+  const cents = applyRpp(adjusted, state)
   const label = subcat || cat
+  const tierNote = spendTierFactor !== 1.0 ? `, spend tier ${spendTierFactor}x` : ''
   const reason = state
-    ? `Synthetic estimate: ${label} floor ($${(floor / 100).toFixed(2)}), adjusted for ${state}`
-    : `Synthetic estimate: ${label} floor ($${(floor / 100).toFixed(2)})`
+    ? `Synthetic estimate: ${label} floor ($${(floor / 100).toFixed(2)}${tierNote}), adjusted for ${state}`
+    : `Synthetic estimate: ${label} floor ($${(floor / 100).toFixed(2)}${tierNote})`
   return { cents, reason }
 }
 
@@ -1043,10 +1075,12 @@ async function resolvePriceUncached(
   // Tier 10: INLINE SYNTHETIC (absolute last resort, PIE Law 9: NEVER return null)
   // Category floor + RPP adjustment. Every ingredient gets a price. Always.
   const categoryForFloor = ingredientCat[0]?.category || null
+  const spendFactor = await getSpendTierFactor(tenantId)
   const { cents: syntheticCents, reason: syntheticReason } = generateInlineSynthetic(
     categoryForFloor,
     preferredState,
-    ingredientName
+    ingredientName,
+    spendFactor
   )
   return withDecay({
     cents: syntheticCents,
@@ -1081,6 +1115,7 @@ export async function resolvePricesBatch(
 ): Promise<Map<string, ResolvedPrice>> {
   const preferredStore = options?.preferredStore || null
   const preferredState = options?.state || (await getChefHomeState(tenantId))
+  const spendFactor = await getSpendTierFactor(tenantId)
   const result = new Map<string, ResolvedPrice>()
 
   if (ingredientIds.length === 0) return result
@@ -1693,7 +1728,8 @@ export async function resolvePricesBatch(
     const { cents: synCents, reason: synReason } = generateInlineSynthetic(
       catForFloor,
       preferredState,
-      nameById.get(id) || null
+      nameById.get(id) || null,
+      spendFactor
     )
     result.set(
       id,

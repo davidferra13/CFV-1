@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "timestamp": "2026-05-05T16:54:05.295Z",
+  "timestamp": "2026-05-05T17:22:01.760Z",
   "source": "auto-postool",
   "partial": false,
   "phase": null,
@@ -22,13 +22,89 @@
     },
     {
       "status": "M",
-      "path": "tests/unit/pie.name-normalizer.test.ts"
+      "path": "app/(chef)/culinary/ingredients/page.tsx"
     },
     {
       "status": "M",
-      "path": "tests/unit/pie.subcategory-floors.test.ts"
+      "path": "app/(public)/layout.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(public)/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/api/remy/stream/route-prompt-utils.ts"
+    },
+    {
+      "status": "M",
+      "path": "app/globals.css"
+    },
+    {
+      "status": "M",
+      "path": "app/layout.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/navigation/public-footer.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/navigation/public-header.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/onboarding/onboarding-steps/pricing-step.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/pricing/price-badge.tsx"
+    },
+    {
+      "status": "M",
+      "path": "lib/ai/remy-context.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/ai/remy-types.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/pricing/chef-price-actions.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/pricing/resolve-price.ts"
+    },
+    {
+      "status": "M",
+      "path": "scripts/codex-dispatch-wave.mjs"
+    },
+    {
+      "status": "??",
+      "path": "app/api/pricing/bridge-health/"
+    },
+    {
+      "status": "??",
+      "path": "components/pricing/bridge-health-dot.tsx"
+    },
+    {
+      "status": "??",
+      "path": "components/pricing/coverage-scorecard.tsx"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260505000003_pie_reliability_suite.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260505000003_pricing_config_overhead_labor.sql"
+    },
+    {
+      "status": "??",
+      "path": "lib/pricing/chef-coverage-score.ts"
     }
   ],
   "next_action": null,
-  "context_notes": "Recent commits:\n30e5833c7 style(pricing): format universal-price-lookup\n03274ff6c chore: config, docs, skills, codex build queue, and package updates\n164b639e2 chore(scripts+tests): add PIE scripts, pricing tests, and trend alerts\ncd3fba331 feat(security): MFA, phone verification, security settings, and dashboard components\n10d76d1f2 feat(api+pricing): PIE endpoints, pricing engine, auth, and schema updates"
+  "context_notes": "Recent commits:\n2eb37fdb7 style: lint-staged formatting fixes\n30e5833c7 style(pricing): format universal-price-lookup\n03274ff6c chore: config, docs, skills, codex build queue, and package updates\n164b639e2 chore(scripts+tests): add PIE scripts, pricing tests, and trend alerts\ncd3fba331 feat(security): MFA, phone verification, security settings, and dashboard components"
 }

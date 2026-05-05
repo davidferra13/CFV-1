@@ -247,8 +247,18 @@ function SetupSection({
 
 // ─── Main Component ─────────────────────────────────────────────────────────
 
+const SPEND_TIERS = [
+  { id: 'budget', label: '$15-25/guest', description: 'Budget-friendly menus', factor: '0.8x' },
+  { id: 'mid', label: '$25-40/guest', description: 'Mid-range (most common)', factor: '1.0x' },
+  { id: 'premium', label: '$40-60/guest', description: 'Premium ingredients', factor: '1.3x' },
+  { id: 'luxury', label: '$60+/guest', description: 'Luxury/specialty sourcing', factor: '1.6x' },
+] as const
+
 export function PricingStep({ onComplete, onSkip, archetype, existingConfig }: PricingStepProps) {
   const [values, setValues] = useState<Record<string, string>>({})
+  const [spendTier, setSpendTier] = useState<string>(
+    (existingConfig?.grocery_spend_tier as string) || 'mid'
+  )
   const [isPending, startTransition] = useTransition()
 
   const benchmarks: BenchmarkSet = getBenchmarksForArchetype(archetype ?? null)
@@ -297,6 +307,9 @@ export function PricingStep({ onComplete, onSkip, archetype, existingConfig }: P
       }
     }
 
+    // Include grocery spend tier
+    configUpdate.grocery_spend_tier = spendTier
+
     startTransition(async () => {
       // Pass the structured config data to onComplete
       // The parent (onboarding wizard) persists this to chef_pricing_config
@@ -337,6 +350,43 @@ export function PricingStep({ onComplete, onSkip, archetype, existingConfig }: P
           <span className="font-medium text-zinc-700 dark:text-zinc-300">{benchmarks.label}</span>{' '}
           businesses. You can adjust everything anytime in Settings.
         </p>
+      </div>
+
+      {/* Grocery spend tier (calibrates synthetic price estimates) */}
+      <div className="rounded-xl border border-zinc-200 dark:border-zinc-700 p-4 space-y-3">
+        <div>
+          <h3 className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
+            What do you typically spend per guest on ingredients?
+          </h3>
+          <p className="text-xs text-zinc-500 mt-0.5">
+            This helps us estimate ingredient costs when we don't have local pricing data.
+          </p>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          {SPEND_TIERS.map((tier) => (
+            <button
+              key={tier.id}
+              type="button"
+              onClick={() => setSpendTier(tier.id)}
+              className={`rounded-lg border px-3 py-2.5 text-left transition-colors ${
+                spendTier === tier.id
+                  ? 'border-brand-500 bg-brand-50 dark:bg-brand-950/30 ring-1 ring-brand-500'
+                  : 'border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600'
+              }`}
+            >
+              <span
+                className={`text-sm font-medium ${
+                  spendTier === tier.id
+                    ? 'text-brand-700 dark:text-brand-300'
+                    : 'text-zinc-700 dark:text-zinc-300'
+                }`}
+              >
+                {tier.label}
+              </span>
+              <span className="block text-[11px] text-zinc-500 mt-0.5">{tier.description}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Industry context */}

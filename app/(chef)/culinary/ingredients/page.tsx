@@ -24,6 +24,8 @@ import { ImageWithFallback } from '@/components/pricing/image-with-fallback'
 import { EnrichImagesButton } from '@/components/culinary/enrich-images-button'
 import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
 import { PricingIntelligenceBar } from '@/components/intelligence/pricing-intelligence-bar'
+import { CoverageScorecard } from '@/components/pricing/coverage-scorecard'
+import { BridgeHealthDot } from '@/components/pricing/bridge-health-dot'
 
 export const metadata: Metadata = { title: 'Ingredients' }
 
@@ -78,6 +80,12 @@ export default async function IngredientsPage() {
           </div>
         </div>
         <p className="text-stone-500 mt-1">Your pantry and ingredient price library</p>
+        <div className="flex items-center gap-4 mt-2">
+          <Suspense fallback={null}>
+            <CoverageScorecard />
+          </Suspense>
+          <BridgeHealthDot />
+        </div>
       </div>
 
       <PriceFlagBanner flagged={flaggedPrices} />

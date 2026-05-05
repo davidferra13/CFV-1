@@ -188,7 +188,7 @@ async function dispatchTask(specName, dryRun) {
     const child = spawn('codex', [
       'exec',
       '--sandbox', 'workspace-write',
-      '-m', 'o4-mini',
+      '-m', 'gpt-5.4-mini',
       '-',
     ], {
       cwd: ROOT,

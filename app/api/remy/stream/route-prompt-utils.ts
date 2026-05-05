@@ -718,6 +718,15 @@ Mention the most urgent items naturally when relevant - especially if the chef a
 ${priceLines.map((l) => `- ${l}`).join('\n')}
 Mention price drops when the chef asks about shopping, ingredient costs, or food cost. Flag spikes when discussing event costing or menu pricing. This is real market data, not estimates.`)
     }
+
+    // Urgent price alerts: spikes affecting the chef's own ingredients
+    if (pc.urgentPriceAlerts && pc.urgentPriceAlerts.length > 0) {
+      const alertLines = pc.urgentPriceAlerts
+        .map((a) => `${a.ingredient} up ${a.spikePct}%${a.store ? ` at ${a.store}` : ''}`)
+        .join(', ')
+      parts.push(`\nURGENT PRICE ALERT: These ingredients in YOUR library have spiked: ${alertLines}.
+Lead with a brief heads-up about this before answering the chef's question. Keep it to one sentence, e.g. "Heads up, salmon is up 18% this week." Only mention once per conversation.`)
+    }
   }
 
   // Recent survey feedback - client satisfaction signals

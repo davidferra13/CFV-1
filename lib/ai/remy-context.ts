@@ -128,7 +128,25 @@ async function loadPriceContext(
   // Only return if we got any meaningful data
   if (drops.length === 0 && spikes.length === 0 && stockAlerts === 0) return null
 
-  return { drops, spikes, stockAlerts, freshnessPct }
+  // Cross-reference spikes with chef's ingredients for urgent alerts
+  const chefIngredientSet = new Set(ingredientNames.map((n) => n.toLowerCase()))
+  const urgentPriceAlerts: Array<{ ingredient: string; spikePct: number; store: string }> = []
+  for (const spike of spikes) {
+    const spikeLower = spike.name.toLowerCase()
+    // Match if chef has this ingredient (exact or partial match)
+    for (const chefName of chefIngredientSet) {
+      if (chefName.includes(spikeLower) || spikeLower.includes(chefName)) {
+        urgentPriceAlerts.push({
+          ingredient: spike.name,
+          spikePct: spike.spikePct,
+          store: spike.store,
+        })
+        break
+      }
+    }
+  }
+
+  return { drops, spikes, stockAlerts, freshnessPct, urgentPriceAlerts }
 }
 
 // ─── In-Memory Cache (per-tenant, 5-min TTL) ────────────────────────────────
