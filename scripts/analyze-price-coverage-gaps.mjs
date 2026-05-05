@@ -99,17 +99,17 @@ async function run() {
   const partialChains = await sql`
     SELECT
       c.name AS chain_name,
-      COUNT(s.id)::int AS total_stores,
+      COUNT(DISTINCT s.id)::int AS total_stores,
       COUNT(DISTINCT sp.store_id)::int AS stores_with_prices,
-      (COUNT(s.id) - COUNT(DISTINCT sp.store_id))::int AS stores_missing,
-      ROUND(COUNT(DISTINCT sp.store_id)::numeric / NULLIF(COUNT(s.id), 0) * 100, 1) AS coverage_pct
+      (COUNT(DISTINCT s.id) - COUNT(DISTINCT sp.store_id))::int AS stores_missing,
+      ROUND(COUNT(DISTINCT sp.store_id)::numeric / NULLIF(COUNT(DISTINCT s.id), 0) * 100, 1) AS coverage_pct
     FROM openclaw.chains c
     JOIN openclaw.stores s ON s.chain_id = c.id AND s.is_active = true
     LEFT JOIN openclaw.store_products sp ON sp.store_id = s.id
     GROUP BY c.id, c.name
     HAVING COUNT(DISTINCT sp.store_id) > 0
-       AND COUNT(DISTINCT sp.store_id) < COUNT(s.id) * 0.5
-    ORDER BY (COUNT(s.id) - COUNT(DISTINCT sp.store_id)) DESC
+       AND COUNT(DISTINCT sp.store_id) < COUNT(DISTINCT s.id) * 0.5
+    ORDER BY (COUNT(DISTINCT s.id) - COUNT(DISTINCT sp.store_id)) DESC
     LIMIT 15
   `
   table(partialChains, [
@@ -127,10 +127,10 @@ async function run() {
   const storeTypes = await sql`
     SELECT
       s.store_type,
-      COUNT(s.id)::int AS total_stores,
+      COUNT(DISTINCT s.id)::int AS total_stores,
       COUNT(DISTINCT sp.store_id)::int AS stores_with_prices,
-      (COUNT(s.id) - COUNT(DISTINCT sp.store_id))::int AS stores_no_prices,
-      ROUND(COUNT(DISTINCT sp.store_id)::numeric / NULLIF(COUNT(s.id), 0) * 100, 1) AS coverage_pct
+      (COUNT(DISTINCT s.id) - COUNT(DISTINCT sp.store_id))::int AS stores_no_prices,
+      ROUND(COUNT(DISTINCT sp.store_id)::numeric / NULLIF(COUNT(DISTINCT s.id), 0) * 100, 1) AS coverage_pct
     FROM openclaw.stores s
     LEFT JOIN openclaw.store_products sp ON sp.store_id = s.id
     WHERE s.is_active = true
@@ -152,10 +152,10 @@ async function run() {
   const stateGaps = await sql`
     SELECT
       s.state,
-      COUNT(s.id)::int AS total_stores,
+      COUNT(DISTINCT s.id)::int AS total_stores,
       COUNT(DISTINCT sp.store_id)::int AS stores_with_prices,
-      (COUNT(s.id) - COUNT(DISTINCT sp.store_id))::int AS stores_no_prices,
-      ROUND(COUNT(DISTINCT sp.store_id)::numeric / NULLIF(COUNT(s.id), 0) * 100, 1) AS coverage_pct
+      (COUNT(DISTINCT s.id) - COUNT(DISTINCT sp.store_id))::int AS stores_no_prices,
+      ROUND(COUNT(DISTINCT sp.store_id)::numeric / NULLIF(COUNT(DISTINCT s.id), 0) * 100, 1) AS coverage_pct
     FROM openclaw.stores s
     LEFT JOIN openclaw.store_products sp ON sp.store_id = s.id
     WHERE s.is_active = true AND s.state IS NOT NULL AND LENGTH(s.state) = 2
@@ -184,14 +184,14 @@ async function run() {
         c.name AS chain_name,
         c.slug,
         s.store_type,
-        COUNT(s.id)::int AS store_count,
+        COUNT(DISTINCT s.id)::int AS store_count,
         COUNT(DISTINCT sp.store_id)::int AS covered,
         COUNT(DISTINCT s.state)::int AS states_present
       FROM openclaw.chains c
       JOIN openclaw.stores s ON s.chain_id = c.id AND s.is_active = true
       LEFT JOIN openclaw.store_products sp ON sp.store_id = s.id
       GROUP BY c.id, c.name, c.slug, s.store_type
-      HAVING COUNT(DISTINCT sp.store_id) < COUNT(s.id) * 0.1
+      HAVING COUNT(DISTINCT sp.store_id) < COUNT(DISTINCT s.id) * 0.1
     )
     SELECT
       chain_name,
