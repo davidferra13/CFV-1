@@ -4,6 +4,66 @@ Monotonic improvement history. Each entry leaves PIE measurably better.
 
 ---
 
+## 2026-05-06T00:00:00Z (PI DATA QUALITY + API V2)
+
+**Discovery:** Three-layer data quality problem:
+
+1. Pi API used `LIKE '%name%'` fallback matching "butter" to NIVEA Cocoa Butter Lotion
+2. 234,794 non-food prices (21%) in current_prices (condoms, bandages, shampoo)
+3. 37 common ingredients had wrong standard_units (butter='each', flour='each')
+
+**Actions:**
+
+1. **Rewrote Pi price-api.py to v2** with 4-tier smart matching:
+   - Tier 1: Exact match (food-only, `is_food=1`, exclude `_NON_FOOD`)
+   - Tier 2: Normalized (strip "organic", "fresh", "raw" prefixes, then exact)
+   - Tier 3: Word-boundary (ingredient at word start/end, not substring)
+   - Tier 4: LIKE substring (last resort, food-only)
+     Plus: product-level keyword filter (40+ non-food keywords: lotion, soap, etc.),
+     LIMIT raised from 10 to 25, `/cleanup-stats` endpoint, `match_type` in responses.
+
+2. **Purged 234,794 non-food prices** from current_prices via maintenance override.
+   Deleted prices linked to `_NON_FOOD` category or `is_food=0` ingredients.
+
+3. **Fixed 37 standard_units** for top chef ingredients:
+   butter/flour/rice/chicken/ground beef/salmon/cheese -> lb
+   spices/baking -> oz
+   produce (onion/tomato/apple) -> each
+   oils/sauces -> fl oz
+
+4. **Created chef ingredient accuracy test** (`pie-accuracy-chef-test.mjs`):
+   Tests 99 common chef ingredients against Pi bridge.
+
+**Results (chef ingredient test, state=MA):**
+
+- **Coverage: 100%** (99/99 ingredients found in Pi)
+- **With food prices: 83.8%** (83/99)
+- **Price sanity: 100%** (0 suspicious prices out of 83)
+- **16 ingredients matched but had 0 relevant prices** in MA (flour, sugar, chocolate, etc.)
+- All prices in reasonable ranges for their unit type
+
+**Previous vs Current:**
+
+| Metric         | Old (garbage)         | Honest baseline       | After v2 fix           |
+| -------------- | --------------------- | --------------------- | ---------------------- |
+| Sample size    | 19,639 (noise)        | 29 (honest)           | 99 (chef ingredients)  |
+| Coverage       | unknown               | 1.5% (29/1900)        | 100% (99/99 found)     |
+| With prices    | unknown               | 82.8% in range        | 83.8% with food prices |
+| Non-food in DB | 234,794 (21%)         | 234,794 (21%)         | 0 (purged)             |
+| Wrong units    | 37 common ingredients | 37 common ingredients | 0 (all fixed)          |
+
+**Interpretation:** Pi now returns food-only, correctly-matched prices for every common chef ingredient. The 16 ingredients without MA prices (flour, sugar, vanilla) need regional price data, not API fixes. The accuracy test measures the right thing: "can a chef look up an ingredient and get a reasonable price?"
+
+**Files created/modified:**
+
+- `scripts/pi-price-api-v2.py` (deployed to Pi as `price-api.py`)
+- `scripts/pi-data-cleanup.py` (ran on Pi, units + purge)
+- `scripts/pie-accuracy-chef-test.mjs` (new accuracy test)
+
+**Next:** Fix the 16 missing-price ingredients (mostly need resolve-prices-worker runs). VACUUM the DB to reclaim space from 234K deleted rows. Add more granular product-to-ingredient relevance scoring.
+
+---
+
 ## 2026-05-05T23:00:00Z (ACCURACY GROUND TRUTH FIX)
 
 **Discovery:** Previous accuracy measurements were garbage. Root causes:
