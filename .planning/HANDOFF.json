@@ -1,7 +1,7 @@
 {
   "version": "1.0",
-  "timestamp": "2026-05-06T02:54:39.631Z",
-  "source": "auto-postool",
+  "timestamp": "2026-05-06T03:50:48.897Z",
+  "source": "auto-compact",
   "partial": false,
   "phase": null,
   "phase_name": null,
@@ -19,104 +19,8 @@
     {
       "status": "M",
       "path": ".planning/HANDOFF.json"
-    },
-    {
-      "status": "M",
-      "path": "app/(admin)/admin/pricing-health/page.tsx"
-    },
-    {
-      "status": "M",
-      "path": "app/(admin)/admin/pricing-health/pricing-health-dashboard.tsx"
-    },
-    {
-      "status": "M",
-      "path": "app/(chef)/events/[id]/page.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/costing/event-food-cost-insight.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/pricing/price-badge.tsx"
-    },
-    {
-      "status": "M",
-      "path": "docs/pie-ratchet-log.md"
-    },
-    {
-      "status": "M",
-      "path": "lib/cron/definitions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/pricing/resolve-price.ts"
-    },
-    {
-      "status": "M",
-      "path": "scripts/ai-batch-processor.mjs"
-    },
-    {
-      "status": "??",
-      "path": "app/api/cron/ingredient-cost-refresh/"
-    },
-    {
-      "status": "??",
-      "path": "app/api/cron/pie-accuracy-check/"
-    },
-    {
-      "status": "??",
-      "path": "app/api/cron/pie-trends/"
-    },
-    {
-      "status": "??",
-      "path": "app/api/pricing/seasonal/"
-    },
-    {
-      "status": "??",
-      "path": "app/api/pricing/trends/"
-    },
-    {
-      "status": "??",
-      "path": "components/pricing/price-trends-panel.tsx"
-    },
-    {
-      "status": "??",
-      "path": "components/pricing/seasonal-tips-card.tsx"
-    },
-    {
-      "status": "??",
-      "path": "database/migrations/20260505000004_pie_ingredient_bridge.sql"
-    },
-    {
-      "status": "??",
-      "path": "database/migrations/20260505000005_pie_ingredient_bridge_v2.sql"
-    },
-    {
-      "status": "??",
-      "path": "scripts/pie-accuracy-bootstrap.mts"
-    },
-    {
-      "status": "??",
-      "path": "scripts/pie-accuracy-stats.mts"
-    },
-    {
-      "status": "??",
-      "path": "scripts/pie-fuzzy-ratchet.ts"
-    },
-    {
-      "status": "??",
-      "path": "scripts/pie-resolve-all-regions.mts"
-    },
-    {
-      "status": "??",
-      "path": "scripts/pie-resolve-one-region.mts"
-    },
-    {
-      "status": "??",
-      "path": "scripts/pie-state-expansion.mjs"
     }
   ],
   "next_action": null,
-  "context_notes": "Recent commits:\n6f3105954 fix(pie): coverage gap script COUNT(DISTINCT) for accurate store counts\ne4b0786f8 fix(pie): coverage gap camelCase transform, Pi SSH quoting\nc779ed32f feat(pie): seasonal pricing, Pi store sync, coverage gaps, dedup audit\ne3cf4e29e chore: update CLAUDE.md and planning handoff state\naf69a2627 chore(pie): add codex specs, scrapers, crontab refs, and PIE docs"
+  "context_notes": "Recent commits:\ndffc060ed feat(pie): Pi API v2 with smart matching, data cleanup, chef accuracy test\n5757a0cdc feat(pie): accuracy ground truth, ingredient bridge v2, Layer 2 APIs, region resolver\n6f3105954 fix(pie): coverage gap script COUNT(DISTINCT) for accurate store counts\ne4b0786f8 fix(pie): coverage gap camelCase transform, Pi SSH quoting\nc779ed32f feat(pie): seasonal pricing, Pi store sync, coverage gaps, dedup audit"
 }
