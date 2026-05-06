@@ -358,6 +358,12 @@ export function PriceBadge({
         {ingredientId ? (
           <span className="inline-flex items-center gap-1.5">
             <span className="text-amber-500/80 text-xs font-medium">No reliable price</span>
+            <span
+              className="inline-block px-1.5 py-0.5 text-[0.6rem] font-semibold uppercase tracking-wide rounded bg-red-500/20 text-red-400 border border-red-500/30"
+              title="No real price data available. This is a statistical estimate. Do not use for client quotes without verification."
+            >
+              Unverified
+            </span>
             <PriceFeedbackButtons
               ingredientId={ingredientId}
               price={price}
@@ -366,9 +372,25 @@ export function PriceBadge({
             />
           </span>
         ) : !compact ? (
-          <span className="text-amber-500/80 text-xs">No local price data</span>
+          <span className="inline-flex items-center gap-1.5">
+            <span className="text-amber-500/80 text-xs">No local price data</span>
+            <span
+              className="inline-block px-1.5 py-0.5 text-[0.6rem] font-semibold uppercase tracking-wide rounded bg-red-500/20 text-red-400 border border-red-500/30"
+              title="No real price data available. This is a statistical estimate. Do not use for client quotes without verification."
+            >
+              Unverified
+            </span>
+          </span>
         ) : (
-          <span className="text-stone-500 text-xs">--</span>
+          <span className="inline-flex items-center gap-1">
+            <span className="text-stone-500 text-xs">--</span>
+            <span
+              className="inline-block px-1 py-0.5 text-[0.55rem] font-semibold uppercase tracking-wide rounded bg-red-500/20 text-red-400"
+              title="No real price data available. This is a statistical estimate. Do not use for client quotes without verification."
+            >
+              Unverified
+            </span>
+          </span>
         )}
       </span>
     )
@@ -376,12 +398,21 @@ export function PriceBadge({
 
   if (isLowConfidence) {
     const freshnessDays = freshnessDaysFromIso(price.confirmedAt)
+    const isEstimateTerritory = price.effectiveConfidence < 0.25
 
     return (
       <span className={`text-sm ${className}`}>
         <span className="text-stone-400">
           ~{formatCents(price.cents)}/{price.unit}
         </span>
+        {isEstimateTerritory && (
+          <span
+            className="ml-1.5 inline-block px-1.5 py-0.5 text-[0.6rem] font-semibold uppercase tracking-wide rounded bg-amber-500/20 text-amber-400 border border-amber-500/30"
+            title="This price is a rough estimate based on category averages. Confirm with your supplier before quoting."
+          >
+            Estimate
+          </span>
+        )}
         {!compact && (
           <span
             className={`ml-1.5 text-[0.65rem] uppercase tracking-wide ${tierColor(price.resolutionTier)}`}

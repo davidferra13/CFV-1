@@ -52,7 +52,7 @@ async function askOllama(prompt) {
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     try {
       const controller = new AbortController()
-      const timeout = setTimeout(() => controller.abort(), 120_000)
+      const timeout = setTimeout(() => controller.abort(), 300_000) // 5 min - Gemma 4 on Pi is slow
       // Use chat API, not generate - Gemma 4 thinking model burns invisible
       // reasoning tokens in generate mode but chat extracts visible content
       const res = await fetch(`${OLLAMA_URL}/api/chat`, {

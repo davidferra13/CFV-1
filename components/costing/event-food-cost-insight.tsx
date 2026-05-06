@@ -4,6 +4,8 @@
 // with operator-aware targets, warnings, and margin analysis.
 // Renders on the event detail Money tab when a menu with cost data is attached.
 
+import { useTransition } from 'react'
+import { useRouter } from 'next/navigation'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { formatCurrency } from '@/lib/utils/currency'
@@ -13,6 +15,7 @@ import { generateMenuWarnings } from '@/lib/costing/generate-warnings'
 import { getTargetsForArchetype } from '@/lib/costing/knowledge'
 import type { OperatorType } from '@/lib/costing/knowledge'
 import { archetypeToOperatorType } from '@/lib/costing/knowledge'
+import { refreshIngredientCostsAction } from '@/lib/pricing/cost-refresh-actions'
 import Link from 'next/link'
 
 export interface MenuCostData {
@@ -56,6 +59,8 @@ function getHealthBadge(
 }
 
 export function EventFoodCostInsight({ menuCost, quotedPriceCents, guestCount, archetype }: Props) {
+  const [isRefreshing, startTransition] = useTransition()
+  const router = useRouter()
   const operatorType = archetypeToOperatorType(archetype ?? 'private-chef')
   const targets = getTargetsForArchetype(archetype ?? 'private-chef')
 
@@ -198,6 +203,42 @@ export function EventFoodCostInsight({ menuCost, quotedPriceCents, guestCount, a
             </div>
           </div>
         )}
+
+        {/* Price freshness indicator + refresh */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1.5">
+            {menuCost.hasAllRecipeCosts === false || !menuCost.totalRecipeCostCents ? (
+              <>
+                <span className="inline-block h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
+                <span className="text-xs text-amber-400">
+                  {menuCost.totalRecipeCostCents ? 'Some prices unavailable' : 'Prices updating...'}
+                </span>
+              </>
+            ) : (
+              <>
+                <span className="inline-block h-2 w-2 rounded-full bg-green-400" />
+                <span className="text-xs text-stone-400">Prices current</span>
+              </>
+            )}
+          </div>
+          <button
+            type="button"
+            disabled={isRefreshing}
+            onClick={() => {
+              startTransition(async () => {
+                try {
+                  await refreshIngredientCostsAction()
+                  router.refresh()
+                } catch (err) {
+                  console.error('[EventFoodCostInsight] Refresh failed:', err)
+                }
+              })
+            }}
+            className="text-xs text-stone-500 hover:text-stone-300 underline underline-offset-2 disabled:opacity-50 disabled:cursor-wait"
+          >
+            {isRefreshing ? 'Refreshing...' : 'Refresh prices'}
+          </button>
+        </div>
 
         {/* Coverage note */}
         {menuCost.hasAllRecipeCosts === false && (

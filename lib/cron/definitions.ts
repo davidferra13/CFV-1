@@ -434,6 +434,35 @@ export const CRON_MONITOR_DEFINITIONS: CronMonitorDefinition[] = [
     cadence: 'daily',
     description: 'Auto-generate task instances from recurring task templates',
   },
+  {
+    cronName: 'ingredient-cost-refresh',
+    routePath: '/api/cron/ingredient-cost-refresh',
+    maxExpectedMinutes: 120,
+    cadence: '6h',
+    description: 'Refresh last_price_cents for all recipe ingredients via PIE resolution chain',
+  },
+  {
+    cronName: 'pie-census',
+    routePath: '/api/cron/pie-census',
+    maxExpectedMinutes: 300,
+    cadence: '6h',
+    description:
+      'Full PIE law enforcement: census, synthetic pricing, freshness, learning, anomaly detection, compliance',
+  },
+  {
+    cronName: 'pie-trends',
+    routePath: '/api/cron/pie-trends',
+    maxExpectedMinutes: 30,
+    cadence: 'daily',
+    description: 'Compute ingredient price trends, seasonal patterns, and volatility alerts',
+  },
+  {
+    cronName: 'pie-accuracy-check',
+    routePath: '/api/cron/pie-accuracy-check',
+    maxExpectedMinutes: 30,
+    cadence: 'daily',
+    description: 'Resolve predictions, compute accuracy rollups, cross-validate Pi bridge prices',
+  },
 ]
 
 export const CRON_MONITOR_DEFINITION_MAP = new Map(

@@ -1,6 +1,7 @@
 'use client'
 
 import type { CoverageSummary } from '@/lib/pricing/region-coverage-actions'
+import type { LearningStatus } from '@/lib/pricing/compound-learning'
 
 function StatusDot({ status }: { status: string }) {
   const color =
@@ -24,7 +25,23 @@ function StatCard({ label, value, sub }: { label: string; value: string | number
   )
 }
 
-export function PricingHealthDashboard({ data }: { data: CoverageSummary }) {
+interface ReceiptAccuracyStats {
+  totalComparisons: number
+  accurateCount: number
+  accuracyPct: number
+  avgDeviationPct: number
+  byTier: Array<{ tier: string; count: number; accuracyPct: number; avgDeviation: number }>
+}
+
+export function PricingHealthDashboard({
+  data,
+  learningStatus,
+  receiptAccuracy,
+}: {
+  data: CoverageSummary
+  learningStatus: LearningStatus
+  receiptAccuracy: ReceiptAccuracyStats
+}) {
   return (
     <div className="space-y-8 p-6 max-w-7xl">
       <h1 className="text-xl font-semibold text-stone-100">Pricing Intelligence Engine Health</h1>
@@ -119,6 +136,202 @@ export function PricingHealthDashboard({ data }: { data: CoverageSummary }) {
               ))}
             </tbody>
           </table>
+        )}
+      </div>
+
+      {/* Prediction accuracy stats */}
+      <div className="bg-stone-900 border border-stone-800 rounded-lg p-4">
+        <h2 className="text-sm font-medium text-stone-300 mb-3">
+          Prediction Accuracy (Compound Learning)
+        </h2>
+        {learningStatus.totalPredictions === 0 ? (
+          <p className="text-xs text-stone-500">
+            No accuracy data yet. Predictions are recorded by the synthetic engine and resolved by
+            the compound learning cron.
+          </p>
+        ) : (
+          <>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-4">
+              <StatCard
+                label="Overall Accuracy"
+                value={
+                  learningStatus.currentMonthAccuracy !== null
+                    ? `${learningStatus.currentMonthAccuracy}%`
+                    : 'N/A'
+                }
+                sub="within 15% of actual"
+              />
+              <StatCard
+                label="Mean Abs Error"
+                value={
+                  learningStatus.meanAbsErrorPct !== null
+                    ? `${learningStatus.meanAbsErrorPct}%`
+                    : 'N/A'
+                }
+              />
+              <StatCard
+                label="Total Predictions"
+                value={learningStatus.totalPredictions.toLocaleString()}
+              />
+              <StatCard
+                label="Resolved"
+                value={learningStatus.resolvedPredictions.toLocaleString()}
+                sub={`${learningStatus.unresolvedPredictions.toLocaleString()} unresolved`}
+              />
+              <StatCard
+                label="Prior Month"
+                value={
+                  learningStatus.priorMonthAccuracy !== null
+                    ? `${learningStatus.priorMonthAccuracy}%`
+                    : 'N/A'
+                }
+              />
+              <StatCard
+                label="Month Trend"
+                value={
+                  learningStatus.improved === null
+                    ? 'N/A'
+                    : learningStatus.improved
+                      ? 'Improved'
+                      : 'Declined'
+                }
+                sub={
+                  learningStatus.improved === null
+                    ? 'not enough data'
+                    : learningStatus.improved
+                      ? 'accuracy went up'
+                      : 'accuracy went down'
+                }
+              />
+            </div>
+
+            {/* Accuracy by derivation method */}
+            {learningStatus.byMethod.length > 0 && (
+              <div className="mt-2">
+                <h3 className="text-xs text-stone-500 uppercase tracking-wide mb-2">
+                  By Derivation Method (Current Month)
+                </h3>
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr className="text-stone-500 border-b border-stone-800">
+                      <th className="text-left py-2 pr-4">Method</th>
+                      <th className="text-right py-2 pr-4">Predictions</th>
+                      <th className="text-right py-2 pr-4">Resolved</th>
+                      <th className="text-right py-2 pr-4">Accuracy</th>
+                      <th className="text-right py-2">MAE %</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {learningStatus.byMethod.map((m) => (
+                      <tr key={m.method} className="border-b border-stone-800/50">
+                        <td className="py-2 pr-4 text-stone-300 font-mono">{m.method}</td>
+                        <td className="py-2 pr-4 text-right text-stone-400">
+                          {m.predictions.toLocaleString()}
+                        </td>
+                        <td className="py-2 pr-4 text-right text-stone-400">
+                          {m.resolved.toLocaleString()}
+                        </td>
+                        <td className="py-2 pr-4 text-right">
+                          <span
+                            className={
+                              m.accuracyPct === null
+                                ? 'text-stone-500'
+                                : m.accuracyPct >= 80
+                                  ? 'text-emerald-400'
+                                  : m.accuracyPct >= 50
+                                    ? 'text-amber-400'
+                                    : 'text-red-400'
+                            }
+                          >
+                            {m.accuracyPct !== null ? `${m.accuracyPct}%` : 'N/A'}
+                          </span>
+                        </td>
+                        <td className="py-2 text-right text-stone-400">
+                          {m.meanAbsErrorPct !== null ? `${m.meanAbsErrorPct}%` : 'N/A'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* Receipt ground truth accuracy */}
+      <div className="bg-stone-900 border border-stone-800 rounded-lg p-4">
+        <h2 className="text-sm font-medium text-stone-300 mb-3">Receipt Ground Truth (30 days)</h2>
+        {receiptAccuracy.totalComparisons === 0 ? (
+          <p className="text-xs text-stone-500">
+            No receipt comparisons yet. Accuracy data appears after chefs scan receipts and prices
+            are compared against PIE predictions.
+          </p>
+        ) : (
+          <>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+              <StatCard
+                label="Comparisons"
+                value={receiptAccuracy.totalComparisons.toLocaleString()}
+                sub={`${receiptAccuracy.accurateCount.toLocaleString()} accurate`}
+              />
+              <StatCard
+                label="Accuracy"
+                value={`${receiptAccuracy.accuracyPct.toFixed(1)}%`}
+                sub="within 15% of receipt price"
+              />
+              <StatCard
+                label="Avg Deviation"
+                value={`${receiptAccuracy.avgDeviationPct.toFixed(1)}%`}
+              />
+              <StatCard label="Tiers Measured" value={receiptAccuracy.byTier.length} />
+            </div>
+
+            {/* By resolution tier */}
+            {receiptAccuracy.byTier.length > 0 && (
+              <div className="mt-2">
+                <h3 className="text-xs text-stone-500 uppercase tracking-wide mb-2">
+                  By Resolution Tier
+                </h3>
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr className="text-stone-500 border-b border-stone-800">
+                      <th className="text-left py-2 pr-4">Tier</th>
+                      <th className="text-right py-2 pr-4">Comparisons</th>
+                      <th className="text-right py-2 pr-4">Accuracy</th>
+                      <th className="text-right py-2">Avg Deviation</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {receiptAccuracy.byTier.map((t) => (
+                      <tr key={t.tier} className="border-b border-stone-800/50">
+                        <td className="py-2 pr-4 text-stone-300 font-mono">{t.tier}</td>
+                        <td className="py-2 pr-4 text-right text-stone-400">
+                          {t.count.toLocaleString()}
+                        </td>
+                        <td className="py-2 pr-4 text-right">
+                          <span
+                            className={
+                              t.accuracyPct >= 80
+                                ? 'text-emerald-400'
+                                : t.accuracyPct >= 50
+                                  ? 'text-amber-400'
+                                  : 'text-red-400'
+                            }
+                          >
+                            {t.accuracyPct.toFixed(1)}%
+                          </span>
+                        </td>
+                        <td className="py-2 text-right text-stone-400">
+                          {t.avgDeviation.toFixed(1)}%
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </>
         )}
       </div>
 

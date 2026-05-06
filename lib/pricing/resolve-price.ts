@@ -89,6 +89,153 @@ export function invalidatePriceCache(tenantId?: string): void {
   }
 }
 
+// --- Unit Normalization (Weight -> oz, Volume -> fl oz, Count -> each) ---
+
+const WEIGHT_UNITS = new Set([
+  'oz',
+  'ounce',
+  'ounces',
+  'lb',
+  'lbs',
+  'pound',
+  'pounds',
+  'g',
+  'gram',
+  'grams',
+  'kg',
+  'kilogram',
+  'kilograms',
+  'mg',
+])
+const VOLUME_UNITS = new Set([
+  'tsp',
+  'teaspoon',
+  'tbsp',
+  'tablespoon',
+  'cup',
+  'cups',
+  'fl oz',
+  'fl_oz',
+  'floz',
+  'pint',
+  'pt',
+  'quart',
+  'qt',
+  'gallon',
+  'gal',
+  'ml',
+  'l',
+  'liter',
+  'liters',
+  'dl',
+])
+const COUNT_UNITS = new Set([
+  'each',
+  'ea',
+  'piece',
+  'pieces',
+  'unit',
+  'whole',
+  'bunch',
+  'head',
+  'can',
+  'bag',
+  'bottle',
+  'jar',
+  'package',
+  'stick',
+  'slice',
+  'ct',
+  'count',
+  'pk',
+  'pack',
+  'box',
+  'dozen',
+  'doz',
+])
+
+const WEIGHT_TO_OZ: Record<string, number> = {
+  oz: 1,
+  ounce: 1,
+  ounces: 1,
+  lb: 16,
+  lbs: 16,
+  pound: 16,
+  pounds: 16,
+  g: 1 / 28.3495,
+  gram: 1 / 28.3495,
+  grams: 1 / 28.3495,
+  kg: 35.274,
+  kilogram: 35.274,
+  kilograms: 35.274,
+  mg: 1 / 28349.5,
+}
+const VOLUME_TO_FLOZ: Record<string, number> = {
+  'fl oz': 1,
+  fl_oz: 1,
+  floz: 1,
+  tsp: 1 / 6,
+  teaspoon: 1 / 6,
+  tbsp: 0.5,
+  tablespoon: 0.5,
+  cup: 8,
+  cups: 8,
+  pint: 16,
+  pt: 16,
+  quart: 32,
+  qt: 32,
+  gallon: 128,
+  gal: 128,
+  ml: 1 / 29.5735,
+  l: 33.814,
+  liter: 33.814,
+  liters: 33.814,
+  dl: 3.3814,
+}
+const COUNT_TO_EACH: Record<string, number> = {
+  each: 1,
+  ea: 1,
+  piece: 1,
+  pieces: 1,
+  unit: 1,
+  whole: 1,
+  ct: 1,
+  count: 1,
+  pk: 1,
+  pack: 1,
+  box: 1,
+  bag: 1,
+  bottle: 1,
+  jar: 1,
+  can: 1,
+  stick: 1,
+  slice: 1,
+  head: 1,
+  bunch: 1,
+  package: 1,
+  dozen: 12,
+  doz: 12,
+}
+
+interface NormalizedPrice {
+  cents: number
+  unit: string
+}
+
+/** Normalize any price+unit to standard base unit within its family.
+ *  Weight -> oz, Volume -> fl oz, Count -> each.
+ *  Returns null if unit is unrecognized. */
+function normalizeToStandardUnit(cents: number, rawUnit: string): NormalizedPrice | null {
+  const u = rawUnit.trim().toLowerCase()
+  const wFactor = WEIGHT_TO_OZ[u]
+  if (wFactor !== undefined) return { cents: cents / wFactor, unit: 'oz' }
+  const vFactor = VOLUME_TO_FLOZ[u]
+  if (vFactor !== undefined) return { cents: cents / vFactor, unit: 'fl oz' }
+  const cFactor = COUNT_TO_EACH[u]
+  if (cFactor !== undefined) return { cents: cents / cFactor, unit: 'each' }
+  return null
+}
+
 // --- Chef State Lookup (cached per request) ---
 
 const stateCache = new Map<string, string | null>()
@@ -661,7 +808,18 @@ async function resolvePriceUncached(
     if (piResult && piResult.prices.length > 0) {
       // Use the freshest in-stock price from Pi
       const best = piResult.prices[0]
-      const priceCents = best.price_per_standard_unit_cents ?? best.price_cents
+      // Prefer Pi's pre-normalized price; otherwise normalize ourselves
+      let priceCents = best.price_per_standard_unit_cents
+      let priceUnit = best.standard_unit || best.price_unit || 'each'
+      if (!priceCents && best.price_cents) {
+        const normalized = normalizeToStandardUnit(best.price_cents, best.price_unit || 'each')
+        if (normalized) {
+          priceCents = normalized.cents
+          priceUnit = normalized.unit
+        } else {
+          priceCents = best.price_cents
+        }
+      }
       if (priceCents && priceCents > 0) {
         // Farmers market seasonal check: exclude out-of-season, boost in-season
         const marketStatus = await getMarketSeasonStatus(best.store, best.state || preferredState)
@@ -669,7 +827,7 @@ async function resolvePriceUncached(
           const seasonalMult = seasonalConfidenceMultiplier(marketStatus)
           return withDecay({
             cents: priceCents,
-            unit: best.standard_unit || best.price_unit || 'each',
+            unit: priceUnit,
             source: 'direct_scrape',
             sourceTier: 'pi_bridge_live',
             resolutionTier:
@@ -1520,16 +1678,20 @@ export async function resolvePricesBatch(
       : undefined
     const piData = normalizedNameForPi ? piBridgeByName.get(normalizedNameForPi) : undefined
     if (piData) {
+      // Normalize Pi batch price to standard unit
+      const piNormalized = normalizeToStandardUnit(piData.avg_cents, piData.unit || 'each')
+      const piCents = piNormalized ? piNormalized.cents : piData.avg_cents
+      const piUnit = piNormalized ? piNormalized.unit : piData.unit || 'each'
       result.set(
         id,
         withDecay({
-          cents: piData.avg_cents,
-          unit: piData.unit || 'each',
+          cents: piCents,
+          unit: piUnit,
           source: 'direct_scrape',
           sourceTier: 'pi_bridge_live',
-          resolutionTier: 'regional',
+          resolutionTier: 'market_national', // Pi batch has no state filtering yet
           store: `Live Price (${piData.observation_count} observations)`,
-          confidence: 0.82,
+          confidence: 0.65, // Reduced: no geographic specificity in batch mode
           freshness: computeFreshness(piData.freshest),
           confirmedAt: piData.freshest,
           reason: null,

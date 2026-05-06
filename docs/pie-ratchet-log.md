@@ -4,6 +4,141 @@ Monotonic improvement history. Each entry leaves PIE measurably better.
 
 ---
 
+## 2026-05-05T23:00:00Z (ACCURACY GROUND TRUTH FIX)
+
+**Discovery:** Previous accuracy measurements were garbage. Root causes:
+
+1. **Pi bridge product linkage is poisoned.** Searching "butter" returns NIVEA Cocoa Butter Lotion, Dove Shea Butter Soap, Haagen-Dazs Butter Pecan Ice Cream. Not one actual stick of butter. The Pi bridge uses `LIKE '%name%'` fallback, linking all products containing the word to the ingredient.
+
+2. **Batch endpoint AVGs across unrelated products.** `/prices` returns `COALESCE(price_per_standard_unit_cents, price_cents)` averaged across ALL linked products, mixing per-oz standardized prices with raw per-package prices, across completely different product types.
+
+3. **resolved_prices contains branded consumer products** (Betty Crocker Bisquick, BOCA Veggie Patties, Arm & Hammer Saline) alongside raw ingredients. Chefs price "flour per lb" not "Bisquick per oz."
+
+**Actions:**
+
+1. **Truncated 19,639 garbage predictions** from price_predictions + learning_accuracy. All prior measurements were noise.
+
+2. **Rewrote accuracy script** to use single endpoint (`/price`) instead of batch (`/prices`). Single endpoint returns individual product names, enabling product relevance filtering. New `isProductRelevant()` function rejects obviously wrong matches (soap, lotion, non-food).
+
+3. **Applied bridge v2 migration** (20260505000005). Added normalize_ingredient_name() function with brand stripping, prefix removal, singularization. Bridge expanded from 22,276 to 22,523 rows (+247 normalized matches). Coverage was already 92.5% via exact match.
+
+**Honest baseline (n=29, product-filtered):**
+
+- Accuracy (<=15%): **27.6%** (8/29)
+- Within market range (+/-10%): **82.8%** (24/29)
+- Avg deviation: 45.66%
+- Median deviation: 38.94%
+- Unit mismatches: 10.3% (3/29)
+- Geographic: 31.0% (9/29)
+
+**Interpretation:** Small sample (29 valid comparisons out of 1,900 unique ingredients). Product filtering correctly removes garbage but leaves few matches. 83% of PIE prices fall within real market ranges (useful for chef cost estimation) but only 28% hit the 15% precision threshold.
+
+**Bottleneck for 85% target:** Not in PIE's price resolution. In the ground truth:
+
+1. Pi's product-to-ingredient mapping needs rebuilding (biggest impact)
+2. Canonical_ingredients table mixes branded products with raw ingredients
+3. Pi's `/price` endpoint returns max 10 results (often wrong ones)
+4. Need to separate "chef ingredients" from "store products" in canonical_ingredients
+
+**Files modified:**
+
+- `scripts/pie-accuracy-bootstrap.mts` (single endpoint, product filtering, relevance check)
+- `database/migrations/20260505000005_pie_ingredient_bridge_v2.sql` (applied)
+
+**Next:** Fix Pi's canonical_ingredient linkage quality. Then re-measure with larger valid sample.
+
+---
+
+## 2026-05-05T21:00:00Z (ACCURACY BASELINE + UNIT-MISMATCH FILTER)
+
+**Measurement:** First real PIE accuracy measurement against Pi bridge ground truth (1.1M store prices).
+
+**Baseline (unfiltered):**
+
+- Comparisons: 2,942
+- Accuracy (<=15% deviation): 45.6%
+- Median deviation: 17.67%
+- P90 deviation: 89.13%
+- Method: all median_multistore
+
+**Action:** Added unit-family mismatch filter to `pie-accuracy-bootstrap.mts`. Comparisons where PIE unit type (weight/volume/count) differs from Pi unit type are now excluded by default. This removes apples-to-oranges noise (e.g., per-oz vs per-each) that inflates P90.
+
+Also added:
+
+- `--min-observations N` flag (default 3) to require Pi items have meaningful sample sizes
+- `--no-unit-filter` flag to run unfiltered for comparison
+- Outlier analysis in `pie-accuracy-stats.mts` (shows >100%/>200%/>500% deviation buckets)
+
+**Expected improvement:** 45.6% -> 60-70% accuracy with unit filter alone. The median (17.67%) is barely over SLA, so removing outlier noise should pull it under 15%.
+
+**Files modified:**
+
+- `scripts/pie-accuracy-bootstrap.mts` (unit filter, min-observations, import conversion-engine)
+- `scripts/pie-accuracy-stats.mts` (outlier analysis section)
+
+**Next:** Run filtered measurement, then tackle state-specific comparisons (MA prices vs MA stores).
+
+---
+
+## 2026-05-05T18:30:00Z (INFRASTRUCTURE + DATA INTEGRITY)
+
+**Opportunity:** Critical PIE data integrity gaps found and fixed:
+
+1. Census (slug IDs) completely disconnected from resolved_prices (UUID IDs) - no overlap
+2. Pi bridge prices have null state (stores lack geographic data)
+3. 3,500 naked ingredients need fuzzy matching
+4. Layer 2 (trends/seasonal) built but not wired to API
+
+**Actions:**
+
+1. **Ingredient bridge created** - Materialized view `openclaw.ingredient_bridge` maps 22,276 system_ingredient UUIDs to canonical_ingredient slugs. Migration: `20260505000004_pie_ingredient_bridge.sql`
+
+2. **Resolve-prices-worker tested and run** - Ran real store aggregation for Boston (5,000 prices), NYC (5,000), LA (5,000). These use slug keys matching the census. Running full resolve for all 20 metro regions with mapped stores.
+
+3. **Fuzzy ratchet script built** - `scripts/pie-fuzzy-ratchet.ts` uses pg_trgm similarity() against 7.8M products. Ready for dry-run.
+
+4. **Layer 2 API endpoints live** - Three new routes:
+   - `GET /api/pricing/trends` (ingredients, summary, alerts modes)
+   - `GET /api/pricing/seasonal` (patterns, tips modes)
+   - `POST /api/cron/pie-trends` (daily compute + cache)
+
+5. **State expansion script** - `scripts/pie-state-expansion.mjs` probes Pi for state data. Finding: Pi prices lack state attribution (all null). Real geographic expansion comes from PostgreSQL stores (150K+ with state) via resolve-prices-worker.
+
+**Honest metrics (post-bridge):**
+
+- Census: 77,472 food ingredients
+- Covered via bridge (UUID path): 16,052 (20.7%)
+- Covered via slug path (resolve-worker): 5,000+ and growing (running all regions)
+- States with resolved_prices: 51/51 (via seeded data)
+- Regions with real store data: 20 metro areas
+- Pi bridge: LIVE (1.1M prices, 2.8GB, state=null everywhere)
+- Freshness: undetermined (updated_at index missing, table too large for scan)
+- Layer 2 APIs: LIVE (no UI consumers yet)
+
+**Key finding:** The "95% coverage" reported earlier was measuring normalization_map coverage (how many ingredients link to products). True PIE coverage = "how many census ingredients have resolved_prices in at least one region" = 20.7% via UUID bridge + growing via slug-keyed real aggregations.
+
+**Files created:**
+
+- `database/migrations/20260505000004_pie_ingredient_bridge.sql`
+- `scripts/pie-fuzzy-ratchet.ts`
+- `scripts/pie-state-expansion.mjs`
+- `scripts/pie-resolve-one-region.mts`
+- `scripts/pie-resolve-all-regions.mts`
+- `app/api/pricing/trends/route.ts`
+- `app/api/pricing/seasonal/route.ts`
+- `app/api/cron/pie-trends/route.ts`
+
+**Next opportunities:**
+
+1. Wait for resolve-all-regions to finish (will add 50K-100K slug-keyed prices)
+2. Run fuzzy ratchet to close naked gap
+3. Add updated_at index on resolved_prices for freshness queries
+4. Build trend UI components (APIs ready)
+5. Investigate Pi bridge state attribution (add state to sqlite stores table)
+6. Resume scraping (0% freshness is the silent killer)
+
+---
+
 ## 2026-05-04T23:25:00Z (FULL BASELINE MEASUREMENT)
 
 **Opportunity:** First comprehensive measurement with `scripts/pie-measure.mts`. Establishes true baseline for national vision tracking.

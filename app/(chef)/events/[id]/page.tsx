@@ -178,6 +178,7 @@ import { EventDefaultFlowPanel } from '@/components/events/event-default-flow-pa
 import { getEventDefaultFlowSnapshotForTenant } from '@/lib/events/default-event-flow-data'
 import { EventCloneButton } from '@/components/events/event-clone-button'
 import { getEventConstraintRadar } from '@/lib/events/constraint-radar-actions'
+import { refreshIngredientCostsForTenant } from '@/lib/pricing/cost-refresh-actions'
 
 async function EventCompletionSection({ eventId }: { eventId: string }) {
   const result = await getCompletionForEntity('event', eventId)
@@ -793,6 +794,35 @@ export default async function EventDetailPage({
   )
   const isEventOwner = (event as any).tenant_id === user.entityId
   const referralSourceLabel = inquiryReferralSource?.replace(/_/g, ' ') ?? null
+
+  // Lazy-refresh: if menu cost data is stale/missing, fire a non-blocking refresh
+  // for this event's ingredients. Next page load will show updated prices.
+  if (!menuCostSummary || !menuCostSummary.hasAllRecipeCosts) {
+    if (event.menu_id) {
+      const db: any = createServerClient()
+      void db
+        .from('components')
+        .select('recipe_id, dishes!inner(menu_id)')
+        .eq('dishes.menu_id', event.menu_id)
+        .not('recipe_id', 'is', null)
+        .then(({ data: comps }: any) => {
+          if (!comps || comps.length === 0) return
+          const recipeIds = [...new Set(comps.map((c: any) => c.recipe_id))]
+          return db.from('recipe_ingredients').select('ingredient_id').in('recipe_id', recipeIds)
+        })
+        .then((res: any) => {
+          if (!res?.data || res.data.length === 0) return
+          const ingredientIds = [
+            ...new Set(res.data.map((ri: any) => ri.ingredient_id)),
+          ] as string[]
+          if (ingredientIds.length === 0) return
+          return refreshIngredientCostsForTenant(user.tenantId!, ingredientIds)
+        })
+        .catch((err: any) => {
+          console.error('[EventDetailPage] lazy cost refresh failed (non-blocking):', err)
+        })
+    }
+  }
 
   const COLLAB_ROLE_LABELS: Record<string, string> = {
     primary: 'Primary Chef',
