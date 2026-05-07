@@ -187,6 +187,8 @@ Credentials in `.auth/agent.json`. Sign in via `POST http://localhost:3100/api/e
 ## ARCHITECTURE & PATTERNS
 
 Full implementation patterns and architecture: `@docs/CLAUDE-ARCHITECTURE.md`
+Domain map (265 lib/ domains, categorized): `docs/CLAUDE-DOMAINS.md` (read when placing new code)
+Workflow domains (chef daily ops mapped to skills): `docs/CLAUDE-WORKFLOWS.md` (read when task matches a workflow)
 File locations and environment config: `docs/CLAUDE-REFERENCE.md` (read when needed)
 Skills, triggers, power tools, brand names: `@docs/CLAUDE-SKILLS-REFERENCE.md`
 

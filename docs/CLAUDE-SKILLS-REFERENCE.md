@@ -36,6 +36,14 @@
 | Creating a new skill                 | `/write-a-skill`                 | Proper structure + progressive disclosure |
 | Feature touches Remy-accessible area | `/remy-gate`                     | Ensure Remy write parity                  |
 | Feature discussion concluded         | `/audit`                         | Lock down before moving on                |
+| "Who's waiting" / client silence     | `/client-pulse`                  | Show clients needing response             |
+| "Tell [client]..." / update client   | `/quick-update`                  | Draft and send status update              |
+| "Let me tell you a recipe..."        | `/brain-dump`                    | Capture recipe from memory                |
+| Unacked inquiries found              | `/acknowledge`                   | Bulk-ack new inquiries                    |
+| "Next dinner" / "what's coming up"   | `/next-dinner`                   | Full event briefing                       |
+| "Recipe blitz" / batch recipes       | `/recipe-blitz`                  | Rapid-fire batch recipe capture           |
+| "Money check" / "who owes me"        | `/money-check`                   | Quick P&L snapshot                        |
+| "Inbox zero" / "what's unread"       | `/inbox-zero`                    | Multi-channel inbox triage                |
 
 ## Autonomous Behaviors (No Trigger Needed)
 
@@ -78,6 +86,17 @@
 - **`/warmup`** - Server + auth + browser ready. Usage: `/warmup [account] [port]`.
 - **`/remy-gate`** - Remy write parity checklist.
 - **`/persona-stress-test`** - Deterministic persona audit.
+
+### Chef Operations Skills
+
+- **`/client-pulse`** - Who's waiting on you? All clients needing response, ranked by urgency and wait time.
+- **`/quick-update`** - One-liner status update to any client. Drafts in your voice, picks channel, confirms before sending.
+- **`/acknowledge`** - Auto-acknowledge unresponded inquiries. Warm "got it" messages in bulk.
+- **`/brain-dump`** - Stream-of-consciousness recipe capture. Talk about a dish, AI structures it.
+- **`/next-dinner`** - Full briefing on next event: menu, guests, dietary, prep timeline, readiness, blockers. Includes week-ahead mode.
+- **`/recipe-blitz`** - Rapid-fire batch recipe capture. 5-10 recipes per session, bare minimum fields, flesh out later via `/brain-dump`.
+- **`/money-check`** - Quick P&L snapshot: outstanding balances, deposits due, monthly revenue/expenses/profit, pipeline forecast.
+- **`/inbox-zero`** - Multi-channel inbox consolidation. All unread items across chat, messages, Wix, notifications, Gmail in one view with triage actions.
 
 ### Infrastructure Skills
 
