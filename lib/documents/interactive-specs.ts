@@ -10,7 +10,13 @@ import type { ResetChecklistData } from './generate-reset-checklist'
 import type { ContentShotListData } from './generate-content-shot-list'
 import type { EventSummaryData } from './generate-event-summary'
 import type { ExecutionSheetData } from './generate-execution-sheet'
-import type { FrontOfHouseMenuData } from './generate-front-of-house-menu'
+import type { FOHMenuData } from '@/lib/menus/foh-menu-data'
+import type { PlatingGuideData } from './generate-plating-guide'
+import type { AllergenReferenceData } from './generate-allergen-reference'
+import type { VenueReconData } from './generate-venue-recon'
+import type { BeverageNotesData } from './generate-beverage-notes'
+import type { ClientContactData } from './generate-client-contact'
+import type { MiseCheckData } from './generate-mise-check'
 import type { TravelLegWithIngredients } from '@/lib/travel/types'
 import { format, parseISO } from 'date-fns'
 import { dateToDateString } from '@/lib/utils/format'
@@ -971,26 +977,44 @@ export function executionSheetToSpec(data: ExecutionSheetData): InteractiveDocSp
 
 // ─── Front-of-House Menu (informational) ──────────────────────────────────────
 
-export function fohMenuToSpec(data: FrontOfHouseMenuData): InteractiveDocSpec {
-  const { event, clientName, courses } = data
+export function fohMenuToSpec(data: FOHMenuData): InteractiveDocSpec {
+  const { courses, title, clientName, date, guestCount } = data
 
   return {
-    title: event.occasion ? `${event.occasion} Menu` : 'Seasonal Menu',
+    title: title || 'Seasonal Menu',
     headerPills: [
-      { label: 'For', value: clientName },
-      { label: 'Date', value: fmtDate(event.event_date) },
-      { label: 'Guests', value: String(event.guest_count) },
+      { label: 'For', value: clientName ?? 'Guest' },
+      { label: 'Date', value: date ?? 'TBD' },
+      { label: 'Guests', value: String(guestCount ?? 0) },
     ],
     alerts: [],
     sections: courses.map((course) => ({
-      id: `course-${course.courseNumber}`,
-      title: course.courseName,
+      id: `course-${course.number}`,
+      title: course.label,
       items: [
-        ...(course.dishDescription
+        ...(course.dishName
           ? [
               {
-                id: `foh-${course.courseNumber}-desc`,
-                label: course.dishDescription,
+                id: `foh-${course.number}-name`,
+                label: course.dishName,
+                checkable: false as const,
+              },
+            ]
+          : []),
+        ...(course.description
+          ? [
+              {
+                id: `foh-${course.number}-desc`,
+                label: course.description,
+                checkable: false as const,
+              },
+            ]
+          : []),
+        ...(course.beveragePairing
+          ? [
+              {
+                id: `foh-${course.number}-pairing`,
+                label: `Paired with: ${course.beveragePairing}`,
                 checkable: false as const,
               },
             ]
@@ -998,7 +1022,7 @@ export function fohMenuToSpec(data: FrontOfHouseMenuData): InteractiveDocSpec {
         ...(course.dietaryTags.length > 0
           ? [
               {
-                id: `foh-${course.courseNumber}-dietary`,
+                id: `foh-${course.number}-dietary`,
                 label: course.dietaryTags.join(', '),
                 checkable: false as const,
               },
@@ -1007,7 +1031,7 @@ export function fohMenuToSpec(data: FrontOfHouseMenuData): InteractiveDocSpec {
         ...(course.allergenFlags.length > 0
           ? [
               {
-                id: `foh-${course.courseNumber}-allergen`,
+                id: `foh-${course.number}-allergen`,
                 label: `Contains: ${course.allergenFlags.join(', ')}`,
                 checkable: false as const,
               },
@@ -1015,5 +1039,320 @@ export function fohMenuToSpec(data: FrontOfHouseMenuData): InteractiveDocSpec {
           : []),
       ],
     })),
+  }
+}
+
+// ─── Plating Guide ───────────────────────────────────────────────────────────
+
+export function platingGuideToSpec(data: PlatingGuideData): InteractiveDocSpec {
+  const { event, clientName, dishes } = data
+
+  return {
+    title: 'Plating Guide',
+    headerPills: [
+      { label: 'Client', value: clientName },
+      { label: 'Date', value: fmtDate(event.event_date) },
+    ],
+    alerts: [],
+    sections: dishes.map((dish, i) => ({
+      id: `dish-${i}`,
+      title: `${dish.course_label ?? 'Course'}: ${dish.name}`,
+      items: [
+        ...dish.components.map((c, j) => ({
+          id: `dish-${i}-comp-${j}`,
+          label: `${c.name}${c.quantity ? ` (${c.quantity} ${c.unit ?? ''})`.trim() : ''}`,
+          checkable: false as const,
+        })),
+        { id: `dish-${i}-plate`, label: 'Plate Type: ___', checkable: false as const },
+        { id: `dish-${i}-garnish`, label: 'Garnish: ___', checkable: false as const },
+        { id: `dish-${i}-portion`, label: 'Portion Notes: ___', checkable: false as const },
+        { id: `dish-${i}-present`, label: 'Presentation Notes: ___', checkable: false as const },
+      ],
+    })),
+  }
+}
+
+// ─── Allergen Quick-Reference ────────────────────────────────────────────────
+
+export function allergenReferenceToSpec(data: AllergenReferenceData): InteractiveDocSpec {
+  const { event, guests, dishes } = data
+  const alerts: string[] = []
+  const sections: InteractiveSection[] = []
+
+  if (event.allergies) alerts.push(`Event allergies: ${event.allergies}`)
+  if (event.dietary_restrictions) alerts.push(`Event dietary: ${event.dietary_restrictions}`)
+
+  if (guests.length > 0) {
+    sections.push({
+      id: 'guests',
+      title: 'Guest Allergens',
+      items: guests.map((g, i) => ({
+        id: `guest-${i}`,
+        label: g.name,
+        sublabel: [g.allergies, g.dietary_restrictions].filter(Boolean).join('; ') || 'None noted',
+        checkable: false as const,
+      })),
+    })
+  }
+
+  if (dishes.length > 0) {
+    sections.push({
+      id: 'dishes',
+      title: 'Dish Notes',
+      items: dishes.map((d, i) => ({
+        id: `dish-${i}`,
+        label: d.name,
+        sublabel: d.notes || 'No allergen notes',
+        checkable: false as const,
+      })),
+    })
+  }
+
+  if (sections.length === 0) {
+    sections.push({
+      id: 'none',
+      title: 'Allergen Status',
+      items: [
+        {
+          id: 'none-0',
+          label: 'No allergens or dietary restrictions recorded for this event.',
+          checkable: false as const,
+        },
+      ],
+    })
+  }
+
+  return {
+    title: 'Allergen Quick-Reference',
+    headerPills: [{ label: 'Date', value: fmtDate(event.event_date) }],
+    alerts,
+    sections,
+  }
+}
+
+// ─── Venue/Kitchen Recon ─────────────────────────────────────────────────────
+
+export function venueReconToSpec(data: VenueReconData): InteractiveDocSpec {
+  const { event, clientName } = data
+  const location = [event.location_address, event.location_city, event.location_state]
+    .filter(Boolean)
+    .join(', ')
+
+  return {
+    title: 'Venue / Kitchen Recon',
+    headerPills: [
+      { label: 'Client', value: clientName },
+      { label: 'Venue', value: location || 'TBD' },
+    ],
+    alerts: [],
+    sections: [
+      {
+        id: 'kitchen',
+        title: 'Kitchen Equipment',
+        items: [
+          { id: 'k-oven', label: 'Oven Type: ___', checkable: true },
+          { id: 'k-burners', label: 'Burner Count: ___', checkable: true },
+          { id: 'k-counter', label: 'Counter Space: adequate / tight', checkable: true },
+          { id: 'k-micro', label: 'Microwave', checkable: true },
+          { id: 'k-blend', label: 'Blender', checkable: true },
+          { id: 'k-fp', label: 'Food Processor', checkable: true },
+          { id: 'k-pans', label: 'Sheet Pans', checkable: true },
+          { id: 'k-bowls', label: 'Mixing Bowls', checkable: true },
+        ],
+      },
+      {
+        id: 'utilities',
+        title: 'Utilities',
+        items: [
+          { id: 'u-hot', label: 'Hot Water', checkable: true },
+          { id: 'u-disp', label: 'Garbage Disposal', checkable: true },
+          { id: 'u-outlets', label: 'Outlet Count: ___', checkable: true },
+          { id: 'u-ext', label: 'Extension Cord Needed', checkable: true },
+        ],
+      },
+      {
+        id: 'storage',
+        title: 'Refrigeration & Storage',
+        items: [
+          { id: 's-fridge', label: 'Fridge Space: full / partial / none', checkable: true },
+          { id: 's-freezer', label: 'Freezer Available', checkable: true },
+          { id: 's-dry', label: 'Dry Storage', checkable: true },
+          { id: 's-staging', label: 'Cooler Staging Area', checkable: true },
+        ],
+      },
+      {
+        id: 'service',
+        title: 'Service Area',
+        items: [
+          { id: 'sv-tables', label: 'Table Count: ___', checkable: true },
+          { id: 'sv-seat', label: 'Seating Style: ___', checkable: true },
+          { id: 'sv-buffet', label: 'Buffet Space', checkable: true },
+          { id: 'sv-platters', label: 'Serving Platters Available', checkable: true },
+        ],
+      },
+      {
+        id: 'access',
+        title: 'Parking & Access',
+        items: [
+          { id: 'a-park', label: 'Parking: driveway / street / lot', checkable: true },
+          { id: 'a-load', label: 'Loading Zone', checkable: true },
+          { id: 'a-key', label: 'Key or Code Needed: ___', checkable: true },
+          { id: 'a-elev', label: 'Elevator / Stairs', checkable: true },
+        ],
+      },
+    ],
+  }
+}
+
+// ─── Beverage & Pairing Notes ────────────────────────────────────────────────
+
+export function beverageNotesToSpec(data: BeverageNotesData): InteractiveDocSpec {
+  const { event, clientName, courseGroups } = data
+
+  const sections: InteractiveSection[] = courseGroups.map((course, i) => ({
+    id: `course-${i}`,
+    title: course.courseLabel,
+    items: [
+      ...course.dishes.map((d, j) => ({
+        id: `c${i}-dish-${j}`,
+        label: d.name,
+        checkable: false as const,
+      })),
+      { id: `c${i}-pair`, label: 'Pairing: ___', checkable: false as const },
+      { id: `c${i}-temp`, label: 'Temp: ___', checkable: false as const },
+      { id: `c${i}-glass`, label: 'Glassware: ___', checkable: false as const },
+      { id: `c${i}-notes`, label: 'Notes: ___', checkable: false as const },
+    ],
+  }))
+
+  sections.push({
+    id: 'client-providing',
+    title: 'Client Providing',
+    items: [{ id: 'cp-0', label: '___', checkable: false as const }],
+  })
+  sections.push({
+    id: 'special-requests',
+    title: 'Special Requests',
+    items: [{ id: 'sr-0', label: '___', checkable: false as const }],
+  })
+
+  return {
+    title: 'Beverage & Pairing Notes',
+    headerPills: [
+      { label: 'Client', value: clientName },
+      { label: 'Date', value: fmtDate(event.event_date) },
+    ],
+    alerts: [],
+    sections,
+  }
+}
+
+// ─── Client Contact & Access ─────────────────────────────────────────────────
+
+export function clientContactToSpec(data: ClientContactData): InteractiveDocSpec {
+  const { event, client } = data
+  const location = [event.location_address, event.location_city, event.location_state]
+    .filter(Boolean)
+    .join(', ')
+
+  return {
+    title: 'Client Contact & Access',
+    headerPills: [
+      { label: 'Client', value: client.full_name },
+      { label: 'Date', value: fmtDate(event.event_date) },
+    ],
+    alerts: [],
+    sections: [
+      {
+        id: 'client',
+        title: 'Client',
+        items: [
+          { id: 'c-name', label: `Name: ${client.full_name}`, checkable: false as const },
+          { id: 'c-phone', label: `Phone: ${client.phone || '___'}`, checkable: false as const },
+          { id: 'c-email', label: `Email: ${client.email || '___'}`, checkable: false as const },
+        ],
+      },
+      {
+        id: 'venue',
+        title: 'Event Venue',
+        items: [
+          { id: 'v-addr', label: `Address: ${location || '___'}`, checkable: false as const },
+          {
+            id: 'v-access',
+            label: `Access: ${event.access_instructions || '___'}`,
+            checkable: false as const,
+          },
+        ],
+      },
+      {
+        id: 'access',
+        title: 'Access Details',
+        items: [
+          { id: 'a-gate', label: 'Gate Code: ___', checkable: false as const },
+          { id: 'a-park', label: 'Parking: ___', checkable: false as const },
+          { id: 'a-door', label: 'Door: ___', checkable: false as const },
+          {
+            id: 'a-wifi',
+            label: `Wi-Fi: ${event.wifi_password || '___'}`,
+            checkable: false as const,
+          },
+        ],
+      },
+      {
+        id: 'emergency',
+        title: 'Emergency',
+        items: [
+          { id: 'e-hosp', label: 'Nearest Hospital: ___', checkable: false as const },
+          { id: 'e-pharm', label: 'Nearest Pharmacy: ___', checkable: false as const },
+          { id: 'e-contact', label: 'Emergency Contact: ___', checkable: false as const },
+        ],
+      },
+    ],
+  }
+}
+
+// ─── Mise en Place Verification ──────────────────────────────────────────────
+
+export function miseCheckToSpec(data: MiseCheckData): InteractiveDocSpec {
+  const { event, clientName, dishes } = data
+
+  const sections: InteractiveSection[] = dishes.map((dish, i) => ({
+    id: `dish-${i}`,
+    title: dish.name,
+    subtitle: dish.course_label ?? undefined,
+    items: dish.components.flatMap((c, j) => {
+      const qty = c.quantity ? `${c.quantity} ${c.unit ?? ''}`.trim() : ''
+      return [
+        {
+          id: `d${i}-c${j}-port`,
+          label: `${c.name}${qty ? ` (${qty})` : ''}: Portioned`,
+          checkable: true,
+        },
+        { id: `d${i}-c${j}-label`, label: `${c.name}: Labeled`, checkable: true },
+        { id: `d${i}-c${j}-taste`, label: `${c.name}: Tasted`, checkable: true },
+      ]
+    }),
+  }))
+
+  sections.push({
+    id: 'final',
+    title: 'Final Checks',
+    items: [
+      { id: 'f-sealed', label: 'All containers sealed', checkable: true },
+      { id: 'f-labeled', label: 'All items labeled with dish name', checkable: true },
+      { id: 'f-temp', label: 'Temperature zones verified', checkable: true },
+      { id: 'f-clear', label: 'Nothing left in prep area', checkable: true },
+      { id: 'f-transport', label: 'Cooler and transport containers ready', checkable: true },
+    ],
+  })
+
+  return {
+    title: 'Mise en Place Verification',
+    headerPills: [
+      { label: 'Client', value: clientName },
+      { label: 'Date', value: fmtDate(event.event_date) },
+    ],
+    alerts: [],
+    sections,
   }
 }

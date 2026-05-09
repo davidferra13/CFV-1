@@ -52,6 +52,7 @@ import type { CompletionResult } from '@/lib/completion/types'
 import { buildQuoteDraftHref } from '@/lib/quotes/quote-prefill'
 import { CSVDownloadButton } from '@/components/exports/csv-download-button'
 import { exportMenuCostCSV } from '@/lib/exports/actions'
+import { createMenuShareLink } from '@/lib/menus/foh-public-actions'
 
 type RecipeInfo = {
   id: string
@@ -347,6 +348,31 @@ export function MenuDetailClient({
     }
   }
 
+  const [shareLoading, setShareLoading] = useState(false)
+
+  const handleCopyShareLink = async () => {
+    setShareLoading(true)
+    try {
+      const result = await createMenuShareLink(menu.id)
+      await navigator.clipboard.writeText(result.url)
+      // Brief visual feedback via the button text (shareLoading toggles it)
+      setError('')
+      // Show a temporary success state
+      const btn = document.getElementById('share-link-btn')
+      if (btn) {
+        const original = btn.textContent
+        btn.textContent = 'Copied!'
+        setTimeout(() => {
+          btn.textContent = original
+        }, 2000)
+      }
+    } catch (err) {
+      setMutationError(err)
+    } finally {
+      setShareLoading(false)
+    }
+  }
+
   const handlePrintBackOfHouse = () => {
     window.print()
   }
@@ -492,29 +518,20 @@ export function MenuDetailClient({
           <Button variant="ghost" onClick={() => router.back()}>
             Back
           </Button>
-          {event ? (
-            <Button
-              variant="secondary"
-              onClick={() =>
-                window.open(`/api/documents/${event.id}?type=foh`, '_blank', 'noopener,noreferrer')
-              }
-            >
-              View FOH PDF
-            </Button>
-          ) : (
-            <Button
-              variant="secondary"
-              onClick={() =>
-                window.open(
-                  `/api/documents/foh-preview/${menu.id}`,
-                  '_blank',
-                  'noopener,noreferrer'
-                )
-              }
-            >
-              Preview FOH
-            </Button>
-          )}
+          <Button
+            variant="secondary"
+            onClick={() => window.open(`/print/menu/${menu.id}`, '_blank', 'noopener,noreferrer')}
+          >
+            Front-of-House Menu
+          </Button>
+          <Button
+            id="share-link-btn"
+            variant="secondary"
+            onClick={handleCopyShareLink}
+            disabled={shareLoading}
+          >
+            {shareLoading ? 'Creating...' : 'Copy Share Link'}
+          </Button>
           <Button variant="secondary" onClick={handlePrintBackOfHouse}>
             Print BOH
           </Button>

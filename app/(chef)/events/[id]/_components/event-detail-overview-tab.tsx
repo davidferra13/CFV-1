@@ -598,6 +598,25 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
           <AllergenRiskPanel eventId={event.id} />
         )}
 
+        {/* Front-of-House Menu Preview */}
+        {event.menu_id && event.status !== 'cancelled' && (
+          <Card className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-semibold text-stone-100">Front-of-House Menu</h3>
+                <p className="text-sm text-stone-500 mt-0.5">
+                  Printable client-facing menu, generated from your courses.
+                </p>
+              </div>
+              <a href={`/print/menu/${event.menu_id}`} target="_blank" rel="noopener noreferrer">
+                <Button variant="secondary" size="sm">
+                  Preview Menu
+                </Button>
+              </a>
+            </div>
+          </Card>
+        )}
+
         {/* Repeat Menu Detection */}
         {eventMenus && event.menu_id && !['draft', 'cancelled'].includes(event.status) && (
           <RepeatMenuAlert eventId={event.id} clientName={event.client?.full_name} />

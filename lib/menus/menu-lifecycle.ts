@@ -12,6 +12,7 @@ export type MenuTransitionSideEffects = {
   activityLog?: boolean
   circleNotifications?: boolean
   dishIndexBridge?: boolean
+  emailClient?: boolean
 }
 
 export type TransitionMenuWithContextInput = {
@@ -51,6 +52,7 @@ function resolveSideEffects(
       input.sideEffects?.dishIndexBridge ??
       defaults.dishIndexBridge ??
       input.source !== 'dinner_circle_menu_polling',
+    emailClient: input.sideEffects?.emailClient ?? defaults.emailClient ?? true,
   }
 }
 
@@ -92,28 +94,94 @@ async function runMenuTransitionSideEffects(input: {
   if (sideEffects.circleNotifications && (toStatus === 'shared' || toStatus === 'locked')) {
     try {
       const { circleFirstNotify } = await import('@/lib/hub/circle-first-notify')
+      const { mapToFOHMenuData } = await import('@/lib/menus/foh-menu-data')
+      const { getChefLayoutData } = await import('@/lib/chef/layout-cache')
       const adminSupa = createServerClient({ admin: true })
-      const { data: menuData } = await adminSupa
-        .from('menus')
-        .select('name, event_id')
-        .eq('id', menuId)
-        .single()
 
+      // Fetch menu with dishes, event, and chef data in parallel
+      const [menuResult, dishesResult] = await Promise.all([
+        adminSupa
+          .from('menus')
+          .select(
+            'name, event_id, service_style, cuisine_type, target_guest_count, notes, description'
+          )
+          .eq('id', menuId)
+          .single(),
+        adminSupa
+          .from('dishes')
+          .select(
+            'course_name, course_number, name, description, dietary_tags, allergen_flags, beverage_pairing'
+          )
+          .eq('menu_id', menuId)
+          .order('course_number', { ascending: true }),
+      ])
+
+      const menuRow = menuResult.data
+      const dishes = dishesResult.data ?? []
+
+      // Fetch event + inquiry + chef layout in parallel
+      let eventData: {
+        occasion: string | null
+        event_date: string | null
+        guest_count: number | null
+        client_name: string | null
+      } | null = null
       let inquiryId: string | null = null
-      if (menuData?.event_id) {
-        const { data: inq } = await adminSupa
-          .from('inquiries')
-          .select('id')
-          .eq('converted_to_event_id', menuData.event_id)
-          .limit(1)
-          .maybeSingle()
-        inquiryId = inq?.id ?? null
+
+      if (menuRow?.event_id) {
+        const [eventResult, inqResult] = await Promise.all([
+          adminSupa
+            .from('events')
+            .select('occasion, event_date, guest_count, client_id, clients(full_name)')
+            .eq('id', menuRow.event_id)
+            .single(),
+          adminSupa
+            .from('inquiries')
+            .select('id')
+            .eq('converted_to_event_id', menuRow.event_id)
+            .limit(1)
+            .maybeSingle(),
+        ])
+        if (eventResult.data) {
+          const ev = eventResult.data as any
+          eventData = {
+            occasion: ev.occasion ?? null,
+            event_date: ev.event_date ?? null,
+            guest_count: ev.guest_count ?? null,
+            client_name: (ev.clients as any)?.full_name ?? null,
+          }
+        }
+        inquiryId = inqResult.data?.id ?? null
       }
 
-      const menuName = menuData?.name || 'Menu'
+      let chefName: string | null = null
+      try {
+        const chefData = await getChefLayoutData(tenantId)
+        chefName = chefData?.business_name ?? null
+      } catch {
+        // Non-blocking
+      }
+
+      // Build FOH data for rich card
+      const fohData = mapToFOHMenuData({
+        menu: { ...menuRow!, dishes } as any,
+        event: eventData,
+        chefName,
+      })
+
+      const menuName = menuRow?.name || 'Menu'
       const finalized = toStatus === 'locked'
+
+      // Build compact course list for metadata
+      const courseList = fohData.courses.map((c) => ({
+        label: c.label,
+        dishName: c.dishName,
+        description: c.description,
+        dietaryTags: c.dietaryTags.length > 0 ? c.dietaryTags : undefined,
+      }))
+
       await circleFirstNotify({
-        eventId: menuData?.event_id ?? null,
+        eventId: menuRow?.event_id ?? null,
         inquiryId,
         notificationType: 'menu_shared',
         body: finalized
@@ -123,8 +191,17 @@ async function runMenuTransitionSideEffects(input: {
           menu_id: menuId,
           menu_name: menuName,
           ...(finalized ? { finalized: true } : {}),
+          // Rich menu card data
+          foh_menu: {
+            title: fohData.title,
+            date: fohData.date,
+            chefName: fohData.chefName,
+            serviceStyle: fohData.serviceStyle,
+            courses: courseList,
+          },
+          course_count: fohData.courses.length,
         },
-        actionUrl: menuData?.event_id ? `/my-events/${menuData.event_id}` : undefined,
+        actionUrl: menuRow?.event_id ? `/my-events/${menuRow.event_id}` : undefined,
         actionLabel: 'View Menu',
       })
     } catch (err) {
@@ -140,6 +217,99 @@ async function runMenuTransitionSideEffects(input: {
       console.error('[menu-lifecycle] Dish index bridge failed (non-blocking):', err)
     }
   }
+
+  // Fire-and-forget: email the FOH menu to the client on shared/locked
+  if (sideEffects.emailClient && (toStatus === 'shared' || toStatus === 'locked')) {
+    sendFOHMenuEmailToClient(menuId, tenantId).catch((err) => {
+      console.error('[menu-lifecycle] FOH menu email failed (non-blocking):', err)
+    })
+  }
+}
+
+/**
+ * Sends the FOH menu email to the event's client (if one exists with an email).
+ * Fetches all needed data internally using admin client. Non-blocking, fire-and-forget.
+ */
+async function sendFOHMenuEmailToClient(menuId: string, tenantId: string): Promise<void> {
+  const adminSupa = createServerClient({ admin: true })
+
+  // Get menu with event_id
+  const { data: menuRow } = await adminSupa
+    .from('menus')
+    .select('name, event_id, service_style, cuisine_type, target_guest_count, notes, description')
+    .eq('id', menuId)
+    .single()
+
+  if (!menuRow?.event_id) return // No event linked, no client to email
+
+  // Fetch event with client info (including email)
+  const { data: eventRow } = await adminSupa
+    .from('events')
+    .select('occasion, event_date, guest_count, client_id, clients(full_name, email)')
+    .eq('id', menuRow.event_id)
+    .single()
+
+  if (!eventRow) return
+
+  const client = (eventRow as any).clients as { full_name?: string; email?: string } | null
+  if (!client?.email) return // No client email, skip
+
+  // Fetch dishes + chef data in parallel
+  const [dishesResult, chefData] = await Promise.all([
+    adminSupa
+      .from('dishes')
+      .select(
+        'course_name, course_number, name, description, dietary_tags, allergen_flags, beverage_pairing'
+      )
+      .eq('menu_id', menuId)
+      .order('course_number', { ascending: true }),
+    (async () => {
+      try {
+        const { getChefLayoutData } = await import('@/lib/chef/layout-cache')
+        return await getChefLayoutData(tenantId)
+      } catch {
+        return null
+      }
+    })(),
+  ])
+
+  const dishes = dishesResult.data ?? []
+  if (dishes.length === 0) return // No dishes, nothing to show
+
+  // Build FOH data
+  const { mapToFOHMenuData } = await import('@/lib/menus/foh-menu-data')
+  const fohData = mapToFOHMenuData({
+    menu: { ...menuRow, dishes } as any,
+    event: {
+      occasion: (eventRow as any).occasion ?? null,
+      event_date: (eventRow as any).event_date ?? null,
+      guest_count: (eventRow as any).guest_count ?? null,
+      client_name: client.full_name ?? null,
+    },
+    chefName: chefData?.business_name ?? null,
+    tagline: chefData?.tagline ?? null,
+  })
+
+  // Build public menu URL (placeholder; will use real token system when Stream 2 lands)
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
+  const publicMenuUrl = `${siteUrl}/my-events/${menuRow.event_id}`
+
+  // Send the email
+  const { sendEmail } = await import('@/lib/email/send')
+  const { FOHMenuEmail, getMenuEmailSubject } = await import('@/lib/email/templates/foh-menu-email')
+  const { createElement } = await import('react')
+
+  const subject = getMenuEmailSubject(fohData)
+
+  await sendEmail({
+    to: client.email,
+    subject,
+    react: createElement(FOHMenuEmail, {
+      data: fohData,
+      publicMenuUrl,
+      chefBusinessName: chefData?.business_name ?? undefined,
+    }),
+  })
 }
 
 export async function transitionMenuWithContext(input: TransitionMenuWithContextInput) {

@@ -39,6 +39,8 @@ import { EventJourneyStepper } from '@/components/events/event-journey-stepper'
 import { CalendarAddButtons } from '@/components/events/calendar-add-buttons'
 
 import { buildJourneySteps, getCurrentJourneyAction } from '@/lib/events/journey-steps'
+import { getFOHMenuDataForClient } from '@/lib/menus/foh-menu-client-actions'
+import { ClientFOHMenuSection } from '@/components/menus/client-foh-menu-section'
 import { getCircleTokenForEvent, getClientProfileToken } from '@/lib/hub/client-hub-actions'
 import { PaymentSuccessRefresher } from '@/components/events/payment-success-refresher'
 import { EventStatusWatcher } from '@/components/events/event-status-watcher'
@@ -180,6 +182,11 @@ export default async function EventDetailPage({
     guestsCount: guests.length,
     hasActiveShare: Boolean(activeShare),
   })
+
+  // Fetch FOH menu data for confirmed+ events
+  const fohMenuData = ['confirmed', 'in_progress', 'completed'].includes(event.status)
+    ? await getFOHMenuDataForClient(params.id).catch(() => null)
+    : null
 
   // Dinner Circle is the canonical guest coordination surface once the event is live.
   const circleToken =
@@ -594,7 +601,7 @@ export default async function EventDetailPage({
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
                   <div className="relative">
-                    <div className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse" />
+                    <div className="w-3 h-3 rounded-full bg-emerald-500" />
                     <div className="absolute inset-0 w-3 h-3 rounded-full bg-emerald-500 animate-ping opacity-50" />
                   </div>
                   <p className="text-sm text-stone-300">Your chef is preparing your menu</p>
@@ -666,7 +673,7 @@ export default async function EventDetailPage({
                 </p>
                 <div className="flex items-center gap-3">
                   <div className="relative">
-                    <div className="w-3 h-3 rounded-full bg-amber-500 animate-pulse" />
+                    <div className="w-3 h-3 rounded-full bg-amber-500" />
                   </div>
                   <p className="text-xs text-stone-500">Chef is revising the menu</p>
                 </div>
@@ -676,8 +683,21 @@ export default async function EventDetailPage({
         </Card>
       )}
 
-      {/* Printable Guest Menu - available once event is confirmed */}
-      {event.menus &&
+      {/* Front-of-House Menu - available once event is confirmed */}
+      {fohMenuData && (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Your Menu</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ClientFOHMenuSection data={fohMenuData} eventId={event.id} />
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Fallback: PDF download only if we have menus but FOH data failed to load */}
+      {!fohMenuData &&
+        event.menus &&
         event.menus.length > 0 &&
         ['confirmed', 'in_progress', 'completed'].includes(event.status) && (
           <Card className="mb-6">

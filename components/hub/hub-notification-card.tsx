@@ -2,6 +2,7 @@
 
 import { memo } from 'react'
 import type { HubMessage, HubNotificationType } from '@/lib/hub/types'
+import { CircleMenuCard, type CircleMenuCardData } from './circle-menu-card'
 
 // ---------------------------------------------------------------------------
 // Notification Card - Rich actionable cards rendered inside the circle feed.
@@ -284,6 +285,15 @@ function NotificationMetadata({
   }
 
   if (notifType === 'menu_shared') {
+    const fohMenu = metadata.foh_menu as CircleMenuCardData | undefined
+    const finalized = metadata.finalized as boolean | undefined
+
+    // Rich card when FOH data is available
+    if (fohMenu && fohMenu.courses && fohMenu.courses.length > 0) {
+      return <CircleMenuCard data={fohMenu} finalized={!!finalized} />
+    }
+
+    // Fallback: simple metadata display for older messages without foh_menu
     const menuName = metadata.menu_name as string | undefined
     const courseCount = metadata.course_count as number | undefined
     if (!menuName) return null
