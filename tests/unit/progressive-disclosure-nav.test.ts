@@ -5,6 +5,7 @@ import {
   STARTER_NAV_GROUP_ORDER,
   isActionBarItemVisible,
   isBrandNewChef,
+  isDashboardCreationActionVisible,
   isNavGroupVisible,
 } from '@/lib/progressive-disclosure/nav-visibility'
 import type { TenantDataPresence } from '@/lib/progressive-disclosure/types'
@@ -69,4 +70,28 @@ test('action bar hides noisy shortcuts for zero-data chefs but preserves bypasse
   assert.equal(isActionBarItemVisible('/finance', empty, false, false), false)
   assert.equal(isActionBarItemVisible('/finance', empty, true, false), true)
   assert.equal(isActionBarItemVisible('/finance', empty, false, true), true)
+})
+
+test('dashboard keeps starter creation actions visible for zero-data chefs', () => {
+  const empty = presence()
+
+  assert.equal(isDashboardCreationActionVisible('/menus/new', empty, false), true)
+  assert.equal(isDashboardCreationActionVisible('/events/new', empty, false), true)
+  assert.equal(isDashboardCreationActionVisible('/clients/new', empty, false), true)
+  assert.equal(isDashboardCreationActionVisible('/recipes/new', empty, false), true)
+})
+
+test('dashboard hides advanced creation actions for zero-data chefs unless bypassed', () => {
+  const empty = presence()
+
+  assert.equal(isDashboardCreationActionVisible('/commerce/storefront', empty, false), false)
+  assert.equal(isDashboardCreationActionVisible('/commerce/storefront', empty, true), true)
+  assert.equal(
+    isDashboardCreationActionVisible(
+      '/commerce/storefront',
+      presence({ hasMenus: true, populatedCount: 1 }),
+      false
+    ),
+    true
+  )
 })

@@ -17,10 +17,70 @@ import dotenv from 'dotenv'
 dotenv.config({ path: '.env.local' })
 
 import postgres from 'postgres'
+import { isProductRelevantToIngredient } from '../lib/pricing/product-relevance'
 // Inline unit classification + conversion (avoids @/ path alias issues in tsx scripts)
-const WEIGHT_UNITS = new Set(['oz', 'ounce', 'ounces', 'lb', 'lbs', 'pound', 'pounds', 'g', 'gram', 'grams', 'kg', 'kilogram', 'kilograms', 'mg'])
-const VOLUME_UNITS = new Set(['tsp', 'teaspoon', 'tbsp', 'tablespoon', 'cup', 'cups', 'fl oz', 'fl_oz', 'floz', 'pint', 'pt', 'quart', 'qt', 'gallon', 'gal', 'ml', 'l', 'liter', 'liters', 'dl'])
-const COUNT_UNITS = new Set(['each', 'ea', 'piece', 'pieces', 'unit', 'whole', 'bunch', 'head', 'can', 'bag', 'bottle', 'jar', 'package', 'stick', 'slice', 'ct', 'count', 'pk', 'pack', 'box', 'dozen', 'doz'])
+const WEIGHT_UNITS = new Set([
+  'oz',
+  'ounce',
+  'ounces',
+  'lb',
+  'lbs',
+  'pound',
+  'pounds',
+  'g',
+  'gram',
+  'grams',
+  'kg',
+  'kilogram',
+  'kilograms',
+  'mg',
+])
+const VOLUME_UNITS = new Set([
+  'tsp',
+  'teaspoon',
+  'tbsp',
+  'tablespoon',
+  'cup',
+  'cups',
+  'fl oz',
+  'fl_oz',
+  'floz',
+  'pint',
+  'pt',
+  'quart',
+  'qt',
+  'gallon',
+  'gal',
+  'ml',
+  'l',
+  'liter',
+  'liters',
+  'dl',
+])
+const COUNT_UNITS = new Set([
+  'each',
+  'ea',
+  'piece',
+  'pieces',
+  'unit',
+  'whole',
+  'bunch',
+  'head',
+  'can',
+  'bag',
+  'bottle',
+  'jar',
+  'package',
+  'stick',
+  'slice',
+  'ct',
+  'count',
+  'pk',
+  'pack',
+  'box',
+  'dozen',
+  'doz',
+])
 
 type UnitFamily = 'weight' | 'volume' | 'count' | 'unknown'
 
@@ -35,27 +95,66 @@ function getUnitFamily(raw: string): UnitFamily {
 // Convert cents to a common base unit within the same family
 // Weight -> cents per oz, Volume -> cents per fl_oz, Count -> cents per each
 const WEIGHT_TO_OZ: Record<string, number> = {
-  oz: 1, ounce: 1, ounces: 1,
-  lb: 16, lbs: 16, pound: 16, pounds: 16,
-  g: 1/28.3495, gram: 1/28.3495, grams: 1/28.3495,
-  kg: 35.274, kilogram: 35.274, kilograms: 35.274,
-  mg: 1/28349.5,
+  oz: 1,
+  ounce: 1,
+  ounces: 1,
+  lb: 16,
+  lbs: 16,
+  pound: 16,
+  pounds: 16,
+  g: 1 / 28.3495,
+  gram: 1 / 28.3495,
+  grams: 1 / 28.3495,
+  kg: 35.274,
+  kilogram: 35.274,
+  kilograms: 35.274,
+  mg: 1 / 28349.5,
 }
 const VOLUME_TO_FLOZ: Record<string, number> = {
-  'fl oz': 1, fl_oz: 1, floz: 1,
-  tsp: 1/6, teaspoon: 1/6,
-  tbsp: 0.5, tablespoon: 0.5,
-  cup: 8, cups: 8,
-  pint: 16, pt: 16,
-  quart: 32, qt: 32,
-  gallon: 128, gal: 128,
-  ml: 1/29.5735, l: 33.814, liter: 33.814, liters: 33.814, dl: 3.3814,
+  'fl oz': 1,
+  fl_oz: 1,
+  floz: 1,
+  tsp: 1 / 6,
+  teaspoon: 1 / 6,
+  tbsp: 0.5,
+  tablespoon: 0.5,
+  cup: 8,
+  cups: 8,
+  pint: 16,
+  pt: 16,
+  quart: 32,
+  qt: 32,
+  gallon: 128,
+  gal: 128,
+  ml: 1 / 29.5735,
+  l: 33.814,
+  liter: 33.814,
+  liters: 33.814,
+  dl: 3.3814,
 }
 const COUNT_TO_EACH: Record<string, number> = {
-  each: 1, ea: 1, piece: 1, pieces: 1, unit: 1, whole: 1,
-  ct: 1, count: 1, pk: 1, pack: 1, box: 1, bag: 1, bottle: 1, jar: 1,
-  can: 1, stick: 1, slice: 1, head: 1, bunch: 1, package: 1,
-  dozen: 12, doz: 12,
+  each: 1,
+  ea: 1,
+  piece: 1,
+  pieces: 1,
+  unit: 1,
+  whole: 1,
+  ct: 1,
+  count: 1,
+  pk: 1,
+  pack: 1,
+  box: 1,
+  bag: 1,
+  bottle: 1,
+  jar: 1,
+  can: 1,
+  stick: 1,
+  slice: 1,
+  head: 1,
+  bunch: 1,
+  package: 1,
+  dozen: 12,
+  doz: 12,
 }
 
 /** Normalize cents to base unit (oz for weight, fl_oz for volume, each for count).
@@ -107,7 +206,13 @@ function diceSimilarity(a: string, b: string): number {
   return (2 * intersection) / (setA.size + setB.size)
 }
 
-type FailureCause = 'accurate' | 'unit_mismatch' | 'name_mismatch' | 'stale_data' | 'geographic' | 'unknown'
+type FailureCause =
+  | 'accurate'
+  | 'unit_mismatch'
+  | 'name_mismatch'
+  | 'stale_data'
+  | 'geographic'
+  | 'unknown'
 
 function categorizeFailure(
   absDev: number,
@@ -121,7 +226,8 @@ function categorizeFailure(
   // >100% deviation with different unit families = unit mismatch
   const pieFamily = getUnitFamily(pieUnit)
   const piFamily = getUnitFamily(piUnit)
-  if (pieFamily !== piFamily && pieFamily !== 'unknown' && piFamily !== 'unknown') return 'unit_mismatch'
+  if (pieFamily !== piFamily && pieFamily !== 'unknown' && piFamily !== 'unknown')
+    return 'unit_mismatch'
   if (absDev > 100) return 'unit_mismatch' // >100% almost always unit/size confusion
   // Low similarity = wrong product matched
   if (similarity < 0.7) return 'name_mismatch'
@@ -156,38 +262,6 @@ interface PiSingleResult {
   query_ms: number
 }
 
-/** Check if a product name is actually relevant to the ingredient.
- *  "Butter" should match "Unsalted Butter 1lb" but NOT "Shea Butter Lotion". */
-function isProductRelevant(productName: string, ingredientName: string): boolean {
-  const pn = productName.toLowerCase()
-  const ing = ingredientName.toLowerCase()
-
-  // Exact containment with word boundary check
-  const idx = pn.indexOf(ing)
-  if (idx === -1) return false
-
-  // Check it's a word boundary (not middle of another word)
-  const before = idx > 0 ? pn[idx - 1] : ' '
-  const after = idx + ing.length < pn.length ? pn[idx + ing.length] : ' '
-  const wordBoundary = /[\s,\-()\/]|^$/
-  if (!wordBoundary.test(before) && before !== ' ') return false
-  if (!wordBoundary.test(after) && after !== ' ') return false
-
-  // Reject if ingredient name appears only as an adjective/modifier
-  // e.g. "Butter Lettuce" - "butter" modifies "lettuce", not actual butter
-  // Heuristic: if ingredient is at position 0 and word after it is a noun, likely modifier
-  // Better heuristic: reject known false-positive categories
-  const falsePositivePatterns = [
-    /lotion|soap|shampoo|conditioner|cream\b.*\b(body|skin|face|hand)/i,
-    /petroleum|vaseline|nivea|dove|pantene/i,
-  ]
-  for (const pat of falsePositivePatterns) {
-    if (pat.test(pn)) return false
-  }
-
-  return true
-}
-
 interface FilteredPiResult {
   canonical_name: string
   median_cents: number
@@ -207,25 +281,27 @@ async function piSingleLookup(name: string, state?: string): Promise<FilteredPiR
       signal: AbortSignal.timeout(5000),
     })
     if (!resp.ok) return null
-    const data = await resp.json() as PiSingleResult
+    const data = (await resp.json()) as PiSingleResult
     if (!data.prices || data.prices.length === 0) return null
 
     // Filter to only relevant products
-    const relevant = data.prices.filter(p => {
+    const relevant = data.prices.filter((p) => {
       if (!p.product_name) return false
       if (!p.in_stock) return false
-      return isProductRelevant(p.product_name, name)
+      return isProductRelevantToIngredient(p.product_name, name)
     })
 
     if (relevant.length === 0) return null
 
     // Prefer price_per_standard_unit_cents (normalized), fall back to price_cents
-    const standardized = relevant.some(p => p.price_per_standard_unit_cents != null)
+    const standardized = relevant.some((p) => p.price_per_standard_unit_cents != null)
     const cents = relevant
-      .map(p => standardized && p.price_per_standard_unit_cents != null
-        ? p.price_per_standard_unit_cents
-        : p.price_cents)
-      .filter(c => c > 0)
+      .map((p) =>
+        standardized && p.price_per_standard_unit_cents != null
+          ? p.price_per_standard_unit_cents
+          : p.price_cents
+      )
+      .filter((c) => c > 0)
       .sort((a, b) => a - b)
 
     if (cents.length === 0) return null
@@ -250,7 +326,9 @@ async function piSingleLookup(name: string, state?: string): Promise<FilteredPiR
 async function main() {
   const start = Date.now()
   console.log('[accuracy-bootstrap] PIE vs Pi Bridge ground truth comparison')
-  console.log(`[accuracy-bootstrap] Sample limit: ${SAMPLE_LIMIT}, State: ${STATE_FILTER || 'all'}, Unit filter: ${SKIP_UNIT_FILTER ? 'OFF' : 'ON'}, Name filter: ${SKIP_NAME_FILTER ? 'OFF' : `ON (>=${MIN_SIMILARITY})`}`)
+  console.log(
+    `[accuracy-bootstrap] Sample limit: ${SAMPLE_LIMIT}, State: ${STATE_FILTER || 'all'}, Unit filter: ${SKIP_UNIT_FILTER ? 'OFF' : 'ON'}, Name filter: ${SKIP_NAME_FILTER ? 'OFF' : `ON (>=${MIN_SIMILARITY})`}`
+  )
 
   // 0. Verify tables
   const tableCheck = await sql`
@@ -269,7 +347,9 @@ async function main() {
   try {
     const health = await fetch(`${PI_BRIDGE_URL}/health`, { signal: AbortSignal.timeout(30000) })
     const h = await health.json()
-    console.log(`[accuracy-bootstrap] Pi bridge: ${h.total_prices?.toLocaleString()} prices, ${h.db_size_mb}MB`)
+    console.log(
+      `[accuracy-bootstrap] Pi bridge: ${h.total_prices?.toLocaleString()} prices, ${h.db_size_mb}MB`
+    )
   } catch {
     console.log('[accuracy-bootstrap] Pi bridge unreachable. Cannot proceed.')
     await sql.end()
@@ -316,7 +396,12 @@ async function main() {
   let withinRange = 0
   let piQueryMs = 0
   const failureCounts: Record<FailureCause, number> = {
-    accurate: 0, unit_mismatch: 0, name_mismatch: 0, stale_data: 0, geographic: 0, unknown: 0,
+    accurate: 0,
+    unit_mismatch: 0,
+    name_mismatch: 0,
+    stale_data: 0,
+    geographic: 0,
+    unknown: 0,
   }
 
   // Group by ingredient name for dedup (preserve original case for Pi)
@@ -366,7 +451,12 @@ async function main() {
       const piFamily = getUnitFamily(piRawUnit)
 
       // Unit-compatibility filter
-      if (!SKIP_UNIT_FILTER && pieFamily !== 'unknown' && piFamily !== 'unknown' && pieFamily !== piFamily) {
+      if (
+        !SKIP_UNIT_FILTER &&
+        pieFamily !== 'unknown' &&
+        piFamily !== 'unknown' &&
+        pieFamily !== piFamily
+      ) {
         unitMismatchSkipped++
         continue
       }
@@ -375,8 +465,10 @@ async function main() {
       const pieNorm = normalizeCentsToBase(Number(sample.price_cents), pieRawUnit)
       const piNorm = normalizeCentsToBase(piResult.median_cents, piRawUnit)
 
-      const pieCents = (pieNorm !== null && piNorm !== null) ? Math.round(pieNorm) : Number(sample.price_cents)
-      const realCents = (pieNorm !== null && piNorm !== null) ? Math.round(piNorm) : piResult.median_cents
+      const pieCents =
+        pieNorm !== null && piNorm !== null ? Math.round(pieNorm) : Number(sample.price_cents)
+      const realCents =
+        pieNorm !== null && piNorm !== null ? Math.round(piNorm) : piResult.median_cents
 
       matched++
 
@@ -384,12 +476,19 @@ async function main() {
       const rawAbsErrorPct = Math.abs(rawErrorPct)
 
       // Range-based check
-      const piMinNorm = (pieNorm !== null && piNorm !== null) ? normalizeCentsToBase(piResult.min_cents, piRawUnit) : null
-      const piMaxNorm = (pieNorm !== null && piNorm !== null) ? normalizeCentsToBase(piResult.max_cents, piRawUnit) : null
+      const piMinNorm =
+        pieNorm !== null && piNorm !== null
+          ? normalizeCentsToBase(piResult.min_cents, piRawUnit)
+          : null
+      const piMaxNorm =
+        pieNorm !== null && piNorm !== null
+          ? normalizeCentsToBase(piResult.max_cents, piRawUnit)
+          : null
       const piMin = piMinNorm !== null ? Math.round(piMinNorm) : piResult.min_cents
       const piMax = piMaxNorm !== null ? Math.round(piMaxNorm) : piResult.max_cents
-      const rangeBuffer = 0.10
-      if (pieCents >= piMin * (1 - rangeBuffer) && pieCents <= piMax * (1 + rangeBuffer)) withinRange++
+      const rangeBuffer = 0.1
+      if (pieCents >= piMin * (1 - rangeBuffer) && pieCents <= piMax * (1 + rangeBuffer))
+        withinRange++
 
       // Skip extreme outliers
       if (!SKIP_OUTLIER_CAP && rawAbsErrorPct > MAX_DEVIATION_CAP) {
@@ -405,7 +504,14 @@ async function main() {
       if (rawAbsErrorPct <= THRESHOLD_PCT) withinThreshold++
 
       const similarity = diceSimilarity(name, piResult.canonical_name)
-      const cause = categorizeFailure(rawAbsErrorPct, pieRawUnit, piRawUnit, name, piResult.canonical_name, similarity)
+      const cause = categorizeFailure(
+        rawAbsErrorPct,
+        pieRawUnit,
+        piRawUnit,
+        name,
+        piResult.canonical_name,
+        similarity
+      )
       failureCounts[cause]++
 
       await sql`
@@ -437,13 +543,17 @@ async function main() {
 
     if ((i + 1) % 200 === 0 || i + 1 === uniqueNames.length) {
       const elapsed = ((Date.now() - start) / 1000).toFixed(1)
-      console.log(`  [progress] ${i + 1}/${uniqueNames.length} names checked, ${matched} matched, ${inserted} inserted (${elapsed}s)`)
+      console.log(
+        `  [progress] ${i + 1}/${uniqueNames.length} names checked, ${matched} matched, ${inserted} inserted (${elapsed}s)`
+      )
     }
   }
 
   if (inserted === 0) {
     console.log('[accuracy-bootstrap] No matches between resolved_prices and Pi bridge.')
-    console.log('[accuracy-bootstrap] This can happen if ingredient names do not match between systems.')
+    console.log(
+      '[accuracy-bootstrap] This can happen if ingredient names do not match between systems.'
+    )
     await sql.end()
     process.exit(0)
   }
@@ -453,8 +563,8 @@ async function main() {
   const rollupsUpdated = await computeMonthlyAccuracyLocal()
 
   // 5. Summary
-  const avgDeviation = matched > 0 ? (totalAbsErrorPct / matched) : 0
-  const accuracyPct = matched > 0 ? ((withinThreshold / matched) * 100) : 0
+  const avgDeviation = matched > 0 ? totalAbsErrorPct / matched : 0
+  const accuracyPct = matched > 0 ? (withinThreshold / matched) * 100 : 0
   const totalElapsed = ((Date.now() - start) / 1000).toFixed(1)
 
   console.log('')
@@ -467,8 +577,10 @@ async function main() {
   console.log(`  Pi bridge matches:       ${matched}`)
   console.log(`  Predictions recorded:    ${inserted}`)
   console.log(`  Average deviation:       ${avgDeviation.toFixed(2)}%`)
-  console.log(`  Accuracy (within ${THRESHOLD_PCT}%):  ${accuracyPct.toFixed(1)}% (${withinThreshold}/${matched})`)
-  const rangePct = matched > 0 ? ((withinRange / matched) * 100) : 0
+  console.log(
+    `  Accuracy (within ${THRESHOLD_PCT}%):  ${accuracyPct.toFixed(1)}% (${withinThreshold}/${matched})`
+  )
+  const rangePct = matched > 0 ? (withinRange / matched) * 100 : 0
   console.log(`  Within Pi range (+/-10%): ${rangePct.toFixed(1)}% (${withinRange}/${matched})`)
   console.log(`  Pi query time:           ${(piQueryMs / 1000).toFixed(1)}s`)
   console.log(`  Monthly rollups:         ${rollupsUpdated}`)
@@ -476,7 +588,9 @@ async function main() {
   console.log('=======================================')
   if (unitMismatchSkipped > 0) {
     const skipPct = ((unitMismatchSkipped / (matched + unitMismatchSkipped)) * 100).toFixed(1)
-    console.log(`  [note] ${skipPct}% of potential comparisons excluded due to unit-family mismatch`)
+    console.log(
+      `  [note] ${skipPct}% of potential comparisons excluded due to unit-family mismatch`
+    )
   }
   console.log(`  [note] Using single endpoint with product-name relevance filtering`)
   console.log(`  [note] Only products whose name matches the ingredient are included`)
@@ -486,10 +600,19 @@ async function main() {
   if (totalCategorized > 0) {
     console.log('')
     console.log('[accuracy-bootstrap] === FAILURE ANALYSIS ===')
-    for (const cause of ['accurate', 'unit_mismatch', 'name_mismatch', 'geographic', 'stale_data', 'unknown'] as FailureCause[]) {
+    for (const cause of [
+      'accurate',
+      'unit_mismatch',
+      'name_mismatch',
+      'geographic',
+      'stale_data',
+      'unknown',
+    ] as FailureCause[]) {
       const count = failureCounts[cause]
       const pct = ((count / totalCategorized) * 100).toFixed(1)
-      console.log(`[accuracy-bootstrap]   ${cause.padEnd(16)} ${count.toLocaleString().padStart(6)} (${pct.padStart(5)}%)`)
+      console.log(
+        `[accuracy-bootstrap]   ${cause.padEnd(16)} ${count.toLocaleString().padStart(6)} (${pct.padStart(5)}%)`
+      )
     }
   }
 
@@ -550,4 +673,7 @@ async function computeMonthlyAccuracyLocal(): Promise<number> {
   return result.count
 }
 
-main().catch(e => { console.error(e); process.exit(1) })
+main().catch((e) => {
+  console.error(e)
+  process.exit(1)
+})

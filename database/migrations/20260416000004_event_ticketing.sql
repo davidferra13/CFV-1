@@ -2,6 +2,29 @@
 -- Adds ticket types and tickets for public event sales.
 -- Capacity enforcement via atomic sold_count CAS guard.
 
+-- Chef-owned public event page + ticketing configuration.
+-- This table must exist before ticketing can attach tickets_enabled below.
+CREATE TABLE IF NOT EXISTS event_share_settings (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  event_id        UUID NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+  tenant_id       UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
+  share_token     TEXT UNIQUE NOT NULL DEFAULT encode(gen_random_bytes(32), 'hex'),
+  tickets_enabled BOOLEAN NOT NULL DEFAULT false,
+  show_menu       BOOLEAN NOT NULL DEFAULT true,
+  show_date       BOOLEAN NOT NULL DEFAULT true,
+  show_location   BOOLEAN NOT NULL DEFAULT true,
+  show_chef_name  BOOLEAN NOT NULL DEFAULT true,
+  show_guest_list BOOLEAN NOT NULL DEFAULT false,
+  is_active       BOOLEAN NOT NULL DEFAULT true,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE (event_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_ess_event ON event_share_settings(event_id);
+CREATE INDEX IF NOT EXISTS idx_ess_tenant ON event_share_settings(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_ess_token ON event_share_settings(share_token);
+
 -- ─── Ticket Types (per-event pricing tiers) ─────────────────────────
 
 CREATE TABLE IF NOT EXISTS event_ticket_types (

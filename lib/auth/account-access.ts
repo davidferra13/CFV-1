@@ -45,7 +45,8 @@ type CachedSessionControlState = SessionControlState & {
   deletedAt: string | null
 }
 
-const SESSION_CONTROL_CACHE_TTL_SECONDS = 15
+const SESSION_CONTROL_CACHE_TTL_SECONDS = 60
+const SESSION_CONTROL_DB_TIMEOUT_MS = 750
 
 export type AccountAccessOverview = {
   events: AccountAccessEvent[]
@@ -220,11 +221,13 @@ export async function getSessionControlRow(authUserId: string): Promise<CachedSe
     // Cache failures must never block auth.
   }
 
-  // DB query with a 3-second timeout. In Edge Runtime, postgres.js may hang
+  // DB query with a short timeout. In Edge Runtime, postgres.js may hang
   // indefinitely rather than throwing (TCP sockets not available). The timeout
-  // prevents the JWT callback from blocking middleware forever.
+  // prevents the JWT callback from making ordinary page loads feel stuck.
   try {
-    const timeout = new Promise<null>((resolve) => setTimeout(() => resolve(null), 3000))
+    const timeout = new Promise<null>((resolve) =>
+      setTimeout(() => resolve(null), SESSION_CONTROL_DB_TIMEOUT_MS)
+    )
     const query = db
       .select({
         rawAppMetaData: authUsers.rawAppMetaData,

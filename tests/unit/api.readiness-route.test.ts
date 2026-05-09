@@ -5,6 +5,10 @@ import { HEAD, GET } from '../../app/api/health/readiness/route'
 
 const REQUIRED_ENV_KEYS = [
   'DATABASE_URL',
+  'NEXT_PUBLIC_APP_ENV',
+  'OLLAMA_BASE_URL',
+  'OLLAMA_CLOUD_BASE_URL',
+  'OLLAMA_LOCAL_BASE_URL',
   'PUBLIC_HEALTH_REQUIRED_CRONS',
   'PUBLIC_HEALTH_SKIP_DB_BOOT_CONTRACT',
 ] as const
@@ -114,6 +118,50 @@ test('GET /api/health/readiness degrades background jobs when required crons are
       assert.equal(body.details.backgroundJobReason, 'missing_database_url')
       assert.equal(body.details.backgroundJobs.required, 1)
       assert.equal(body.details.backgroundJobs.missing, 1)
+    }
+  )
+})
+
+test('GET /api/health/readiness degrades production when AI is only pointed at localhost', async () => {
+  await withEnv(
+    {
+      DATABASE_URL: 'postgresql://user:pass@example.com:5432/postgres',
+      NEXT_PUBLIC_APP_ENV: 'production',
+      OLLAMA_BASE_URL: 'http://localhost:11434',
+      OLLAMA_CLOUD_BASE_URL: undefined,
+      OLLAMA_LOCAL_BASE_URL: undefined,
+      PUBLIC_HEALTH_SKIP_DB_BOOT_CONTRACT: '1',
+    },
+    async () => {
+      const response = await GET(new NextRequest('http://localhost/api/health/readiness?strict=1'))
+      const body = await response.json()
+
+      assert.equal(response.status, 503)
+      assert.equal(body.status, 'degraded')
+      assert.equal(body.checks.aiRuntime, 'degraded')
+      assert.equal(body.details.aiRuntime.reason, 'local_only_in_production')
+    }
+  )
+})
+
+test('GET /api/health/readiness accepts production cloud AI endpoint', async () => {
+  await withEnv(
+    {
+      DATABASE_URL: 'postgresql://user:pass@example.com:5432/postgres',
+      NEXT_PUBLIC_APP_ENV: 'production',
+      OLLAMA_BASE_URL: undefined,
+      OLLAMA_CLOUD_BASE_URL: 'https://ai.example.com',
+      OLLAMA_LOCAL_BASE_URL: undefined,
+      PUBLIC_HEALTH_SKIP_DB_BOOT_CONTRACT: '1',
+    },
+    async () => {
+      const response = await GET(new NextRequest('http://localhost/api/health/readiness?strict=1'))
+      const body = await response.json()
+
+      assert.equal(response.status, 200)
+      assert.equal(body.status, 'ok')
+      assert.equal(body.checks.aiRuntime, 'ok')
+      assert.equal(body.details.aiRuntime.reason, null)
     }
   )
 })

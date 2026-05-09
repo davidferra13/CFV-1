@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { lookupPrice } from '@/lib/pricing/universal-price-lookup'
 import { checkPieRateLimit, rateLimitHeaders } from '@/lib/pricing/pie-rate-limiter'
+import {
+  buildPriceStateReliability,
+  priceStateReliabilityApiShape,
+} from '@/lib/pricing/price-state-reliability'
 
 export const dynamic = 'force-dynamic'
 
@@ -42,6 +46,11 @@ export async function GET(request: NextRequest) {
       zipCode,
       radiusMiles,
     })
+    const stateReliability = await buildPriceStateReliability({
+      zipCode,
+      resolutionTier: result.resolution_tier,
+      confidenceScore: result.confidence_score,
+    })
 
     const response = {
       ingredient: result.ingredient_name,
@@ -58,9 +67,11 @@ export async function GET(request: NextRequest) {
 
       confidence: mapConfidenceLevel(result.confidence_score),
       confidence_score: result.confidence_score,
+      effective_confidence_score: stateReliability.effectiveConfidenceScore,
       resolution_tier: result.resolution_tier,
       data_points: result.data_points,
       last_updated: result.last_updated,
+      state_reliability: priceStateReliabilityApiShape(stateReliability),
 
       range: result.range,
       location: result.location,

@@ -142,6 +142,53 @@ try {
   alert('medium', 'database', `Stores check failed: ${e.message}`)
 }
 
+// --- Check 8: State-level reliability ---
+try {
+  const { getStateReliabilityReport } = await import('../lib/pricing/state-reliability.ts')
+  const report = await getStateReliabilityReport(sql)
+  const staleStates = report.states.filter((s) => s.blockers.includes('stale_7d'))
+  const unvalidatedStates = report.states.filter((s) =>
+    s.blockers.includes('unvalidated_accuracy')
+  )
+  const worstStates = [...report.states]
+    .sort((a, b) => a.score - b.score)
+    .slice(0, 8)
+    .map((s) => `${s.state}:${s.status}/${s.score}`)
+    .join(', ')
+
+  if (report.summary.reliable === 0) {
+    alert(
+      'high',
+      'state_reliability',
+      'No state currently passes PIE reliability gates',
+      `Usable=${report.summary.usable}, estimated=${report.summary.estimated}, unreliable=${report.summary.unreliable}. Worst: ${worstStates}`,
+      'Run npx tsx scripts/pie-state-reliability.mts, then target sync/acquisition by weakest states.'
+    )
+  }
+
+  if (staleStates.length > 10) {
+    alert(
+      'high',
+      'state_freshness',
+      `${staleStates.length} states miss the 7-day freshness target`,
+      `States: ${staleStates.map((s) => s.state).join(', ')}`,
+      'Restore OpenClaw sync cadence and prioritize volatile-category refresh by state.'
+    )
+  }
+
+  if (unvalidatedStates.length > 10) {
+    alert(
+      'medium',
+      'state_accuracy',
+      `${unvalidatedStates.length} states do not have enough ground-truth accuracy comparisons`,
+      `Minimum target: ${report.targets.minAccuracyComparisons} comparisons/state.`,
+      'Increase receipt/shelf-price validation and run npx tsx scripts/pie-accuracy-stats.mts.'
+    )
+  }
+} catch (e: any) {
+  alert('medium', 'state_reliability', `State reliability check failed: ${e.message}`)
+}
+
 // --- Output ---
 await sql.end()
 

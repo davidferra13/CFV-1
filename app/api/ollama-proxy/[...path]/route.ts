@@ -10,6 +10,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { getLocalAiPreferences } from '@/lib/ai/privacy-actions'
+import { isBlockedServerSideAiTarget } from '@/lib/ai/server-runtime-guard'
 
 const ALLOWED_PATHS = new Set(['api/tags', 'api/chat', 'api/generate', 'api/show'])
 const MAX_BODY_SIZE = 512 * 1024 // 512KB - prompt + context is large
@@ -35,22 +36,30 @@ async function proxyRequest(
     }
 
     const subPath = path.join('/')
+    const ollamaPath = subPath.replace(/^api\//, '')
 
     // Whitelist allowed Ollama API paths
-    if (!ALLOWED_PATHS.has(`api/${subPath}`)) {
+    if (!ALLOWED_PATHS.has(`api/${ollamaPath}`)) {
       return NextResponse.json({ error: 'Path not allowed' }, { status: 403 })
     }
 
     const prefs = await getLocalAiPreferences()
-    if (!prefs.enabled) {
+    if (!prefs.enabled && !(method === 'GET' && ollamaPath === 'tags')) {
       return NextResponse.json({ error: 'Local AI not enabled' }, { status: 403 })
     }
 
     // Build target URL - the user's configured Ollama endpoint
     const baseUrl = prefs.url.replace(/\/+$/, '')
+    if (isBlockedServerSideAiTarget(baseUrl)) {
+      return NextResponse.json(
+        { error: 'Server-side local AI proxy is disabled for this target' },
+        { status: 403 }
+      )
+    }
+
     const targetUrl = baseUrl.endsWith('/api')
-      ? `${baseUrl}/${subPath}`
-      : `${baseUrl}/api/${subPath}`
+      ? `${baseUrl}/${ollamaPath}`
+      : `${baseUrl}/api/${ollamaPath}`
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -74,7 +83,7 @@ async function proxyRequest(
 
     // Streaming responses (chat, generate): Ollama streams NDJSON.
     // Pipe the body through directly regardless of transfer-encoding header.
-    const isStreamingPath = subPath === 'chat' || subPath === 'generate'
+    const isStreamingPath = ollamaPath === 'chat' || ollamaPath === 'generate'
     if (isStreamingPath && upstream.body) {
       return new Response(upstream.body, {
         status: upstream.status,

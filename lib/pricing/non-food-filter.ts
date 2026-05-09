@@ -117,7 +117,7 @@ const EXCLUDED_BRANDS = new Set([
 const NON_FOOD_PATTERNS = [
   /\b(diaper|nappy|wipe|tissue|toilet paper|paper towel)\b/,
   /\b(detergent|fabric softener|dryer sheet|bleach|stain remover)\b/,
-  /\b(shampoo|conditioner|body wash|lotion|moisturizer|sunscreen)\b/,
+  /\b(shampoo|conditioner|body wash|beauty bar|soap|lotion|moisturizer|sunscreen)\b/,
   /\b(deodorant|antiperspirant|cologne|perfume|aftershave)\b/,
   /\b(toothpaste|toothbrush|mouthwash|dental floss)\b/,
   /\b(tampon|pad|liner|menstrual|feminine)\b/,

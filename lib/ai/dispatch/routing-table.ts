@@ -4,6 +4,7 @@ import type {
   AiRuntimePolicy,
   DispatchModelTier,
 } from './types'
+import { isSharedAiRuntimeEnabled } from '../server-runtime-guard'
 
 const DEFAULT_LOCAL_BASE_URL = 'http://localhost:11434'
 const DEFAULT_MODEL = 'gemma4'
@@ -21,6 +22,10 @@ export function isLocalOllamaUrl(url?: string | null): boolean {
 }
 
 function getRawEndpointUrls(): { localUrl: string | null; cloudUrl: string | null } {
+  if (!isSharedAiRuntimeEnabled()) {
+    return { localUrl: null, cloudUrl: null }
+  }
+
   const sharedUrl = normalizeUrl(process.env.OLLAMA_BASE_URL)
   const explicitLocal = normalizeUrl(process.env.OLLAMA_LOCAL_BASE_URL)
   const explicitCloud = normalizeUrl(process.env.OLLAMA_CLOUD_BASE_URL)

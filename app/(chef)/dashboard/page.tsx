@@ -104,7 +104,10 @@ import { getAllPrepPrompts, getEventDOPProgress } from '@/lib/scheduling/actions
 import { autoSuggestEventBlocks } from '@/lib/scheduling/prep-block-actions'
 import { getEventsNeedingClosure } from '@/lib/events/actions'
 import { getTenantDataPresence } from '@/lib/progressive-disclosure/tenant-data-presence'
-import { isBrandNewChef } from '@/lib/progressive-disclosure/nav-visibility'
+import {
+  isBrandNewChef,
+  isDashboardCreationActionVisible,
+} from '@/lib/progressive-disclosure/nav-visibility'
 import { GettingStartedSection } from '@/components/dashboard/getting-started-section'
 import { getWorkspaceDensity } from '@/lib/chef/preferences-actions'
 import { getDocumentReadiness } from '@/lib/documents/actions'
@@ -1707,6 +1710,16 @@ export default async function ChefDashboard() {
   const simplifyForNewChef = isNewChef && !bypassProgressiveDisclosure
   const isMinimalDensity = workspaceDensity === 'minimal'
   const primaryAction = getDashboardPrimaryAction(archetype)
+  const showCreateMenuAction = isDashboardCreationActionVisible(
+    '/menus/new',
+    presence,
+    bypassProgressiveDisclosure
+  )
+  const showStorefrontAction = isDashboardCreationActionVisible(
+    '/commerce/storefront',
+    presence,
+    bypassProgressiveDisclosure
+  )
 
   // Hero data for the glance zone
   const heroData = await safe(
@@ -1747,23 +1760,23 @@ export default async function ChefDashboard() {
           >
             Briefing
           </Link>
-          {!simplifyForNewChef && (
-            <>
-              <Link
-                href="/menus/new"
-                className="inline-flex items-center justify-center gap-1.5 px-4 py-2 border border-stone-700/60 text-stone-400 rounded-xl hover:bg-stone-800 hover:border-stone-600 hover:text-stone-200 transition-all font-medium text-sm"
-              >
-                <UtensilsCrossed className="h-4 w-4" />
-                Create Menu
-              </Link>
-              <Link
-                href="/commerce/storefront"
-                className="inline-flex items-center justify-center gap-1.5 px-4 py-2 border border-stone-700/60 text-stone-400 rounded-xl hover:bg-stone-800 hover:border-stone-600 hover:text-stone-200 transition-all font-medium text-sm"
-              >
-                <Store className="h-4 w-4" />
-                Storefront
-              </Link>
-            </>
+          {showCreateMenuAction && (
+            <Link
+              href="/menus/new"
+              className="inline-flex items-center justify-center gap-1.5 px-4 py-2 border border-stone-700/60 text-stone-400 rounded-xl hover:bg-stone-800 hover:border-stone-600 hover:text-stone-200 transition-all font-medium text-sm"
+            >
+              <UtensilsCrossed className="h-4 w-4" />
+              Create Menu
+            </Link>
+          )}
+          {showStorefrontAction && (
+            <Link
+              href="/commerce/storefront"
+              className="inline-flex items-center justify-center gap-1.5 px-4 py-2 border border-stone-700/60 text-stone-400 rounded-xl hover:bg-stone-800 hover:border-stone-600 hover:text-stone-200 transition-all font-medium text-sm"
+            >
+              <Store className="h-4 w-4" />
+              Storefront
+            </Link>
           )}
           <Link
             href={primaryAction.href}

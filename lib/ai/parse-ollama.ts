@@ -16,6 +16,7 @@ import { incrementAiMetric, recordAiLatency, recordAiTier } from './ai-metrics'
 import { reportAppError } from '@/lib/monitoring/sentry-reporter'
 import { resolveAiDispatch } from './dispatch/router'
 import type { AiDispatchRequest } from './dispatch/types'
+import { isSharedAiRuntimeEnabled } from './server-runtime-guard'
 
 function extractJsonPayload(rawText: string): string {
   const jsonMatch = rawText.match(/```(?:json)?\s*([\s\S]*?)```/)
@@ -101,6 +102,13 @@ export async function parseWithOllama<T>(
   schema: z.ZodType<T>,
   options?: ParseOllamaOptions
 ): Promise<T> {
+  if (options?.endpointUrl && !isSharedAiRuntimeEnabled()) {
+    throw new OllamaOfflineError(
+      'Shared server AI runtime is disabled in production',
+      'not_configured'
+    )
+  }
+
   if (!isOllamaEnabled() && !options?.endpointUrl) {
     throw new OllamaOfflineError('OLLAMA_BASE_URL is not set in environment', 'not_configured')
   }

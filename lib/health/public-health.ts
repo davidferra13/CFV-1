@@ -3,6 +3,7 @@ import { getRequestId } from '@/lib/observability/request-id'
 import { CRON_MONITOR_DEFINITIONS } from '@/lib/cron/definitions'
 import { buildCronHealthReport } from '@/lib/cron/monitor'
 import { getCircuitBreakerHealth } from '@/lib/resilience/circuit-breaker'
+import { getAiRuntimePolicy, isLocalOllamaUrl } from '@/lib/ai/dispatch/routing-table'
 
 export type PublicHealthStatus = 'ok' | 'degraded'
 export type PublicHealthScope = 'health' | 'readiness'
@@ -21,6 +22,13 @@ type BackgroundJobSummary = {
 type BuildSnapshotOptions = {
   includeBackgroundJobs?: boolean
   requiredEnvVars: readonly string[]
+}
+
+type AiRuntimeSummary = {
+  status: PublicHealthStatus
+  mode: string
+  enabledEndpoints: string[]
+  reason: string | null
 }
 
 export type PublicHealthSnapshot = {
@@ -113,6 +121,43 @@ function getRequiredCronDefinitionsForPublicHealth() {
   return CRON_MONITOR_DEFINITIONS.filter((definition) => requested.has(definition.cronName))
 }
 
+function isProductionAppEnv(): boolean {
+  const appEnv = process.env.NEXT_PUBLIC_APP_ENV ?? process.env.APP_ENV ?? process.env.NODE_ENV
+  return ['production', 'prod'].includes((appEnv ?? '').toLowerCase())
+}
+
+function getAiRuntimeSummary(): AiRuntimeSummary {
+  const policy = getAiRuntimePolicy()
+  const enabledEndpoints = policy.endpoints
+    .filter((endpoint) => endpoint.enabled)
+    .map((endpoint) => endpoint.name)
+  const enabledCloudEndpoint = policy.endpoints.find(
+    (endpoint) => endpoint.enabled && endpoint.location === 'cloud'
+  )
+  const enabledLocalEndpoints = policy.endpoints.filter(
+    (endpoint) => endpoint.enabled && endpoint.location === 'local'
+  )
+
+  let reason: string | null = null
+  if (isProductionAppEnv()) {
+    if (enabledEndpoints.length === 0) {
+      reason = 'not_configured'
+    } else if (
+      !enabledCloudEndpoint &&
+      enabledLocalEndpoints.some((endpoint) => isLocalOllamaUrl(endpoint.baseUrl))
+    ) {
+      reason = 'local_only_in_production'
+    }
+  }
+
+  return {
+    status: reason ? 'degraded' : 'ok',
+    mode: policy.mode,
+    enabledEndpoints,
+    reason,
+  }
+}
+
 export async function buildPublicHealthSnapshot(
   options: BuildSnapshotOptions
 ): Promise<PublicHealthSnapshot> {
@@ -129,6 +174,7 @@ export async function buildPublicHealthSnapshot(
     }))
 
   const backgroundJobs = options.includeBackgroundJobs ? await getBackgroundJobSummary() : null
+  const aiRuntime = getAiRuntimeSummary()
 
   let dbStatus = missingEnv.includes('DATABASE_URL') ? 'missing_env' : 'ok'
   let dbHealthy = dbStatus === 'ok'
@@ -162,8 +208,11 @@ export async function buildPublicHealthSnapshot(
   const envHealthy = missingEnv.length === 0
   const circuitBreakersHealthy = degradedCircuitBreakers.length === 0
   const backgroundJobsHealthy = backgroundJobs ? backgroundJobs.status === 'ok' : true
+  const aiRuntimeHealthy = aiRuntime.status === 'ok'
   const status: PublicHealthStatus =
-    envHealthy && circuitBreakersHealthy && backgroundJobsHealthy && dbHealthy ? 'ok' : 'degraded'
+    envHealthy && circuitBreakersHealthy && backgroundJobsHealthy && dbHealthy && aiRuntimeHealthy
+      ? 'ok'
+      : 'degraded'
 
   return {
     requestId,
@@ -176,11 +225,13 @@ export async function buildPublicHealthSnapshot(
         env: envHealthy ? 'ok' : 'missing',
         db: dbStatus,
         circuitBreakers: circuitBreakersHealthy ? 'ok' : 'degraded',
+        aiRuntime: aiRuntime.status,
         ...(backgroundJobs ? { backgroundJobs: backgroundJobs.status } : {}),
       },
       details: {
         missingEnvCount: missingEnv.length,
         ...dbDetails,
+        aiRuntime,
         circuitBreakers: degradedCircuitBreakers,
         ...(backgroundJobs
           ? {

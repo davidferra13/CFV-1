@@ -5,14 +5,21 @@ import { classifyAiTask } from '@/lib/ai/dispatch/classifier'
 import { scanAiPrivacyRisk } from '@/lib/ai/dispatch/privacy-gate'
 import { getAiRuntimePolicy, resolveOllamaModel } from '@/lib/ai/dispatch/routing-table'
 import { resolveAiActionDecision, resolveAiDispatch } from '@/lib/ai/dispatch/router'
+import {
+  isBlockedServerSideAiTarget,
+  isSharedAiRuntimeEnabled,
+} from '@/lib/ai/server-runtime-guard'
 
 const ORIGINAL_ENV = {
+  NODE_ENV: process.env.NODE_ENV,
   OLLAMA_BASE_URL: process.env.OLLAMA_BASE_URL,
   OLLAMA_LOCAL_BASE_URL: process.env.OLLAMA_LOCAL_BASE_URL,
   OLLAMA_CLOUD_BASE_URL: process.env.OLLAMA_CLOUD_BASE_URL,
   OLLAMA_MODEL: process.env.OLLAMA_MODEL,
   OLLAMA_LOCAL_MODEL: process.env.OLLAMA_LOCAL_MODEL,
   OLLAMA_CLOUD_MODEL: process.env.OLLAMA_CLOUD_MODEL,
+  CHEFFLOW_SHARED_AI_RUNTIME_ENABLED: process.env.CHEFFLOW_SHARED_AI_RUNTIME_ENABLED,
+  CHEFFLOW_SERVER_LOCAL_AI_PROXY_ENABLED: process.env.CHEFFLOW_SERVER_LOCAL_AI_PROXY_ENABLED,
 }
 
 function restoreEnv() {
@@ -135,6 +142,44 @@ describe('ai runtime policy', () => {
 
     assert.equal(resolveOllamaModel('standard', 'local'), 'gemma4-local')
     assert.equal(resolveOllamaModel('standard', 'cloud'), 'gemma4-cloud')
+  })
+
+  it('disables shared Ollama runtimes in production by default', () => {
+    process.env.NODE_ENV = 'production'
+    process.env.OLLAMA_BASE_URL = 'http://localhost:11434'
+    delete process.env.CHEFFLOW_SHARED_AI_RUNTIME_ENABLED
+
+    const policy = getAiRuntimePolicy()
+
+    assert.equal(isSharedAiRuntimeEnabled(), false)
+    assert.equal(
+      policy.endpoints.every((endpoint) => endpoint.enabled === false),
+      true
+    )
+  })
+
+  it('allows shared Ollama runtimes in production only when explicitly enabled', () => {
+    process.env.NODE_ENV = 'production'
+    process.env.OLLAMA_BASE_URL = 'http://localhost:11434'
+    process.env.CHEFFLOW_SHARED_AI_RUNTIME_ENABLED = 'true'
+
+    const policy = getAiRuntimePolicy()
+
+    assert.equal(isSharedAiRuntimeEnabled(), true)
+    assert.equal(
+      policy.endpoints.some((endpoint) => endpoint.enabled),
+      true
+    )
+  })
+
+  it('blocks server-side local AI proxy targets in production by default', () => {
+    process.env.NODE_ENV = 'production'
+    delete process.env.CHEFFLOW_SERVER_LOCAL_AI_PROXY_ENABLED
+
+    assert.equal(isBlockedServerSideAiTarget('http://localhost:11434'), true)
+    assert.equal(isBlockedServerSideAiTarget('http://127.0.0.1:11434'), true)
+    assert.equal(isBlockedServerSideAiTarget('http://192.168.1.20:11434'), true)
+    assert.equal(isBlockedServerSideAiTarget('https://ai.customer.example'), false)
   })
 })
 

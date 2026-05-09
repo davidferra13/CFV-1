@@ -32,6 +32,7 @@ import {
   CATEGORY_FLOOR_CENTS,
   DEFAULT_FLOOR_CENTS,
 } from './subcategory-floors'
+import { isProductRelevantToIngredient } from './product-relevance'
 
 /** Best-effort category inference from raw ingredient text for synthetic floor. */
 function inferCategoryFromText(text: string): string {
@@ -497,11 +498,14 @@ const NON_FOOD_PRODUCT_PATTERNS = [
   'bandage',
 ].map((kw) => kw.toLowerCase())
 
-/** Secondary keyword filter for non-food products that slipped through category-level is_food */
-function filterFoodProducts(rows: ProductPriceRow[]): ProductPriceRow[] {
+/** Secondary filter for products that slipped through category-level is_food */
+function filterRelevantProducts(rows: ProductPriceRow[], ingredient: string): ProductPriceRow[] {
   return rows.filter((r) => {
     const nameLower = r.product_name.toLowerCase()
-    return !NON_FOOD_PRODUCT_PATTERNS.some((pattern) => nameLower.includes(pattern))
+    return (
+      !NON_FOOD_PRODUCT_PATTERNS.some((pattern) => nameLower.includes(pattern)) &&
+      isProductRelevantToIngredient(r.product_name, ingredient)
+    )
   })
 }
 
@@ -548,7 +552,7 @@ async function searchProductPrices(
         sp.price_cents ASC
       LIMIT ${limit}
     `)) as unknown as ProductPriceRow[]
-    return filterFoodProducts(rows)
+    return filterRelevantProducts(rows, text)
   }
 
   // National search (no location filter)
@@ -582,7 +586,7 @@ async function searchProductPrices(
       sp.last_seen_at DESC
     LIMIT ${limit}
   `)) as unknown as ProductPriceRow[]
-  return filterFoodProducts(rows)
+  return filterRelevantProducts(rows, text)
 }
 
 /**
@@ -626,7 +630,7 @@ async function searchProductPricesTrigram(
                sp.price_cents ASC
       LIMIT ${limit}
     `)) as unknown as ProductPriceRow[]
-    return filterFoodProducts(rows)
+    return filterRelevantProducts(rows, text)
   }
 
   const rows = (await db.execute(sql`
@@ -654,7 +658,7 @@ async function searchProductPricesTrigram(
              sp.last_seen_at DESC
     LIMIT ${limit}
   `)) as unknown as ProductPriceRow[]
-  return filterFoodProducts(rows)
+  return filterRelevantProducts(rows, text)
 }
 
 /** Derive a single price_type label from a set of ProductPriceRow results.

@@ -172,6 +172,52 @@ export const DB_BOOT_CONTRACT_OBJECTS: readonly DbBootContractObject[] = [
     },
   },
   {
+    id: 'public.event_share_settings',
+    description:
+      'Chef-owned public Event sharing and ticketing settings required by ticketed Event pages.',
+    readinessRequired: true,
+    criticalMigrationFile: '20260416000004_event_ticketing.sql',
+    liveObject: { kind: 'table', schema: 'public', name: 'event_share_settings' },
+    surfaces: {
+      sqlMigrations: [
+        {
+          filePath: 'database/migrations/20260416000004_event_ticketing.sql',
+          patterns: ['CREATE TABLE IF NOT EXISTS event_share_settings'],
+        },
+      ],
+    },
+  },
+  {
+    id: 'public.event_ticket_types',
+    description: 'Ticket type inventory required for public ticket purchases.',
+    readinessRequired: true,
+    criticalMigrationFile: '20260416000004_event_ticketing.sql',
+    liveObject: { kind: 'table', schema: 'public', name: 'event_ticket_types' },
+    surfaces: {
+      sqlMigrations: [
+        {
+          filePath: 'database/migrations/20260416000004_event_ticketing.sql',
+          patterns: ['CREATE TABLE IF NOT EXISTS event_ticket_types'],
+        },
+      ],
+    },
+  },
+  {
+    id: 'public.event_tickets',
+    description: 'Ticket purchase records required for public checkout and ticket follow-through.',
+    readinessRequired: true,
+    criticalMigrationFile: '20260416000004_event_ticketing.sql',
+    liveObject: { kind: 'table', schema: 'public', name: 'event_tickets' },
+    surfaces: {
+      sqlMigrations: [
+        {
+          filePath: 'database/migrations/20260416000004_event_ticketing.sql',
+          patterns: ['CREATE TABLE IF NOT EXISTS event_tickets'],
+        },
+      ],
+    },
+  },
+  {
     id: 'public.platform_admins',
     description: 'Platform admin table expected by admin runtime paths.',
     readinessRequired: false,

@@ -17,11 +17,66 @@ import { getOrCreateEmailChannel } from '@/lib/comms/email-channel'
 import type { CommunicationTab } from '@/lib/communication/types'
 import { getCalendarEvents } from '@/lib/scheduling/actions'
 import { getGoogleConnection } from '@/lib/google/auth'
+import type { GoogleConnectionStatus } from '@/lib/google/types'
+import type { InboxStats } from '@/lib/inbox/types'
 import Link from 'next/link'
 
 export const metadata: Metadata = { title: 'Inbox' }
 
 const VALID_TABS: CommunicationTab[] = ['unlinked', 'needs_attention', 'snoozed', 'resolved']
+
+function withInboxTimeout<T>(label: string, promise: Promise<T>, fallback: T, timeoutMs = 4000) {
+  let timeoutId: ReturnType<typeof setTimeout> | null = null
+  let timedOut = false
+
+  const guarded = promise.catch((error) => {
+    if (!timedOut) {
+      console.error(`[inbox] ${label} failed:`, error)
+    }
+    return fallback
+  })
+
+  const timeout = new Promise<T>((resolve) => {
+    timeoutId = setTimeout(() => {
+      timedOut = true
+      console.error(`[inbox] ${label} timed out after ${timeoutMs}ms`)
+      resolve(fallback)
+    }, timeoutMs)
+  })
+
+  return Promise.race([guarded, timeout]).finally(() => {
+    if (timeoutId) clearTimeout(timeoutId)
+  })
+}
+
+const emptyStats = {
+  total: 0,
+  unlinked: 0,
+  needs_attention: 0,
+  snoozed: 0,
+  resolved: 0,
+}
+
+const disconnectedGoogle: GoogleConnectionStatus = {
+  gmail: { connected: false, email: null, lastSync: null, errorCount: 0 },
+  calendar: {
+    connected: false,
+    email: null,
+    lastSync: null,
+    checkedAt: null,
+    health: 'unknown',
+    healthDetail: null,
+    busyRangeCount: 0,
+    conflictCount: 0,
+    calendarCount: 0,
+  },
+}
+
+const emptyLegacyInboxStats: InboxStats = {
+  total: 0,
+  unread: 0,
+  bySource: { chat: 0, message: 0, wix: 0, notification: 0 },
+}
 
 export default async function InboxPage({ searchParams }: { searchParams?: { tab?: string } }) {
   const user = await requireChef()
@@ -36,13 +91,13 @@ export default async function InboxPage({ searchParams }: { searchParams?: { tab
 
     const [items, stats, calendarEvents, gmailConnection, unreadCount, staged, emailChannel] =
       await Promise.all([
-        getCommunicationInbox(undefined, 100),
-        getCommunicationInboxStats(),
-        getCalendarEvents(rangeStart, rangeEnd),
-        getGoogleConnection(),
-        getUnreadThreadCount(),
-        getStagedEntities().catch(() => ({ clients: [], inquiries: [] })),
-        getOrCreateEmailChannel(user.entityId!).catch(() => null),
+        withInboxTimeout('communication inbox', getCommunicationInbox(undefined, 100), []),
+        withInboxTimeout('communication inbox stats', getCommunicationInboxStats(), emptyStats),
+        withInboxTimeout('calendar events', getCalendarEvents(rangeStart, rangeEnd), []),
+        withInboxTimeout('google connection', getGoogleConnection(), disconnectedGoogle),
+        withInboxTimeout('unread thread count', getUnreadThreadCount(), 0),
+        withInboxTimeout('staged entities', getStagedEntities(), { clients: [], inquiries: [] }),
+        withInboxTimeout('email channel', getOrCreateEmailChannel(user.entityId!), null),
       ])
 
     // Smart default: if user specified a tab use it, otherwise pick the tab with content
@@ -130,9 +185,9 @@ export default async function InboxPage({ searchParams }: { searchParams?: { tab
   }
 
   const [items, stats, gmailConnection] = await Promise.all([
-    getUnifiedInbox({ limit: 50 }),
-    getInboxStats(),
-    getGoogleConnection(),
+    withInboxTimeout('legacy inbox', getUnifiedInbox({ limit: 50 }), []),
+    withInboxTimeout('legacy inbox stats', getInboxStats(), emptyLegacyInboxStats),
+    withInboxTimeout('legacy google connection', getGoogleConnection(), disconnectedGoogle),
   ])
 
   return (

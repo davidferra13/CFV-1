@@ -385,12 +385,13 @@ async function syncCore(
     // not a single global baseline. This prevents cross-product false positives
     // (e.g., a garlic bulb vs a jar of minced garlic under the same ingredient name).
     const ingredientIds = cfIngredients.map((i) => i.id)
-    const perStoreBaselines = new Map<string, number>()
+    const perStoreRawBaselines = new Map<string, number>()
+    const perStoreUnitBaselines = new Map<string, number>()
     if (ingredientIds.length > 0) {
       try {
         const rows = await db.execute(sql`
           SELECT DISTINCT ON (ingredient_id, store_name)
-            ingredient_id, store_name, price_cents
+            ingredient_id, store_name, price_cents, price_per_unit_cents
           FROM ingredient_price_history
           WHERE source LIKE 'openclaw_%'
             AND ingredient_id = ANY(${ingredientIds})
@@ -398,7 +399,9 @@ async function syncCore(
           ORDER BY ingredient_id, store_name, purchase_date DESC
         `)
         for (const row of rows as any[]) {
-          perStoreBaselines.set(`${row.ingredient_id}::${row.store_name}`, row.price_cents)
+          const key = `${row.ingredient_id}::${row.store_name}`
+          perStoreRawBaselines.set(key, row.price_cents)
+          perStoreUnitBaselines.set(key, row.price_per_unit_cents ?? row.price_cents)
         }
       } catch (err) {
         console.warn('[sync] Could not pre-load per-store baselines, falling back to global:', err)
@@ -485,11 +488,48 @@ async function syncCore(
               quarantined++
               continue
             }
+            const unitPriceCheck = validatePrice(storePrice.normalized_cents, name)
+            if (!unitPriceCheck.valid) {
+              try {
+                await db.execute(sql`
+                  INSERT INTO openclaw.quarantined_prices
+                    (source, ingredient_name, price_cents, rejection_reason, raw_data)
+                  VALUES (
+                    ${storePrice.store}, ${name}, ${storePrice.normalized_cents},
+                    ${unitPriceCheck.reason},
+                    ${JSON.stringify(
+                      buildOpenClawQuarantineRawData({
+                        rawPrice: storePrice as unknown as Record<string, unknown>,
+                        reviewContext: {
+                          ingredientId: ing.id,
+                          tenantId: ing.tenantId ?? null,
+                          ingredientName: name,
+                          priceCents: storePrice.cents,
+                          normalizedPricePerUnitCents: storePrice.normalized_cents,
+                          normalizedUnit: storePrice.normalized_unit,
+                          originalUnit: storePrice.original_unit,
+                          purchaseDate: today,
+                          confirmedAt: storePrice.confirmed_at ?? null,
+                          storeName: storePrice.store,
+                          storeState: chefHomeState,
+                          tier: storePrice.tier,
+                          granularSource,
+                        },
+                      })
+                    )}::jsonb
+                  )
+                `)
+              } catch {
+                /* quarantine is best-effort */
+              }
+              quarantined++
+              continue
+            }
             // Use per-store baseline (same store's last price for this ingredient).
             // If no store-specific history exists, treat as first observation (null).
             // This prevents cross-product false positives (bulb vs jar under same name).
             const storeKey = `${ing.id}::${storePrice.store}`
-            const baselinePrice = perStoreBaselines.get(storeKey) ?? null
+            const baselinePrice = perStoreRawBaselines.get(storeKey) ?? null
             const changeCheck = validatePriceChange(baselinePrice, storePrice.cents, name)
             if (!changeCheck.valid) {
               try {
@@ -499,6 +539,48 @@ async function syncCore(
                   VALUES (
                     ${storePrice.store}, ${name}, ${storePrice.cents},
                     ${baselinePrice}, ${changeCheck.reason},
+                    ${JSON.stringify(
+                      buildOpenClawQuarantineRawData({
+                        rawPrice: storePrice as unknown as Record<string, unknown>,
+                        reviewContext: {
+                          ingredientId: ing.id,
+                          tenantId: ing.tenantId ?? null,
+                          ingredientName: name,
+                          priceCents: storePrice.cents,
+                          normalizedPricePerUnitCents: storePrice.normalized_cents,
+                          normalizedUnit: storePrice.normalized_unit,
+                          originalUnit: storePrice.original_unit,
+                          purchaseDate: today,
+                          confirmedAt: storePrice.confirmed_at ?? null,
+                          storeName: storePrice.store,
+                          storeState: chefHomeState,
+                          tier: storePrice.tier,
+                          granularSource,
+                        },
+                      })
+                    )}::jsonb
+                  )
+                `)
+              } catch {
+                /* quarantine is best-effort */
+              }
+              quarantined++
+              continue
+            }
+            const baselineUnitPrice = perStoreUnitBaselines.get(storeKey) ?? null
+            const unitChangeCheck = validatePriceChange(
+              baselineUnitPrice,
+              storePrice.normalized_cents,
+              name
+            )
+            if (!unitChangeCheck.valid) {
+              try {
+                await db.execute(sql`
+                  INSERT INTO openclaw.quarantined_prices
+                    (source, ingredient_name, price_cents, old_price_cents, rejection_reason, raw_data)
+                  VALUES (
+                    ${storePrice.store}, ${name}, ${storePrice.normalized_cents},
+                    ${baselineUnitPrice}, ${unitChangeCheck.reason},
                     ${JSON.stringify(
                       buildOpenClawQuarantineRawData({
                         rawPrice: storePrice as unknown as Record<string, unknown>,
@@ -559,7 +641,7 @@ async function syncCore(
 
           // 5b. Update the ingredient row with BEST price only
           // Dedup: skip if already synced today with same best price
-          if (ing.lastPriceCents === bestPrice.cents) {
+          if (ing.lastPriceCents === bestPrice.normalized_cents) {
             skipped++
             continue
           }
@@ -570,7 +652,7 @@ async function syncCore(
           try {
             await db.execute(sql`
               UPDATE ingredients SET
-                last_price_cents = ${bestPrice.cents},
+                last_price_cents = ${bestPrice.normalized_cents},
                 last_price_date = ${today},
                 price_unit = ${bestPrice.normalized_unit},
                 last_price_source = ${granularSource},
@@ -585,7 +667,7 @@ async function syncCore(
             await db
               .update(ingredients)
               .set({
-                lastPriceCents: bestPrice.cents,
+                lastPriceCents: bestPrice.normalized_cents,
                 lastPriceDate: today,
                 priceUnit: bestPrice.normalized_unit,
               })

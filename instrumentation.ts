@@ -15,6 +15,13 @@ function areBackgroundJobsDisabled() {
   return process.env.DISABLE_BACKGROUND_JOBS_FOR_E2E === 'true'
 }
 
+function areBackgroundJobsEnabled() {
+  return (
+    process.env.ENABLE_BACKGROUND_JOBS === 'true' ||
+    process.env.ENABLE_SELF_HOSTED_BACKGROUND_JOBS === 'true'
+  )
+}
+
 function shouldStartBackgroundJobs() {
   if (areBackgroundJobsDisabled()) {
     return {
@@ -23,9 +30,18 @@ function shouldStartBackgroundJobs() {
     }
   }
 
+  if (process.env.NODE_ENV === 'production' && !areBackgroundJobsEnabled()) {
+    return {
+      enabled: false,
+      reason:
+        '[instrumentation] Background jobs disabled. Set ENABLE_BACKGROUND_JOBS=true to run self-hosted jobs in this web process.',
+    }
+  }
+
   if (
     process.env.NODE_ENV !== 'production' &&
-    process.env.ENABLE_BACKGROUND_JOBS_IN_DEV !== 'true'
+    process.env.ENABLE_BACKGROUND_JOBS_IN_DEV !== 'true' &&
+    !areBackgroundJobsEnabled()
   ) {
     return {
       enabled: false,

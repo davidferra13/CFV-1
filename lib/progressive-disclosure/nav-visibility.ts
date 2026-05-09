@@ -21,14 +21,35 @@ export function isActionBarItemVisible(
     case '/events':
     case '/culinary':
     case '/clients':
-    case '/finance':
       return true
     case '/inbox':
       return presence.hasConversations || presence.hasInquiries
     case '/inquiries':
       return presence.hasInquiries || presence.hasQuotes
+    case '/finance':
+      return presence.hasInvoices || presence.hasExpenses || presence.hasEvents
     default:
       return true
+  }
+}
+
+export function isDashboardCreationActionVisible(
+  href: string,
+  presence: TenantDataPresence | null | undefined,
+  bypassProgressiveDisclosure: boolean
+): boolean {
+  if (!presence || bypassProgressiveDisclosure) return true
+
+  switch (href) {
+    case '/menus/new':
+    case '/events/new':
+    case '/clients/new':
+    case '/recipes/new':
+      return true
+    case '/commerce/storefront':
+      return !isBrandNewChef(presence) || presence.hasEvents || presence.hasMenus
+    default:
+      return !isBrandNewChef(presence)
   }
 }
 

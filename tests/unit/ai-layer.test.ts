@@ -12,6 +12,7 @@
 
 import { describe, it, beforeEach } from 'node:test'
 import assert from 'node:assert/strict'
+import { z } from 'zod'
 
 import {
   incrementAiMetric,
@@ -27,6 +28,7 @@ import { OllamaOfflineError, getOllamaErrorHelp } from '../../lib/ai/ollama-erro
 import { withAiFallback, formulaOnly } from '../../lib/ai/with-ai-fallback'
 
 import { isOllamaEnabled, getOllamaModel, getOllamaConfig } from '../../lib/ai/providers'
+import { parseWithOllama } from '../../lib/ai/parse-ollama'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // A) ai-metrics.ts
@@ -306,5 +308,30 @@ describe('providers', () => {
     assert.equal(config.baseUrl, 'http://localhost:11434')
     assert.equal(config.model, 'gemma4')
     restoreEnv()
+  })
+})
+
+describe('parseWithOllama runtime guard', () => {
+  it('blocks explicit server endpoint overrides in production by default', async () => {
+    const originalNodeEnv = process.env.NODE_ENV
+    const originalSharedRuntime = process.env.CHEFFLOW_SHARED_AI_RUNTIME_ENABLED
+
+    process.env.NODE_ENV = 'production'
+    delete process.env.CHEFFLOW_SHARED_AI_RUNTIME_ENABLED
+
+    try {
+      await assert.rejects(
+        () =>
+          parseWithOllama('system', 'user', z.object({ ok: z.boolean() }), {
+            endpointUrl: 'http://localhost:11434',
+          }),
+        (err) => err instanceof OllamaOfflineError && err.code === 'not_configured'
+      )
+    } finally {
+      if (originalNodeEnv == null) delete process.env.NODE_ENV
+      else process.env.NODE_ENV = originalNodeEnv
+      if (originalSharedRuntime == null) delete process.env.CHEFFLOW_SHARED_AI_RUNTIME_ENABLED
+      else process.env.CHEFFLOW_SHARED_AI_RUNTIME_ENABLED = originalSharedRuntime
+    }
   })
 })

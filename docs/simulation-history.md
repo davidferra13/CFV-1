@@ -740,3 +740,23 @@ Failing: inquiry_parse (0%), client_parse (0%), allergen_risk (0%)
 
 Passing: correspondence, menu_suggestions, quote_draft
 Failing: inquiry_parse (0%), client_parse (0%), allergen_risk (0%)
+
+## 2026-05-07 15:32 UTC - 33% pass rate - Run ebb3640a
+
+Passing: quote_draft
+Failing: inquiry_parse (0%), client_parse (0%), allergen_risk (0%), correspondence (0%), menu_suggestions (0%)
+
+## 2026-05-07 15:35 UTC - 67% pass rate - Run e852a5c7
+
+Passing: menu_suggestions, quote_draft
+Failing: inquiry_parse (0%), client_parse (0%), allergen_risk (0%), correspondence (0%)
+
+## 2026-05-08 18:34 UTC - 0% pass rate - Run 275e6a39
+
+Passing: none
+Failing: inquiry_parse (0%), client_parse (0%), allergen_risk (0%), correspondence (0%), menu_suggestions (0%), quote_draft (0%)
+
+## 2026-05-08 18:34 UTC - 0% pass rate - Run 4a1f18fd
+
+Passing: none
+Failing: inquiry_parse (0%), client_parse (0%), allergen_risk (0%), correspondence (0%), menu_suggestions (0%), quote_draft (0%)

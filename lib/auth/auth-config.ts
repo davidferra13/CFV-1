@@ -53,9 +53,16 @@ type AuthJwtToken = {
   tenantId?: string | null
   sessionVersion?: number
   sessionAuthenticatedAt?: number
+  sessionControlCheckedAt?: number
   mfaPending?: boolean
   mfaChallengeId?: string
   iat?: number
+}
+
+const AUTH_SESSION_CONTROL_REFRESH_MS = 60 * 1000
+
+function isEdgeRuntime(): boolean {
+  return typeof (globalThis as { EdgeRuntime?: unknown }).EdgeRuntime === 'string'
 }
 
 /**
@@ -346,30 +353,34 @@ export const authConfig: NextAuthConfig = {
         return authToken
       }
 
-      // Enforce ban status on every token refresh (not just login)
-      try {
-        const [bannedCheck] = await db
-          .select({ bannedUntil: authUsers.bannedUntil })
-          .from(authUsers)
-          .where(eq(authUsers.id, authToken.userId))
-          .limit(1)
-        if (bannedCheck?.bannedUntil && new Date(bannedCheck.bannedUntil) > new Date()) {
-          return null // Invalidate session for banned users
-        }
-      } catch (error) {
-        console.error('[auth] Failed to check ban status:', error)
+      // Auth.js also runs this callback from middleware, which is Edge runtime.
+      // Node database drivers cannot open TCP sockets there, so middleware must
+      // rely on the already-signed JWT claims and leave revocation checks to
+      // Node routes/actions.
+      if (isEdgeRuntime()) {
+        return authToken
       }
 
       let sessionControl = null
-      try {
-        sessionControl = await getSessionControlRow(authToken.userId)
-      } catch (error) {
-        console.error('[auth] Failed to load session control state:', error)
+      const now = Date.now()
+      const shouldRefreshSessionControl =
+        Boolean(user) ||
+        trigger === 'update' ||
+        !authToken.sessionControlCheckedAt ||
+        now - authToken.sessionControlCheckedAt > AUTH_SESSION_CONTROL_REFRESH_MS
+
+      if (shouldRefreshSessionControl) {
+        try {
+          sessionControl = await getSessionControlRow(authToken.userId)
+          authToken.sessionControlCheckedAt = now
+        } catch (error) {
+          console.error('[auth] Failed to load session control state:', error)
+        }
       }
 
       if (user) {
         authToken.sessionVersion = sessionControl?.sessionVersion ?? 0
-        authToken.sessionAuthenticatedAt = Date.now()
+        authToken.sessionAuthenticatedAt = now
       }
 
       if (sessionControl && shouldInvalidateJwtSession(authToken, sessionControl)) {

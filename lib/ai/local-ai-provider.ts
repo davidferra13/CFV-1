@@ -1,6 +1,6 @@
 // Client-side local AI provider abstraction.
 // Runs in the browser, connects to Ollama or on-device AICore bridge.
-// On HTTPS: auto-proxies through /api/ollama-proxy to avoid mixed content.
+// On HTTPS: loopback stays direct; non-loopback HTTP can proxy through /api/ollama-proxy.
 // On Android (Tauri): GemmaBridge serves Ollama-compatible API on :11435.
 // Future providers: Chrome Prompt API, AI Edge Gallery, WebGPU inference.
 
@@ -12,15 +12,29 @@ export const OLLAMA_DEFAULT_PORT = 11434
 /**
  * Resolves the effective Ollama URL for the current environment.
  * - On HTTP pages: use the configured URL directly (no mixed content issue)
- * - On HTTPS pages with localhost Ollama: proxy through /api/ollama-proxy
- * - On HTTPS pages with remote Ollama: proxy through /api/ollama-proxy
+ * - On HTTPS pages with localhost Ollama: use the configured URL directly
+ * - On HTTPS pages with non-loopback HTTP Ollama: proxy through /api/ollama-proxy
  */
 export function resolveEffectiveOllamaUrl(configuredUrl: string): string {
   if (typeof window === 'undefined') return configuredUrl
   const isSecure = window.location.protocol === 'https:'
   if (!isSecure) return configuredUrl
-  // On HTTPS, all HTTP Ollama calls get blocked by mixed content.
-  // Route through our same-origin proxy instead.
+
+  try {
+    const url = new URL(configuredUrl)
+    const host = url.hostname.toLowerCase()
+    const isLoopback =
+      host === 'localhost' || host === '::1' || host === '[::1]' || host.startsWith('127.')
+
+    // Browser loopback requests stay on the chef's device. A server-side proxy would make
+    // `localhost` mean the Next.js host instead, which breaks hosted/tunneled setups.
+    if (url.protocol === 'http:' && isLoopback) return configuredUrl
+  } catch {
+    // Fall through to the same-origin proxy for unusual saved values.
+  }
+
+  // On HTTPS, non-loopback HTTP Ollama calls can be blocked by mixed content / private network
+  // access rules. Route those through our same-origin proxy.
   return `${window.location.origin}/api/ollama-proxy`
 }
 
@@ -49,7 +63,11 @@ export function resolveOllamaApiUrl(baseUrl: string, endpoint: string): string {
   const normalizedBase = trimTrailingSlashes(baseUrl.trim())
   const normalizedEndpoint = endpoint.replace(/^\/+/, '')
 
-  if (/\/api\/ollama$/i.test(normalizedBase) || /\/api$/i.test(normalizedBase)) {
+  if (
+    /\/api\/ollama$/i.test(normalizedBase) ||
+    /\/api\/ollama-proxy$/i.test(normalizedBase) ||
+    /\/api$/i.test(normalizedBase)
+  ) {
     return `${normalizedBase}/${normalizedEndpoint}`
   }
 

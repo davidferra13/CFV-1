@@ -57,7 +57,7 @@ let tickerInterval: ReturnType<typeof setInterval> | null = null
 /**
  * Start the cron ticker. Call once from instrumentation.ts.
  * Ticks every 60 seconds. Each tick checks which jobs are due and fires them.
- * Jobs run sequentially within a tick to avoid stampeding the server.
+ * Jobs are scheduled from process start so a restart cannot stampede the web server.
  */
 export function startCronTicker() {
   const secret = process.env.CRON_SECRET
@@ -88,6 +88,11 @@ export function startCronTicker() {
     console.log(`[cron-ticker]   ${cadence}: ${jobs.map((j) => j.cronName).join(', ')}`)
   }
 
+  const startedAt = Date.now()
+  for (const def of CRON_MONITOR_DEFINITIONS) {
+    lastRun.set(def.cronName, startedAt)
+  }
+
   // Tick every 60 seconds. Each tick fires jobs whose cadence interval has elapsed.
   tickerInterval = setInterval(async () => {
     for (const def of CRON_MONITOR_DEFINITIONS) {
@@ -104,17 +109,19 @@ export function startCronTicker() {
     }
   }, 60_000) // Check every minute
 
-  // Fire daily jobs immediately on startup (they may have missed overnight)
-  // Stagger by 10 seconds each to avoid stampede
-  const dailyJobs = CRON_MONITOR_DEFINITIONS.filter(
-    (d) => d.cadence === 'daily' || d.cadence === '6h'
-  )
-  let delay = 30_000 // Start 30s after boot (let server warm up)
-  for (const def of dailyJobs) {
-    setTimeout(() => {
-      fireJob(def, baseUrl, secret).catch(() => {})
-    }, delay)
-    delay += 10_000
+  if (process.env.CRON_TICKER_RUN_MISSED_ON_STARTUP === 'true') {
+    // Optional catch-up mode for dedicated worker hosts. Keep it opt-in so
+    // the web server does not launch dozens of expensive jobs after restart.
+    const catchupJobs = CRON_MONITOR_DEFINITIONS.filter(
+      (d) => d.cadence === 'daily' || d.cadence === '6h'
+    )
+    let delay = 30_000
+    for (const def of catchupJobs) {
+      setTimeout(() => {
+        fireJob(def, baseUrl, secret).catch(() => {})
+      }, delay)
+      delay += 10_000
+    }
   }
 }
 

@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { lookupPricesBatch, type PriceLookupQuery } from '@/lib/pricing/universal-price-lookup'
 import { checkPieRateLimit, rateLimitHeaders } from '@/lib/pricing/pie-rate-limiter'
+import {
+  buildPriceStateReliability,
+  priceStateReliabilityApiShape,
+} from '@/lib/pricing/price-state-reliability'
 
 export const dynamic = 'force-dynamic'
 
@@ -49,23 +53,47 @@ export async function POST(request: NextRequest) {
 
   try {
     const results = await lookupPricesBatch(queries)
+    const reliabilityByTierAndScore = new Map<
+      string,
+      Awaited<ReturnType<typeof buildPriceStateReliability>>
+    >()
+    for (const result of results) {
+      const key = `${result.resolution_tier}:${result.confidence_score}`
+      if (!reliabilityByTierAndScore.has(key)) {
+        reliabilityByTierAndScore.set(
+          key,
+          await buildPriceStateReliability({
+            zipCode: body.zip,
+            resolutionTier: result.resolution_tier,
+            confidenceScore: result.confidence_score,
+          })
+        )
+      }
+    }
 
     const response = {
       count: results.length,
       zip: body.zip || null,
-      results: results.map((r) => ({
-        ingredient: r.ingredient_name,
-        ingredient_id: r.ingredient_id,
-        matched: r.matched,
-        price_cents: r.price_cents,
-        price_per_unit_cents: r.price_per_unit_cents,
-        unit: r.unit,
-        confidence_score: r.confidence_score,
-        resolution_tier: r.resolution_tier,
-        data_points: r.data_points,
-        last_updated: r.last_updated,
-        location_scope: r.location.scope,
-      })),
+      results: results.map((r) => {
+        const stateReliability = reliabilityByTierAndScore.get(
+          `${r.resolution_tier}:${r.confidence_score}`
+        )!
+        return {
+          ingredient: r.ingredient_name,
+          ingredient_id: r.ingredient_id,
+          matched: r.matched,
+          price_cents: r.price_cents,
+          price_per_unit_cents: r.price_per_unit_cents,
+          unit: r.unit,
+          confidence_score: r.confidence_score,
+          effective_confidence_score: stateReliability.effectiveConfidenceScore,
+          resolution_tier: r.resolution_tier,
+          data_points: r.data_points,
+          last_updated: r.last_updated,
+          location_scope: r.location.scope,
+          state_reliability: priceStateReliabilityApiShape(stateReliability),
+        }
+      }),
       latency_ms: Date.now() - start,
     }
 

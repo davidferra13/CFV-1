@@ -1,0 +1,989 @@
+- generic [active] [ref=e1]:
+  - link "Skip to main content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - region "Notifications alt+T"
+  - generic [ref=e3]:
+    - link "Skip to main content" [ref=e4] [cursor=pointer]:
+      - /url: "#main-content"
+    - generic:
+      - generic: Dev
+    - complementary [ref=e5]:
+      - generic [ref=e6]:
+        - link "ChefFlow logo ChefFlow" [ref=e7] [cursor=pointer]:
+          - /url: /dashboard
+          - generic:
+            - img "ChefFlow logo"
+          - generic [ref=e8]: ChefFlow
+        - generic [ref=e9]:
+          - generic "Checking..." [ref=e10]
+          - button "Recent activity" [ref=e14] [cursor=pointer]
+          - button "Open search" [ref=e19] [cursor=pointer]:
+            - img [ref=e20]
+          - button "Open Remy" [ref=e23] [cursor=pointer]:
+            - img [ref=e24]
+          - button "Notifications" [ref=e27] [cursor=pointer]:
+            - img [ref=e28]
+          - button "Collapse sidebar" [ref=e30] [cursor=pointer]:
+            - img [ref=e31]
+      - navigation [ref=e33]:
+        - generic [ref=e34]:
+          - generic [ref=e35]:
+            - img
+            - textbox [ref=e36]:
+              - /placeholder: Search or ⌘K to jump...
+          - generic [ref=e37]:
+            - button "Create" [ref=e38] [cursor=pointer]:
+              - img [ref=e39]
+              - generic [ref=e41]: Create
+            - generic [ref=e42]:
+              - link "Today" [ref=e43] [cursor=pointer]:
+                - /url: /dashboard
+                - img [ref=e44]
+                - generic [ref=e46]: Today
+              - link "Inbox" [ref=e47] [cursor=pointer]:
+                - /url: /inbox
+                - img [ref=e48]
+                - generic [ref=e50]: Inbox
+              - link "Events" [ref=e51] [cursor=pointer]:
+                - /url: /events
+                - img [ref=e52]
+                - generic [ref=e54]: Events
+              - link "Clients" [ref=e55] [cursor=pointer]:
+                - /url: /clients
+                - img [ref=e56]
+                - generic [ref=e58]: Clients
+              - link "Culinary" [ref=e59] [cursor=pointer]:
+                - /url: /culinary
+                - img [ref=e60]
+                - generic [ref=e62]: Culinary
+              - link "Finance" [ref=e63] [cursor=pointer]:
+                - /url: /finance
+                - img [ref=e64]
+                - generic [ref=e66]: Finance
+          - generic [ref=e68]:
+            - generic [ref=e69]:
+              - button "Clients" [ref=e70] [cursor=pointer]:
+                - img [ref=e71]
+                - generic [ref=e73]: Clients
+                - img [ref=e74]
+              - generic [ref=e76]:
+                - generic [ref=e77]:
+                  - button "Client Directory" [ref=e78] [cursor=pointer]:
+                    - img [ref=e79]
+                    - generic [ref=e81]: Client Directory
+                    - img [ref=e82]
+                  - generic [ref=e84]:
+                    - link "Active" [ref=e85] [cursor=pointer]:
+                      - /url: /clients/active
+                      - text: Active
+                    - link "Add Client" [ref=e87] [cursor=pointer]:
+                      - /url: /clients/new
+                      - text: Add Client
+                    - link "Duplicates" [ref=e89] [cursor=pointer]:
+                      - /url: /clients/duplicates
+                      - text: Duplicates
+                    - link "Gift Cards" [ref=e91] [cursor=pointer]:
+                      - /url: /clients/gift-cards
+                      - text: Gift Cards
+                    - link "Inactive" [ref=e93] [cursor=pointer]:
+                      - /url: /clients/inactive
+                      - text: Inactive
+                    - link "Segments" [ref=e95] [cursor=pointer]:
+                      - /url: /clients/segments
+                      - text: Segments
+                    - link "VIP" [ref=e97] [cursor=pointer]:
+                      - /url: /clients/vip
+                      - text: VIP
+                - generic [ref=e99]:
+                  - button "Client History" [ref=e100] [cursor=pointer]:
+                    - img [ref=e101]
+                    - generic [ref=e103]: Client History
+                    - img [ref=e104]
+                  - generic [ref=e106]:
+                    - link "Event History" [ref=e107] [cursor=pointer]:
+                      - /url: /clients/history/event-history
+                      - text: Event History
+                    - link "Past Menus" [ref=e109] [cursor=pointer]:
+                      - /url: /clients/history/past-menus
+                      - text: Past Menus
+                    - link "Payment History" [ref=e111] [cursor=pointer]:
+                      - /url: /clients/history/spending-history
+                      - text: Payment History
+                - generic [ref=e113]:
+                  - button "Client Insights" [ref=e114] [cursor=pointer]:
+                    - img [ref=e115]
+                    - generic [ref=e117]: Client Insights
+                    - img [ref=e118]
+                  - generic [ref=e120]:
+                    - link "At Risk" [ref=e121] [cursor=pointer]:
+                      - /url: /clients/insights/at-risk
+                      - text: At Risk
+                    - link "Most Frequent" [ref=e123] [cursor=pointer]:
+                      - /url: /clients/insights/most-frequent
+                      - text: Most Frequent
+                    - link "Top Clients" [ref=e125] [cursor=pointer]:
+                      - /url: /clients/insights/top-clients
+                      - text: Top Clients
+                - link "Client Intake" [ref=e127] [cursor=pointer]:
+                  - /url: /clients/intake
+                  - img [ref=e128]
+                  - text: Client Intake
+                - link "Client Presence" [ref=e130] [cursor=pointer]:
+                  - /url: /clients/presence
+                  - img [ref=e131]
+                  - text: Client Presence
+                - generic [ref=e133]:
+                  - button "Communication" [ref=e134] [cursor=pointer]:
+                    - img [ref=e135]
+                    - generic [ref=e137]: Communication
+                    - img [ref=e138]
+                  - generic [ref=e140]:
+                    - link "Client Notes" [ref=e141] [cursor=pointer]:
+                      - /url: /clients/communication/notes
+                      - text: Client Notes
+                    - link "Follow-Ups" [ref=e143] [cursor=pointer]:
+                      - /url: /clients/communication/follow-ups
+                      - text: Follow-Ups
+                    - link "Upcoming Touchpoints" [ref=e145] [cursor=pointer]:
+                      - /url: /clients/communication/upcoming-touchpoints
+                      - text: Upcoming Touchpoints
+                - generic [ref=e147]:
+                  - button "Guest Directory" [ref=e148] [cursor=pointer]:
+                    - img [ref=e149]
+                    - generic [ref=e151]: Guest Directory
+                    - img [ref=e152]
+                  - generic [ref=e154]:
+                    - link "Guest Insights" [ref=e155] [cursor=pointer]:
+                      - /url: /guest-analytics
+                      - text: Guest Insights
+                    - link "Guest Pipeline" [ref=e157] [cursor=pointer]:
+                      - /url: /guest-leads
+                      - text: Guest Pipeline
+                    - link "Reservations" [ref=e159] [cursor=pointer]:
+                      - /url: /guests/reservations
+                      - text: Reservations
+                - generic [ref=e161]:
+                  - button "Loyalty & Rewards" [ref=e162] [cursor=pointer]:
+                    - img [ref=e163]
+                    - generic [ref=e165]: Loyalty & Rewards
+                    - img [ref=e166]
+                  - generic [ref=e168]:
+                    - link "Create Reward" [ref=e169] [cursor=pointer]:
+                      - /url: /loyalty/rewards/new
+                      - text: Create Reward
+                    - link "Learn About Loyalty" [ref=e171] [cursor=pointer]:
+                      - /url: /loyalty/learn
+                      - text: Learn About Loyalty
+                    - link "Loyalty Overview" [ref=e173] [cursor=pointer]:
+                      - /url: /clients/loyalty
+                      - text: Loyalty Overview
+                    - link "Points" [ref=e175] [cursor=pointer]:
+                      - /url: /clients/loyalty/points
+                      - text: Points
+                    - link "Program Settings" [ref=e177] [cursor=pointer]:
+                      - /url: /loyalty/settings
+                      - text: Program Settings
+                    - link "Raffle" [ref=e179] [cursor=pointer]:
+                      - /url: /loyalty/raffle
+                      - text: Raffle
+                    - link "Referrals" [ref=e181] [cursor=pointer]:
+                      - /url: /clients/loyalty/referrals
+                      - text: Referrals
+                    - link "Rewards" [ref=e183] [cursor=pointer]:
+                      - /url: /clients/loyalty/rewards
+                      - text: Rewards
+                - generic [ref=e185]:
+                  - button "Partners & Referrals" [ref=e186] [cursor=pointer]:
+                    - img [ref=e187]
+                    - generic [ref=e189]: Partners & Referrals
+                    - img [ref=e190]
+                  - generic [ref=e192]:
+                    - link "Active" [ref=e193] [cursor=pointer]:
+                      - /url: /partners/active
+                      - text: Active
+                    - link "Add Partner" [ref=e195] [cursor=pointer]:
+                      - /url: /partners/new
+                      - text: Add Partner
+                    - link "Events Generated" [ref=e197] [cursor=pointer]:
+                      - /url: /partners/events-generated
+                      - text: Events Generated
+                    - link "Inactive" [ref=e199] [cursor=pointer]:
+                      - /url: /partners/inactive
+                      - text: Inactive
+                    - link "Referral Performance" [ref=e201] [cursor=pointer]:
+                      - /url: /partners/referral-performance
+                      - text: Referral Performance
+                - generic [ref=e203]:
+                  - button "Preferences & Dietary" [ref=e204] [cursor=pointer]:
+                    - img [ref=e205]
+                    - generic [ref=e207]: Preferences & Dietary
+                    - img [ref=e208]
+                  - generic [ref=e210]:
+                    - link "Allergies" [ref=e211] [cursor=pointer]:
+                      - /url: /clients/preferences/allergies
+                      - text: Allergies
+                    - link "Dietary Restrictions" [ref=e213] [cursor=pointer]:
+                      - /url: /clients/preferences/dietary-restrictions
+                      - text: Dietary Restrictions
+                    - link "Dislikes" [ref=e215] [cursor=pointer]:
+                      - /url: /clients/preferences/dislikes
+                      - text: Dislikes
+                    - link "Favorite Dishes" [ref=e217] [cursor=pointer]:
+                      - /url: /clients/preferences/favorite-dishes
+                      - text: Favorite Dishes
+                - link "Recurring Clients" [ref=e219] [cursor=pointer]:
+                  - /url: /clients/recurring
+                  - img [ref=e220]
+                  - text: Recurring Clients
+                - link "Who's Waiting" [ref=e222] [cursor=pointer]:
+                  - /url: /pulse
+                  - img [ref=e223]
+                  - text: Who's Waiting
+            - generic [ref=e225]:
+              - button "Culinary" [ref=e226] [cursor=pointer]:
+                - img [ref=e227]
+                - generic [ref=e229]: Culinary
+                - img [ref=e230]
+              - generic [ref=e232]:
+                - link "ChefTips" [ref=e233] [cursor=pointer]:
+                  - /url: /culinary/cheftips
+                  - img [ref=e234]
+                  - text: ChefTips
+                - generic [ref=e236]:
+                  - button "Components" [ref=e237] [cursor=pointer]:
+                    - img [ref=e238]
+                    - generic [ref=e240]: Components
+                    - img [ref=e241]
+                  - generic [ref=e243]:
+                    - link "Ferments" [ref=e244] [cursor=pointer]:
+                      - /url: /culinary/components/ferments
+                      - text: Ferments
+                    - link "Garnishes" [ref=e246] [cursor=pointer]:
+                      - /url: /culinary/components/garnishes
+                      - text: Garnishes
+                    - link "Sauces" [ref=e248] [cursor=pointer]:
+                      - /url: /culinary/components/sauces
+                      - text: Sauces
+                    - link "Shared Elements" [ref=e250] [cursor=pointer]:
+                      - /url: /culinary/components/shared-elements
+                      - text: Shared Elements
+                    - link "Stocks" [ref=e252] [cursor=pointer]:
+                      - /url: /culinary/components/stocks
+                      - text: Stocks
+                - generic [ref=e254]:
+                  - button "Costing" [ref=e255] [cursor=pointer]:
+                    - img [ref=e256]
+                    - generic [ref=e258]: Costing
+                    - img [ref=e259]
+                  - generic [ref=e261]:
+                    - link "Food Cost Analysis" [ref=e262] [cursor=pointer]:
+                      - /url: /culinary/costing/food-cost
+                      - text: Food Cost Analysis
+                    - link "Menu Costs" [ref=e264] [cursor=pointer]:
+                      - /url: /culinary/costing/menu
+                      - text: Menu Costs
+                    - link "On Sale This Week" [ref=e266] [cursor=pointer]:
+                      - /url: /culinary/costing/sales
+                      - text: On Sale This Week
+                    - link "Recipe Costs" [ref=e268] [cursor=pointer]:
+                      - /url: /culinary/costing/recipe
+                      - text: Recipe Costs
+                - link "Culinary Board" [ref=e270] [cursor=pointer]:
+                  - /url: /culinary-board
+                  - img [ref=e271]
+                  - text: Culinary Board
+                - link "Culinary Hub" [ref=e273] [cursor=pointer]:
+                  - /url: /culinary
+                  - img [ref=e274]
+                  - text: Culinary Hub
+                - link "Food Catalog" [ref=e276] [cursor=pointer]:
+                  - /url: /culinary/price-catalog
+                  - img [ref=e277]
+                  - text: Food Catalog
+                - generic [ref=e279]:
+                  - button "Ingredients" [ref=e280] [cursor=pointer]:
+                    - img [ref=e281]
+                    - generic [ref=e283]: Ingredients
+                    - img [ref=e284]
+                  - generic [ref=e286]:
+                    - link "Ingredients Database" [ref=e287] [cursor=pointer]:
+                      - /url: /culinary/ingredients
+                      - text: Ingredients Database
+                    - link "Receipt Scanner" [ref=e289] [cursor=pointer]:
+                      - /url: /culinary/ingredients/receipt-scan
+                      - text: Receipt Scanner
+                    - link "Seasonal Availability" [ref=e291] [cursor=pointer]:
+                      - /url: /culinary/ingredients/seasonal-availability
+                      - text: Seasonal Availability
+                    - link "Vendor Notes" [ref=e293] [cursor=pointer]:
+                      - /url: /culinary/ingredients/vendor-notes
+                      - text: Vendor Notes
+                - link "Menu Engine Settings" [ref=e295] [cursor=pointer]:
+                  - /url: /settings/menu-engine
+                  - img [ref=e296]
+                  - text: Menu Engine Settings
+                - generic [ref=e298]:
+                  - button "Menus" [ref=e299] [cursor=pointer]:
+                    - img [ref=e300]
+                    - generic [ref=e302]: Menus
+                    - img [ref=e303]
+                  - generic [ref=e305]:
+                    - link "All Menus" [ref=e306] [cursor=pointer]:
+                      - /url: /culinary/menus
+                      - text: All Menus
+                    - link "Approved" [ref=e308] [cursor=pointer]:
+                      - /url: /culinary/menus/approved
+                      - text: Approved
+                    - link "Dish Index" [ref=e310] [cursor=pointer]:
+                      - /url: /culinary/dish-index
+                      - text: Dish Index
+                    - link "Dish Insights" [ref=e312] [cursor=pointer]:
+                      - /url: /culinary/dish-index/insights
+                      - text: Dish Insights
+                    - link "Dishes" [ref=e314] [cursor=pointer]:
+                      - /url: /menus/dishes
+                      - text: Dishes
+                    - link "Drafts" [ref=e316] [cursor=pointer]:
+                      - /url: /culinary/menus/drafts
+                      - text: Drafts
+                    - link "Estimate" [ref=e318] [cursor=pointer]:
+                      - /url: /menus/estimate
+                      - text: Estimate
+                    - link "Menu Engineering" [ref=e320] [cursor=pointer]:
+                      - /url: /culinary/menus/engineering
+                      - text: Menu Engineering
+                    - link "Menu Upload" [ref=e322] [cursor=pointer]:
+                      - /url: /menus/upload
+                      - text: Menu Upload
+                    - link "New Menu" [ref=e324] [cursor=pointer]:
+                      - /url: /menus/new
+                      - text: New Menu
+                    - link "Scaling" [ref=e326] [cursor=pointer]:
+                      - /url: /culinary/menus/scaling
+                      - text: Scaling
+                    - link "Substitutions" [ref=e328] [cursor=pointer]:
+                      - /url: /culinary/menus/substitutions
+                      - text: Substitutions
+                    - link "Tasting Menus" [ref=e330] [cursor=pointer]:
+                      - /url: /menus/tasting
+                      - text: Tasting Menus
+                    - link "Templates" [ref=e332] [cursor=pointer]:
+                      - /url: /culinary/menus/templates
+                      - text: Templates
+                - link "My Kitchen" [ref=e334] [cursor=pointer]:
+                  - /url: /culinary/my-kitchen
+                  - img [ref=e335]
+                  - text: My Kitchen
+                - generic [ref=e337]:
+                  - button "Prep Workspace" [ref=e338] [cursor=pointer]:
+                    - img [ref=e339]
+                    - generic [ref=e341]: Prep Workspace
+                    - img [ref=e342]
+                  - generic [ref=e344]:
+                    - link "Prep Timeline" [ref=e345] [cursor=pointer]:
+                      - /url: /culinary/prep/timeline
+                      - text: Prep Timeline
+                    - link "Shopping Lists" [ref=e347] [cursor=pointer]:
+                      - /url: /culinary/prep/shopping
+                      - text: Shopping Lists
+                - link "Recipe Import Hub" [ref=e349] [cursor=pointer]:
+                  - /url: /recipes/import
+                  - img [ref=e350]
+                  - text: Recipe Import Hub
+                - link "Recipe Sprint" [ref=e352] [cursor=pointer]:
+                  - /url: /recipes/sprint
+                  - img [ref=e353]
+                  - text: Recipe Sprint
+                - generic [ref=e355]:
+                  - button "Recipes" [ref=e356] [cursor=pointer]:
+                    - img [ref=e357]
+                    - generic [ref=e359]: Recipes
+                    - img [ref=e360]
+                  - generic [ref=e362]:
+                    - link "Brain Dump" [ref=e363] [cursor=pointer]:
+                      - /url: /recipes/dump
+                      - text: Brain Dump
+                    - link "By Dietary Flags" [ref=e365] [cursor=pointer]:
+                      - /url: /culinary/recipes/dietary-flags
+                      - text: By Dietary Flags
+                    - link "Drafts" [ref=e367] [cursor=pointer]:
+                      - /url: /culinary/recipes/drafts
+                      - text: Drafts
+                    - link "New Recipe" [ref=e369] [cursor=pointer]:
+                      - /url: /recipes/new
+                      - text: New Recipe
+                    - link "Production Log" [ref=e371] [cursor=pointer]:
+                      - /url: /recipes/production-log
+                      - text: Production Log
+                    - link "Recipe Library" [ref=e373] [cursor=pointer]:
+                      - /url: /culinary/recipes
+                      - text: Recipe Library
+                    - link "Seasonal Notes" [ref=e375] [cursor=pointer]:
+                      - /url: /culinary/recipes/seasonal-notes
+                      - text: Seasonal Notes
+                    - link "Step Photos" [ref=e377] [cursor=pointer]:
+                      - /url: /recipes/photos
+                      - text: Step Photos
+                    - link "Tags" [ref=e379] [cursor=pointer]:
+                      - /url: /culinary/recipes/tags
+                      - text: Tags
+                - link "Seasonal Calendar" [ref=e381] [cursor=pointer]:
+                  - /url: /culinary/seasonal-calendar
+                  - img [ref=e382]
+                  - text: Seasonal Calendar
+                - link "Seasonal Palettes" [ref=e384] [cursor=pointer]:
+                  - /url: /settings/repertoire
+                  - img [ref=e385]
+                  - text: Seasonal Palettes
+                - link "Substitutions" [ref=e387] [cursor=pointer]:
+                  - /url: /culinary/substitutions
+                  - img [ref=e388]
+                  - text: Substitutions
+                - link "Voice Hub" [ref=e390] [cursor=pointer]:
+                  - /url: /culinary/call-sheet
+                  - img [ref=e391]
+                  - text: Voice Hub
+            - generic [ref=e393]:
+              - button "Events" [ref=e394] [cursor=pointer]:
+                - img [ref=e395]
+                - generic [ref=e397]: Events
+                - img [ref=e398]
+              - generic [ref=e400]:
+                - generic [ref=e401]:
+                  - button "Calendar" [ref=e402] [cursor=pointer]:
+                    - img [ref=e403]
+                    - generic [ref=e405]: Calendar
+                    - img [ref=e406]
+                  - generic [ref=e408]:
+                    - link "Day View" [ref=e409] [cursor=pointer]:
+                      - /url: /calendar/day
+                      - text: Day View
+                    - link "Share Calendar" [ref=e411] [cursor=pointer]:
+                      - /url: /calendar/share
+                      - text: Share Calendar
+                    - link "Waitlist" [ref=e413] [cursor=pointer]:
+                      - /url: /waitlist
+                      - text: Waitlist
+                    - link "Week Planner" [ref=e415] [cursor=pointer]:
+                      - /url: /calendar/week
+                      - text: Week Planner
+                    - link "Year View" [ref=e417] [cursor=pointer]:
+                      - /url: /calendar/year
+                      - text: Year View
+                - generic [ref=e419]:
+                  - button "Client Feedback" [ref=e420] [cursor=pointer]:
+                    - img [ref=e421]
+                    - generic [ref=e423]: Client Feedback
+                    - img [ref=e424]
+                  - generic [ref=e426]:
+                    - link "Feedback Dashboard" [ref=e427] [cursor=pointer]:
+                      - /url: /feedback/dashboard
+                      - text: Feedback Dashboard
+                    - link "Send Requests" [ref=e429] [cursor=pointer]:
+                      - /url: /feedback/requests
+                      - text: Send Requests
+                - link "Event Calendar" [ref=e431] [cursor=pointer]:
+                  - /url: /production
+                  - img [ref=e432]
+                  - text: Event Calendar
+                - generic [ref=e434]:
+                  - button "Event Reviews" [ref=e435] [cursor=pointer]:
+                    - img [ref=e436]
+                    - generic [ref=e438]: Event Reviews
+                    - img [ref=e439]
+                  - generic [ref=e441]:
+                    - link "Reviews" [ref=e442] [cursor=pointer]:
+                      - /url: /reviews
+                      - text: Reviews
+                    - link "Smart Import" [ref=e444] [cursor=pointer]:
+                      - /url: /import
+                      - text: Smart Import
+                - generic [ref=e446]:
+                  - button "Event Status" [ref=e447] [cursor=pointer]:
+                    - img [ref=e448]
+                    - generic [ref=e450]: Event Status
+                    - img [ref=e451]
+                  - generic [ref=e453]:
+                    - link "Awaiting Deposit" [ref=e454] [cursor=pointer]:
+                      - /url: /events/awaiting-deposit
+                      - text: Awaiting Deposit
+                    - link "Cancelled" [ref=e456] [cursor=pointer]:
+                      - /url: /events/cancelled
+                      - text: Cancelled
+                    - link "Completed" [ref=e458] [cursor=pointer]:
+                      - /url: /events/completed
+                      - text: Completed
+                    - link "Confirmed" [ref=e460] [cursor=pointer]:
+                      - /url: /events/confirmed
+                      - text: Confirmed
+                    - link "Create Event" [ref=e462] [cursor=pointer]:
+                      - /url: /events/new
+                      - text: Create Event
+                    - link "Create from Text" [ref=e464] [cursor=pointer]:
+                      - /url: /events/new/from-text
+                      - text: Create from Text
+                    - link "Event Wizard" [ref=e466] [cursor=pointer]:
+                      - /url: /events/new/wizard
+                      - text: Event Wizard
+                    - link "Kanban Board" [ref=e468] [cursor=pointer]:
+                      - /url: /events/board
+                      - text: Kanban Board
+                    - link "Timeline" [ref=e470] [cursor=pointer]:
+                      - /url: /events/timeline
+                      - text: Timeline
+            - generic [ref=e472]:
+              - button "Finance" [ref=e473] [cursor=pointer]:
+                - img [ref=e474]
+                - generic [ref=e476]: Finance
+                - img [ref=e477]
+              - generic [ref=e479]:
+                - link "1099 Contractors" [ref=e480] [cursor=pointer]:
+                  - /url: /finance/contractors
+                  - img [ref=e481]
+                  - text: 1099 Contractors
+                - link "Break-Even Analysis" [ref=e483] [cursor=pointer]:
+                  - /url: /finance/planning/break-even
+                  - img [ref=e484]
+                  - text: Break-Even Analysis
+                - generic [ref=e486]:
+                  - button "Expenses" [ref=e487] [cursor=pointer]:
+                    - img [ref=e488]
+                    - generic [ref=e490]: Expenses
+                    - img [ref=e491]
+                  - generic [ref=e493]:
+                    - link "Add Expense" [ref=e494] [cursor=pointer]:
+                      - /url: /expenses/new
+                      - text: Add Expense
+                    - link "By Category" [ref=e496] [cursor=pointer]:
+                      - /url: /finance/expenses
+                      - text: By Category
+                    - link "Food & Ingredients" [ref=e498] [cursor=pointer]:
+                      - /url: /finance/expenses/food-ingredients
+                      - text: Food & Ingredients
+                    - link "Labor" [ref=e500] [cursor=pointer]:
+                      - /url: /finance/expenses/labor
+                      - text: Labor
+                    - link "Marketing" [ref=e502] [cursor=pointer]:
+                      - /url: /finance/expenses/marketing
+                      - text: Marketing
+                    - link "Miscellaneous" [ref=e504] [cursor=pointer]:
+                      - /url: /finance/expenses/miscellaneous
+                      - text: Miscellaneous
+                    - link "Plate Costs" [ref=e506] [cursor=pointer]:
+                      - /url: /finance/plate-costs
+                      - text: Plate Costs
+                    - link "Receipt Library" [ref=e508] [cursor=pointer]:
+                      - /url: /receipts
+                      - text: Receipt Library
+                    - link "Rentals & Equipment" [ref=e510] [cursor=pointer]:
+                      - /url: /finance/expenses/rentals-equipment
+                      - text: Rentals & Equipment
+                    - link "Software" [ref=e512] [cursor=pointer]:
+                      - /url: /finance/expenses/software
+                      - text: Software
+                    - link "Travel" [ref=e514] [cursor=pointer]:
+                      - /url: /finance/expenses/travel
+                      - text: Travel
+                - link "Financial Goals" [ref=e516] [cursor=pointer]:
+                  - /url: /finance/goals
+                  - img [ref=e517]
+                  - text: Financial Goals
+                - generic [ref=e519]:
+                  - button "Financial Hub" [ref=e520] [cursor=pointer]:
+                    - img [ref=e521]
+                    - generic [ref=e523]: Financial Hub
+                    - img [ref=e524]
+                  - generic [ref=e526]:
+                    - link "Finance Home" [ref=e527] [cursor=pointer]:
+                      - /url: /finance
+                      - text: Finance Home
+                    - link "Outstanding Payments" [ref=e529] [cursor=pointer]:
+                      - /url: /finance/overview/outstanding-payments
+                      - text: Outstanding Payments
+                    - link "Overview" [ref=e531] [cursor=pointer]:
+                      - /url: /finance/overview
+                      - text: Overview
+                    - link "Revenue Summary" [ref=e533] [cursor=pointer]:
+                      - /url: /finance/overview/revenue-summary
+                      - text: Revenue Summary
+                - link "Forecasting" [ref=e535] [cursor=pointer]:
+                  - /url: /finance/forecast
+                  - img [ref=e536]
+                  - text: Forecasting
+                - generic [ref=e538]:
+                  - button "Invoices" [ref=e539] [cursor=pointer]:
+                    - img [ref=e540]
+                    - generic [ref=e542]: Invoices
+                    - img [ref=e543]
+                  - generic [ref=e545]:
+                    - link "Cancelled" [ref=e546] [cursor=pointer]:
+                      - /url: /finance/invoices/cancelled
+                      - text: Cancelled
+                    - link "Draft" [ref=e548] [cursor=pointer]:
+                      - /url: /finance/invoices/draft
+                      - text: Draft
+                    - link "Overdue" [ref=e550] [cursor=pointer]:
+                      - /url: /finance/invoices/overdue
+                      - text: Overdue
+                    - link "Paid" [ref=e552] [cursor=pointer]:
+                      - /url: /finance/invoices/paid
+                      - text: Paid
+                    - link "Recurring Invoices" [ref=e554] [cursor=pointer]:
+                      - /url: /finance/recurring
+                      - text: Recurring Invoices
+                    - link "Refunded" [ref=e556] [cursor=pointer]:
+                      - /url: /finance/invoices/refunded
+                      - text: Refunded
+                    - link "Sent" [ref=e558] [cursor=pointer]:
+                      - /url: /finance/invoices/sent
+                      - text: Sent
+                - generic [ref=e560]:
+                  - button "Ledger" [ref=e561] [cursor=pointer]:
+                    - img [ref=e562]
+                    - generic [ref=e564]: Ledger
+                    - img [ref=e565]
+                  - generic [ref=e567]:
+                    - link "Adjustments" [ref=e568] [cursor=pointer]:
+                      - /url: /finance/ledger/adjustments
+                      - text: Adjustments
+                    - link "Transaction Log" [ref=e570] [cursor=pointer]:
+                      - /url: /finance/ledger/transaction-log
+                      - text: Transaction Log
+                - link "Payment Splitting" [ref=e572] [cursor=pointer]:
+                  - /url: /payments/splitting
+                  - img [ref=e573]
+                  - text: Payment Splitting
+                - generic [ref=e575]:
+                  - button "Payments" [ref=e576] [cursor=pointer]:
+                    - img [ref=e577]
+                    - generic [ref=e579]: Payments
+                    - img [ref=e580]
+                  - generic [ref=e582]:
+                    - link "Deposits" [ref=e583] [cursor=pointer]:
+                      - /url: /finance/payments/deposits
+                      - text: Deposits
+                    - link "Disputes" [ref=e585] [cursor=pointer]:
+                      - /url: /finance/disputes
+                      - text: Disputes
+                    - link "Failed Payments" [ref=e587] [cursor=pointer]:
+                      - /url: /finance/payments/failed
+                      - text: Failed Payments
+                    - link "Installments" [ref=e589] [cursor=pointer]:
+                      - /url: /finance/payments/installments
+                      - text: Installments
+                    - link "New Retainer" [ref=e591] [cursor=pointer]:
+                      - /url: /finance/retainers/new
+                      - text: New Retainer
+                    - link "Refunds" [ref=e593] [cursor=pointer]:
+                      - /url: /finance/payments/refunds
+                      - text: Refunds
+                    - link "Retainers" [ref=e595] [cursor=pointer]:
+                      - /url: /finance/retainers
+                      - text: Retainers
+                - generic [ref=e597]:
+                  - button "Payouts" [ref=e598] [cursor=pointer]:
+                    - img [ref=e599]
+                    - generic [ref=e601]: Payouts
+                    - img [ref=e602]
+                  - generic [ref=e604]:
+                    - link "Manual Payments" [ref=e605] [cursor=pointer]:
+                      - /url: /finance/payouts/manual-payments
+                      - text: Manual Payments
+                    - link "Reconciliation" [ref=e607] [cursor=pointer]:
+                      - /url: /finance/payouts/reconciliation
+                      - text: Reconciliation
+                    - link "Stripe Payouts" [ref=e609] [cursor=pointer]:
+                      - /url: /finance/payouts/stripe-payouts
+                      - text: Stripe Payouts
+                - generic [ref=e611]:
+                  - button "Payroll" [ref=e612] [cursor=pointer]:
+                    - img [ref=e613]
+                    - generic [ref=e615]: Payroll
+                    - img [ref=e616]
+                  - generic [ref=e618]:
+                    - link "941 Filing" [ref=e619] [cursor=pointer]:
+                      - /url: /finance/payroll/941
+                      - text: 941 Filing
+                    - link "Employees" [ref=e621] [cursor=pointer]:
+                      - /url: /finance/payroll/employees
+                      - text: Employees
+                    - link "Run Payroll" [ref=e623] [cursor=pointer]:
+                      - /url: /finance/payroll/run
+                      - text: Run Payroll
+                    - link "W-2 Forms" [ref=e625] [cursor=pointer]:
+                      - /url: /finance/payroll/w2
+                      - text: W-2 Forms
+                - generic [ref=e627]:
+                  - button "Reports" [ref=e628] [cursor=pointer]:
+                    - img [ref=e629]
+                    - generic [ref=e631]: Reports
+                    - img [ref=e632]
+                  - generic [ref=e634]:
+                    - link "Expense by Category" [ref=e635] [cursor=pointer]:
+                      - /url: /finance/reporting/expense-by-category
+                      - text: Expense by Category
+                    - link "Profit & Loss" [ref=e637] [cursor=pointer]:
+                      - /url: /finance/reporting/profit-loss
+                      - text: Profit & Loss
+                    - link "Profit by Event" [ref=e639] [cursor=pointer]:
+                      - /url: /finance/reporting/profit-by-event
+                      - text: Profit by Event
+                    - link "Revenue by Client" [ref=e641] [cursor=pointer]:
+                      - /url: /finance/reporting/revenue-by-client
+                      - text: Revenue by Client
+                    - link "Revenue by Event" [ref=e643] [cursor=pointer]:
+                      - /url: /finance/reporting/revenue-by-event
+                      - text: Revenue by Event
+                    - link "Revenue by Month" [ref=e645] [cursor=pointer]:
+                      - /url: /finance/reporting/revenue-by-month
+                      - text: Revenue by Month
+                    - link "Year-over-Year Comparison" [ref=e647] [cursor=pointer]:
+                      - /url: /finance/reporting/yoy-comparison
+                      - text: Year-over-Year Comparison
+                    - link "Year-to-Date Summary" [ref=e649] [cursor=pointer]:
+                      - /url: /finance/reporting/year-to-date-summary
+                      - text: Year-to-Date Summary
+                - generic [ref=e651]:
+                  - button "Sales Tax" [ref=e652] [cursor=pointer]:
+                    - img [ref=e653]
+                    - generic [ref=e655]: Sales Tax
+                    - img [ref=e656]
+                  - generic [ref=e658]:
+                    - link "Remittances" [ref=e659] [cursor=pointer]:
+                      - /url: /finance/sales-tax/remittances
+                      - text: Remittances
+                    - link "Tax Settings" [ref=e661] [cursor=pointer]:
+                      - /url: /finance/sales-tax/settings
+                      - text: Tax Settings
+                - generic [ref=e663]:
+                  - button "Tax Center" [ref=e664] [cursor=pointer]:
+                    - img [ref=e665]
+                    - generic [ref=e667]: Tax Center
+                    - img [ref=e668]
+                  - generic [ref=e670]:
+                    - link "1099-NEC" [ref=e671] [cursor=pointer]:
+                      - /url: /finance/tax/1099-nec
+                      - text: 1099-NEC
+                    - link "Depreciation" [ref=e673] [cursor=pointer]:
+                      - /url: /finance/tax/depreciation
+                      - text: Depreciation
+                    - link "Home Office" [ref=e675] [cursor=pointer]:
+                      - /url: /finance/tax/home-office
+                      - text: Home Office
+                    - link "Quarterly Estimates" [ref=e677] [cursor=pointer]:
+                      - /url: /finance/tax/quarterly
+                      - text: Quarterly Estimates
+                    - link "Retirement" [ref=e679] [cursor=pointer]:
+                      - /url: /finance/tax/retirement
+                      - text: Retirement
+                    - link "Tax Summary" [ref=e681] [cursor=pointer]:
+                      - /url: /finance/reporting/tax-summary
+                      - text: Tax Summary
+                    - link "Year-End Package" [ref=e683] [cursor=pointer]:
+                      - /url: /finance/tax/year-end
+                      - text: Year-End Package
+                - link "Year-End Close" [ref=e685] [cursor=pointer]:
+                  - /url: /finance/year-end
+                  - img [ref=e686]
+                  - text: Year-End Close
+            - generic [ref=e688]:
+              - button "Pipeline" [ref=e689] [cursor=pointer]:
+                - img [ref=e690]
+                - generic [ref=e692]: Pipeline
+                - img [ref=e693]
+              - generic [ref=e695]:
+                - generic [ref=e696]:
+                  - button "Calls & Meetings" [ref=e697] [cursor=pointer]:
+                    - img [ref=e698]
+                    - generic [ref=e700]: Calls & Meetings
+                    - img [ref=e701]
+                  - generic [ref=e703]:
+                    - link "Completed" [ref=e704] [cursor=pointer]:
+                      - /url: /calls?status=completed
+                      - text: Completed
+                    - link "Schedule Call" [ref=e706] [cursor=pointer]:
+                      - /url: /calls/new
+                      - text: Schedule Call
+                    - link "Upcoming" [ref=e708] [cursor=pointer]:
+                      - /url: /calls?status=scheduled
+                      - text: Upcoming
+                - link "Consulting Hub" [ref=e710] [cursor=pointer]:
+                  - /url: /consulting
+                  - img [ref=e711]
+                  - text: Consulting Hub
+                - generic [ref=e713]:
+                  - button "Contracts" [ref=e714] [cursor=pointer]:
+                    - img [ref=e715]
+                    - generic [ref=e717]: Contracts
+                    - img [ref=e718]
+                  - link "Templates" [ref=e721] [cursor=pointer]:
+                    - /url: /settings/contracts
+                    - text: Templates
+                - generic [ref=e723]:
+                  - button "Inquiries" [ref=e724] [cursor=pointer]:
+                    - img [ref=e725]
+                    - generic [ref=e727]: Inquiries
+                    - img [ref=e728]
+                  - generic [ref=e730]:
+                    - link "Awaiting Response" [ref=e731] [cursor=pointer]:
+                      - /url: /inquiries/awaiting-response
+                      - text: Awaiting Response
+                    - link "Client Reply" [ref=e733] [cursor=pointer]:
+                      - /url: /inquiries/awaiting-client-reply
+                      - text: Client Reply
+                    - link "Declined" [ref=e735] [cursor=pointer]:
+                      - /url: /inquiries/declined
+                      - text: Declined
+                    - link "Menu Drafting" [ref=e737] [cursor=pointer]:
+                      - /url: /inquiries/menu-drafting
+                      - text: Menu Drafting
+                    - link "New Inquiry" [ref=e739] [cursor=pointer]:
+                      - /url: /inquiries/new
+                      - text: New Inquiry
+                    - link "Sent to Client" [ref=e741] [cursor=pointer]:
+                      - /url: /inquiries/sent-to-client
+                      - text: Sent to Client
+                - generic [ref=e743]:
+                  - button "Leads" [ref=e744] [cursor=pointer]:
+                    - img [ref=e745]
+                    - generic [ref=e747]: Leads
+                    - img [ref=e748]
+                  - generic [ref=e750]:
+                    - link "Archived" [ref=e751] [cursor=pointer]:
+                      - /url: /leads/archived
+                      - text: Archived
+                    - link "Contacted" [ref=e753] [cursor=pointer]:
+                      - /url: /leads/contacted
+                      - text: Contacted
+                    - link "Converted" [ref=e755] [cursor=pointer]:
+                      - /url: /leads/converted
+                      - text: Converted
+                    - link "New" [ref=e757] [cursor=pointer]:
+                      - /url: /leads/new
+                      - text: New
+                    - link "Qualified" [ref=e759] [cursor=pointer]:
+                      - /url: /leads/qualified
+                      - text: Qualified
+                - generic [ref=e761]:
+                  - button "Marketplace" [ref=e762] [cursor=pointer]:
+                    - img [ref=e763]
+                    - generic [ref=e765]: Marketplace
+                    - img [ref=e766]
+                  - generic [ref=e768]:
+                    - link "Availability Broadcaster" [ref=e769] [cursor=pointer]:
+                      - /url: /availability
+                      - text: Availability Broadcaster
+                    - link "Capture Live Page" [ref=e771] [cursor=pointer]:
+                      - /url: /marketplace/capture
+                      - text: Capture Live Page
+                    - link "Command Center" [ref=e773] [cursor=pointer]:
+                      - /url: /marketplace
+                      - text: Command Center
+                - generic [ref=e775]:
+                  - button "Proposals" [ref=e776] [cursor=pointer]:
+                    - img [ref=e777]
+                    - generic [ref=e779]: Proposals
+                    - img [ref=e780]
+                  - generic [ref=e782]:
+                    - link "Add-Ons" [ref=e783] [cursor=pointer]:
+                      - /url: /proposals/addons
+                      - text: Add-Ons
+                    - link "Proposal Builder" [ref=e785] [cursor=pointer]:
+                      - /url: /proposals/builder
+                      - text: Proposal Builder
+                    - link "Templates" [ref=e787] [cursor=pointer]:
+                      - /url: /proposals/templates
+                      - text: Templates
+                - generic [ref=e789]:
+                  - button "Prospecting" [ref=e790] [cursor=pointer]:
+                    - img [ref=e791]
+                    - generic [ref=e793]: Prospecting
+                    - img [ref=e794]
+                  - generic [ref=e796]:
+                    - link "AI Scrub" [ref=e797] [cursor=pointer]:
+                      - /url: /prospecting/scrub
+                      - text: AI Scrub
+                    - link "Call Queue" [ref=e799] [cursor=pointer]:
+                      - /url: /prospecting/queue
+                      - text: Call Queue
+                    - link "Call Scripts" [ref=e801] [cursor=pointer]:
+                      - /url: /prospecting/scripts
+                      - text: Call Scripts
+                    - link "Clusters" [ref=e803] [cursor=pointer]:
+                      - /url: /prospecting/clusters
+                      - text: Clusters
+                    - link "Import Leads" [ref=e805] [cursor=pointer]:
+                      - /url: /prospecting/import
+                      - text: Import Leads
+                    - link "Pipeline" [ref=e807] [cursor=pointer]:
+                      - /url: /prospecting/pipeline
+                      - text: Pipeline
+                - generic [ref=e809]:
+                  - button "Quotes" [ref=e810] [cursor=pointer]:
+                    - img [ref=e811]
+                    - generic [ref=e813]: Quotes
+                    - img [ref=e814]
+                  - generic [ref=e816]:
+                    - link "Accepted" [ref=e817] [cursor=pointer]:
+                      - /url: /quotes/accepted
+                      - text: Accepted
+                    - link "Draft" [ref=e819] [cursor=pointer]:
+                      - /url: /quotes/draft
+                      - text: Draft
+                    - link "Expired" [ref=e821] [cursor=pointer]:
+                      - /url: /quotes/expired
+                      - text: Expired
+                    - link "New Quote" [ref=e823] [cursor=pointer]:
+                      - /url: /quotes/new
+                      - text: New Quote
+                    - link "Rejected" [ref=e825] [cursor=pointer]:
+                      - /url: /quotes/rejected
+                      - text: Rejected
+                    - link "Sent" [ref=e827] [cursor=pointer]:
+                      - /url: /quotes/sent
+                      - text: Sent
+                    - link "Viewed" [ref=e829] [cursor=pointer]:
+                      - /url: /quotes/viewed
+                      - text: Viewed
+                - link "Rate Card" [ref=e831] [cursor=pointer]:
+                  - /url: /rate-card
+                  - img [ref=e832]
+                  - text: Rate Card
+                - link "Testimonials" [ref=e834] [cursor=pointer]:
+                  - /url: /testimonials
+                  - img [ref=e835]
+                  - text: Testimonials
+                - link "Wix Forms" [ref=e837] [cursor=pointer]:
+                  - /url: /wix-submissions
+                  - img [ref=e838]
+                  - text: Wix Forms
+          - link "All Features" [ref=e841] [cursor=pointer]:
+            - /url: /features
+            - img [ref=e842]
+            - text: All Features
+          - link "Settings" [ref=e844] [cursor=pointer]:
+            - /url: /settings
+            - img [ref=e845]
+            - text: Settings
+      - button "Sign Out" [ref=e848] [cursor=pointer]:
+        - img [ref=e849]
+        - text: Sign Out
+    - main [ref=e851]:
+      - navigation "Breadcrumb" [ref=e852]:
+        - list [ref=e854]:
+          - listitem [ref=e855]:
+            - link "Dashboard" [ref=e856] [cursor=pointer]:
+              - /url: /dashboard
+          - listitem [ref=e857]:
+            - img [ref=e858]
+            - link "Settings" [ref=e860] [cursor=pointer]:
+              - /url: /settings
+          - listitem [ref=e861]:
+            - img [ref=e862]
+            - generic [ref=e864]: Ai Privacy
+        - generic [ref=e865]:
+          - generic [ref=e866]:
+            - generic [ref=e867]: ⌘
+            - generic [ref=e868]: K
+          - button "Refresh" [ref=e869] [cursor=pointer]:
+            - img [ref=e870]

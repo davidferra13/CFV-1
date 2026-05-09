@@ -7,11 +7,7 @@ import {
   markLocalAiVerified,
   type LocalAiPreferences,
 } from '@/lib/ai/privacy-actions'
-import {
-  resolveEffectiveOllamaUrl,
-  detectBestProvider,
-  AICORE_BRIDGE_PORT,
-} from '@/lib/ai/local-ai-provider'
+import { detectBestProvider } from '@/lib/ai/local-ai-provider'
 
 type SetupStep = 'off' | 'get-app' | 'detecting' | 'ready' | 'advanced'
 type ConnectionStatus = 'untested' | 'testing' | 'connected' | 'unreachable'

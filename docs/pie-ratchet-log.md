@@ -4,6 +4,42 @@ Monotonic improvement history. Each entry leaves PIE measurably better.
 
 ---
 
+## 2026-05-07T00:00:00Z (PRODUCT RELEVANCE GUARD + HONEST PI BATCH FALLBACK)
+
+**Discovery:** Accuracy risk remained in two serving paths:
+
+1. Product-level false positives could still leak through callers that consumed Pi/product search results directly.
+2. Batch Pi bridge results did not expose product names or per-row geography, but could outrank explicitly observed/regional prices in `resolvePricesBatch()`.
+3. Non-food filter missed `beauty bar` / generic `soap`, allowing another form of personal-care contamination.
+
+**Actions:**
+
+1. Added shared `isProductRelevantToIngredient()` guard for product-to-ingredient matching.
+   - Rejects non-food products before relevance checks.
+   - Rejects known flavor/prepared-food false positives such as butter pecan ice cream for butter and cilantro lime chicken for cilantro.
+   - Accepts direct raw ingredient products such as unsalted butter, salmon fillet, and cilantro bunch.
+2. Wired the guard into:
+   - Universal product search in `lib/pricing/universal-price-lookup.ts`
+   - Single Pi bridge price resolution in `lib/pricing/resolve-price.ts`
+   - Accuracy bootstrap script in `scripts/pie-accuracy-bootstrap.mts`
+3. Moved batch Pi bridge aggregate below explicit OpenClaw scrape/flyer/Instacart/regional-average tiers and labeled it `pi_bridge_live_batch` with lower confidence.
+4. Tightened `non-food-filter.ts` to catch `beauty bar` and `soap`.
+5. Added regression tests:
+   - `tests/unit/pie.product-relevance.test.ts`
+   - `tests/unit/pi-bridge-state.test.ts`
+
+**Verification:**
+
+- Focused tests passed: `node --test --import tsx tests/unit/pie.product-relevance.test.ts tests/unit/pi-bridge-state.test.ts tests/unit/pricing.resolve-price.test.ts`
+- Module imports passed for `lib/pricing/universal-price-lookup.ts` and `lib/pricing/resolve-price.ts`.
+- Full `npm run typecheck:app` was attempted but exceeded the 120s tool timeout before producing a result.
+
+**Impact:** PIE now refuses a known class of wrong prices before they can affect served ingredient costs, and batch Pi data can no longer override more trustworthy observed/regional price sources when geography and product details are not inspectable.
+
+**Next:** Run live `scripts/pie-accuracy-chef-test.mjs --state MA` against Pi and then fix the remaining no-food-price chef staples.
+
+---
+
 ## 2026-05-06T00:00:00Z (PI DATA QUALITY + API V2)
 
 **Discovery:** Three-layer data quality problem:

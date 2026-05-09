@@ -1,7 +1,7 @@
 {
   "version": "1.0",
-  "timestamp": "2026-05-06T03:50:48.897Z",
-  "source": "auto-compact",
+  "timestamp": "2026-05-07T15:38:44.369Z",
+  "source": "auto-postool",
   "partial": false,
   "phase": null,
   "phase_name": null,
@@ -19,8 +19,20 @@
     {
       "status": "M",
       "path": ".planning/HANDOFF.json"
+    },
+    {
+      "status": "M",
+      "path": "docs/simulation-history.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/simulation-report.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/uptime-history.json"
     }
   ],
   "next_action": null,
-  "context_notes": "Recent commits:\ndffc060ed feat(pie): Pi API v2 with smart matching, data cleanup, chef accuracy test\n5757a0cdc feat(pie): accuracy ground truth, ingredient bridge v2, Layer 2 APIs, region resolver\n6f3105954 fix(pie): coverage gap script COUNT(DISTINCT) for accurate store counts\ne4b0786f8 fix(pie): coverage gap camelCase transform, Pi SSH quoting\nc779ed32f feat(pie): seasonal pricing, Pi store sync, coverage gaps, dedup audit"
+  "context_notes": "Recent commits:\n6ead4828f feat(skills): add 8 chef daily ops skills and domain docs\nca63ddb5d feat(pie): Pi API v2, data cleanup, chef accuracy test, Layer 2 APIs\ndffc060ed feat(pie): Pi API v2 with smart matching, data cleanup, chef accuracy test\n5757a0cdc feat(pie): accuracy ground truth, ingredient bridge v2, Layer 2 APIs, region resolver\n6f3105954 fix(pie): coverage gap script COUNT(DISTINCT) for accurate store counts"
 }

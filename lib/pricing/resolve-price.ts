@@ -30,6 +30,7 @@ import { getRegionalAverage, getRegionalAveragesBatch } from './cross-store-aver
 import { getCategoryBaseline, getCategoryBaselinesBatch } from './category-baseline'
 import { lookupPrice, lookupPricesBatch } from './pi-bridge'
 import { normalizeIngredientName } from './name-normalizer'
+import { isProductRelevantToIngredient } from './product-relevance'
 import {
   getMarketSeasonStatus,
   seasonalConfidenceMultiplier,
@@ -806,43 +807,52 @@ async function resolvePriceUncached(
     const normalizedName = normalizeIngredientName(ingredientName)
     const piResult = await lookupPrice(normalizedName, preferredState || undefined)
     if (piResult && piResult.prices.length > 0) {
-      // Use the freshest in-stock price from Pi
-      const best = piResult.prices[0]
-      // Prefer Pi's pre-normalized price; otherwise normalize ourselves
-      let priceCents = best.price_per_standard_unit_cents
-      let priceUnit = best.standard_unit || best.price_unit || 'each'
-      if (!priceCents && best.price_cents) {
-        const normalized = normalizeToStandardUnit(best.price_cents, best.price_unit || 'each')
-        if (normalized) {
-          priceCents = normalized.cents
-          priceUnit = normalized.unit
-        } else {
-          priceCents = best.price_cents
+      // Use the freshest in-stock price from Pi, but only after defending
+      // against product-level false positives from the catalog.
+      const relevantPrices = piResult.prices.filter(
+        (price) =>
+          price.in_stock &&
+          isProductRelevantToIngredient(price.product_name, normalizedName) &&
+          (!preferredState || !price.state || price.state === preferredState.toUpperCase())
+      )
+      const best = relevantPrices[0]
+      if (best) {
+        // Prefer Pi's pre-normalized price; otherwise normalize ourselves
+        let priceCents = best.price_per_standard_unit_cents
+        let priceUnit = best.standard_unit || best.price_unit || 'each'
+        if (!priceCents && best.price_cents) {
+          const normalized = normalizeToStandardUnit(best.price_cents, best.price_unit || 'each')
+          if (normalized) {
+            priceCents = normalized.cents
+            priceUnit = normalized.unit
+          } else {
+            priceCents = best.price_cents
+          }
         }
-      }
-      if (priceCents && priceCents > 0) {
-        // Farmers market seasonal check: exclude out-of-season, boost in-season
-        const marketStatus = await getMarketSeasonStatus(best.store, best.state || preferredState)
-        if (!shouldExcludeForSeason(marketStatus)) {
-          const seasonalMult = seasonalConfidenceMultiplier(marketStatus)
-          return withDecay({
-            cents: priceCents,
-            unit: priceUnit,
-            source: 'direct_scrape',
-            sourceTier: 'pi_bridge_live',
-            resolutionTier:
-              preferredState && best.state === preferredState?.toUpperCase()
-                ? 'zip_local'
-                : 'regional',
-            store: sourceDisplayStore('direct_scrape', best.store || best.product_name),
-            confidence: Math.min(0.82 * seasonalMult, 1.0),
-            freshness: computeFreshness(best.last_confirmed_at),
-            confirmedAt: best.last_confirmed_at,
-            reason:
-              marketStatus === 'in_season' ? 'Farmers market in-season (freshness boost)' : null,
-          })
+        if (priceCents && priceCents > 0) {
+          // Farmers market seasonal check: exclude out-of-season, boost in-season
+          const marketStatus = await getMarketSeasonStatus(best.store, best.state || preferredState)
+          if (!shouldExcludeForSeason(marketStatus)) {
+            const seasonalMult = seasonalConfidenceMultiplier(marketStatus)
+            return withDecay({
+              cents: priceCents,
+              unit: priceUnit,
+              source: 'direct_scrape',
+              sourceTier: 'pi_bridge_live',
+              resolutionTier:
+                preferredState && best.state === preferredState?.toUpperCase()
+                  ? 'zip_local'
+                  : 'regional',
+              store: sourceDisplayStore('direct_scrape', best.store || best.product_name),
+              confidence: Math.min(0.82 * seasonalMult, 1.0),
+              freshness: computeFreshness(best.last_confirmed_at),
+              confirmedAt: best.last_confirmed_at,
+              reason:
+                marketStatus === 'in_season' ? 'Farmers market in-season (freshness boost)' : null,
+            })
+          }
+          // out_of_season: fall through to next tier
         }
-        // out_of_season: fall through to next tier
       }
     }
   }
@@ -1671,35 +1681,6 @@ export async function resolvePricesBatch(
       continue
     }
 
-    // Tier 2.7: Pi Bridge (live, real-time from 1.1M prices)
-    const rawNameForPi = nameById.get(id)
-    const normalizedNameForPi = rawNameForPi
-      ? normalizeIngredientName(rawNameForPi).toLowerCase()
-      : undefined
-    const piData = normalizedNameForPi ? piBridgeByName.get(normalizedNameForPi) : undefined
-    if (piData) {
-      // Normalize Pi batch price to standard unit
-      const piNormalized = normalizeToStandardUnit(piData.avg_cents, piData.unit || 'each')
-      const piCents = piNormalized ? piNormalized.cents : piData.avg_cents
-      const piUnit = piNormalized ? piNormalized.unit : piData.unit || 'each'
-      result.set(
-        id,
-        withDecay({
-          cents: piCents,
-          unit: piUnit,
-          source: 'direct_scrape',
-          sourceTier: 'pi_bridge_live',
-          resolutionTier: 'market_national', // Pi batch has no state filtering yet
-          store: `Live Price (${piData.observation_count} observations)`,
-          confidence: 0.65, // Reduced: no geographic specificity in batch mode
-          freshness: computeFreshness(piData.freshest),
-          confirmedAt: piData.freshest,
-          reason: null,
-        })
-      )
-      continue
-    }
-
     // Tier 3: Direct scrape (within 14 days) [PostgreSQL fallback]
     const scrapeRow = findBestRow(openclaw, 'openclaw_scrape', 14)
     if (scrapeRow && scrapeRow.price_per_unit_cents !== null) {
@@ -1816,6 +1797,38 @@ export async function resolvePricesBatch(
         )
         continue
       }
+    }
+
+    // Tier 6.1: Pi Bridge batch aggregate.
+    // Batch Pi responses do not expose product names or per-row geography, so
+    // they must never outrank product-inspectable or explicitly regional prices.
+    const rawNameForPi = nameById.get(id)
+    const normalizedNameForPi = rawNameForPi
+      ? normalizeIngredientName(rawNameForPi).toLowerCase()
+      : undefined
+    const piData = normalizedNameForPi ? piBridgeByName.get(normalizedNameForPi) : undefined
+    if (piData) {
+      const piNormalized = normalizeToStandardUnit(piData.avg_cents, piData.unit || 'each')
+      const piCents = piNormalized ? piNormalized.cents : piData.avg_cents
+      const piUnit = piNormalized ? piNormalized.unit : piData.unit || 'each'
+      result.set(
+        id,
+        withDecay({
+          cents: piCents,
+          unit: piUnit,
+          source: 'direct_scrape',
+          sourceTier: 'pi_bridge_live_batch',
+          resolutionTier: 'market_national',
+          store: `Live national price (${piData.observation_count} observations)`,
+          confidence: 0.55,
+          freshness: computeFreshness(piData.freshest),
+          confirmedAt: piData.freshest,
+          reason: preferredState
+            ? `Pi batch aggregate is not product/geography inspectable; using as national fallback for ${preferredState}.`
+            : 'Pi batch aggregate is not product/geography inspectable; using as national fallback.',
+        })
+      )
+      continue
     }
 
     // Tier 6.25: Resolved national (pre-computed per-region price via alias bridge)
