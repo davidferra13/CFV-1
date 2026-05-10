@@ -42,7 +42,7 @@ export default async function DeveloperSettingsPage() {
           title="API & Developer"
           description="API keys and webhooks for integrating ChefFlow with external tools."
           icon="Code"
-          tone="slate"
+          tone="neutral"
           defaultOpen={true}
         >
           <div className="space-y-3">

@@ -34,7 +34,7 @@ export default async function AiPrivacySettingsPage() {
           title="AI &amp; Privacy"
           description="Control Remy, understand how your data is handled, and manage AI features."
           icon="Brain"
-          tone="emerald"
+          tone="neutral"
           defaultOpen={true}
         >
           <div className="space-y-3">

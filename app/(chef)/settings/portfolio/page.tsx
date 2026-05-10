@@ -33,15 +33,7 @@ export default async function PortfolioPage() {
         </div>
       </div>
 
-      <GridEditor
-        items={portfolio.map((p) => ({
-          id: p.id,
-          photoUrl: p.photoUrl,
-          caption: p.caption ?? undefined,
-          dishName: p.dishName ?? undefined,
-          isFeatured: p.isFeatured,
-        }))}
-      />
+      <GridEditor items={portfolio} />
     </div>
   )
 }

@@ -710,7 +710,6 @@ export async function rescheduleEvent(
   }
 
   revalidatePath('/calendar')
-  revalidatePath('/schedule')
   revalidatePath('/events')
   revalidatePath(`/events/${eventId}`)
   return { success: true, clearedPrepBlocks }

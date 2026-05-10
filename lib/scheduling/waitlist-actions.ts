@@ -115,7 +115,7 @@ export async function addToWaitlist(input: AddToWaitlistInput): Promise<Waitlist
     throw new Error('Failed to add to waitlist')
   }
 
-  revalidatePath('/schedule')
+  revalidatePath('/calendar')
   return data as unknown as WaitlistEntry
 }
 
@@ -149,7 +149,7 @@ export async function updateWaitlistEntry(
     throw new Error('Failed to update waitlist entry')
   }
 
-  revalidatePath('/schedule')
+  revalidatePath('/calendar')
   return data as unknown as WaitlistEntry
 }
 
@@ -169,7 +169,7 @@ export async function removeFromWaitlist(entryId: string): Promise<void> {
     throw new Error('Failed to remove from waitlist')
   }
 
-  revalidatePath('/schedule')
+  revalidatePath('/calendar')
 }
 
 export async function notifyWaitlistOpening(date: string): Promise<WaitlistEntry[]> {
@@ -280,7 +280,7 @@ export async function convertWaitlistToEvent(entryId: string): Promise<string> {
     // Event was created but waitlist entry not updated. Log but don't fail.
   }
 
-  revalidatePath('/schedule')
+  revalidatePath('/calendar')
   revalidatePath('/events')
 
   return event.id

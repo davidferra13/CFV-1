@@ -160,23 +160,43 @@ export async function getSharedAvailability(token: string): Promise<{
   const windowStart = dates[0]
   const windowEnd = dates[dates.length - 1]
 
-  // Fetch event dates in the window (non-cancelled)
-  const { data: events } = await db
-    .from('events')
-    .select('event_date')
-    .eq('tenant_id', tenantId)
-    .gte('event_date', windowStart)
-    .lte('event_date', windowEnd + 'T23:59:59')
-    .not('status', 'in', '("cancelled","draft")')
-
-  // Fetch protected blocks in the window
-  const { data: protectedBlocks } = await db
-    .from('event_prep_blocks' as any)
-    .select('block_date')
-    .eq('chef_id', tenantId)
-    .in('block_type', ['protected_personal', 'rest'])
-    .gte('block_date', windowStart)
-    .lte('block_date', windowEnd)
+  // Fetch event dates, manual availability blocks, and protected blocks in parallel
+  const [
+    { data: events },
+    { data: manualBlocks },
+    { data: protectedBlocks },
+    { data: schedulingRules },
+  ] = await Promise.all([
+    // Events (non-cancelled, non-draft)
+    db
+      .from('events')
+      .select('event_date')
+      .eq('tenant_id', tenantId)
+      .gte('event_date', windowStart)
+      .lte('event_date', windowEnd + 'T23:59:59')
+      .not('status', 'in', '("cancelled","draft")'),
+    // Manual availability blocks (chef-blocked dates)
+    db
+      .from('chef_availability_blocks')
+      .select('block_date')
+      .eq('chef_id', tenantId)
+      .gte('block_date', windowStart)
+      .lte('block_date', windowEnd),
+    // Protected prep blocks
+    db
+      .from('event_prep_blocks' as any)
+      .select('block_date')
+      .eq('chef_id', tenantId)
+      .in('block_type', ['protected_personal', 'rest'])
+      .gte('block_date', windowStart)
+      .lte('block_date', windowEnd),
+    // Scheduling rules (blocked days of week)
+    db
+      .from('chef_scheduling_rules')
+      .select('blocked_days_of_week')
+      .eq('tenant_id', tenantId)
+      .single(),
+  ])
 
   // Build a set of unavailable dates
   const unavailable = new Set<string>()
@@ -186,9 +206,25 @@ export async function getSharedAvailability(token: string): Promise<{
     unavailable.add(d)
   }
 
+  for (const block of manualBlocks ?? []) {
+    const d = (block as any).block_date as string
+    unavailable.add(d)
+  }
+
   for (const block of protectedBlocks ?? []) {
     const d = (block as any).block_date as string
     unavailable.add(d)
+  }
+
+  // Apply scheduling rules: blocked days of week
+  const blockedDays: number[] = (schedulingRules as any)?.blocked_days_of_week ?? []
+  if (blockedDays.length > 0) {
+    for (const date of dates) {
+      const dow = new Date(date + 'T12:00:00Z').getUTCDay()
+      if (blockedDays.includes(dow)) {
+        unavailable.add(date)
+      }
+    }
   }
 
   // Get chef display name from business_name

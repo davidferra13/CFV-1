@@ -40,7 +40,7 @@ export default async function SystemSettingsPage() {
           title="Sample Data & Setup"
           description="Load sample data to explore ChefFlow, or revisit the setup guide."
           icon="Database"
-          tone="slate"
+          tone="neutral"
           defaultOpen={true}
         >
           <div className="space-y-4">
@@ -60,7 +60,7 @@ export default async function SystemSettingsPage() {
           title="Desktop App"
           description="System tray, auto-start, and native desktop notifications for the ChefFlow desktop app."
           icon="Monitor"
-          tone="slate"
+          tone="neutral"
           defaultOpen={true}
         >
           <DesktopAppSettings />
@@ -80,7 +80,7 @@ export default async function SystemSettingsPage() {
           title="Account & Security"
           description="Email, password, devices, and account management."
           icon="Lock"
-          tone="slate"
+          tone="neutral"
           defaultOpen={true}
           summary={['Account settings', 'Security', 'System health', 'Incidents']}
         >

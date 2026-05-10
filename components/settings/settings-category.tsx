@@ -23,6 +23,7 @@ import {
   MessageCircle,
   Lock,
   Printer,
+  Cpu,
   ChevronDown,
   type LucideIcon,
 } from '@/components/ui/icons'
@@ -50,6 +51,7 @@ const iconMap: Record<string, LucideIcon> = {
   MessageCircle,
   Lock,
   Printer,
+  Cpu,
 }
 
 function slugifyTitle(title: string) {
@@ -67,7 +69,7 @@ export function SettingsCategory({
   children,
   defaultOpen = false,
   primary = false,
-  tone = 'slate',
+  tone = 'neutral',
   summary,
 }: {
   title: string
@@ -99,15 +101,14 @@ export function SettingsCategory({
   return (
     <section
       id={sectionId}
-      className={`group relative scroll-mt-24 overflow-hidden rounded-[22px] border bg-[image:var(--card-gradient)] transition-all duration-200 ${
+      className={`group relative scroll-mt-24 overflow-hidden rounded-xl border bg-[image:var(--card-gradient)] transition-all duration-200 ${
         toneStyles.panel
       } ${
         isOpen
           ? 'shadow-[var(--shadow-card-hover)]'
-          : 'shadow-[var(--shadow-card)] hover:-translate-y-[1px] hover:shadow-[var(--shadow-card-hover)]'
+          : 'shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-card-hover)]'
       }`}
     >
-      <div className={`absolute inset-x-0 top-0 h-px bg-gradient-to-r ${toneStyles.accentBar}`} />
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}

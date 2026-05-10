@@ -127,8 +127,8 @@ export async function createTimeBlock(input: z.infer<typeof TimeBlockSchema>) {
     throw new Error(`Failed to create time block: ${error?.message || 'Unknown error'}`)
   }
 
-  revalidatePath('/schedule')
-  revalidatePath('/scheduling')
+  revalidatePath('/calendar')
+  revalidatePath('/calendar')
   return data as TimeBlock
 }
 
@@ -146,8 +146,8 @@ export async function deleteTimeBlock(timeBlockId: string) {
     throw new Error(`Failed to delete time block: ${error.message}`)
   }
 
-  revalidatePath('/schedule')
-  revalidatePath('/scheduling')
+  revalidatePath('/calendar')
+  revalidatePath('/calendar')
   return { success: true }
 }
 

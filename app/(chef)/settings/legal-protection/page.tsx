@@ -34,7 +34,7 @@ export default async function LegalProtectionSettingsPage() {
           description="Insurance, certifications, contracts, compliance, emergency contacts, and crisis planning."
           icon="ShieldCheck"
           primary
-          tone="amber"
+          tone="neutral"
           defaultOpen={true}
           summary={['Protection hub', 'Contracts', 'Compliance']}
         >

@@ -16,7 +16,7 @@ import {
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
-export type Frequency = 'weekly' | 'biweekly' | 'monthly'
+export type Frequency = 'weekly' | 'biweekly' | 'monthly' | 'quarterly'
 
 export interface RecurringSchedule {
   id: string
@@ -34,6 +34,14 @@ export interface RecurringSchedule {
   isActive: boolean
   nextOccurrence: string | null
   lastGeneratedDate: string | null
+  leadTimeDays: number
+  autoGenerate: boolean
+  locationAddress: string | null
+  locationCity: string | null
+  locationState: string | null
+  locationZip: string | null
+  occasion: string | null
+  serviceStyle: string | null
   createdAt: string
   updatedAt: string
 }
@@ -47,6 +55,14 @@ export interface CreateRecurringScheduleData {
   menuId?: string
   guestCount?: number
   notes?: string
+  leadTimeDays?: number
+  autoGenerate?: boolean
+  locationAddress?: string
+  locationCity?: string
+  locationState?: string
+  locationZip?: string
+  occasion?: string
+  serviceStyle?: string
 }
 
 export interface UpdateRecurringScheduleData {
@@ -58,6 +74,14 @@ export interface UpdateRecurringScheduleData {
   guestCount?: number
   notes?: string
   isActive?: boolean
+  leadTimeDays?: number
+  autoGenerate?: boolean
+  locationAddress?: string
+  locationCity?: string
+  locationState?: string
+  locationZip?: string
+  occasion?: string
+  serviceStyle?: string
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -81,6 +105,14 @@ function mapRow(r: any): RecurringSchedule {
     isActive: r.is_active ?? true,
     nextOccurrence: r.next_occurrence ?? null,
     lastGeneratedDate: r.last_generated_date ?? null,
+    leadTimeDays: r.lead_time_days ?? 21,
+    autoGenerate: r.auto_generate ?? false,
+    locationAddress: r.location_address ?? null,
+    locationCity: r.location_city ?? null,
+    locationState: r.location_state ?? null,
+    locationZip: r.location_zip ?? null,
+    occasion: r.occasion ?? null,
+    serviceStyle: r.service_style ?? null,
     createdAt: r.created_at,
     updatedAt: r.updated_at ?? r.created_at,
   }
@@ -123,6 +155,9 @@ function calculateNextOccurrences(
         case 'monthly':
           current = addMonths(current, 1)
           break
+        case 'quarterly':
+          current = addMonths(current, 3)
+          break
       }
       occurrences.push(new Date(current))
     }
@@ -157,6 +192,14 @@ export async function createRecurringSchedule(
       notes: data.notes ?? null,
       is_active: true,
       next_occurrence: nextOcc.length > 0 ? format(nextOcc[0], 'yyyy-MM-dd') : null,
+      lead_time_days: data.leadTimeDays ?? 21,
+      auto_generate: data.autoGenerate ?? false,
+      location_address: data.locationAddress ?? null,
+      location_city: data.locationCity ?? null,
+      location_state: data.locationState ?? null,
+      location_zip: data.locationZip ?? null,
+      occasion: data.occasion ?? null,
+      service_style: data.serviceStyle ?? null,
       created_by: user.id,
     })
     .select()
@@ -167,7 +210,7 @@ export async function createRecurringSchedule(
     throw new Error('Failed to create recurring schedule')
   }
 
-  revalidatePath('/scheduling')
+  revalidatePath('/calendar')
   revalidatePath('/dashboard')
   return mapRow(row)
 }
@@ -192,6 +235,14 @@ export async function updateRecurringSchedule(
   if (data.guestCount !== undefined) updatePayload.guest_count = data.guestCount
   if (data.notes !== undefined) updatePayload.notes = data.notes
   if (data.isActive !== undefined) updatePayload.is_active = data.isActive
+  if (data.leadTimeDays !== undefined) updatePayload.lead_time_days = data.leadTimeDays
+  if (data.autoGenerate !== undefined) updatePayload.auto_generate = data.autoGenerate
+  if (data.locationAddress !== undefined) updatePayload.location_address = data.locationAddress
+  if (data.locationCity !== undefined) updatePayload.location_city = data.locationCity
+  if (data.locationState !== undefined) updatePayload.location_state = data.locationState
+  if (data.locationZip !== undefined) updatePayload.location_zip = data.locationZip
+  if (data.occasion !== undefined) updatePayload.occasion = data.occasion
+  if (data.serviceStyle !== undefined) updatePayload.service_style = data.serviceStyle
 
   // Recalculate next occurrence if frequency or day changed
   if (data.frequency !== undefined || data.dayOfWeek !== undefined) {
@@ -216,7 +267,7 @@ export async function updateRecurringSchedule(
     throw new Error('Failed to update recurring schedule')
   }
 
-  revalidatePath('/scheduling')
+  revalidatePath('/calendar')
   revalidatePath('/dashboard')
   return mapRow(row)
 }
@@ -241,7 +292,7 @@ export async function deleteRecurringSchedule(id: string): Promise<void> {
     throw new Error('Failed to deactivate recurring schedule')
   }
 
-  revalidatePath('/scheduling')
+  revalidatePath('/calendar')
   revalidatePath('/dashboard')
 }
 
@@ -369,7 +420,7 @@ export async function generateUpcomingEvents(
     .eq('id', scheduleId)
     .eq('tenant_id', tenantId)
 
-  revalidatePath('/scheduling')
+  revalidatePath('/calendar')
   revalidatePath('/events')
   revalidatePath('/dashboard')
 
@@ -434,4 +485,76 @@ export async function getUpcomingRecurringEvents(): Promise<
   // Sort by date
   upcoming.sort((a, b) => a.date.localeCompare(b.date))
   return upcoming
+}
+
+/**
+ * Get unacknowledged auto-generated events for a tenant.
+ * Surfaces on the dashboard so the chef knows about auto-created drafts.
+ */
+export async function getUnacknowledgedAutoGeneratedEvents(): Promise<
+  {
+    id: string
+    eventId: string
+    scheduleId: string
+    clientName: string
+    eventDate: string
+    generatedAt: string
+  }[]
+> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const { data, error } = await db
+    .from('recurring_auto_generated_events')
+    .select(
+      'id, event_id, schedule_id, generated_at, events(event_date, client:clients(full_name))'
+    )
+    .eq('tenant_id', user.tenantId!)
+    .eq('acknowledged', false)
+    .order('generated_at', { ascending: false })
+    .limit(20)
+
+  if (error || !data) return []
+
+  return data.map((row: any) => ({
+    id: row.id,
+    eventId: row.event_id,
+    scheduleId: row.schedule_id,
+    clientName: row.events?.client?.full_name ?? 'Unknown',
+    eventDate: row.events?.event_date ?? '',
+    generatedAt: row.generated_at,
+  }))
+}
+
+/**
+ * Acknowledge (dismiss) auto-generated event notifications.
+ */
+export async function acknowledgeAutoGeneratedEvent(id: string): Promise<void> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  await db
+    .from('recurring_auto_generated_events')
+    .update({ acknowledged: true, acknowledged_at: new Date().toISOString() })
+    .eq('id', id)
+    .eq('tenant_id', user.tenantId!)
+
+  revalidatePath('/dashboard')
+}
+
+/**
+ * Get client IDs that have active recurring schedules (for badge display).
+ */
+export async function getRecurringClientIds(): Promise<Set<string>> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const { data, error } = await db
+    .from('recurring_schedules' as any)
+    .select('client_id')
+    .eq('tenant_id', user.tenantId!)
+    .eq('is_active', true)
+
+  if (error || !data) return new Set()
+  return new Set(data.map((r: any) => r.client_id))
 }

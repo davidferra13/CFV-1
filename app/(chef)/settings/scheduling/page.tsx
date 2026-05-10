@@ -35,6 +35,21 @@ export default async function SchedulingSettingsPage() {
         <p className="mt-2 max-w-2xl text-sm text-stone-300">
           Availability rules and booking page configuration.
         </p>
+        <Link
+          href="/calendar"
+          className="mt-2 inline-flex items-center gap-1.5 text-sm text-brand-500 hover:text-brand-400 transition-colors"
+        >
+          View in Calendar
+          <svg
+            className="w-3.5 h-3.5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+          </svg>
+        </Link>
       </div>
 
       <div className="space-y-6">
@@ -43,7 +58,7 @@ export default async function SchedulingSettingsPage() {
           description="Set your default availability and blackout dates."
           icon="CalendarClock"
           primary
-          tone="sky"
+          tone="neutral"
           defaultOpen={true}
         >
           <SchedulingRulesForm initialRules={schedulingRules} />
@@ -54,7 +69,7 @@ export default async function SchedulingSettingsPage() {
           description="Configure your public booking page and pricing."
           icon="CalendarCheck"
           primary
-          tone="sky"
+          tone="neutral"
           defaultOpen={true}
         >
           <BookingPageSettings

@@ -31,8 +31,8 @@ const STATUS_COLORS: Record<StatusLevel, string> = {
 
 const STATUS_DOT: Record<StatusLevel, string> = {
   ok: 'bg-emerald-500',
-  warning: 'bg-amber-500 animate-pulse',
-  error: 'bg-red-500 animate-pulse',
+  warning: 'bg-amber-500',
+  error: 'bg-red-500',
   unknown: 'bg-stone-400',
 }
 

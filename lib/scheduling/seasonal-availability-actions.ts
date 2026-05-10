@@ -288,7 +288,7 @@ export async function createSeasonalPeriod(
 
   if (error) throw new Error(`Failed to create seasonal period: ${error.message}`)
 
-  revalidatePath('/scheduling')
+  revalidatePath('/calendar')
   return { success: true, period: data as SeasonalPeriod }
 }
 
@@ -351,7 +351,7 @@ export async function updateSeasonalPeriod(
 
   if (error) throw new Error(`Failed to update seasonal period: ${error.message}`)
 
-  revalidatePath('/scheduling')
+  revalidatePath('/calendar')
   return { success: true, period: data as SeasonalPeriod }
 }
 
@@ -370,6 +370,6 @@ export async function deleteSeasonalPeriod(
 
   if (error) throw new Error(`Failed to delete seasonal period: ${error.message}`)
 
-  revalidatePath('/scheduling')
+  revalidatePath('/calendar')
   return { success: true }
 }

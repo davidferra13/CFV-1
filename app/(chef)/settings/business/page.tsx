@@ -91,7 +91,7 @@ export default async function BusinessSettingsPage() {
             </Link>
 
             <Link
-              href="/goals/setup"
+              href="/analytics/goals/setup"
               className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
             >
               <p className="font-medium text-stone-100">Goals</p>
@@ -162,7 +162,7 @@ export default async function BusinessSettingsPage() {
           title="Print & Documents"
           description="Configure print output and document footers."
           icon="Printer"
-          tone="slate"
+          tone="neutral"
           defaultOpen={true}
         >
           <Link

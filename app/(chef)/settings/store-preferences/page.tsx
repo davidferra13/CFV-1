@@ -32,7 +32,7 @@ export default async function StorePreferencesPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8 sm:px-6">
-      <div className="overflow-hidden rounded-[28px] border border-stone-800 bg-[radial-gradient(circle_at_top_left,rgba(232,143,71,0.14),transparent_38%),linear-gradient(180deg,rgba(28,25,23,0.96),rgba(12,10,9,0.98))] p-6 shadow-[var(--shadow-card-hover)] sm:p-8">
+      <div className="overflow-hidden rounded-xl border border-stone-800 bg-[radial-gradient(circle_at_top_left,rgba(232,143,71,0.14),transparent_38%),linear-gradient(180deg,rgba(28,25,23,0.96),rgba(12,10,9,0.98))] p-6 shadow-[var(--shadow-card-hover)] sm:p-8">
         <div className="flex flex-wrap items-center gap-3">
           <span className="inline-flex items-center rounded-full border border-brand-200/70 bg-brand-50/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-800 dark:border-brand-900/70 dark:bg-brand-950/60 dark:text-brand-200">
             Business defaults

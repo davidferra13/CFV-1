@@ -35,7 +35,7 @@ export default async function CommunicationsSettingsPage() {
           description="Manage messaging templates, automations, and your creative planning systems."
           icon="MessageSquare"
           primary
-          tone="sky"
+          tone="neutral"
           defaultOpen={true}
         >
           <div className="space-y-3">
@@ -99,7 +99,7 @@ export default async function CommunicationsSettingsPage() {
           description="Control email, browser push, and SMS alerts by category."
           icon="Bell"
           primary
-          tone="amber"
+          tone="neutral"
           defaultOpen={true}
         >
           <Link

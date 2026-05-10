@@ -81,7 +81,7 @@ export default async function ConnectionsSettingsPage() {
           title="Connected Accounts &amp; Integrations"
           description="Connect inbox and website channels, then manage system integrations."
           icon="Plug"
-          tone="emerald"
+          tone="neutral"
           defaultOpen={true}
         >
           <div className="space-y-6">
@@ -152,7 +152,7 @@ export default async function ConnectionsSettingsPage() {
           title="Client Reviews"
           description="Configure your review link and review collection flow."
           icon="Star"
-          tone="rose"
+          tone="neutral"
           defaultOpen={true}
         >
           <div className="space-y-3">
@@ -182,7 +182,7 @@ export default async function ConnectionsSettingsPage() {
           title="Local AI Connector"
           description="Connect your local Ollama instance. AI tasks run on your machine without exposing port 11434 to the internet."
           icon="Cpu"
-          tone="slate"
+          tone="neutral"
           defaultOpen={true}
         >
           <LocalAiConnectors initialConnectors={localAiConnectors} />

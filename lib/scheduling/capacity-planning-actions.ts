@@ -324,7 +324,7 @@ export async function updateCapacityPlanningSettings(input: {
     throw new Error('Failed to update capacity settings')
   }
 
-  revalidatePath('/scheduling')
+  revalidatePath('/calendar')
   revalidatePath('/settings')
   return { success: true }
 }

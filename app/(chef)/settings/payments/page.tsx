@@ -35,7 +35,7 @@ export default async function PaymentsSettingsPage() {
           description="Payment processing and workspace configuration."
           icon="CreditCard"
           primary
-          tone="emerald"
+          tone="neutral"
           defaultOpen={true}
         >
           <div className="space-y-3">

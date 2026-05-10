@@ -35,7 +35,7 @@ export function SettingsAdvancedDirectory({
   return (
     <div
       id={id}
-      className="mt-8 scroll-mt-24 overflow-hidden rounded-[24px] border border-stone-700/80 bg-[var(--glass-subtle-bg)] shadow-[var(--shadow-card)]"
+      className="mt-8 scroll-mt-24 overflow-hidden rounded-xl border border-stone-700/80 bg-[var(--glass-subtle-bg)] shadow-[var(--shadow-card)]"
     >
       <button
         type="button"

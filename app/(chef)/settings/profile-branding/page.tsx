@@ -59,7 +59,7 @@ export default async function ProfileBrandingSettingsPage() {
           description="Your business identity and public presence."
           icon="Palette"
           primary
-          tone="rose"
+          tone="neutral"
           defaultOpen={true}
         >
           <BrandingCard
@@ -141,7 +141,7 @@ export default async function ProfileBrandingSettingsPage() {
           title="Appearance"
           description="Theme and display preferences."
           icon="Sun"
-          tone="rose"
+          tone="neutral"
           defaultOpen={true}
         >
           <Link
@@ -157,7 +157,7 @@ export default async function ProfileBrandingSettingsPage() {
           title="Professional Growth"
           description="Skills, credentials, and career development."
           icon="TrendingUp"
-          tone="rose"
+          tone="neutral"
           defaultOpen={true}
         >
           <div className="space-y-3">
@@ -227,7 +227,7 @@ export default async function ProfileBrandingSettingsPage() {
           title="Chef Network"
           description="Directory presence and discoverability."
           icon="Users"
-          tone="sky"
+          tone="neutral"
           defaultOpen={true}
         >
           <DiscoverabilityToggle currentValue={networkDiscoverable} />

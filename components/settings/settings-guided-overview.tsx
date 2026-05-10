@@ -23,7 +23,7 @@ const guideCards: GuideCard[] = [
     cta: 'Open workflow controls',
     href: '/settings/scheduling',
     icon: CalendarDays,
-    tone: 'sky',
+    tone: 'neutral',
     highlights: ['Availability rules', 'Booking page', 'Capacity'],
   },
   {
@@ -44,7 +44,7 @@ const guideCards: GuideCard[] = [
     cta: 'Open client-facing settings',
     href: '/settings/profile-branding',
     icon: Globe,
-    tone: 'rose',
+    tone: 'neutral',
     highlights: ['Profile & branding', 'Booking page', 'Client reviews'],
   },
   {
@@ -55,7 +55,7 @@ const guideCards: GuideCard[] = [
     cta: 'Open integrations',
     href: '/settings/connections',
     icon: Plug,
-    tone: 'emerald',
+    tone: 'neutral',
     highlights: ['Connected accounts', 'Calendar sync', 'Business tools'],
   },
   {
@@ -65,7 +65,7 @@ const guideCards: GuideCard[] = [
     cta: 'Open AI + system settings',
     href: '/settings/system',
     icon: Sparkles,
-    tone: 'slate',
+    tone: 'neutral',
     highlights: ['AI & privacy', 'Account & security', 'System health'],
   },
 ]
@@ -80,11 +80,8 @@ export function SettingsGuidedOverview() {
           <Link
             key={card.label}
             href={card.href}
-            className={`group relative overflow-hidden rounded-[22px] border bg-[image:var(--card-gradient)] p-5 shadow-[var(--shadow-card)] transition-all duration-200 hover:-translate-y-[1px] hover:shadow-[var(--shadow-card-hover)] ${toneStyles.panel}`}
+            className={`group relative overflow-hidden rounded-xl border bg-[image:var(--card-gradient)] p-5 shadow-[var(--shadow-card)] transition-all duration-200 hover:shadow-[var(--shadow-card-hover)] ${toneStyles.panel}`}
           >
-            <div
-              className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${toneStyles.accentBar}`}
-            />
             <div className="flex items-start justify-between gap-4">
               <span
                 className={`inline-flex h-11 w-11 items-center justify-center rounded-2xl border shadow-sm ${toneStyles.iconWrap}`}

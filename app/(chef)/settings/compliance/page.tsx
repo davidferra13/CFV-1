@@ -285,6 +285,40 @@ export default async function CompliancePage() {
 
       {/* AI Permit Renewal Checklist */}
       <PermitChecklistPanel />
+
+      {/* Safety & Protection Sub-pages */}
+      <div className="space-y-3">
+        <h2 className="text-base font-semibold text-stone-100">Safety &amp; Protection</h2>
+        <div className="grid gap-3 sm:grid-cols-3">
+          <Link
+            href="/settings/compliance/incidents"
+            className="rounded-xl border border-stone-700 bg-stone-800 p-4 hover:border-stone-500 transition-colors"
+          >
+            <h3 className="font-medium text-stone-100">Incidents</h3>
+            <p className="mt-1 text-xs text-stone-400">
+              Document safety incidents, injuries, and near-misses.
+            </p>
+          </Link>
+          <Link
+            href="/settings/compliance/claims"
+            className="rounded-xl border border-stone-700 bg-stone-800 p-4 hover:border-stone-500 transition-colors"
+          >
+            <h3 className="font-medium text-stone-100">Insurance Claims</h3>
+            <p className="mt-1 text-xs text-stone-400">
+              Track filed claims, documents, and status.
+            </p>
+          </Link>
+          <Link
+            href="/settings/compliance/backup"
+            className="rounded-xl border border-stone-700 bg-stone-800 p-4 hover:border-stone-500 transition-colors"
+          >
+            <h3 className="font-medium text-stone-100">Backup Protocol</h3>
+            <p className="mt-1 text-xs text-stone-400">
+              Emergency backup chef contacts and delegation plans.
+            </p>
+          </Link>
+        </div>
+      </div>
     </div>
   )
 }
