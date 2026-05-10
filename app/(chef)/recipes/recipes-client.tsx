@@ -376,7 +376,7 @@ export function RecipeLibraryClient({ recipes }: Props) {
           secondaryAction={{ label: 'Create Recipe', href: '/recipes/new' }}
         />
       ) : viewMode === 'grid' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 stagger-grid">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {recipes.map((recipe) => {
             const gradient = CATEGORY_GRADIENTS[recipe.category] || CATEGORY_GRADIENTS.other
             return (

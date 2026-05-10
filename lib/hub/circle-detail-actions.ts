@@ -17,6 +17,7 @@ export interface CircleMemberDetail {
   client_id: string | null
   client_name: string | null
   role: string
+  rsvp_status: string | null
   joined_at: string
   last_read_at: string | null
 }
@@ -79,7 +80,7 @@ export async function getCircleDetail(circleId: string): Promise<CircleDetail | 
   // 2. Get members with profile + client data
   const { data: memberships } = await db
     .from('hub_group_members')
-    .select('profile_id, role, joined_at, last_read_at')
+    .select('profile_id, role, joined_at, last_read_at, rsvp_status')
     .eq('group_id', circleId)
     .order('joined_at', { ascending: true })
 
@@ -121,6 +122,7 @@ export async function getCircleDetail(circleId: string): Promise<CircleDetail | 
       client_id: profile.client_id ?? null,
       client_name: profile.client_id ? (clientNameMap[profile.client_id] ?? null) : null,
       role: m.role,
+      rsvp_status: m.rsvp_status ?? null,
       joined_at: m.joined_at,
       last_read_at: m.last_read_at,
     }

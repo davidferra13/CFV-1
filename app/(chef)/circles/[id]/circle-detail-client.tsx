@@ -8,6 +8,9 @@ import { OpenSlotForm } from '@/components/hub/open-slot-form'
 import { PrivateMessagesTab } from '@/components/hub/private-messages-tab'
 import type { CircleDetail } from '@/lib/hub/circle-detail-actions'
 import { CircleSourcingBoard } from '@/components/circles/circle-sourcing-board'
+import { CircleBroadcastDialog } from '@/components/circles/circle-broadcast-dialog'
+import { CircleEngagementCard } from '@/components/circles/circle-engagement-card'
+import { CirclePreferredDishes } from '@/components/circles/circle-preferred-dishes'
 import { IngredientAvailabilityBoard } from '@/components/hub/ingredient-availability-board'
 import {
   addClientToCircle,
@@ -22,6 +25,7 @@ type Tab = 'overview' | 'members' | 'events' | 'sourcing' | 'ingredients' | 'mes
 export function CircleDetailClient({ circle }: { circle: CircleDetail }) {
   const [tab, setTab] = useState<Tab>('overview')
   const [showSlotForm, setShowSlotForm] = useState(false)
+  const [showBroadcast, setShowBroadcast] = useState(false)
   const router = useRouter()
 
   const tabs: { key: Tab; label: string; count?: number }[] = [
@@ -55,6 +59,13 @@ export function CircleDetailClient({ circle }: { circle: CircleDetail }) {
           </span>
           <button
             type="button"
+            onClick={() => setShowBroadcast(true)}
+            className="rounded-lg bg-stone-700 px-3 py-1.5 text-xs font-medium text-stone-300 hover:bg-stone-600"
+          >
+            Broadcast
+          </button>
+          <button
+            type="button"
             onClick={() => setShowSlotForm(!showSlotForm)}
             className="rounded-lg bg-brand-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-brand-600"
           >
@@ -73,6 +84,13 @@ export function CircleDetailClient({ circle }: { circle: CircleDetail }) {
       {showSlotForm && (
         <OpenSlotForm circleId={circle.id} menus={[]} onClose={() => setShowSlotForm(false)} />
       )}
+
+      <CircleBroadcastDialog
+        circleId={circle.id}
+        circleName={circle.name}
+        open={showBroadcast}
+        onClose={() => setShowBroadcast(false)}
+      />
 
       {/* Tabs */}
       <div className="flex gap-1 rounded-lg bg-stone-800/50 p-1">
@@ -174,6 +192,34 @@ function OverviewTab({ circle }: { circle: CircleDetail }) {
         <div className="text-2xl font-bold text-stone-100">{circle.message_count}</div>
         <div className="text-xs text-stone-400">Messages</div>
       </div>
+
+      {/* Engagement metrics */}
+      <div className="col-span-full">
+        <CircleEngagementCard circleId={circle.id} />
+      </div>
+
+      {/* Preferred dishes / event history */}
+      <div className="col-span-full">
+        <CirclePreferredDishes circleId={circle.id} events={circle.events} />
+      </div>
+
+      {/* RSVP Summary */}
+      {(() => {
+        const going = circle.members.filter((m) => m.rsvp_status === 'going').length
+        const maybe = circle.members.filter((m) => m.rsvp_status === 'maybe').length
+        const notGoing = circle.members.filter((m) => m.rsvp_status === 'not_going').length
+        if (going === 0 && maybe === 0 && notGoing === 0) return null
+        return (
+          <div className="col-span-full rounded-xl border border-stone-700 bg-stone-800/50 p-4">
+            <h3 className="mb-2 text-sm font-semibold text-stone-200">RSVP Summary</h3>
+            <div className="flex gap-4 text-sm">
+              <span className="text-emerald-400">{going} going</span>
+              <span className="text-amber-400">{maybe} maybe</span>
+              <span className="text-stone-400">{notGoing} can&apos;t make it</span>
+            </div>
+          </div>
+        )
+      })()}
 
       {/* Recent activity */}
       {circle.recent_messages.length > 0 && (
@@ -299,6 +345,7 @@ function MemberRow({ member, circleId }: { member: CircleDetail['members'][0]; c
           <span className="rounded-full bg-stone-700 px-2 py-0.5 text-xs text-stone-400">
             {member.role}
           </span>
+          <RsvpBadge status={member.rsvp_status} />
         </div>
         {member.email && <p className="truncate text-xs text-stone-500">{member.email}</p>}
       </div>
@@ -486,6 +533,23 @@ const statusColors: Record<string, string> = {
   in_progress: 'bg-amber-500/20 text-amber-300',
   completed: 'bg-stone-600 text-stone-400',
   cancelled: 'bg-red-500/20 text-red-300',
+}
+
+const rsvpStyles: Record<string, { bg: string; label: string }> = {
+  going: { bg: 'bg-emerald-500/20 text-emerald-300', label: 'Going' },
+  maybe: { bg: 'bg-amber-500/20 text-amber-300', label: 'Maybe' },
+  not_going: { bg: 'bg-stone-600/50 text-stone-400', label: "Can't make it" },
+}
+
+function RsvpBadge({ status }: { status: string | null }) {
+  if (!status || status === 'no_response') return null
+  const style = rsvpStyles[status]
+  if (!style) return null
+  return (
+    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${style.bg}`}>
+      {style.label}
+    </span>
+  )
 }
 
 function StatusBadge({ status }: { status: string }) {

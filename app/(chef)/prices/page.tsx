@@ -1,10 +1,15 @@
 import type { Metadata } from 'next'
+import { Suspense } from 'react'
 import { requireChef } from '@/lib/auth/get-user'
 import { getStoreCatalogStats, getChains } from '@/lib/openclaw/store-catalog-actions'
 import { getOpenClawRefreshStatus } from '@/lib/openclaw/refresh-status-actions'
 import { OpenClawRefreshStatus } from '@/components/pricing/openclaw-refresh-status'
 import { PricingReadinessCard } from '@/components/pricing/pricing-readiness-card'
 import { getPricingReadinessSummary } from '@/lib/pricing/pricing-readiness-actions'
+import { getTrendAlerts } from '@/lib/pricing/trend-alerts-actions'
+import { getCategoryBaselinesBatch } from '@/lib/pricing/category-baseline'
+import { PriceTrendAlerts } from '@/components/pricing/price-trend-alerts'
+import { PriceWatchList } from '@/components/pricing/price-watch-list'
 import { PricesCatalogClient } from './prices-client'
 
 export const metadata: Metadata = { title: 'Store Prices' }
@@ -40,12 +45,22 @@ function StatCard({
 export default async function PricesPage() {
   await requireChef()
 
-  const [stats, chains, refreshStatus, readinessSummary] = await Promise.all([
-    getStoreCatalogStats(),
-    getChains(),
-    getOpenClawRefreshStatus(),
-    getPricingReadinessSummary(),
-  ])
+  const [stats, chains, refreshStatus, readinessSummary, trendAlerts, categoryBaselines] =
+    await Promise.all([
+      getStoreCatalogStats(),
+      getChains(),
+      getOpenClawRefreshStatus(),
+      getPricingReadinessSummary(),
+      getTrendAlerts().catch(() => []),
+      getCategoryBaselinesBatch([
+        'Proteins',
+        'Produce',
+        'Dairy',
+        'Pantry/Dry Goods',
+        'Seafood',
+        'Spices',
+      ]).catch(() => new Map()),
+    ])
 
   const freshPct = stats.prices > 0 ? Math.round((stats.freshPrices / stats.prices) * 100) : 0
 
@@ -127,6 +142,69 @@ export default async function PricesPage() {
           </div>
         </div>
       )}
+
+      {/* Intelligence Panels */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Category Cost Breakdown */}
+        <div className="rounded-xl border border-stone-800 bg-stone-900/60 p-4">
+          <h2 className="text-sm font-medium uppercase tracking-wider text-stone-500 mb-3">
+            Category Cost Breakdown
+          </h2>
+          {categoryBaselines.size > 0 ? (
+            <div className="space-y-2">
+              {['Proteins', 'Produce', 'Dairy', 'Pantry/Dry Goods', 'Seafood', 'Spices'].map(
+                (cat) => {
+                  const baseline = categoryBaselines.get(cat)
+                  if (!baseline) return null
+                  return (
+                    <div
+                      key={cat}
+                      className="flex items-center justify-between rounded-lg border border-stone-800 bg-stone-800/40 px-3 py-2"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-stone-300">{cat}</span>
+                        <span className="text-xs text-stone-600">
+                          {baseline.ingredientCount} items
+                        </span>
+                      </div>
+                      <span className="text-sm font-medium text-stone-200 tabular-nums">
+                        ${(baseline.avgCentsPerUnit / 100).toFixed(2)}/{baseline.mostCommonUnit}
+                      </span>
+                    </div>
+                  )
+                }
+              )}
+            </div>
+          ) : (
+            <p className="text-sm text-stone-500 py-4 text-center">
+              Category analysis builds as you add recipes
+            </p>
+          )}
+        </div>
+
+        {/* Seasonal Trends */}
+        <div className="rounded-xl border border-stone-800 bg-stone-900/60 p-4">
+          <h2 className="text-sm font-medium uppercase tracking-wider text-stone-500 mb-3">
+            Seasonal Trends
+          </h2>
+          {trendAlerts.length > 0 ? (
+            <PriceTrendAlerts alerts={trendAlerts.slice(0, 8)} />
+          ) : (
+            <p className="text-sm text-stone-500 py-4 text-center">
+              Trend alerts appear when your recipe ingredients show significant price movement
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Price Watch Panel */}
+      <Suspense
+        fallback={
+          <div className="rounded-xl border border-stone-800 bg-stone-900/60 p-4 animate-pulse h-32" />
+        }
+      >
+        <PriceWatchList />
+      </Suspense>
 
       <PricesCatalogClient chains={chains} hasData={stats.stores > 0} />
     </div>

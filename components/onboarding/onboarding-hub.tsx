@@ -18,12 +18,16 @@ import {
 } from '@/components/ui/icons'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { OnboardingProgressBar } from '@/components/onboarding/onboarding-progress-bar'
+import { SmartSuggestionsCard } from '@/components/onboarding/smart-suggestions-card'
+import { ReconfigureBanner } from '@/components/onboarding/reconfigure-banner'
 import type {
   FirstWeekActivationStepKey,
   FirstWeekActivationStep,
 } from '@/lib/onboarding/first-week-activation'
 import type { OnboardingProgress } from '@/lib/onboarding/progress-actions'
 import type { ArchetypeId } from '@/lib/archetypes/presets'
+import type { SmartSuggestion } from '@/lib/onboarding/smart-suggestions'
 
 type WizardStep = { step_key: string; completed_at: string | null; skipped: boolean }
 
@@ -180,10 +184,12 @@ export function OnboardingHub({
   progress,
   archetype,
   wizardSteps = [],
+  suggestions = [],
 }: {
   progress: OnboardingProgress
   archetype?: ArchetypeId | null
   wizardSteps?: WizardStep[]
+  suggestions?: SmartSuggestion[]
 }) {
   const pct = Math.round((progress.completedSteps / progress.totalSteps) * 100)
   const secondaryItems = getSecondarySetupItems(progress, archetype)
@@ -191,6 +197,10 @@ export function OnboardingHub({
   return (
     <div className="min-h-screen bg-stone-800">
       <div className="max-w-3xl mx-auto px-4 py-12 space-y-8">
+        <ReconfigureBanner />
+
+        <OnboardingProgressBar progress={progress} archetype={archetype} />
+
         <div data-tour="chef-onboarding-home">
           <p className="text-sm text-amber-400 font-medium mb-2">Run the first booking loop.</p>
           <h1 className="text-3xl font-bold text-stone-100">Activate Your First Week</h1>
@@ -311,6 +321,8 @@ export function OnboardingHub({
             })}
           </div>
         </section>
+
+        {suggestions.length > 0 && <SmartSuggestionsCard suggestions={suggestions} />}
 
         <div className="pt-4 border-t border-stone-700 flex items-center justify-between">
           <p className="text-sm text-stone-500">

@@ -48,6 +48,7 @@ import { exportRecipeCostCSV } from '@/lib/exports/actions'
 import { Snowflake } from '@/components/ui/icons'
 import { CompletionCard } from '@/components/completion/completion-card'
 import type { CompletionResult } from '@/lib/completion/types'
+import { IngredientPiePopover } from '@/components/pricing/ingredient-pie-popover'
 
 const CATEGORY_COLORS: Record<string, 'default' | 'success' | 'warning' | 'info' | 'error'> = {
   sauce: 'warning',
@@ -490,55 +491,104 @@ export function RecipeDetailClient({ recipe, initialCompletion, provenance }: Pr
           {recipe.ingredients.length === 0 ? (
             <p className="text-stone-500 text-center py-4">No ingredients added yet.</p>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-1">
               {recipe.ingredients.map((ri: any) => (
-                <div
-                  key={ri.id}
-                  className="flex justify-between items-center py-1 border-b border-stone-50 last:border-0"
-                >
-                  <div className="flex items-center gap-2">
-                    {/* Cost status indicator */}
-                    <span
-                      className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                        ri.costStatus === 'accurate'
-                          ? 'bg-emerald-500'
-                          : ri.costStatus === 'estimated'
-                            ? 'bg-amber-500'
-                            : ri.costStatus === 'stale'
-                              ? 'bg-amber-400'
-                              : 'bg-stone-600'
-                      }`}
-                      title={ri.costNote || 'Cost verified'}
-                    />
-                    <span className="text-stone-100">
-                      {ri.quantity} {ri.unit} {ri.ingredient.name}
-                    </span>
-                    {ri.preparation_notes && (
-                      <span className="text-sm text-stone-500">({ri.preparation_notes})</span>
-                    )}
-                    {ri.is_optional && (
-                      <span className="text-xs px-1.5 py-0.5 bg-stone-800 text-stone-500 rounded">
-                        optional
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {ri.computedCostCents != null && (
+                <div key={ri.id} className="py-1.5 border-b border-stone-800/50 last:border-0">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      {/* Cost status indicator */}
                       <span
-                        className={`text-sm ${ri.costStatus === 'accurate' ? 'text-stone-400' : 'text-amber-500'}`}
-                      >
-                        ${(ri.computedCostCents / 100).toFixed(2)}
+                        className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                          ri.costStatus === 'accurate'
+                            ? 'bg-emerald-500'
+                            : ri.costStatus === 'estimated'
+                              ? 'bg-amber-500'
+                              : ri.costStatus === 'stale'
+                                ? 'bg-amber-400'
+                                : 'bg-stone-600'
+                        }`}
+                        title={ri.costNote || 'Cost verified'}
+                      />
+                      <span className="text-stone-100">
+                        {ri.quantity} {ri.unit} {ri.ingredient.name}
                       </span>
-                    )}
-                    {ri.ingredient?.last_price_store && ri.computedCostCents != null && (
-                      <span className="text-xs text-stone-500">
-                        at {ri.ingredient.last_price_store}
-                      </span>
-                    )}
-                    {ri.costStatus === 'no_price' && (
-                      <span className="text-xs text-stone-600">no price</span>
-                    )}
+                      {ri.preparation_notes && (
+                        <span className="text-sm text-stone-500">({ri.preparation_notes})</span>
+                      )}
+                      {ri.is_optional && (
+                        <span className="text-xs px-1.5 py-0.5 bg-stone-800 text-stone-500 rounded">
+                          optional
+                        </span>
+                      )}
+                      {/* Confidence tier badge */}
+                      {ri.ingredient?.last_price_source && ri.computedCostCents != null && (
+                        <span
+                          className={`text-[0.6rem] uppercase tracking-wide ${
+                            ri.ingredient.last_price_confidence >= 0.7
+                              ? 'text-emerald-400'
+                              : ri.ingredient.last_price_confidence >= 0.4
+                                ? 'text-amber-400'
+                                : 'text-stone-500'
+                          }`}
+                          title={`Price source: ${ri.ingredient.last_price_source}, confidence: ${Math.round((ri.ingredient.last_price_confidence || 0) * 100)}%`}
+                        >
+                          {ri.ingredient.last_price_source === 'receipt' ||
+                          ri.ingredient.last_price_source === 'manual'
+                            ? 'your data'
+                            : ri.ingredient.last_price_source === 'direct_scrape'
+                              ? 'local'
+                              : ri.ingredient.last_price_source === 'regional_average'
+                                ? 'regional'
+                                : ri.ingredient.last_price_source === 'government'
+                                  ? 'USDA'
+                                  : ri.ingredient.last_price_source === 'synthetic'
+                                    ? 'estimate'
+                                    : ''}
+                        </span>
+                      )}
+                      {/* Trend arrow */}
+                      {ri.ingredient?.price_trend_direction &&
+                        ri.ingredient.price_trend_direction !== 'flat' && (
+                          <span
+                            className={`text-xs ${
+                              ri.ingredient.price_trend_direction === 'up'
+                                ? 'text-red-400'
+                                : 'text-emerald-400'
+                            }`}
+                            title={`${ri.ingredient.price_trend_direction === 'up' ? '+' : '-'}${Math.abs(ri.ingredient.price_trend_pct || 0).toFixed(0)}% trend`}
+                          >
+                            {ri.ingredient.price_trend_direction === 'up' ? '\u2191' : '\u2193'}
+                            {Math.abs(ri.ingredient.price_trend_pct || 0) >= 1 &&
+                              `${Math.abs(ri.ingredient.price_trend_pct || 0).toFixed(0)}%`}
+                          </span>
+                        )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {ri.computedCostCents != null && (
+                        <span
+                          className={`text-sm ${ri.costStatus === 'accurate' ? 'text-stone-400' : 'text-amber-500'}`}
+                        >
+                          ${(ri.computedCostCents / 100).toFixed(2)}
+                        </span>
+                      )}
+                      {ri.ingredient?.last_price_store && ri.computedCostCents != null && (
+                        <span className="text-xs text-stone-500">
+                          at {ri.ingredient.last_price_store}
+                        </span>
+                      )}
+                      {ri.costStatus === 'no_price' && (
+                        <span className="text-xs text-stone-600">no price</span>
+                      )}
+                    </div>
                   </div>
+                  {/* PIE expandable detail */}
+                  {ri.ingredient?.id && (
+                    <IngredientPiePopover
+                      ingredientId={ri.ingredient.id}
+                      ingredientName={ri.ingredient.name}
+                      className="ml-6 mt-0.5"
+                    />
+                  )}
                 </div>
               ))}
             </div>

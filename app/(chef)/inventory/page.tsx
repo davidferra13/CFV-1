@@ -3,10 +3,14 @@
 
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { Suspense } from 'react'
 import { requireChef } from '@/lib/auth/get-user'
-import { getParAlerts } from '@/lib/inventory/count-actions'
+import { getParAlerts, getInventoryCounts } from '@/lib/inventory/count-actions'
+import { getUpcomingEventUsageForIngredients } from '@/lib/inventory/stock-lookup-actions'
 import { ParAlertPanel } from '@/components/inventory/par-alert-panel'
 import { AutoReorderPanel } from '@/components/inventory/auto-reorder-panel'
+import { ParSuggestionsPanel } from '@/components/inventory/par-suggestions-panel'
+import { UpcomingEventUsagePanel } from '@/components/inventory/upcoming-event-usage'
 import { Card } from '@/components/ui/card'
 
 export const metadata: Metadata = { title: 'Inventory' }
@@ -132,6 +136,11 @@ export default async function InventoryPage() {
       {/* Auto-reorder from par shortfalls */}
       {(parAlerts as any[]).length > 0 && <AutoReorderPanel />}
 
+      {/* Par level suggestions based on recipe frequency */}
+      <Suspense fallback={null}>
+        <ParSuggestionsPanel />
+      </Suspense>
+
       {/* Sub-page navigation */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {SUB_PAGES.map((page) => (
@@ -149,6 +158,11 @@ export default async function InventoryPage() {
         ))}
       </div>
 
+      {/* Upcoming event usage for tracked ingredients */}
+      <Suspense fallback={null}>
+        <UpcomingEventUsageSection />
+      </Suspense>
+
       {(parAlerts as any[]).length === 0 && (
         <div className="rounded-lg border border-stone-700 bg-stone-800 p-6 text-center">
           <p className="text-stone-500 text-sm">
@@ -162,4 +176,35 @@ export default async function InventoryPage() {
       )}
     </div>
   )
+}
+
+/**
+ * Async section that loads inventory counts, finds which have ingredient_id,
+ * and looks up their upcoming event usage.
+ */
+async function UpcomingEventUsageSection() {
+  const counts = await getInventoryCounts().catch(() => [])
+
+  // Get ingredient IDs from inventory counts that have them
+  const ingredientIds = (counts as any[])
+    .map((c: any) => c.ingredientId)
+    .filter(Boolean) as string[]
+
+  if (ingredientIds.length === 0) return null
+
+  const usageMap = await getUpcomingEventUsageForIngredients(ingredientIds).catch(() => new Map())
+
+  // Build name map from counts
+  const ingredientNames = new Map<string, string>()
+  for (const c of counts as any[]) {
+    if (c.ingredientId) {
+      ingredientNames.set(c.ingredientId, c.ingredientName)
+    }
+  }
+
+  // Only render if there's actual upcoming usage
+  const hasUsage = [...usageMap.values()].some((u: any) => u.events?.length > 0)
+  if (!hasUsage) return null
+
+  return <UpcomingEventUsagePanel usageMap={usageMap} ingredientNames={ingredientNames} />
 }

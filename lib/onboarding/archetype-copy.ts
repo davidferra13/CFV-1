@@ -168,7 +168,7 @@ export function getCompletionCopy(archetype: ArchetypeId | null): {
     ],
     'meal-prep': [
       { label: 'Add your first client', href: '/clients/new' },
-      { label: 'Set up your schedule', href: '/schedule' },
+      { label: 'Set up your schedule', href: '/calendar' },
       { label: 'Create a prep order', href: '/events/new' },
     ],
     restaurant: [
@@ -177,13 +177,13 @@ export function getCompletionCopy(archetype: ArchetypeId | null): {
       { label: 'Open the register', href: '/commerce/register' },
     ],
     'food-truck': [
-      { label: 'Plan your next stop', href: '/schedule' },
+      { label: 'Plan your next stop', href: '/calendar' },
       { label: 'Set up your menu board', href: '/menus/new' },
       { label: 'Open the register', href: '/commerce/register' },
     ],
     bakery: [
       { label: 'Add your products', href: '/menus/new' },
-      { label: 'Set up your schedule', href: '/schedule' },
+      { label: 'Set up your schedule', href: '/calendar' },
       { label: 'Add your first client', href: '/clients/new' },
     ],
   }

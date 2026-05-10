@@ -1,30 +1,36 @@
-// Daily Ops - "Open App -> Approve -> Go Cook"
-// The chef's structured daily plan. Pulls from all existing systems
-// (queue, DOP, NBA, follow-ups, todos, recipe debt, calls) and organizes
-// everything into 4 swim lanes: Quick Admin, Event Prep, Creative, Relationship.
+// Daily Command Center - "Open App -> Approve -> Go Cook"
+// Server component: fetches data, passes to client shell for interactive features.
 // Protected by layout via requireChef().
 
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
-import { format } from 'date-fns'
 import { getDailyPlan } from '@/lib/daily-ops/actions'
-import { DailyPlanView } from '@/components/daily-ops/daily-plan-view'
-import { BriefingAlertsBanner } from '@/components/daily-ops/briefing-alerts-banner'
+import { getInboxStats } from '@/lib/inbox/actions'
+import { getSignalsForDisplay } from '@/lib/cil/signal-actions'
+import { DailyCommandShell } from '@/components/daily-ops/daily-command-shell'
+import { DailySignalBanner } from '@/components/cil/daily-signal-banner'
 
 export const metadata: Metadata = { title: 'Daily Ops' }
 
 export default async function DailyOpsPage() {
-  let plan: Awaited<ReturnType<typeof getDailyPlan>> | null = null
-  try {
-    plan = await getDailyPlan()
-  } catch {
-    // getDailyPlan failure shows error state rather than crash
-  }
-  const todayFormatted = format(new Date(), 'EEEE, MMMM d')
+  const [plan, inboxStats, signals] = await Promise.all([
+    getDailyPlan().catch(() => null),
+    getInboxStats().catch(() => ({
+      total: 0,
+      unread: 0,
+      bySource: { chat: 0, message: 0, wix: 0, notification: 0 },
+    })),
+    getSignalsForDisplay().catch(() => []),
+  ])
 
   if (!plan) {
+    const todayFormatted = new Date().toLocaleDateString('en-US', {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric',
+    })
     return (
-      <div className="flex flex-col gap-6 max-w-3xl mx-auto">
+      <div className="flex flex-col gap-6 max-w-4xl mx-auto p-6">
         <div>
           <h1 className="text-2xl sm:text-3xl font-display text-stone-100">Daily Ops</h1>
           <p className="text-sm text-stone-400 mt-0.5">{todayFormatted}</p>
@@ -37,45 +43,16 @@ export default async function DailyOpsPage() {
     )
   }
 
-  const { stats } = plan
-  const remaining = stats.totalItems - stats.completedItems
-  const pct = stats.totalItems > 0 ? Math.round((stats.completedItems / stats.totalItems) * 100) : 0
-
   return (
-    <div className="flex flex-col gap-6 max-w-3xl mx-auto">
-      {/* Header */}
-      <div>
-        <div className="flex items-baseline justify-between gap-4">
-          <h1 className="text-2xl sm:text-3xl font-display text-stone-100">Daily Ops</h1>
-          {stats.totalItems > 0 && (
-            <span className="text-sm text-stone-400 tabular-nums shrink-0">
-              {stats.completedItems}/{stats.totalItems} done
-              {remaining > 0 && (
-                <span className="text-stone-600"> · {stats.estimatedMinutes}m left</span>
-              )}
-            </span>
-          )}
-        </div>
-        <p className="text-sm text-stone-400 mt-0.5">{todayFormatted}</p>
-        {stats.totalItems > 0 && (
-          // eslint-disable-next-line tailwindcss/no-arbitrary-value
-          <div className="mt-2 h-1 w-full rounded-full bg-stone-800 overflow-hidden">
-            {/* dynamic width requires inline style - no static Tailwind class exists */}
-            <div
-              className={`h-full rounded-full transition-all duration-500 ${pct === 100 ? 'bg-emerald-500' : 'bg-brand-600'}`}
-              style={{ width: `${pct}%` }} // eslint-disable-line react/forbid-component-props
-            />
-          </div>
-        )}
-      </div>
-
-      {/* Urgent alerts from morning briefing */}
+    <div className="max-w-4xl mx-auto p-6 flex flex-col gap-4">
+      {signals.length > 0 && (
+        <Suspense fallback={null}>
+          <DailySignalBanner initialSignals={signals} />
+        </Suspense>
+      )}
       <Suspense fallback={null}>
-        <BriefingAlertsBanner />
+        <DailyCommandShell plan={plan} unreadMessages={inboxStats.unread} />
       </Suspense>
-
-      {/* Plan */}
-      <DailyPlanView plan={plan} />
     </div>
   )
 }

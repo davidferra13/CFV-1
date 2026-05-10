@@ -107,6 +107,7 @@ export interface HubGroupMember {
   digest_mode?: HubDigestMode
   on_behalf_of_profile_id?: string | null
   is_co_host?: boolean
+  rsvp_status?: string | null
   joined_at: string
   // Joined data
   profile?: HubGuestProfile
