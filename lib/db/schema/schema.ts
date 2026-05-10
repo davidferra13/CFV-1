@@ -11278,7 +11278,7 @@ export const aiTaskQueue = pgTable("ai_task_queue", {
 	check("ai_task_queue_model_tier_check", sql`model_tier = ANY (ARRAY['fast'::text, 'standard'::text, 'complex'::text])`),
 	check("ai_task_queue_priority_check", sql`(priority >= 0) AND (priority <= 1000)`),
 	check("ai_task_queue_status_check", sql`status = ANY (ARRAY['pending'::text, 'processing'::text, 'completed'::text, 'awaiting_approval'::text, 'approved'::text, 'rejected'::text, 'failed'::text, 'dead'::text])`),
-	check("ai_task_queue_target_endpoint_check", sql`target_endpoint = ANY (ARRAY['auto'::text, 'pc'::text, 'pi'::text])`),
+	check("ai_task_queue_target_endpoint_check", sql`target_endpoint = ANY (ARRAY['auto'::text, 'pc'::text, 'pi'::text, 'local_connector'::text])`),
 ]);
 
 export const chefReminders = pgTable("chef_reminders", {
@@ -11814,6 +11814,34 @@ export const aiPreferences = pgTable("ai_preferences", {
   WHERE ((user_roles.auth_user_id = auth.uid()) AND (user_roles.role = 'chef'::user_role))))`  }),
 	pgPolicy("ai_preferences_select", { as: "permissive", for: "select", to: ["public"] }),
 	pgPolicy("ai_preferences_update", { as: "permissive", for: "update", to: ["public"] }),
+]);
+
+export const localAiConnectors = pgTable("local_ai_connectors", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	userId: uuid("user_id").notNull(),
+	deviceName: text("device_name").notNull(),
+	keyHash: text("key_hash").notNull(),
+	keyPrefix: text("key_prefix").notNull(),
+	defaultModel: text("default_model").default('gemma4').notNull(),
+	ollamaBaseUrl: text("ollama_base_url").default('http://localhost:11434').notNull(),
+	ollamaAuthToken: text("ollama_auth_token"),
+	lastSeenAt: timestamp("last_seen_at", { withTimezone: true, mode: 'string' }),
+	revokedAt: timestamp("revoked_at", { withTimezone: true, mode: 'string' }),
+	status: text("status").default('active').notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	foreignKey({
+		columns: [table.userId],
+		foreignColumns: [chefs.id],
+		name: "local_ai_connectors_user_id_fkey",
+	}).onDelete("cascade"),
+	unique("local_ai_connectors_key_hash_key").on(table.keyHash),
+	pgPolicy("local_ai_connectors_select", { as: "permissive", for: "select", to: ["public"] }),
+	pgPolicy("local_ai_connectors_insert", { as: "permissive", for: "insert", to: ["public"], withCheck: sql`(user_id IN ( SELECT user_roles.entity_id
+   FROM user_roles
+  WHERE ((user_roles.auth_user_id = auth.uid()) AND (user_roles.role = 'chef'::user_role))))` }),
+	pgPolicy("local_ai_connectors_update", { as: "permissive", for: "update", to: ["public"] }),
 ]);
 
 export const wasteLog = pgTable("waste_log", {

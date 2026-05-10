@@ -3773,7 +3773,7 @@ export const aiTaskQueue = pgTable("ai_task_queue", {
 	check("ai_task_queue_model_tier_check", sql`model_tier = ANY (ARRAY['fast'::text, 'standard'::text, 'complex'::text])`),
 	check("ai_task_queue_priority_check", sql`(priority >= 0) AND (priority <= 1000)`),
 	check("ai_task_queue_status_check", sql`status = ANY (ARRAY['pending'::text, 'processing'::text, 'completed'::text, 'awaiting_approval'::text, 'approved'::text, 'rejected'::text, 'failed'::text, 'dead'::text])`),
-	check("ai_task_queue_target_endpoint_check", sql`target_endpoint = ANY (ARRAY['auto'::text, 'pc'::text, 'pi'::text])`),
+	check("ai_task_queue_target_endpoint_check", sql`target_endpoint = ANY (ARRAY['auto'::text, 'pc'::text, 'pi'::text, 'local_connector'::text])`),
 ]);
 
 export const platformActionLog = pgTable("platform_action_log", {
