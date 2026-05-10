@@ -5,7 +5,7 @@ import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
-const REVALIDATE_PATH = '/safety/incidents'
+const REVALIDATE_PATH = '/settings/compliance/incidents'
 
 const IncidentTypeEnum = z.enum([
   'food_safety',

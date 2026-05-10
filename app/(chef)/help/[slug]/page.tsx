@@ -149,7 +149,7 @@ export default async function HelpArticlePage({ params }: Props) {
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <Link
-        href="/help"
+        href="/onboarding/help"
         className="flex items-center gap-2 text-sm text-stone-500 hover:text-stone-300 transition-colors"
       >
         <ArrowLeft className="h-4 w-4" />

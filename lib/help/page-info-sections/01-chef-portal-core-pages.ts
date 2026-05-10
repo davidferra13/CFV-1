@@ -44,7 +44,7 @@ export const CHEF_PORTAL_CORE_PAGES_PAGE_INFO: Record<string, PageInfoEntry> = {
     ],
   },
 
-  '/commands': {
+  '/remy': {
     title: 'Remy Command Center',
     description:
       'Your AI assistant hub - talk to Remy, review past conversations, and manage AI settings.',
@@ -56,7 +56,7 @@ export const CHEF_PORTAL_CORE_PAGES_PAGE_INFO: Record<string, PageInfoEntry> = {
     ],
   },
 
-  '/remy': {
+  '/remy/history': {
     title: 'Remy History',
     description:
       'Browse everything Remy has created - drafts, suggestions, and past conversations.',

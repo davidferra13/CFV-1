@@ -80,7 +80,7 @@ export async function ingestOpenClawPackage(pkg: OpenClawSocialPackage): Promise
     }
   }
 
-  revalidatePath('/social/planner')
+  revalidatePath('/marketing/social')
   return { success: true, postId: data.id }
 }
 

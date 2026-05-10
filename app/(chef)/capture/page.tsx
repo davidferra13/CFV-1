@@ -1,11 +1,16 @@
 import { Metadata } from 'next'
-import { WhiteboardCapture } from './whiteboard-capture'
+import { requireChef } from '@/lib/auth/get-user'
+import { getCaptures } from '@/lib/capture/actions'
+import { CapturePageClient } from './capture-page-client'
 
 export const metadata: Metadata = {
   title: 'Capture | ChefFlow',
 }
 
-export default function CapturePage() {
+export default async function CapturePage() {
+  await requireChef()
+  const captures = await getCaptures({ limit: 50 })
+
   return (
     <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
       <div>
@@ -14,7 +19,7 @@ export default function CapturePage() {
           Snap your whiteboard, notes, or recipe cards. Everything gets structured and routed.
         </p>
       </div>
-      <WhiteboardCapture />
+      <CapturePageClient initialCaptures={captures} />
     </div>
   )
 }

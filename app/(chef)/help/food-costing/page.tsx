@@ -51,7 +51,7 @@ export default async function FoodCostingGuidePage() {
       {/* Header */}
       <div>
         <Link
-          href="/help"
+          href="/onboarding/help"
           className="text-sm text-stone-500 hover:text-stone-300 transition-colors"
         >
           ← Help Center

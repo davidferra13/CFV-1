@@ -13,7 +13,7 @@ export const CHEF_PORTAL_FINANCE_PAGE_INFO: Record<string, PageInfoEntry> = {
     ],
   },
 
-  '/financials': {
+  '/finance/dashboard': {
     title: 'Financial Dashboard',
     description: 'Full financial dashboard - revenue, expenses, targets, and trends.',
     features: ['Revenue and expense tracking', 'Goal progress', 'Monthly trends', 'Profit margins'],

@@ -815,7 +815,7 @@ export async function upsertSocialQueueSettings(
     throw new Error('Failed to save social queue settings.')
   }
 
-  revalidatePath('/social')
+  revalidatePath('/marketing/social')
   return normalizeSettingsRow(data as unknown as SocialQueueSettings, user.tenantId!, user.id)
 }
 
@@ -1034,7 +1034,7 @@ export async function generateAnnualSocialPlan(input: AnnualGenerationInput): Pr
     }
   }
 
-  revalidatePath('/social')
+  revalidatePath('/marketing/social')
 
   return {
     created: rows.length,
@@ -1093,7 +1093,7 @@ export async function updateSocialPost(
     throw new Error('Failed to update social post.')
   }
 
-  revalidatePath('/social')
+  revalidatePath('/marketing/social')
   return mapPostRow(data)
 }
 
@@ -1135,7 +1135,7 @@ export async function bulkUpdateSocialPostStatus(postIds: string[], status: Soci
     throw new Error('Failed to update post statuses.')
   }
 
-  revalidatePath('/social')
+  revalidatePath('/marketing/social')
 }
 
 export async function setSocialPostHotSwap(postId: string, hotSwapReady: boolean) {
@@ -1211,7 +1211,7 @@ export async function applyHotSwapToScheduledPost(input: z.infer<typeof HotSwapS
   }
 
   await refreshPostPreflight(db, user.tenantId!, validated.scheduled_post_id, user.id)
-  revalidatePath('/social')
+  revalidatePath('/marketing/social')
 }
 
 export async function uploadSocialAsset(formData: FormData): Promise<SocialMediaAsset> {
@@ -1269,7 +1269,7 @@ export async function uploadSocialAsset(formData: FormData): Promise<SocialMedia
     throw new Error('Asset uploaded but metadata insert failed.')
   }
 
-  revalidatePath('/social')
+  revalidatePath('/marketing/social')
   return mapAssetRow(data)
 }
 
@@ -1290,7 +1290,7 @@ export async function updateSocialAsset(
     .single()
 
   if (error || !data) throw new Error('Failed to update media asset.')
-  revalidatePath('/social')
+  revalidatePath('/marketing/social')
   return mapAssetRow(data)
 }
 
@@ -1330,7 +1330,7 @@ export async function deleteSocialAsset(assetId: string) {
     await refreshPostPreflight(db, user.tenantId!, postId, user.id)
   }
 
-  revalidatePath('/social')
+  revalidatePath('/marketing/social')
 }
 
 export async function attachSocialAssetToPost(
@@ -1395,7 +1395,7 @@ export async function attachSocialAssetToPost(
   }
 
   await refreshPostPreflight(db, user.tenantId!, validated.post_id, user.id)
-  revalidatePath('/social')
+  revalidatePath('/marketing/social')
   return mapPostAssetLinkRow(data)
 }
 
@@ -1458,7 +1458,7 @@ export async function detachSocialAssetFromPost(input: z.infer<typeof DetachAsse
   }
 
   await refreshPostPreflight(db, user.tenantId!, linkData.post_id, user.id)
-  revalidatePath('/social')
+  revalidatePath('/marketing/social')
 }
 
 export async function exportSocialPlatformWindowCsv(

@@ -25,17 +25,24 @@ const PLATFORMS: { value: ContentPlatform; label: string }[] = [
   { value: 'instagram', label: 'Instagram' },
   { value: 'story', label: 'Story' },
   { value: 'blog', label: 'Blog' },
+  { value: 'email', label: 'Email' },
+  { value: 'website', label: 'Website' },
+  { value: 'newsletter', label: 'Newsletter' },
 ]
 
 const STATUS_LABELS: Record<string, string> = {
   draft: 'Draft',
+  review: 'Review',
   approved: 'Approved',
+  scheduled: 'Scheduled',
   posted: 'Posted',
 }
 
 const STATUS_COLORS: Record<string, string> = {
   draft: 'bg-yellow-100 text-yellow-800',
+  review: 'bg-blue-100 text-blue-800',
   approved: 'bg-brand-100 text-brand-800',
+  scheduled: 'bg-purple-100 text-purple-800',
   posted: 'bg-green-100 text-green-800',
 }
 

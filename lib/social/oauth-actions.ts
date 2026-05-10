@@ -161,7 +161,7 @@ export async function disconnectSocialPlatform(
 
   try {
     await disconnectCredential(chef.tenantId, platform)
-    revalidatePath('/social/connections')
+    revalidatePath('/marketing/social/connections')
     return { success: true }
   } catch (err) {
     return { success: false, error: (err as Error).message }

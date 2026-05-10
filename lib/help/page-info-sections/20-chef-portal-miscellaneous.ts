@@ -100,17 +100,10 @@ export const CHEF_PORTAL_MISCELLANEOUS_PAGE_INFO: Record<string, PageInfoEntry> 
     features: ['Projection modeling', 'Scenario planning', 'Gap analysis'],
   },
 
-  '/guest-analytics': {
-    title: 'Guest Analytics',
-    description:
-      'Guest-level analytics across events - dietary trends, group sizes, and preferences.',
-    features: ['Guest count trends', 'Dietary distribution', 'Group size patterns'],
-  },
-
-  '/guest-leads': {
-    title: 'Guest Leads',
-    description: 'Leads generated from event guests - turn guests into clients.',
-    features: ['Guest-to-lead pipeline', 'Contact capture', 'Conversion tracking'],
+  '/clients/insights/retention': {
+    title: 'Guest Retention',
+    description: 'Repeat guest tracking, dinner group patterns, and guest conversion analytics.',
+    features: ['Repeat guest tracking', 'Dinner group analysis', 'Guest frequency stats'],
   },
 
   '/help': {
@@ -322,8 +315,8 @@ export const CHEF_PORTAL_MISCELLANEOUS_PAGE_INFO: Record<string, PageInfoEntry> 
     features: ['Unified review feed', 'Source links', 'Sync controls'],
   },
 
-  '/schedule': {
-    title: 'Master Schedule',
+  '/calendar': {
+    title: 'Master Calendar',
     description: 'Calendar view of all events, prep, and staff schedules.',
     features: ['Unified calendar', 'Event and prep blocks', 'Staff availability overlay'],
   },
@@ -334,11 +327,7 @@ export const CHEF_PORTAL_MISCELLANEOUS_PAGE_INFO: Record<string, PageInfoEntry> 
     features: ['Survey creation', 'Response tracking', 'Satisfaction metrics'],
   },
 
-  '/testimonials': {
-    title: 'Testimonials',
-    description: 'Collect and showcase client testimonials.',
-    features: ['Testimonial collection', 'Display management', 'Public showcase'],
-  },
+  // '/testimonials' merged into '/reviews'
 
   '/travel': {
     title: 'Travel',

@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 'use client'
 
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -11,7 +11,21 @@ import {
   type WhiteboardResult,
 } from '@/lib/ai/parse-whiteboard'
 import { parseBrainDump, type BrainDumpResult } from '@/lib/ai/parse-brain-dump'
-import { useRouter } from 'next/navigation'
+import { createCapture, type CaptureTag, type ParsedItem } from '@/lib/capture/actions'
+import { toast } from 'sonner'
+
+const CATEGORY_TO_TAG: Record<string, CaptureTag> = {
+  recipe_note: 'recipe',
+  menu_idea: 'menu-idea',
+  client_followup: 'client-note',
+  prep_task: 'prep-task',
+  shopping_item: 'shopping',
+  business_note: 'business',
+  dinner_detail: 'event-idea',
+  contact_info: 'client-note',
+  date_reminder: 'event-idea',
+  general: 'business',
+}
 
 const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/heic']
 const MAX_FILE_SIZE = 15 * 1024 * 1024
@@ -53,7 +67,7 @@ const URGENCY_CONFIG: Record<string, { label: string; variant: 'error' | 'warnin
 
 type CaptureMode = 'photo' | 'text'
 
-export function WhiteboardCapture() {
+export function WhiteboardCapture({ onCaptureSaved }: { onCaptureSaved?: () => void } = {}) {
   const [mode, setMode] = useState<CaptureMode>('photo')
   const [preview, setPreview] = useState<string | null>(null)
   const [file, setFile] = useState<File | null>(null)
@@ -62,8 +76,89 @@ export function WhiteboardCapture() {
   const [result, setResult] = useState<WhiteboardResult | null>(null)
   const [brainDumpResult, setBrainDumpResult] = useState<BrainDumpResult | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [saved, setSaved] = useState(false)
+  const [saving, startSaving] = useTransition()
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const router = useRouter()
+
+  const saveCapture = useCallback(
+    async (
+      type: 'text' | 'photo',
+      rawContent: string,
+      parsedItems: ParsedItem[],
+      tags: CaptureTag[]
+    ) => {
+      try {
+        await createCapture({
+          captureType: type,
+          rawContent,
+          parsedItems,
+          tags,
+          source: 'capture-page',
+        })
+        setSaved(true)
+        toast.success('Saved to inbox')
+        onCaptureSaved?.()
+      } catch {
+        toast.error('Auto-save failed. Use "Save to Inbox" to retry.')
+      }
+    },
+    [onCaptureSaved]
+  )
+
+  function whiteboardItemsToParsed(items: WhiteboardItem[]): {
+    parsedItems: ParsedItem[]
+    tags: CaptureTag[]
+  } {
+    const parsedItems: ParsedItem[] = items.map((item) => ({
+      text: item.content,
+      category: item.category,
+      urgency: item.urgency,
+      actionable: item.urgency === 'high',
+    }))
+    const tagSet = new Set<CaptureTag>()
+    for (const item of items) {
+      const tag = CATEGORY_TO_TAG[item.category]
+      if (tag) tagSet.add(tag)
+    }
+    return { parsedItems, tags: Array.from(tagSet) }
+  }
+
+  function brainDumpToParsed(bd: BrainDumpResult): {
+    parsedItems: ParsedItem[]
+    tags: CaptureTag[]
+  } {
+    const parsedItems: ParsedItem[] = []
+    const tagSet = new Set<CaptureTag>()
+    for (const c of bd.clients) {
+      parsedItems.push({ text: `Client: ${c.full_name}`, category: 'client_followup' })
+      tagSet.add('client-note')
+    }
+    for (const r of bd.recipes) {
+      parsedItems.push({ text: `Recipe: ${r.name}`, category: 'recipe_note' })
+      tagSet.add('recipe')
+    }
+    for (const n of bd.notes) {
+      parsedItems.push({ text: n.content, category: n.type || 'general' })
+      const tag = CATEGORY_TO_TAG[n.type] ?? 'business'
+      tagSet.add(tag)
+    }
+    return { parsedItems, tags: Array.from(tagSet) }
+  }
+
+  function handleManualSave() {
+    if (result) {
+      const { parsedItems, tags } = whiteboardItemsToParsed(result.items)
+      const raw = result.rawTranscription || result.items.map((i) => i.content).join('\n')
+      startSaving(async () => {
+        await saveCapture('photo', raw, parsedItems, tags)
+      })
+    } else if (brainDumpResult) {
+      const { parsedItems, tags } = brainDumpToParsed(brainDumpResult)
+      startSaving(async () => {
+        await saveCapture('text', textInput, parsedItems, tags)
+      })
+    }
+  }
 
   const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0]
@@ -106,11 +201,16 @@ export function WhiteboardCapture() {
     if (!file) return
     setParsing(true)
     setError(null)
+    setSaved(false)
 
     try {
       const base64 = await fileToBase64(file)
       const parsed = await parseWhiteboardImage(base64, file.type || 'image/jpeg')
       setResult(parsed)
+      // Auto-save to DB
+      const { parsedItems, tags } = whiteboardItemsToParsed(parsed.items)
+      const raw = parsed.rawTranscription || parsed.items.map((i) => i.content).join('\n')
+      await saveCapture('photo', raw, parsedItems, tags)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to parse photo')
     } finally {
@@ -122,10 +222,14 @@ export function WhiteboardCapture() {
     if (!textInput.trim()) return
     setParsing(true)
     setError(null)
+    setSaved(false)
 
     try {
       const parsed = await parseBrainDump(textInput)
       setBrainDumpResult(parsed.parsed)
+      // Auto-save to DB
+      const { parsedItems, tags } = brainDumpToParsed(parsed.parsed)
+      await saveCapture('text', textInput, parsedItems, tags)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to parse text')
     } finally {
@@ -140,6 +244,7 @@ export function WhiteboardCapture() {
     setBrainDumpResult(null)
     setError(null)
     setTextInput('')
+    setSaved(false)
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
@@ -278,9 +383,23 @@ export function WhiteboardCapture() {
                 {result.confidence} confidence
               </Badge>
             </div>
-            <Button variant="ghost" size="sm" onClick={reset}>
-              Scan another
-            </Button>
+            <div className="flex items-center gap-2">
+              {!saved && (
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={handleManualSave}
+                  loading={saving}
+                  disabled={saving}
+                >
+                  Save to Inbox
+                </Button>
+              )}
+              {saved && <Badge variant="success">Saved</Badge>}
+              <Button variant="ghost" size="sm" onClick={reset}>
+                Scan another
+              </Button>
+            </div>
           </div>
 
           {result.warnings.length > 0 && (
@@ -328,9 +447,23 @@ export function WhiteboardCapture() {
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-stone-900 dark:text-stone-100">Parsed</h2>
-            <Button variant="ghost" size="sm" onClick={reset}>
-              Dump more
-            </Button>
+            <div className="flex items-center gap-2">
+              {!saved && (
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={handleManualSave}
+                  loading={saving}
+                  disabled={saving}
+                >
+                  Save to Inbox
+                </Button>
+              )}
+              {saved && <Badge variant="success">Saved</Badge>}
+              <Button variant="ghost" size="sm" onClick={reset}>
+                Dump more
+              </Button>
+            </div>
           </div>
 
           {brainDumpResult.clients.length > 0 && (

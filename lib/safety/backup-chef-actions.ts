@@ -5,7 +5,7 @@ import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
-const REVALIDATE_PATH = '/safety/backup-chef'
+const REVALIDATE_PATH = '/settings/compliance/backup'
 
 const BackupContactSchema = z.object({
   name: z.string().min(1, 'Name is required'),

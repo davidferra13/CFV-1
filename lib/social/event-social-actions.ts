@@ -137,9 +137,9 @@ export async function createPostFromEvent(input: {
     }
   }
 
-  revalidatePath('/social')
+  revalidatePath('/marketing/social')
   revalidatePath(`/events/${eventId}`)
-  revalidatePath('/social/compose/' + eventId)
+  revalidatePath('/marketing/social/compose/' + eventId)
 
   return { success: true, postId: post.id }
 }
@@ -418,7 +418,7 @@ export async function markPostPublished(
     return { success: false, error: 'Failed to update post' }
   }
 
-  revalidatePath('/social')
+  revalidatePath('/marketing/social')
   return { success: true }
 }
 
