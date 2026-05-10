@@ -19,7 +19,7 @@ export default async function MobileChefDashboardPage({ params }: MobileChefDash
       <MobileNavigation
         items={[
           { href: `/mobile/chef/${params.slug}/dashboard`, label: 'Dashboard' },
-          { href: '/schedule', label: 'Calendar' },
+          { href: '/calendar', label: 'Calendar' },
           { href: '/events', label: 'Events' },
           { href: '/notifications', label: 'Alerts' },
         ]}

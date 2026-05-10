@@ -98,7 +98,7 @@ export async function BusinessCards() {
                   : 'Needs attention'
           }
           trendDirection={goalPercent >= 75 ? 'up' : goalPercent >= 50 ? 'flat' : 'down'}
-          href="/goals"
+          href="/analytics/goals"
         />
       )}
 

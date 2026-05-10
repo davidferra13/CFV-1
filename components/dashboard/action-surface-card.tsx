@@ -52,7 +52,7 @@ export function ActionSurfaceCard({
 
   return (
     <section
-      className={`overflow-hidden rounded-[28px] border p-5 shadow-[var(--shadow-card-hover)] sm:p-6 ${toneStyles.panel}`}
+      className={`overflow-hidden rounded-xl border p-5 shadow-[var(--shadow-card-hover)] sm:p-6 ${toneStyles.panel}`}
     >
       <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
         <div className="max-w-3xl">

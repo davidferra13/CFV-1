@@ -58,6 +58,14 @@ export function HeroMetricsClient({ metrics }: { metrics: HeroMetric[] }) {
 
   return (
     <div className="space-y-5">
+      <div className="flex items-center justify-end">
+        <Link
+          href="/analytics"
+          className="text-xs text-stone-500 hover:text-amber-500 transition-colors"
+        >
+          Full Analytics &rarr;
+        </Link>
+      </div>
       {surgeMetric && (
         <Link
           href={surgeMetric.href}

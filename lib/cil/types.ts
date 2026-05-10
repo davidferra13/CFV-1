@@ -21,6 +21,12 @@ export type SignalSource =
   | 'automation' // automation_executions
   | 'inventory' // inventory_transactions
   | 'sse' // SSE EventEmitter bus
+  | 'finance' // revenue, expenses, overdue invoices
+  | 'client_health' // dormant, at-risk, VIP activity
+  | 'calendar' // overload, dead spots, booking pace
+  | 'inventory_analysis' // par levels, price spikes, waste
+  | 'reputation' // reviews, ratings, testimonials
+  | 'pipeline' // stale leads, expiring proposals, unsigned contracts
 
 export type ConfidenceLabel = 'EXTRACTED' | 'INFERRED' | 'AMBIGUOUS'
 
@@ -58,4 +64,30 @@ export interface CILSignal {
   timestamp: number // source event time
   interpretation_status: 'pending' | 'interpreted' | 'skipped'
   created_at: number
+}
+
+// ── Proactive Intelligence (Phase 3) ──────────────────────────────────────
+
+export type SignalDomain =
+  | 'finance'
+  | 'clients'
+  | 'calendar'
+  | 'inventory'
+  | 'reputation'
+  | 'pipeline'
+
+export interface ProactiveSignal {
+  id: string
+  domain: SignalDomain
+  urgency: 1 | 2 | 3 | 4 | 5
+  confidence: number // 0.0-1.0
+  title: string
+  detail: string
+  suggestedAction: string
+  actionType: 'navigate' | 'confirm' | 'dismiss'
+  actionPayload?: Record<string, unknown>
+  entityIds: string[]
+  source: string // which analyzer produced it
+  createdAt: number
+  dismissedAt?: number
 }

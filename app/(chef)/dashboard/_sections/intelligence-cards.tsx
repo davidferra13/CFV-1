@@ -49,7 +49,7 @@ export async function IntelligenceCards() {
           widgetId="business_health"
           title="Business Health"
           size="md"
-          href="/intelligence"
+          href="/analytics/intelligence"
         >
           <div className="space-y-3">
             {/* Overall score + sub-scores */}

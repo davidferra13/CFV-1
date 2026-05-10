@@ -1,0 +1,205 @@
+// CIL Proactive Analyzer: Client Health
+// Detects dormant clients, at-risk clients, and VIP activity
+
+import { createServerClient } from '@/lib/db/server'
+import type { ProactiveSignal } from '../types'
+
+function generateId(): string {
+  return Date.now().toString(36) + Math.random().toString(36).substring(2, 10)
+}
+
+export async function analyzeClients(tenantId: string): Promise<ProactiveSignal[]> {
+  try {
+    const client = createServerClient()
+    const signals: ProactiveSignal[] = []
+    const now = Date.now()
+
+    // 1. Dormant clients: no event in 90+ days but had events before
+    await analyzeDormantClients(client, tenantId, signals, now)
+
+    // 2. At-risk clients: cancelled last event or declining frequency
+    await analyzeAtRiskClients(client, tenantId, signals, now)
+
+    // 3. VIP activity: top 20% by revenue with recent activity
+    await analyzeVIPActivity(client, tenantId, signals, now)
+
+    return signals
+  } catch (err) {
+    console.error(
+      '[CIL/clients] analyzer failed (non-fatal)',
+      err instanceof Error ? err.message : err
+    )
+    return []
+  }
+}
+
+async function analyzeDormantClients(
+  client: ReturnType<typeof createServerClient>,
+  tenantId: string,
+  signals: ProactiveSignal[],
+  now: number
+): Promise<void> {
+  const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000)
+
+  // Get all clients for tenant
+  const { data: clients } = await client
+    .from('clients')
+    .select('id, full_name')
+    .eq('tenant_id', tenantId)
+
+  if (!clients || clients.length === 0) return
+
+  for (const c of clients) {
+    // Get their most recent event
+    const { data: recentEvents } = await client
+      .from('events')
+      .select('id, event_date, status')
+      .eq('tenant_id', tenantId)
+      .eq('client_id', c.id)
+      .order('event_date', { ascending: false })
+      .limit(1)
+
+    if (!recentEvents || recentEvents.length === 0) continue
+
+    const lastEvent = recentEvents[0]
+    const lastDate = new Date(lastEvent.event_date)
+
+    // Only flag if they had events before but none recently
+    if (lastDate < ninetyDaysAgo && lastEvent.status !== 'cancelled') {
+      const daysSince = Math.round((Date.now() - lastDate.getTime()) / (24 * 60 * 60 * 1000))
+      signals.push({
+        id: generateId(),
+        domain: 'clients',
+        urgency: 3,
+        confidence: 0.75,
+        title: `Dormant client: ${c.full_name}`,
+        detail: `No events in ${daysSince} days. Last event was on ${lastEvent.event_date}.`,
+        suggestedAction: 'Send a check-in or seasonal menu update',
+        actionType: 'navigate',
+        actionPayload: { path: `/clients/${c.id}` },
+        entityIds: [c.id],
+        source: 'clients.dormant',
+        createdAt: now,
+      })
+    }
+  }
+}
+
+async function analyzeAtRiskClients(
+  client: ReturnType<typeof createServerClient>,
+  tenantId: string,
+  signals: ProactiveSignal[],
+  now: number
+): Promise<void> {
+  // Find clients whose last event was cancelled
+  const { data: clients } = await client
+    .from('clients')
+    .select('id, full_name')
+    .eq('tenant_id', tenantId)
+
+  if (!clients || clients.length === 0) return
+
+  for (const c of clients) {
+    const { data: recentEvents } = await client
+      .from('events')
+      .select('id, status, event_date')
+      .eq('tenant_id', tenantId)
+      .eq('client_id', c.id)
+      .order('event_date', { ascending: false })
+      .limit(2)
+
+    if (!recentEvents || recentEvents.length === 0) continue
+
+    // If most recent event was cancelled
+    if (recentEvents[0].status === 'cancelled') {
+      signals.push({
+        id: generateId(),
+        domain: 'clients',
+        urgency: 4,
+        confidence: 0.7,
+        title: `At-risk: ${c.full_name}`,
+        detail: `Their most recent event was cancelled. Proactive outreach may prevent churn.`,
+        suggestedAction: 'Reach out with a personalized message or offer',
+        actionType: 'navigate',
+        actionPayload: { path: `/clients/${c.id}` },
+        entityIds: [c.id, recentEvents[0].id],
+        source: 'clients.atRisk',
+        createdAt: now,
+      })
+    }
+  }
+}
+
+async function analyzeVIPActivity(
+  client: ReturnType<typeof createServerClient>,
+  tenantId: string,
+  signals: ProactiveSignal[],
+  now: number
+): Promise<void> {
+  // Get revenue per client from ledger
+  const { data: allPayments } = await client
+    .from('ledger_entries')
+    .select('client_id, amount_cents')
+    .eq('tenant_id', tenantId)
+    .eq('is_refund', false)
+
+  if (!allPayments || allPayments.length === 0) return
+
+  // Aggregate by client
+  const revenueByClient = new Map<string, number>()
+  for (const p of allPayments) {
+    const current = revenueByClient.get(p.client_id) || 0
+    revenueByClient.set(p.client_id, current + p.amount_cents)
+  }
+
+  // Top 20% threshold
+  const revenues = Array.from(revenueByClient.values()).sort((a, b) => b - a)
+  const topIdx = Math.max(1, Math.floor(revenues.length * 0.2))
+  const vipThreshold = revenues[topIdx - 1] || 0
+
+  if (vipThreshold <= 0) return
+
+  // Check if VIPs have upcoming events
+  const thirtyDaysFromNow = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+  const today = new Date().toISOString().slice(0, 10)
+
+  for (const [clientId, revenue] of revenueByClient) {
+    if (revenue < vipThreshold) continue
+
+    const { data: upcomingEvents } = await client
+      .from('events')
+      .select('id, event_date, occasion')
+      .eq('tenant_id', tenantId)
+      .eq('client_id', clientId)
+      .gte('event_date', today)
+      .lte('event_date', thirtyDaysFromNow.toISOString().slice(0, 10))
+      .limit(1)
+
+    if (upcomingEvents && upcomingEvents.length > 0) {
+      const evt = upcomingEvents[0]
+      // Get client name
+      const { data: clientData } = await client
+        .from('clients')
+        .select('full_name')
+        .eq('id', clientId)
+        .limit(1)
+
+      const clientName = clientData?.[0]?.full_name || 'VIP Client'
+
+      signals.push({
+        id: generateId(),
+        domain: 'clients',
+        urgency: 2,
+        confidence: 0.9,
+        title: `VIP upcoming: ${clientName}`,
+        detail: `Top client ($${(revenue / 100).toFixed(0)} lifetime) has "${evt.occasion || 'event'}" on ${evt.event_date}. Ensure premium experience.`,
+        suggestedAction: 'Review event details and add personal touches',
+        actionType: 'navigate',
+        actionPayload: { path: `/events/${evt.id}` },
+        entityIds: [clientId, evt.id],
+        source: 'clients.vipActivity',
+        createdAt: now,
+      })
+    }
+  }
+}

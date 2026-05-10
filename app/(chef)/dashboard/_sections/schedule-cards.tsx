@@ -164,6 +164,16 @@ export async function ScheduleCards() {
         </div>
       )}
 
+      {/* Calendar link */}
+      <div className="col-span-full flex items-center justify-end -mb-2">
+        <Link
+          href="/calendar"
+          className="text-xs text-stone-500 hover:text-amber-500 transition-colors"
+        >
+          View Calendar
+        </Link>
+      </div>
+
       {/* Today's Schedule - list card */}
       <ListCard
         widgetId="todays_schedule"
@@ -217,7 +227,7 @@ export async function ScheduleCards() {
           subtitle={`${dopTaskDigest.dueTodayCount} due today`}
           trend={overdueCount > 0 ? `${overdueCount} overdue` : 'On track'}
           trendDirection={overdueCount > 0 ? 'down' : 'up'}
-          href="/daily-ops"
+          href="/daily"
         />
       )}
     </>

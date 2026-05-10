@@ -77,7 +77,7 @@ export function ActionBar({
                 active
                   ? 'bg-brand-950 text-brand-600'
                   : isPending
-                    ? 'bg-brand-950/50 text-brand-600/70 animate-pulse'
+                    ? 'bg-brand-950/50 text-brand-600/70'
                     : 'text-stone-400 hover:bg-stone-800 hover:text-stone-300'
               }`}
             >
@@ -124,7 +124,7 @@ export function ActionBar({
                 active
                   ? 'bg-brand-950 text-brand-400 border-brand-500 nav-active-glow'
                   : isPending
-                    ? 'bg-brand-950/50 text-brand-400/70 border-brand-500/50 animate-pulse'
+                    ? 'bg-brand-950/50 text-brand-400/70 border-brand-500/50'
                     : 'text-stone-300 hover:bg-stone-800 hover:text-stone-100 border-transparent'
               }`}
             >

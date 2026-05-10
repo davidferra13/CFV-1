@@ -243,11 +243,11 @@ export function OllamaStatusBadge() {
 
   if (pcHealthy) {
     badgeClass = 'border-emerald-200 bg-emerald-950 text-emerald-700'
-    badgeDot = 'bg-emerald-500 animate-pulse'
+    badgeDot = 'bg-emerald-500'
     badgeLabel = `Server AI · ${pcEndpoint.latencyMs ?? '?'}ms`
   } else if (pcEndpoint?.online) {
     badgeClass = 'border-amber-200 bg-amber-950 text-amber-700'
-    badgeDot = 'bg-amber-500 animate-pulse'
+    badgeDot = 'bg-amber-500'
     badgeLabel = 'AI Degraded'
   } else {
     badgeClass = 'border-red-300 bg-red-950 text-red-700'
@@ -317,7 +317,7 @@ export function OllamaStatusBadge() {
                       <span className="text-sm font-medium text-stone-200">{label}</span>
                       {ep.online ? (
                         <span className="inline-flex items-center gap-1 text-xxs font-medium text-emerald-500">
-                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                           {ep.latencyMs}ms
                         </span>
                       ) : (

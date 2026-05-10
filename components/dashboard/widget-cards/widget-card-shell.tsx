@@ -45,11 +45,9 @@ export function WidgetCardShell({
   return (
     <div
       data-widget-id={widgetId}
-      className={`${sizeClass} rounded-2xl overflow-hidden transition-all duration-200 hover:translate-y-[-2px] hover:shadow-[0_8px_24px_rgba(0,0,0,0.3)] ${className ?? ''}`}
+      className={`${sizeClass} rounded-2xl overflow-hidden transition-all duration-200 hover:shadow-[var(--shadow-card-hover)] border-l-2 border-l-stone-600 bg-[var(--surface-1)] ${className ?? ''}`}
       style={{
         border: '1px solid rgba(255,255,255,0.06)',
-        borderLeft: `3px solid ${catStyle.border}`,
-        background: catStyle.bgExpanded,
       }}
     >
       {/* Header */}

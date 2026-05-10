@@ -149,7 +149,7 @@ async function getHeroMetrics(): Promise<HeroMetric[]> {
     {
       label: 'Events this week',
       value: String(eventsCount),
-      href: '/schedule',
+      href: '/calendar',
       tier: 'hero',
       sparkData: eventSparkData,
     },

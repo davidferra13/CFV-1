@@ -72,7 +72,7 @@ export function DashboardHero({ data }: { data: HeroData }) {
             icon={Calendar}
             label="Events this week"
             value={String(eventsThisWeek)}
-            href="/schedule"
+            href="/calendar"
           />
           <HeroMetricTile
             icon={MessageSquare}

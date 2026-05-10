@@ -298,6 +298,15 @@ const INGESTORS: Record<
       )
     }
   },
+
+  // Proactive analyzer sources: these don't produce graph signals via ingestion.
+  // Their output goes through the ProactiveSignal pipeline instead.
+  finance() {},
+  client_health() {},
+  calendar() {},
+  inventory_analysis() {},
+  reputation() {},
+  pipeline() {},
 }
 
 export function ingestSignal(db: Database.Database, signal: RawSignal): void {

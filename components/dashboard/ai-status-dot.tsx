@@ -63,9 +63,7 @@ export function AiStatusDot() {
       }
     >
       <span
-        className={`h-2 w-2 rounded-full ${
-          state === 'degraded' ? 'bg-amber-500 animate-pulse' : 'bg-red-500'
-        }`}
+        className={`h-2 w-2 rounded-full ${state === 'degraded' ? 'bg-amber-500' : 'bg-red-500'}`}
       />
     </div>
   )

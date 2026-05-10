@@ -15,7 +15,17 @@ export { notifyCIL } from './notify'
 export { getOrCreateDB, closeDB, closeAllDBs, deleteTenantDB } from './db'
 export { runDecay } from './decay'
 export { scanGraph } from './scanner'
-export { getCILInsights, formatInsightsForRemy, invalidateCILCache } from './api'
+export {
+  getCILInsights,
+  formatInsightsForRemy,
+  invalidateCILCache,
+  getProactiveSignals,
+  dismissSignal,
+  persistSignals,
+  refreshProactiveSignals,
+  formatSignalsForRemy,
+} from './api'
+export { scoreSignals, priorityScore } from './scoring'
 export type {
   CILEntity,
   CILRelation,
@@ -23,5 +33,7 @@ export type {
   EntityType,
   RelationType,
   SignalSource,
+  SignalDomain,
+  ProactiveSignal,
 } from './types'
 export type { CILInsight, ScanResult } from './scanner'

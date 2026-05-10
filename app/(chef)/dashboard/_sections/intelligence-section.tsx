@@ -221,7 +221,7 @@ export async function IntelligenceSection({
               {/* Intelligence Hub Link */}
               <div className="flex justify-end pt-1">
                 <Link
-                  href="/intelligence"
+                  href="/analytics/intelligence"
                   className="text-xs text-brand-500 hover:text-brand-400 font-medium"
                 >
                   Full Intelligence Hub →

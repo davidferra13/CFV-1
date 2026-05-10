@@ -67,7 +67,15 @@ export async function RestaurantMetricsSection() {
 
   return (
     <section>
-      <div className="section-label mb-4">Daily Operations</div>
+      <div className="flex items-center justify-between mb-4">
+        <div className="section-label">Daily Operations</div>
+        <Link
+          href="/analytics"
+          className="text-xs text-stone-500 hover:text-amber-500 transition-colors"
+        >
+          View in Analytics
+        </Link>
+      </div>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {/* Prime Cost - THE restaurant number */}
         <MetricCard
@@ -75,7 +83,7 @@ export async function RestaurantMetricsSection() {
           value={`${kpis.primeCostPercent}%`}
           subtitle={`Food ${kpis.foodCostPercent}% + Labor ${kpis.laborCostPercent}% (target: <${benchmarks.primeCostTarget}%)`}
           status={benchmarks.primeCostStatus}
-          href="/financials"
+          href="/finance"
         />
 
         {/* Net Profit Today */}

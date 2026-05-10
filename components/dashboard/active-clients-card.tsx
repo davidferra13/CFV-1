@@ -32,7 +32,7 @@ export function ActiveClientsCard({ clients }: ActiveClientsCardProps) {
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-semibold text-stone-700">Active Now</h3>
         <span className="flex items-center gap-1.5 text-xs text-emerald-600">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="w-2 h-2 rounded-full bg-emerald-500" />
           {clients.length} online
         </span>
       </div>

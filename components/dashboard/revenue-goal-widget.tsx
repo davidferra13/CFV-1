@@ -103,7 +103,7 @@ export function RevenueGoalWidget({ snapshot }: Props) {
         <div className="flex justify-between items-center">
           <CardTitle>Revenue Goal</CardTitle>
           <Link
-            href="/goals"
+            href="/analytics/goals"
             className="inline-flex items-center gap-1 text-sm text-brand-500 hover:text-brand-400"
           >
             Goals <ArrowRight className="h-3.5 w-3.5" />

@@ -46,8 +46,8 @@ const TIER_LABELS: Record<ServiceTier, string> = {
 
 const STATUS_DOT: Record<ServiceStatus, string> = {
   healthy: 'bg-emerald-500',
-  degraded: 'bg-amber-500 animate-pulse',
-  error: 'bg-red-500 animate-pulse',
+  degraded: 'bg-amber-500',
+  error: 'bg-red-500',
   unknown: 'bg-stone-500',
   unchecked: 'bg-stone-600',
 }
@@ -246,9 +246,9 @@ export default function SystemNerveCenter() {
 
   const overallDot =
     sweep?.overallStatus === 'error'
-      ? 'bg-red-500 animate-pulse'
+      ? 'bg-red-500'
       : sweep?.overallStatus === 'degraded'
-        ? 'bg-amber-500 animate-pulse'
+        ? 'bg-amber-500'
         : 'bg-emerald-500'
 
   const ago = sweep ? timeSince(sweep.timestamp) : ''

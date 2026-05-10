@@ -238,12 +238,12 @@ export const navGroups: NavGroup[] = [
         icon: Funnel,
       },
       {
-        href: '/goals',
+        href: '/analytics/goals',
         label: 'Goals',
         icon: Target,
         children: [
-          { href: '/goals/setup', label: 'Goal Setup' },
-          { href: '/goals/revenue-path', label: 'Revenue Path' },
+          { href: '/analytics/goals/setup', label: 'Goal Setup' },
+          { href: '/analytics/goals/revenue-path', label: 'Revenue Path' },
         ],
       },
       {
@@ -258,15 +258,10 @@ export const navGroups: NavGroup[] = [
         ],
       },
       {
-        href: '/intelligence',
+        href: '/analytics/intelligence',
         label: 'Intelligence Hub',
         icon: Compass,
-        children: [{ href: '/intelligence', label: 'Full Dashboard' }],
-      },
-      {
-        href: '/reports',
-        label: 'Reports',
-        icon: FileText,
+        children: [{ href: '/analytics/intelligence', label: 'Full Dashboard' }],
       },
       {
         href: '/surveys',
@@ -345,8 +340,8 @@ export const navGroups: NavGroup[] = [
         label: 'Guest Directory',
         icon: Contact,
         children: [
-          { href: '/guest-analytics', label: 'Guest Insights' },
-          { href: '/guest-leads', label: 'Guest Pipeline' },
+          { href: '/clients/insights/retention', label: 'Guest Insights' },
+          { href: '/leads', label: 'Guest Pipeline' },
           { href: '/guests/reservations', label: 'Reservations' },
         ],
       },
@@ -874,15 +869,15 @@ export const navGroups: NavGroup[] = [
         icon: Kanban,
       },
       {
-        href: '/social/planner',
+        href: '/marketing/social',
         label: 'Content Planner',
         icon: PenNib,
         children: [
-          { href: '/social/calendar', label: 'Content Calendar' },
-          { href: '/social/vault', label: 'Media Vault' },
-          { href: '/social/connections', label: 'Platform Connections' },
-          { href: '/social/settings', label: 'Queue Settings' },
-          { href: '/social/templates', label: 'Social Templates' },
+          { href: '/marketing/social', label: 'Content Calendar' },
+          { href: '/content/vault', label: 'Media Vault' },
+          { href: '/marketing/social/connections', label: 'Platform Connections' },
+          { href: '/marketing/social/settings', label: 'Queue Settings' },
+          { href: '/marketing/social/templates', label: 'Social Templates' },
         ],
       },
       {
@@ -907,12 +902,12 @@ export const navGroups: NavGroup[] = [
         icon: Star,
       },
       {
-        href: '/social',
+        href: '/marketing/social',
         label: 'Social Media',
         icon: MessagesSquare,
         children: [
-          { href: '/social/hub-overview', label: 'Dinner Circle Overview' },
-          { href: '/social/planner', label: 'Post Planner' },
+          { href: '/circles/admin', label: 'Dinner Circle Overview' },
+          { href: '/marketing/social', label: 'Post Planner' },
         ],
       },
     ],
@@ -924,11 +919,11 @@ export const navGroups: NavGroup[] = [
     module: 'more',
     items: [
       {
-        href: '/charity',
+        href: '/events/charity',
         label: 'Community Impact',
         icon: HeartHandshake,
         hidden: true,
-        children: [{ href: '/charity/hours', label: 'Volunteer Hours' }],
+        children: [{ href: '/events/charity/hours', label: 'Volunteer Hours' }],
       },
       {
         href: '/network',
@@ -1096,7 +1091,7 @@ export const navGroups: NavGroup[] = [
         icon: Users,
       },
       {
-        href: '/travel',
+        href: '/events/travel',
         label: 'Travel Planning',
         icon: MapPin,
       },
@@ -1119,7 +1114,7 @@ export const navGroups: NavGroup[] = [
         ],
       },
       {
-        href: '/consulting',
+        href: '/quotes/calculator',
         label: 'Consulting Hub',
         icon: Compass,
       },
@@ -1231,7 +1226,7 @@ export const navGroups: NavGroup[] = [
         icon: ScrollText,
       },
       {
-        href: '/safety/backup-chef',
+        href: '/settings/compliance/backup',
         label: 'Backup Coverage',
         icon: IdentificationBadge,
       },
@@ -1250,18 +1245,18 @@ export const navGroups: NavGroup[] = [
         ],
       },
       {
-        href: '/safety/incidents',
+        href: '/settings/compliance/incidents',
         label: 'Incidents',
         icon: AlertTriangle,
-        children: [{ href: '/safety/incidents/new', label: 'Report Incident' }],
+        children: [{ href: '/settings/compliance/incidents/new', label: 'Report Incident' }],
       },
       {
-        href: '/safety/claims',
+        href: '/settings/compliance/claims',
         label: 'Insurance Claims',
         icon: ShieldAlert,
         children: [
-          { href: '/safety/claims/documents', label: 'Claim Documents' },
-          { href: '/safety/claims/new', label: 'New Claim', hidden: true },
+          { href: '/settings/compliance/claims/documents', label: 'Claim Documents' },
+          { href: '/settings/compliance/claims/new', label: 'New Claim', hidden: true },
         ],
       },
     ],

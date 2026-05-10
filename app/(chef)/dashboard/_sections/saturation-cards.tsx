@@ -1,6 +1,7 @@
 // Dashboard Saturation Cards - shows workload saturation %
 // Follows the same pattern as schedule-cards.tsx
 
+import Link from 'next/link'
 import { getSaturationSnapshot } from '@/lib/saturation/actions'
 import { StatCard } from '@/components/dashboard/widget-cards/stat-card'
 import { WidgetCardShell } from '@/components/dashboard/widget-cards/widget-card-shell'
@@ -38,6 +39,14 @@ export async function SaturationCards() {
 
   return (
     <>
+      <div className="col-span-full flex items-center justify-end -mb-2">
+        <Link
+          href="/analytics"
+          className="text-xs text-stone-500 hover:text-amber-500 transition-colors"
+        >
+          Revenue Analytics
+        </Link>
+      </div>
       <StatCard
         widgetId="saturation-overall"
         title="Workload"
@@ -45,7 +54,7 @@ export async function SaturationCards() {
         subtitle={periodLabel}
         trend={STATUS_LABELS[status]}
         trendDirection={overall >= 65 ? 'down' : overall >= 35 ? 'flat' : 'up'}
-        href="/scheduling"
+        href="/calendar"
       />
       <WidgetCardShell widgetId="saturation-breakdown" title="Capacity" size="md">
         <div className="space-y-2 text-sm">

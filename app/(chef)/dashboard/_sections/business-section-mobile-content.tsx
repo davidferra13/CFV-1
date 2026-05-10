@@ -397,7 +397,7 @@ export function BusinessSectionMobileContent(
     {
       id: 'operations_readiness',
       title: 'Operations Readiness',
-      href: '/operations/readiness',
+      href: '/ops',
       rows: [
         { label: 'Open Safety Incidents', value: toInteger(openSafetyIncidents) },
         { label: 'Critical Incidents', value: toInteger(criticalSafetyIncidents) },
@@ -440,7 +440,7 @@ export function BusinessSectionMobileContent(
     {
       id: 'safety_risk_watch',
       title: 'Safety Risk Watch',
-      href: '/safety/incidents',
+      href: '/settings/compliance/incidents',
       rows: [
         { label: 'Open Incidents', value: toInteger(openSafetyIncidents) },
         { label: 'Critical Incidents', value: toInteger(criticalSafetyIncidents) },

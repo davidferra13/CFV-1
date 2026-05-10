@@ -195,7 +195,7 @@ function PendingNavLink({
         setPendingHref(href)
         onClick?.()
       }}
-      className={`${className} ${isActive ? activeClassName : ''} ${isPending ? `${pendingClassName} animate-pulse` : ''}`}
+      className={`${className} ${isActive ? activeClassName : ''} ${isPending ? `${pendingClassName}` : ''}`}
       style={isActive ? style : undefined}
     >
       {children}
@@ -1024,11 +1024,11 @@ export function ChefSidebar({
 
             {/* All Features */}
             <Link
-              href="/features"
+              href="/onboarding/features"
               title="All Features"
               aria-label="All Features"
               className={`flex items-center justify-center w-10 h-10 rounded-lg transition-colors ${
-                pathname.startsWith('/features')
+                pathname.startsWith('/onboarding/features')
                   ? 'bg-brand-950 text-brand-600'
                   : 'text-stone-500 hover:bg-stone-800 hover:text-stone-300'
               }`}
@@ -1123,10 +1123,10 @@ export function ChefSidebar({
 
             {/* Settings */}
             {(() => {
-              const featuresActive = isItemActive(pathname, '/features', searchParams)
+              const featuresActive = isItemActive(pathname, '/onboarding/features', searchParams)
               return (
                 <Link
-                  href="/features"
+                  href="/onboarding/features"
                   className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-semibold transition-colors ${
                     featuresActive
                       ? 'bg-brand-950 text-brand-400 nav-active-glow'

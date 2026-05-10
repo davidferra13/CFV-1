@@ -64,7 +64,7 @@ export function FeedbackWidget() {
     <div className="rounded-lg border border-gray-200 bg-white p-4">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-gray-900">Client Feedback</h3>
-        <Link href="/feedback" className="text-xs font-medium text-amber-600 hover:text-amber-700">
+        <Link href="/surveys" className="text-xs font-medium text-amber-600 hover:text-amber-700">
           View all
         </Link>
       </div>

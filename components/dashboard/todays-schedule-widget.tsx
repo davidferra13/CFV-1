@@ -197,7 +197,7 @@ function CountdownStrip({
 function CountdownPill({ label, minutes }: { label: string; minutes: number }) {
   const urgencyClass =
     minutes <= 0
-      ? 'bg-red-900 text-red-200 animate-pulse'
+      ? 'bg-red-900 text-red-200'
       : minutes <= 30
         ? 'bg-red-900/60 text-red-300'
         : minutes <= 120
