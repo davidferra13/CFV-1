@@ -62,9 +62,7 @@ function CourseStatusBadge({ status }: { status: CourseStatus }) {
       variant={getStatusVariant(status)}
       className={status === 'skipped' ? 'line-through' : ''}
     >
-      {status === 'firing' && (
-        <span className="mr-1.5 h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
-      )}
+      {status === 'firing' && <span className="mr-1.5 h-2 w-2 rounded-full bg-amber-400" />}
       {STATUS_LABELS[status]}
     </Badge>
   )

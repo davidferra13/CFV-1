@@ -19,6 +19,7 @@ export interface OpsHubData {
     status: string
     client_name: string | null
     location_address: string | null
+    aar_filed: boolean
   }
   menu: {
     id: string
@@ -69,7 +70,7 @@ export async function getEventOpsHub(eventId: string): Promise<OpsHubData | null
   const { data: event, error: eventError } = await db
     .from('events')
     .select(
-      'id, occasion, event_date, serve_time, guest_count, status, location_address, client:clients(full_name)'
+      'id, occasion, event_date, serve_time, guest_count, status, location_address, aar_filed, client:clients(full_name)'
     )
     .eq('id', eventId)
     .eq('tenant_id', user.tenantId!)
@@ -245,6 +246,7 @@ export async function getEventOpsHub(eventId: string): Promise<OpsHubData | null
       status: event.status,
       client_name: event.client?.full_name ?? null,
       location_address: event.location_address,
+      aar_filed: event.aar_filed === true,
     },
     menu,
     shopping,

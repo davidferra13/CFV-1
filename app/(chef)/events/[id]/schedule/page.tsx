@@ -1,5 +1,5 @@
 // Event Schedule Page
-// Full day-of timeline, DOP status, and route plan for a single event.
+// Full day-of timeline, DOP status, reverse prep timeline, and route plan for a single event.
 
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
@@ -7,8 +7,10 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getEventById } from '@/lib/events/actions'
 import { getEventTimeline, getEventDOPSchedule } from '@/lib/scheduling/actions'
 import { getDOPManualCompletions } from '@/lib/scheduling/dop-completions'
+import { getEventPrepTimeline } from '@/lib/prep-timeline/actions'
 import { TimelineView } from '@/components/scheduling/timeline-view'
 import { DOPView } from '@/components/scheduling/dop-view'
+import { PrepTimelineContent } from '../_components/event-detail-prep-tab'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ServiceSimulationRollupCard } from '@/components/events/service-simulation-rollup-card'
@@ -27,12 +29,13 @@ export default async function EventSchedulePage({
   await requireChef()
   const returnTo = sanitizeReturnTo(searchParams?.returnTo)
 
-  const [event, timeline, dop, manualCompletions, simulationState] = await Promise.all([
+  const [event, timeline, dop, manualCompletions, simulationState, prepResult] = await Promise.all([
     getEventById(params.id),
     getEventTimeline(params.id),
     getEventDOPSchedule(params.id),
     getDOPManualCompletions(params.id).catch(() => new Set<string>()),
     loadEventServiceSimulationPanelState(params.id).catch(() => null),
+    getEventPrepTimeline(params.id).catch(() => ({ timeline: null })),
   ])
 
   if (!event) notFound()
@@ -60,7 +63,7 @@ export default async function EventSchedulePage({
           <Link href={returnTo ?? `/events/${event.id}`}>
             <Button variant="secondary">Event Details</Button>
           </Link>
-          <Link href="/schedule">
+          <Link href="/calendar">
             <Button variant="ghost">Weekly View</Button>
           </Link>
         </div>
@@ -95,6 +98,9 @@ export default async function EventSchedulePage({
           </p>
         </Card>
       )}
+
+      {/* Reverse Prep Timeline: day-by-day countdown computed from recipe peak windows */}
+      <PrepTimelineContent timeline={prepResult.timeline} eventId={params.id} hasMenu={true} />
 
       {/* DOP Status */}
       {dop && (

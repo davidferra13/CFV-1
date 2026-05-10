@@ -32,6 +32,9 @@ import { EventPhotoGallery } from '@/components/events/event-photo-gallery'
 import { CrewCircleCard } from '@/components/events/crew-circle-card'
 import { RecipeCapturePrompt } from '@/components/recipes/recipe-capture-prompt'
 import { EventAmbiancePanel } from '@/components/events/event-ambiance-panel'
+import { EventStationPlan } from '@/components/events/event-station-plan'
+import { AARPromptBanner } from '@/components/operations/aar-prompt-banner'
+import type { StationPlanGroup } from '@/lib/stations/event-station-actions'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import type { ReadinessResult } from '@/lib/events/readiness'
@@ -71,6 +74,11 @@ type EventDetailOpsTabProps = {
   eventTotalCents: number
   serviceSimulationState: ServiceSimulationPanelState | null
   courseProgress: CourseProgress[]
+  stationPlan: {
+    groups: StationPlanGroup[]
+    unassigned: { id: string; name: string; course_number: number }[]
+    stations: { id: string; name: string }[]
+  } | null
 }
 
 export function EventDetailOpsTab(props: EventDetailOpsTabProps) {
@@ -107,12 +115,26 @@ export function EventDetailOpsTab(props: EventDetailOpsTabProps) {
     eventTotalCents,
     serviceSimulationState,
     courseProgress,
+    stationPlan,
   } = props
 
   return (
     <EventDetailSection tab="ops" activeTab={activeTab}>
       {event.status === 'in_progress' && (
         <LiveServiceTracker eventId={event.id} initialCourses={courseProgress} />
+      )}
+
+      {/* AAR Prompt Banner: shown for completed events without a filed review */}
+      {event.status === 'completed' && !aar && !closureStatus?.aarFiled && (
+        <AARPromptBanner
+          status={{
+            shouldPrompt: true,
+            eventId: event.id,
+            eventName: event.occasion,
+            completedAt: (event as any).service_completed_at ?? null,
+            aarExists: false,
+          }}
+        />
       )}
 
       {/* Time Tracking */}
@@ -154,6 +176,16 @@ export function EventDetailOpsTab(props: EventDetailOpsTabProps) {
 
       {event.status !== 'cancelled' && (
         <ServiceSimulationPanel eventId={event.id} initialState={serviceSimulationState} />
+      )}
+
+      {/* Station Plan: assign dishes to kitchen stations */}
+      {event.status !== 'cancelled' && stationPlan && (
+        <EventStationPlan
+          eventId={event.id}
+          groups={stationPlan.groups}
+          unassigned={stationPlan.unassigned}
+          stations={stationPlan.stations}
+        />
       )}
 
       {/* Event Staff */}

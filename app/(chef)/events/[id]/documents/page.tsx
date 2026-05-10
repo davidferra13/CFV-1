@@ -50,6 +50,12 @@ const SNAPSHOT_DOCUMENT_TYPES: SnapshotDocumentType[] = [
   'reset',
   'travel',
   'shots',
+  'plating',
+  'allergen',
+  'venue',
+  'beverage',
+  'contact',
+  'mise',
   'all',
 ]
 
@@ -98,6 +104,12 @@ function isOperationalTypeReady(type: OperationalDocumentType, readiness: any): 
   if (type === 'reset') return readiness.resetChecklist.ready
   if (type === 'travel') return readiness.travelRoute.ready
   if (type === 'shots') return true
+  if (type === 'plating') return readiness.platingGuide.ready
+  if (type === 'allergen') return readiness.allergenReference.ready
+  if (type === 'venue') return readiness.venueRecon.ready
+  if (type === 'beverage') return readiness.beverageNotes.ready
+  if (type === 'contact') return readiness.clientContact.ready
+  if (type === 'mise') return readiness.miseCheck.ready
   return false
 }
 
@@ -354,7 +366,7 @@ export default async function EventDocumentsPage({
           <ReadinessAwareDocumentButton
             eventId={event.id}
             href={`/api/documents/${event.id}?type=all&archive=1`}
-            label="Print All (8 Sheets)"
+            label="Print All"
             readiness={readinessGate}
           />
           <Link href={returnTo ?? `/events/${event.id}`}>

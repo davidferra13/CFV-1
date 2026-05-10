@@ -95,30 +95,26 @@ const STATUS_CONFIG: Record<EventStatus, StatusConfig> = {
   proposed: {
     label: 'Proposed',
     icon: <Icon d="M8 1l1.5 4.5L14 7l-4.5 1.5L8 13l-1.5-4.5L2 7l4.5-1.5L8 1z" fill />,
-    classes:
-      'bg-amber-950/60 text-amber-300 border border-amber-700/50 shadow-[0_0_10px_rgba(245,158,11,0.12)]',
+    classes: 'bg-brand-950/50 text-brand-300 border border-brand-800/50',
   },
   accepted: {
     label: 'Accepted',
     icon: (
       <Icon d="M5 14H3a1 1 0 01-1-1V8a1 1 0 011-1h2m0 7V7m0 7h6.5a1.5 1.5 0 001.45-1.12l1-4A1.5 1.5 0 0012.5 7H10V3.5A1.5 1.5 0 008.5 2L5 7" />
     ),
-    classes:
-      'bg-sky-950/60 text-sky-300 border border-sky-700/50 shadow-[0_0_8px_rgba(56,189,248,0.10)]',
+    classes: 'bg-brand-950/50 text-brand-300 border border-brand-800/50',
   },
   paid: {
     label: 'Paid',
     icon: (
       <Icon d="M8 1v14M11.5 4c0-1.1-1.6-2-3.5-2S4.5 2.9 4.5 4s1.6 2 3.5 2 3.5.9 3.5 2-1.6 2-3.5 2-3.5-.9-3.5-2" />
     ),
-    classes:
-      'bg-emerald-950/60 text-emerald-300 border border-emerald-700/50 shadow-[0_0_8px_rgba(16,185,129,0.10)]',
+    classes: 'bg-brand-950/50 text-brand-300 border border-brand-800/50',
   },
   confirmed: {
     label: 'Confirmed',
     icon: <CheckCircleIcon />,
-    classes:
-      'bg-emerald-950/50 text-emerald-300 border border-emerald-600/60 shadow-[0_0_12px_rgba(16,185,129,0.15)]',
+    classes: 'bg-brand-950/50 text-brand-300 border border-brand-800/50',
   },
   in_progress: {
     label: 'Live',
@@ -128,14 +124,12 @@ const STATUS_CONFIG: Record<EventStatus, StatusConfig> = {
         fill
       />
     ),
-    classes:
-      'bg-orange-950/70 text-orange-300 border border-orange-600/60 shadow-[0_0_14px_rgba(249,115,22,0.2)] animate-pulse',
+    classes: 'bg-brand-950/50 text-brand-300 border border-brand-700/60',
   },
   completed: {
     label: 'Completed',
     icon: <TrophyIcon />,
-    classes:
-      'bg-brand-950/60 text-brand-400 border border-brand-700/50 shadow-[0_0_10px_rgba(232,143,71,0.12)]',
+    classes: 'bg-stone-800/60 text-stone-400 border border-stone-600',
   },
   cancelled: {
     label: 'Cancelled',

@@ -50,6 +50,23 @@ export function EventDetailWrapTab({
 }: EventDetailWrapTabProps) {
   return (
     <EventDetailSection tab="wrap" activeTab={activeTab}>
+      {/* Guided Follow-Up Workflow CTA */}
+      {eventStatus === 'completed' && (
+        <Card className="p-6 border-brand-700 bg-brand-950">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <h2 className="font-semibold text-brand-200">Post-Event Follow-Up</h2>
+              <p className="text-sm text-brand-400 mt-1">
+                Guided checklist: thank-you, review, rebook, and more.
+              </p>
+            </div>
+            <Link href={`/events/${eventId}/follow-up`}>
+              <Button>Open Follow-Up</Button>
+            </Link>
+          </div>
+        </Card>
+      )}
+
       {/* File AAR button - prominent, for completed events without AAR */}
       {eventStatus === 'completed' && !hasAAR && !hasClosureStatus && (
         <Card className="p-6 border-brand-700 bg-brand-950">

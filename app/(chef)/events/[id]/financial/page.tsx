@@ -32,13 +32,27 @@ export default async function EventFinancialPage({ params }: { params: { id: str
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      {/* Back link + PDF download */}
+      {/* Back link + cross-nav + PDF download */}
       <div className="flex justify-between items-center">
-        <Link href={`/events/${params.id}`}>
-          <Button variant="ghost" size="sm">
-            ← Back to Event
-          </Button>
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link href={`/events/${params.id}`}>
+            <Button variant="ghost" size="sm">
+              ← Back to Event
+            </Button>
+          </Link>
+          <Link
+            href={`/finance/ledger/transaction-log?eventId=${params.id}`}
+            className="text-xs text-brand-600 hover:underline"
+          >
+            View in ledger
+          </Link>
+          <Link
+            href={`/events/${params.id}/billing`}
+            className="text-xs text-brand-600 hover:underline"
+          >
+            Billing
+          </Link>
+        </div>
         <a
           href={`/api/documents/financial-summary/${params.id}`}
           target="_blank"

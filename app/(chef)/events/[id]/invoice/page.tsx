@@ -21,11 +21,25 @@ export default async function ChefInvoicePage({ params }: { params: { id: string
     <div className="max-w-2xl mx-auto pb-16 space-y-4">
       {/* Nav */}
       <div className="flex justify-between items-center">
-        <Link href={`/events/${params.id}`}>
-          <Button variant="ghost" size="sm">
-            &larr; Back to Event
-          </Button>
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link href={`/events/${params.id}`}>
+            <Button variant="ghost" size="sm">
+              &larr; Back to Event
+            </Button>
+          </Link>
+          <Link
+            href={`/events/${params.id}/billing`}
+            className="text-xs text-brand-600 hover:underline"
+          >
+            Billing
+          </Link>
+          <Link
+            href={`/finance/ledger/transaction-log?eventId=${params.id}`}
+            className="text-xs text-brand-600 hover:underline"
+          >
+            View in ledger
+          </Link>
+        </div>
         <div className="flex items-center gap-2">
           <a
             href={`/api/documents/invoice-pdf/${params.id}`}

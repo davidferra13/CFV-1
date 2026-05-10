@@ -8,9 +8,14 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { listStations } from '@/lib/stations/actions'
 import { getAll86dItems } from '@/lib/stations/clipboard-actions'
+import {
+  getUpcomingEventsForAllStations,
+  type StationUpcomingEvent,
+} from '@/lib/stations/event-station-actions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
+import { format } from 'date-fns'
 
 export const metadata: Metadata = { title: 'Station Coordination' }
 
@@ -19,7 +24,11 @@ export default async function StationCoordinationPage() {
   const db: any = createServerClient()
   const today = new Date().toISOString().split('T')[0]
 
-  const [stations, eightySixed] = await Promise.all([listStations(), getAll86dItems()])
+  const [stations, eightySixed, upcomingByStation] = await Promise.all([
+    listStations(),
+    getAll86dItems(),
+    getUpcomingEventsForAllStations().catch(() => new Map<string, StationUpcomingEvent[]>()),
+  ])
 
   // Get today's clipboard entries for all stations
   const { data: clipboardEntries } = await db
@@ -62,6 +71,8 @@ export default async function StationCoordinationPage() {
     const tasksDone = stationTasks.filter((t: any) => t.status === 'done').length
     const tasksTotal = stationTasks.length
 
+    const upcomingEvents = upcomingByStation.get(s.id) ?? []
+
     return {
       ...s,
       parPct,
@@ -71,6 +82,7 @@ export default async function StationCoordinationPage() {
       tasksDone,
       tasksTotal,
       lastShift: shifts.length > 0 ? shifts[shifts.length - 1] : null,
+      upcomingEvents,
     }
   })
 
@@ -157,7 +169,7 @@ export default async function StationCoordinationPage() {
                         <span
                           className={`inline-block w-2.5 h-2.5 rounded-full ${
                             s.items86 > 0
-                              ? 'bg-red-400 animate-pulse'
+                              ? 'bg-red-400'
                               : s.parPct >= 80
                                 ? 'bg-emerald-400'
                                 : 'bg-amber-400'
@@ -221,6 +233,33 @@ export default async function StationCoordinationPage() {
                         <p className="text-xs text-stone-600">No staff checked in</p>
                       )}
                     </div>
+
+                    {/* Upcoming Events */}
+                    {s.upcomingEvents.length > 0 && (
+                      <div className="border-t border-stone-800 pt-2 mt-1">
+                        <p className="text-xs font-medium text-stone-500 mb-1">Upcoming Events</p>
+                        <div className="space-y-1">
+                          {s.upcomingEvents.slice(0, 3).map((ev: StationUpcomingEvent) => (
+                            <div
+                              key={ev.event_id}
+                              className="flex items-center justify-between text-xs px-1.5 py-1"
+                            >
+                              <span className="text-stone-300 truncate">
+                                {ev.occasion ?? 'Event'} ({ev.dish_count} dishes)
+                              </span>
+                              <span className="text-stone-500 whitespace-nowrap ml-2">
+                                {format(new Date(ev.event_date), 'MMM d')}
+                              </span>
+                            </div>
+                          ))}
+                          {s.upcomingEvents.length > 3 && (
+                            <p className="text-xs text-stone-600 px-1.5">
+                              +{s.upcomingEvents.length - 3} more
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </Link>

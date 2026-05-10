@@ -55,7 +55,7 @@ export function EventKanbanColumn({
         )}
 
         {/* Visual drop target hint when over */}
-        {isOver && <div className="h-1 rounded-full bg-brand-800 animate-pulse" />}
+        {isOver && <div className="h-1 rounded-full bg-brand-800" />}
       </div>
     </div>
   )

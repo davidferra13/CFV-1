@@ -58,6 +58,17 @@ export default async function EventBillingPage({ params }: { params: { id: strin
             {((event as any).client?.full_name as string | undefined) ?? 'Client'} |{' '}
             {event.occasion ?? 'Event'} | {format(new Date(event.event_date), 'MMMM d, yyyy')}
           </p>
+          <div className="mt-2 flex items-center gap-3">
+            <Link
+              href={`/finance/ledger/transaction-log?eventId=${params.id}`}
+              className="text-xs text-brand-600 hover:underline"
+            >
+              View in ledger
+            </Link>
+            <Link href="/finance" className="text-xs text-brand-600 hover:underline">
+              Finance hub
+            </Link>
+          </div>
         </div>
         <Link href={`/events/${params.id}/financial`}>
           <Button variant="secondary">

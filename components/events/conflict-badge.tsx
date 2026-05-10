@@ -42,7 +42,7 @@ export function ConflictBadge({ conflicts, className = '' }: ConflictBadgeProps)
         `}
         title={`${conflicts.length} scheduling conflict${conflicts.length !== 1 ? 's' : ''}`}
       >
-        <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+        <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
         {conflicts.length} conflict{conflicts.length !== 1 ? 's' : ''}
         <svg
           className={`w-3 h-3 transition-transform ${open ? 'rotate-180' : ''}`}

@@ -28,6 +28,7 @@ import type {
   DinnerCircleSnapshot,
 } from '@/lib/dinner-circles/types'
 import { CorporateProcurementPanel } from '@/components/events/corporate-procurement-panel'
+import { RichTextEditor } from '@/components/ui/rich-text-editor'
 
 type Props = {
   snapshot: DinnerCircleSnapshot
@@ -425,15 +426,14 @@ export function DinnerCircleCommandCenter({
 
           <div className="rounded-lg border border-stone-800 p-4">
             <Header icon={<Utensils className="h-4 w-4" />} title="Menu Builder" />
-            <textarea
-              className={`${fieldClass} mt-3`}
-              rows={5}
-              value={config.menu?.manualNotes ?? ''}
-              onChange={(event) =>
-                updateLocal({ menu: { ...config.menu!, manualNotes: event.target.value } })
-              }
-              placeholder="Manual courses, serving notes, poll options"
-            />
+            <div className="mt-3">
+              <RichTextEditor
+                value={config.menu?.manualNotes ?? ''}
+                onChange={(html) => updateLocal({ menu: { ...config.menu!, manualNotes: html } })}
+                placeholder="Manual courses, serving notes, poll options"
+                minHeight={120}
+              />
+            </div>
             <label className="mt-3 flex items-center gap-2 text-sm text-stone-300">
               <input
                 type="checkbox"
@@ -487,23 +487,19 @@ export function DinnerCircleCommandCenter({
                 }
                 placeholder="Working menu version"
               />
-              <textarea
-                className={fieldClass}
-                rows={3}
+              <RichTextEditor
                 value={config.menu?.fixedElements ?? ''}
-                onChange={(event) =>
-                  updateLocal({ menu: { ...config.menu!, fixedElements: event.target.value } })
-                }
+                onChange={(html) => updateLocal({ menu: { ...config.menu!, fixedElements: html } })}
                 placeholder="Fixed menu promises"
+                minHeight={120}
               />
-              <textarea
-                className={fieldClass}
-                rows={3}
+              <RichTextEditor
                 value={config.menu?.flexibleElements ?? ''}
-                onChange={(event) =>
-                  updateLocal({ menu: { ...config.menu!, flexibleElements: event.target.value } })
+                onChange={(html) =>
+                  updateLocal({ menu: { ...config.menu!, flexibleElements: html } })
                 }
                 placeholder="Flexible seasonal ranges"
+                minHeight={120}
               />
             </div>
 
@@ -527,18 +523,21 @@ export function DinnerCircleCommandCenter({
           </div>
 
           <div className="grid gap-4 lg:grid-cols-3">
-            <TextPanel
-              icon={<Megaphone className="h-4 w-4" />}
-              title="Client Expectation Layer"
-              value={config.adaptive?.clientExpectationNote ?? ''}
-              rows={4}
-              placeholder="What can change and what stays fixed"
-              onChange={(value) =>
-                updateLocal({
-                  adaptive: { ...config.adaptive!, clientExpectationNote: value },
-                })
-              }
-            />
+            <div className="rounded-lg border border-stone-800 p-4">
+              <Header icon={<Megaphone className="h-4 w-4" />} title="Client Expectation Layer" />
+              <div className="mt-3">
+                <RichTextEditor
+                  value={config.adaptive?.clientExpectationNote ?? ''}
+                  onChange={(html) =>
+                    updateLocal({
+                      adaptive: { ...config.adaptive!, clientExpectationNote: html },
+                    })
+                  }
+                  placeholder="What can change and what stays fixed"
+                  minHeight={120}
+                />
+              </div>
+            </div>
             <TextPanel
               icon={<DollarSign className="h-4 w-4" />}
               title="Pricing Adjustment"
@@ -652,16 +651,19 @@ export function DinnerCircleCommandCenter({
         </section>
 
         <section className="grid gap-4 lg:grid-cols-3">
-          <TextPanel
-            icon={<Megaphone className="h-4 w-4" />}
-            title="Public Story"
-            value={config.publicPage?.story ?? ''}
-            rows={5}
-            placeholder="Story, host note, location context"
-            onChange={(value) =>
-              updateLocal({ publicPage: { ...config.publicPage!, story: value } })
-            }
-          />
+          <div className="rounded-lg border border-stone-800 p-4">
+            <Header icon={<Megaphone className="h-4 w-4" />} title="Public Story" />
+            <div className="mt-3">
+              <RichTextEditor
+                value={config.publicPage?.story ?? ''}
+                onChange={(html) =>
+                  updateLocal({ publicPage: { ...config.publicPage!, story: html } })
+                }
+                placeholder="Story, host note, location context"
+                minHeight={120}
+              />
+            </div>
+          </div>
           <LinesPanel
             icon={<Leaf className="h-4 w-4" />}
             title="Farm Identity"

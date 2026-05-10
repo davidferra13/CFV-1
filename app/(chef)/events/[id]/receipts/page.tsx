@@ -35,6 +35,20 @@ export default async function ReceiptsPage({ params }: { params: { id: string } 
             {event.occasion || 'Untitled Event'} ·{' '}
             {format(new Date(event.event_date), 'MMM d, yyyy')}
           </p>
+          <div className="mt-1 flex items-center gap-3">
+            <Link
+              href={`/events/${params.id}/billing`}
+              className="text-xs text-brand-600 hover:underline"
+            >
+              Billing
+            </Link>
+            <Link
+              href={`/finance/ledger/transaction-log?eventId=${params.id}`}
+              className="text-xs text-brand-600 hover:underline"
+            >
+              View in ledger
+            </Link>
+          </div>
         </div>
         <Link href={`/events/${params.id}`}>
           <Button variant="ghost" size="sm">

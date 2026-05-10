@@ -13,7 +13,11 @@ import {
   stopEventActivity,
 } from '@/lib/events/actions'
 import { getAARByEventId } from '@/lib/aar/actions'
-import { getDocumentReadiness, getBusinessDocInfo } from '@/lib/documents/actions'
+import {
+  getDocumentReadiness,
+  getBusinessDocInfo,
+  type DocumentReadiness,
+} from '@/lib/documents/actions'
 import { hasAllergyData } from '@/lib/documents/generate-allergy-card'
 import { getEventExpenses, getEventProfitSummary, getBudgetGuardrail } from '@/lib/expenses/actions'
 import { getUnrecordedComponentsForEvent } from '@/lib/recipes/actions'
@@ -49,6 +53,7 @@ import { Card } from '@/components/ui/card'
 import { EventExportButton } from '@/components/exports/event-export-button'
 import { EventActionsOverflow } from '@/components/events/event-actions-overflow'
 import { QuickProposalButton } from '@/components/events/quick-proposal-button'
+import { EventPacketDrawer } from '@/components/documents/event-packet-drawer'
 import { ChefGuestPanel } from '@/components/sharing/chef-guest-panel'
 import { EventStatusRealtimeSync } from '@/components/events/event-status-realtime-sync'
 import { getEventShares, getEventGuests, getEventRSVPSummary } from '@/lib/sharing/actions'
@@ -176,6 +181,7 @@ import {
 import { getApprovalGates } from '@/lib/dinner-circles/corporate-actions'
 import { EventDefaultFlowPanel } from '@/components/events/event-default-flow-panel'
 import { getEventDefaultFlowSnapshotForTenant } from '@/lib/events/default-event-flow-data'
+import { getEventStationPlan } from '@/lib/stations/event-station-actions'
 import { EventCloneButton } from '@/components/events/event-clone-button'
 import { getEventConstraintRadar } from '@/lib/events/constraint-radar-actions'
 import { refreshIngredientCostsForTenant } from '@/lib/pricing/cost-refresh-actions'
@@ -706,11 +712,25 @@ export default async function EventDetailPage({
       ? getEventClosureStatus(params.id).catch(() => null)
       : Promise.resolve(null),
     isCompletedOrBeyond ? getAARByEventId(params.id) : Promise.resolve(null),
-    getDocumentReadiness(params.id).catch(() => ({
-      prepSheet: false,
-      packingList: false,
-      fohMenu: false,
-    })),
+    getDocumentReadiness(params.id).catch(
+      (): DocumentReadiness => ({
+        eventSummary: { ready: false, missing: [] },
+        groceryList: { ready: false, missing: [] },
+        frontOfHouseMenu: { ready: false, missing: [] },
+        prepSheet: { ready: false, missing: [] },
+        executionSheet: { ready: false, missing: [] },
+        checklist: { ready: false, missing: [] },
+        packingList: { ready: false, missing: [] },
+        resetChecklist: { ready: false, missing: [] },
+        travelRoute: { ready: false, missing: [] },
+        platingGuide: { ready: false, missing: [] },
+        allergenReference: { ready: false, missing: [] },
+        venueRecon: { ready: false, missing: [] },
+        beverageNotes: { ready: false, missing: [] },
+        clientContact: { ready: false, missing: [] },
+        miseCheck: { ready: false, missing: [] },
+      })
+    ),
     getBusinessDocInfo(params.id).catch(() => null),
     getEventMenusForCheck(params.id).catch(() => [] as string[]),
     getEventExpenses(params.id).catch(() => ({ expenses: [], totalCents: 0 })),
@@ -784,6 +804,8 @@ export default async function EventDetailPage({
         })()
       : Promise.resolve(null),
   ])
+  const stationPlan = await getEventStationPlan(params.id).catch(() => null)
+
   const readinessAssistant = await getEventReadinessAssistant(params.id, pricingIntelligence).catch(
     () => null
   )
@@ -1243,6 +1265,13 @@ export default async function EventDetailPage({
           <Link href={`/events/${event.id}/documents`}>
             <Button variant="secondary">Documents</Button>
           </Link>
+          {event.status !== 'cancelled' && (
+            <EventPacketDrawer
+              eventId={event.id}
+              readiness={docReadiness}
+              readinessGate={documentReadinessGate}
+            />
+          )}
           {event.client_id && !['cancelled'].includes(event.status) && (
             <QuickProposalButton eventId={event.id} />
           )}
@@ -1656,6 +1685,7 @@ export default async function EventDetailPage({
         eventTotalCents={eventTotalCents}
         serviceSimulationState={serviceSimulationState}
         courseProgress={courseProgress}
+        stationPlan={stationPlan}
       />
       {/* TAB: WRAP-UP â€” Debrief, survey, history      */}
       {/* ============================================ */}

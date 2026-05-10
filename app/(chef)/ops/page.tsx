@@ -16,7 +16,7 @@ function StatusDot({ status }: { status: 'good' | 'warn' | 'critical' | 'off' })
   const colors = {
     good: 'bg-emerald-400 shadow-emerald-400/50',
     warn: 'bg-amber-400 shadow-amber-400/50',
-    critical: 'bg-red-400 shadow-red-400/50 animate-pulse',
+    critical: 'bg-red-400 shadow-red-400/50',
     off: 'bg-stone-600',
   }
   return <span className={`inline-block w-2.5 h-2.5 rounded-full shadow-sm ${colors[status]}`} />
@@ -539,6 +539,15 @@ export default async function OpsHubPage() {
             href: '/ops/performance',
             label: 'Menu Analytics',
             desc: 'Sales, margins, engineering',
+          },
+          { href: '/kitchen', label: 'Kitchen Mode', desc: 'Full-screen live service' },
+          { href: '/queue', label: 'Priority Queue', desc: 'Next actions by urgency' },
+          { href: '/meal-prep', label: 'Meal Prep', desc: 'Recurring prep schedules' },
+          { href: '/ops/equipment', label: 'Equipment', desc: 'Inventory, maintenance, rentals' },
+          {
+            href: '/ops/kitchen-rentals',
+            label: 'Kitchen Rentals',
+            desc: 'Bookings, hours, costs',
           },
         ].map((link) => (
           <Link key={link.href} href={link.href} className="block">

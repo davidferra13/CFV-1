@@ -412,6 +412,30 @@ export async function transitionEvent({
   revalidatePath('/finance')
   revalidatePath('/calendar')
 
+  // Auto-block/unblock availability when events are confirmed or cancelled.
+  // This keeps the calendar and shared availability in sync with the event lifecycle.
+  if (toStatus === 'confirmed' && event.event_date) {
+    try {
+      const { autoBlockEventDate } = await import('@/lib/availability/actions')
+      const eventDateStr =
+        event.event_date instanceof Date
+          ? event.event_date.toISOString().slice(0, 10)
+          : String(event.event_date).slice(0, 10)
+      await autoBlockEventDate(eventId, event.tenant_id, eventDateStr)
+    } catch (err) {
+      log.events.warn('Auto-block for confirmed event failed (non-blocking)', { error: err })
+    }
+  }
+
+  if (toStatus === 'cancelled') {
+    try {
+      const { removeEventAutoBlock } = await import('@/lib/availability/actions')
+      await removeEventAutoBlock(eventId)
+    } catch (err) {
+      log.events.warn('Auto-unblock for cancelled event failed (non-blocking)', { error: err })
+    }
+  }
+
   const interactionAction =
     toStatus === 'accepted'
       ? 'accept_event'

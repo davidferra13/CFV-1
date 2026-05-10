@@ -28,6 +28,7 @@ import { Card } from '@/components/ui/card'
 import { SendWorksheetButton } from '@/components/events/send-worksheet-button'
 import { RepeatMenuAlert } from '@/components/menus/repeat-menu-alert'
 import { AllergenConflictAlert } from '@/components/events/allergen-conflict-alert'
+import { DietaryAlertsBanner } from '@/components/events/dietary-alerts-banner'
 import { DietaryKnowledgePanel } from '@/components/events/dietary-knowledge-panel'
 import { EventCollaboratorsPanel } from '@/components/collaboration/event-collaborators-panel'
 import type { EventCollaborator } from '@/lib/collaboration/types'
@@ -582,6 +583,9 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
 
         {/* Post-Event Guest Outreach (completed events only) */}
         {event.status === 'completed' && <PostEventOutreachPanel eventId={event.id} />}
+
+        {/* Dietary Alerts Banner: who has what restriction, with client links */}
+        {event.status !== 'cancelled' && <DietaryAlertsBanner eventId={event.id} />}
 
         {/* Deterministic Allergen Conflict Check (instant, no AI) */}
         {event.menu_id && event.status !== 'draft' && event.status !== 'cancelled' && (

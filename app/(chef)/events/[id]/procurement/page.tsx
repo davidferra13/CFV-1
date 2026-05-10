@@ -8,6 +8,7 @@ import { getLatestGroceryQuote } from '@/lib/grocery/pricing-actions'
 import { getShortageAlerts } from '@/lib/inventory/demand-forecast-actions'
 import { GroceryQuotePanel } from '@/components/events/grocery-quote-panel'
 import { GroceryListView } from '@/components/grocery/grocery-list-view'
+import { VendorComparisonPanel } from '@/components/events/vendor-comparison-panel'
 import { Button } from '@/components/ui/button'
 
 export default async function EventProcurementPage({ params }: { params: { id: string } }) {
@@ -35,6 +36,9 @@ export default async function EventProcurementPage({ params }: { params: { id: s
           <p className="mt-1 text-sm text-stone-500">{eventLabel}</p>
         </div>
         <div className="flex flex-wrap gap-2">
+          <Link href={`/culinary/prep/shopping?eventIds=${params.id}`}>
+            <Button variant="secondary">Combined Shopping</Button>
+          </Link>
           <Link href={`/events/${params.id}/grocery-quote`}>
             <Button variant="secondary">Quote Only</Button>
           </Link>
@@ -81,7 +85,7 @@ export default async function EventProcurementPage({ params }: { params: { id: s
         </div>
 
         {groceryList ? (
-          <div className="rounded-[24px] bg-white p-6 shadow-[var(--shadow-card-hover)]">
+          <div className="rounded-xl bg-white p-6 shadow-[var(--shadow-card-hover)]">
             <GroceryListView data={groceryList} eventId={params.id} />
           </div>
         ) : (
@@ -106,6 +110,8 @@ export default async function EventProcurementPage({ params }: { params: { id: s
           quotedPriceCents={event.quoted_price_cents}
         />
       </section>
+
+      <VendorComparisonPanel eventId={params.id} />
     </div>
   )
 }

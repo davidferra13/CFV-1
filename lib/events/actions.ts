@@ -778,7 +778,7 @@ export async function updateEvent(eventId: string, input: UpdateEventInput) {
       revalidatePath('/my-events')
       revalidatePath(`/my-events/${eventId}`)
       revalidatePath('/dashboard')
-      revalidatePath('/scheduling')
+      revalidatePath('/calendar')
       revalidatePath('/calendar')
       invalidateRemyContextCache(user.tenantId!)
 
@@ -870,7 +870,7 @@ export async function updateEvent(eventId: string, input: UpdateEventInput) {
                   .eq('id', block.id)
                   .eq('chef_id', user.tenantId!)
               }
-              revalidatePath('/scheduling')
+              revalidatePath('/calendar')
             }
           }
         } catch (err) {

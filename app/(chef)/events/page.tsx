@@ -37,7 +37,7 @@ export const metadata: Metadata = { title: 'Events' }
 const hubSections = [
   {
     heading: 'Planning',
-    accent: 'border-l-sky-500/60',
+    accent: 'border-l-brand-700/40',
     iconTint: 'text-sky-400',
     items: [
       {
@@ -58,11 +58,36 @@ const hubSections = [
         description: 'Visual board of all events by status',
         icon: '🗂️',
       },
+      {
+        href: '/events/travel',
+        label: 'Travel Planning',
+        description: 'Upcoming trips across all events, next 90 days',
+        icon: '🗺️',
+      },
+    ],
+  },
+  {
+    heading: 'Specialized',
+    accent: 'border-l-emerald-700/40',
+    iconTint: 'text-emerald-400',
+    items: [
+      {
+        href: '/events/cannabis',
+        label: 'Cannabis Events',
+        description: 'Cannabis dining portal with compliance and ledger',
+        icon: '🌿',
+      },
+      {
+        href: '/events/charity',
+        label: 'Community Impact',
+        description: 'Charity events, volunteer hours, and donations',
+        icon: '💚',
+      },
     ],
   },
   {
     heading: 'Pipeline',
-    accent: 'border-l-amber-500/60',
+    accent: 'border-l-brand-700/40',
     iconTint: 'text-amber-400',
     items: [
       {
@@ -87,11 +112,11 @@ const hubSections = [
   },
   {
     heading: 'Review',
-    accent: 'border-l-emerald-500/60',
+    accent: 'border-l-brand-700/40',
     iconTint: 'text-emerald-400',
     items: [
       {
-        href: '/feedback',
+        href: '/surveys',
         label: 'Client Feedback',
         description: 'Request and view post-event feedback',
         icon: '⭐',
@@ -325,7 +350,7 @@ async function EventsList({ status }: { status: EventStatus }) {
                     }
                     const urgencyClasses =
                       staleness === 'hot'
-                        ? 'bg-red-950/50 text-red-300 border-red-800/50 animate-pulse'
+                        ? 'bg-red-950/50 text-red-300 border-red-800/50'
                         : staleness === 'warm'
                           ? 'bg-amber-950/40 text-amber-300 border-amber-800/40'
                           : 'bg-stone-800/60 text-stone-300 border-stone-700/40'
@@ -334,7 +359,7 @@ async function EventsList({ status }: { status: EventStatus }) {
                         className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border text-xs font-medium ${urgencyClasses}`}
                       >
                         {staleness === 'hot' && (
-                          <span className="inline-block h-1.5 w-1.5 rounded-full bg-red-400 animate-pulse" />
+                          <span className="inline-block h-1.5 w-1.5 rounded-full bg-red-400" />
                         )}
                         {next.text}
                         {next.owner === 'client' && (
@@ -490,21 +515,17 @@ export default async function EventsPage({
           <h2 className="text-xs font-semibold uppercase tracking-widest text-stone-500 mb-3">
             {section.heading}
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 stagger-grid">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {section.items.map((tile) => (
               <Link key={tile.href} href={tile.href} className="group block">
                 <Card interactive className={`h-full border-l-2 ${section.accent}`}>
                   <CardContent className="pt-5 pb-5">
                     <div className="flex items-start gap-3">
-                      <span
-                        className={`text-2xl leading-none mt-0.5 flex-shrink-0 group-hover:scale-110 transition-transform duration-200`}
-                      >
+                      <span className={`text-2xl leading-none mt-0.5 flex-shrink-0`}>
                         {tile.icon}
                       </span>
                       <div>
-                        <p className="font-semibold text-stone-100 group-hover:text-brand-400 transition-colors">
-                          {tile.label}
-                        </p>
+                        <p className="font-semibold text-stone-100">{tile.label}</p>
                         <p className="text-sm text-stone-500 mt-0.5">{tile.description}</p>
                       </div>
                     </div>

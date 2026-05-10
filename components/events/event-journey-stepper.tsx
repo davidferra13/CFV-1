@@ -62,7 +62,7 @@ export function EventJourneyStepper({ steps }: { steps: JourneyStep[] }) {
                     step.completedAt && !step.isFuture
                       ? 'bg-emerald-500 border-emerald-500 text-white'
                       : step.isCurrent
-                        ? 'bg-brand-600 border-brand-600 text-white animate-pulse'
+                        ? 'bg-brand-600 border-brand-600 text-white'
                         : 'bg-stone-900 border-stone-600 text-stone-300'
                   }`}
                 >
@@ -137,7 +137,7 @@ export function EventJourneyStepper({ steps }: { steps: JourneyStep[] }) {
                   step.completedAt && !step.isFuture
                     ? 'bg-emerald-500 border-emerald-500 text-white'
                     : step.isCurrent
-                      ? 'bg-brand-600 border-brand-600 text-white animate-pulse'
+                      ? 'bg-brand-600 border-brand-600 text-white'
                       : 'bg-stone-900 border-stone-600 text-stone-300'
                 }`}
               >

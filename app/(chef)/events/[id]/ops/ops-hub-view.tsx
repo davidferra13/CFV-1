@@ -4,6 +4,7 @@ import { useState, type ReactNode } from 'react'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { EventStatusBadge, type EventStatus } from '@/components/events/event-status-badge'
+import { AARPromptBanner } from '@/components/operations/aar-prompt-banner'
 import type { OpsHubData } from '@/lib/events/ops-hub-actions'
 import type { PrepSymbol } from '@/lib/prep-timeline/compute-timeline'
 import { formatPrepTime } from '@/lib/prep-timeline/compute-timeline'
@@ -272,6 +273,18 @@ export function OpsHubView({ data }: { data: OpsHubData }) {
       <Section title="Prep Timeline">
         <PrepSection prep={data.prep} />
       </Section>
+
+      {data.event.status === 'completed' && !data.event.aar_filed && (
+        <AARPromptBanner
+          status={{
+            shouldPrompt: true,
+            eventId: data.event.id,
+            eventName: data.event.occasion,
+            completedAt: null,
+            aarExists: false,
+          }}
+        />
+      )}
     </div>
   )
 }
