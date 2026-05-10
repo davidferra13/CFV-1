@@ -31,7 +31,7 @@ export const CHEF_PROTECTED_PATHS = [
   '/finance',
   '/food-cost',
   '/goals',
-  '/growth',
+  '/marketing',
   '/clients/insights/retention',
   '/guests',
   '/help',

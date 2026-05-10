@@ -486,22 +486,13 @@ const tiles: TileConfig[] = [
     accentBorder: 'hover:border-purple-700/40',
   },
   {
-    href: '/feedback/requests',
-    label: 'Feedback Requests',
-    description: 'Manage outbound review requests sent to clients',
+    href: '/reputation/mentions',
+    label: 'Mentions & Feedback',
+    description: 'Track brand mentions, reviews, and client feedback',
     icon: '📩',
     statKey: null,
     gradient: 'from-sky-950/30 via-stone-900/10 to-stone-900/0',
     accentBorder: 'hover:border-sky-700/40',
-  },
-  {
-    href: '/feedback/dashboard',
-    label: 'Feedback Dashboard',
-    description: 'Trends, sentiment breakdown, and response rates',
-    icon: '📊',
-    statKey: null,
-    gradient: 'from-emerald-950/30 via-stone-900/10 to-stone-900/0',
-    accentBorder: 'hover:border-emerald-700/40',
   },
 ]
 
