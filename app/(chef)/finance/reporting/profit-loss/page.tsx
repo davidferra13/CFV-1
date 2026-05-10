@@ -28,6 +28,12 @@ export default async function ProfitLossPage() {
       </div>
 
       <ProfitAndLossReport initialData={report} />
+
+      <div className="flex items-center gap-4 pt-2">
+        <Link href="/documents" className="text-sm text-brand-600 hover:underline">
+          View supporting documents
+        </Link>
+      </div>
     </div>
   )
 }

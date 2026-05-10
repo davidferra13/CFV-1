@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { Suspense } from 'react'
 import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
 import { requireChef } from '@/lib/auth/get-user'
+import { getEvents } from '@/lib/events/actions'
 import { getTenantFinancialSummary, getYtdCarryForwardSavings } from '@/lib/ledger/compute'
 import { Card } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils/format'
@@ -11,7 +12,60 @@ import { FinanceHealthBar } from '@/components/intelligence/finance-health-bar'
 import { PricingIntelligenceBar } from '@/components/intelligence/pricing-intelligence-bar'
 import { getProfitAndLossReport } from '@/lib/finance/profit-loss-report-actions'
 import { getFinanceSurfaceAvailability } from '@/lib/finance/surface-availability'
+import { FinanceAlertBanner } from '@/components/finance/finance-alerts'
 import { format, startOfMonth, endOfMonth } from 'date-fns'
+
+/** Recent events with financial data, linking to billing */
+async function RecentEventsList() {
+  const [events, regional] = await Promise.all([getEvents(), getRegionalSettings()])
+  const currOpts = { locale: regional.locale, currency: regional.currencyCode }
+  const fmt = (cents: number) => formatCurrency(cents, currOpts)
+
+  const recent = events
+    .filter((e: any) => (e.quoted_price_cents ?? 0) > 0)
+    .sort((a: any, b: any) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime())
+    .slice(0, 8)
+
+  if (recent.length === 0) return null
+
+  return (
+    <Card className="p-4">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-semibold text-stone-300">Recent Events</h3>
+        <Link
+          href="/finance/reporting/revenue-by-event"
+          className="text-xs text-brand-600 hover:underline"
+        >
+          All events →
+        </Link>
+      </div>
+      <div className="space-y-2">
+        {recent.map((event: any) => (
+          <Link
+            key={event.id}
+            href={`/events/${event.id}/financial`}
+            className="flex items-center justify-between py-1.5 px-2 rounded hover:bg-stone-800 transition-colors group"
+          >
+            <div className="flex items-center gap-3 min-w-0">
+              <span className="text-xs text-stone-500 shrink-0">
+                {format(new Date(event.event_date), 'MMM d')}
+              </span>
+              <span className="text-sm text-stone-200 truncate">
+                {event.client?.full_name ?? 'No client'}
+              </span>
+              <span className="text-xs text-stone-500 capitalize truncate hidden sm:inline">
+                {event.occasion?.replace(/_/g, ' ') ?? ''}
+              </span>
+            </div>
+            <span className="text-sm font-semibold text-stone-100 shrink-0 ml-2">
+              {fmt(event.quoted_price_cents ?? 0)}
+            </span>
+          </Link>
+        ))}
+      </div>
+    </Card>
+  )
+}
 
 /** Inline P&L snapshot for the current month */
 async function MonthlyPLSnapshot() {
@@ -34,9 +88,18 @@ async function MonthlyPLSnapshot() {
     <Card className="p-4">
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-semibold text-stone-300">P&amp;L Snapshot: {monthLabel}</h3>
-        <Link href="/finance/reporting" className="text-xs text-brand-600 hover:underline">
-          Full report →
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/finance/reporting/profit-by-event"
+            className="text-xs text-brand-600 hover:underline"
+          >
+            See by event
+          </Link>
+          <span className="text-stone-700">|</span>
+          <Link href="/finance/reporting" className="text-xs text-brand-600 hover:underline">
+            Full report →
+          </Link>
+        </div>
       </div>
       <div className="grid grid-cols-4 gap-3">
         <div>
@@ -69,7 +132,14 @@ async function MonthlyPLSnapshot() {
 
 export const metadata: Metadata = { title: 'Finance' }
 
-const SECTIONS = [
+const SECTIONS: Array<{
+  href: string
+  label: string
+  description: string
+  icon: string
+  secondaryHref?: string
+  secondaryLabel?: string
+}> = [
   {
     href: '/finance/overview',
     label: 'Overview',
@@ -87,6 +157,8 @@ const SECTIONS = [
     label: 'Invoices',
     description: 'Track invoices by status - draft, sent, paid, overdue',
     icon: '🧾',
+    secondaryHref: '/documents',
+    secondaryLabel: 'View Contracts',
   },
   {
     href: '/finance/expenses',
@@ -117,12 +189,16 @@ const SECTIONS = [
     label: 'Reporting',
     description: 'Revenue by month, client, event, tax summary, and year-to-date',
     icon: '📈',
+    secondaryHref: '/analytics',
+    secondaryLabel: 'View Analytics',
   },
   {
     href: '/finance/tax',
     label: 'Tax Center',
     description: 'Mileage log, quarterly estimates, and accountant export',
     icon: '🗓️',
+    secondaryHref: '/documents?phase=closeout',
+    secondaryLabel: 'Tax Documents',
   },
   {
     href: '/finance/goals',
@@ -231,6 +307,11 @@ export default async function FinancePage() {
         </div>
       )}
 
+      {/* Finance Alerts (overdue invoices, unusual expenses) */}
+      <WidgetErrorBoundary name="Finance Alerts" compact>
+        <FinanceAlertBanner />
+      </WidgetErrorBoundary>
+
       {/* Financial Intelligence */}
       <WidgetErrorBoundary name="Finance Health" compact>
         <Suspense fallback={null}>
@@ -245,26 +326,41 @@ export default async function FinancePage() {
         </Suspense>
       </WidgetErrorBoundary>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 stagger-grid">
-        <Card className="p-4">
-          <p className="text-2xl font-bold text-stone-100">{fmt(summary.totalRevenueCents)}</p>
-          <p className="text-sm text-stone-500 mt-1">Total revenue collected</p>
-        </Card>
-        <Card className="p-4">
-          <p className="text-2xl font-bold text-green-700">{fmt(summary.netRevenueCents)}</p>
-          <p className="text-sm text-stone-500 mt-1">Net revenue (after refunds)</p>
-        </Card>
-        <Card className="p-4">
-          <p className="text-2xl font-bold text-red-600">{fmt(summary.totalRefundsCents)}</p>
-          <p className="text-sm text-stone-500 mt-1">Total refunds issued</p>
-        </Card>
-        <Card className="p-4 border-emerald-200 bg-emerald-950">
-          <p className="text-2xl font-bold text-emerald-700">
-            {carryForwardSavings === null ? '--' : fmt(carryForwardSavings)}
-          </p>
-          <p className="text-sm text-emerald-600 mt-1">Leftover credit applied YTD</p>
-        </Card>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Link href="/finance/reporting/revenue-by-month">
+          <Card className="p-4 hover:border-amber-700/50 transition-colors cursor-pointer h-full">
+            <p className="text-2xl font-bold text-stone-100">{fmt(summary.totalRevenueCents)}</p>
+            <p className="text-sm text-stone-500 mt-1">Total revenue collected</p>
+          </Card>
+        </Link>
+        <Link href="/finance/reporting/profit-loss">
+          <Card className="p-4 hover:border-amber-700/50 transition-colors cursor-pointer h-full">
+            <p className="text-2xl font-bold text-green-700">{fmt(summary.netRevenueCents)}</p>
+            <p className="text-sm text-stone-500 mt-1">Net revenue (after refunds)</p>
+          </Card>
+        </Link>
+        <Link href="/finance/payments/refunds">
+          <Card className="p-4 hover:border-amber-700/50 transition-colors cursor-pointer h-full">
+            <p className="text-2xl font-bold text-red-600">{fmt(summary.totalRefundsCents)}</p>
+            <p className="text-sm text-stone-500 mt-1">Total refunds issued</p>
+          </Card>
+        </Link>
+        <Link href="/finance/overview">
+          <Card className="p-4 border-emerald-200 bg-emerald-950 hover:border-amber-700/50 transition-colors cursor-pointer h-full">
+            <p className="text-2xl font-bold text-emerald-700">
+              {carryForwardSavings === null ? '--' : fmt(carryForwardSavings)}
+            </p>
+            <p className="text-sm text-emerald-600 mt-1">Leftover credit applied YTD</p>
+          </Card>
+        </Link>
       </div>
+
+      {/* Recent Events with Financial Data */}
+      <WidgetErrorBoundary name="Recent Events" compact>
+        <Suspense fallback={null}>
+          <RecentEventsList />
+        </Suspense>
+      </WidgetErrorBoundary>
 
       {/* Monthly P&L Snapshot */}
       <WidgetErrorBoundary name="Monthly P&L" compact>
@@ -285,7 +381,7 @@ export default async function FinancePage() {
         </Suspense>
       </WidgetErrorBoundary>
 
-      <div className="grid grid-cols-2 gap-4 stagger-grid">
+      <div className="grid grid-cols-2 gap-4">
         {VISIBLE_SECTIONS.map((section) => (
           <Link key={section.href} href={section.href}>
             <Card className="p-5 hover:shadow-md transition-shadow cursor-pointer h-full">
@@ -294,6 +390,15 @@ export default async function FinancePage() {
                 <div>
                   <h2 className="font-semibold text-stone-100">{section.label}</h2>
                   <p className="text-sm text-stone-500 mt-0.5">{section.description}</p>
+                  {section.secondaryHref && (
+                    <Link
+                      href={section.secondaryHref}
+                      onClick={(e) => e.stopPropagation()}
+                      className="text-xs text-brand-600 hover:underline mt-1.5 inline-block"
+                    >
+                      {section.secondaryLabel} →
+                    </Link>
+                  )}
                 </div>
               </div>
             </Card>
@@ -302,7 +407,7 @@ export default async function FinancePage() {
       </div>
 
       <div className="text-sm text-stone-400 flex items-center gap-2">
-        <Link href="/goals" className="text-brand-600 hover:underline">
+        <Link href="/analytics/goals" className="text-brand-600 hover:underline">
           Revenue Goals
         </Link>
       </div>

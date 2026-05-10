@@ -14,6 +14,12 @@ export type DocumentTemplateSlug =
   | 'travel-route'
   | 'content-asset-capture'
   | 'banquet-event-order'
+  | 'plating-guide'
+  | 'allergen-reference'
+  | 'venue-recon'
+  | 'beverage-notes'
+  | 'client-contact'
+  | 'mise-check'
 
 export type DocumentTemplateEntry = {
   slug: DocumentTemplateSlug
@@ -101,6 +107,48 @@ export const DOCUMENT_TEMPLATE_CATALOG: DocumentTemplateEntry[] = [
     sourcePath: 'docs/PDFref/templates/12-banquet-event-order-template.md',
     downloadName: 'banquet-event-order-template.md',
   },
+  {
+    slug: 'plating-guide',
+    label: 'Plating Guide Template',
+    description: 'Per-dish plating directions: plate type, garnish, portion, presentation.',
+    sourcePath: 'docs/PDFref/templates/13-plating-guide-template.md',
+    downloadName: 'plating-guide-template.md',
+  },
+  {
+    slug: 'allergen-reference',
+    label: 'Allergen Quick-Reference Template',
+    description: 'Station-tape card with per-guest allergens and per-dish warnings.',
+    sourcePath: 'docs/PDFref/templates/14-allergen-reference-template.md',
+    downloadName: 'allergen-reference-template.md',
+  },
+  {
+    slug: 'venue-recon',
+    label: 'Venue/Kitchen Recon Template',
+    description: 'Kitchen equipment, utilities, storage, and access checklist.',
+    sourcePath: 'docs/PDFref/templates/15-venue-recon-template.md',
+    downloadName: 'venue-recon-template.md',
+  },
+  {
+    slug: 'beverage-notes',
+    label: 'Beverage & Pairing Notes Template',
+    description: 'Per-course pairings, temps, glassware, and client-provided drinks.',
+    sourcePath: 'docs/PDFref/templates/16-beverage-notes-template.md',
+    downloadName: 'beverage-notes-template.md',
+  },
+  {
+    slug: 'client-contact',
+    label: 'Client Contact & Access Template',
+    description: 'Pocket card: client phone, address, gate code, parking, emergency.',
+    sourcePath: 'docs/PDFref/templates/17-client-contact-template.md',
+    downloadName: 'client-contact-template.md',
+  },
+  {
+    slug: 'mise-check',
+    label: 'Mise en Place Verification Template',
+    description: 'Component-level portioning, labeling, and taste verification checklist.',
+    sourcePath: 'docs/PDFref/templates/18-mise-check-template.md',
+    downloadName: 'mise-check-template.md',
+  },
 ]
 
 export const TEMPLATE_SLUG_BY_DOC_TYPE: Record<OperationalDocumentType, DocumentTemplateSlug> = {
@@ -115,6 +163,12 @@ export const TEMPLATE_SLUG_BY_DOC_TYPE: Record<OperationalDocumentType, Document
   travel: 'travel-route',
   shots: 'content-asset-capture',
   beo: 'banquet-event-order',
+  plating: 'plating-guide',
+  allergen: 'allergen-reference',
+  venue: 'venue-recon',
+  beverage: 'beverage-notes',
+  contact: 'client-contact',
+  mise: 'mise-check',
 }
 
 export function getDocumentTemplateBySlug(slug: string): DocumentTemplateEntry | null {

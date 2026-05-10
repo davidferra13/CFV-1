@@ -11,6 +11,7 @@ import { createServerClient } from '@/lib/db/server'
 import { allergenShortName } from '@/lib/constants/allergens'
 import { format, parseISO } from 'date-fns'
 import { dateToDateString } from '@/lib/utils/format'
+import { FONT, COLOR } from './pdf-design-tokens'
 
 // --- Types ---
 
@@ -263,7 +264,7 @@ function renderLabel(
   let curY = y + padding
 
   // Dashed border for cut guides
-  doc.setDrawColor(180, 180, 180)
+  doc.setDrawColor(...COLOR.borderLight)
   doc.setLineWidth(0.3)
   doc.setLineDashPattern([2, 2], 0)
   doc.rect(x, y, width, height)
@@ -280,7 +281,7 @@ function renderLabel(
   // Dish name (bold, prominent)
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(nameFontSize)
-  doc.setTextColor(0, 0, 0)
+  doc.setTextColor(...COLOR.textPrimary)
 
   const nameLines = doc.splitTextToSize(label.dishName, innerW)
   const lineH = nameFontSize * 0.38
@@ -295,7 +296,7 @@ function renderLabel(
   if (curY + courseFontSize * 0.38 < maxY) {
     doc.setFont('helvetica', 'italic')
     doc.setFontSize(courseFontSize)
-    doc.setTextColor(100, 100, 100)
+    doc.setTextColor(...COLOR.textSecondary)
     doc.text(label.courseName, x + padding, curY)
     curY += courseFontSize * 0.38 + 1
   }
@@ -316,9 +317,9 @@ function renderLabel(
     const allergenText = label.allergens.map((a) => allergenShortName(a)).join(' | ')
 
     const prefixW = doc.getTextWidth('CONTAINS: ')
-    doc.setTextColor(100, 100, 100)
+    doc.setTextColor(...COLOR.textSecondary)
     doc.text('CONTAINS:', x + padding, curY)
-    doc.setTextColor(180, 50, 50)
+    doc.setTextColor(...COLOR.dangerText)
 
     const allergenLines = doc.splitTextToSize(allergenText, innerW - prefixW)
     if (allergenLines.length === 1) {
@@ -346,7 +347,7 @@ function renderLabel(
   if (label.reheatNote && curY + detailFontSize * 0.38 + 1 < maxY) {
     doc.setFont('helvetica', 'normal')
     doc.setFontSize(detailFontSize)
-    doc.setTextColor(60, 60, 60)
+    doc.setTextColor(...COLOR.textSecondary)
     const reheatLines = doc.splitTextToSize(label.reheatNote, innerW)
     for (const line of reheatLines.slice(0, 1)) {
       if (curY + detailFontSize * 0.38 > maxY) break
@@ -362,7 +363,7 @@ function renderLabel(
   if (dateY > curY && dateY + dateLineH <= y + height) {
     doc.setFont('helvetica', 'normal')
     doc.setFontSize(detailFontSize)
-    doc.setTextColor(120, 120, 120)
+    doc.setTextColor(...COLOR.textMuted)
     doc.text('Prepared: ' + label.datePrepared, x + padding, dateY)
   }
 }

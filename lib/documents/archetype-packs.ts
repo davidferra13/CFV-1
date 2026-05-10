@@ -25,8 +25,12 @@ const PRIVATE_CHEF_PACK: ArchetypeDocumentPack = {
     'reset',
     'travel',
     'shots',
+    'plating',
+    'allergen',
+    'contact',
+    'mise',
   ],
-  optionalOperationalDocs: [],
+  optionalOperationalDocs: ['venue', 'beverage'],
   futureDocs: [],
 }
 
@@ -43,8 +47,11 @@ const CATERER_PACK: ArchetypeDocumentPack = {
     'packing',
     'reset',
     'travel',
+    'allergen',
+    'venue',
+    'mise',
   ],
-  optionalOperationalDocs: ['foh', 'shots'],
+  optionalOperationalDocs: ['foh', 'shots', 'plating', 'beverage', 'contact'],
   futureDocs: ['Crew assignments sheet', 'Production kitchen load sheet'],
 }
 
@@ -52,8 +59,8 @@ const MEAL_PREP_PACK: ArchetypeDocumentPack = {
   archetype: 'meal-prep',
   title: 'Meal Prep Run Pack',
   subtitle: 'Batch-cooking focused packet adapted from event docs.',
-  recommendedOperationalDocs: ['grocery', 'prep', 'packing', 'checklist', 'reset'],
-  optionalOperationalDocs: ['summary', 'travel'],
+  recommendedOperationalDocs: ['grocery', 'prep', 'packing', 'checklist', 'reset', 'mise'],
+  optionalOperationalDocs: ['summary', 'travel', 'allergen', 'contact'],
   futureDocs: ['Delivery manifest', 'Weekly production run sheet'],
 }
 
@@ -61,8 +68,16 @@ const RESTAURANT_PACK: ArchetypeDocumentPack = {
   archetype: 'restaurant',
   title: 'Restaurant Private Event Pack',
   subtitle: 'Best for buyouts, chef tables, and private dining nights.',
-  recommendedOperationalDocs: ['foh', 'prep', 'execution', 'checklist', 'shots'],
-  optionalOperationalDocs: ['summary', 'grocery', 'packing', 'reset'],
+  recommendedOperationalDocs: [
+    'foh',
+    'prep',
+    'execution',
+    'checklist',
+    'shots',
+    'plating',
+    'allergen',
+  ],
+  optionalOperationalDocs: ['summary', 'grocery', 'packing', 'reset', 'beverage', 'mise'],
   futureDocs: ['Banquet BEO export', 'FOH staffing lineup sheet'],
 }
 
@@ -78,8 +93,9 @@ const FOOD_TRUCK_PACK: ArchetypeDocumentPack = {
     'packing',
     'travel',
     'reset',
+    'mise',
   ],
-  optionalOperationalDocs: ['summary', 'shots'],
+  optionalOperationalDocs: ['summary', 'shots', 'allergen', 'venue', 'contact'],
   futureDocs: ['Commissary load-in sheet', 'Service window throughput sheet'],
 }
 
@@ -87,8 +103,8 @@ const BAKERY_PACK: ArchetypeDocumentPack = {
   archetype: 'bakery',
   title: 'Bakery Event Order Pack',
   subtitle: 'Order-production packet for custom event bakes.',
-  recommendedOperationalDocs: ['grocery', 'prep', 'checklist', 'packing'],
-  optionalOperationalDocs: ['summary', 'travel', 'reset'],
+  recommendedOperationalDocs: ['grocery', 'prep', 'checklist', 'packing', 'allergen'],
+  optionalOperationalDocs: ['summary', 'travel', 'reset', 'mise', 'contact', 'plating'],
   futureDocs: ['Bake timeline board', 'Order fulfillment and labeling sheet'],
 }
 

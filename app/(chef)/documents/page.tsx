@@ -27,6 +27,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { ScrollToTopButton } from '@/components/ui/scroll-to-top-button'
+import { VersionHistoryBadge } from '@/components/documents/version-history-badge'
 
 type EventListItem = {
   id: string
@@ -108,10 +109,15 @@ const TEMPLATE_GROUPS: TemplateGroup[] = [
   },
 ]
 
-function buildDocumentsFilterHref(phase: EventWorkspacePhaseKey | 'all', query: string): string {
+function buildDocumentsFilterHref(
+  phase: EventWorkspacePhaseKey | 'all',
+  query: string,
+  clientId?: string
+): string {
   const params = new URLSearchParams()
   if (phase !== 'all') params.set('phase', phase)
   if (query) params.set('q', query)
+  if (clientId) params.set('client', clientId)
   const queryString = params.toString()
   return queryString ? `/documents?${queryString}` : '/documents'
 }
@@ -140,7 +146,8 @@ function buildSnapshotFilterHref(
   phase: EventWorkspacePhaseKey | 'all',
   phaseQuery: string,
   current: SnapshotQueryState,
-  overrides: Partial<SnapshotQueryState>
+  overrides: Partial<SnapshotQueryState>,
+  clientId?: string
 ): string {
   const merged: SnapshotQueryState = {
     ...current,
@@ -150,6 +157,7 @@ function buildSnapshotFilterHref(
   const params = new URLSearchParams()
   if (phase !== 'all') params.set('phase', phase)
   if (phaseQuery) params.set('q', phaseQuery)
+  if (clientId) params.set('client', clientId)
 
   if (merged.doc !== 'any') params.set('s_doc', merged.doc)
   if (merged.from) params.set('s_from', merged.from)
@@ -209,6 +217,7 @@ export default async function DocumentsIndexPage({
   searchParams?: {
     phase?: string
     q?: string
+    client?: string
     s_doc?: string
     s_from?: string
     s_to?: string
@@ -260,6 +269,10 @@ export default async function DocumentsIndexPage({
       : isEventWorkspacePhaseKey(requestedPhase)
         ? requestedPhase
         : 'all'
+  const clientFilter = (searchParams?.client ?? '').trim()
+  const activeClientName = clientFilter
+    ? (searchClients.find((c) => c.id === clientFilter)?.name ?? null)
+    : null
 
   const snapshotQueryState: SnapshotQueryState = {
     doc: snapshotDocFilter,
@@ -268,6 +281,46 @@ export default async function DocumentsIndexPage({
     order: snapshotOrder,
     q: snapshotSearch,
     page: archiveDrilldown.page,
+  }
+
+  // Compute version groups for archive finder: group by eventId + documentType
+  const versionGroupMap = new Map<
+    string,
+    { id: string; versionNumber: number; generatedAt: string }[]
+  >()
+  for (const snapshot of archiveDrilldown.items) {
+    const groupKey = `${snapshot.eventId}::${snapshot.documentType}`
+    const existing = versionGroupMap.get(groupKey)
+    if (existing) {
+      existing.push({
+        id: snapshot.id,
+        versionNumber: snapshot.versionNumber,
+        generatedAt: snapshot.generatedAt,
+      })
+    } else {
+      versionGroupMap.set(groupKey, [
+        {
+          id: snapshot.id,
+          versionNumber: snapshot.versionNumber,
+          generatedAt: snapshot.generatedAt,
+        },
+      ])
+    }
+  }
+  // Also scan recentSnapshots for additional versions not on the current page
+  for (const snapshot of recentSnapshots) {
+    const groupKey = `${snapshot.eventId}::${snapshot.documentType}`
+    const existing = versionGroupMap.get(groupKey)
+    if (existing) {
+      if (!existing.some((v) => v.id === snapshot.id)) {
+        existing.push({
+          id: snapshot.id,
+          versionNumber: snapshot.versionNumber,
+          generatedAt: snapshot.generatedAt,
+        })
+      }
+    }
+    // Only add to groups that already exist from the current page items
   }
 
   const templateBySlug = new Map<DocumentTemplateSlug, DocumentTemplateEntry>(
@@ -307,6 +360,7 @@ export default async function DocumentsIndexPage({
     })
     .filter((event) => {
       if (phaseFilter !== 'all' && event.phase !== phaseFilter) return false
+      if (activeClientName && event.clientName !== activeClientName) return false
       if (!query) return true
       const searchable = `${event.occasion} ${event.clientName} ${event.status}`.toLowerCase()
       return searchable.includes(query)
@@ -370,7 +424,24 @@ export default async function DocumentsIndexPage({
         </div>
       </Card>
 
-      <Card className="p-6">
+      {/* Quick filter links */}
+      <div className="flex items-center gap-3 text-xs text-stone-500">
+        <span>Quick filters: View documents</span>
+        <a
+          href="#workspace-section"
+          className="text-amber-400 hover:text-amber-300 underline underline-offset-2"
+        >
+          by event
+        </a>
+        <a
+          href="#workspace-section"
+          className="text-amber-400 hover:text-amber-300 underline underline-offset-2"
+        >
+          by client
+        </a>
+      </div>
+
+      <Card id="workspace-section" className="p-6">
         <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
           <div>
             <h2 className="text-lg font-semibold">Event-First Document Workspace</h2>
@@ -378,7 +449,7 @@ export default async function DocumentsIndexPage({
               Find events by lifecycle phase, then open or print docs immediately.
             </p>
           </div>
-          <form method="get" className="flex items-center gap-2">
+          <form method="get" className="flex flex-wrap items-center gap-2">
             <input
               type="text"
               name="q"
@@ -387,10 +458,33 @@ export default async function DocumentsIndexPage({
               className="h-10 rounded-lg border border-stone-700 bg-stone-900 px-3 text-sm text-stone-200 placeholder:text-stone-500 w-64 max-w-[60vw]"
             />
             {phaseFilter !== 'all' && <input type="hidden" name="phase" value={phaseFilter} />}
+            {searchClients.length > 0 && (
+              <select
+                name="client"
+                defaultValue={clientFilter}
+                aria-label="Filter by client"
+                className="h-10 rounded-lg border border-stone-700 bg-stone-900 px-3 text-sm text-stone-200"
+              >
+                <option value="">All clients</option>
+                {searchClients.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            )}
             <Button type="submit" variant="secondary" size="sm">
               Search
             </Button>
-            {(rawQuery || phaseFilter !== 'all' || snapshotDocFilter !== 'any' || snapshotFromDate || snapshotToDate || snapshotOrder !== 'newest' || snapshotSearch || snapshotPage > 1) && (
+            {(rawQuery ||
+              phaseFilter !== 'all' ||
+              clientFilter ||
+              snapshotDocFilter !== 'any' ||
+              snapshotFromDate ||
+              snapshotToDate ||
+              snapshotOrder !== 'newest' ||
+              snapshotSearch ||
+              snapshotPage > 1) && (
               <Link href="/documents">
                 <Button variant="ghost" size="sm">
                   Reset
@@ -400,8 +494,22 @@ export default async function DocumentsIndexPage({
           </form>
         </div>
 
+        {/* Active filter pills */}
+        {(activeClientName || phaseFilter !== 'all') && (
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            {activeClientName && (
+              <span className="inline-flex items-center gap-1.5 text-xs rounded-full bg-amber-900/30 border border-amber-700/50 text-amber-300 px-2.5 py-1">
+                Client: {activeClientName}
+                <Link href={buildDocumentsFilterHref(phaseFilter, rawQuery)}>
+                  <span className="hover:text-amber-100 cursor-pointer font-bold ml-0.5">x</span>
+                </Link>
+              </span>
+            )}
+          </div>
+        )}
+
         <div className="mt-4 flex flex-wrap gap-2">
-          <Link href={buildDocumentsFilterHref('all', rawQuery)}>
+          <Link href={buildDocumentsFilterHref('all', rawQuery, clientFilter || undefined)}>
             <Button variant={phaseFilter === 'all' ? 'primary' : 'secondary'} size="sm">
               All ({workspaceRows.length})
             </Button>
@@ -409,7 +517,10 @@ export default async function DocumentsIndexPage({
           {EVENT_WORKSPACE_PHASES.map((phase) => {
             const count = rowsByPhase.get(phase.id)?.length ?? 0
             return (
-              <Link key={phase.id} href={buildDocumentsFilterHref(phase.id, rawQuery)}>
+              <Link
+                key={phase.id}
+                href={buildDocumentsFilterHref(phase.id, rawQuery, clientFilter || undefined)}
+              >
                 <Button variant={phaseFilter === phase.id ? 'primary' : 'secondary'} size="sm">
                   {phase.label} ({count})
                 </Button>
@@ -489,6 +600,11 @@ export default async function DocumentsIndexPage({
                           Financial
                         </Button>
                       </Link>
+                      <Link href={`/finance/invoices?event=${event.id}`}>
+                        <Button variant="ghost" size="sm">
+                          View Invoices
+                        </Button>
+                      </Link>
                     </div>
                   </div>
                 ))}
@@ -515,21 +631,32 @@ export default async function DocumentsIndexPage({
                   {templates.map((template) => (
                     <div
                       key={template.slug}
-                      className="flex items-center justify-between gap-3 border-b border-stone-800 pb-3 last:border-b-0 last:pb-0"
+                      className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-stone-800 pb-3 last:border-b-0 last:pb-0"
                     >
                       <div>
                         <p className="font-medium text-stone-100">{template.label}</p>
                         <p className="text-xs text-stone-500">{template.description}</p>
+                        <p className="text-xs text-stone-600 mt-1">
+                          Tip: Open an event hub to generate this template pre-filled with event
+                          data
+                        </p>
                       </div>
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        href={`/api/documents/templates/${template.slug}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        Download Blank
-                      </Button>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          href={`/api/documents/templates/${template.slug}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          Download Blank
+                        </Button>
+                        <Link href="/documents?phase=active">
+                          <Button variant="ghost" size="sm">
+                            Find event to fill
+                          </Button>
+                        </Link>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -549,10 +676,16 @@ export default async function DocumentsIndexPage({
           {SNAPSHOT_TYPE_FILTERS.map((filter) => (
             <Link
               key={filter.value}
-              href={buildSnapshotFilterHref(phaseFilter, rawQuery, snapshotQueryState, {
-                doc: filter.value,
-                page: 1,
-              })}
+              href={buildSnapshotFilterHref(
+                phaseFilter,
+                rawQuery,
+                snapshotQueryState,
+                {
+                  doc: filter.value,
+                  page: 1,
+                },
+                clientFilter || undefined
+              )}
             >
               <Button
                 variant={snapshotDocFilter === filter.value ? 'primary' : 'secondary'}
@@ -570,6 +703,7 @@ export default async function DocumentsIndexPage({
         >
           {phaseFilter !== 'all' && <input type="hidden" name="phase" value={phaseFilter} />}
           {rawQuery && <input type="hidden" name="q" value={rawQuery} />}
+          {clientFilter && <input type="hidden" name="client" value={clientFilter} />}
           {snapshotDocFilter !== 'any' && (
             <input type="hidden" name="s_doc" value={snapshotDocFilter} />
           )}
@@ -610,12 +744,18 @@ export default async function DocumentsIndexPage({
             </Button>
             {(snapshotSearch || snapshotFromDate || snapshotToDate) && (
               <Link
-                href={buildSnapshotFilterHref(phaseFilter, rawQuery, snapshotQueryState, {
-                  q: '',
-                  from: '',
-                  to: '',
-                  page: 1,
-                })}
+                href={buildSnapshotFilterHref(
+                  phaseFilter,
+                  rawQuery,
+                  snapshotQueryState,
+                  {
+                    q: '',
+                    from: '',
+                    to: '',
+                    page: 1,
+                  },
+                  clientFilter || undefined
+                )}
               >
                 <Button variant="ghost" size="sm">
                   Clear
@@ -626,20 +766,32 @@ export default async function DocumentsIndexPage({
           <div className="flex items-center gap-2">
             <p className="text-xs text-stone-500">Order</p>
             <Link
-              href={buildSnapshotFilterHref(phaseFilter, rawQuery, snapshotQueryState, {
-                order: 'newest',
-                page: 1,
-              })}
+              href={buildSnapshotFilterHref(
+                phaseFilter,
+                rawQuery,
+                snapshotQueryState,
+                {
+                  order: 'newest',
+                  page: 1,
+                },
+                clientFilter || undefined
+              )}
             >
               <Button variant={snapshotOrder === 'newest' ? 'primary' : 'secondary'} size="sm">
                 Newest
               </Button>
             </Link>
             <Link
-              href={buildSnapshotFilterHref(phaseFilter, rawQuery, snapshotQueryState, {
-                order: 'oldest',
-                page: 1,
-              })}
+              href={buildSnapshotFilterHref(
+                phaseFilter,
+                rawQuery,
+                snapshotQueryState,
+                {
+                  order: 'oldest',
+                  page: 1,
+                },
+                clientFilter || undefined
+              )}
             >
               <Button variant={snapshotOrder === 'oldest' ? 'primary' : 'secondary'} size="sm">
                 Oldest
@@ -677,42 +829,61 @@ export default async function DocumentsIndexPage({
           </p>
         ) : (
           <div className="space-y-2 mt-3">
-            {archiveDrilldown.items.map((snapshot) => (
-              <div
-                key={snapshot.id}
-                className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-stone-800 pb-2 last:border-b-0 last:pb-0"
-              >
-                <div>
-                  <p className="text-sm font-medium text-stone-100">
-                    {SNAPSHOT_DOCUMENT_LABELS[snapshot.documentType]} - v{snapshot.versionNumber}
-                  </p>
-                  <p className="text-xs text-stone-500">
-                    {snapshot.eventOccasion || 'Untitled Event'}
-                    {snapshot.clientName ? ` - ${snapshot.clientName}` : ''}
-                    {snapshot.eventDate
-                      ? ` - ${format(new Date(snapshot.eventDate), 'EEE, MMM d, yyyy')}`
-                      : ''}{' '}
-                    ({formatBytes(snapshot.sizeBytes)})
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    href={`/api/documents/snapshots/${snapshot.id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Open
-                  </Button>
-                  <Link href={`/events/${snapshot.eventId}/documents`}>
-                    <Button variant="secondary" size="sm">
-                      Event Hub
+            {archiveDrilldown.items.map((snapshot) => {
+              const groupKey = `${snapshot.eventId}::${snapshot.documentType}`
+              const versions = versionGroupMap.get(groupKey) ?? []
+              return (
+                <div
+                  key={snapshot.id}
+                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-stone-800 pb-2 last:border-b-0 last:pb-0"
+                >
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-medium text-stone-100">
+                        {SNAPSHOT_DOCUMENT_LABELS[snapshot.documentType]} - v
+                        {snapshot.versionNumber}
+                      </p>
+                      {versions.length > 1 && (
+                        <VersionHistoryBadge
+                          currentVersion={snapshot.versionNumber}
+                          totalVersions={versions.length}
+                          versions={versions}
+                        />
+                      )}
+                    </div>
+                    <p className="text-xs text-stone-500">
+                      {snapshot.eventOccasion || 'Untitled Event'}
+                      {snapshot.clientName ? ` - ${snapshot.clientName}` : ''}
+                      {snapshot.eventDate
+                        ? ` - ${format(new Date(snapshot.eventDate), 'EEE, MMM d, yyyy')}`
+                        : ''}{' '}
+                      ({formatBytes(snapshot.sizeBytes)})
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      href={`/api/documents/snapshots/${snapshot.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Open
                     </Button>
-                  </Link>
+                    <Link href={`/events/${snapshot.eventId}/documents`}>
+                      <Button variant="secondary" size="sm">
+                        Event Hub
+                      </Button>
+                    </Link>
+                    <Link href={`/events/${snapshot.eventId}/billing`}>
+                      <Button variant="ghost" size="sm">
+                        Payment Status
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
 
@@ -723,18 +894,30 @@ export default async function DocumentsIndexPage({
             </p>
             <div className="flex items-center gap-2">
               <Link
-                href={buildSnapshotFilterHref(phaseFilter, rawQuery, snapshotQueryState, {
-                  page: Math.max(1, archiveDrilldown.page - 1),
-                })}
+                href={buildSnapshotFilterHref(
+                  phaseFilter,
+                  rawQuery,
+                  snapshotQueryState,
+                  {
+                    page: Math.max(1, archiveDrilldown.page - 1),
+                  },
+                  clientFilter || undefined
+                )}
               >
                 <Button variant="secondary" size="sm" disabled={!archiveDrilldown.hasPreviousPage}>
                   Previous
                 </Button>
               </Link>
               <Link
-                href={buildSnapshotFilterHref(phaseFilter, rawQuery, snapshotQueryState, {
-                  page: Math.min(archiveDrilldown.totalPages, archiveDrilldown.page + 1),
-                })}
+                href={buildSnapshotFilterHref(
+                  phaseFilter,
+                  rawQuery,
+                  snapshotQueryState,
+                  {
+                    page: Math.min(archiveDrilldown.totalPages, archiveDrilldown.page + 1),
+                  },
+                  clientFilter || undefined
+                )}
               >
                 <Button variant="secondary" size="sm" disabled={!archiveDrilldown.hasNextPage}>
                   Next

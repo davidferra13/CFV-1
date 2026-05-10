@@ -15,6 +15,12 @@ const DOC_TYPE_LABELS: Record<keyof DocumentReadiness, string> = {
   packingList: 'Packing List',
   resetChecklist: 'Reset Checklist',
   travelRoute: 'Travel Route',
+  platingGuide: 'Plating Guide',
+  allergenReference: 'Allergen Quick-Reference',
+  venueRecon: 'Venue/Kitchen Recon',
+  beverageNotes: 'Beverage & Pairing Notes',
+  clientContact: 'Client Contact & Access',
+  miseCheck: 'Mise en Place Verification',
 }
 
 // Maps readiness keys to API request doc types
@@ -28,6 +34,12 @@ const DOC_TYPE_API_MAP: Record<keyof DocumentReadiness, string> = {
   packingList: 'packing',
   resetChecklist: 'reset',
   travelRoute: 'travel',
+  platingGuide: 'plating',
+  allergenReference: 'allergen',
+  venueRecon: 'venue',
+  beverageNotes: 'beverage',
+  clientContact: 'contact',
+  miseCheck: 'mise',
 }
 
 export type DocumentReadinessStatus = {

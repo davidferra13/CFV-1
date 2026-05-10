@@ -8,6 +8,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { getChefChecklist, type ChecklistItem } from '@/lib/checklist/actions'
 import { PDFLayout } from './pdf-layout'
+import { FONT } from './pdf-design-tokens'
 
 export type ChecklistData = {
   event: {
@@ -79,34 +80,34 @@ export function renderChecklist(pdf: PDFLayout, data: ChecklistData) {
   if (totalItems > 35) pdf.setFontScale(0.75)
 
   // Title
-  pdf.title('NON-NEGOTIABLES', 16)
-  pdf.text('CHECK BEFORE LEAVING', 10, 'bold', 0)
-  pdf.space(3)
+  pdf.title('NON-NEGOTIABLES', FONT.title.size)
+  pdf.text('CHECK BEFORE LEAVING', FONT.bodyText.size, 'bold', 0)
+  pdf.groupGap()
 
   // ALWAYS section
-  pdf.sectionHeader('ALWAYS', 12, true)
+  pdf.sectionHeader('ALWAYS', FONT.sectionHeader.size, true)
   for (const item of permanentItems) {
-    pdf.checkbox(item.item, 11)
+    pdf.checkbox(item.item, FONT.courseHeader.size)
   }
-  pdf.space(2)
+  pdf.groupGap()
 
   // THIS EVENT section
   if (eventSpecificItems.length > 0) {
-    pdf.sectionHeader('THIS EVENT', 12, true)
+    pdf.sectionHeader('THIS EVENT', FONT.sectionHeader.size, true)
     for (const item of eventSpecificItems) {
-      pdf.checkbox(item.item, 11)
+      pdf.checkbox(item.item, FONT.courseHeader.size)
     }
-    pdf.space(2)
+    pdf.groupGap()
   }
 
   // LEARNED section
   if (learnedItems.length > 0) {
-    pdf.sectionHeader('LEARNED (forgotten before)', 12, true)
+    pdf.sectionHeader('LEARNED (forgotten before)', FONT.sectionHeader.size, true)
     for (const item of learnedItems) {
       const extra = item.forgottenCount ? `(forgotten ${item.forgottenCount}x)` : undefined
-      pdf.checkbox(item.item, 11, extra)
+      pdf.checkbox(item.item, FONT.courseHeader.size, extra)
     }
-    pdf.space(2)
+    pdf.groupGap()
   }
 
   // Footer with departure info
@@ -129,7 +130,11 @@ export async function generateChecklist(
   const data = await fetchChecklistData(eventId)
   if (!data) throw new Error('Cannot generate checklist: event not found')
 
-  const pdf = new PDFLayout()
+  const pdf = new PDFLayout({
+    docType: 'checklist',
+    clientName: data.clientName,
+    eventDate: data.event.event_date,
+  })
   renderChecklist(pdf, data)
   if (generatedByName) pdf.generatedBy(generatedByName, 'Non-Negotiables')
   return pdf.toBuffer()

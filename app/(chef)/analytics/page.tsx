@@ -3,6 +3,7 @@
 
 import type { Metadata } from 'next'
 import dynamic from 'next/dynamic'
+import Link from 'next/link'
 import { Suspense } from 'react'
 import { requireChef } from '@/lib/auth/get-user'
 import { UpgradePrompt } from '@/components/billing/upgrade-prompt'
@@ -231,6 +232,12 @@ export default async function AnalyticsHubPage() {
         <p className="text-stone-400 mt-1">
           Every metric that matters - business, operations, clients, marketing, social, and culinary
         </p>
+        <Link
+          href="/finance/reporting"
+          className="inline-block mt-2 text-xs text-stone-500 hover:text-amber-500 transition-colors"
+        >
+          Finance Reports &rarr;
+        </Link>
       </div>
 
       <UpgradePrompt featureSlug="intelligence-hub" show={true} className="mb-4" />

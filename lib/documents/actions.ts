@@ -96,6 +96,12 @@ export type DocumentReadiness = {
   packingList: { ready: boolean; missing: string[] }
   resetChecklist: { ready: boolean; missing: string[] }
   travelRoute: { ready: boolean; missing: string[] }
+  platingGuide: { ready: boolean; missing: string[] }
+  allergenReference: { ready: boolean; missing: string[] }
+  venueRecon: { ready: boolean; missing: string[] }
+  beverageNotes: { ready: boolean; missing: string[] }
+  clientContact: { ready: boolean; missing: string[] }
+  miseCheck: { ready: boolean; missing: string[] }
 }
 
 /**
@@ -120,16 +126,23 @@ export async function getDocumentReadiness(eventId: string): Promise<DocumentRea
     .single()
 
   if (!event) {
+    const notFound = { ready: false, missing: ['Event not found'] }
     return {
-      eventSummary: { ready: false, missing: ['Event not found'] },
-      groceryList: { ready: false, missing: ['Event not found'] },
-      frontOfHouseMenu: { ready: false, missing: ['Event not found'] },
-      prepSheet: { ready: false, missing: ['Event not found'] },
-      executionSheet: { ready: false, missing: ['Event not found'] },
-      checklist: { ready: false, missing: ['Event not found'] },
-      packingList: { ready: false, missing: ['Event not found'] },
-      resetChecklist: { ready: false, missing: ['Event not found'] },
-      travelRoute: { ready: false, missing: ['Event not found'] },
+      eventSummary: notFound,
+      groceryList: notFound,
+      frontOfHouseMenu: notFound,
+      prepSheet: notFound,
+      executionSheet: notFound,
+      checklist: notFound,
+      packingList: notFound,
+      resetChecklist: notFound,
+      travelRoute: notFound,
+      platingGuide: notFound,
+      allergenReference: notFound,
+      venueRecon: notFound,
+      beverageNotes: notFound,
+      clientContact: notFound,
+      miseCheck: notFound,
     }
   }
 
@@ -206,7 +219,14 @@ export async function getDocumentReadiness(eventId: string): Promise<DocumentRea
     // Table may not exist yet (migration pending)
   }
 
-  // Event Summary, checklist, packing list, and reset checklist are always generatable
+  // Plating guide needs menu + dishes (same as FOH)
+  const platingMissing = [...fohMissing]
+
+  // Mise en place verification needs menu + dishes + components (same as prep)
+  const miseMissing = [...prepMissing]
+
+  // Event Summary, checklist, packing list, reset checklist, allergen ref,
+  // venue recon, beverage notes, and client contact are always generatable
   return {
     eventSummary: { ready: true, missing: [] },
     groceryList: { ready: groceryMissing.length === 0, missing: groceryMissing },
@@ -222,5 +242,11 @@ export async function getDocumentReadiness(eventId: string): Promise<DocumentRea
         ? []
         : ['No service travel leg added yet - open Travel Plan to add one'],
     },
+    platingGuide: { ready: platingMissing.length === 0, missing: platingMissing },
+    allergenReference: { ready: true, missing: [] },
+    venueRecon: { ready: true, missing: [] },
+    beverageNotes: { ready: true, missing: [] },
+    clientContact: { ready: true, missing: [] },
+    miseCheck: { ready: miseMissing.length === 0, missing: miseMissing },
   }
 }

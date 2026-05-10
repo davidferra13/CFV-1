@@ -3,6 +3,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { PDFLayout } from './pdf-layout'
+import { FONT } from './pdf-design-tokens'
 import { allergenShortName } from '@/lib/constants/allergens'
 import { format } from 'date-fns'
 
@@ -167,14 +168,14 @@ export async function generateMenuPdf(menuId: string, options?: MenuPdfOptions):
 
   // --- Build PDF ---
 
-  const pdf = new PDFLayout()
+  const pdf = new PDFLayout({ docType: 'menu-pdf' })
 
   // Header: business name (large, bold)
-  pdf.title(businessName, 16)
+  pdf.title(businessName, FONT.title.size)
 
   // Tagline underneath (if exists)
   if (businessTagline) {
-    pdf.text(businessTagline, 9, 'italic')
+    pdf.text(businessTagline, FONT.metadata.size, 'italic')
     pdf.space(2)
   }
 
@@ -183,7 +184,7 @@ export async function generateMenuPdf(menuId: string, options?: MenuPdfOptions):
 
   // Menu description if present
   if (menu.description) {
-    pdf.text(menu.description, 9, 'italic')
+    pdf.text(menu.description, FONT.metadata.size, 'italic')
     pdf.space(2)
   }
 
@@ -211,11 +212,11 @@ export async function generateMenuPdf(menuId: string, options?: MenuPdfOptions):
           ? `  [${dish.dietary_tags.map(dietaryShort).join(', ')}]`
           : ''
 
-      pdf.text(dishName + dishDietaryLine, 10, 'bold', 2)
+      pdf.text(dishName + dishDietaryLine, FONT.bodyText.size, 'bold', 2)
 
       // Dish description
       if (showDescriptions && dish.description) {
-        pdf.text(dish.description, 8, 'italic', 4)
+        pdf.text(dish.description, FONT.caption.size, 'italic', 4)
       }
 
       // Components
@@ -231,11 +232,11 @@ export async function generateMenuPdf(menuId: string, options?: MenuPdfOptions):
             compDietary = `  [${comp.recipe.dietary_tags.map(dietaryShort).join(', ')}]`
           }
 
-          pdf.bullet(compName + compDietary, 8, 6)
+          pdf.bullet(compName + compDietary, FONT.caption.size, 6)
 
           // Recipe description under component
           if (showDescriptions && comp.recipe?.description) {
-            pdf.text(comp.recipe.description, 7, 'italic', 10)
+            pdf.text(comp.recipe.description, FONT.footer.size, 'italic', 10)
           }
         }
       }
@@ -251,7 +252,7 @@ export async function generateMenuPdf(menuId: string, options?: MenuPdfOptions):
     pdf.hr()
     pdf.space(1)
     const allergenList = Array.from(allAllergens).map(allergenShortName).sort().join(', ')
-    pdf.text(`Allergens present: ${allergenList}`, 8, 'bold')
+    pdf.text(`Allergens present: ${allergenList}`, FONT.caption.size, 'bold')
     pdf.space(1)
   }
 
@@ -261,7 +262,7 @@ export async function generateMenuPdf(menuId: string, options?: MenuPdfOptions):
       .sort()
       .map((tag) => `${dietaryShort(tag)} = ${tag}`)
       .join('   ')
-    pdf.text(legendParts, 7, 'italic')
+    pdf.text(legendParts, FONT.footer.size, 'italic')
     pdf.space(1)
   }
 

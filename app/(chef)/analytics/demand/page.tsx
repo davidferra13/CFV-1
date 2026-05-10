@@ -8,6 +8,7 @@ import { getSeasonalHeatmap } from '@/lib/analytics/demand-forecast-actions'
 import { getHolidayYearOverYear } from '@/lib/analytics/seasonality'
 import { DemandHeatmap } from '@/components/analytics/demand-heatmap'
 import { HolidayYoYTable } from '@/components/analytics/holiday-yoy-table'
+import { CrossDomainLinks } from '@/components/ui/cross-domain-links'
 
 export const metadata: Metadata = { title: 'Demand Forecast' }
 
@@ -32,6 +33,13 @@ export default async function DemandForecastPage() {
           </p>
         </div>
       </div>
+
+      <CrossDomainLinks
+        links={[
+          { label: 'Calendar', href: '/calendar' },
+          { label: 'Events', href: '/events' },
+        ]}
+      />
 
       {heatmapData ? (
         <DemandHeatmap data={heatmapData} />

@@ -122,7 +122,7 @@ export default async function FailedPaymentsPage() {
                           : '-'}
                       </TableCell>
                       <TableCell>
-                        <Link href={`/events/${event.id}`}>
+                        <Link href={`/events/${event.id}/billing`}>
                           <span className="text-xs text-brand-600 hover:underline cursor-pointer">
                             View
                           </span>
@@ -183,7 +183,7 @@ export default async function FailedPaymentsPage() {
                         : '-'}
                     </TableCell>
                     <TableCell>
-                      <Link href={`/events/${event.id}`}>
+                      <Link href={`/events/${event.id}/billing`}>
                         <span className="text-xs text-brand-600 hover:underline cursor-pointer">
                           View
                         </span>

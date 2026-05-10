@@ -8,6 +8,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { PDFLayout } from './pdf-layout'
+import { FONT, SPACING, COLOR } from './pdf-design-tokens'
 import { format, parseISO } from 'date-fns'
 import { dateToDateString } from '@/lib/utils/format'
 import { getGearDefaults } from '@/lib/gear/actions'
@@ -352,7 +353,7 @@ export function renderPackingList(pdf: PDFLayout, data: PackingListData) {
   if (totalItems > 30) pdf.setFontScale(0.85)
   if (totalItems > 45) pdf.setFontScale(0.75)
 
-  pdf.title('PACKING LIST', 14)
+  pdf.title('PACKING LIST', FONT.title.size)
 
   const dateStr = format(
     parseISO(dateToDateString(event.event_date as Date | string)),
@@ -373,10 +374,10 @@ export function renderPackingList(pdf: PDFLayout, data: PackingListData) {
     .filter(Boolean)
     .join(', ')
   if (location) {
-    pdf.text(`Location: ${location}`, 8, 'normal')
+    pdf.text(`Location: ${location}`, FONT.caption.size, 'normal')
   }
   if (event.access_instructions) {
-    pdf.text(`Access: ${event.access_instructions}`, 8, 'italic')
+    pdf.text(`Access: ${event.access_instructions}`, FONT.caption.size, 'italic')
   }
 
   if (data.allergies.length > 0) {
@@ -388,37 +389,61 @@ export function renderPackingList(pdf: PDFLayout, data: PackingListData) {
   // ─── Food sections ────────────────────────────────────────────────────────
 
   if (coldItems.length > 0) {
-    pdf.sectionHeader('COOLER - COLD ITEMS', 11, true)
+    pdf.sectionHeader('COOLER - COLD ITEMS', FONT.courseHeader.size, true)
+    pdf.dualCheckboxHeaders()
     for (const item of coldItems) {
-      const label = item.storage_notes ? `${item.name} - ${item.storage_notes}` : item.name
-      pdf.checkbox(label, 9, `C${item.course_number}`)
+      pdf.dualCheckbox(
+        item.name,
+        `C${item.course_number}`,
+        item.storage_notes ?? undefined,
+        FONT.metadata.size
+      )
     }
     pdf.space(1)
   }
 
   if (frozenItems.length > 0) {
-    pdf.sectionHeader('COOLER - FROZEN (pack last, on top)', 11, true)
+    pdf.sectionHeader('COOLER - FROZEN (pack last, on top)', FONT.courseHeader.size, true)
+    pdf.dualCheckboxHeaders()
     for (const item of frozenItems) {
-      const label = item.storage_notes ? `${item.name} - ${item.storage_notes}` : item.name
-      pdf.checkbox(label, 9, `C${item.course_number}`)
+      pdf.dualCheckbox(
+        item.name,
+        `C${item.course_number}`,
+        item.storage_notes ?? undefined,
+        FONT.metadata.size
+      )
     }
     pdf.space(1)
   }
 
   if (roomTempItems.length > 0) {
-    pdf.sectionHeader('DRY BAG - ROOM TEMP', 11, true)
+    pdf.sectionHeader('DRY BAG - ROOM TEMP', FONT.courseHeader.size, true)
+    pdf.dualCheckboxHeaders()
     for (const item of roomTempItems) {
-      const label = item.storage_notes ? `${item.name} - ${item.storage_notes}` : item.name
-      pdf.checkbox(label, 9, `C${item.course_number}`)
+      pdf.dualCheckbox(
+        item.name,
+        `C${item.course_number}`,
+        item.storage_notes ?? undefined,
+        FONT.metadata.size
+      )
     }
     pdf.space(1)
   }
 
   if (fragileItems.length > 0) {
-    pdf.sectionHeader('FRAGILE - own padded container, nothing stacked on top', 11, true)
+    pdf.sectionHeader(
+      'FRAGILE - own padded container, nothing stacked on top',
+      FONT.courseHeader.size,
+      true
+    )
+    pdf.dualCheckboxHeaders()
     for (const item of fragileItems) {
-      const label = item.storage_notes ? `${item.name} - ${item.storage_notes}` : item.name
-      pdf.checkbox(label, 9, `C${item.course_number}`)
+      pdf.dualCheckbox(
+        item.name,
+        `C${item.course_number}`,
+        item.storage_notes ?? undefined,
+        FONT.metadata.size
+      )
     }
     pdf.space(1)
   }
@@ -429,10 +454,10 @@ export function renderPackingList(pdf: PDFLayout, data: PackingListData) {
     roomTempItems.length === 0 &&
     fragileItems.length === 0
   ) {
-    pdf.sectionHeader('FOOD ITEMS', 11, true)
+    pdf.sectionHeader('FOOD ITEMS', FONT.courseHeader.size, true)
     pdf.text(
       'No make-ahead components found. Add components to the menu with "Make ahead" checked.',
-      8,
+      FONT.caption.size,
       'italic'
     )
     pdf.space(1)
@@ -440,25 +465,26 @@ export function renderPackingList(pdf: PDFLayout, data: PackingListData) {
 
   // ─── Equipment ─────────────────────────────────────────────────────────────
 
-  pdf.sectionHeader('EQUIPMENT', 11, true)
+  pdf.sectionHeader('EQUIPMENT', FONT.courseHeader.size, true)
+  pdf.dualCheckboxHeaders()
 
   for (const item of standardKitItems) {
-    pdf.checkbox(item, 9)
+    pdf.dualCheckbox(item, undefined, undefined, FONT.metadata.size)
   }
 
   if (mustBringEquipment.length > 0) {
     pdf.space(0.5)
-    pdf.text('Client-specific:', 8, 'bold', 2)
+    pdf.text('Client-specific:', FONT.caption.size, 'bold', 2)
     for (const item of mustBringEquipment) {
-      pdf.checkbox(item, 9)
+      pdf.dualCheckbox(item, undefined, undefined, FONT.metadata.size)
     }
   }
 
   if (eventEquipment.length > 0) {
     pdf.space(0.5)
-    pdf.text('This event:', 8, 'bold', 2)
+    pdf.text('This event:', FONT.caption.size, 'bold', 2)
     for (const item of eventEquipment) {
-      pdf.checkbox(item, 9)
+      pdf.dualCheckbox(item, undefined, undefined, FONT.metadata.size)
     }
   }
 
@@ -467,9 +493,10 @@ export function renderPackingList(pdf: PDFLayout, data: PackingListData) {
   // ─── Serviceware ──────────────────────────────────────────────────────────
 
   if (data.servicewareItems.length > 0) {
-    pdf.sectionHeader('SERVICEWARE', 11, true)
+    pdf.sectionHeader('SERVICEWARE', FONT.courseHeader.size, true)
+    pdf.dualCheckboxHeaders()
     for (const item of data.servicewareItems) {
-      pdf.checkbox(item, 9)
+      pdf.dualCheckbox(item, undefined, undefined, FONT.metadata.size)
     }
     pdf.space(1)
   }
@@ -477,7 +504,8 @@ export function renderPackingList(pdf: PDFLayout, data: PackingListData) {
   // ─── Personal Gear ────────────────────────────────────────────────────────
 
   if (data.personalGear.length > 0) {
-    pdf.sectionHeader('PERSONAL GEAR', 11, true)
+    pdf.sectionHeader('PERSONAL GEAR', FONT.courseHeader.size, true)
+    pdf.dualCheckboxHeaders()
     const byCategory = new Map<string, string[]>()
     for (const g of data.personalGear) {
       const list = byCategory.get(g.category) ?? []
@@ -487,9 +515,9 @@ export function renderPackingList(pdf: PDFLayout, data: PackingListData) {
     for (const cat of GEAR_CATEGORY_ORDER) {
       const items = byCategory.get(cat)
       if (items && items.length > 0) {
-        pdf.text(GEAR_CATEGORY_LABELS[cat] ?? cat, 8, 'bold', 2)
+        pdf.text(GEAR_CATEGORY_LABELS[cat] ?? cat, FONT.caption.size, 'bold', 2)
         for (const item of items) {
-          pdf.checkbox(item, 9)
+          pdf.dualCheckbox(item, undefined, undefined, FONT.metadata.size)
         }
       }
     }
@@ -499,25 +527,25 @@ export function renderPackingList(pdf: PDFLayout, data: PackingListData) {
   // ─── Component Verification ────────────────────────────────────────────────
 
   if (courseVerification.length > 0) {
-    pdf.sectionHeader('COMPONENT VERIFICATION', 11, true)
+    pdf.sectionHeader('COMPONENT VERIFICATION', FONT.courseHeader.size, true)
     for (const { courseNumber, courseName, count } of courseVerification) {
       pdf.text(
         `Course ${courseNumber} - ${courseName}: ${count} item${count !== 1 ? 's' : ''}`,
-        9,
+        FONT.metadata.size,
         'normal',
         2
       )
     }
-    pdf.text(`TOTAL: ${totalFoodItems} food items to pack`, 9, 'bold', 2)
+    pdf.text(`TOTAL: ${totalFoodItems} food items to pack`, FONT.metadata.size, 'bold', 2)
     pdf.space(1)
   }
 
   // ─── Site Notes ────────────────────────────────────────────────────────────
 
   if (kitchenNotes || houseRules) {
-    pdf.sectionHeader('SITE NOTES', 10, true)
-    if (kitchenNotes) pdf.text(`Kitchen: ${kitchenNotes}`, 8, 'normal', 2)
-    if (houseRules) pdf.text(`House rules: ${houseRules}`, 8, 'italic', 2)
+    pdf.sectionHeader('SITE NOTES', FONT.bodyText.size, true)
+    if (kitchenNotes) pdf.text(`Kitchen: ${kitchenNotes}`, FONT.caption.size, 'normal', 2)
+    if (houseRules) pdf.text(`House rules: ${houseRules}`, FONT.caption.size, 'italic', 2)
   }
 
   // ─── Footer ────────────────────────────────────────────────────────────────
@@ -541,7 +569,15 @@ export async function generatePackingList(
   const data = await fetchPackingListData(eventId)
   if (!data) throw new Error('Cannot generate packing list: event not found')
 
-  const pdf = new PDFLayout()
+  const dateStr = format(
+    parseISO(dateToDateString(data.event.event_date as Date | string)),
+    'EEE, MMM d, yyyy'
+  )
+  const pdf = new PDFLayout({
+    docType: 'packing-list',
+    clientName: data.clientName,
+    eventDate: dateStr,
+  })
   renderPackingList(pdf, data)
   if (generatedByName) pdf.generatedBy(generatedByName, 'Packing List')
   return pdf.toBuffer()

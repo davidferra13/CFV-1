@@ -29,9 +29,23 @@ const ENTRY_TYPE_STYLES: Record<string, string> = {
   refund: 'bg-red-900 text-red-700',
 }
 
-export default async function TransactionLogPage() {
+export default async function TransactionLogPage({
+  searchParams,
+}: {
+  searchParams: { eventId?: string }
+}) {
   await requireChef()
-  const entries = await getLedgerEntries()
+  const filters: { eventId?: string } = {}
+  if (searchParams.eventId) {
+    filters.eventId = searchParams.eventId
+  }
+  const entries = await getLedgerEntries(filters)
+
+  // When filtered by event, grab the event name from the first entry (all share the same event)
+  const filteredEventName =
+    searchParams.eventId && entries.length > 0
+      ? ((entries[0] as any).event?.occasion?.replace(/_/g, ' ') ?? 'Event')
+      : null
 
   const totalIn = entries
     .filter((e: any) => !e.is_refund && e.entry_type !== 'refund')
@@ -61,6 +75,30 @@ export default async function TransactionLogPage() {
           <CSVDownloadButton action={exportLedgerEntriesCSV} label="Export CSV" />
         </div>
       </div>
+
+      {/* Event filter banner */}
+      {searchParams.eventId && (
+        <div className="rounded-lg border border-brand-700 bg-brand-950/40 px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-brand-300">
+              Filtered to event:{' '}
+              <span className="font-semibold capitalize">{filteredEventName}</span>
+            </span>
+            <Link
+              href={`/events/${searchParams.eventId}/billing`}
+              className="text-xs text-brand-500 hover:underline ml-2"
+            >
+              View event billing
+            </Link>
+          </div>
+          <Link
+            href="/finance/ledger/transaction-log"
+            className="text-xs text-stone-400 hover:text-stone-200"
+          >
+            Clear filter
+          </Link>
+        </div>
+      )}
 
       <div className="grid grid-cols-3 gap-4">
         <Card className="p-4">
@@ -112,12 +150,19 @@ export default async function TransactionLogPage() {
                   </TableCell>
                   <TableCell className="text-stone-400 text-sm">
                     {entry.event ? (
-                      <Link
-                        href={`/events/${entry.event.id}`}
-                        className="text-brand-600 hover:underline capitalize"
-                      >
-                        {entry.event.occasion?.replace(/_/g, ' ') ?? 'Event'}
-                      </Link>
+                      <div className="flex items-center gap-2">
+                        <Link
+                          href={`/events/${entry.event.id}/billing`}
+                          className="text-brand-600 hover:underline capitalize"
+                        >
+                          {entry.event.occasion?.replace(/_/g, ' ') ?? 'Event'}
+                        </Link>
+                        {entry.event.event_date && (
+                          <span className="text-xs text-stone-500">
+                            {format(new Date(entry.event.event_date), 'MMM d')}
+                          </span>
+                        )}
+                      </div>
                     ) : (
                       '-'
                     )}

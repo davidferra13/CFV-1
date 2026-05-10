@@ -115,7 +115,7 @@ export default async function RentalsEquipmentExpensesPage() {
                   <TableCell className="text-stone-500 text-sm">
                     {expense.event ? (
                       <Link
-                        href={`/events/${expense.event.id}`}
+                        href={`/events/${expense.event.id}/billing`}
                         className="text-brand-600 hover:underline capitalize"
                       >
                         {expense.event.occasion?.replace(/_/g, ' ') ?? 'Event'}

@@ -135,7 +135,7 @@ export default async function RevenueByEventPage() {
                     </span>
                   </TableCell>
                   <TableCell className="text-stone-100 font-semibold text-sm">
-                    <Link href={`/events/${event.id}`} className="hover:underline">
+                    <Link href={`/events/${event.id}/billing`} className="hover:underline">
                       {formatCurrency(event.quoted_price_cents ?? 0)}
                     </Link>
                   </TableCell>

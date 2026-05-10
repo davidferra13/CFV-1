@@ -7,6 +7,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { PDFLayout } from './pdf-layout'
+import { FONT, SPACING, COLOR } from './pdf-design-tokens'
 import { format, parseISO } from 'date-fns'
 import { dateToDateString } from '@/lib/utils/format'
 
@@ -510,7 +511,7 @@ export function renderQuote(pdf: PDFLayout, data: QuoteDocumentData) {
   if (menu.length > 9) pdf.setFontScale(0.75)
 
   // ── SECTION 1: HEADER ──────────────────────────────────────────────────────
-  pdf.title(chef.businessName, 14)
+  pdf.title(chef.businessName, FONT.title.size)
   pdf.space(1)
 
   // Quote metadata bar
@@ -528,14 +529,14 @@ export function renderQuote(pdf: PDFLayout, data: QuoteDocumentData) {
       typeof client.loyaltyPoints === 'number'
         ? `${client.loyaltyPoints.toLocaleString()} points`
         : 'Loyalty account active'
-    pdf.text(`Loyalty status: ${loyaltyLabel} - ${pointsLabel}`, 8, 'italic', 0)
+    pdf.text(`Loyalty status: ${loyaltyLabel} - ${pointsLabel}`, FONT.caption.size, 'italic', 0)
     pdf.space(1)
   }
 
   if (quote.validUntil) {
     pdf.text(
       `This quote is valid until ${format(parseISO(quote.validUntil), 'MMMM d, yyyy')}.`,
-      8,
+      FONT.caption.size,
       'italic',
       0
     )
@@ -546,10 +547,10 @@ export function renderQuote(pdf: PDFLayout, data: QuoteDocumentData) {
 
   // ── SECTION 2: MENU ───────────────────────────────────────────────────────
   // Always present menu before price - never lead with the number.
-  pdf.sectionHeader('YOUR MENU', 11, true)
+  pdf.sectionHeader('YOUR MENU', FONT.courseHeader.size, true)
 
   if (event.occasion) {
-    pdf.text(event.occasion, 10, 'bold', 0)
+    pdf.text(event.occasion, FONT.bodyText.size, 'bold', 0)
   }
 
   const eventMeta: string[] = []
@@ -562,7 +563,7 @@ export function renderQuote(pdf: PDFLayout, data: QuoteDocumentData) {
   if (event.serviceStyle) eventMeta.push(event.serviceStyle)
 
   if (eventMeta.length > 0) {
-    pdf.text(eventMeta.join('  ·  '), 8, 'normal', 0)
+    pdf.text(eventMeta.join('  ·  '), FONT.caption.size, 'normal', 0)
   }
 
   pdf.space(2)
@@ -571,16 +572,16 @@ export function renderQuote(pdf: PDFLayout, data: QuoteDocumentData) {
     for (const course of menu) {
       pdf.courseHeader(`${course.courseNumber}. ${course.courseName}`)
       if (course.description) {
-        pdf.text(course.description, 9, 'italic', 6)
+        pdf.text(course.description, FONT.metadata.size, 'italic', 6)
       } else if (course.componentNames.length > 0) {
-        pdf.text(course.componentNames.join(', '), 9, 'italic', 6)
+        pdf.text(course.componentNames.join(', '), FONT.metadata.size, 'italic', 6)
       }
       pdf.space(1)
     }
   } else {
     pdf.text(
       "Menu to be finalized. I'll share the full menu details with you shortly.",
-      9,
+      FONT.metadata.size,
       'italic',
       0
     )
@@ -592,12 +593,12 @@ export function renderQuote(pdf: PDFLayout, data: QuoteDocumentData) {
     Boolean
   )
   if (allDietary.length > 0) {
-    pdf.text(`Dietary accommodations: ${allDietary.join(', ')}`, 8, 'italic', 0)
+    pdf.text(`Dietary accommodations: ${allDietary.join(', ')}`, FONT.caption.size, 'italic', 0)
     pdf.space(1)
   }
 
   // ── SECTION 3: INVESTMENT ─────────────────────────────────────────────────
-  pdf.sectionHeader('YOUR INVESTMENT', 11, true)
+  pdf.sectionHeader('YOUR INVESTMENT', FONT.courseHeader.size, true)
 
   // Single line item - menu first means the number lands in context, not first
   const pricingLabel =
@@ -624,17 +625,17 @@ export function renderQuote(pdf: PDFLayout, data: QuoteDocumentData) {
 
   if (quote.pricingNotes) {
     pdf.space(2)
-    pdf.text("What's included:", 9, 'bold', 0)
+    pdf.text("What's included:", FONT.metadata.size, 'bold', 0)
     const lines = quote.pricingNotes.split('\n').filter((l) => l.trim())
     for (const line of lines) {
-      pdf.bullet(line.replace(/^[-•]\s*/, ''), 9)
+      pdf.bullet(line.replace(/^[-•]\s*/, ''), FONT.metadata.size)
     }
   }
 
   pdf.space(2)
 
   // ── SECTION 4: TERMS ──────────────────────────────────────────────────────
-  pdf.sectionHeader('TERMS', 10, true)
+  pdf.sectionHeader('TERMS', FONT.bodyText.size, true)
 
   const cutoff = cancellationPolicy.cutoffDays
   const depositRefundable = cancellationPolicy.depositRefundable
@@ -644,27 +645,27 @@ export function renderQuote(pdf: PDFLayout, data: QuoteDocumentData) {
       ? `Cancellations ${cutoff}+ days before the event: full refund. Within ${cutoff} days: no refund on balance.${depositRefundable ? '' : ' Deposits are non-refundable.'}`
       : 'All payments are non-refundable once made. Please contact me if you need to reschedule.'
 
-  pdf.text(cancellationText, 8, 'normal', 0)
+  pdf.text(cancellationText, FONT.caption.size, 'normal', 0)
   pdf.space(1)
   pdf.text(
     'Final guest count confirmed 48 hours prior to the event. Additional guests may incur extra charges.',
-    8,
+    FONT.caption.size,
     'normal',
     0
   )
   pdf.space(2)
 
   // ── SECTION 5: CALL TO ACTION ─────────────────────────────────────────────
-  pdf.sectionHeader('READY TO BOOK?', 10, true)
+  pdf.sectionHeader('READY TO BOOK?', FONT.bodyText.size, true)
   pdf.text(
     `I'd love to cook for you. Reply to this email or reach me directly at ${chef.email}${chef.phone ? ' / ' + chef.phone : ''} to confirm your date.`,
-    9,
+    FONT.metadata.size,
     'normal',
     0
   )
   pdf.space(1)
-  pdf.text(`Looking forward to it,`, 9, 'italic', 0)
-  pdf.text(chef.businessName, 9, 'bold', 0)
+  pdf.text(`Looking forward to it,`, FONT.metadata.size, 'italic', 0)
+  pdf.text(chef.businessName, FONT.metadata.size, 'bold', 0)
 
   // Footer
   pdf.footer(`${quote.quoteRef}  ·  ${chef.businessName}  ·  ${chef.email}`)
@@ -676,7 +677,14 @@ export async function generateQuote(quoteId: string): Promise<Buffer> {
   const data = await fetchQuoteDocumentData(quoteId)
   if (!data) throw new Error('Cannot generate quote: quote not found or access denied')
 
-  const pdf = new PDFLayout()
+  const eventDateStr = data.event.eventDate
+    ? format(parseISO(data.event.eventDate), 'MMMM d, yyyy')
+    : undefined
+  const pdf = new PDFLayout({
+    docType: 'quote',
+    clientName: data.client.fullName,
+    eventDate: eventDateStr,
+  })
   renderQuote(pdf, data)
   return pdf.toBuffer()
 }

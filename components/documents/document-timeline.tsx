@@ -27,7 +27,7 @@ const STATUS_STYLES: Record<TimelineEvent['status'], { dot: string; line: string
       text: 'text-stone-300',
     },
     current: {
-      dot: 'bg-amber-500 animate-pulse',
+      dot: 'bg-amber-500',
       line: 'bg-stone-700',
       text: 'text-stone-200 font-medium',
     },

@@ -168,7 +168,7 @@ export default async function RetainerDetailPage({ params }: { params: { id: str
                     <tr key={event.id} className="border-b border-stone-50 hover:bg-stone-800/40">
                       <td className="py-3 px-4">
                         <Link
-                          href={`/events/${event.id}`}
+                          href={`/events/${event.id}/billing`}
                           className="font-medium text-brand-600 hover:underline"
                         >
                           {event.occasion || 'Untitled Event'}

@@ -7,6 +7,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { PDFLayout } from './pdf-layout'
+import { FONT, SPACING, COLOR } from './pdf-design-tokens'
 import { format, parseISO } from 'date-fns'
 import { dateToDateString } from '@/lib/utils/format'
 import { convertQuantity } from '@/lib/units/conversion-engine'
@@ -620,7 +621,7 @@ export function renderGroceryList(pdf: PDFLayout, data: GroceryListData) {
   else if (totalItems > 25) pdf.setFontScale(0.85)
 
   // ── Title ──────────────────────────────────────────────────────────────────
-  pdf.title('GROCERY LIST', 13)
+  pdf.title('GROCERY LIST', FONT.title.size)
 
   // ── Event header bars ─────────────────────────────────────────────────────
   const dateStr = format(
@@ -639,7 +640,7 @@ export function renderGroceryList(pdf: PDFLayout, data: GroceryListData) {
   if (budget.projectedCents != null)
     budgetParts.push(`Projected: ~${formatCents(budget.projectedCents)}`)
   if (budgetParts.length > 0) {
-    pdf.text(budgetParts.join('  |  '), 8, 'normal', 0)
+    pdf.text(budgetParts.join('  |  '), FONT.caption.size, 'normal', 0)
     pdf.space(1)
   }
 
@@ -651,10 +652,10 @@ export function renderGroceryList(pdf: PDFLayout, data: GroceryListData) {
 
   // ── Stop 1: Grocery Store ─────────────────────────────────────────────────
   if (stop1Sections.length > 0) {
-    pdf.sectionHeader(`STOP 1: ${groceryStoreName}`, 10, true)
+    pdf.sectionHeader(`STOP 1: ${groceryStoreName}`, FONT.bodyText.size, true)
 
     for (const section of stop1Sections) {
-      pdf.courseHeader(section.sectionName, 9)
+      pdf.courseHeader(section.sectionName, FONT.metadata.size)
       for (const item of section.items) {
         const buyQty = item.needToBuyQty
         const qtyStr = formatQuantity(buyQty, item.unit)
@@ -669,47 +670,55 @@ export function renderGroceryList(pdf: PDFLayout, data: GroceryListData) {
             ? ` | or: ${item.substitutions.map((s) => `${s.ingredient} (${s.count}x)`).join(', ')}`
             : ''
         const label = `${item.ingredientName} - ${qtyStr}${onHandNote}${optSuffix}${subNote}`
-        pdf.checkbox(label, 8, item.courseLabel)
+        pdf.checkbox(label, FONT.caption.size, item.courseLabel)
       }
       pdf.space(1)
     }
   } else {
-    pdf.sectionHeader(`STOP 1: ${groceryStoreName}`, 10, true)
-    pdf.text('No ingredients with recorded recipes - see warnings below.', 8, 'italic')
+    pdf.sectionHeader(`STOP 1: ${groceryStoreName}`, FONT.bodyText.size, true)
+    pdf.text(
+      'No ingredients with recorded recipes - see warnings below.',
+      FONT.caption.size,
+      'italic'
+    )
     pdf.space(1)
   }
 
   // ── Stop 2: Liquor Store ──────────────────────────────────────────────────
   if (hasStop2) {
-    pdf.sectionHeader(`STOP 2: ${liquorStoreName}`, 10, true)
+    pdf.sectionHeader(`STOP 2: ${liquorStoreName}`, FONT.bodyText.size, true)
     for (const item of stop2Items) {
       const buyQty = item.needToBuyQty
       const qtyStr = formatQuantity(buyQty, item.unit)
       const onHandNote =
         item.onHandQty != null ? ` (have ${formatQuantity(item.onHandQty, item.unit)} on hand)` : ''
       const label = `${item.ingredientName} - ${qtyStr}${onHandNote}`
-      pdf.checkbox(label, 8, item.courseLabel)
+      pdf.checkbox(label, FONT.caption.size, item.courseLabel)
     }
     pdf.space(1)
   }
 
   // ── Pre-sourced ingredients (specialty runs) ──────────────────────────────
   if (presourcedItems && presourcedItems.length > 0) {
-    pdf.sectionHeader('\u2713  PRE-SOURCED (specialty run)', 9, true)
+    pdf.sectionHeader('\u2713  PRE-SOURCED (specialty run)', FONT.metadata.size, true)
     for (const item of presourcedItems) {
       const qtyStr = item.quantity != null ? `${item.quantity} ${item.unit ?? ''}`.trim() : ''
       const storeStr = item.storeName ? ` @ ${item.storeName}` : ''
       const label = `${item.ingredientName}${qtyStr ? ` - ${qtyStr}` : ''}${storeStr}`
-      pdf.checkbox(label, 8, undefined, true) // pre-checked: already sourced
+      pdf.checkbox(label, FONT.caption.size, undefined, true) // pre-checked: already sourced
     }
     pdf.space(1)
   }
 
   // ── Components without recipes ────────────────────────────────────────────
   if (unrecipedComponents.length > 0) {
-    pdf.sectionHeader('\u26A0  VERIFY MANUALLY (no recipe linked)', 9, true)
+    pdf.sectionHeader('\u26A0  VERIFY MANUALLY (no recipe linked)', FONT.metadata.size, true)
     for (const comp of unrecipedComponents) {
-      pdf.bullet(`${comp.componentName} - Course ${comp.courseNumber} (${comp.courseName})`, 8, 4)
+      pdf.bullet(
+        `${comp.componentName} - Course ${comp.courseNumber} (${comp.courseName})`,
+        FONT.caption.size,
+        4
+      )
     }
     pdf.space(1)
   }
@@ -734,7 +743,15 @@ export async function generateGroceryList(
   const data = await fetchGroceryListData(eventId)
   if (!data) throw new Error('Cannot generate grocery list: missing event or menu data')
 
-  const pdf = new PDFLayout()
+  const dateStr = format(
+    parseISO(dateToDateString(data.event.event_date as Date | string)),
+    'EEE, MMM d, yyyy'
+  )
+  const pdf = new PDFLayout({
+    docType: 'grocery-list',
+    clientName: data.clientName,
+    eventDate: dateStr,
+  })
   renderGroceryList(pdf, data)
   if (generatedByName) pdf.generatedBy(generatedByName, 'Grocery List')
   return pdf.toBuffer()

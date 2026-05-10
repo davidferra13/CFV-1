@@ -91,7 +91,17 @@ export default async function LedgerPage() {
                   <p className="text-sm font-medium text-stone-100 capitalize">
                     {entry.entry_type.replace(/_/g, ' ')}
                   </p>
-                  <p className="text-xs text-stone-400">{entry.description}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-xs text-stone-400">{entry.description}</p>
+                    {entry.event && (
+                      <Link
+                        href={`/events/${entry.event.id}/billing`}
+                        className="text-xs text-brand-600 hover:underline capitalize"
+                      >
+                        {entry.event.occasion?.replace(/_/g, ' ') ?? 'Event'}
+                      </Link>
+                    )}
+                  </div>
                 </div>
                 <span
                   className={`text-sm font-semibold ${entry.is_refund ? 'text-red-600' : 'text-green-700'}`}

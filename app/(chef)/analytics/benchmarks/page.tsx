@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getBenchmarkHistory } from '@/lib/analytics/benchmark-actions'
+import { CrossDomainLinks } from '@/components/ui/cross-domain-links'
 
 const BenchmarkDashboard = dynamic(
   () => import('@/components/analytics/benchmark-dashboard').then((m) => m.BenchmarkDashboard),
@@ -44,6 +45,13 @@ export default async function BenchmarksPage() {
           </p>
         </div>
       </div>
+
+      <CrossDomainLinks
+        links={[
+          { label: 'Pricing Intelligence', href: '/finance/plate-costs' },
+          { label: 'Revenue', href: '/finance/reporting' },
+        ]}
+      />
 
       {benchmarkHistory && benchmarkHistory.length > 0 ? (
         <BenchmarkDashboard

@@ -7,6 +7,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { PDFLayout } from './pdf-layout'
+import { FONT } from './pdf-design-tokens'
 import { format, parseISO } from 'date-fns'
 import { dateToDateString } from '@/lib/utils/format'
 
@@ -302,7 +303,7 @@ export function renderExecutionSheet(pdf: PDFLayout, data: ExecutionSheetData) {
 
   // ===== HEADER =====
   // "MENU - [Client Name]"
-  pdf.title(`MENU \u2014 ${client.full_name}`, 14)
+  pdf.title(`MENU \u2014 ${client.full_name}`, FONT.title.size - 2)
 
   // Detail bar: "[N] Guests | Day of Week, Date | Address | Arrive [time] | Serve [time]"
   const dateStr = format(
@@ -321,24 +322,24 @@ export function renderExecutionSheet(pdf: PDFLayout, data: ExecutionSheetData) {
     ...(event.arrival_time ? [`Arrive ${event.arrival_time}`] : []),
     `Serve ${event.serve_time}`,
   ]
-  pdf.text(detailParts.join('  |  '), 8, 'normal', 0)
-  pdf.space(3)
+  pdf.text(detailParts.join('  |  '), FONT.caption.size, 'normal', 0)
+  pdf.groupGap()
 
   // ===== TOP HALF: FRONT OF HOUSE =====
-  pdf.sectionHeader('FRONT OF HOUSE', 11, true)
+  pdf.sectionHeader('FRONT OF HOUSE', FONT.courseHeader.size, true)
 
   for (const course of courses) {
     pdf.courseHeader(`Course ${course.courseNumber}: ${course.courseName}`)
 
     if (course.dishDescription) {
-      pdf.text(course.dishDescription, 8, 'italic', 6)
+      pdf.text(course.dishDescription, FONT.caption.size, 'italic', 6)
     } else if (course.components.length > 0) {
       // Auto-derive FOH description from component names as a clean, comma-separated list
       const compList = course.components.map((c) => c.name).join(', ')
-      pdf.text(compList, 8, 'italic', 6)
+      pdf.text(compList, FONT.caption.size, 'italic', 6)
     }
   }
-  pdf.space(2)
+  pdf.groupGap()
 
   // ===== DIETARY WARNINGS - SAFETY-CRITICAL =====
   // Merge event + client allergies and dietary restrictions
@@ -363,18 +364,18 @@ export function renderExecutionSheet(pdf: PDFLayout, data: ExecutionSheetData) {
 
   if (allDietary.size > 0) {
     const dietaryText = Array.from(allDietary).join(', ')
-    pdf.text(`Dietary: ${dietaryText}`, 9, 'bold', 0)
-    pdf.space(1)
+    pdf.text(`Dietary: ${dietaryText}`, FONT.metadata.size, 'bold', 0)
+    pdf.itemGap()
   }
 
   if (event.special_requests) {
-    pdf.text(`Special Requests: ${event.special_requests}`, 8, 'italic', 0)
-    pdf.space(1)
+    pdf.text(`Special Requests: ${event.special_requests}`, FONT.caption.size, 'italic', 0)
+    pdf.itemGap()
   }
 
   // ===== ARRIVAL TASKS - start these the moment you walk in =====
   if (hasArrivalTasks) {
-    pdf.sectionHeader('ON ARRIVAL \u2014 START IMMEDIATELY', 11, true)
+    pdf.sectionHeader('ON ARRIVAL \u2014 START IMMEDIATELY', FONT.courseHeader.size, true)
     arrivalTasks.forEach((task, idx) => {
       const parts: string[] = [`${idx + 1}. ${task.name}`]
       if (task.make_ahead_window_hours) {
@@ -383,16 +384,16 @@ export function renderExecutionSheet(pdf: PDFLayout, data: ExecutionSheetData) {
       if (task.execution_notes) {
         parts.push(`\u2014 ${task.execution_notes}`)
       }
-      pdf.text(parts.join(' '), 8, 'normal', 6)
+      pdf.text(parts.join(' '), FONT.caption.size, 'normal', 6)
     })
-    pdf.space(2)
+    pdf.groupGap()
   }
 
   // ===== PER-GUEST DIETARY FLAGS (from RSVP) =====
   // Only shown when guests have submitted dietary info via RSVP.
   // Lets the chef modify specific plates at plating time without relying on memory.
   if (guestFlags.length > 0) {
-    pdf.sectionHeader('GUEST FLAGS \u2014 MODIFY PLATES ACCORDINGLY', 11, true)
+    pdf.sectionHeader('GUEST FLAGS \u2014 MODIFY PLATES ACCORDINGLY', FONT.courseHeader.size, true)
     for (const guest of guestFlags) {
       const parts: string[] = [guest.name]
       if (guest.allergies.length > 0) {
@@ -401,13 +402,18 @@ export function renderExecutionSheet(pdf: PDFLayout, data: ExecutionSheetData) {
       if (guest.dietary_restrictions.length > 0) {
         parts.push(guest.dietary_restrictions.join(', '))
       }
-      pdf.text(parts.join('  |  '), 8, guest.allergies.length > 0 ? 'bold' : 'normal', 6)
+      pdf.text(
+        parts.join('  |  '),
+        FONT.caption.size,
+        guest.allergies.length > 0 ? 'bold' : 'normal',
+        6
+      )
     }
-    pdf.space(2)
+    pdf.groupGap()
   }
 
   // ===== COURSE EXECUTION - COMPONENT BREAKDOWN =====
-  pdf.sectionHeader('COURSE EXECUTION', 11, true)
+  pdf.sectionHeader('COURSE EXECUTION', FONT.courseHeader.size, true)
 
   for (const course of courses) {
     // Compute allergen conflict once per course - dish-level granularity
@@ -436,15 +442,15 @@ export function renderExecutionSheet(pdf: PDFLayout, data: ExecutionSheetData) {
         parts.push('[pre-made]')
       }
 
-      pdf.text(parts.join(' '), 8, 'normal', 6)
+      pdf.text(parts.join(' '), FONT.caption.size, 'normal', 6)
     })
 
-    pdf.space(1)
+    pdf.itemGap()
   }
 
   // ===== CLEAN-AS-YOU-GO REMINDER =====
-  pdf.text('Clean as you go. Kitchen to baseline before dessert.', 8, 'bold', 0)
-  pdf.space(1)
+  pdf.text('Clean as you go. Kitchen to baseline before dessert.', FONT.caption.size, 'bold', 0)
+  pdf.itemGap()
 
   // ===== SUMMARY LINE =====
   pdf.hr()
@@ -466,7 +472,7 @@ export function renderExecutionSheet(pdf: PDFLayout, data: ExecutionSheetData) {
       ? `${totalComponentCount} TOTAL COMPONENTS  |  ${dietarySummaryParts.join('  |  ')}`
       : `${totalComponentCount} TOTAL COMPONENTS`
 
-  pdf.text(summaryLine, 9, 'bold')
+  pdf.text(summaryLine, FONT.metadata.size, 'bold')
 
   // Footer - serve time is always shown; arrive time is conditional
   const footerParts: string[] = []
@@ -483,7 +489,15 @@ export async function generateExecutionSheet(
   const data = await fetchExecutionSheetData(eventId)
   if (!data) throw new Error('Cannot generate execution sheet: missing event or menu data')
 
-  const pdf = new PDFLayout()
+  const dateStr = format(
+    parseISO(dateToDateString(data.event.event_date as Date | string)),
+    'EEE, MMM d, yyyy'
+  )
+  const pdf = new PDFLayout({
+    docType: 'execution-sheet',
+    clientName: data.client.full_name,
+    eventDate: dateStr,
+  })
   renderExecutionSheet(pdf, data)
   if (generatedByName) pdf.generatedBy(generatedByName, 'Execution Sheet')
   return pdf.toBuffer()

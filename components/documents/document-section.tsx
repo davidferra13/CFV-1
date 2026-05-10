@@ -132,6 +132,48 @@ export function DocumentSection({
       ready: readiness.resetChecklist.ready,
       missing: readiness.resetChecklist.missing,
     },
+    {
+      type: 'plating',
+      label: 'Plating Guide',
+      description: 'Per-dish plate type, garnish, portion, and presentation notes',
+      ready: readiness.platingGuide.ready,
+      missing: readiness.platingGuide.missing,
+    },
+    {
+      type: 'allergen',
+      label: 'Allergen Quick-Reference',
+      description: 'Per-guest allergens and per-dish safety notes for station tape',
+      ready: readiness.allergenReference.ready,
+      missing: readiness.allergenReference.missing,
+    },
+    {
+      type: 'venue',
+      label: 'Venue/Kitchen Recon',
+      description: 'Kitchen equipment, utilities, storage, and access checklist',
+      ready: readiness.venueRecon.ready,
+      missing: readiness.venueRecon.missing,
+    },
+    {
+      type: 'beverage',
+      label: 'Beverage & Pairing Notes',
+      description: 'Per-course pairings, temps, glassware, client-provided drinks',
+      ready: readiness.beverageNotes.ready,
+      missing: readiness.beverageNotes.missing,
+    },
+    {
+      type: 'contact',
+      label: 'Client Contact & Access',
+      description: 'Client phone, address, gate code, parking, emergency info',
+      ready: readiness.clientContact.ready,
+      missing: readiness.clientContact.missing,
+    },
+    {
+      type: 'mise',
+      label: 'Mise en Place Verification',
+      description: 'Component-level portioning, labeling, and taste verification',
+      ready: readiness.miseCheck.ready,
+      missing: readiness.miseCheck.missing,
+    },
   ]
 
   const travelRouteReady = readiness.travelRoute.ready
@@ -140,9 +182,9 @@ export function DocumentSection({
   return (
     <>
       <Card className="p-6">
-        <h2 className="text-xl font-semibold mb-4">Printed Documents (8 Sheets)</h2>
+        <h2 className="text-xl font-semibold mb-4">Printed Documents</h2>
         <p className="text-stone-500 text-sm mb-4">
-          Generate your eight printed sheets for this event. Each document is exactly one page.
+          Generate your printed sheets for this event. Each document is exactly one page.
         </p>
 
         <div className="space-y-3">
@@ -236,12 +278,12 @@ export function DocumentSection({
           ))}
         </div>
 
-        {/* Print All - combined 8-page PDF; stays as new-tab link for multi-page print */}
+        {/* Print All - combined PDF; stays as new-tab link for multi-page print */}
         <div className="mt-5 pt-4 border-t border-stone-700">
           <ReadinessAwareDocumentButton
             eventId={eventId}
             href={`${baseUrl}?type=all&archive=1`}
-            label="Print All (8 Sheets)"
+            label="Print All"
             readiness={readinessGate}
             className="w-full"
           />

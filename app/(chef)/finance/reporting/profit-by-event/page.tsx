@@ -126,7 +126,7 @@ export default async function ProfitByEventPage() {
                       {row.occasion?.replace(/_/g, ' ') ?? '-'}
                     </TableCell>
                     <TableCell className="text-green-700 font-semibold text-sm">
-                      <Link href={`/events/${row.id}`} className="hover:underline">
+                      <Link href={`/events/${row.id}/billing`} className="hover:underline">
                         {formatCurrency(row.revenue)}
                       </Link>
                     </TableCell>

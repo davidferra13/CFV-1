@@ -6,6 +6,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { PDFLayout } from './pdf-layout'
+import { FONT, SPACING, COLOR } from './pdf-design-tokens'
 import { format, parseISO } from 'date-fns'
 import { dateToDateString } from '@/lib/utils/format'
 import {
@@ -123,7 +124,7 @@ function renderLegPage(
 
   // ── Header ────────────────────────────────────────────────────────────────
 
-  pdf.title(`TRAVEL ROUTE - ${typeLabel.toUpperCase()}`, 13)
+  pdf.title(`TRAVEL ROUTE - ${typeLabel.toUpperCase()}`, FONT.title.size)
 
   pdf.headerBar([
     ['Event', eventLabel],
@@ -132,12 +133,12 @@ function renderLegPage(
   ])
 
   const statusLabel = LEG_STATUS_LABELS[leg.status]
-  pdf.text(`Status: ${statusLabel}`, 8, 'normal', 0)
+  pdf.text(`Status: ${statusLabel}`, FONT.caption.size, 'normal', 0)
   pdf.space(2)
 
   // ── Departure ─────────────────────────────────────────────────────────────
 
-  pdf.sectionHeader('DEPARTURE', 10, true)
+  pdf.sectionHeader('DEPARTURE', FONT.bodyText.size, true)
   if (leg.departure_time) {
     pdf.keyValue('Depart', formatLegTime(leg.departure_time))
   }
@@ -148,25 +149,30 @@ function renderLegPage(
   // ── Stops ─────────────────────────────────────────────────────────────────
 
   if (leg.stops.length > 0) {
-    pdf.sectionHeader('STOPS', 10, true)
+    pdf.sectionHeader('STOPS', FONT.bodyText.size, true)
     const sortedStops = [...leg.stops].sort((a, b) => a.order - b.order)
     for (let i = 0; i < sortedStops.length; i++) {
       const stop = sortedStops[i]
       const label = `${i + 1}. ${stop.name}`
-      pdf.text(label, 9, 'bold', 0)
-      if (stop.address) pdf.text(stop.address, 8, 'normal', 4)
-      if (stop.purpose) pdf.text(`Purpose: ${stop.purpose}`, 8, 'normal', 4)
+      pdf.text(label, FONT.metadata.size, 'bold', 0)
+      if (stop.address) pdf.text(stop.address, FONT.caption.size, 'normal', 4)
+      if (stop.purpose) pdf.text(`Purpose: ${stop.purpose}`, FONT.caption.size, 'normal', 4)
       if (stop.estimated_minutes) {
-        pdf.text(`Time on-site: ${formatMinutes(stop.estimated_minutes)}`, 8, 'normal', 4)
+        pdf.text(
+          `Time on-site: ${formatMinutes(stop.estimated_minutes)}`,
+          FONT.caption.size,
+          'normal',
+          4
+        )
       }
-      if (stop.notes) pdf.text(`Note: ${stop.notes}`, 8, 'italic', 4)
+      if (stop.notes) pdf.text(`Note: ${stop.notes}`, FONT.caption.size, 'italic', 4)
       pdf.space(1)
     }
   }
 
   // ── Arrival ───────────────────────────────────────────────────────────────
 
-  pdf.sectionHeader('ARRIVAL', 10, true)
+  pdf.sectionHeader('ARRIVAL', FONT.bodyText.size, true)
   const destParts = [leg.destination_label, leg.destination_address].filter(Boolean)
   pdf.keyValue('To', destParts.join(' - ') || 'Not specified')
   if (leg.estimated_return_time) {
@@ -176,30 +182,45 @@ function renderLegPage(
 
   // ── Time Summary ──────────────────────────────────────────────────────────
 
-  pdf.sectionHeader('TIME SUMMARY', 10, true)
+  pdf.sectionHeader('TIME SUMMARY', FONT.bodyText.size, true)
   if (leg.total_drive_minutes != null) {
-    pdf.text(`Drive time: ${formatMinutes(leg.total_drive_minutes)}`, 9, 'normal', 2)
+    pdf.text(
+      `Drive time: ${formatMinutes(leg.total_drive_minutes)}`,
+      FONT.metadata.size,
+      'normal',
+      2
+    )
   }
   if (leg.total_stop_minutes != null) {
-    pdf.text(`Stop time:  ${formatMinutes(leg.total_stop_minutes)}`, 9, 'normal', 2)
+    pdf.text(
+      `Stop time:  ${formatMinutes(leg.total_stop_minutes)}`,
+      FONT.metadata.size,
+      'normal',
+      2
+    )
   }
   if (leg.total_estimated_minutes != null) {
-    pdf.text(`Total:      ${formatMinutes(leg.total_estimated_minutes)}`, 9, 'bold', 2)
+    pdf.text(
+      `Total:      ${formatMinutes(leg.total_estimated_minutes)}`,
+      FONT.metadata.size,
+      'bold',
+      2
+    )
   }
   pdf.space(2)
 
   // ── Notes ─────────────────────────────────────────────────────────────────
 
   if (leg.purpose_notes) {
-    pdf.sectionHeader('NOTES', 10, true)
-    pdf.text(leg.purpose_notes, 8, 'italic', 2)
+    pdf.sectionHeader('NOTES', FONT.bodyText.size, true)
+    pdf.text(leg.purpose_notes, FONT.caption.size, 'italic', 2)
     pdf.space(2)
   }
 
   // ── Ingredient Sourcing Checklist (specialty runs only) ───────────────────
 
   if (leg.leg_type === 'specialty_sourcing' && leg.ingredients.length > 0) {
-    pdf.sectionHeader('INGREDIENTS TO SOURCE', 10, true)
+    pdf.sectionHeader('INGREDIENTS TO SOURCE', FONT.bodyText.size, true)
     for (const ing of leg.ingredients) {
       const qty = ing.quantity != null ? `${ing.quantity} ${ing.unit ?? ''}`.trim() : ''
       const store = ing.store_name ? ` @ ${ing.store_name}` : ''
@@ -210,7 +231,7 @@ function renderLegPage(
         : ing.status === 'unavailable'
           ? 'unavailable'
           : undefined
-      pdf.checkbox(label, 8, statusNote, isSourced)
+      pdf.checkbox(label, FONT.caption.size, statusNote, isSourced)
     }
     pdf.space(1)
   }
@@ -234,16 +255,16 @@ export function renderTravelRoute(pdf: PDFLayout, data: TravelRouteData) {
 
   if (legs.length === 0) {
     // No legs - summary placeholder
-    pdf.title('TRAVEL ROUTE', 14)
+    pdf.title('TRAVEL ROUTE', FONT.title.size)
     pdf.headerBar([
       ['Event', eventLabel],
       ['Date', dateLabel],
     ])
     pdf.space(3)
-    pdf.text('No travel legs planned for this event.', 10, 'italic')
+    pdf.text('No travel legs planned for this event.', FONT.bodyText.size, 'italic')
     pdf.text(
       'Open the Travel Plan tab on the event page to start planning your routes.',
-      9,
+      FONT.metadata.size,
       'normal'
     )
     return
@@ -270,7 +291,12 @@ export async function generateTravelRoute(
   const data = await fetchTravelRouteData(eventId)
   if (!data) throw new Error('Cannot generate travel route: event not found')
 
-  const pdf = new PDFLayout()
+  const eventDateStr = format(parseISO(data.event.event_date), 'EEE, MMM d, yyyy')
+  const pdf = new PDFLayout({
+    docType: 'travel-route',
+    clientName: data.clientName,
+    eventDate: eventDateStr,
+  })
   renderTravelRoute(pdf, data)
   if (generatedByName) pdf.generatedBy(generatedByName, 'Travel Route')
   return pdf.toBuffer()

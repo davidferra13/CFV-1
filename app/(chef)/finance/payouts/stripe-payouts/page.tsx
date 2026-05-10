@@ -122,7 +122,7 @@ export default async function StripePayoutsPage() {
                   <TableCell className="text-stone-400 text-sm">
                     {transfer.eventId ? (
                       <Link
-                        href={`/events/${transfer.eventId}`}
+                        href={`/events/${transfer.eventId}/billing`}
                         className="text-brand-600 hover:underline capitalize"
                       >
                         {transfer.eventOccasion?.replace(/_/g, ' ') ?? 'Event'}

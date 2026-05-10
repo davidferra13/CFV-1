@@ -3,6 +3,7 @@ import { dateToDateString } from '@/lib/utils/format'
 import { requireClient } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { PDFLayout } from './pdf-layout'
+import { FONT } from './pdf-design-tokens'
 
 type ReceiptLedgerEntry = {
   id: string
@@ -138,7 +139,7 @@ export function renderReceipt(pdf: PDFLayout, data: ReceiptData) {
     .join(', ')
 
   pdf.title('EVENT RECEIPT')
-  pdf.text(`Issued ${receiptDate}`, 9, 'italic')
+  pdf.text(`Issued ${receiptDate}`, FONT.metadata.size, 'italic')
   pdf.space(1)
 
   pdf.sectionHeader('Chef')
@@ -151,7 +152,7 @@ export function renderReceipt(pdf: PDFLayout, data: ReceiptData) {
   pdf.keyValue('Name', data.client.full_name)
   pdf.keyValue('Email', data.client.email)
   if (data.client.address) {
-    pdf.text(`Address: ${data.client.address}`, 9)
+    pdf.text(`Address: ${data.client.address}`, FONT.metadata.size)
   }
   pdf.space(1)
 
@@ -160,25 +161,25 @@ export function renderReceipt(pdf: PDFLayout, data: ReceiptData) {
   pdf.keyValue('Occasion', data.event.occasion || 'Private Dining')
   pdf.keyValue('Date', `${eventDate} at ${data.event.serve_time}`)
   pdf.keyValue('Guests', String(data.event.guest_count))
-  pdf.text(`Location: ${location}`, 9)
+  pdf.text(`Location: ${location}`, FONT.metadata.size)
   pdf.space(1)
 
   pdf.sectionHeader('Payment History')
   if (data.ledger.length === 0) {
-    pdf.text('No recorded ledger entries for this event.', 9, 'italic')
+    pdf.text('No recorded ledger entries for this event.', FONT.metadata.size, 'italic')
   } else {
     for (const entry of data.ledger) {
       const dateLabel = format(new Date(entry.created_at), 'PP')
       const details = `${dateLabel}  |  ${entry.description} (${entry.entry_type})`
-      pdf.text(details, 9)
+      pdf.text(details, FONT.metadata.size)
       pdf.text(
         `Method: ${entry.payment_method}  |  Amount: ${money(entry.amount_cents)}`,
-        8,
+        FONT.caption.size,
         'italic',
         4
       )
       if (entry.transaction_reference) {
-        pdf.text(`Ref: ${entry.transaction_reference}`, 8, 'italic', 4)
+        pdf.text(`Ref: ${entry.transaction_reference}`, FONT.caption.size, 'italic', 4)
       }
       pdf.space(0.5)
     }
@@ -195,7 +196,12 @@ export function renderReceipt(pdf: PDFLayout, data: ReceiptData) {
 
 export async function generateReceipt(eventId: string) {
   const data = await fetchReceiptData(eventId)
-  const pdf = new PDFLayout()
+  const eventDate = format(parseISO(data.event.event_date), 'PPP')
+  const pdf = new PDFLayout({
+    docType: 'receipt',
+    clientName: data.client.full_name,
+    eventDate,
+  })
   renderReceipt(pdf, data)
   return pdf.toBuffer()
 }
@@ -276,7 +282,12 @@ export async function fetchReceiptDataForChef(eventId: string): Promise<ReceiptD
 
 export async function generateReceiptForChef(eventId: string) {
   const data = await fetchReceiptDataForChef(eventId)
-  const pdf = new PDFLayout()
+  const eventDate = format(parseISO(data.event.event_date), 'PPP')
+  const pdf = new PDFLayout({
+    docType: 'receipt',
+    clientName: data.client.full_name,
+    eventDate,
+  })
   renderReceipt(pdf, data)
   return pdf.toBuffer()
 }
@@ -350,7 +361,12 @@ export async function generateReceiptByTenant(eventId: string, tenantId: string)
     summary: { quotedPriceCents, totalPaidCents, outstandingBalanceCents },
   }
 
-  const pdf = new PDFLayout()
+  const eventDateFmt = format(parseISO(data.event.event_date), 'PPP')
+  const pdf = new PDFLayout({
+    docType: 'receipt',
+    clientName: data.client.full_name,
+    eventDate: eventDateFmt,
+  })
   renderReceipt(pdf, data)
   return pdf.toBuffer()
 }

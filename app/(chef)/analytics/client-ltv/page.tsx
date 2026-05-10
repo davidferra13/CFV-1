@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getTopClientsByLTV } from '@/lib/analytics/client-ltv-actions'
+import { CrossDomainLinks } from '@/components/ui/cross-domain-links'
 
 const ClientLTVChart = dynamic(
   () => import('@/components/analytics/client-ltv-chart').then((m) => m.ClientLTVChart),
@@ -45,6 +46,13 @@ export default async function ClientLTVPage() {
           View All Clients
         </Link>
       </div>
+
+      <CrossDomainLinks
+        links={[
+          { label: 'All Clients', href: '/clients' },
+          { label: 'Revenue by Client', href: '/finance/reporting/revenue-by-client' },
+        ]}
+      />
 
       {(topClients as any[]).length > 0 ? (
         <ClientLTVChart clients={topClients as any[]} />

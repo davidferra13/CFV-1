@@ -140,7 +140,7 @@ export default async function SentInvoicesPage() {
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <InvoicePaymentLinkButton eventId={String(event.id)} />
-                        <Link href={`/events/${event.id}`}>
+                        <Link href={`/events/${event.id}/billing`}>
                           <span className="text-xs text-brand-600 hover:underline cursor-pointer">
                             View
                           </span>

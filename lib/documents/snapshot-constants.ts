@@ -12,5 +12,11 @@ export const SNAPSHOT_DOCUMENT_LABELS: Record<SnapshotDocumentType, string> = {
   travel: 'Travel Route',
   shots: 'Content Asset Capture Sheet',
   beo: 'Banquet Event Order',
+  plating: 'Plating Guide',
+  allergen: 'Allergen Quick-Reference',
+  venue: 'Venue/Kitchen Recon',
+  beverage: 'Beverage & Pairing Notes',
+  contact: 'Client Contact & Access',
+  mise: 'Mise en Place Verification',
   all: 'Full 8-Sheet Packet',
 }

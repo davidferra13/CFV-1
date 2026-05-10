@@ -6,6 +6,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { PDFLayout } from './pdf-layout'
+import { FONT, COLOR } from './pdf-design-tokens'
 import { format, parseISO } from 'date-fns'
 import { dateToDateString } from '@/lib/utils/format'
 
@@ -290,9 +291,9 @@ export function renderBEO(pdf: PDFLayout, data: BEOData) {
   // ─── Client & Venue ─────────────────────────────────────────────────────────
 
   pdf.sectionHeader('CLIENT', 10, true)
-  pdf.text(`${client.full_name}`, 9, 'bold')
-  if (client.email) pdf.text(client.email, 8, 'normal', 2)
-  if (client.phone) pdf.text(client.phone, 8, 'normal', 2)
+  pdf.text(`${client.full_name}`, FONT.metadata.size, 'bold')
+  if (client.email) pdf.text(client.email, FONT.caption.size, 'normal', 2)
+  if (client.phone) pdf.text(client.phone, FONT.caption.size, 'normal', 2)
   pdf.space(1)
 
   const location = [
@@ -306,18 +307,20 @@ export function renderBEO(pdf: PDFLayout, data: BEOData) {
 
   if (location) {
     pdf.sectionHeader('VENUE', 10, true)
-    pdf.text(location, 9, 'normal')
-    if (event.access_instructions) pdf.text(`Access: ${event.access_instructions}`, 8, 'italic', 2)
+    pdf.text(location, FONT.metadata.size, 'normal')
+    if (event.access_instructions)
+      pdf.text(`Access: ${event.access_instructions}`, FONT.caption.size, 'italic', 2)
     if (event.venue_contact_name) {
       const vcParts = [
         event.venue_contact_name,
         event.venue_contact_phone,
         event.venue_contact_email,
       ].filter(Boolean)
-      pdf.text(`Venue contact: ${vcParts.join(' / ')}`, 8, 'normal', 2)
+      pdf.text(`Venue contact: ${vcParts.join(' / ')}`, FONT.caption.size, 'normal', 2)
     }
-    if (event.load_in_path_notes) pdf.text(`Load-in: ${event.load_in_path_notes}`, 8, 'italic', 2)
-    if (event.loading_dock) pdf.text('Loading dock: Yes', 8, 'normal', 2)
+    if (event.load_in_path_notes)
+      pdf.text(`Load-in: ${event.load_in_path_notes}`, FONT.caption.size, 'italic', 2)
+    if (event.loading_dock) pdf.text('Loading dock: Yes', FONT.caption.size, 'normal', 2)
     pdf.space(1)
   }
 
@@ -329,7 +332,7 @@ export function renderBEO(pdf: PDFLayout, data: BEOData) {
   }
 
   if (event.dietary_restrictions.length > 0) {
-    pdf.text(`Dietary: ${event.dietary_restrictions.join(', ')}`, 8, 'italic', 2)
+    pdf.text(`Dietary: ${event.dietary_restrictions.join(', ')}`, FONT.caption.size, 'italic', 2)
   }
 
   pdf.space(1)
@@ -344,13 +347,18 @@ export function renderBEO(pdf: PDFLayout, data: BEOData) {
   if (timeline.departure) timeEntries.push(`Departure: ${timeline.departure}`)
 
   if (timeEntries.length > 0) {
-    pdf.text(timeEntries.join('  |  '), 9, 'normal')
+    pdf.text(timeEntries.join('  |  '), FONT.metadata.size, 'normal')
   } else {
-    pdf.text('Timeline not set', 8, 'italic')
+    pdf.text('Timeline not set', FONT.caption.size, 'italic')
   }
 
   if (event.service_style) {
-    pdf.text(`Service style: ${event.service_style.replace(/_/g, ' ')}`, 8, 'normal', 2)
+    pdf.text(
+      `Service style: ${event.service_style.replace(/_/g, ' ')}`,
+      FONT.caption.size,
+      'normal',
+      2
+    )
   }
   pdf.space(1)
 
@@ -359,13 +367,13 @@ export function renderBEO(pdf: PDFLayout, data: BEOData) {
   if (menu.courses.length > 0) {
     pdf.sectionHeader('MENU', 10, true)
     for (const course of menu.courses) {
-      pdf.text(`Course ${course.courseNumber}`, 9, 'bold', 2)
+      pdf.text(`Course ${course.courseNumber}`, FONT.metadata.size, 'bold', 2)
       for (const dish of course.dishes) {
         const allergenSuffix =
           dish.allergenFlags.length > 0 ? ` [${dish.allergenFlags.join(', ')}]` : ''
-        pdf.text(`${dish.name}${allergenSuffix}`, 9, 'normal', 4)
+        pdf.text(`${dish.name}${allergenSuffix}`, FONT.metadata.size, 'normal', 4)
         if (dish.description) {
-          pdf.text(dish.description, 8, 'italic', 6)
+          pdf.text(dish.description, FONT.caption.size, 'italic', 6)
         }
       }
     }
@@ -377,7 +385,7 @@ export function renderBEO(pdf: PDFLayout, data: BEOData) {
   if (staff.length > 0) {
     pdf.sectionHeader('STAFF', 10, true)
     for (const s of staff) {
-      pdf.text(`${s.name} - ${s.role}`, 9, 'normal', 2)
+      pdf.text(`${s.name} - ${s.role}`, FONT.metadata.size, 'normal', 2)
     }
     pdf.space(1)
   }
@@ -386,10 +394,14 @@ export function renderBEO(pdf: PDFLayout, data: BEOData) {
 
   if (event.special_requests || event.ambiance_notes || event.kitchen_notes || client.house_rules) {
     pdf.sectionHeader('NOTES', 10, true)
-    if (event.special_requests) pdf.text(`Requests: ${event.special_requests}`, 8, 'normal', 2)
-    if (event.ambiance_notes) pdf.text(`Ambiance: ${event.ambiance_notes}`, 8, 'normal', 2)
-    if (event.kitchen_notes) pdf.text(`Kitchen: ${event.kitchen_notes}`, 8, 'normal', 2)
-    if (client.house_rules) pdf.text(`House rules: ${client.house_rules}`, 8, 'italic', 2)
+    if (event.special_requests)
+      pdf.text(`Requests: ${event.special_requests}`, FONT.caption.size, 'normal', 2)
+    if (event.ambiance_notes)
+      pdf.text(`Ambiance: ${event.ambiance_notes}`, FONT.caption.size, 'normal', 2)
+    if (event.kitchen_notes)
+      pdf.text(`Kitchen: ${event.kitchen_notes}`, FONT.caption.size, 'normal', 2)
+    if (client.house_rules)
+      pdf.text(`House rules: ${client.house_rules}`, FONT.caption.size, 'italic', 2)
     pdf.space(1)
   }
 
@@ -398,7 +410,7 @@ export function renderBEO(pdf: PDFLayout, data: BEOData) {
   if (equipmentSummary.length > 0) {
     pdf.sectionHeader('EQUIPMENT NOTES', 10, true)
     for (const item of equipmentSummary) {
-      pdf.text(item, 8, 'normal', 2)
+      pdf.text(item, FONT.caption.size, 'normal', 2)
     }
     pdf.space(1)
   }
@@ -408,7 +420,7 @@ export function renderBEO(pdf: PDFLayout, data: BEOData) {
   if (emergencyContacts.length > 0) {
     pdf.sectionHeader('EMERGENCY CONTACTS', 10, true)
     for (const c of emergencyContacts) {
-      pdf.text(`${c.role}: ${c.name} - ${c.phone}`, 8, 'normal', 2)
+      pdf.text(`${c.role}: ${c.name} - ${c.phone}`, FONT.caption.size, 'normal', 2)
     }
   }
 
@@ -426,7 +438,14 @@ export async function generateBEO(eventId: string, generatedByName?: string): Pr
   const data = await fetchBEOData(eventId)
   if (!data) throw new Error('Cannot generate BEO: event not found')
 
-  const pdf = new PDFLayout()
+  const dateStr = data.event.event_date
+    ? format(parseISO(dateToDateString(data.event.event_date as Date | string)), 'MMMM d, yyyy')
+    : undefined
+  const pdf = new PDFLayout({
+    docType: 'beo',
+    clientName: data.client.full_name,
+    eventDate: dateStr,
+  })
   renderBEO(pdf, data)
   if (generatedByName) pdf.generatedBy(generatedByName, 'Banquet Event Order')
   return pdf.toBuffer()

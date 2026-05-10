@@ -24,6 +24,12 @@ export const DOCUMENT_REQUEST_LABELS: Record<DocumentRequestType, string> = {
   travel: getDocumentDefinition('travel').label,
   shots: getDocumentDefinition('shots').label,
   beo: getDocumentDefinition('beo').label,
+  plating: getDocumentDefinition('plating').label,
+  allergen: getDocumentDefinition('allergen').label,
+  venue: getDocumentDefinition('venue').label,
+  beverage: getDocumentDefinition('beverage').label,
+  contact: getDocumentDefinition('contact').label,
+  mise: getDocumentDefinition('mise').label,
   all: 'Full 8-Sheet Packet',
   pack: 'Custom Document Pack',
 }

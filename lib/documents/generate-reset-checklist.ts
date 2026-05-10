@@ -11,6 +11,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { PDFLayout, CONTENT_WIDTH, MARGIN_X, LETTER_WIDTH } from './pdf-layout'
+import { FONT, COLOR } from './pdf-design-tokens'
 import { format, parseISO } from 'date-fns'
 import { dateToDateString } from '@/lib/utils/format'
 import { formatCurrency } from '@/lib/utils/currency'
@@ -151,15 +152,16 @@ export function renderResetChecklist(pdf: PDFLayout, data: ResetChecklistData) {
   pdf.doc.setTextColor(0, 0, 0)
   pdf.y += 5
 
-  // ─── Helper: gray section header bar ────────────────────────────────────────
-  function sectionBar(title: string) {
-    const barH = 5
-    pdf.doc.setFillColor(240, 240, 240)
-    pdf.doc.rect(MARGIN_X, pdf.y, CONTENT_WIDTH, barH, 'F')
-    pdf.doc.setFontSize(8.5)
-    pdf.doc.setFont('helvetica', 'bold')
-    pdf.doc.text(title, MARGIN_X + 2, pdf.y + 3.5)
-    pdf.y += barH + 1
+  // ─── Helper: urgency-colored section header ─────────────────────────────────
+  // Sections A-D: immediate (danger), E: 30min (warning), F: next day (secondary)
+  function sectionBar(title: string, urgency: 'immediate' | 'soon' | 'next-day' = 'immediate') {
+    const borderColor =
+      urgency === 'immediate'
+        ? COLOR.dangerText
+        : urgency === 'soon'
+          ? COLOR.warningText
+          : COLOR.textSecondary
+    pdf.urgencySection(title, borderColor)
   }
 
   function item(text: string, preChecked = false) {
@@ -192,7 +194,7 @@ export function renderResetChecklist(pdf: PDFLayout, data: ResetChecklistData) {
   }
 
   // ─── SECTION A: Bring Everything Inside ─────────────────────────────────────
-  sectionBar('A - BRING EVERYTHING INSIDE')
+  sectionBar('A - BRING EVERYTHING INSIDE', 'immediate')
   item('All equipment bags brought inside from car')
   item('Cooler brought inside from car')
   for (const eq of specialtyEquipment) {
@@ -200,20 +202,20 @@ export function renderResetChecklist(pdf: PDFLayout, data: ResetChecklistData) {
   }
   item('Any extra bags / dry goods brought inside')
   item('Car completely cleared - nothing left in vehicle')
-  pdf.space(1)
+  pdf.itemGap()
 
   // ─── SECTION B: Cooler + Cold Storage ───────────────────────────────────────
-  sectionBar('B - COOLER + COLD STORAGE')
+  sectionBar('B - COOLER + COLD STORAGE', 'immediate')
   item('Cooler emptied completely')
   item('Cooler wiped down and dried')
   item('Cooler lid left open to air out')
   item('Leftover food sorted: keep vs toss')
   item('Kept leftovers stored in fridge with labels (item + date)')
   item('Fridge has space - cleared out old items if needed')
-  pdf.space(1)
+  pdf.itemGap()
 
   // ─── SECTION C: Equipment + Tools ───────────────────────────────────────────
-  sectionBar('C - EQUIPMENT + TOOLS')
+  sectionBar('C - EQUIPMENT + TOOLS', 'immediate')
   item('Equipment bags emptied')
   item('Dirty tools separated for washing')
   item('Clean tools put back in storage')
@@ -223,20 +225,20 @@ export function renderResetChecklist(pdf: PDFLayout, data: ResetChecklistData) {
   } else {
     item('Specialty items returned to place (ice cream machine, sous vide, etc.)')
   }
-  pdf.space(1)
+  pdf.itemGap()
 
   // ─── SECTION D: Dishes + Laundry ────────────────────────────────────────────
-  sectionBar('D - DISHES + LAUNDRY')
+  sectionBar('D - DISHES + LAUNDRY', 'immediate')
   item('All dishes in dishwasher or hand washed')
   item('Deli containers washed and dried')
   item('Towels in washing machine')
   item('Chef uniform in washing machine')
   item('Apron in washing machine')
   item('Wash cycle started')
-  pdf.space(1)
+  pdf.itemGap()
 
   // ─── SECTION E: Financial + Records ─────────────────────────────────────────
-  sectionBar('E - FINANCIAL + RECORDS')
+  sectionBar('E - FINANCIAL + RECORDS', 'soon')
   if (paymentReceived) {
     item(`Payment received - ${formatCurrency(paymentAmountCents)}`, true)
   } else {
@@ -244,30 +246,16 @@ export function renderResetChecklist(pdf: PDFLayout, data: ResetChecklistData) {
   }
   item('All receipts photographed and uploaded')
   item('Gratuity recorded (if applicable)')
-  pdf.space(1)
+  pdf.itemGap()
 
   // ─── SECTION F: Next Day (by noon) ──────────────────────────────────────────
-  // Slightly different visual: label the deadline in the header
-  const nextDayBarH = 5
-  pdf.doc.setFillColor(240, 240, 240)
-  pdf.doc.rect(MARGIN_X, pdf.y, CONTENT_WIDTH, nextDayBarH, 'F')
-  pdf.doc.setFontSize(8.5)
-  pdf.doc.setFont('helvetica', 'bold')
-  pdf.doc.text('F - NEXT DAY', MARGIN_X + 2, pdf.y + 3.5)
-  pdf.doc.setFont('helvetica', 'italic')
-  pdf.doc.setFontSize(7.5)
-  pdf.doc.text(
-    '(complete by noon tomorrow)',
-    MARGIN_X + 2 + pdf.doc.getTextWidth('F - NEXT DAY') + 3,
-    pdf.y + 3.5
-  )
-  pdf.y += nextDayBarH + 1
+  sectionBar('F - NEXT DAY (complete by noon tomorrow)', 'next-day')
 
   item('Laundry moved to dryer or hung')
   item('Follow-up / thank you message sent to client')
   item('Event Review completed')
   item('Unused ingredients flagged (kept / tossed / returned)')
-  pdf.space(1.5)
+  pdf.groupGap()
 
   // ─── Compounding Warning Box ─────────────────────────────────────────────────
   pdf.doc.setFontSize(8)
@@ -317,7 +305,15 @@ export async function generateResetChecklist(
   const data = await fetchResetChecklistData(eventId)
   if (!data) throw new Error('Cannot generate reset checklist: event not found')
 
-  const pdf = new PDFLayout()
+  const dateStr = format(
+    parseISO(dateToDateString(data.event.event_date as Date | string)),
+    'EEE, MMMM d, yyyy'
+  )
+  const pdf = new PDFLayout({
+    docType: 'reset-checklist',
+    clientName: data.clientName,
+    eventDate: dateStr,
+  })
   renderResetChecklist(pdf, data)
   if (generatedByName) pdf.generatedBy(generatedByName, 'Reset Checklist')
   return pdf.toBuffer()

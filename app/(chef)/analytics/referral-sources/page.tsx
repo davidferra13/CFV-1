@@ -7,6 +7,7 @@ import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getReferralAnalytics } from '@/lib/analytics/referral-analytics'
+import { CrossDomainLinks } from '@/components/ui/cross-domain-links'
 
 const ReferralAnalyticsDashboard = dynamic(
   () =>
@@ -43,6 +44,13 @@ export default async function ReferralSourcesPage() {
           </p>
         </div>
       </div>
+
+      <CrossDomainLinks
+        links={[
+          { label: 'Clients', href: '/clients' },
+          { label: 'Pipeline', href: '/analytics/pipeline' },
+        ]}
+      />
 
       {data ? (
         <ReferralAnalyticsDashboard data={data} />

@@ -20,6 +20,12 @@ const DOC_LABELS: Record<OperationalDocumentType, string> = {
   travel: 'Travel Route',
   shots: 'Content Asset Capture Sheet',
   beo: 'Banquet Event Order',
+  plating: 'Plating Guide',
+  allergen: 'Allergen Quick-Reference',
+  venue: 'Venue/Kitchen Recon',
+  beverage: 'Beverage & Pairing Notes',
+  contact: 'Client Contact & Access',
+  mise: 'Mise en Place Verification',
 }
 
 type BulkRunResultRow = {

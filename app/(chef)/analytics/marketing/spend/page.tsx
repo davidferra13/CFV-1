@@ -7,6 +7,7 @@ import { formatCurrency } from '@/lib/utils/currency'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import type { Metadata } from 'next'
+import { CrossDomainLinks } from '@/components/ui/cross-domain-links'
 
 export const metadata: Metadata = { title: 'Marketing Spend' }
 
@@ -46,6 +47,13 @@ export default async function MarketingSpendPage() {
           </div>
         )}
       </div>
+
+      <CrossDomainLinks
+        links={[
+          { label: 'Marketing Expenses', href: '/finance/expenses/marketing' },
+          { label: 'Campaigns', href: '/analytics/marketing' },
+        ]}
+      />
 
       {error && (
         <div className="rounded-lg border border-amber-800 bg-amber-950/50 px-4 py-3 text-sm text-amber-300">

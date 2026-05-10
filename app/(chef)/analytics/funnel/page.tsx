@@ -16,6 +16,7 @@ import { getInquiries } from '@/lib/inquiries/actions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, Clock, TrendingUp, Ghost, XCircle } from '@/components/ui/icons'
+import { CrossDomainLinks } from '@/components/ui/cross-domain-links'
 
 export const metadata: Metadata = {
   title: 'Conversion Funnel',
@@ -123,6 +124,13 @@ export default async function FunnelPage() {
           <p className="text-stone-400 mt-1">Track how inquiries move through your pipeline</p>
         </div>
       </div>
+
+      <CrossDomainLinks
+        links={[
+          { label: 'Pipeline Details', href: '/analytics/pipeline' },
+          { label: 'Quotes', href: '/events' },
+        ]}
+      />
 
       {/* Funnel Visualization */}
       {funnel.totalInquiries > 0 ? (

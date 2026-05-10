@@ -7,6 +7,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { PDFLayout, MARGIN_X, CONTENT_WIDTH, LETTER_WIDTH } from './pdf-layout'
+import { FONT, COLOR } from './pdf-design-tokens'
 import { format, parseISO } from 'date-fns'
 import { dateToDateString } from '@/lib/utils/format'
 import type { jsPDF } from 'jspdf'
@@ -345,15 +346,15 @@ function colSectionHeader(
 ): number {
   const lh = fontSize * 0.38
   const boxH = lh + 2.5
-  doc.setFillColor(240, 240, 240)
-  doc.setDrawColor(200, 200, 200)
+  doc.setFillColor(...COLOR.shadingLight)
+  doc.setDrawColor(...COLOR.borderLight)
   doc.setLineWidth(0.2)
   doc.rect(x, y, w, boxH, 'FD')
   doc.setFontSize(fontSize)
   doc.setFont('helvetica', 'bold')
-  doc.setTextColor(40, 40, 40)
+  doc.setTextColor(...COLOR.textPrimary)
   doc.text(label, x + 2, y + lh + 0.5)
-  doc.setTextColor(0, 0, 0)
+  doc.setTextColor(...COLOR.textPrimary)
   return y + boxH + 1.5
 }
 
@@ -368,10 +369,14 @@ function colKeyValue(
 ): number {
   const lh = fontSize * 0.38
   doc.setFontSize(fontSize)
-  doc.setFont('helvetica', 'bold')
+  // Muted label
+  doc.setFont('helvetica', 'normal')
+  doc.setTextColor(...COLOR.textSecondary)
   doc.text(label + ':', x, y)
   const labelW = doc.getTextWidth(label + ': ')
-  doc.setFont('helvetica', 'normal')
+  // Bold value in primary color
+  doc.setFont('helvetica', 'bold')
+  doc.setTextColor(...COLOR.textPrimary)
   // Wrap value if too long
   const maxW = w - labelW - 1
   const lines = doc.splitTextToSize(value, maxW) as string[]
@@ -405,7 +410,7 @@ function colText(
     doc.text(line, x, y)
     y += lh
   }
-  if (color) doc.setTextColor(0, 0, 0)
+  if (color) doc.setTextColor(...COLOR.textPrimary)
   return y + 0.3
 }
 
@@ -414,13 +419,13 @@ function colHistoryEntry(doc: jsPDF, x: number, w: number, y: number, text: stri
   const lh = fontSize * 0.38
   doc.setFontSize(fontSize)
   doc.setFont('helvetica', 'normal')
-  doc.setTextColor(100, 100, 100)
+  doc.setTextColor(...COLOR.textSecondary)
   const lines = doc.splitTextToSize(text, w) as string[]
   for (const line of lines) {
     doc.text(line, x, y)
     y += lh
   }
-  doc.setTextColor(0, 0, 0)
+  doc.setTextColor(...COLOR.textPrimary)
   return y + 0.2
 }
 
@@ -521,7 +526,7 @@ export function renderEventSummary(pdf: PDFLayout, data: EventSummaryData) {
   doc.text(dateStr, LETTER_WIDTH - MARGIN_X - 2, pdf.y + 3.5, { align: 'right' })
   doc.setFont('helvetica', 'bold')
   doc.text(stageLabel.toUpperCase(), LETTER_WIDTH - MARGIN_X - 2, pdf.y + 7, { align: 'right' })
-  doc.setTextColor(0, 0, 0)
+  doc.setTextColor(...COLOR.textPrimary)
 
   pdf.y += headerH + 2.5
 
@@ -560,20 +565,20 @@ export function renderEventSummary(pdf: PDFLayout, data: EventSummaryData) {
     const lines = doc.splitTextToSize(fullText, CONTENT_WIDTH - 8) as string[]
     const boxH = lines.length * lh + 5
 
-    doc.setFillColor(255, 240, 240)
-    doc.setDrawColor(200, 0, 0)
+    doc.setFillColor(...COLOR.dangerBg)
+    doc.setDrawColor(...COLOR.dangerBorder)
     doc.setLineWidth(0.8)
     doc.rect(MARGIN_X, pdf.y, CONTENT_WIDTH, boxH, 'FD')
 
     doc.setFontSize(fs)
     doc.setFont('helvetica', 'bold')
-    doc.setTextColor(180, 0, 0)
+    doc.setTextColor(...COLOR.dangerText)
     let alertY = pdf.y + lh + 1
     for (const line of lines) {
       doc.text(line, MARGIN_X + 3, alertY)
       alertY += lh
     }
-    doc.setTextColor(0, 0, 0)
+    doc.setTextColor(...COLOR.textPrimary)
     pdf.y += boxH + 2.5
   }
 
@@ -801,7 +806,14 @@ export async function generateEventSummary(
   const data = await fetchEventSummaryData(eventId)
   if (!data) throw new Error('Cannot generate event summary: event not found')
 
-  const pdf = new PDFLayout()
+  const dateStr = data.event.event_date
+    ? format(parseISO(dateToDateString(data.event.event_date as Date | string)), 'MMMM d, yyyy')
+    : undefined
+  const pdf = new PDFLayout({
+    docType: 'event-summary',
+    clientName: data.client.full_name,
+    eventDate: dateStr,
+  })
   renderEventSummary(pdf, data)
   if (generatedByName) pdf.generatedBy(generatedByName, 'Event Summary')
   return pdf.toBuffer()

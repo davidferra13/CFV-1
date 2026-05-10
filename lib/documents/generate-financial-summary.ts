@@ -5,6 +5,7 @@
 // Multi-page allowed: 7 sections with many data rows.
 
 import { PDFLayout, MARGIN_X, CONTENT_WIDTH } from './pdf-layout'
+import { FONT, COLOR } from './pdf-design-tokens'
 import { format } from 'date-fns'
 import type { EventFinancialSummaryData } from '@/lib/events/financial-summary-actions'
 
@@ -25,11 +26,11 @@ function formatMinutes(minutes: number | null): string {
 
 // Right-aligned data row: label on left, value on right
 function dataRow(pdf: PDFLayout, label: string, value: string, sub?: string) {
-  const lh = 9 * 0.38
+  const lh = FONT.metadata.size * 0.38
   if (pdf.wouldOverflow(lh + (sub ? lh * 0.8 : 0) + 1)) pdf.newPage()
 
   const doc = pdf.doc
-  doc.setFontSize(9)
+  doc.setFontSize(FONT.metadata.size)
   doc.setFont('helvetica', 'normal')
   doc.text(label, MARGIN_X, pdf.y)
   const valueW = doc.getTextWidth(value)
@@ -38,12 +39,12 @@ function dataRow(pdf: PDFLayout, label: string, value: string, sub?: string) {
   pdf.y += lh + 1
 
   if (sub) {
-    doc.setFontSize(7.5)
+    doc.setFontSize(FONT.footer.size + 0.5)
     doc.setFont('helvetica', 'italic')
-    doc.setTextColor(130, 130, 130)
+    doc.setTextColor(...COLOR.textMuted)
     doc.text(sub, MARGIN_X + 2, pdf.y)
-    doc.setTextColor(0, 0, 0)
-    pdf.y += 7.5 * 0.38 + 0.5
+    doc.setTextColor(...COLOR.textPrimary)
+    pdf.y += (FONT.footer.size + 0.5) * 0.38 + 0.5
   }
 
   // Thin separator line
@@ -62,7 +63,7 @@ export function renderFinancialSummary(pdf: PDFLayout, data: EventFinancialSumma
   const statusLabel = event.financialClosed ? 'CLOSED' : isDraft ? `DRAFT` : 'FINAL'
 
   // ── HEADER ────────────────────────────────────────────────────────────────
-  pdf.title('EVENT FINANCIAL SUMMARY', 13)
+  pdf.title('EVENT FINANCIAL SUMMARY')
   pdf.space(1)
 
   const eventDate = format(new Date(event.eventDate), 'MMMM d, yyyy')
@@ -72,30 +73,30 @@ export function renderFinancialSummary(pdf: PDFLayout, data: EventFinancialSumma
     ['Guests', String(event.guestCount)],
   ])
   if (event.occasion) {
-    pdf.text(event.occasion, 8, 'italic')
+    pdf.text(event.occasion, FONT.caption.size, 'italic')
   }
   pdf.space(1)
 
   // Status badge (text-based)
   const doc = pdf.doc
-  doc.setFontSize(8)
+  doc.setFontSize(FONT.caption.size)
   doc.setFont('helvetica', 'bold')
   const statusColor = event.financialClosed ? [22, 101, 52] : isDraft ? [146, 64, 14] : [28, 25, 23]
   doc.setTextColor(statusColor[0], statusColor[1], statusColor[2])
   doc.text(`● ${statusLabel}`, MARGIN_X, pdf.y)
-  doc.setTextColor(0, 0, 0)
+  doc.setTextColor(...COLOR.textPrimary)
   if (isDraft) {
-    doc.setFontSize(7.5)
+    doc.setFontSize(FONT.footer.size + 0.5)
     doc.setFont('helvetica', 'normal')
-    doc.setTextColor(130, 130, 130)
+    doc.setTextColor(...COLOR.textMuted)
     doc.text(`  Pending: ${pendingItems.join(' · ')}`, MARGIN_X + 6, pdf.y)
-    doc.setTextColor(0, 0, 0)
+    doc.setTextColor(...COLOR.textPrimary)
   }
-  pdf.y += 9 * 0.38 + 1
+  pdf.y += FONT.metadata.size * 0.38 + 1
   pdf.space(2)
 
   // ── SECTION 2: REVENUE ────────────────────────────────────────────────────
-  pdf.sectionHeader('REVENUE', 10, true)
+  pdf.sectionHeader('REVENUE', FONT.bodyText.size, true)
   dataRow(pdf, 'Quoted price', formatCents(revenue.quotedPriceCents))
   dataRow(pdf, 'Service payment received', formatCents(revenue.basePaymentReceivedCents))
   dataRow(pdf, 'Tip / gratuity', revenue.tipCents > 0 ? formatCents(revenue.tipCents) : '-')
@@ -109,7 +110,7 @@ export function renderFinancialSummary(pdf: PDFLayout, data: EventFinancialSumma
 
   // ── SECTION 3: COSTS ─────────────────────────────────────────────────────
   if (pdf.wouldOverflow(40)) pdf.newPage()
-  pdf.sectionHeader('COSTS', 10, true)
+  pdf.sectionHeader('COSTS', FONT.bodyText.size, true)
   dataRow(
     pdf,
     'Grocery & ingredient spend',
@@ -140,7 +141,7 @@ export function renderFinancialSummary(pdf: PDFLayout, data: EventFinancialSumma
 
   // ── SECTION 4: MARGINS ────────────────────────────────────────────────────
   if (pdf.wouldOverflow(35)) pdf.newPage()
-  pdf.sectionHeader('MARGINS', 10, true)
+  pdf.sectionHeader('MARGINS', FONT.bodyText.size, true)
   dataRow(pdf, 'Food cost %', `${margins.foodCostPercent}%`, 'target: under 30%')
   dataRow(pdf, 'Gross profit', formatCents(margins.grossProfitCents))
   dataRow(pdf, 'Gross margin %', `${margins.grossMarginPercent}%`)
@@ -149,7 +150,7 @@ export function renderFinancialSummary(pdf: PDFLayout, data: EventFinancialSumma
 
   // ── SECTION 5: TIME INVESTMENT ────────────────────────────────────────────
   if (pdf.wouldOverflow(40)) pdf.newPage()
-  pdf.sectionHeader('TIME INVESTMENT', 10, true)
+  pdf.sectionHeader('TIME INVESTMENT', FONT.bodyText.size, true)
   if (time.totalMinutes) {
     dataRow(pdf, 'Shopping', formatMinutes(time.shoppingMinutes))
     dataRow(pdf, 'Prep', formatMinutes(time.prepMinutes))
@@ -161,19 +162,19 @@ export function renderFinancialSummary(pdf: PDFLayout, data: EventFinancialSumma
       pdf.space(1)
       pdf.text(
         `Effective hourly rate: ${formatCents(time.effectiveHourlyRateCents)}/hr`,
-        10,
+        FONT.bodyText.size,
         'bold'
       )
     }
   } else {
-    pdf.text('Time not logged for this event.', 9, 'italic')
+    pdf.text('Time not logged for this event.', FONT.metadata.size, 'italic')
   }
   pdf.space(2)
 
   // ── SECTION 6: MILEAGE ────────────────────────────────────────────────────
   if (pdf.wouldOverflow(25)) pdf.newPage()
   const rateLabel = `$${(mileage.irsMileageRateCentsPerMile / 100).toFixed(2)}/mi IRS rate`
-  pdf.sectionHeader(`MILEAGE  (${rateLabel})`, 10, true)
+  pdf.sectionHeader(`MILEAGE  (${rateLabel})`, FONT.bodyText.size, true)
   if (mileage.miles) {
     dataRow(pdf, 'Miles driven', `${mileage.miles} mi`)
     if (mileage.deductionValueCents) {
@@ -185,14 +186,14 @@ export function renderFinancialSummary(pdf: PDFLayout, data: EventFinancialSumma
       )
     }
   } else {
-    pdf.text('Mileage not entered.', 9, 'italic')
+    pdf.text('Mileage not entered.', FONT.metadata.size, 'italic')
   }
   pdf.space(2)
 
   // ── SECTION 7: HISTORICAL COMPARISON ─────────────────────────────────────
   if (comparison) {
     if (pdf.wouldOverflow(25)) pdf.newPage()
-    pdf.sectionHeader('VS. YOUR AVERAGE', 10, true)
+    pdf.sectionHeader('VS. YOUR AVERAGE', FONT.bodyText.size, true)
     const fcSign =
       comparison.vsAverageFoodCostPercent !== null && comparison.vsAverageFoodCostPercent > 0
         ? '+'
@@ -228,7 +229,12 @@ export function renderFinancialSummary(pdf: PDFLayout, data: EventFinancialSumma
 // ─── Generate ─────────────────────────────────────────────────────────────────
 
 export function generateFinancialSummaryPDF(data: EventFinancialSummaryData): Buffer {
-  const pdf = new PDFLayout()
+  const eventDate = format(new Date(data.event.eventDate), 'MMMM d, yyyy')
+  const pdf = new PDFLayout({
+    docType: 'financial-summary',
+    clientName: data.client.displayName,
+    eventDate,
+  })
   renderFinancialSummary(pdf, data)
   return pdf.toBuffer()
 }

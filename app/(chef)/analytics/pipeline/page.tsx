@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getPipelineRevenueForecast } from '@/lib/analytics/pipeline-forecast-actions'
+import { CrossDomainLinks } from '@/components/ui/cross-domain-links'
 
 const PipelineForecast = dynamic(
   () => import('@/components/analytics/pipeline-forecast').then((m) => m.PipelineForecast),
@@ -44,6 +45,13 @@ export default async function PipelineForecastPage() {
           </p>
         </div>
       </div>
+
+      <CrossDomainLinks
+        links={[
+          { label: 'View Events', href: '/events' },
+          { label: 'Invoices', href: '/finance/invoices' },
+        ]}
+      />
 
       {pipelineData ? (
         <PipelineForecast

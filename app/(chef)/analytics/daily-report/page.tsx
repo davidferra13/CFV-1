@@ -7,6 +7,7 @@ import {
   getDailyReportHistory,
 } from '@/lib/reports/daily-report-actions'
 import { DailyReportView } from '@/components/reports/daily-report-view'
+import { CrossDomainLinks } from '@/components/ui/cross-domain-links'
 
 export const metadata = {
   title: 'Daily Report',
@@ -31,6 +32,13 @@ export default async function DailyReportPage() {
         <h1 className="text-2xl font-bold text-stone-900">Daily Report</h1>
         <p className="text-sm text-stone-500">Your daily business snapshot.</p>
       </div>
+
+      <CrossDomainLinks
+        links={[
+          { label: 'Dashboard', href: '/dashboard' },
+          { label: "Today's Events", href: '/daily' },
+        ]}
+      />
 
       <DailyReportView report={report} history={history} />
     </div>

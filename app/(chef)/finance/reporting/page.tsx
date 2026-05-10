@@ -31,9 +31,9 @@ const REPORTS = [
   },
   {
     href: '/finance/reporting/revenue-by-client',
-    label: 'Revenue by Client',
-    icon: '👤',
-    description: 'Lifetime value and revenue per client - export CSV',
+    label: 'Client P&L',
+    icon: '👥',
+    description: 'Revenue, expenses, and profit breakdown per client',
   },
   {
     href: '/finance/reporting/profit-by-event',
@@ -93,6 +93,12 @@ export default async function ReportingPage() {
           <p className="text-stone-500 mt-1">
             Financial reports and summaries - export-ready insights for your business
           </p>
+          <Link
+            href="/analytics"
+            className="inline-block mt-2 text-xs text-stone-500 hover:text-amber-500 transition-colors"
+          >
+            View in Analytics &rarr;
+          </Link>
         </div>
         <a
           href={`/finance/year-end/export?year=${new Date().getFullYear()}`}

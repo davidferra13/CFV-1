@@ -75,7 +75,7 @@ export default async function DepositsPage() {
                   <TableCell className="text-stone-400 text-sm">
                     {entry.event ? (
                       <Link
-                        href={`/events/${entry.event.id}`}
+                        href={`/events/${entry.event.id}/billing`}
                         className="text-brand-600 hover:underline capitalize"
                       >
                         {entry.event.occasion?.replace(/_/g, ' ') ?? 'Event'}

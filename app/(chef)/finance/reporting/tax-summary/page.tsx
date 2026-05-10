@@ -135,6 +135,16 @@ export default async function TaxSummaryPage() {
           </Card>
         )}
       </div>
+
+      <div className="flex items-center gap-4 pt-2">
+        <Link href="/finance/year-end" className="text-sm text-brand-600 hover:underline">
+          Export for accountant
+        </Link>
+        <span className="text-stone-700">|</span>
+        <Link href="/receipts" className="text-sm text-brand-600 hover:underline">
+          View receipts
+        </Link>
+      </div>
     </div>
   )
 }
