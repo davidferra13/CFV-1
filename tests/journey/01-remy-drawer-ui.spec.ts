@@ -304,7 +304,7 @@ test.describe('Remy Drawer — Available on All Pages', () => {
     { name: 'Clients', url: '/clients' },
     { name: 'Inquiries', url: '/inquiries' },
     { name: 'Recipes', url: '/recipes' },
-    { name: 'Financials', url: '/financials' },
+    { name: 'Finance', url: '/finance' },
     { name: 'Calendar', url: '/calendar' },
     { name: 'Settings', url: '/settings' },
   ]

@@ -470,6 +470,21 @@ export async function loadRemyContext(
         failedOperations
       )
 
+  const proactiveSignals = isMinimal
+    ? undefined
+    : await withContextFallback(
+        tenantId,
+        'load_proactive_signals',
+        undefined,
+        async () => {
+          const { getProactiveSignals, formatSignalsForRemy } = await import('@/lib/cil/api')
+          const signals = await getProactiveSignals(tenantId)
+          return signals.length > 0 ? formatSignalsForRemy(signals) : undefined
+        },
+        undefined,
+        failedOperations
+      )
+
   return {
     chefName: chefProfile.businessName,
     businessName: chefProfile.businessName,
@@ -535,6 +550,8 @@ export async function loadRemyContext(
         : undefined,
     // CIL: Continuous Intelligence Layer insights (graph-based pattern detection)
     cilInsights,
+    // CIL: Proactive business signals (actionable intelligence from domain analyzers)
+    proactiveSignals,
   }
 }
 

@@ -744,7 +744,7 @@ export async function remyCreatePrepBlock(inputs: {
     }
 
     broadcastInsert('event_prep_blocks', user.tenantId!, result.block)
-    revalidatePath('/schedule')
+    revalidatePath('/calendar')
     revalidatePath('/dashboard')
 
     return writeResult('prep.create_block', 2, {

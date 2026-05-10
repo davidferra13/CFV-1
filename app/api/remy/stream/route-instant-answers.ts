@@ -102,7 +102,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
       if (!ctx.upcomingEvents || ctx.upcomingEvents.length === 0) {
         return {
           text: 'Nothing on the board right now. Light schedule - good time for menu development, client outreach, or recipe work. 🧑‍🍳',
-          navSuggestions: [{ label: 'Schedule', href: '/schedule' }],
+          navSuggestions: [{ label: 'Calendar', href: '/calendar' }],
         }
       }
       const now = Date.now()
@@ -133,7 +133,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
       return {
         text: lines.join('\n'),
         navSuggestions: [
-          { label: 'Schedule', href: '/schedule' },
+          { label: 'Calendar', href: '/calendar' },
           { label: 'Events', href: '/events' },
         ],
       }
@@ -284,7 +284,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
       if (!ctx.dayOfWeekPattern) return null
       return {
         text: `Your busiest day is **${ctx.dayOfWeekPattern.busiestDay}** and your slowest is **${ctx.dayOfWeekPattern.slowestDay}**.\n\n${ctx.dayOfWeekPattern.distribution ? `Breakdown: ${ctx.dayOfWeekPattern.distribution.map((d) => `${d.day}: ${d.count}`).join(', ')}` : ''}\n\nUse this for scheduling and availability planning. 📅`,
-        navSuggestions: [{ label: 'Schedule', href: '/schedule' }],
+        navSuggestions: [{ label: 'Calendar', href: '/calendar' }],
       }
     },
   },
@@ -839,7 +839,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
       if (blocked === 0 && entries === 0) {
         return {
           text: 'Your calendar is wide open for the next 30 days. Time to fill it! 📅',
-          navSuggestions: [{ label: 'Schedule', href: '/schedule' }],
+          navSuggestions: [{ label: 'Calendar', href: '/calendar' }],
         }
       }
       const lines = ['**Next 30 days:**\n']
@@ -848,7 +848,7 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
       if (waitlist > 0) lines.push(`- ${waitlist} on the waitlist`)
       return {
         text: lines.join('\n'),
-        navSuggestions: [{ label: 'Schedule', href: '/schedule' }],
+        navSuggestions: [{ label: 'Calendar', href: '/calendar' }],
       }
     },
   },

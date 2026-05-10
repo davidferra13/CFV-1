@@ -616,10 +616,10 @@ export const TEST_CASES: TestCase[] = [
     id: 'ctx-02',
     category: 'page_context',
     query: 'What should I focus on here?',
-    currentPage: '/financials',
+    currentPage: '/finance',
     expectedIntent: 'question',
     qualityCriteria:
-      'Should give context-aware advice about the financials page. Should mention revenue, outstanding payments, expenses, or profit margins. Should NOT give event-focused advice.',
+      'Should give context-aware advice about the finance page. Should mention revenue, outstanding payments, expenses, or profit margins. Should NOT give event-focused advice.',
   },
   {
     id: 'ctx-03',

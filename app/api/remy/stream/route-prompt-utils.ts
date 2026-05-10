@@ -26,8 +26,7 @@ AVAILABLE PAGES (suggest these when relevant):
 /clients/new - Add a new client
 /inquiries - Inquiry pipeline
 /quotes - Quotes
-/schedule - Calendar / availability
-/calendar - Calendar views
+/calendar - Calendar / availability
 /recipes - Recipe library
 /recipes/new - Create a new recipe
 /menus - Menu library
@@ -1353,7 +1352,7 @@ function buildPageIntelligence(context: RemyContext): string | null {
     )
   }
 
-  if (page.startsWith('/calendar') || page.startsWith('/schedule')) {
+  if (page.startsWith('/calendar')) {
     if (context.calendarSummary) {
       const blocked = context.calendarSummary.blockedDates.length
       const entries = context.calendarSummary.calendarEntries.length

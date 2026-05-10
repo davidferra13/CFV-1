@@ -49,7 +49,7 @@ export function getStartersForPage(pathname: string): StarterPrompt[] {
       { text: 'Search online for client engagement tips', icon: Globe },
     ]
   }
-  if (pathname.startsWith('/financials') || pathname.startsWith('/expenses')) {
+  if (pathname.startsWith('/finance') || pathname.startsWith('/expenses')) {
     return [
       { text: "How's revenue this month?", icon: TrendingUp },
       { text: 'Give me a monthly financial snapshot', icon: TrendingUp },

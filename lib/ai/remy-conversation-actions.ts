@@ -316,3 +316,114 @@ export async function deleteConversation(conversationId: string): Promise<void> 
 
   if (error) throw new Error(`Failed to delete conversation: ${error.message}`)
 }
+
+// ─── Search Conversations ─────────────────────────────────────────────────
+
+export async function searchConversations(query: string): Promise<{
+  conversations: RemyConversation[]
+  matchingMessages: Array<{
+    conversationId: string
+    content: string
+    role: string
+    createdAt: string
+  }>
+}> {
+  const user = await requireChef()
+  const tenantId = user.tenantId!
+  const db: any = createServerClient()
+
+  const searchTerm = `%${query.trim()}%`
+
+  // Search conversation titles
+  const { data: titleMatches, error: titleError } = await db
+    .from('remy_conversations')
+    .select('*')
+    .eq('tenant_id', tenantId)
+    .eq('is_active', true)
+    .ilike('title', searchTerm)
+    .order('updated_at', { ascending: false })
+    .limit(20)
+
+  if (titleError) throw new Error(`Search failed: ${titleError.message}`)
+
+  // Search message content
+  const { data: messageMatches, error: msgError } = await db
+    .from('remy_messages')
+    .select('conversation_id, content, role, created_at')
+    .eq('tenant_id', tenantId)
+    .ilike('content', searchTerm)
+    .order('created_at', { ascending: false })
+    .limit(50)
+
+  if (msgError) throw new Error(`Message search failed: ${msgError.message}`)
+
+  // Get conversations that had message matches (if not already in title matches)
+  const titleIds = new Set((titleMatches ?? []).map((c: any) => c.id))
+  const msgConvIds = [...new Set((messageMatches ?? []).map((m: any) => m.conversation_id))].filter(
+    (id) => !titleIds.has(id)
+  )
+
+  let additionalConvs: RemyConversation[] = []
+  if (msgConvIds.length > 0) {
+    const { data: convs } = await db
+      .from('remy_conversations')
+      .select('*')
+      .in('id', msgConvIds)
+      .eq('is_active', true)
+
+    additionalConvs = (convs ?? []).map((row: any) => ({
+      id: row.id,
+      title: row.title,
+      isActive: row.is_active,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    }))
+  }
+
+  const conversations: RemyConversation[] = [
+    ...(titleMatches ?? []).map((row: any) => ({
+      id: row.id,
+      title: row.title,
+      isActive: row.is_active,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    })),
+    ...additionalConvs,
+  ]
+
+  return {
+    conversations,
+    matchingMessages: (messageMatches ?? []).map((m: any) => ({
+      conversationId: m.conversation_id,
+      content: m.content.length > 120 ? m.content.slice(0, 117) + '...' : m.content,
+      role: m.role,
+      createdAt: m.created_at,
+    })),
+  }
+}
+
+// ─── Get Conversation Message Counts ──────────────────────────────────────
+
+export async function getConversationMessageCounts(
+  conversationIds: string[]
+): Promise<Record<string, number>> {
+  if (conversationIds.length === 0) return {}
+  const user = await requireChef()
+  const tenantId = user.tenantId!
+  const db: any = createServerClient()
+
+  const { data, error } = await db
+    .from('remy_messages')
+    .select('conversation_id')
+    .eq('tenant_id', tenantId)
+    .in('conversation_id', conversationIds)
+
+  if (error) throw new Error(`Failed to get message counts: ${error.message}`)
+
+  const counts: Record<string, number> = {}
+  for (const row of data ?? []) {
+    const convId = row.conversation_id as string
+    counts[convId] = (counts[convId] || 0) + 1
+  }
+  return counts
+}

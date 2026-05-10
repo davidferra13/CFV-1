@@ -402,6 +402,7 @@ export interface RemyContext {
     failedOperations: string[]
   }
   cilInsights?: string
+  proactiveSignals?: string
 }
 
 // ─── Page Entity Context ────────────────────────────────────────────────────

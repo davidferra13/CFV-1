@@ -88,8 +88,7 @@ CORE WORKFLOW:
 /inquiries - Inquiry pipeline
 /quotes - Quotes list
 /quotes/new - Create a new quote
-/schedule - Calendar / availability
-/calendar - Calendar views
+/calendar - Calendar / availability
 /calendar/week - Weekly calendar
 /calendar/day - Daily calendar
 
@@ -122,7 +121,7 @@ FINANCE:
 /finance/tax - Tax tools
 /expenses - Expense tracker
 /expenses/new - Add an expense
-/financials - Financial summary
+/finance - Financial summary
 
 CLIENTS:
 /clients/loyalty - Client loyalty overview
@@ -147,8 +146,7 @@ MARKETING & GROWTH:
 /loyalty - Loyalty program
 /partners - Referral partners
 /leads - Lead pipeline
-/reviews - Client reviews
-/testimonials - Testimonials
+/reviews - Reviews and Testimonials
 
 ANALYTICS & REPORTS:
 /analytics - Analytics hub
@@ -194,13 +192,12 @@ AVAILABLE PAGES (suggest these when relevant):
 /clients/new - Add a new client
 /inquiries - Inquiry pipeline
 /quotes - Quotes
-/schedule - Calendar / availability
-/calendar - Calendar views
+/calendar - Calendar / availability
 /recipes - Recipe library
 /recipes/new - Create a new recipe
 /menus - Menu library
 /menus/new - Create a new menu
-/financials - Financial hub
+/finance - Financial hub
 /expenses - Expense tracker
 /expenses/new - Add an expense
 /chat - Client messaging
@@ -686,6 +683,13 @@ Reference these insights when the chef asks about their business, pricing strate
     parts.push(`\nCONTINUOUS INTELLIGENCE (accumulated patterns from chef's history - use proactively):
 ${context.cilInsights}
 These insights come from the chef's persistent knowledge graph. Mention relevant ones when they naturally fit the conversation. Proactively flag high-severity items.`)
+  }
+
+  // CIL: Proactive business signals (actionable intelligence)
+  if (context.proactiveSignals) {
+    parts.push(`\nPROACTIVE BUSINESS SIGNALS (real-time intelligence from domain analyzers):
+${context.proactiveSignals}
+These are active business signals requiring attention. When greeting the chef or when relevant to conversation, proactively surface the highest urgency items with their suggested actions. Frame suggestions as helpful nudges, not commands.`)
   }
 
   // Revenue pattern awareness
