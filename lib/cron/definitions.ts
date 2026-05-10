@@ -239,6 +239,13 @@ export const CRON_MONITOR_DEFINITIONS: CronMonitorDefinition[] = [
     description: 'Expire stale workflows and send lifecycle reminders',
   },
   {
+    cronName: 'recurring-auto-generate',
+    routePath: '/api/scheduled/recurring-auto-generate',
+    maxExpectedMinutes: 2880,
+    cadence: 'daily',
+    description: 'Auto-generate draft events for clients with recurring booking schedules',
+  },
+  {
     cronName: 'loyalty-expiry',
     routePath: '/api/scheduled/loyalty-expiry',
     maxExpectedMinutes: 2880,

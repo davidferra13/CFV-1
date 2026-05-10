@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { TurnstileWidget } from '@/components/security/turnstile-widget'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { RadioGroup } from '@/components/ui/radio-group'
@@ -69,8 +68,6 @@ export function BetaSurveyForm({
   const [error, setError] = useState<string | null>(null)
   const [submitted, setSubmitted] = useState(false)
   const [websiteUrl, setWebsiteUrl] = useState('')
-  const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
-
   const isPublicMode = mode !== 'authenticated'
 
   const questionsMap = useMemo(() => {
@@ -139,7 +136,6 @@ export function BetaSurveyForm({
           wave: trackedWave,
           launch: trackedLaunch,
           websiteUrl,
-          captchaToken: turnstileToken || undefined,
         })
       } else if (mode === 'public_shared' && surveySlug) {
         result = await submitBetaSurveyAnonymous(surveySlug, answers, {
@@ -151,7 +147,6 @@ export function BetaSurveyForm({
           respondentRole:
             respondentRole || getDefaultRespondentRoleForSurveyType(survey.survey_type),
           websiteUrl,
-          captchaToken: turnstileToken || undefined,
         })
       } else {
         result = { success: false, error: 'Missing public survey configuration.' }
@@ -210,23 +205,16 @@ export function BetaSurveyForm({
   return (
     <div className="space-y-6">
       {isPublicMode && (
-        <>
-          <div className="absolute left-[-9999px] h-0 overflow-hidden" aria-hidden="true">
-            <input
-              type="text"
-              name="website_url"
-              value={websiteUrl}
-              onChange={(e) => setWebsiteUrl(e.target.value)}
-              tabIndex={-1}
-              autoComplete="off"
-            />
-          </div>
-          <TurnstileWidget
-            onVerify={(token) => setTurnstileToken(token)}
-            onExpire={() => setTurnstileToken(null)}
-            onError={() => setTurnstileToken(null)}
+        <div className="absolute left-[-9999px] h-0 overflow-hidden" aria-hidden="true">
+          <input
+            type="text"
+            name="website_url"
+            value={websiteUrl}
+            onChange={(e) => setWebsiteUrl(e.target.value)}
+            tabIndex={-1}
+            autoComplete="off"
           />
-        </>
+        </div>
       )}
 
       {/* Progress bar */}

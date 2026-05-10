@@ -316,6 +316,20 @@ export async function approveReceiptSummary(receiptPhotoId: string) {
       )
     const vendorName = extraction.store_name ?? undefined
 
+    // Try to match receipt store name to an existing vendor
+    let matchedVendorId: string | null = null
+    try {
+      const { matchReceiptToVendor } = await import('@/lib/vendors/vendor-matching')
+      if (vendorName) {
+        const vendorMatch = await matchReceiptToVendor(vendorName, user.tenantId!)
+        if (vendorMatch) {
+          matchedVendorId = vendorMatch.vendorId
+        }
+      }
+    } catch {
+      // Vendor matching failure is non-blocking
+    }
+
     // Map ingredient_category → expense category
     const categoryMap: Record<string, string> = {
       protein: 'groceries',
@@ -355,6 +369,8 @@ export async function approveReceiptSummary(receiptPhotoId: string) {
           description: item.description,
           expense_date: expenseDate,
           vendor_name: vendorName,
+          vendor_id: matchedVendorId,
+          receipt_photo_id: receiptPhotoId,
           is_business: true,
           receipt_photo_url: photo.photo_url,
           receipt_uploaded: true,
@@ -445,6 +461,47 @@ export async function approveReceiptSummary(receiptPhotoId: string) {
             })
           } catch {
             // Price logging is non-blocking
+          }
+        }
+
+        // Feed into vendor price tracking: record price points for matched vendor items
+        if (matchedVendorId) {
+          try {
+            const { recordVendorPricePoint } = await import('@/lib/vendors/price-point-actions')
+            for (const li of lineItemInputs) {
+              if (!li.ingredientId) continue
+              await recordVendorPricePoint({
+                db,
+                tenantId: user.tenantId!,
+                vendorId: matchedVendorId,
+                ingredientId: li.ingredientId,
+                itemName: li.description,
+                unitMeasure: li.unit,
+                priceCents: li.amountCents,
+                notes: `Auto-recorded from receipt ${receiptPhotoId}`,
+              })
+            }
+          } catch {
+            // Vendor price tracking is non-blocking
+          }
+
+          // Update vendor category default from this receipt's expense pattern
+          try {
+            const { updateVendorCategoryDefault } = await import('@/lib/expenses/auto-categorize')
+            const dominantCategory = businessItems.reduce(
+              (acc, item) => {
+                const cat = categoryMap[item.ingredientCategory ?? 'unknown'] ?? 'groceries'
+                acc[cat] = (acc[cat] || 0) + 1
+                return acc
+              },
+              {} as Record<string, number>
+            )
+            const topCategory = Object.entries(dominantCategory).sort((a, b) => b[1] - a[1])[0]
+            if (topCategory) {
+              await updateVendorCategoryDefault(matchedVendorId, topCategory[0] as any)
+            }
+          } catch {
+            // Category default update is non-blocking
           }
         }
 
@@ -564,7 +621,6 @@ export async function approveReceiptSummary(receiptPhotoId: string) {
   })
 
   revalidatePath('/receipts')
-  revalidatePath('/financials')
   revalidatePath('/finance')
   revalidatePath('/documents')
   if (photo.event_id) {

@@ -10,7 +10,6 @@ import { revalidateTag } from 'next/cache'
 import { requireAuth } from '@/lib/auth/get-user'
 import { requireAdmin } from '@/lib/auth/admin'
 import { checkRateLimit } from '@/lib/rateLimit'
-import { verifyTurnstileToken } from '@/lib/security/turnstile'
 import { cookies, headers } from 'next/headers'
 import { sendEmail } from '@/lib/email/send'
 import { BetaSurveyInviteEmail } from '@/lib/email/templates/beta-survey-invite'
@@ -65,14 +64,6 @@ async function guardPublicSurveySubmission(
 
   if (meta?.websiteUrl?.trim()) {
     return { success: true }
-  }
-
-  const turnstileResult = await verifyTurnstileToken(meta?.captchaToken || '', {
-    ip,
-    host: hdrs.get('host') || undefined,
-  })
-  if (!turnstileResult.success) {
-    return { success: false, error: turnstileResult.error || 'CAPTCHA verification failed.' }
   }
 
   return null

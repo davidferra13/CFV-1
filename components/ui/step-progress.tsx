@@ -211,7 +211,7 @@ function CheckIcon() {
 function ActiveDot() {
   return (
     <div className="relative w-4 h-4 flex items-center justify-center">
-      <div className="w-2.5 h-2.5 rounded-full bg-brand-400 animate-pulse" />
+      <div className="w-2.5 h-2.5 rounded-full bg-brand-400" />
       <div className="absolute w-4 h-4 rounded-full border-2 border-brand-400/30 animate-ping" />
     </div>
   )

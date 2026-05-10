@@ -15,17 +15,20 @@ import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
-export type ContentPlatform = 'instagram' | 'story' | 'blog'
+export type ContentPlatform = 'instagram' | 'story' | 'blog' | 'email' | 'website' | 'newsletter'
 
 export type ContentDraft = {
   id: string
-  event_id: string
+  event_id: string | null
   tenant_id: string
   platform: ContentPlatform
   draft_text: string
-  status: 'draft' | 'approved' | 'posted'
+  title: string | null
+  status: 'draft' | 'approved' | 'posted' | 'review' | 'scheduled'
   photo_ids: string[]
   ai_generated: boolean
+  capture_source_id: string | null
+  scheduled_for: string | null
   created_at: string
   updated_at: string
 }
@@ -49,11 +52,14 @@ const DraftTextSchema = z.object({
 })
 
 const SaveDraftSchema = z.object({
-  eventId: z.string().uuid(),
-  platform: z.enum(['instagram', 'story', 'blog']),
+  eventId: z.string().uuid().nullable().optional(),
+  platform: z.enum(['instagram', 'story', 'blog', 'email', 'website', 'newsletter']),
   draftText: z.string().min(1).max(5000),
   photoIds: z.array(z.string().uuid()).optional(),
   aiGenerated: z.boolean().optional(),
+  title: z.string().max(200).optional(),
+  captureSourceId: z.string().uuid().optional(),
+  scheduledFor: z.string().optional(),
 })
 
 // ── getContentReadyEvents ──────────────────────────────────────────────────
@@ -225,6 +231,12 @@ export async function generateContentDraft(
     story:
       'Write a short Instagram Story overlay text. 1-2 punchy sentences max. Casual and engaging. Think captions over a photo.',
     blog: 'Write a short blog-style paragraph (4-6 sentences). More detailed and reflective. First person, professional but personable.',
+    email:
+      'Write a short email snippet (2-3 sentences). Warm, personal tone. Suitable for a client update or newsletter segment.',
+    website:
+      'Write website copy (3-5 sentences). Professional, clear, and inviting. Highlight the experience and craft.',
+    newsletter:
+      'Write a newsletter blurb (2-4 sentences). Engaging, conversational. Encourage the reader to learn more.',
   }
 
   const privacyNote = isRestricted
@@ -269,11 +281,14 @@ export async function generateContentDraft(
  * Saves a content draft (either AI-generated or manually written by the chef).
  */
 export async function saveContentDraft(input: {
-  eventId: string
+  eventId?: string | null
   platform: ContentPlatform
   draftText: string
   photoIds?: string[]
   aiGenerated?: boolean
+  title?: string
+  captureSourceId?: string
+  scheduledFor?: string
 }): Promise<{ success: true; draft: ContentDraft } | { success: false; error: string }> {
   const user = await requireChef()
   await requirePro('marketing')
@@ -284,35 +299,51 @@ export async function saveContentDraft(input: {
     return { success: false, error: parsed.error.issues.map((i) => i.message).join(', ') }
   }
 
-  const { eventId, platform, draftText, photoIds, aiGenerated } = parsed.data
+  const {
+    eventId,
+    platform,
+    draftText,
+    photoIds,
+    aiGenerated,
+    title,
+    captureSourceId,
+    scheduledFor,
+  } = parsed.data
 
-  // Verify event belongs to this tenant and is completed
-  const { data: event } = await db
-    .from('events')
-    .select('id, status')
-    .eq('id', eventId)
-    .eq('tenant_id', user.tenantId!)
-    .single()
+  // If event-sourced, verify event belongs to this tenant and is completed
+  if (eventId) {
+    const { data: event } = await db
+      .from('events')
+      .select('id, status')
+      .eq('id', eventId)
+      .eq('tenant_id', user.tenantId!)
+      .single()
 
-  if (!event) {
-    return { success: false, error: 'Event not found' }
+    if (!event) {
+      return { success: false, error: 'Event not found' }
+    }
+
+    if (event.status !== 'completed') {
+      return { success: false, error: 'Only completed events can have content drafts' }
+    }
   }
 
-  if (event.status !== 'completed') {
-    return { success: false, error: 'Only completed events can have content drafts' }
+  const insertPayload: Record<string, unknown> = {
+    event_id: eventId ?? null,
+    tenant_id: user.tenantId!,
+    platform,
+    draft_text: draftText,
+    status: 'draft',
+    photo_ids: photoIds ?? [],
+    ai_generated: aiGenerated ?? false,
   }
+  if (title) insertPayload.title = title
+  if (captureSourceId) insertPayload.capture_source_id = captureSourceId
+  if (scheduledFor) insertPayload.scheduled_for = scheduledFor
 
   const { data: draft, error } = await db
     .from('event_content_drafts')
-    .insert({
-      event_id: eventId,
-      tenant_id: user.tenantId!,
-      platform,
-      draft_text: draftText,
-      status: 'draft',
-      photo_ids: photoIds ?? [],
-      ai_generated: aiGenerated ?? false,
-    })
+    .insert(insertPayload)
     .select()
     .single()
 
@@ -321,7 +352,7 @@ export async function saveContentDraft(input: {
     return { success: false, error: 'Failed to save draft' }
   }
 
-  revalidatePath(`/events/${eventId}`)
+  if (eventId) revalidatePath(`/events/${eventId}`)
   revalidatePath('/content')
 
   return { success: true, draft }
@@ -366,7 +397,7 @@ export async function updateContentDraft(
  */
 export async function updateDraftStatus(
   draftId: string,
-  status: 'draft' | 'approved' | 'posted'
+  status: 'draft' | 'approved' | 'posted' | 'review' | 'scheduled'
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
   await requirePro('marketing')
@@ -449,7 +480,73 @@ export async function deleteContentDraft(
     return { success: false, error: 'Failed to delete draft' }
   }
 
-  revalidatePath(`/events/${draft.event_id}`)
+  if (draft.event_id) revalidatePath(`/events/${draft.event_id}`)
+  revalidatePath('/content')
+  return { success: true }
+}
+
+// ── getScheduledDrafts ────────────────────────────────────────────────────
+
+/**
+ * Returns all drafts with a scheduled_for date in a given month/year.
+ */
+export async function getScheduledDrafts(month: number, year: number): Promise<ContentDraft[]> {
+  const user = await requireChef()
+  await requirePro('marketing')
+  const db: any = createServerClient()
+
+  const startDate = `${year}-${String(month).padStart(2, '0')}-01`
+  const endMonth = month === 12 ? 1 : month + 1
+  const endYear = month === 12 ? year + 1 : year
+  const endDate = `${endYear}-${String(endMonth).padStart(2, '0')}-01`
+
+  const { data, error } = await db
+    .from('event_content_drafts')
+    .select('*')
+    .eq('tenant_id', user.tenantId!)
+    .gte('scheduled_for', startDate)
+    .lt('scheduled_for', endDate)
+    .order('scheduled_for', { ascending: true })
+
+  if (error) {
+    console.error('[getScheduledDrafts] Error:', error)
+    return []
+  }
+
+  return data ?? []
+}
+
+// ── updateDraftSchedule ───────────────────────────────────────────────────
+
+/**
+ * Sets or clears the scheduled_for date on a draft.
+ */
+export async function updateDraftSchedule(
+  draftId: string,
+  scheduledFor: string | null
+): Promise<{ success: boolean; error?: string }> {
+  const user = await requireChef()
+  await requirePro('marketing')
+  const db: any = createServerClient()
+
+  const updatePayload: Record<string, unknown> = {
+    scheduled_for: scheduledFor,
+  }
+  if (scheduledFor) {
+    updatePayload.status = 'scheduled'
+  }
+
+  const { error } = await db
+    .from('event_content_drafts')
+    .update(updatePayload)
+    .eq('id', draftId)
+    .eq('tenant_id', user.tenantId!)
+
+  if (error) {
+    console.error('[updateDraftSchedule] Error:', error)
+    return { success: false, error: 'Failed to update schedule' }
+  }
+
   revalidatePath('/content')
   return { success: true }
 }

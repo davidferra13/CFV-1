@@ -10,6 +10,7 @@ import type { PublicEventInfo } from '@/lib/tickets/purchase-actions'
 import type { EventTicketType } from '@/lib/tickets/types'
 import { submitDinnerCircleVendorInterest } from '@/lib/dinner-circles/actions'
 import { buildEventDefaultLayer } from '@/lib/events/default-behaviors'
+import { RichTextRenderer } from '@/components/ui/rich-text-renderer'
 import type { FarmShowcaseItem, FarmCropItem } from '@/lib/events/venue-details-actions'
 
 type VenueDetailsPublic = {
@@ -628,24 +629,24 @@ export function PublicEventView({
             </div>
             <div className="mt-4 grid gap-3 md:grid-cols-2">
               {config.adaptive?.clientExpectationNote && (
-                <p className="rounded-lg bg-stone-950 px-3 py-2 text-sm leading-5 text-stone-300">
-                  {config.adaptive.clientExpectationNote}
-                </p>
+                <div className="rounded-lg bg-stone-950 px-3 py-2">
+                  <RichTextRenderer html={config.adaptive.clientExpectationNote} />
+                </div>
               )}
               {config.adaptive?.changeWindowNote && (
-                <p className="rounded-lg bg-stone-950 px-3 py-2 text-sm leading-5 text-stone-300">
-                  {config.adaptive.changeWindowNote}
-                </p>
+                <div className="rounded-lg bg-stone-950 px-3 py-2">
+                  <RichTextRenderer html={config.adaptive.changeWindowNote} />
+                </div>
               )}
               {config.menu?.fixedElements && (
-                <p className="rounded-lg bg-stone-950 px-3 py-2 text-sm leading-5 text-stone-300">
-                  {config.menu.fixedElements}
-                </p>
+                <div className="rounded-lg bg-stone-950 px-3 py-2">
+                  <RichTextRenderer html={config.menu.fixedElements} />
+                </div>
               )}
               {config.menu?.flexibleElements && (
-                <p className="rounded-lg bg-stone-950 px-3 py-2 text-sm leading-5 text-stone-300">
-                  {config.menu.flexibleElements}
-                </p>
+                <div className="rounded-lg bg-stone-950 px-3 py-2">
+                  <RichTextRenderer html={config.menu.flexibleElements} />
+                </div>
               )}
             </div>
           </section>
@@ -658,9 +659,9 @@ export function PublicEventView({
                 <h2 className="text-sm font-semibold uppercase tracking-wide text-stone-400">
                   Story
                 </h2>
-                <p className="mt-3 whitespace-pre-line text-sm leading-6 text-stone-300">
-                  {config.publicPage.story}
-                </p>
+                <div className="mt-3">
+                  <RichTextRenderer html={config.publicPage.story} />
+                </div>
               </div>
             )}
             {event.publicPhotos.length > 0 && (

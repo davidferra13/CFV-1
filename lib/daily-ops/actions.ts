@@ -16,6 +16,10 @@ import { getRecipeDebt } from '@/lib/recipes/actions'
 import { getUpcomingCalls } from '@/lib/calls/actions'
 import { listProtectedBlocks } from '@/lib/scheduling/protected-time-actions'
 import { toggleDOPTaskCompletion } from '@/lib/scheduling/dop-completions'
+import { getCircleActivityForDaily } from '@/lib/hub/circle-daily-actions'
+import { getOnboardingNudge } from '@/lib/onboarding/daily-nudge'
+import { getActionFeed, getActionStats } from '@/lib/action-center/feed'
+import { getActiveWorkflowSummaries } from '@/lib/workflows/actions'
 import { buildDailyPlan, type PlanEngineInput } from './plan-engine'
 import type { DailyPlan } from './types'
 
@@ -122,6 +126,18 @@ export async function getDailyPlan(): Promise<DailyPlan> {
         },
         []
       ),
+      // Circle activity (upcoming events, unread messages)
+      safe('circleActivity', getCircleActivityForDaily, []),
+      // Onboarding nudge (if setup incomplete)
+      safe('onboardingNudge', getOnboardingNudge, null),
+      // Action center feed (notifications, reminders, tasks)
+      safe('actionFeed', () => getActionFeed({ limit: 20 }), []),
+      safe('actionStats', getActionStats, {
+        total: 0,
+        bySource: { notification: 0, reminder: 0, task: 0 },
+        urgent: 0,
+      }),
+      safe('activeWorkflows', getActiveWorkflowSummaries, []),
     ]),
     planDeadline,
   ])
@@ -139,6 +155,11 @@ export async function getDailyPlan(): Promise<DailyPlan> {
     protectedBlocks,
     dismissalRows,
     todayEventsRaw,
+    circleActivity,
+    onboardingNudge,
+    actionFeed,
+    actionStats,
+    activeWorkflows,
   ] = results
 
   // Build dismissed keys set
@@ -184,6 +205,11 @@ export async function getDailyPlan(): Promise<DailyPlan> {
     todayEvents,
     protectedTime: todayProtected,
     dismissedKeys,
+    circleActivity: circleActivity ?? [],
+    onboardingNudge: onboardingNudge ?? null,
+    actionFeed: actionFeed ?? [],
+    actionStats: actionStats ?? undefined,
+    activeWorkflows: activeWorkflows ?? [],
   }
 
   return buildDailyPlan(input)
@@ -263,6 +289,7 @@ export async function dismissDailyPlanItem(
     }
 
     revalidatePath('/daily')
+    revalidatePath('/dashboard')
     return { success: true }
   } catch (err) {
     console.error('[DailyOps] dismissDailyPlanItem failed:', err)

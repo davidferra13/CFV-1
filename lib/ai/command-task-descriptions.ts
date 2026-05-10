@@ -559,7 +559,7 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     description:
       'Navigate the chef to a specific page in ChefFlow. Use when the chef says "take me to", "show me", "go to", "open", or asks where something is. Returns the route so the UI can navigate.',
     inputSchema:
-      '{ "route": "string - app route to navigate to, e.g. /events, /clients/new, /financials" }',
+      '{ "route": "string - app route to navigate to, e.g. /events, /clients/new, /finance" }',
   },
   {
     type: 'loyalty.status',

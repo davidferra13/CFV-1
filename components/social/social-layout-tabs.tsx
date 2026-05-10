@@ -5,10 +5,10 @@ import { usePathname } from 'next/navigation'
 import { Calendar, Image, Link2, Settings } from '@/components/ui/icons'
 
 const TABS = [
-  { href: '/social/planner', label: 'Planner', icon: Calendar },
-  { href: '/social/vault', label: 'Media Vault', icon: Image },
-  { href: '/social/connections', label: 'Connections', icon: Link2 },
-  { href: '/social/settings', label: 'Settings', icon: Settings },
+  { href: '/marketing/social', label: 'Planner', icon: Calendar },
+  { href: '/content/vault', label: 'Media Vault', icon: Image },
+  { href: '/marketing/social/connections', label: 'Connections', icon: Link2 },
+  { href: '/marketing/social/settings', label: 'Settings', icon: Settings },
 ]
 
 export function SocialLayoutTabs() {

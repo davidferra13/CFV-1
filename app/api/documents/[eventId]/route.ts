@@ -33,6 +33,21 @@ import {
   renderContentShotList,
 } from '@/lib/documents/generate-content-shot-list'
 import { fetchBEOData, renderBEO } from '@/lib/documents/generate-beo'
+import { fetchPlatingGuideData, renderPlatingGuide } from '@/lib/documents/generate-plating-guide'
+import {
+  fetchAllergenReferenceData,
+  renderAllergenReference,
+} from '@/lib/documents/generate-allergen-reference'
+import { fetchVenueReconData, renderVenueRecon } from '@/lib/documents/generate-venue-recon'
+import {
+  fetchBeverageNotesData,
+  renderBeverageNotes,
+} from '@/lib/documents/generate-beverage-notes'
+import {
+  fetchClientContactData,
+  renderClientContact,
+} from '@/lib/documents/generate-client-contact'
+import { fetchMiseCheckData, renderMiseCheck } from '@/lib/documents/generate-mise-check'
 import { PDFLayout } from '@/lib/documents/pdf-layout'
 import {
   CORE_PACKET_DOCUMENT_TYPES,
@@ -96,6 +111,12 @@ function getDocRenderConfigs(eventId: string): Record<OperationalDocumentType, D
   const travel = getDocumentDefinition('travel')
   const shots = getDocumentDefinition('shots')
   const beo = getDocumentDefinition('beo')
+  const plating = getDocumentDefinition('plating')
+  const allergen = getDocumentDefinition('allergen')
+  const venue = getDocumentDefinition('venue')
+  const beverage = getDocumentDefinition('beverage')
+  const contact = getDocumentDefinition('contact')
+  const mise = getDocumentDefinition('mise')
 
   return {
     summary: {
@@ -174,6 +195,48 @@ function getDocRenderConfigs(eventId: string): Record<OperationalDocumentType, D
       docTypeLabel: beo.docTypeLabel,
       fallbackTitle: beo.fallbackTitle,
       filenameBase: beo.filenameBase,
+    },
+    plating: {
+      fetch: () => fetchPlatingGuideData(eventId),
+      render: renderPlatingGuide,
+      docTypeLabel: plating.docTypeLabel,
+      fallbackTitle: plating.fallbackTitle,
+      filenameBase: plating.filenameBase,
+    },
+    allergen: {
+      fetch: () => fetchAllergenReferenceData(eventId),
+      render: renderAllergenReference,
+      docTypeLabel: allergen.docTypeLabel,
+      fallbackTitle: allergen.fallbackTitle,
+      filenameBase: allergen.filenameBase,
+    },
+    venue: {
+      fetch: () => fetchVenueReconData(eventId),
+      render: renderVenueRecon,
+      docTypeLabel: venue.docTypeLabel,
+      fallbackTitle: venue.fallbackTitle,
+      filenameBase: venue.filenameBase,
+    },
+    beverage: {
+      fetch: () => fetchBeverageNotesData(eventId),
+      render: renderBeverageNotes,
+      docTypeLabel: beverage.docTypeLabel,
+      fallbackTitle: beverage.fallbackTitle,
+      filenameBase: beverage.filenameBase,
+    },
+    contact: {
+      fetch: () => fetchClientContactData(eventId),
+      render: renderClientContact,
+      docTypeLabel: contact.docTypeLabel,
+      fallbackTitle: contact.fallbackTitle,
+      filenameBase: contact.filenameBase,
+    },
+    mise: {
+      fetch: () => fetchMiseCheckData(eventId),
+      render: renderMiseCheck,
+      docTypeLabel: mise.docTypeLabel,
+      fallbackTitle: mise.fallbackTitle,
+      filenameBase: mise.filenameBase,
     },
   }
 }

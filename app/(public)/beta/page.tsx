@@ -173,7 +173,7 @@ export default async function BetaSignupPage({ searchParams }: BetaSignupPagePro
             </div>
           </div>
 
-          <aside className="rounded-[28px] border border-stone-700 bg-stone-900/85 p-6 shadow-[var(--shadow-card)] md:p-8">
+          <aside className="rounded-xl border border-stone-700 bg-stone-900/85 p-6 shadow-[var(--shadow-card)] md:p-8">
             <div className="rounded-2xl border border-brand-700/40 bg-brand-950/30 p-4">
               <p className="text-xs font-semibold uppercase tracking-[0.1em] text-brand-300">
                 Access status

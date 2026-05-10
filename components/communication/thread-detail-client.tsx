@@ -150,6 +150,14 @@ export function ThreadDetailClient({
               </button>
             </div>
             {thread.client_email && <p className="text-sm text-stone-500">{thread.client_email}</p>}
+            {thread.client_id && (
+              <Link
+                href={`/clients/${thread.client_id}`}
+                className="text-xs text-brand-400 hover:text-brand-300"
+              >
+                View Profile
+              </Link>
+            )}
           </div>
         </div>
 

@@ -25,7 +25,7 @@ export function StatCard({
   trend,
   subtitle,
   className = '',
-  animate = true,
+  animate = false,
 }: StatCardProps) {
   const displayValue = String(value)
 
@@ -41,7 +41,7 @@ export function StatCard({
           </p>
           {subtitle && <p className="text-xs text-stone-400 mt-0.5">{subtitle}</p>}
         </div>
-        <div className="rounded-lg bg-brand-950/80 p-2.5 transition-all duration-200 group-hover:scale-110 group-hover:bg-brand-950">
+        <div className="rounded-lg bg-brand-950/80 p-2.5">
           <Icon className="h-5 w-5 text-brand-500" />
         </div>
       </div>

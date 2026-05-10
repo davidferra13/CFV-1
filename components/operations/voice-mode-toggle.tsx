@@ -107,7 +107,7 @@ export function VoiceModeToggle({ onCommand, className = '' }: VoiceModeTogglePr
           onClick={toggleListening}
           className={`relative flex items-center justify-center w-12 h-12 rounded-full transition-all ${
             isListening
-              ? 'bg-red-500 text-white shadow-lg shadow-red-500/30 animate-pulse'
+              ? 'bg-red-500 text-white shadow-lg shadow-red-500/30'
               : 'bg-stone-700 text-stone-300 hover:bg-stone-600'
           }`}
           title={isListening ? 'Stop listening' : 'Start voice mode'}

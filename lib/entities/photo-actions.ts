@@ -62,7 +62,7 @@ const ENTITY_CONFIGS: Record<string, EntityConfig> = {
     table: 'equipment_items',
     photoColumn: 'photo_url',
     tenantColumn: 'chef_id',
-    revalidatePaths: (id) => ['/operations/equipment'],
+    revalidatePaths: (id) => ['/ops/equipment'],
   },
   ingredient: {
     table: 'ingredients',

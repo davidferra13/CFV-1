@@ -146,7 +146,7 @@ export const LOADING_REGISTRY: LoadingContext[] = [
     category: 'navigation',
     visual: 'skeleton',
     messages: ['Loading your calendar...', 'Pulling schedule data...'],
-    usedIn: ['app/(chef)/calendar/loading.tsx', 'app/(chef)/schedule/loading.tsx'],
+    usedIn: ['app/(chef)/calendar/loading.tsx'],
     expectedDuration: 'short',
   },
   {

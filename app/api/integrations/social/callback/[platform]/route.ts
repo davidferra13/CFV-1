@@ -92,7 +92,7 @@ export async function GET(request: NextRequest, { params }: { params: { platform
   const origin = request.nextUrl.origin
 
   const failRedirect = (msg: string) => {
-    const url = new URL('/social/connections', origin)
+    const url = new URL('/marketing/social/connections', origin)
     url.searchParams.set('error', encodeURIComponent(msg))
     url.searchParams.set('platform', platform)
     return NextResponse.redirect(url)
@@ -353,7 +353,7 @@ export async function GET(request: NextRequest, { params }: { params: { platform
     }
 
     // Success - send chef back to connections page
-    const successUrl = new URL('/social/connections', origin)
+    const successUrl = new URL('/marketing/social/connections', origin)
     successUrl.searchParams.set('connected', platform)
     return NextResponse.redirect(successUrl)
   } catch (err) {

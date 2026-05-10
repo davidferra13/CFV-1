@@ -1,8 +1,10 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { CsvExportButton } from '@/components/ui/csv-export-button'
 import {
   BarChart,
   Bar,
@@ -159,11 +161,13 @@ function StatCard({
   value,
   sub,
   variant,
+  href,
 }: {
   label: string
   value: string | number
   sub?: string
   variant?: 'success' | 'warning' | 'error' | 'default'
+  href?: string
 }) {
   const color =
     variant === 'success'
@@ -173,13 +177,19 @@ function StatCard({
         : variant === 'error'
           ? 'text-red-600'
           : 'text-stone-100'
-  return (
-    <div className="bg-stone-900 rounded-lg border border-stone-700 p-4">
+  const inner = (
+    <div
+      className={`bg-stone-900 rounded-lg border border-stone-700 p-4${href ? ' cursor-pointer hover:border-amber-700/50' : ''}`}
+    >
       <p className="text-xs text-stone-500 uppercase tracking-wide mb-1">{label}</p>
       <p className={`text-2xl font-bold ${color}`}>{value}</p>
       {sub && <p className="text-xs text-stone-300 mt-1">{sub}</p>}
     </div>
   )
+  if (href) {
+    return <Link href={href}>{inner}</Link>
+  }
+  return inner
 }
 
 const TABS = [
@@ -208,11 +218,13 @@ function OverviewTab({ p }: { p: AnalyticsHubProps }) {
           value={fmt$(p.monthRevenue?.currentMonthRevenueCents ?? 0)}
           sub={`${revChange >= 0 ? '+' : ''}${revChange.toFixed(1)}% vs last month`}
           variant={revChange >= 0 ? 'success' : 'error'}
+          href="/finance/overview/revenue-summary"
         />
         <StatCard
           label="Events This Month"
           value={p.eventCounts?.thisMonth ?? 0}
           sub={`${p.eventCounts?.completedThisMonth ?? 0} completed`}
+          href="/events"
         />
         <StatCard
           label="NPS Score"
@@ -221,6 +233,7 @@ function OverviewTab({ p }: { p: AnalyticsHubProps }) {
           variant={
             p.npsStats.npsScore >= 50 ? 'success' : p.npsStats.npsScore >= 20 ? 'warning' : 'error'
           }
+          href="/analytics/client-ltv"
         />
         <StatCard
           label="Avg Review Rating"
@@ -233,25 +246,51 @@ function OverviewTab({ p }: { p: AnalyticsHubProps }) {
                 ? 'warning'
                 : 'error'
           }
+          href="/analytics/marketing"
         />
       </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard label="Events YTD" value={p.eventCounts?.ytd ?? 0} />
+        <StatCard label="Events YTD" value={p.eventCounts?.ytd ?? 0} href="/events" />
         <StatCard
           label="Capacity This Month"
           value={p.capacity.maxEventsPerMonth ? `${p.capacity.utilization}%` : 'Not set'}
           sub={`${p.capacity.bookedThisMonth} booked`}
           variant={p.capacity.maxEventsPerMonth ? pctBadge(p.capacity.utilization, 60) : 'default'}
+          href="/calendar"
         />
         <StatCard
           label="Inquiry→Booking Rate"
           value={`${p.inquiryFunnel.overallConversionRate}%`}
           variant={pctBadge(p.inquiryFunnel.overallConversionRate, 40)}
+          href="/analytics/pipeline"
         />
         <StatCard
           label="Repeat Booking Rate"
           value={`${p.clientRetention.repeatBookingRate}%`}
           variant={pctBadge(p.clientRetention.repeatBookingRate, 50)}
+          href="/clients"
+        />
+      </div>
+      <div className="flex justify-end mt-4">
+        <CsvExportButton
+          filename="analytics-overview-export.csv"
+          headers={['Metric', 'Value']}
+          rows={[
+            ['Revenue This Month', fmt$(p.monthRevenue?.currentMonthRevenueCents ?? 0)],
+            ['Events This Month', String(p.eventCounts?.thisMonth ?? 0)],
+            ['NPS Score', p.npsStats.totalResponses > 0 ? String(p.npsStats.npsScore) : 'N/A'],
+            [
+              'Avg Review Rating',
+              p.reviewStats.avgRating > 0 ? `${p.reviewStats.avgRating}` : 'N/A',
+            ],
+            ['Events YTD', String(p.eventCounts?.ytd ?? 0)],
+            [
+              'Capacity This Month',
+              p.capacity.maxEventsPerMonth ? `${p.capacity.utilization}%` : 'Not set',
+            ],
+            ['Inquiry to Booking Rate', `${p.inquiryFunnel.overallConversionRate}%`],
+            ['Repeat Booking Rate', `${p.clientRetention.repeatBookingRate}%`],
+          ]}
         />
       </div>
     </div>
@@ -266,22 +305,26 @@ function RevenueTab({ p }: { p: AnalyticsHubProps }) {
           label="Revenue / Guest"
           value={fmt$(p.revenuePerUnit.revenuePerGuestCents)}
           sub={`${p.revenuePerUnit.totalGuestsServed} total guests`}
+          href="/finance/reporting/revenue-by-event"
         />
         <StatCard
           label="Revenue / Hour"
           value={fmt$(p.revenuePerUnit.revenuePerHourCents)}
           sub={`${p.revenuePerUnit.totalHoursWorked}h worked`}
+          href="/finance/reporting/revenue-by-event"
         />
         <StatCard
           label="Revenue / Mile"
           value={fmt$(p.revenuePerUnit.revenuePerMileCents)}
           sub={`${p.revenuePerUnit.totalMilesDriven} miles`}
+          href="/finance/reporting/revenue-by-event"
         />
         <StatCard
           label="True Net Profit Margin"
           value={`${p.trueLaborCost.trueNetMarginPercent}%`}
           sub="after labor cost"
           variant={pctBadge(p.trueLaborCost.trueNetMarginPercent, 40)}
+          href="/finance/reporting/profit-loss"
         />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -322,12 +365,18 @@ function RevenueTab({ p }: { p: AnalyticsHubProps }) {
                 ? 'warning'
                 : 'error'
           }
+          href="/finance/expenses/labor"
         />
-        <StatCard label="Staff Cost" value={fmt$(p.trueLaborCost.staffCostCents)} />
+        <StatCard
+          label="Staff Cost"
+          value={fmt$(p.trueLaborCost.staffCostCents)}
+          href="/finance/expenses/labor"
+        />
         <StatCard
           label="Carry-Forward Savings"
           value={fmt$(p.carryForward.totalSavingsCents)}
           sub={`${p.carryForward.eventsWithCarryForward} events`}
+          href="/finance/overview"
         />
         <StatCard
           label="Break-Even Events/Month"
@@ -338,6 +387,7 @@ function RevenueTab({ p }: { p: AnalyticsHubProps }) {
               ? 'success'
               : 'error'
           }
+          href="/finance/planning/break-even"
         />
       </div>
       <Card className="p-6">
@@ -371,6 +421,25 @@ function RevenueTab({ p }: { p: AnalyticsHubProps }) {
           </div>
         )}
       </Card>
+      <div className="flex justify-end mt-4">
+        <CsvExportButton
+          filename="analytics-revenue-export.csv"
+          headers={['Metric', 'Value']}
+          rows={[
+            ['Revenue / Guest', fmt$(p.revenuePerUnit.revenuePerGuestCents)],
+            ['Revenue / Hour', fmt$(p.revenuePerUnit.revenuePerHourCents)],
+            ['Revenue / Mile', fmt$(p.revenuePerUnit.revenuePerMileCents)],
+            ['True Net Profit Margin', `${p.trueLaborCost.trueNetMarginPercent}%`],
+            ['Labor as % of Revenue', `${p.trueLaborCost.laborAsPercentOfRevenue}%`],
+            ['Staff Cost', fmt$(p.trueLaborCost.staffCostCents)],
+            ['Carry-Forward Savings', fmt$(p.carryForward.totalSavingsCents)],
+            ['Break-Even Events/Month', String(p.breakEven.breakEvenEventsPerMonth)],
+            ...p.revenueByEventType.map(
+              (row) => [row.occasion, fmt$(row.revenueCents)] as [string, string]
+            ),
+          ]}
+        />
+      </div>
     </div>
   )
 }
@@ -383,33 +452,39 @@ function OperationsTab({ p }: { p: AnalyticsHubProps }) {
           label="On-Time Start Rate"
           value={`${p.compliance.onTimeStartRate}%`}
           variant={pctBadge(p.compliance.onTimeStartRate, 85)}
+          href="/events"
         />
         <StatCard
           label="Kitchen Compliance"
           value={`${p.compliance.kitchenComplianceRate}%`}
           sub="reset_complete after event"
           variant={pctBadge(p.compliance.kitchenComplianceRate, 90)}
+          href="/events"
         />
         <StatCard
           label="Receipt Submission"
           value={`${p.compliance.receiptSubmissionRate}%`}
           sub="within 24h"
           variant={pctBadge(p.compliance.receiptSubmissionRate, 80)}
+          href="/receipts"
         />
         <StatCard
           label="Temp Log Compliance"
           value={`${p.compliance.tempLogComplianceRate}%`}
           variant={pctBadge(p.compliance.tempLogComplianceRate, 80)}
+          href="/events"
         />
         <StatCard
           label="Dietary Accommodation"
           value={`${p.compliance.dietaryAccommodationRate}%`}
           sub="events with restrictions"
+          href="/events"
         />
         <StatCard
           label="Menu Deviation Rate"
           value={`${p.compliance.menuDeviationRate}%`}
           sub="proposed vs actual served"
+          href="/events"
         />
       </div>
       <Card className="p-6">
@@ -446,17 +521,52 @@ function OperationsTab({ p }: { p: AnalyticsHubProps }) {
         </div>
       </Card>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard label="Total Food Spend" value={fmt$(p.waste.totalFoodSpendCents)} />
+        <StatCard
+          label="Total Food Spend"
+          value={fmt$(p.waste.totalFoodSpendCents)}
+          href="/finance/expenses/food-ingredients"
+        />
         <StatCard
           label="Carry-Forward (leftovers)"
           value={fmt$(p.waste.leftoverCarriedForwardCents)}
+          href="/finance/expenses/food-ingredients"
         />
-        <StatCard label="Net Food Cost" value={fmt$(p.waste.netFoodCostCents)} />
+        <StatCard
+          label="Net Food Cost"
+          value={fmt$(p.waste.netFoodCostCents)}
+          href="/finance/expenses/food-ingredients"
+        />
         <StatCard
           label="Waste Rate"
           value={`${p.waste.wastePercent}%`}
           sub="leftovers / food spend"
           variant={p.waste.wastePercent <= 10 ? 'success' : 'warning'}
+          href="/finance/expenses/food-ingredients"
+        />
+      </div>
+      <div className="flex justify-end mt-4">
+        <CsvExportButton
+          filename="analytics-operations-export.csv"
+          headers={['Metric', 'Value']}
+          rows={[
+            ['On-Time Start Rate', `${p.compliance.onTimeStartRate}%`],
+            ['Kitchen Compliance', `${p.compliance.kitchenComplianceRate}%`],
+            ['Receipt Submission', `${p.compliance.receiptSubmissionRate}%`],
+            ['Temp Log Compliance', `${p.compliance.tempLogComplianceRate}%`],
+            ['Dietary Accommodation', `${p.compliance.dietaryAccommodationRate}%`],
+            ['Menu Deviation Rate', `${p.compliance.menuDeviationRate}%`],
+            ['Total Food Spend', fmt$(p.waste.totalFoodSpendCents)],
+            ['Carry-Forward (leftovers)', fmt$(p.waste.leftoverCarriedForwardCents)],
+            ['Net Food Cost', fmt$(p.waste.netFoodCostCents)],
+            ['Waste Rate', `${p.waste.wastePercent}%`],
+            ...p.timePhases.map(
+              (phase) =>
+                [phase.phase, phase.avgMinutes > 0 ? `${phase.avgMinutes}m` : '-'] as [
+                  string,
+                  string,
+                ]
+            ),
+          ]}
         />
       </div>
     </div>
@@ -478,6 +588,7 @@ function PipelineTab({ p }: { p: AnalyticsHubProps }) {
           value={`${p.quoteAcceptance.acceptanceRate}%`}
           sub={`${p.quoteAcceptance.accepted} / ${p.quoteAcceptance.totalSent} sent`}
           variant={pctBadge(p.quoteAcceptance.acceptanceRate, 60)}
+          href="/analytics/funnel"
         />
         <StatCard
           label="Ghost Rate"
@@ -490,16 +601,19 @@ function PipelineTab({ p }: { p: AnalyticsHubProps }) {
                 ? 'warning'
                 : 'error'
           }
+          href="/analytics/funnel"
         />
         <StatCard
           label="Avg Lead Time"
           value={`${p.leadTime.avgLeadTimeDays}d`}
           sub="inquiry to event date"
+          href="/analytics/pipeline"
         />
         <StatCard
           label="Avg Sales Cycle"
           value={`${p.leadTime.avgSalesCycleDays}d`}
           sub="inquiry to quote accepted"
+          href="/analytics/pipeline"
         />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -556,11 +670,13 @@ function PipelineTab({ p }: { p: AnalyticsHubProps }) {
           label="Negotiation Rate"
           value={`${p.negotiation.negotiationRate}%`}
           sub="quotes with price adjustment"
+          href="/analytics/pipeline"
         />
         <StatCard
           label="Avg Discount"
           value={`${p.negotiation.avgDiscountPercent}%`}
           sub={fmt$(p.negotiation.avgDiscountCents)}
+          href="/analytics/pipeline"
         />
         <StatCard
           label="Avg Response Time"
@@ -572,11 +688,13 @@ function PipelineTab({ p }: { p: AnalyticsHubProps }) {
                 ? 'warning'
                 : 'error'
           }
+          href="/analytics/pipeline"
         />
         <StatCard
           label="Responded < 1h"
           value={`${p.responseTime.under1hourPercent}%`}
           variant={pctBadge(p.responseTime.under1hourPercent, 50)}
+          href="/analytics/pipeline"
         />
       </div>
       {p.declineReasons.reasons.length > 0 && (
@@ -599,6 +717,22 @@ function PipelineTab({ p }: { p: AnalyticsHubProps }) {
           </div>
         </Card>
       )}
+      <div className="flex justify-end mt-4">
+        <CsvExportButton
+          filename="analytics-pipeline-export.csv"
+          headers={['Metric', 'Value']}
+          rows={[
+            ['Quote Acceptance Rate', `${p.quoteAcceptance.acceptanceRate}%`],
+            ['Ghost Rate', `${p.ghostRate.ghostRate}%`],
+            ['Avg Lead Time', `${p.leadTime.avgLeadTimeDays}d`],
+            ['Avg Sales Cycle', `${p.leadTime.avgSalesCycleDays}d`],
+            ['Negotiation Rate', `${p.negotiation.negotiationRate}%`],
+            ['Avg Discount', `${p.negotiation.avgDiscountPercent}%`],
+            ['Avg Response Time', `${p.responseTime.avgHoursToFirstResponse}h`],
+            ['Responded < 1h', `${p.responseTime.under1hourPercent}%`],
+          ]}
+        />
+      </div>
     </div>
   )
 }
@@ -607,12 +741,13 @@ function ClientsTab({ p }: { p: AnalyticsHubProps }) {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard label="Active Clients" value={p.clientRetention.activeClients} />
+        <StatCard label="Active Clients" value={p.clientRetention.activeClients} href="/clients" />
         <StatCard
           label="Repeat Clients"
           value={p.clientRetention.repeatClients}
           sub={`${p.clientRetention.repeatBookingRate}% repeat rate`}
           variant={pctBadge(p.clientRetention.repeatBookingRate, 50)}
+          href="/clients"
         />
         <StatCard
           label="6-Month Retention"
@@ -624,6 +759,7 @@ function ClientsTab({ p }: { p: AnalyticsHubProps }) {
           value={p.clientChurn.totalAtRisk}
           sub="120+ days, 2+ events"
           variant={p.clientChurn.totalAtRisk === 0 ? 'success' : 'warning'}
+          href="/clients"
         />
       </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -637,6 +773,7 @@ function ClientsTab({ p }: { p: AnalyticsHubProps }) {
                 ? 'warning'
                 : 'error'
           }
+          href="/clients"
         />
         <StatCard
           label="Avg Days Since Last Event"
@@ -646,6 +783,7 @@ function ClientsTab({ p }: { p: AnalyticsHubProps }) {
           label="Referral Conversion"
           value={`${p.referralConversion.referralConversionRate}%`}
           sub={`${p.referralConversion.referredConversions} / ${p.referralConversion.referredInquiries} referred`}
+          href="/analytics/referral-sources"
         />
         <StatCard
           label="Referral Revenue"
@@ -653,7 +791,11 @@ function ClientsTab({ p }: { p: AnalyticsHubProps }) {
         />
       </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard label="New Clients (Period)" value={p.clientAcquisition.newClientsThisPeriod} />
+        <StatCard
+          label="New Clients (Period)"
+          value={p.clientAcquisition.newClientsThisPeriod}
+          href="/clients"
+        />
         <StatCard
           label="Cost Per Client (CAC)"
           value={
@@ -666,6 +808,7 @@ function ClientsTab({ p }: { p: AnalyticsHubProps }) {
               ? `${fmt$(p.clientAcquisition.totalMarketingSpendCents)} spend`
               : 'Log marketing spend to enable'
           }
+          href="/finance/expenses/marketing"
         />
       </div>
       <Card className="p-6">
@@ -721,6 +864,29 @@ function ClientsTab({ p }: { p: AnalyticsHubProps }) {
           <StatCard label="Survey Response Rate" value={`${p.npsStats.responseRate}%`} />
         </div>
       )}
+      <div className="flex justify-end mt-4">
+        <CsvExportButton
+          filename="analytics-clients-export.csv"
+          headers={['Metric', 'Value']}
+          rows={[
+            ['Active Clients', String(p.clientRetention.activeClients)],
+            ['Repeat Clients', String(p.clientRetention.repeatClients)],
+            ['Repeat Booking Rate', `${p.clientRetention.repeatBookingRate}%`],
+            ['6-Month Retention', `${p.clientRetention.retentionRate}%`],
+            ['At-Risk Clients', String(p.clientChurn.totalAtRisk)],
+            ['Churn Rate', `${p.clientChurn.churnRate}%`],
+            ['New Clients (Period)', String(p.clientAcquisition.newClientsThisPeriod)],
+            [
+              'CAC',
+              p.clientAcquisition.totalMarketingSpendCents > 0
+                ? fmt$(p.clientAcquisition.cacCents)
+                : 'Not tracked',
+            ],
+            ['Top 5 Revenue Share', `${p.revenueConcentration.top5SharePercent}%`],
+            ['Referral Conversion', `${p.referralConversion.referralConversionRate}%`],
+          ]}
+        />
+      </div>
     </div>
   )
 }
@@ -733,11 +899,13 @@ function MarketingTab({ p }: { p: AnalyticsHubProps }) {
           label="Email Open Rate"
           value={`${p.emailStats.openRate}%`}
           variant={pctBadge(p.emailStats.openRate, 30)}
+          href="/analytics/marketing"
         />
         <StatCard
           label="Email Click Rate"
           value={`${p.emailStats.clickRate}%`}
           variant={pctBadge(p.emailStats.clickRate, 5)}
+          href="/analytics/marketing"
         />
         <StatCard
           label="Bounce Rate"
@@ -860,6 +1028,21 @@ function MarketingTab({ p }: { p: AnalyticsHubProps }) {
           </div>
         </Card>
       )}
+      <div className="flex justify-end mt-4">
+        <CsvExportButton
+          filename="analytics-marketing-export.csv"
+          headers={['Metric', 'Value']}
+          rows={[
+            ['Email Open Rate', `${p.emailStats.openRate}%`],
+            ['Email Click Rate', `${p.emailStats.clickRate}%`],
+            ['Bounce Rate', `${p.emailStats.bounceRate}%`],
+            ['Spam Rate', `${p.emailStats.spamRate}%`],
+            ['Total Reviews', String(p.reviewStats.totalReviews)],
+            ['Avg Rating', p.reviewStats.avgRating > 0 ? String(p.reviewStats.avgRating) : 'N/A'],
+            ['Review Rate', `${p.reviewStats.reviewRate}%`],
+          ]}
+        />
+      </div>
     </div>
   )
 }
@@ -999,6 +1182,17 @@ function SocialTab({ p }: { p: AnalyticsHubProps }) {
             />
           ))}
       </div>
+      <div className="flex justify-end mt-4">
+        <CsvExportButton
+          filename="analytics-social-export.csv"
+          headers={['Platform', 'Status', 'Handle']}
+          rows={p.socialConnections.map((c) => [
+            c.platform,
+            c.isConnected ? 'Connected' : 'Not connected',
+            c.accountHandle ?? '',
+          ])}
+        />
+      </div>
     </div>
   )
 }
@@ -1011,12 +1205,14 @@ function CulinaryTab({ p }: { p: AnalyticsHubProps }) {
           label="Total Recipes"
           value={p.recipeUsage.totalRecipes}
           sub={`${p.recipeUsage.neverCookedCount} never cooked`}
+          href="/culinary/recipes"
         />
         <StatCard
           label="Recipe Reuse Rate"
           value={`${p.recipeUsage.recipeReuseRate}%`}
           sub="used in 2+ events"
           variant={pctBadge(p.recipeUsage.recipeReuseRate, 40)}
+          href="/culinary/recipes"
         />
         <StatCard label="Avg Times Cooked" value={p.recipeUsage.avgTimesCooked} />
         <StatCard
@@ -1070,14 +1266,32 @@ function CulinaryTab({ p }: { p: AnalyticsHubProps }) {
           label="Menu Modification Rate"
           value={`${p.dishPerformance.menuModificationRate}%`}
           sub="menus with revision requests"
+          href="/culinary"
         />
         <StatCard label="Avg Dishes / Menu" value={p.dishPerformance.avgDishesSentPerMenu} />
         <StatCard
           label="Menu Approval Rate"
           value={`${p.menuApproval.approvalRate}%`}
           variant={pctBadge(p.menuApproval.approvalRate, 70)}
+          href="/culinary"
         />
         <StatCard label="Avg Menu Response" value={`${p.menuApproval.avgResponseHours}h`} />
+      </div>
+      <div className="flex justify-end mt-4">
+        <CsvExportButton
+          filename="analytics-culinary-export.csv"
+          headers={['Metric', 'Value']}
+          rows={[
+            ['Total Recipes', String(p.recipeUsage.totalRecipes)],
+            ['Never Cooked', String(p.recipeUsage.neverCookedCount)],
+            ['Recipe Reuse Rate', `${p.recipeUsage.recipeReuseRate}%`],
+            ['Avg Times Cooked', String(p.recipeUsage.avgTimesCooked)],
+            ['New Dishes This Month', String(p.dishPerformance.newDishesThisMonth)],
+            ['Menu Modification Rate', `${p.dishPerformance.menuModificationRate}%`],
+            ['Menu Approval Rate', `${p.menuApproval.approvalRate}%`],
+            ['Avg Menu Response', `${p.menuApproval.avgResponseHours}h`],
+          ]}
+        />
       </div>
     </div>
   )

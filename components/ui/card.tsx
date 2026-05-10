@@ -18,7 +18,7 @@ const variantStyles: Record<CardVariant, string> = {
     'bg-[var(--surface-3)] border-stone-600/50 shadow-[var(--shadow-card-hover)] bg-[image:var(--card-gradient)]',
   glass: 'bg-[var(--glass-bg)] border-stone-600/30 shadow-[var(--shadow-card)] backdrop-blur-xl',
   highlight:
-    'bg-[var(--surface-2)] border-brand-600/30 shadow-[var(--shadow-card),0_0_20px_rgb(var(--brand-500)/0.08)] bg-[image:var(--card-gradient)]',
+    'bg-[var(--surface-2)] border-brand-600/30 shadow-[var(--shadow-card)] bg-[image:var(--card-gradient)]',
 }
 
 export const Card = forwardRef<HTMLDivElement, CardProps>(
@@ -26,7 +26,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
     return (
       <div
         ref={ref}
-        className={`rounded-xl border card-transition ${variantStyles[variant]} ${interactive ? 'card-lift hover:border-[rgba(232,143,71,0.25)] hover:bg-stone-800/80 hover:shadow-[0_12px_32px_rgba(0,0,0,0.4),0_0_0_1px_rgba(232,143,71,0.08),0_0_20px_rgba(232,143,71,0.06)] cursor-pointer' : ''} ${className}`}
+        className={`rounded-xl border card-transition ${variantStyles[variant]} ${interactive ? 'hover:border-stone-600 hover:bg-stone-800/80 hover:shadow-[var(--shadow-card-hover)] cursor-pointer' : ''} ${className}`}
         {...props}
       >
         {children}

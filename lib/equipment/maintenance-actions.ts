@@ -173,7 +173,7 @@ export async function logMaintenance(
     console.error('[non-blocking] Failed to update equipment maintenance date', updateError)
   }
 
-  revalidatePath('/operations/equipment')
+  revalidatePath('/ops/equipment')
 
   return {
     id: logEntry.id,

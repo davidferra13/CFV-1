@@ -44,7 +44,7 @@ export function EventHubLinkPanel({ groupToken, eventId, profileToken }: EventHu
 
   if (!token) {
     return (
-      <div className="relative overflow-hidden rounded-[28px] border border-stone-700 bg-gradient-to-br from-stone-900 via-stone-900 to-stone-800 p-5">
+      <div className="relative overflow-hidden rounded-xl border border-stone-700 bg-gradient-to-br from-stone-900 via-stone-900 to-stone-800 p-5">
         <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-[#e88f47]/10 to-transparent" />
         <div className="relative flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="space-y-2">

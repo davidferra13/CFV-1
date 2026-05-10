@@ -146,7 +146,7 @@ async function handleWaitlistSweep(request: NextRequest): Promise<NextResponse> 
                 action: 'follow_up_due',
                 title: 'Waitlist client notified',
                 body: `${clientInfo.full_name} was notified that ${dateStr}${entry.occasion ? ` (${entry.occasion})` : ''} may be available. Consider reaching out.`,
-                actionUrl: `/schedule/waitlist`,
+                actionUrl: `/calendar/waitlist`,
                 clientId: entry.client_id ?? undefined,
               })
             }

@@ -195,7 +195,7 @@ export function HistoricalScanSection({ initialStatus }: HistoricalScanSectionPr
             {status.status === 'idle' && <p className="text-xs text-stone-400">{idleMessage}</p>}
             {status.status === 'in_progress' && (
               <div className="flex items-center gap-2">
-                <div className="h-2 w-2 rounded-full bg-brand-600 animate-pulse" />
+                <div className="h-2 w-2 rounded-full bg-brand-600" />
                 <p className="text-xs text-brand-500">
                   Scanning&hellip; {status.totalProcessed.toLocaleString()} emails filtered so far
                 </p>

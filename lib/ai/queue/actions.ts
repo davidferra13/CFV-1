@@ -17,6 +17,7 @@ import type { AiQueueItem, AiTaskStatus, ApprovalTier, EnqueueInput, LlmEndpoint
 import { OLLAMA_GUARD } from './types'
 import { getTaskDefinition } from './registry'
 import { resolveAiActionDecision } from '@/lib/ai/dispatch/router'
+import { tenantHasActiveConnector } from '@/lib/ai/connector/auth'
 
 async function recordQueueFailure(input: {
   operation: string
@@ -139,6 +140,24 @@ export async function enqueueTask(
   return _enqueueTaskImpl(input)
 }
 
+/**
+ * Resolve the target endpoint for a new task.
+ * If the tenant has an active local connector, route to it instead of the server worker.
+ */
+async function resolveTargetEndpoint(
+  explicitEndpoint: string | null | undefined,
+  tenantId: string
+): Promise<string> {
+  if (explicitEndpoint && explicitEndpoint !== 'auto') return explicitEndpoint
+  try {
+    const hasConnector = await tenantHasActiveConnector(tenantId)
+    if (hasConnector) return 'local_connector'
+  } catch {
+    // Check failed; fall back to auto
+  }
+  return explicitEndpoint ?? 'auto'
+}
+
 async function _enqueueTaskImpl(input: EnqueueInput): Promise<{ id: string } | { error: string }> {
   const definition = getTaskDefinition(input.taskType)
   if (!definition) {
@@ -220,7 +239,10 @@ async function _enqueueTaskImpl(input: EnqueueInput): Promise<{ id: string } | {
       ),
       status: 'pending',
       payload: (input.payload ?? {}) as Json,
-      target_endpoint: input.targetEndpoint ?? definition.preferredEndpoint,
+      target_endpoint: await resolveTargetEndpoint(
+        input.targetEndpoint ?? definition.preferredEndpoint,
+        input.tenantId
+      ),
       model_tier: definition.modelTier,
       scheduled_for: input.scheduledFor?.toISOString() ?? new Date().toISOString(),
       recurrence: definition.recurrence,
@@ -263,11 +285,13 @@ export async function claimNextTask(): Promise<AiQueueItem | null> {
   // First, recover any hung tasks (processing for too long)
   await recoverHungTasks()
 
-  // Find the highest-priority task that's due
+  // Find the highest-priority task that's due.
+  // Skip tasks targeted at local connectors - those are claimed by the connector app.
   const { data: candidates, error: findError } = await db
     .from('ai_task_queue')
     .select('id')
     .eq('status', 'pending')
+    .neq('target_endpoint', 'local_connector')
     .lte('scheduled_for', now)
     .order('priority', { ascending: false })
     .order('scheduled_for', { ascending: true })

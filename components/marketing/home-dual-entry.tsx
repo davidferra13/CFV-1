@@ -157,7 +157,7 @@ export function HomeDualEntry() {
           </div>
 
           <div className="mt-10 grid gap-5 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
-            <section className="rounded-[28px] border border-stone-700 bg-stone-950/85 p-6 shadow-[var(--shadow-card)] md:p-8">
+            <section className="rounded-xl border border-stone-700 bg-stone-950/85 p-6 shadow-[var(--shadow-card)] md:p-8">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.12em] text-brand-300">
@@ -265,7 +265,7 @@ export function HomeDualEntry() {
               </div>
             </section>
 
-            <section className="rounded-[28px] border border-brand-700/40 bg-gradient-to-br from-stone-950 via-stone-950 to-brand-950/40 p-6 shadow-[var(--shadow-card)] md:p-8">
+            <section className="rounded-xl border border-brand-700/40 bg-gradient-to-br from-stone-950 via-stone-950 to-brand-950/40 p-6 shadow-[var(--shadow-card)] md:p-8">
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-brand-300">
                 For chefs and operators
               </p>

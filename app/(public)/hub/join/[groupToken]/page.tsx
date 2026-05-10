@@ -84,7 +84,7 @@ export default async function JoinGroupPage({ params, searchParams }: Props) {
 
               <div className="flex items-center gap-4">
                 {group.emoji ? (
-                  <div className="flex h-20 w-20 items-center justify-center rounded-[28px] border border-white/10 bg-white/5 text-4xl shadow-inner shadow-black/20">
+                  <div className="flex h-20 w-20 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-4xl shadow-inner shadow-black/20">
                     {group.emoji}
                   </div>
                 ) : null}

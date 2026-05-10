@@ -209,7 +209,7 @@ export function EventFoodCostInsight({ menuCost, quotedPriceCents, guestCount, a
           <div className="flex items-center gap-1.5">
             {menuCost.hasAllRecipeCosts === false || !menuCost.totalRecipeCostCents ? (
               <>
-                <span className="inline-block h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
+                <span className="inline-block h-2 w-2 rounded-full bg-amber-400" />
                 <span className="text-xs text-amber-400">
                   {menuCost.totalRecipeCostCents ? 'Some prices unavailable' : 'Prices updating...'}
                 </span>

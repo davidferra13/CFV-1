@@ -128,7 +128,7 @@ export async function submitGuestLead(input: {
       action: 'new_guest_lead',
       title: 'New guest lead',
       body: `${validated.name.trim()} expressed interest after attending your event.`,
-      actionUrl: '/guest-leads',
+      actionUrl: '/leads',
     })
   } catch (err) {
     console.error('[submitGuestLead] Notification failed (non-blocking):', err)

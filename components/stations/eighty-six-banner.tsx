@@ -2,11 +2,13 @@
 
 // 86 Banner - Shows all currently 86'd items across ALL stations
 // Prominent red banner displayed at the top of the stations page.
+// Broadcast button logs the 86 to the ops log for cross-station visibility.
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
 import { unmark86 } from '@/lib/stations/clipboard-actions'
+import { broadcastEightySix } from '@/lib/stations/service-mode-actions'
 
 type EightySixedItem = {
   id: string
@@ -29,6 +31,7 @@ type Props = {
 export function EightySixBanner({ items }: Props) {
   const router = useRouter()
   const [restoring, setRestoring] = useState<string | null>(null)
+  const [broadcasting, setBroadcasting] = useState<string | null>(null)
 
   async function handleUnmark(entryId: string) {
     setRestoring(entryId)
@@ -37,8 +40,29 @@ export function EightySixBanner({ items }: Props) {
       router.refresh()
     } catch (err) {
       console.error('[EightySixBanner] Unmark error:', err)
+      toast.error('Failed to restore item')
     } finally {
       setRestoring(null)
+    }
+  }
+
+  async function handleBroadcast(item: EightySixedItem) {
+    const stationId = item.stations?.id
+    const itemName = item.station_components?.name ?? 'Unknown'
+    if (!stationId) return
+    setBroadcasting(item.id)
+    try {
+      const result = await broadcastEightySix({ itemName, stationId })
+      if (result.success) {
+        toast.success(`86 broadcast: ${itemName}`)
+      } else {
+        toast.error(result.error ?? 'Failed to broadcast')
+      }
+    } catch (err) {
+      console.error('[EightySixBanner] Broadcast error:', err)
+      toast.error('Failed to broadcast 86')
+    } finally {
+      setBroadcasting(null)
     }
   }
 
@@ -75,6 +99,15 @@ export function EightySixBanner({ items }: Props) {
               </span>
             )}
             <button
+              type="button"
+              onClick={() => handleBroadcast(item)}
+              disabled={broadcasting === item.id || !item.stations?.id}
+              className="text-xs text-amber-300 hover:text-white bg-amber-800/60 hover:bg-amber-700 rounded px-2 py-0.5 transition-colors disabled:opacity-50"
+            >
+              {broadcasting === item.id ? '...' : 'Broadcast'}
+            </button>
+            <button
+              type="button"
               onClick={() => handleUnmark(item.id)}
               disabled={restoring === item.id}
               className="text-xs text-red-300 hover:text-white bg-red-800/60 hover:bg-red-700 rounded px-2 py-0.5 transition-colors disabled:opacity-50"

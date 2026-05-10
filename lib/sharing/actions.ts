@@ -2274,7 +2274,7 @@ export async function submitViewerIntent(input: ViewerIntentInput) {
         action: 'new_guest_lead',
         title: `${validated.full_name} wants their own event`,
         body: 'New viewer conversion from event sharing.',
-        actionUrl: '/guest-leads',
+        actionUrl: '/leads',
       })
     }
   } catch (err) {

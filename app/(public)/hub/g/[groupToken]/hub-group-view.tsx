@@ -38,6 +38,8 @@ import { CircleEventPlan } from '@/components/hub/circle-event-plan'
 import { CircleShareCard } from '@/components/hub/circle-share-card'
 import { HostDashboardTab } from '@/components/hub/host-dashboard-tab'
 import { IngredientAvailabilityBoard } from '@/components/hub/ingredient-availability-board'
+import { CircleRsvpBar } from '@/components/hub/circle-rsvp-bar'
+import type { RsvpStatus, RsvpSummary } from '@/lib/hub/rsvp-actions'
 import type { GuestCriticalPathResult } from '@/lib/lifecycle/critical-path'
 import type { CircleChefProofData } from '@/lib/hub/circle-chef-proof'
 import type { HouseholdDietarySummary } from '@/lib/hub/household-actions'
@@ -98,6 +100,7 @@ interface HubGroupViewProps {
     totalCents: number
     validUntil: string | null
   } | null
+  rsvpSummary?: RsvpSummary | null
 }
 
 export function HubGroupView({
@@ -118,6 +121,7 @@ export function HubGroupView({
   lifecycleStages,
   chefProof,
   pendingQuote,
+  rsvpSummary,
 }: HubGroupViewProps) {
   const [activeTab, setActiveTab] = useState<Tab>(((group as any).default_tab as Tab) || 'chat')
   const [localGroup, setLocalGroup] = useState<HubGroup>(group)
@@ -407,6 +411,15 @@ export function HubGroupView({
         <div className="mx-auto w-full max-w-2xl">
           <CircleClientStatus status={guestStatus} />
         </div>
+      )}
+
+      {/* RSVP Bar (event-linked circles only, authenticated guests only) */}
+      {linkedEventId && profileToken && rsvpSummary && (
+        <CircleRsvpBar
+          groupId={group.id}
+          summary={rsvpSummary}
+          currentStatus={(currentMember?.rsvp_status as RsvpStatus) ?? 'no_response'}
+        />
       )}
 
       {/* Lifecycle Progress (client-visible checkpoints) */}

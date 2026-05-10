@@ -457,7 +457,10 @@ export function SocialPostEditor({
                     <Wifi className="w-3 h-3 text-emerald-500" />
                     Connected account - will auto-publish when Queued.
                     {connectedPlatforms.size === 0 && (
-                      <a href="/social/connections" className="text-brand-600 hover:underline ml-1">
+                      <a
+                        href="/marketing/social/connections"
+                        className="text-brand-600 hover:underline ml-1"
+                      >
                         Connect platforms →
                       </a>
                     )}

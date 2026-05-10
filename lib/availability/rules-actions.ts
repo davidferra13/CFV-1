@@ -86,6 +86,8 @@ export async function upsertSchedulingRules(
   if (error) return { success: false, error: error.message }
 
   revalidatePath('/settings')
+  revalidatePath('/calendar')
+  revalidatePath('/calendar/share')
   return { success: true }
 }
 

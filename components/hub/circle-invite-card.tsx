@@ -134,7 +134,7 @@ export function CircleInviteCard({
   return (
     <div
       className={cn(
-        'relative overflow-hidden rounded-[28px] border border-[#e88f47]/20 bg-[radial-gradient(circle_at_top_left,rgba(232,143,71,0.18),transparent_38%),linear-gradient(135deg,rgba(28,25,23,0.98),rgba(17,14,12,0.98))] p-5 text-stone-100 shadow-[0_18px_60px_rgba(0,0,0,0.35)]',
+        'relative overflow-hidden rounded-xl border border-[#e88f47]/20 bg-[radial-gradient(circle_at_top_left,rgba(232,143,71,0.18),transparent_38%),linear-gradient(135deg,rgba(28,25,23,0.98),rgba(17,14,12,0.98))] p-5 text-stone-100 shadow-[0_18px_60px_rgba(0,0,0,0.35)]',
         className
       )}
     >

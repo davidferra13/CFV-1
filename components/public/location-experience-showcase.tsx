@@ -77,7 +77,7 @@ function LocationExperienceCard({
     : null
 
   return (
-    <article className="overflow-hidden rounded-[28px] border border-stone-700 bg-stone-950/90 shadow-[0_24px_60px_rgba(0,0,0,0.28)]">
+    <article className="overflow-hidden rounded-xl border border-stone-700 bg-stone-950/90 shadow-[0_24px_60px_rgba(0,0,0,0.28)]">
       <div className="relative aspect-[4/3] overflow-hidden bg-stone-900">
         {activeImage ? (
           <Image

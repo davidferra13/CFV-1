@@ -88,7 +88,7 @@ export function buildRevenueGoalRecommendations(input: {
       id: 'open-dates-promotion',
       title: `${input.openDatesThisMonth.length} open date${input.openDatesThisMonth.length === 1 ? '' : 's'} left this month`,
       description: `Push availability on ${dates}${input.openDatesThisMonth.length > 3 ? ', ...' : ''} to close revenue gap without overbooking.`,
-      href: '/schedule',
+      href: '/calendar',
       severity: 'normal',
       confidence: 0.88,
       metadata: {
@@ -117,7 +117,7 @@ export function buildRevenueGoalRecommendations(input: {
       id: `custom-goal-${goal.id}`,
       title: `Custom goal behind: ${goal.label}`,
       description: `${goal.label} is ${dollars(goal.range.gapCents)} below target for this period.`,
-      href: '/financials',
+      href: '/finance',
       severity: 'normal',
       confidence: 0.8,
       metadata: {
@@ -133,7 +133,7 @@ export function buildRevenueGoalRecommendations(input: {
       title: 'On track to hit goal',
       description:
         'Current trajectory is healthy. Keep conversion velocity steady and protect open premium dates.',
-      href: '/financials',
+      href: '/finance',
       severity: 'low',
       confidence: 0.9,
     })

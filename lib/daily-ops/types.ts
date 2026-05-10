@@ -2,6 +2,8 @@
 // Pure types for the Daily Plan system.
 // No logic. No imports beyond what's needed for typing.
 
+import type { DailyWorkflowSummary } from '@/lib/workflows/types'
+
 // ============================================
 // PLAN LANES
 // ============================================
@@ -27,6 +29,11 @@ export type PlanItemSource =
   | 'recipe_debt'
   | 'follow_up'
   | 'call'
+  | 'circle'
+  | 'onboarding'
+  | 'notification'
+  | 'reminder'
+  | 'task'
 
 // ============================================
 // PLAN ITEMS
@@ -149,6 +156,16 @@ export interface DailyPlan {
     endDate: string
     blockType: string
   }[]
+
+  /** Action center summary (notifications, reminders, tasks) */
+  actionCenter?: {
+    total: number
+    urgent: number
+    bySource: Record<string, number>
+  }
+
+  /** Active compound workflows (post-event, booking pipeline, prep countdown) */
+  activeWorkflows: DailyWorkflowSummary[]
 
   /** When this plan was computed */
   computedAt: string

@@ -87,7 +87,7 @@ export function PipelineStatusBadge() {
       <Badge variant={flashMessage ? 'info' : state.variant}>
         <span className="flex items-center gap-1.5">
           <span
-            className={`inline-block h-2 w-2 rounded-full ${flashMessage ? 'bg-blue-400 animate-pulse' : state.dotColor}`}
+            className={`inline-block h-2 w-2 rounded-full ${flashMessage ? 'bg-blue-400' : state.dotColor}`}
           />
           <span className="text-xs">{flashMessage || state.label}</span>
         </span>

@@ -5,6 +5,7 @@ import type { HubGroup, EventTheme } from '@/lib/hub/types'
 import { useHubInviteLink } from '@/components/hub/use-hub-invite-link'
 import { updateHubGroup } from '@/lib/hub/group-actions'
 import { ThemePicker } from './theme-picker'
+import { RichTextEditor } from '@/components/ui/rich-text-editor'
 
 interface HubGroupSettingsProps {
   group: HubGroup
@@ -111,14 +112,11 @@ export function HubGroupSettings({
         <label htmlFor="circle-desc" className="mb-1 block text-xs font-medium text-stone-400">
           Description
         </label>
-        <textarea
-          id="circle-desc"
+        <RichTextEditor
           value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          maxLength={500}
-          rows={2}
-          className="w-full resize-none rounded-lg bg-stone-900 px-3 py-2 text-sm text-stone-200 ring-1 ring-stone-700 focus:outline-none focus:ring-[#e88f47]"
+          onChange={setDescription}
           placeholder="What's this circle about?"
+          minHeight={100}
         />
       </div>
 

@@ -137,7 +137,7 @@ export function LivePresencePanel({ tenantId, initialClients }: LivePresencePane
         <div className="flex items-center gap-3">
           {onlineNow.length > 0 && (
             <span className="flex items-center gap-1.5 text-xs text-emerald-600 font-medium">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="w-2 h-2 rounded-full bg-emerald-500" />
               {onlineNow.length} online now
             </span>
           )}

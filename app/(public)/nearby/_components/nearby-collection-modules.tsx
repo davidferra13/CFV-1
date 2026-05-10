@@ -75,7 +75,7 @@ function CollectionModule({
   const themeClass = MODULE_THEME_CLASSES[index % MODULE_THEME_CLASSES.length]
 
   return (
-    <section className={`rounded-[28px] border p-6 sm:p-7 ${themeClass}`}>
+    <section className={`rounded-xl border p-6 sm:p-7 ${themeClass}`}>
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
         {module.eyebrow}
       </p>
@@ -123,7 +123,7 @@ export function NearbyCollectionModules({ stats }: { stats: DirectoryStats }) {
               {model.description}
             </p>
 
-            <div className="mt-6 rounded-[28px] border border-stone-800/80 bg-stone-950/65 p-5 sm:p-6">
+            <div className="mt-6 rounded-xl border border-stone-800/80 bg-stone-950/65 p-5 sm:p-6">
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-200">
                 Spotlight Guide
               </p>
@@ -191,7 +191,7 @@ export function NearbyCollectionModules({ stats }: { stats: DirectoryStats }) {
       </div>
 
       {model.lowDensityNote && (
-        <section className="rounded-[28px] border border-brand-700/25 bg-brand-950/15 p-5 sm:flex sm:items-start sm:justify-between sm:gap-6 sm:p-6">
+        <section className="rounded-xl border border-brand-700/25 bg-brand-950/15 p-5 sm:flex sm:items-start sm:justify-between sm:gap-6 sm:p-6">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-200">
               Low-Data Handling

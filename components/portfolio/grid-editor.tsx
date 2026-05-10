@@ -6,26 +6,64 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Star, Plus, Trash2, GripVertical } from '@/components/ui/icons'
-import { addPortfolioItem, removePortfolioItem, reorderPortfolio } from '@/lib/portfolio/actions'
+import {
+  addPortfolioItem,
+  removePortfolioItem,
+  reorderPortfolio,
+  updatePortfolioItem,
+} from '@/lib/portfolio/actions'
+import type { PortfolioItem } from '@/lib/portfolio/actions'
 import { toast } from 'sonner'
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const CATEGORIES = [
+  'uncategorized',
+  'plating',
+  'setup',
+  'ambiance',
+  'ingredients',
+  'team',
+  'table-setting',
+  'dessert',
+] as const
+
+const SEASONS = ['spring', 'summer', 'fall', 'winter'] as const
+
+const CATEGORY_LABELS: Record<string, string> = {
+  uncategorized: 'Uncategorized',
+  plating: 'Plating',
+  setup: 'Setup',
+  ambiance: 'Ambiance',
+  ingredients: 'Ingredients',
+  team: 'Team',
+  'table-setting': 'Table Setting',
+  dessert: 'Dessert',
+}
+
+const SEASON_LABELS: Record<string, string> = {
+  spring: 'Spring',
+  summer: 'Summer',
+  fall: 'Fall',
+  winter: 'Winter',
+}
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-interface PortfolioItem {
+interface EventOption {
   id: string
-  photoUrl: string
-  caption?: string
-  dishName?: string
-  isFeatured: boolean
+  name: string
+  date: string | null
 }
 
 interface GridEditorProps {
   items: PortfolioItem[]
+  events?: EventOption[]
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export function GridEditor({ items: initialItems }: GridEditorProps) {
+export function GridEditor({ items: initialItems, events = [] }: GridEditorProps) {
   const [items, setItems] = useState<PortfolioItem[]>(initialItems)
   const [isPending, startTransition] = useTransition()
   const [showAddForm, setShowAddForm] = useState(false)
@@ -68,16 +106,7 @@ export function GridEditor({ items: initialItems }: GridEditorProps) {
           dishName: newDishName.trim() || undefined,
         })
         if (result.item) {
-          setItems((prev) => [
-            ...prev,
-            {
-              id: result.item.id,
-              photoUrl: result.item.photoUrl,
-              caption: result.item.caption ?? undefined,
-              dishName: result.item.dishName ?? undefined,
-              isFeatured: result.item.isFeatured,
-            },
-          ])
+          setItems((prev) => [...prev, result.item])
         }
         setNewPhotoUrl('')
         setNewCaption('')
@@ -87,6 +116,22 @@ export function GridEditor({ items: initialItems }: GridEditorProps) {
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : 'Failed to add item'
         toast.error(message)
+      }
+    })
+  }
+
+  function handleFieldUpdate(itemId: string, field: string, value: string | null) {
+    const previous = [...items]
+    setItems((prev) =>
+      prev.map((item) => (item.id === itemId ? { ...item, [field]: value } : item))
+    )
+
+    startTransition(async () => {
+      try {
+        await updatePortfolioItem(itemId, { [field]: value })
+      } catch {
+        setItems(previous)
+        toast.error('Failed to update item')
       }
     })
   }
@@ -132,6 +177,9 @@ export function GridEditor({ items: initialItems }: GridEditorProps) {
     setDragOverIndex(null)
   }
 
+  const selectClass =
+    'w-full text-xs text-stone-300 bg-stone-800 border border-stone-700 rounded px-1.5 py-1 focus:outline-none focus:ring-1 focus:ring-brand-400'
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
@@ -175,7 +223,7 @@ export function GridEditor({ items: initialItems }: GridEditorProps) {
               </div>
 
               {/* Caption overlay */}
-              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3">
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3 pointer-events-none">
                 {item.dishName && <p className="text-sm font-medium text-white">{item.dishName}</p>}
                 {item.caption && <p className="text-xs text-white/80">{item.caption}</p>}
               </div>
@@ -208,6 +256,58 @@ export function GridEditor({ items: initialItems }: GridEditorProps) {
                   Featured
                 </div>
               )}
+
+              {/* Metadata dropdowns */}
+              <div className="p-2 space-y-1.5 bg-stone-900">
+                <div className="grid grid-cols-2 gap-1.5">
+                  <select
+                    value={item.category || 'uncategorized'}
+                    onChange={(e) => handleFieldUpdate(item.id, 'category', e.target.value)}
+                    className={selectClass}
+                    title="Category"
+                    disabled={isPending}
+                  >
+                    {CATEGORIES.map((c) => (
+                      <option key={c} value={c}>
+                        {CATEGORY_LABELS[c]}
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    value={item.season || ''}
+                    onChange={(e) => handleFieldUpdate(item.id, 'season', e.target.value || null)}
+                    className={selectClass}
+                    title="Season"
+                    disabled={isPending}
+                  >
+                    <option value="">No season</option>
+                    {SEASONS.map((s) => (
+                      <option key={s} value={s}>
+                        {SEASON_LABELS[s]}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                {events.length > 0 && (
+                  <select
+                    value={item.eventLinkId || ''}
+                    onChange={(e) =>
+                      handleFieldUpdate(item.id, 'eventLinkId', e.target.value || null)
+                    }
+                    className={selectClass}
+                    title="Link to event"
+                    disabled={isPending}
+                  >
+                    <option value="">No linked event</option>
+                    {events.map((ev) => (
+                      <option key={ev.id} value={ev.id}>
+                        {ev.name}
+                        {ev.date ? ` (${new Date(ev.date).toLocaleDateString()})` : ''}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
             </div>
           ))}
 

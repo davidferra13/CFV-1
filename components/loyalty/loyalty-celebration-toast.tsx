@@ -97,7 +97,7 @@ function PointsToast({ event, onDismiss }: { event: PointsEvent; onDismiss: () =
       className="w-full text-left bg-stone-900 border-l-4 border-brand-500 rounded-lg p-4 shadow-xl cursor-pointer hover:bg-stone-800 transition-colors"
     >
       <div className="flex items-start gap-3">
-        <span className="text-2xl animate-pulse">&#11088;</span>
+        <span className="text-2xl">&#11088;</span>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-bold text-brand-400">+{event.points} points earned!</p>
           <p className="text-xs text-stone-400 mt-0.5 truncate">{event.description}</p>

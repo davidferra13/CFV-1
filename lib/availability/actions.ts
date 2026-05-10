@@ -67,6 +67,7 @@ export async function blockDate(input: BlockDateInput) {
   }
 
   revalidatePath('/calendar')
+  revalidatePath('/calendar/share')
   return data
 }
 
@@ -83,6 +84,27 @@ export async function unblockDate(blockId: string) {
 
   if (error) throw new Error('Failed to remove block')
   revalidatePath('/calendar')
+  revalidatePath('/calendar/share')
+}
+
+/**
+ * Remove all manual blocks for a given date.
+ * Used by calendar views that know the date but not the block ID.
+ */
+export async function unblockByDate(date: string) {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const { error } = await db
+    .from('chef_availability_blocks')
+    .delete()
+    .eq('chef_id', user.tenantId!)
+    .eq('block_date', date)
+    .eq('is_event_auto', false)
+
+  if (error) throw new Error('Failed to remove block')
+  revalidatePath('/calendar')
+  revalidatePath('/calendar/share')
 }
 
 /**

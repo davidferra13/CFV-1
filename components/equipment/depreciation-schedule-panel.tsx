@@ -275,7 +275,7 @@ export function DepreciationSchedulePanel({ equipment, taxYear }: Props) {
         {equipment.length === 0 && (
           <div className="text-center py-8 text-stone-400 text-sm">
             No owned equipment found. Add equipment in{' '}
-            <a href="/operations/equipment" className="text-brand-600 hover:underline">
+            <a href="/ops/equipment" className="text-brand-600 hover:underline">
               Operations → Equipment
             </a>
             .

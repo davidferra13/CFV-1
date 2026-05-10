@@ -12,17 +12,17 @@ export function Badge({ variant = 'default', className = '', children, ...props 
     default:
       'bg-stone-200 text-stone-700 ring-1 ring-inset ring-stone-300 dark:bg-stone-800/80 dark:text-stone-400 dark:ring-stone-700',
     success:
-      'bg-emerald-100 text-emerald-800 ring-1 ring-inset ring-emerald-200 dark:bg-emerald-950 dark:text-emerald-400 dark:ring-emerald-800 dark:shadow-[0_0_8px_rgba(16,185,129,0.15)]',
+      'bg-emerald-100 text-emerald-800 ring-1 ring-inset ring-emerald-200 dark:bg-stone-800/80 dark:text-emerald-400 dark:ring-stone-700',
     warning:
-      'bg-amber-100 text-amber-800 ring-1 ring-inset ring-amber-200 dark:bg-amber-950 dark:text-amber-400 dark:ring-amber-800 dark:shadow-[0_0_8px_rgba(245,158,11,0.15)]',
+      'bg-amber-100 text-amber-800 ring-1 ring-inset ring-amber-200 dark:bg-stone-800/80 dark:text-amber-400 dark:ring-stone-700',
     error:
-      'bg-red-100 text-red-800 ring-1 ring-inset ring-red-200 dark:bg-red-950 dark:text-red-400 dark:ring-red-800 dark:shadow-[0_0_8px_rgba(239,68,68,0.15)]',
-    info: 'bg-brand-100 text-brand-800 ring-1 ring-inset ring-brand-200 dark:bg-brand-950 dark:text-brand-400 dark:ring-brand-800 dark:shadow-[0_0_8px_rgba(232,143,71,0.15)]',
+      'bg-red-100 text-red-800 ring-1 ring-inset ring-red-200 dark:bg-stone-800/80 dark:text-red-400 dark:ring-stone-700',
+    info: 'bg-brand-100 text-brand-800 ring-1 ring-inset ring-brand-200 dark:bg-stone-800/80 dark:text-brand-400 dark:ring-stone-700',
   }
 
   return (
     <span
-      className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium transition-colors duration-150 animate-scale-in ${variants[variant]} ${className}`}
+      className={`inline-flex items-center px-3 py-1 rounded-md text-xs font-medium transition-colors duration-150 ${variants[variant]} ${className}`}
       {...props}
     >
       {children}

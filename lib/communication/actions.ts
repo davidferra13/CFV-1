@@ -72,7 +72,8 @@ function parseSenderIdentity(senderIdentity: string) {
 
 export async function getCommunicationInbox(
   tab?: CommunicationTab,
-  limit = 50
+  limit = 50,
+  clientId?: string
 ): Promise<
   Array<
     CommunicationInboxItem & {
@@ -97,6 +98,9 @@ export async function getCommunicationInbox(
 
   if (tab) {
     query = query.eq('tab', tab)
+  }
+  if (clientId) {
+    query = query.eq('client_id', clientId)
   }
 
   const { data, error } = await query

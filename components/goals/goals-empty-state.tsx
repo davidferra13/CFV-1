@@ -15,7 +15,7 @@ export function GoalsEmptyState() {
           </p>
         </div>
         <Link
-          href="/goals/setup"
+          href="/analytics/goals/setup"
           className="inline-flex items-center rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand-700 transition-colors"
         >
           Set your first goal

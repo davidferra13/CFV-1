@@ -286,7 +286,7 @@ export function RecipeSprintClient({ initialItems, aiConfigured }: Props) {
                     disabled={loading}
                     className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium transition-colors ${
                       isListening
-                        ? 'bg-red-900/60 text-red-300 hover:bg-red-900/80 animate-pulse'
+                        ? 'bg-red-900/60 text-red-300 hover:bg-red-900/80'
                         : 'bg-stone-700 text-stone-300 hover:bg-stone-600'
                     }`}
                   >
@@ -313,7 +313,7 @@ export function RecipeSprintClient({ initialItems, aiConfigured }: Props) {
                 autoFocus
               />
               {isListening && (
-                <p className="text-xs text-red-400 animate-pulse mt-1">
+                <p className="text-xs text-red-400 mt-1">
                   Listening... speak naturally, then tap Stop when done
                 </p>
               )}

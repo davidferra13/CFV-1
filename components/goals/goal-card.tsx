@@ -233,7 +233,7 @@ export function GoalCard({ view, onCheckIn }: GoalCardProps) {
           </Link>
           {revenue && !onTrack && progress.gapValue > 0 && (
             <Link
-              href="/goals/revenue-path"
+              href="/analytics/goals/revenue-path"
               className="inline-flex items-center gap-1 rounded-md bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-700 transition-colors"
             >
               Build Your Path →

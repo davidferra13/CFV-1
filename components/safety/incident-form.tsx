@@ -41,7 +41,7 @@ export function IncidentForm({ eventId, onSuccess }: { eventId?: string; onSucce
         })
         toast.success('Incident reported')
         onSuccess?.()
-        router.push('/safety/incidents')
+        router.push('/settings/compliance/incidents')
       } catch {
         toast.error('Failed to report incident. Please try again.')
       }

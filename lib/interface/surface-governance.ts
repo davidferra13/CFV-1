@@ -80,7 +80,6 @@ export function resolveChefSurfaceMode(pathname: string): ProductSurfaceMode {
   }
   if (
     pathname.startsWith('/calendar') ||
-    pathname.startsWith('/schedule') ||
     pathname.startsWith('/menus') ||
     pathname.startsWith('/recipes') ||
     pathname.startsWith('/culinary/prep')
@@ -89,8 +88,7 @@ export function resolveChefSurfaceMode(pathname: string): ProductSurfaceMode {
   }
   if (
     pathname.startsWith('/analytics') ||
-    pathname.startsWith('/financials') ||
-    pathname.startsWith('/finance/reporting') ||
+    pathname.startsWith('/finance') ||
     pathname.startsWith('/reports')
   ) {
     return 'monitoring'

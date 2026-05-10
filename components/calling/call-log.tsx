@@ -93,7 +93,7 @@ function statusDot(status: string, result?: 'yes' | 'no' | null) {
   if (status === 'voicemail') return 'bg-violet-400'
   if (status === 'no_answer' || status === 'busy') return 'bg-amber-400'
   if (status === 'failed') return 'bg-rose-500'
-  if (status === 'in_progress' || status === 'ringing') return 'bg-blue-400 animate-pulse'
+  if (status === 'in_progress' || status === 'ringing') return 'bg-blue-400'
   return 'bg-stone-600'
 }
 

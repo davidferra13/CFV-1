@@ -259,7 +259,7 @@ export async function analyzeMenuNutrition(menuId: string): Promise<{
 
   // 5. Return fresh data
   const entries = await fetchMenuNutritionRows(db, validated, user.tenantId!)
-  revalidatePath(`/nutrition/${validated}`)
+  revalidatePath(`/culinary/menus/${validated}/nutrition`)
 
   return { success: true, analyzed, failed, errors, entries }
 }
@@ -337,7 +337,7 @@ export async function updateDishNutrition(
     throw new Error('Failed to update nutrition entry')
   }
 
-  revalidatePath(`/nutrition/${existing.menu_id}`)
+  revalidatePath(`/culinary/menus/${existing.menu_id}/nutrition`)
 
   return mapRow(updated)
 }
@@ -374,7 +374,7 @@ export async function deleteDishNutrition(nutritionId: string): Promise<{ succes
     throw new Error('Failed to delete nutrition entry')
   }
 
-  revalidatePath(`/nutrition/${existing.menu_id}`)
+  revalidatePath(`/culinary/menus/${existing.menu_id}/nutrition`)
 
   return { success: true }
 }
@@ -429,7 +429,7 @@ export async function toggleNutritionDisplay(
     throw new Error('Failed to update nutrition display setting')
   }
 
-  revalidatePath(`/nutrition/${validated}`)
+  revalidatePath(`/culinary/menus/${validated}/nutrition`)
 
   return { success: true, show }
 }

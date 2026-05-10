@@ -608,6 +608,11 @@ export async function getRecipeById(recipeId: string) {
         category: ing?.category as IngredientCategory,
         default_unit: ing?.default_unit,
         average_price_cents: ing?.average_price_cents,
+        last_price_store: ing?.last_price_store ?? null,
+        last_price_source: ing?.last_price_source ?? null,
+        last_price_confidence: ing?.last_price_confidence ?? null,
+        price_trend_direction: ing?.price_trend_direction ?? null,
+        price_trend_pct: ing?.price_trend_pct ?? null,
       },
     }
   })

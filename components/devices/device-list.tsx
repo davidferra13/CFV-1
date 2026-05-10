@@ -301,7 +301,7 @@ export function DeviceList({ initialDevices }: DeviceListProps) {
                       <td className="px-4 py-3">
                         {device.active_staff_name ? (
                           <span className="inline-flex items-center gap-1.5 text-sm text-green-400">
-                            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-green-400" />
+                            <span className="h-1.5 w-1.5 rounded-full bg-green-400" />
                             {device.active_staff_name}
                           </span>
                         ) : (

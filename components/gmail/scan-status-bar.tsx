@@ -42,8 +42,10 @@ export function ScanStatusBar({ initialStatus, pendingCount }: ScanStatusBarProp
           )}
           {status.status === 'in_progress' && (
             <span className="text-brand-400 flex items-center gap-2">
-              <span className="inline-block w-2 h-2 rounded-full bg-brand-400 animate-pulse shrink-0" />
-              Scanning your email history: <strong>{status.totalProcessed.toLocaleString()}</strong>{' '}
+              <span className="inline-block w-2 h-2 rounded-full bg-brand-400 shrink-0" />
+              Scanning your email history: <strong>
+                {status.totalProcessed.toLocaleString()}
+              </strong>{' '}
               emails processed so far
             </span>
           )}

@@ -269,7 +269,7 @@ export async function getFinancialQueueItems(db: any, tenantId: string): Promise
         score,
         title: 'Close monthly revenue gap',
         description: `You need ${dinnersNeeded} more dinner${dinnersNeeded === 1 ? '' : 's'} at your current average booking value to hit this month's target.`,
-        href: '/financials',
+        href: '/finance',
         icon: 'Target',
         context: { primaryLabel: 'Monthly goal gap', amountCents: gapCents },
         createdAt: now.toISOString(),

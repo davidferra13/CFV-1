@@ -1,10 +1,9 @@
 'use server'
 
 // Custom Reports Server Actions
-// All Pro-gated. Tenant ID derived from session, never from input.
+// Tenant ID derived from session, never from input.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { requirePro } from '@/lib/billing/require-pro'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import type { ReportType, ReportConfig, DateRangeFilter, ReportPeriod } from './report-definitions'
@@ -48,7 +47,6 @@ export async function generateReport(
   dateRange: DateRangeFilter,
   period?: ReportPeriod
 ): Promise<{ success: true; report: GeneratedReport } | { success: false; error: string }> {
-  await requirePro('advanced-analytics')
   const user = await requireChef()
   const tenantId = user.tenantId!
 
@@ -89,7 +87,6 @@ export async function generateReport(
 // ── Saved Reports CRUD ───────────────────────────────────────────────────
 
 export async function getSavedReports(): Promise<SavedReportRow[]> {
-  await requirePro('advanced-analytics')
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -111,7 +108,6 @@ export async function saveReport(
   name: string,
   config: ReportConfig
 ): Promise<{ success: true; id: string } | { success: false; error: string }> {
-  await requirePro('advanced-analytics')
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -138,7 +134,6 @@ export async function saveReport(
 export async function deleteReport(
   reportId: string
 ): Promise<{ success: true } | { success: false; error: string }> {
-  await requirePro('advanced-analytics')
   const user = await requireChef()
   const db: any = createServerClient()
 

@@ -1,0 +1,90 @@
+/* TipTap editor placeholder */
+.tiptap p.is-editor-empty:first-child::before {
+  color: #78716c;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+/* Remove default outline */
+.tiptap:focus {
+  outline: none;
+}
+
+/* Shared content styles for editor (.tiptap) and renderer (.rich-text-content) */
+.tiptap h2,
+.rich-text-content h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0.75rem 0 0.375rem;
+  color: #e7e5e4;
+}
+
+.tiptap h3,
+.rich-text-content h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0.5rem 0 0.25rem;
+  color: #e7e5e4;
+}
+
+.tiptap p,
+.rich-text-content p {
+  margin: 0.25rem 0;
+  line-height: 1.6;
+}
+
+.tiptap ul,
+.rich-text-content ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+}
+
+.tiptap ol,
+.rich-text-content ol {
+  list-style-type: decimal;
+  padding-left: 1.5rem;
+}
+
+.tiptap li,
+.rich-text-content li {
+  margin: 0.125rem 0;
+}
+
+.tiptap a,
+.rich-text-content a {
+  color: #f59e0b;
+  text-decoration: underline;
+}
+
+.tiptap a:hover,
+.rich-text-content a:hover {
+  color: #fbbf24;
+}
+
+.tiptap blockquote,
+.rich-text-content blockquote {
+  border-left: 3px solid #78716c;
+  padding-left: 0.75rem;
+  color: #a8a29e;
+  margin: 0.5rem 0;
+  font-style: italic;
+}
+
+.tiptap mark,
+.rich-text-content mark {
+  border-radius: 0.125rem;
+  padding: 0.0625rem 0.125rem;
+}
+
+.tiptap hr,
+.rich-text-content hr {
+  border-color: #44403c;
+  margin: 0.75rem 0;
+}
+
+.tiptap s,
+.rich-text-content s {
+  text-decoration: line-through;
+}

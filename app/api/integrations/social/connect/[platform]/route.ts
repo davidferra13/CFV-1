@@ -22,7 +22,7 @@ export async function GET(
   const origin = request.nextUrl.origin
 
   const failRedirect = (code: string) => {
-    const url = new URL('/social/connections', origin)
+    const url = new URL('/marketing/social/connections', origin)
     url.searchParams.set('error', code)
     url.searchParams.set('platform', platform)
     return NextResponse.redirect(url)
@@ -69,7 +69,7 @@ export async function GET(
     platform,
     state,
     code_verifier: codeVerifier,
-    redirect_to: '/social/connections',
+    redirect_to: '/marketing/social/connections',
     expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
   })
 

@@ -20,7 +20,19 @@ export type PortfolioItem = {
   eventType: string | null
   displayOrder: number
   isFeatured: boolean
+  category: string | null
+  season: string | null
+  cuisineType: string | null
+  eventLinkId: string | null
+  collection: string | null
+  isPublic: boolean
   createdAt: string
+}
+
+export type PortfolioCollection = {
+  name: string
+  count: number
+  coverPhotoUrl: string | null
 }
 
 // --- Zod Schemas ---
@@ -31,6 +43,22 @@ const AddPortfolioItemSchema = z.object({
   dishName: z.string().max(200).optional(),
   eventType: z.string().max(100).optional(),
   isFeatured: z.boolean().optional(),
+  category: z.string().max(100).optional(),
+  season: z.string().max(50).optional(),
+  cuisineType: z.string().max(100).optional(),
+  eventLinkId: z.string().uuid().optional(),
+  collection: z.string().max(200).optional(),
+})
+
+const UpdatePortfolioItemSchema = z.object({
+  category: z.string().max(100).optional(),
+  season: z.string().max(50).optional(),
+  cuisineType: z.string().max(100).optional(),
+  eventLinkId: z.string().uuid().nullable().optional(),
+  collection: z.string().max(200).nullable().optional(),
+  isPublic: z.boolean().optional(),
+  caption: z.string().max(500).optional(),
+  dishName: z.string().max(200).optional(),
 })
 
 const ReorderPortfolioSchema = z.object({
@@ -75,6 +103,11 @@ export async function addPortfolioItem(
       event_type: validated.eventType ?? null,
       display_order: nextOrder,
       is_featured: validated.isFeatured ?? false,
+      category: validated.category ?? 'uncategorized',
+      season: validated.season ?? null,
+      cuisine_type: validated.cuisineType ?? null,
+      event_link_id: validated.eventLinkId ?? null,
+      collection: validated.collection ?? null,
     })
     .select()
     .single()
@@ -180,6 +213,128 @@ function mapPortfolioItem(row: any): PortfolioItem {
     eventType: row.event_type,
     displayOrder: row.display_order,
     isFeatured: row.is_featured,
+    category: row.category ?? null,
+    season: row.season ?? null,
+    cuisineType: row.cuisine_type ?? null,
+    eventLinkId: row.event_link_id ?? null,
+    collection: row.collection ?? null,
+    isPublic: row.is_public ?? true,
     createdAt: row.created_at,
   }
+}
+
+/**
+ * Update category, season, cuisine, collection, or public status on a portfolio item.
+ */
+export async function updatePortfolioItem(
+  itemId: string,
+  updates: z.infer<typeof UpdatePortfolioItemSchema>
+): Promise<{ success: boolean; item: PortfolioItem }> {
+  const validated = UpdatePortfolioItemSchema.parse(updates)
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const dbUpdates: Record<string, unknown> = {}
+  if (validated.category !== undefined) dbUpdates.category = validated.category
+  if (validated.season !== undefined) dbUpdates.season = validated.season
+  if (validated.cuisineType !== undefined) dbUpdates.cuisine_type = validated.cuisineType
+  if (validated.eventLinkId !== undefined) dbUpdates.event_link_id = validated.eventLinkId
+  if (validated.collection !== undefined) dbUpdates.collection = validated.collection
+  if (validated.isPublic !== undefined) dbUpdates.is_public = validated.isPublic
+  if (validated.caption !== undefined) dbUpdates.caption = validated.caption
+  if (validated.dishName !== undefined) dbUpdates.dish_name = validated.dishName
+
+  const { data: item, error } = await db
+    .from('portfolio_items')
+    .update(dbUpdates)
+    .eq('id', itemId)
+    .eq('chef_id', user.tenantId!)
+    .select()
+    .single()
+
+  if (error) {
+    console.error('[updatePortfolioItem] Error:', error)
+    throw new Error('Failed to update portfolio item')
+  }
+
+  revalidatePath('/portfolio')
+  return { success: true, item: mapPortfolioItem(item) }
+}
+
+/**
+ * Get distinct collection names with item counts and cover photo.
+ */
+export async function getPortfolioCollections(): Promise<PortfolioCollection[]> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const { data: items, error } = await db
+    .from('portfolio_items')
+    .select('collection, photo_url, display_order')
+    .eq('chef_id', user.tenantId!)
+    .not('collection', 'is', null)
+    .order('display_order', { ascending: true })
+
+  if (error) {
+    console.error('[getPortfolioCollections] Error:', error)
+    return []
+  }
+
+  const collectionMap = new Map<string, { count: number; coverPhotoUrl: string | null }>()
+  for (const item of items ?? []) {
+    if (!item.collection) continue
+    const existing = collectionMap.get(item.collection)
+    if (existing) {
+      existing.count++
+    } else {
+      collectionMap.set(item.collection, { count: 1, coverPhotoUrl: item.photo_url })
+    }
+  }
+
+  return Array.from(collectionMap.entries()).map(([name, data]) => ({
+    name,
+    count: data.count,
+    coverPhotoUrl: data.coverPhotoUrl,
+  }))
+}
+
+/**
+ * Get the chef's public portfolio URL.
+ */
+export async function getPublicPortfolioLink(): Promise<string | null> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const { data: chef } = await db.from('chefs').select('slug').eq('id', user.tenantId!).single()
+
+  if (!chef?.slug) return null
+  return `/chef/${chef.slug}/portfolio`
+}
+
+/**
+ * Get a list of recent events for linking to portfolio items.
+ */
+export async function getRecentEventsForPortfolio(): Promise<
+  { id: string; name: string; date: string | null }[]
+> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const { data: events, error } = await db
+    .from('events')
+    .select('id, name, occasion, event_date')
+    .eq('tenant_id', user.tenantId!)
+    .order('event_date', { ascending: false })
+    .limit(50)
+
+  if (error) {
+    console.error('[getRecentEventsForPortfolio] Error:', error)
+    return []
+  }
+
+  return (events ?? []).map((e: any) => ({
+    id: e.id,
+    name: e.name || e.occasion || 'Untitled Event',
+    date: e.event_date,
+  }))
 }

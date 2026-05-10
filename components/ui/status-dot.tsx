@@ -12,10 +12,10 @@ interface StatusDotProps {
 }
 
 const colors = {
-  active: 'bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.4)]',
+  active: 'bg-emerald-500',
   idle: 'bg-stone-500',
-  warning: 'bg-amber-500 shadow-[0_0_6px_rgba(245,158,11,0.4)]',
-  error: 'bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.4)]',
+  warning: 'bg-amber-500',
+  error: 'bg-red-500',
   offline: 'bg-stone-600',
 } as const
 
@@ -32,12 +32,7 @@ const sizes = {
   md: 'h-2.5 w-2.5',
 } as const
 
-export function StatusDot({
-  status,
-  pulse = status === 'active',
-  size = 'sm',
-  className = '',
-}: StatusDotProps) {
+export function StatusDot({ status, pulse = false, size = 'sm', className = '' }: StatusDotProps) {
   return (
     <span className={`relative inline-flex ${className}`} aria-hidden="true">
       {pulse && (

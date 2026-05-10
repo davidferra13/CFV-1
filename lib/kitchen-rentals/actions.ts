@@ -29,7 +29,7 @@ export async function createKitchenRental(input: KitchenRentalInput) {
   const { error } = await db.from('kitchen_rentals').insert({ ...data, chef_id: chef.id })
 
   if (error) throw new Error(error.message)
-  revalidatePath('/operations/kitchen-rentals')
+  revalidatePath('/ops/kitchen-rentals')
 }
 
 export async function updateKitchenRental(id: string, input: KitchenRentalInput) {
@@ -44,7 +44,7 @@ export async function updateKitchenRental(id: string, input: KitchenRentalInput)
     .eq('chef_id', chef.id)
 
   if (error) throw new Error(error.message)
-  revalidatePath('/operations/kitchen-rentals')
+  revalidatePath('/ops/kitchen-rentals')
 }
 
 export async function deleteKitchenRental(id: string) {
@@ -54,7 +54,7 @@ export async function deleteKitchenRental(id: string) {
   const { error } = await db.from('kitchen_rentals').delete().eq('id', id).eq('chef_id', chef.id)
 
   if (error) throw new Error(error.message)
-  revalidatePath('/operations/kitchen-rentals')
+  revalidatePath('/ops/kitchen-rentals')
 }
 
 export async function listKitchenRentals(limit = 50) {

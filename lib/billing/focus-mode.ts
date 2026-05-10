@@ -37,13 +37,13 @@ export const EXTENDED_MODULES = [
  */
 export const CORE_NAV_HREFS = new Set([
   '/dashboard',
-  '/commands', // Remy
+  '/remy', // Remy
   '/daily', // Daily Ops
   '/inbox', // Inbox
   '/clients', // Clients
   '/inquiries', // Inquiries
   '/chat', // Messaging
-  '/schedule', // Calendar
+  '/calendar', // Calendar
   '/events', // All Events
   '/menus', // Menus
   '/activity', // Activity

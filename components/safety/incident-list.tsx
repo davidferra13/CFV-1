@@ -66,7 +66,7 @@ export function IncidentList({ incidents }: { incidents: Incident[] }) {
                 </div>
                 <p className="text-sm text-stone-300 line-clamp-2">{incident.description}</p>
               </div>
-              <Link href={`/safety/incidents/${incident.id}`}>
+              <Link href={`/settings/compliance/incidents/${incident.id}`}>
                 <Button variant="ghost" size="sm">
                   View
                 </Button>

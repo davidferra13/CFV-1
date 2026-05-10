@@ -92,7 +92,7 @@ export function TimelineView({ timeline }: { timeline: EventTimeline }) {
       {/* Next-up banner - only shown when inside the event window */}
       {nextUp && (
         <div className="flex items-center gap-3 rounded-lg border border-brand-700 bg-brand-950/40 px-4 py-2">
-          <div className="w-2 h-2 rounded-full bg-brand-500 animate-pulse" />
+          <div className="w-2 h-2 rounded-full bg-brand-500" />
           <span className="text-sm text-brand-300 font-medium">Next: {nextUp.label}</span>
           <span className="text-xs text-brand-600 ml-auto">in {nextUp.minutes} min</span>
         </div>
@@ -118,7 +118,7 @@ export function TimelineView({ timeline }: { timeline: EventTimeline }) {
                 {/* Current time indicator */}
                 {isCurrentOrNext && (
                   <div className="relative flex items-center py-1 pl-2">
-                    <div className="w-3 h-3 rounded-full bg-brand-600 ring-2 ring-brand-700 z-10 animate-pulse" />
+                    <div className="w-3 h-3 rounded-full bg-brand-600 ring-2 ring-brand-700 z-10" />
                     <div className="ml-4 text-xs font-medium text-brand-600">
                       NOW ({activeTime})
                     </div>

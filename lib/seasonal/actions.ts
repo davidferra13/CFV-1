@@ -161,7 +161,7 @@ export async function updateSeasonalPalette(paletteId: string, input: UpdatePale
 
   revalidatePath('/settings/repertoire')
   revalidatePath('/recipes')
-  revalidatePath('/schedule')
+  revalidatePath('/calendar')
   return { success: true }
 }
 
@@ -238,7 +238,7 @@ export async function setActiveSeason(paletteId: string) {
 
   revalidatePath('/settings/repertoire')
   revalidatePath('/recipes')
-  revalidatePath('/schedule')
+  revalidatePath('/calendar')
   return { success: true }
 }
 
@@ -260,7 +260,7 @@ export async function deactivateAllSeasons() {
 
   revalidatePath('/settings/repertoire')
   revalidatePath('/recipes')
-  revalidatePath('/schedule')
+  revalidatePath('/calendar')
   return { success: true }
 }
 

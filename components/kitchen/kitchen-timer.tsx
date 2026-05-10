@@ -42,22 +42,29 @@ function playBeep(durationMs = 500, frequency = 880) {
         gain2.gain.value = 0.3
         osc2.start()
         osc2.stop(ctx.currentTime + durationMs / 1000)
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
     }, durationMs + 200)
 
-    setTimeout(() => {
-      try {
-        const osc3 = ctx.createOscillator()
-        const gain3 = ctx.createGain()
-        osc3.connect(gain3)
-        gain3.connect(ctx.destination)
-        osc3.frequency.value = frequency * 1.5
-        osc3.type = 'square'
-        gain3.gain.value = 0.3
-        osc3.start()
-        osc3.stop(ctx.currentTime + durationMs / 1000)
-      } catch { /* ignore */ }
-    }, (durationMs + 200) * 2)
+    setTimeout(
+      () => {
+        try {
+          const osc3 = ctx.createOscillator()
+          const gain3 = ctx.createGain()
+          osc3.connect(gain3)
+          gain3.connect(ctx.destination)
+          osc3.frequency.value = frequency * 1.5
+          osc3.type = 'square'
+          gain3.gain.value = 0.3
+          osc3.start()
+          osc3.stop(ctx.currentTime + durationMs / 1000)
+        } catch {
+          /* ignore */
+        }
+      },
+      (durationMs + 200) * 2
+    )
   } catch {
     // Web Audio API not available, silent fallback
   }
@@ -145,9 +152,10 @@ export function KitchenTimerDisplay({ timers, onRemove }: KitchenTimerDisplayPro
   return (
     <div className="flex flex-wrap gap-4">
       {timers.map((timer) => {
-        const progress = timer.totalSeconds > 0
-          ? ((timer.totalSeconds - timer.remainingSeconds) / timer.totalSeconds) * 100
-          : 100
+        const progress =
+          timer.totalSeconds > 0
+            ? ((timer.totalSeconds - timer.remainingSeconds) / timer.totalSeconds) * 100
+            : 100
         const isFinished = timer.remainingSeconds <= 0
         const isUrgent = timer.remainingSeconds > 0 && timer.remainingSeconds <= 30
 
@@ -156,11 +164,12 @@ export function KitchenTimerDisplay({ timers, onRemove }: KitchenTimerDisplayPro
             key={timer.id}
             className={`
               relative rounded-2xl border-2 px-6 py-4 min-w-[200px]
-              ${isFinished
-                ? 'border-red-500 bg-red-500/20 animate-pulse'
-                : isUrgent
-                  ? 'border-yellow-500 bg-yellow-500/10'
-                  : 'border-zinc-600 bg-zinc-800/80'
+              ${
+                isFinished
+                  ? 'border-red-500 bg-red-500/20'
+                  : isUrgent
+                    ? 'border-yellow-500 bg-yellow-500/10'
+                    : 'border-zinc-600 bg-zinc-800/80'
               }
             `}
           >
@@ -188,11 +197,7 @@ export function KitchenTimerDisplay({ timers, onRemove }: KitchenTimerDisplayPro
             <div className="mt-3 h-1.5 bg-zinc-700 rounded-full overflow-hidden">
               <div
                 className={`h-full rounded-full transition-all duration-1000 ${
-                  isFinished
-                    ? 'bg-red-500'
-                    : isUrgent
-                      ? 'bg-yellow-500'
-                      : 'bg-emerald-500'
+                  isFinished ? 'bg-red-500' : isUrgent ? 'bg-yellow-500' : 'bg-emerald-500'
                 }`}
                 style={{ width: `${progress}%` }}
               />

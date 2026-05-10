@@ -8,6 +8,8 @@ import type { DOPTaskDigest, DigestTask } from '@/lib/scheduling/task-digest'
 import type { OverdueFollowUpEvent } from '@/lib/dashboard/accountability'
 import type { NextBestAction } from '@/lib/clients/next-best-action'
 import type { ChefTodo } from '@/lib/todos/actions'
+import type { UnifiedActionItem, ActionPriority } from '@/lib/action-center/types'
+import type { DailyWorkflowSummary } from '@/lib/workflows/types'
 
 // ============================================
 // INPUT TYPE - everything pre-fetched by the server action
@@ -42,6 +44,25 @@ export interface PlanEngineInput {
   }[]
   protectedTime: { title: string; startDate: string; endDate: string; blockType: string }[]
   dismissedKeys: Set<string>
+  circleActivity: {
+    id: string
+    circleName: string
+    circleId: string
+    type: 'upcoming_event' | 'unread_messages' | 'new_rsvp'
+    label: string
+    description: string
+    href: string
+    count?: number
+  }[]
+  onboardingNudge: {
+    show: boolean
+    progressPercent: number
+    nextStep: string
+    href: string
+  } | null
+  actionFeed?: UnifiedActionItem[]
+  actionStats?: { total: number; urgent: number; bySource: Record<string, number> }
+  activeWorkflows?: DailyWorkflowSummary[]
 }
 
 // ============================================
@@ -157,6 +178,56 @@ function nbaToLane(actionType: string): PlanLane {
     default:
       return 'relationship'
   }
+}
+
+// ============================================
+// ACTION CENTER PRIORITY MAPPING
+// ============================================
+
+function actionPriorityToNumber(priority: ActionPriority): number {
+  switch (priority) {
+    case 'urgent':
+      return 1
+    case 'high':
+      return 2
+    case 'medium':
+      return 3
+    case 'low':
+      return 4
+    default:
+      return 3
+  }
+}
+
+// ============================================
+// REMINDER LANE ROUTING
+// ============================================
+
+function reminderToLane(item: UnifiedActionItem): PlanLane {
+  const meta = item.metadata as Record<string, unknown>
+  const category = (meta?.category as string) ?? ''
+  switch (category) {
+    case 'prep':
+    case 'shopping':
+      return 'event_prep'
+    case 'client':
+    case 'follow_up':
+      return 'relationship'
+    case 'admin':
+    case 'personal':
+    case 'general':
+    default:
+      return 'quick_admin'
+  }
+}
+
+// ============================================
+// TASK LANE ROUTING
+// ============================================
+
+function taskToLane(item: UnifiedActionItem): PlanLane {
+  if (item.eventId) return 'event_prep'
+  return 'quick_admin'
 }
 
 // ============================================
@@ -331,6 +402,106 @@ export function buildDailyPlan(input: PlanEngineInput): DailyPlan {
     })
   }
 
+  // ---- 8. Circle activity ----
+  for (const activity of input.circleActivity) {
+    const key = `circle:${activity.id}`
+    if (input.dismissedKeys.has(key)) continue
+
+    const lane: PlanLane = activity.type === 'upcoming_event' ? 'event_prep' : 'relationship'
+    const priority = activity.type === 'unread_messages' ? 2 : 3
+
+    items.push({
+      id: key,
+      lane,
+      title: activity.label,
+      description: `${activity.circleName}${activity.count ? ` (${activity.count})` : ''}`,
+      href: activity.href,
+      timeEstimateMinutes: activity.type === 'unread_messages' ? 3 : 5,
+      priority,
+      sourceSystem: 'circle',
+      sourceId: activity.circleId,
+      completed: false,
+      dismissed: false,
+    })
+  }
+
+  // ---- 9. Onboarding nudge (if setup incomplete) ----
+  if (input.onboardingNudge?.show) {
+    const key = 'onboarding:setup'
+    if (!input.dismissedKeys.has(key)) {
+      items.push({
+        id: key,
+        lane: 'quick_admin',
+        title: `Finish setup (${input.onboardingNudge.progressPercent}% done)`,
+        description: `Next: ${input.onboardingNudge.nextStep}`,
+        href: input.onboardingNudge.href,
+        timeEstimateMinutes: 5,
+        priority: 3,
+        sourceSystem: 'onboarding',
+        sourceId: 'setup',
+        completed: false,
+        dismissed: false,
+      })
+    }
+  }
+
+  // ---- 10. Action center items (notifications, reminders, tasks) ----
+  if (input.actionFeed) {
+    for (const action of input.actionFeed) {
+      // Skip completed or dismissed actions from the source
+      if (action.status === 'completed' || action.status === 'dismissed') continue
+
+      const sourceType = action.source as 'notification' | 'reminder' | 'task'
+      const key = `${sourceType}:${action.sourceId}`
+      if (input.dismissedKeys.has(key)) continue
+
+      let lane: PlanLane
+      let timeEstimate: number
+
+      switch (sourceType) {
+        case 'notification':
+          lane = 'quick_admin'
+          timeEstimate = 2
+          break
+        case 'reminder':
+          lane = reminderToLane(action)
+          timeEstimate = 5
+          break
+        case 'task':
+          lane = taskToLane(action)
+          timeEstimate = 10
+          break
+        default:
+          lane = 'quick_admin'
+          timeEstimate = 3
+      }
+
+      items.push({
+        id: key,
+        lane,
+        title: action.title,
+        description: action.description || '',
+        href: action.actionUrl || '/notifications',
+        timeEstimateMinutes: timeEstimate,
+        priority: actionPriorityToNumber(action.priority),
+        sourceSystem: sourceType,
+        sourceId: action.sourceId,
+        completed: false,
+        dismissed: false,
+        ...(action.eventId
+          ? {
+              eventContext: {
+                eventId: action.eventId,
+                occasion: null,
+                eventDate: '',
+                clientName: '',
+              },
+            }
+          : {}),
+      })
+    }
+  }
+
   // ---- Deduplicate by title similarity ----
   const deduped = deduplicateItems(items)
 
@@ -379,6 +550,14 @@ export function buildDailyPlan(input: PlanEngineInput): DailyPlan {
     stats,
     todayEvents: input.todayEvents,
     protectedTime: input.protectedTime,
+    actionCenter: input.actionStats
+      ? {
+          total: input.actionStats.total,
+          urgent: input.actionStats.urgent,
+          bySource: input.actionStats.bySource,
+        }
+      : undefined,
+    activeWorkflows: input.activeWorkflows ?? [],
     computedAt: now.toISOString(),
   }
 }

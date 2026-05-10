@@ -20,12 +20,18 @@ const PLATFORMS: { key: ContentPlatform; label: string }[] = [
   { key: 'instagram', label: 'Instagram' },
   { key: 'story', label: 'Story' },
   { key: 'blog', label: 'Blog' },
+  { key: 'email', label: 'Email' },
+  { key: 'website', label: 'Website' },
+  { key: 'newsletter', label: 'Newsletter' },
 ]
 
 const CHAR_LIMITS: Record<ContentPlatform, number> = {
   instagram: 2200,
   story: 300,
   blog: 5000,
+  email: 3000,
+  website: 3000,
+  newsletter: 3000,
 }
 
 const STATUS_BADGES: Record<string, { label: string; variant: 'default' | 'success' | 'warning' }> =

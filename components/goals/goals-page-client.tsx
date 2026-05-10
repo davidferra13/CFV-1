@@ -80,7 +80,7 @@ export function GoalsPageClient({ dashboard }: { dashboard: GoalsDashboard }) {
             <span className="hidden sm:inline">Categories</span>
           </button>
           <Link
-            href="/goals/setup"
+            href="/analytics/goals/setup"
             className="inline-flex items-center gap-2 rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand-700 transition-colors whitespace-nowrap"
           >
             <Plus className="h-4 w-4" />

@@ -61,7 +61,7 @@ export async function createEquipmentItem(input: CreateEquipmentInput) {
     .single()
 
   if (error) throw new Error('Failed to add equipment item')
-  revalidatePath('/operations/equipment')
+  revalidatePath('/ops/equipment')
   return data
 }
 
@@ -78,7 +78,7 @@ export async function updateEquipmentItem(id: string, input: Partial<CreateEquip
     .single()
 
   if (error) throw new Error('Failed to update equipment item')
-  revalidatePath('/operations/equipment')
+  revalidatePath('/ops/equipment')
   return data
 }
 
@@ -90,7 +90,7 @@ export async function retireEquipmentItem(id: string) {
     .update({ status: 'retired' })
     .eq('id', id)
     .eq('chef_id', user.tenantId!)
-  revalidatePath('/operations/equipment')
+  revalidatePath('/ops/equipment')
 }
 
 export async function logMaintenance(id: string, notes?: string) {
@@ -105,7 +105,7 @@ export async function logMaintenance(id: string, notes?: string) {
     .eq('chef_id', user.tenantId!)
 
   if (error) throw new Error('Failed to log maintenance')
-  revalidatePath('/operations/equipment')
+  revalidatePath('/ops/equipment')
 }
 
 export async function listEquipment(category?: string) {
@@ -166,7 +166,7 @@ export async function logRental(input: RentalInput) {
     .single()
 
   if (error) throw new Error('Failed to log rental')
-  revalidatePath('/operations/equipment')
+  revalidatePath('/ops/equipment')
   if (validated.event_id) revalidatePath(`/events/${validated.event_id}`)
   return data
 }
@@ -175,7 +175,7 @@ export async function deleteRental(id: string) {
   const user = await requireChef()
   const db: any = createServerClient()
   await db.from('equipment_rentals').delete().eq('id', id).eq('chef_id', user.tenantId!)
-  revalidatePath('/operations/equipment')
+  revalidatePath('/ops/equipment')
 }
 
 export async function getRentalCostForEvent(eventId: string): Promise<number> {

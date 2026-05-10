@@ -41,7 +41,7 @@ export function NearbyBrowseHubs({ stats }: { stats: DirectoryStats }) {
   return (
     <div className="mb-12 space-y-6">
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
-        <div className="relative overflow-hidden rounded-[28px] border border-stone-800/80 bg-[radial-gradient(circle_at_top_left,rgba(234,88,12,0.16),transparent_48%),linear-gradient(180deg,rgba(28,25,23,0.98),rgba(12,10,9,0.98))] p-6 sm:p-7">
+        <div className="relative overflow-hidden rounded-xl border border-stone-800/80 bg-[radial-gradient(circle_at_top_left,rgba(234,88,12,0.16),transparent_48%),linear-gradient(180deg,rgba(28,25,23,0.98),rgba(12,10,9,0.98))] p-6 sm:p-7">
           <div className="pointer-events-none absolute inset-y-0 right-0 w-1/3 bg-[radial-gradient(circle_at_center,rgba(251,146,60,0.12),transparent_70%)]" />
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-200">
             Browse Hubs
@@ -90,7 +90,7 @@ export function NearbyBrowseHubs({ stats }: { stats: DirectoryStats }) {
           </div>
         </div>
 
-        <div className="rounded-[28px] border border-stone-800/80 bg-stone-900/55 p-6 sm:p-7">
+        <div className="rounded-xl border border-stone-800/80 bg-stone-900/55 p-6 sm:p-7">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
             Fast Lanes
           </p>
@@ -148,7 +148,7 @@ export function NearbyBrowseHubs({ stats }: { stats: DirectoryStats }) {
           {model.typeHubs.map((hub) => (
             <div
               key={hub.businessType}
-              className="rounded-[24px] border border-stone-800/80 bg-stone-900/50 p-5"
+              className="rounded-xl border border-stone-800/80 bg-stone-900/50 p-5"
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
@@ -193,7 +193,7 @@ export function NearbyBrowseHubs({ stats }: { stats: DirectoryStats }) {
               {model.cityHubs.map((hub) => (
                 <div
                   key={hub.href}
-                  className="rounded-[24px] border border-stone-800/80 bg-stone-900/50 p-5"
+                  className="rounded-xl border border-stone-800/80 bg-stone-900/50 p-5"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
@@ -223,7 +223,7 @@ export function NearbyBrowseHubs({ stats }: { stats: DirectoryStats }) {
               ))}
             </div>
           ) : (
-            <div className="rounded-[24px] border border-dashed border-stone-800 bg-stone-900/35 p-5">
+            <div className="rounded-xl border border-dashed border-stone-800 bg-stone-900/35 p-5">
               <p className="text-sm leading-relaxed text-stone-400">
                 City hubs become visible here once the directory has enough local density to make
                 them worth browsing.
@@ -232,7 +232,7 @@ export function NearbyBrowseHubs({ stats }: { stats: DirectoryStats }) {
           )}
         </div>
 
-        <div className="rounded-[28px] border border-stone-800/80 bg-stone-900/55 p-6 sm:p-7">
+        <div className="rounded-xl border border-stone-800/80 bg-stone-900/55 p-6 sm:p-7">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
             City + Type
           </p>

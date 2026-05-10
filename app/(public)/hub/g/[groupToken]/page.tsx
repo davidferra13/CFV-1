@@ -13,6 +13,7 @@ import { getLifecycleProgressForClient } from '@/lib/lifecycle/actions'
 import { getCircleChefProofData } from '@/lib/hub/circle-chef-proof'
 import { getDinnerCircleConfig } from '@/lib/dinner-circles/event-circle'
 import { getPendingQuoteForCircle } from '@/lib/hub/circle-approval-actions'
+import { getRsvpSummary, getMemberRsvpStatus } from '@/lib/hub/rsvp-actions'
 import { createServerClient } from '@/lib/db/server'
 import { HubGroupView } from './hub-group-view'
 import { HubBridgeView } from '@/components/hub/hub-bridge-view'
@@ -120,10 +121,12 @@ export default async function HubGroupPage({ params }: Props) {
 
   const pendingQuote = await getPendingQuoteForCircle(groupToken)
   const linkedEventId = group.event_id ?? groupEvents[0]?.event_id ?? null
-  const circleConfig =
+  const [circleConfig, rsvpSummary] = await Promise.all([
     group.group_type === 'community' || !linkedEventId
-      ? null
-      : await getDinnerCircleConfig(linkedEventId).catch(() => null)
+      ? Promise.resolve(null)
+      : getDinnerCircleConfig(linkedEventId).catch(() => null),
+    linkedEventId ? getRsvpSummary(group.id).catch(() => null) : Promise.resolve(null),
+  ])
 
   // Branch: bridge groups get the slim intro view, not the full Dinner Circle
   if (group.group_type === 'bridge') {
@@ -164,6 +167,7 @@ export default async function HubGroupPage({ params }: Props) {
       circleConfig={circleConfig}
       chefProof={chefProof}
       pendingQuote={pendingQuote}
+      rsvpSummary={rsvpSummary}
     />
   )
 }

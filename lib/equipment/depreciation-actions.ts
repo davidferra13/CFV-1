@@ -74,7 +74,7 @@ export async function setDepreciationMethod(input: z.infer<typeof SetMethodSchem
   // Auto-generate the schedule after setting method
   await generateDepreciationSchedule(parsed.equipmentItemId)
   revalidatePath('/finance/tax/depreciation')
-  revalidatePath('/operations/equipment')
+  revalidatePath('/ops/equipment')
 }
 
 export async function generateDepreciationSchedule(
