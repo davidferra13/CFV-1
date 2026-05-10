@@ -21,6 +21,7 @@ export type NormalizedCreateTaskInput = {
   priority?: TaskPriority
   notes?: string
   recurring_rule?: NormalizedRecurringRule
+  time_estimate_minutes?: number | null
 }
 
 export type NormalizedUpdateTaskInput = {
@@ -38,6 +39,14 @@ export type NormalizedUpdateTaskInput = {
 
 function isFormData(input: unknown): input is FormData {
   return typeof FormData !== 'undefined' && input instanceof FormData
+}
+
+function getOptionalNumber(formData: FormData, key: string): number | null | undefined {
+  if (!formData.has(key)) return undefined
+  const raw = getRawString(formData, key)
+  if (!raw) return null
+  const num = Number(raw)
+  return Number.isFinite(num) && num > 0 ? Math.round(num) : null
 }
 
 function getRawString(formData: FormData, key: string): string {
@@ -110,6 +119,7 @@ export function normalizeCreateTaskInput(
     recurring_rule: input.has('recurring_rule')
       ? parseRecurringRule(input.get('recurring_rule'))
       : undefined,
+    time_estimate_minutes: getOptionalNumber(input, 'time_estimate_minutes'),
   }
 }
 

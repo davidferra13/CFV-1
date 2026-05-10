@@ -14,6 +14,7 @@ export type TaskCreateDraft = {
   priority: CreateTaskInput['priority']
   notes: string
   recurring_rule: string
+  time_estimate_minutes: string
 }
 
 function firstValue(value: string | string[] | undefined): string | undefined {
@@ -68,6 +69,7 @@ export function buildDefaultTaskCreateDraft(defaultDate: string): TaskCreateDraf
     priority: 'medium',
     notes: '',
     recurring_rule: '',
+    time_estimate_minutes: '',
   }
 }
 
@@ -85,6 +87,7 @@ export function buildTaskCreateDraftFromFormData(
     priority: coerceTaskPriority(getFormDataValue(formData, 'priority', 'medium')),
     notes: getFormDataValue(formData, 'notes'),
     recurring_rule: getFormDataValue(formData, 'recurring_rule'),
+    time_estimate_minutes: getFormDataValue(formData, 'time_estimate_minutes'),
   }
 }
 
@@ -106,6 +109,7 @@ export function readTaskCreateDraftFromSearchParams(
     ),
     notes: readDraftValue(input, 'notes'),
     recurring_rule: readDraftValue(input, 'recurring_rule'),
+    time_estimate_minutes: readDraftValue(input, 'time_estimate_minutes'),
   }
 }
 
@@ -146,6 +150,7 @@ export function buildTaskCreateHref({
     setDraftParam(params, 'priority', draft.priority)
     setDraftParam(params, 'notes', draft.notes)
     setDraftParam(params, 'recurring_rule', draft.recurring_rule)
+    setDraftParam(params, 'time_estimate_minutes', draft.time_estimate_minutes)
   }
 
   return `/tasks?${params.toString()}`

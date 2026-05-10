@@ -86,7 +86,7 @@ export async function requestTestimonial(eventId: string): Promise<{
     throw new Error('Failed to create review request')
   }
 
-  revalidatePath('/testimonials')
+  revalidatePath('/reviews')
 
   return {
     token,
@@ -147,7 +147,7 @@ export async function approveTestimonial(id: string): Promise<void> {
     throw new Error('Failed to approve testimonial')
   }
 
-  revalidatePath('/testimonials')
+  revalidatePath('/reviews')
 }
 
 /**
@@ -180,7 +180,7 @@ export async function featureTestimonial(id: string): Promise<void> {
     throw new Error('Failed to update testimonial')
   }
 
-  revalidatePath('/testimonials')
+  revalidatePath('/reviews')
 }
 
 /**
@@ -201,7 +201,7 @@ export async function deleteTestimonial(id: string): Promise<void> {
     throw new Error('Failed to delete testimonial')
   }
 
-  revalidatePath('/testimonials')
+  revalidatePath('/reviews')
 }
 
 /**

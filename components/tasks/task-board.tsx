@@ -174,6 +174,16 @@ function TaskCard({
               {task.title}
             </span>
             <Badge variant={priority.variant}>{priority.label}</Badge>
+            {task.time_estimate_minutes != null && task.time_estimate_minutes > 0 && (
+              <span className="text-xs text-stone-500">
+                ~{formatEstimate(task.time_estimate_minutes)}
+              </span>
+            )}
+            {task.auto_source && (
+              <span className="inline-flex items-center rounded-md border border-blue-800 bg-blue-950/40 px-1.5 py-0.5 text-xxs text-blue-400">
+                Auto: {task.auto_source}
+              </span>
+            )}
             {task.due_time && (
               <span className="text-xs text-stone-400">{formatTime(task.due_time)}</span>
             )}
@@ -298,6 +308,13 @@ export function TaskBoard({ grouped, unassigned, selectedDate, onEditTask, staff
 // ============================================
 // HELPERS
 // ============================================
+
+function formatEstimate(minutes: number): string {
+  if (minutes < 60) return `${minutes}m`
+  const h = Math.floor(minutes / 60)
+  const m = minutes % 60
+  return m > 0 ? `${h}h${m}m` : `${h}h`
+}
 
 function formatTime(time: string): string {
   const [hours, minutes] = time.split(':').map(Number)

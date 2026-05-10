@@ -35,6 +35,7 @@ const CreateTaskSchema = z.object({
   priority: z.enum(['low', 'medium', 'high', 'urgent']).default('medium'),
   notes: z.string().optional(),
   recurring_rule: RecurringRuleSchema,
+  time_estimate_minutes: z.number().int().positive().nullable().optional(),
 })
 
 const UpdateTaskSchema = z.object({
@@ -80,6 +81,9 @@ export type Task = {
   template_id: string | null
   completed_at: string | null
   completed_by: string | null
+  time_estimate_minutes: number | null
+  auto_source: string | null
+  event_id: string | null
   created_at: string
   updated_at: string
   staff_member?: { id: string; name: string; role: string } | null
@@ -154,6 +158,7 @@ export async function createTask(input: CreateTaskInput | FormData) {
       status: 'pending',
       notes: validated.notes ?? null,
       recurring_rule: validated.recurring_rule ?? null,
+      time_estimate_minutes: validated.time_estimate_minutes ?? null,
     })
     .select()
     .single()
@@ -527,4 +532,92 @@ export async function reopenTask(id: string) {
 
   revalidatePath('/tasks')
   return data
+}
+
+// ============================================
+// GET TASKS BY STATUS (for kanban view)
+// ============================================
+
+export async function getTasksByStatus(): Promise<Record<string, Task[]>> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  // Fetch pending and in_progress tasks (all dates)
+  const { data: activeTasks, error: activeError } = await db
+    .from('tasks')
+    .select(TASK_WITH_STAFF_SELECT)
+    .eq('chef_id', user.tenantId!)
+    .in('status', ['pending', 'in_progress'])
+    .order('due_date', { ascending: true })
+    .order('priority', { ascending: false })
+
+  if (activeError) {
+    console.error('[getTasksByStatus] Active tasks error:', activeError)
+    throw new Error('Failed to load tasks by status')
+  }
+
+  // Fetch completed tasks from the last 3 days only
+  const threeDaysAgo = new Date()
+  threeDaysAgo.setDate(threeDaysAgo.getDate() - 3)
+  const cutoffDate = `${threeDaysAgo.getFullYear()}-${String(threeDaysAgo.getMonth() + 1).padStart(2, '0')}-${String(threeDaysAgo.getDate()).padStart(2, '0')}`
+
+  const { data: doneTasks, error: doneError } = await db
+    .from('tasks')
+    .select(TASK_WITH_STAFF_SELECT)
+    .eq('chef_id', user.tenantId!)
+    .eq('status', 'done')
+    .gte('completed_at', cutoffDate)
+    .order('completed_at', { ascending: false })
+
+  if (doneError) {
+    console.error('[getTasksByStatus] Done tasks error:', doneError)
+    throw new Error('Failed to load completed tasks')
+  }
+
+  const allActive = (activeTasks ?? []) as Task[]
+  const allDone = (doneTasks ?? []) as Task[]
+
+  return {
+    pending: allActive.filter((t) => t.status === 'pending'),
+    in_progress: allActive.filter((t) => t.status === 'in_progress'),
+    done: allDone,
+  }
+}
+
+// ============================================
+// UPDATE TASK STATUS (for kanban drag-and-drop)
+// ============================================
+
+export async function updateTaskStatus(taskId: string, status: string) {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const validStatuses = ['pending', 'in_progress', 'done']
+  if (!validStatuses.includes(status)) {
+    throw new Error(`Invalid status: ${status}`)
+  }
+
+  const updatePayload: Record<string, unknown> = { status }
+
+  if (status === 'done') {
+    updatePayload.completed_at = new Date().toISOString()
+    updatePayload.completed_by = user.entityId
+  } else {
+    // Clear completion fields when moving back to active statuses
+    updatePayload.completed_at = null
+    updatePayload.completed_by = null
+  }
+
+  const { error } = await db
+    .from('tasks')
+    .update(updatePayload)
+    .eq('id', taskId)
+    .eq('chef_id', user.tenantId!)
+
+  if (error) {
+    console.error('[updateTaskStatus] Error:', error)
+    throw new Error('Failed to update task status')
+  }
+
+  revalidatePath('/tasks')
 }

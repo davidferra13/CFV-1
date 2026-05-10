@@ -1,22 +1,27 @@
-// Website Leads - Unclaimed contact form submissions
-// Any chef can view the shared pool and claim leads into their inquiry pipeline.
-// Manual leads bypass this page and go straight to the inquiry form.
+// Leads - Unified lead pipeline
+// Website leads (unclaimed contact form submissions), operator evaluations,
+// and guest referrals (QR code scans from events) all live here.
 
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getOperatorEvaluationInbox, getUnclaimedSubmissions } from '@/lib/contact/claim'
+import { getGuestLeads, getGuestLeadStats } from '@/lib/guests/lead-actions'
 import { LeadsList } from '@/components/leads/leads-list'
 import { OperatorEvaluationInbox } from '@/components/leads/operator-evaluation-inbox'
+import { GuestLeadsList } from '@/components/guest-leads/guest-leads-list'
 import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
 
 export const metadata: Metadata = { title: 'Leads' }
 
 export default async function LeadsPage() {
   await requireChef()
-  const [submissions, operatorEvaluationInbox] = await Promise.all([
+  const [submissions, operatorEvaluationInbox, guestLeads, guestLeadStats] = await Promise.all([
     getUnclaimedSubmissions(),
     getOperatorEvaluationInbox(),
+    getGuestLeads(),
+    getGuestLeadStats(),
   ])
 
   return (
@@ -25,8 +30,7 @@ export default async function LeadsPage() {
         <div>
           <h1 className="text-3xl font-bold text-stone-100">Leads</h1>
           <p className="text-stone-400 mt-1">
-            General website leads stay claimable here, and founder-reviewed operator walkthrough
-            requests stay in their own evaluation lane.
+            Website leads, operator evaluations, and guest referrals in one place.
           </p>
         </div>
         <Link href="/inquiries/new">
@@ -55,6 +59,48 @@ export default async function LeadsPage() {
           </p>
         </div>
         <LeadsList submissions={submissions} />
+      </section>
+
+      <section className="space-y-4">
+        <div>
+          <h2 className="text-2xl font-semibold text-stone-100">Guest referrals</h2>
+          <p className="mt-1 text-sm text-stone-400">
+            People who scanned your QR code at events and expressed interest in booking.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <Card className="p-4 text-center">
+            <p className="text-2xl font-bold text-stone-100">{guestLeadStats.total}</p>
+            <p className="text-sm text-stone-500">Total Leads</p>
+          </Card>
+          <Card className="p-4 text-center">
+            <p className="text-2xl font-bold text-brand-600">{guestLeadStats.new}</p>
+            <p className="text-sm text-stone-500">New</p>
+          </Card>
+          <Card className="p-4 text-center">
+            <p className="text-2xl font-bold text-amber-600">{guestLeadStats.contacted}</p>
+            <p className="text-sm text-stone-500">Contacted</p>
+          </Card>
+          <Card className="p-4 text-center">
+            <p className="text-2xl font-bold text-green-600">{guestLeadStats.converted}</p>
+            <p className="text-sm text-stone-500">Converted</p>
+          </Card>
+        </div>
+
+        {guestLeads.length === 0 ? (
+          <Card className="p-12 text-center">
+            <div className="max-w-md mx-auto">
+              <p className="text-stone-400 text-lg mb-2">No guest leads yet</p>
+              <p className="text-stone-500 text-sm">
+                Display the QR code from your event pages at your next dinner. When guests scan it
+                and fill out the form, they will appear here.
+              </p>
+            </div>
+          </Card>
+        ) : (
+          <GuestLeadsList leads={guestLeads} />
+        )}
       </section>
     </div>
   )

@@ -28,8 +28,16 @@ import {
   Gift,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
+  ChevronUp,
   Archive,
   EyeOff,
+  Send,
+  ExternalLink,
+  Calendar,
+  Globe,
+  ListChecks,
+  Layers,
 } from '@/components/ui/icons'
 import { toast } from 'sonner'
 import { showUndoToast } from '@/components/ui/undo-toast'
@@ -43,14 +51,18 @@ import {
   getNotificationsByCategory,
   getNotificationCount,
   getUnreadNotifications,
+  getNotificationDigests,
+  type NotificationDigest,
 } from '@/lib/notifications/check'
 import { useNotifications } from '@/components/notifications/notification-provider'
 import {
   NOTIFICATION_CONFIG,
   CATEGORY_LABELS,
+  INLINE_ACTIONS,
   type Notification,
   type NotificationAction,
   type NotificationCategory,
+  type InlineActionButton,
 } from '@/lib/notifications/types'
 
 // ─── Icon Map ────────────────────────────────────────────────────────────
@@ -78,6 +90,12 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   CalendarClock,
   Package,
   Gift,
+  Send,
+  ExternalLink,
+  Calendar,
+  Globe,
+  ListChecks,
+  Layers,
 }
 
 const categoryColors: Record<string, string> = {
@@ -199,6 +217,109 @@ function groupNotificationsByDate(
     .map((group) => ({ group, items: groups[group] }))
 }
 
+// ─── Digest Card ────────────────────────────────────────────────────────
+
+function DigestCard({
+  digest,
+  onExpand,
+  expanded,
+}: {
+  digest: NotificationDigest
+  onExpand: () => void
+  expanded: boolean
+}) {
+  const config = NOTIFICATION_CONFIG[digest.action as NotificationAction]
+  const iconName = config?.icon || 'Bell'
+  const IconComponent = ICON_MAP[iconName] || Bell
+  const colorClass = config ? categoryColors[config.category] || 'text-stone-500' : 'text-stone-500'
+
+  // Build a readable summary: "3 new inquiries today"
+  const actionLabel = digest.action.replace(/_/g, ' ')
+
+  return (
+    <button
+      type="button"
+      onClick={onExpand}
+      className={`flex items-center gap-2.5 px-3 py-2 rounded-lg border transition-colors w-full text-left ${
+        expanded
+          ? 'bg-stone-800 border-stone-700'
+          : 'bg-stone-800/60 border-stone-800 hover:bg-stone-800 hover:border-stone-700'
+      }`}
+    >
+      <div className={`flex-shrink-0 ${colorClass}`}>
+        <IconComponent className="w-4 h-4" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <span className="text-xs font-medium text-stone-200">
+          {digest.count} {actionLabel}
+          {digest.count > 1 ? 's' : ''} today
+        </span>
+      </div>
+      <div className="flex-shrink-0 text-stone-500">
+        {expanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+      </div>
+    </button>
+  )
+}
+
+// ─── Inline Action Button ───────────────────────────────────────────────
+
+function InlineActionButtonComponent({
+  action,
+  notification,
+  onNavigate,
+  onArchive,
+  onMarkRead,
+}: {
+  action: InlineActionButton
+  notification: Notification
+  onNavigate: (n: Notification) => void
+  onArchive: (id: string) => void
+  onMarkRead: (n: Notification) => void
+}) {
+  const IconComponent = ICON_MAP[action.icon] || Bell
+
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+
+    if (action.serverAction) {
+      switch (action.serverAction) {
+        case 'mark_read':
+          onMarkRead(notification)
+          break
+        case 'archive':
+          onArchive(notification.id)
+          break
+        case 'create_task':
+          toast.info(`Task creation from notification: "${notification.title}"`)
+          break
+        case 'dismiss':
+          onArchive(notification.id)
+          break
+      }
+      return
+    }
+
+    // Navigation: use href if set, otherwise fall through to action_url
+    if (action.href) {
+      window.location.href = action.href
+    } else {
+      onNavigate(notification)
+    }
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={handleClick}
+      className="inline-flex items-center gap-1 px-2 py-0.5 text-xxs font-medium rounded-full bg-stone-700 text-stone-300 hover:bg-stone-600 hover:text-stone-200 transition-colors whitespace-nowrap"
+    >
+      <IconComponent className="w-3 h-3" />
+      {action.label}
+    </button>
+  )
+}
+
 // ─── Component ───────────────────────────────────────────────────────────
 
 export function NotificationListClient() {
@@ -216,6 +337,8 @@ export function NotificationListClient() {
   const [page, setPage] = useState(0)
   const [totalCount, setTotalCount] = useState(0)
   const [loadError, setLoadError] = useState<string | null>(null)
+  const [digests, setDigests] = useState<NotificationDigest[]>([])
+  const [expandedDigests, setExpandedDigests] = useState<Set<string>>(new Set())
 
   // ─── Fetch ─────────────────────────────────────────────────────────
 
@@ -251,11 +374,25 @@ export function NotificationListClient() {
 
       setNotifications(data)
       setTotalCount(count)
+
+      // Fetch digests for the "Today" group (only on first page, no category filter)
+      if (page === 0 && activeFilter === 'all' && readFilter === 'all') {
+        try {
+          const digestData = await getNotificationDigests(5)
+          setDigests(digestData)
+        } catch {
+          // Digests are non-critical; silently fall back to empty
+          setDigests([])
+        }
+      } else {
+        setDigests([])
+      }
     } catch (err) {
       console.error('[NotificationListClient] Failed to load:', err)
       setLoadError('Could not load notifications. Please retry.')
       setNotifications([])
       setTotalCount(0)
+      setDigests([])
     } finally {
       setLoading(false)
     }
@@ -345,6 +482,18 @@ export function NotificationListClient() {
     setPage(0)
   }
 
+  const toggleDigest = (action: string) => {
+    setExpandedDigests((prev) => {
+      const next = new Set(prev)
+      if (next.has(action)) {
+        next.delete(action)
+      } else {
+        next.add(action)
+      }
+      return next
+    })
+  }
+
   // ─── Pagination ────────────────────────────────────────────────────
 
   const totalPages = Math.ceil(totalCount / PAGE_SIZE)
@@ -357,6 +506,111 @@ export function NotificationListClient() {
     () => groupNotificationsByDate(notifications),
     [notifications]
   )
+
+  // Build set of notification IDs that are covered by a digest (for collapsing)
+  const digestActionSet = useMemo(() => new Set(digests.map((d) => d.action)), [digests])
+
+  // ─── Render helpers ────────────────────────────────────────────────
+
+  const renderNotificationCard = (notification: Notification) => {
+    const config = NOTIFICATION_CONFIG[notification.action as NotificationAction]
+    const iconName = config?.icon || 'Bell'
+    const IconComponent = ICON_MAP[iconName] || Bell
+    const colorClass = categoryColors[notification.category] || 'text-stone-500'
+    const badgeClass =
+      categoryBadgeColors[notification.category] ||
+      'bg-stone-500/10 text-stone-400 border-stone-500/20'
+    const isUnread = !notification.read_at
+    const categoryLabel =
+      CATEGORY_LABELS[notification.category as NotificationCategory] || notification.category
+    const inlineActions = INLINE_ACTIONS[notification.action as NotificationAction]
+
+    return (
+      <div
+        key={notification.id}
+        className={`flex items-start gap-3 px-4 py-3 transition-colors group ${
+          isUnread ? 'bg-brand-950/20' : ''
+        }`}
+      >
+        {/* Icon */}
+        <div className={`mt-1 flex-shrink-0 ${colorClass}`}>
+          <IconComponent className="w-5 h-5" />
+        </div>
+
+        {/* Content - clickable */}
+        <div className="flex-1 min-w-0">
+          <button
+            type="button"
+            onClick={() => handleNavigate(notification)}
+            className="w-full text-left"
+          >
+            <div className="flex items-start gap-2">
+              <p
+                className={`text-sm ${isUnread ? 'font-medium text-stone-100' : 'text-stone-300'}`}
+              >
+                {notification.title}
+              </p>
+              {isUnread && (
+                <span className="w-1.5 h-1.5 rounded-full bg-brand-600 mt-1.5 flex-shrink-0" />
+              )}
+            </div>
+            {notification.body && (
+              <p className="text-xs text-stone-500 mt-0.5 line-clamp-2">{notification.body}</p>
+            )}
+            <div className="flex items-center gap-2 mt-1.5">
+              <span
+                className={`inline-flex items-center text-xxs px-1.5 py-0.5 rounded border ${badgeClass}`}
+              >
+                {categoryLabel}
+              </span>
+              <span className="text-xxs text-stone-500">{formatDate(notification.created_at)}</span>
+              <span className="text-xxs text-stone-600">
+                ({getRelativeTime(notification.created_at)})
+              </span>
+            </div>
+          </button>
+
+          {/* Inline action buttons: visible on hover (desktop), always visible on mobile */}
+          {inlineActions && inlineActions.length > 0 && (
+            <div className="flex items-center gap-1.5 mt-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+              {inlineActions.map((action) => (
+                <InlineActionButtonComponent
+                  key={action.label}
+                  action={action}
+                  notification={notification}
+                  onNavigate={handleNavigate}
+                  onArchive={handleArchive}
+                  onMarkRead={handleMarkAsRead}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Mark read / Archive buttons */}
+        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+          {isUnread && (
+            <button
+              type="button"
+              onClick={() => handleMarkAsRead(notification)}
+              title="Mark as read"
+              className="p-1 rounded hover:bg-stone-700 text-stone-500 hover:text-stone-300"
+            >
+              <Check className="w-3.5 h-3.5" />
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => handleArchive(notification.id)}
+            title="Archive"
+            className="p-1 rounded hover:bg-stone-700 text-stone-500 hover:text-stone-300"
+          >
+            <Archive className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   // ─── Render ────────────────────────────────────────────────────────
 
@@ -444,107 +698,72 @@ export function NotificationListClient() {
           </div>
         ) : (
           <div>
-            {groupedNotifications.map(({ group, items }) => (
-              <div key={group}>
-                {/* Date group header */}
-                <div className="px-4 py-2 bg-stone-850 border-b border-stone-800 sticky top-0 z-10">
-                  <h3 className="text-xs-tight font-semibold text-stone-400 uppercase tracking-wider">
-                    {group}
-                  </h3>
-                </div>
+            {groupedNotifications.map(({ group, items }, groupIndex) => {
+              const showDigests = group === 'Today' && digests.length > 0
 
-                {/* Notifications in this group */}
-                <div className="divide-y divide-stone-800">
-                  {items.map((notification) => {
-                    const config = NOTIFICATION_CONFIG[notification.action as NotificationAction]
-                    const iconName = config?.icon || 'Bell'
-                    const IconComponent = ICON_MAP[iconName] || Bell
-                    const colorClass = categoryColors[notification.category] || 'text-stone-500'
-                    const badgeClass =
-                      categoryBadgeColors[notification.category] ||
-                      'bg-stone-500/10 text-stone-400 border-stone-500/20'
-                    const isUnread = !notification.read_at
-                    const categoryLabel =
-                      CATEGORY_LABELS[notification.category as NotificationCategory] ||
-                      notification.category
+              // For the Today group, split items into digested (collapsible) and non-digested
+              const digestedItems = showDigests
+                ? items.filter((n) => digestActionSet.has(n.action))
+                : []
+              const nonDigestedItems = showDigests
+                ? items.filter((n) => !digestActionSet.has(n.action))
+                : items
 
-                    return (
-                      <div
-                        key={notification.id}
-                        className={`flex items-start gap-3 px-4 py-3 transition-colors group ${
-                          isUnread ? 'bg-brand-950/20' : ''
-                        }`}
-                      >
-                        {/* Icon */}
-                        <div className={`mt-1 flex-shrink-0 ${colorClass}`}>
-                          <IconComponent className="w-5 h-5" />
-                        </div>
+              return (
+                <div key={group}>
+                  {/* Divider between groups (not before first) */}
+                  {groupIndex > 0 && <div className="border-t border-stone-700" />}
 
-                        {/* Content - clickable */}
-                        <button
-                          type="button"
-                          onClick={() => handleNavigate(notification)}
-                          className="flex-1 min-w-0 text-left"
-                        >
-                          <div className="flex items-start gap-2">
-                            <p
-                              className={`text-sm ${
-                                isUnread ? 'font-medium text-stone-100' : 'text-stone-300'
-                              }`}
-                            >
-                              {notification.title}
-                            </p>
-                            {isUnread && (
-                              <span className="w-1.5 h-1.5 rounded-full bg-brand-600 mt-1.5 flex-shrink-0" />
-                            )}
-                          </div>
-                          {notification.body && (
-                            <p className="text-xs text-stone-500 mt-0.5 line-clamp-2">
-                              {notification.body}
-                            </p>
-                          )}
-                          <div className="flex items-center gap-2 mt-1.5">
-                            <span
-                              className={`inline-flex items-center text-xxs px-1.5 py-0.5 rounded border ${badgeClass}`}
-                            >
-                              {categoryLabel}
-                            </span>
-                            <span className="text-xxs text-stone-500">
-                              {formatDate(notification.created_at)}
-                            </span>
-                            <span className="text-xxs text-stone-600">
-                              ({getRelativeTime(notification.created_at)})
-                            </span>
-                          </div>
-                        </button>
+                  {/* Date group header */}
+                  <div className="px-4 py-2 bg-stone-850 border-b border-stone-800 sticky top-0 z-10">
+                    <h3 className="text-xs-tight font-semibold text-stone-500 uppercase tracking-wider">
+                      {group}
+                    </h3>
+                  </div>
 
-                        {/* Action buttons */}
-                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
-                          {isUnread && (
-                            <button
-                              type="button"
-                              onClick={() => handleMarkAsRead(notification)}
-                              title="Mark as read"
-                              className="p-1 rounded hover:bg-stone-700 text-stone-500 hover:text-stone-300"
-                            >
-                              <Check className="w-3.5 h-3.5" />
-                            </button>
-                          )}
-                          <button
-                            type="button"
-                            onClick={() => handleArchive(notification.id)}
-                            title="Archive"
-                            className="p-1 rounded hover:bg-stone-700 text-stone-500 hover:text-stone-300"
-                          >
-                            <Archive className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
+                  {/* Digest cards at top of Today group */}
+                  {showDigests && (
+                    <div className="px-4 py-3 space-y-2 border-b border-stone-800 bg-stone-900/50">
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <Layers className="w-3.5 h-3.5 text-stone-500" />
+                        <span className="text-xxs font-medium text-stone-500 uppercase tracking-wider">
+                          Activity Summary
+                        </span>
                       </div>
-                    )
-                  })}
+                      {digests.map((digest) => (
+                        <div key={digest.action}>
+                          <DigestCard
+                            digest={digest}
+                            onExpand={() => toggleDigest(digest.action)}
+                            expanded={expandedDigests.has(digest.action)}
+                          />
+                          {/* Expanded digest items */}
+                          {expandedDigests.has(digest.action) && (
+                            <div className="ml-2 mt-1 border-l-2 border-stone-700 pl-2 space-y-0">
+                              {digestedItems
+                                .filter((n) => n.action === digest.action)
+                                .map((notification) => (
+                                  <div
+                                    key={notification.id}
+                                    className="divide-y divide-stone-800/50"
+                                  >
+                                    {renderNotificationCard(notification)}
+                                  </div>
+                                ))}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Non-digested notifications (or all items for non-Today groups) */}
+                  <div className="divide-y divide-stone-800">
+                    {nonDigestedItems.map((notification) => renderNotificationCard(notification))}
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
       </div>

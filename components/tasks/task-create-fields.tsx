@@ -130,15 +130,46 @@ export function TaskCreateFields({ staff, stations, draft }: Props) {
         </div>
       </div>
 
-      <div>
-        <label className="mb-1.5 block text-sm font-medium text-stone-300">Priority</label>
-        <select name="priority" defaultValue={draft.priority} className={FIELD_CLASSNAME}>
-          {PRIORITY_OPTIONS.map((priority) => (
-            <option key={priority.value} value={priority.value}>
-              {priority.label}
-            </option>
-          ))}
-        </select>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label
+            htmlFor="task-create-priority"
+            className="mb-1.5 block text-sm font-medium text-stone-300"
+          >
+            Priority
+          </label>
+          <select
+            id="task-create-priority"
+            name="priority"
+            defaultValue={draft.priority}
+            className={FIELD_CLASSNAME}
+          >
+            {PRIORITY_OPTIONS.map((priority) => (
+              <option key={priority.value} value={priority.value}>
+                {priority.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label
+            htmlFor="task-create-time-estimate"
+            className="mb-1.5 block text-sm font-medium text-stone-300"
+          >
+            Est. time (min)
+          </label>
+          <input
+            id="task-create-time-estimate"
+            name="time_estimate_minutes"
+            type="number"
+            min={1}
+            max={480}
+            defaultValue={draft.time_estimate_minutes || ''}
+            placeholder="30"
+            className={FIELD_CLASSNAME}
+          />
+        </div>
       </div>
 
       <div>

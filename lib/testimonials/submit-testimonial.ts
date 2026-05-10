@@ -80,7 +80,7 @@ export async function submitTestimonialByToken(input: {
         action: 'review_submitted',
         title: 'New client review',
         body: `${(testimonial as any).client_name} submitted a ${rating}-star review.`,
-        actionUrl: '/testimonials',
+        actionUrl: '/reviews',
       })
     }
   } catch (err) {

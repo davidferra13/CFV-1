@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition, useRef, useCallback } from 'react'
+import { useState, useTransition, useRef, useCallback, useMemo } from 'react'
 import { toast } from 'sonner'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -18,28 +18,39 @@ import {
   X,
   Tag,
   AlertTriangle,
+  Repeat,
+  Timer,
+  Link2,
 } from '@/components/ui/icons'
 import {
-  createTodo,
-  toggleTodo,
-  deleteTodo,
-  updateTodo,
-  type ChefTodo,
-  type TodoPriority,
-  type TodoCategory,
-  type CreateTodoInput,
-} from '@/lib/todos/actions'
+  createReminder,
+  toggleReminder,
+  deleteReminder,
+  updateReminder,
+  snoozeReminder,
+  unsnoozeReminder,
+} from '@/lib/reminders/actions'
+import type {
+  ChefReminder,
+  CreateReminderInput,
+  RecurringRule,
+  ReminderPriority,
+  ReminderCategory,
+} from '@/lib/reminders/types'
+import { SNOOZE_OPTIONS } from '@/lib/reminders/types'
+import { parseNaturalLanguageReminder } from '@/lib/reminders/natural-language'
+import type { ParsedReminder } from '@/lib/reminders/natural-language'
 
-// ─── CONSTANTS ──────────────────────────────────────────
+// ── CONSTANTS ──────────────────────────────────────────
 
-const PRIORITY_CONFIG: Record<TodoPriority, { label: string; color: string; dot: string }> = {
+const PRIORITY_CONFIG: Record<ReminderPriority, { label: string; color: string; dot: string }> = {
   urgent: { label: 'Urgent', color: 'text-red-400', dot: 'bg-red-500' },
   high: { label: 'High', color: 'text-orange-400', dot: 'bg-orange-500' },
   medium: { label: 'Medium', color: 'text-yellow-400', dot: 'bg-yellow-500' },
   low: { label: 'Low', color: 'text-stone-400', dot: 'bg-stone-500' },
 }
 
-const CATEGORY_CONFIG: Record<TodoCategory, { label: string; emoji: string }> = {
+const CATEGORY_CONFIG: Record<ReminderCategory, { label: string; emoji: string }> = {
   general: { label: 'General', emoji: '📋' },
   prep: { label: 'Prep', emoji: '🔪' },
   shopping: { label: 'Shopping', emoji: '🛒' },
@@ -49,23 +60,28 @@ const CATEGORY_CONFIG: Record<TodoCategory, { label: string; emoji: string }> = 
   personal: { label: 'Personal', emoji: '🏠' },
 }
 
-type FilterView = 'all' | 'today' | 'upcoming' | 'overdue' | 'completed'
+type FilterView = 'all' | 'today' | 'upcoming' | 'overdue' | 'completed' | 'snoozed'
 
-// ─── HELPERS ────────────────────────────────────────────
+// ── HELPERS ────────────────────────────────────────────
 
-function isOverdue(todo: ChefTodo): boolean {
+function isOverdue(todo: ChefReminder): boolean {
   if (!todo.due_date || todo.completed) return false
   const today = new Date().toISOString().split('T')[0]
   return todo.due_date < today
 }
 
-function isDueToday(todo: ChefTodo): boolean {
+function isSnoozed(todo: ChefReminder): boolean {
+  if (!todo.snoozed_until || todo.completed) return false
+  return new Date(todo.snoozed_until) > new Date()
+}
+
+function isDueToday(todo: ChefReminder): boolean {
   if (!todo.due_date || todo.completed) return false
   const today = new Date().toISOString().split('T')[0]
   return todo.due_date === today
 }
 
-function isDueThisWeek(todo: ChefTodo): boolean {
+function isDueThisWeek(todo: ChefReminder): boolean {
   if (!todo.due_date || todo.completed) return false
   const today = new Date()
   const weekOut = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)
@@ -98,11 +114,56 @@ function formatDueDate(dateStr: string, timeStr?: string | null): string {
   return label
 }
 
-function sortTodos(todos: ChefTodo[]): ChefTodo[] {
-  const priorityOrder: Record<TodoPriority, number> = { urgent: 0, high: 1, medium: 2, low: 3 }
+function formatSnoozeUntil(iso: string): string {
+  const d = new Date(iso)
+  const now = new Date()
+  const diffMs = d.getTime() - now.getTime()
+  const diffHours = Math.round(diffMs / (1000 * 60 * 60))
+
+  if (diffHours < 1) return 'less than 1 hour'
+  if (diffHours < 24) return `${diffHours}h`
+
+  return (
+    d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) +
+    ' at ' +
+    d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+  )
+}
+
+function formatRecurringRule(rule: RecurringRule): string {
+  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+
+  if (rule.frequency === 'daily') return 'Daily'
+
+  if (rule.frequency === 'weekly' && rule.days_of_week?.length) {
+    const days = rule.days_of_week.map((d) => dayNames[d]).join(', ')
+    return `Weekly (${days})`
+  }
+
+  if (rule.frequency === 'monthly' && rule.day_of_month) {
+    const suffix =
+      rule.day_of_month === 1 || rule.day_of_month === 21 || rule.day_of_month === 31
+        ? 'st'
+        : rule.day_of_month === 2 || rule.day_of_month === 22
+          ? 'nd'
+          : rule.day_of_month === 3 || rule.day_of_month === 23
+            ? 'rd'
+            : 'th'
+    return `Monthly (${rule.day_of_month}${suffix})`
+  }
+
+  return rule.frequency.charAt(0).toUpperCase() + rule.frequency.slice(1)
+}
+
+function sortTodos(todos: ChefReminder[]): ChefReminder[] {
+  const priorityOrder: Record<ReminderPriority, number> = { urgent: 0, high: 1, medium: 2, low: 3 }
   return [...todos].sort((a, b) => {
     // Completed last
     if (a.completed !== b.completed) return a.completed ? 1 : -1
+    // Snoozed after active, before completed
+    const aSnoozed = isSnoozed(a)
+    const bSnoozed = isSnoozed(b)
+    if (aSnoozed !== bSnoozed) return aSnoozed ? 1 : -1
     // Overdue first
     const aOverdue = isOverdue(a)
     const bOverdue = isOverdue(b)
@@ -121,22 +182,72 @@ function sortTodos(todos: ChefTodo[]): ChefTodo[] {
   })
 }
 
-// ─── REMINDER ROW ───────────────────────────────────────
+// ── SNOOZE DROPDOWN ─────────────────────────────────────
+
+function SnoozeDropdown({
+  reminderId,
+  onSnooze,
+  disabled,
+}: {
+  reminderId: string
+  onSnooze: (id: string, option: string) => void
+  disabled: boolean
+}) {
+  const [open, setOpen] = useState(false)
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        disabled={disabled}
+        className="p-1 text-stone-400 hover:text-blue-400 transition-colors disabled:cursor-not-allowed"
+        title="Snooze"
+      >
+        <Timer className="h-3.5 w-3.5" />
+      </button>
+      {open && (
+        <div className="absolute right-0 top-full mt-1 z-20 bg-stone-900 border border-stone-700 rounded-md shadow-lg py-1 min-w-[140px]">
+          {SNOOZE_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => {
+                onSnooze(reminderId, opt.value)
+                setOpen(false)
+              }}
+              className="block w-full text-left px-3 py-1.5 text-xs text-stone-300 hover:bg-stone-800 hover:text-stone-100 transition-colors"
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── REMINDER ROW ───────────────────────────────────────
 
 function ReminderRow({
   todo,
   onToggle,
   onDelete,
   onEdit,
+  onSnooze,
+  onUnsnooze,
   disabled,
 }: {
-  todo: ChefTodo
+  todo: ChefReminder
   onToggle: (id: string) => void
   onDelete: (id: string) => void
-  onEdit: (todo: ChefTodo) => void
+  onEdit: (todo: ChefReminder) => void
+  onSnooze: (id: string, option: string) => void
+  onUnsnooze: (id: string) => void
   disabled: boolean
 }) {
   const overdue = isOverdue(todo)
+  const snoozed = isSnoozed(todo)
   const dueToday = isDueToday(todo)
   const prio = PRIORITY_CONFIG[todo.priority]
   const cat = CATEGORY_CONFIG[todo.category]
@@ -146,11 +257,13 @@ function ReminderRow({
       className={`group flex items-start gap-3 rounded-lg px-3 py-3 transition-colors border ${
         todo.completed
           ? 'opacity-50 border-stone-800'
-          : overdue
-            ? 'border-red-900/50 bg-red-950/20'
-            : dueToday
-              ? 'border-yellow-900/30 bg-yellow-950/10'
-              : 'border-stone-800 hover:bg-stone-800/50'
+          : snoozed
+            ? 'border-blue-900/40 bg-blue-950/10 opacity-70'
+            : overdue
+              ? 'border-red-900/50 bg-red-950/20'
+              : dueToday
+                ? 'border-yellow-900/30 bg-yellow-950/10'
+                : 'border-stone-800 hover:bg-stone-800/50'
       }`}
     >
       {/* Toggle */}
@@ -209,6 +322,47 @@ function ReminderRow({
               {cat.emoji} {cat.label}
             </span>
           )}
+          {/* Recurring badge */}
+          {todo.recurring_rule && (
+            <span className="flex items-center gap-1 text-xs text-purple-400">
+              <Repeat className="h-3 w-3" />
+              {formatRecurringRule(todo.recurring_rule)}
+            </span>
+          )}
+          {/* Snoozed badge */}
+          {snoozed && todo.snoozed_until && (
+            <span className="flex items-center gap-1 text-xs text-blue-400">
+              <Timer className="h-3 w-3" />
+              Snoozed until {formatSnoozeUntil(todo.snoozed_until)}
+              <button
+                type="button"
+                onClick={() => onUnsnooze(todo.id)}
+                disabled={disabled}
+                className="ml-1 text-blue-400 hover:text-blue-300 underline"
+              >
+                wake
+              </button>
+            </span>
+          )}
+          {/* Event link */}
+          {todo.event_id && (
+            <a
+              href={`/events/${todo.event_id}`}
+              className="flex items-center gap-1 text-xs text-brand-400 hover:text-brand-300 transition-colors"
+            >
+              <Link2 className="h-3 w-3" />
+              Linked event
+            </a>
+          )}
+          {/* Client link */}
+          {todo.client_id && (
+            <a
+              href={`/clients/${todo.client_id}`}
+              className="flex items-center gap-1 text-xs text-stone-400 hover:text-stone-300 transition-colors"
+            >
+              👤 Client
+            </a>
+          )}
           {todo.notes && (
             <span className="text-xs text-stone-500 truncate max-w-[200px]">{todo.notes}</span>
           )}
@@ -217,10 +371,14 @@ function ReminderRow({
 
       {/* Actions */}
       <div className="flex items-center gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-all">
+        {!todo.completed && !snoozed && (
+          <SnoozeDropdown reminderId={todo.id} onSnooze={onSnooze} disabled={disabled} />
+        )}
         <button
           type="button"
           onClick={() => onEdit(todo)}
           disabled={disabled}
+          title="Edit"
           className="p-1 text-stone-400 hover:text-stone-200 transition-colors disabled:cursor-not-allowed"
         >
           <Pencil className="h-3.5 w-3.5" />
@@ -229,6 +387,7 @@ function ReminderRow({
           type="button"
           onClick={() => onDelete(todo.id)}
           disabled={disabled}
+          title="Delete"
           className="p-1 text-stone-400 hover:text-red-500 transition-colors disabled:cursor-not-allowed"
         >
           <Trash2 className="h-3.5 w-3.5" />
@@ -238,7 +397,93 @@ function ReminderRow({
   )
 }
 
-// ─── CREATE / EDIT FORM ─────────────────────────────────
+// ── QUICK ADD (NATURAL LANGUAGE) ────────────────────────
+
+function QuickAddBar({
+  onSubmit,
+  disabled,
+}: {
+  onSubmit: (parsed: ParsedReminder) => void
+  disabled: boolean
+}) {
+  const [quickText, setQuickText] = useState('')
+  const [parsed, setParsed] = useState<ParsedReminder | null>(null)
+
+  function handleChange(value: string) {
+    setQuickText(value)
+    if (value.trim().length > 2) {
+      setParsed(parseNaturalLanguageReminder(value))
+    } else {
+      setParsed(null)
+    }
+  }
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!quickText.trim() || !parsed) return
+    onSubmit(parsed)
+    setQuickText('')
+    setParsed(null)
+  }
+
+  const hasMeta =
+    parsed && (parsed.due_date || parsed.due_time || parsed.recurring_rule || parsed.category)
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-1">
+      <div className="flex items-center gap-2">
+        <div className="relative flex-1">
+          <input
+            type="text"
+            value={quickText}
+            onChange={(e) => handleChange(e.target.value)}
+            placeholder='Quick add: "call Sarah Thursday at 3pm" or "every Monday review prep"'
+            disabled={disabled}
+            className="w-full text-sm bg-stone-900 border border-stone-700 rounded-md px-3 py-2 outline-none focus:border-brand-500 placeholder:text-stone-600 text-stone-200 disabled:cursor-not-allowed"
+          />
+        </div>
+        <Button type="submit" size="sm" disabled={disabled || !quickText.trim()}>
+          <Plus className="h-4 w-4" />
+        </Button>
+      </div>
+      {/* Preview of parsed result */}
+      {parsed && hasMeta && (
+        <div className="flex items-center gap-3 px-1 flex-wrap">
+          {parsed.due_date && (
+            <span className="flex items-center gap-1 text-xs text-stone-400">
+              <Calendar className="h-3 w-3" />
+              {parsed.due_date}
+            </span>
+          )}
+          {parsed.due_time && (
+            <span className="flex items-center gap-1 text-xs text-stone-400">
+              <Clock className="h-3 w-3" />
+              {parsed.due_time}
+            </span>
+          )}
+          {parsed.recurring_rule && (
+            <span className="flex items-center gap-1 text-xs text-purple-400">
+              <Repeat className="h-3 w-3" />
+              {formatRecurringRule(parsed.recurring_rule)}
+            </span>
+          )}
+          {parsed.category && (
+            <span className="text-xs text-stone-400">
+              {CATEGORY_CONFIG[parsed.category].emoji} {CATEGORY_CONFIG[parsed.category].label}
+            </span>
+          )}
+          {parsed.text && (
+            <span className="text-xs text-stone-500 italic truncate max-w-[300px]">
+              &quot;{parsed.text}&quot;
+            </span>
+          )}
+        </div>
+      )}
+    </form>
+  )
+}
+
+// ── CREATE / EDIT FORM ─────────────────────────────────
 
 function ReminderForm({
   editingTodo,
@@ -246,25 +491,46 @@ function ReminderForm({
   onCancel,
   disabled,
 }: {
-  editingTodo: ChefTodo | null
-  onSave: (input: CreateTodoInput) => Promise<void>
+  editingTodo: ChefReminder | null
+  onSave: (input: CreateReminderInput) => Promise<void>
   onCancel: () => void
   disabled: boolean
 }) {
   const [text, setText] = useState(editingTodo?.text ?? '')
   const [dueDate, setDueDate] = useState(editingTodo?.due_date ?? '')
   const [dueTime, setDueTime] = useState(editingTodo?.due_time?.slice(0, 5) ?? '')
-  const [priority, setPriority] = useState<TodoPriority>(editingTodo?.priority ?? 'medium')
-  const [category, setCategory] = useState<TodoCategory>(editingTodo?.category ?? 'general')
+  const [priority, setPriority] = useState<ReminderPriority>(editingTodo?.priority ?? 'medium')
+  const [category, setCategory] = useState<ReminderCategory>(editingTodo?.category ?? 'general')
   const [reminderAt, setReminderAt] = useState(
     editingTodo?.reminder_at ? editingTodo.reminder_at.slice(0, 16) : ''
   )
   const [notes, setNotes] = useState(editingTodo?.notes ?? '')
+  const [recurringFreq, setRecurringFreq] = useState<string>(
+    editingTodo?.recurring_rule?.frequency ?? 'none'
+  )
   const [showAdvanced, setShowAdvanced] = useState(
-    !!(editingTodo?.notes || editingTodo?.reminder_at || editingTodo?.category !== 'general')
+    !!(
+      editingTodo?.notes ||
+      editingTodo?.reminder_at ||
+      editingTodo?.category !== 'general' ||
+      editingTodo?.recurring_rule
+    )
   )
   const [pending, startTransition] = useTransition()
   const inputRef = useRef<HTMLInputElement>(null)
+
+  function buildRecurringRule(): RecurringRule | null {
+    if (recurringFreq === 'none') return null
+    const rule: RecurringRule = { frequency: recurringFreq as RecurringRule['frequency'] }
+    if (recurringFreq === 'weekly') {
+      // Default to current day of week
+      rule.days_of_week = [new Date().getDay()]
+    }
+    if (recurringFreq === 'monthly') {
+      rule.day_of_month = new Date().getDate()
+    }
+    return rule
+  }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -281,6 +547,7 @@ function ReminderForm({
           category,
           reminder_at: reminderAt ? new Date(reminderAt).toISOString() : null,
           notes: notes.trim() || null,
+          recurring_rule: buildRecurringRule(),
         })
         if (!editingTodo) {
           setText('')
@@ -290,6 +557,7 @@ function ReminderForm({
           setCategory('general')
           setReminderAt('')
           setNotes('')
+          setRecurringFreq('none')
           inputRef.current?.focus()
         }
       } catch {
@@ -323,6 +591,7 @@ function ReminderForm({
             value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}
             disabled={disabled || pending}
+            title="Due date"
             className="text-xs bg-stone-900 border border-stone-700 rounded px-2 py-1 text-stone-300 outline-none focus:border-brand-500"
           />
         </div>
@@ -333,13 +602,15 @@ function ReminderForm({
             value={dueTime}
             onChange={(e) => setDueTime(e.target.value)}
             disabled={disabled || pending}
+            title="Due time"
             className="text-xs bg-stone-900 border border-stone-700 rounded px-2 py-1 text-stone-300 outline-none focus:border-brand-500"
           />
         </div>
         <select
           value={priority}
-          onChange={(e) => setPriority(e.target.value as TodoPriority)}
+          onChange={(e) => setPriority(e.target.value as ReminderPriority)}
           disabled={disabled || pending}
+          title="Priority"
           className="text-xs bg-stone-900 border border-stone-700 rounded px-2 py-1 text-stone-300 outline-none focus:border-brand-500"
         >
           <option value="low">Low</option>
@@ -365,8 +636,9 @@ function ReminderForm({
             <Tag className="h-3.5 w-3.5 text-stone-400" />
             <select
               value={category}
-              onChange={(e) => setCategory(e.target.value as TodoCategory)}
+              onChange={(e) => setCategory(e.target.value as ReminderCategory)}
               disabled={disabled || pending}
+              title="Category"
               className="text-xs bg-stone-900 border border-stone-700 rounded px-2 py-1 text-stone-300 outline-none focus:border-brand-500"
             >
               {Object.entries(CATEGORY_CONFIG).map(([key, cfg]) => (
@@ -374,6 +646,21 @@ function ReminderForm({
                   {cfg.emoji} {cfg.label}
                 </option>
               ))}
+            </select>
+          </div>
+          <div className="flex items-center gap-2">
+            <Repeat className="h-3.5 w-3.5 text-stone-400" />
+            <select
+              value={recurringFreq}
+              onChange={(e) => setRecurringFreq(e.target.value)}
+              disabled={disabled || pending}
+              title="Repeat frequency"
+              className="text-xs bg-stone-900 border border-stone-700 rounded px-2 py-1 text-stone-300 outline-none focus:border-brand-500"
+            >
+              <option value="none">No repeat</option>
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+              <option value="monthly">Monthly</option>
             </select>
           </div>
           <div className="flex items-center gap-2">
@@ -417,13 +704,13 @@ function ReminderForm({
   )
 }
 
-// ─── MAIN COMPONENT ─────────────────────────────────────
+// ── MAIN COMPONENT ─────────────────────────────────────
 
-export function RemindersClient({ initialTodos }: { initialTodos: ChefTodo[] }) {
-  const [todos, setTodos] = useState<ChefTodo[]>(initialTodos)
+export function RemindersClient({ initialTodos }: { initialTodos: ChefReminder[] }) {
+  const [todos, setTodos] = useState<ChefReminder[]>(initialTodos)
   const [isPending, startTransition] = useTransition()
   const [view, setView] = useState<FilterView>('all')
-  const [editingTodo, setEditingTodo] = useState<ChefTodo | null>(null)
+  const [editingTodo, setEditingTodo] = useState<ChefReminder | null>(null)
 
   // ── Counts ──
   const overdueCount = todos.filter(isOverdue).length
@@ -431,31 +718,39 @@ export function RemindersClient({ initialTodos }: { initialTodos: ChefTodo[] }) 
   const upcomingCount = todos.filter(isDueThisWeek).length
   const completedCount = todos.filter((t) => t.completed).length
   const activeCount = todos.filter((t) => !t.completed).length
+  const snoozedCount = todos.filter(isSnoozed).length
 
   // ── Filtered list ──
-  const filtered = sortTodos(
-    todos.filter((t) => {
-      switch (view) {
-        case 'today':
-          return isDueToday(t) || isOverdue(t)
-        case 'upcoming':
-          return isDueThisWeek(t) && !t.completed
-        case 'overdue':
-          return isOverdue(t)
-        case 'completed':
-          return t.completed
-        default:
-          return true
-      }
-    })
+  const filtered = useMemo(
+    () =>
+      sortTodos(
+        todos.filter((t) => {
+          switch (view) {
+            case 'today':
+              return isDueToday(t) || isOverdue(t)
+            case 'upcoming':
+              return isDueThisWeek(t) && !t.completed
+            case 'overdue':
+              return isOverdue(t)
+            case 'completed':
+              return t.completed
+            case 'snoozed':
+              return isSnoozed(t)
+            default:
+              return true
+          }
+        })
+      ),
+    [todos, view]
   )
 
   // ── Handlers ──
   const handleCreate = useCallback(
-    async (input: CreateTodoInput) => {
+    async (input: CreateReminderInput) => {
       const tempId = `temp-${Date.now()}`
-      const optimistic: ChefTodo = {
+      const optimistic: ChefReminder = {
         id: tempId,
+        chef_id: '',
         text: input.text,
         completed: false,
         completed_at: null,
@@ -468,13 +763,16 @@ export function RemindersClient({ initialTodos }: { initialTodos: ChefTodo[] }) 
         reminder_at: input.reminder_at ?? null,
         reminder_sent: false,
         notes: input.notes ?? null,
-        event_id: null,
-        client_id: null,
+        event_id: input.event_id ?? null,
+        client_id: input.client_id ?? null,
+        snoozed_until: null,
+        recurring_rule: input.recurring_rule ?? null,
+        location_trigger: input.location_trigger ?? null,
       }
 
       setTodos((prev) => [...prev, optimistic])
 
-      const result = await createTodo(input)
+      const result = await createReminder(input)
       if (result.success && result.id) {
         setTodos((prev) => prev.map((t) => (t.id === tempId ? { ...t, id: result.id! } : t)))
         toast.success('Reminder added')
@@ -487,7 +785,7 @@ export function RemindersClient({ initialTodos }: { initialTodos: ChefTodo[] }) 
   )
 
   const handleUpdate = useCallback(
-    async (input: CreateTodoInput) => {
+    async (input: CreateReminderInput) => {
       if (!editingTodo) return
       const id = editingTodo.id
 
@@ -506,6 +804,7 @@ export function RemindersClient({ initialTodos }: { initialTodos: ChefTodo[] }) 
                 reminder_sent:
                   input.reminder_at !== editingTodo.reminder_at ? false : t.reminder_sent,
                 notes: input.notes ?? null,
+                recurring_rule: input.recurring_rule ?? null,
               }
             : t
         )
@@ -513,7 +812,7 @@ export function RemindersClient({ initialTodos }: { initialTodos: ChefTodo[] }) 
 
       setEditingTodo(null)
 
-      const result = await updateTodo(id, input)
+      const result = await updateReminder(id, input)
       if (result.success) {
         toast.success('Reminder updated')
       } else {
@@ -543,7 +842,7 @@ export function RemindersClient({ initialTodos }: { initialTodos: ChefTodo[] }) 
 
     startTransition(async () => {
       try {
-        const result = await toggleTodo(id)
+        const result = await toggleReminder(id)
         if (!result.success) {
           setTodos((prev) => prev.map((t) => (t.id === id ? original : t)))
         }
@@ -560,7 +859,7 @@ export function RemindersClient({ initialTodos }: { initialTodos: ChefTodo[] }) 
 
     startTransition(async () => {
       try {
-        const result = await deleteTodo(id)
+        const result = await deleteReminder(id)
         if (!result.success && original) {
           setTodos((prev) => sortTodos([...prev, original]))
         }
@@ -571,12 +870,74 @@ export function RemindersClient({ initialTodos }: { initialTodos: ChefTodo[] }) 
     })
   }
 
+  function handleSnooze(id: string, optionKey: string) {
+    const original = todos.find((t) => t.id === id)
+    if (!original) return
+
+    const option = SNOOZE_OPTIONS.find((o) => o.value === optionKey)
+    if (!option) return
+
+    // Optimistic
+    setTodos((prev) =>
+      prev.map((t) => (t.id === id ? { ...t, snoozed_until: option.getUntil().toISOString() } : t))
+    )
+
+    startTransition(async () => {
+      try {
+        const result = await snoozeReminder(id, optionKey)
+        if (!result.success) {
+          setTodos((prev) => prev.map((t) => (t.id === id ? original : t)))
+          toast.error(result.error || 'Failed to snooze')
+        } else {
+          toast.success(`Snoozed for ${option.label.toLowerCase()}`)
+        }
+      } catch {
+        setTodos((prev) => prev.map((t) => (t.id === id ? original : t)))
+        toast.error('Failed to snooze')
+      }
+    })
+  }
+
+  function handleUnsnooze(id: string) {
+    const original = todos.find((t) => t.id === id)
+    if (!original) return
+
+    // Optimistic
+    setTodos((prev) => prev.map((t) => (t.id === id ? { ...t, snoozed_until: null } : t)))
+
+    startTransition(async () => {
+      try {
+        const result = await unsnoozeReminder(id)
+        if (!result.success) {
+          setTodos((prev) => prev.map((t) => (t.id === id ? original : t)))
+          toast.error(result.error || 'Failed to unsnooze')
+        }
+      } catch {
+        setTodos((prev) => prev.map((t) => (t.id === id ? original : t)))
+        toast.error('Failed to unsnooze')
+      }
+    })
+  }
+
+  function handleQuickAdd(parsed: ParsedReminder) {
+    if (!parsed.text.trim()) return
+    const input: CreateReminderInput = {
+      text: parsed.text,
+      due_date: parsed.due_date || null,
+      due_time: parsed.due_time || null,
+      category: parsed.category || 'general',
+      recurring_rule: parsed.recurring_rule || null,
+    }
+    handleCreate(input)
+  }
+
   // ── View tabs ──
   const tabs: { key: FilterView; label: string; count?: number; warn?: boolean }[] = [
     { key: 'all', label: 'All', count: activeCount },
     { key: 'today', label: 'Today', count: todayCount + overdueCount, warn: overdueCount > 0 },
     { key: 'upcoming', label: 'This Week', count: upcomingCount },
     { key: 'overdue', label: 'Overdue', count: overdueCount, warn: overdueCount > 0 },
+    { key: 'snoozed', label: 'Snoozed', count: snoozedCount },
     { key: 'completed', label: 'Done', count: completedCount },
   ]
 
@@ -592,13 +953,20 @@ export function RemindersClient({ initialTodos }: { initialTodos: ChefTodo[] }) 
         </div>
       </div>
 
+      {/* Quick add bar */}
+      <Card>
+        <CardContent className="pt-4 pb-3">
+          <QuickAddBar onSubmit={handleQuickAdd} disabled={isPending} />
+        </CardContent>
+      </Card>
+
       {/* Filter tabs */}
-      <div className="flex items-center gap-1 border-b border-stone-800 pb-px">
+      <div className="flex items-center gap-1 border-b border-stone-800 pb-px overflow-x-auto">
         {tabs.map((tab) => (
           <button
             key={tab.key}
             onClick={() => setView(tab.key)}
-            className={`px-3 py-2 text-sm rounded-t-md transition-colors ${
+            className={`px-3 py-2 text-sm rounded-t-md transition-colors whitespace-nowrap ${
               view === tab.key
                 ? 'bg-stone-800 text-stone-100 border-b-2 border-brand-500'
                 : 'text-stone-400 hover:text-stone-200 hover:bg-stone-800/50'
@@ -647,7 +1015,11 @@ export function RemindersClient({ initialTodos }: { initialTodos: ChefTodo[] }) 
                     ? 'No completed reminders yet.'
                     : view === 'today'
                       ? 'Nothing due today.'
-                      : 'No reminders. Add one above.'}
+                      : view === 'snoozed'
+                        ? 'No snoozed reminders.'
+                        : view === 'upcoming'
+                          ? 'Nothing due this week.'
+                          : 'No reminders. Add one above.'}
               </p>
             </CardContent>
           </Card>
@@ -659,6 +1031,8 @@ export function RemindersClient({ initialTodos }: { initialTodos: ChefTodo[] }) 
               onToggle={handleToggle}
               onDelete={handleDelete}
               onEdit={setEditingTodo}
+              onSnooze={handleSnooze}
+              onUnsnooze={handleUnsnooze}
               disabled={isPending}
             />
           ))

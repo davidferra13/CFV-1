@@ -388,6 +388,49 @@ export const NOTIFICATION_CONFIG: Record<
   reminder_fired: { category: 'system', icon: 'Bell', toastByDefault: true },
 }
 
+// Inline action buttons that appear on notification cards
+export type InlineActionButton = {
+  label: string
+  icon: string // icon name from @/components/ui/icons
+  href?: string // navigate to URL (uses action_url if not set)
+  serverAction?: 'mark_read' | 'archive' | 'create_task' | 'dismiss'
+}
+
+// Which notification actions get inline action buttons
+export const INLINE_ACTIONS: Partial<Record<NotificationAction, InlineActionButton[]>> = {
+  new_inquiry: [
+    { label: 'Reply', icon: 'MessageSquare', href: undefined }, // uses action_url
+    { label: 'Create Task', icon: 'ListChecks', serverAction: 'create_task' },
+  ],
+  inquiry_reply: [
+    { label: 'View', icon: 'ExternalLink' },
+    { label: 'Reply', icon: 'MessageSquare' },
+  ],
+  follow_up_due: [
+    { label: 'Send Now', icon: 'Send' },
+    { label: 'Snooze', icon: 'Clock', serverAction: 'dismiss' },
+  ],
+  quote_accepted: [{ label: 'View Quote', icon: 'FileCheck' }],
+  quote_expiring: [
+    { label: 'View Quote', icon: 'FileCheck' },
+    { label: 'Follow Up', icon: 'Send' },
+  ],
+  payment_received: [{ label: 'View Payment', icon: 'CreditCard' }],
+  payment_failed: [
+    { label: 'Resolve', icon: 'AlertTriangle' },
+    { label: 'Create Task', icon: 'ListChecks', serverAction: 'create_task' },
+  ],
+  new_message: [{ label: 'Reply', icon: 'MessageSquare' }],
+  review_submitted: [{ label: 'Read Review', icon: 'Star' }],
+  event_confirmed: [{ label: 'View Event', icon: 'Calendar' }],
+  wix_submission: [
+    { label: 'Review', icon: 'Globe' },
+    { label: 'Create Task', icon: 'ListChecks', serverAction: 'create_task' },
+  ],
+  dietary_menu_conflict: [{ label: 'Resolve', icon: 'AlertTriangle' }],
+  guest_dietary_alert: [{ label: 'Review', icon: 'AlertTriangle' }],
+}
+
 // Category display names for preferences UI
 export const CATEGORY_LABELS: Record<NotificationCategory, string> = {
   inquiry: 'Inquiries',

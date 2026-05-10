@@ -120,7 +120,7 @@ export async function submitTestimonial(input: {
       action: 'review_submitted',
       title: 'New guest testimonial',
       body: `${validated.guestName.trim()} left a testimonial for your event.`,
-      actionUrl: '/testimonials',
+      actionUrl: '/reviews',
     })
   } catch (err) {
     console.error('[submitTestimonial] Notification failed (non-blocking):', err)
