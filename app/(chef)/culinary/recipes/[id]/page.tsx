@@ -4,6 +4,8 @@ import { RecipeScalingPanel } from '@/components/ai/recipe-scaling-panel'
 import { RecipeScalingPreview } from '@/components/culinary/recipe-scaling-preview'
 import Link from 'next/link'
 import { getRecipeById } from '@/lib/recipes/actions'
+import { requireChef } from '@/lib/auth/get-user'
+import { resolvePricesBatch } from '@/lib/pricing/resolve-price'
 import { getPlaceholderImage } from '@/lib/images/placeholder-actions'
 import { formatCurrency } from '@/lib/utils/currency'
 import { PriceBadgeFromFlat } from '@/components/pricing/price-badge'
@@ -14,6 +16,10 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { getIngredientKnowledgeBatch } from '@/lib/openclaw/ingredient-knowledge-queries'
 import { IngredientSourcingToggle } from '@/components/recipes/ingredient-sourcing-toggle'
+import { IngredientPiePopover } from '@/components/pricing/ingredient-pie-popover'
+import { getRecipeStockCoverage } from '@/lib/inventory/stock-lookup-actions'
+import { StockStatusBadge, StockCoverageSummary } from '@/components/inventory/stock-status-badge'
+import { getEventsUsingRecipe } from '@/lib/recipes/recipe-events-action'
 
 const VOLUME_UNITS = new Set([
   'cup',
@@ -100,6 +106,7 @@ export default async function ChefRecipeDetailPage({ params }: { params: { id: s
   if (!recipe) notFound()
 
   const r = recipe as any
+  const user = await requireChef()
   const totalMinutes =
     r.total_time_minutes ?? (r.prep_time_minutes ?? 0) + (r.cook_time_minutes ?? 0)
 
@@ -111,10 +118,47 @@ export default async function ChefRecipeDetailPage({ params }: { params: { id: s
     .map((ri: any) => ri.ingredient?.name)
     .filter(Boolean)
 
-  const [placeholderImage, ingredientKnowledge] = await Promise.all([
-    hasOwnPhoto ? Promise.resolve(null) : getPlaceholderImage(r.name),
-    getIngredientKnowledgeBatch(ingredientNames).catch(() => new Map()),
-  ])
+  // Collect ingredient IDs for live PIE price resolution
+  const ingredientIds: string[] = (r.recipe_ingredients ?? [])
+    .map((ri: any) => ri.ingredient?.id)
+    .filter(Boolean)
+
+  // Build stock coverage input from recipe ingredients
+  const stockInput = (r.recipe_ingredients ?? [])
+    .filter((ri: any) => ri.ingredient?.id)
+    .map((ri: any) => ({
+      ingredientId: ri.ingredient.id,
+      ingredientName: ri.ingredient.name ?? 'Unknown',
+      quantity: ri.quantity,
+      unit: ri.unit,
+    }))
+
+  const [placeholderImage, ingredientKnowledge, stockCoverage, livePrices, recipeEvents] =
+    await Promise.all([
+      hasOwnPhoto ? Promise.resolve(null) : getPlaceholderImage(r.name),
+      getIngredientKnowledgeBatch(ingredientNames).catch(() => new Map()),
+      getRecipeStockCoverage(stockInput).catch(
+        () => [] as Awaited<ReturnType<typeof getRecipeStockCoverage>>
+      ),
+      ingredientIds.length > 0
+        ? resolvePricesBatch(ingredientIds, user.tenantId!).catch(() => new Map<string, any>())
+        : Promise.resolve(new Map<string, any>()),
+      getEventsUsingRecipe(params.id).catch(() => []),
+    ])
+
+  // Compute live total from PIE prices
+  let liveTotalCents = 0
+  let livePricedCount = 0
+  for (const ri of r.recipe_ingredients ?? []) {
+    const livePrice = ri.ingredient?.id ? livePrices.get(ri.ingredient.id) : null
+    if (livePrice && ri.quantity) {
+      liveTotalCents += Math.round(ri.quantity * livePrice.cents)
+      livePricedCount++
+    }
+  }
+
+  // Build a lookup map for stock status by ingredient ID
+  const stockByIngredient = new Map(stockCoverage.map((s) => [s.ingredientId, s]))
 
   return (
     <div className="space-y-6">
@@ -161,6 +205,96 @@ export default async function ChefRecipeDetailPage({ params }: { params: { id: s
           </Link>
         </div>
       </div>
+
+      {/* Recipe Cost Summary Card */}
+      {liveTotalCents > 0 &&
+        (() => {
+          const servings = r.yield_quantity ?? r.servings ?? r.default_servings ?? 4
+          const costPerServing = Math.round(liveTotalCents / servings)
+          const coveragePct =
+            ingredientIds.length > 0
+              ? Math.round((livePricedCount / ingredientIds.length) * 100)
+              : 0
+
+          // Find oldest confirmedAt across all priced ingredients
+          let oldestConfirmed: Date | null = null
+          for (const ri of r.recipe_ingredients ?? []) {
+            const lp = ri.ingredient?.id ? livePrices.get(ri.ingredient.id) : null
+            if (lp?.confirmedAt) {
+              const d = new Date(lp.confirmedAt)
+              if (!oldestConfirmed || d < oldestConfirmed) oldestConfirmed = d
+            }
+          }
+          const freshnessLabel = oldestConfirmed
+            ? (() => {
+                const days = Math.floor(
+                  (Date.now() - oldestConfirmed.getTime()) / (1000 * 60 * 60 * 24)
+                )
+                if (days <= 7) return 'Fresh (< 1 week)'
+                if (days <= 30) return `${days}d old`
+                return `${Math.floor(days / 30)}mo old`
+              })()
+            : null
+
+          return (
+            <Card className="p-4 bg-stone-900 border-stone-800">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className="flex flex-wrap items-center gap-6">
+                  {/* Total Cost */}
+                  <div>
+                    <p className="text-xs text-stone-500 uppercase tracking-wide">Total Cost</p>
+                    <p className="text-lg font-semibold text-stone-100">
+                      {formatCurrency(liveTotalCents)}
+                    </p>
+                  </div>
+
+                  {/* Per Serving */}
+                  <div>
+                    <p className="text-xs text-stone-500 uppercase tracking-wide">Per Serving</p>
+                    <p className="text-lg font-semibold text-stone-100">
+                      {formatCurrency(costPerServing)}
+                      <span className="text-xs text-stone-500 font-normal ml-1">
+                        / {servings} srv
+                      </span>
+                    </p>
+                  </div>
+
+                  {/* Food Cost % */}
+                  <div>
+                    <p className="text-xs text-stone-500 uppercase tracking-wide">Food Cost %</p>
+                    <p className="text-sm text-stone-400">Set selling price to see food cost %</p>
+                  </div>
+
+                  {/* Price Coverage */}
+                  <div>
+                    <p className="text-xs text-stone-500 uppercase tracking-wide">Coverage</p>
+                    <p className="text-lg font-semibold text-stone-100">
+                      {coveragePct}%
+                      <span className="text-xs text-stone-500 font-normal ml-1">
+                        ({livePricedCount}/{ingredientIds.length})
+                      </span>
+                    </p>
+                  </div>
+
+                  {/* Freshness */}
+                  {freshnessLabel && (
+                    <div>
+                      <p className="text-xs text-stone-500 uppercase tracking-wide">Freshness</p>
+                      <p className="text-sm font-medium text-stone-200">{freshnessLabel}</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Shop link */}
+                <Link href="/culinary/prep/shopping">
+                  <Button variant="secondary" size="sm">
+                    Shop for This
+                  </Button>
+                </Link>
+              </div>
+            </Card>
+          )
+        })()}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Recipe Details */}
@@ -221,16 +355,34 @@ export default async function ChefRecipeDetailPage({ params }: { params: { id: s
 
         {/* Ingredients & Cost */}
         <Card className="p-5 space-y-4">
-          <div className="flex justify-between items-center">
-            <h2 className="text-base font-semibold text-stone-100">Ingredients</h2>
-            {(r as any).costSummary?.total_cost_cents != null && (
-              <span className="text-sm text-stone-500">
-                Est. cost:{' '}
-                <span className="font-medium text-stone-100">
-                  {formatCurrency((r as any).costSummary.total_cost_cents)}
-                </span>
-              </span>
-            )}
+          <div className="space-y-2">
+            <div className="flex justify-between items-center">
+              <h2 className="text-base font-semibold text-stone-100">Ingredients</h2>
+              <div className="flex items-center gap-3">
+                {liveTotalCents > 0 && (
+                  <span className="text-sm text-stone-400">
+                    Live cost:{' '}
+                    <span className="font-medium text-stone-100">
+                      {formatCurrency(liveTotalCents)}
+                    </span>
+                    {livePricedCount < ingredientIds.length && (
+                      <span className="text-xs text-stone-600 ml-1">
+                        ({livePricedCount}/{ingredientIds.length} priced)
+                      </span>
+                    )}
+                  </span>
+                )}
+                {liveTotalCents === 0 && (r as any).costSummary?.total_cost_cents != null && (
+                  <span className="text-sm text-stone-500">
+                    Est. cost:{' '}
+                    <span className="font-medium text-stone-100">
+                      {formatCurrency((r as any).costSummary.total_cost_cents)}
+                    </span>
+                  </span>
+                )}
+              </div>
+            </div>
+            {stockCoverage.length > 0 && <StockCoverageSummary items={stockCoverage} />}
           </div>
 
           {r.recipe_ingredients?.length > 0 ? (
@@ -238,9 +390,13 @@ export default async function ChefRecipeDetailPage({ params }: { params: { id: s
               {r.recipe_ingredients.map((ri: any) => {
                 const iName = ri.ingredient?.name
                 const know = iName ? ingredientKnowledge.get(iName) : undefined
-                const hasPriceUnit = ri.ingredient?.average_price_cents != null
+                const livePrice = ri.ingredient?.id ? livePrices.get(ri.ingredient.id) : null
+                const hasPriceUnit = livePrice || ri.ingredient?.average_price_cents != null
                 const hasUnitMismatch =
-                  hasPriceUnit && unitMismatch(ri.unit, ri.ingredient?.default_unit)
+                  hasPriceUnit &&
+                  unitMismatch(ri.unit, livePrice?.unit ?? ri.ingredient?.default_unit)
+                const lineTotal =
+                  livePrice && ri.quantity ? Math.round(ri.quantity * livePrice.cents) : null
                 return (
                   <li key={ri.id} className="py-2.5">
                     <div className="flex items-start justify-between gap-2">
@@ -251,6 +407,11 @@ export default async function ChefRecipeDetailPage({ params }: { params: { id: s
                           {ri.is_optional && (
                             <span className="ml-1 text-xs text-stone-400">(optional)</span>
                           )}
+                          {lineTotal != null && (
+                            <span className="text-xs text-stone-500 ml-2">
+                              {formatCurrency(lineTotal)}
+                            </span>
+                          )}
                         </span>
                         {ri.preparation_notes && (
                           <p className="text-xs text-stone-500 mt-0.5">{ri.preparation_notes}</p>
@@ -258,11 +419,29 @@ export default async function ChefRecipeDetailPage({ params }: { params: { id: s
                         {hasUnitMismatch && (
                           <p className="text-xs text-amber-400 mt-0.5">
                             Unit mismatch: recipe uses {ri.unit}, price is per{' '}
-                            {ri.ingredient.default_unit}. Cost estimate may be inaccurate.
+                            {livePrice?.unit ?? ri.ingredient.default_unit}. Cost estimate may be
+                            inaccurate.
                           </p>
                         )}
+                        {/* Stock status from inventory */}
+                        {ri.ingredient?.id && stockByIngredient.get(ri.ingredient.id) && (
+                          <div className="mt-1">
+                            <StockStatusBadge item={stockByIngredient.get(ri.ingredient.id)!} />
+                          </div>
+                        )}
                       </div>
-                      {hasPriceUnit ? (
+                      {livePrice ? (
+                        <PriceBadgeFromFlat
+                          priceCents={livePrice.cents}
+                          priceUnit={livePrice.unit}
+                          store={livePrice.store}
+                          confidence={livePrice.effectiveConfidence}
+                          source={livePrice.source}
+                          lastPriceDate={livePrice.confirmedAt}
+                          ingredientId={ri.ingredient.id}
+                          compact
+                        />
+                      ) : ri.ingredient?.average_price_cents != null ? (
                         <PriceBadgeFromFlat
                           priceCents={ri.ingredient.average_price_cents}
                           priceUnit={ri.ingredient.default_unit ?? 'unit'}
@@ -279,6 +458,13 @@ export default async function ChefRecipeDetailPage({ params }: { params: { id: s
                         />
                       ) : (
                         iName && <IngredientSourcingToggle ingredientName={iName} />
+                      )}
+                      {ri.ingredient?.id && (
+                        <IngredientPiePopover
+                          ingredientId={ri.ingredient.id}
+                          ingredientName={ri.ingredient.name}
+                          className="ml-1"
+                        />
                       )}
                     </div>
                     {/* Inline knowledge: dietary flags + pairings hint */}
@@ -308,6 +494,45 @@ export default async function ChefRecipeDetailPage({ params }: { params: { id: s
           )}
         </Card>
       </div>
+
+      {/* Cross-domain: Events using this recipe */}
+      {recipeEvents.length > 0 && (
+        <Card className="p-5">
+          <h2 className="text-base font-semibold text-stone-100 mb-3">
+            Used in Events
+            <span className="ml-2 text-xs bg-stone-800 text-stone-400 px-2 py-0.5 rounded-full">
+              {recipeEvents.length}
+            </span>
+          </h2>
+          <div className="space-y-2">
+            {recipeEvents.map((event) => (
+              <Link
+                key={event.event_id}
+                href={`/events/${event.event_id}`}
+                className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-stone-800/50 group"
+              >
+                <div>
+                  <span className="text-sm text-stone-200 group-hover:text-stone-100 font-medium">
+                    {event.event_name}
+                  </span>
+                  {event.menu_name && (
+                    <span className="text-xs text-stone-500 ml-2">via {event.menu_name}</span>
+                  )}
+                </div>
+                {event.event_date && (
+                  <span className="text-xs text-stone-500">
+                    {new Date(event.event_date).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric',
+                    })}
+                  </span>
+                )}
+              </Link>
+            ))}
+          </div>
+        </Card>
+      )}
 
       {/* Nutrition Lookup - Open Food Facts */}
       <NutritionLookupPanel defaultQuery={r.name} />

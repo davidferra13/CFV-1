@@ -347,7 +347,7 @@ export default async function IngredientsPage({ searchParams }: Props) {
                       <img
                         src={item.imageUrl}
                         alt={item.name}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        className="w-full h-full object-cover"
                       />
                     </div>
                   ) : (
@@ -520,7 +520,7 @@ function IngredientCard({
         <div
           className={`w-full h-44 bg-gradient-to-br ${gradient} flex items-center justify-center relative`}
         >
-          <span className="text-5xl opacity-50 group-hover:opacity-70 group-hover:scale-110 transition-all duration-300">
+          <span className="text-5xl opacity-50 group-hover:opacity-70 transition-all duration-300">
             {CATEGORY_EMOJI[category] ?? '🍴'}
           </span>
           <div className="absolute inset-0 bg-gradient-to-t from-stone-900/40 via-transparent to-transparent" />

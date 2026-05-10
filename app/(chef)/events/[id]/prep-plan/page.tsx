@@ -4,7 +4,9 @@ import { format } from 'date-fns'
 import { requireChef } from '@/lib/auth/get-user'
 import { getEventById } from '@/lib/events/actions'
 import { autoSuggestEventBlocks, getEventPrepBlocks } from '@/lib/scheduling/prep-block-actions'
+import { generatePrepSchedule } from '@/lib/prep-timeline/export-actions'
 import { EventPrepSchedule } from '@/components/events/event-prep-schedule'
+import { PrepScheduleExportView } from '@/components/prep-timeline/prep-schedule-export'
 import { ServiceSimulationReturnBanner } from '@/components/events/service-simulation-return-banner'
 import { Button } from '@/components/ui/button'
 import { sanitizeReturnTo } from '@/lib/navigation/return-to'
@@ -22,7 +24,10 @@ export default async function EventPrepPlanPage({
   const event = await getEventById(params.id)
   if (!event) notFound()
 
-  const blocks = await getEventPrepBlocks(params.id).catch(() => [])
+  const [blocks, schedule] = await Promise.all([
+    getEventPrepBlocks(params.id).catch(() => []),
+    generatePrepSchedule(params.id).catch(() => null),
+  ])
   const suggestions =
     blocks.length === 0
       ? (await autoSuggestEventBlocks(params.id).catch(() => ({ suggestions: [] }))).suggestions
@@ -56,6 +61,8 @@ export default async function EventPrepPlanPage({
         initialBlocks={blocks}
         initialSuggestions={suggestions}
       />
+
+      {schedule && schedule.days.length > 0 && <PrepScheduleExportView schedule={schedule} />}
     </div>
   )
 }

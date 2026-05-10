@@ -258,14 +258,26 @@ export default async function ChefRecipesPage() {
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="text-stone-400 text-sm">
+                    <TableCell className="text-sm">
                       {recipe.total_cost_cents != null ? (
-                        <span className={recipe.has_all_prices ? '' : 'text-stone-400'}>
-                          {formatCurrency(recipe.total_cost_cents)}
-                          {!recipe.has_all_prices && <span className="text-xs ml-1">est.</span>}
-                        </span>
+                        <div className="flex flex-col">
+                          <span className="text-stone-100">
+                            {formatCurrency(recipe.total_cost_cents)}
+                            {!recipe.has_all_prices && (
+                              <span className="text-xs text-stone-500 ml-1">est.</span>
+                            )}
+                          </span>
+                          {recipe.servings != null && recipe.servings > 0 && (
+                            <span className="text-xs text-stone-500">
+                              {formatCurrency(
+                                Math.round(recipe.total_cost_cents / recipe.servings)
+                              )}
+                              /srv
+                            </span>
+                          )}
+                        </div>
                       ) : (
-                        '-'
+                        <span className="text-stone-500 text-xs">No pricing</span>
                       )}
                     </TableCell>
                     <TableCell className="text-stone-400 text-sm">{recipe.times_cooked}</TableCell>

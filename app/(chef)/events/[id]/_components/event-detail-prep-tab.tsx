@@ -351,12 +351,16 @@ function DayCard({
   )
 }
 
-export function EventDetailPrepTab({
-  activeTab,
+// Standalone prep timeline content, usable in both event detail tab and schedule page
+export function PrepTimelineContent({
   timeline,
   eventId,
   hasMenu,
-}: EventDetailPrepTabProps) {
+}: {
+  timeline: PrepTimeline | null
+  eventId: string
+  hasMenu: boolean
+}) {
   // Checkbox state: localStorage for instant UX, server for cross-device sync
   const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set())
 
@@ -428,130 +432,139 @@ export function EventDetailPrepTab({
     : 1
 
   return (
-    <EventDetailSection tab="prep" activeTab={activeTab}>
-      <div className="space-y-4 mt-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-stone-200">Prep Timeline</h2>
-          <div className="flex items-center gap-2">
-            {timeline && (
-              <a
-                href={`/api/prep-timeline/ical?eventId=${encodeURIComponent(eventId)}`}
-                download
-                className="inline-flex items-center gap-2 rounded-lg border border-stone-600 bg-stone-800 px-3 py-1.5 text-sm text-stone-300 hover:bg-stone-700"
-              >
-                Export to Calendar
-              </a>
-            )}
-            {checkedItems.size > 0 && (
-              <button
-                type="button"
-                onClick={() => {
-                  if (!confirm('Clear all checked items?')) return
-                  for (const key of checkedItems) {
-                    localStorage.removeItem(key)
-                  }
-                  setCheckedItems(new Set())
-                }}
-                className="text-xs text-stone-500 hover:text-stone-300 transition-colors"
-              >
-                Clear all
-              </button>
-            )}
-            <SymbolKeyTrigger />
-          </div>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold text-stone-200">Prep Timeline</h2>
+        <div className="flex items-center gap-2">
+          {timeline && (
+            <a
+              href={`/api/prep-timeline/ical?eventId=${encodeURIComponent(eventId)}`}
+              download
+              className="inline-flex items-center gap-2 rounded-lg border border-stone-600 bg-stone-800 px-3 py-1.5 text-sm text-stone-300 hover:bg-stone-700"
+            >
+              Export to Calendar
+            </a>
+          )}
+          {checkedItems.size > 0 && (
+            <button
+              type="button"
+              onClick={() => {
+                if (!confirm('Clear all checked items?')) return
+                for (const key of checkedItems) {
+                  localStorage.removeItem(key)
+                }
+                setCheckedItems(new Set())
+              }}
+              className="text-xs text-stone-500 hover:text-stone-300 transition-colors"
+            >
+              Clear all
+            </button>
+          )}
+          <SymbolKeyTrigger />
         </div>
+      </div>
 
-        {/* No menu */}
-        {!hasMenu && (
-          <Card className="border-stone-700 p-6 text-center">
-            <p className="text-stone-500">Add a menu to see your prep timeline.</p>
-          </Card>
-        )}
+      {/* No menu */}
+      {!hasMenu && (
+        <Card className="border-stone-700 p-6 text-center">
+          <p className="text-stone-500">Add a menu to see your prep timeline.</p>
+        </Card>
+      )}
 
-        {/* Menu but no timeline (no components) */}
-        {hasMenu && !timeline && (
-          <Card className="border-stone-700 p-6 text-center">
-            <p className="text-stone-500">
-              No components found on this menu. Add items and components to generate a prep
-              timeline.
-            </p>
-          </Card>
-        )}
+      {/* Menu but no timeline (no components) */}
+      {hasMenu && !timeline && (
+        <Card className="border-stone-700 p-6 text-center">
+          <p className="text-stone-500">
+            No components found on this menu. Add items and components to generate a prep timeline.
+          </p>
+        </Card>
+      )}
 
-        {/* Timeline summary */}
-        {timeline &&
-          (() => {
-            const totalItems =
-              timeline.days.reduce((s, d) => s + d.items.length, 0) + timeline.untimedItems.length
-            const totalMinutes =
-              timeline.days.reduce((s, d) => s + d.totalPrepMinutes, 0) +
-              timeline.untimedItems.reduce((s, i) => s + i.prepTimeMinutes, 0)
-            const timedCount = timeline.days.reduce((s, d) => s + d.items.length, 0)
-            const prepDays = timeline.days.filter(
-              (d) => d.items.length > 0 && !d.isServiceDay
-            ).length
+      {/* Timeline summary */}
+      {timeline &&
+        (() => {
+          const totalItems =
+            timeline.days.reduce((s, d) => s + d.items.length, 0) + timeline.untimedItems.length
+          const totalMinutes =
+            timeline.days.reduce((s, d) => s + d.totalPrepMinutes, 0) +
+            timeline.untimedItems.reduce((s, i) => s + i.prepTimeMinutes, 0)
+          const prepDays = timeline.days.filter((d) => d.items.length > 0 && !d.isServiceDay).length
 
-            return totalItems > 0 ? (
-              <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-stone-500">
+          return totalItems > 0 ? (
+            <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-stone-500">
+              <span>
+                {totalItems} component{totalItems !== 1 ? 's' : ''}
+              </span>
+              <span>{formatPrepTime(totalMinutes)} total prep</span>
+              {prepDays > 0 && (
                 <span>
-                  {totalItems} component{totalItems !== 1 ? 's' : ''}
+                  {prepDays} prep day{prepDays !== 1 ? 's' : ''}
                 </span>
-                <span>{formatPrepTime(totalMinutes)} total prep</span>
-                {prepDays > 0 && (
-                  <span>
-                    {prepDays} prep day{prepDays !== 1 ? 's' : ''}
-                  </span>
-                )}
-                {timeline.untimedItems.length > 0 && (
-                  <span className="text-amber-500">
-                    {timeline.untimedItems.length} need peak windows
-                  </span>
-                )}
-                {timeline.groceryDeadline && (
-                  <span>Shop by {format(timeline.groceryDeadline, 'EEE, MMM d')}</span>
-                )}
+              )}
+              {timeline.untimedItems.length > 0 && (
+                <span className="text-amber-500">
+                  {timeline.untimedItems.length} need peak windows
+                </span>
+              )}
+              {timeline.groceryDeadline && (
+                <span>Shop by {format(timeline.groceryDeadline, 'EEE, MMM d')}</span>
+              )}
+            </div>
+          ) : null
+        })()}
+
+      {/* Timeline */}
+      {timeline && (
+        <div className="space-y-3">
+          {timeline.days.map((day) => (
+            <DayCard
+              key={day.date.toISOString()}
+              day={day}
+              eventId={eventId}
+              checkedItems={checkedItems}
+              toggleItem={toggleItem}
+              maxDayMinutes={maxDayMinutes}
+            />
+          ))}
+
+          {/* Untimed items */}
+          {timeline.untimedItems.length > 0 && (
+            <Card className="border-stone-700 border-dashed">
+              <div className="px-4 py-3 border-b border-stone-800">
+                <div className="text-sm font-medium text-stone-400">Not yet timed</div>
+                <div className="text-xs text-stone-600">
+                  Set peak windows on these recipes to place them on the timeline
+                </div>
               </div>
-            ) : null
-          })()}
+              <div className="divide-y divide-stone-800/50">
+                {timeline.untimedItems.map((item) => (
+                  <PrepItemRow
+                    key={`${item.recipeId}-${item.componentName}`}
+                    item={item}
+                    eventId={eventId}
+                    checked={false}
+                    onToggle={() => {}}
+                  />
+                ))}
+              </div>
+            </Card>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
 
-        {/* Timeline */}
-        {timeline && (
-          <div className="space-y-3">
-            {timeline.days.map((day) => (
-              <DayCard
-                key={day.date.toISOString()}
-                day={day}
-                eventId={eventId}
-                checkedItems={checkedItems}
-                toggleItem={toggleItem}
-                maxDayMinutes={maxDayMinutes}
-              />
-            ))}
-
-            {/* Untimed items */}
-            {timeline.untimedItems.length > 0 && (
-              <Card className="border-stone-700 border-dashed">
-                <div className="px-4 py-3 border-b border-stone-800">
-                  <div className="text-sm font-medium text-stone-400">Not yet timed</div>
-                  <div className="text-xs text-stone-600">
-                    Set peak windows on these recipes to place them on the timeline
-                  </div>
-                </div>
-                <div className="divide-y divide-stone-800/50">
-                  {timeline.untimedItems.map((item) => (
-                    <PrepItemRow
-                      key={`${item.recipeId}-${item.componentName}`}
-                      item={item}
-                      eventId={eventId}
-                      checked={false}
-                      onToggle={() => {}}
-                    />
-                  ))}
-                </div>
-              </Card>
-            )}
-          </div>
-        )}
+export function EventDetailPrepTab({
+  activeTab,
+  timeline,
+  eventId,
+  hasMenu,
+}: EventDetailPrepTabProps) {
+  return (
+    <EventDetailSection tab="prep" activeTab={activeTab}>
+      <div className="mt-6">
+        <PrepTimelineContent timeline={timeline} eventId={eventId} hasMenu={hasMenu} />
       </div>
     </EventDetailSection>
   )

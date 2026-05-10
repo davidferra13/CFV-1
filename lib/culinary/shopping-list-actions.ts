@@ -532,3 +532,44 @@ export async function createPurchaseOrderFromShoppingList(input: {
 
   return po
 }
+
+// ── Upcoming Events for Shopping Event Picker ──────────────────────────────
+
+export type ShoppingEventOption = {
+  id: string
+  occasion: string | null
+  eventDate: string
+  guestCount: number
+  clientName: string | null
+  status: string
+}
+
+export async function getUpcomingEventsForShopping(input: {
+  startDate: string
+  endDate: string
+}): Promise<ShoppingEventOption[]> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const { data: events, error } = await db
+    .from('events')
+    .select('id, occasion, event_date, guest_count, status, client:clients(full_name)')
+    .eq('tenant_id', user.tenantId!)
+    .gte('event_date', input.startDate)
+    .lte('event_date', input.endDate)
+    .in('status', ['confirmed', 'accepted', 'paid'])
+    .order('event_date', { ascending: true })
+
+  if (error) throw new Error(`Failed to load events: ${error.message}`)
+
+  return (events ?? []).map((e: any) => ({
+    id: e.id,
+    occasion: e.occasion,
+    eventDate: e.event_date,
+    guestCount: Number(e.guest_count) || 0,
+    clientName: Array.isArray(e.client)
+      ? (e.client[0]?.full_name ?? null)
+      : (e.client?.full_name ?? null),
+    status: e.status,
+  }))
+}

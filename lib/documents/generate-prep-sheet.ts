@@ -6,6 +6,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { PDFLayout } from './pdf-layout'
+import { FONT } from './pdf-design-tokens'
 import { format, parseISO } from 'date-fns'
 import { dateToDateString } from '@/lib/utils/format'
 
@@ -281,7 +282,7 @@ export function renderPrepSheet(pdf: PDFLayout, data: PrepSheetData) {
 
   // ─── Header ────────────────────────────────────────────────────────────────
 
-  pdf.title('PREP SHEET', 14)
+  pdf.title('PREP SHEET', FONT.title.size - 2)
 
   const dateStr = format(
     parseISO(dateToDateString(event.event_date as Date | string)),
@@ -315,7 +316,7 @@ export function renderPrepSheet(pdf: PDFLayout, data: PrepSheetData) {
 
   if (data.clientPreferences) {
     const prefs = data.clientPreferences
-    pdf.space(1)
+    pdf.itemGap()
 
     // Allergy + dietary line - highest priority (safety)
     const allergyLine =
@@ -338,15 +339,15 @@ export function renderPrepSheet(pdf: PDFLayout, data: PrepSheetData) {
     }
   }
 
-  pdf.space(1)
+  pdf.itemGap()
 
   // ─── AT HOME Section ───────────────────────────────────────────────────────
 
-  pdf.sectionHeader('AT HOME', 11, true)
+  pdf.sectionHeader('AT HOME', FONT.courseHeader.size, true)
 
   if (atHomeComponents.length === 0) {
-    pdf.text('No make-ahead components for this event.', 8, 'italic')
-    pdf.space(1)
+    pdf.text('No make-ahead components for this event.', FONT.caption.size, 'italic')
+    pdf.itemGap()
   } else {
     // Split into PREP NOW and PREP AFTER SHOPPING
     const prepNow = atHomeComponents.filter((c) => classifyDependency(c) === 'prep_now')
@@ -376,7 +377,11 @@ export function renderPrepSheet(pdf: PDFLayout, data: PrepSheetData) {
 
     // PREP NOW subsection
     if (prepNow.length > 0) {
-      pdf.sectionHeader('PREP NOW - start immediately, everything on hand', 9, false)
+      pdf.sectionHeader(
+        'PREP NOW - start immediately, everything on hand',
+        FONT.metadata.size,
+        false
+      )
       for (const [courseNum, course] of groupByCourse(prepNow)) {
         pdf.courseHeader(`Course ${courseNum} \u2014 ${course.courseName}`)
         for (const comp of course.components) {
@@ -389,18 +394,22 @@ export function renderPrepSheet(pdf: PDFLayout, data: PrepSheetData) {
           if (comp.storage_notes) label += `. ${comp.storage_notes}`
           if (allergenFlags.length > 0) label += ` [ALLERGEN: ${allergenFlags.join(', ')}]`
 
-          pdf.checkbox(label, 8)
+          pdf.checkbox(label, FONT.caption.size)
         }
-        pdf.space(1)
+        pdf.itemGap()
       }
     } else {
-      pdf.text('All tasks require grocery items - see below.', 8, 'italic')
-      pdf.space(1)
+      pdf.text('All tasks require grocery items - see below.', FONT.caption.size, 'italic')
+      pdf.itemGap()
     }
 
     // PREP AFTER SHOPPING subsection
     if (prepAfter.length > 0) {
-      pdf.sectionHeader('PREP AFTER SHOPPING - blocked until groceries arrive', 9, false)
+      pdf.sectionHeader(
+        'PREP AFTER SHOPPING - blocked until groceries arrive',
+        FONT.metadata.size,
+        false
+      )
       for (const [courseNum, course] of groupByCourse(prepAfter)) {
         pdf.courseHeader(`Course ${courseNum} \u2014 ${course.courseName}`)
         for (const comp of course.components) {
@@ -411,13 +420,17 @@ export function renderPrepSheet(pdf: PDFLayout, data: PrepSheetData) {
           if (comp.storage_notes) label += ` \u2014 ${comp.storage_notes}`
           if (allergenFlags.length > 0) label += ` [ALLERGEN: ${allergenFlags.join(', ')}]`
 
-          pdf.checkbox(label, 8)
+          pdf.checkbox(label, FONT.caption.size)
         }
-        pdf.space(1)
+        pdf.itemGap()
       }
     } else {
-      pdf.text('All tasks use on-hand ingredients - prep starts immediately.', 8, 'italic')
-      pdf.space(1)
+      pdf.text(
+        'All tasks use on-hand ingredients - prep starts immediately.',
+        FONT.caption.size,
+        'italic'
+      )
+      pdf.itemGap()
     }
 
     // Component counts per course (bridge to packing list)
@@ -435,25 +448,34 @@ export function renderPrepSheet(pdf: PDFLayout, data: PrepSheetData) {
     const courseCounts = Array.from(countsByCourse.entries()).sort((a, b) => a[0] - b[0])
     const totalAtHome = atHomeComponents.length
     const countParts = courseCounts.map(([num, c]) => `C${num}: ${c.count}`)
-    pdf.text(`COMPONENTS: ${countParts.join('  ')}  TOTAL: ${totalAtHome}`, 8, 'bold', 0)
-    pdf.space(1)
+    pdf.text(
+      `COMPONENTS: ${countParts.join('  ')}  TOTAL: ${totalAtHome}`,
+      FONT.caption.size,
+      'bold',
+      0
+    )
+    pdf.itemGap()
   }
 
   // ─── Before Leaving Section ────────────────────────────────────────────────
 
-  pdf.sectionHeader('BEFORE LEAVING', 10, true)
-  pdf.checkbox('Pack all components - frozen items LAST', 8)
-  pdf.checkbox('Non-negotiables check', 8)
-  pdf.checkbox(`Depart by ${leaveBy}`, 8)
-  pdf.space(1)
+  pdf.sectionHeader('BEFORE LEAVING', FONT.bodyText.size, true)
+  pdf.checkbox('Pack all components - frozen items LAST', FONT.caption.size)
+  pdf.checkbox('Non-negotiables check', FONT.caption.size)
+  pdf.checkbox(`Depart by ${leaveBy}`, FONT.caption.size)
+  pdf.itemGap()
 
   // ─── ON SITE Section ───────────────────────────────────────────────────────
 
   const siteLocation = [event.location_city, event.location_state].filter(Boolean).join(', ')
-  pdf.sectionHeader(`ON SITE${siteLocation ? ` \u2014 ${siteLocation}` : ''}`, 11, true)
+  pdf.sectionHeader(
+    `ON SITE${siteLocation ? ` \u2014 ${siteLocation}` : ''}`,
+    FONT.courseHeader.size,
+    true
+  )
 
   if (onSiteComponents.length === 0) {
-    pdf.text('No on-site execution tasks.', 8, 'italic')
+    pdf.text('No on-site execution tasks.', FONT.caption.size, 'italic')
   } else {
     const onSiteByCourse = new Map<number, { courseName: string; components: PrepComponent[] }>()
     for (const comp of onSiteComponents) {
@@ -481,9 +503,9 @@ export function renderPrepSheet(pdf: PDFLayout, data: PrepSheetData) {
         if (comp.execution_notes) label += ` \u2014 ${comp.execution_notes}`
         if (allergenFlags.length > 0) label += ` [ALLERGEN: ${allergenFlags.join(', ')}]`
 
-        pdf.checkbox(label, 8)
+        pdf.checkbox(label, FONT.caption.size)
       }
-      pdf.space(1)
+      pdf.itemGap()
     }
   }
 }
@@ -497,7 +519,15 @@ export async function generatePrepSheet(
   const data = await fetchPrepSheetData(eventId)
   if (!data) throw new Error('Cannot generate prep sheet: missing event or menu data')
 
-  const pdf = new PDFLayout()
+  const dateStr = format(
+    parseISO(dateToDateString(data.event.event_date as Date | string)),
+    'EEE, MMM d, yyyy'
+  )
+  const pdf = new PDFLayout({
+    docType: 'prep-sheet',
+    clientName: data.clientName,
+    eventDate: dateStr,
+  })
   renderPrepSheet(pdf, data)
   if (generatedByName) pdf.generatedBy(generatedByName, 'Prep Sheet')
   return pdf.toBuffer()

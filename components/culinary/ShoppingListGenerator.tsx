@@ -8,8 +8,11 @@ import { Badge } from '@/components/ui/badge'
 import {
   generateShoppingList,
   createPurchaseOrderFromShoppingList,
+  getUpcomingEventsForShopping,
   type ShoppingListResult,
+  type ShoppingEventOption,
 } from '@/lib/culinary/shopping-list-actions'
+import { splitListByStore, type StoreSplit } from '@/lib/grocery/store-shopping-actions'
 import { WebSourcingPanel } from '@/components/pricing/web-sourcing-panel'
 
 function formatCurrency(cents: number) {
@@ -103,17 +106,26 @@ function ShoppingListRow({ item }: { item: ShoppingItem }) {
 type Props = {
   initialResult: ShoppingListResult
   initialEventIds?: string[]
+  initialEvents?: ShoppingEventOption[]
 }
 
-export function ShoppingListGenerator({ initialResult, initialEventIds }: Props) {
+export function ShoppingListGenerator({ initialResult, initialEventIds, initialEvents }: Props) {
   const router = useRouter()
   const [result, setResult] = useState(initialResult)
   const [startDate, setStartDate] = useState(initialResult.startDate)
   const [endDate, setEndDate] = useState(initialResult.endDate)
-  const [pinnedEventIds] = useState<string[] | undefined>(initialEventIds)
-  const [groupBy, setGroupBy] = useState<'category' | 'supplier'>('category')
+  const [selectedEventIds, setSelectedEventIds] = useState<Set<string>>(
+    new Set(initialEventIds ?? [])
+  )
+  const [availableEvents, setAvailableEvents] = useState<ShoppingEventOption[]>(initialEvents ?? [])
+  const [showEventPicker, setShowEventPicker] = useState(false)
+  const [groupBy, setGroupBy] = useState<'category' | 'supplier' | 'store'>('category')
   const [showShortagesOnly, setShowShortagesOnly] = useState(true)
   const [selectedSupplier, setSelectedSupplier] = useState('')
+  const [storeSplits, setStoreSplits] = useState<{
+    splits: StoreSplit[]
+    unassigned: { name: string; quantity: number | string; unit: string }[]
+  } | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
@@ -126,6 +138,42 @@ export function ShoppingListGenerator({ initialResult, initialEventIds }: Props)
   }, [result.items, selectedSupplier, showShortagesOnly])
 
   const grouped = useMemo(() => {
+    if (groupBy === 'store' && storeSplits) {
+      // Map store splits back to full ShoppingListItem data
+      const result: [string, typeof filteredItems][] = []
+      for (const split of storeSplits.splits) {
+        const storeItemNames = new Set(split.items.map((i) => i.name.toLowerCase()))
+        const matched = filteredItems.filter((fi) =>
+          storeItemNames.has(fi.ingredientName.toLowerCase())
+        )
+        if (matched.length > 0) {
+          result.push([split.store.store_name, matched])
+        }
+      }
+      // Unassigned items
+      if (storeSplits.unassigned.length > 0) {
+        const unassignedNames = new Set(storeSplits.unassigned.map((i) => i.name.toLowerCase()))
+        const unmatched = filteredItems.filter((fi) =>
+          unassignedNames.has(fi.ingredientName.toLowerCase())
+        )
+        if (unmatched.length > 0) {
+          result.push(['Unassigned', unmatched])
+        }
+      }
+      // Items not in any split (fallback)
+      const allMappedNames = new Set([
+        ...storeSplits.splits.flatMap((s) => s.items.map((i) => i.name.toLowerCase())),
+        ...storeSplits.unassigned.map((i) => i.name.toLowerCase()),
+      ])
+      const remaining = filteredItems.filter(
+        (fi) => !allMappedNames.has(fi.ingredientName.toLowerCase())
+      )
+      if (remaining.length > 0) {
+        result.push(['Other', remaining])
+      }
+      return result
+    }
+
     const map = new Map<string, typeof filteredItems>()
     for (const item of filteredItems) {
       const key = groupBy === 'category' ? item.category : item.supplier
@@ -134,7 +182,7 @@ export function ShoppingListGenerator({ initialResult, initialEventIds }: Props)
       map.set(key, existing)
     }
     return Array.from(map.entries()).sort((a, b) => a[0].localeCompare(b[0]))
-  }, [filteredItems, groupBy])
+  }, [filteredItems, groupBy, storeSplits])
 
   const suppliers = useMemo(() => {
     return Array.from(new Set(result.items.map((item) => item.supplier))).sort((a, b) =>
@@ -146,12 +194,60 @@ export function ShoppingListGenerator({ initialResult, initialEventIds }: Props)
     setError(null)
     startTransition(async () => {
       try {
-        const next = await generateShoppingList({ startDate, endDate, eventIds: pinnedEventIds })
+        const eventIds = selectedEventIds.size > 0 ? Array.from(selectedEventIds) : undefined
+        const [next, events] = await Promise.all([
+          generateShoppingList({ startDate, endDate, eventIds }),
+          getUpcomingEventsForShopping({ startDate, endDate }),
+        ])
         setResult(next)
+        setAvailableEvents(events)
+        setStoreSplits(null) // reset store splits when list changes
       } catch (err: any) {
         setError(err?.message || 'Failed to generate shopping list')
       }
     })
+  }
+
+  function loadStoreSplits() {
+    if (storeSplits) return
+    const allItems = result.items.map((item) => ({
+      name: item.ingredientName,
+      quantity: item.totalRequired,
+      unit: item.unit,
+    }))
+    startTransition(async () => {
+      try {
+        const splits = await splitListByStore(allItems)
+        setStoreSplits(splits)
+      } catch {
+        setError('Could not load store assignments. Check Settings > Store Preferences.')
+      }
+    })
+  }
+
+  function handleGroupByChange(value: 'category' | 'supplier' | 'store') {
+    setGroupBy(value)
+    if (value === 'store') loadStoreSplits()
+  }
+
+  function toggleEvent(eventId: string) {
+    setSelectedEventIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(eventId)) {
+        next.delete(eventId)
+      } else {
+        next.add(eventId)
+      }
+      return next
+    })
+  }
+
+  function selectAllEvents() {
+    setSelectedEventIds(new Set(availableEvents.map((e) => e.id)))
+  }
+
+  function clearAllEvents() {
+    setSelectedEventIds(new Set())
   }
 
   function exportCsv() {
@@ -201,7 +297,7 @@ export function ShoppingListGenerator({ initialResult, initialEventIds }: Props)
       try {
         const po = await createPurchaseOrderFromShoppingList({
           supplier: selectedSupplier || undefined,
-          eventId: pinnedEventIds?.length === 1 ? pinnedEventIds[0] : undefined,
+          eventId: selectedEventIds.size === 1 ? Array.from(selectedEventIds)[0] : undefined,
           items: filteredItems.map((item) => ({
             ingredientId: item.ingredientId,
             ingredientName: item.ingredientName,
@@ -221,9 +317,16 @@ export function ShoppingListGenerator({ initialResult, initialEventIds }: Props)
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Grocery List</CardTitle>
+        <CardTitle>Combined Shopping List</CardTitle>
         <p className="text-sm text-stone-500">
-          Consolidated ingredient demand minus inventory, grouped by category or supplier.
+          Consolidated ingredient demand across multiple events, minus on-hand inventory.
+          {availableEvents.length > 0 && (
+            <span className="ml-1 text-stone-400">
+              {selectedEventIds.size > 0
+                ? `${selectedEventIds.size} of ${availableEvents.length} events selected`
+                : `All ${availableEvents.length} events in range`}
+            </span>
+          )}
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -232,27 +335,36 @@ export function ShoppingListGenerator({ initialResult, initialEventIds }: Props)
         <div className="grid gap-2 md:grid-cols-[150px_150px_140px_1fr]">
           <input
             type="date"
+            title="Start date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
             className="rounded-md border border-stone-600 bg-stone-900 px-2 py-2 text-sm"
           />
           <input
             type="date"
+            title="End date"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
             className="rounded-md border border-stone-600 bg-stone-900 px-2 py-2 text-sm"
           />
           <select
+            title="Group by"
             value={groupBy}
-            onChange={(e) => setGroupBy(e.target.value as 'category' | 'supplier')}
+            onChange={(e) =>
+              handleGroupByChange(e.target.value as 'category' | 'supplier' | 'store')
+            }
             className="rounded-md border border-stone-600 bg-stone-900 px-2 py-2 text-sm"
           >
             <option value="category">Group by Category</option>
             <option value="supplier">Group by Supplier</option>
+            <option value="store">Group by Store</option>
           </select>
           <div className="flex gap-2 justify-end">
             <Button onClick={regenerate} disabled={isPending}>
-              Generate
+              {isPending ? 'Loading...' : 'Generate'}
+            </Button>
+            <Button variant="secondary" onClick={() => setShowEventPicker((v) => !v)}>
+              {showEventPicker ? 'Hide Events' : 'Pick Events'}
             </Button>
             <Button variant="secondary" onClick={exportCsv}>
               Export
@@ -262,6 +374,72 @@ export function ShoppingListGenerator({ initialResult, initialEventIds }: Props)
             </Button>
           </div>
         </div>
+
+        {/* Event Picker */}
+        {showEventPicker && (
+          <div className="rounded-lg border border-stone-700 bg-stone-900/50 p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium text-stone-200">Select events to include</p>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={selectAllEvents}
+                  className="text-xs text-brand-400 hover:text-brand-300"
+                >
+                  Select all
+                </button>
+                <button
+                  type="button"
+                  onClick={clearAllEvents}
+                  className="text-xs text-stone-400 hover:text-stone-300"
+                >
+                  Clear
+                </button>
+              </div>
+            </div>
+            {availableEvents.length === 0 ? (
+              <p className="text-sm text-stone-500">
+                No confirmed events in this date range. Adjust dates and click Generate.
+              </p>
+            ) : (
+              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                {availableEvents.map((event) => {
+                  const isSelected = selectedEventIds.has(event.id)
+                  return (
+                    <label
+                      key={event.id}
+                      className={`flex items-start gap-3 rounded-md border px-3 py-2 cursor-pointer transition-colors ${
+                        isSelected
+                          ? 'border-brand-500/50 bg-brand-950/30'
+                          : 'border-stone-700 hover:border-stone-600'
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => toggleEvent(event.id)}
+                        className="mt-0.5 h-4 w-4 rounded border-stone-600 text-brand-600 focus:ring-brand-500"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium text-stone-200 truncate">
+                          {event.occasion || 'Untitled Event'}
+                        </p>
+                        <p className="text-xs text-stone-500">
+                          {new Date(event.eventDate + 'T00:00:00').toLocaleDateString()} ·{' '}
+                          {event.guestCount} guests
+                          {event.clientName && ` · ${event.clientName}`}
+                        </p>
+                      </div>
+                    </label>
+                  )
+                })}
+              </div>
+            )}
+            <p className="text-xs text-stone-600">
+              Leave all unchecked to include every confirmed event in the date range.
+            </p>
+          </div>
+        )}
 
         <div className="flex flex-wrap items-center gap-3">
           <label className="flex items-center gap-2 text-sm text-stone-400">
@@ -274,6 +452,7 @@ export function ShoppingListGenerator({ initialResult, initialEventIds }: Props)
           </label>
 
           <select
+            title="Filter by supplier"
             value={selectedSupplier}
             onChange={(e) => setSelectedSupplier(e.target.value)}
             className="rounded-md border border-stone-600 bg-stone-900 px-2 py-2 text-sm"

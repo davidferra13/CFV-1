@@ -26,6 +26,8 @@ import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
 import { PricingIntelligenceBar } from '@/components/intelligence/pricing-intelligence-bar'
 import { CoverageScorecard } from '@/components/pricing/coverage-scorecard'
 import { BridgeHealthDot } from '@/components/pricing/bridge-health-dot'
+import { getStockForIngredients } from '@/lib/inventory/stock-lookup-actions'
+import { StockDot } from '@/components/inventory/stock-status-badge'
 
 export const metadata: Metadata = { title: 'Ingredients' }
 
@@ -53,8 +55,26 @@ export default async function IngredientsPage() {
   const ingredients = await getIngredients()
   const flaggedPrices = await getFlaggedPrices()
 
+  // Fetch stock levels for all ingredients
+  const ingredientIds = ingredients.map((i: any) => i.id).filter(Boolean)
+  const stockMap = await getStockForIngredients(ingredientIds).catch(
+    () => new Map() as Awaited<ReturnType<typeof getStockForIngredients>>
+  )
+
   const stapleCount = ingredients.filter((i: any) => i.is_staple).length
   const pricedCount = ingredients.filter((i: any) => i.average_price_cents != null).length
+  const inStockCount = ingredientIds.filter((id: string) => {
+    const stock = stockMap.get(id)
+    return stock && stock.onHand > 0
+  }).length
+  const yieldIngredients = ingredients.filter((i: any) => i.default_yield_pct)
+  const avgYield =
+    yieldIngredients.length > 0
+      ? Math.round(
+          yieldIngredients.reduce((sum: number, i: any) => sum + Number(i.default_yield_pct), 0) /
+            yieldIngredients.length
+        )
+      : null
 
   return (
     <div className="space-y-6">
@@ -91,7 +111,7 @@ export default async function IngredientsPage() {
       <PriceFlagBanner flagged={flaggedPrices} />
 
       {ingredients.length > 0 && (
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <Card className="p-4">
             <p className="text-2xl font-bold text-stone-100">{ingredients.length}</p>
             <p className="text-sm text-stone-500 mt-1">Total ingredients</p>
@@ -104,6 +124,16 @@ export default async function IngredientsPage() {
             <p className="text-2xl font-bold text-amber-700">{pricedCount}</p>
             <p className="text-sm text-stone-500 mt-1">With price data</p>
           </Card>
+          <Card className="p-4">
+            <p className="text-2xl font-bold text-emerald-500">{inStockCount}</p>
+            <p className="text-sm text-stone-500 mt-1">In inventory</p>
+          </Card>
+          {avgYield !== null && (
+            <Card className="p-4">
+              <p className="text-2xl font-bold text-stone-100">{avgYield}%</p>
+              <p className="text-sm text-stone-500 mt-1">Avg yield</p>
+            </Card>
+          )}
         </div>
       )}
 
@@ -135,9 +165,12 @@ export default async function IngredientsPage() {
                 <TableHead>Ingredient</TableHead>
                 <TableHead>Category</TableHead>
                 <TableHead>Default Unit</TableHead>
+                <TableHead>Yield</TableHead>
                 <TableHead>Staple</TableHead>
+                <TableHead>On Hand</TableHead>
                 <TableHead>Avg Price</TableHead>
                 <TableHead>Used In</TableHead>
+                <TableHead>Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -169,6 +202,17 @@ export default async function IngredientsPage() {
                     </span>
                   </TableCell>
                   <TableCell className="text-stone-400 text-sm">{ing.default_unit}</TableCell>
+                  <TableCell className="text-sm">
+                    {ing.default_yield_pct ? (
+                      <span
+                        className={`${Number(ing.default_yield_pct) < 70 ? 'text-amber-500' : 'text-stone-400'}`}
+                      >
+                        {ing.default_yield_pct}%
+                      </span>
+                    ) : (
+                      <span className="text-stone-600">-</span>
+                    )}
+                  </TableCell>
                   <TableCell>
                     {ing.is_staple ? (
                       <span className="text-xs bg-green-900 text-green-700 px-2 py-0.5 rounded-full">
@@ -177,6 +221,22 @@ export default async function IngredientsPage() {
                     ) : (
                       '-'
                     )}
+                  </TableCell>
+                  <TableCell className="text-sm">
+                    {(() => {
+                      const stock = stockMap.get(ing.id)
+                      if (!stock || stock.onHand <= 0) {
+                        return <span className="text-stone-600">-</span>
+                      }
+                      return (
+                        <span className="flex items-center gap-1.5">
+                          <StockDot color="green" />
+                          <span className="text-emerald-400">
+                            {stock.onHand} {stock.unit}
+                          </span>
+                        </span>
+                      )
+                    })()}
                   </TableCell>
                   <TableCell className="text-stone-400 text-sm">
                     {ing.average_price_cents != null || ing.last_price_cents != null ? (
@@ -207,6 +267,34 @@ export default async function IngredientsPage() {
                     {(ing as any).usage_count > 0
                       ? `${(ing as any).usage_count} recipe${(ing as any).usage_count > 1 ? 's' : ''}`
                       : '-'}
+                  </TableCell>
+                  <TableCell>
+                    {(() => {
+                      const hasUsage = (ing as any).usage_count > 0
+                      const hasPrice = ing.average_price_cents != null
+                      if (hasUsage && hasPrice) {
+                        return (
+                          <span className="inline-flex items-center gap-1.5 text-xs">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                            <span className="text-emerald-400">Active</span>
+                          </span>
+                        )
+                      }
+                      if (hasPrice) {
+                        return (
+                          <span className="inline-flex items-center gap-1.5 text-xs">
+                            <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                            <span className="text-amber-400">Priced</span>
+                          </span>
+                        )
+                      }
+                      return (
+                        <span className="inline-flex items-center gap-1.5 text-xs">
+                          <span className="w-1.5 h-1.5 rounded-full bg-stone-600" />
+                          <span className="text-stone-500">New</span>
+                        </span>
+                      )
+                    })()}
                   </TableCell>
                 </TableRow>
               ))}

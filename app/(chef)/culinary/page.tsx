@@ -14,6 +14,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { AnimatedCounter } from '@/components/ui/animated-counter'
 import { PriceAlertsWidget } from '@/components/culinary/price-alerts-widget'
 import { BatchOpportunitiesCard } from '@/components/grocery/batch-opportunities-card'
+import { getRecentCulinaryActivity, type CulinaryActivity } from '@/lib/culinary/recent-activity'
 
 export const metadata: Metadata = { title: 'Culinary' }
 
@@ -210,6 +211,76 @@ function TileSkeleton({ tile, size }: { tile: TileConfig; size: 'primary' | 'sec
 }
 
 // ---------------------------------------------------------------------------
+// Quick actions config
+// ---------------------------------------------------------------------------
+
+const quickActions = [
+  { href: '/culinary/recipes/new', label: 'Add Recipe', icon: '+' },
+  { href: '/culinary/prep', label: 'Start Prep List', icon: '\u25B6' },
+  { href: '/culinary/price-catalog', label: 'Price Check', icon: '$' },
+]
+
+// ---------------------------------------------------------------------------
+// Relative time helper
+// ---------------------------------------------------------------------------
+
+function relativeTime(timestamp: string): string {
+  const now = Date.now()
+  const then = new Date(timestamp).getTime()
+  const diffSec = Math.floor((now - then) / 1000)
+
+  if (diffSec < 60) return 'just now'
+  const diffMin = Math.floor(diffSec / 60)
+  if (diffMin < 60) return `${diffMin}m ago`
+  const diffHr = Math.floor(diffMin / 60)
+  if (diffHr < 24) return `${diffHr}h ago`
+  const diffDay = Math.floor(diffHr / 24)
+  if (diffDay < 30) return `${diffDay}d ago`
+  const diffMonth = Math.floor(diffDay / 30)
+  return `${diffMonth}mo ago`
+}
+
+// ---------------------------------------------------------------------------
+// Recent activity feed (async, wrapped in Suspense)
+// ---------------------------------------------------------------------------
+
+const activityIcon: Record<CulinaryActivity['type'], string> = {
+  recipe_created: '\uD83D\uDCD6',
+  recipe_updated: '\u270F\uFE0F',
+  ingredient_added: '\uD83E\uDDC5',
+}
+
+async function RecentActivityFeed() {
+  const activity = await getRecentCulinaryActivity(5)
+  if (activity.length === 0) return null
+
+  return (
+    <Card className="p-4">
+      <h3 className="text-sm font-semibold text-stone-200 mb-3">Recent Activity</h3>
+      <div className="space-y-1">
+        {activity.map((item) => (
+          <Link
+            key={item.id}
+            href={item.href}
+            className="flex items-center justify-between py-1.5 px-2 rounded hover:bg-stone-800/50 group"
+          >
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-xs shrink-0">{activityIcon[item.type]}</span>
+              <span className="text-sm text-stone-300 group-hover:text-stone-100 truncate">
+                {item.name}
+              </span>
+            </div>
+            <span className="text-xs text-stone-600 shrink-0 ml-2">
+              {relativeTime(item.timestamp)}
+            </span>
+          </Link>
+        ))}
+      </div>
+    </Card>
+  )
+}
+
+// ---------------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------------
 
@@ -231,6 +302,20 @@ export default async function CulinaryHubPage() {
         </Link>
       </div>
 
+      {/* Quick actions */}
+      <div className="flex flex-wrap gap-2">
+        {quickActions.map((action) => (
+          <Link
+            key={action.href}
+            href={action.href}
+            className="inline-flex items-center gap-1.5 rounded-full bg-stone-800 px-3.5 py-1.5 text-sm text-stone-300 hover:bg-stone-700 hover:text-stone-100 transition-colors"
+          >
+            <span className="text-xs font-bold">{action.icon}</span>
+            {action.label}
+          </Link>
+        ))}
+      </div>
+
       {/* Primary features - 2 column */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Suspense
@@ -243,7 +328,7 @@ export default async function CulinaryHubPage() {
       </div>
 
       {/* Secondary features - 3 column */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 stagger-grid">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <Suspense
           fallback={secondaryTiles.map((t) => (
             <TileSkeleton key={t.href} tile={t} size="secondary" />
@@ -252,6 +337,11 @@ export default async function CulinaryHubPage() {
           <CulinaryTilesWithStats tiles={secondaryTiles} size="secondary" />
         </Suspense>
       </div>
+
+      {/* Recent activity */}
+      <Suspense fallback={null}>
+        <RecentActivityFeed />
+      </Suspense>
 
       {/* Price alerts */}
       <PriceAlertsWidget />

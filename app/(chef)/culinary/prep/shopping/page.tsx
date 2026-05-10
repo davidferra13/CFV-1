@@ -2,7 +2,10 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { ShoppingListGenerator } from '@/components/culinary/ShoppingListGenerator'
-import { generateShoppingList } from '@/lib/culinary/shopping-list-actions'
+import {
+  generateShoppingList,
+  getUpcomingEventsForShopping,
+} from '@/lib/culinary/shopping-list-actions'
 
 export const metadata: Metadata = { title: 'Consolidated Shopping' }
 
@@ -29,17 +32,16 @@ export default async function ConsolidatedShoppingPage({ searchParams }: PagePro
   const endDate = params?.endDate ?? defaultWindow.endDate
   const eventIds = params?.eventIds ? params.eventIds.split(',').filter(Boolean) : undefined
 
-  const initialResult = await generateShoppingList({
-    startDate,
-    endDate,
-    eventIds,
-  }).catch(() => ({
-    startDate,
-    endDate,
-    items: [],
-    totalEstimatedCostCents: 0,
-    shortageCount: 0,
-  }))
+  const [initialResult, initialEvents] = await Promise.all([
+    generateShoppingList({ startDate, endDate, eventIds }).catch(() => ({
+      startDate,
+      endDate,
+      items: [],
+      totalEstimatedCostCents: 0,
+      shortageCount: 0,
+    })),
+    getUpcomingEventsForShopping({ startDate, endDate }).catch(() => []),
+  ])
 
   return (
     <div className="space-y-6">
@@ -47,13 +49,18 @@ export default async function ConsolidatedShoppingPage({ searchParams }: PagePro
         <Link href="/culinary/prep" className="text-sm text-stone-500 hover:text-stone-300">
           &larr; Prep
         </Link>
-        <h1 className="text-3xl font-bold text-stone-100 mt-1">Consolidated Shopping</h1>
+        <h1 className="text-3xl font-bold text-stone-100 mt-1">Combined Shopping List</h1>
         <p className="text-stone-500 mt-1">
-          Auto-generated ingredient requirements from planned events, adjusted by on-hand stock.
+          One shopping list across all your upcoming events. Select events, pick a date range, and
+          see exactly what to buy.
         </p>
       </div>
 
-      <ShoppingListGenerator initialResult={initialResult} initialEventIds={eventIds} />
+      <ShoppingListGenerator
+        initialResult={initialResult}
+        initialEventIds={eventIds}
+        initialEvents={initialEvents}
+      />
     </div>
   )
 }
